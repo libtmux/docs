@@ -75,6 +75,12 @@ step 'version slugs (negative)'
 # The one class of link nothing else covers: `check-links.mjs` follows
 # internal links, and a source link is a GitHub blob URL. Skips per port when
 # the sibling checkout is absent rather than failing a fresh clone.
+# The extracted models are committed so CI can build with no sibling
+# checkouts. Committed generated data rots silently unless something compares
+# it against its source, and nothing did.
+step 'api model freshness'
+node scripts/gen-api-model.mjs --check
+
 step 'source links'
 node scripts/check-source-links.mjs
 

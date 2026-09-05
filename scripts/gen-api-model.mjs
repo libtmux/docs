@@ -213,10 +213,21 @@ const only = args.includes('--port') ? args[args.indexOf('--port') + 1] : undefi
 const check = args.includes('--check')
 
 let stale = 0
+let skipped = 0
 for (const [port, cfg] of Object.entries(PORTS)) {
   if (only && only !== port) continue
   const checkout = expand(cfg.checkout)
   if (!existsSync(checkout)) {
+    // Generating without source is impossible, so that still fails. Checking
+    // without source is merely unanswerable, and a fresh clone and a CI runner
+    // both lack every sibling checkout — failing there would make this
+    // impossible to gate anywhere but a fully provisioned machine. Say which
+    // ports went unchecked, the shape check-source-links.mjs already uses.
+    if (check) {
+      console.log(`gen-api-model: ${port} skipped, no checkout at ${cfg.checkout}`)
+      skipped++
+      continue
+    }
     console.error(`gen-api-model: no checkout for ${port} at ${cfg.checkout}`)
     process.exit(1)
   }
@@ -412,4 +423,5 @@ for (const [port, cfg] of Object.entries(PORTS)) {
         : ''),
   )
 }
+if (check && skipped) console.log(`gen-api-model: ${skipped} port(s) skipped`)
 process.exit(stale ? 1 : 0)
