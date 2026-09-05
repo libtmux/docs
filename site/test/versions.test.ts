@@ -35,6 +35,29 @@ describe('compareTags', () => {
 })
 
 describe('sortVersions', () => {
+  const tags = (slugs: string[]): VersionEntry[] =>
+    slugs.map((slug) => ({ slug, label: slug, kind: 'tag', supported: true }))
+
+  it('puts a release above its own prereleases', () => {
+    // Numeric collation on the raw slug read `v1.0.0-alpha.3` as later than
+    // `v1.0.0`: a longer string sharing a prefix. This function is what the
+    // switcher renders, so the ordering has to be right here, not only in
+    // compareTags.
+    expect(sortVersions(tags(['v1.0.0-alpha.3', 'v1.0.0', 'v1.0.0-alpha.10'])).map((e) => e.slug)).toEqual([
+      'v1.0.0',
+      'v1.0.0-alpha.10',
+      'v1.0.0-alpha.3',
+    ])
+  })
+
+  it('does not yet order PEP 440 suffixes', () => {
+    // Python writes `v0.11.0b1`, with no hyphen, so compareTags reads the
+    // whole thing as the version core. Recorded rather than hidden: closing
+    // it needs a per-port tag grammar, not a change to this comparator.
+    const ordered = sortVersions(tags(['v0.11.0', 'v0.11.0b1', 'v0.11.0a2'])).map((e) => e.slug)
+    expect(ordered).not.toEqual(['v0.11.0', 'v0.11.0b1', 'v0.11.0a2'])
+  })
+
   it('ranks aliases before trunk before tags', () => {
     const entries: VersionEntry[] = [
       { slug: 'v0.1.0', label: 'v0.1.0', kind: 'tag', supported: true },

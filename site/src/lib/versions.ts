@@ -111,11 +111,21 @@ export function compareTags(a: string, b: string): number {
   return pb.pre.localeCompare(pa.pre, undefined, { numeric: true })
 }
 
-/** Sort newest-first for the switcher: aliases, then trunk, then tags, then branches. */
+/**
+ * Sort newest-first for the switcher: aliases, then trunk, then tags, then
+ * branches.
+ *
+ * Tags order by `compareTags`, not by their slug. Numeric collation on the
+ * raw string has no notion of a prerelease, so it read `v1.0.0-alpha.3` as
+ * later than `v1.0.0` — a longer string sharing a prefix — and listed a
+ * prerelease above the release it precedes. This function is what the
+ * switcher renders, so it is the ordering that has to be right.
+ */
 export function sortVersions(entries: VersionEntry[]): VersionEntry[] {
   const rank: Record<VersionKind, number> = { alias: 0, trunk: 1, tag: 2, branch: 3, pr: 4 }
   return [...entries].sort((a, b) => {
     if (rank[a.kind] !== rank[b.kind]) return rank[a.kind] - rank[b.kind]
+    if (a.kind === 'tag' && b.kind === 'tag') return compareTags(a.slug, b.slug)
     return b.slug.localeCompare(a.slug, undefined, { numeric: true })
   })
 }
