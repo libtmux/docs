@@ -1,0 +1,25 @@
+{
+  "name": "@libtmux/docs-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @libtmux/site dev",
+    "build": "pnpm --filter @libtmux/site build",
+    "preview": "pnpm --filter @libtmux/site preview",
+    "build:site": "./scripts/build-site.sh",
+    "type-check": "pnpm run --recursive type-check",
+    "lint": "pnpm run --recursive lint && oxlint scripts",
+    "test": "./scripts/test-all.sh",
+    "test:fast": "./scripts/test-all.sh --skip-build"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@11.21.0",
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "typescript": "catalog:",
+    "oxlint": "catalog:"
+  }
+}

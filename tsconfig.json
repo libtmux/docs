@@ -1,0 +1,19 @@
+{
+  "// note": "Shared strict base for the plain-TypeScript workspace packages. Ported from ~/work/typescript/tony.sh along with packages/theme, whose tsconfig extends this path — it was left dangling by the port, which broke both that package's `lint` and its `type-check` and therefore the recursive scripts at the root. site/ does NOT extend this: it uses astro/tsconfigs/strict, which carries Astro's own JSX and content-collection types.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "useDefineForClassFields": true,
+    "noEmit": true
+  },
+  "files": []
+}
