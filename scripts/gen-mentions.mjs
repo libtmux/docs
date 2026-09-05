@@ -29,7 +29,8 @@ const modelDir = join(root, 'site/src/data/api')
 const out = join(root, 'site/src/data/mentions.json')
 const check = process.argv.includes('--check')
 
-const PORTS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
+const { PORTS: PORT_DEFS } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
+const PORTS = PORT_DEFS.map((p) => p.slug)
 
 /** The first column's label, as the prose writes it. */
 const PORT_BY_LABEL = {

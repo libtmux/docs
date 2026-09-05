@@ -16,7 +16,8 @@
  * Usage: add-intersphinx.mjs <conf-dir> <site-dir> <base-url> [skip-port]
  */
 import { appendFileSync, existsSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const [confDir, siteDir, baseUrl, skipPort] = process.argv.slice(2)
 if (!confDir || !siteDir || !baseUrl) {
@@ -36,7 +37,9 @@ if (readFileSync(conf, 'utf8').includes(MARKER)) {
   process.exit(0)
 }
 
-const PORTS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
+const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
+const { PORTS: PORT_DEFS } = await import(`file://${join(repoRoot, 'site/src/lib/ports.ts')}`)
+const PORTS = PORT_DEFS.map((p) => p.slug)
 const entries = []
 for (const port of PORTS) {
   if (port === skipPort) continue

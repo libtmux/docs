@@ -14,7 +14,9 @@ import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const script = join(dirname(fileURLToPath(import.meta.url)), 'check-xrefs.mjs')
-const PORTS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
+const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
+const { PORTS: PORT_DEFS } = await import(`file://${join(repoRoot, 'site/src/lib/ports.ts')}`)
+const PORTS = PORT_DEFS.map((p) => p.slug)
 
 /** A tree where every port has `n` resolved anchors. */
 function site(n) {

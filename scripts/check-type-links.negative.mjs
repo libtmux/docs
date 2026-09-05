@@ -15,7 +15,9 @@ import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const script = join(dirname(fileURLToPath(import.meta.url)), 'check-type-links.mjs')
-const PORTS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
+const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
+const { PORTS: PORT_DEFS } = await import(`file://${join(repoRoot, 'site/src/lib/ports.ts')}`)
+const PORTS = PORT_DEFS.map((p) => p.slug)
 
 const linked = (n) => `<span class="api-type"><a href="/x/" class="api-type-link">${n}</a></span>`
 const plain = (n) => `<span class="api-type"><span class="api-punct">${n}</span></span>`

@@ -17,15 +17,20 @@
  * Usage: node scripts/check-api-fidelity.mjs <site-dir>
  */
 import { readFileSync, globSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const root = process.argv[2]
+// `root` above is the assembled site this run measures; the port list comes
+// from the repository, which is a different place.
+const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 if (!root) {
   console.error('usage: check-api-fidelity.mjs <site-dir>')
   process.exit(2)
 }
 
-const PORTS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
+const { PORTS: PORT_DEFS } = await import(`file://${join(repoRoot, 'site/src/lib/ports.ts')}`)
+const PORTS = PORT_DEFS.map((p) => p.slug)
 const HOOKS = [
   'data-domain',
   'data-objtype',

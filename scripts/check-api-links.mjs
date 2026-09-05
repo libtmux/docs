@@ -22,7 +22,8 @@ import { fileURLToPath } from 'node:url'
 import { Resolver, decideFilePath, decideMention, isLikelyReference, looksLikeApiMention, notASymbol, notApiReason, readInventory } from '../packages/api-model/src/index.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const PORTS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
+const { PORTS: PORT_DEFS } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
+const PORTS = PORT_DEFS.map((p) => p.slug)
 const CONTENT = join(root, 'site/src/content/docs')
 const started = Date.now()
 

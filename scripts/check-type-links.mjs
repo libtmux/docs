@@ -31,7 +31,8 @@ const CEILING_FILE =
   ceilingArg === -1
     ? join(root, 'scripts/type-links-ceiling.json')
     : process.argv[ceilingArg + 1]
-const PORTS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
+const { PORTS: PORT_DEFS } = await import(`file://${join(root, 'site/src/lib/ports.ts')}`)
+const PORTS = PORT_DEFS.map((p) => p.slug)
 
 const args = process.argv.slice(2)
 const positional = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--ceiling')

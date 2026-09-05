@@ -114,6 +114,26 @@ const PORTS = [
   },
 ]
 
+/*
+ * This table is MCP server locations and extraction patterns, not port
+ * identity, so it does not belong in ports.ts. What does belong there is the
+ * set of ports, and the two silently diverging is how a ninth port gets an
+ * empty comparison instead of an error.
+ */
+const portsModule = resolve(dirname(dirname(fileURLToPath(import.meta.url))), 'site/src/lib/ports.ts')
+const { PORTS: PORT_DEFS } = await import(`file://${portsModule}`)
+const declaredSlugs = new Set(PORT_DEFS.map((port) => port.slug))
+const coveredSlugs = new Set(PORTS.map((port) => port.slug))
+const absentHere = [...declaredSlugs].filter((slug) => !coveredSlugs.has(slug))
+const absentThere = [...coveredSlugs].filter((slug) => !declaredSlugs.has(slug))
+if (absentHere.length || absentThere.length) {
+  console.error('gen-mcp-tools: this table and ports.ts disagree about which ports exist.')
+  if (absentHere.length) console.error(`  declared in ports.ts, absent here: ${absentHere.join(', ')}`)
+  if (absentThere.length) console.error(`  present here, absent from ports.ts: ${absentThere.join(', ')}`)
+  process.exit(1)
+}
+
+
 function filesIn(dir, glob, exclude = []) {
   try {
     const args = ['--type', 'f', '--glob', glob, '--base-directory', dir, '--absolute-path']
