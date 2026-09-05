@@ -1,0 +1,87 @@
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { describe, expect, it } from 'vitest'
+import { readInventory } from '@libtmux/api-model'
+import { API_MODELS, indexFor } from '../src/lib/api-models'
+
+/**
+ * The federation is reachable from a build, not just from a unit test.
+ *
+ * `indexFor` used to resolve each `.inv` from `import.meta.url` and skip it
+ * when `existsSync` said no. Under Vite that path moves, so the check failed
+ * silently and no inventory was ever loaded in a build — Python's 6,253
+ * external links were byte-identical with the inventory present and absent,
+ * every one of them from a hand-written fallback table of 22 names. Nothing
+ * reported it, because fewer links is not an error.
+ *
+ * This asserts through `indexFor` itself for that reason. A test that loads
+ * the `.inv` directly passes in exactly the situation that was broken.
+ */
+const here = dirname(fileURLToPath(import.meta.url))
+const invDir = join(here, '../src/data/inventories')
+const href = (s: { publicId?: string; id: string }) => `#${s.publicId ?? s.id}`
+
+describe('indexFor attaches the inventories', () => {
+  it('links a JDK type from a Java annotation', () => {
+    const index = indexFor(API_MODELS.java, href)
+    const hit = index.resolve('List', 'class')
+    expect(hit?.external, 'List should resolve into the JDK').toBe(true)
+    expect(hit?.href).toContain('docs.oracle.com')
+  })
+
+  it('links a DOM interface from a TypeScript annotation', () => {
+    const index = indexFor(API_MODELS.ts, href)
+    const hit = index.resolve('AbortController', 'class')
+    expect(hit?.external).toBe(true)
+    expect(hit?.href).toContain('developer.mozilla.org/en-US/docs/Web/API/AbortController')
+  })
+
+  it('links a Python name the built-in fallback cannot reach', () => {
+    // Deliberately a method on a builtin, not `dataclasses.dataclass`: the
+    // fallback resolves anything whose first segment is a stdlib module name,
+    // so most qualified names pass with or without the inventory and prove
+    // nothing. `str.removeprefix` has no module head, so only the inventory
+    // has it — this fails the moment the inventory stops loading again.
+    const index = indexFor(API_MODELS.py, href)
+    const hit = index.resolve('str.removeprefix', 'class')
+    expect(hit?.external, 'str.removeprefix is inventory-only').toBe(true)
+    expect(hit?.href).toContain('docs.python.org')
+  })
+
+  it('does not answer for a language it does not describe', () => {
+    for (const port of ['rs', 'go', 'dotnet', 'cxx', 'swift'] as const) {
+      const index = indexFor(API_MODELS[port], href)
+      for (const name of ['List', 'AbortController', 'str', 'Optional']) {
+        const hit = index.resolve(name, 'class')
+        expect(hit?.external, `${port} resolved ${name} externally`).not.toBe(true)
+      }
+    }
+  })
+})
+
+describe('each sidecar agrees with the .inv beside it', () => {
+  /**
+   * Two files written from the same bytes in the same run, so they can only
+   * drift if one is regenerated alone. The `.inv` is what Sphinx consumes and
+   * what the round-trip tests validate; the sidecar is what the bundler can
+   * see. Neither is redundant, so both are checked.
+   */
+  it.each(['python', 'jdk', 'dom'])('%s', (name) => {
+    const inv = readInventory(readFileSync(join(invDir, `${name}.inv`)))
+    const sidecar = JSON.parse(
+      readFileSync(join(invDir, `${name}.entries.json`), 'utf8'),
+    ) as { project: string; e: [string, string][] }
+
+    expect(sidecar.e.length, `${name}: entry count differs`).toBe(inv.entries.length)
+    expect(sidecar.project).toBe(inv.project)
+
+    // Compared as multisets, not by name: an inventory may carry one name in
+    // several domains — CPython has `__future__` as a module and as a label —
+    // so a name-keyed map silently drops one and reports a false mismatch.
+    const key = (n: string, u: string) => `${n}\u0000${u}`
+    const fromInv = new Set(inv.entries.map((e) => key(e.name, e.uri)))
+    const mismatched = sidecar.e.filter(([n, u]) => !fromInv.has(key(n, u)))
+    expect(mismatched.slice(0, 3), `${name}: URIs differ`).toEqual([])
+  })
+})
