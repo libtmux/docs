@@ -165,6 +165,14 @@ node scripts/check-type-links.negative.mjs
 # The edge function decides file-versus-page from an extension allowlist. A
 # generator adding a file type breaks that URL class at the CDN, where no link
 # check here can see it — every link in the tree still resolves.
+# The reference tree carries no version and no locale, so a page there has no
+# other page to point at. Nothing else asserts a canonical anywhere.
+step 'reference canonicals'
+node scripts/check-canonicals.mjs "$out"
+
+step 'reference canonicals (negative)'
+node scripts/check-canonicals.negative.mjs
+
 step 'edge extensions'
 node scripts/check-edge-extensions.mjs "$out"
 

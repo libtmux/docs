@@ -62,6 +62,14 @@ interface Props {
   owner?: ApiSymbol
 }
 const { model, owner } = Astro.props as Props
+/*
+ * The route param is the page's own path below `/reference/`, so composing
+ * `pagePath` from it cannot disagree with the URL. Deriving it from `owner`
+ * instead dropped the port: every symbol page in all eight ports declared a
+ * canonical at `/reference/<symbol>/`, a URL that does not exist, and two
+ * ports sharing a symbol slug declared the same one.
+ */
+const { slug } = Astro.params
 
 
 /**
@@ -447,7 +455,7 @@ const title = owner
         ? `Every public symbol in libtmux for ${PORT_NAME[model.port] ?? model.port}: ${model.symbols.length}, extracted from source.`
         : 'The libtmux API reference for every language, extracted from source and rendered through one set of components.'
   }
-  pagePath={owner ? `reference/${(owner.publicId ?? owner.id).replaceAll('.', '-').toLowerCase()}` : 'reference'}
+  pagePath={slug ? `reference/${slug}` : 'reference'}
   noindex={true}
   switcherPath=""
 >
