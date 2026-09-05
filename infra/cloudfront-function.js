@@ -142,7 +142,7 @@ const ASSET_EXTENSIONS = {
  * | `/`                                        | 2 (directory index)     | rewrite -> `/index.html`                   |
  * | `/py`                                      | 1 (KVS, parts[2] undef) | 302 -> `/py/stable/` (or whatever `py:default` holds) |
  * | `/py/`                                     | 1 (KVS, parts[2] "")    | 302 -> `/py/stable/`                       |
- * | `/rs`                                      | 1 (KVS)                 | 302 -> `/rs/stable/` — ecosystem ports still carry a guides prefix even though their API reference is external (ports.ts referenceUrl) |
+ * | `/rs`                                      | 1 attempted, KVS misses | falls through to rule 3: 301 -> `/rs/`, then rule 2 serves `/rs/index.html` — rs, go and java publish no version prefix, so they get no `<slug>:default` key to point at (notes/decisions/port-root-redirect.md) |
  * | `/py/stable`                                | 3 (extensionless)       | 301 -> `/py/stable/`                       |
  * | `/py/stable/`                               | 2 (directory index)     | rewrite -> `/py/stable/index.html`         |
  * | `/py/latest`                                | 3 (extensionless)       | 301 -> `/py/latest/` (never the KVS default — `parts[2]` is truthy) |

@@ -15,6 +15,12 @@
  * cross-reference from every other project stops resolving — while every link
  * check here still passes, because nothing in this repository links to it.
  *
+ * Scope: this can only see what the tree in front of it emits. CI assembles
+ * the shell alone, with no port checkouts, so a Sphinx or DocC file type is
+ * absent there and cannot be caught until a full local assembly runs. The
+ * check reports which allowlisted extensions the tree did not emit for that
+ * reason — silence would read as full coverage.
+ *
  * Usage: node scripts/check-edge-extensions.mjs [site-dir] [--function <path>]
  */
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs'
