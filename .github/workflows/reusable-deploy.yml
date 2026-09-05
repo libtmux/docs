@@ -1,0 +1,263 @@
+name: reusable-deploy
+
+# Shared publish step for every self-hosted port (site/src/lib/ports.ts:
+# referenceMode 'self-hosted' — py, ts, dotnet, cxx, swift) plus this
+# repo's own PR previews. A caller builds with its own toolchain and
+# uploads an artifact; this workflow only downloads it, syncs it to its
+# one exclusive prefix, upserts that port's manifest fragment, and
+# invalidates. It never installs a language toolchain, so it can't couple
+# one port's toolchain choice to another's (docs/ci.md, "shared file vs
+# shared execution").
+#
+# Callers in other repositories pin an exact tag (`@v1`) and bump it on
+# review, same as any other dependency — see docs/ci.md for the opt-in
+# recipe. This file never sets `concurrency`: groups are workflow-level on
+# the *caller*, so a shared group name here would silently merge queues
+# across repositories that have nothing to do with each other.
+
+on:
+  workflow_call:
+    inputs:
+      path-prefix:
+        description: >
+          S3 key prefix this call may write, e.g. 'py/v0.46.2', 'py/stable',
+          'pr-42'. Validated below, not just documented — this is the one
+          thing standing between a caller and every other prefix in the
+          bucket.
+        required: true
+        type: string
+      artifact:
+        description: Name of the build artifact (from actions/upload-artifact) to publish.
+        required: true
+        type: string
+      version-kind:
+        description: >
+          A site/src/lib/versions.ts VersionKind: 'trunk' | 'tag' | 'branch'
+          | 'pr' | 'alias'. Drives Cache-Control and invalidation — the
+          caller states what it built, this workflow decides how it is
+          cached, so a caller can't hand an immutable tag a five-minute TTL
+          by copy-paste.
+        required: true
+        type: string
+      port:
+        description: >
+          Port slug from site/src/lib/ports.ts (e.g. 'py'). Set to upsert
+          this version into manifest/<port>.json; omit to skip the manifest
+          step entirely (this repo's own PR previews have no port).
+        required: false
+        type: string
+        default: ''
+      version:
+        description: Version slug for the manifest entry (VersionEntry.slug), e.g. 'v0.46.2', 'stable'. Required when `port` is set.
+        required: false
+        type: string
+        default: ''
+      label:
+        description: Display label for the manifest entry (VersionEntry.label). Defaults to `version`.
+        required: false
+        type: string
+        default: ''
+      is-default:
+        description: Whether this call's version is the port's indexable default (VersionManifest.defaultVersion) — see versions.ts robotsFor().
+        required: false
+        type: boolean
+        default: false
+      resolves-to:
+        description: For version-kind 'alias' (VersionEntry.resolvesTo), the slug this alias currently points at, e.g. 'v0.46.2'. Ignored for every other version-kind.
+        required: false
+        type: string
+        default: ''
+      aws-region:
+        required: false
+        type: string
+        default: us-east-1
+      environment:
+        description: >
+          GitHub Environment this call's AWS role assumption runs under
+          (e.g. 'docs', 'docs-preview'). Set on this job, not the caller's —
+          workflow_call does not support an `environment:` on the calling
+          job itself, and this is also the job whose OIDC `sub` claim needs
+          `environment:<name>` to match the role's trust policy. The
+          environment's deployment branch/tag policy is what actually
+          restricts which refs may publish (docs/ci.md).
+        required: true
+        type: string
+    secrets:
+      role-arn:
+        required: true
+      bucket:
+        required: true
+      distribution:
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      # All eight port slugs plus the bucket-root reservations, even though
+      # only five (py, ts, dotnet, cxx, swift — ports.ts referenceMode
+      # 'self-hosted') ever legitimately call this workflow: rs/go/java
+      # deep-link to an ecosystem host and should never reach here at all,
+      # so blocking their slugs too is defense in depth, not dead weight.
+      # This is a literal copy of ports.ts, not a checkout of this repo — a
+      # cross-repo checkout of a private repo would need a shared credential
+      # handed to every caller, exactly the shared-execution risk per-repo
+      # prefix ownership exists to avoid. Keep it in sync by hand if PORTS
+      # ever gains a ninth entry.
+      - name: Validate path-prefix
+        env:
+          PREFIX_IN: ${{ inputs.path-prefix }}
+        run: |
+          set -euo pipefail
+          p="$PREFIX_IN"
+          if [[ -z "$p" || "$p" == /* || "$p" == */ || "$p" == *..* ]]; then
+            echo "::error::path-prefix '$p' must be non-empty, unrooted, and contain no '..' segment" >&2
+            exit 1
+          fi
+          reserved=(py ts rs go java dotnet cxx swift manifest _shell)
+          for r in "${reserved[@]}"; do
+            if [[ "$p" == "$r" ]]; then
+              echo "::error::path-prefix '$p' is a bare reserved top-level name — qualify it, e.g. '$r/stable'" >&2
+              exit 1
+            fi
+          done
+          echo "PREFIX=$p" >> "$GITHUB_ENV"
+
+      - name: Resolve cache policy from version-kind
+        env:
+          KIND: ${{ inputs.version-kind }}
+        run: |
+          set -euo pipefail
+          case "$KIND" in
+            tag)
+              # Immutable tag prefixes never change their bytes once
+              # published, so a year-long TTL costs nothing and invalidating
+              # them would be pure waste (notes/research/06, "Invalidation:
+              # mutable pointers only").
+              echo "CACHE_CONTROL=public, max-age=31536000, immutable" >> "$GITHUB_ENV"
+              echo "DO_INVALIDATE=false" >> "$GITHUB_ENV"
+              ;;
+            trunk|branch|pr|alias)
+              echo "CACHE_CONTROL=public, max-age=0, s-maxage=300" >> "$GITHUB_ENV"
+              echo "DO_INVALIDATE=true" >> "$GITHUB_ENV"
+              ;;
+            *)
+              echo "::error::unknown version-kind '$KIND'" >&2
+              exit 1
+              ;;
+          esac
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.artifact }}
+          path: dist
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.role-arn }}
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Sync to this call's own prefix
+        env:
+          BUCKET: ${{ secrets.bucket }}
+        run: |
+          set -euo pipefail
+          # Scoped to $PREFIX, never the bucket root — the live bug in
+          # ~/work/python/libtmux/.github/workflows/docs.yml this design
+          # replaces. --delete is safe here because $PREFIX is this call's
+          # own exclusive key, validated above.
+          aws s3 sync dist/ "s3://$BUCKET/$PREFIX/" \
+            --delete \
+            --cache-control "$CACHE_CONTROL"
+
+      - name: Upsert manifest/<port>.json
+        if: inputs.port != ''
+        env:
+          BUCKET: ${{ secrets.bucket }}
+          PORT: ${{ inputs.port }}
+          SLUG: ${{ inputs.version }}
+          KIND: ${{ inputs.version-kind }}
+          LABEL: ${{ inputs.label }}
+          IS_DEFAULT: ${{ inputs.is-default }}
+          RESOLVES_TO: ${{ inputs.resolves-to }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$SLUG" ]]; then
+            echo "::error::version is required when port is set" >&2
+            exit 1
+          fi
+          key="manifest/${PORT}.json"
+          label="${LABEL:-$SLUG}"
+
+          # Derived from the bucket's own manifest key, never appended to —
+          # the losing side of a race recomputes from current state instead
+          # of retrying stale bytes. manifest/<port>.json is exclusive to
+          # this port's own OIDC role, so in steady state there is no other
+          # writer; --if-match/--if-none-match is a backstop against a
+          # manual re-run racing itself, not the primary correctness
+          # mechanism (notes/research/07, "Manifest consistency by
+          # construction").
+          for attempt in 1 2 3; do
+            put_args=(--content-type application/json)
+            if etag=$(aws s3api head-object --bucket "$BUCKET" --key "$key" --query ETag --output text 2>/dev/null); then
+              aws s3api get-object --bucket "$BUCKET" --key "$key" "$RUNNER_TEMP/manifest-current.json" >/dev/null
+              current=$(cat "$RUNNER_TEMP/manifest-current.json")
+              put_args+=(--if-match "$etag")
+            else
+              current='{"schema":1,"ports":{},"defaultVersion":{}}'
+              put_args+=(--if-none-match "*")
+            fi
+
+            jq -n \
+              --argjson doc "$current" \
+              --arg port "$PORT" \
+              --arg slug "$SLUG" \
+              --arg label "$label" \
+              --arg kind "$KIND" \
+              --argjson isDefault "$IS_DEFAULT" \
+              --arg resolvesTo "$RESOLVES_TO" \
+              '
+              {slug: $slug, label: $label, kind: $kind, supported: true}
+              + (if $kind == "alias" and $resolvesTo != "" then {resolvesTo: $resolvesTo} else {} end)
+              as $entry
+              | ($doc.ports[$port] // []) as $existing
+              | ($existing | map(select(.slug != $slug))) + [$entry] as $entries
+              | $doc
+              | .ports[$port] = $entries
+              | if $isDefault then .defaultVersion[$port] = $slug else . end
+              ' > "$RUNNER_TEMP/manifest-fragment.json"
+
+            if aws s3api put-object \
+              --bucket "$BUCKET" \
+              --key "$key" \
+              --body "$RUNNER_TEMP/manifest-fragment.json" \
+              "${put_args[@]}" >/dev/null 2>"$RUNNER_TEMP/put-error.txt"; then
+              exit 0
+            fi
+
+            if grep -qi 'PreconditionFailed\|412' "$RUNNER_TEMP/put-error.txt"; then
+              echo "manifest write raced on attempt $attempt, re-reading and retrying" >&2
+              continue
+            fi
+
+            cat "$RUNNER_TEMP/put-error.txt" >&2
+            exit 1
+          done
+          echo "::error::manifest/${PORT}.json still conflicting after 3 attempts" >&2
+          exit 1
+
+      - name: Invalidate this prefix only
+        if: env.DO_INVALIDATE == 'true'
+        run: |
+          set -euo pipefail
+          # Never a whole language root: $PREFIX is already this one
+          # version's own key (e.g. 'py/stable', not 'py'), enforced by the
+          # validation step above.
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ secrets.distribution }}" \
+            --paths "/$PREFIX/*"

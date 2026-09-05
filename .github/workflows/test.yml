@@ -1,0 +1,50 @@
+name: test
+
+# Everything that can say the docs are wrong, on every push and pull request.
+#
+# `deploy-shell.yml` builds and publishes; it does not run the suite, so until
+# now nothing stopped a change that type-checks and builds cleanly from
+# shipping a reference full of dangling anchors.
+#
+# This runs `scripts/test-all.sh`, the same command used locally, rather than
+# restating its steps. A CI file that lists them separately drifts from the
+# script, and then "it passes locally" and "it passes in CI" stop meaning the
+# same thing.
+#
+# The port references are deliberately not built. Seven of the eight need
+# their own toolchain — Sphinx, docfx, Doxygen, a Swift compiler — each port
+# already runs its own, and installing all seven to check a Markdown change
+# would trade ten minutes for something no port owner asked for. test-all.sh
+# builds the shell only, which is what this repo controls.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Unit tests, lint, type-check, a real shell build, then the suites that
+      # read built HTML, the link check and the API fidelity check — ordered
+      # cheapest-first inside the script so a failure arrives as early as it
+      # can.
+      - name: test-all
+        run: pnpm test

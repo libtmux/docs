@@ -1,0 +1,263 @@
+name: deploy-shell
+
+# This repo's own build: the bucket root (landing, concepts, guides,
+# examples, parity, search — site/src/content.config.ts's 'docs'
+# collection) plus PR previews of the same pages. No port ever calls this
+# file; each self-hosted port owns its own docs.yml calling
+# reusable-deploy.yml instead (docs/ci.md).
+#
+# The shell has no versioned URL space of its own (notes/research/06: root
+# is always "whatever's on trunk," never /latest/ or /stable/ like a port).
+# A tag here is a release marker for this repo's own history; it deploys to
+# the same root a trunk push does, not a separate prefix. Release branches
+# are a per-port version concept (versions.ts VersionKind 'branch', e.g.
+# 'v0.x') with no shell equivalent, so there is deliberately no branch
+# trigger here beyond the default branch.
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('deploy-shell-pr-{0}', github.event.pull_request.number) || 'deploy-shell' }}
+  queue: max
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Both branches build the same 'docs' collection through the same
+      # astro.config.ts; only the version env vars differ (astro.config.ts's
+      # own doc comment names all five). Production is the one indexable
+      # build (LIBTMUX_DOCS_IS_DEFAULT=true), so it is the only one that
+      # emits a sitemap.
+      - name: Build (production root)
+        if: github.event_name != 'pull_request'
+        working-directory: site
+        env:
+          LIBTMUX_DOCS_VERSION: latest
+          LIBTMUX_DOCS_VERSION_KIND: trunk
+          LIBTMUX_DOCS_IS_DEFAULT: 'true'
+          LIBTMUX_DOCS_BASE: /
+          LIBTMUX_DOCS_SITE: https://libtmux.org
+        run: pnpm build
+
+      - name: Build (PR preview)
+        if: github.event_name == 'pull_request'
+        working-directory: site
+        env:
+          LIBTMUX_DOCS_VERSION: pr-${{ github.event.pull_request.number }}
+          LIBTMUX_DOCS_VERSION_KIND: pr
+          LIBTMUX_DOCS_IS_DEFAULT: 'false'
+          LIBTMUX_DOCS_BASE: /pr-${{ github.event.pull_request.number }}/
+          # A preview nests the whole site, so "/" is not the site root here.
+          # BASE cannot stand in for that: /py/stable/ and /pr-42/ have the
+          # same shape, and only one of them moves the root. Everything that
+          # emits a root-relative link — the rehype pass over Markdown, the
+          # port and version switchers, ports.ts's URL builders — reads this.
+          LIBTMUX_DOCS_ROOT: /pr-${{ github.event.pull_request.number }}/
+          LIBTMUX_DOCS_SITE: https://libtmux.org
+        run: pnpm build
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: shell-dist
+          path: site/dist
+          retention-days: 1
+
+  # Same-repo PRs only. Fork PRs get no secrets on `pull_request` by
+  # design (a fork's build step above still runs, with no OIDC and no
+  # secrets in scope — GITHUB_TOKEN aside — so a malicious build script
+  # gains nothing); this job's `if` is what keeps it that way, not the
+  # trigger. Chosen over a `workflow_run` handoff for two reasons: this
+  # repo is private, so a fork PR is not a real scenario yet (README:
+  # "Private while under construction"), and a handoff needs a fourth
+  # workflow file, all validating `head_sha`/`head_repository` correctly,
+  # which is more surface than today's threat model justifies. If the repo
+  # goes public, add that handoff (notes/research/06/07) rather than
+  # widening this `if`.
+  publish-preview:
+    needs: build
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      path-prefix: pr-${{ github.event.pull_request.number }}
+      artifact: shell-dist
+      version-kind: pr
+      environment: docs-preview
+    secrets:
+      role-arn: ${{ secrets.LIBTMUX_DOCS_PREVIEW_ROLE_ARN }}
+      bucket: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
+      distribution: ${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}
+
+  # Bucket root is shared with eight language prefixes this repo must never
+  # bulk-touch. reusable-deploy.yml's single-prefix `sync --delete` doesn't
+  # fit here — production output spans several top-level directories (the
+  # 'docs' collection's own routes, plus /ja/ once i18n lands) — so this
+  # job does its own sync, one directory at a time, denylist-checked
+  # against every reserved language/manifest name before anything is
+  # written. This is the workflow-level twin of the IAM NotResource policy
+  # in notes/research/07: a bug here should fail the run, not depend on IAM
+  # alone to fail closed.
+  #
+  # A reserved prefix is not entirely off limits, though: [port]/index.astro
+  # renders once per port (site root build only), so dist/py/, dist/ts/, and
+  # six more each hold exactly that one port's landing page and nothing
+  # else. notes/decisions/port-root-redirect.md is the decision that page
+  # stays there rather than move: for rs/go/java (ecosystem — no local
+  # version prefix to redirect to) and dotnet/swift (not published yet) it's
+  # the only content /<slug>/ ever serves; for py/ts/cxx it's a fallback for
+  # when infra/cloudfront-function.js's KVS-driven redirect can't resolve.
+  # The sync step below writes that one file with `cp`, never `sync
+  # --delete`, and asserts it really is the only thing there before writing
+  # anything — same fail-closed property the old all-or-nothing denylist
+  # had, just scoped to the one object the shell actually owns at that
+  # prefix instead of the whole prefix a port's own CI also writes to.
+  publish-root:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: docs
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: shell-dist
+          path: dist
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.LIBTMUX_DOCS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Sync top-level directories, denylist-checked
+        env:
+          BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
+        run: |
+          set -euo pipefail
+          # Reserved names copied from site/src/lib/ports.ts's eight slugs
+          # plus the manifest and runtime-shell prefixes. Keep this in sync
+          # by hand if PORTS grows a ninth entry — see the same comment in
+          # reusable-deploy.yml. manifest/ and _shell/ get no exception from
+          # this job, unlike the eight port slugs below: manifest/ has no
+          # shell output today, so any appearance is a build that changed
+          # shape. _shell/ is a live, separate discrepancy, not a dead
+          # case: the build now emits dist/_shell/{shell.js,tokens.css,...}
+          # unversioned, which will still fail here after this fix, and
+          # contradicts _shell/v*/** being the shell's own versioned prefix
+          # per notes/research/07-ci-topology.md's ownership table — see
+          # notes/decisions/port-root-redirect.md, which records rather
+          # than resolves it; that's a separate decision.
+          reserved=(py ts rs go java dotnet cxx swift manifest _shell)
+          dirs=()
+          reserved_index_dirs=()
+          for entry in dist/*/; do
+            [[ -d "$entry" ]] || continue
+            name=$(basename "$entry")
+            is_reserved=false
+            for r in "${reserved[@]}"; do
+              [[ "$name" == "$r" ]] && is_reserved=true && break
+            done
+            if [[ "$is_reserved" == false ]]; then
+              dirs+=("$name")
+              continue
+            fi
+
+            # notes/decisions/port-root-redirect.md: the shell owns exactly
+            # one file under a reserved prefix, [port]/index.astro's own
+            # index.html — Astro puts every shared chunk under one
+            # root-level _astro/, never dist/<slug>/_astro/, so there is no
+            # legitimate second entry here. Anything else means the build
+            # changed shape in a way this job hasn't been taught about;
+            # fail rather than silently sync or skip content a port's own
+            # reusable-deploy.yml owns at this same prefix.
+            mapfile -t contents < <(find "${entry%/}" -mindepth 1 -maxdepth 1 -printf '%f\n' | sort)
+            if [[ "${#contents[@]}" -ne 1 || "${contents[0]}" != "index.html" ]]; then
+              echo "::error::dist/$name/ is a reserved language/manifest prefix and must contain exactly index.html, found: ${contents[*]:-<empty>}" >&2
+              exit 1
+            fi
+            reserved_index_dirs+=("$name")
+          done
+
+          for name in "${dirs[@]}"; do
+            aws s3 sync "dist/$name/" "s3://$BUCKET/$name/" \
+              --delete \
+              --cache-control "public, max-age=0, s-maxage=300"
+          done
+
+          # One object per reserved prefix, never a directory sync: this
+          # must not be able to touch anything a port's own
+          # reusable-deploy.yml wrote under <slug>/<version>/ — validated
+          # there to always be a qualified, non-bare prefix, so it and
+          # <slug>/index.html are disjoint keys by construction.
+          for name in "${reserved_index_dirs[@]}"; do
+            aws s3 cp "dist/$name/index.html" "s3://$BUCKET/$name/index.html" \
+              --cache-control "public, max-age=0, s-maxage=300"
+          done
+
+          # Root-level files (index.html, 404.html, robots.txt,
+          # sitemap-*.xml, versions.json, favicon.svg, ...) copied without
+          # --delete: a plain `cp` pass can never remove a sibling prefix,
+          # so this half needs no denylist. Process substitution, not a
+          # pipe, so $root_files survives into this shell for the
+          # invalidation step below instead of dying with a `| while` subshell.
+          root_files=()
+          while IFS= read -r -d '' f; do
+            name=$(basename "$f")
+            aws s3 cp "$f" "s3://$BUCKET/$name" \
+              --cache-control "public, max-age=0, s-maxage=300"
+            root_files+=("$name")
+          done < <(find dist -maxdepth 1 -type f -print0)
+
+          printf '%s\n' "${dirs[@]}" > "$RUNNER_TEMP/shell-dirs.txt"
+          printf '%s\n' "${root_files[@]}" > "$RUNNER_TEMP/shell-root-files.txt"
+          printf '%s\n' "${reserved_index_dirs[@]}" > "$RUNNER_TEMP/shell-reserved-index-dirs.txt"
+
+      - name: Invalidate shell-owned paths only
+        run: |
+          set -euo pipefail
+          # Never a whole language root, and never a bare '/*' either —
+          # that would also invalidate every port's cached responses even
+          # though the shell doesn't own that data. A reserved prefix's
+          # landing page is invalidated as exactly '/<slug>/' — the precise
+          # object CloudFront's directory-index rule rewrites that request
+          # to — never '/<slug>/*', which would reach into the version
+          # tree a port's own deploy owns at the same prefix.
+          paths=()
+          while IFS= read -r name; do
+            [[ -n "$name" ]] || continue
+            paths+=("/$name")
+          done < "$RUNNER_TEMP/shell-root-files.txt"
+          while IFS= read -r name; do
+            [[ -n "$name" ]] || continue
+            paths+=("/$name/*")
+          done < "$RUNNER_TEMP/shell-dirs.txt"
+          while IFS= read -r name; do
+            [[ -n "$name" ]] || continue
+            paths+=("/$name/")
+          done < "$RUNNER_TEMP/shell-reserved-index-dirs.txt"
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}" \
+            --paths "${paths[@]}"

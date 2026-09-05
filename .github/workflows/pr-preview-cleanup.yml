@@ -1,0 +1,61 @@
+name: pr-preview-cleanup
+
+# Deletes pr-<n>/ the moment its PR closes, merged or not. Same-repo PRs
+# get a preview published by deploy-shell.yml's publish-preview job; fork
+# PRs never do (deploy-shell.yml, "Fork PRs get no secrets"), so this job
+# is a no-op delete of a prefix that was never written for those — fine,
+# `aws s3 rm --recursive` on an absent prefix is not an error.
+#
+# pull_request_target never checks out PR content — it only reads
+# github.event.pull_request.number from the event payload the platform
+# already validated — so it is safe to run unconditionally, including for
+# forks. It also always runs the workflow file from the default branch, so
+# a PR branch can't alter its own cleanup logic. This job gets its own
+# GitHub Environment rather than reusing deploy-shell.yml's docs-preview:
+# whether pull_request_target's OIDC `sub` claim matches pull_request's
+# documented repo:ORG/REPO:pull_request format is unverified
+# (notes/research/06), so its trust-policy entry is kept separate and
+# reviewed on its own.
+
+on:
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-shell-pr-${{ github.event.pull_request.number }}
+  queue: max
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    environment: docs-preview-cleanup
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.LIBTMUX_DOCS_PREVIEW_CLEANUP_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Delete pr-<n>/
+        env:
+          BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$PR" || ! "$PR" =~ ^[0-9]+$ ]]; then
+            echo "::error::no numeric PR number in event payload" >&2
+            exit 1
+          fi
+          aws s3 rm "s3://$BUCKET/pr-$PR/" --recursive
+
+      - name: Invalidate the deleted prefix
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}" \
+            --paths "/pr-$PR/*"
