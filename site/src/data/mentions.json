@@ -1,0 +1,2401 @@
+{
+ "generated": "2026-09-04T00:25:01.555Z",
+ "mentions": [
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Chain",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Connection",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::DeliveryStatus",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::exactly_one",
+   "page": "/guides/querying-and-filtering/",
+   "title": "Filtering and querying, in practice",
+   "section": "guides"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane::options",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane::send_text",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane::set_option",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane::unset_option",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane::window",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server::at_default",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server::at_socket_name",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server::at_socket_path",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server::control",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server::from_env",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server::global_hooks",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server::is_alive",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server::sessions",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server::signal",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server::wait_for",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Session",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Session::active_window",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Session::hooks",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Session::set_hook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Session::windows",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Window",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Window",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Window::active_pane",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Window::panes",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Window::session",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.IncompleteSnapshotException",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.IncompleteSnapshotException",
+   "page": "/topics/format-tokens/",
+   "title": "Format-token fields",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.LibTmuxException",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.LibTmuxException.Dispatch",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Pane.Equals",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Pane.FromEnvironmentAsync",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Pane.SendKeysAsync",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Pane.SendTextAsync",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Pane.Window",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.SendKeysRequest",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Server.Chain",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Server.EnterControlModeAsync",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Server.FromEnvironment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Server.GetSessionsAsync",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Server.IsAliveAsync",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Server.OpenWaitChannel",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Session.ActiveWindow",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Session.FromEnvironmentAsync",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Session.GetWindowsAsync",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Testing.TmuxWait.UntilAsync",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxCommandException",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxDispatchState",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxDispatchState.Dispatched",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxDispatchState.NotDispatched",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxEnvironment.GetAllAsync",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxEnvironment.RemoveAsync",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxEnvironment.SetAsync",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxEnvironment.UnsetAsync",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxHooks.GetAllAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxHooks.RunAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxHooks.SetAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxHooks.UnsetAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxObjectNotFoundException",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxOptions.GetAllAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxOptions.GetAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxOptions.SetAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxOptions.UnsetAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxTransportException",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxWaitChannel",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Window.ActivePane",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Window.FromEnvironmentAsync",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Window.GetPanesAsync",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Window.Session",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.CommandError.Is",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewServer",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewServerFromEnv",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.DeadSignal",
+   "page": "/topics/format-tokens/",
+   "title": "Format-token fields",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.Hooks",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.Options",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.SetHook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.SetHooks",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.SetOption",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.UnsetHook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.UnsetOption",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.Window",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.PaneFromEnv",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Plan.Run",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.IsAlive",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.Sessions",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.SetEnvironment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.ShowEnvironment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.UnsetEnvironment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Session.ActiveWindow",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Session.OpenControl",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Session.Windows",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.SessionFromEnv",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Window.ActivePane",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Window.Panes",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Window.Session",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.WindowFromEnv",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmuxq.ExactlyOne",
+   "page": "/guides/querying-and-filtering/",
+   "title": "Filtering and querying, in practice",
+   "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmuxq.Where",
+   "page": "/guides/querying-and-filtering/",
+   "title": "Filtering and querying, in practice",
+   "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmuxtest.WaitFor",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "workspace.Build",
+   "page": "/examples/workspace-from-file/",
+   "title": "Build a workspace from a file",
+   "section": "examples"
+  },
+  {
+   "port": "go",
+   "symbol": "workspace.Parse",
+   "page": "/examples/workspace-from-file/",
+   "title": "Build a workspace from a file",
+   "section": "examples"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane_.Pane_",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane.Pane.equals",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane.Pane.floating",
+   "page": "/topics/format-tokens/",
+   "title": "Format-token fields",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane.Pane.hooks",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane.Pane.options",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane.Pane.send",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane.Pane.sendLine",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane.Pane.window",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.query.Selections.Selections.exactlyOne",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.query.Selections.Selections.MultipleMatchesException",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.query.Selections.Selections.NoMatchException",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server.channel",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server.isAlive",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server.sessions",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.ServerEndpoint.ServerEndpoint.defaultSocket",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.ServerEndpoint.ServerEndpoint.namedSocket",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.ServerEndpoint.ServerEndpoint.socketPath",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Session_.Session_",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Session.Session.activeWindow",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Session.Session.windows",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.transport.DispatchOutcome.DispatchOutcome",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.transport.DispatchOutcome.DispatchOutcome.NOT_DISPATCHED",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.transport.TmuxTransportException.TmuxTransportException.outcome",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.WakeReason.WakeReason",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Window.Window.activePane",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Window.Window.panes",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Window.Window.session",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux._internal.control_mode.ControlMode",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux._internal.query_list.QueryList.filter",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.exc.LibTmuxException",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.exc.MultipleObjectsReturned",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.exc.ObjectDoesNotExist",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.exc.WaitTimeout",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.neo.Obj",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.from_env",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.send_keys",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.set_hook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.set_option",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.show_hook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.show_hooks",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.show_option",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.show_options",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.unset_hook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.unset_option",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.window",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.server.Server.from_env",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.server.Server.is_alive",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.server.Server.sessions",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.server.Server.set_environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.server.Server.show_environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.server.Server.unset_environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.server.Server.wait_for",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.session.Session.active_window",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.session.Session.from_env",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.session.Session.set_environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.session.Session.show_environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.session.Session.windows",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.window.Window.active_pane",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.window.Window.from_env",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.window.Window.panes",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.window.Window.session",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "error.ControlModeErrorKind",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "error.ControlModeErrorKind.DispatchTimedOut",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "hooks.SparseValues.iter",
+   "page": "/guides/querying-and-filtering/",
+   "title": "Filtering and querying, in practice",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.from_env",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.send_key_names",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.send_keys",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.send_line",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.window",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.settings.Pane.append_option",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.settings.Pane.hook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.settings.Pane.option_names",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.settings.Pane.options",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.settings.Pane.set_hook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.settings.Pane.set_option",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.settings.Pane.typed_option",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.settings.Pane.unset_hook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.settings.Pane.unset_option",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.channels.Server.signal_channel",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.channels.Server.wait_for_channel",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.ChannelWait.Signalled",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.discovery.Server.sessions",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.builder",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.check_alive",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.from_env",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.is_alive",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.new",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.settings.Server.environment_all",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.settings.Server.set_environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.settings.Server.unset_environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.Session.active_window",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.Session.from_env",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.Session.windows",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.settings.Session.environment_all",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.settings.Session.set_environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.settings.Session.unset_environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "test.retry_until",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "window.navigation.Window.active_pane",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "window.navigation.Window.panes",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "window.navigation.Window.session",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "window.Window.from_env",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "ControlSession",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "ControlSession.watch(_:)",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "swift",
+   "symbol": "Pane.windowID",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.environment(_:)",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.hooks(_:)",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.isRunning()",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.option(_:scope:)",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.options(_:)",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.removeEnvironment(_:in:)",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.runHook(_:in:)",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.sendKeys(_:to:literally:)",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.sessions()",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.setEnvironment(_:to:in:)",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.setHook(_:to:at:in:)",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.setOption(_:to:scope:)",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.signal(_:)",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.unsetEnvironment(_:in:)",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.unsetHook(_:in:)",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.unsetOption(_:scope:)",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.wait(for:)",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Snapshot",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "TmuxContext.current(environment:)",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Window",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "exc.MultipleMatchesError",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "exc.NoMatchError",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "exc.TmuxCommandError",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "exc.TmuxTransportError",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "exc.TmuxTransportError.delivery",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "pane.Pane",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "pane.Pane.sendKeys",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "pane.Pane.setHook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "pane.Pane.setOption",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "pane.Pane.showHooks",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "pane.Pane.showOptions",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "pane.Pane.showResolvedOptions",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "pane.Pane.unsetHook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "pane.Pane.unsetOption",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "pane.Pane.window",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "selection.Selection.filter",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "selection.Selection.one",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "selection.Selection.oneOrUndefined",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "selection.Selection.where",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server.batch",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server.connect",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server.isAlive",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server.pipeline",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server.raiseIfDead",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server.sessions",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server.setEnvironment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server.showEnvironment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server.unsetEnvironment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server.watch",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "session.Session",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "session.Session.activeWindow",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "session.Session.fromEnv",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "session.Session.setEnvironment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "session.Session.showEnvironment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "session.Session.unsetEnvironment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "session.Session.windows",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "types.ConnectedServer.waitFor",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "types.ServerSnapshot",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "window.Window",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "window.Window.activePane",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "window.Window.panes",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "window.Window.session",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  }
+ ],
+ "dangling": [
+  {
+   "port": "py",
+   "text": ".get()",
+   "page": "/concepts/queries/",
+   "line": 216,
+   "why": "ambiguous"
+  },
+  {
+   "port": "py",
+   "text": "libtmux._internal",
+   "page": "/concepts/transports/",
+   "line": 34,
+   "why": "no-symbol"
+  },
+  {
+   "port": "go",
+   "text": "OpenNotifications",
+   "page": "/concepts/transports/",
+   "line": 36,
+   "why": "ambiguous"
+  },
+  {
+   "port": "swift",
+   "text": "server.connect()",
+   "page": "/concepts/transports/",
+   "line": 41,
+   "why": "no-symbol"
+  },
+  {
+   "port": "swift",
+   "text": "TmuxWorkspace",
+   "page": "/concepts/workspaces/",
+   "line": 146,
+   "why": "no-symbol"
+  },
+  {
+   "port": "swift",
+   "text": "YAMLWorkspaces",
+   "page": "/concepts/workspaces/",
+   "line": 146,
+   "why": "no-symbol"
+  },
+  {
+   "port": "go",
+   "text": "TestQuickstart",
+   "page": "/examples/attach-and-send-keys/",
+   "line": 116,
+   "why": "no-symbol"
+  },
+  {
+   "port": "go",
+   "text": "docs:quickstart",
+   "page": "/examples/attach-and-send-keys/",
+   "line": 116,
+   "why": "no-symbol"
+  },
+  {
+   "port": "java",
+   "text": "ExamplesRunTest",
+   "page": "/examples/attach-and-send-keys/",
+   "line": 117,
+   "why": "no-symbol"
+  },
+  {
+   "port": "dotnet",
+   "text": "ConnectAndBuild",
+   "page": "/examples/attach-and-send-keys/",
+   "line": 118,
+   "why": "no-symbol"
+  },
+  {
+   "port": "dotnet",
+   "text": "ReadmeExampleTests",
+   "page": "/examples/attach-and-send-keys/",
+   "line": 118,
+   "why": "no-symbol"
+  },
+  {
+   "port": "go",
+   "text": "TestQuickstart",
+   "page": "/examples/capture-pane-output/",
+   "line": 156,
+   "why": "no-symbol"
+  },
+  {
+   "port": "go",
+   "text": "TestControlModeSubscribe",
+   "page": "/examples/capture-pane-output/",
+   "line": 156,
+   "why": "no-symbol"
+  },
+  {
+   "port": "go",
+   "text": "docs:watching",
+   "page": "/examples/capture-pane-output/",
+   "line": 156,
+   "why": "no-symbol"
+  },
+  {
+   "port": "java",
+   "text": "WatchPaneOutput",
+   "page": "/examples/capture-pane-output/",
+   "line": 158,
+   "why": "no-symbol"
+  },
+  {
+   "port": "java",
+   "text": "ExamplesRunTest",
+   "page": "/examples/capture-pane-output/",
+   "line": 158,
+   "why": "no-symbol"
+  },
+  {
+   "port": "dotnet",
+   "text": "ReadmeExampleTests",
+   "page": "/examples/capture-pane-output/",
+   "line": 159,
+   "why": "no-symbol"
+  },
+  {
+   "port": "dotnet",
+   "text": "ReadmeExampleTests",
+   "page": "/examples/",
+   "line": 53,
+   "why": "no-symbol"
+  },
+  {
+   "port": "go",
+   "text": "Example()",
+   "page": "/examples/workspace-from-file/",
+   "line": 154,
+   "why": "no-symbol"
+  },
+  {
+   "port": "dotnet",
+   "text": "ReadmeExampleTests",
+   "page": "/examples/workspace-from-file/",
+   "line": 157,
+   "why": "no-symbol"
+  },
+  {
+   "port": "cxx",
+   "text": "consumer.workspace",
+   "page": "/examples/workspace-from-file/",
+   "line": 158,
+   "why": "no-symbol"
+  },
+  {
+   "port": "go",
+   "text": "tmuxq.ErrNoMatch",
+   "page": "/guides/querying-and-filtering/",
+   "line": 24,
+   "why": "no-symbol"
+  },
+  {
+   "port": "go",
+   "text": "tmuxq.ErrMultipleMatches",
+   "page": "/guides/querying-and-filtering/",
+   "line": 24,
+   "why": "no-symbol"
+  },
+  {
+   "port": "rs",
+   "text": ".exactly_one()",
+   "page": "/guides/querying-and-filtering/",
+   "line": 25,
+   "why": "no-symbol"
+  },
+  {
+   "port": "rs",
+   "text": "Display",
+   "page": "/guides/querying-and-filtering/",
+   "line": 25,
+   "why": "no-symbol"
+  },
+  {
+   "port": "cxx",
+   "text": "range \\| libtmux::matching(expr)",
+   "page": "/guides/querying-and-filtering/",
+   "line": 26,
+   "why": "ambiguous"
+  },
+  {
+   "port": "cxx",
+   "text": ".error()",
+   "page": "/guides/querying-and-filtering/",
+   "line": 26,
+   "why": "ambiguous"
+  },
+  {
+   "port": "py",
+   "text": "FORMATS",
+   "page": "/topics/architecture/",
+   "line": 102,
+   "why": "no-symbol"
+  },
+  {
+   "port": "py",
+   "text": "None",
+   "page": "/topics/architecture/",
+   "line": 102,
+   "why": "no-symbol"
+  },
+  {
+   "port": "go",
+   "text": "(value, bool)",
+   "page": "/topics/architecture/",
+   "line": 104,
+   "why": "not-a-symbol"
+  },
+  {
+   "port": "py",
+   "text": ".remove_environment()",
+   "page": "/topics/environment/",
+   "line": 146,
+   "why": "ambiguous"
+  },
+  {
+   "port": "py",
+   "text": "str()",
+   "page": "/topics/errors-and-exceptions/",
+   "line": 29,
+   "why": "no-symbol"
+  },
+  {
+   "port": "go",
+   "text": "(T, error)",
+   "page": "/topics/errors-and-exceptions/",
+   "line": 31,
+   "why": "not-a-symbol"
+  },
+  {
+   "port": "rs",
+   "text": "Error",
+   "page": "/topics/errors-and-exceptions/",
+   "line": 32,
+   "why": "ambiguous"
+  },
+  {
+   "port": "swift",
+   "text": "throws(TmuxError)",
+   "page": "/topics/errors-and-exceptions/",
+   "line": 36,
+   "why": "no-symbol"
+  },
+  {
+   "port": "dotnet",
+   "text": "Unknown",
+   "page": "/topics/errors-and-exceptions/",
+   "line": 79,
+   "why": "ambiguous"
+  },
+  {
+   "port": "java",
+   "text": "COMPLETE",
+   "page": "/topics/errors-and-exceptions/",
+   "line": 80,
+   "why": "ambiguous"
+  },
+  {
+   "port": "java",
+   "text": "UNKNOWN",
+   "page": "/topics/errors-and-exceptions/",
+   "line": 80,
+   "why": "ambiguous"
+  },
+  {
+   "port": "rs",
+   "text": "TimedOut",
+   "page": "/topics/errors-and-exceptions/",
+   "line": 82,
+   "why": "ambiguous"
+  },
+  {
+   "port": "py",
+   "text": "None",
+   "page": "/topics/format-tokens/",
+   "line": 30,
+   "why": "no-symbol"
+  },
+  {
+   "port": "go",
+   "text": "(string, bool)",
+   "page": "/topics/format-tokens/",
+   "line": 32,
+   "why": "not-a-symbol"
+  },
+  {
+   "port": "rs",
+   "text": "BTreeMap",
+   "page": "/topics/options-and-hooks/",
+   "line": 33,
+   "why": "no-symbol"
+  },
+  {
+   "port": "java",
+   "text": ".append(event, command)",
+   "page": "/topics/options-and-hooks/",
+   "line": 99,
+   "why": "ambiguous"
+  },
+  {
+   "port": "dotnet",
+   "text": "Literal",
+   "page": "/topics/pane-interaction/",
+   "line": 37,
+   "why": "ambiguous"
+  },
+  {
+   "port": "cxx",
+   "text": "send_text(text)",
+   "page": "/topics/pane-interaction/",
+   "line": 38,
+   "why": "ambiguous"
+  },
+  {
+   "port": "cxx",
+   "text": "send_key(\"Enter\")",
+   "page": "/topics/pane-interaction/",
+   "line": 38,
+   "why": "ambiguous"
+  },
+  {
+   "port": "swift",
+   "text": "server.run(text, in: pane)",
+   "page": "/topics/pane-interaction/",
+   "line": 39,
+   "why": "ambiguous"
+  },
+  {
+   "port": "swift",
+   "text": "sendKeys([text, \"Enter\"], to: pane)",
+   "page": "/topics/pane-interaction/",
+   "line": 39,
+   "why": "ambiguous"
+  },
+  {
+   "port": "py",
+   "text": "Server()",
+   "page": "/topics/socket-and-servers/",
+   "line": 23,
+   "why": "ambiguous"
+  },
+  {
+   "port": "py",
+   "text": "Server(socket_name=\"work\")",
+   "page": "/topics/socket-and-servers/",
+   "line": 23,
+   "why": "ambiguous"
+  },
+  {
+   "port": "py",
+   "text": "Server(socket_path=\"/tmp/tmux-1000/work\")",
+   "page": "/topics/socket-and-servers/",
+   "line": 23,
+   "why": "ambiguous"
+  },
+  {
+   "port": "go",
+   "text": "(bool, error)",
+   "page": "/topics/socket-and-servers/",
+   "line": 104,
+   "why": "not-a-symbol"
+  },
+  {
+   "port": "swift",
+   "text": "Bool",
+   "page": "/topics/socket-and-servers/",
+   "line": 109,
+   "why": "no-symbol"
+  },
+  {
+   "port": "swift",
+   "text": "snapshot.windows(of: session)",
+   "page": "/topics/traversal/",
+   "line": 36,
+   "why": "ambiguous"
+  },
+  {
+   "port": "go",
+   "text": "(Window, bool)",
+   "page": "/topics/traversal/",
+   "line": 60,
+   "why": "not-a-symbol"
+  },
+  {
+   "port": "go",
+   "text": "(Session, bool)",
+   "page": "/topics/traversal/",
+   "line": 60,
+   "why": "not-a-symbol"
+  },
+  {
+   "port": "go",
+   "text": "(Window, bool)",
+   "page": "/topics/traversal/",
+   "line": 171,
+   "why": "not-a-symbol"
+  },
+  {
+   "port": "go",
+   "text": "(Pane, bool)",
+   "page": "/topics/traversal/",
+   "line": 171,
+   "why": "not-a-symbol"
+  },
+  {
+   "port": "swift",
+   "text": "snapshot.windows(of: session)",
+   "page": "/topics/traversal/",
+   "line": 176,
+   "why": "ambiguous"
+  },
+  {
+   "port": "ts",
+   "text": ".id",
+   "page": "/topics/traversal/",
+   "line": 219,
+   "why": "ambiguous"
+  },
+  {
+   "port": "go",
+   "text": "PaneID",
+   "page": "/topics/traversal/",
+   "line": 220,
+   "why": "ambiguous"
+  },
+  {
+   "port": "swift",
+   "text": ".id",
+   "page": "/topics/traversal/",
+   "line": 225,
+   "why": "ambiguous"
+  },
+  {
+   "port": "py",
+   "text": "libtmux.test.retry_until(fn, seconds=, interval=)",
+   "page": "/topics/waiting-and-retry/",
+   "line": 29,
+   "why": "no-symbol"
+  },
+  {
+   "port": "py",
+   "text": "libtmux.test",
+   "page": "/topics/waiting-and-retry/",
+   "line": 29,
+   "why": "no-symbol"
+  },
+  {
+   "port": "rs",
+   "text": "libtmux::test",
+   "page": "/topics/waiting-and-retry/",
+   "line": 32,
+   "why": "no-symbol"
+  },
+  {
+   "port": "java",
+   "text": "Await.until(...)",
+   "page": "/topics/waiting-and-retry/",
+   "line": 33,
+   "why": "no-symbol"
+  },
+  {
+   "port": "go",
+   "text": "Mode",
+   "page": "/topics/waiting-and-retry/",
+   "line": 107,
+   "why": "ambiguous"
+  },
+  {
+   "port": "rs",
+   "text": "TimedOut",
+   "page": "/topics/waiting-and-retry/",
+   "line": 108,
+   "why": "ambiguous"
+  },
+  {
+   "port": "dotnet",
+   "text": "WaitAsync(budget)",
+   "page": "/topics/waiting-and-retry/",
+   "line": 110,
+   "why": "ambiguous"
+  }
+ ]
+}

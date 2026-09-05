@@ -1,0 +1,1151 @@
+{
+  "schemaVersion": 1,
+  "legend": {
+    "testVerified": "The cited test (file, for .NET; function, for Go) exists in that port’s checkout.",
+    "claimed": "An implementation or test is asserted, but the ledger cites nothing resolvable.",
+    "unknown": "The ledger disclaims implementation status for this row, or carries no status field at all."
+  },
+  "revisionSkew": {
+    "note": "The ledgers are not pinned to the same Python revision: dotnet and java pin c4a980b; swift pins 988b02a (v0.62.0-60-g988b02a74a02); go records no single Python git revision — only a sha256 content digest per source file. Comparing coverage across ports assumes a shared baseline that does not, in fact, exist.",
+    "pythonRevisionByPort": {
+      "dotnet": "c4a980b",
+      "go": null,
+      "java": "c4a980b",
+      "swift": "988b02a"
+    }
+  },
+  "moduleUnion": [
+    "libtmux",
+    "libtmux.__about__",
+    "libtmux._compat",
+    "libtmux._internal.constants",
+    "libtmux._internal.control_mode",
+    "libtmux._internal.dataclasses",
+    "libtmux._internal.env",
+    "libtmux._internal.query_list",
+    "libtmux._internal.sparse_array",
+    "libtmux._internal.types",
+    "libtmux._vendor._structures",
+    "libtmux._vendor.version",
+    "libtmux.client",
+    "libtmux.common",
+    "libtmux.constants",
+    "libtmux.exc",
+    "libtmux.formats",
+    "libtmux.hooks",
+    "libtmux.neo",
+    "libtmux.options",
+    "libtmux.pane",
+    "libtmux.pytest_plugin",
+    "libtmux.server",
+    "libtmux.session",
+    "libtmux.test",
+    "libtmux.test.constants",
+    "libtmux.test.environment",
+    "libtmux.test.random",
+    "libtmux.test.retry",
+    "libtmux.test.temporary",
+    "libtmux.window"
+  ],
+  "ports": {
+    "dotnet": {
+      "available": true,
+      "ledgerFormat": "Structured JSON, one row per Python public-API symbol, all pre-triaged: destinationStatus is approved (has a C# destination) / excluded (deliberately not carried, with a reason) / internalized (implemented, no public 1:1 destination).",
+      "ledgerPaths": [
+        "~/work/libtmux/libtmux-dotnet/docs/parity/parity-ledger.json"
+      ],
+      "pythonRevision": "c4a980b",
+      "scopeNote": "Scoped to public API surface only (python-public-api.json in the same directory is the matching 626-symbol extraction) — no rows at all for Python's _internal/_vendor modules. A module missing here is out of this ledger’s declared scope, not an omission.",
+      "portTally": {
+        "total": 626,
+        "testVerified": 626,
+        "claimed": 0,
+        "unknown": 0,
+        "disposition": {
+          "approved": 288,
+          "excluded": 99,
+          "internalized": 239
+        }
+      },
+      "byModule": {
+        "libtmux._internal.query_list": {
+          "total": 27,
+          "testVerified": 27,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 5,
+            "excluded": 21,
+            "internalized": 1
+          }
+        },
+        "libtmux.client": {
+          "total": 9,
+          "testVerified": 9,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 8,
+            "internalized": 1
+          }
+        },
+        "libtmux.common": {
+          "total": 30,
+          "testVerified": 30,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "internalized": 13,
+            "approved": 17
+          }
+        },
+        "libtmux.constants": {
+          "total": 25,
+          "testVerified": 25,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 19,
+            "internalized": 6
+          }
+        },
+        "libtmux.exc": {
+          "total": 28,
+          "testVerified": 28,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 15,
+            "excluded": 13
+          }
+        },
+        "libtmux.formats": {
+          "total": 6,
+          "testVerified": 6,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "internalized": 5,
+            "excluded": 1
+          }
+        },
+        "libtmux.hooks": {
+          "total": 13,
+          "testVerified": 13,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 12,
+            "internalized": 1
+          }
+        },
+        "libtmux.neo": {
+          "total": 190,
+          "testVerified": 190,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "internalized": 190
+          }
+        },
+        "libtmux.options": {
+          "total": 23,
+          "testVerified": 23,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 7,
+            "internalized": 16
+          }
+        },
+        "libtmux.pane": {
+          "total": 58,
+          "testVerified": 58,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 52,
+            "excluded": 5,
+            "internalized": 1
+          }
+        },
+        "libtmux.pytest_plugin": {
+          "total": 14,
+          "testVerified": 14,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "excluded": 14
+          }
+        },
+        "libtmux.server": {
+          "total": 72,
+          "testVerified": 72,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 57,
+            "excluded": 12,
+            "internalized": 3
+          }
+        },
+        "libtmux.session": {
+          "total": 43,
+          "testVerified": 43,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 29,
+            "excluded": 13,
+            "internalized": 1
+          }
+        },
+        "libtmux.test.constants": {
+          "total": 4,
+          "testVerified": 4,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 4
+          }
+        },
+        "libtmux.test.environment": {
+          "total": 4,
+          "testVerified": 4,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 4
+          }
+        },
+        "libtmux.test.random": {
+          "total": 5,
+          "testVerified": 5,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 5
+          }
+        },
+        "libtmux.test.retry": {
+          "total": 2,
+          "testVerified": 2,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 2
+          }
+        },
+        "libtmux.test.temporary": {
+          "total": 3,
+          "testVerified": 3,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 3
+          }
+        },
+        "libtmux.test": {
+          "total": 1,
+          "testVerified": 1,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 1
+          }
+        },
+        "libtmux.window": {
+          "total": 55,
+          "testVerified": 55,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 41,
+            "excluded": 13,
+            "internalized": 1
+          }
+        },
+        "libtmux": {
+          "total": 14,
+          "testVerified": 14,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "approved": 7,
+            "excluded": 7
+          }
+        }
+      }
+    },
+    "go": {
+      "available": true,
+      "ledgerFormat": "Structured JSON, one entry per Python symbol/branch (classes, methods, fields, parameter branches, ...), each with a `source` file path and a `proof` array citing a Go test function. PARITY.md: the manifest gate \"rejects... unproved entries\" — checked here by resolving each citation, not assumed.",
+      "ledgerPaths": [
+        "~/work/libtmux/libtmux-go/tmux/internal/parity/manifest.json",
+        "~/work/libtmux/libtmux-go/PARITY.md"
+      ],
+      "pythonRevision": null,
+      "pythonRevisionNote": "records no single Python git revision — only a sha256 content digest per source file",
+      "scopeNote": null,
+      "portTally": {
+        "total": 1588,
+        "testVerified": 1588,
+        "claimed": 0,
+        "unknown": 0,
+        "disposition": {
+          "handwritten": 201,
+          "python-package-metadata-omission": 18,
+          "package-build-metadata": 3,
+          "named-method-or-value": 181,
+          "generated": 235,
+          "context-first-method": 79,
+          "blocking-test-helper": 61,
+          "query-addendum-replacement": 57,
+          "fresh-slice-and-sequence": 5,
+          "canonical-snapshot": 213,
+          "request-struct": 386,
+          "error-value": 54,
+          "deprecated-python-omission": 35,
+          "warning-handler": 48,
+          "deprecated-alias": 6,
+          "identical-operation-alias": 6
+        }
+      },
+      "byModule": {
+        "libtmux": {
+          "total": 14,
+          "testVerified": 14,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "handwritten": 5,
+            "python-package-metadata-omission": 7,
+            "package-build-metadata": 1,
+            "named-method-or-value": 1
+          }
+        },
+        "libtmux.__about__": {
+          "total": 12,
+          "testVerified": 12,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "python-package-metadata-omission": 11,
+            "package-build-metadata": 1
+          }
+        },
+        "libtmux._compat": {
+          "total": 18,
+          "testVerified": 18,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "named-method-or-value": 18
+          }
+        },
+        "libtmux._internal.constants": {
+          "total": 242,
+          "testVerified": 242,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "named-method-or-value": 5,
+            "generated": 235,
+            "context-first-method": 2
+          }
+        },
+        "libtmux._internal.control_mode": {
+          "total": 10,
+          "testVerified": 10,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "blocking-test-helper": 10
+          }
+        },
+        "libtmux._internal.dataclasses": {
+          "total": 2,
+          "testVerified": 2,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "named-method-or-value": 2
+          }
+        },
+        "libtmux._internal.env": {
+          "total": 10,
+          "testVerified": 10,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "handwritten": 8,
+            "named-method-or-value": 2
+          }
+        },
+        "libtmux._internal.query_list": {
+          "total": 57,
+          "testVerified": 57,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "query-addendum-replacement": 57
+          }
+        },
+        "libtmux._internal.sparse_array": {
+          "total": 6,
+          "testVerified": 6,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "fresh-slice-and-sequence": 5,
+            "named-method-or-value": 1
+          }
+        },
+        "libtmux._internal.types": {
+          "total": 1,
+          "testVerified": 1,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "named-method-or-value": 1
+          }
+        },
+        "libtmux._vendor._structures": {
+          "total": 1,
+          "testVerified": 1,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "named-method-or-value": 1
+          }
+        },
+        "libtmux._vendor.version": {
+          "total": 1,
+          "testVerified": 1,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "named-method-or-value": 1
+          }
+        },
+        "libtmux.client": {
+          "total": 7,
+          "testVerified": 7,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "handwritten": 2,
+            "canonical-snapshot": 3,
+            "context-first-method": 1,
+            "named-method-or-value": 1
+          }
+        },
+        "libtmux.common": {
+          "total": 48,
+          "testVerified": 48,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "named-method-or-value": 9,
+            "context-first-method": 23,
+            "request-struct": 3,
+            "canonical-snapshot": 4,
+            "handwritten": 6,
+            "package-build-metadata": 1,
+            "error-value": 2
+          }
+        },
+        "libtmux.constants": {
+          "total": 24,
+          "testVerified": 24,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "named-method-or-value": 19,
+            "handwritten": 5
+          }
+        },
+        "libtmux.exc": {
+          "total": 53,
+          "testVerified": 53,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "error-value": 47,
+            "deprecated-python-omission": 2,
+            "named-method-or-value": 4
+          }
+        },
+        "libtmux.formats": {
+          "total": 5,
+          "testVerified": 5,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "named-method-or-value": 4,
+            "canonical-snapshot": 1
+          }
+        },
+        "libtmux.hooks": {
+          "total": 54,
+          "testVerified": 54,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "named-method-or-value": 17,
+            "context-first-method": 31,
+            "warning-handler": 4,
+            "deprecated-alias": 2
+          }
+        },
+        "libtmux.neo": {
+          "total": 197,
+          "testVerified": 197,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "canonical-snapshot": 197
+          }
+        },
+        "libtmux.options": {
+          "total": 69,
+          "testVerified": 69,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "named-method-or-value": 30,
+            "context-first-method": 19,
+            "request-struct": 12,
+            "deprecated-alias": 4,
+            "error-value": 4
+          }
+        },
+        "libtmux.pane": {
+          "total": 285,
+          "testVerified": 285,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "handwritten": 60,
+            "named-method-or-value": 21,
+            "deprecated-python-omission": 5,
+            "request-struct": 173,
+            "warning-handler": 23,
+            "context-first-method": 1,
+            "canonical-snapshot": 2
+          }
+        },
+        "libtmux.pytest_plugin": {
+          "total": 16,
+          "testVerified": 16,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "blocking-test-helper": 16
+          }
+        },
+        "libtmux.server": {
+          "total": 232,
+          "testVerified": 232,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "handwritten": 70,
+            "named-method-or-value": 15,
+            "request-struct": 121,
+            "deprecated-python-omission": 6,
+            "warning-handler": 18,
+            "canonical-snapshot": 1,
+            "error-value": 1
+          }
+        },
+        "libtmux.session": {
+          "total": 71,
+          "testVerified": 71,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "handwritten": 20,
+            "named-method-or-value": 12,
+            "deprecated-python-omission": 11,
+            "canonical-snapshot": 2,
+            "request-struct": 24,
+            "context-first-method": 1,
+            "warning-handler": 1
+          }
+        },
+        "libtmux.test.constants": {
+          "total": 3,
+          "testVerified": 3,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "blocking-test-helper": 3
+          }
+        },
+        "libtmux.test.environment": {
+          "total": 10,
+          "testVerified": 10,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "blocking-test-helper": 10
+          }
+        },
+        "libtmux.test.random": {
+          "total": 10,
+          "testVerified": 10,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "blocking-test-helper": 10
+          }
+        },
+        "libtmux.test.retry": {
+          "total": 4,
+          "testVerified": 4,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "blocking-test-helper": 4
+          }
+        },
+        "libtmux.test.temporary": {
+          "total": 8,
+          "testVerified": 8,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "blocking-test-helper": 8
+          }
+        },
+        "libtmux.window": {
+          "total": 118,
+          "testVerified": 118,
+          "claimed": 0,
+          "unknown": 0,
+          "disposition": {
+            "handwritten": 25,
+            "named-method-or-value": 17,
+            "deprecated-python-omission": 11,
+            "canonical-snapshot": 3,
+            "request-struct": 53,
+            "warning-handler": 2,
+            "context-first-method": 1,
+            "identical-operation-alias": 6
+          }
+        }
+      }
+    },
+    "java": {
+      "available": true,
+      "ledgerFormat": "Two generated Markdown tables, no structured data file. python-api.md (889 rows) catalogues Python’s public surface with an intended Java disposition — by its own header, \"not a record of what is implemented here\". test-map.md (1458 rows) catalogues planned contract tests, by its own header \"a catalogue, not a status report\": all but a handful are status \"planned parity\", for a test class the ledger says does not exist yet (checked here, not just quoted — see contractClassesFound below).",
+      "ledgerPaths": [
+        "~/work/libtmux/libtmux-java/docs/parity/python-api.md",
+        "~/work/libtmux/libtmux-java/docs/parity/test-map.md"
+      ],
+      "pythonRevision": "c4a980b",
+      "scopeNote": "Per-module rows below come from python-api.md only — test-map.md is keyed by pytest node IDs and doctest chunks, not Python symbols, so it cannot be bucketed by module; its own totals are reported once at the port level instead: 1458 rows, status counts {\"planned parity\":1454,\"source-declared partial non-execution\":1,\"deliberate Java correction\":3}. The 3 rows status \"deliberate Java correction\" are test-map.md’s own prose \"defect decisions\" (2 decisions, 3 rows — Server.attached_sessions is cited under two evidence keys) that the ledger says *are* implemented; each still cites a PythonBehaviorParityTest method, the very class confirmed absent from the checkout, so this script marks them \"claimed\" rather than upgrading them on the strength of the status label alone. Folded into the port tally below, not counted twice against python-api.md’s own module rows.",
+      "contractClassesFound": {
+        "PythonApiParityContract": false,
+        "PythonBehaviorParityTest": false
+      },
+      "unparsedSourceEvidence": [],
+      "portTally": {
+        "total": 892,
+        "testVerified": 0,
+        "claimed": 3,
+        "unknown": 889,
+        "disposition": {
+          "direct translation": 216,
+          "approved omission": 88,
+          "semantic Java adaptation": 372,
+          "consolidation": 213,
+          "deliberate-java-correction": 3
+        }
+      },
+      "byModule": {
+        "libtmux": {
+          "total": 13,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 13,
+          "disposition": {
+            "direct translation": 5,
+            "approved omission": 8
+          }
+        },
+        "libtmux._compat": {
+          "total": 5,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 5,
+          "disposition": {
+            "approved omission": 5
+          }
+        },
+        "libtmux._internal.constants": {
+          "total": 237,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 237,
+          "disposition": {
+            "semantic Java adaptation": 237
+          }
+        },
+        "libtmux._internal.control_mode": {
+          "total": 5,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 5,
+          "disposition": {
+            "semantic Java adaptation": 5
+          }
+        },
+        "libtmux._internal.dataclasses": {
+          "total": 1,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 1,
+          "disposition": {
+            "semantic Java adaptation": 1
+          }
+        },
+        "libtmux._internal.env": {
+          "total": 5,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 5,
+          "disposition": {
+            "semantic Java adaptation": 5
+          }
+        },
+        "libtmux._internal.query_list": {
+          "total": 28,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 28,
+          "disposition": {
+            "consolidation": 25,
+            "approved omission": 3
+          }
+        },
+        "libtmux._internal.sparse_array": {
+          "total": 8,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 8,
+          "disposition": {
+            "semantic Java adaptation": 8
+          }
+        },
+        "libtmux._internal.types": {
+          "total": 1,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 1,
+          "disposition": {
+            "semantic Java adaptation": 1
+          }
+        },
+        "libtmux._vendor._structures": {
+          "total": 4,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 4,
+          "disposition": {
+            "approved omission": 4
+          }
+        },
+        "libtmux._vendor.version": {
+          "total": 25,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 25,
+          "disposition": {
+            "approved omission": 25
+          }
+        },
+        "libtmux.client": {
+          "total": 8,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 8,
+          "disposition": {
+            "direct translation": 7,
+            "approved omission": 1
+          }
+        },
+        "libtmux.common": {
+          "total": 30,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 30,
+          "disposition": {
+            "semantic Java adaptation": 29,
+            "approved omission": 1
+          }
+        },
+        "libtmux.constants": {
+          "total": 24,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 24,
+          "disposition": {
+            "semantic Java adaptation": 24
+          }
+        },
+        "libtmux.exc": {
+          "total": 27,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 27,
+          "disposition": {
+            "direct translation": 27
+          }
+        },
+        "libtmux.formats": {
+          "total": 5,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 5,
+          "disposition": {
+            "semantic Java adaptation": 5
+          }
+        },
+        "libtmux.hooks": {
+          "total": 12,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 12,
+          "disposition": {
+            "semantic Java adaptation": 11,
+            "approved omission": 1
+          }
+        },
+        "libtmux.neo": {
+          "total": 191,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 191,
+          "disposition": {
+            "consolidation": 188,
+            "approved omission": 3
+          }
+        },
+        "libtmux.options": {
+          "total": 22,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 22,
+          "disposition": {
+            "semantic Java adaptation": 21,
+            "approved omission": 1
+          }
+        },
+        "libtmux.pane": {
+          "total": 56,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 56,
+          "disposition": {
+            "direct translation": 51,
+            "approved omission": 5
+          }
+        },
+        "libtmux.pytest_plugin": {
+          "total": 13,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 13,
+          "disposition": {
+            "semantic Java adaptation": 12,
+            "approved omission": 1
+          }
+        },
+        "libtmux.server": {
+          "total": 66,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 66,
+          "disposition": {
+            "approved omission": 8,
+            "direct translation": 58
+          }
+        },
+        "libtmux.session": {
+          "total": 39,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 39,
+          "disposition": {
+            "direct translation": 28,
+            "approved omission": 11
+          }
+        },
+        "libtmux.test.constants": {
+          "total": 3,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 3,
+          "disposition": {
+            "semantic Java adaptation": 3
+          }
+        },
+        "libtmux.test.environment": {
+          "total": 3,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 3,
+          "disposition": {
+            "semantic Java adaptation": 3
+          }
+        },
+        "libtmux.test.random": {
+          "total": 4,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 4,
+          "disposition": {
+            "semantic Java adaptation": 4
+          }
+        },
+        "libtmux.test.retry": {
+          "total": 1,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 1,
+          "disposition": {
+            "semantic Java adaptation": 1
+          }
+        },
+        "libtmux.test.temporary": {
+          "total": 2,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 2,
+          "disposition": {
+            "semantic Java adaptation": 2
+          }
+        },
+        "libtmux.window": {
+          "total": 51,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 51,
+          "disposition": {
+            "direct translation": 40,
+            "approved omission": 11
+          }
+        }
+      }
+    },
+    "swift": {
+      "available": true,
+      "ledgerFormat": "Structured JSON, Python-side extraction only: public surface, behavior contracts, format fields, query contracts, source fingerprints. No field in any of the five files records whether Swift has implemented a given symbol — python-behavior-contracts.json’s `swiftAdaptation` (direct/adapted/consolidated) records a planned translation strategy, not completion.",
+      "ledgerPaths": [
+        "~/work/libtmux/libtmux-swift/Parity/python-public-api.json"
+      ],
+      "pythonRevision": "988b02a",
+      "pythonRevisionDescribe": "v0.62.0-60-g988b02a74a02",
+      "scopeNote": "712 of this ledger's 1326 entries are kind \"inherited-dataclass-field\" — the same Python dataclass field counted again for every subclass that inherits it (libtmux.neo, almost entirely), not that many distinct symbols. A module row where Swift’s count runs several times another port's for the same file is this, not several times the actual surface.",
+      "portTally": {
+        "total": 1326,
+        "testVerified": 0,
+        "claimed": 0,
+        "unknown": 1326,
+        "disposition": {
+          "direct": 1252,
+          "python-only": 74
+        }
+      },
+      "byModule": {
+        "libtmux": {
+          "total": 14,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 14,
+          "disposition": {
+            "direct": 14
+          }
+        },
+        "libtmux.client": {
+          "total": 8,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 8,
+          "disposition": {
+            "direct": 8
+          }
+        },
+        "libtmux.neo": {
+          "total": 899,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 899,
+          "disposition": {
+            "direct": 899
+          }
+        },
+        "libtmux.common": {
+          "total": 37,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 37,
+          "disposition": {
+            "direct": 37
+          }
+        },
+        "libtmux.constants": {
+          "total": 25,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 25,
+          "disposition": {
+            "direct": 25
+          }
+        },
+        "libtmux.exc": {
+          "total": 28,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 28,
+          "disposition": {
+            "direct": 28
+          }
+        },
+        "libtmux.formats": {
+          "total": 6,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 6,
+          "disposition": {
+            "direct": 6
+          }
+        },
+        "libtmux.hooks": {
+          "total": 38,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 38,
+          "disposition": {
+            "direct": 38
+          }
+        },
+        "libtmux.options": {
+          "total": 29,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 29,
+          "disposition": {
+            "direct": 19,
+            "python-only": 10
+          }
+        },
+        "libtmux.pane": {
+          "total": 56,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 56,
+          "disposition": {
+            "direct": 52,
+            "python-only": 4
+          }
+        },
+        "libtmux.pytest_plugin": {
+          "total": 13,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 13,
+          "disposition": {
+            "python-only": 13
+          }
+        },
+        "libtmux.server": {
+          "total": 65,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 65,
+          "disposition": {
+            "direct": 59,
+            "python-only": 6
+          }
+        },
+        "libtmux.session": {
+          "total": 39,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 39,
+          "disposition": {
+            "direct": 29,
+            "python-only": 10
+          }
+        },
+        "libtmux.test": {
+          "total": 1,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 1,
+          "disposition": {
+            "python-only": 1
+          }
+        },
+        "libtmux.test.constants": {
+          "total": 4,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 4,
+          "disposition": {
+            "python-only": 4
+          }
+        },
+        "libtmux.test.environment": {
+          "total": 4,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 4,
+          "disposition": {
+            "python-only": 4
+          }
+        },
+        "libtmux.test.random": {
+          "total": 4,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 4,
+          "disposition": {
+            "python-only": 4
+          }
+        },
+        "libtmux.test.retry": {
+          "total": 2,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 2,
+          "disposition": {
+            "python-only": 2
+          }
+        },
+        "libtmux.test.temporary": {
+          "total": 3,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 3,
+          "disposition": {
+            "python-only": 3
+          }
+        },
+        "libtmux.window": {
+          "total": 51,
+          "testVerified": 0,
+          "claimed": 0,
+          "unknown": 51,
+          "disposition": {
+            "direct": 38,
+            "python-only": 13
+          }
+        }
+      }
+    }
+  }
+}

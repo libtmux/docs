@@ -1,0 +1,318 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { PORTS } from '../lib/ports'
+import parityData from '../data/parity.json'
+import { withRoot } from '../lib/site-root'
+
+/**
+ * Cross-language parity: how each port is built, and — for the four ports
+ * that publish a per-symbol Python-parity ledger — what that ledger
+ * actually says, read through scripts/normalise-parity.mjs.
+ *
+ * The full inventory of each ledger's own format, and exactly how each
+ * provenance call is made, lives in that script's header comment rather
+ * than duplicated here: this file only renders site/src/data/parity.json,
+ * it doesn't re-derive it. Regenerate that file with:
+ *
+ *   node scripts/normalise-parity.mjs
+ *
+ * Rust, C++ and TypeScript keep parity trackers of their own too (a Python
+ * parity-claims checker script, a multi-file manifest under
+ * tools/parity/data/, and baseline/current JSON snapshots under
+ * packages/libtmux/parity/, respectively) — three more shapes, out of scope
+ * for this pass exactly as the four normalised below were the in-scope ones.
+ */
+
+const PARITY_PORTS = ['dotnet', 'go', 'java', 'swift'] as const
+const PORT_LABEL: Record<(typeof PARITY_PORTS)[number], string> = {
+  dotnet: '.NET',
+  go: 'Go',
+  java: 'Java',
+  swift: 'Swift',
+}
+
+// Explicit shape for site/src/data/parity.json (scripts/normalise-parity.mjs's
+// output) rather than letting TS infer one structurally from today's JSON
+// literal: every port happens to be `available: true` on this build, and an
+// inferred type has no room left for the `available: false` branch a missing
+// sibling checkout would produce. Generic type args are kept out of the
+// template below (Astro's template expressions compile through a JSX-like
+// transform that doesn't reliably parse multi-argument generics such as
+// `Record<string, Tally>` inline) — every lookup that needs one is a plain
+// function call into this frontmatter script instead.
+interface Tally {
+  total: number
+  testVerified: number
+  claimed: number
+  unknown: number
+  disposition: Record<string, number>
+}
+
+interface AvailablePort {
+  available: true
+  ledgerFormat: string
+  ledgerPaths: string[]
+  pythonRevision: string | null
+  scopeNote?: string | null
+  contractClassesFound?: Record<string, boolean>
+  portTally: Tally
+  byModule: Record<string, Tally>
+}
+
+interface UnavailablePort {
+  available: false
+  reason: string
+}
+
+type PortEntry = AvailablePort | UnavailablePort
+
+interface ParityManifest {
+  legend: { testVerified: string; claimed: string; unknown: string }
+  revisionSkew: { note: string }
+  moduleUnion: string[]
+  ports: Record<'dotnet' | 'go' | 'java' | 'swift', PortEntry>
+}
+
+const parity = parityData as unknown as ParityManifest
+const javaPort = parity.ports.java
+const javaContractClasses = javaPort.available ? javaPort.contractClassesFound : undefined
+
+function moduleTally(port: PortEntry, mod: string): Tally | undefined {
+  return port.available ? port.byModule[mod] : undefined
+}
+
+// Precomputed here, not filtered+mapped in the template: TS narrowing from a
+// `.filter(p => p.available)` doesn't carry into a later `.map()` callback,
+// since each is its own closure re-reading the union-typed source.
+const scopeNotes = PARITY_PORTS.flatMap((slug) => {
+  const port = parity.ports[slug]
+  return port.available && port.scopeNote ? [{ slug, note: port.scopeNote }] : []
+})
+
+/** Compact, mix-aware cell text: most ports are uniform (all test-verified, or
+ * all unknown), but the matrix renders whatever the tally actually holds
+ * rather than assuming that. */
+function cellSummary(tally: Tally | undefined): { text: string; title: string } {
+  if (!tally) return { text: '—', title: 'No rows for this module in this ledger.' }
+  const parts: string[] = []
+  if (tally.testVerified) parts.push(`${tally.testVerified} verified`)
+  if (tally.claimed) parts.push(`${tally.claimed} claimed`)
+  if (tally.unknown) parts.push(`${tally.unknown} unknown`)
+  const dispositionText = Object.entries(tally.disposition)
+    .map(([k, v]) => `${k}: ${v}`)
+    .join(', ')
+  return { text: parts.join(' · ') || '0', title: `disposition — ${dispositionText}` }
+}
+
+function cellClass(tally: Tally | undefined): string {
+  if (!tally || tally.total === 0) return 'opacity-40'
+  if (tally.unknown === tally.total) return 'text-muted'
+  if (tally.testVerified === tally.total) return 'text-emerald-700 dark:text-emerald-400'
+  return 'text-amber-700 dark:text-amber-400'
+}
+
+/** "all 626 .NET rows" or "1573 of 1588 Go rows" — read from the actual tally
+ * rather than asserted as prose, so a ledger that stops being entirely
+ * test-verified on a future regen doesn't leave a false claim sitting here. */
+function verifiedSummary(label: string, port: PortEntry): string {
+  if (!port.available) return `${label} unavailable`
+  const { testVerified, total } = port.portTally
+  return testVerified === total ? `all ${total} ${label} rows` : `${testVerified} of ${total} ${label} rows`
+}
+const dotnetGoVerifiedSummary = `${verifiedSummary('.NET', parity.ports.dotnet)} and ${verifiedSummary('Go', parity.ports.go)}`
+---
+
+<BaseLayout
+  title="Parity"
+  description="What each libtmux port is built from, and what its own parity ledger actually verifies."
+>
+  <main class="mx-auto max-w-5xl px-4 py-12">
+    <h1 class="text-3xl font-semibold tracking-tight">Parity</h1>
+    <p class="mt-3 max-w-2xl">
+      Python is the reference implementation; every other port tracks how much of its public
+      surface it covers.
+    </p>
+
+    <h2 class="mt-10 text-lg font-semibold">How each port is built</h2>
+    <div class="mt-4 overflow-x-auto">
+      <table class="w-full min-w-max border-collapse text-sm">
+        <thead>
+          <tr class="border-b border-edge text-left">
+            <th class="px-3 py-2 font-semibold">Port</th>
+            <th class="px-3 py-2 font-semibold">Package</th>
+            <th class="px-3 py-2 font-semibold">Reference host</th>
+            <th class="px-3 py-2 font-semibold">Renderer</th>
+            <th class="px-3 py-2 font-semibold">Generator</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            PORTS.map((port) => {
+              // Every port's reference is here; three also have a
+              // canonical host of their own, which is what gets named.
+              const external = Boolean(port.ecosystemHost)
+              const host = port.ecosystemHost?.name ?? 'libtmux.org'
+              return (
+                <tr class="border-b border-edge">
+                  <td class="px-3 py-2 font-medium">
+                    <a class="hover:underline" href={withRoot(`/${port.slug}/`)}>
+                      {port.name}
+                    </a>
+                  </td>
+                  <td class="px-3 py-2 font-mono text-xs opacity-80">{port.packageName}</td>
+                  <td class="px-3 py-2">
+                    {host}
+                    {external && <span class="ml-1 opacity-60" aria-hidden="true">&#8599;&#65038;</span>}
+                  </td>
+                  <td class="px-3 py-2">{port.renderer === 'none' ? '—' : port.renderer}</td>
+                  <td class="px-3 py-2">{port.generator || '—'}</td>
+                </tr>
+              )
+            })
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="mt-12 text-lg font-semibold">Per-symbol parity</h2>
+    <p class="mt-3 max-w-2xl">
+      Four ports publish a per-symbol Python-parity ledger, each in its own format (Rust, C++ and
+      TypeScript keep trackers too, in three more shapes not sampled here). Every cell below is
+      marked by what its ledger's own cited evidence resolves to on this machine, not by how
+      confident the ledger's prose sounds:
+    </p>
+    <dl class="mt-4 max-w-2xl space-y-2 text-sm">
+      <div class="flex gap-2">
+        <dt class="w-28 shrink-0 font-medium text-emerald-700 dark:text-emerald-400">test-verified</dt>
+        <dd>{parity.legend.testVerified}</dd>
+      </div>
+      <div class="flex gap-2">
+        <dt class="w-28 shrink-0 font-medium text-amber-700 dark:text-amber-400">claimed</dt>
+        <dd>{parity.legend.claimed}</dd>
+      </div>
+      <div class="flex gap-2">
+        <dt class="w-28 shrink-0 font-medium text-muted">unknown</dt>
+        <dd>{parity.legend.unknown}</dd>
+      </div>
+    </dl>
+
+    <aside class="mt-6 max-w-2xl rounded border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 p-4 text-sm">
+      <p class="font-semibold">The four ledgers don't share a Python baseline</p>
+      <p class="mt-2">{parity.revisionSkew.note}</p>
+    </aside>
+
+    <h3 class="mt-8 font-semibold">Per-port summary</h3>
+    <div class="mt-4 overflow-x-auto">
+      <table class="w-full min-w-max border-collapse text-sm">
+        <thead>
+          <tr class="border-b border-edge text-left">
+            <th class="px-3 py-2 font-semibold">Port</th>
+            <th class="px-3 py-2 font-semibold">Ledger format</th>
+            <th class="px-3 py-2 font-semibold">Python revision</th>
+            <th class="px-3 py-2 font-semibold">Rows</th>
+            <th class="px-3 py-2 font-semibold">Test-verified</th>
+            <th class="px-3 py-2 font-semibold">Claimed</th>
+            <th class="px-3 py-2 font-semibold">Unknown</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            PARITY_PORTS.map((slug) => {
+              const p = parity.ports[slug]
+              if (!p.available) {
+                return (
+                  <tr class="border-b border-edge">
+                    <td class="px-3 py-2 font-medium">{PORT_LABEL[slug]}</td>
+                    <td class="px-3 py-2 opacity-60" colspan={6}>
+                      Ledger unavailable on this build: {p.reason}
+                    </td>
+                  </tr>
+                )
+              }
+              return (
+                <tr class="border-b border-edge align-top">
+                  <td class="px-3 py-2 font-medium">{PORT_LABEL[slug]}</td>
+                  <td class="px-3 py-2 max-w-xs text-xs opacity-80">{p.ledgerFormat}</td>
+                  <td class="px-3 py-2 font-mono text-xs">{p.pythonRevision ?? 'not recorded'}</td>
+                  <td class="px-3 py-2">{p.portTally.total}</td>
+                  <td class="px-3 py-2 text-emerald-700 dark:text-emerald-400">{p.portTally.testVerified}</td>
+                  <td class="px-3 py-2 text-amber-700 dark:text-amber-400">{p.portTally.claimed}</td>
+                  <td class="px-3 py-2 text-muted">{p.portTally.unknown}</td>
+                </tr>
+              )
+            })
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="mt-3 max-w-2xl text-xs opacity-70">
+      .NET and Go publish per-symbol ledgers that are entirely pre-triaged; on this build,
+      {dotnetGoVerifiedSummary} resolve as test-verified — the cited evidence (a test file for
+      .NET, a test function for Go) exists in that port's checkout. Java's and Swift's ledgers
+      carry no per-symbol
+      implementation-status field at all: Java's by explicit disclaimer in its own source files
+      ("a row's presence says Python has it, not that Java does" / "a catalogue, not a status
+      report"), confirmed here by checking that the contract-test classes those files cite
+      ({javaContractClasses?.PythonApiParityContract ? 'found' : 'not found'} /{' '}
+      {javaContractClasses?.PythonBehaviorParityTest ? 'found' : 'not found'}) don't
+      exist in the checkout; Swift's by the absence of any Swift-side status field across all five
+      of its parity files.
+    </p>
+
+    <h3 class="mt-8 font-semibold">By Python module</h3>
+    <p class="mt-2 max-w-2xl text-sm">
+      Rows are the union of modules across all four ledgers. Only .NET's ledger has its own module
+      field, used directly; Go, Java and Swift have none, so their rows are derived mechanically
+      from each entry's source-file path instead (see scripts/normalise-parity.mjs's
+      <code>deriveModule</code>) — the same rule for all three, so their keys line up with each
+      other and, for files .NET's ledger also covers, with .NET's own field. An em dash means the
+      ledger has no rows at all for that module; for .NET, most of the
+      <code>_internal</code>/<code>_vendor</code> rows are that by declared scope
+      (public-API-only), not by omission.
+    </p>
+    <div class="mt-4 overflow-x-auto">
+      <table class="w-full min-w-max border-collapse text-xs">
+        <thead>
+          <tr class="border-b border-edge text-left">
+            <th class="px-3 py-2 font-semibold">Python module</th>
+            {PARITY_PORTS.map((slug) => <th class="px-3 py-2 font-semibold">{PORT_LABEL[slug]}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {
+            parity.moduleUnion.map((mod) => (
+              <tr class="border-b border-slate-100 dark:border-slate-900">
+                <td class="px-3 py-2 font-mono">{mod}</td>
+                {PARITY_PORTS.map((slug) => {
+                  const tally = moduleTally(parity.ports[slug], mod)
+                  const { text, title } = cellSummary(tally)
+                  return (
+                    <td class={`px-3 py-2 ${cellClass(tally)}`} title={title}>
+                      {text}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="mt-8 font-semibold">Per-ledger notes</h3>
+    <ul class="mt-3 max-w-2xl list-disc space-y-3 pl-5 text-sm">
+      {
+        scopeNotes.map(({ slug, note }) => (
+          <li>
+            <span class="font-medium">{PORT_LABEL[slug]}:</span> {note}
+          </li>
+        ))
+      }
+      <li>
+        <span class="font-medium">Go:</span> the "Python revision" column above reads "not
+        recorded" rather than a guess — see the revision-skew note above for what Go's manifest
+        records instead.
+      </li>
+    </ul>
+  </main>
+</BaseLayout>

@@ -1,0 +1,135 @@
+---
+import { Code } from 'astro-expressive-code/components'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import PortHero from '../../components/PortHero.astro'
+import DocCard from '../../components/DocCard.astro'
+import ApiReferences from '../../components/ApiReferences.astro'
+import ProseText from '../../components/ProseText.astro'
+import PackageInstall from '../../components/widgets/PackageInstall.astro'
+import { PORTS, portPageUrl, type Port } from '../../lib/ports'
+import { QUICKSTARTS } from '../../lib/quickstarts'
+
+/**
+ * Per-port home page: playwright.dev/python/'s shape, ported to the eight
+ * libtmux ports. A hero naming the language and the reference hand-off
+ * (PortHero.astro), an install command and a quickstart the reader can run
+ * in that language, then onward cards into that port's own Topics, Guides,
+ * Examples and API reference.
+ *
+ * This sits above the version axis — one page per port, not per version —
+ * same as the page it replaces, which is why it takes no `version` param.
+ * `referenceUrl`/`portPageUrl` still need a version for self-hosted ports,
+ * so this page points at the site's own default rather than any one
+ * build's own version.
+ */
+export function getStaticPaths() {
+  // Port home pages belong to the site root only. Every port+version build
+  // renders this same route, so without this guard /cxx/stable/ also emits
+  // /cxx/stable/py/, /cxx/stable/rs/ and six more — eight nonsense copies per
+  // build that nothing links to.
+  if ((process.env.LIBTMUX_DOCS_BASE ?? '/') !== '/') return []
+
+  return PORTS.map((port) => ({
+    params: { port: port.slug },
+    props: { port },
+  }))
+}
+
+interface Props {
+  port: Port
+}
+
+
+const { port } = Astro.props as Props
+// process.env, not import.meta.env: import.meta.env.LIBTMUX_DOCS_* goes
+// stale across repeated astro builds in one tree (see BaseLayout.astro).
+const defaultVersion = process.env.LIBTMUX_DOCS_DEFAULT_VERSION ?? 'stable'
+const quickstart = QUICKSTARTS[port.slug]
+
+/*
+ * No API-reference card.
+ *
+ * `PortHero` above now carries the reference row — ours, and the ecosystem
+ * host beside it where there is one — so a card repeating it would be the
+ * third API-reference affordance on one page. Concepts takes the fourth slot,
+ * which also makes this grid match the one on `/<port>/<version>/`.
+ */
+const cards = [
+  {
+    label: 'Topics',
+    body: `Deep dives into one subject at a time, in ${port.name}: architecture, traversal, options and hooks.`,
+    href: portPageUrl(port, defaultVersion, 'topics'),
+  },
+  {
+    label: 'Guides',
+    body: `Task-oriented walkthroughs in ${port.name} — install tmux, then the round trip every real program starts from.`,
+    href: portPageUrl(port, defaultVersion, 'guides'),
+  },
+  {
+    label: 'Examples',
+    body: `The same concrete tasks worked through in ${port.name}, with each snippet checked by the port's own tests.`,
+    href: portPageUrl(port, defaultVersion, 'examples'),
+  },
+  {
+    label: 'Concepts',
+    body: 'The domain model every port shares — the object hierarchy, transports and filtering.',
+    href: portPageUrl(port, defaultVersion, 'concepts'),
+  },
+] as const
+---
+
+<BaseLayout
+  title={port.name}
+  description={`Install ${port.packageName} and get started driving tmux from ${port.language}.`}
+  portSlug={port.slug}
+>
+  <main class="mx-auto max-w-7xl px-4 py-12">
+    <PortHero port={port} defaultVersion={defaultVersion} />
+
+    <section class="mt-12 max-w-4xl">
+      <h2 class="text-lg font-semibold">Install</h2>
+      <div class="mt-3">
+        <PackageInstall ports={[port.slug]} />
+      </div>
+    </section>
+
+    <section class="mt-10 max-w-4xl">
+      <h2 class="text-lg font-semibold">Quickstart</h2>
+      {
+        quickstart ? (
+          <>
+            <div class="mt-3">
+              <Code code={quickstart.code} lang={quickstart.lang} />
+            </div>
+            {quickstart.note && (
+              <ProseText text={quickstart.note} port={port.slug} class="mt-2 text-sm opacity-80" />
+            )}
+            <p class="mt-2 text-xs opacity-60">{quickstart.source}</p>
+          </>
+        ) : (
+          <p class="mt-3 text-sm opacity-80">
+            A runnable quickstart isn't sourced from the {port.name} README yet.
+            Install above, then see the{' '}
+            <a class="underline" href={`https://github.com/${port.repo}`}>
+              {port.name} repository
+            </a>
+            's own README for how to connect.
+          </p>
+        )
+      }
+    </section>
+
+    <ApiReferences port={port} version={defaultVersion} />
+
+    <section class="mt-12">
+      <h2 class="text-lg font-semibold">Read on</h2>
+      <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        {
+          cards.map((c) => (
+            <DocCard label={c.label} body={c.body} href={c.href} />
+          ))
+        }
+      </div>
+    </section>
+  </main>
+</BaseLayout>

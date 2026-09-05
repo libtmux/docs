@@ -1,0 +1,90 @@
+---
+import McpInstall from '../components/widgets/McpInstall.astro'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { PORTS } from '../lib/ports'
+import mcpTools from '../data/mcp-tools.json'
+import { withRoot } from '../lib/site-root'
+
+/**
+ * The MCP server page.
+ *
+ * This is an .astro route rather than a Markdown page because the install
+ * widget is a component: pages in the `docs` content collection are plain
+ * Markdown and cannot import one. The prose lives here alongside it.
+ */
+// All eight ship a server. The earlier hardcoded six predated checking:
+// libtmux-cxx has apps/mcp/ and libtmux-swift has Sources/LibTmuxMCP/, both
+// with a registered tool catalog — see /mcp/tools/ for what each registers.
+const toolCount = mcpTools.ports as Record<string, { tools: string[] }>
+// Read from the generated matrix rather than retyped into the prose: these
+// three numbers move whenever any port registers a tool, and a sentence is
+// the one place a stale number never surfaces as an error.
+const toolUniverse = (mcpTools.universe as string[]).length
+const coverage = mcpTools.coverage as Record<string, string[]>
+const universalTools = (mcpTools.universe as string[]).filter((t) => coverage[t].length === 8).length
+const referenceTools = toolCount.py.tools.length
+const mcpPorts = PORTS
+---
+
+<BaseLayout
+  title="MCP server"
+  description="Drive tmux from an AI agent. Install the libtmux MCP server in Claude Code, Claude Desktop, Cursor, VS Code, Codex, Zed, opencode or Windsurf."
+  pagePath="mcp"
+>
+  <main class="mx-auto max-w-4xl px-4 py-12">
+    <h1 class="text-3xl font-semibold tracking-tight">MCP server</h1>
+    <p class="mt-3 text-lg">
+      The libtmux MCP server exposes tmux to any client that speaks the Model
+      Context Protocol, so an agent can create sessions, send keys and read
+      pane output without shelling out.
+    </p>
+
+    <h2 class="mt-10 text-xl font-semibold">Install</h2>
+    <p class="mt-2 text-sm text-muted">
+      Pick your client, install method and scope. Every combination below is
+      rendered server-side, so the command you see is the command you get —
+      nothing is assembled in the browser.
+    </p>
+    <div class="mt-4">
+      <McpInstall />
+    </div>
+
+    <h2 class="mt-12 text-xl font-semibold">Scope, and why it matters</h2>
+    <p class="mt-3">
+      Most clients distinguish a <strong>user</strong> scope, which follows you
+      across every project, from a <strong>project</strong> scope committed
+      alongside the repository so collaborators get the same server. A tmux
+      server is machine-local state, so user scope is usually right; choose
+      project scope when the workspace definition itself is part of the repo.
+    </p>
+
+    <h2 class="mt-12 text-xl font-semibold">Ports with an MCP server</h2>
+    <p class="mt-3">
+      All eight ports ship one. The reference implementation is Python, whose
+      {referenceTools} tools are the set the others are measured against:
+    </p>
+    <ul class="mt-4 space-y-1">
+      {
+        mcpPorts.map((p) => (
+          <li>
+            <a class="font-medium hover:underline" href={withRoot(`/${p.slug}/`)}>
+              {p.name}
+            </a>
+            <span class="ml-2 font-mono text-sm opacity-70">{p.packageName}</span>
+            <span class="ml-2 text-sm opacity-60">{toolCount[p.slug]?.tools.length ?? 0} tools</span>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="mt-4 text-sm text-muted">
+      They do <em>not</em> agree on tool names. Across the eight servers,
+      {toolUniverse} distinct names are registered and {universalTools} exist in
+      all of them; Java and .NET prefix every tool with <code>tmux_</code> on
+      the wire. What each port
+      actually registers is on the
+      <a class="hover:underline" href={withRoot('/mcp/tools/')}>tool surface</a>
+      page, extracted from each port's own source. Symbol-level library parity
+      is a separate axis — see <a class="hover:underline" href={withRoot('/parity/')}>parity</a>.
+    </p>
+  </main>
+</BaseLayout>

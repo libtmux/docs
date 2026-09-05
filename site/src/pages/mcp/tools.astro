@@ -1,0 +1,205 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { PORTS, PORT_BY_SLUG } from '../../lib/ports'
+import { withRoot } from '../../lib/site-root'
+import mcpTools from '../../data/mcp-tools.json'
+
+/**
+ * The cross-port MCP tool surface.
+ *
+ * /mcp/ used to say tool names were "kept in step across ports" and show
+ * nothing behind it. This is what is actually there, extracted from each
+ * port's own registration site by scripts/gen-mcp-tools.mjs. Regenerate with:
+ *
+ *   node scripts/gen-mcp-tools.mjs
+ *
+ * The extraction rule per port lives in that script's header, along with the
+ * cross-check that keeps it honest: the Python rule must yield exactly the set
+ * of tools libtmux-mcp's own docs/tools/ documents, or the script refuses to
+ * write.
+ */
+const SLUGS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'] as const
+type Slug = (typeof SLUGS)[number]
+
+interface ToolData {
+  ports: Record<string, { tools: string[]; wirePrefix: string; source: string }>
+  universe: string[]
+  coverage: Record<string, string[]>
+  referenceDocumented: number | null
+}
+const data = mcpTools as ToolData
+
+const buildPort = process.env.LIBTMUX_DOCS_PORT || undefined
+
+const counts = SLUGS.map((s) => ({ slug: s, n: data.ports[s].tools.length }))
+const ranked = [...counts].sort((a, b) => b.n - a.n)
+const prefixed = SLUGS.filter((s) => data.ports[s].wirePrefix)
+
+const byCoverage = (n: number) => data.universe.filter((t) => data.coverage[t].length === n)
+const everywhere = byCoverage(8)
+const rows = data.universe
+  .map((tool) => ({ tool, ports: data.coverage[tool], n: data.coverage[tool].length }))
+  .sort((a, b) => b.n - a.n || a.tool.localeCompare(b.tool))
+const soleOwner = byCoverage(1).length
+// Derived, not typed: the ratio moves whenever any port adds a tool.
+const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
+---
+
+<BaseLayout
+  title="MCP tool surface"
+  description={`Which MCP tools each libtmux port actually registers: ${data.universe.length} distinct names across eight ports, ${everywhere.length} of them present in all eight.`}
+  pagePath="mcp/tools"
+>
+  <main class="mx-auto max-w-5xl px-4 py-12">
+    <h1 class="text-3xl font-semibold tracking-tight">MCP tool surface</h1>
+    <p class="mt-3 max-w-3xl text-lg">
+      Every port ships an MCP server, and they do not agree on what the tools
+      are called. Across the eight, <strong>{data.universe.length} distinct tool
+      names</strong> are registered; <strong>{everywhere.length}</strong> of
+      them exist in all eight, and {soleOwner} exist in exactly one.
+    </p>
+    <p class="mt-3 max-w-3xl text-sm opacity-80">
+      This page exists because the claim it replaces was unfalsifiable from any
+      one port's documentation. The numbers below are extracted from each
+      port's own registration site — a FastMCP call, an <code>rmcp</code>
+      attribute, an <code>[McpServerTool]</code>, a catalog literal — by
+      <code>scripts/gen-mcp-tools.mjs</code>, which refuses to write a matrix
+      unless its Python rule reproduces, name for name, the {data.referenceDocumented}
+      tools libtmux-mcp documents itself.
+    </p>
+
+    <h2 class="mt-10 text-xl font-semibold">Two things to know before you configure a client</h2>
+    <div class="mt-4 space-y-4 max-w-3xl">
+      <p>
+        <strong>{prefixed.map((s) => PORT_BY_SLUG[s].name).join(' and ')} prefix
+        every tool with <code>tmux_</code></strong> on the wire. The other six
+        do not. An agent told to call <code>capture_pane</code> finds nothing on
+        a {PORT_BY_SLUG[prefixed[0]].name} server, and one told to call
+        <code>tmux_capture_pane</code> finds nothing on the other six. The
+        prefix is stripped in the table below so the comparison is about
+        capability rather than spelling.
+      </p>
+      <p>
+        <strong>Size varies by a factor of {spread}.</strong>{' '}
+        {ranked.map((r, i) => (
+          <>
+            {i > 0 ? ', ' : ''}
+            {PORT_BY_SLUG[r.slug].name} {r.n}
+          </>
+        ))}. C++ is deliberately the smallest, and smaller still on
+        Windows: eight of its twelve tools sit behind
+        <code>#if !defined(_WIN32)</code>, so a Windows build registers four
+        read-only tools and nothing that mutates. The comment above that guard
+        gives the reason — psmux 3.3.7 "can report another process's same-name
+        mutation as its own", so the catalog stays read-only there until
+        ownership can be proven. On Windows the six-tool common vocabulary
+        below shrinks to two: <code>list_sessions</code> and
+        <code>list_windows</code>.
+      </p>
+    </div>
+
+    <h2 class="mt-12 text-xl font-semibold">The part every port agrees on</h2>
+    <p class="mt-2 max-w-3xl">
+      Six tools are registered by all eight ports. If you are writing an agent
+      prompt that has to work against any libtmux MCP server, this is the
+      vocabulary it can assume — on a non-Windows host; see the C++ caveat
+      above:
+    </p>
+    <ul class="mt-4 flex flex-wrap gap-2">
+      {
+        everywhere.map((t) => (
+          <li class="rounded border border-slate-200 px-2 py-1 font-mono text-sm dark:border-slate-800">
+            {t}
+          </li>
+        ))
+      }
+    </ul>
+
+    <h2 class="mt-12 text-xl font-semibold">Every tool, and who has it</h2>
+    <p class="mt-2 max-w-3xl text-sm opacity-80">
+      Sorted by how many ports register it. A name means the tool is registered,
+      not that its arguments match — argument parity is a separate question this
+      page does not answer.
+    </p>
+    <div class="mt-4 overflow-x-auto">
+      <table class="w-full min-w-max border-collapse text-sm">
+        <thead>
+          <tr class="border-b border-slate-200 text-left dark:border-slate-800">
+            <th class="px-3 py-2 font-semibold">Tool</th>
+            {
+              SLUGS.map((s) => (
+                <th
+                  class:list={[
+                    'px-2 py-2 text-center font-semibold',
+                    s === buildPort && 'underline decoration-2 underline-offset-4',
+                  ]}
+                >
+                  {PORT_BY_SLUG[s].name}
+                </th>
+              ))
+            }
+          </tr>
+        </thead>
+        <tbody>
+          {
+            rows.map((row) => (
+              <tr class="border-b border-edge">
+                <td class="px-3 py-1.5 font-mono text-xs">{row.tool}</td>
+                {SLUGS.map((s) => (
+                  <td class="px-2 py-1.5 text-center">
+                    {row.ports.includes(s) ? (
+                      <span title={`${PORT_BY_SLUG[s].name} registers ${data.ports[s].wirePrefix}${row.tool}`}>
+                        &#10003;
+                      </span>
+                    ) : (
+                      <span class="opacity-25">&#183;</span>
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="mt-12 text-xl font-semibold">Where these came from</h2>
+    <div class="mt-4 overflow-x-auto">
+      <table class="w-full min-w-max border-collapse text-sm">
+        <thead>
+          <tr class="border-b border-slate-200 text-left dark:border-slate-800">
+            <th class="px-3 py-2 font-semibold">Port</th>
+            <th class="px-3 py-2 font-semibold">Tools</th>
+            <th class="px-3 py-2 font-semibold">Wire prefix</th>
+            <th class="px-3 py-2 font-semibold">Registration site</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            SLUGS.map((s) => (
+              <tr class="border-b border-edge">
+                <td class="px-3 py-2 font-medium">
+                  <a class="hover:underline" href={withRoot(`/${s}/`)}>
+                    {PORT_BY_SLUG[s].name}
+                  </a>
+                </td>
+                <td class="px-3 py-2">{data.ports[s].tools.length}</td>
+                <td class="px-3 py-2 font-mono text-xs">
+                  {data.ports[s].wirePrefix || '—'}
+                </td>
+                <td class="px-3 py-2 font-mono text-xs opacity-70">{data.ports[s].source}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <p class="mt-8 text-sm opacity-80">
+      Install a server from <a class="hover:underline" href={withRoot('/mcp/')}>the MCP page</a>,
+      or read the reference implementation's per-tool documentation in the
+      {' '}<a class="hover:underline" href={withRoot('/py/')}>Python port</a>.
+      {PORTS.length} ports, one protocol, and — for now — {data.universe.length} names.
+    </p>
+  </main>
+</BaseLayout>

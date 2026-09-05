@@ -1,0 +1,135 @@
+---
+import type { ApiSymbol } from '@libtmux/api-model'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { withRoot } from '../../../lib/site-root'
+import { API_MODELS, PORT_NAME, referenceHref } from '../../../lib/api-models'
+import '../../../styles/api.css'
+import '../../../styles/vendor/gp-sphinx-api.css'
+
+/**
+ * Every public symbol in every port, A to Z.
+ *
+ * The per-port index answers "what is in this library"; this answers "where
+ * does this name live", which is the question a reader arrives with when they
+ * have seen a name in someone else's code and do not know which of eight
+ * libraries it belongs to — or whether it belongs to more than one.
+ *
+ * One page per initial letter. All eleven thousand on a single page is
+ * several megabytes of HTML that no browser is glad to receive, and the
+ * alphabet is the split a reader already understands.
+ */
+export async function getStaticPaths() {
+  // Root build only, like the reference route itself: inside a port shell
+  // this would render fourteen more copies of the same eleven thousand rows.
+  if (process.env.LIBTMUX_DOCS_PORT) return []
+
+  const byLetter = new Map<string, { port: string; symbol: ApiSymbol }[]>()
+  for (const [port, model] of Object.entries(API_MODELS) as [string, { symbols: ApiSymbol[] }][]) {
+    for (const symbol of model.symbols) {
+      // The bare name, not the qualified id: a reader looking up `capture`
+      // does not know it is `libtmux::Pane::capture` yet.
+      const first = symbol.name.replace(/^[^A-Za-z0-9]+/, '').charAt(0).toUpperCase()
+      const letter = /[A-Z]/.test(first) ? first : '0'
+      const list = byLetter.get(letter) ?? []
+      list.push({ port, symbol })
+      byLetter.set(letter, list)
+    }
+  }
+
+  const letters = [...byLetter.keys()].sort()
+  return letters.map((letter) => ({
+    params: { letter: letter.toLowerCase() },
+    props: {
+      letter,
+      letters,
+      entries: (byLetter.get(letter) ?? []).sort(
+        (a, b) => a.symbol.name.localeCompare(b.symbol.name) || a.port.localeCompare(b.port),
+      ),
+    },
+  }))
+}
+
+interface Props {
+  letter: string
+  letters: string[]
+  entries: { port: string; symbol: ApiSymbol }[]
+}
+const { letter, letters, entries } = Astro.props as Props
+
+/**
+ * Names carried by more than one port, marked as such.
+ *
+ * This is the cross-language axis the concept map cannot cover: `Pane` is
+ * `Pane` everywhere and needs no mapping, so nothing would otherwise say that
+ * all eight ports have one.
+ */
+const portsByName = new Map<string, Set<string>>()
+for (const { port, symbol } of entries) {
+  const set = portsByName.get(symbol.name) ?? new Set<string>()
+  set.add(port)
+  portsByName.set(symbol.name, set)
+}
+---
+
+<BaseLayout
+  title={`Symbols — ${letter}`}
+  description={`Every public libtmux symbol beginning with ${letter}, across all eight language ports.`}
+  pagePath={`reference/symbols/${letter.toLowerCase()}`}
+  noindex={true}
+  switcherPath=""
+>
+  <main class="mx-auto max-w-5xl px-4 py-10">
+    <h1 class="font-mono text-2xl font-semibold tracking-tight">Symbol index</h1>
+    <p class="mt-3 max-w-2xl">
+      Every public symbol in all eight ports, by name. {entries.length} beginning
+      with <strong>{letter}</strong>.
+    </p>
+
+    <nav class="mt-6 flex flex-wrap gap-1" aria-label="Letters">
+      {
+        letters.map((l) => (
+          <a
+            class:list={[
+              'rounded border border-slate-200 px-2 py-1 font-mono text-sm dark:border-slate-800',
+              l === letter
+                ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
+                : 'hover:bg-surface-hover',
+            ]}
+            href={withRoot(`/reference/symbols/${l.toLowerCase()}/`)}
+          >
+            {l === '0' ? '#' : l}
+          </a>
+        ))
+      }
+    </nav>
+
+    <ul class="mt-8 divide-y divide-slate-200 dark:divide-slate-800">
+      {
+        entries.map(({ port, symbol }) => {
+          const id = symbol.publicId ?? symbol.id
+          const href = referenceHref(port, id)
+          const shared = (portsByName.get(symbol.name)?.size ?? 1) > 1
+          return (
+            <li class="grid grid-cols-[1fr_auto] items-baseline gap-4 py-1.5">
+              <span class="min-w-0">
+                {href ? (
+                  <a href={href} class="font-mono">
+                    {symbol.name}
+                  </a>
+                ) : (
+                  <span class="font-mono">{symbol.name}</span>
+                )}
+                <span class="ml-2 truncate font-mono text-xs opacity-50">{id}</span>
+              </span>
+              <span class="whitespace-nowrap text-xs opacity-60">
+                {symbol.kind}
+                <span class="ml-2">{PORT_NAME[port] ?? port}</span>
+                {shared && <span class="ml-2 opacity-70" title="Also in other ports">·shared</span>}
+              </span>
+            </li>
+          )
+        })
+      }
+    </ul>
+  </main>
+</BaseLayout>

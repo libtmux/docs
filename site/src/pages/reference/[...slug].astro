@@ -1,0 +1,948 @@
+---
+import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
+import { conceptsFor, moduleOf, modulesIn } from '@libtmux/api-model'
+import ApiEntry from '../../components/api/ApiEntry.astro'
+import ApiExampleTabs from '../../components/api/ApiExampleTabs.astro'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { withRoot } from '../../lib/site-root'
+import { API_MODELS, API_NAV, OWNER_KINDS, PORT_NAME, indexFor, ownersOf, pageSlug, referenceHref, topLevelTypesOf } from '../../lib/api-models'
+import { PORT_BY_SLUG } from '../../lib/ports'
+import ApiDoc from '../../components/api/ApiDoc.astro'
+import SymbolName from '../../components/api/SymbolName.astro'
+import '../../styles/api.css'
+import '../../styles/vendor/gp-sphinx-api.css'
+
+/**
+ * The tree-sitter-extracted reference, rendered through this site's own
+ * components in the style gp-sphinx gives libtmux-python.
+ *
+ * Mounted at `/reference/` and `noindex`, deliberately. Python already
+ * publishes a Sphinx reference at `/py/<version>/api/` with working Pagefind
+ * entries, a genindex and an llms.txt; replacing it is a swap to make once
+ * this side matches it structurally, not a side effect of adding a route.
+ * `scripts/compare-reference.mjs` is what decides that.
+ *
+ * One page per top-level type, mirroring what a reader can hold: `Pane` and
+ * its 257 members on one page, not 257 pages.
+ */
+
+export async function getStaticPaths() {
+  // Only the root build. This route would otherwise render inside all
+  // fourteen shell builds, the way `[port]/index.astro` used to.
+  if (process.env.LIBTMUX_DOCS_PORT) return []
+
+  // Typed explicitly: inferring from the first element gives every field the
+  // type `undefined`, and every push after it fails.
+  const paths: {
+    params: { slug: string | undefined }
+    props: { model: ApiModel | undefined; owner: ApiSymbol | undefined }
+  }[] = [{ params: { slug: undefined }, props: { model: undefined, owner: undefined } }]
+
+  for (const [port, model] of Object.entries(API_MODELS)) {
+    paths.push({ params: { slug: port }, props: { model, owner: undefined } })
+    // Every symbol, not only the types with members. A method that lives as
+    // an anchor on someone else's page cannot be listed in a sidebar, cannot
+    // carry its own examples, and cannot be linked to as a page — which was
+    // true of all but the owning types.
+    //
+    // `slug` comes from the model rather than from `pageSlug` because it has
+    // to be injective; see its comment in model.ts.
+    for (const owner of model.symbols) {
+      paths.push({
+        params: { slug: `${port}/${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}` },
+        props: { model, owner },
+      })
+    }
+  }
+  return paths
+}
+
+interface Props {
+  model?: ApiModel
+  owner?: ApiSymbol
+}
+const { model, owner } = Astro.props as Props
+
+
+/**
+ * Where a symbol's entry is rendered.
+ *
+ * A member lives on its owner's page; a type lives on its own. Everything
+ * else — free functions, namespace-scope constants — lives on the port index,
+ * because it has no owner and is not one. Sending those to a page named after
+ * themselves produced 114 links to pages that were never generated, all of
+ * them C++ namespace functions.
+ */
+/** Ids of the types that have a page of their own. */
+const paged = new Set((model ? ownersOf(model) : []).map((s) => s.id))
+
+/**
+ * Where a symbol's entry is rendered.
+ *
+ * A type with members has its own page. Everything else has a *home* rather
+ * than a page: a member renders on its owner's page, a nested member-less
+ * type renders as an entry on its parent's, and a top-level one renders on
+ * the port index. Every symbol is therefore linkable without generating a
+ * page that says nothing.
+ */
+/**
+ * Every symbol has a page, so every link is to one.
+ *
+ * This had three branches — a type to its page, a member to an anchor on its
+ * owner's, everything else to an anchor on the port index — and two of them
+ * were wrong often enough to produce links to pages that were never
+ * generated. One rule, total over the model, cannot have that failure.
+ */
+const hrefFor = (s: ApiSymbol): string =>
+  model
+    ? withRoot(`/reference/${model.port}/${s.slug ?? pageSlug(s.publicId ?? s.id)}/`)
+    : withRoot('/reference/')
+/*
+ * The stub is what the index route has instead of a model.
+ *
+ * Its port is a real slug because `PortSlug` admits nothing else, which is
+ * exactly how this became a bug: `indexFor` memoises per port, so when this
+ * route built before any Python page the empty index claimed the `py` key and
+ * every Python page after it resolved against nothing. `indexFor` now refuses
+ * to cache a model with no symbols, which is the guard that makes this safe.
+ */
+const index = indexFor(model ?? { port: 'py', extractor: '', symbols: [] }, hrefFor)
+
+/**
+ * The navigation tree: the curated buckets, each with the types it holds.
+ *
+ * This was every type in the module, alphabetical. On Go that meant 221
+ * entries in one run, because 213 of Go's 221 types live in one package and
+ * there was no prefix to group by — `Server` sorted next to `BindKeyRequest`
+ * and looked no more important.
+ *
+ * The buckets and their contents are decided once per port in
+ * `scripts/gen-api-model.mjs` and read here. Nothing is computed per page but
+ * which branch to open.
+ */
+const nav = model ? API_NAV[model.port] : undefined
+const navHref = (slug: string): string => withRoot(`/reference/${model?.port}/${slug}/`)
+/** The entry a bucket's own link should land on: the type the bucket is named
+ *  for when there is one, so Window opens `libtmux.Window` rather than
+ *  whichever of `WindowDirection` and `WindowOptions` sorted first. */
+const bucketTarget = (label: string, entries: { name: string; slug: string }[]) =>
+  entries.find((e) => e.name.toLowerCase() === label.toLowerCase()) ?? entries[0]
+
+/**
+ * The tree the sidebar renders: buckets, each with the types it holds and the
+ * children it splits into.
+ *
+ * A bucket of 55 is a list rather than a grouping, so the ones that grow are
+ * divided — Requests by the tmux object each acts on, Queries and Internal by
+ * their own vocabulary. Children carry symbols of their own, so a sidebar
+ * that rendered only the top level would drop 83 of Rust's.
+ */
+const tree = nav
+  ? [
+      ...nav.buckets
+        .map((b) => ({
+          ...b,
+          entries: nav.assignments[b.id] ?? [],
+          children: (b.children ?? [])
+            .map((c) => ({ ...c, entries: nav.assignments[c.id] ?? [] }))
+            .filter((c) => c.entries.length > 0),
+        }))
+        .filter((b) => b.entries.length > 0 || b.children.length > 0),
+      // Named "Other" rather than hidden. Every one of these is listed in
+      // `unsettled` in nav-config.ts with the reason it is unplaced, and a
+      // symbol with a page and no way to reach it is worse than an honest
+      // bucket at the bottom.
+      ...(nav.unplaced.length > 0
+        ? [{ id: '__unplaced', label: 'Other', collapsed: true, entries: nav.unplaced, children: [] }]
+        : []),
+    ]
+  : []
+
+/** Everything a bucket holds, its children included, for the count on its link. */
+const bucketTotal = (b: (typeof tree)[number]) =>
+  b.entries.length + b.children.reduce((n, c) => n + c.entries.length, 0)
+
+/** The first entry anywhere under a bucket, for a bucket that only splits. */
+const firstEntry = (b: (typeof tree)[number]) =>
+  bucketTarget(b.label, b.entries.length > 0 ? b.entries : (b.children[0]?.entries ?? []))
+
+/** The type this page is about, or the one it is a member of. */
+const currentType =
+  owner && OWNER_KINDS.has(owner.kind)
+    ? owner
+    : owner?.parent
+      ? model?.symbols.find((sym) => sym.id === owner.parent)
+      : undefined
+const currentModule = currentType ? moduleOf(currentType) : owner ? moduleOf(owner) : undefined
+
+/**
+ * Which branch this page sits in — one lookup, not a scan.
+ *
+ * `placement` is symbol id to bucket id, built alongside `assignments` so the
+ * page never walks every bucket looking for itself.
+ */
+const currentBucket = currentType
+  ? nav?.placement[currentType.publicId ?? currentType.id]
+  : undefined
+
+/** The top-level bucket that holds the current one, which may be its parent. */
+const currentRoot = tree.find(
+  (b) => b.id === currentBucket || b.children.some((c) => c.id === currentBucket),
+)?.id
+const currentMembers = currentType
+  ? (model?.symbols.filter((sym) => sym.parent === currentType.id) ?? []).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    )
+  : []
+
+/** This port's package, for the definition block's Package row. */
+const portMeta = model ? PORT_BY_SLUG[model.port] : undefined
+
+/**
+ * The module rows of the definition block.
+ *
+ * `moduleOf` strips the symbol's own name from its path, which for a member
+ * yields its owning *type* rather than a module — `libtmux.Pane` for
+ * `libtmux.Pane.wrap_flag`. Linking that to the port index produced thousands
+ * of links to anchors the index never renders. So the module is the type's
+ * module, the type gets a row of its own, and the module links only when the
+ * index actually has that anchor.
+ */
+const declaringType = owner?.parent ? model?.symbols.find((s) => s.id === owner.parent) : undefined
+const ownerModule = owner ? moduleOf(declaringType ?? owner) : undefined
+const moduleAnchors = new Set(model ? modulesIn(model).map((m) => m.name) : [])
+
+/**
+ * The same symbol in the other ports, for the switcher.
+ *
+ * `conceptsFor` is the mapping that already backs "In other languages" on an
+ * entry; reading it here puts the same knowledge in the definition block,
+ * where a reader who arrived on the wrong language can leave in one click.
+ * A port with no counterpart is absent rather than dead-linked — the concept
+ * map records an `absent` reason for those, which is a different statement
+ * from "we did not look".
+ */
+const conceptEntries =
+  owner && model ? conceptsFor(model.port, owner.publicId ?? owner.id) : []
+
+/**
+ * The same symbol in every other port.
+ *
+ * Every port is listed, not only the ones with a counterpart: a reader
+ * comparing languages needs to know that Swift has no equivalent, which is a
+ * different statement from a switcher that quietly offers seven options on
+ * one page and four on the next. The ones without are rendered disabled.
+ */
+const counterparts = model
+  ? Object.keys(API_MODELS)
+      .filter((p) => p !== model.port)
+      .map((p) => {
+        const id = conceptEntries.map((c) => c.symbols[p]).find((v) => typeof v === 'string')
+        return { port: p, label: PORT_NAME[p] ?? p, href: id ? referenceHref(p, id) : undefined }
+      })
+  : []
+
+/**
+ * The same example in each language that has one, this port first.
+ *
+ * Only where the concept map knows a counterpart — an example is a claim that
+ * two pieces of code do the same thing, and nothing else here can make it.
+ */
+const exampleGroups = [
+  ...(owner?.doc?.examples?.length
+    ? [{ port: model?.port ?? '', examples: owner.doc.examples }]
+    : []),
+  ...counterparts.flatMap((c) => {
+    const id = conceptEntries.map((x) => x.symbols[c.port]).find((v) => typeof v === 'string')
+    const other = id
+      ? API_MODELS[c.port]?.symbols.find((sym) => (sym.publicId ?? sym.id) === id)
+      : undefined
+    return other?.doc?.examples?.length ? [{ port: c.port, examples: other.doc.examples }] : []
+  }),
+]
+
+const repo = (model as { repo?: string } | undefined)?.repo ?? 'tmux-python/libtmux'
+const rev = model?.revision ?? 'HEAD'
+// A symbol whose line could not be carried to the public commit links to
+// the file alone; `#Lundefined` is the alternative and it scrolls nowhere.
+const sourceUrl = (file: string, line?: number): string =>
+  `https://github.com/${repo}/blob/${rev}/${file}${line ? `#L${line}` : ''}`
+
+const members = owner && model
+  ? model.symbols
+      .filter((s) => s.parent === owner.id)
+      .sort((a, b) => {
+        // Declared before inherited, then by kind, then alphabetically —
+        // which is how autodoc orders a class page and how a reader looks.
+        const inh = Number(Boolean(a.inheritedFrom)) - Number(Boolean(b.inheritedFrom))
+        if (inh) return inh
+        return a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name)
+      })
+  : []
+
+const owners = (model ? topLevelTypesOf(model) : []).sort((a, b) => a.name.localeCompare(b.name))
+
+/**
+ * How many entries in the contents share each name.
+ *
+ * Two different types can be called `Server` — Rust has five, in
+ * `libtmux`, `blocking` and three more — and a list that renders both as
+ * "Server" asks the reader to pick by guessing. Only the repeats are
+ * qualified: appending a module to all 553 entries would bury the name that
+ * is being scanned for under the path that is not.
+ */
+const ownerNames = new Map<string, number>()
+for (const o of owners) ownerNames.set(o.name, (ownerNames.get(o.name) ?? 0) + 1)
+
+/**
+ * The port index, grouped by module.
+ *
+ * A flat list of a thousand symbols is a wall, and it left prose with nowhere
+ * to point: `libtmux.neo`, `LibTmux.Testing` and `libtmux::test` are named
+ * constantly in the guides and were unlinkable, because no extractor emits a
+ * module as a symbol and this page gave one no anchor. Each section's `id` is
+ * the module's own spelling, which is what the resolver hands back.
+ */
+const namedGroups = (model ? modulesIn(model) : []).map((m) => ({
+  name: m.name,
+  types: m.symbols.filter((s) => paged.has(s.id)),
+  // Free functions, constants, and types too small to earn a page. They are
+  // rendered in full here because there is nowhere else for them to be.
+  free: m.symbols
+    .filter((s) => !paged.has(s.id))
+    .sort((a, b) => a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name)),
+}))
+
+/**
+ * Top-level symbols the index has to render itself: free functions and
+ * constants, plus any type with no members and therefore no page.
+ */
+const freeSymbols = (model?.symbols ?? [])
+  .filter((s) => !s.parent && !paged.has(s.id))
+  .sort((a, b) => a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name))
+
+/**
+ * Symbols with no module at all, in one unnamed group.
+ *
+ * The partition has to be complete or the page silently drops symbols.
+ * Swift's ids are bare — `Server`, not `LibTmux.Server` — so every one of its
+ * 88 types has an empty module and the grid rendered nothing at all when the
+ * groups were built from module names alone.
+ */
+const rootGroup = {
+  name: '',
+  types: owners.filter((s) => !namedGroups.some((m) => m.types.includes(s))),
+  free: freeSymbols.filter((s) => !namedGroups.some((m) => m.free.includes(s))),
+}
+const moduleGroups = [...namedGroups, rootGroup].filter((m) => m.types.length || m.free.length)
+
+/**
+ * Whether this port groups by module.
+ *
+ * `modulesIn` decides — it returns nothing for a port whose "modules" are one
+ * per symbol, which is what docfx and the Java extractor produce by taking a
+ * module segment from the file name. Deciding it there rather than here is
+ * what keeps the modules that resolve and the modules that get an anchor the
+ * same set.
+ *
+ * Fixing those two ports properly means teaching `LAYOUT` that Java's module
+ * is its directory, as Go's already is, and that a .NET namespace is not its
+ * file — but that moves every anchor and inventory entry for both, so it is a
+ * decision to make deliberately rather than a side effect of this page.
+ */
+const grouped = namedGroups.length > 0
+
+/**
+ * What the index actually renders: module sections, or one flat list when
+ * grouping would not group. Either way every top-level symbol appears exactly
+ * once.
+ */
+/**
+ * The index groups by the same buckets the sidebar does.
+ *
+ * It grouped by module, so the sidebar taught one shape and the page it links
+ * to showed another. `collapsed` comes from the compiled nav and decides which
+ * sections open: the domain leads, the machinery is present but folded.
+ *
+ * The module anchors survive this. `#<module>` is what the definition block,
+ * the prose linker and the inventories all point at — grouping by bucket
+ * without them broke 9,160 links — so a compact module index is emitted
+ * alongside the bucket sections, carrying every anchor and landing a reader
+ * on a real heading rather than a hidden span.
+ */
+/*
+ * Every top-level symbol, not just the ones that own a page of members.
+ *
+ * The nav places a symbol whenever it is top-level and of an owning kind;
+ * `topLevelTypesOf` is stricter. Looking a bucket's members up in the
+ * stricter list dropped 18 of Go's from the index and 3 of TypeScript's —
+ * `tmux.PaneDirection` among them — which `check-xrefs` caught as resolution
+ * falling by six, because a symbol that renders nowhere links nowhere.
+ */
+const symbolById = new Map(
+  (model?.symbols ?? []).filter((sym) => !sym.parent).map((sym) => [sym.publicId ?? sym.id, sym]),
+)
+const typesOf = (bucketId: string) =>
+  // The "Other" bucket's members are in `unplaced`, not `assignments`; reading
+  // only the latter rendered none of them on the index, which `check-xrefs`
+  // caught as resolution falling on four ports.
+  (bucketId === '__unplaced' ? (nav?.unplaced ?? []) : (nav?.assignments[bucketId] ?? []))
+    .map((e) => symbolById.get(e.id))
+    .filter((o): o is NonNullable<typeof o> => o !== undefined)
+
+/** Placed somewhere, so the catch-all must not repeat it. */
+const placedIds = new Set([
+  ...Object.values(nav?.assignments ?? {}).flatMap((members) => members.map((m) => m.id)),
+  ...(nav?.unplaced ?? []).map((m) => m.id),
+])
+
+const bucketSections = nav
+  ? [
+      ...tree.flatMap((b) => [
+        { id: b.id, name: b.label, collapsed: b.collapsed, types: typesOf(b.id), free: [] },
+        ...b.children.map((c) => ({
+          id: c.id,
+          name: `${b.label} — ${c.label}`,
+          collapsed: b.collapsed,
+          types: typesOf(c.id),
+          free: [],
+        })),
+      ]),
+      // Functions and constants own no members, so no bucket claims them.
+      ...(freeSymbols.length > 0
+        ? [
+            {
+              id: 'free',
+              name: 'Functions and constants',
+              collapsed: true,
+              types: [],
+              free: freeSymbols.filter((sym) => !placedIds.has(sym.publicId ?? sym.id)),
+            },
+          ]
+        : []),
+    ].filter((sec) => sec.types.length > 0 || sec.free.length > 0)
+  : []
+
+const sections = bucketSections.length
+  ? bucketSections
+  : grouped
+    ? moduleGroups.map((m) => ({ ...m, id: m.name, collapsed: false }))
+    : [{ id: '', name: '', collapsed: false, types: owners, free: freeSymbols }]
+
+const declared = members.filter((m) => !m.inheritedFrom)
+const inherited = members.filter((m) => m.inheritedFrom)
+const title = owner
+  ? (owner.publicId ?? owner.name)
+  : model
+    ? `${PORT_NAME[model.port] ?? model.port} API reference`
+    : 'API reference'
+---
+
+<BaseLayout
+  title={title}
+  description={
+    owner
+      ? `${owner.doc?.summary ?? owner.name} — ${members.length} members, extracted from source.`
+      : model
+        ? `Every public symbol in libtmux for ${PORT_NAME[model.port] ?? model.port}: ${model.symbols.length}, extracted from source.`
+        : 'The libtmux API reference for every language, extracted from source and rendered through one set of components.'
+  }
+  pagePath={owner ? `reference/${(owner.publicId ?? owner.id).replaceAll('.', '-').toLowerCase()}` : 'reference'}
+  noindex={true}
+  switcherPath=""
+>
+  <!-- The content column is capped at 47rem, which is 752px — gp-sphinx
+       renders 754 from Furo's `46em` against a 16.4px root. Uncapped it ran
+       to 960px, a third wider than this site's own prose pages at 704 and a
+       measure no one reads comfortably. The cap is the design decision; the
+       exact figure is gp-sphinx's, since matching it is the point. -->
+  <main class="mx-auto grid max-w-[100rem] gap-8 px-6 py-10 lg:grid-cols-[16rem_minmax(0,1fr)]">
+    <!-- A disclosure, not a column, until there is room for a column.
+         `Server` lists 98 members and 60 types; as a block above the content
+         that is two full screens of links before a phone reader reaches the
+         first entry. Open by default so it behaves without JavaScript, and
+         closed by the script below when the viewport is too narrow to place
+         it beside the content. -->
+    <details class="api-toc-shell lg:sticky lg:top-20 lg:self-start" open>
+      <summary class="api-toc-summary">On this page</summary>
+      <nav class="api-toc" aria-label="Contents" data-pagefind-ignore="all">
+      {/*
+        Bucket, type, member — expanded along the path to this page.
+
+        A flat list of every type was navigable when the reference was a
+        thousand pages. It is not at twelve thousand, it could never show a
+        member at all, and on Go it was one alphabetical run of 221 entries
+        with the domain buried in it.
+
+        Only the branch being read is expanded, so the markup a page carries
+        is its own bucket's types and its own type's members rather than the
+        whole tree. That is what keeps this from becoming the largest part of
+        every page.
+      */}
+      {tree.map((b) => (
+        b.id === currentRoot ? (
+          <details class="api-tree-module" open>
+            <summary>{b.label}</summary>
+            {b.entries.map((t) => (
+              t.id === (currentType?.publicId ?? currentType?.id) && currentMembers.length > 0 ? (
+                <details class="api-tree-type" open>
+                  <summary>
+                    <a href={navHref(t.slug)} class:list={[t.id === (owner?.publicId ?? owner?.id) && 'is-current']}><SymbolName name={t.name} /></a>
+                  </summary>
+                  <div class="api-tree-members">
+                    {currentMembers.map((m) => (
+                      <a href={hrefFor(m)} class:list={[m.id === owner?.id && 'is-current']}><SymbolName name={m.name} /></a>
+                    ))}
+                  </div>
+                </details>
+              ) : (
+                <a class="api-tree-type-link" href={navHref(t.slug)} class:list={[t.id === (owner?.publicId ?? owner?.id) && 'is-current']}>
+                  <SymbolName name={t.name} />
+                </a>
+              )
+            ))}
+            {b.children.map((c) => (
+              c.id === currentBucket ? (
+                <details class="api-tree-child" open>
+                  <summary>{c.label}</summary>
+                  {c.entries.map((t) => (
+                    t.id === (currentType?.publicId ?? currentType?.id) && currentMembers.length > 0 ? (
+                      <details class="api-tree-type" open>
+                        <summary>
+                          <a href={navHref(t.slug)} class:list={[t.id === (owner?.publicId ?? owner?.id) && 'is-current']}><SymbolName name={t.name} /></a>
+                        </summary>
+                        <div class="api-tree-members">
+                          {currentMembers.map((m) => (
+                            <a href={hrefFor(m)} class:list={[m.id === owner?.id && 'is-current']}><SymbolName name={m.name} /></a>
+                          ))}
+                        </div>
+                      </details>
+                    ) : (
+                      <a class="api-tree-type-link" href={navHref(t.slug)} class:list={[t.id === (owner?.publicId ?? owner?.id) && 'is-current']}>
+                        <SymbolName name={t.name} />
+                      </a>
+                    )
+                  ))}
+                </details>
+              ) : (
+                <a class="api-tree-child-link" href={navHref(bucketTarget(c.label, c.entries).slug)}>
+                  {c.label}
+                  <span class="api-toc-qualifier">{c.entries.length}</span>
+                </a>
+              )
+            ))}
+          </details>
+        ) : (
+          <a class="api-tree-module-link" href={navHref(firstEntry(b).slug)}>
+            {b.label}
+            <span class="api-toc-qualifier">{bucketTotal(b)}</span>
+          </a>
+        )
+      ))}
+      </nav>
+    </details>
+
+    <div>
+      <!-- The id is the anchor every link to this type uses. `hrefFor` sends a
+           type to `<page>/#<publicId>` whether the link comes from a
+           signature, a doc comment or prose, and without this the fragment
+           had nothing to land on: the page was right and the scroll position
+           was the top of it. -->
+      <h1
+        id={owner ? (owner.publicId ?? owner.id) : undefined}
+        class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight"
+      >
+        <SymbolName name={title} />
+      </h1>
+
+      {
+        !owner && !model && (
+          <>
+            <p class="mt-3 max-w-2xl">
+              One reference, extracted from each port's own source and rendered
+              through the same components. Every type name in a signature links
+              to its own entry; every cross-reference in a doc comment resolves
+              against the same table.
+            </p>
+            <p class="mt-4">
+              <a href={withRoot('/reference/symbols/a/')}>Symbol index (A–Z)</a>
+              <span class="ml-2 text-sm opacity-60">
+                every name in every port, for when you know the name and not
+                the library
+              </span>
+            </p>
+            <div class="mt-6 grid gap-3 sm:grid-cols-2">
+              {Object.entries(API_MODELS).map(([port, m]) => (
+                <a
+                  class="block rounded border border-slate-200 p-4 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800"
+                  href={withRoot(`/reference/${port}/`)}
+                >
+                  <span class="text-lg font-semibold">{PORT_NAME[port] ?? port}</span>
+                  <span class="ml-2 text-sm opacity-60">{m.symbols.length} symbols</span>
+                  <p class="mt-1 text-sm opacity-75">
+                    {m.symbols.filter((s) => s.doc?.summary).length} documented,
+                    {' '}{topLevelTypesOf(m).length} types
+                  </p>
+                </a>
+              ))}
+            </div>
+            <p class="mt-6 max-w-3xl text-sm opacity-70">
+              Six of these come from <code>web-tree-sitter</code>. C++ and Swift
+              do not: their grammars lose 0.34% and 2.84% of the real source,
+              and what they lose is what a reference exists to show — the
+              default argument in <code>void f(std::string s = &#123;&#125;)</code>,
+              a typed <code>throws(TmuxError)</code>. Those two come from the
+              Doxygen XML this build already produces and from
+              <code>swift -emit-symbol-graph</code>, which resolves its own
+              cross-references. See <code>packages/api-model/docs/DESIGN.md</code>.
+            </p>
+          </>
+        )
+      }
+
+      {
+        !owner && model && (
+          <>
+            <p class="mt-3 max-w-2xl">
+              {model.symbols.length} symbols, extracted from source. Every type name in
+              a signature links to its own entry; every cross-reference in a
+              doc comment resolves against the same table.
+            </p>
+            {bucketSections.length > 0 && grouped && (
+              <section class="mt-12">
+                <h2 class="border-b border-edge pb-1 font-mono text-sm font-semibold tracking-tight">
+                  By module
+                  <span class="ml-2 font-sans text-xs font-normal opacity-60">
+                    {moduleGroups.length} modules
+                  </span>
+                </h2>
+                {/*
+                  Names and counts only; the types themselves are listed above,
+                  under the bucket that claims them. This section exists so
+                  `#<module>` still resolves — the definition block, the prose
+                  linker and the inventories all point at those anchors, and
+                  grouping by bucket without keeping them broke 9,160 links.
+                */}
+                <ul class="mt-3 grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
+                  {moduleGroups.map((m) => (
+                    <li id={m.name || undefined} class="scroll-mt-24 font-mono text-sm">
+                      {m.name || 'Types'}
+                      <span class="ml-2 font-sans text-xs opacity-60">
+                        {m.types.length + m.free.length}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {sections.map((mod) => (
+              /*
+                `collapsed` comes from the compiled nav and is the one thing
+                that decides whether a section opens: the domain leads, the
+                machinery is present and folded. It is a `<details>` either
+                way so the two read as the same kind of thing, and `open` is
+                server-rendered so a reader without JavaScript sees the same
+                page.
+              */
+              <details class="api-index-section mt-10" open={!mod.collapsed}>
+                {/*
+                  Prefixed, because eleven bucket names collide with module
+                  names on Rust alone — `server`, `session`, `pane`,
+                  `options`. Duplicate ids are invalid and `#server` would
+                  resolve to whichever came first. `#<module>` is the one the
+                  rest of the site links to, so it keeps the bare name and the
+                  section takes the prefix.
+                */}
+                <summary
+                  id={mod.id ? `section-${mod.id}` : undefined}
+                  class="api-index-summary scroll-mt-24 border-b border-edge pb-1 font-mono text-sm font-semibold tracking-tight"
+                >
+                  {mod.name || 'Types'}
+                  <span class="ml-2 font-sans text-xs font-normal opacity-60">
+                    {mod.types.length} {mod.types.length === 1 ? 'type' : 'types'}
+                  </span>
+                </summary>
+                <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                  {mod.types.map((o) => (
+                    <a
+                      class="block rounded border border-slate-200 p-3 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800"
+                      href={hrefFor(o)}
+                    >
+                      <span class="font-mono font-semibold">{o.name}</span>
+                      <span class="ml-2 text-xs opacity-60">
+                        {model.symbols.filter((s) => s.parent === o.id).length} members
+                      </span>
+                      {o.doc?.summary && (
+                        <p class="mt-1 text-sm opacity-80">
+                          <ApiDoc text={o.doc.summary} index={index} context={o} citations={false} />
+                        </p>
+                      )}
+                    </a>
+                  ))}
+                </div>
+                {mod.free.length > 0 && (
+                  <div class="mt-4">
+                    {mod.free.map((m) => (
+                      <ApiEntry symbol={m} index={index} sourceUrl={sourceUrl} port={model?.port} member />
+                    ))}
+                  </div>
+                )}
+              </details>
+            ))}
+          </>
+        )
+      }
+
+      {
+        owner && (
+          <>
+            <!-- The type's own entry, through the same component as its
+                 members. It is a declaration like any other — the only
+                 difference is that this one is what the page is about, which
+                 `heading` says. Rendering it by hand here is how the summary
+                 came to display raw reST while every member's rendered. -->
+            {/*
+              Where this symbol lives, above the description.
+
+              learn.microsoft.com opens every API page with Namespace,
+              Assemblies and Source before a word of prose, and it is the right
+              order: a reader arriving from a search needs to know which module
+              and which package this is before deciding whether the description
+              applies to them. Each row is a link, not a string.
+            */}
+            {/*
+              Copy the page as Markdown, and a link to it.
+
+              The button fetches the `.md` URL rather than carrying its own
+              copy of the text: one generator, one document, so what is copied
+              is what is served. Without JavaScript the link still works — it
+              is a URL, and that is the whole feature.
+            */}
+            <p class="api-page-actions" data-pagefind-ignore="all">
+              <a href={withRoot(`/reference/${model?.port}/${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}.md`)}>
+                View as Markdown
+              </a>
+              <button type="button" class="api-copy-md" data-md={withRoot(`/reference/${model?.port}/${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}.md`)}>
+                Copy Markdown
+              </button>
+            </p>
+
+            {/*
+                Indexed, not displayed twice: `data-pagefind-meta` puts the
+                package, module and source file into the search index as
+                fields, so a result can say where a symbol lives instead of
+                making the reader open it to find out.
+              */}
+              {portMeta?.packageName && (
+                <span hidden data-pagefind-meta={`package:${portMeta.packageName}`} />
+              )}
+              {ownerModule && <span hidden data-pagefind-meta={`module:${ownerModule}`} />}
+              {owner?.source?.file && (
+                <span hidden data-pagefind-meta={`file:${owner.source.file}`} />
+              )}
+              {owner?.kind && <span hidden data-pagefind-meta={`kind:${owner.kind}`} />}
+            <dl class="api-definition" data-pagefind-ignore="all">
+              {ownerModule && (
+                <>
+                  <dt>Module</dt>
+                  <dd>
+                    {moduleAnchors.has(ownerModule) ? (
+                      <a href={withRoot(`/reference/${model?.port}/#${ownerModule}`)}>{ownerModule}</a>
+                    ) : (
+                      ownerModule
+                    )}
+                  </dd>
+                </>
+              )}
+              {declaringType && (
+                <>
+                  <dt>Declared in</dt>
+                  <dd><a href={hrefFor(declaringType)}>{declaringType.name}</a></dd>
+                </>
+              )}
+              {portMeta && (
+                <>
+                  <dt>Package</dt>
+                  <dd><a href={withRoot(`/${model?.port}/`)}>{portMeta.packageName}</a></dd>
+                </>
+              )}
+              {owner.source?.file && (
+                <>
+                  <dt>Source</dt>
+                  <dd>
+                    <a href={sourceUrl(owner.source.file, owner.source.line)} rel="nofollow noopener">
+                      {owner.source.file}
+                    </a>
+                  </dd>
+                </>
+              )}
+              {counterparts.some((c) => c.href) && (
+                <>
+                  <dt>Other languages</dt>
+                  <dd class="api-definition-langs">
+                    {counterparts.map((c) =>
+                      c.href ? (
+                        <a href={c.href}>{c.label}</a>
+                      ) : (
+                        <span class="api-lang-absent" title={`No ${c.label} counterpart is mapped`}>
+                          {c.label}
+                        </span>
+                      ),
+                    )}
+                  </dd>
+                </>
+              )}
+            </dl>
+
+            <div class="mt-6">
+              {/*
+                `heading` for a type, `member` for everything else.
+                
+                It marked every entry as a heading once every symbol had a
+                page, which gave a method's own page the band and margin
+                gp-sphinx reserves for a type — on a page that already carries
+                an <h1> with the same name. The band is duplicated emphasis
+                there, and the parity check reads it as a difference in two
+                treatments.
+              */}
+              <ApiEntry
+                symbol={owner}
+                index={index}
+                sourceUrl={sourceUrl}
+                port={model?.port}
+                heading={OWNER_KINDS.has(owner.kind)}
+                member={!OWNER_KINDS.has(owner.kind)}
+              />
+            </div>
+
+            {exampleGroups.length > 1 && (
+              <section class="mt-8">
+                <h2 class="text-lg font-semibold">Examples</h2>
+                <ApiExampleTabs groups={exampleGroups} name={`ex-${owner.slug ?? 'x'}`} />
+              </section>
+            )}
+
+            <p class="mt-2 text-sm opacity-70">
+              {declared.length} declared, {inherited.length} inherited
+            </p>
+
+            {/*
+              A list, not a stack of entries.
+
+              Every member has its own page, so inlining them here would
+              publish each twice and make a large type's page the longest
+              document on the site. What a reader wants from a type page is
+              the shape of the type — the names, their kind and one line each
+              — which is what learn.microsoft.com puts here too.
+            */}
+            {declared.length > 0 && (
+              <div class="mt-8">
+                <h2 class="text-lg font-semibold">Members</h2>
+                <ul class="api-member-list mt-3">
+                  {declared.map((m) => (
+                    <li>
+                      <a class="api-member-link" href={hrefFor(m)}>{m.name}</a>
+                      <span class="api-member-kind">{m.kind}</span>
+                      {m.doc?.summary && (
+                        <span class="api-member-summary">
+                          <ApiDoc text={m.doc.summary} index={index} context={m} citations={false} />
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {inherited.length > 0 && (
+              <>
+                <h2 class="mt-12 text-lg font-semibold">Inherited members</h2>
+                <p class="mt-1 text-sm opacity-70">
+                  Reached through {[...new Set(inherited.map((m) => m.inheritedFrom))].join(', ')}.
+                </p>
+                <ul class="api-member-list mt-4">
+                  {inherited.map((m) => (
+                    <li>
+                      <a class="api-member-link" href={hrefFor(m)}>{m.name}</a>
+                      <span class="api-member-kind">{m.inheritedFrom}</span>
+                      {m.doc?.summary && (
+                        <span class="api-member-summary">
+                          <ApiDoc text={m.doc.summary} index={index} context={m} citations={false} />
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </>
+        )
+      }
+    </div>
+  </main>
+
+  <script is:inline>
+    // Copy an example to the clipboard. One delegated listener rather than one
+    // per block: a page can carry 600 examples and 600 listeners is a cost
+    // paid on every load for a button most readers never press.
+    ;(() => {
+      const copy = async (button) => {
+        const text = button.dataset.copy
+        if (!text) return
+        try {
+          await navigator.clipboard.writeText(text)
+        } catch {
+          // Clipboard access can be refused — an insecure origin, a policy, a
+          // browser that asks. Say nothing rather than claim success.
+          button.textContent = 'Failed'
+          setTimeout(() => (button.textContent = 'Copy'), 1200)
+          return
+        }
+        button.dataset.copied = 'true'
+        button.textContent = 'Copied'
+        setTimeout(() => {
+          delete button.dataset.copied
+          button.textContent = 'Copy'
+        }, 1200)
+      }
+      document.addEventListener('click', (event) => {
+        const button = event.target.closest?.('.gp-sphinx-api-copy')
+        if (button) copy(button)
+      })
+    })()
+
+    // Collapse the contents disclosure where it would otherwise push the page
+    // below the fold. Re-runs after a client-side navigation.
+    ;(() => {
+      const sync = () => {
+        const el = document.querySelector('.api-toc-shell')
+        if (el) el.open = window.matchMedia('(min-width: 64rem)').matches
+      }
+      sync()
+      document.addEventListener('astro:after-swap', sync)
+    })()
+  </script>
+</BaseLayout>
+
+<script>
+  // Fetch the served Markdown and put it on the clipboard. Fetching rather
+  // than embedding keeps one source for the document; a failure leaves the
+  // label saying so instead of silently copying nothing.
+  document.addEventListener('click', async (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>('.api-copy-md')
+    if (!button?.dataset.md) return
+    const original = button.textContent
+    try {
+      const response = await fetch(button.dataset.md)
+      if (!response.ok) throw new Error(String(response.status))
+      await navigator.clipboard.writeText(await response.text())
+      button.textContent = 'Copied'
+    } catch {
+      button.textContent = 'Copy failed'
+    }
+    setTimeout(() => {
+      button.textContent = original
+    }, 1500)
+  })
+</script>

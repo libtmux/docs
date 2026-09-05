@@ -1,0 +1,27 @@
+{
+  "$comment": "Spans in prose that name something code-shaped and deliberately do not link. scripts/check-api-links.mjs fails on any unresolved mention absent from this file, so adding one is a decision a reviewer can see. Every entry says why.",
+  "language and standard library": {
+    "why": "belongs to the language, not to libtmux; no inventory covers it",
+    "spans": ["BTreeMap", "Codable", "Display", "Drop", "Hashable", "IAsyncDisposable", "IEnumerable<T>.Matching<T>(expression)", "IReadOnlyList", "Sendable", "[Symbol.asyncDispose]", "std::optional", "std::string_view", "std::vector", "PascalCase", "Literal", "Unknown"]
+  },
+  "test and example fixtures": {
+    "why": "a real class in a file the extractors exclude, so it is not public API",
+    "spans": ["ConnectAndBuild", "Example", "Example()", "ExampleExactlyOne", "TmuxFixture", "WatchPaneOutput", "YAMLWorkspaces", "TmuxWorkspace"]
+  },
+  "private or internal modules": {
+    "why": "named to say a reader should not import it; it has no reference page by design",
+    "spans": ["libtmux._internal", "libtmux::testing", "LibTmux.csproj", "<doc:Waiting>"]
+  },
+  "a method without its type": {
+    "why": "several types define this name and the sentence does not say which; clause 3 leaves it plain rather than guessing",
+    "spans": ["CaptureAsync", "CreateSessionAsync", "OpenNotifications", "SearchPanes", "SetHooks", "Close()", "refresh()", "Plan", "Psmux", "ReplaceExisting", "TimedOut", "OwnedPaneScope"]
+  },
+  "an expression, not a name": {
+    "why": "an example of a call, with arguments; there is no single symbol to point at",
+    "spans": ["Kill(ctx)", "WaitAsync(budget)", "defer conn.Close()", "fields.pane_active.eq(true)", "force_cleanup()", "send_text(text)", "throws(TmuxError)", "with Server()", "pane.zoomedFlag"]
+  },
+  "errors the extractor does not surface": {
+    "why": "package-level error values in Go, which the model records as constants without their package path",
+    "spans": ["ErrDaemonReplaced", "tmuxq.ErrMultipleMatches", "tmuxq.ErrNoMatch"]
+  }
+}

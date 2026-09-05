@@ -1,0 +1,126 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content'
+import DocsLayout from '../layouts/DocsLayout.astro'
+import { DEFAULT_LOCALE, LOCALE_LABEL } from '../i18n/locales'
+import { t } from '../i18n/ui'
+import { withRoot } from '../lib/site-root'
+import {
+  localeOf,
+  localesEnabled,
+  localesFor,
+  sourceIdOf,
+  translationState,
+} from '../i18n/resolve'
+
+/**
+ * Shell prose route: every hand-written page in the `docs` collection
+ * (guides, cross-language concepts, examples, the parity narrative) renders
+ * through here. Per-port reference trees never enter this collection — see
+ * content.config.ts — so this route never competes with a Sphinx or docfx
+ * output tree for a URL.
+ *
+ * `entry.id` is already the collection's slug: the glob loader's default
+ * `generateId` github-slugifies each path segment and strips a trailing
+ * `/index`, so `guides/panes.md` -> `guides/panes` and `guides/index.md` ->
+ * `guides`. That id is both the route param and `pagePath` below.
+ */
+export async function getStaticPaths() {
+  const entries = await getCollection('docs')
+  // A translated page belongs to the root mount only. This route runs in all
+  // fourteen shell builds, so without the guard `/py/stable/ja/concepts/`
+  // would exist — a URL with no meaning, since the reference is never
+  // localised and per-port prose is already the language-filtered English.
+  //
+  // Untranslated pages are *absent* under `/ja/`, not filled in with English.
+  // A fallback page would be near-byte-identical duplicate content that
+  // Pagefind then indexes as Japanese, with Japanese stemming applied to
+  // English prose. Absence is the honest answer; /ja/ lists what exists.
+  const i18n = localesEnabled()
+  return entries
+    .filter((entry) => i18n || localeOf(entry.id) === DEFAULT_LOCALE)
+    .map((entry) => ({
+      params: { slug: entry.id },
+      props: { entry },
+    }))
+}
+
+interface Props {
+  entry: CollectionEntry<'docs'>
+}
+
+const { entry } = Astro.props as Props
+const { Content, headings } = await render(entry)
+
+const locale = localeOf(entry.id)
+const sourceId = sourceIdOf(entry.id)
+const all = await getCollection('docs')
+const source = all.find((e) => e.id === sourceId)
+const state = locale === DEFAULT_LOCALE ? 'translated' : translationState(entry, source)
+// Only locales that actually have this page. Advertising an alternate that
+// does not exist is worse than advertising none: it points a search engine,
+// and a reader, at a 404.
+const locales = localesEnabled() ? await localesFor(sourceId) : [DEFAULT_LOCALE]
+const translations = locales.filter((l) => l !== locale)
+
+// In a language build the shared prose IS that language's page: the remark
+// plugin has already dropped every other port's code fences, so it is
+// distinct content deserving its own canonical, not a duplicate of the root.
+// The root build sets no port, so root prose stays canonical at the root.
+const buildPort = process.env.LIBTMUX_DOCS_PORT || undefined
+const port = entry.data.port ?? buildPort
+
+// `entry.data.port` is undefined for the shared pages (concepts, guides,
+// examples); DocsLayout and lib/sidebar.ts's `getSidebar` treat that as "the
+// shell's shared section", not an error.
+//
+// `canonical` (content.config.ts) still has nowhere to go: DocsLayout
+// forwards pagePath/noindex/updated to BaseLayout's Seo, but an explicit
+// per-page canonical override has no matching prop on either layout.
+---
+
+<DocsLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  port={port}
+  headings={headings}
+  pagePath={entry.id}
+  noindex={entry.data.noindex}
+  updated={entry.data.updated}
+  tableOfContents={entry.data.tableOfContents}
+  locale={locale}
+  locales={locales}
+  sourcePath={sourceId}
+>
+  {
+    locale !== DEFAULT_LOCALE && (
+      <div class="mb-6 rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm dark:border-amber-800 dark:bg-amber-950">
+        {state === 'stale' && (
+          <p class="font-medium">
+            {t(locale, 'i18n.stale')} — {t(locale, 'i18n.staleBody')}
+          </p>
+        )}
+        {entry.data.reviewed === false && <p>{t(locale, 'i18n.unreviewed')}</p>}
+        {source && (
+          <p class="mt-1">
+            <a class="underline" href={withRoot(`/${sourceId}/`)}>
+              {t(locale, 'i18n.readEnglish')}
+            </a>
+          </p>
+        )}
+      </div>
+    )
+  }
+  {
+    locale === DEFAULT_LOCALE && translations.length > 0 && (
+      <p class="mb-6 text-sm opacity-80">
+        {t(locale, 'i18n.available')}:{' '}
+        {translations.map((l) => (
+          <a class="underline" href={withRoot(`/${l}/${sourceId}/`)}>
+            {LOCALE_LABEL[l]}
+          </a>
+        ))}
+      </p>
+    )
+  }
+  <Content />
+</DocsLayout>

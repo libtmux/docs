@@ -1,0 +1,76 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { PORTS } from '../lib/ports'
+import { withRoot } from '../lib/site-root'
+
+/**
+ * Not found, on a site where "not found in this version" and "not found at
+ * all" are different problems. A page can be missing because it never
+ * existed, or because it exists under a different version prefix than the
+ * one in the URL — the version switcher's own fallback comment names this
+ * exact case ("the 404 handler sends them to the version root"). This is
+ * the handler, and it offers that link rather than redirecting blind: a
+ * silent jump to the version root would throw away the path the reader
+ * was actually trying to reach.
+ *
+ * The build has no way to know, ahead of time, which port (if any) a 404'd
+ * URL belongs to — this page is static and version-less. So the port list
+ * ships as data and a small script reads it back out of the URL at request
+ * time.
+ */
+const portSlugs = PORTS.map((p) => p.slug)
+// process.env, not import.meta.env: import.meta.env.LIBTMUX_DOCS_* goes
+// stale across repeated astro builds in one tree (see BaseLayout.astro).
+const defaultVersion = process.env.LIBTMUX_DOCS_DEFAULT_VERSION ?? 'stable'
+---
+
+<BaseLayout title="Page not found" noindex={true}>
+  <main class="mx-auto max-w-2xl px-4 py-16">
+    <h1 class="text-3xl font-semibold tracking-tight">Page not found</h1>
+    <p class="mt-3">
+      This page doesn't exist at this URL — or it exists under a different version of the
+      documentation than the one you're looking at.
+    </p>
+
+    <div id="port-hint" class="mt-6 hidden rounded border border-edge bg-surface p-4 text-sm">
+      <p>
+        This looks like a <strong><span id="port-hint-name"></span></strong> URL. Try:
+      </p>
+      <ul class="mt-2 list-disc pl-5">
+        <li><a class="hover:underline" id="port-hint-root" href="#">The port's own landing page</a></li>
+        <li><a class="hover:underline" id="port-hint-version" href="#">Its default version</a></li>
+      </ul>
+    </div>
+
+    <ul class="mt-6 list-disc pl-5 text-sm">
+      <li><a class="hover:underline" href={withRoot('/')}>libtmux.org home</a></li>
+      <li><a class="hover:underline" href={withRoot('/search/')}>Search the documentation</a></li>
+    </ul>
+
+    <script type="application/json" id="port-slugs" set:html={JSON.stringify(portSlugs)} />
+    <script type="application/json" id="default-version" set:html={JSON.stringify(defaultVersion)} />
+  </main>
+</BaseLayout>
+
+<script>
+  const slugsEl = document.getElementById('port-slugs')
+  const versionEl = document.getElementById('default-version')
+  if (slugsEl?.textContent && versionEl?.textContent) {
+    const slugs: string[] = JSON.parse(slugsEl.textContent)
+    const defaultVersion: string = JSON.parse(versionEl.textContent)
+
+    const [firstSegment] = location.pathname.replace(/^\/+/, '').split('/')
+    if (firstSegment && slugs.includes(firstSegment)) {
+      const hint = document.getElementById('port-hint')
+      const nameEl = document.getElementById('port-hint-name')
+      const rootLink = document.getElementById('port-hint-root') as HTMLAnchorElement | null
+      const versionLink = document.getElementById('port-hint-version') as HTMLAnchorElement | null
+      if (hint && nameEl && rootLink && versionLink) {
+        nameEl.textContent = firstSegment
+        rootLink.href = `/${firstSegment}/`
+        versionLink.href = `/${firstSegment}/${defaultVersion}/`
+        hint.classList.remove('hidden')
+      }
+    }
+  }
+</script>

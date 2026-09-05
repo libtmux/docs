@@ -1,0 +1,51 @@
+---
+import { getCollection, render } from 'astro:content'
+import DocsLayout from '../../layouts/DocsLayout.astro'
+import { PORT_BY_SLUG } from '../../lib/ports'
+
+/**
+ * The generated API reference for whichever port this build targets.
+ *
+ * The shell is built once per port+version with LIBTMUX_DOCS_PORT and a
+ * matching base, so these pages land at /<port>/<version>/api/. Filtering by
+ * that env var keeps one port's reference out of another port's build.
+ */
+export async function getStaticPaths() {
+  const port = process.env.LIBTMUX_DOCS_PORT
+  const entries = await getCollection('api', (e) => !port || e.data.port === port)
+  return entries.map((entry) => ({
+    params: { slug: entry.id.replace(/^[^/]+\/?/, '') || undefined },
+    props: { entry },
+  }))
+}
+
+const { entry } = Astro.props
+const { Content, headings } = await render(entry)
+const port = PORT_BY_SLUG[entry.data.port]
+
+/**
+ * The page's own path within this port+version, which is what Seo.astro
+ * canonicalises. A one-file reference (TypeScript) is just `api`; a tree of
+ * them (.NET, 215 type pages) needs the rest of the id, or every type page
+ * would declare itself a duplicate of the index.
+ */
+const rest = entry.id.replace(/^[^/]+\/?/, '')
+const pagePath = rest ? `api/${rest}` : 'api'
+---
+
+<DocsLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  port={entry.data.port}
+  headings={headings}
+  pagePath={pagePath}
+>
+  <Content />
+  {
+    entry.data.generator && (
+      <p class="mt-12 border-t border-slate-200 pt-4 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-400">
+        Generated from the {port?.name ?? entry.data.port} source by {entry.data.generator}.
+      </p>
+    )
+  }
+</DocsLayout>

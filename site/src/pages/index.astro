@@ -1,0 +1,226 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { PORTS, PORT_BY_SLUG, portPageUrl, referenceUrl } from '../lib/ports'
+import PortHero from '../components/PortHero.astro'
+import DocCard from '../components/DocCard.astro'
+import ApiReferences from '../components/ApiReferences.astro'
+import { buildTarget } from '../lib/versions'
+import PackageInstall from '../components/widgets/PackageInstall.astro'
+import { QUICKSTARTS } from '../lib/quickstarts'
+import { withRoot } from '../lib/site-root'
+import { localesFor } from '../i18n/resolve'
+import { DEFAULT_LOCALE } from '../i18n/locales'
+
+/**
+ * Onward links below the fold. Each points at a section another agent owns
+ * (concepts/ and guides/ pre-date this page; topics/ and examples/ are
+ * assembled in this same batch) — home only links out, it never restates
+ * their content.
+ */
+const explore = [
+  {
+    href: '/topics/',
+    label: 'Topics',
+    body: 'Deep dives into one subject at a time — architecture, traversal, options and hooks — compared across all eight ports.',
+  },
+  {
+    href: '/concepts/',
+    label: 'Concepts',
+    body: 'The mental model every port shares before you read any one port’s own reference: the object hierarchy, transports, and filtering.',
+  },
+  {
+    href: '/guides/',
+    label: 'Guides',
+    body: 'Task-oriented walkthroughs — install tmux, pick a port, and run the round trip every real program starts from.',
+  },
+  {
+    href: '/reference/',
+    label: 'API reference',
+    body: 'Every public symbol in all eight ports, extracted from source and cross-linked — 13,753 of them, in one place and one style.',
+  },
+  {
+    href: '/examples/',
+    label: 'Examples',
+    body: 'The same concrete task, worked through in each of the eight ports side by side, so you can compare syntax directly.',
+  },
+] as const
+
+
+/**
+ * A port+version build mounts this route at /<port>/<version>/, so the site
+ * home was being emitted there — /py/stable/ served "libtmux" rather than
+ * anything Python. That is a real URL a version switcher lands on, so it
+ * renders the version root for that port instead: the same hero and cards as
+ * the port home, but scoped to the version actually being built.
+ */
+const buildPort = process.env.LIBTMUX_DOCS_PORT || undefined
+const versionRootPort = buildPort ? PORT_BY_SLUG[buildPort] : undefined
+const { version: buildVersion } = buildTarget(process.env)
+
+const versionSections = versionRootPort
+  ? [
+      { href: portPageUrl(versionRootPort, buildVersion, 'topics'), label: 'Topics', body: `Subject-by-subject, with ${versionRootPort.name} in every code block.` },
+      { href: portPageUrl(versionRootPort, buildVersion, 'guides'), label: 'Guides', body: `Task-shaped walkthroughs for ${versionRootPort.name}.` },
+      { href: portPageUrl(versionRootPort, buildVersion, 'examples'), label: 'Examples', body: 'Complete programs, sourced from the code each port tests.' },
+      { href: portPageUrl(versionRootPort, buildVersion, 'concepts'), label: 'Concepts', body: 'The domain model every port shares.' },
+    ]
+  : []
+
+/**
+ * Locales this landing page genuinely exists in.
+ *
+ * Content pages get this from `DocsLayout`, which knows its own entry. The
+ * landing page is a route rather than a collection entry, so it asks for the
+ * translations of the site root directly — without it the page emitted no
+ * hreflang cluster at all while `/ja/` sat there untagged, which is the one
+ * case where a missing alternate is a search engine's problem rather than a
+ * reader's.
+ *
+ * The empty source id is not a typo. Astro's glob loader names an entry after
+ * its path without `/index`, so `ja/index.md` is the entry `ja`, and stripping
+ * its locale prefix leaves nothing. `'index'` looks like the right argument
+ * and silently matches no entry.
+ */
+const homeLocales = await localesFor('')
+
+---
+
+{
+  versionRootPort ? (
+    <BaseLayout
+      title={`${versionRootPort.name} ${buildVersion}`}
+      description={`libtmux for ${versionRootPort.language}, version ${buildVersion}.`}
+      portSlug={versionRootPort.slug}
+    >
+      <main class="mx-auto max-w-7xl px-4 py-12">
+        <PortHero port={versionRootPort} defaultVersion={buildVersion} />
+        <p class="mt-4 text-sm text-muted">
+          You are reading the <strong>{buildVersion}</strong> documentation. Use
+          the version control in the header to move between releases, or the
+          language control to read the same page in another port.
+        </p>
+        <div class="mt-10 grid gap-4 sm:grid-cols-2">
+          {versionSections.map((s) => (
+            <DocCard href={s.href} label={s.label} body={s.body} />
+          ))}
+        </div>
+        <ApiReferences port={versionRootPort} version={buildVersion} />
+        <p class="mt-8 text-sm">
+          <a class="hover:underline" href={withRoot(`/${versionRootPort.slug}/`)}>
+            All {versionRootPort.name} versions and install instructions
+          </a>
+        </p>
+      </main>
+    </BaseLayout>
+  ) : (
+
+<BaseLayout
+  title="libtmux"
+  description="A typed tmux control library for Python, TypeScript, Rust, Go, Java, .NET, C++ and Swift — one API shape, one documentation site."
+  locale={DEFAULT_LOCALE}
+  locales={homeLocales}
+  sourcePath="/"
+>
+  <main class="mx-auto max-w-7xl px-4 py-12 sm:py-16">
+    <!-- Hero -->
+    <section class="max-w-3xl">
+      <h1 class="text-4xl font-semibold tracking-tight sm:text-5xl">libtmux</h1>
+      <p class="mt-4 text-xl text-muted">
+        Drive a real tmux from your language of choice.
+      </p>
+      <p class="mt-4 max-w-2xl text-base leading-relaxed opacity-80">
+        Server, session, window, pane — the same object hierarchy tmux itself
+        defines, typed and ported to eight languages. Script a workspace,
+        harness a TUI in tests, or give an assistant hands on a terminal,
+        without hand-rolling a subprocess wrapper first.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a
+          href={withRoot('/guides/getting-started/')}
+          class="rounded bg-theme-primary px-4 py-2 text-sm font-semibold text-white hover:bg-theme-primary/90"
+        >
+          Get started
+        </a>
+        <a
+          href={withRoot('/topics/')}
+          class="rounded border border-edge px-4 py-2 text-sm font-semibold hover:bg-surface-hover"
+        >
+          Browse Topics
+        </a>
+        <a
+          href="https://github.com/libtmux"
+          class="rounded border border-edge px-4 py-2 text-sm font-semibold hover:bg-surface-hover"
+        >
+          GitHub
+        </a>
+      </div>
+    </section>
+
+    <!-- Quickstart -->
+    <section class="mt-16">
+      <h2 class="text-xl font-semibold">Quickstart</h2>
+      <p class="mt-2 max-w-2xl text-sm opacity-80">
+        Pick your language below — the install line and the example both
+        follow it. Each snippet is that port's own opening example; see
+        <a class="underline" href={withRoot('/examples/attach-and-send-keys/')}>Attach and send keys</a>
+        for one task written out in all eight.
+      </p>
+      <div class="mt-4 max-w-2xl">
+        <PackageInstall snippets={QUICKSTARTS} />
+      </div>
+    </section>
+
+    <!-- Ports -->
+    <section class="mt-16">
+      <h2 class="text-xl font-semibold">Eight ports, one API shape</h2>
+      <p class="mt-2 max-w-2xl text-sm opacity-80">
+        Rust, Go, and Java deep-link to the canonical host their own
+        ecosystem already uses (docs.rs, pkg.go.dev, javadoc.io); the rest
+        are self-hosted here, in the same design.
+      </p>
+      <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          PORTS.map((p) => (
+            <article class="flex flex-col rounded border border-edge p-4">
+              <h3 class="font-semibold">
+                <a class="hover:underline" href={withRoot(`/${p.slug}/`)}>
+                  {p.name}
+                </a>
+              </h3>
+              <p class="mt-1 font-mono text-xs opacity-70">{p.packageName}</p>
+              <pre class="mt-3 overflow-x-auto rounded bg-surface px-2 py-1.5 font-mono text-xs"><code>{p.install}</code></pre>
+              <p class="mt-3 text-sm">
+                {/* Every port has one here. Three also have a canonical host
+                    of their own, which the port's own page offers alongside;
+                    this card links ours, and the "not published yet" branch
+                    that used to sit here described four ports that between
+                    them ship 5,000 pages. */}
+                <a class="hover:underline" href={referenceUrl(p)}>API reference</a>
+              </p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- Onward -->
+    <section class="mt-16">
+      <h2 class="text-xl font-semibold">Read the docs</h2>
+      <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        {
+          explore.map((item) => (
+            <a
+              href={withRoot(item.href)}
+              class="block rounded border border-edge p-4 hover:bg-surface-hover"
+            >
+              <h3 class="font-semibold">{item.label}</h3>
+              <p class="mt-1 text-sm opacity-80">{item.body}</p>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+  )
+}
