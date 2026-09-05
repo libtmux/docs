@@ -74,10 +74,29 @@ jobs:
           LIBTMUX_DOCS_SITE: https://libtmux.org
         run: pnpm build
 
+      # publish-root needs the port slugs to know which prefixes it must not
+      # bulk-touch, and it has no checkout of its own. Emitting the list here
+      # ties it to the commit that produced the tree, which a second hand-kept
+      # copy in that job could not do.
+      - name: Emit the reserved prefixes from ports.ts
+        run: |
+          set -euo pipefail
+          node --input-type=module -e "
+            const { PORTS } = await import('./site/src/lib/ports.ts')
+            process.stdout.write(PORTS.map((p) => p.slug).join('\n') + '\n')
+          " > reserved-prefixes.txt
+          cat reserved-prefixes.txt
+
       - uses: actions/upload-artifact@v7
         with:
           name: shell-dist
           path: site/dist
+          retention-days: 1
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: reserved-prefixes
+          path: reserved-prefixes.txt
           retention-days: 1
 
   # Same-repo PRs only. Fork PRs get no secrets on `pull_request` by
@@ -147,6 +166,10 @@ jobs:
           name: shell-dist
           path: dist
 
+      - uses: actions/download-artifact@v8
+        with:
+          name: reserved-prefixes
+
       - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.LIBTMUX_DOCS_ROLE_ARN }}
@@ -157,9 +180,20 @@ jobs:
           BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
         run: |
           set -euo pipefail
-          # Reserved names copied from site/src/lib/ports.ts's eight slugs
-          # plus the manifest prefix. Keep this in sync by hand if PORTS
-          # grows a ninth entry — see the same comment in reusable-deploy.yml.
+          # The port slugs come from ports.ts, emitted by the build job into
+          # its own artifact — this job has no checkout, and a second hand-kept
+          # copy here is what the list used to be. `manifest` is added locally
+          # because it is this bucket's convention, not a port.
+          #
+          # Fail closed if the artifact is missing: an empty reserved list
+          # would let this job sync straight over a port's version tree.
+          if [[ ! -s reserved-prefixes.txt ]]; then
+            echo "::error::reserved-prefixes.txt is missing or empty — refusing to sync without a denylist" >&2
+            exit 1
+          fi
+          mapfile -t reserved < reserved-prefixes.txt
+          reserved+=(manifest)
+          printf 'reserved prefixes: %s\n' "${reserved[*]}"
           #
           # `_shell` is deliberately not reserved here, and the asymmetry is
           # the point: this job is the shell, and `_shell/` is the shell's own
@@ -177,7 +211,6 @@ jobs:
           #
           # manifest/ stays reserved: it has no shell output, so anything
           # appearing there is a build that changed shape.
-          reserved=(py ts rs go java dotnet cxx swift manifest)
           dirs=()
           reserved_index_dirs=()
           for entry in dist/*/; do
