@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    // This package runs under bare `node --experimental-strip-types` (the
+    // build script imports it directly), whose ESM resolver needs the
+    // extension on every relative import. Vite and vitest accept it either
+    // way, so the stricter consumer sets the rule — and tsc has to be told.
+    "allowImportingTsExtensions": true,
+    "types": ["node"]
+  },
+  "include": ["./src/**/*.ts", "./test/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

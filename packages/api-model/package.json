@@ -1,0 +1,26 @@
+{
+  "name": "@libtmux/api-model",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "One normalized API model for eight languages, extracted with web-tree-sitter.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "lint": "oxlint --type-aware --tsconfig tsconfig.json --ignore-pattern '**/*.test.ts' src",
+    "type-check": "oxlint --type-aware --type-check -A all --tsconfig tsconfig.json --ignore-pattern '**/*.test.ts' src"
+  },
+  "dependencies": {
+    "tree-sitter-wasms": "catalog:",
+    "web-tree-sitter": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
