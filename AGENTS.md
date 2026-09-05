@@ -9,7 +9,8 @@ requested work.
 
 ## Which policy applies
 
-- Environment, checks, tests, and pull requests: [CONTRIBUTING.md](CONTRIBUTING.md).
+- Environment, Oxlint, formatting, tests, and pull requests:
+  [CONTRIBUTING.md](CONTRIBUTING.md).
 - Documentation, user-facing text, comments, and commits: [WRITING.md](WRITING.md).
 
 Each guide is the single home for its subject.
@@ -39,8 +40,10 @@ facts come from the code.
   re-exports or single-use helpers.
 - Keep port and version decisions in their existing shared modules.
 - Use owned Astro components; do not adopt Starlight, Docusaurus, or another
-  documentation framework.
+  documentation framework. Extend the shell with small integrations, as in
+  `site/src/integrations/pagefind.ts`.
 - Keep TypeScript on the workspace's 6.x catalog entry; do not bump it to 7.
+  See [Toolchain constraints](CONTRIBUTING.md#toolchain-constraints).
 
 ## Repository boundaries
 

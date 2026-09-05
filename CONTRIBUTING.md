@@ -23,7 +23,23 @@ Start the Astro development server:
 $ pnpm dev
 ```
 
-## Checks
+## Toolchain constraints
+
+`@astrojs/check` accepts TypeScript 5 or 6 as a peer dependency. The site's
+`astro check` and Astro language tooling depend on the compiler's language
+service API; a compiler upgrade must preserve that integration. Follow the
+TypeScript 6 constraint in [AGENTS.md](AGENTS.md#change-discipline).
+
+The plain TypeScript packages extend the root `tsconfig.json`. The site
+extends Astro's strict configuration instead. Keep both paths working when
+changing shared compiler settings.
+
+## Linting and formatting
+
+`oxlint` is the workspace linter; `oxlint-tsgolint` supplies its type-aware
+rules. Both are pinned centrally in the pnpm catalog. Package lint scripts
+use `--type-aware` with their own `tsconfig.json`; the root command also runs
+Oxlint over `scripts/`. Preserve each script's scope and exclusions.
 
 Run lint across the workspace and build scripts:
 
@@ -31,11 +47,24 @@ Run lint across the workspace and build scripts:
 $ pnpm run lint
 ```
 
+The theme package retains Biome in its formatting script; it is not the
+workspace lint gate. This command writes changes, so review its diff:
+
+```console
+$ pnpm --filter @libtmux/theme format
+```
+
+## Checks
+
 Run workspace type checks:
 
 ```console
 $ pnpm run type-check
 ```
+
+This runs `astro check` for the site and Oxlint's type-check mode for the
+plain TypeScript packages. The theme also exposes `type-check:tsc` for a
+direct compiler check; it is separate from the root gate.
 
 Run the fast checks while iterating:
 
@@ -54,10 +83,17 @@ $ pnpm test
 defines their CI environment. Report skipped checks explicitly. Missing port
 checkouts or a missing local server can leave checks unexercised.
 
-Oxlint is the linter. Biome is used by the theme package's format script.
 Add focused regression coverage for behavior changes and confirm that a new
 check fails when its intended invariant is broken. Documentation-only edits
 need link, command, and diff review rather than new tests.
+
+### Theme test setup
+
+`packages/theme/src/test-utils.ts` compiles CSS through the real Tailwind
+plugin. Reuse it for output assertions. The package's `vitest.config.ts`
+loads `src/test/setup.ts`, whose serializer normalizes only the Tailwind
+version banner. Preserve that setup; changes to selectors or CSS structure
+must remain visible in snapshots.
 
 ## Building and previewing
 
