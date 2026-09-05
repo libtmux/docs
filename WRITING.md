@@ -13,7 +13,14 @@ restating types or signatures.
 
 Keep identifiers in backticks and use stable names for ports, versions,
 renderers, and packages. Avoid filler, marketing claims, emojis, and agent
-attribution. Quantify performance claims or omit them.
+attribution. Use sentence-case headings and preserve the capitalization of
+TypeScript, .NET, C++, Astro, pnpm, Oxlint, and package names.
+
+Delete introductions that only announce the paragraph. Replace "robust"
+with the failure handled, "comprehensive" with the scope covered, and
+"optimized" with a measured change and its reproduction conditions. Omit
+"easily", "simply", "just", "please note", and unearned superlatives.
+Use MUST, SHOULD, and MAY only for an intended normative requirement.
 
 Describe the current behavior. Keep implementation deliberation and branch
 history in commit messages. Explain tickets and decisions when referring to
@@ -140,18 +147,45 @@ free of routine narration.
 
 ## Source comments
 
-Comments explain constraints, invariants, upstream quirks, and tradeoffs
-that the code cannot express. Match the surrounding density; one or two
-lines usually suffice.
+Keep a source comment only when it passes all three gates:
 
-Before keeping a comment, ask whether deletion loses useful information,
-whether the text states a precise fact, and whether it stays true without
-manual synchronization. Remove narration, restated types, speculative
-requirements, and history already recorded by Git. Preserve the constraint
-behind a workaround even when trimming its explanation.
+- **Loss:** Deletion would make a maintainer rediscover a constraint,
+  invariant, failure mode, or non-obvious intent.
+- **Quality:** A mature standard-library project would state it this
+  directly, at this length, without arguing with an imagined reader.
+- **Upkeep:** It stays true without manually synchronizing values owned by
+  the code, such as counts, offsets, paths, or duplicated constants.
 
-Public API usage examples and parameter, return, and error documentation
-serve callers; keep them concise and accurate.
+Aim for one or two lines and match the surrounding density. Split distinct
+facts or cut deliberation before adding a long explanation. Keep frozen
+external facts that explain a workaround; the upkeep gate targets values
+that drift with our own code.
+
+Keep upstream quirks, protocol constraints, ordering and lifetime rules,
+concurrency requirements, and reasons that required code looks wrong. A
+short algorithm sketch is useful when the local operations hide the whole.
+Explain the constraint behind a cast, `@ts-expect-error`, or lint suppression.
+
+Delete narration of the next lines, restated names or types, apologies,
+speculative requirements, commented-out code, and history held by Git.
+Prefer a better name to a comment explaining a confusing one. Do not delete
+an invariant or workaround merely to meet a length target.
+
+Minimal public API examples and parameter, return, and error guidance are
+exempt from the loss gate, but must still be accurate, concise, and
+maintainable. Preserve compiler directives, lint directives, region markers,
+doctest prompts, and other text that tooling interprets.
+
+## Error messages and help
+
+Name the failed operation, the relevant input, and a corrective action when
+one is known. Avoid empty messages such as "an error occurred", blame, and
+speculative fixes. Keep published examples free of private paths and data.
+
+Document defaults, units, empty-value semantics, filesystem effects, and
+exit statuses where they affect using a script. Verify which stream carries
+results and which carries diagnostics; do not invent a repo-wide convention
+from one command. A skipped check must be described as skipped, not passed.
 
 ## Markdown and examples
 
@@ -159,14 +193,20 @@ Wrap prose at 80 columns, except tables and long links. Do not hard-wrap
 GitHub issue or pull request paragraphs. Avoid personal information, email
 addresses, and local absolute paths in published text.
 
+Use ordinary Markdown for facts that must survive different renderers.
+Reserve GitHub alert syntax for GitHub-only material and only when a warning
+is necessary; the warning's text must stand alone. Put blank lines around
+lists and headings, and preserve existing anchors when restructuring prose.
+
 Code blocks are paste-and-run units:
 
 - Put one command in each block. An explicit `&&`, `;`, or `\` chain counts
   as one command.
 - Put explanations above the block, not in shell comments inside it.
+- Give each command in a menu its own prose lead-in and block.
 - Use `console` fences and a `$ ` prompt for shell commands.
 - Split long commands with `\`, one flag or flag/value pair per continuation
-  line.
+  line, with positional arguments last.
 - Verify commands against the repository's scripts and their actual inputs.
 
 Run the workspace linter:
@@ -175,11 +215,34 @@ Run the workspace linter:
 $ pnpm run lint
 ```
 
+### Durable links
+
 Link to repository-relative files for local guidance. For external source
-claims, prefer a release tag, then a commit reachable from trunk. Use trunk
-links for living documents. Attach line anchors only to pinned revisions.
-Avoid duplicated counts, version pins, and status claims that silently drift
-from the code that owns them.
+claims, prefer a release tag, then an unambiguous commit reachable from
+trunk. Do not use a disposable PR-head revision. Use trunk links for living
+documents and attach line anchors only to pinned revisions.
+
+Preserve links, citations, anchors, and warnings while editing. Replace a
+link's destination when its source moves; do not silently drop the evidence.
+Link API mentions to their rendered reference when it exists and verify that
+the destination belongs to the intended port and version.
+
+## Review for slop
+
+Judge information value, not authorship. Remove text that restates code,
+sells the work, or requires knowledge of a branch's intermediate states.
+
+- No tool signatures, conversational filler, or generated-by footers.
+- No bare commit hashes, hard-coded line numbers, drifting counts, or
+  copied version pins in general prose. Exact evidence belongs in a dated
+  test result, lockfile, or pinned source citation.
+- No invented rule codes or unexplained labels as a substitute for names.
+- No ownerless TODOs, speculative scaffolding, or duplicate instructions.
+- No change diary in README, API documentation, or user-facing guides.
+
+Retain facts that explain a public contract, invariant, migration, or
+upstream workaround. Apply this guide to the requested scope; it does not
+authorize unrelated cleanup or rewriting shared history.
 
 ## Commits
 
