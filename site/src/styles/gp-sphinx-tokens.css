@@ -1,0 +1,42 @@
+/* gp-sphinx's palette, available to every page.
+ *
+ * These are the design system's own surface colours, resolved from a built
+ * gp-sphinx page in both themes. They lived in
+ * `vendor/gp-sphinx-api.css`, which only the two reference routes import — so
+ * a card on a landing page could not use them even though gp-sphinx is the
+ * recorded design system for this site. It reached for `slate-200` instead,
+ * and the two grounds drifted apart.
+ *
+ * Kept out of the vendored file rather than beside the rules that read them,
+ * because the vendored file is a faithful copy and a rule that differs from
+ * upstream there is a vendoring bug. These were never upstream CSS: they are
+ * measurements of upstream's output, so they belong here.
+ *
+ * The API-specific names — `--color-api-name`, `--color-api-paren`,
+ * `--color-api-keyword`, `--color-api-pre-name` — stay in the vendored file.
+ * Nothing outside a signature has any business colouring a parenthesis.
+ *
+ * Not layered: custom properties do not participate in the cascade layers the
+ * way declarations do, and a token defined inside `layer(components)` loses to
+ * one Tailwind's preflight sets on `:root`.
+ */
+
+:root {
+  --color-api-background-hover: #efeff4;
+  --color-background-border: #eeebee;
+  --color-background-secondary: #f8f9fb;
+  --color-foreground-muted: #6b6f76;
+  --color-link: #2757dd;
+  --color-highlight-on-target: #ffc;
+  --color-inline-code-background: #f8f9fb;
+}
+
+[data-theme-mode='dark'] {
+  --color-api-background-hover: #1e2124;
+  --color-background-border: #303335;
+  --color-background-secondary: #1a1c1e;
+  --color-foreground-muted: #81868d;
+  --color-link: #5ca5ff;
+  --color-highlight-on-target: #330;
+  --color-inline-code-background: #1a1c1e;
+}

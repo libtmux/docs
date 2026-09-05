@@ -1,0 +1,217 @@
+---
+import '../styles/global.css'
+import { Font } from 'astro:assets'
+import BackToTop from '../components/BackToTop.astro'
+import Seo from '../components/Seo.astro'
+import SiteFooter from '../components/SiteFooter.astro'
+import SiteHeader from '../components/SiteHeader.astro'
+import ThemeScript from '../components/ThemeScript.astro'
+import SearchModal from '../components/SearchModal.astro'
+import { pickerPaintRules } from '../lib/picker-paint'
+import { buildTarget } from '../lib/versions'
+import type { VersionEntry } from '../lib/versions'
+import { withRoot } from '../lib/site-root'
+import { PORT_NAME } from '../lib/api-models'
+
+/**
+ * The one page shell. Everything the site renders goes through here —
+ * landing, prose, and the three ports whose reference we render ourselves.
+ *
+ * Ports rendered by Sphinx or their own generator do not use this layout;
+ * they receive the same header, footer and switchers as runtime-injected
+ * artifacts instead. Keeping the markup here and the injected copy in sync
+ * is what `scripts/build-site.sh` checks.
+ */
+interface Props {
+  title: string
+  description?: string
+  /** Path within the current port+version, e.g. 'guides/panes'. */
+  pagePath?: string
+  /** Port slug when this page belongs to one. */
+  portSlug?: string
+  noindex?: boolean
+  updated?: string
+  /** Suppress the site header, for embedded/preview renders. */
+  bare?: boolean
+  /** BCP-47 tag for this page. Drives <html lang> and the hreflang cluster. */
+  locale?: string
+  /** Locales this page genuinely exists in — never the full LOCALES list. */
+  locales?: string[]
+  /** This page's path with any locale prefix removed. Drives hreflang. */
+  sourcePath?: string
+  /**
+   * The path the port switcher should carry across ports.
+   *
+   * Defaults to this page's own path, which is right for prose: switching
+   * language on `/concepts/transports/` should land on the same concept. It is
+   * wrong wherever a page has no per-port counterpart — the API reference
+   * lives only at the root, so carrying `reference/ts/...` across produced
+   * `/cxx/stable/reference/...` for every one of its 1,009 pages. Pass `''`
+   * there and the switcher offers each port's home instead.
+   */
+  switcherPath?: string
+}
+
+const {
+  title,
+  description,
+  pagePath = '',
+  portSlug,
+  noindex = false,
+  updated,
+  bare = false,
+  locale = 'en',
+  locales = [],
+  sourcePath,
+  switcherPath,
+} = Astro.props as Props
+
+// process.env, not import.meta.env: import.meta.env.LIBTMUX_DOCS_* goes
+// stale across repeated astro builds in the same tree — reproduced 3/3 from
+// a fresh cache, build-site.sh's own per-port-per-version loop shape, every
+// later build silently keeping the first build's robots/canonical/version.
+// process.env didn't reproduce it in the same test. astro.config.ts already
+// reads process.env directly for base/site/sitemap gating; this brings
+// BaseLayout's own env reads in line with it.
+const target = buildTarget(process.env)
+
+// Until the manifest is fetched client-side, treat this build's own version
+// as the entry we know about. The switcher replaces this at runtime.
+const versionEntry: VersionEntry = {
+  slug: target.version,
+  label: target.version,
+  kind: target.kind,
+  supported: true,
+}
+const defaultVersion = process.env.LIBTMUX_DOCS_DEFAULT_VERSION ?? 'stable'
+/**
+ * Which part of the site this page is in, as a search filter.
+ *
+ * The first path segment after any port and version: `topics`, `guides`,
+ * `concepts`, `examples`, `reference`. A reader searching for `capture`
+ * usually wants one of those, not all five.
+ */
+const section = (pagePath.split('/').filter(Boolean)[0] ?? 'home').toLowerCase()
+
+---
+
+<!doctype html>
+<html lang={locale} data-theme="purple">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href={withRoot('/favicon.svg')} type="image/svg+xml" />
+    {/*
+      Preload the faces the pages actually open with, and only those.
+
+      Two mechanisms, doing different jobs. The gate in ThemeScript holds the
+      page until `document.fonts.ready`, which waits for every face the
+      document uses — so nothing can be seen arriving late whatever is on this
+      list. The list decides how *soon* the gate lifts: a preloaded face is
+      fetched beside the critical CSS instead of being discovered when the CSS
+      is parsed.
+
+      That makes preloading the families entire actively worse, not merely
+      wasteful. It is 395 KB at the highest priority the browser has, ten
+      faces of which no page opens with, competing for bandwidth with the ten
+      that hold the paint back.
+
+      The list is measured, and `scripts/check-fonts.mjs` fails in both
+      directions — a face an archetype opens with that is missing here, and a
+      face here that no archetype opens with. Which archetype demands each,
+      and why, is in notes/gp-sphinx-parity.md; regenerate it from the check
+      rather than editing by hand.
+    */}
+    <Font
+      cssVariable="--font-ibm-plex-sans"
+      preload={[
+        { weight: 400, style: 'normal' },
+        { weight: 400, style: 'italic' },
+        { weight: 500, style: 'normal' },
+        { weight: 600, style: 'normal' },
+        { weight: 700, style: 'normal' },
+      ]}
+    />
+    <Font
+      cssVariable="--font-ibm-plex-mono"
+      preload={[
+        { weight: 400, style: 'normal' },
+        { weight: 400, style: 'italic' },
+        { weight: 600, style: 'normal' },
+        { weight: 700, style: 'normal' },
+        { weight: 700, style: 'italic' },
+      ]}
+    />
+    {/*
+      The font gate's stylesheet, before anything it hides.
+
+      Paired with `gateOnFonts()` in ThemeScript: the class is only ever added
+      by that script, so a reader without JavaScript is never gated, and the
+      script lifts it on `document.fonts.ready` or after 3s, whichever is
+      first. `visibility` rather than `display` so the layout is computed and
+      settled behind the gate — the page appears, it does not assemble.
+    */}
+    <style is:inline>html.fonts-pending body{visibility:hidden}</style>
+    <ThemeScript />
+    {/* Paints the picker in the saved language. Must precede the body. */}
+    <style is:global set:html={pickerPaintRules()} />
+    <Seo
+      title={title}
+      description={description}
+      pagePath={pagePath}
+      portSlug={portSlug}
+      version={target.version}
+      defaultVersion={defaultVersion}
+      locale={locale}
+      locales={locales}
+      sourcePath={sourcePath}
+      versionEntry={versionEntry}
+      noindex={noindex}
+      updated={updated}
+    />
+    {/* The switcher reads the live manifest, so a version published after
+        this build still appears here. */}
+    <link rel="preload" href={withRoot('/versions.json')} as="fetch" crossorigin="anonymous" />
+  </head>
+  <!--
+    No colour utilities on `body`.
+
+    `bg-surface` sat in the utilities layer and outranked the
+    `body` rule in the base layer, which already paints from
+    `--background-color`. So the palette had two sources and the utility won —
+    changing the token moved nothing, and the page stayed on slate-950 while
+    every component around it followed the token.
+  -->
+  <body class="min-h-screen antialiased">
+    {
+      /* The switcher carries the reader's place across ports, and a locale
+         prefix cannot travel with it: per-port prose is English-only by
+         design, so `/ja/concepts/` must map to `/py/stable/concepts/`, not to
+         `/py/stable/ja/concepts/` — 16 URLs that never existed. `sourcePath`
+         is `pagePath` with the locale stripped, and equals it everywhere
+         else. */
+      !bare && (
+        <SiteHeader
+          portSlug={portSlug}
+          version={target.version}
+          pagePath={switcherPath ?? sourcePath ?? pagePath}
+        />
+      )
+    }
+    <!-- `data-pagefind-body` scopes the index to the page's own content.
+         Without it Pagefind indexed the header and footer on all 1,066
+         pages, so every nav label outranked the prose that mentioned it
+         once. The filters are what make a 1,000-symbol reference searchable
+         at all: "sessions" is a different question in Go than in Swift. -->
+    <div
+      data-pagefind-body
+      data-pagefind-filter={`port:${portSlug ? (PORT_NAME[portSlug] ?? portSlug) : 'All languages'}`}
+    >
+      <div data-pagefind-filter={`section:${section}`} data-pagefind-ignore="all" hidden></div>
+      <slot />
+    </div>
+    {!bare && <SiteFooter />}
+    <BackToTop />
+    <SearchModal />
+  </body>
+</html>

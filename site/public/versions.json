@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "ports": {
+    "py": [
+      {
+        "slug": "stable",
+        "label": "stable",
+        "kind": "alias",
+        "resolvesTo": "latest",
+        "supported": true
+      },
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "ts": [
+      {
+        "slug": "stable",
+        "label": "stable",
+        "kind": "alias",
+        "resolvesTo": "latest",
+        "supported": true
+      },
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "rs": [
+      {
+        "slug": "stable",
+        "label": "stable",
+        "kind": "alias",
+        "resolvesTo": "latest",
+        "supported": true
+      },
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "go": [
+      {
+        "slug": "stable",
+        "label": "stable",
+        "kind": "alias",
+        "resolvesTo": "latest",
+        "supported": true
+      },
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "java": [
+      {
+        "slug": "stable",
+        "label": "stable",
+        "kind": "alias",
+        "resolvesTo": "latest",
+        "supported": true
+      },
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "dotnet": [
+      {
+        "slug": "stable",
+        "label": "stable",
+        "kind": "alias",
+        "resolvesTo": "latest",
+        "supported": true
+      },
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "cxx": [
+      {
+        "slug": "stable",
+        "label": "stable",
+        "kind": "alias",
+        "resolvesTo": "latest",
+        "supported": true
+      },
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "swift": [
+      {
+        "slug": "stable",
+        "label": "stable",
+        "kind": "alias",
+        "resolvesTo": "latest",
+        "supported": true
+      },
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ]
+  },
+  "defaultVersion": {
+    "py": "stable",
+    "ts": "stable",
+    "rs": "stable",
+    "go": "stable",
+    "java": "stable",
+    "dotnet": "stable",
+    "cxx": "stable",
+    "swift": "stable"
+  }
+}

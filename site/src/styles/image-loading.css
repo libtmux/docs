@@ -1,0 +1,52 @@
+/* Image loading: reserve space and reveal instantly on load (the site is
+   intentionally motionless — no fades or shimmer placeholders) */
+
+/* Image container styles to prevent layout shift */
+.project-icon {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hide until loaded to prevent flicker; data-loaded flips it on instantly */
+.project-icon img {
+  opacity: 0;
+}
+
+.project-icon img[data-loaded="true"] {
+  opacity: 1;
+}
+
+/* Static placeholder behind the image while it loads */
+.project-icon::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(226, 232, 240, 0.15);
+  border-radius: 0.125rem;
+}
+
+/* Hide placeholder when image is loaded */
+.project-icon img[data-loaded="true"] + ::before {
+  display: none;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .project-icon::before {
+    background: rgba(51, 65, 85, 0.15);
+  }
+}
+
+/* Critical image optimization - no placeholder for immediately loaded images */
+.project-icon[data-critical="true"]::before {
+  display: none;
+}
+
+/* Hover state (instant, like every state change on this site) */
+.project-icon:hover img {
+  transform: scale(1.1);
+}

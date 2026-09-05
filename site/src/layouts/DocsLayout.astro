@@ -1,0 +1,333 @@
+---
+import type { MarkdownHeading } from 'astro'
+import Sidebar from '../components/docs/Sidebar.astro'
+import TableOfContentsIcon from '../components/icons/TableOfContentsIcon.astro'
+import MobileToC from '../components/MobileToC.astro'
+import TableOfContents from '../components/TableOfContents/TableOfContents.astro'
+import { PAGE_TITLE_ID } from '../constants'
+import { buildTarget } from '../lib/versions'
+import CodeTabs from '../components/CodeTabs.astro'
+import { generateToC } from '../utils/generateToC'
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
+import BaseLayout from './BaseLayout.astro'
+
+/**
+ * The documentation reading shell: sidebar | content | table of contents.
+ * Wraps BaseLayout rather than duplicating its <head>. `port` scopes the
+ * sidebar to one language's nav; omit it (as [...slug].astro does for the
+ * shared docs — concepts, guides, examples, which carry no `port`
+ * frontmatter) to get the shell's own `sidebar.group` sectioning instead —
+ * see lib/sidebar.ts.
+ *
+ * MobileSidebar.astro is deliberately NOT reused here: it imports a
+ * `ProjectSidebar.astro` that does not exist in this repo and hardcodes
+ * tony.sh nav links, so importing it turns any page that uses this layout
+ * red. The mobile drawer below reimplements its exact mechanism — same ids,
+ * same open/close classes, same AbortController + astro:after-swap script
+ * shape as MobileToC.astro below it — with <Sidebar> as the content instead.
+ * MobileToC.astro has no such problem and is reused verbatim.
+ */
+interface Props {
+  title: string
+  description?: string
+  /** Which port's nav to scope the sidebar to. Omit for shell pages with no port. */
+  port?: string
+  /** Path within the current port+version, e.g. 'guides/panes'. Forwarded to BaseLayout for canonical/SEO. */
+  pagePath?: string
+  noindex?: boolean
+  updated?: string
+  headings?: MarkdownHeading[]
+  /** Suppress the on-page table of contents (frontmatter `tableOfContents`). */
+  tableOfContents?: boolean
+  /** BCP-47 tag for this page. */
+  locale?: Locale
+  /** Locales this page genuinely exists in. */
+  locales?: string[]
+  /** This page's path with any locale prefix removed. */
+  sourcePath?: string
+}
+
+const {
+  title,
+  description,
+  port,
+  pagePath = '',
+  noindex = false,
+  updated,
+  headings = [],
+  tableOfContents = true,
+  locale = DEFAULT_LOCALE,
+  locales = [],
+  sourcePath,
+} = Astro.props as Props
+
+// process.env, not import.meta.env: import.meta.env.LIBTMUX_DOCS_* goes
+// stale across repeated astro builds in one tree (see BaseLayout.astro).
+const { version } = buildTarget(process.env)
+
+// Astro.url.pathname rather than `pagePath`: the sidebar only needs *a*
+// consistent value to diff against the hrefs it built itself
+// (lib/sidebar.ts's isActivePath trims base and slashes either way), and
+// reading it directly means this layout doesn't have to trust that every
+// caller formats `pagePath` the same way BaseLayout does.
+const currentPath = Astro.url.pathname
+
+const tocItems =
+  tableOfContents && headings.length > 0 ? generateToC(headings) : []
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  pagePath={pagePath}
+  portSlug={port}
+  noindex={noindex}
+  updated={updated}
+  locale={locale}
+  locales={locales}
+  sourcePath={sourcePath}
+>
+  <CodeTabs />
+  <!-- Mobile toolbar: sidebar + ToC toggles. The three-column layout below hides
+       both columns under `lg`/`xl`, so these are a phone/tablet-only affordance. -->
+  <div class="mobile-toolbar lg:hidden">
+    <button
+      id="mobile-sidebar-toggle"
+      type="button"
+      aria-label="Open navigation menu"
+      aria-controls="mobile-sidebar"
+      aria-expanded="false"
+      class="toolbar-button"
+    >
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+    {
+      tocItems.length > 0 && (
+        <button
+          id="mobile-toc-toggle"
+          type="button"
+          aria-label="Open table of contents"
+          aria-controls="mobile-toc"
+          aria-expanded="false"
+          class="toolbar-button ml-auto"
+        >
+          <TableOfContentsIcon class="h-5 w-5" />
+        </button>
+      )
+    }
+  </div>
+
+  <!-- Mobile sidebar drawer -->
+  <div id="mobile-sidebar-overlay" class="fixed inset-0 z-40 bg-black/50 opacity-0 invisible lg:hidden"></div>
+  <aside id="mobile-sidebar" class="drawer-surface fixed left-0 top-0 z-50 h-full w-64 -translate-x-full overflow-y-auto lg:hidden">
+    <div class="p-4">
+      <div class="mb-6 flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Navigation</h2>
+        <button
+          id="mobile-sidebar-close"
+          type="button"
+          aria-label="Close navigation menu"
+          class="flex h-8 w-8 items-center justify-center rounded-md hover:bg-surface-hover"
+        >
+          <svg class="h-5 w-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <Sidebar locale={locale} port={port} version={version} currentPath={currentPath} />
+    </div>
+  </aside>
+
+  {tocItems.length > 0 && <MobileToC tocItems={tocItems} />}
+
+  {/*
+    Wider than 7xl, and the reading column is bounded by the prose measure
+    rather than by the shell. At 1400px the old 80rem shell left the table of
+    contents floating a long way short of the right edge with nothing beside
+    it; the sidebars now sit near the edges and the middle grows.
+  */}
+  <div class="mx-auto flex max-w-[100rem] gap-8 px-6 py-8">
+    <aside class="hidden w-64 shrink-0 lg:block">
+      <div class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
+        <Sidebar locale={locale} port={port} version={version} currentPath={currentPath} />
+      </div>
+    </aside>
+
+    <main class="min-w-0 flex-1">
+      <article class="prose max-w-[80ch] dark:prose-invert">
+        <h1 id={PAGE_TITLE_ID}>{title}</h1>
+        <slot />
+      </article>
+    </main>
+
+    {
+      tocItems.length > 0 && (
+        <aside class="hidden w-56 shrink-0 xl:block">
+          <TableOfContents items={tocItems} />
+        </aside>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  /*
+   * The breakpoint is stated here, not left to `lg:hidden` on the element.
+   *
+   * Astro scopes this rule to `.mobile-toolbar[data-astro-cid-…]`, which is
+   * specificity (0,2,0) against Tailwind's `.lg\:hidden` at (0,1,0) — so the
+   * utility never won and the toolbar rendered at every width. A hamburger
+   * and a contents button sat above the three-column desktop layout on all
+   * 394 pages that use this shell.
+   */
+  .mobile-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid rgb(229 231 235); /* gray-200 */
+    background: color-mix(in oklch, white, transparent 5%);
+    padding: 0.5rem 1rem;
+  }
+  @media (min-width: 1024px) {
+    .mobile-toolbar {
+      display: none;
+    }
+  }
+
+  :global([data-theme-mode='dark']) .mobile-toolbar {
+    border-bottom-color: rgb(55 65 81); /* gray-700 */
+    background: color-mix(in oklch, var(--background-color), transparent 5%);
+  }
+  .toolbar-button {
+    display: flex;
+    height: 2.25rem;
+    width: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.375rem;
+    border: 1px solid rgb(229 231 235); /* gray-200 */
+  }
+  /*
+   * Hover from the theme, not a hardcoded light grey.
+   *
+   * This was `background: rgb(243 244 246)` with no dark counterpart — the
+   * same defect the top-nav chips had, and the same result: in dark mode
+   * hovering painted a light background under a light icon.
+   */
+  .toolbar-button:hover {
+    background: color-mix(in oklch, var(--topnav-background), var(--topnav-text-color) 16%);
+    color: var(--topnav-link-hover-color);
+  }
+
+  .toolbar-button:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 2px;
+  }
+  :global([data-theme-mode='dark']) .toolbar-button {
+    border-color: rgb(55 65 81); /* gray-700 */
+  }
+  :global([data-theme-mode='dark']) .toolbar-button:hover {
+    background: rgb(31 41 55); /* gray-800 */
+  }
+</style>
+
+<script>
+  // Mobile sidebar drawer. Same mechanism as MobileToC.astro's script
+  // (AbortController-scoped listeners, re-init on astro:after-swap so a
+  // ClientRouter navigation replaces them instead of stacking duplicates) —
+  // duplicated here rather than imported because MobileSidebar.astro, which
+  // would otherwise own this, cannot currently be built (see the note atop
+  // this file's frontmatter).
+  let controller: AbortController | null = null
+
+  function initMobileSidebar() {
+    controller?.abort()
+    controller = new AbortController()
+    const { signal } = controller
+    const toggleButton = document.getElementById('mobile-sidebar-toggle')
+    const closeButton = document.getElementById('mobile-sidebar-close')
+    const sidebar = document.getElementById('mobile-sidebar')
+    const overlay = document.getElementById('mobile-sidebar-overlay')
+    // Recover if a navigation happened while the drawer was open.
+    document.body.style.overflow = ''
+
+    /**
+     * A closed drawer is off-screen, not absent — `-translate-x-full` moves
+     * it out of view and leaves every link in it focusable. Tabbing from the
+     * page walked into a menu nobody could see. `inert` removes it from the
+     * tab order and the accessibility tree in one attribute, and is what
+     * `visibility` would do if the drawer did not need to animate.
+     */
+    function setInert(on: boolean) {
+      if (sidebar) sidebar.inert = on
+    }
+    setInert(true)
+
+    function open() {
+      if (!sidebar || !overlay) return
+      // One drawer at a time: the contents panel listens for this and closes.
+      document.dispatchEvent(new CustomEvent('libtmux:drawer-open', { detail: 'sidebar' }))
+      sidebar.classList.remove('-translate-x-full')
+      overlay.classList.remove('opacity-0', 'invisible')
+      overlay.classList.add('opacity-100', 'visible')
+      document.body.style.overflow = 'hidden'
+      toggleButton?.setAttribute('aria-expanded', 'true')
+      setInert(false)
+      // Into the drawer, so the next Tab is a menu item rather than whatever
+      // sits behind it; and back to the button on close, so the reader
+      // returns to where they were rather than to the top of the document.
+      ;(closeButton ?? sidebar.querySelector<HTMLElement>('a'))?.focus()
+    }
+    function close() {
+      if (!sidebar || !overlay) return
+      const hadFocus = sidebar.contains(document.activeElement)
+      sidebar.classList.add('-translate-x-full')
+      overlay.classList.remove('opacity-100', 'visible')
+      overlay.classList.add('opacity-0', 'invisible')
+      document.body.style.overflow = ''
+      toggleButton?.setAttribute('aria-expanded', 'false')
+      setInert(true)
+      if (hadFocus) toggleButton?.focus()
+    }
+
+    toggleButton?.addEventListener('click', open, { signal })
+    closeButton?.addEventListener('click', close, { signal })
+    overlay?.addEventListener('click', close, { signal })
+    document.addEventListener(
+      'keydown',
+      (e) => {
+        if (e.key === 'Escape' && sidebar && !sidebar.classList.contains('-translate-x-full')) close()
+      },
+      { signal },
+    )
+    sidebar?.querySelectorAll('a').forEach((link) => link.addEventListener('click', close, { signal }))
+
+    // Another drawer opened.
+    document.addEventListener(
+      'libtmux:drawer-open',
+      (e) => {
+        if ((e as CustomEvent).detail !== 'sidebar') close()
+      },
+      { signal },
+    )
+
+    /*
+     * Crossing to the desktop layout closes it.
+     *
+     * The drawer and its overlay are `lg:hidden`, so widening the window made
+     * both vanish — but `body { overflow: hidden }` stayed, leaving a desktop
+     * page that could not be scrolled and no visible control to release it.
+     */
+    const desktop = window.matchMedia('(min-width: 1024px)')
+    desktop.addEventListener('change', (e) => e.matches && close(), { signal })
+    if (desktop.matches) close()
+  }
+
+  initMobileSidebar()
+  document.addEventListener('astro:after-swap', initMobileSidebar)
+</script>

@@ -1,0 +1,26 @@
+/* Minimal flag styles for the two flags the site uses (US/GB region
+   toggle in the top nav). The .fi/.fi-* class shape and the SVGs in
+   ./flags/ come from flag-icons (https://github.com/lipis/flag-icons,
+   MIT) — importing the full library cost ~28KB of CSS for two flags. */
+
+.fi {
+  position: relative;
+  display: inline-block;
+  width: 1.333333em;
+  line-height: 1em;
+  background-size: contain;
+  background-position: 50%;
+  background-repeat: no-repeat;
+}
+
+.fi::before {
+  content: " ";
+}
+
+.fi-us {
+  background-image: url("./flags/us.svg");
+}
+
+.fi-gb {
+  background-image: url("./flags/gb.svg");
+}

@@ -1,0 +1,748 @@
+/**
+ * The API reference's own look.
+ *
+ * Reproduces the visual language gp-sphinx gives libtmux-python — a kind badge
+ * beside every signature, a card per entry, field lists for parameters and
+ * returns — without importing its stylesheets. Those need Furo's
+ * `--color-background-secondary`, `--color-foreground-muted`, `--color-link`
+ * and `--font-stack--monospace`, plus selectors from Sphinx's `basic.css`;
+ * pulling them in would couple this site's design to Furo's cascade, which is
+ * the coupling the whole project exists to avoid.
+ *
+ * The per-kind palette below IS gp-sphinx's, lifted value for value from its
+ * `sab_palettes.css`, because that mapping — indigo for classes, cyan for
+ * methods, teal for properties, rose for exceptions — is the part a reader
+ * recognises. Everything structural is ours and uses the site's tokens.
+ */
+
+:root {
+  --api-kind-class-bg: #eef2ff;
+  --api-kind-class-fg: #4338ca;
+  --api-kind-class-border: #6366f1;
+  --api-kind-exception-bg: #fff1f2;
+  --api-kind-exception-fg: #be123c;
+  --api-kind-exception-border: #f43f5e;
+  --api-kind-function-bg: #e8f0fe;
+  --api-kind-function-fg: #1a56db;
+  --api-kind-function-border: #3b82f6;
+  --api-kind-method-bg: #ecfeff;
+  --api-kind-method-fg: #0e7490;
+  --api-kind-method-border: #06b6d4;
+  --api-kind-property-bg: #f0fdfa;
+  --api-kind-property-fg: #0f766e;
+  --api-kind-property-border: #14b8a6;
+  --api-kind-attribute-bg: #f1f5f9;
+  --api-kind-attribute-fg: #475569;
+  --api-kind-attribute-border: #94a3b8;
+  --api-kind-constant-bg: #f5f5f5;
+  --api-kind-constant-fg: #525252;
+  --api-kind-constant-border: #a3a3a3;
+  --api-kind-module-bg: #f0fdf4;
+  --api-kind-module-fg: #166534;
+  --api-kind-module-border: #22c55e;
+  --api-kind-typealias-bg: #f5f3ff;
+  --api-kind-typealias-fg: #6d28d9;
+  --api-kind-typealias-border: #8b5cf6;
+
+  --api-surface: color-mix(in oklch, currentColor, transparent 96%);
+  --api-border: color-mix(in oklch, currentColor, transparent 88%);
+  --api-muted: color-mix(in oklch, currentColor, transparent 35%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme='light']) {
+    --api-kind-class-bg: #1e1b4b;
+    --api-kind-class-fg: #a5b4fc;
+    --api-kind-exception-bg: #4c0519;
+    --api-kind-exception-fg: #fda4af;
+    --api-kind-exception-border: #fb7185;
+    --api-kind-function-bg: #172554;
+    --api-kind-function-fg: #93c5fd;
+    --api-kind-method-bg: #083344;
+    --api-kind-method-fg: #67e8f9;
+    --api-kind-method-border: #22d3ee;
+    --api-kind-property-bg: #042f2e;
+    --api-kind-property-fg: #5eead4;
+    --api-kind-property-border: #2dd4bf;
+    --api-kind-attribute-bg: #1e293b;
+    --api-kind-attribute-fg: #cbd5e1;
+    --api-kind-attribute-border: #64748b;
+    --api-kind-constant-bg: #262626;
+    --api-kind-constant-fg: #d4d4d4;
+    --api-kind-constant-border: #737373;
+    --api-kind-module-bg: #052e16;
+    --api-kind-module-fg: #86efac;
+    --api-kind-module-border: #4ade80;
+    --api-kind-typealias-bg: #2e1065;
+    --api-kind-typealias-fg: #c4b5fd;
+    --api-kind-typealias-border: #a78bfa;
+  }
+}
+
+[data-color-scheme='dark'] {
+  --api-kind-class-bg: #1e1b4b;
+  --api-kind-class-fg: #a5b4fc;
+  --api-kind-exception-bg: #4c0519;
+  --api-kind-exception-fg: #fda4af;
+  --api-kind-exception-border: #fb7185;
+  --api-kind-function-bg: #172554;
+  --api-kind-function-fg: #93c5fd;
+  --api-kind-method-bg: #083344;
+  --api-kind-method-fg: #67e8f9;
+  --api-kind-method-border: #22d3ee;
+  --api-kind-property-bg: #042f2e;
+  --api-kind-property-fg: #5eead4;
+  --api-kind-property-border: #2dd4bf;
+  --api-kind-attribute-bg: #1e293b;
+  --api-kind-attribute-fg: #cbd5e1;
+  --api-kind-attribute-border: #64748b;
+  --api-kind-constant-bg: #262626;
+  --api-kind-constant-fg: #d4d4d4;
+  --api-kind-constant-border: #737373;
+  --api-kind-module-bg: #052e16;
+  --api-kind-module-fg: #86efac;
+  --api-kind-module-border: #4ade80;
+  --api-kind-typealias-bg: #2e1065;
+  --api-kind-typealias-fg: #c4b5fd;
+  --api-kind-typealias-border: #a78bfa;
+}
+
+/* --- One entry ---------------------------------------------------------- */
+
+.api-entry {
+  border-top: 1px solid var(--api-border);
+  padding: 1.25rem 0;
+  scroll-margin-top: 5rem;
+}
+.api-entry:first-of-type { border-top: 0; }
+
+.api-entry-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+}
+
+.api-signature {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.api-name { font-weight: 600; }
+.api-punct { opacity: 0.65; }
+.api-param-name { color: var(--api-kind-attribute-fg); }
+.api-default { opacity: 0.75; }
+
+/* Overloads stack; each gets its own line but shares the entry. */
+.api-signature + .api-signature { margin-top: 0.35rem; }
+
+/* --- Badges ------------------------------------------------------------- */
+
+.api-badges { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+.api-badge {
+  border: 1px solid;
+  border-radius: 0.3rem;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+.api-badge--kind-class { background: var(--api-kind-class-bg); color: var(--api-kind-class-fg); border-color: var(--api-kind-class-border); }
+.api-badge--kind-exception { background: var(--api-kind-exception-bg); color: var(--api-kind-exception-fg); border-color: var(--api-kind-exception-border); }
+.api-badge--kind-function { background: var(--api-kind-function-bg); color: var(--api-kind-function-fg); border-color: var(--api-kind-function-border); }
+.api-badge--kind-method { background: var(--api-kind-method-bg); color: var(--api-kind-method-fg); border-color: var(--api-kind-method-border); }
+.api-badge--kind-property { background: var(--api-kind-property-bg); color: var(--api-kind-property-fg); border-color: var(--api-kind-property-border); }
+.api-badge--kind-attribute { background: var(--api-kind-attribute-bg); color: var(--api-kind-attribute-fg); border-color: var(--api-kind-attribute-border); }
+.api-badge--kind-constant { background: var(--api-kind-constant-bg); color: var(--api-kind-constant-fg); border-color: var(--api-kind-constant-border); }
+.api-badge--kind-module { background: var(--api-kind-module-bg); color: var(--api-kind-module-fg); border-color: var(--api-kind-module-border); }
+.api-badge--kind-typealias { background: var(--api-kind-typealias-bg); color: var(--api-kind-typealias-fg); border-color: var(--api-kind-typealias-border); }
+/* Modifiers are outline-only, so a kind badge stays the loudest thing. */
+.api-badge--mod { background: transparent; color: var(--api-muted); border-color: var(--api-border); }
+.api-badge--mod-deprecated { color: var(--api-kind-exception-fg); border-color: var(--api-kind-exception-border); }
+
+/* --- Field lists -------------------------------------------------------- */
+
+.api-fields { margin-top: 0.75rem; font-size: 0.9rem; }
+.api-field-title {
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-top: 0.75rem;
+}
+.api-field-list { margin: 0.3rem 0 0; padding: 0; list-style: none; }
+.api-field {
+  display: grid;
+  grid-template-columns: minmax(6rem, max-content) 1fr;
+  gap: 0.25rem 1rem;
+  padding: 0.2rem 0;
+}
+@media (max-width: 40rem) { .api-field { grid-template-columns: 1fr; } }
+.api-field-name {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.85rem;
+}
+.api-field-type { opacity: 0.8; font-size: 0.8rem; }
+
+/* --- Inherited, permalinks, source -------------------------------------- */
+
+.api-inherited { font-size: 0.75rem; opacity: 0.65; }
+.api-permalink { opacity: 0; transition: opacity 120ms; text-decoration: none; }
+.api-entry:hover .api-permalink,
+.api-permalink:focus-visible { opacity: 0.6; }
+.api-source { font-size: 0.72rem; opacity: 0.55; }
+.api-source:hover { opacity: 0.9; }
+
+/* --- Member index (right rail and per-page) ----------------------------- */
+
+.api-toc { font-size: 0.82rem; }
+
+/*
+ * Names wrap rather than escape the column, and only where a reader would
+ * break them.
+ *
+ * The break points are `<wbr>` elements the markup carries — see
+ * `lib/word-break.ts`, whose rule is Apple's from swift-docc-render: after a
+ * colon, between case changes, before a dot or an underscore. So Swift's
+ * `init(id:index:width:…)` breaks after `id:` rather than in the middle of
+ * `currentCommand`.
+ *
+ * `break-word` is the fallback for a name with no safe point in it at all. It
+ * was `anywhere`, which overrode the hints and broke at the column edge
+ * regardless — the exact behaviour the `<wbr>`s exist to replace.
+ */
+.api-toc a {
+  display: block;
+  padding: 0.1rem 0;
+  text-decoration: none;
+  overflow-wrap: break-word;
+}
+.api-toc a:hover { text-decoration: underline; }
+
+/*
+ * The module that tells two same-named entries apart.
+ *
+ * Muted and smaller than the name: it is there to be read only when the name
+ * alone is ambiguous, and it must not compete with the name when scanning.
+ */
+.api-toc-qualifier {
+  margin-left: 0.35em;
+  font-size: 0.85em;
+  opacity: 0.55;
+}
+
+/* The cross-language block: collapsed by default, because a reader on a
+   Python page is usually reading Python. It is an answer waiting for the
+   question "what is this called in Go", not something to read past. */
+.api-elsewhere {
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+}
+.api-elsewhere > summary {
+  cursor: pointer;
+  opacity: 0.7;
+}
+.api-elsewhere > summary:hover {
+  opacity: 1;
+}
+.api-elsewhere-label {
+  margin-left: 0.5rem;
+  opacity: 0.7;
+}
+.api-elsewhere ul {
+  margin: 0.5rem 0 0;
+  padding-left: 0;
+  list-style: none;
+}
+.api-elsewhere li {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: 0.5rem;
+  padding: 0.125rem 0;
+}
+.api-elsewhere-port {
+  opacity: 0.6;
+}
+.api-elsewhere-absent {
+  opacity: 0.6;
+  font-style: italic;
+}
+
+/* The member list on a type page. Capped and scrollable: Pane declares 257
+   members, and a sidebar taller than the document it indexes is not one. */
+.api-toc-members {
+  max-height: 40vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The contents disclosure. A plain column at lg and above, where the marker
+   and the summary are noise; a disclosure below that, where 98 members ahead
+   of the content is two screens of scrolling before anything is read. */
+.api-toc-summary {
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+  padding: 0.5rem 0;
+}
+.api-toc-summary:hover {
+  opacity: 1;
+}
+@media (min-width: 64rem) {
+  .api-toc-shell > summary {
+    display: none;
+  }
+}
+
+/*
+ * The member list on a type's page.
+ *
+ * Every member has its own page, so the type page lists them rather than
+ * inlining their entries. Name, kind and one line of prose per row, in the
+ * shape learn.microsoft.com uses — enough to say what the type is for
+ * without the list becoming the page.
+ */
+.api-member-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--color-background-border, #e2e8f0);
+}
+
+.api-member-list li {
+  display: grid;
+  grid-template-columns: minmax(8rem, 18rem) auto;
+  gap: 0 0.75rem;
+  align-items: baseline;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--color-background-border, #e2e8f0);
+}
+
+.api-member-link {
+  font-family: var(--font-ibm-plex-mono, ui-monospace, monospace);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.api-member-link:hover {
+  text-decoration: underline;
+}
+
+.api-member-kind {
+  font-size: 0.8em;
+  opacity: 0.6;
+}
+
+.api-member-summary {
+  grid-column: 1 / -1;
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+/* One column below the container's own threshold, the same 36rem the entry
+   layout uses, so the name and its summary stay readable on a phone. */
+@container (max-width: 36rem) {
+  .api-member-list li {
+    grid-template-columns: 1fr;
+  }
+}
+
+/*
+ * The definition block above a symbol's description.
+ *
+ * Module, package, source and the other languages that define the same thing,
+ * in the shape learn.microsoft.com opens an API page with. A two-column grid
+ * so the labels align down the left and the values wrap independently; one
+ * column on a narrow container, where a label above its value reads better
+ * than a label squeezed beside it.
+ */
+.api-definition {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.15rem 1rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.9em;
+}
+
+.api-definition dt {
+  opacity: 0.6;
+}
+
+.api-definition dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.api-definition-langs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.75rem;
+}
+
+@container (max-width: 36rem) {
+  .api-definition {
+    grid-template-columns: 1fr;
+  }
+
+  .api-definition dt {
+    margin-top: 0.4rem;
+  }
+}
+
+/* The Markdown actions above a symbol's definition block. */
+.api-page-actions {
+  display: flex;
+  gap: 0.9rem;
+  align-items: baseline;
+  margin: 0.5rem 0 0;
+  font-size: 0.85em;
+}
+
+.api-copy-md {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--theme-primary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/*
+ * The reference navigation tree.
+ *
+ * `<details>` rather than a scripted disclosure: the branch being read is
+ * server-rendered open, every other module is a link, and a reader without
+ * JavaScript gets the same tree. The marker is the only thing styled away —
+ * the summary already carries a link, and two affordances on one row read as
+ * two different controls.
+ */
+.api-tree-module > summary,
+.api-tree-type > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.api-tree-module > summary::-webkit-details-marker,
+.api-tree-type > summary::-webkit-details-marker {
+  display: none;
+}
+
+.api-tree-module > summary {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 0.35rem;
+}
+
+.api-tree-module-link {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/*
+ * One indent, and only for members.
+ *
+ * A type sits flush whether it is open or closed, so `SessionID` and an
+ * expanded `Session` start at the same place and read as the siblings they
+ * are. Only the members step in, and only once.
+ *
+ * Getting here took three tries because there were two indents stacked: one
+ * on the type's row and another on the `<details>` wrapping it, so opening a
+ * type moved the type, its members, and the rule beside them all to the
+ * right — three levels of offset for one level of nesting.
+ */
+.api-tree-type,
+.api-tree-type > summary,
+.api-tree-type-link {
+  display: block;
+  padding-left: 0;
+}
+
+.api-tree-members {
+  display: flex;
+  flex-direction: column;
+  margin-left: 0.15rem;
+  padding-left: 0.6rem;
+  border-left: 1px solid var(--color-background-border, #e2e8f0);
+}
+
+.api-toc .is-current {
+  font-weight: 600;
+  color: var(--theme-accent);
+}
+
+/*
+ * Cross-language example tabs, driven by radios rather than script.
+ *
+ * The radios sit before the panels so a sibling selector can reach them, and
+ * are clipped rather than `display: none` — a hidden input is not focusable,
+ * which would take the keyboard away from a control that is otherwise
+ * perfectly operable with it.
+ */
+.api-example-tabs {
+  margin-top: 0.75rem;
+  border: 1px solid var(--color-background-border, #e2e8f0);
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.api-example-tabstrip {
+  display: flex;
+  flex-wrap: wrap;
+  background: var(--color-background-secondary, #f8f9fb);
+  border-bottom: 1px solid var(--color-background-border, #e2e8f0);
+}
+
+.api-example-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  overflow: hidden;
+}
+
+.api-example-tab {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85em;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  opacity: 0.65;
+}
+
+.api-example-radio:checked + .api-example-tab {
+  opacity: 1;
+  color: var(--theme-accent);
+  border-bottom-color: var(--theme-accent);
+}
+
+.api-example-radio:focus-visible + .api-example-tab {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: -2px;
+}
+
+.api-example-panel {
+  display: none;
+  padding: 0.75rem 0.9rem;
+}
+
+/* Each radio reveals the panel at its own position. Generated in the
+   component's own style block, since the count varies per instance. */
+.api-example-intro {
+  margin: 0 0 0.5rem;
+  font-size: 0.9em;
+  opacity: 0.85;
+}
+
+/* A language with no mapped counterpart: shown, so its absence is a fact
+   rather than a gap in a list that varies page to page. */
+.api-lang-absent {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/*
+ * Hover affordances for the two links that had none.
+ *
+ * A type in a signature and the word "source" were both links with no visible
+ * change under the pointer — findable only by watching the status bar. Hover
+ * gained an underline, which found them but only once the pointer was already
+ * on one: at rest every linked type still read as body text, so `Bases:` was a
+ * row of white words with no sign that any of them went anywhere.
+ *
+ * Colour carries the resting state, as it does for a cross-reference in prose
+ * and as gp-sphinx does throughout. The underline stays on hover rather than at
+ * rest, because a dense signature underlined throughout reads as emphasis
+ * rather than as navigation.
+ */
+.api-type-link {
+  color: var(--color-link);
+  text-decoration: none;
+  text-underline-offset: 0.15em;
+}
+
+.api-type-link:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+
+.api-type-link:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/*
+ * The word inside `[source]`. The brackets stay plain text, so the underline
+ * and the click target are the word alone — and the whole thing keeps the
+ * monospace it already had, since the anchor inherits from the `.pre` span it
+ * sits in rather than carrying type of its own.
+ */
+.api-source-anchor {
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  text-underline-offset: 0.15em;
+}
+
+.api-source-anchor:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+
+.api-source-anchor:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .api-type-link,
+  .api-source-anchor {
+    transition: none;
+  }
+}
+
+/*
+ * Cross-references in a description, as gp-sphinx draws them.
+ *
+ * A name in prose rendered in the body's own colour with no background, so
+ * `EnvironmentMixin`, `Session` and `Window` were indistinguishable from the
+ * words around them and there was no way to tell which were links. gp-sphinx
+ * gives every literal a chip and colours the ones that resolve.
+ *
+ * Every value here is a token already resolved from a built gp-sphinx page in
+ * both themes — the chip's background, border and the link colour — so this
+ * is the same treatment rather than an approximation of it. The measured
+ * 13.325px is 0.8125em of gp-sphinx's 16.4px root; expressed relatively it
+ * tracks the surrounding text rather than pinning to one page's root size.
+ */
+.api-literal {
+  background: var(--color-inline-code-background);
+  border: 1px solid var(--color-background-border);
+  /* gp-sphinx measures 2.665px of padding and radius on a 13.325px chip —
+     0.2em of its own size, equal on all four sides. Expressed in `em` so it
+     tracks the chip rather than pinning to one page's root. */
+  border-radius: 0.2em;
+  padding: 0.2em;
+  font-size: 0.8125em;
+  font-family: var(--font-ibm-plex-mono, ui-monospace, monospace);
+}
+
+/* The half that resolves. Colour is the only difference gp-sphinx makes
+   between a link and a plain literal, and it is enough because the chip
+   already separates both from the prose. */
+.api-literal--link {
+  color: var(--color-link);
+}
+
+.api-xref {
+  text-decoration: none;
+}
+
+.api-xref:hover .api-literal--link {
+  border-color: var(--color-link);
+}
+
+.api-xref:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/*
+ * A bucket that splits: a level between the bucket and its types, so it is
+ * indented like one and its own types step in again.
+ */
+.api-tree-child > summary,
+.api-tree-child-link {
+  display: block;
+  padding: 0.15rem 0 0.15rem 0.6rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-foreground-muted);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.api-tree-child > summary:hover,
+.api-tree-child-link:hover {
+  color: var(--color-link);
+}
+
+.api-tree-child .api-tree-type-link,
+.api-tree-child .api-tree-type > summary {
+  padding-left: 1.2rem;
+}
+
+/*
+ * A section of the port index.
+ *
+ * A `<details>` so the machinery folds, with the marker styled away: the
+ * summary is already a heading and a triangle beside it reads as a second
+ * control.
+ */
+.api-index-summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.api-index-summary::-webkit-details-marker {
+  display: none;
+}
+
+.api-index-section:not([open]) > .api-index-summary {
+  opacity: 0.7;
+}
+
+/*
+ * `Bases:` — every conformance, wrapped.
+ *
+ * Apple lists all of them: `Int` shows twenty-eight protocols, Copyable and
+ * SendableMetatype among them. Length is a layout problem there, not a reason
+ * to curate, and swift-docc-render solves it with a threshold — inline to
+ * three, a column above (`RelationshipsList.vue`, `MaxInlineItems = 3`).
+ *
+ * The threshold does not transfer, and its own source says why: the column
+ * "should not be used for a list that contains any items with availability
+ * constraints information", which is the case it exists for. Our items are
+ * one-word chips that never carry constraints, so a wrapped row shows nine of
+ * them in two lines where a column spends nine and pushes the summary off the
+ * screen. Apple's substance, not Apple's arithmetic.
+ */
+.api-bases {
+  display: block;
+}
+
+.api-bases-label {
+  margin-inline-end: 0.35rem;
+}
+
+.api-bases-list {
+  display: inline;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.api-bases-list li {
+  display: inline;
+}
+
+.api-bases-list li:not(:last-child)::after {
+  content: ",\00a0";
+}
