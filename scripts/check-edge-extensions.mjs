@@ -18,6 +18,7 @@
  * Usage: node scripts/check-edge-extensions.mjs [site-dir] [--function <path>]
  */
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -25,11 +26,38 @@ const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const args = process.argv.slice(2)
 const fnIndex = args.indexOf('--function')
 const fnPath = fnIndex === -1 ? join(repoRoot, 'infra', 'cloudfront-function.js') : args[fnIndex + 1]
-const siteDir = args.find((a) => !a.startsWith('--') && a !== fnPath) ?? join(repoRoot, '_site')
+const defaultSite = join(repoRoot, '_site')
+const siteDir = args.find((a) => !a.startsWith('--') && a !== fnPath) ?? defaultSite
 
 if (!existsSync(siteDir)) {
   console.error(`check-edge-extensions: no site at ${siteDir} — run ./scripts/build-site.sh`)
   process.exit(1)
+}
+
+/*
+ * A tree being written cannot be measured, and this check cannot tell a file
+ * type that is absent from one that has not been emitted yet — it would
+ * report "allowlisted but not emitted", which reads as drift rather than as a
+ * running build. `site/test/site-root.ts` guards its own suites the same way
+ * and for the same reason; the rationale is written out there.
+ *
+ * Scoped to the default tree. An explicitly named directory is the caller's,
+ * and the repository lock says nothing about whether they are writing it —
+ * the negative test's fixtures are exactly that case.
+ */
+const lock = join(repoRoot, '.build.lock')
+if (siteDir === defaultSite && existsSync(lock)) {
+  let held = false
+  try {
+    execFileSync('flock', ['-n', lock, 'true'], { stdio: 'ignore' })
+  } catch {
+    held = true
+  }
+  if (held) {
+    console.error(`check-edge-extensions: an assembly holds .build.lock — ${siteDir} is being written.`)
+    console.error(`Re-run when it finishes; a half-populated tree cannot answer this question.`)
+    process.exit(1)
+  }
 }
 
 const source = readFileSync(fnPath, 'utf8')
