@@ -1,0 +1,46 @@
+---
+import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
+
+/**
+ * A type annotation, with every name it mentions linked.
+ *
+ * `list[Window] | None` renders as three links and two literal fragments:
+ * `list` and `None` go to docs.python.org the way intersphinx sends them,
+ * `Window` goes to its own entry on this site, and the brackets and pipe are
+ * untouched so the annotation still reads as the annotation.
+ *
+ * Names that resolve to nothing stay plain. That is deliberate — a link to a
+ * guess is worse than no link, and unresolved names are a signal worth seeing.
+ *
+ * `context` is the symbol the annotation belongs to. It separates candidates
+ * that a bare name cannot: `Pane` on a page in package `tmux` is `tmux.Pane`,
+ * never `workspace.Pane`. Without it both are equally good and neither links.
+ */
+interface Props {
+  type: string
+  index: SymbolIndex
+  context?: ApiSymbol
+  chip?: boolean
+}
+const { type, index, context, chip } = Astro.props as Props
+const spans = index.linkType(type, context)
+/* gp-sphinx renders a type cross-reference as a code chip — `Bases:` and the
+   parameter list both — and chips the names that resolve to nothing too, so
+   the box marks "this is a type" and the colour marks "this one is a link".
+   Punctuation between them stays outside the chip. */
+const NAME = /^[A-Za-z_][A-Za-z0-9_.]*$/
+---
+<span class="api-type">{
+  spans.map((span) =>
+    span.link ? (
+      <a
+        href={span.link.href}
+        class:list={['api-type-link', chip && 'api-literal api-literal--link']}
+        rel={span.link.external ? 'nofollow noopener' : undefined}
+        title={span.link.external ? `${span.text} — ${span.link.project ?? "external"}` : span.link.symbol?.publicId}
+      >{span.text}</a>
+    ) : (
+      <span class:list={['api-punct', chip && NAME.test(span.text) && 'api-literal']}>{span.text}</span>
+    ),
+  )
+}</span>

@@ -1,0 +1,26 @@
+---
+/**
+ * A kind or modifier badge.
+ *
+ * gp-sphinx puts one on every entry and it is most of what makes its
+ * reference scannable: you can tell a property from a method from an
+ * inherited attribute without reading a signature. Kinds are filled and
+ * coloured; modifiers are outline-only, so exactly one thing per entry is
+ * loud.
+ */
+interface Props {
+  label: string
+  variant: 'kind' | 'mod'
+  /** Drives the palette class: the symbol kind, or the modifier name. */
+  value: string
+}
+const { label, variant, value } = Astro.props as Props
+---
+<span
+  class:list={[
+    'api-badge',
+    `api-badge--${variant}`,
+    `api-badge--${variant}-${value}`,
+  ]}
+  title={variant === 'kind' ? `${label} (kind)` : label}
+>{label}</span>

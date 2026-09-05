@@ -1,0 +1,46 @@
+---
+import { PORTS, portPageUrl } from '../lib/ports'
+
+/**
+ * Port switcher. Eight languages, one control.
+ *
+ * No outbound marker on any of them. Rust, Go and Java used to carry one,
+ * which was wrong twice over: the chip links to that port's page on this site
+ * and never left it, and the reference it was warning about is no longer
+ * external-only — every port now has one here. Where the ecosystem host is
+ * offered, `ApiReferences.astro` marks it, on the link that actually leaves.
+ */
+interface Props {
+  portSlug?: string
+  version: string
+  /** Path within the current port+version, so switching keeps the page. */
+  pagePath?: string
+}
+const { portSlug, version, pagePath = '' } = Astro.props as Props
+
+// Switching language resets to that port's default, the way Playwright's
+// language switcher does: version numbers are per-port, so carrying v0.46.2
+// from Python to TypeScript would name a version that never existed. The
+// 'stable' alias is every self-hosted port's default and always resolves.
+const DEFAULT_ALIAS = 'stable'
+---
+
+<nav aria-label="Language" class="flex flex-wrap gap-1">
+  {
+    PORTS.map((p) => {
+      const active = p.slug === portSlug
+      return (
+        <a
+          href={portPageUrl(p, active ? version : DEFAULT_ALIAS, pagePath)}
+          class:list={[
+            'rounded px-2 py-1 text-sm transition-colors',
+            'topnav-chip',
+          ]}
+          aria-current={active ? 'page' : undefined}
+        >
+          {p.name}
+        </a>
+      )
+    })
+  }
+</nav>

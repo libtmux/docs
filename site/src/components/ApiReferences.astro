@@ -1,0 +1,66 @@
+---
+import DocCard from './DocCard.astro'
+import { referenceEntries } from '../lib/sidebar'
+import type { Port } from '../lib/ports'
+
+/**
+ * Where one port's API reference lives — ours, and the ecosystem host beside
+ * it rather than instead of it.
+ *
+ * Built from `referenceEntries`, the same function the sidebar calls, so the
+ * two cannot disagree about which references a port has. That mattered here:
+ * `referenceUrl` answers "where should a reader be sent by default", and for
+ * Rust, Go and Java it answers docs.rs / pkg.go.dev / javadoc.io — so the
+ * reference this site generates for those three was reachable from the
+ * sidebar and from nowhere on their own landing page.
+ *
+ * Both are worth having and they are different documents. Ours is extracted
+ * from that port's source and cross-links the other seven languages; the
+ * ecosystem host is canonical for that language's own world. Python has a
+ * third, gp-sphinx rendering upstream's own docs, which is neither.
+ *
+ * Same card as the "Read on" grid below it, because these are the same kind
+ * of thing: somewhere else to go.
+ */
+interface Props {
+  port: Port
+  version: string
+}
+
+const { port, version } = Astro.props as Props
+const entries = referenceEntries(port.slug, version)
+
+const cards = entries.map((entry) => {
+  if (entry.external) {
+    return {
+      label: `${entry.label} documentation`,
+      body:
+        port.ecosystemHost?.rationale ??
+        `Hosted on ${entry.label}, the canonical place ${port.language} developers already look.`,
+      href: entry.href,
+      external: true,
+    }
+  }
+  if (entry.label === 'Upstream reference') {
+    return {
+      label: 'Upstream reference',
+      body: `${port.name}'s own documentation, rendered with gp-sphinx — a different document from the reference extracted here.`,
+      href: entry.href,
+      external: false,
+    }
+  }
+  return {
+    label: 'Official reference',
+    body: `Every public ${port.name} symbol, extracted from source on libtmux.org and cross-linked to the other seven ports.`,
+    href: entry.href,
+    external: false,
+  }
+})
+---
+
+<section class="mt-12">
+  <h2 class="text-lg font-semibold">API References</h2>
+  <div class="mt-4 grid gap-4 sm:grid-cols-2">
+    {cards.map((c) => <DocCard label={c.label} body={c.body} href={c.href} external={c.external} />)}
+  </div>
+</section>

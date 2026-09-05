@@ -1,0 +1,81 @@
+---
+/**
+ * One onward link on a port's home page — Topics, Guides, Examples, API
+ * reference. Same visual language as the card grid on the root `index.astro`
+ * ("Eight ports, one API shape" section), pulled out here because the port
+ * home page needs four of them and a landing-page-only inline block would
+ * mean writing the border/hover classes out four times.
+ *
+ * `href` is optional: a port with no published reference yet (.NET, Swift)
+ * still gets a card in the same grid position, so the four-card layout
+ * doesn't reflow — it just renders unlinked, with `body` carrying the
+ * explanation instead of a destination.
+ */
+interface Props {
+  label: string
+  body: string
+  href?: string
+  /** Adds the outbound-link glyph and opens in a new tab — an ecosystem
+   *  reference (docs.rs, pkg.go.dev, javadoc.io) leaving libtmux.org. */
+  external?: boolean
+}
+
+const { label, body, href, external = false } = Astro.props as Props
+---
+
+{
+  href ? (
+    <a
+      href={href}
+      class="doc-card"
+      rel={external ? 'noopener' : undefined}
+      target={external ? '_blank' : undefined}
+    >
+      <h3 class="font-semibold">
+        {label}
+        {external && <span aria-hidden="true"> &#8599;&#65038;</span>}
+      </h3>
+      <p class="doc-card__body">{body}</p>
+    </a>
+  ) : (
+    <article class="doc-card doc-card--unlinked">
+      <h3 class="font-semibold opacity-70">{label}</h3>
+      <p class="doc-card__body">{body}</p>
+    </article>
+  )
+}
+
+<style>
+  /*
+   * gp-sphinx's palette, not Tailwind's slate.
+   *
+   * This was `border-slate-200 hover:bg-slate-100 dark:border-slate-800
+   * dark:hover:bg-slate-800`, chosen before the site had a palette. The
+   * design system's own surface and border tokens are now loaded on every
+   * page (styles/gp-sphinx-tokens.css), so a card sits on the same ground as
+   * an API entry instead of a near-miss of it.
+   */
+  .doc-card {
+    display: block;
+    padding: 1rem;
+    border: 1px solid var(--color-background-border);
+    border-radius: var(--card-radius, 0.5rem);
+    background: var(--color-background-secondary);
+  }
+
+  a.doc-card:hover {
+    background: var(--color-api-background-hover);
+  }
+
+  /* A port with nothing published still occupies its grid slot, so the
+     four-card layout does not reflow; it just reads as inactive. */
+  .doc-card--unlinked {
+    background: transparent;
+  }
+
+  .doc-card__body {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--color-foreground-muted);
+  }
+</style>

@@ -1,0 +1,112 @@
+---
+import { PORT_BY_SLUG } from '../lib/ports'
+import { withRoot } from '../lib/site-root'
+
+/**
+ * Version switcher.
+ *
+ * Renders a native <select> with this build's own version pre-selected, then
+ * hydrates from /versions.json at runtime. That split matters: an immutable
+ * tag build published months ago still lists versions released after it,
+ * because the list is fetched rather than baked.
+ *
+ * This must also work when injected as plain markup into rustdoc, Dokka,
+ * DocC and Sphinx output, so it is a custom element with no framework and no
+ * build step — the same file is what the tier-2 generators receive.
+ */
+interface Props {
+  portSlug?: string
+  version: string
+}
+const { portSlug, version } = Astro.props as Props
+const candidate = portSlug ? PORT_BY_SLUG[portSlug] : undefined
+// A port without a version tree has no prefixes to switch between, and
+// offering the control would navigate to ones that never existed. Rust, Go
+// and Java are the three today; `gen-versions` does find versions for them,
+// so this is a consequence of `versionedDocs`, not of their reference.
+const port = candidate?.versionedDocs ? candidate : undefined
+---
+
+{
+  port && (
+    <libtmux-version-switcher
+      data-port={port.slug}
+      data-current={version}
+      data-root={withRoot('/')}
+      class="inline-block"
+    >
+      <label class="sr-only" for="libtmux-version">
+        Version
+      </label>
+      <select
+        id="libtmux-version"
+        class="rounded border border-edge bg-surface px-2 py-1 text-sm"
+        aria-label={`Version of the ${port.name} documentation`}
+      >
+        <option value={version} selected>
+          {version}
+        </option>
+      </select>
+    </libtmux-version-switcher>
+  )
+}
+
+<script>
+  class LibtmuxVersionSwitcher extends HTMLElement {
+    async connectedCallback() {
+      const select = this.querySelector('select')
+      const port = this.dataset.port
+      const current = this.dataset.current
+      // The site root, baked in at build time. A PR preview publishes the
+      // whole site under /pr-42/, where a hardcoded '/versions.json' reads
+      // production's manifest and a hardcoded '/<port>/<version>/' navigates
+      // out of the preview entirely — with the preview's own header still on
+      // screen, which is the confusing part.
+      const root = (this.dataset.root || '/').replace(/\/+$/, '')
+      if (!select || !port) return
+
+      let manifest: {
+        schema: number
+        ports: Record<string, Array<{ slug: string; label: string; supported: boolean; eol?: boolean }>>
+        defaultVersion: Record<string, string>
+      }
+      try {
+        const res = await fetch(`${root}/versions.json`, { cache: 'no-cache' })
+        if (!res.ok) return
+        manifest = await res.json()
+      } catch {
+        // Offline, or the manifest is not deployed yet. The baked-in single
+        // option stays, which is correct rather than empty.
+        return
+      }
+      if (manifest.schema !== 1) return
+
+      const entries = (manifest.ports[port] ?? []).filter((e) => e.supported)
+      if (entries.length === 0) return
+
+      select.innerHTML = ''
+      for (const entry of entries) {
+        const opt = document.createElement('option')
+        opt.value = entry.slug
+        opt.textContent = entry.eol ? `${entry.label} (end of life)` : entry.label
+        if (entry.slug === current) opt.selected = true
+        select.append(opt)
+      }
+
+      select.addEventListener('change', () => {
+        const next = select.value
+        if (!next || next === current) return
+        // Keep the reader on the same page across the version jump when that
+        // page exists; the 404 handler sends them to the version root when it
+        // does not. Landing on the version root beats a hard 404.
+        const path = location.pathname
+        const marker = `${root}/${port}/${current}/`
+        const rest = path.startsWith(marker) ? path.slice(marker.length) : ''
+        location.href = `${root}/${port}/${next}/${rest}`
+      })
+    }
+  }
+  if (!customElements.get('libtmux-version-switcher')) {
+    customElements.define('libtmux-version-switcher', LibtmuxVersionSwitcher)
+  }
+</script>

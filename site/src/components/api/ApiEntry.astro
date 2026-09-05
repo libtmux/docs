@@ -1,0 +1,662 @@
+---
+import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
+import { conceptsFor } from '@libtmux/api-model'
+import { PORT_NAME, mentionsOf, referenceHref } from '../../lib/api-models'
+import { highlight } from '../../lib/highlight'
+import ApiBadge from './ApiBadge.astro'
+import ApiDoc from './ApiDoc.astro'
+import ApiProse from './ApiProse.astro'
+import ApiType from './ApiType.astro'
+
+/**
+ * One documented symbol, in the shape gp-sphinx's stylesheet expects.
+ *
+ * `dl.py` / `dt.sig` / `dd`, not nested `div`s. The brief left the structure
+ * open; this is the one gp-sphinx's rules match, and it is also what docutils
+ * chose, because a reference entry *is* a definition list — a term and its
+ * description. Nested divs would have meant re-writing 1,652 lines of CSS by
+ * hand to arrive at the same picture.
+ *
+ * The header carries two layout variants and a container query decides
+ * between them, so the entry responds to its own width rather than the
+ * window's — correct in an article column, a sidebar and a narrow embed
+ * without being told which it is in.
+ */
+interface Props {
+  symbol: ApiSymbol
+  index: SymbolIndex
+  /** Repository blob URL builder, for the source link. */
+  sourceUrl?: (file: string, line?: number) => string
+  /** This entry's port. Enables the cross-language block; omit to hide it. */
+  port?: string
+  /**
+   * This entry is a member of the page's subject.
+   *
+   * gp-sphinx gets the lighter treatment — no shadow, transparent header band,
+   * tighter margin — from literal nesting: its methods live inside the class's
+   * `<dd>`. This site renders them as siblings so the page is a flat list a
+   * sidebar can index and a reader can scan, and says "nested" with a class
+   * instead. Same picture, without burying 98 entries inside one description.
+   */
+  member?: boolean
+  /**
+   * This entry is the page's subject, not one of its members.
+   *
+   * A type at the top of its own page reads as a declaration — `class
+   * libtmux.Server` — where the same type in a list reads as a name. gp-sphinx
+   * draws the keyword and the module prefix for exactly this reason, and the
+   * bases belong here too.
+   */
+  heading?: boolean
+}
+const { symbol, index, sourceUrl, port, heading = false, member = false } = Astro.props as Props
+const anchor = symbol.publicId ?? symbol.id
+const kind = symbol.kind
+
+/**
+ * The Sphinx domain this port's symbols belong to.
+ *
+ * `data-domain` is a hook gp-sphinx's rules read, so it has to carry a real
+ * answer. Python is `py` and C++ is `cpp` because those domains exist and
+ * mean this; TypeScript is `js` for the same reason. The other five have no
+ * Sphinx domain at all, and `std` is what Sphinx itself uses for a thing it
+ * has no domain for — claiming `py` for a Rust trait would be a lie a
+ * consumer could act on.
+ */
+const DOMAIN: Record<string, string> = { py: 'py', ts: 'js', cxx: 'cpp' }
+const domain = port ? (DOMAIN[port] ?? 'std') : 'py'
+
+/**
+ * The same operation in the other seven ports.
+ *
+ * Only for symbols the concept map names, which is a short hand-maintained
+ * list: nothing in the source says `capture_pane` and `capture` are the same
+ * thing, and name similarity would not prove it.
+ */
+const concepts = port ? conceptsFor(port, anchor) : []
+const elsewhere = concepts.map((c) => ({
+  label: c.label,
+  ports: Object.keys(PORT_NAME)
+    .filter((p) => p !== port)
+    .map((p) => ({
+      port: p,
+      name: PORT_NAME[p] ?? p,
+      publicId: c.symbols[p],
+      href: c.symbols[p] ? referenceHref(p, c.symbols[p]) : undefined,
+      absent: c.absent?.[p],
+    }))
+    .filter((e) => e.publicId || e.absent),
+}))
+
+const inheritedHref = symbol.inheritedFrom
+  ? index.resolve(symbol.inheritedFrom, 'class')?.href
+  : undefined
+
+/**
+ * The source link, for inherited members too.
+ *
+ * Excluding them cost 24 of this page's 98 links — exactly the gap against
+ * gp-sphinx. An inherited member records the file and line of the class that
+ * *declares* it, which is where a reader wanting the code needs to go; the
+ * entry already says which class that is.
+ */
+const source = sourceUrl ? sourceUrl(symbol.source.file, symbol.source.line) : undefined
+
+/** The keyword a declaration of this kind opens with, where one exists. */
+const KEYWORD: Record<string, string> = {
+  class: 'class',
+  exception: 'exception',
+  interface: 'interface',
+  struct: 'struct',
+  enum: 'enum',
+  trait: 'trait',
+  typealias: 'type',
+}
+const keyword = heading ? KEYWORD[kind] : undefined
+
+/**
+ * The module path, shown only in heading mode.
+ *
+ * `libtmux.` before `Server`, dimmed — which is what tells a reader whether
+ * two same-named types on different pages are the same type.
+ */
+const prename = heading && anchor.endsWith(symbol.name)
+  ? anchor.slice(0, anchor.length - symbol.name.length)
+  : ''
+
+const bases = heading ? ((symbol as { extends?: string[] }).extends ?? []) : []
+
+const examples = symbol.doc?.examples ?? []
+const references = symbol.doc?.references ?? []
+
+/**
+ * Prose that discusses this symbol.
+ *
+ * The reverse of what `rehype-api-links` does: it sends a reader from a guide
+ * to the reference, and this sends them back. Grouped by section, because
+ * "explained in a concept" and "used in an example" are different offers.
+ */
+const mentions = port ? mentionsOf(port, symbol.id) : []
+const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].sort()
+
+/**
+ * Examples, highlighted at build time.
+ *
+ * Awaited here rather than in a child component so one highlighter serves
+ * the whole build; the alternative loads grammars per block. A block that
+ * fails to highlight falls back to plain text, because an unhighlighted
+ * example is a small loss and a build that dies on an odd docstring is not.
+ */
+const highlighted = await Promise.all(
+  examples.map(async (ex) => ({ ...ex, html: await highlight(ex.code, ex.lang) })),
+)
+
+const badges = [
+  { label: kind, variant: 'kind' as const, value: kind },
+  ...symbol.modifiers.map((m) => ({ label: m, variant: 'mod' as const, value: m })),
+  ...(symbol.signatures.length > 1
+    ? [
+        {
+          label: `${symbol.signatures.length} overloads`,
+          variant: 'mod' as const,
+          value: 'overload',
+        },
+      ]
+    : []),
+]
+
+/**
+ * The assigned value, for an attribute or constant that has one.
+ *
+ * `child_id_attribute = 'session_id'` is how gp-sphinx renders it and how the
+ * source reads. The model carried `value` all along and nothing displayed it.
+ */
+const value = (symbol as { value?: string }).value
+
+/**
+ * A signature long enough to hide behind a summary.
+ *
+ * Ten parameters is gp-sphinx's own default and it is the right shape of
+ * threshold: 44 of this estate's 5,641 signatures reach it, which is the
+ * handful where the parameter list stops being a signature and starts being
+ * a wall. Folding at three would hide 717 signatures that read fine.
+ *
+ * A `<details>` rather than gp-sphinx's button and hidden panel. It is the
+ * same affordance with keyboard and screen-reader behaviour built in, it
+ * works with scripting off, and a browser opens it by itself when a fragment
+ * points inside — which is the case their `expandForHash` exists to handle.
+ */
+const FOLD_THRESHOLD = 10
+/**
+ * Decided per signature, not per symbol.
+ *
+ * An overload set has one entry and several signatures with different
+ * parameter counts. Taking the last one's length and applying it to all of
+ * them folded eight short signatures that read fine — 44 folds across 36
+ * entries, where the two counts should have matched.
+ */
+const folds = (sig: { params: unknown[] }) => sig.params.length >= FOLD_THRESHOLD
+const foldable = symbol.signatures.some(folds)
+
+const params = symbol.signatures.at(-1)?.params.filter((p) => p.doc) ?? []
+const returnsDoc = symbol.signatures.at(-1)?.returnsDoc
+const raises = symbol.signatures.at(-1)?.raises ?? []
+const hasFields = params.length > 0 || Boolean(returnsDoc) || raises.length > 0
+
+/**
+ * Whether there is a description at all.
+ *
+ * An empty `<dd>` still paints its padding and border, so an undocumented
+ * attribute rendered as a header above an empty box. A definition list with a
+ * term and no description is valid and reads correctly; a blank one is a gap
+ * the reader has to interpret.
+ */
+const hasBody =
+  mentions.length > 0 ||
+  (symbol.doc?.admonitions?.length ?? 0) > 0 ||
+  Boolean(symbol.doc?.changed) ||
+  bases.length > 0 ||
+  examples.length > 0 ||
+  references.length > 0 ||
+  Boolean(symbol.inheritedFrom) ||
+  Boolean(symbol.doc?.summary) ||
+  Boolean(symbol.doc?.body) ||
+  Boolean(symbol.doc?.deprecated) ||
+  hasFields ||
+  elsewhere.length > 0
+---
+
+<dl
+  class:list={[
+    'py',
+    kind,
+    'gp-sphinx-api-container',
+    member && 'gp-sphinx-api-container--member',
+    symbol.doc?.deprecated && 'gp-sphinx-badge--state-deprecated',
+  ]}
+>
+  <dt
+    class="sig sig-object py gp-sphinx-api-header"
+    id={anchor}
+    data-domain={domain}
+    data-objtype={kind}
+    data-badge-count={String(badges.length)}
+    data-has-badges={String(badges.length > 0)}
+    data-has-fold={String(foldable)}
+    data-has-source={String(Boolean(source))}
+    data-signature-expanded="false"
+  >
+    <div class="gp-sphinx-api-layout gp-sphinx-api-layout--desktop">
+      <div class="gp-sphinx-api-layout-left">
+        <span class="gp-sphinx-api-signature">
+          {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
+          {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname"><span class="pre">{symbol.name}</span></span>
+          {
+            symbol.signatures.length === 0 && symbol.type && (
+              <>
+                <span class="sig-paren">: </span>
+                <ApiType type={symbol.type} index={index} context={symbol} />
+              </>
+            )
+          }
+          {
+            symbol.signatures.length === 0 && value && (
+              <>
+                <span class="o"> = </span>
+                <span class="default_value">{value}</span>
+              </>
+            )
+          }
+          {
+            symbol.signatures.map((sig) => (
+              <>
+                {folds(sig) ? (
+                  <details class="gp-sphinx-api-fold">
+                    <summary class="gp-sphinx-api-signature-toggle">
+                      <span class="sig-paren">(</span>
+                      <span class="gp-sphinx-api-signature-preview">
+                        {sig.params.length} parameters
+                      </span>
+                      <span class="sig-paren">)</span>
+                    </summary>
+                    <span class="gp-sphinx-api-signature-expanded">
+                      <span class="sig-paren">(</span>
+                      {sig.params.map((p, j) => (
+                        <>
+                          {j > 0 && <span class="sig-paren">, </span>}
+                          <em class="sig-param">
+                            {p.variadic === 'positional' && <span class="o">*</span>}
+                            {p.variadic === 'keyword' && <span class="o">**</span>}
+                            <span class="n">{p.name}</span>
+                            {p.type && (
+                              <>
+                                <span class="p">: </span>
+                                <ApiType type={p.type} index={index} context={symbol} />
+                              </>
+                            )}
+                            {p.default && (
+                              <>
+                                <span class="o"> = </span>
+                                <span class="default_value">{p.default}</span>
+                              </>
+                            )}
+                          </em>
+                        </>
+                      ))}
+                      <span class="sig-paren">)</span>
+                    </span>
+                  </details>
+                ) : (
+                  <>
+                <span class="sig-paren">(</span>
+                {sig.params.map((p, j) => (
+                  <>
+                    {j > 0 && <span class="sig-paren">, </span>}
+                    <em class="sig-param">
+                      {p.variadic === 'positional' && <span class="o">*</span>}
+                      {p.variadic === 'keyword' && <span class="o">**</span>}
+                      <span class="n">{p.name}</span>
+                      {p.type && (
+                        <>
+                          <span class="p">: </span>
+                          <ApiType type={p.type} index={index} context={symbol} />
+                        </>
+                      )}
+                      {p.default && (
+                        <>
+                          <span class="o"> = </span>
+                          <span class="default_value">{p.default}</span>
+                        </>
+                      )}
+                    </em>
+                  </>
+                ))}
+                <span class="sig-paren">)</span>
+                  </>
+                )}
+                {sig.returns && (
+                  <span class="sig-return">
+                    <span class="sig-return-icon">&#8594;</span>{' '}
+                    <span class="sig-return-typehint">
+                      <ApiType type={sig.returns} index={index} context={symbol} />
+                    </span>
+                  </span>
+                )}
+              </>
+            ))
+          }
+        </span>
+      </div>
+      <div class="gp-sphinx-api-layout-right">
+        <span class="gp-sphinx-api-slot gp-sphinx-api-slot--badges">
+          {badges.map((b) => <ApiBadge label={b.label} variant={b.variant} value={b.value} />)}
+        </span>
+        {
+          /*
+           * The brackets are punctuation, not part of the link.
+           *
+           * `[source]` was one anchor, so hovering underlined the brackets
+           * too and the click target included them. gp-sphinx's own viewcode
+           * link is the whole thing, which is the one place this deliberately
+           * differs — see notes/gp-sphinx-parity.md.
+           *
+           * The wrapper keeps the layout classes so the vendored rule making
+           * this an inline-flex item in the header row still applies; only
+           * the anchor inside it is new.
+           */
+          source && (
+            <span class="gp-sphinx-api-source-link viewcode-link">
+              <span class="pre">[<a class="api-source-anchor" href={source}>source</a>]</span>
+            </span>
+          )
+        }
+        <a class="headerlink" href={`#${anchor}`} title={`Permalink to ${symbol.name}`}>&#182;</a>
+      </div>
+    </div>
+
+    <!-- Same content, stacked: toolbar above, signature below. gp-sphinx's
+         order, which puts the affordances where a thumb reaches first. -->
+    <div class="gp-sphinx-api-layout gp-sphinx-api-layout--mobile">
+      <div class="gp-sphinx-api-layout-top">
+        <span class="gp-sphinx-api-slot gp-sphinx-api-slot--badges">
+          {badges.map((b) => <ApiBadge label={b.label} variant={b.variant} value={b.value} />)}
+        </span>
+        {
+          /*
+           * The brackets are punctuation, not part of the link.
+           *
+           * `[source]` was one anchor, so hovering underlined the brackets
+           * too and the click target included them. gp-sphinx's own viewcode
+           * link is the whole thing, which is the one place this deliberately
+           * differs — see notes/gp-sphinx-parity.md.
+           *
+           * The wrapper keeps the layout classes so the vendored rule making
+           * this an inline-flex item in the header row still applies; only
+           * the anchor inside it is new.
+           */
+          source && (
+            <span class="gp-sphinx-api-source-link viewcode-link">
+              <span class="pre">[<a class="api-source-anchor" href={source}>source</a>]</span>
+            </span>
+          )
+        }
+        <a class="headerlink" href={`#${anchor}`} title={`Permalink to ${symbol.name}`}>&#182;</a>
+      </div>
+      <div class="gp-sphinx-api-layout-bottom">
+        <span class="gp-sphinx-api-signature">
+          {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
+          {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname"><span class="pre">{symbol.name}</span></span>
+        </span>
+      </div>
+    </div>
+  </dt>
+
+  {hasBody && (
+  <dd>
+    {
+      symbol.inheritedFrom && (
+        <p class="gp-sphinx-api-facts">
+          Inherited from{' '}
+          {inheritedHref ? (
+            <a href={inheritedHref}>
+              <code>{symbol.inheritedFrom}</code>
+            </a>
+          ) : (
+            <code>{symbol.inheritedFrom}</code>
+          )}
+        </p>
+      )
+    }
+
+    {
+      bases.length > 0 && (
+        <div class="gp-sphinx-api-facts api-bases">
+          <span class="api-bases-label">Bases:</span>
+          <ul class="api-bases-list">
+            {bases.map((b) => (
+              <li>
+                <ApiType type={b} index={index} context={symbol} chip />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+    {symbol.doc?.summary && (
+      <p class="gp-sphinx-api-summary">
+        <ApiDoc text={symbol.doc.summary} index={index} context={symbol} />
+      </p>
+    )}
+    {symbol.doc?.body && (
+      <div class="gp-sphinx-api-description">
+        <ApiProse text={symbol.doc.body} index={index} context={symbol} />
+      </div>
+    )}
+
+    {
+      examples.length > 0 && (
+        <div class="gp-sphinx-api-examples">
+          <p class="rubric">Examples</p>
+          {highlighted.map((ex) => (
+            <>
+              {ex.intro && (
+                <p class="gp-sphinx-api-example-intro">
+                  <ApiDoc text={ex.intro} index={index} context={symbol} />
+                </p>
+              )}
+              <div class="gp-sphinx-api-example">
+                <button
+                  class="gp-sphinx-api-copy"
+                  type="button"
+                  data-copy={ex.code}
+                  aria-label="Copy example to clipboard"
+                >
+                  Copy
+                </button>
+                {ex.html ? (
+                  <div class="highlight" set:html={ex.html} />
+                ) : (
+                  <pre class="highlight"><code class={`language-${ex.lang ?? 'text'}`}>{ex.code}</code></pre>
+                )}
+              </div>
+            </>
+          ))}
+        </div>
+      )
+    }
+
+    {
+      references.length > 0 && (
+        <div class="gp-sphinx-api-references">
+          <p class="rubric">References</p>
+          <dl class="citation">
+            {references.map((r) => (
+              <>
+                <dt id={`citation-${r.name}`}>[{r.name}]</dt>
+                <dd>
+                  <p>
+                    <ApiDoc text={r.text} index={index} context={symbol} />
+                  </p>
+                </dd>
+              </>
+            ))}
+          </dl>
+        </div>
+      )
+    }
+
+    {
+      symbol.doc?.deprecated && (
+        <div class="admonition deprecated">
+          <p class="admonition-title">Deprecated</p>
+          <p>
+            <ApiDoc text={symbol.doc.deprecated} index={index} context={symbol} />
+          </p>
+        </div>
+      )
+    }
+
+    {
+      symbol.doc?.changed && (
+        <div class="admonition versionchanged">
+          <p class="admonition-title">Changed</p>
+          <p>
+            <ApiDoc text={symbol.doc.changed} index={index} context={symbol} />
+          </p>
+        </div>
+      )
+    }
+
+    {
+      (symbol.doc?.admonitions ?? []).map((a) => (
+        <div class:list={['admonition', a.kind]}>
+          <p class="admonition-title">{a.kind}</p>
+          <p>
+            <ApiDoc text={a.text} index={index} context={symbol} />
+          </p>
+        </div>
+      ))
+    }
+
+    {
+      hasFields && (
+        <div class="gp-sphinx-api-parameters">
+          <dl class="field-list simple">
+            {params.length > 0 && (
+              <>
+                <dt class="field-odd">Parameters</dt>
+                <dd class="field-odd">
+                  <ul class="simple">
+                    {params.map((p) => (
+                      <li>
+                        <p>
+                          <strong>{p.name}</strong>
+                          {p.type && (
+                            <>
+                              {' ('}
+                              <ApiType type={p.type} index={index} context={symbol} />
+                              {') '}
+                            </>
+                          )}
+                          {' – '}
+                          <ApiDoc text={p.doc ?? ''} index={index} context={symbol} />
+                          {p.since && <span class="gp-sphinx-api-param-since">added {p.since}</span>}
+                          {p.deprecated && (
+                            <span class="gp-sphinx-api-param-deprecated">
+                              deprecated {p.deprecated}
+                            </span>
+                          )}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </>
+            )}
+            {returnsDoc && (
+              <>
+                <dt class="field-even">Returns</dt>
+                <dd class="field-even">
+                  <p>
+                    <ApiDoc text={returnsDoc} index={index} context={symbol} />
+                  </p>
+                </dd>
+              </>
+            )}
+            {raises.length > 0 && (
+              <>
+                <dt class="field-odd">Raises</dt>
+                <dd class="field-odd">
+                  <ul class="simple">
+                    {raises.map((r) => (
+                      <li>
+                        <p>
+                          <ApiType type={r.type} index={index} context={symbol} />
+                          {r.doc && (
+                            <>
+                              {' – '}
+                              <ApiDoc text={r.doc} index={index} context={symbol} />
+                            </>
+                          )}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </>
+            )}
+          </dl>
+        </div>
+      )
+    }
+
+    {
+      mentions.length > 0 && (
+        <p class="gp-sphinx-api-mentions">
+          <span class="gp-sphinx-api-mentions-label">Discussed in</span>
+          {mentionSections.map((section, i) => (
+            <>
+              {i > 0 && <span class="gp-sphinx-api-mentions-sep"> · </span>}
+              {mentions
+                .filter((m) => (m.section ?? 'docs') === section)
+                .map((m, j) => (
+                  <>
+                    {j > 0 && ', '}
+                    <a href={m.page}>{m.title ?? m.page}</a>
+                  </>
+                ))}
+            </>
+          ))}
+        </p>
+      )
+    }
+
+    {
+      elsewhere.map((c) => (
+        <details class="api-elsewhere">
+          <summary>
+            In other languages <span class="api-elsewhere-label">{c.label}</span>
+          </summary>
+          <ul>
+            {c.ports.map((e) => (
+              <li>
+                <span class="api-elsewhere-port">{e.name}</span>
+                {e.href ? (
+                  <a href={e.href}>
+                    <code>{e.publicId}</code>
+                  </a>
+                ) : e.publicId ? (
+                  <code>{e.publicId}</code>
+                ) : (
+                  <span class="api-elsewhere-absent">{e.absent}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ))
+    }
+  </dd>
+  )}
+</dl>

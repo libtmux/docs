@@ -1,0 +1,58 @@
+---
+/**
+ * Based on Starlight's TableOfContents component
+ * Original source: https://github.com/withastro/starlight
+ * License: MIT
+ * Copyright (c) 2023 Astro contributors
+ *
+ * Adapted for use with custom theme system and TocItem type
+ */
+
+import type { TocItem } from '../../utils/generateToC'
+import TableOfContentsList from './TableOfContentsList.astro'
+
+interface Props {
+  items: TocItem[]
+  minHeadingLevel?: number
+  maxHeadingLevel?: number
+}
+
+const { items, minHeadingLevel = 2, maxHeadingLevel = 3 } = Astro.props
+---
+
+<starlight-toc data-min-h={minHeadingLevel} data-max-h={maxHeadingLevel}>
+  <nav aria-labelledby="starlight__on-this-page" class="toc-nav">
+    <h2 id="starlight__on-this-page" class="text-sm font-semibold text-slate-900 dark:text-white mb-4">
+      On this page
+    </h2>
+    <TableOfContentsList toc={items} />
+  </nav>
+</starlight-toc>
+
+<style>
+  .toc-nav {
+    position: sticky;
+    top: 5rem; /* 80px - below header */
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+    padding-right: 1rem;
+  }
+  /* Scrollbar styling */
+  .toc-nav::-webkit-scrollbar {
+    width: 6px;
+  }
+  .toc-nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .toc-nav::-webkit-scrollbar-thumb {
+    background-color: rgb(203 213 225); /* slate-300 */
+    border-radius: 3px;
+  }
+  :global([data-theme-mode="dark"]) .toc-nav::-webkit-scrollbar-thumb {
+    background-color: rgb(71 85 105); /* slate-600 */
+  }
+</style>
+
+<script>
+  import './starlight-toc'
+</script>

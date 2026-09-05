@@ -1,0 +1,93 @@
+---
+import { highlight } from '../../lib/highlight'
+import { PORT_NAME } from '../../lib/api-models'
+
+/**
+ * The same example, in each language that has one.
+ *
+ * learn.microsoft.com puts a C#/VB/F# switcher on its example blocks, and the
+ * reason it works is that the examples are the same example — one task, told
+ * in several languages. The concept map already records which symbols are
+ * counterparts, so where a counterpart carries examples they belong here
+ * rather than on a page the reader has to go and find.
+ *
+ * CSS-only tabs: a radio per language, labels styled as the tab strip, and
+ * the checked radio revealing its panel through a sibling selector. No script,
+ * so it works on a page with none, and no shared state, so two of these on a
+ * page do not fight. The radios are visually hidden rather than absent —
+ * removing them takes the keyboard with them.
+ */
+interface Props {
+  /** Panels in display order; the first is the page's own language. */
+  groups: { port: string; examples: { lang: string; code: string; intro?: string }[] }[]
+  /** Distinguishes this instance's radio group from any other on the page. */
+  name: string
+}
+const { groups, name } = Astro.props as Props
+
+const rendered = await Promise.all(
+  groups.map(async (g) => ({
+    ...g,
+    examples: await Promise.all(
+      g.examples.map(async (ex) => ({ ...ex, html: await highlight(ex.code, ex.lang) })),
+    ),
+  })),
+)
+
+/*
+ * One rule per position: the nth checked radio shows the nth panel.
+ *
+ * Counted inside their own wrapper, not among the tab strip's siblings: the
+ * strip is a `div` too, so `.api-example-panel:nth-of-type(1)` matched *it*
+ * and the first tab showed nothing at all. Generated because the count varies
+ * with how many languages carry an example.
+ */
+const panelRules = rendered
+  .map(
+    (_, i) =>
+      `.api-example-tabs:has(.api-example-radio:nth-of-type(${i + 1}):checked) ` +
+      `.api-example-panels > :nth-child(${i + 1}){display:block}`,
+  )
+  .join('')
+---
+
+<style is:global set:html={panelRules} />
+
+{
+  rendered.length > 0 && (
+    <div class="api-example-tabs">
+      <div class="api-example-tabstrip" role="tablist">
+        {rendered.map((g, i) => (
+          <>
+            <input
+              type="radio"
+              name={name}
+              id={`${name}-${g.port}`}
+              class="api-example-radio"
+              checked={i === 0}
+            />
+            <label class="api-example-tab" for={`${name}-${g.port}`}>
+              {PORT_NAME[g.port] ?? g.port}
+            </label>
+          </>
+        ))}
+      </div>
+      <div class="api-example-panels">
+      {rendered.map((g) => (
+        <div class="api-example-panel" data-port={g.port}>
+          {g.examples.map((ex) => (
+            <>
+              {ex.intro && <p class="api-example-intro">{ex.intro}</p>}
+              {ex.html ? (
+                <Fragment set:html={ex.html} />
+              ) : (
+                <pre><code>{ex.code}</code></pre>
+              )}
+            </>
+          ))}
+        </div>
+      ))}
+      </div>
+    </div>
+  )
+}

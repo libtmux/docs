@@ -1,0 +1,122 @@
+---
+/**
+ * Behaviour and styling for the tab groups `rehype-code-tabs.mjs` emits.
+ *
+ * A component rather than a global script because it is rendered once by
+ * DocsLayout and carries its own CSS; the plugin cannot import anything.
+ *
+ * Two behaviours that are not obvious but are what makes the control useful:
+ *
+ * **Every group on the page switches together.** A reader who picks Python at
+ * the top of a topic wants Python for the rest of it, and clicking through
+ * eight groups is worse than the vertical stack this replaces.
+ *
+ * **The choice persists.** Stored per browser, read before first paint by the
+ * inline script below, so a Python reader who follows a link does not land on
+ * a C++ block and have to pick again.
+ */
+---
+
+<style is:global>
+  .code-tabs { display: block; margin: 1.25rem 0; }
+
+  .code-tabs-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.125rem;
+    border-bottom: 1px solid color-mix(in oklch, currentColor, transparent 88%);
+    margin-bottom: -1px;
+  }
+
+  .code-tab {
+    appearance: none;
+    background: transparent;
+    border: 1px solid transparent;
+    border-bottom: 0;
+    border-radius: 0.35rem 0.35rem 0 0;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: color-mix(in oklch, currentColor, transparent 35%);
+    cursor: pointer;
+    line-height: 1.4;
+  }
+  .code-tab:hover { color: inherit; }
+  .code-tab[aria-selected='true'] {
+    color: var(--theme-primary, inherit);
+    border-color: color-mix(in oklch, currentColor, transparent 88%);
+    background: color-mix(in oklch, currentColor, transparent 96%);
+    font-weight: 600;
+  }
+  .code-tab:focus-visible {
+    outline: 2px solid var(--focus-ring-color, currentColor);
+    outline-offset: -2px;
+  }
+
+  /* Expressive Code puts its own margin on the wrapper; inside a panel the
+     tab strip already provides the spacing. */
+  .code-tab-panel > .expressive-code { margin-top: 0; }
+</style>
+
+<script>
+  const KEY = 'libtmux-code-tab'
+
+  class LibtmuxCodeTabs extends HTMLElement {
+    connectedCallback() {
+      const tabs = [...this.querySelectorAll<HTMLButtonElement>('.code-tab')]
+      const panels = [...this.querySelectorAll<HTMLElement>('.code-tab-panel')]
+      if (!tabs.length) return
+
+      const show = (port: string, persist: boolean) => {
+        // A group that lacks the chosen port keeps its own selection: not
+        // every page documents all eight, and blanking those groups would be
+        // a worse answer than showing what they do have.
+        if (!tabs.some((t) => t.dataset.port === port)) return
+        for (const tab of tabs) {
+          const on = tab.dataset.port === port
+          tab.setAttribute('aria-selected', String(on))
+          tab.tabIndex = on ? 0 : -1
+        }
+        for (const panel of panels) panel.hidden = panel.dataset.port !== port
+        if (persist) {
+          try {
+            localStorage.setItem(KEY, port)
+          } catch {
+            // Private windows and blocked site data throw here. The tabs still
+            // work for this page; only the memory is lost.
+          }
+          document.dispatchEvent(new CustomEvent('libtmux:code-tab', { detail: port }))
+        }
+      }
+
+      for (const tab of tabs) {
+        tab.addEventListener('click', () => show(tab.dataset.port ?? '', true))
+        tab.addEventListener('keydown', (event) => {
+          const delta = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
+          if (!delta) return
+          event.preventDefault()
+          const i = tabs.indexOf(tab)
+          const next = tabs[(i + delta + tabs.length) % tabs.length]
+          show(next.dataset.port ?? '', true)
+          next.focus()
+        })
+      }
+
+      document.addEventListener('libtmux:code-tab', (event) => {
+        show((event as CustomEvent<string>).detail, false)
+      })
+
+      let stored: string | null = null
+      try {
+        stored = localStorage.getItem(KEY)
+      } catch {
+        stored = null
+      }
+      if (stored) show(stored, false)
+    }
+  }
+
+  if (!customElements.get('libtmux-code-tabs')) {
+    customElements.define('libtmux-code-tabs', LibtmuxCodeTabs)
+  }
+</script>

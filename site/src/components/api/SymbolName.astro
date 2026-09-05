@@ -1,0 +1,18 @@
+---
+import { wordBreak } from '../../lib/word-break'
+
+/**
+ * A symbol name that may break across lines, but only where a reader would
+ * break it.
+ *
+ * `<wbr>` rather than `overflow-wrap`: the browser then breaks after a colon
+ * or between case changes instead of at whatever character reaches the edge.
+ * See `lib/word-break.ts` — the rule is Apple's, from swift-docc-render.
+ */
+interface Props {
+  name: string
+}
+const { name } = Astro.props as Props
+const parts = wordBreak(name)
+---
+{parts.map((part, i) => (i === 0 ? part : [<wbr />, part]))}

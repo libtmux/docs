@@ -1,0 +1,426 @@
+---
+import { Code } from 'astro-expressive-code/components'
+import { highlightInline } from '../../lib/highlight'
+import { PORTS } from '../../lib/ports'
+import type { Quickstart } from '../../lib/quickstarts'
+
+/**
+ * Package-manager picker for the eight libtmux ports' own install commands
+ * (`port.install` from ports.ts — see that file for why each string is
+ * what it is). Same visual language and copy-to-clipboard behaviour as
+ * ./McpInstall.astro, but only one axis (which port), so it carries no
+ * separate data module or asset files — everything lives in this component.
+ *
+ * No literal source to port: McpInstall.astro's sibling in
+ * ~/work/python/libtmux-mcp/docs only ever installed one package, so there
+ * was nothing there shaped like an eight-way tab picker. sphinx-copybutton
+ * isn't available here either (see McpInstall.astro's note on the same
+ * gap), so the copy button is this component's own, duplicated rather than
+ * imported from mcp-install.js because that file is McpInstall's alone —
+ * this widget must stand on its own with no cross-file dependency.
+ *
+ * `ports` restricts the tab set (e.g. a guide about one language); omit it
+ * for the full eight. The active port persists across every PackageInstall
+ * instance on the site via one shared localStorage key — a restricted
+ * instance simply ignores a saved value outside its own subset and falls
+ * back to its own default, rather than rendering blank.
+ */
+interface Props {
+  /** Port slugs to show; omit for all eight. */
+  ports?: readonly string[]
+  /**
+   * A code example to show under each port's install line, keyed by slug.
+   *
+   * The home page's picker used to switch the install command while the
+   * example below it stayed Python, so seven of the eight tabs showed a
+   * Java or Swift install above Python code. Putting the example in the
+   * panel makes one picker drive both, which is what a reader already
+   * expects it to do.
+   *
+   * Omit it and the widget is exactly what it was: install lines only. A
+   * port with no entry shows its install line alone rather than an empty
+   * block.
+   */
+  snippets?: Partial<Record<string, Quickstart>>
+  /** Active tab when nothing is saved yet; defaults to the first shown port. */
+  defaultPort?: string
+  variant?: 'full' | 'compact'
+}
+const { ports, defaultPort, snippets, variant = 'full' } = Astro.props as Props
+
+const items = ports && ports.length > 0 ? PORTS.filter((p) => ports.includes(p.slug)) : PORTS
+if (items.length === 0) {
+  throw new Error('PackageInstall: `ports` matched none of the eight port slugs in ports.ts')
+}
+const initialSlug = defaultPort && items.some((p) => p.slug === defaultPort) ? defaultPort : items[0]!.slug
+
+// Which panel to show once `data-active-port` is set is data-driven (one
+// rule per port actually rendered in *this* instance), not hand-typed —
+// ports.ts stays the only place a port's slug is spelled out. See the
+// is:global block below for the static rules this pairs with.
+const activePortRules = items
+  .map((p) => `.lm-pkg-install[data-active-port="${p.slug}"] .lm-pkg-install__panel[data-port="${p.slug}"]{display:block}`)
+  .join('')
+
+
+/*
+ * Highlighted once, here rather than in the template: `await` is not allowed
+ * inside a map callback in Astro's markup.
+ */
+const installHtml = new Map(
+  await Promise.all(
+    items.map(async (p) => [p.slug, await highlightInline(`$ ${p.install}`, 'console')] as const),
+  ),
+)
+---
+
+<div class={`lm-pkg-install lm-pkg-install--${variant}`} data-ports={items.map((p) => p.slug).join(' ')}>
+  <div class="lm-pkg-install__tabs" role="tablist" aria-label="Package manager">
+    {
+      items.map((p) => (
+        <button
+          type="button"
+          class="lm-pkg-install__tab"
+          role="tab"
+          data-tab-value={p.slug}
+          aria-selected={p.slug === initialSlug ? 'true' : 'false'}
+          tabindex={p.slug === initialSlug ? '0' : '-1'}
+        >
+          {p.name}
+        </button>
+      ))
+    }
+  </div>
+  <div class="lm-pkg-install__body">
+    {
+      items.map((p) => (
+        <div
+          class="lm-pkg-install__panel"
+          role="tabpanel"
+          data-port={p.slug}
+          data-default={p.slug === initialSlug ? true : undefined}
+          tabindex="0"
+        >
+          <div class="lm-pkg-install__code" data-language="console"><pre><code set:html={installHtml.get(p.slug)} /></pre><button type="button" class="lm-pkg-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
+          {snippets?.[p.slug] && (
+            <div class="lm-pkg-install__snippet">
+              <Code code={snippets[p.slug]!.code} lang={snippets[p.slug]!.lang} />
+            </div>
+          )}
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<style is:global>
+  /* Unlayered on purpose — see mcp-install.css's file-level comment for why
+   * that matters against Tailwind v4's `[hidden]` preflight rule. This
+   * widget never uses the `hidden` attribute either, so the point is moot
+   * here, but the two widgets stay consistent about it. */
+  .lm-pkg-install {
+    --lm-pkg-install-bg: var(--background-color);
+    --lm-pkg-install-bg-tabs: #f1f5f9; /* slate-100 */
+    --lm-pkg-install-border: #e2e8f0; /* slate-200 */
+    --lm-pkg-install-fg: var(--text-color);
+    --lm-pkg-install-fg-secondary: #475569; /* slate-600 */
+    --lm-pkg-install-fg-muted: #64748b; /* slate-500 */
+    --lm-pkg-install-accent: var(--theme-primary);
+    --lm-pkg-install-hover: rgb(0 0 0 / 4%);
+    --lm-pkg-install-code-bg: #f1f5f9;
+    --lm-pkg-install-mono: var(--font-ibm-plex-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+
+    border: 1px solid var(--lm-pkg-install-border);
+    border-radius: 0.375rem;
+    background: var(--lm-pkg-install-bg);
+    color: var(--lm-pkg-install-fg);
+    overflow: hidden;
+    margin: 1rem 0;
+    font-size: 0.95em;
+  }
+
+  html[data-theme-mode='dark'] .lm-pkg-install {
+    --lm-pkg-install-bg-tabs: #1e293b; /* slate-800 */
+    --lm-pkg-install-border: #1e293b;
+    --lm-pkg-install-fg-secondary: #94a3b8; /* slate-400 */
+    --lm-pkg-install-fg-muted: #94a3b8;
+    --lm-pkg-install-hover: rgb(255 255 255 / 6%);
+    --lm-pkg-install-code-bg: #1e293b;
+  }
+
+  .lm-pkg-install__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    background: var(--lm-pkg-install-bg-tabs);
+    border-bottom: 1px solid var(--lm-pkg-install-border);
+  }
+
+  .lm-pkg-install__tab {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    color: var(--lm-pkg-install-fg-muted);
+    cursor: pointer;
+    font: inherit;
+    padding: 0.45rem 0.9rem;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .lm-pkg-install__tab:hover {
+    color: var(--lm-pkg-install-fg);
+    background: var(--lm-pkg-install-hover);
+  }
+
+  .lm-pkg-install__tab:focus-visible {
+    outline: 2px solid var(--lm-pkg-install-accent);
+    outline-offset: -2px;
+  }
+
+  /* Server-rendered active tab (no JS) and JS-selected tab both key off
+   * `aria-selected` — the deferred script below is the only thing that
+   * ever changes it, so there is no separate prehydrate override needed
+   * here (unlike McpInstall, whose tabs must repaint before mcp-install.js
+   * has even downloaded). This widget's *panel* visibility needs one,
+   * hence the document-level rules generated below — and the tab colour now
+   * needs one too, which is what `preloadedPortRules` adds. */
+  .lm-pkg-install__tab[aria-selected='true'] {
+    color: var(--lm-pkg-install-accent);
+    border-bottom-color: var(--lm-pkg-install-accent);
+    background: var(--lm-pkg-install-bg);
+  }
+
+  .lm-pkg-install__body {
+    padding: 0.9rem 1rem;
+  }
+
+  /* SSR/no-JS default: exactly one panel visible, no script required. The
+   * `html[data-pkg-port]` rules (set in <head> before any of this markup is
+   * parsed, when a saved choice exists and this instance carries that port)
+   * override it by specificity, so they need no `!important` or source-order
+   * care. */
+  .lm-pkg-install__panel {
+    display: none;
+  }
+
+  .lm-pkg-install__panel[data-default] {
+    display: block;
+  }
+
+  /* Once JS has picked an active port (a click, or a restored session),
+   * every panel defaults to hidden; the per-port rule injected below (see
+   * `activePortRules`) is more specific ([data-active-port="X"] vs the bare
+   * [data-active-port] here) and wins regardless of source order — same
+   * reasoning as mcp-install.css's default-override rule. */
+  .lm-pkg-install[data-active-port] .lm-pkg-install__panel {
+    display: none;
+  }
+
+  .lm-pkg-install__panel:focus-visible {
+    outline: 2px solid var(--lm-pkg-install-accent);
+    outline-offset: 4px;
+    border-radius: 0.25rem;
+  }
+
+  .lm-pkg-install__code {
+    position: relative;
+  }
+
+  /* The example under the install line. Expressive Code brings its own
+   * frame, so this only supplies the gap between the two. */
+  .lm-pkg-install__snippet {
+    margin-top: 0.75rem;
+  }
+
+  .lm-pkg-install__snippet :global(.expressive-code) {
+    margin: 0;
+  }
+
+  .lm-pkg-install__code pre {
+    margin: 0;
+    overflow-x: auto;
+    border-radius: 0.25rem;
+    background: var(--lm-pkg-install-code-bg);
+    color: var(--lm-pkg-install-fg);
+    padding: 0.75rem 3.25rem 0.75rem 0.9rem;
+  }
+
+  .lm-pkg-install__code code {
+    font-family: var(--lm-pkg-install-mono);
+    font-size: 0.85em;
+    white-space: pre;
+  }
+
+  .lm-pkg-install__copy {
+    position: absolute;
+    top: 0.45rem;
+    right: 0.45rem;
+    appearance: none;
+    border: 1px solid var(--lm-pkg-install-border);
+    border-radius: 0.25rem;
+    background: var(--lm-pkg-install-bg);
+    color: var(--lm-pkg-install-fg-secondary);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.75em;
+    line-height: 1;
+    padding: 0.3rem 0.5rem;
+  }
+
+  .lm-pkg-install__copy:hover {
+    color: var(--lm-pkg-install-fg);
+    border-color: var(--lm-pkg-install-fg-muted);
+  }
+
+  .lm-pkg-install__copy:focus-visible {
+    outline: 2px solid var(--lm-pkg-install-accent);
+    outline-offset: 2px;
+  }
+
+  .lm-pkg-install__copy--done {
+    color: var(--lm-pkg-install-accent);
+    border-color: var(--lm-pkg-install-accent);
+  }
+
+  /* Compact variant: tighter padding, smaller type — mirrors
+   * .lm-mcp-install--compact. */
+  .lm-pkg-install--compact .lm-pkg-install__tab {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.9em;
+  }
+
+  .lm-pkg-install--compact .lm-pkg-install__body {
+    padding: 0.7rem 0.8rem;
+  }
+</style>
+
+{/* Generated from `items`, not hand-typed — see `activePortRules` above. */}
+<style is:global set:html={activePortRules} />
+
+<script>
+  // Deferred interactivity: tab switching, cross-instance sync, and
+  // copy-to-clipboard. Event delegation on document so this survives an
+  // Astro ClientRouter swap the same way McpInstall's mcp-install.js does
+  // (see that file's header) — this site doesn't run ClientRouter yet, but
+  // every other interactive component here already defends against it.
+  const STORAGE_KEY = 'libtmux-docs.package-install.port'
+  const SYNC_EVENT = 'lm-pkg-install:change'
+
+  function applySavedState() {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (!saved) return
+    document.querySelectorAll<HTMLElement>('.lm-pkg-install').forEach((widget) => selectPort(widget, saved, false))
+  }
+
+  function selectPort(widget: HTMLElement, slug: string, persist: boolean) {
+    const tabs = widget.querySelectorAll<HTMLButtonElement>('.lm-pkg-install__tab')
+    // Decided before anything is written. This used to clear `aria-selected`
+    // on every tab and *then* return when none matched, so a picker
+    // restricted to one language — the port pages render one — was left with
+    // no tab selected at all whenever the shared saved value named a
+    // different language. The panel was right and the tab above it was blank.
+    const matched = [...tabs].some((tab) => tab.dataset.tabValue === slug)
+    // A restricted-subset instance that doesn't carry this port keeps its
+    // own current selection rather than going blank — see this file's top
+    // comment on why the storage key is shared but instances aren't forced
+    // to honor a value outside their own `ports` prop.
+    if (!matched) return
+    tabs.forEach((tab) => {
+      const isMatch = tab.dataset.tabValue === slug
+      tab.setAttribute('aria-selected', isMatch ? 'true' : 'false')
+      tab.setAttribute('tabindex', isMatch ? '0' : '-1')
+    })
+    widget.setAttribute('data-active-port', slug)
+    // The document-level attribute is what <head> sets before first paint and
+    // what the no-flicker rules key on, and those rules outrank the
+    // per-widget ones. Leaving it behind would mean a click that changes the
+    // panel back on the next paint.
+    if (persist) {
+      document.documentElement.setAttribute('data-pkg-port', slug)
+      localStorage.setItem(STORAGE_KEY, slug)
+    }
+  }
+
+  function copyPanelCode(button: HTMLElement) {
+    const wrap = button.closest('.lm-pkg-install__code')
+    const codeEl = wrap?.querySelector('code')
+    if (!codeEl) return
+    let text = codeEl.textContent ?? ''
+    if (wrap?.getAttribute('data-language') === 'console') {
+      text = text.replace(/^\$ /gm, '')
+    }
+    writeClipboardText(text, button)
+  }
+
+  function writeClipboardText(text: string, button: HTMLElement) {
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(
+        () => announceCopied(button),
+        () => fallbackCopy(text, button),
+      )
+    } else {
+      fallbackCopy(text, button)
+    }
+  }
+
+  function fallbackCopy(text: string, button: HTMLElement) {
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.focus()
+    textarea.select()
+    try {
+      document.execCommand('copy')
+    } catch {
+      // Nothing more to do — the button simply won't confirm.
+    }
+    document.body.removeChild(textarea)
+    announceCopied(button)
+  }
+
+  function announceCopied(button: HTMLElement) {
+    const original = button.getAttribute('data-copy-label') ?? button.textContent ?? 'Copy'
+    button.setAttribute('data-copy-label', original)
+    button.textContent = 'Copied'
+    button.classList.add('lm-pkg-install__copy--done')
+    const win = button as HTMLElement & { _lmCopyResetTimer?: number }
+    window.clearTimeout(win._lmCopyResetTimer)
+    win._lmCopyResetTimer = window.setTimeout(() => {
+      button.textContent = original
+      button.classList.remove('lm-pkg-install__copy--done')
+    }, 1500)
+  }
+
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement
+    const copyButton = target.closest<HTMLElement>('[data-action="copy"]')
+    if (copyButton?.closest('.lm-pkg-install')) {
+      e.preventDefault()
+      copyPanelCode(copyButton)
+      return
+    }
+    const tab = target.closest<HTMLButtonElement>('.lm-pkg-install__tab')
+    const widget = tab?.closest<HTMLElement>('.lm-pkg-install')
+    if (!tab || !widget || !tab.dataset.tabValue) return
+    selectPort(widget, tab.dataset.tabValue, true)
+    window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: { origin: widget, slug: tab.dataset.tabValue } }))
+  })
+
+  window.addEventListener(SYNC_EVENT, ((e: CustomEvent<{ origin: HTMLElement; slug: string }>) => {
+    document.querySelectorAll<HTMLElement>('.lm-pkg-install').forEach((widget) => {
+      if (widget === e.detail.origin) return
+      selectPort(widget, e.detail.slug, false)
+    })
+  }) as EventListener)
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applySavedState)
+  } else {
+    applySavedState()
+  }
+  document.addEventListener('astro:after-swap', applySavedState)
+</script>

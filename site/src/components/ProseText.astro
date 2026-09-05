@@ -1,0 +1,70 @@
+---
+import { decideMention, notASymbol } from '@libtmux/api-model'
+import { getResolver } from '../lib/prose-resolver'
+import { API_MODELS } from '../lib/api-models'
+import { withRoot } from '../lib/site-root'
+
+/**
+ * A sentence written in an `.astro` template, with its code spans linked.
+ *
+ * Markdown pages get this from `plugins/rehype-api-links.ts`. Prose that
+ * lives in a component did not, so `java.nio.file.Path` in the Java
+ * quickstart note rendered as plain text while the same name on a Markdown
+ * page linked to Oracle's javadoc. Both now ask `decideMention`, through the
+ * one resolver in `lib/prose-resolver.ts`, so a name resolves the same way
+ * wherever it is written.
+ *
+ * That resolver carries the standard-library inventories — Python's,
+ * the JDK's and MDN's — and falls back to the curated builtin map for the
+ * five languages that publish no inventory. So `java.nio.file.Path` reaches
+ * Oracle, `Path` in a Python sentence reaches docs.python.org, and
+ * `TmuxEnvironment.current()` reaches our own reference.
+ *
+ * Backticks mark what to resolve. Everything else is text: guessing at bare
+ * prose is how a linker starts turning the word "session" into a link.
+ */
+interface Props {
+  text: string
+  /** Which language's names these are, for scoping the resolver. */
+  port?: string
+  class?: string
+}
+const { text, port, class: className } = Astro.props as Props
+
+const resolver = getResolver()
+
+/** `a \`b\` c` → alternating text and code segments. */
+const segments = text.split(/`([^`]+)`/).map((value, i) => ({
+  code: i % 2 === 1,
+  value,
+}))
+
+const resolved = segments.map((seg) => {
+  if (!seg.code || notASymbol(seg.value)) return { ...seg, href: undefined, title: undefined }
+  const d = decideMention(seg.value, { pagePort: port }, resolver, API_MODELS)
+  if (d.kind !== 'link') return { ...seg, href: undefined, title: undefined }
+  return {
+    ...seg,
+    href: d.external ? d.href : withRoot(d.href),
+    title: d.title,
+    external: d.external,
+  }
+})
+---
+
+<p class={className}>{
+  resolved.map((seg) => {
+    if (!seg.code) return seg.value
+    if (!seg.href) return <code class="api-literal">{seg.value}</code>
+    return (
+      <a
+        class="api-mention"
+        href={seg.href}
+        title={seg.title}
+        rel={seg.external ? 'nofollow noopener' : undefined}
+      >
+        <code class="api-literal api-literal--link">{seg.value}</code>
+      </a>
+    )
+  })
+}</p>

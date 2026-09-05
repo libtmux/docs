@@ -1,0 +1,132 @@
+---
+// BackToTop component with beautiful, accessible styling for light and dark modes
+// Features:
+// - Soft borders and shadows for elegant appearance
+// - Backdrop blur for modern glass effect
+// - Smooth hover animations with scale transform
+// - Focus visible ring for keyboard navigation
+// - ARIA attributes for screen reader support
+---
+
+<button
+  id="back-to-top"
+  class="fixed bottom-8 right-8 z-50 p-3 rounded-full 
+  bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm
+  text-gray-700 dark:text-gray-300
+  border border-gray-200/80 dark:border-gray-700/50
+  shadow-md shadow-gray-200/50 dark:shadow-black/20
+  hover:bg-gray-50 dark:hover:bg-gray-700/80
+  hover:text-gray-900 dark:hover:text-white
+  hover:border-gray-300 dark:hover:border-gray-600
+  hover:shadow-lg hover:shadow-gray-300/50 dark:hover:shadow-black/30
+  hover:scale-110
+  focus-visible:outline-none focus-visible:ring-2 
+  focus-visible:ring-theme-primary/50 dark:focus-visible:ring-theme-primary/40
+  focus-visible:scale-110
+  cursor-pointer 
+  opacity-0 translate-y-4 pointer-events-none"
+  aria-label="Back to top"
+  title="Scroll to top"
+  type="button"
+>
+  <svg 
+    width="15" 
+    height="15" 
+    viewBox="0 0 15 15" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg" 
+    class="h-5 w-5"
+    aria-hidden="true"
+  >
+    <path 
+      d="M3.13523 8.84197C3.3241 9.04343 3.64052 9.05363 3.84197 8.86477L7.5 5.43536L11.158 8.86477C11.3595 9.05363 11.6759 9.04343 11.8648 8.84197C12.0536 8.64051 12.0434 8.32409 11.842 8.13523L7.84197 4.38523C7.64964 4.20492 7.35036 4.20492 7.15803 4.38523L3.15803 8.13523C2.95657 8.32409 2.94637 8.64051 3.13523 8.84197Z" 
+      fill="currentColor" 
+      fill-rule="evenodd" 
+      clip-rule="evenodd"
+    />
+  </svg>
+</button>
+
+<script>
+  // Listeners are scoped to an AbortController so re-initialization after
+  // ClientRouter navigations replaces them instead of stacking duplicates.
+  let controller: AbortController | null = null
+
+  function initBackToTop() {
+    controller?.abort()
+    controller = new AbortController()
+    const { signal } = controller
+    const button = document.getElementById('back-to-top')
+    if (!button) return
+
+    let isVisible = false
+    let isAtBottom = false
+    let isPlayerVisible = false
+
+    const updateBottomPosition = () => {
+      // Remove all bottom position classes
+      button.classList.remove('bottom-8', 'bottom-24', 'bottom-32')
+
+      // Determine correct bottom position based on state
+      // Player bar is h-16 (4rem), so add 4rem when player is visible
+      if (isAtBottom && isPlayerVisible) {
+        button.classList.add('bottom-32') // 8rem - above footer + player
+      } else if (isAtBottom || isPlayerVisible) {
+        button.classList.add('bottom-24') // 6rem - above footer OR player
+      } else {
+        button.classList.add('bottom-8') // 2rem - default
+      }
+    }
+
+    const toggleVisibility = () => {
+      // Show button when scrolled down 300px
+      if (window.pageYOffset > 300) {
+        if (!isVisible) {
+          isVisible = true
+          button.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none')
+          button.classList.add('opacity-100', 'translate-y-0')
+        }
+      } else {
+        if (isVisible) {
+          isVisible = false
+          button.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none')
+          button.classList.remove('opacity-100', 'translate-y-0')
+        }
+      }
+
+      // Check if at bottom of page (within 100px)
+      const scrollHeight = document.documentElement.scrollHeight
+      const scrollTop = window.pageYOffset
+      const clientHeight = document.documentElement.clientHeight
+      const newIsAtBottom = scrollHeight - scrollTop - clientHeight < 100
+
+      // Check if audio player bar is visible
+      const newIsPlayerVisible = document.body.classList.contains('player-visible')
+
+      // Update position if state changed
+      if (newIsAtBottom !== isAtBottom || newIsPlayerVisible !== isPlayerVisible) {
+        isAtBottom = newIsAtBottom
+        isPlayerVisible = newIsPlayerVisible
+        updateBottomPosition()
+      }
+    }
+
+    const handleClick = () => {
+      // Site is intentionally motionless: jump, don't smooth-scroll
+      window.scrollTo({ top: 0 })
+    }
+
+    // Add listeners; the controller cleans up the previous generation
+    window.addEventListener('scroll', toggleVisibility, { signal, passive: true })
+    button.addEventListener('click', handleClick, { signal })
+
+    // Check initial state
+    toggleVisibility()
+  }
+
+  // Initialize on first load
+  initBackToTop()
+
+  // Re-initialize after view transitions
+  document.addEventListener('astro:after-swap', initBackToTop)
+</script>

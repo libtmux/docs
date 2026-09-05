@@ -1,0 +1,124 @@
+---
+import type { TocItem } from '../utils/generateToC'
+import TableOfContents from './TableOfContents/TableOfContents.astro'
+
+interface Props {
+  tocItems: TocItem[]
+}
+
+const { tocItems } = Astro.props
+---
+
+<!-- Mobile ToC Overlay -->
+<div id="mobile-toc-overlay" class="fixed inset-0 bg-black/50 z-40 opacity-0 invisible lg:hidden"></div>
+
+<!-- Mobile ToC -->
+<aside id="mobile-toc" class="drawer-surface fixed right-0 top-0 h-full w-64 z-50 transform translate-x-full lg:hidden overflow-y-auto">
+  <div class="p-4">
+    <!-- Header with close button -->
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">On this page</h2>
+      <button
+        id="mobile-toc-close"
+        type="button"
+        aria-label="Close table of contents"
+        class="flex items-center justify-center h-8 w-8 rounded-md hover:bg-surface-hover cursor-pointer"
+      >
+        <svg class="h-5 w-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Table of Contents -->
+    {tocItems.length > 0 ? (
+      <TableOfContents items={tocItems} />
+    ) : (
+      <p class="text-sm text-muted">No table of contents available for this page.</p>
+    )}
+  </div>
+</aside>
+
+<script>
+  // Mobile ToC functionality. Listeners are scoped to an AbortController so
+  // re-initialization after ClientRouter navigations replaces them instead of
+  // stacking duplicates on document.
+  let controller: AbortController | null = null
+
+  function initMobileToC() {
+    controller?.abort()
+    controller = new AbortController()
+    const { signal } = controller
+    const toggleButton = document.getElementById('mobile-toc-toggle')
+    const closeButton = document.getElementById('mobile-toc-close')
+    const toc = document.getElementById('mobile-toc')
+    const overlay = document.getElementById('mobile-toc-overlay')
+    /** See DocsLayout's sidebar drawer for why a closed drawer is inert. */
+    function setInert(on: boolean) {
+      if (toc) toc.inert = on
+    }
+    setInert(true)
+
+    function openToC() {
+      if (toc && overlay) {
+        document.dispatchEvent(new CustomEvent('libtmux:drawer-open', { detail: 'toc' }))
+        toc.classList.remove('translate-x-full')
+        overlay.classList.remove('opacity-0', 'invisible')
+        overlay.classList.add('opacity-100', 'visible')
+        document.body.style.overflow = 'hidden'
+        toggleButton?.setAttribute('aria-expanded', 'true')
+        setInert(false)
+        ;(closeButton ?? toc.querySelector<HTMLElement>('a'))?.focus()
+      }
+    }
+    function closeToC() {
+      if (toc && overlay) {
+        const hadFocus = toc.contains(document.activeElement)
+        toc.classList.add('translate-x-full')
+        overlay.classList.remove('opacity-100', 'visible')
+        overlay.classList.add('opacity-0', 'invisible')
+        document.body.style.overflow = ''
+        toggleButton?.setAttribute('aria-expanded', 'false')
+        setInert(true)
+        if (hadFocus) toggleButton?.focus()
+      }
+    }
+    // Event listeners
+    toggleButton?.addEventListener('click', openToC, { signal })
+    closeButton?.addEventListener('click', closeToC, { signal })
+    overlay?.addEventListener('click', closeToC, { signal })
+    // Close on escape key
+    document.addEventListener(
+      'keydown',
+      (e) => {
+        if (e.key === 'Escape' && toc && !toc.classList.contains('translate-x-full')) {
+          closeToC()
+        }
+      },
+      { signal },
+    )
+    // Close ToC when clicking on a link
+    const tocLinks = toc?.querySelectorAll('a')
+    tocLinks?.forEach((link) => {
+      link.addEventListener('click', closeToC, { signal })
+    })
+    document.addEventListener(
+      'libtmux:drawer-open',
+      (e) => {
+        if ((e as CustomEvent).detail !== 'toc') closeToC()
+      },
+      { signal },
+    )
+
+    // Widening past the breakpoint hides the panel but would leave the body
+    // scroll-locked; see the sidebar drawer's note.
+    const desktop = window.matchMedia('(min-width: 1024px)')
+    desktop.addEventListener('change', (e) => e.matches && closeToC(), { signal })
+    if (desktop.matches) closeToC()
+  }
+  // Initialize on first load
+
+  initMobileToC()
+  // Re-initialize after view transitions
+  document.addEventListener('astro:after-swap', initMobileToC)
+</script>

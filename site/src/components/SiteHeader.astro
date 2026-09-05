@@ -1,0 +1,44 @@
+---
+import PortSwitcher from './PortSwitcher.astro'
+import VersionSwitcher from './VersionSwitcher.astro'
+import { withRoot } from '../lib/site-root'
+
+interface Props {
+  portSlug?: string
+  version: string
+  /** Forwarded to the port switcher so switching language keeps the page. */
+  pagePath?: string
+}
+const { portSlug, version, pagePath = '' } = Astro.props as Props
+---
+
+{/*
+  Sticky, so the port switcher stays reachable down a long reference page.
+
+  It needs its own background: the page scrolls underneath, and a transparent
+  bar shows signatures sliding through the nav. `--topnav-background` is the
+  token that already tracks the theme, and the blur is the one tony.sh uses
+  behind the same bar.
+*/}
+<header
+  class="sticky top-0 z-40 border-b border-edge"
+  style="background: var(--topnav-background); backdrop-filter: blur(var(--topnav-backdrop-blur, 8px));"
+>
+  <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 py-3">
+    <a href={withRoot('/')} class="font-mono text-lg font-semibold tracking-tight">libtmux</a>
+    <div class="flex-1"><PortSwitcher portSlug={portSlug} version={version} pagePath={pagePath} /></div>
+    <VersionSwitcher portSlug={portSlug} version={version} />
+    <a
+      href={withRoot('/reference/')}
+      class="topnav-chip px-2 py-1 text-sm"
+    >Reference</a>
+    <a href={withRoot('/mcp/')} class="topnav-chip px-2 py-1 text-sm">MCP</a>
+    <a
+      href={withRoot('/search/')}
+      class="topnav-chip border border-edge px-2 py-1 text-sm"
+      aria-label="Search the documentation"
+    >
+      Search
+    </a>
+  </div>
+</header>

@@ -1,0 +1,176 @@
+---
+/**
+ * Based on Starlight's TableOfContentsList component
+ * Original source: https://github.com/withastro/starlight
+ * License: MIT
+ * Copyright (c) 2023 Astro contributors
+ *
+ * Modified to use Tailwind CSS v4 and custom theme system
+ */
+
+import type { TocItem } from '../../utils/generateToC'
+
+interface Props {
+  toc: TocItem[]
+  depth?: number
+  isMobile?: boolean
+}
+
+const { toc, isMobile = false, depth = 0 } = Astro.props
+---
+
+<ul class:list={{ isMobile }} data-toc-depth={depth}>
+  {
+    toc.map((heading) => (
+      <li data-has-children={heading.children.length > 0 ? 'true' : 'false'} class={heading.children.length > 0 ? 'collapsed' : ''}>
+        <a href={'#' + heading.slug}>
+          <span>{heading.text}</span>
+          {heading.children.length > 0 && !isMobile && (
+            <svg
+              class="toc-chevron"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M6 12L10 8L6 4" />
+            </svg>
+          )}
+        </a>
+        {heading.children.length > 0 && (
+          <Astro.self toc={heading.children} depth={depth + 1} isMobile={isMobile} />
+        )}
+      </li>
+    ))
+    }
+  </ul>
+
+  <style define:vars={{ depth }}>
+    ul {
+      padding: 0;
+      list-style: none;
+    }
+    a {
+      --pad-inline: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 0.25rem;
+      padding-block: 0.25rem;
+      padding-inline: calc(1rem * var(--depth) + var(--pad-inline)) var(--pad-inline);
+      line-height: 1.25;
+      color: rgb(100 116 139); /* slate-500 */
+      text-decoration: none;
+    }
+    :global([data-theme-mode="dark"]) a {
+      color: rgb(148 163 184); /* slate-400 */
+    }
+    a:hover {
+      color: rgb(51 65 85); /* slate-700 */
+    }
+    :global([data-theme-mode="dark"]) a:hover {
+      color: rgb(203 213 225); /* slate-300 */
+    }
+    a[aria-current='true'] {
+      color: var(--theme-primary);
+      font-weight: 500;
+      position: relative;
+    }
+    a[aria-current='true']::before {
+      content: '';
+      position: absolute;
+      left: -0.75rem;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background-color: var(--theme-primary);
+    }
+    .isMobile a {
+      --pad-inline: 1rem;
+      display: flex;
+      justify-content: space-between;
+      gap: var(--pad-inline);
+      border-top: 1px solid rgb(229 231 235); /* gray-200 */
+      border-radius: 0;
+      padding-block: 0.5rem;
+      font-size: 0.875rem;
+      text-decoration: none;
+      outline-offset: -2px;
+    }
+    :global([data-theme-mode="dark"]) .isMobile a {
+      border-top-color: rgb(55 65 81); /* gray-700 */
+    }
+    .isMobile:first-child > li:first-child > a {
+      border-top: 0;
+    }
+    .isMobile a[aria-current='true'],
+    .isMobile a[aria-current='true']:hover,
+    .isMobile a[aria-current='true']:focus {
+      color: var(--theme-primary);
+      background-color: unset;
+    }
+    .isMobile a[aria-current='true']::after {
+      content: '';
+      width: 1rem;
+      background-color: var(--theme-primary);
+      /* Check mark SVG icon */
+      -webkit-mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxNCAxNCc+PHBhdGggZD0nTTEwLjkxNCA0LjIwNmEuNTgzLjU4MyAwIDAgMC0uODI4IDBMNS43NCA4LjU1NyAzLjkxNCA2LjcyNmEuNTk2LjU5NiAwIDAgMC0uODI4Ljg1N2wyLjI0IDIuMjRhLjU4My41ODMgMCAwIDAgLjgyOCAwbDQuNzYtNC43NmEuNTgzLjU4MyAwIDAgMCAwLS44NTdaJy8+PC9zdmc+Cg==');
+      mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9JzAgMCAxNCAxNCc+PHBhdGggZD0nTTEwLjkxNCA0LjIwNmEuNTgzLjU4MyAwIDAgMC0uODI4IDBMNS43NCA4LjU1NyAzLjkxNCA2LjcyNmEuNTk2LjU5NiAwIDAgMC0uODI4Ljg1N2wyLjI0IDIuMjRhLjU4My41ODMgMCAwIDAgLjgyOCAwbDQuNzYtNC43NmEuNTgzLjU4MyAwIDAgMCAwLS44NTdaJy8+PC9zdmc+Cg==');
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      flex-shrink: 0;
+    }
+    /* Chevron styles - purely visual indicator, start collapsed */
+    .toc-chevron {
+      width: 1rem;
+      height: 1rem;
+      opacity: 0.4;
+      flex-shrink: 0;
+      margin-left: 0.25rem;
+      pointer-events: none; /* Not interactive */
+      transform: rotate(-90deg); /* Start collapsed */
+    }
+    li[data-has-children="true"]:not(.collapsed) .toc-chevron {
+      transform: rotate(0deg);
+    }
+    /* Collapse/expand styles - start collapsed by default to prevent
+       flicker; state changes snap (the site is intentionally motionless) */
+    li[data-has-children="true"] > ul {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+    }
+    li[data-has-children="true"]:not(.collapsed) > ul {
+      max-height: 1000px;
+      opacity: 1;
+    }
+    li[data-has-children="true"].collapsed > ul {
+      max-height: 0;
+      opacity: 0;
+    }
+    li[data-has-children="true"].collapsed .toc-chevron {
+      transform: rotate(-90deg);
+    }
+    /* Always expand if has active child */
+    li[data-has-children="true"]:has(a[aria-current="true"]) > ul,
+    li[data-has-children="true"]:has(li a[aria-current="true"]) > ul {
+      max-height: 1000px !important;
+      opacity: 1 !important;
+    }
+    li[data-has-children="true"]:has(a[aria-current="true"]) .toc-chevron,
+    li[data-has-children="true"]:has(li a[aria-current="true"]) .toc-chevron {
+      transform: rotate(0deg) !important;
+    }
+    /* Don't collapse when hovering over the section */
+    li[data-has-children="true"]:hover > ul {
+      max-height: 1000px !important;
+      opacity: 1 !important;
+    }
+    li[data-has-children="true"]:hover .toc-chevron {
+      transform: rotate(0deg) !important;
+    }
+  </style>

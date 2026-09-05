@@ -1,0 +1,144 @@
+---
+import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
+import ApiDoc from './ApiDoc.astro'
+
+/**
+ * A docstring body, with its block structure.
+ *
+ * `ApiDoc` resolves cross-references inside one run of prose and returns
+ * inline spans. That is right for a summary or a parameter description, and
+ * wrong for a body: `Server`'s docstring opens with a four-level bullet list
+ * showing the containment hierarchy, and rendered inline it became one long
+ * sentence with the indentation collapsed —
+ * "- Server.sessions [Session, …] - Session.windows [Window, …]".
+ *
+ * Only the two constructs docstrings here actually use: paragraphs and
+ * nested bullet lists. A literal block or a table would need docutils, and
+ * pretending to handle one badly is worse than leaving it as a paragraph.
+ */
+interface Item {
+  text: string
+  children: Item[]
+}
+
+interface Props {
+  /** A docstring body to parse. Omit when passing `items`. */
+  text?: string
+  /** Already-parsed list items, for the recursive call. */
+  items?: Item[]
+  index: SymbolIndex
+  context?: ApiSymbol
+}
+const { text, items, index, context } = Astro.props as Props
+
+type Block =
+  | { kind: 'p'; text: string }
+  | { kind: 'ul'; items: Item[] }
+  /** `# Errors`, `# Panics`, `# Safety` — Rust's convention, and Go's. */
+  | { kind: 'rubric'; text: string }
+
+/**
+ * Group lines into paragraphs and bullet lists.
+ *
+ * Nesting comes from indentation, which is how reST spells it. A bullet
+ * deeper than the last opens a child list; a shallower one closes back to the
+ * matching level.
+ */
+function parse(source: string): Block[] {
+  const blocks: Block[] = []
+  const lines = source.split('\n')
+  let para: string[] = []
+  /** Open lists, innermost last, with the indent that opened each. */
+  let stack: { indent: number; items: Item[] }[] = []
+
+  const flushPara = () => {
+    const joined = para.join(' ').replace(/\s+/g, ' ').trim()
+    if (joined) blocks.push({ kind: 'p', text: joined })
+    para = []
+  }
+  const flushList = () => {
+    if (stack.length) blocks.push({ kind: 'ul', items: stack[0].items })
+    stack = []
+  }
+
+  for (const raw of lines) {
+    // A heading, not a comment: `#` opens a heading in a Markdown doc comment
+    // and these render it. Left as text it printed "# Errors" mid-paragraph.
+    const heading = /^\s*#{1,4}\s+(\S.*)$/.exec(raw)
+    if (heading) {
+      flushPara()
+      flushList()
+      blocks.push({ kind: 'rubric', text: heading[1].trim() })
+      continue
+    }
+    const bullet = /^(\s*)[-*+]\s+(.*)$/.exec(raw)
+    if (bullet) {
+      flushPara()
+      const indent = bullet[1].length
+      const item: Item = { text: bullet[2].trim(), children: [] }
+      while (stack.length && indent < stack[stack.length - 1].indent) stack.pop()
+      if (!stack.length) {
+        stack.push({ indent, items: [item] })
+      } else if (indent > stack[stack.length - 1].indent) {
+        const parent = stack[stack.length - 1].items.at(-1)
+        if (parent) {
+          stack.push({ indent, items: parent.children })
+          stack[stack.length - 1].items.push(item)
+        }
+      } else {
+        stack[stack.length - 1].items.push(item)
+      }
+      continue
+    }
+    if (!raw.trim()) {
+      // A blank line ends a paragraph but not a list: reST separates nested
+      // bullets with blank lines, and treating one as a terminator flattened
+      // every hierarchy in the corpus.
+      flushPara()
+      continue
+    }
+    if (stack.length) {
+      // Prose at column zero after a list ends it; indented prose continues
+      // the last item.
+      if (/^\S/.test(raw)) flushList()
+      else {
+        const last = stack[stack.length - 1].items.at(-1)
+        if (last) last.text += ` ${raw.trim()}`
+        continue
+      }
+    }
+    para.push(raw.trim())
+  }
+  flushPara()
+  flushList()
+  return blocks
+}
+
+// `items` is the recursive call: a nested list, already parsed. Re-serialising
+// it to text and re-parsing would drop every level below the second.
+const blocks: Block[] = items ? [{ kind: 'ul', items }] : parse(text ?? '')
+const { self: ApiProse } = Astro
+---
+
+{
+  blocks.map((block) =>
+    block.kind === 'rubric' ? (
+      <p class="rubric">{block.text}</p>
+    ) : block.kind === 'p' ? (
+      <p>
+        <ApiDoc text={block.text} index={index} context={context} />
+      </p>
+    ) : (
+      <ul>
+        {block.items.map((item) => (
+          <li>
+            <ApiDoc text={item.text} index={index} context={context} />
+            {item.children.length > 0 && (
+              <ApiProse items={item.children} index={index} context={context} />
+            )}
+          </li>
+        ))}
+      </ul>
+    ),
+  )
+}

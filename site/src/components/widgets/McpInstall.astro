@@ -1,0 +1,311 @@
+---
+import './mcp-install.css'
+import {
+  bodySegments,
+  buildMcpInstallPrehydrateSnippet,
+  buildPanels,
+  CLIENTS,
+  DEFAULT_COOLDOWN_DAYS,
+  DEFAULT_COOLDOWN_ENABLED,
+  DEFAULT_COOLDOWN_TYPE,
+  DEFAULT_SCOPES,
+  defaultCooldownDate,
+  METHODS,
+  COOLDOWN_DURATION_SENTINEL,
+  COOLDOWN_DATE_SENTINEL,
+} from '../../lib/install-matrix'
+import { highlightInline } from '../../lib/highlight'
+
+/**
+ * Client x install-method x config-scope x dependency-cooldown picker for
+ * the libtmux MCP server. Ported from
+ * ~/work/python/libtmux-mcp/docs/_widgets/mcp-install/widget.html (Jinja)
+ * — see install-matrix.ts for the data/body-building port and
+ * mcp-install.{css,js} for the near-verbatim behavioural port. This file
+ * only turns the Jinja template's loops into Astro's.
+ *
+ * Every (client, method, scope, cooldown) combination is server-rendered —
+ * 8 clients / 14 scopes / 3 methods / 3 cooldowns = 126 panels — so the
+ * widget is fully usable with JavaScript disabled: exactly one panel
+ * (`data-default`) is visible via mcp-install.css's plain CSS rule, tabs
+ * render but don't switch (no-JS parity with the source, not an
+ * improvement on it — see mcp-install.js's own header for why no-JS tab
+ * *switching* was never in scope). With JavaScript enabled, the prehydrate
+ * snippet below picks the reader's last selection before first paint, and
+ * mcp-install.js keeps it in sync afterward.
+ */
+interface Props {
+  variant?: 'full' | 'compact'
+}
+const { variant = 'full' } = Astro.props as Props
+
+const panels = buildPanels()
+
+/*
+ * The config body, highlighted, with its live slots intact.
+ *
+ * The block is JSON (or a shell line) and rendered as plain text, so it sat
+ * unhighlighted beside code the rest of the page highlights. It cannot take
+ * Shiki's `<pre>` wrapper — the widget brings a copy button — and it cannot
+ * simply be highlighted as a string either, because two spans inside it are
+ * rewritten at runtime when the reader changes the cooldown.
+ *
+ * So: substitute the sentinels for the values they default to, highlight
+ * that, then wrap those values back up in the slot elements
+ * `mcp-install.js` looks for. Both are plain ASCII inside a JSON string,
+ * which Shiki emits as one token, so neither is split across spans or
+ * escaped.
+ */
+const panelKey = (panel: (typeof panels)[number]) =>
+  `${panel.client.id}/${panel.method.id}/${panel.scope.id}/${panel.cooldown.id}`
+
+const DURATION_VALUE = `P${DEFAULT_COOLDOWN_DAYS}D`
+const DATE_VALUE = defaultCooldownDate(DEFAULT_COOLDOWN_DAYS)
+
+const slot = (attr: string, value: string) =>
+  `<span class="lm-mcp-install__cooldown-days" ${attr}>${value}</span>`
+
+const bodyHtml = new Map(
+  await Promise.all(
+    panels.map(async (panel) => {
+      const text = panel.body
+        .replaceAll(COOLDOWN_DURATION_SENTINEL, DURATION_VALUE)
+        .replaceAll(COOLDOWN_DATE_SENTINEL, DATE_VALUE)
+      let html = await highlightInline(text, panel.language)
+      if (panel.body.includes(COOLDOWN_DURATION_SENTINEL)) {
+        html = html.replace(DURATION_VALUE, slot('data-cooldown-duration-slot', DURATION_VALUE))
+      }
+      if (panel.body.includes(COOLDOWN_DATE_SENTINEL)) {
+        html = html.replace(DATE_VALUE, slot('data-cooldown-date-slot', DATE_VALUE))
+      }
+      return [panelKey(panel), html] as const
+    }),
+  ),
+)
+
+const prereqHtml = new Map(
+  await Promise.all(
+    panels
+      .filter((panel) => panel.pipPrereq)
+      .map(async (panel) => [
+        panelKey(panel),
+        await highlightInline(`$ ${panel.pipPrereq}`, 'console'),
+      ] as const),
+  ),
+)
+const prehydrateSnippet = buildMcpInstallPrehydrateSnippet()
+const scopedClients = CLIENTS.filter((c) => c.scopes.length > 1)
+---
+
+<Fragment set:html={prehydrateSnippet} />
+<div
+  class={`lm-mcp-install lm-mcp-install--${variant}`}
+  data-default-scopes={JSON.stringify(DEFAULT_SCOPES)}
+  data-default-cooldown-enabled={DEFAULT_COOLDOWN_ENABLED ? '1' : '0'}
+  data-default-cooldown-type={DEFAULT_COOLDOWN_TYPE}
+  data-default-cooldown-days={DEFAULT_COOLDOWN_DAYS}
+>
+  <div class="lm-mcp-install__tabs lm-mcp-install__tabs--clients" role="tablist" aria-label="MCP client">
+    {
+      CLIENTS.map((client, i) => (
+        <button
+          type="button"
+          class="lm-mcp-install__tab"
+          role="tab"
+          data-tab-kind="client"
+          data-tab-value={client.id}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          tabindex={i === 0 ? '0' : '-1'}
+        >
+          {client.label}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="lm-mcp-install__tabs lm-mcp-install__tabs--methods" role="tablist" aria-label="Install method">
+    {
+      METHODS.map((method, i) => (
+        <button
+          type="button"
+          class="lm-mcp-install__tab"
+          role="tab"
+          data-tab-kind="method"
+          data-tab-value={method.id}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          tabindex={i === 0 ? '0' : '-1'}
+        >
+          {method.label}
+        </button>
+      ))
+    }
+
+    <div class="lm-mcp-install__cooldown-control">
+      <input
+        type="checkbox"
+        id="lm-mcp-install__cooldown-toggle"
+        class="lm-mcp-install__cooldown-toggle"
+        data-action="cooldown-toggle"
+        aria-label="Apply a dependency cooldown"
+      />
+      <button
+        type="button"
+        class="lm-mcp-install__cooldown-label-text"
+        data-action="cooldown-open"
+        aria-label="Toggle cooldown settings"
+      >
+        Configure cooldowns
+      </button>
+      <button
+        type="button"
+        class="lm-mcp-install__cooldown-help"
+        data-action="cooldown-help"
+        aria-label="What are cooldowns?"
+        title="What are cooldowns?"
+      >
+        ?
+      </button>
+    </div>
+  </div>
+
+  <div class="lm-mcp-install__tabs lm-mcp-install__tabs--scopes" role="tablist" aria-label="Config scope">
+    {
+      scopedClients.map((client) => (
+        <div class="lm-mcp-install__scopes-group" data-scope-client={client.id}>
+          {client.scopes.map((scope, i) => (
+            <button
+              type="button"
+              class="lm-mcp-install__tab"
+              role="tab"
+              data-tab-kind="scope"
+              data-tab-client={client.id}
+              data-tab-value={scope.id}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? '0' : '-1'}
+            >
+              {scope.label}
+            </button>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="lm-mcp-install__body lm-mcp-install__body--install">
+    {
+      panels.map((panel) => (
+        <div
+          class="lm-mcp-install__panel"
+          role="tabpanel"
+          data-client={panel.client.id}
+          data-method={panel.method.id}
+          data-scope={panel.scope.id}
+          data-cooldown={panel.cooldown.id}
+          data-default={panel.isDefault ? true : undefined}
+          tabindex="0"
+        >
+          {panel.method.docUrl ? (
+            <p class="lm-mcp-install__preamble">
+              With
+              {' '}
+              <a href={panel.method.docUrl} target="_blank" rel="noopener">
+                {panel.method.label}
+              </a>
+              {' '}
+              installed:
+            </p>
+          ) : panel.method.id === 'pip' ? (
+            <>
+              <p class="lm-mcp-install__preamble">Install the packages first:</p>
+              <div class="lm-mcp-install__code lm-mcp-install__code--prereq" data-language="console"><pre><code set:html={prereqHtml.get(panelKey(panel))} /></pre><button type="button" class="lm-mcp-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
+              <p class="lm-mcp-install__preamble">Then {panel.client.kind === 'cli' ? 'register' : 'use this config'}:</p>
+            </>
+          ) : null}
+
+          {panel.scope.note && <p class="lm-mcp-install__preamble lm-mcp-install__preamble--manual">{panel.scope.note}</p>}
+
+          <div class="lm-mcp-install__code" data-language={panel.language}><pre><code set:html={bodyHtml.get(panelKey(panel))} /></pre><button type="button" class="lm-mcp-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
+
+          {panel.note && <p class="lm-mcp-install__cooldown-note">{panel.note}</p>}
+
+          {(variant !== 'compact' || panel.client.kind === 'json') && (
+            <p class="lm-mcp-install__config-file">
+              Config file: <code>{panel.scope.configFile}</code>
+            </p>
+          )}
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="lm-mcp-install__body lm-mcp-install__body--settings" role="dialog" aria-label="Cooldown settings">
+    <div class="lm-mcp-install__settings-header">
+      <button type="button" class="lm-mcp-install__back" data-action="cooldown-back" aria-label="Back to installer">
+        <span class="lm-mcp-install__back-icon" aria-hidden="true">
+          &larr;
+        </span>
+        <span class="lm-mcp-install__back-text">Back</span>
+      </button>
+      <h3 class="lm-mcp-install__settings-title">Dependency cooldowns</h3>
+    </div>
+    <p class="lm-mcp-install__settings-help">
+      Use the <em>Configure cooldowns</em> checkbox above to enable or disable. These settings choose how cooldown behaves
+      once enabled.
+    </p>
+    <fieldset class="lm-mcp-install__settings-modes">
+      <legend class="lm-mcp-install__sr-only">Cooldown type</legend>
+      <label class="lm-mcp-install__settings-mode">
+        <input
+          type="radio"
+          name="cooldown-mode"
+          value="days"
+          data-action="cooldown-mode"
+          checked={DEFAULT_COOLDOWN_TYPE === 'days'}
+        />
+        <span>
+          Apply a cooldown of
+          <input
+            type="number"
+            min="1"
+            max="365"
+            value={DEFAULT_COOLDOWN_DAYS}
+            class="lm-mcp-install__cooldown-days-input"
+            data-action="cooldown-days"
+            aria-label="Cooldown in days"
+          />
+          days
+        </span>
+      </label>
+      <label class="lm-mcp-install__settings-mode">
+        <input
+          type="radio"
+          name="cooldown-mode"
+          value="bypass"
+          data-action="cooldown-mode"
+          checked={DEFAULT_COOLDOWN_TYPE === 'bypass'}
+        />
+        <span>
+          Bypass any global cooldown <small>(uv only)</small>
+        </span>
+      </label>
+    </fieldset>
+    <details class="lm-mcp-install__cooldown-explainer">
+      <summary>What are cooldowns?</summary>
+      <p>
+        Cooldowns delay picking up newly uploaded packages so the community has time to spot supply-chain attacks before
+        you install. Most package managers don't apply one by default &mdash; you opt in via a global setting in your
+        tool's config.
+      </p>
+      <p>
+        Learn more at <a href="https://cooldowns.dev/" target="_blank" rel="noopener">cooldowns.dev</a> &middot;{' '}
+        <a href="https://securitylabs.datadoghq.com/articles/dependency-cooldowns/" target="_blank" rel="noopener">
+          Datadog Security Labs writeup
+        </a>.
+      </p>
+    </details>
+  </div>
+</div>
+
+<script>
+  import './mcp-install.js'
+</script>

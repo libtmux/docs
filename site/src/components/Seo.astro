@@ -1,0 +1,177 @@
+---
+import type { Graph, WithContext, Thing } from 'schema-dts'
+import { PORT_BY_SLUG } from '../lib/ports'
+import { canonicalUrl, robotsFor, type VersionEntry } from '../lib/versions'
+
+/**
+ * Every head tag that search engines care about, in one place.
+ *
+ * The hard part on a versioned, multi-port site is not emitting tags — it is
+ * emitting the *right* ones. Eight ports times N versions means most URLs on
+ * this site are duplicates of another URL, and saying so explicitly is what
+ * keeps ranking on the page we actually want people to land on.
+ */
+interface Props {
+  title: string
+  description?: string
+  /** Path within the current port+version, e.g. 'guides/panes'. */
+  pagePath: string
+  /** Port slug when the page belongs to one; omitted for shared shell pages. */
+  portSlug?: string
+  /** Version slug for this build. */
+  version: string
+  /** The version this port currently defaults to. */
+  defaultVersion: string
+  versionEntry: VersionEntry
+  /** Page exists at the same path under the default version. */
+  existsInDefault?: boolean
+  /** Force noindex regardless of version policy. */
+  noindex?: boolean
+  /** ISO date for Article structured data. */
+  updated?: string
+  /**
+   * Every locale this page genuinely exists in, including the default.
+   *
+   * Never the project's full locale list. An hreflang alternate that 404s is
+   * worse than no alternate at all: it tells a search engine, and a reader,
+   * that a translation exists when it does not.
+   */
+  locales?: string[]
+  /** Current locale. */
+  locale?: string
+  /**
+   * This page's path with any locale prefix removed, e.g. 'concepts' for both
+   * `/concepts/` and `/ja/concepts/`. Alternates are built from this, because
+   * the current URL already carries a prefix and appending another produces
+   * `/ja/ja/concepts/`.
+   */
+  sourcePath?: string
+}
+
+const {
+  title,
+  description,
+  pagePath,
+  portSlug,
+  version,
+  defaultVersion,
+  versionEntry,
+  existsInDefault = true,
+  noindex = false,
+  updated,
+  locales = [],
+  locale = 'en',
+  sourcePath,
+} = Astro.props as Props
+
+const origin = (Astro.site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
+const port = portSlug ? PORT_BY_SLUG[portSlug] : undefined
+
+// Shared shell pages live at the root and are always canonical to themselves.
+// Port pages canonicalise to the same path under the port's default version.
+const canonical = portSlug
+  ? canonicalUrl(origin, portSlug, version, defaultVersion, pagePath, existsInDefault)
+  : `${origin}/${pagePath.replace(/^\/+/, '').replace(/\/+$/, '')}${pagePath.replace(/^\/+/, '') ? '/' : ''}`
+
+/**
+ * The URL of this page in one locale, built from the unprefixed source path
+ * rather than from `canonical` — which already carries the current locale's
+ * prefix, so deriving from it yields `/ja/ja/concepts/`.
+ */
+const localeBase = (sourcePath ?? pagePath).replace(/^\/+|\/+$/g, '')
+const localeHref = (l: string) =>
+  l === 'en'
+    ? `${origin}/${localeBase}${localeBase ? '/' : ''}`
+    : `${origin}/${l}/${localeBase}${localeBase ? '/' : ''}`
+
+const isDefault = version === defaultVersion
+
+/**
+ * Shared shell pages (concepts, guides, examples — anything with no `port`)
+ * are emitted by *every* build, including each port's versioned build, because
+ * they live in one collection rendered by one catch-all route. Treating "has
+ * no port" as "is canonical" therefore marks the same page indexable at a
+ * dozen URLs, which is precisely the duplicate-content split robotsFor() exists
+ * to prevent.
+ *
+ * The real signal is whether this build is the one mounted at the site root.
+ * Only that build's copy of a shared page is the canonical one.
+ */
+const isRootShellBuild =
+  (process.env.LIBTMUX_DOCS_BASE ?? '/') === '/' && versionEntry.kind !== 'pr'
+const indexable = portSlug ? isDefault : isRootShellBuild
+
+const robots = noindex ? 'noindex, nofollow' : robotsFor(versionEntry, indexable)
+
+const fullTitle = title === 'libtmux' ? title : `${title} — libtmux`
+const desc =
+  description ??
+  'libtmux is a typed tmux control library, available in Python, TypeScript, Rust, Go, Java, .NET, C++ and Swift.'
+
+// Structured data. WebSite on the landing page, TechArticle elsewhere —
+// TechArticle is the schema.org type that actually fits API documentation,
+// and it carries the programming language, which is the axis this site is
+// organised around.
+const graph: Graph = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${origin}/#website`,
+      url: `${origin}/`,
+      name: 'libtmux',
+      description:
+        'A typed tmux control library for eight languages, with one documentation site.',
+    },
+    ...(pagePath
+      ? [
+          {
+            '@type': 'TechArticle' as const,
+            '@id': `${canonical}#article`,
+            url: canonical,
+            headline: title,
+            description: desc,
+            isPartOf: { '@id': `${origin}/#website` },
+            inLanguage: locale,
+            ...(updated ? { dateModified: updated } : {}),
+            ...(port
+              ? {
+                  programmingLanguage: port.language,
+                  about: { '@type': 'SoftwareSourceCode' as const, name: port.packageName },
+                }
+              : {}),
+          },
+        ]
+      : []),
+  ],
+}
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={desc} />
+<link rel="canonical" href={canonical} />
+<meta name="robots" content={robots} />
+
+{/* Locale alternates. x-default points at the unprefixed English page,
+    which is what an unmatched Accept-Language should get.
+    Emitted only when a real translation exists — a cluster of one is noise,
+    and a cluster built from the *current* URL would double the locale prefix. */}
+{
+  locales.length > 1 && (
+    <>
+      {locales.map((l) => (
+        <link rel="alternate" hreflang={l} href={localeHref(l)} />
+      ))}
+      <link rel="alternate" hreflang="x-default" href={localeHref('en')} />
+    </>
+  )
+}
+
+<meta property="og:type" content={pagePath ? 'article' : 'website'} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={desc} />
+<meta property="og:url" content={canonical} />
+<meta property="og:site_name" content="libtmux" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(graph)} />

@@ -1,0 +1,54 @@
+---
+import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
+
+/**
+ * Doc-comment prose with its cross-references resolved.
+ *
+ * 93.5% of libtmux's docstring references land on a real symbol. The rest —
+ * chained calls whose receiver type is not knowable without inference, and a
+ * handful of stale references to methods that no longer exist — render as
+ * plain text, which is what Sphinx does when it cannot resolve one either.
+ */
+interface Props {
+  text: string
+  index: SymbolIndex
+  /** The symbol this doc belongs to, so `:attr:`.panes`` can resolve. */
+  context?: ApiSymbol
+  /**
+   * Whether a citation should link.
+   *
+   * `[server_manual]` points at this page's own References section, which
+   * only the entry that owns the docstring renders. A summary reproduced
+   * somewhere else — the port index, a member list — has no such section, so
+   * the link would resolve to nothing. The label still reads correctly.
+   */
+  citations?: boolean
+}
+const { text, index, context, citations = true } = Astro.props as Props
+// Through the index, so the tokenizer knows which language's spelling of a
+// cross-reference it is reading. Tokenizing here meant reST for all eight.
+const spans = index.linkText(text, context)
+---
+<span>{
+  spans.map((span) => {
+    if (span.kind === 'code') return <code class="api-literal">{span.text}</code>
+    if (span.kind === 'text') return <span>{span.text}</span>
+    // A citation points into this page's own References section, which is
+    // rendered only when the docstring defines one. Where it does not, the
+    // label still reads correctly as `[name]`.
+    if (span.kind === 'citation') {
+      return citations ? (
+        <a class="citation-reference" href={`#citation-${span.target}`}>{span.label}</a>
+      ) : (
+        <span>{span.label}</span>
+      )
+    }
+    return span.link ? (
+      <a class="api-xref" href={span.link.href} rel={span.link.external ? 'nofollow noopener' : undefined}>
+        <code class="api-literal api-literal--link">{span.label}</code>
+      </a>
+    ) : (
+      <code class="api-literal">{span.label}</code>
+    )
+  })
+}</span>

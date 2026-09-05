@@ -1,0 +1,497 @@
+/* MCP install widget — ported from
+ * ~/work/python/libtmux-mcp/docs/_widgets/mcp-install/widget.css.
+ *
+ * Class names, structure and behaviour are unchanged from the source. What
+ * changed is the color system: the source ran on Furo (Sphinx's theme),
+ * whose `--color-*` custom properties don't exist here. The block below
+ * maps this site's own tokens (theme-config.ts's four themes via
+ * --theme-primary, and this site's manual `[data-theme-mode]` dark toggle —
+ * see global.css) onto local `--lm-mcp-install-*` names so the rest of the
+ * file reads exactly like the source with `var(--color-X)` renamed to
+ * `var(--lm-mcp-install-X)`. install-matrix.ts's prehydrate rules
+ * (buildMcpInstallPrehydrateSnippet) consume the same local names, since
+ * they must recolor tabs before this stylesheet's cousin — the prehydrate
+ * `<style>` — even loads.
+ *
+ * This file is imported directly by McpInstall.astro (`import
+ * './mcp-install.css'`), so it ships unlayered — Vite emits it as its own
+ * stylesheet, outside Tailwind's `theme/base/components/utilities` layer
+ * stack declared in global.css. That is deliberate: Tailwind v4's preflight
+ * carries `[hidden]:where(...){display:none!important}` inside `@layer
+ * base`, and per CSS Cascade Layers, an unlayered `!important` rule loses
+ * to it regardless of specificity — the exact fight `_prehydrate.py` needed
+ * `@layer` + `!important` to win. This port never sets the `hidden`
+ * attribute on a panel (McpInstall.astro uses `data-default` instead), so
+ * that preflight rule never matches our elements, and plain unlayered
+ * specificity is enough everywhere below — no `!important` appears in this
+ * file or in install-matrix.ts's prehydrate rules.
+ *
+ * Motion: this site is intentionally motionless (see global.css) — no
+ * transitions here either, matching the source's own lesson (commit
+ * f23d7d5: animations during theme resolve are visible flicker).
+ */
+
+.lm-mcp-install {
+  --lm-mcp-install-bg: var(--background-color);
+  --lm-mcp-install-bg-tabs: #f1f5f9; /* slate-100 */
+  --lm-mcp-install-bg-tabs-2: #eef1f5;
+  --lm-mcp-install-bg-tabs-3: #e9edf2;
+  --lm-mcp-install-border: #e2e8f0; /* slate-200 */
+  --lm-mcp-install-fg: var(--text-color);
+  --lm-mcp-install-fg-secondary: #475569; /* slate-600 */
+  --lm-mcp-install-fg-muted: #64748b; /* slate-500 */
+  --lm-mcp-install-accent: var(--theme-primary);
+  --lm-mcp-install-hover: rgb(0 0 0 / 4%);
+  --lm-mcp-install-code-bg: #f1f5f9; /* slate-100 */
+  --lm-mcp-install-code-fg: var(--text-color);
+  --lm-mcp-install-mono: var(--font-ibm-plex-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+
+  border: 1px solid var(--lm-mcp-install-border);
+  border-radius: 0.375rem;
+  background: var(--lm-mcp-install-bg);
+  color: var(--lm-mcp-install-fg);
+  overflow: hidden;
+  margin: 1rem 0;
+  font-size: 0.95em;
+}
+
+html[data-theme-mode='dark'] .lm-mcp-install {
+  --lm-mcp-install-bg-tabs: #1e293b; /* slate-800 */
+  --lm-mcp-install-bg-tabs-2: #1a2436;
+  --lm-mcp-install-bg-tabs-3: #16202f;
+  --lm-mcp-install-border: #1e293b; /* slate-800 */
+  --lm-mcp-install-fg-secondary: #94a3b8; /* slate-400 */
+  --lm-mcp-install-fg-muted: #94a3b8;
+  --lm-mcp-install-hover: rgb(255 255 255 / 6%);
+  --lm-mcp-install-code-bg: #1e293b;
+}
+
+.lm-mcp-install__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  background: var(--lm-mcp-install-bg-tabs);
+  border-bottom: 1px solid var(--lm-mcp-install-border);
+}
+
+.lm-mcp-install__tabs--methods {
+  background: var(--lm-mcp-install-bg-tabs-2);
+}
+
+.lm-mcp-install__tabs--scopes {
+  background: var(--lm-mcp-install-bg-tabs-3);
+}
+
+/* Scope groups are hidden by default; a client with more than one scope
+ * only becomes visible once install-matrix.ts's prehydrate rule matches
+ * the active `<html data-mcp-install-client>`. Single-scope clients
+ * (Claude Desktop, Antigravity, opencode) render no group at all — see
+ * McpInstall.astro — so there is nothing to show for them regardless. */
+.lm-mcp-install__scopes-group {
+  display: none;
+  flex-wrap: wrap;
+  gap: 0;
+  width: 100%;
+}
+
+.lm-mcp-install__tab {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--lm-mcp-install-fg-muted);
+  cursor: pointer;
+  font: inherit;
+  padding: 0.45rem 0.9rem;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.lm-mcp-install__tab:hover {
+  color: var(--lm-mcp-install-fg);
+  background: var(--lm-mcp-install-hover);
+}
+
+.lm-mcp-install__tab:focus-visible {
+  outline: 2px solid var(--lm-mcp-install-accent);
+  outline-offset: -2px;
+}
+
+.lm-mcp-install__tab[aria-selected='true'] {
+  color: var(--lm-mcp-install-accent);
+  border-bottom-color: var(--lm-mcp-install-accent);
+  background: var(--lm-mcp-install-bg);
+}
+
+.lm-mcp-install__body {
+  padding: 0.9rem 1rem;
+}
+
+/* SSR/no-JS default: exactly one panel is visible with no script needed.
+ * install-matrix.ts's prehydrate PANEL_DEFAULT_OVERRIDE_RULE hides this one
+ * again once `<html>` carries a selection that isn't (claude-code, uvx,
+ * local, off), and its panelActiveSelectors() rule shows whichever panel
+ * actually matches — both more specific than the two rules below, so no
+ * source-order dependency and no `!important`. */
+.lm-mcp-install__panel {
+  display: none;
+}
+
+.lm-mcp-install__panel[data-default] {
+  display: block;
+}
+
+.lm-mcp-install__panel:focus-visible {
+  outline: 2px solid var(--lm-mcp-install-accent);
+  outline-offset: 4px;
+  border-radius: 0.25rem;
+}
+
+.lm-mcp-install__preamble {
+  margin: 0 0 0.4rem 0;
+  color: var(--lm-mcp-install-fg-secondary);
+  font-size: 0.93em;
+}
+
+.lm-mcp-install__preamble a {
+  color: var(--lm-mcp-install-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Code block wrapper: houses the <pre> plus the copy button. Astro has no
+ * `<Code>` usable outside markdown here (see src/pages/[port]/index.astro's
+ * own comment on the same limitation), so panels render plain <pre><code> —
+ * no per-language syntax color, same as that page's install command. */
+.lm-mcp-install__code {
+  position: relative;
+}
+
+.lm-mcp-install__code pre {
+  margin: 0;
+  overflow-x: auto;
+  border-radius: 0.25rem;
+  background: var(--lm-mcp-install-code-bg);
+  color: var(--lm-mcp-install-code-fg);
+  padding: 0.75rem 3.25rem 0.75rem 0.9rem;
+}
+
+.lm-mcp-install__code code {
+  font-family: var(--lm-mcp-install-mono);
+  font-size: 0.85em;
+  white-space: pre;
+}
+
+.lm-mcp-install__copy {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  appearance: none;
+  border: 1px solid var(--lm-mcp-install-border);
+  border-radius: 0.25rem;
+  background: var(--lm-mcp-install-bg);
+  color: var(--lm-mcp-install-fg-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75em;
+  line-height: 1;
+  padding: 0.3rem 0.5rem;
+}
+
+.lm-mcp-install__copy:hover {
+  color: var(--lm-mcp-install-fg);
+  border-color: var(--lm-mcp-install-fg-muted);
+}
+
+.lm-mcp-install__copy:focus-visible {
+  outline: 2px solid var(--lm-mcp-install-accent);
+  outline-offset: 2px;
+}
+
+.lm-mcp-install__copy--done {
+  color: var(--lm-mcp-install-accent);
+  border-color: var(--lm-mcp-install-accent);
+}
+
+/* Prereq accent: blue left-border on the `pip install` prerequisite block. */
+.lm-mcp-install__code--prereq {
+  border-left: 3px solid var(--lm-mcp-install-accent);
+  margin: 0 0 0.6rem 0;
+}
+
+.lm-mcp-install__code--prereq pre {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.lm-mcp-install__config-file {
+  margin: 0.5rem 0 0 0;
+  color: var(--lm-mcp-install-fg-muted);
+  font-size: 0.85em;
+}
+
+.lm-mcp-install__config-file code {
+  font-family: var(--lm-mcp-install-mono);
+  font-size: 0.95em;
+}
+
+/* Compact variant: tighter padding, smaller type. For above-the-fold use
+ * (source used it on its index page). */
+.lm-mcp-install--compact .lm-mcp-install__tab {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.9em;
+}
+
+.lm-mcp-install--compact .lm-mcp-install__body {
+  padding: 0.7rem 0.8rem;
+}
+
+.lm-mcp-install--compact .lm-mcp-install__cooldown-control {
+  font-size: 0.85em;
+  padding: 0 0.5rem 0 0.4rem;
+}
+
+/* Cooldown control: sits on the right edge of the method row. */
+.lm-mcp-install__cooldown-control {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-inline-start: auto;
+  padding: 0 0.7rem 0 0.5rem;
+  color: var(--lm-mcp-install-fg-secondary);
+  font-size: 0.9em;
+}
+
+/* Unchecked baseline only — the *checked* visual lives in
+ * install-matrix.ts's buildMcpInstallPrehydrateSnippet(), keyed off
+ * `html[data-mcp-install-cooldown-enabled="1"]`. A native checkbox's
+ * rendered glyph follows its `.checked` DOM property, which only
+ * mcp-install.js can set (after DOMContentLoaded); painting the checked
+ * state from `<html>` state instead avoids an unchecked -> checked flicker
+ * on reload when cooldown was previously enabled. */
+.lm-mcp-install__cooldown-toggle {
+  appearance: none;
+  width: 0.95em;
+  height: 0.95em;
+  margin: 0;
+  border: 1.5px solid var(--lm-mcp-install-fg-muted);
+  border-radius: 0.2em;
+  background: var(--lm-mcp-install-bg);
+  cursor: pointer;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.lm-mcp-install__cooldown-toggle:focus-visible {
+  outline: 2px solid var(--lm-mcp-install-accent);
+  outline-offset: 2px;
+}
+
+.lm-mcp-install__cooldown-label-text {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  margin: 0;
+}
+
+.lm-mcp-install__cooldown-label-text:hover {
+  color: var(--lm-mcp-install-fg);
+  border-bottom-color: var(--lm-mcp-install-fg-muted);
+}
+
+.lm-mcp-install__cooldown-label-text:focus-visible {
+  outline: 2px solid var(--lm-mcp-install-accent);
+  outline-offset: 2px;
+  border-radius: 0.15rem;
+}
+
+.lm-mcp-install__cooldown-help {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--lm-mcp-install-border);
+  border-radius: 999px;
+  width: 1.3em;
+  height: 1.3em;
+  padding: 0;
+  font: inherit;
+  font-size: 0.85em;
+  color: var(--lm-mcp-install-fg-secondary);
+  cursor: help;
+  line-height: 1;
+}
+
+.lm-mcp-install__cooldown-help:hover {
+  color: var(--lm-mcp-install-accent);
+  border-color: var(--lm-mcp-install-accent);
+}
+
+.lm-mcp-install__cooldown-help:focus-visible {
+  outline: 2px solid var(--lm-mcp-install-accent);
+  outline-offset: 2px;
+}
+
+/* Cooldown days slot inside snippets: plain text color, inherited. Two
+ * data-*-slot attributes are the JS hook for updating textContent on every
+ * cooldown-days change — see mcp-install.js's updateAllCooldownSlots. */
+.lm-mcp-install__cooldown-days {
+  color: inherit;
+}
+
+/* Cooldown caveat note rendered after snippets where bypass/days is a no-op. */
+.lm-mcp-install__cooldown-note {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.85em;
+  font-style: italic;
+  color: var(--lm-mcp-install-fg-secondary);
+  border-left: 2px solid var(--lm-mcp-install-border);
+  padding-left: 0.6rem;
+}
+
+.lm-mcp-install__cooldown-note code {
+  font-style: normal;
+}
+
+/* Settings sub-view: swaps in via `[data-mcp-install-view="settings"]` on
+ * `<html>`. Plain `display` toggle, no `[hidden]` involved, so no
+ * Tailwind-preflight collision and no `!important` needed here either. */
+.lm-mcp-install__body--settings {
+  display: none;
+  padding: 1rem 1.2rem 1.2rem;
+}
+
+html[data-mcp-install-view='settings'] .lm-mcp-install__body--install {
+  display: none;
+}
+
+html[data-mcp-install-view='settings'] .lm-mcp-install__body--settings {
+  display: block;
+}
+
+.lm-mcp-install__settings-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 0.8rem 0;
+}
+
+.lm-mcp-install__back {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--lm-mcp-install-border);
+  border-radius: 0.25rem;
+  color: var(--lm-mcp-install-fg-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font: inherit;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0.2rem 0.5rem;
+}
+
+.lm-mcp-install__back:hover {
+  color: var(--lm-mcp-install-fg);
+  border-color: var(--lm-mcp-install-fg-secondary);
+  background: var(--lm-mcp-install-hover);
+}
+
+.lm-mcp-install__back:focus-visible {
+  outline: 2px solid var(--lm-mcp-install-accent);
+  outline-offset: 2px;
+}
+
+.lm-mcp-install__back-icon {
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.lm-mcp-install__settings-title {
+  margin: 0;
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--lm-mcp-install-fg);
+}
+
+.lm-mcp-install__settings-help {
+  margin: 0 0 0.8rem 0;
+  font-size: 0.9em;
+  color: var(--lm-mcp-install-fg-secondary);
+}
+
+.lm-mcp-install__settings-help em {
+  font-style: italic;
+}
+
+.lm-mcp-install__settings-modes {
+  border: 0;
+  padding: 0;
+  margin: 0 0 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.lm-mcp-install__settings-mode {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+
+.lm-mcp-install__settings-mode input[type='radio'] {
+  cursor: pointer;
+}
+
+.lm-mcp-install__cooldown-days-input {
+  width: 4.5em;
+  padding: 0.15rem 0.35rem;
+  border: 1px solid var(--lm-mcp-install-border);
+  border-radius: 0.2rem;
+  background: var(--lm-mcp-install-bg);
+  color: var(--lm-mcp-install-fg);
+  font: inherit;
+  font-size: 0.95em;
+}
+
+.lm-mcp-install__cooldown-explainer {
+  border-top: 1px solid var(--lm-mcp-install-border);
+  padding-top: 0.7rem;
+  margin-top: 0.5rem;
+  color: var(--lm-mcp-install-fg-secondary);
+  font-size: 0.9em;
+}
+
+.lm-mcp-install__cooldown-explainer summary {
+  cursor: pointer;
+  color: var(--lm-mcp-install-accent);
+  margin-bottom: 0.5rem;
+}
+
+.lm-mcp-install__cooldown-explainer p {
+  margin: 0 0 0.5rem 0;
+}
+
+.lm-mcp-install__cooldown-explainer a {
+  color: var(--lm-mcp-install-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.lm-mcp-install__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

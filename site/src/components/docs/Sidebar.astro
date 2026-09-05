@@ -1,0 +1,55 @@
+---
+/**
+ * Documentation sidebar. Scoped to one port when `port` is set (a page under
+ * /py/ shows only Python nav, plus its reference-tree entry); omit it for
+ * the shell's own shared pages (concepts, guides, examples) to get their
+ * `sidebar.group` sectioning with no port-specific entry appended.
+ *
+ * Rendered twice per page by DocsLayout — once in the mobile drawer, once in
+ * the desktop column — so it owns no positioning of its own; the caller
+ * decides how it's placed.
+ */
+import { getSidebar, isActivePath } from '../../lib/sidebar'
+import { DEFAULT_LOCALE, type Locale } from '../../i18n/locales'
+import SidebarLink from './SidebarLink.astro'
+import SidebarSection from './SidebarSection.astro'
+
+interface Props {
+  port?: string
+  version: string
+  currentPath: string
+  /** Scopes the nav to one locale, the way `port` scopes it to one port. */
+  locale?: Locale
+}
+
+const { port, version, currentPath, locale = DEFAULT_LOCALE } = Astro.props
+const items = await getSidebar(port, version, locale)
+---
+
+<nav aria-label="Documentation" class="sidebar-nav">
+  {
+    items.map((item) =>
+      item.type === 'group' ? (
+        <SidebarSection label={item.label} items={item.items} currentPath={currentPath} />
+      ) : (
+        <SidebarLink href={item.href} label={item.label} external={item.external} isActive={isActivePath(item.href, currentPath)} />
+      ),
+    )
+  }
+</nav>
+
+<style>
+  .sidebar-nav::-webkit-scrollbar {
+    width: 4px;
+  }
+  .sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgb(203 213 225); /* slate-300 */
+    border-radius: 2px;
+  }
+  :global([data-theme-mode='dark']) .sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgb(71 85 105); /* slate-600 */
+  }
+</style>

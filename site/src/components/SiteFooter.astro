@@ -1,0 +1,20 @@
+---
+import { PORTS } from '../lib/ports'
+import { withRoot } from '../lib/site-root'
+---
+
+<footer class="mt-16 border-t border-edge">
+  <div class="mx-auto max-w-7xl px-4 py-8 text-sm">
+    <p class="mb-4">
+      libtmux is a typed tmux control library. Eight ports, one API shape.
+    </p>
+    <ul class="flex flex-wrap gap-x-4 gap-y-1">
+      {PORTS.map((p) => (
+        <li>
+          <a class="hover:underline" href={withRoot(`/${p.slug}/`)}>{p.name}</a>
+        </li>
+      ))}
+      <li><a class="hover:underline" href={withRoot('/third-party-notices/')}>Third-party notices</a></li>
+    </ul>
+  </div>
+</footer>
