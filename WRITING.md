@@ -1,8 +1,9 @@
 # Writing
 
 This guide governs documentation, user-facing text, content frontmatter,
-source comments, and commit messages. For setup, checks, and pull requests,
-see [CONTRIBUTING.md](CONTRIBUTING.md).
+source comments, review descriptions, changelogs, release notes, and commit
+messages. For setup, checks, and pull request workflow, see
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Voice
 
@@ -246,7 +247,7 @@ authorize unrelated cleanup or rewriting shared history.
 
 ## Commits
 
-Use the no-colon scoped form used by the sibling TypeScript projects:
+Use the no-colon scoped form:
 
     type(scope[detail]) Concise description
 
@@ -263,5 +264,104 @@ Use `docs` for documentation and `ai(rules[AGENTS])` or `ai(rules[claude])`
 for agent entry points. Make the subject describe the actual change. Commit
 history carries the rationale; shipped prose describes the resulting state.
 
+Choose a concrete scope such as `site`, `theme`, `api-model`, or `scripts`.
+Keep ordinary types small: `feat`, `fix`, `refactor`, `docs`, `test`, `perf`,
+`ci`, and `chore`. Capitalize the description, use the imperative, and omit
+a trailing period. Do not copy an automated dependency bot's colon form.
+
+Subjects name the deliverable, not the editing activity. A changelog commit
+should name the behavior documented rather than say "refresh CHANGES".
+Use `why:` to record the problem or constraint; use `what:` for the changes
+that resolve it. Include a triggering input, failure, or tradeoff when it
+helps explain the decision. Scale the body to the change.
+
 Keep each commit reviewable and include verification appropriate to its
-scope. Do not add tool signatures or invented pull request provenance.
+scope. Atomic means one coherent change, not an arbitrary file count. Keep
+changelog updates separate from implementation. Do not add tool signatures
+or PR numbers to ordinary commits; a merge message's PR number must name
+the PR that actually produced the merge.
+
+### Configuration and dependency commits
+
+A change confined to a configuration file can use `filename: Description`.
+Use `deps(catalog) Description` for shared catalog changes. A pinned tool
+bump uses `filename(tool) old -> new` so the changed requirement is visible
+in the subject.
+
+Dependency-bump bodies identify the package, old and new versions, and
+pinned release or changelog links when available. Verify versions against
+the dependency files. Do not invent release dates or a tagging process from
+a neighboring project's convention.
+
+## Pull request and issue descriptions
+
+Open with the concrete problem and resulting behavior for the reader.
+Describe the branch's net change against its base. A reviewer should not
+need the conversation or intermediate commit history to understand it.
+
+For a simple change, one or two paragraphs plus verification suffice. For a
+larger change, give distinct deliverables descriptive headings and prose;
+use lists for actual enumerations. Explain the trigger and a before/after
+example when behavior changes. Include implementation detail only when it
+helps assess correctness, a tradeoff, or compatibility.
+
+State what ran, what passed, what failed, and what was skipped. Keep raw logs
+in a details block when needed, with the conclusion outside it. Explain
+referenced tickets instead of using their identifiers as vocabulary. Omit
+bare Git refs, file-move inventories, abandoned approaches, and work diaries.
+
+For an issue, give the expected and observed behavior, reproduction, and
+relevant environment. For a PR, keep the title and body aligned with the
+final implementation. Preserve useful custom sections and existing evidence
+when refreshing a description.
+
+## Changelogs and release notes
+
+When release or changelog prose is requested, follow the existing target's
+version scheme and structure. Keep port release material in its owning
+repository. These writing conventions do not establish a publication
+workflow or authorize a release.
+
+### Deliverables and migrations
+
+Write for someone deciding whether a change affects them and what they
+must do. Name the deliverable in reader vocabulary before explaining the
+mechanism. Include changed defaults, compatibility limits, and a concrete
+migration where needed.
+
+For substantial changes, use titled deliverable sections followed by short
+prose paragraphs. Within a `What's new` section, use H4 deliverable headings;
+put real `(#NN)` PR references in those headings when the target's style
+uses them. Small fixes can be one-line bullets. Promote a paragraph-sized
+bullet to a heading and prose.
+
+When organizing a full entry, use the applicable sections in this order:
+Breaking changes, Dependencies, What's new, Fixes, Documentation, Development.
+Keep internal tooling in Development and omit empty sections. Preserve
+maintainer placeholders, markers, and already published entries; correct a
+published fact explicitly instead of silently rewriting history.
+
+Put breaking changes near the top. Show the old and new usage in a compact
+diff or separately labeled runnable examples. State new dependency floors
+with their previous values. Link to the relevant rendered API or migration
+guide rather than exposing private helper names.
+
+### Release summaries
+
+Write the lead only when the release scope is final and release work is
+requested. Unreleased branch entries contain their deliverables, not a
+summary claiming what the eventual release ships.
+
+A release lead is a short prose paragraph naming the version, headline
+changes, affected readers, and required action. Follow it with the changes
+worth noticing, upgrade and compatibility guidance, then detailed entries.
+Use measured numbers only when they help a decision and have evidence.
+Avoid codenames, invented dates, promotional claims, and a pasted Git log.
+
+### The published-behavior test
+
+Before describing an old name, bug, or behavior, ask whether readers of the
+deployed site or the relevant published port release ever encountered it.
+If they did not, describe the final state and leave intermediate history in
+the commit message. Keep real migration guidance, public deprecations, and
+constraints that still explain required behavior.
