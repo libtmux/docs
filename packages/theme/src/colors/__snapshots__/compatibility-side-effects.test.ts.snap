@@ -1,0 +1,683 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Color Mutation Pipeline > CSS Variable Inheritance and Cascading > ensures proper variable inheritance chain > css-variable-cascade 1`] = `
+"/*! tailwindcss vx.y.z | MIT License | https://tailwindcss.com */
+@layer base {
+  :root {
+    --color-amber-accent: oklch(0.85 0.15 75);
+    --color-amber-background: oklch(0.97 0.03 75);
+    --color-amber-primary: oklch(0.7 0.2 75);
+    --color-amber-secondary: oklch(0.75 0.18 75);
+    --color-amber-text: oklch(0.35 0.15 75);
+    --color-emerald-accent: oklch(0.8 0.15 160);
+    --color-emerald-background: oklch(0.97 0.03 160);
+    --color-emerald-primary: oklch(0.65 0.2 160);
+    --color-emerald-secondary: oklch(0.7 0.18 160);
+    --color-emerald-text: oklch(0.3 0.15 160);
+    --color-purple-accent: oklch(0.75 0.15 280);
+    --color-purple-background: oklch(0.97 0.03 280);
+    --color-purple-primary: oklch(0.6 0.22 280);
+    --color-purple-secondary: oklch(0.65 0.2 280);
+    --color-purple-text: oklch(0.25 0.18 280);
+    --color-sky-accent: oklch(0.8 0.15 230);
+    --color-sky-background: oklch(0.97 0.03 230);
+    --color-sky-primary: oklch(0.65 0.2 230);
+    --color-sky-secondary: oklch(0.7 0.18 230);
+    --color-sky-text: oklch(0.3 0.15 230);
+  }
+  html[data-theme="amber"] {
+    --theme-accent: var(--color-amber-accent);
+    --theme-background: var(--color-amber-background);
+    --theme-primary: var(--color-amber-primary);
+    --theme-secondary: var(--color-amber-secondary);
+    --theme-text: var(--color-amber-text);
+  }
+  html[data-theme="amber"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.15 75);
+    --theme-primary: oklch(0.7 0.2 75);
+    --theme-secondary: oklch(0.75 0.18 75);
+  }
+  html[data-theme="emerald"] {
+    --theme-accent: var(--color-emerald-accent);
+    --theme-background: var(--color-emerald-background);
+    --theme-primary: var(--color-emerald-primary);
+    --theme-secondary: var(--color-emerald-secondary);
+    --theme-text: var(--color-emerald-text);
+  }
+  html[data-theme="emerald"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.1 160);
+    --theme-primary: oklch(0.65 0.2 160);
+    --theme-secondary: oklch(0.7 0.18 160);
+  }
+  html[data-theme="purple"] {
+    --theme-accent: var(--color-purple-accent);
+    --theme-background: var(--color-purple-background);
+    --theme-primary: var(--color-purple-primary);
+    --theme-secondary: var(--color-purple-secondary);
+    --theme-text: var(--color-purple-text);
+  }
+  html[data-theme="purple"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.12 280);
+    --theme-primary: oklch(0.6 0.22 280);
+    --theme-secondary: oklch(0.65 0.2 280);
+  }
+  html[data-theme="sky"] {
+    --theme-accent: var(--color-sky-accent);
+    --theme-background: var(--color-sky-background);
+    --theme-primary: var(--color-sky-primary);
+    --theme-secondary: var(--color-sky-secondary);
+    --theme-text: var(--color-sky-text);
+  }
+  html[data-theme="sky"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.15 230);
+    --theme-primary: oklch(0.65 0.2 230);
+    --theme-secondary: oklch(0.7 0.18 230);
+  }
+}
+"
+`;
+
+exports[`Color Mutation Pipeline > Color Space Conversions > converts OKLCH to sRGB in color-mix > color-space-conversion 1`] = `
+"/*! tailwindcss vx.y.z | MIT License | https://tailwindcss.com */
+.bg-theme-primary\\/50 {
+  background-color: var(--theme-primary);
+  @supports (color: color-mix(in lab, red, red)) {
+    background-color: color-mix(in srgb, var(--theme-primary) 50%, transparent);
+  }
+}
+@layer base {
+  :root {
+    --color-amber-accent: oklch(0.85 0.15 75);
+    --color-amber-background: oklch(0.97 0.03 75);
+    --color-amber-primary: oklch(0.7 0.2 75);
+    --color-amber-secondary: oklch(0.75 0.18 75);
+    --color-amber-text: oklch(0.35 0.15 75);
+    --color-emerald-accent: oklch(0.8 0.15 160);
+    --color-emerald-background: oklch(0.97 0.03 160);
+    --color-emerald-primary: oklch(0.65 0.2 160);
+    --color-emerald-secondary: oklch(0.7 0.18 160);
+    --color-emerald-text: oklch(0.3 0.15 160);
+    --color-purple-accent: oklch(0.75 0.15 280);
+    --color-purple-background: oklch(0.97 0.03 280);
+    --color-purple-primary: oklch(0.6 0.22 280);
+    --color-purple-secondary: oklch(0.65 0.2 280);
+    --color-purple-text: oklch(0.25 0.18 280);
+    --color-sky-accent: oklch(0.8 0.15 230);
+    --color-sky-background: oklch(0.97 0.03 230);
+    --color-sky-primary: oklch(0.65 0.2 230);
+    --color-sky-secondary: oklch(0.7 0.18 230);
+    --color-sky-text: oklch(0.3 0.15 230);
+  }
+  html[data-theme="amber"] {
+    --theme-accent: var(--color-amber-accent);
+    --theme-background: var(--color-amber-background);
+    --theme-primary: var(--color-amber-primary);
+    --theme-secondary: var(--color-amber-secondary);
+    --theme-text: var(--color-amber-text);
+  }
+  html[data-theme="amber"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.15 75);
+    --theme-primary: oklch(0.7 0.2 75);
+    --theme-secondary: oklch(0.75 0.18 75);
+  }
+  html[data-theme="emerald"] {
+    --theme-accent: var(--color-emerald-accent);
+    --theme-background: var(--color-emerald-background);
+    --theme-primary: var(--color-emerald-primary);
+    --theme-secondary: var(--color-emerald-secondary);
+    --theme-text: var(--color-emerald-text);
+  }
+  html[data-theme="emerald"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.1 160);
+    --theme-primary: oklch(0.65 0.2 160);
+    --theme-secondary: oklch(0.7 0.18 160);
+  }
+  html[data-theme="purple"] {
+    --theme-accent: var(--color-purple-accent);
+    --theme-background: var(--color-purple-background);
+    --theme-primary: var(--color-purple-primary);
+    --theme-secondary: var(--color-purple-secondary);
+    --theme-text: var(--color-purple-text);
+  }
+  html[data-theme="purple"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.12 280);
+    --theme-primary: oklch(0.6 0.22 280);
+    --theme-secondary: oklch(0.65 0.2 280);
+  }
+  html[data-theme="sky"] {
+    --theme-accent: var(--color-sky-accent);
+    --theme-background: var(--color-sky-background);
+    --theme-primary: var(--color-sky-primary);
+    --theme-secondary: var(--color-sky-secondary);
+    --theme-text: var(--color-sky-text);
+  }
+  html[data-theme="sky"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.15 230);
+    --theme-primary: oklch(0.65 0.2 230);
+    --theme-secondary: oklch(0.7 0.18 230);
+  }
+}
+"
+`;
+
+exports[`Color Mutation Pipeline > Color Space Conversions > provides @supports fallback for color-mix > color-mix-fallback 1`] = `
+"/*! tailwindcss vx.y.z | MIT License | https://tailwindcss.com */
+.bg-theme-accent\\/30 {
+  background-color: var(--theme-accent);
+  @supports (color: color-mix(in lab, red, red)) {
+    background-color: color-mix(in srgb, var(--theme-accent) 30%, transparent);
+  }
+}
+@layer base {
+  :root {
+    --color-amber-accent: oklch(0.85 0.15 75);
+    --color-amber-background: oklch(0.97 0.03 75);
+    --color-amber-primary: oklch(0.7 0.2 75);
+    --color-amber-secondary: oklch(0.75 0.18 75);
+    --color-amber-text: oklch(0.35 0.15 75);
+    --color-emerald-accent: oklch(0.8 0.15 160);
+    --color-emerald-background: oklch(0.97 0.03 160);
+    --color-emerald-primary: oklch(0.65 0.2 160);
+    --color-emerald-secondary: oklch(0.7 0.18 160);
+    --color-emerald-text: oklch(0.3 0.15 160);
+    --color-purple-accent: oklch(0.75 0.15 280);
+    --color-purple-background: oklch(0.97 0.03 280);
+    --color-purple-primary: oklch(0.6 0.22 280);
+    --color-purple-secondary: oklch(0.65 0.2 280);
+    --color-purple-text: oklch(0.25 0.18 280);
+    --color-sky-accent: oklch(0.8 0.15 230);
+    --color-sky-background: oklch(0.97 0.03 230);
+    --color-sky-primary: oklch(0.65 0.2 230);
+    --color-sky-secondary: oklch(0.7 0.18 230);
+    --color-sky-text: oklch(0.3 0.15 230);
+  }
+  html[data-theme="amber"] {
+    --theme-accent: var(--color-amber-accent);
+    --theme-background: var(--color-amber-background);
+    --theme-primary: var(--color-amber-primary);
+    --theme-secondary: var(--color-amber-secondary);
+    --theme-text: var(--color-amber-text);
+  }
+  html[data-theme="amber"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.15 75);
+    --theme-primary: oklch(0.7 0.2 75);
+    --theme-secondary: oklch(0.75 0.18 75);
+  }
+  html[data-theme="emerald"] {
+    --theme-accent: var(--color-emerald-accent);
+    --theme-background: var(--color-emerald-background);
+    --theme-primary: var(--color-emerald-primary);
+    --theme-secondary: var(--color-emerald-secondary);
+    --theme-text: var(--color-emerald-text);
+  }
+  html[data-theme="emerald"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.1 160);
+    --theme-primary: oklch(0.65 0.2 160);
+    --theme-secondary: oklch(0.7 0.18 160);
+  }
+  html[data-theme="purple"] {
+    --theme-accent: var(--color-purple-accent);
+    --theme-background: var(--color-purple-background);
+    --theme-primary: var(--color-purple-primary);
+    --theme-secondary: var(--color-purple-secondary);
+    --theme-text: var(--color-purple-text);
+  }
+  html[data-theme="purple"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.12 280);
+    --theme-primary: oklch(0.6 0.22 280);
+    --theme-secondary: oklch(0.65 0.2 280);
+  }
+  html[data-theme="sky"] {
+    --theme-accent: var(--color-sky-accent);
+    --theme-background: var(--color-sky-background);
+    --theme-primary: var(--color-sky-primary);
+    --theme-secondary: var(--color-sky-secondary);
+    --theme-text: var(--color-sky-text);
+  }
+  html[data-theme="sky"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.15 230);
+    --theme-primary: oklch(0.65 0.2 230);
+    --theme-secondary: oklch(0.7 0.18 230);
+  }
+}
+"
+`;
+
+exports[`Color Mutation Pipeline > Gradient Color Mutations > combines theme colors in gradients > gradient-color-combinations 1`] = `
+"/*! tailwindcss vx.y.z | MIT License | https://tailwindcss.com */
+.bg-gradient-theme-radial-accent-primary {
+  background-image: radial-gradient(circle at center, var(--theme-accent), var(--theme-primary));
+}
+.bg-gradient-theme-right-primary-secondary {
+  background-image: linear-gradient(to right, var(--theme-primary), var(--theme-secondary));
+}
+@layer base {
+  :root {
+    --color-amber-accent: oklch(0.85 0.15 75);
+    --color-amber-background: oklch(0.97 0.03 75);
+    --color-amber-primary: oklch(0.7 0.2 75);
+    --color-amber-secondary: oklch(0.75 0.18 75);
+    --color-amber-text: oklch(0.35 0.15 75);
+    --color-emerald-accent: oklch(0.8 0.15 160);
+    --color-emerald-background: oklch(0.97 0.03 160);
+    --color-emerald-primary: oklch(0.65 0.2 160);
+    --color-emerald-secondary: oklch(0.7 0.18 160);
+    --color-emerald-text: oklch(0.3 0.15 160);
+    --color-purple-accent: oklch(0.75 0.15 280);
+    --color-purple-background: oklch(0.97 0.03 280);
+    --color-purple-primary: oklch(0.6 0.22 280);
+    --color-purple-secondary: oklch(0.65 0.2 280);
+    --color-purple-text: oklch(0.25 0.18 280);
+    --color-sky-accent: oklch(0.8 0.15 230);
+    --color-sky-background: oklch(0.97 0.03 230);
+    --color-sky-primary: oklch(0.65 0.2 230);
+    --color-sky-secondary: oklch(0.7 0.18 230);
+    --color-sky-text: oklch(0.3 0.15 230);
+  }
+  html[data-theme="amber"] {
+    --theme-accent: var(--color-amber-accent);
+    --theme-background: var(--color-amber-background);
+    --theme-primary: var(--color-amber-primary);
+    --theme-secondary: var(--color-amber-secondary);
+    --theme-text: var(--color-amber-text);
+  }
+  html[data-theme="amber"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.15 75);
+    --theme-primary: oklch(0.7 0.2 75);
+    --theme-secondary: oklch(0.75 0.18 75);
+  }
+  html[data-theme="emerald"] {
+    --theme-accent: var(--color-emerald-accent);
+    --theme-background: var(--color-emerald-background);
+    --theme-primary: var(--color-emerald-primary);
+    --theme-secondary: var(--color-emerald-secondary);
+    --theme-text: var(--color-emerald-text);
+  }
+  html[data-theme="emerald"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.1 160);
+    --theme-primary: oklch(0.65 0.2 160);
+    --theme-secondary: oklch(0.7 0.18 160);
+  }
+  html[data-theme="purple"] {
+    --theme-accent: var(--color-purple-accent);
+    --theme-background: var(--color-purple-background);
+    --theme-primary: var(--color-purple-primary);
+    --theme-secondary: var(--color-purple-secondary);
+    --theme-text: var(--color-purple-text);
+  }
+  html[data-theme="purple"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.12 280);
+    --theme-primary: oklch(0.6 0.22 280);
+    --theme-secondary: oklch(0.65 0.2 280);
+  }
+  html[data-theme="sky"] {
+    --theme-accent: var(--color-sky-accent);
+    --theme-background: var(--color-sky-background);
+    --theme-primary: var(--color-sky-primary);
+    --theme-secondary: var(--color-sky-secondary);
+    --theme-text: var(--color-sky-text);
+  }
+  html[data-theme="sky"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.15 230);
+    --theme-primary: oklch(0.65 0.2 230);
+    --theme-secondary: oklch(0.7 0.18 230);
+  }
+}
+"
+`;
+
+exports[`Color Mutation Pipeline > Gradient Color Mutations > handles dynamic gradient generation > dynamic-gradient-mutations 1`] = `
+"/*! tailwindcss vx.y.z | MIT License | https://tailwindcss.com */
+.bg-gradient-theme-br-primary-secondary {
+  background-image: linear-gradient(to bottom right, var(--theme-primary), var(--theme-secondary));
+}
+.bg-gradient-theme-right-secondary-accent {
+  background-image: linear-gradient(to right, var(--theme-secondary), var(--theme-accent));
+}
+@layer base {
+  :root {
+    --color-amber-accent: oklch(0.85 0.15 75);
+    --color-amber-background: oklch(0.97 0.03 75);
+    --color-amber-primary: oklch(0.7 0.2 75);
+    --color-amber-secondary: oklch(0.75 0.18 75);
+    --color-amber-text: oklch(0.35 0.15 75);
+    --color-emerald-accent: oklch(0.8 0.15 160);
+    --color-emerald-background: oklch(0.97 0.03 160);
+    --color-emerald-primary: oklch(0.65 0.2 160);
+    --color-emerald-secondary: oklch(0.7 0.18 160);
+    --color-emerald-text: oklch(0.3 0.15 160);
+    --color-purple-accent: oklch(0.75 0.15 280);
+    --color-purple-background: oklch(0.97 0.03 280);
+    --color-purple-primary: oklch(0.6 0.22 280);
+    --color-purple-secondary: oklch(0.65 0.2 280);
+    --color-purple-text: oklch(0.25 0.18 280);
+    --color-sky-accent: oklch(0.8 0.15 230);
+    --color-sky-background: oklch(0.97 0.03 230);
+    --color-sky-primary: oklch(0.65 0.2 230);
+    --color-sky-secondary: oklch(0.7 0.18 230);
+    --color-sky-text: oklch(0.3 0.15 230);
+  }
+  html[data-theme="amber"] {
+    --theme-accent: var(--color-amber-accent);
+    --theme-background: var(--color-amber-background);
+    --theme-primary: var(--color-amber-primary);
+    --theme-secondary: var(--color-amber-secondary);
+    --theme-text: var(--color-amber-text);
+  }
+  html[data-theme="amber"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.15 75);
+    --theme-primary: oklch(0.7 0.2 75);
+    --theme-secondary: oklch(0.75 0.18 75);
+  }
+  html[data-theme="emerald"] {
+    --theme-accent: var(--color-emerald-accent);
+    --theme-background: var(--color-emerald-background);
+    --theme-primary: var(--color-emerald-primary);
+    --theme-secondary: var(--color-emerald-secondary);
+    --theme-text: var(--color-emerald-text);
+  }
+  html[data-theme="emerald"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.1 160);
+    --theme-primary: oklch(0.65 0.2 160);
+    --theme-secondary: oklch(0.7 0.18 160);
+  }
+  html[data-theme="purple"] {
+    --theme-accent: var(--color-purple-accent);
+    --theme-background: var(--color-purple-background);
+    --theme-primary: var(--color-purple-primary);
+    --theme-secondary: var(--color-purple-secondary);
+    --theme-text: var(--color-purple-text);
+  }
+  html[data-theme="purple"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.12 280);
+    --theme-primary: oklch(0.6 0.22 280);
+    --theme-secondary: oklch(0.65 0.2 280);
+  }
+  html[data-theme="sky"] {
+    --theme-accent: var(--color-sky-accent);
+    --theme-background: var(--color-sky-background);
+    --theme-primary: var(--color-sky-primary);
+    --theme-secondary: var(--color-sky-secondary);
+    --theme-text: var(--color-sky-text);
+  }
+  html[data-theme="sky"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.15 230);
+    --theme-primary: oklch(0.65 0.2 230);
+    --theme-secondary: oklch(0.7 0.18 230);
+  }
+}
+"
+`;
+
+exports[`Color Mutation Pipeline > Opacity Mutations via color-mix() > transforms colors with opacity modifiers > opacity-color-mutations 1`] = `
+"/*! tailwindcss vx.y.z | MIT License | https://tailwindcss.com */
+.border-theme-accent\\/30 {
+  border-color: var(--theme-accent);
+  @supports (color: color-mix(in lab, red, red)) {
+    border-color: color-mix(in srgb, var(--theme-accent) 30%, transparent);
+  }
+}
+.bg-theme-primary\\/10 {
+  background-color: var(--theme-primary);
+  @supports (color: color-mix(in lab, red, red)) {
+    background-color: color-mix(in srgb, var(--theme-primary) 10%, transparent);
+  }
+}
+.bg-theme-primary\\/50 {
+  background-color: var(--theme-primary);
+  @supports (color: color-mix(in lab, red, red)) {
+    background-color: color-mix(in srgb, var(--theme-primary) 50%, transparent);
+  }
+}
+.bg-theme-primary\\/90 {
+  background-color: var(--theme-primary);
+  @supports (color: color-mix(in lab, red, red)) {
+    background-color: color-mix(in srgb, var(--theme-primary) 90%, transparent);
+  }
+}
+.text-theme-secondary\\/20 {
+  color: var(--theme-secondary);
+  @supports (color: color-mix(in lab, red, red)) {
+    color: color-mix(in srgb, var(--theme-secondary) 20%, transparent);
+  }
+}
+@layer base {
+  :root {
+    --color-amber-accent: oklch(0.85 0.15 75);
+    --color-amber-background: oklch(0.97 0.03 75);
+    --color-amber-primary: oklch(0.7 0.2 75);
+    --color-amber-secondary: oklch(0.75 0.18 75);
+    --color-amber-text: oklch(0.35 0.15 75);
+    --color-emerald-accent: oklch(0.8 0.15 160);
+    --color-emerald-background: oklch(0.97 0.03 160);
+    --color-emerald-primary: oklch(0.65 0.2 160);
+    --color-emerald-secondary: oklch(0.7 0.18 160);
+    --color-emerald-text: oklch(0.3 0.15 160);
+    --color-purple-accent: oklch(0.75 0.15 280);
+    --color-purple-background: oklch(0.97 0.03 280);
+    --color-purple-primary: oklch(0.6 0.22 280);
+    --color-purple-secondary: oklch(0.65 0.2 280);
+    --color-purple-text: oklch(0.25 0.18 280);
+    --color-sky-accent: oklch(0.8 0.15 230);
+    --color-sky-background: oklch(0.97 0.03 230);
+    --color-sky-primary: oklch(0.65 0.2 230);
+    --color-sky-secondary: oklch(0.7 0.18 230);
+    --color-sky-text: oklch(0.3 0.15 230);
+  }
+  html[data-theme="amber"] {
+    --theme-accent: var(--color-amber-accent);
+    --theme-background: var(--color-amber-background);
+    --theme-primary: var(--color-amber-primary);
+    --theme-secondary: var(--color-amber-secondary);
+    --theme-text: var(--color-amber-text);
+  }
+  html[data-theme="amber"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.15 75);
+    --theme-primary: oklch(0.7 0.2 75);
+    --theme-secondary: oklch(0.75 0.18 75);
+  }
+  html[data-theme="emerald"] {
+    --theme-accent: var(--color-emerald-accent);
+    --theme-background: var(--color-emerald-background);
+    --theme-primary: var(--color-emerald-primary);
+    --theme-secondary: var(--color-emerald-secondary);
+    --theme-text: var(--color-emerald-text);
+  }
+  html[data-theme="emerald"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.1 160);
+    --theme-primary: oklch(0.65 0.2 160);
+    --theme-secondary: oklch(0.7 0.18 160);
+  }
+  html[data-theme="purple"] {
+    --theme-accent: var(--color-purple-accent);
+    --theme-background: var(--color-purple-background);
+    --theme-primary: var(--color-purple-primary);
+    --theme-secondary: var(--color-purple-secondary);
+    --theme-text: var(--color-purple-text);
+  }
+  html[data-theme="purple"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.12 280);
+    --theme-primary: oklch(0.6 0.22 280);
+    --theme-secondary: oklch(0.65 0.2 280);
+  }
+  html[data-theme="sky"] {
+    --theme-accent: var(--color-sky-accent);
+    --theme-background: var(--color-sky-background);
+    --theme-primary: var(--color-sky-primary);
+    --theme-secondary: var(--color-sky-secondary);
+    --theme-text: var(--color-sky-text);
+  }
+  html[data-theme="sky"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.15 230);
+    --theme-primary: oklch(0.65 0.2 230);
+    --theme-secondary: oklch(0.7 0.18 230);
+  }
+}
+"
+`;
+
+exports[`Color Mutation Pipeline > Runtime Theme Switching > applies dark mode overrides correctly > dark-mode-mutations 1`] = `
+"/*! tailwindcss vx.y.z | MIT License | https://tailwindcss.com */
+.bg-theme-accent {
+  background-color: var(--theme-accent);
+}
+.bg-theme-primary {
+  background-color: var(--theme-primary);
+}
+@layer base {
+  :root {
+    --color-amber-accent: oklch(0.85 0.15 75);
+    --color-amber-background: oklch(0.97 0.03 75);
+    --color-amber-primary: oklch(0.7 0.2 75);
+    --color-amber-secondary: oklch(0.75 0.18 75);
+    --color-amber-text: oklch(0.35 0.15 75);
+    --color-emerald-accent: oklch(0.8 0.15 160);
+    --color-emerald-background: oklch(0.97 0.03 160);
+    --color-emerald-primary: oklch(0.65 0.2 160);
+    --color-emerald-secondary: oklch(0.7 0.18 160);
+    --color-emerald-text: oklch(0.3 0.15 160);
+    --color-purple-accent: oklch(0.75 0.15 280);
+    --color-purple-background: oklch(0.97 0.03 280);
+    --color-purple-primary: oklch(0.6 0.22 280);
+    --color-purple-secondary: oklch(0.65 0.2 280);
+    --color-purple-text: oklch(0.25 0.18 280);
+    --color-sky-accent: oklch(0.8 0.15 230);
+    --color-sky-background: oklch(0.97 0.03 230);
+    --color-sky-primary: oklch(0.65 0.2 230);
+    --color-sky-secondary: oklch(0.7 0.18 230);
+    --color-sky-text: oklch(0.3 0.15 230);
+  }
+  html[data-theme="amber"] {
+    --theme-accent: var(--color-amber-accent);
+    --theme-background: var(--color-amber-background);
+    --theme-primary: var(--color-amber-primary);
+    --theme-secondary: var(--color-amber-secondary);
+    --theme-text: var(--color-amber-text);
+  }
+  html[data-theme="amber"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.15 75);
+    --theme-primary: oklch(0.7 0.2 75);
+    --theme-secondary: oklch(0.75 0.18 75);
+  }
+  html[data-theme="emerald"] {
+    --theme-accent: var(--color-emerald-accent);
+    --theme-background: var(--color-emerald-background);
+    --theme-primary: var(--color-emerald-primary);
+    --theme-secondary: var(--color-emerald-secondary);
+    --theme-text: var(--color-emerald-text);
+  }
+  html[data-theme="emerald"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.1 160);
+    --theme-primary: oklch(0.65 0.2 160);
+    --theme-secondary: oklch(0.7 0.18 160);
+  }
+  html[data-theme="purple"] {
+    --theme-accent: var(--color-purple-accent);
+    --theme-background: var(--color-purple-background);
+    --theme-primary: var(--color-purple-primary);
+    --theme-secondary: var(--color-purple-secondary);
+    --theme-text: var(--color-purple-text);
+  }
+  html[data-theme="purple"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.12 280);
+    --theme-primary: oklch(0.6 0.22 280);
+    --theme-secondary: oklch(0.65 0.2 280);
+  }
+  html[data-theme="sky"] {
+    --theme-accent: var(--color-sky-accent);
+    --theme-background: var(--color-sky-background);
+    --theme-primary: var(--color-sky-primary);
+    --theme-secondary: var(--color-sky-secondary);
+    --theme-text: var(--color-sky-text);
+  }
+  html[data-theme="sky"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.15 230);
+    --theme-primary: oklch(0.65 0.2 230);
+    --theme-secondary: oklch(0.7 0.18 230);
+  }
+}
+"
+`;
+
+exports[`Color Mutation Pipeline > Runtime Theme Switching > generates correct CSS variable cascades for theme switching > theme-switching-cascade 1`] = `
+"/*! tailwindcss vx.y.z | MIT License | https://tailwindcss.com */
+.bg-theme-primary {
+  background-color: var(--theme-primary);
+}
+.text-theme-secondary {
+  color: var(--theme-secondary);
+}
+@layer base {
+  :root {
+    --color-amber-accent: oklch(0.85 0.15 75);
+    --color-amber-background: oklch(0.97 0.03 75);
+    --color-amber-primary: oklch(0.7 0.2 75);
+    --color-amber-secondary: oklch(0.75 0.18 75);
+    --color-amber-text: oklch(0.35 0.15 75);
+    --color-emerald-accent: oklch(0.8 0.15 160);
+    --color-emerald-background: oklch(0.97 0.03 160);
+    --color-emerald-primary: oklch(0.65 0.2 160);
+    --color-emerald-secondary: oklch(0.7 0.18 160);
+    --color-emerald-text: oklch(0.3 0.15 160);
+    --color-purple-accent: oklch(0.75 0.15 280);
+    --color-purple-background: oklch(0.97 0.03 280);
+    --color-purple-primary: oklch(0.6 0.22 280);
+    --color-purple-secondary: oklch(0.65 0.2 280);
+    --color-purple-text: oklch(0.25 0.18 280);
+    --color-sky-accent: oklch(0.8 0.15 230);
+    --color-sky-background: oklch(0.97 0.03 230);
+    --color-sky-primary: oklch(0.65 0.2 230);
+    --color-sky-secondary: oklch(0.7 0.18 230);
+    --color-sky-text: oklch(0.3 0.15 230);
+  }
+  html[data-theme="amber"] {
+    --theme-accent: var(--color-amber-accent);
+    --theme-background: var(--color-amber-background);
+    --theme-primary: var(--color-amber-primary);
+    --theme-secondary: var(--color-amber-secondary);
+    --theme-text: var(--color-amber-text);
+  }
+  html[data-theme="amber"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.15 75);
+    --theme-primary: oklch(0.7 0.2 75);
+    --theme-secondary: oklch(0.75 0.18 75);
+  }
+  html[data-theme="emerald"] {
+    --theme-accent: var(--color-emerald-accent);
+    --theme-background: var(--color-emerald-background);
+    --theme-primary: var(--color-emerald-primary);
+    --theme-secondary: var(--color-emerald-secondary);
+    --theme-text: var(--color-emerald-text);
+  }
+  html[data-theme="emerald"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.85 0.1 160);
+    --theme-primary: oklch(0.65 0.2 160);
+    --theme-secondary: oklch(0.7 0.18 160);
+  }
+  html[data-theme="purple"] {
+    --theme-accent: var(--color-purple-accent);
+    --theme-background: var(--color-purple-background);
+    --theme-primary: var(--color-purple-primary);
+    --theme-secondary: var(--color-purple-secondary);
+    --theme-text: var(--color-purple-text);
+  }
+  html[data-theme="purple"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.12 280);
+    --theme-primary: oklch(0.6 0.22 280);
+    --theme-secondary: oklch(0.65 0.2 280);
+  }
+  html[data-theme="sky"] {
+    --theme-accent: var(--color-sky-accent);
+    --theme-background: var(--color-sky-background);
+    --theme-primary: var(--color-sky-primary);
+    --theme-secondary: var(--color-sky-secondary);
+    --theme-text: var(--color-sky-text);
+  }
+  html[data-theme="sky"][data-theme-mode="dark"] {
+    --theme-accent: oklch(0.8 0.15 230);
+    --theme-primary: oklch(0.65 0.2 230);
+    --theme-secondary: oklch(0.7 0.18 230);
+  }
+}
+"
+`;

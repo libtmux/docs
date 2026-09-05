@@ -1,0 +1,44 @@
+{
+  "name": "@libtmux/theme",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Tailwind CSS v4 theme plugin for libtmux.org (ported from tony.sh)",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "preview": "vite preview",
+    "build": "echo 'NOOP'",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:types": "vitest run --typecheck",
+    "lint": "oxlint --type-aware --tsconfig tsconfig.json --ignore-pattern '**/*.test.ts' --ignore-pattern '**/*.test-d.ts' src",
+    "format": "pnpm biome check . --write; biome format . --write",
+    "update": "pnpm update",
+    "ncu": "ncu",
+    "clean": "rm -rf dist/ node_modules/.cache/",
+    "type-check": "oxlint --type-aware --type-check -A all --tsconfig tsconfig.json --ignore-pattern '**/*.test.ts' --ignore-pattern '**/*.test-d.ts' src",
+    "type-check:tsc": "tsc --noEmit",
+    "type-check:watch": "tsc --noEmit --watch"
+  },
+  "peerDependencies": {
+    "tailwindcss": "^4.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@types/chroma-js": "^3.1.2",
+    "memfs": "^4.68.1",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "^8.2.2",
+    "vitest": "catalog:"
+  },
+  "dependencies": {
+    "chroma-js": "^3.2.0",
+    "zod": "^4.4.3"
+  }
+}

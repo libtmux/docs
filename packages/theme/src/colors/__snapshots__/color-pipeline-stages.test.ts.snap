@@ -1,0 +1,293 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Theme Processing Lifecycle Snapshots > Edge Cases and Validation > handles invalid OKLCH values > edge-case-validation 1`] = `
+[
+  {
+    "input": "oklch(1.5 0.2 160)",
+    "issue": "lightness > 1",
+    "result": "correctly rejected",
+  },
+  {
+    "input": "oklch(0.5 -0.1 160)",
+    "issue": "negative chroma",
+    "result": "correctly rejected",
+  },
+  {
+    "input": "oklch(0.5 0.2 -30)",
+    "issue": "negative hue",
+    "result": "correctly rejected",
+  },
+  {
+    "input": "oklch(0.5 0.2 400)",
+    "issue": "hue > 360",
+    "result": "correctly rejected",
+  },
+  {
+    "input": "rgb(255, 0, 0)",
+    "issue": "wrong color format",
+    "result": "correctly rejected",
+  },
+  {
+    "input": "oklch(0.5 0.2)",
+    "issue": "missing hue",
+    "result": "correctly rejected",
+  },
+]
+`;
+
+exports[`Theme Processing Lifecycle Snapshots > Stage 1: Theme Definition > defines and validates theme colors > 1-theme-definitions 1`] = `
+{
+  "amber": {
+    "accent": "oklch(0.85 0.15 75)",
+    "background": "oklch(0.97 0.03 75)",
+    "primary": "oklch(0.7 0.2 75)",
+    "secondary": "oklch(0.75 0.18 75)",
+    "text": "oklch(0.35 0.15 75)",
+  },
+  "emerald": {
+    "accent": "oklch(0.8 0.15 160)",
+    "background": "oklch(0.97 0.03 160)",
+    "primary": "oklch(0.65 0.2 160)",
+    "secondary": "oklch(0.7 0.18 160)",
+    "text": "oklch(0.3 0.15 160)",
+  },
+  "purple": {
+    "accent": "oklch(0.75 0.15 280)",
+    "background": "oklch(0.97 0.03 280)",
+    "primary": "oklch(0.6 0.22 280)",
+    "secondary": "oklch(0.65 0.2 280)",
+    "text": "oklch(0.25 0.18 280)",
+  },
+  "sky": {
+    "accent": "oklch(0.8 0.15 230)",
+    "background": "oklch(0.97 0.03 230)",
+    "primary": "oklch(0.65 0.2 230)",
+    "secondary": "oklch(0.7 0.18 230)",
+    "text": "oklch(0.3 0.15 230)",
+  },
+}
+`;
+
+exports[`Theme Processing Lifecycle Snapshots > Stage 2: Dark Mode Adjustments > defines dark mode color overrides > 2-dark-mode-adjustments 1`] = `
+{
+  "amber": {
+    "accent": "oklch(0.85 0.15 75)",
+    "primary": "oklch(0.7 0.2 75)",
+    "secondary": "oklch(0.75 0.18 75)",
+  },
+  "emerald": {
+    "accent": "oklch(0.85 0.1 160)",
+    "primary": "oklch(0.65 0.2 160)",
+    "secondary": "oklch(0.7 0.18 160)",
+  },
+  "purple": {
+    "accent": "oklch(0.8 0.12 280)",
+    "primary": "oklch(0.6 0.22 280)",
+    "secondary": "oklch(0.65 0.2 280)",
+  },
+  "sky": {
+    "accent": "oklch(0.8 0.15 230)",
+    "primary": "oklch(0.65 0.2 230)",
+    "secondary": "oklch(0.7 0.18 230)",
+  },
+}
+`;
+
+exports[`Theme Processing Lifecycle Snapshots > Stage 3: CSS Variable Generation > generates CSS variables for all themes > 3-css-variables 1`] = `
+"--color-amber-accent: oklch(0.85 0.15 75);
+  --color-amber-background: oklch(0.97 0.03 75);
+  --color-amber-primary: oklch(0.7 0.2 75);
+  --color-amber-secondary: oklch(0.75 0.18 75);
+  --color-amber-text: oklch(0.35 0.15 75);
+  --color-emerald-accent: oklch(0.8 0.15 160);
+  --color-emerald-background: oklch(0.97 0.03 160);
+  --color-emerald-primary: oklch(0.65 0.2 160);
+  --color-emerald-secondary: oklch(0.7 0.18 160);
+  --color-emerald-text: oklch(0.3 0.15 160);
+  --color-purple-accent: oklch(0.75 0.15 280);
+  --color-purple-background: oklch(0.97 0.03 280);
+  --color-purple-primary: oklch(0.6 0.22 280);
+  --color-purple-secondary: oklch(0.65 0.2 280);
+  --color-purple-text: oklch(0.25 0.18 280);
+  --color-sky-accent: oklch(0.8 0.15 230);
+  --color-sky-background: oklch(0.97 0.03 230);
+  --color-sky-primary: oklch(0.65 0.2 230);
+  --color-sky-secondary: oklch(0.7 0.18 230);
+  --color-sky-text: oklch(0.3 0.15 230)"
+`;
+
+exports[`Theme Processing Lifecycle Snapshots > Stage 4: Theme-Aware Variables > generates theme-aware CSS variable mappings > 4-theme-aware-mappings 1`] = `
+{
+  "amber": {
+    "--theme-accent": "var(--color-amber-accent)",
+    "--theme-background": "var(--color-amber-background)",
+    "--theme-primary": "var(--color-amber-primary)",
+    "--theme-secondary": "var(--color-amber-secondary)",
+    "--theme-text": "var(--color-amber-text)",
+  },
+  "emerald": {
+    "--theme-accent": "var(--color-emerald-accent)",
+    "--theme-background": "var(--color-emerald-background)",
+    "--theme-primary": "var(--color-emerald-primary)",
+    "--theme-secondary": "var(--color-emerald-secondary)",
+    "--theme-text": "var(--color-emerald-text)",
+  },
+  "purple": {
+    "--theme-accent": "var(--color-purple-accent)",
+    "--theme-background": "var(--color-purple-background)",
+    "--theme-primary": "var(--color-purple-primary)",
+    "--theme-secondary": "var(--color-purple-secondary)",
+    "--theme-text": "var(--color-purple-text)",
+  },
+  "sky": {
+    "--theme-accent": "var(--color-sky-accent)",
+    "--theme-background": "var(--color-sky-background)",
+    "--theme-primary": "var(--color-sky-primary)",
+    "--theme-secondary": "var(--color-sky-secondary)",
+    "--theme-text": "var(--color-sky-text)",
+  },
+}
+`;
+
+exports[`Theme Processing Lifecycle Snapshots > Stage 5: Gradient Configurations > defines gradient utility configurations > 5-gradient-configurations 1`] = `
+{
+  "bottom-primary-secondary": {
+    "colors": [
+      "primary",
+      "secondary",
+    ],
+    "direction": "to bottom",
+  },
+  "br-primary-secondary": {
+    "colors": [
+      "primary",
+      "secondary",
+    ],
+    "direction": "to bottom right",
+  },
+  "radial-accent-primary": {
+    "colors": [
+      "accent",
+      "primary",
+    ],
+    "direction": "circle at center",
+    "type": "radial",
+  },
+  "right-primary-accent": {
+    "colors": [
+      "primary",
+      "accent",
+    ],
+    "direction": "to right",
+  },
+  "right-primary-secondary": {
+    "colors": [
+      "primary",
+      "secondary",
+    ],
+    "direction": "to right",
+  },
+  "right-secondary-accent": {
+    "colors": [
+      "secondary",
+      "accent",
+    ],
+    "direction": "to right",
+  },
+  "tr-primary-secondary": {
+    "colors": [
+      "primary",
+      "secondary",
+    ],
+    "direction": "to top right",
+  },
+}
+`;
+
+exports[`Theme Processing Lifecycle Snapshots > Stage 6: Utility Class Patterns > defines utility class patterns with modifiers > 6-utility-patterns 1`] = `
+{
+  "colorUtilities": {
+    "bg": [
+      "primary",
+      "secondary",
+      "accent",
+      "background",
+    ],
+    "border": [
+      "primary",
+      "secondary",
+      "accent",
+    ],
+    "ring": [
+      "primary",
+      "secondary",
+      "accent",
+    ],
+    "text": [
+      "primary",
+      "secondary",
+      "accent",
+      "background",
+      "text",
+    ],
+  },
+  "opacityModifiers": [
+    10,
+    20,
+    30,
+    40,
+    50,
+    60,
+    70,
+    80,
+    90,
+  ],
+  "stateVariants": {
+    "active": [
+      "bg",
+    ],
+    "focus": [
+      "ring",
+      "border",
+    ],
+    "hover": [
+      "text",
+      "bg",
+      "border",
+    ],
+  },
+}
+`;
+
+exports[`Theme Processing Lifecycle Snapshots > Stage 7: Complete Theme System > shows complete theme system structure > 7-complete-system 1`] = `
+{
+  "colorSlots": [
+    "primary",
+    "secondary",
+    "accent",
+    "background",
+    "text",
+  ],
+  "cssArchitecture": {
+    "darkModeSelectors": "Dark mode overrides",
+    "rootVariables": "All theme color definitions",
+    "themeSelectors": "Theme-specific variable mappings",
+    "utilityClasses": "Theme-aware utilities",
+  },
+  "features": {
+    "darkMode": true,
+    "gradients": true,
+    "opacityVariants": true,
+  },
+  "themes": [
+    "amber",
+    "emerald",
+    "purple",
+    "sky",
+  ],
+  "usageExample": {
+    "classes": "bg-theme-primary text-white hover:bg-theme-primary/80",
+    "html": "<div data-theme="emerald" data-theme-mode="dark">",
+  },
+}
+`;

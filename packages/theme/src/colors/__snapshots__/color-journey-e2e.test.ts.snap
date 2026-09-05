@@ -1,0 +1,264 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Color Journey E2E: Theme Switching and Dark Mode > measures color system performance metrics > color-system-metrics 1`] = `
+{
+  "cssVariableCount": 20,
+  "darkModeOverrideCount": 4,
+  "gradientCount": 2,
+  "themeMappingCount": 5,
+  "totalCSSSize": 3791,
+  "utilityClassCount": 7,
+}
+`;
+
+exports[`Color Journey E2E: Theme Switching and Dark Mode > tracks color precision through opacity transformations > opacity-transformation-precision 1`] = `
+{
+  "opacityVariants": [
+    {
+      "className": "bg-theme-accent/10",
+      "hasColorMix": true,
+      "hasFallback": false,
+      "level": 10,
+      "supportsQuery": true,
+    },
+    {
+      "className": "bg-theme-accent/20",
+      "hasColorMix": true,
+      "hasFallback": false,
+      "level": 20,
+      "supportsQuery": true,
+    },
+    {
+      "className": "bg-theme-accent/30",
+      "hasColorMix": true,
+      "hasFallback": false,
+      "level": 30,
+      "supportsQuery": true,
+    },
+    {
+      "className": "bg-theme-accent/40",
+      "hasColorMix": true,
+      "hasFallback": false,
+      "level": 40,
+      "supportsQuery": true,
+    },
+    {
+      "className": "bg-theme-accent/50",
+      "hasColorMix": true,
+      "hasFallback": false,
+      "level": 50,
+      "supportsQuery": true,
+    },
+    {
+      "className": "bg-theme-accent/60",
+      "hasColorMix": true,
+      "hasFallback": false,
+      "level": 60,
+      "supportsQuery": true,
+    },
+    {
+      "className": "bg-theme-accent/70",
+      "hasColorMix": true,
+      "hasFallback": false,
+      "level": 70,
+      "supportsQuery": true,
+    },
+    {
+      "className": "bg-theme-accent/80",
+      "hasColorMix": true,
+      "hasFallback": false,
+      "level": 80,
+      "supportsQuery": true,
+    },
+    {
+      "className": "bg-theme-accent/90",
+      "hasColorMix": true,
+      "hasFallback": false,
+      "level": 90,
+      "supportsQuery": true,
+    },
+  ],
+  "original": {
+    "alpha": 1,
+    "c": 0.15,
+    "format": "oklch",
+    "h": 230,
+    "l": 0.8,
+  },
+}
+`;
+
+exports[`Color Journey E2E: Theme Switching and Dark Mode > tracks emerald primary color through complete theme pipeline > emerald-primary-color-journey 1`] = `
+{
+  "colorName": "emerald-primary",
+  "originalValue": "oklch(0.65 0.2 160)",
+  "stages": [
+    {
+      "data": {
+        "parsed": {
+          "alpha": 1,
+          "c": 0.2,
+          "format": "oklch",
+          "h": 160,
+          "l": 0.65,
+        },
+        "value": "oklch(0.65 0.2 160)",
+      },
+      "description": "Original OKLCH color value from constants",
+      "stage": "Color Definition",
+      "validation": "Valid OKLCH format",
+    },
+    {
+      "data": {
+        "cssVariable": "--color-emerald-primary",
+        "inRoot": true,
+        "value": "oklch(0.65 0.2 160)",
+      },
+      "description": "Color defined as CSS custom property",
+      "stage": "CSS Variable Generation",
+      "validation": "CSS variable created in :root",
+    },
+    {
+      "data": {
+        "mapping": "--theme-primary: var(--color-emerald-primary)",
+        "selector": "html[data-theme="emerald"]",
+        "value": "var(--color-emerald-primary)",
+      },
+      "description": "Theme-aware CSS variable mapping",
+      "stage": "Theme Mapping",
+      "validation": "Theme-specific mapping created",
+    },
+    {
+      "data": {
+        "adjustment": "oklch(0.65 0.2 160)",
+        "hasOverride": true,
+        "selector": "html[data-theme="emerald"][data-theme-mode="dark"]",
+        "value": "oklch(0.65 0.2 160)",
+      },
+      "description": "Dark mode color overrides",
+      "stage": "Dark Mode Adjustments",
+      "validation": "Dark mode adjustments applied correctly",
+    },
+    {
+      "data": {
+        "className": ".bg-theme-primary",
+        "styles": "background-color: var(--theme-primary);",
+        "usesVariable": true,
+      },
+      "description": "Tailwind utility class using theme variable",
+      "stage": "Utility Class Generation",
+      "validation": "Utility references theme variable",
+    },
+    {
+      "data": {
+        "className": ".bg-theme-primary/50",
+        "hasColorMix": true,
+        "hasFallback": false,
+        "usesProgressiveEnhancement": true,
+      },
+      "description": "Opacity modifier with color-mix and fallback",
+      "stage": "Opacity Transformation",
+      "validation": "Progressive enhancement with fallbacks",
+    },
+  ],
+}
+`;
+
+exports[`Color Journey E2E: Theme Switching and Dark Mode > validates theme switching and dark mode color cascade > theme-switching-cascade 1`] = `
+{
+  "themes": {
+    "amber": {
+      "adjustments": {
+        "accent": "oklch(0.85 0.15 75)",
+        "background": undefined,
+        "primary": "oklch(0.7 0.2 75)",
+        "secondary": "oklch(0.75 0.18 75)",
+        "text": undefined,
+      },
+      "darkMode": {
+        "accent": "oklch(0.85 0.15 75)",
+        "background": "inherits",
+        "primary": "oklch(0.7 0.2 75)",
+        "secondary": "oklch(0.75 0.18 75)",
+        "text": "inherits",
+      },
+      "lightMode": {
+        "accent": "var(--color-amber-accent)",
+        "background": "var(--color-amber-background)",
+        "primary": "var(--color-amber-primary)",
+        "secondary": "var(--color-amber-secondary)",
+        "text": "var(--color-amber-text)",
+      },
+    },
+    "emerald": {
+      "adjustments": {
+        "accent": "oklch(0.85 0.1 160)",
+        "background": undefined,
+        "primary": "oklch(0.65 0.2 160)",
+        "secondary": "oklch(0.7 0.18 160)",
+        "text": undefined,
+      },
+      "darkMode": {
+        "accent": "oklch(0.85 0.1 160)",
+        "background": "inherits",
+        "primary": "oklch(0.65 0.2 160)",
+        "secondary": "oklch(0.7 0.18 160)",
+        "text": "inherits",
+      },
+      "lightMode": {
+        "accent": "var(--color-emerald-accent)",
+        "background": "var(--color-emerald-background)",
+        "primary": "var(--color-emerald-primary)",
+        "secondary": "var(--color-emerald-secondary)",
+        "text": "var(--color-emerald-text)",
+      },
+    },
+    "purple": {
+      "adjustments": {
+        "accent": "oklch(0.8 0.12 280)",
+        "background": undefined,
+        "primary": "oklch(0.6 0.22 280)",
+        "secondary": "oklch(0.65 0.2 280)",
+        "text": undefined,
+      },
+      "darkMode": {
+        "accent": "oklch(0.8 0.12 280)",
+        "background": "inherits",
+        "primary": "oklch(0.6 0.22 280)",
+        "secondary": "oklch(0.65 0.2 280)",
+        "text": "inherits",
+      },
+      "lightMode": {
+        "accent": "var(--color-purple-accent)",
+        "background": "var(--color-purple-background)",
+        "primary": "var(--color-purple-primary)",
+        "secondary": "var(--color-purple-secondary)",
+        "text": "var(--color-purple-text)",
+      },
+    },
+    "sky": {
+      "adjustments": {
+        "accent": "oklch(0.8 0.15 230)",
+        "background": undefined,
+        "primary": "oklch(0.65 0.2 230)",
+        "secondary": "oklch(0.7 0.18 230)",
+        "text": undefined,
+      },
+      "darkMode": {
+        "accent": "oklch(0.8 0.15 230)",
+        "background": "inherits",
+        "primary": "oklch(0.65 0.2 230)",
+        "secondary": "oklch(0.7 0.18 230)",
+        "text": "inherits",
+      },
+      "lightMode": {
+        "accent": "var(--color-sky-accent)",
+        "background": "var(--color-sky-background)",
+        "primary": "var(--color-sky-primary)",
+        "secondary": "var(--color-sky-secondary)",
+        "text": "var(--color-sky-text)",
+      },
+    },
+  },
+}
+`;
