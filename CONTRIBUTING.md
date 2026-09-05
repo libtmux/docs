@@ -84,8 +84,9 @@ defines their CI environment. Report skipped checks explicitly. Missing port
 checkouts or a missing local server can leave checks unexercised.
 
 Add focused regression coverage for behavior changes and confirm that a new
-check fails when its intended invariant is broken. Documentation-only edits
-need link, command, and diff review rather than new tests.
+check fails when its intended invariant is broken. Root policy-guide edits
+need link, command, and diff review rather than new tests. Content edits
+under `site/` still need the relevant rendering, example, and link checks.
 
 ### Theme test setup
 
