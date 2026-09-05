@@ -158,19 +158,26 @@ jobs:
         run: |
           set -euo pipefail
           # Reserved names copied from site/src/lib/ports.ts's eight slugs
-          # plus the manifest and runtime-shell prefixes. Keep this in sync
-          # by hand if PORTS grows a ninth entry — see the same comment in
-          # reusable-deploy.yml. manifest/ and _shell/ get no exception from
-          # this job, unlike the eight port slugs below: manifest/ has no
-          # shell output today, so any appearance is a build that changed
-          # shape. _shell/ is a live, separate discrepancy, not a dead
-          # case: the build now emits dist/_shell/{shell.js,tokens.css,...}
-          # unversioned, which will still fail here after this fix, and
-          # contradicts _shell/v*/** being the shell's own versioned prefix
-          # per notes/research/07-ci-topology.md's ownership table — see
-          # notes/decisions/port-root-redirect.md, which records rather
-          # than resolves it; that's a separate decision.
-          reserved=(py ts rs go java dotnet cxx swift manifest _shell)
+          # plus the manifest prefix. Keep this in sync by hand if PORTS
+          # grows a ninth entry — see the same comment in reusable-deploy.yml.
+          #
+          # `_shell` is deliberately not reserved here, and the asymmetry is
+          # the point: this job is the shell, and `_shell/` is the shell's own
+          # prefix — `site/public/_shell/{shell.js,tokens.css,README.md}` is
+          # published by nothing else. reusable-deploy.yml keeps `_shell` in
+          # its own list because a *port* writing there would be clobbering
+          # someone else's data. Reserving it in both places was what made
+          # publish-root fail on every trunk push.
+          #
+          # Whether the prefix should be versioned (`_shell/v1/`, so a
+          # breaking change cannot break every generator that already baked
+          # in the URL) is open and recorded in
+          # notes/decisions/port-root-redirect.md. Owning the prefix here
+          # does not foreclose it.
+          #
+          # manifest/ stays reserved: it has no shell output, so anything
+          # appearing there is a build that changed shape.
+          reserved=(py ts rs go java dotnet cxx swift manifest)
           dirs=()
           reserved_index_dirs=()
           for entry in dist/*/; do
