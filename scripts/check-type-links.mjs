@@ -131,11 +131,17 @@ if (args.includes('--list')) {
 if (args.includes('--update')) {
   const current = existsSync(CEILING_FILE) ? JSON.parse(readFileSync(CEILING_FILE, 'utf8')) : {}
   // The mirror of check-palette and check-xrefs: this ceiling only comes down.
-  const raised = PORTS.filter((p) => results[p].unresolved > (current[p] ?? Infinity))
+  //
+  // A port with no entry is treated as a ceiling of zero, not of infinity, so
+  // it lands in `raised` and needs --force like any other rise. Recording a
+  // first baseline is deliberate; so is a renamed slug arriving with no
+  // history, and the two are indistinguishable here. Defaulting to infinity
+  // waved both through.
+  const raised = PORTS.filter((p) => results[p].unresolved > (current[p] ?? 0))
   if (raised.length && !args.includes('--force')) {
     console.error(
       `check-type-links: refusing to raise the ceiling for ${raised.join(', ')}.\n` +
-        raised.map((p) => `  ${p}: ${current[p]} -> ${results[p].unresolved}`).join('\n') +
+        raised.map((p) => `  ${p}: ${current[p] ?? '(none recorded)'} -> ${results[p].unresolved}`).join('\n') +
         `\nAdd the missing names to BUILTINS or fix resolution. If more plain\n` +
         `names really are the intended outcome, say so and pass --force.`,
     )

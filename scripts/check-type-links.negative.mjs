@@ -96,6 +96,28 @@ const check = (name, ok, detail) => {
 }
 
 {
+  // The --update path, where a missing entry used to default to infinity and
+  // so could never be judged a rise. Recording a first baseline and a renamed
+  // slug arriving with no history look identical here, and only one of them
+  // is intended.
+  const dir = site({ n: 9 })
+  const { code, out, recorded } = run(dir, 5, ['--update'], ['go'])
+  check(
+    'rebaselining an unrecorded port needs --force',
+    code !== 0 && out.includes('refusing to raise') && out.includes('go') && recorded === undefined,
+    `exited ${code}, go now ${recorded}:\n${out}`,
+  )
+  rmSync(dir, { recursive: true, force: true })
+}
+
+{
+  const dir = site({ n: 9 })
+  const { code, recorded } = run(dir, 5, ['--update', '--force'], ['go'])
+  check('--force records the new port', code === 0 && recorded === 9, `exited ${code}, go now ${recorded}`)
+  rmSync(dir, { recursive: true, force: true })
+}
+
+{
   /*
    * A port the record does not mention. Defaulting it happens to fail closed
    * in this direction, but it reports an unrecorded port as a resolution
