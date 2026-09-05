@@ -28,9 +28,10 @@ function site(n) {
   return dir
 }
 
-function run(dir, floor) {
+function run(dir, floor, omit = []) {
   const f = join(dir, 'floor.json')
-  writeFileSync(f, JSON.stringify(Object.fromEntries(PORTS.map((p) => [p, floor]))))
+  const recorded = PORTS.filter((p) => !omit.includes(p))
+  writeFileSync(f, JSON.stringify(Object.fromEntries(recorded.map((p) => [p, floor]))))
   try {
     return { code: 0, out: execFileSync('node', [script, dir, '--floor', f], { encoding: 'utf8', stdio: 'pipe' }) }
   } catch (err) {
@@ -42,16 +43,22 @@ let failures = 0
 const CASES = [
   { name: 'resolution fell', built: 2, floor: 10, mustFail: true },
   { name: 'resolution held', built: 10, floor: 10, mustFail: false },
+  /*
+   * A port the record does not mention used to default to a floor of zero,
+   * which no count can fall below — the one port whose collapse this check
+   * could not see. A renamed slug arrives exactly this way.
+   */
+  { name: 'port unrecorded', built: 0, floor: 10, omit: ['go'], mustFail: true, says: 'no floor recorded for go' },
 ]
 
 for (const c of CASES) {
   const dir = site(c.built)
   try {
-    const { code, out } = run(dir, c.floor)
+    const { code, out } = run(dir, c.floor, c.omit)
     if (c.mustFail && code === 0) {
       console.error(`FAIL ${c.name} — ${c.built} resolved against a floor of ${c.floor} passed`)
       failures++
-    } else if (c.mustFail && !out.includes('resolution fell on')) {
+    } else if (c.mustFail && !out.includes(c.says ?? 'resolution fell on')) {
       console.error(`FAIL ${c.name} — exited ${code} without naming the drop:\n${out}`)
       failures++
     } else if (!c.mustFail && code !== 0) {

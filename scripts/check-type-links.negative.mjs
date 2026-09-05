@@ -39,9 +39,10 @@ function site({ n = 0, mangled = false } = {}) {
   return dir
 }
 
-function run(dir, ceilings, extra = []) {
+function run(dir, ceilings, extra = [], omit = []) {
   const f = join(dir, 'ceiling.json')
-  writeFileSync(f, `${JSON.stringify(Object.fromEntries(PORTS.map((p) => [p, ceilings])), null, 2)}\n`)
+  const recordedPorts = PORTS.filter((p) => !omit.includes(p))
+  writeFileSync(f, `${JSON.stringify(Object.fromEntries(recordedPorts.map((p) => [p, ceilings])), null, 2)}\n`)
   let code = 0
   let out = ''
   try {
@@ -89,6 +90,22 @@ const check = (name, ok, detail) => {
   check(
     'more plain names than the ceiling fails',
     code !== 0 && out.includes('ceiling allows'),
+    `exited ${code}:\n${out}`,
+  )
+  rmSync(dir, { recursive: true, force: true })
+}
+
+{
+  /*
+   * A port the record does not mention. Defaulting it happens to fail closed
+   * in this direction, but it reports an unrecorded port as a resolution
+   * regression, sending the reader after a defect that is not there.
+   */
+  const dir = site({ n: 5 })
+  const { code, out } = run(dir, 5, [], ['go'])
+  check(
+    'an unrecorded port is named as such',
+    code !== 0 && out.includes('no ceiling recorded for go'),
     `exited ${code}:\n${out}`,
   )
   rmSync(dir, { recursive: true, force: true })

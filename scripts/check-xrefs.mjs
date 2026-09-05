@@ -87,9 +87,26 @@ if (!existsSync(FLOOR_FILE)) {
 }
 const floor = JSON.parse(readFileSync(FLOOR_FILE, 'utf8'))
 
-const below = PORTS.filter((p) => counts[p] < (floor[p] ?? 0))
+/*
+ * A port absent from the record is not a port whose floor is zero.
+ * Defaulting it to zero makes this check unfailable for that port: the
+ * collapse above could take it to nothing and the run would print `up` and
+ * exit clean. A renamed slug reaches this branch, which is the case worth
+ * stopping for.
+ */
+const unrecorded = PORTS.filter((p) => !(p in floor))
+if (unrecorded.length) {
+  console.error(
+    `check-xrefs: no floor recorded for ${unrecorded.join(', ')}.\n` +
+      `A port with no floor cannot fail this check. Record one:\n` +
+      `  node scripts/check-xrefs.mjs --update`,
+  )
+  process.exit(1)
+}
+
+const below = PORTS.filter((p) => counts[p] < floor[p])
 for (const p of PORTS) {
-  const f = floor[p] ?? 0
+  const f = floor[p]
   const mark = counts[p] < f ? 'FELL' : counts[p] > f ? 'up' : 'ok'
   console.log(`${p.padEnd(7)} ${String(counts[p]).padStart(7)} resolved  (floor ${f})  ${mark}`)
 }
@@ -105,7 +122,7 @@ if (below.length) {
   process.exit(1)
 }
 
-const risen = PORTS.filter((p) => counts[p] > (floor[p] ?? 0))
+const risen = PORTS.filter((p) => counts[p] > floor[p])
 if (risen.length) {
   console.log(`\ncheck-xrefs: resolution rose on ${risen.join(', ')} — raise the floor:`)
   console.log(`  node scripts/check-xrefs.mjs --update`)

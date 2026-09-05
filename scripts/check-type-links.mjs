@@ -165,7 +165,21 @@ if (!existsSync(CEILING_FILE)) {
 }
 
 const ceiling = JSON.parse(readFileSync(CEILING_FILE, 'utf8'))
-const over = PORTS.filter((p) => results[p].unresolved > (ceiling[p] ?? 0))
+
+// Absent is not zero here either. A ceiling of zero happens to fail closed for
+// this direction, but it reports a renamed slug as a resolution regression
+// rather than as an unrecorded port, which sends the reader after the wrong
+// defect. See check-xrefs.mjs for the same guard on the other direction.
+const unrecorded = PORTS.filter((p) => !(p in ceiling))
+if (unrecorded.length) {
+  console.error(
+    `check-type-links: no ceiling recorded for ${unrecorded.join(', ')}.\n` +
+      `Record one: node scripts/check-type-links.mjs --update`,
+  )
+  process.exit(1)
+}
+
+const over = PORTS.filter((p) => results[p].unresolved > ceiling[p])
 if (over.length) {
   console.error('check-type-links: more type names render plain than the ceiling allows.')
   for (const p of over) {
