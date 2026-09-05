@@ -83,8 +83,12 @@ const walk = (dir) => {
       walk(full)
       continue
     }
+    // `dot === -1`, not `dot <= 0`: the function treats a leading dot as an
+    // extension separator too, so `.buildinfo` is the extension `buildinfo`
+    // there. Skipping dotfiles here made this check blind to exactly the file
+    // class the function is most likely to redirect away from itself.
     const dot = entry.lastIndexOf('.')
-    if (dot <= 0) continue
+    if (dot === -1) continue
     const ext = entry.slice(dot + 1).toLowerCase()
     if (!found.has(ext)) found.set(ext, full.slice(siteDir.length))
   }

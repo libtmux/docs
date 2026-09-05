@@ -16,12 +16,17 @@ import { fileURLToPath } from 'node:url'
 
 const script = join(dirname(fileURLToPath(import.meta.url)), 'check-edge-extensions.mjs')
 
-/** A tree holding one page and one `objects.inv`, the real failure. */
+/**
+ * A tree holding one page, one `objects.inv` — the real failure — and one
+ * dotfile, because Sphinx emits `.buildinfo` and the function reads a leading
+ * dot as an extension separator like any other.
+ */
 function site() {
   const dir = mkdtempSync(join(tmpdir(), 'check-edge-ext-'))
   mkdirSync(join(dir, 'reference', 'py'), { recursive: true })
   writeFileSync(join(dir, 'reference', 'py', 'index.html'), '<html></html>')
   writeFileSync(join(dir, 'reference', 'py', 'objects.inv'), 'x')
+  writeFileSync(join(dir, 'reference', 'py', '.buildinfo'), 'x')
   return dir
 }
 
@@ -69,8 +74,21 @@ const check = (name, ok, detail) => {
 
 {
   const dir = site()
-  const { code, out } = run(dir, fnFile(['html', 'inv']))
+  const { code, out } = run(dir, fnFile(['html', 'inv', 'buildinfo']))
   check('the same tree passes once it is allowlisted', code === 0, `exited ${code}:\n${out}`)
+  rmSync(dir, { recursive: true, force: true })
+}
+
+{
+  // A dotfile is not an extensionless file. Skipping it here made the check
+  // blind to the class the function is most likely to redirect away.
+  const dir = site()
+  const { code, out } = run(dir, fnFile(['html', 'inv']))
+  check(
+    'a dotfile extension is checked, not skipped',
+    code !== 0 && out.includes('.buildinfo'),
+    `exited ${code}:\n${out}`,
+  )
   rmSync(dir, { recursive: true, force: true })
 }
 
