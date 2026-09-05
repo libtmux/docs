@@ -1,0 +1,244 @@
+---
+/**
+ * The search UI, used by the /search/ page and by the Cmd-K modal.
+ *
+ * Pagefind's own default UI renders a title and an excerpt and nothing else,
+ * which on a reference of twelve thousand symbols is not enough to choose
+ * between two hits: `test.scaled` and `tmux.MaximumTestedVersion` look alike
+ * until you can see the package and the file. This renders Pagefind's results
+ * itself so a hit can show where it lives.
+ *
+ * Vanilla, like the rest of this site. The shape is borrowed from
+ * social-embed's search (debounced query, sub-results, arrow-key selection);
+ * that one is React and this site has no UI framework, and adding one to
+ * render a list would be a poor trade.
+ */
+interface Props {
+  /** The modal autofocuses and closes on Escape; the page does neither. */
+  modal?: boolean
+}
+const { modal = false } = Astro.props as Props
+---
+
+<div class="search-panel" data-modal={modal ? 'true' : undefined}>
+  <div class="search-panel__field">
+    <svg class="search-panel__icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="2"></circle>
+      <path d="m14 14 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+    </svg>
+    <input
+      class="search-panel__input"
+      type="search"
+      autocomplete="off"
+      spellcheck="false"
+      placeholder="Search the documentation"
+      aria-label="Search"
+    />
+    {modal && <kbd class="search-panel__hint">Esc</kbd>}
+  </div>
+
+  <div class="search-panel__body">
+    <aside class="search-panel__filters" hidden>
+      <p class="search-panel__filters-title">Port</p>
+      <div class="search-panel__filter-list"></div>
+    </aside>
+    <div class="search-panel__results" role="listbox" aria-label="Search results">
+      <p class="search-panel__status">Type to search.</p>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  /*
+   * Global, not scoped.
+   *
+   * Astro scopes a component's CSS with a `data-astro-cid-*` attribute it
+   * stamps on the elements it renders. The results, the filters and the
+   * "show more" button are built by `lib/search-panel.ts` at runtime, so they
+   * carry no such attribute and scoped rules miss every one of them — the
+   * panel rendered completely unstyled. The class names are namespaced
+   * instead.
+   */
+  .search-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .search-panel__field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--color-background-border);
+    border-radius: var(--radius-md, 0.375rem);
+    background: var(--color-background-secondary);
+  }
+
+  .search-panel__icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex: none;
+    color: var(--color-foreground-muted);
+  }
+
+  .search-panel__input {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    color: var(--text-color);
+    font: inherit;
+    outline: none;
+  }
+
+  /* The browser's own clear affordance duplicates Escape and sits where the
+     hint goes. */
+  .search-panel__input::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  .search-panel__hint {
+    flex: none;
+    padding: 0.1rem 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-foreground-muted);
+    border: 1px solid var(--color-background-border);
+    border-radius: 0.25rem;
+  }
+
+  .search-panel__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    margin-top: 1rem;
+    min-height: 0;
+  }
+
+  @media (min-width: 56rem) {
+    .search-panel__body {
+      grid-template-columns: 14rem minmax(0, 1fr);
+    }
+  }
+
+  .search-panel__filters-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-foreground-muted);
+  }
+
+  .search-panel__filter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.6rem;
+  }
+
+  .search-panel__filter {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.875rem;
+  }
+
+  .search-panel__filter-count {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--color-foreground-muted);
+  }
+
+  .search-panel__results {
+    min-width: 0;
+    overflow-y: auto;
+  }
+
+  .search-panel__status {
+    font-size: 0.875rem;
+    color: var(--color-foreground-muted);
+  }
+
+  .search-panel__result {
+    display: block;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md, 0.375rem);
+    color: inherit;
+  }
+
+  .search-panel__result:hover,
+  .search-panel__result[aria-selected='true'] {
+    background: var(--color-api-background-hover);
+    border-color: var(--color-background-border);
+  }
+
+  .search-panel__result-title {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--color-link);
+  }
+
+  .search-panel__result-excerpt {
+    margin-top: 0.15rem;
+    font-size: 0.875rem;
+    color: var(--color-foreground-muted);
+  }
+
+  /* Pagefind returns its own <mark> around the matched terms. */
+  .search-panel__result-excerpt mark {
+    background: var(--color-highlight-on-target);
+    color: inherit;
+    border-radius: 0.15rem;
+  }
+
+  /*
+   * Where the hit lives: the URL, the file it was extracted from, the
+   * package. This is the part Pagefind's default UI has no place for, and the
+   * reason a list of twelve thousand symbols was hard to choose from.
+   */
+  .search-panel__result-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 0.85rem;
+    margin-top: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-foreground-muted);
+  }
+
+  .search-panel__result-meta span {
+    overflow-wrap: anywhere;
+  }
+
+  .search-panel__more {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.55rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--color-background-border);
+    border-radius: var(--radius-md, 0.375rem);
+    background: var(--color-background-secondary);
+    color: var(--color-link);
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  import { mountSearchPanel } from '../lib/search-panel'
+
+  const bundlePath = `${import.meta.env.BASE_URL}pagefind/`
+  for (const root of document.querySelectorAll<HTMLElement>('.search-panel')) {
+    if (root.dataset.mounted) continue
+    root.dataset.mounted = 'true'
+    const handle = mountSearchPanel(root, bundlePath)
+
+    const dialog = root.closest('dialog')
+    if (dialog) {
+      // Focus after the dialog is actually open, or the input is not yet
+      // focusable and the keystroke that opened it is lost.
+      dialog.addEventListener('search-modal:open', () => handle.focus())
+      dialog.addEventListener('close', () => handle.clear())
+    }
+  }
+</script>

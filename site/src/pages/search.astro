@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import SearchPanel from '../components/SearchPanel.astro'
+
+/**
+ * The search page: the same panel the Cmd-K modal uses.
+ *
+ * Pagefind's own UI is no longer used. It renders a title and an excerpt,
+ * which on a reference of twelve thousand symbols is not enough to choose
+ * between two hits — `test.scaled` and `test.RetryTimeout` differ by their
+ * package and the file they came from, and neither appears in a title.
+ * `SearchPanel` renders the results itself and shows that.
+ *
+ * The missing-index case is handled in `lib/search-panel.ts` rather than
+ * here: Pagefind's index is a build artifact, absent under `pnpm dev` and
+ * under a build with LIBTMUX_DOCS_SKIP_PAGEFIND=true, so the panel checks for
+ * it before importing and says so plainly instead of throwing.
+ */
+---
+
+<BaseLayout title="Search" description="Search the libtmux documentation.">
+  <main class="mx-auto max-w-7xl px-4 py-12">
+    <h1 class="text-3xl font-semibold tracking-tight">Search</h1>
+    <div class="mt-8">
+      <SearchPanel />
+    </div>
+  </main>
+</BaseLayout>
