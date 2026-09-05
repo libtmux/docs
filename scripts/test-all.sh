@@ -19,6 +19,12 @@ SERVE_URL="${LIBTMUX_DOCS_SERVE:-http://localhost:8080}"
 skip_build=false
 [[ "${1:-}" == "--skip-build" ]] && skip_build=true
 
+# shellcheck source=scripts/skip-summary.sh
+. "$(dirname "$0")/skip-summary.sh"
+skipped=""
+skip_reason=""
+note_skip() { skipped="${skipped:+$skipped, }$1"; }
+
 step() { printf '\n\033[1m== %s\033[0m\n' "$1"; }
 
 step 'cached inventories'
@@ -55,6 +61,11 @@ node scripts/check-palette.mjs
 
 step 'palette (negative)'
 node scripts/check-palette.negative.mjs
+
+# The run summary has to say what it did not run. Four checks skip whenever
+# nothing is serving, which is always in CI.
+step 'run summary (negative)'
+./scripts/check-summary.negative.sh
 
 # A version slug names a source. This script only ever renders HEAD, so a slug
 # naming anything else would publish today's tree as though it were a release.
@@ -179,9 +190,16 @@ if curl -sf -o /dev/null "$SERVE_URL/reference/py/libtmux-server/"; then
     (cd site && node scripts/check-style-parity.mjs "$SERVE_URL")
   else
     printf '\nstyle parity skipped: no gp-sphinx page at %s — run scripts/build-site.sh\n' "$SERVE_URL"
+    note_skip 'style parity'
+    skip_reason="no gp-sphinx page at $SERVE_URL — run scripts/build-site.sh"
   fi
 else
   printf '\nvisual checks skipped: nothing serving at %s\n' "$SERVE_URL"
+  note_skip 'fonts'
+  note_skip 'mobile navigation'
+  note_skip 'visual regression'
+  note_skip 'style parity'
+  skip_reason="nothing serving at $SERVE_URL — run scripts/serve.sh"
 fi
 
-printf '\n\033[1mall checks passed\033[0m\n'
+summarise_run "$skipped" "$skip_reason"
