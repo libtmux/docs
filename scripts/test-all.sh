@@ -162,6 +162,15 @@ node scripts/check-type-links.mjs "$out"
 step 'type name resolution (negative)'
 node scripts/check-type-links.negative.mjs
 
+# The edge function decides file-versus-page from an extension allowlist. A
+# generator adding a file type breaks that URL class at the CDN, where no link
+# check here can see it — every link in the tree still resolves.
+step 'edge extensions'
+node scripts/check-edge-extensions.mjs "$out"
+
+step 'edge extensions (negative)'
+node scripts/check-edge-extensions.negative.mjs
+
 step 'api fidelity'
 node scripts/check-api-fidelity.mjs "$out"
 

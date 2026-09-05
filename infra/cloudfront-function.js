@@ -110,17 +110,25 @@ async function handler(event) {
 }
 
 /**
- * Every extension the assembled tree emits (`find _site -type f | sed
- * 's/.*\.//' | sort -u`, plus Pagefind's and Sphinx's). An object, not a Set:
- * property lookup is the cheapest membership test in this runtime. A missing
- * extension costs one redirect to a URL that 403s — noisy, not silent.
+ * Every extension the assembled tree emits. An object, not a Set: property
+ * lookup is the cheapest membership test in this runtime.
+ *
+ * A missing extension is not cosmetic. `objects.inv` is how every external
+ * Sphinx project resolves an intersphinx reference into this site; redirected
+ * to a trailing slash it 403s, and cross-references from other projects stop
+ * resolving with nothing here reporting it.
+ *
+ * `scripts/check-edge-extensions.mjs` holds this list to what the build
+ * actually emits, because a hand-kept list drifts the moment a generator adds
+ * a file type.
  */
 const ASSET_EXTENSIONS = {
     html: 1, htm: 1, xml: 1, txt: 1, json: 1, js: 1, mjs: 1, map: 1, css: 1,
     svg: 1, png: 1, jpg: 1, jpeg: 1, gif: 1, webp: 1, avif: 1, ico: 1,
     woff: 1, woff2: 1, ttf: 1, otf: 1, eot: 1,
     md: 1, pdf: 1, zip: 1, gz: 1, wasm: 1, pf_meta: 1, pf_fragment: 1,
-    pf_index: 1, pagefind: 1, log: 1, yml: 1, yaml: 1, doccarchive: 1,
+    pf_index: 1, pf_filter: 1, pagefind: 1, log: 1, yml: 1, yaml: 1,
+    doccarchive: 1, inv: 1, buildinfo: 1,
 }
 
 /**
