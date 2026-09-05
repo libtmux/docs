@@ -3,8 +3,8 @@
 // site/src/lib/versions.ts) from git refs in each port's checkout, falling
 // back to the two-entry seed for a port whose checkout is not present on
 // this machine. Never invents the manifest shape independently of
-// versions.ts — it imports PORTS and sortVersions directly so ordering and
-// the field set cannot drift from what the switcher actually reads.
+// versions.ts — it imports PORTS, sortVersions and compareTags directly so
+// ordering and the field set cannot drift from what the switcher reads.
 //
 // Usage:
 //   node scripts/gen-versions.mjs [--out <path>] [--seed] [--overrides <path>]
@@ -30,7 +30,7 @@ const repoRoot = dirname(here)
 const siteLib = join(repoRoot, 'site', 'src', 'lib')
 
 const { PORTS } = await import(`file://${join(siteLib, 'ports.ts')}`)
-const { sortVersions } = await import(`file://${join(siteLib, 'versions.ts')}`)
+const { sortVersions, compareTags } = await import(`file://${join(siteLib, 'versions.ts')}`)
 
 function parseArgs(argv) {
   const opts = { out: undefined, seed: false, overrides: undefined }
@@ -62,27 +62,6 @@ function seedEntries() {
     { slug: 'latest', label: 'latest', kind: 'trunk', supported: true },
     { slug: 'stable', label: 'stable', kind: 'alias', resolvesTo: 'latest', supported: true },
   ]
-}
-
-/**
- * Semver-ish compare for tag slugs (`v0.46.2` > `v0.9.0`), newest first.
- * Pre-release suffixes sort behind their base version.
- */
-function compareTags(a, b) {
-  const parse = (s) => {
-    const [core, pre] = s.slice(1).split('-', 2)
-    return { nums: core.split('.').map(Number), pre: pre ?? null }
-  }
-  const pa = parse(a)
-  const pb = parse(b)
-  for (let i = 0; i < 3; i += 1) {
-    const d = (pb.nums[i] ?? 0) - (pa.nums[i] ?? 0)
-    if (d !== 0) return d
-  }
-  if (pa.pre === pb.pre) return 0
-  if (pa.pre === null) return -1 // release beats pre-release
-  if (pb.pre === null) return 1
-  return pa.pre.localeCompare(pb.pre)
 }
 
 function deriveEntries(checkout) {

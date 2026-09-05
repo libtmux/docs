@@ -82,6 +82,35 @@ export function canonicalUrl(
   return `${origin.replace(/\/$/, '')}/${portSlug}/${target}/${tail}`
 }
 
+/**
+ * Newest-first precedence for two tag slugs.
+ *
+ * Lives here rather than beside the manifest generator because it is ordering,
+ * and this module already owns ordering — the generator imports it for the
+ * same reason it imports `sortVersions`, so the switcher and the manifest
+ * cannot disagree about which release is newer.
+ *
+ * A release outranks any of its own prereleases. Prerelease identifiers
+ * collate numerically, so `alpha.10` is newer than `alpha.9`; plain
+ * lexicographic order puts it between `alpha.1` and `alpha.2`.
+ */
+export function compareTags(a: string, b: string): number {
+  const parse = (s: string) => {
+    const [core, pre] = s.slice(1).split('-', 2)
+    return { nums: core.split('.').map(Number), pre: pre ?? null }
+  }
+  const pa = parse(a)
+  const pb = parse(b)
+  for (let i = 0; i < 3; i += 1) {
+    const d = (pb.nums[i] ?? 0) - (pa.nums[i] ?? 0)
+    if (d !== 0) return d
+  }
+  if (pa.pre === pb.pre) return 0
+  if (pa.pre === null) return -1
+  if (pb.pre === null) return 1
+  return pb.pre.localeCompare(pa.pre, undefined, { numeric: true })
+}
+
 /** Sort newest-first for the switcher: aliases, then trunk, then tags, then branches. */
 export function sortVersions(entries: VersionEntry[]): VersionEntry[] {
   const rank: Record<VersionKind, number> = { alias: 0, trunk: 1, tag: 2, branch: 3, pr: 4 }
