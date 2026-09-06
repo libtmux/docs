@@ -5,7 +5,7 @@ import { visit } from 'unist-util-visit'
 import { decideFilePath, decideMention, isLikelyReference, notASymbol, notApiReason, type Resolver } from '@libtmux/api-model'
 import { getResolver } from '../lib/prose-resolver'
 import { API_MODELS, PORT_NAME } from '../lib/api-models'
-import { withRoot } from '../lib/site-root'
+import { withPortRoot } from '../lib/site-root'
 
 /**
  * Link the API mentions in a prose table to the reference.
@@ -228,7 +228,10 @@ export function rehypeApiLinks() {
       if (d.kind !== 'link') return undefined
       return {
         properties: {
-          href: withRoot(d.href),
+          // withPortRoot: this rewrites prose, which is built in every
+          // locale, into reference URLs, which exist in the default locale
+          // only. withRoot sent a Japanese page to /ja/reference/….
+          href: withPortRoot(d.href),
           class: 'api-mention',
           title: d.title,
           ...(d.external ? { rel: 'nofollow noopener' } : {}),

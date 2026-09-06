@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { getCollection, type CollectionEntry } from 'astro:content'
-import { DEFAULT_LOCALE, isLocale, type Locale } from './locales.ts'
+import { DEFAULT_LOCALE, LOCALES, isLocale, type Locale } from './locales.ts'
 
 /**
  * Locale routing for the shell's one catch-all route.
@@ -45,7 +45,34 @@ export function localesEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
   return !env.LIBTMUX_DOCS_PORT
 }
 
+/**
+ * The one locale this build renders.
+ *
+ * SITE_ROOT is a single value per Astro invocation, so a build that emitted
+ * two locales gave one of them the other's prefix — a Japanese page whose
+ * every link pointed into `/en/`. One locale per build is what makes the
+ * prefix correct for every page in it.
+ *
+ * A port build always renders the default locale: the reference is not
+ * translated, and per-port prose is the language-filtered English.
+ */
+export function buildLocale(env: NodeJS.ProcessEnv = process.env): Locale {
+  if (env.LIBTMUX_DOCS_PORT) return DEFAULT_LOCALE
+  const named = env.LIBTMUX_DOCS_LOCALE
+  return named && isLocale(named) ? named : DEFAULT_LOCALE
+}
+
 export type TranslationState = 'translated' | 'stale' | 'missing'
+
+/**
+ * What a locale offers for one page.
+ *
+ * `placeholder` is the fourth state and the one the switcher needs: the URL
+ * resolves, but what it serves says the page is untranslated rather than
+ * pretending otherwise. It is distinct from `missing`, which meant the URL
+ * did not exist at all.
+ */
+export type LocaleStatus = 'translated' | 'stale' | 'placeholder'
 
 /**
  * The commit that last touched a file, or null when git cannot answer.
@@ -97,4 +124,51 @@ export async function localesFor(sourceId: string): Promise<Locale[]> {
     if (locale !== DEFAULT_LOCALE && sourceIdOf(entry.id) === sourceId) found.add(locale)
   }
   return [...found]
+}
+
+/**
+ * Every locale's status for one English page, keyed by locale.
+ *
+ * The default locale is always `translated` — it is the source. Every other
+ * locale is `translated`, `stale`, or `placeholder`, so the switcher can
+ * offer all of them and say plainly which is which. A locale never appears
+ * absent, because a placeholder is served in its place.
+ */
+export async function localeStatusesFor(sourceId: string): Promise<Record<string, LocaleStatus>> {
+  const entries = await getCollection('docs')
+  const source = entries.find((e) => e.id === sourceId)
+  const statuses: Record<string, LocaleStatus> = { [DEFAULT_LOCALE]: 'translated' }
+  for (const locale of LOCALES) {
+    if (locale === DEFAULT_LOCALE) continue
+    const translation = entries.find(
+      (e) => localeOf(e.id) === locale && sourceIdOf(e.id) === sourceId,
+    )
+    if (!translation) {
+      statuses[locale] = 'placeholder'
+      continue
+    }
+    const state = translationState(translation, source)
+    statuses[locale] = state === 'stale' ? 'stale' : 'translated'
+  }
+  return statuses
+}
+
+/**
+ * The English pages a locale has no translation for.
+ *
+ * Drives the placeholder routes: one per (locale, untranslated page) pair, so
+ * every page answers in every locale.
+ */
+export async function placeholderPairs(): Promise<{ locale: Locale; sourceId: string }[]> {
+  const entries = await getCollection('docs')
+  const sources = entries.filter((e) => localeOf(e.id) === DEFAULT_LOCALE).map((e) => e.id)
+  const pairs: { locale: Locale; sourceId: string }[] = []
+  for (const locale of LOCALES) {
+    if (locale === DEFAULT_LOCALE) continue
+    for (const sourceId of sources) {
+      const has = entries.some((e) => localeOf(e.id) === locale && sourceIdOf(e.id) === sourceId)
+      if (!has) pairs.push({ locale, sourceId })
+    }
+  }
+  return pairs
 }

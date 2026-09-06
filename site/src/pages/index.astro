@@ -7,7 +7,7 @@ import ApiReferences from '../components/ApiReferences.astro'
 import { buildTarget } from '../lib/versions'
 import PackageInstall from '../components/widgets/PackageInstall.astro'
 import { QUICKSTARTS } from '../lib/quickstarts'
-import { withRoot } from '../lib/site-root'
+import { withPortRoot, withRoot } from '../lib/site-root'
 import { localesFor } from '../i18n/resolve'
 import { DEFAULT_LOCALE } from '../i18n/locales'
 
@@ -19,27 +19,30 @@ import { DEFAULT_LOCALE } from '../i18n/locales'
  */
 const explore = [
   {
-    href: '/topics/',
+    href: withRoot('/topics/'),
     label: 'Topics',
     body: 'Deep dives into one subject at a time — architecture, traversal, options and hooks — compared across all eight ports.',
   },
   {
-    href: '/concepts/',
+    href: withRoot('/concepts/'),
     label: 'Concepts',
     body: 'The mental model every port shares before you read any one port’s own reference: the object hierarchy, transports, and filtering.',
   },
   {
-    href: '/guides/',
+    href: withRoot('/guides/'),
     label: 'Guides',
     body: 'Task-oriented walkthroughs — install tmux, pick a port, and run the round trip every real program starts from.',
   },
   {
-    href: '/reference/',
+    // Composed here rather than at the point of render: four of these five
+    // are shared prose and live under this build's own root, while the
+    // reference is built in the default locale only. One list, two roots.
+    href: withPortRoot('/reference/'),
     label: 'API reference',
     body: 'Every public symbol in all eight ports, extracted from source and cross-linked — 13,753 of them, in one place and one style.',
   },
   {
-    href: '/examples/',
+    href: withRoot('/examples/'),
     label: 'Examples',
     body: 'The same concrete task, worked through in each of the eight ports side by side, so you can compare syntax directly.',
   },
@@ -106,7 +109,7 @@ const homeLocales = await localesFor('')
         </div>
         <ApiReferences port={versionRootPort} version={buildVersion} />
         <p class="mt-8 text-sm">
-          <a class="hover:underline" href={withRoot(`/${versionRootPort.slug}/`)}>
+          <a class="hover:underline" href={withPortRoot(`/${versionRootPort.slug}/`)}>
             All {versionRootPort.name} versions and install instructions
           </a>
         </p>
@@ -183,7 +186,7 @@ const homeLocales = await localesFor('')
           PORTS.map((p) => (
             <article class="flex flex-col rounded border border-edge p-4">
               <h3 class="font-semibold">
-                <a class="hover:underline" href={withRoot(`/${p.slug}/`)}>
+                <a class="hover:underline" href={withPortRoot(`/${p.slug}/`)}>
                   {p.name}
                 </a>
               </h3>
@@ -210,7 +213,7 @@ const homeLocales = await localesFor('')
         {
           explore.map((item) => (
             <a
-              href={withRoot(item.href)}
+              href={item.href}
               class="block rounded border border-edge p-4 hover:bg-surface-hover"
             >
               <h3 class="font-semibold">{item.label}</h3>

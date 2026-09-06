@@ -1,4 +1,6 @@
 ---
+import { DEFAULT_LOCALE } from '../../../i18n/locales'
+import { buildLocale } from '../../../i18n/resolve'
 import type { ApiSymbol } from '@libtmux/api-model'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { withRoot } from '../../../lib/site-root'
@@ -22,6 +24,11 @@ export async function getStaticPaths() {
   // Root build only, like the reference route itself: inside a port shell
   // this would render fourteen more copies of the same eleven thousand rows.
   if (process.env.LIBTMUX_DOCS_PORT) return []
+  // Default locale only, for the same reason the reference route itself is
+  // gated: the symbol index is the reference's own front door, and the
+  // reference is not translated. A Japanese copy would be an English index
+  // at a Japanese URL, linking across to /en/ for every row.
+  if (buildLocale() !== DEFAULT_LOCALE) return []
 
   const byLetter = new Map<string, { port: string; symbol: ApiSymbol }[]>()
   for (const [port, model] of Object.entries(API_MODELS) as [string, { symbols: ApiSymbol[] }][]) {

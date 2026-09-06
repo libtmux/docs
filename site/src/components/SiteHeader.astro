@@ -1,15 +1,35 @@
 ---
+import LocaleSwitcher from './LocaleSwitcher.astro'
 import PortSwitcher from './PortSwitcher.astro'
 import VersionSwitcher from './VersionSwitcher.astro'
-import { withRoot } from '../lib/site-root'
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
+import type { LocaleStatus } from '../i18n/resolve'
+import { withPortRoot, withRoot } from '../lib/site-root'
 
 interface Props {
   portSlug?: string
   version: string
   /** Forwarded to the port switcher so switching language keeps the page. */
   pagePath?: string
+  /** Current locale, for the locale switcher. */
+  locale?: Locale
+  /**
+   * This page's path with any locale prefix removed. The locale switcher
+   * needs the unprefixed form: it composes each target from that locale's own
+   * root, and `pagePath` in a port build is relative to the port instead.
+   */
+  sourcePath?: string
+  /** Every locale's status for this page. One entry means no control. */
+  localeStatuses?: Record<string, LocaleStatus>
 }
-const { portSlug, version, pagePath = '' } = Astro.props as Props
+const {
+  portSlug,
+  version,
+  pagePath = '',
+  locale = DEFAULT_LOCALE,
+  sourcePath,
+  localeStatuses,
+} = Astro.props as Props
 ---
 
 {/*
@@ -28,8 +48,17 @@ const { portSlug, version, pagePath = '' } = Astro.props as Props
     <a href={withRoot('/')} class="font-mono text-lg font-semibold tracking-tight">libtmux</a>
     <div class="flex-1"><PortSwitcher portSlug={portSlug} version={version} pagePath={pagePath} /></div>
     <VersionSwitcher portSlug={portSlug} version={version} />
+    {
+      localeStatuses && (
+        <LocaleSwitcher
+          locale={locale}
+          sourcePath={sourcePath ?? pagePath}
+          localeStatuses={localeStatuses}
+        />
+      )
+    }
     <a
-      href={withRoot('/reference/')}
+      href={withPortRoot('/reference/')}
       class="topnav-chip px-2 py-1 text-sm"
     >Reference</a>
     <a href={withRoot('/mcp/')} class="topnav-chip px-2 py-1 text-sm">MCP</a>

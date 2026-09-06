@@ -7,6 +7,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import { withRoot } from '../../lib/site-root'
 import { API_MODELS, API_NAV, OWNER_KINDS, PORT_NAME, indexFor, ownersOf, pageSlug, referenceHref, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG } from '../../lib/ports'
+import { DEFAULT_LOCALE } from '../../i18n/locales'
+import { buildLocale } from '../../i18n/resolve'
 import ApiDoc from '../../components/api/ApiDoc.astro'
 import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
@@ -29,7 +31,11 @@ import '../../styles/vendor/gp-sphinx-api.css'
 export async function getStaticPaths() {
   // Only the root build. This route would otherwise render inside all
   // fourteen shell builds, the way `[port]/index.astro` used to.
+  // The root build of the default locale only. The reference is not
+  // translated — a `/ja/reference/` tree would be the English body under
+  // another locale's prefix, which is what placeholders exist to avoid.
   if (process.env.LIBTMUX_DOCS_PORT) return []
+  if (buildLocale() !== DEFAULT_LOCALE) return []
 
   // Typed explicitly: inferring from the first element gives every field the
   // type `undefined`, and every push after it fails.

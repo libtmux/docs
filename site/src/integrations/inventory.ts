@@ -1,3 +1,4 @@
+import { DEFAULT_LOCALE } from '../i18n/locales'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import type { AstroIntegration } from 'astro'
@@ -16,9 +17,14 @@ import { API_MODELS, PORT_NAME, ownersOf, pageSlug } from '../lib/api-models'
  * Written at `astro:build:done` rather than as a route: the file is bytes, not
  * a page, and a route would have to base64 its way through a text response.
  *
- * Emitted only from the root build. The reference lives at `/reference/` and
- * has no per-port mount, so a per-port build writing one would publish an
- * inventory of URLs that do not exist under its own prefix.
+ * Emitted only from the root build, and only in the default locale. The
+ * reference lives at `/reference/` and has no per-port mount, so a per-port
+ * build writing one would publish an inventory of URLs that do not exist
+ * under its own prefix — and the reference is not translated, so a Japanese
+ * build wrote an inventory of `/ja/reference/…` for the same reason. An
+ * inventory is consumed by other projects' Sphinx builds rather than by a
+ * reader, so a wrong one breaks their links, not ours, and nothing here
+ * would have reported it.
  */
 export function inventory(): AstroIntegration {
   return {
@@ -26,6 +32,10 @@ export function inventory(): AstroIntegration {
     hooks: {
       'astro:build:done': ({ dir, logger }) => {
         if (process.env.LIBTMUX_DOCS_PORT) return
+        // The env var, not `buildLocale()` from i18n/resolve: this runs as an
+        // Astro integration, in the config context, where `astro:content` —
+        // which that module imports — does not exist.
+        if ((process.env.LIBTMUX_DOCS_LOCALE || DEFAULT_LOCALE) !== DEFAULT_LOCALE) return
         const out = dir.pathname
         let total = 0
 

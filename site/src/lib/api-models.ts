@@ -3,7 +3,7 @@ import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
 import pythonInv from '../data/inventories/python.entries.json'
-import { withRoot } from './site-root'
+import { withPortRoot } from './site-root'
 import cxxNav from '../data/api/cxx.nav.json'
 import dotnetNav from '../data/api/dotnet.nav.json'
 import goNav from '../data/api/go.nav.json'
@@ -294,7 +294,10 @@ export function referenceHref(port: string, publicId: string): string | undefine
   // than link to a page that was never generated.
   const symbol = model.symbols.find((s) => (s.publicId ?? s.id) === publicId)
   if (!symbol) return undefined
-  return withRoot(`/reference/${port}/${symbol.slug ?? pageSlug(publicId)}/`)
+  // withPortRoot: this is called from ApiEntry, which renders inside shared
+  // prose, so it runs in every locale's build — while the reference itself is
+  // generated only in the default locale's tree.
+  return withPortRoot(`/reference/${port}/${symbol.slug ?? pageSlug(publicId)}/`)
 }
 
 interface MentionIndex {

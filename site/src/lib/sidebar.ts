@@ -19,9 +19,9 @@
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
 import { PORT_BY_SLUG } from './ports'
-import { withRoot } from './site-root'
+import { withPortRoot, withRoot } from './site-root'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
-import { localeOf } from '../i18n/resolve'
+import { localeOf, sourceIdOf } from '../i18n/resolve'
 
 export interface SidebarLinkItem {
   type: 'link'
@@ -56,15 +56,19 @@ function byOrderThenLabel<T extends OrderedLabel>(items: T[]): T[] {
 
 /**
  * A docs entry's URL path. This IS the route param `[...slug].astro` uses
- * (`params: { slug: entry.id }`) — not a path relative to some per-port
- * build root, because the shared 'docs' collection is served from one
- * catch-all route, not one separate build per port. Do not strip a
- * `<port>/` prefix here: entries are not nested under one today, and if
- * they ever are, `entry.id` already includes it because that route's own
- * param does too.
+ * (`params: { slug: sourceIdOf(entry.id) }`) — not a path relative to some
+ * per-port build root, because the shared 'docs' collection is served from
+ * one catch-all route, not one separate build per port.
+ *
+ * The locale comes off, and only the locale. A translated entry is stored as
+ * `ja/concepts/queries` but served from a build whose base is already `/ja/`,
+ * so keeping the prefix here composed `/ja/ja/concepts/` — 56 sidebar links
+ * per Japanese page, all dead. Do not strip a `<port>/` prefix as well:
+ * entries are not nested under one today, and if they ever are, `entry.id`
+ * already includes it because that route's own param does too.
  */
 export function entryPath(entry: CollectionEntry<'docs'>): string {
-  return entry.id
+  return sourceIdOf(entry.id)
 }
 
 /** `entryPath`, joined to this build's own base and given the trailing slash `trailingSlash: 'always'` expects. */
@@ -101,7 +105,10 @@ export function referenceEntries(port: string, version: string): SidebarLinkItem
   if (!p) throw new Error(`sidebar.ts: unknown port slug "${port}"`)
 
   const entries: SidebarLinkItem[] = [
-    { type: 'link', label: 'API reference', href: withRoot(`/reference/${port}/`), external: false },
+    // withPortRoot, not withRoot: the reference is built in the default
+    // locale only, so a Japanese page reaches across to it rather than
+    // expecting a copy under its own prefix.
+    { type: 'link', label: 'API reference', href: withPortRoot(`/reference/${port}/`), external: false },
   ]
 
   if (p.ecosystemHost) {
@@ -120,7 +127,7 @@ export function referenceEntries(port: string, version: string): SidebarLinkItem
     entries.push({
       type: 'link',
       label: 'Upstream reference',
-      href: withRoot(`/py/${version}/api/`),
+      href: withPortRoot(`/py/${version}/api/`),
       external: false,
     })
   }
@@ -152,22 +159,41 @@ export async function getSidebar(
   // fences kept. Matching only `entry.data.port === port` emptied the whole
   // sidebar the moment builds started setting a port, since no shared page
   // carries the field. A page that *does* name a port stays exclusive to it.
-  // Locale scoping, alongside port scoping. Without it `ja/concepts/index.md`
-  // renders as a second "Overview" in the English sidebar — the same failure
-  // the port filter had, one axis over.
+  //
+  // The source locale defines the page set, in every locale. Scoping the set
+  // itself to `locale` instead left the Japanese sidebar listing the 2 pages
+  // translated so far out of 28, and hid all 26 placeholder pages that exist
+  // precisely so every page answers in every language — a nav that shrinks as
+  // you switch language is worse than one that admits what is untranslated.
   const entries = await getCollection(
     'docs',
     (entry) =>
       (entry.data.port === undefined || entry.data.port === port) &&
-      localeOf(entry.id) === locale,
+      localeOf(entry.id) === DEFAULT_LOCALE,
   )
 
-  const rows = entries.map((entry) => ({
-    label: entry.data.sidebar?.label ?? entry.data.title,
-    href: linkHref(entry),
-    order: entry.data.sidebar?.order,
-    group: entry.data.sidebar?.group,
-  }))
+  // The reader's own locale, where it has this page. `entryPath` strips the
+  // locale, so a translation and its source share a key; the href is built
+  // from the source either way, because the build's base already carries the
+  // locale and a placeholder is served at the same path as a translation.
+  const translated = new Map<string, CollectionEntry<'docs'>>()
+  if (locale !== DEFAULT_LOCALE) {
+    const inLocale = await getCollection('docs', (entry) => localeOf(entry.id) === locale)
+    for (const entry of inLocale) translated.set(entryPath(entry), entry)
+  }
+
+  const rows = entries.map((entry) => {
+    // The translated label when there is one, so the nav reads in the
+    // reader's language as far as the translation has got, and in English —
+    // not blank, and not a slug — for the rest.
+    const localised = translated.get(entryPath(entry)) ?? entry
+    return {
+      label: localised.data.sidebar?.label ?? localised.data.title,
+      href: linkHref(entry),
+      order: entry.data.sidebar?.order,
+      group: entry.data.sidebar?.group,
+    }
+  })
 
   const ungrouped: SidebarLinkItem[] = byOrderThenLabel(rows.filter((r) => !r.group)).map((r) => ({
     type: 'link',

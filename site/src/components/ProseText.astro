@@ -2,7 +2,7 @@
 import { decideMention, notASymbol } from '@libtmux/api-model'
 import { getResolver } from '../lib/prose-resolver'
 import { API_MODELS } from '../lib/api-models'
-import { withRoot } from '../lib/site-root'
+import { withPortRoot } from '../lib/site-root'
 
 /**
  * A sentence written in an `.astro` template, with its code spans linked.
@@ -45,7 +45,9 @@ const resolved = segments.map((seg) => {
   if (d.kind !== 'link') return { ...seg, href: undefined, title: undefined }
   return {
     ...seg,
-    href: d.external ? d.href : withRoot(d.href),
+    // withPortRoot, as in rehype-api-links: an internal mention resolves
+    // into the reference, which is not built per locale.
+    href: d.external ? d.href : withPortRoot(d.href),
     title: d.title,
     external: d.external,
   }

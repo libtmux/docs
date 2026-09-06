@@ -45,6 +45,10 @@ interface Props {
   locales?: string[]
   /** This page's path with any locale prefix removed. */
   sourcePath?: string
+  /** Overrides the computed canonical. A placeholder points at its English page. */
+  canonicalOverride?: string
+  /** Every locale's status for this page, for the locale switcher. */
+  localeStatuses?: Record<string, string>
 }
 
 const {
@@ -59,6 +63,8 @@ const {
   locale = DEFAULT_LOCALE,
   locales = [],
   sourcePath,
+  canonicalOverride,
+  localeStatuses,
 } = Astro.props as Props
 
 // process.env, not import.meta.env: import.meta.env.LIBTMUX_DOCS_* goes
@@ -86,6 +92,8 @@ const tocItems =
   locale={locale}
   locales={locales}
   sourcePath={sourcePath}
+  canonicalOverride={canonicalOverride}
+  localeStatuses={localeStatuses}
 >
   <CodeTabs />
   <!-- Mobile toolbar: sidebar + ToC toggles. The three-column layout below hides

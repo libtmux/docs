@@ -1,7 +1,8 @@
 /**
- * Supported locales, and which one is unprefixed.
+ * Supported locales.
  *
- * English has no `/en/` prefix — it is the site root, per
+ * Every locale carries its own prefix, English included: the site root is a
+ * redirect into `/en/`, not a tree of its own, per
  * notes/research/05-i18n-translations.md's URL shape. Adding a locale here is
  * necessary but not sufficient: a locale with no translated page under
  * `src/content/docs/<locale>/` produces no URLs at all, by design. See
@@ -25,11 +26,17 @@ export function isLocale(value: string): value is Locale {
 /**
  * Whether the default locale carries a prefix of its own.
  *
- * False today: English is the site root. The `/en/` scheme flips this, and it
- * is one constant precisely so that move does not become a hunt through every
- * place a URL is composed.
+ * True: `build-site.sh` gives every locale its own tree, English included, and
+ * builds each one under `LIBTMUX_DOCS_ROOT=/<locale>/`. The site root serves a
+ * 302 into `/en/` rather than a copy of it, so composing an English URL as `/`
+ * names a redirect instead of a page — wrong in a canonical, an hreflang, or
+ * anything a crawler is asked to treat as the destination.
+ *
+ * Kept as a constant rather than inlined so the scheme stays one decision. It
+ * was `false` while English was the site root; flipping it is what moved the
+ * tree, and no URL is composed from the bare default anywhere else.
  */
-export const DEFAULT_LOCALE_PREFIXED = false
+export const DEFAULT_LOCALE_PREFIXED = true
 
 /**
  * Where one locale's tree begins, as an absolute path with a trailing slash.

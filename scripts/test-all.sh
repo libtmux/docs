@@ -84,6 +84,17 @@ step 'version slugs (negative)'
 step 'api model freshness'
 node scripts/gen-api-model.mjs --check
 
+# site/public/_shell/shell.js is injected into rustdoc, Dokka, DocC and Sphinx
+# output, so it has no bundler and cannot import ports.ts. Its copy of the port
+# table is generated and compared here for the same reason the API models are:
+# a hand-kept copy rots silently, and this one already had — its comment named
+# a `referenceMode` field ports.ts no longer has.
+step 'shell port table'
+node scripts/gen-shell-ports.mjs --check
+
+step 'shell port table (negative)'
+node scripts/gen-shell-ports.negative.mjs
+
 step 'source links'
 node scripts/check-source-links.mjs
 

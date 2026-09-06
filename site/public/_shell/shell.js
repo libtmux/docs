@@ -28,37 +28,32 @@
  *      reads (see tokens.css's own header comment for why :root/html, not
  *      body).
  *
- * PORTS below is a literal, hand-kept-in-sync copy of the fields this file
- * needs from site/src/lib/ports.ts (name, referenceMode, and — for
- * ecosystem ports — the exact ecosystemHost URL, copied verbatim, never
- * invented). A runtime script has no bundler and cannot import that
- * module; ThemeScript.astro already accepts the identical trade-off for
- * theme-config.ts, with the same comment shape, for the same reason.
+ * PORTS below is a copy of the fields this file needs from
+ * site/src/lib/ports.ts (name, whether the port has an ecosystem host, and
+ * for those the exact ecosystemHost URL). A runtime script has no bundler and
+ * cannot import that module; ThemeScript.astro accepts the identical
+ * trade-off for theme-config.ts, for the same reason.
+ *
+ * It is generated rather than hand-kept: run scripts/gen-shell-ports.mjs, and
+ * `--check` in the test suite fails when it drifts. It had already drifted as
+ * a hand-kept copy — the sentence here named a `referenceMode` field that
+ * ports.ts no longer has. Do not edit between the markers.
  */
 ;(function () {
   'use strict'
 
-  /** Keep in sync with site/src/lib/ports.ts. */
+  // >>> generated from site/src/lib/ports.ts by scripts/gen-shell-ports.mjs
   var PORTS = [
-    { slug: 'py', name: 'Python', mode: 'self-hosted' },
-    { slug: 'ts', name: 'TypeScript', mode: 'self-hosted' },
-    { slug: 'rs', name: 'Rust', mode: 'ecosystem', home: 'https://docs.rs/libtmux' },
-    {
-      slug: 'go',
-      name: 'Go',
-      mode: 'ecosystem',
-      home: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux',
-    },
-    {
-      slug: 'java',
-      name: 'Java',
-      mode: 'ecosystem',
-      home: 'https://javadoc.io/doc/io.github.libtmux/libtmux',
-    },
-    { slug: 'dotnet', name: '.NET', mode: 'self-hosted' },
-    { slug: 'cxx', name: 'C++', mode: 'self-hosted' },
-    { slug: 'swift', name: 'Swift', mode: 'self-hosted' },
+    {"slug":"py","name":"Python","mode":"self-hosted"},
+    {"slug":"ts","name":"TypeScript","mode":"self-hosted"},
+    {"slug":"rs","name":"Rust","mode":"ecosystem","home":"https://docs.rs/libtmux"},
+    {"slug":"go","name":"Go","mode":"ecosystem","home":"https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux"},
+    {"slug":"java","name":"Java","mode":"ecosystem","home":"https://javadoc.io/doc/io.github.libtmux/libtmux"},
+    {"slug":"dotnet","name":".NET","mode":"self-hosted"},
+    {"slug":"cxx","name":"C++","mode":"self-hosted"},
+    {"slug":"swift","name":"Swift","mode":"self-hosted"},
   ]
+  // <<< end generated
 
   // ---------------------------------------------------------------------
   // Where are we? The site's own URL scheme (ports.ts, versions.ts) is

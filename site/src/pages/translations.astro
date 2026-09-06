@@ -1,0 +1,136 @@
+---
+import { getCollection } from 'astro:content'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { LOCALES, LOCALE_LABEL, DEFAULT_LOCALE, localeRoot, type Locale } from '../i18n/locales'
+import { buildLocale, localeOf, localeStatusesFor, type LocaleStatus } from '../i18n/resolve'
+import { t } from '../i18n/ui'
+
+/**
+ * Translation coverage: every shared prose page, and each locale's status for
+ * it.
+ *
+ * This is the exit the untranslated-page notice points at. A placeholder that
+ * says "this is not translated" and offers nowhere to go is a dead end, so
+ * the notice links here and here answers "what is missing, and where".
+ *
+ * Deliberately no per-page GitHub edit link yet. The docs repository is
+ * private, so such a link would 404 for everyone outside the collaborator
+ * list — worse than no link, because it looks like an invitation. Coverage
+ * itself needs no such decision, and is useful without it.
+ *
+ * The status comes from `localeStatusesFor`, the same function the locale
+ * switcher reads, rather than a second count derived here: two answers to
+ * "is this translated" that can disagree is exactly the bug the switcher and
+ * the placeholder routes already share this helper to avoid.
+ */
+const locale = buildLocale()
+
+// Source pages, in served order. Every locale's row is a status against one of
+// these — the English tree is the spine, since a translation with no English
+// original is not a thing the content collection can hold.
+const entries = await getCollection('docs')
+const sources = entries
+  .filter((e) => localeOf(e.id) === DEFAULT_LOCALE)
+  .map((e) => ({ sourceId: e.id, title: e.data.title }))
+  .sort((a, b) => a.sourceId.localeCompare(b.sourceId))
+
+const rows = await Promise.all(
+  sources.map(async (s) => ({ ...s, statuses: await localeStatusesFor(s.sourceId) })),
+)
+
+// Locales other than the source. English is every row's own definition of
+// "translated", so a column for it would be a column of one repeated word.
+const columns = LOCALES.filter((l) => l !== DEFAULT_LOCALE)
+
+const STATUS_KEY = {
+  translated: 'i18n.statusTranslated',
+  stale: 'i18n.statusStale',
+  placeholder: 'i18n.statusPlaceholder',
+} as const satisfies Record<LocaleStatus, string>
+
+/*
+ * Counted from the rendered rows rather than written into the prose. These
+ * numbers move every time a page is translated or an English page is added,
+ * and a sentence is the one place a stale number never surfaces as an error.
+ */
+const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').length
+
+/*
+ * This page's own status, for the switcher in the header. Chrome rather than
+ * content: it is generated per locale and complete in each, so every locale
+ * is 'translated'. Without it the control that links here would be the one
+ * control missing on the page it links to.
+ */
+const pageStatuses = Object.fromEntries(
+  LOCALES.map((l) => [l, 'translated' as LocaleStatus]),
+)
+---
+
+<BaseLayout
+  title={t(locale, 'i18n.coverage')}
+  description={t(locale, 'i18n.coverageIntro')}
+  pagePath="translations"
+  sourcePath="translations"
+  locale={locale}
+  switcherPath=""
+  localeStatuses={pageStatuses}
+>
+  <div class="mx-auto max-w-4xl px-4 py-10">
+    <h1 class="text-3xl font-bold tracking-tight">{t(locale, 'i18n.coverage')}</h1>
+    <p class="mt-3 text-muted">{t(locale, 'i18n.coverageIntro')}</p>
+
+    <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-1 text-sm">
+      {
+        columns.map((l) => (
+          <li>
+            <span class="font-medium">{LOCALE_LABEL[l]}</span>{' '}
+            <span class="text-muted">
+              {done(l)} / {rows.length}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <!-- Scrolls in its own box: a locale column per language means this table
+         outgrows a phone long before the page does. -->
+    <div class="mt-8 overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead>
+          <tr class="border-b">
+            <th scope="col" class="py-2 pr-4 font-semibold">{t(locale, 'i18n.page')}</th>
+            {
+              columns.map((l) => (
+                <th scope="col" class="py-2 pr-4 font-semibold" lang={l}>
+                  {LOCALE_LABEL[l]}
+                </th>
+              ))
+            }
+          </tr>
+        </thead>
+        <tbody>
+          {
+            rows.map((row) => (
+              <tr class="border-b/50 border-b">
+                <th scope="row" class="py-2 pr-4 font-normal">
+                  {/* Into the reader's own locale, not English: this page is
+                      served per locale, so a Japanese reader following a row
+                      should land on the Japanese page — a translation where
+                      there is one, its placeholder where there is not. */}
+                  <a class="underline" href={`${localeRoot(locale)}${row.sourceId}/`}>
+                    {row.title}
+                  </a>
+                </th>
+                {columns.map((l) => (
+                  <td class="py-2 pr-4" data-status={row.statuses[l]}>
+                    {t(locale, STATUS_KEY[row.statuses[l] as LocaleStatus])}
+                  </td>
+                ))}
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</BaseLayout>

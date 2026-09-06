@@ -11,7 +11,7 @@
 // list_ports() imports this file with bare `node`, whose ESM resolver needs
 // the extension; Vite does not care either way. Any future import added here
 // needs the same, or the build dies before it renders a page.
-import { withRoot } from './site-root.ts'
+import { withPortRoot, withRoot } from './site-root.ts'
 import type { TagGrammar } from './versions.ts'
 
 
@@ -265,7 +265,7 @@ export const ECOSYSTEM_PORTS = PORTS.filter((p) => p.ecosystemHost)
  * separately.
  */
 export function referenceUrl(port: Port, _version?: string): string {
-  return withRoot(`/reference/${port.slug}/`)
+  return withPortRoot(`/reference/${port.slug}/`)
 }
 
 /**
@@ -293,8 +293,8 @@ export function portPageUrl(port: Port, version: string, pagePath = ''): string 
   // yet, but they do get a versioned prose build like every self-hosted port,
   // so dropping the version here pointed at /dotnet/concepts/ — a tree that
   // never existed.
-  if (!port.versionedDocs) return withRoot(`/${port.slug}/${tail}`)
-  return withRoot(`/${port.slug}/${version}/${tail}`)
+  if (!port.versionedDocs) return withPortRoot(`/${port.slug}/${tail}`)
+  return withPortRoot(`/${port.slug}/${version}/${tail}`)
 }
 
 /**
@@ -315,5 +315,5 @@ export function hasReference(_port: Port): boolean {
  * to its landing page.
  */
 export function portHomeUrl(port: Port, version: string): string {
-  return withRoot(port.versionedDocs ? `/${port.slug}/${version}/` : `/${port.slug}/`)
+  return withPortRoot(port.versionedDocs ? `/${port.slug}/${version}/` : `/${port.slug}/`)
 }

@@ -12,6 +12,8 @@ import { buildTarget } from '../lib/versions'
 import type { VersionEntry } from '../lib/versions'
 import { withRoot } from '../lib/site-root'
 import { PORT_NAME } from '../lib/api-models'
+import type { Locale } from '../i18n/locales'
+import type { LocaleStatus } from '../i18n/resolve'
 
 /**
  * The one page shell. Everything the site renders goes through here —
@@ -39,6 +41,10 @@ interface Props {
   locales?: string[]
   /** This page's path with any locale prefix removed. Drives hreflang. */
   sourcePath?: string
+  /** Overrides the computed canonical. A placeholder points at its English page. */
+  canonicalOverride?: string
+  /** Every locale's status for this page, for the locale switcher. */
+  localeStatuses?: Record<string, string>
   /**
    * The path the port switcher should carry across ports.
    *
@@ -63,6 +69,8 @@ const {
   locale = 'en',
   locales = [],
   sourcePath,
+  canonicalOverride,
+  localeStatuses,
   switcherPath,
 } = Astro.props as Props
 
@@ -165,6 +173,7 @@ const section = (pagePath.split('/').filter(Boolean)[0] ?? 'home').toLowerCase()
       locale={locale}
       locales={locales}
       sourcePath={sourcePath}
+      canonicalOverride={canonicalOverride}
       versionEntry={versionEntry}
       noindex={noindex}
       updated={updated}
@@ -195,6 +204,9 @@ const section = (pagePath.split('/').filter(Boolean)[0] ?? 'home').toLowerCase()
           portSlug={portSlug}
           version={target.version}
           pagePath={switcherPath ?? sourcePath ?? pagePath}
+          locale={locale as Locale}
+          sourcePath={sourcePath ?? pagePath}
+          localeStatuses={localeStatuses as Record<string, LocaleStatus> | undefined}
         />
       )
     }

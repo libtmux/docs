@@ -2,7 +2,11 @@ import { rehypeHeadingIds, unified } from '@astrojs/markdown-remark'
 import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import tailwindcss from '@tailwindcss/vite'
+import { existsSync, readdirSync, statSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig, fontProviders } from 'astro/config'
+import { DEFAULT_LOCALE, LOCALES } from './src/i18n/locales.ts'
 import expressiveCode from 'astro-expressive-code'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import { apiDb } from './src/integrations/api-db'
@@ -39,6 +43,40 @@ const versionKind = env.LIBTMUX_DOCS_VERSION_KIND ?? 'trunk'
 // root. A sitemap that lists pages we tell crawlers to ignore is worse than
 // no sitemap, so require the root mount as well.
 // Not `base === '/'`: the root build's own base gains a locale prefix.
+/**
+ * Whether a URL is a placeholder standing in for a translation.
+ *
+ * Every page answers in every locale, but a placeholder carries no content of
+ * its own — it is `noindex` and canonical to the English page, so listing it
+ * would be a sitemap contradicting the robots tag on what it lists, the exact
+ * bug the root-build condition below already fixed once.
+ *
+ * Decided from the content tree rather than from the render: a translation is
+ * a file under `src/content/docs/<locale>/`, so its absence is the whole
+ * definition of a placeholder and needs no second source.
+ */
+const contentRoot = fileURLToPath(new URL('./src/content/docs/', import.meta.url))
+const translated = new Set<string>()
+for (const locale of LOCALES.filter((l) => l !== DEFAULT_LOCALE)) {
+  const dir = join(contentRoot, locale)
+  if (!existsSync(dir)) continue
+  const walk = (base: string, prefix: string) => {
+    for (const name of readdirSync(base)) {
+      const child = join(base, name)
+      if (statSync(child).isDirectory()) walk(child, `${prefix}${name}/`)
+      else translated.add(`${locale}/${prefix}${name}`.replace(/\.mdx?$/, '').replace(/\/index$/, ''))
+    }
+  }
+  walk(dir, '')
+}
+
+const isPlaceholder = (page: string): boolean => {
+  const path = new URL(page).pathname.replace(/^\/+|\/+$/g, '')
+  const [first] = path.split('/')
+  if (!LOCALES.includes(first as never) || first === DEFAULT_LOCALE) return false
+  return !translated.has(path)
+}
+
 const isRootBuild = !env.LIBTMUX_DOCS_PORT
 const wantSitemap = isDefaultBuild && isRootBuild && versionKind !== 'pr'
 
@@ -62,7 +100,8 @@ export default defineConfig({
     ...(wantSitemap
       ? [
           sitemap({
-            filter: (page) => !page.includes('/pr-') && !page.includes('/demo'),
+            filter: (page) =>
+              !page.includes('/pr-') && !page.includes('/demo') && !isPlaceholder(page),
           }),
         ]
       : []),

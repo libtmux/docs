@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { PORTS } from '../lib/ports'
 import parityData from '../data/parity.json'
-import { withRoot } from '../lib/site-root'
+import { withPortRoot, withRoot } from '../lib/site-root'
 
 /**
  * Cross-language parity: how each port is built, and — for the four ports
@@ -155,7 +155,7 @@ const dotnetGoVerifiedSummary = `${verifiedSummary('.NET', parity.ports.dotnet)}
               return (
                 <tr class="border-b border-edge">
                   <td class="px-3 py-2 font-medium">
-                    <a class="hover:underline" href={withRoot(`/${port.slug}/`)}>
+                    <a class="hover:underline" href={withPortRoot(`/${port.slug}/`)}>
                       {port.name}
                     </a>
                   </td>

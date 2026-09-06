@@ -3,7 +3,7 @@ import McpInstall from '../components/widgets/McpInstall.astro'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { PORTS } from '../lib/ports'
 import mcpTools from '../data/mcp-tools.json'
-import { withRoot } from '../lib/site-root'
+import { withPortRoot, withRoot } from '../lib/site-root'
 
 /**
  * The MCP server page.
@@ -67,7 +67,7 @@ const mcpPorts = PORTS
       {
         mcpPorts.map((p) => (
           <li>
-            <a class="font-medium hover:underline" href={withRoot(`/${p.slug}/`)}>
+            <a class="font-medium hover:underline" href={withPortRoot(`/${p.slug}/`)}>
               {p.name}
             </a>
             <span class="ml-2 font-mono text-sm opacity-70">{p.packageName}</span>

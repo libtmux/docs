@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { PORTS, PORT_BY_SLUG } from '../../lib/ports'
-import { withRoot } from '../../lib/site-root'
+import { withPortRoot, withRoot } from '../../lib/site-root'
 import mcpTools from '../../data/mcp-tools.json'
 
 /**
@@ -179,7 +179,7 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
             SLUGS.map((s) => (
               <tr class="border-b border-edge">
                 <td class="px-3 py-2 font-medium">
-                  <a class="hover:underline" href={withRoot(`/${s}/`)}>
+                  <a class="hover:underline" href={withPortRoot(`/${s}/`)}>
                     {PORT_BY_SLUG[s].name}
                   </a>
                 </td>
@@ -198,7 +198,7 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
     <p class="mt-8 text-sm opacity-80">
       Install a server from <a class="hover:underline" href={withRoot('/mcp/')}>the MCP page</a>,
       or read the reference implementation's per-tool documentation in the
-      {' '}<a class="hover:underline" href={withRoot('/py/')}>Python port</a>.
+      {' '}<a class="hover:underline" href={withPortRoot('/py/')}>Python port</a>.
       {PORTS.length} ports, one protocol, and — for now — {data.universe.length} names.
     </p>
   </main>

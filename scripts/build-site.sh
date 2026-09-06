@@ -83,6 +83,14 @@ site_origin="${LIBTMUX_DOCS_SITE:-https://libtmux.org}"
 # there, above any locale — and `$site_out` is where the site itself goes.
 locale="${LIBTMUX_DOCS_LOCALE:-en}"
 site_out="$out_dir/$locale"
+
+# Every locale the shell is published in, from the module that owns them.
+list_locales() {
+  node --input-type=module -e '
+    const { LOCALES } = await import(`file://'"$site_dir"'/src/i18n/locales.ts`)
+    process.stdout.write(LOCALES.join(" "))
+  '
+}
 LIBTMUX_DOCS_ROOT="/$locale/"
 export LIBTMUX_DOCS_ROOT
 
@@ -373,6 +381,11 @@ kind_for_version() {
 LIBTMUX_DOCS_PORT_DEFAULTS="$(port_defaults_json)"
 export LIBTMUX_DOCS_PORT_DEFAULTS
 
+# Port trees are rendered in the default locale only, so every locale links
+# across to them rather than expecting a copy beneath itself.
+LIBTMUX_DOCS_PORT_ROOT="/$locale"
+export LIBTMUX_DOCS_PORT_ROOT
+
 IFS=',' read -r -a versions <<<"$versions_arg"
 
 # A slug that names a source other than HEAD would be a lie.
@@ -413,9 +426,10 @@ build_shell() {
   mkdir -p "$outdir"
 
   local key cached
-  key="$(printf '%s|%s|%s|%s|%s|%s|%s|%s' \
+  key="$(printf '%s|%s|%s|%s|%s|%s|%s|%s|%s|%s' \
     "$base_fingerprint" "$base" "$version" "$kind" "$is_default" "$default_version" \
-    "${LIBTMUX_DOCS_PORT:-}" "${LIBTMUX_DOCS_PORT_DEFAULTS:-}" | sha256sum | cut -c1-40)"
+    "${LIBTMUX_DOCS_PORT:-}" "${LIBTMUX_DOCS_PORT_DEFAULTS:-}" \
+    "${LIBTMUX_DOCS_LOCALE:-}" "${LIBTMUX_DOCS_PORT_ROOT:-}" | sha256sum | cut -c1-40)"
   cached="$cache_dir/shell-$key"
   if [ "$no_cache" -eq 0 ] && [ -d "$cached" ]; then
     cp -a "$cached/." "$outdir/"
@@ -432,6 +446,8 @@ build_shell() {
       LIBTMUX_DOCS_ROOT="${LIBTMUX_DOCS_ROOT:-/}" \
       LIBTMUX_DOCS_SITE="$site_origin" \
       LIBTMUX_DOCS_PORT_DEFAULTS="${LIBTMUX_DOCS_PORT_DEFAULTS:-}" \
+      LIBTMUX_DOCS_LOCALE="${LIBTMUX_DOCS_LOCALE:-}" \
+      LIBTMUX_DOCS_PORT_ROOT="${LIBTMUX_DOCS_PORT_ROOT:-}" \
       LIBTMUX_DOCS_VERSION="$version" \
       LIBTMUX_DOCS_VERSION_KIND="$kind" \
       LIBTMUX_DOCS_IS_DEFAULT="$is_default" \
@@ -932,7 +948,15 @@ build_reference() {
 # ---------------------------------------------------------------------------
 
 log "building shell root (shared prose)"
-build_shell "/$locale/" "latest" "trunk" "true" "stable" "$site_out"
+# One build per locale. SITE_ROOT is a single value per invocation, so a
+# build emitting two locales gave one of them the other's prefix — a Japanese
+# page whose every link pointed into /en/.
+for shell_locale in $(list_locales); do
+  log "building the shell for $shell_locale (base=/$shell_locale/)"
+  LIBTMUX_DOCS_LOCALE="$shell_locale" \
+    LIBTMUX_DOCS_ROOT="/$shell_locale/" \
+    build_shell "/$shell_locale/" "latest" "trunk" "true" "stable" "$out_dir/$shell_locale"
+done
 
 # Every port's home page (site/src/pages/[port]/index.astro) is built here,
 # at the root, because its own getStaticPaths() only emits routes for the

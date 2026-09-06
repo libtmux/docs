@@ -48,3 +48,25 @@ export function withRoot(path: string): string {
  * already failed once.
  */
 export const IS_ROOT_BUILD: boolean = !process.env.LIBTMUX_DOCS_PORT
+
+/**
+ * The root under which the port trees and the reference live.
+ *
+ * They are rendered in the default locale only — translating the reference is
+ * out of scope, and per-port prose is the language-filtered English — so a
+ * page in another locale links across to them rather than expecting a copy
+ * beneath itself. A Japanese page linking at `/ja/py/stable/` names a tree
+ * nothing builds.
+ *
+ * Supplied by the assembly rather than derived here, because it also has to
+ * survive a pull-request preview, where the whole site is nested one level
+ * deeper still.
+ */
+export const PORT_ROOT: string = (process.env.LIBTMUX_DOCS_PORT_ROOT || SITE_ROOT).replace(/\/+$/, '')
+
+/** Prefix a root-relative path with the root the port trees live under. */
+export function withPortRoot(path: string): string {
+  if (!PORT_ROOT) return path
+  if (!path.startsWith('/') || path.startsWith('//')) return path
+  return `${PORT_ROOT}${path}`
+}

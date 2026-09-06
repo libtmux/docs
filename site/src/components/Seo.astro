@@ -48,6 +48,12 @@ interface Props {
    * `/ja/ja/concepts/`.
    */
   sourcePath?: string
+  /**
+   * An explicit canonical, overriding the computed one. A placeholder page
+   * exists so the URL resolves, but the page it stands for is the English
+   * one, and that is what a crawler should be told.
+   */
+  canonicalOverride?: string
 }
 
 const {
@@ -64,6 +70,7 @@ const {
   locales = [],
   locale = 'en',
   sourcePath,
+  canonicalOverride,
 } = Astro.props as Props
 
 const origin = (Astro.site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
@@ -79,7 +86,9 @@ const rootedOrigin = `${origin}${SITE_ROOT}`
 
 // Shared shell pages are canonical to themselves. Port pages canonicalise to
 // the same path under the port's default version.
-const canonical = portSlug
+const canonical = canonicalOverride
+  ? `${origin}${canonicalOverride}`
+  : portSlug
   ? canonicalUrl(rootedOrigin, portSlug, version, defaultVersion, pagePath, existsInDefault)
   : `${rootedOrigin}/${pagePath.replace(/^\/+/, '').replace(/\/+$/, '')}${pagePath.replace(/^\/+/, '') ? '/' : ''}`
 
@@ -163,8 +172,11 @@ const graph: Graph = {
 <link rel="canonical" href={canonical} />
 <meta name="robots" content={robots} />
 
-{/* Locale alternates. x-default points at the unprefixed English page,
-    which is what an unmatched Accept-Language should get.
+{/* Locale alternates. x-default names the English page itself, at /en/, not
+    the site root: the root is an unconditional 302 into /en/ (it does not
+    negotiate on Accept-Language — see infra/cloudfront-function.js rule 0),
+    and pointing x-default at a redirect asks a crawler to resolve a hop to
+    reach the answer this tag exists to give directly.
     Emitted only when a real translation exists — a cluster of one is noise,
     and a cluster built from the *current* URL would double the locale prefix. */}
 {

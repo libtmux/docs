@@ -3,6 +3,8 @@ import { API_MODELS } from '../../lib/api-models'
 import { pageSlug } from '@libtmux/api-model'
 import { symbolMarkdown } from '../../lib/symbol-markdown'
 import { PORT_BY_SLUG } from '../../lib/ports'
+import { DEFAULT_LOCALE } from '../../i18n/locales'
+import { buildLocale } from '../../i18n/resolve'
 
 /**
  * `/reference/<port>/<symbol>.md` — the page, as its source.
@@ -16,7 +18,11 @@ import { PORT_BY_SLUG } from '../../lib/ports'
  * the reference is not rendered inside the fourteen shell builds.
  */
 export async function getStaticPaths() {
+  // The root build of the default locale only, matching the HTML route: the
+  // reference is not translated, so a twin under another locale would be the
+  // English body wearing that locale's prefix.
   if (process.env.LIBTMUX_DOCS_PORT) return []
+  if (buildLocale() !== DEFAULT_LOCALE) return []
   const paths: { params: { slug: string }; props: { port: string; id: string } }[] = []
   for (const [port, model] of Object.entries(API_MODELS)) {
     for (const symbol of model.symbols) {
