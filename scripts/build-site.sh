@@ -627,7 +627,8 @@ render_staged_reference() {
 write_reference_redirect() {
   local slug="$1" dest="$2"
   # Through the site root, like every other link the assembly emits.
-  local target="${site_origin%/}/$locale/reference/$slug/"
+  local path="${LIBTMUX_DOCS_ROOT%/}/reference/$slug/"
+  local target="${site_origin%/}$path"
   cat >"$dest" <<HTML
 <!doctype html>
 <html lang="en">
@@ -636,10 +637,10 @@ write_reference_redirect() {
     <title>API reference moved</title>
     <link rel="canonical" href="$target" />
     <meta name="robots" content="noindex, follow" />
-    <meta http-equiv="refresh" content="0; url=/$locale/reference/$slug/" />
+    <meta http-equiv="refresh" content="0; url=$path" />
   </head>
   <body>
-    <p>This reference now lives at <a href="/$locale/reference/$slug/">/$locale/reference/$slug/</a>.</p>
+    <p>This reference now lives at <a href="$path">$path</a>.</p>
   </body>
 </html>
 HTML
