@@ -1,6 +1,6 @@
 ---
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { conceptsFor, moduleOf, modulesIn } from '@libtmux/api-model'
+import { conceptsFor, docSummaryText, moduleOf, modulesIn } from '@libtmux/api-model'
 import ApiEntry from '../../components/api/ApiEntry.astro'
 import ApiExampleTabs from '../../components/api/ApiExampleTabs.astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
@@ -456,7 +456,12 @@ const title = owner
   title={title}
   description={
     owner
-      ? owner.doc?.summary ?? `${owner.publicId ?? owner.name} API documentation.`
+      ? // The summary is written in this port's doc dialect, and a card, a
+        // meta tag and a JSON-LD blob all take a string: `{@link Pane}` and
+        // ``Server`` reached all three as markup.
+        owner.doc?.summary
+        ? docSummaryText(owner.doc.summary, model?.port)
+        : `${owner.publicId ?? owner.name} API documentation.`
       : model
         ? `Types, methods, and functions in libtmux for ${PORT_NAME[model.port] ?? model.port}.`
         : 'Types, methods, and functions in the libtmux language libraries.'

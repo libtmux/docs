@@ -60,6 +60,17 @@ const HEADING = /^\s*#{1,3}\s+(Examples?|Panics|Errors|Safety|Notes?|Returns?|Ar
  */
 const BLOCK_TAG = /^\s*@(param|arg|argument|returns?|throws|exception|deprecated|since)\b\s*(.*)$/
 
+/**
+ * A Markdown link definition: `` [`Window`]: crate::Window ``.
+ *
+ * rustdoc writes intra-doc links this way when the same item is named several
+ * times, and libtmux-rs has 58 of them. The definition is plumbing for the
+ * reference above it, not a sentence, and printing it put a bare
+ * `[Window]: crate::Window` at the end of the description. The reference is
+ * resolved by name, so dropping the definition loses nothing.
+ */
+const LINK_DEFINITION = /^\s*\[[^\]]+\]:\s+\S+\s*$/
+
 export interface ParsedMarkdownDoc {
   doc: DocBlock
   params: Map<string, string>
@@ -164,6 +175,8 @@ export function parseMarkdownDocFull(raw: string, defaultLang = 'text'): ParsedM
       else tag.text.push(line.trim())
       continue
     }
+
+    if (LINK_DEFINITION.test(line)) continue
 
     const heading = HEADING.exec(line)
     if (heading) {

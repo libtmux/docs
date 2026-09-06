@@ -79,6 +79,40 @@ const CITATION_RE = /\[([A-Za-z][\w-]*)\]_/g
 const INTRA_DOC_RE = /\[`?([A-Za-z_][\w]*(?:::[\w]+)+)`?\](?!\()/g
 
 /**
+ * A rustdoc link written in Markdown's own syntax: `` [`Window`](crate::Window) ``.
+ *
+ * rustdoc accepts an item path where Markdown expects a URL, so the target
+ * has to be shaped like one or `[design.md](../docs/design.md)` and every
+ * external URL in the corpus would be claimed as a reference.
+ *
+ * https://doc.rust-lang.org/rustdoc/write-documentation/linking-to-items-by-name.html
+ */
+const INTRA_DOC_PAREN_RE =
+  /\[`?([^\]`]+)`?\]\(((?:crate|self|super|Self)?(?:::)?[A-Za-z_]\w*(?:::\w+)*)\)/g
+
+/**
+ * A backticked path with no scope operator: `` [`Window`] ``.
+ *
+ * The `::` guard on `INTRA_DOC_RE` is there so `[see below]` is not read as a
+ * reference, and it also excludes every link to an item already in scope —
+ * which is the form rustdoc's documentation leads with. The backticks are
+ * what make this one safe: prose in brackets does not carry them.
+ */
+const INTRA_DOC_TICK_RE = /\[`([A-Za-z_]\w*)`\](?![(:])/g
+
+/**
+ * `crate::`, `self::` and `super::` address the crate, not the item.
+ *
+ * `Self::run` is rustdoc's "on this type", which the resolver reads as a
+ * leading dot the same way it reads javadoc's `#`.
+ */
+function rustTarget(path: string): string {
+  const inner = path.replace(/^(?:crate|self|super)::/, '')
+  if (inner.startsWith('Self::')) return `.${inner.slice(6).replace(/::/g, '.')}`
+  return inner.replace(/::/g, '.')
+}
+
+/**
  * A Go doc link: `[Name]`, `[Name.Method]`, `[pkg.Name]`.
  *
  * Go 1.19 gave doc comments their own link syntax and libtmux-go uses it
@@ -94,6 +128,7 @@ const INTRA_DOC_RE = /\[`?([A-Za-z_][\w]*(?:::[\w]+)+)`?\](?!\()/g
  * was already doing.
  */
 const GO_DOC_LINK_RE = /\[\*?([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)*)\](?![(_])/g
+/** https://go.dev/doc/comment#links */
 
 /**
  * Javadoc and TSDoc inline tags: `{@link Target}`, `{@link Target label}`.
@@ -102,6 +137,7 @@ const GO_DOC_LINK_RE = /\[\*?([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)*)\](?![(_])/g
  * the same thing reST spells with double backticks.
  */
 const JSDOC_LINK_RE = /\{@link(?:plain|code)?\s+([^}\s]+)(?:\s+([^}]+))?\}/g
+/** https://docs.oracle.com/en/java/javase/21/docs/specs/javadoc/doc-comment-spec.html */
 const JSDOC_CODE_RE = /\{@(?:code|literal)\s+([^}]+)\}/g
 
 /**
@@ -113,6 +149,13 @@ const JSDOC_CODE_RE = /\{@(?:code|literal)\s+([^}]+)\}/g
  */
 const XML_SEE_RE = /<see(?:also)?\s+cref="(?:[A-Z]:)?([^"]+)"\s*\/?>(?:<\/see(?:also)?>)?/g
 const XML_PARAMREF_RE = /<(?:paramref|typeparamref)\s+name="([^"]+)"\s*\/?>/g
+/**
+ * `<see langword="null"/>` names a C# keyword, not a member.
+ *
+ * The `cref` matcher requires an addressable target, so these six reached the
+ * page as printed XML. A keyword is a literal, which is what `<c>` maps to.
+ */
+const XML_LANGWORD_RE = /<see\s+langword="([^"]+)"\s*\/?>(?:<\/see>)?/g
 const XML_CODE_RE = /<c>([^<]+)<\/c>/g
 /** A bare double-backtick literal, which is never a link. */
 const LITERAL_RE = /``([^`]+)``/g
@@ -168,6 +211,22 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   cxx: new Set([]),
 }
 
+/**
+ * A doc summary as plain prose, in the dialect it was written in.
+ *
+ * A page's `<meta description>`, its Open Graph card and its JSON-LD all take
+ * the summary as a string, so they were serving raw markup: 211 `{@link}`,
+ * ``Symbol`` and `<see cref>` across the reference, in exactly the three
+ * places a reader never sees them and a search engine only sees them.
+ */
+export function docSummaryText(text: string, lang?: string): string {
+  return tokenizeDoc(text, lang)
+    .map((span) =>
+      span.kind === 'ref' ? span.label : span.kind === 'code' ? span.text : span.kind === 'text' ? span.text : '',
+    )
+    .join('')
+}
+
 export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
   const spans: DocSpan[] = []
   let index = 0
@@ -177,11 +236,25 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
   const hits: Hit[] = []
 
   if (syntax.has('intra-doc')) {
+    for (const m of text.matchAll(INTRA_DOC_PAREN_RE)) {
+      hits.push({
+        start: m.index,
+        end: m.index + m[0].length,
+        span: { kind: 'ref', role: 'any', target: rustTarget(m[2]), label: m[1] },
+      })
+    }
     for (const m of text.matchAll(INTRA_DOC_RE)) {
       hits.push({
         start: m.index,
         end: m.index + m[0].length,
-        span: { kind: 'ref', role: 'any', target: m[1].replace(/::/g, '.'), label: m[1] },
+        span: { kind: 'ref', role: 'any', target: rustTarget(m[1]), label: m[1] },
+      })
+    }
+    for (const m of text.matchAll(INTRA_DOC_TICK_RE)) {
+      hits.push({
+        start: m.index,
+        end: m.index + m[0].length,
+        span: { kind: 'ref', role: 'any', target: m[1], label: m[1] },
       })
     }
   }
@@ -213,6 +286,9 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
   }
 
   if (syntax.has('xml-doc')) {
+    for (const m of text.matchAll(XML_LANGWORD_RE)) {
+      hits.push({ start: m.index, end: m.index + m[0].length, span: { kind: 'code', text: m[1] } })
+    }
     for (const m of text.matchAll(XML_CODE_RE)) {
       hits.push({ start: m.index, end: m.index + m[0].length, span: { kind: 'code', text: m[1] } })
     }

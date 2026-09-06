@@ -4,9 +4,11 @@ import { parseMarkdownDocFull, type ParsedMarkdownDoc } from './markdown.ts'
  * Javadoc's HTML, translated into the Markdown the block parser reads.
  *
  * A javadoc comment is HTML by specification, and the reference was parsing it
- * as prose: 289 `<p>` and 36 `<pre>` from libtmux-java reached the page as
- * printed tags, on 146 of its pages. This is the same failure C# XML had, and
- * has the same fix — read the comment in the dialect it was written in.
+ * as prose: 192 `<p>` and 7 `<pre>` reached the page as printed tags, across
+ * 146 of libtmux-java's pages. This is the same failure C# XML had, and has
+ * the same fix — read the comment in the dialect it was written in.
+ *
+ * https://docs.oracle.com/en/java/javase/21/docs/specs/javadoc/doc-comment-spec.html
  *
  * The source keeps its HTML. Javadoc output is generated from these comments
  * by javadoc itself, which needs the tags; this converts a copy on the way

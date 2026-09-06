@@ -5,7 +5,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { Resolver, notASymbol } from '../src/resolver.ts'
-import { tokenizeDoc } from '../src/doc/roles.ts'
+import { tokenizeDoc, docSummaryText } from '../src/doc/roles.ts'
 import { javadocToMarkdown, parseJavadoc } from '../src/doc/javadoc.ts'
 import { tableMentions } from '../src/mentions.ts'
 import { readInventory, writeInventory } from '../src/inventory.ts'
@@ -273,10 +273,33 @@ describe('each language gets its own spelling of a cross-reference', () => {
     ])
   })
 
+  it('rustdoc links to an item in scope, and through Markdown syntax', () => {
+    // The `::` guard that keeps `[see below]` from being a reference also
+    // excluded every link to an item already in scope. Backticks disambiguate.
+    expect(ref(tokenizeDoc('Unlike [`Window`], a pane is one thing.', 'rs'))).toEqual(['Window'])
+    // rustdoc accepts an item path where Markdown expects a URL.
+    expect(ref(tokenizeDoc('Unlike [`Window`](crate::Window), it is.', 'rs'))).toEqual(['Window'])
+    expect(ref(tokenizeDoc('See [`run`](Self::run) first.', 'rs'))).toEqual(['.run'])
+    // A real URL and a relative path are still Markdown links.
+    expect(ref(tokenizeDoc('see [design](../docs/design.md) and [x](http://a)', 'rs'))).toEqual([])
+  })
+
   it('C# see-cref, with the addressing prefix removed', () => {
     expect(ref(tokenizeDoc('See <see cref="T:LibTmux.Server"/> for more.', 'dotnet'))).toEqual([
       'LibTmux.Server',
     ])
+  })
+
+  it('a C# keyword is a literal, not a member', () => {
+    const spans = tokenizeDoc('Or <see langword="null" /> for the default.', 'dotnet')
+    expect(spans.filter((s) => s.kind === 'code').map((s) => (s as { text: string }).text)).toEqual([
+      'null',
+    ])
+  })
+
+  it('a summary reaches metadata as prose, not markup', () => {
+    expect(docSummaryText('Typed fields of {@link Pane}.', 'java')).toBe('Typed fields of Pane.')
+    expect(docSummaryText('Call ``Server/kill()`` first.', 'swift')).toBe('Call Server/kill() first.')
   })
 
   it('DocC gives double backticks the meaning reST gives single ones', () => {
