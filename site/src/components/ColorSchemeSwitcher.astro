@@ -1,0 +1,125 @@
+---
+/**
+ * Light, dark, or whatever the operating system says.
+ *
+ * The mechanism already existed: `ThemeScript` reads `color-scheme` from
+ * storage in <head>, resolves `system` against `prefers-color-scheme`, writes
+ * `data-color-scheme` (the preference) and `data-theme-mode` (the resolution)
+ * onto the root, and re-resolves when the OS setting changes. What was
+ * missing was any way to say which of the three you wanted.
+ *
+ * Two attributes rather than one because they answer different questions.
+ * Every colour in the site keys off `data-theme-mode`, which is only ever
+ * `light` or `dark`; this control keys off `data-color-scheme`, because a
+ * reader who chose "system" should see "system" selected rather than
+ * whichever of the two it currently resolves to.
+ *
+ * Which option looks active is therefore CSS, not JavaScript. The attribute
+ * is on the root before any of this markup is parsed, so the right segment is
+ * painted highlighted rather than corrected afterwards — the same reason the
+ * package picker resolves its language in <head>, written up there.
+ *
+ * Radio inputs, not buttons: a group where exactly one is chosen is what a
+ * radio group is, and it arrives with roving focus, arrow-key movement and a
+ * name announced once for the set. `aria-pressed` on three buttons is the
+ * same thing rebuilt by hand and worse.
+ */
+const OPTIONS = [
+  { id: 'system', label: 'Auto', title: 'Match the operating system' },
+  { id: 'light', label: 'Light', title: 'Always light' },
+  { id: 'dark', label: 'Dark', title: 'Always dark' },
+] as const
+---
+
+<fieldset class="scheme-switch" data-scheme-switch>
+  <legend class="sr-only">Colour scheme</legend>
+  {
+    OPTIONS.map((option) => (
+      <label class="scheme-switch__option" data-scheme={option.id} title={option.title}>
+        {/*
+          `checked` on the server marks the default. It is the fallback for a
+          reader with no stored preference and for one with no JavaScript, and
+          it is what the CSS overrides when the root says otherwise — the
+          attribute wins over the server's guess without a repaint.
+        */}
+        <input
+          type="radio"
+          name="libtmux-color-scheme"
+          value={option.id}
+          checked={option.id === 'system'}
+          class="sr-only"
+        />
+        <span aria-hidden="true" class="scheme-switch__icon">
+          {option.id === 'system' ? (
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4">
+              <rect x="1.75" y="2.75" width="12.5" height="8.5" rx="1.25" />
+              <path d="M5.5 13.25h5" stroke-linecap="round" />
+            </svg>
+          ) : option.id === 'light' ? (
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4">
+              <circle cx="8" cy="8" r="3.1" />
+              <path
+                d="M8 1.2v1.6M8 13.2v1.6M1.2 8h1.6M13.2 8h1.6M3.2 3.2l1.15 1.15M11.65 11.65l1.15 1.15M12.8 3.2l-1.15 1.15M4.35 11.65L3.2 12.8"
+                stroke-linecap="round"
+              />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4">
+              <path d="M13.4 9.6A5.8 5.8 0 1 1 6.4 2.6a4.6 4.6 0 0 0 7 7Z" stroke-linejoin="round" />
+            </svg>
+          )}
+        </span>
+        <span class="scheme-switch__label">{option.label}</span>
+      </label>
+    ))
+  }
+</fieldset>
+
+<script>
+  const STORAGE_KEY = 'color-scheme'
+
+  /**
+   * Write the choice, then let the script that owns the resolution apply it.
+   *
+   * `window.__applyTheme` is `ThemeScript`'s own function, which reads storage
+   * and sets both attributes. Calling it rather than setting the attributes
+   * here keeps one implementation of "what does this preference mean": the
+   * `system` case has to resolve against `prefers-color-scheme`, and a second
+   * copy of that would be a second thing to keep true.
+   */
+  function choose(value: string) {
+    try {
+      localStorage.setItem(STORAGE_KEY, value)
+    } catch {
+      // Storage blocked: the choice still applies to this page.
+      document.documentElement.setAttribute('data-color-scheme', value)
+    }
+    window.__applyTheme?.()
+  }
+
+  function bind() {
+    for (const input of document.querySelectorAll<HTMLInputElement>(
+      '[data-scheme-switch] input[type="radio"]',
+    )) {
+      // The server marked `system` checked; storage may say otherwise, and
+      // the control has to agree with the highlight the CSS is already
+      // showing or the next arrow-key press starts from the wrong option.
+      const stored = (() => {
+        try {
+          return localStorage.getItem(STORAGE_KEY)
+        } catch {
+          return null
+        }
+      })()
+      if (stored) input.checked = input.value === stored
+      if (input.dataset.bound) continue
+      input.dataset.bound = 'yes'
+      input.addEventListener('change', () => {
+        if (input.checked) choose(input.value)
+      })
+    }
+  }
+
+  bind()
+  document.addEventListener('astro:after-swap', bind)
+</script>

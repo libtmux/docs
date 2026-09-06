@@ -741,3 +741,94 @@ html[data-prerelease='dismissed'] .prerelease-notice {
     align-self: flex-end;
   }
 }
+
+/*
+ * The colour-scheme control, and why its selected state is CSS.
+ *
+ * `ThemeScript` sets `data-color-scheme` on the root in <head>, so the right
+ * segment can be highlighted by the first paint rather than corrected by a
+ * script running after the markup. Keyed on the *preference* rather than on
+ * `data-theme-mode`: a reader who chose Auto should see Auto lit, not
+ * whichever of light and dark it currently resolves to.
+ *
+ * `:checked` is the fallback for the moment before the attribute exists and
+ * for a reader with no JavaScript, where the radio group still works on its
+ * own.
+ */
+.scheme-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  margin: 0;
+  border: 1px solid var(--color-background-border);
+  border-radius: var(--radius-md, 0.375rem);
+  padding: 0.125rem;
+}
+
+.scheme-switch__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: calc(var(--radius-md, 0.375rem) - 0.125rem);
+  padding: 0.2rem 0.45rem;
+  color: var(--topnav-link-color);
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.scheme-switch__option:hover {
+  background: color-mix(in oklch, var(--topnav-background), var(--topnav-text-color) 10%);
+}
+
+.scheme-switch__icon {
+  display: inline-flex;
+}
+
+.scheme-switch__option:has(input:checked),
+html[data-color-scheme='system'] .scheme-switch__option[data-scheme='system'],
+html[data-color-scheme='light'] .scheme-switch__option[data-scheme='light'],
+html[data-color-scheme='dark'] .scheme-switch__option[data-scheme='dark'] {
+  background: color-mix(in oklch, var(--topnav-background), var(--topnav-text-color) 16%);
+  font-weight: 600;
+}
+
+/* The attribute is the authority once it exists. Without this, the server's
+   `checked` on Auto would keep Auto highlighted alongside the real choice,
+   because `:has(input:checked)` above matches independently. */
+html[data-color-scheme] .scheme-switch__option:not([data-scheme]) {
+  background: none;
+}
+
+html[data-color-scheme='light'] .scheme-switch__option[data-scheme='system'],
+html[data-color-scheme='dark'] .scheme-switch__option[data-scheme='system'],
+html[data-color-scheme='system'] .scheme-switch__option[data-scheme='light'],
+html[data-color-scheme='dark'] .scheme-switch__option[data-scheme='light'],
+html[data-color-scheme='system'] .scheme-switch__option[data-scheme='dark'],
+html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
+  background: none;
+  font-weight: 400;
+}
+
+.scheme-switch__option:focus-within {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 1px;
+}
+
+/* The header is tight before it wraps, and the icons carry the meaning on
+   their own once a reader has used the control twice. */
+@media (max-width: 60rem) {
+  .scheme-switch__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .scheme-switch__option {
+    padding: 0.25rem 0.35rem;
+  }
+}

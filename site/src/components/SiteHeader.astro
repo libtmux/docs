@@ -1,4 +1,5 @@
 ---
+import ColorSchemeSwitcher from './ColorSchemeSwitcher.astro'
 import LocaleSwitcher from './LocaleSwitcher.astro'
 import PortSwitcher from './PortSwitcher.astro'
 import PagePortSwitcher from './PagePortSwitcher.astro'
@@ -62,6 +63,7 @@ const {
         class="topnav-chip px-2 py-1 text-sm"
       >Reference</a>
       <a href={withRoot('/mcp/')} class="topnav-chip px-2 py-1 text-sm">MCP</a>
+      <ColorSchemeSwitcher />
       <a
         href={withRoot('/search/')}
         class="topnav-chip border border-edge px-2 py-1 text-sm"
