@@ -23,7 +23,7 @@
  * Usage: node scripts/gen-api-model.mjs [--port py] [--check]
  */
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -36,6 +36,20 @@ import { NAV } from '../packages/api-model/src/nav-config.ts'
 import { compileNav } from '../packages/api-model/src/nav.ts'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+
+/** The newest modification time anywhere under a directory. */
+function newestMtime(dir) {
+  let newest = 0
+  const walk = (d) => {
+    for (const entry of readdirSync(d, { withFileTypes: true })) {
+      const full = join(d, entry.name)
+      if (entry.isDirectory()) walk(full)
+      else newest = Math.max(newest, statSync(full).mtimeMs)
+    }
+  }
+  if (existsSync(dir)) walk(dir)
+  return newest
+}
 
 /** Four base-36 characters of a string, enough to separate 96 collisions. */
 function shortHash(text) {
@@ -211,7 +225,7 @@ const PORTS = {
   cxx: {
     checkout: '~/work/libtmux/libtmux-cxx-docs',
     root: '.',
-    doxygen: 'xml',
+    artifact: { dir: 'xml', from: 'include', what: 'Doxygen XML', build: 'doxygen Doxyfile' },
     repo: 'libtmux/libtmux-cxx',
     options: {},
   },
@@ -221,6 +235,12 @@ const PORTS = {
   swift: {
     checkout: '~/work/libtmux/libtmux-swift-docs',
     root: '.',
+    artifact: {
+      dir: 'symbolgraph',
+      from: 'Sources',
+      what: 'symbol graph',
+      build: 'swift build -Xswiftc -emit-symbol-graph',
+    },
     repo: 'libtmux/libtmux-swift',
     options: {},
   },
@@ -267,23 +287,28 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     console.error(`gen-api-model: no source roots exist for ${port}`)
     process.exit(1)
   }
-  // C++ prose reaches the model through Doxygen XML, which is a build product
-  // of the headers rather than the headers themselves. Nothing regenerated it
-  // here — `build-site.sh` builds its own copy for the Sphinx render — so the
-  // committed model was extracted from XML three days older than the comments
-  // it was meant to carry, and 24 documented symbols read as undocumented.
-  if (cfg.doxygen) {
-    const xml = join(checkout, cfg.doxygen)
-    if (!existsSync(xml)) {
-      console.error(`gen-api-model: ${port} has no Doxygen XML at ${cfg.doxygen} — run doxygen in ${cfg.checkout}`)
+  // Two ports reach the model through a build product rather than through
+  // their own source: C++ through Doxygen XML, Swift through a symbol graph.
+  // Nothing here regenerated or checked either, and both had drifted three
+  // days behind the comments they were meant to carry — 24 documented C++
+  // symbols read as undocumented, and Swift's newest prose was simply absent.
+  //
+  // Compared on modification time rather than commit time so uncommitted work
+  // counts: doc-comment work on a port is uncommitted for as long as it takes
+  // to write, which is exactly when this matters.
+  if (cfg.artifact) {
+    const built = join(checkout, cfg.artifact.dir)
+    if (!existsSync(built)) {
+      console.error(
+        `gen-api-model: ${port} has no ${cfg.artifact.what} at ${cfg.artifact.dir} — ` +
+          `run ${cfg.artifact.build} in ${cfg.checkout}`,
+      )
       process.exit(1)
     }
-    const stale = git(checkout, 'log', '-1', '--format=%ct', '--', 'include')
-    const built = statSync(join(xml, 'index.xml')).mtimeMs / 1000
-    if (stale && Number(stale) > built) {
+    if (newestMtime(built) < newestMtime(join(checkout, cfg.artifact.from))) {
       console.error(
-        `gen-api-model: ${port} Doxygen XML predates the headers it describes — ` +
-          `run doxygen in ${cfg.checkout} and re-run`,
+        `gen-api-model: ${port}'s ${cfg.artifact.what} predates the source it describes — ` +
+          `run ${cfg.artifact.build} in ${cfg.checkout} and re-run`,
       )
       process.exit(1)
     }
