@@ -21,6 +21,8 @@ Delete introductions that only announce the paragraph. Replace "robust"
 with the failure handled, "comprehensive" with the scope covered, and
 "optimized" with a measured change and its reproduction conditions. Omit
 "easily", "simply", "just", "please note", and unearned superlatives.
+Avoid em dashes and slogans such as "eight ports, one API shape". Describe
+what a reader can do or learn.
 Use MUST, SHOULD, and MAY only for an intended normative requirement.
 
 Describe the current behavior. Keep implementation deliberation and branch
