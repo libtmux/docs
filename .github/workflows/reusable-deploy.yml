@@ -45,7 +45,9 @@ name: reusable-deploy
 # `uses:` and leaves the checkout on the default branch, so the workflow reads
 # as pinned in review while the build script it actually runs drifts with this
 # repository's main. A SHA is also the only ref for which "the same" still
-# means the same thing an hour later. This file never sets `concurrency`: groups are workflow-level on
+# means the same thing an hour later.
+#
+# This file never sets `concurrency`: groups are workflow-level on
 # the *caller*, so a shared group name here would silently merge queues
 # across repositories that have nothing to do with each other.
 
