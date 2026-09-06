@@ -47,6 +47,11 @@ export const TYPESCRIPT: LanguageSpec = {
     method_definition: 'method',
     method_signature: 'method',
     function_declaration: 'function',
+    // An overload set declares each form separately and documents the first,
+    // then writes an implementation signature TypeScript hides from callers.
+    // Only the implementation was extracted, so `splitSize` reached the page
+    // with the one signature it cannot be called with, and no prose at all.
+    function_signature: 'function',
     public_field_definition: 'attribute',
     property_signature: 'property',
     type_alias_declaration: 'typealias',
@@ -70,7 +75,8 @@ export const TYPESCRIPT: LanguageSpec = {
   // carrying a page for a shape a caller cannot import. Exporting them is the
   // port's decision to make. A private function is named by nothing.
   isExported: (node) =>
-    node.parent?.type !== 'program' || node.type !== 'function_declaration',
+    node.parent?.type !== 'program' ||
+    (node.type !== 'function_declaration' && node.type !== 'function_signature'),
   fields: { returns: 'return_type' },
 }
 
