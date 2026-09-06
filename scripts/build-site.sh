@@ -1089,6 +1089,7 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     if [ "$ref_status" = "built" ]; then
       mkdir -p "$port_out/api"
       cp -a "$ref_outdir/." "$port_out/api/"
+      node "$script_dir/normalize-native-shell.mjs" "$port_out/api" "$LIBTMUX_DOCS_PORT_ROOT"
     fi
 
     summary_rows+=("$slug|$version|$renderer|$ref_status|[$generator] $ref_reason")
