@@ -96,6 +96,26 @@ loads `src/test/setup.ts`, whose serializer normalizes only the Tailwind
 version banner. Preserve that setup; changes to selectors or CSS structure
 must remain visible in snapshots.
 
+### Links between ports and guides
+
+[`concepts.ts`](packages/api-model/src/concepts.ts) maps equivalent APIs by
+their public symbol IDs. Check behavior and scope in each port's source
+before adding a mapping. Record an absence when a port has no equivalent;
+similar names alone do not establish one. An overloaded page can belong to
+several concepts. The page dropdown and "In other ports" use these mappings,
+and tests require every mapped target to resolve.
+
+"Discussed in" comes from API mentions in guides, including tables and
+sections headed with a port name. After editing those mentions, regenerate
+the index:
+
+```console
+$ node scripts/gen-mentions.mjs
+```
+
+The publication audit checks index freshness, rendered links, navigation targets,
+and table layout at desktop, tablet, and phone widths.
+
 ## Building and previewing
 
 Build the Astro shell:
