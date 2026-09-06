@@ -21,3 +21,23 @@ export const LOCALE_LABEL: Record<Locale, string> = {
 export function isLocale(value: string): value is Locale {
   return (LOCALES as readonly string[]).includes(value)
 }
+
+/**
+ * Whether the default locale carries a prefix of its own.
+ *
+ * False today: English is the site root. The `/en/` scheme flips this, and it
+ * is one constant precisely so that move does not become a hunt through every
+ * place a URL is composed.
+ */
+export const DEFAULT_LOCALE_PREFIXED = false
+
+/**
+ * Where one locale's tree begins, as an absolute path with a trailing slash.
+ *
+ * Locales are siblings of each other, not children of the current build, so
+ * this cannot be derived from the site root the way an in-locale path can —
+ * a Japanese alternate is `/ja/`, whatever prefix the English build carries.
+ */
+export function localeRoot(locale: string): string {
+  return locale === DEFAULT_LOCALE && !DEFAULT_LOCALE_PREFIXED ? '/' : `/${locale}/`
+}

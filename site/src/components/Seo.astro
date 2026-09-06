@@ -2,7 +2,8 @@
 import type { Graph, WithContext, Thing } from 'schema-dts'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { canonicalUrl, robotsFor, type VersionEntry } from '../lib/versions'
-import { IS_ROOT_BUILD } from '../lib/site-root'
+import { IS_ROOT_BUILD, SITE_ROOT } from '../lib/site-root'
+import { localeRoot } from '../i18n/locales'
 
 /**
  * Every head tag that search engines care about, in one place.
@@ -68,11 +69,19 @@ const {
 const origin = (Astro.site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
 const port = portSlug ? PORT_BY_SLUG[portSlug] : undefined
 
-// Shared shell pages live at the root and are always canonical to themselves.
-// Port pages canonicalise to the same path under the port's default version.
+/*
+ * Absolute URLs compose through the build's own site root, not the bare
+ * origin. A build mounted under a prefix — a pull-request preview today, a
+ * locale prefix next — otherwise declares a canonical for a URL it does not
+ * serve. SITE_ROOT is '' at the site root, so this is a no-op there.
+ */
+const rootedOrigin = `${origin}${SITE_ROOT}`
+
+// Shared shell pages are canonical to themselves. Port pages canonicalise to
+// the same path under the port's default version.
 const canonical = portSlug
-  ? canonicalUrl(origin, portSlug, version, defaultVersion, pagePath, existsInDefault)
-  : `${origin}/${pagePath.replace(/^\/+/, '').replace(/\/+$/, '')}${pagePath.replace(/^\/+/, '') ? '/' : ''}`
+  ? canonicalUrl(rootedOrigin, portSlug, version, defaultVersion, pagePath, existsInDefault)
+  : `${rootedOrigin}/${pagePath.replace(/^\/+/, '').replace(/\/+$/, '')}${pagePath.replace(/^\/+/, '') ? '/' : ''}`
 
 /**
  * The URL of this page in one locale, built from the unprefixed source path
@@ -80,10 +89,9 @@ const canonical = portSlug
  * prefix, so deriving from it yields `/ja/ja/concepts/`.
  */
 const localeBase = (sourcePath ?? pagePath).replace(/^\/+|\/+$/g, '')
-const localeHref = (l: string) =>
-  l === 'en'
-    ? `${origin}/${localeBase}${localeBase ? '/' : ''}`
-    : `${origin}/${l}/${localeBase}${localeBase ? '/' : ''}`
+// Each locale's own root, not this build's: an alternate is a sibling tree,
+// so it does not inherit whatever prefix this build carries.
+const localeHref = (l: string) => `${origin}${localeRoot(l)}${localeBase}${localeBase ? '/' : ''}`
 
 const isDefault = version === defaultVersion
 
