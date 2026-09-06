@@ -58,6 +58,20 @@ export interface LanguageSpec {
   transparent?: string[]
   /** Comment node types that can carry documentation. */
   commentTypes: string[]
+  /**
+   * Node types that sit between a doc comment and what it documents.
+   *
+   * Rust writes `#[derive(Clone)]` and `#[must_use = "…"]` under the doc
+   * comment and above the item, and the walk up from the declaration stopped
+   * at the first sibling that was not a comment. That hid the prose on 488
+   * Rust symbols and 188 of its examples: `pub struct Command` documents
+   * itself with a runnable example and rendered blank.
+   *
+   * Only Rust needs this so far. C# writes `[Obsolete]` in the same position
+   * but its grammar keeps the attribute inside the declaration, so the walk
+   * never sees it.
+   */
+  attributeTypes?: string[]
   /** Strip a doc comment's markers. Returning undefined rejects the comment. */
   stripDoc: (raw: string) => string | undefined
   /** Keywords or attributes that map to model modifiers. */
@@ -120,6 +134,14 @@ function docCommentFor(node: Node, spec: LanguageSpec): string | undefined {
   }
   let cursor: Node | null = anchor.previousNamedSibling
   let expectedRow = anchor.startPosition.row
+  // Attributes are part of the declaration, not a break in it, so the doc
+  // comment above them still documents it. Adjacency is still required: a
+  // comment separated from the attributes by a blank line is a section marker.
+  while (cursor && spec.attributeTypes?.includes(cursor.type)) {
+    if (cursor.endPosition.row < expectedRow - 1) break
+    expectedRow = cursor.startPosition.row
+    cursor = cursor.previousNamedSibling
+  }
   while (cursor && spec.commentTypes.includes(cursor.type)) {
     if (cursor.endPosition.row < expectedRow - 1) break
     const stripped = spec.stripDoc(cursor.text)

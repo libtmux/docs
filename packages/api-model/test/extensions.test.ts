@@ -72,3 +72,42 @@ describe('an extension block belongs to the type it extends', () => {
     expect(mergeExtensions(symbols, undefined)).toBe(symbols)
   })
 })
+
+/**
+ * Rust puts `#[derive(Clone)]` and `#[must_use = "…"]` between a doc comment
+ * and the item it documents. The walk up from a declaration stopped at the
+ * first sibling that was not a comment, so `pub struct Command` — which
+ * documents itself with a runnable example — rendered blank, along with 487
+ * other symbols and 188 examples.
+ */
+describe('a doc comment reaches past the attributes under it', () => {
+  it('finds the doc behind Rust attributes, and still requires adjacency', async () => {
+    const { extractWithSpec } = await import('../src/languages/spec.ts')
+    const { RUST } = await import('../src/languages/specs.ts')
+    const { mkdtempSync, writeFileSync } = await import('node:fs')
+    const { join } = await import('node:path')
+    const { tmpdir } = await import('node:os')
+
+    const dir = mkdtempSync(join(tmpdir(), 'attrs-'))
+    const file = join(dir, 'command.rs')
+    writeFileSync(
+      file,
+      [
+        '/// One tmux command, and what it will do.',
+        '#[derive(Clone)]',
+        '#[must_use = "a command has no effect until it is dispatched"]',
+        'pub struct Command {}',
+        '',
+        '// A section marker, not documentation.',
+        '',
+        '#[derive(Debug)]',
+        'pub struct Unrelated {}',
+        '',
+      ].join('\n'),
+    )
+    const symbols = await extractWithSpec(RUST, file, 'command')
+    const doc = (n: string) => symbols.find((s) => s.name === n)?.doc?.summary
+    expect(doc('Command')).toBe('One tmux command, and what it will do.')
+    expect(doc('Unrelated')).toBeUndefined()
+  })
+})

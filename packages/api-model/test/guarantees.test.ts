@@ -217,8 +217,27 @@ describe('doc comments give up their examples', () => {
     // A bare fence in a Rust doc comment is Rust, and `no_run` is a doctest
     // attribute rather than a language — a renderer asked to highlight
     // `compile_fail` highlights nothing.
-    const wrong = blocks.filter((b) => b.lang !== lang)
+    //
+    // A fence that names a different language is authored, not mis-tagged:
+    // `target::SessionName` shows a shell transcript of tmux rejecting a name,
+    // which is the point of the example. So the assertion is that no doctest
+    // attribute survives as a language, and that the port's own language still
+    // accounts for nearly all of the blocks.
+    const attributes = new Set([
+      '',
+      'no_run',
+      'should_panic',
+      'compile_fail',
+      'ignore',
+      'edition2015',
+      'edition2018',
+      'edition2021',
+      'edition2024',
+    ])
+    const wrong = blocks.filter((b) => attributes.has(b.lang))
     expect(wrong.slice(0, 3).map((b) => b.lang), `${port} mis-tagged blocks`).toEqual([])
+    const own = blocks.filter((b) => b.lang === lang).length
+    expect(own / blocks.length, `${port} examples tagged ${lang}`).toBeGreaterThan(0.9)
   })
 
   it.each(['rs', 'ts', 'py'])('%s leaves no fence behind in a body', (port) => {

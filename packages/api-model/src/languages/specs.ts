@@ -96,6 +96,7 @@ export const RUST: LanguageSpec = {
     'enum_variant_list',
   ],
   commentTypes: ['line_comment', 'block_comment'],
+  attributeTypes: ['attribute_item'],
   stripDoc: stripSlashDoc,
   modifiers: { async: 'async', unsafe: 'unsafe', 'pub(crate)': 'private' },
   // `impl Pane { … }` names the type it extends in `type`, not `name`. The
