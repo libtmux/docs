@@ -139,7 +139,13 @@
   // Listen for system preference changes
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
   mediaQuery.addEventListener('change', (e) => {
-    if (localStorage.getItem('color-scheme') === 'system') {
+    // Absent counts as `system`, which is what `applyTheme` above decides for
+    // the first paint. Requiring the literal string meant a reader who had
+    // never touched the control — everyone, on a first visit — kept whichever
+    // scheme the page opened in when they changed their OS setting, while a
+    // reader who had chosen `system` explicitly tracked it correctly.
+    const stored = localStorage.getItem('color-scheme');
+    if (!stored || stored === 'system') {
       document.documentElement.setAttribute('data-theme-mode', e.matches ? 'dark' : 'light');
     }
   });
