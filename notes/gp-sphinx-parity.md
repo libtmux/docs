@@ -203,12 +203,16 @@ changes the weight without restyling the heading scale.
   `#L85` and highlights one line. The extractors all know where a declaration
   ends — tree-sitter has `endPosition`, Doxygen has `bodyend` — so this is a
   field the model does not carry yet rather than information it lacks.
-- **Go and .NET have almost no examples.** Not a rendering gap: Go puts them
-  in `Example` test functions and .NET rarely writes them in doc comments.
-  Extracting Go's would mean reading its test files, which is a different
-  mechanism from everything else here. Java's seven were a rendering gap —
-  javadoc fences with `<pre>{@code …}</pre>`, and reading that as prose hid
-  them inside a printed tag.
+- **Go, .NET and C++ have almost no examples.** Not a rendering gap. Go puts
+  them in `Example` test functions, and extracting those would mean reading
+  its test files, which is a different mechanism from everything else here.
+  .NET rarely writes them in doc comments. C++ writes none at all: 31 headers,
+  zero fences and zero `@code`, so Doxygen emits no `programlisting` for this
+  project to read. A C++ page shows the counterpart examples the concept map
+  knows about and no tab of its own, which is accurate rather than missing.
+  Java's seven were a rendering gap — javadoc fences with `<pre>{@code …}</pre>`,
+  and reading that as prose hid them inside a printed tag. Swift's four were
+  the same shape: its symbol-graph extractor never parsed the Markdown.
 - **Go's indented code blocks are not detected.** Go spells a code block with
   indentation rather than a fence. Three symbols in libtmux-go use one, and
   after comment-marker stripping the block's first line is flush with the
@@ -232,6 +236,17 @@ wide.
 Cross-references in every language. Inline parsing used to be one reST-shaped
 tokenizer for all eight ports while block parsing dispatched properly, so Go,
 Java, .NET, Swift and TypeScript rendered every reference as literal text.
+
+Inline emphasis. `**bold**` reached the page as literal asterisks: the
+renderer splits into block structure and inline references, and Markdown
+emphasis was in neither. No visible docstring had used it until `#[derive]`
+stopped hiding `server::Server`'s doc comment. Only the doubled form is
+claimed — a single `*` is emphasis, a glob and a multiplication sign at once.
+
+Shiki colour outside gp-sphinx's DOM. The only rule reading `--shiki-light`
+and `--shiki-dark` was scoped to `dl.py > dd .highlight`, which the per-symbol
+examples sit inside and the cross-port example tabs do not, so every token on
+a page showing another port's example rendered in one flat inherited grey.
 
 Javadoc's HTML. A javadoc comment is HTML by specification and was being read
 as prose, so 192 `<p>` and 7 `<pre>` printed across 146 pages of the Java
