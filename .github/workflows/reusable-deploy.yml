@@ -274,11 +274,15 @@ jobs:
               --argjson isDefault "$IS_DEFAULT" \
               --arg resolvesTo "$RESOLVES_TO" \
               '
-              {slug: $slug, label: $label, kind: $kind, supported: true}
-              + (if $kind == "alias" and $resolvesTo != "" then {resolvesTo: $resolvesTo} else {} end)
-              as $entry
+              # Both bindings are parenthesised because `as` binds looser than
+              # `+`: `A + B as $x | C` is `A + (B as $x | C)`, which added the
+              # entry array to the rest of the pipeline and failed with
+              # "array and object cannot be added".
+              ({slug: $slug, label: $label, kind: $kind, supported: true}
+                + (if $kind == "alias" and $resolvesTo != "" then {resolvesTo: $resolvesTo} else {} end)
+              ) as $entry
               | ($doc.ports[$port] // []) as $existing
-              | ($existing | map(select(.slug != $slug))) + [$entry] as $entries
+              | (($existing | map(select(.slug != $slug))) + [$entry]) as $entries
               | $doc
               | .ports[$port] = $entries
               | if $isDefault then .defaultVersion[$port] = $slug else . end
