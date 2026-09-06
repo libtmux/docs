@@ -1,5 +1,9 @@
 ---
 import '../styles/global.css'
+import { getCollection } from 'astro:content'
+import { pagePortLinks } from '../lib/page-port-links'
+import { buildLocale, localeOf } from '../i18n/resolve'
+import { DEFAULT_LOCALE, localeSourcePath } from '../i18n/locales'
 import { Font } from 'astro:assets'
 import BackToTop from '../components/BackToTop.astro'
 import Seo from '../components/Seo.astro'
@@ -45,23 +49,13 @@ interface Props {
   canonicalOverride?: string
   /** Every locale's status for this page, for the locale switcher. */
   localeStatuses?: Record<string, string>
-  /**
-   * The path the port switcher should carry across ports.
-   *
-   * Defaults to this page's own path, which is right for prose: switching
-   * language on `/concepts/transports/` should land on the same concept. It is
-   * wrong wherever a page has no per-port counterpart — the API reference
-   * lives only at the root, so carrying `reference/ts/...` across produced
-   * `/cxx/stable/reference/...` for every one of its 1,009 pages. Pass `''`
-   * there and the switcher offers each port's home instead.
-   */
-  switcherPath?: string
+
 }
 
 const {
   title,
   description,
-  pagePath = '',
+  pagePath: requestedPagePath,
   portSlug,
   noindex = false,
   updated,
@@ -71,17 +65,15 @@ const {
   sourcePath,
   canonicalOverride,
   localeStatuses,
-  switcherPath,
 } = Astro.props as Props
 
 
-// process.env, not import.meta.env: import.meta.env.LIBTMUX_DOCS_* goes
-// stale across repeated astro builds in the same tree — reproduced 3/3 from
-// a fresh cache, build-site.sh's own per-port-per-version loop shape, every
-// later build silently keeping the first build's robots/canonical/version.
-// process.env didn't reproduce it in the same test. astro.config.ts already
-// reads process.env directly for base/site/sitemap gating; this brings
-// BaseLayout's own env reads in line with it.
+const buildBase = process.env.LIBTMUX_DOCS_BASE ?? '/'
+const routePath = (Astro.url.pathname.startsWith(buildBase)
+  ? Astro.url.pathname.slice(buildBase.length)
+  : Astro.url.pathname).replace(/^\/+|\/+$/g, '')
+const pagePath = requestedPagePath ?? (routePath === portSlug ? '' : routePath)
+
 const target = buildTarget(process.env)
 
 // Until the manifest is fetched client-side, treat this build's own version
@@ -101,6 +93,21 @@ const defaultVersion = process.env.LIBTMUX_DOCS_DEFAULT_VERSION ?? 'stable'
  * usually wants one of those, not all five.
  */
 const section = (pagePath.split('/').filter(Boolean)[0] ?? 'home').toLowerCase()
+
+const navPort = portSlug ?? (process.env.LIBTMUX_DOCS_PORT || undefined) ?? (pagePath.startsWith('reference/') ? pagePath.split('/')[1] : undefined)
+let portDefaults: Record<string, string> = {}
+try {
+  portDefaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
+} catch { /* Unconfigured builds use each port's latest tree. */ }
+const navVersion = process.env.LIBTMUX_DOCS_PORT ? target.version : (portDefaults[navPort ?? ''] ?? 'latest')
+const pagePorts = pagePortLinks({
+  pagePath: sourcePath ?? pagePath,
+  portSlug: navPort,
+  version: navVersion,
+  defaults: portDefaults,
+  docs: (await getCollection('docs')).filter((entry) => localeOf(entry.id) === DEFAULT_LOCALE),
+})
+const localePagePath = localeSourcePath(Astro.url.pathname, buildLocale())
 
 ---
 
@@ -177,20 +184,15 @@ const section = (pagePath.split('/').filter(Boolean)[0] ?? 'home').toLowerCase()
   -->
   <body class="min-h-screen antialiased">
     {
-      /* The switcher carries the reader's place across ports, and a locale
-         prefix cannot travel with it: per-port prose is English-only by
-         design, so `/ja/concepts/` must map to `/py/stable/concepts/`, not to
-         `/py/stable/ja/concepts/` — 16 URLs that never existed. `sourcePath`
-         is `pagePath` with the locale stripped, and equals it everywhere
-         else. */
       !bare && (
         <SiteHeader
-          portSlug={portSlug}
-          version={target.version}
-          pagePath={switcherPath ?? sourcePath ?? pagePath}
+          portSlug={navPort}
+          version={navVersion}
+          pagePath={sourcePath ?? pagePath}
+          pagePorts={pagePorts}
           locale={locale as Locale}
-          sourcePath={sourcePath ?? pagePath}
-          localeStatuses={localeStatuses as Record<string, LocaleStatus> | undefined}
+          sourcePath={localePagePath}
+          localeStatuses={(process.env.LIBTMUX_DOCS_PORT ? { en: 'translated' } : localeStatuses ?? { en: 'translated' }) as Record<string, LocaleStatus>}
         />
       )
     }

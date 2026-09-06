@@ -456,14 +456,13 @@ const title = owner
   title={title}
   description={
     owner
-      ? `${owner.doc?.summary ?? owner.name} — ${members.length} members, extracted from source.`
+      ? owner.doc?.summary ?? `${owner.publicId ?? owner.name} API documentation.`
       : model
-        ? `Every public symbol in libtmux for ${PORT_NAME[model.port] ?? model.port}: ${model.symbols.length}, extracted from source.`
-        : 'The libtmux API reference for every language, extracted from source and rendered through one set of components.'
+        ? `Types, methods, and functions in libtmux for ${PORT_NAME[model.port] ?? model.port}.`
+        : 'Types, methods, and functions in the libtmux language libraries.'
   }
   pagePath={slug ? `reference/${slug}` : 'reference'}
   noindex={true}
-  switcherPath=""
 >
   <!-- The content column is capped at 47rem, which is 752px — gp-sphinx
        renders 754 from Furo's `46em` against a 16.4px root. Uncapped it ran

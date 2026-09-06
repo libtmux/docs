@@ -121,6 +121,41 @@ describeIfAssembled('published exports', () => {
     })
   })
 
+  describe('native shell assets', () => {
+    it.each(['latest', 'stable'].filter((version) => has(`${SITE_PREFIX}py/${version}/api/api/libtmux.session/index.html`)))(
+      '%s loads the shell script and tokens from this locale tree', (version) => {
+        const html = read(`py/${version}/api/api/libtmux.session/index.html`)
+        const script = /<script\b[^>]*src="([^"]*\/_shell\/shell\.js[^"]*)"/.exec(html)?.[1]
+        expect(script).toBe(`/${SITE_PREFIX}_shell/shell.js`)
+        expect(has(script!)).toBe(true)
+        const css = read(`py/${version}/api/_static/libtmux-org.css`)
+        expect(css).toContain(`url('/${SITE_PREFIX}_shell/tokens.css')`)
+        expect(has(`${SITE_PREFIX}_shell/tokens.css`)).toBe(true)
+      },
+    )
+  })
+
+  describe('native navigation manifest', () => {
+    it('publishes verified symbol counterparts for the native shell', () => {
+      const manifest = JSON.parse(read('page-links.json'))
+      expect(manifest.schema).toBe(1)
+      expect(Object.keys(manifest.indexes).sort()).toEqual(PORTS.map((port) => port.slug).sort())
+      expect(manifest.symbols.py['libtmux.Session.windows']).toEqual(expect.arrayContaining([
+        expect.objectContaining({ port: 'ts', href: expect.stringMatching(/\/reference\/ts\/session-session-windows\/$/) }),
+      ]))
+      const targets = new Set([
+        ...Object.values(manifest.indexes as Record<string, string>),
+        ...Object.values(manifest.symbols as Record<string, Record<string, { href: string }[]>>)
+          .flatMap((symbols) => Object.values(symbols).flatMap((entries) => entries.map((entry) => entry.href))),
+      ])
+      const missing = [...targets].filter((href) => {
+        const path = new URL(href, 'https://libtmux.org').pathname.replace(/^\//, '')
+        return !has(join(path, 'index.html'))
+      })
+      expect(missing, 'native page-switcher targets missing from the assembly').toEqual([])
+    })
+  })
+
   describe('hreflang', () => {
     it('is a complete cluster wherever it appears, including x-default', () => {
       // A partial cluster is worse than none: a page that advertises `ja` but

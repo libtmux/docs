@@ -1,6 +1,8 @@
 ---
 import LocaleSwitcher from './LocaleSwitcher.astro'
 import PortSwitcher from './PortSwitcher.astro'
+import PagePortSwitcher from './PagePortSwitcher.astro'
+import type { PagePortLink } from '../lib/page-port-links'
 import VersionSwitcher from './VersionSwitcher.astro'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import type { LocaleStatus } from '../i18n/resolve'
@@ -9,7 +11,8 @@ import { withPortRoot, withRoot } from '../lib/site-root'
 interface Props {
   portSlug?: string
   version: string
-  /** Forwarded to the port switcher so switching language keeps the page. */
+  pagePorts: PagePortLink[]
+  /** Current page path for the locale control. */
   pagePath?: string
   /** Current locale, for the locale switcher. */
   locale?: Locale
@@ -19,44 +22,40 @@ interface Props {
    * root, and `pagePath` in a port build is relative to the port instead.
    */
   sourcePath?: string
-  /** Every locale's status for this page. One entry means no control. */
+  /** Each available locale's translation status. */
   localeStatuses?: Record<string, LocaleStatus>
 }
 const {
   portSlug,
   version,
   pagePath = '',
+  pagePorts,
   locale = DEFAULT_LOCALE,
   sourcePath,
   localeStatuses,
 } = Astro.props as Props
 ---
 
-{/*
-  Sticky, so the port switcher stays reachable down a long reference page.
-
-  It needs its own background: the page scrolls underneath, and a transparent
-  bar shows signatures sliding through the nav. `--topnav-background` is the
-  token that already tracks the theme, and the blur is the one tony.sh uses
-  behind the same bar.
-*/}
 <header
   class="sticky top-0 z-40 border-b border-edge"
   style="background: var(--topnav-background); backdrop-filter: blur(var(--topnav-backdrop-blur, 8px));"
 >
   <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 py-3">
     <a href={withRoot('/')} class="font-mono text-lg font-semibold tracking-tight">libtmux</a>
-    <div class="flex-1"><PortSwitcher portSlug={portSlug} version={version} pagePath={pagePath} /></div>
-    <VersionSwitcher portSlug={portSlug} version={version} />
-    {
-      localeStatuses && (
-        <LocaleSwitcher
-          locale={locale}
-          sourcePath={sourcePath ?? pagePath}
-          localeStatuses={localeStatuses}
-        />
-      )
-    }
+    <div class="flex-1"><PortSwitcher portSlug={portSlug} version={version} /></div>
+    <VersionSwitcher portSlug={pagePath.startsWith('reference') ? undefined : portSlug} version={version} />
+    <div class="relative flex min-w-56 shrink-0 flex-nowrap items-center gap-4" data-page-switchers>
+      <PagePortSwitcher entries={pagePorts} portSlug={portSlug} />
+      {
+        localeStatuses && (
+          <LocaleSwitcher
+            locale={locale}
+            sourcePath={sourcePath ?? pagePath}
+            localeStatuses={localeStatuses}
+          />
+        )
+      }
+    </div>
     <a
       href={withPortRoot('/reference/')}
       class="topnav-chip px-2 py-1 text-sm"

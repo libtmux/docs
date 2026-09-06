@@ -70,7 +70,6 @@ const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').l
   pagePath="translations"
   sourcePath="translations"
   locale={locale}
-  switcherPath=""
   localeStatuses={ALL_TRANSLATED}
 >
   <div class="mx-auto max-w-4xl px-4 py-10">
@@ -123,7 +122,7 @@ const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').l
                 {columns.map((l) => {
                   const status = row.statuses[l] as LocaleStatus
                   /* The cell is the way in: the status names what is needed
-                     and the link opens the file that would hold it — the
+                     and the link opens the file that would hold it. The
                      editor where it exists, a prefilled new file where it
                      does not. A coverage page that only reports is a list of
                      work with no way to start it. */

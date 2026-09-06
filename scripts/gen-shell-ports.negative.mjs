@@ -4,8 +4,8 @@
  *
  * The control is the freshly generated file, because a check that always
  * failed would satisfy the first case on its own. Three ways to be stale are
- * tested rather than one: a dropped port, a renamed port, and an ecosystem
- * home pointed somewhere else. They are distinct because the table is a
+ * tested rather than one: a dropped port, a renamed port, and an incorrect
+ * version-tree flag. They are distinct because the table is a
  * literal — a check comparing only the port count would pass the last two,
  * and that is the drift that actually happened (its own comment named a
  * `referenceMode` field `ports.ts` no longer has).
@@ -63,7 +63,7 @@ const check = (name, ok, detail) => {
 const mutations = [
   ['a dropped port is caught', (s) => s.replace(/^ {4}\{"slug":"swift".*\n/m, '')],
   ['a renamed port is caught', (s) => s.replace('"name":"Python"', '"name":"Python 3"')],
-  ['a moved ecosystem home is caught', (s) => s.replace('https://docs.rs/libtmux', 'https://example.invalid/libtmux')],
+  ['an incorrect version-tree flag is caught', (s) => s.replace('"versionedDocs":true', '"versionedDocs":false')],
 ]
 
 for (const [name, mutate] of mutations) {

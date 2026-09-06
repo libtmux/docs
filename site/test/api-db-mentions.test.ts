@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { mentionedIn, mentionsOn, seed } from '../src/db'
 import { MODEL_DIR } from '../src/db/paths'
+import mentionIndex from '../src/data/mentions.json'
 
 /**
  * The backlink index: which prose mentions a symbol.
@@ -29,6 +30,15 @@ function mentionsFile(mentions: unknown[]): string {
 }
 
 describeIfSeeded('prose mention index', () => {
+  it('does not turn language types into unrelated API backlinks', () => {
+    for (const [port, symbol, page] of [
+      ['swift', 'JSONValue.bool(_:)', '/topics/socket-and-servers/'],
+      ['dotnet', 'LibTmux.ControlModeGuardKind.Error', '/topics/errors-and-exceptions/'],
+    ]) {
+      expect(mentionIndex.mentions.some((row) => row.port === port && row.symbol === symbol && row.page === page)).toBe(false)
+    }
+  })
+
   it('answers which pages mention a symbol', () => {
     const result = seed({
       mentionsPath: mentionsFile([

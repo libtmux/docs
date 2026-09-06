@@ -1,0 +1,43 @@
+---
+import type { PagePortLink } from '../lib/page-port-links'
+
+interface Props {
+  entries: PagePortLink[]
+  portSlug?: string
+}
+const { entries, portSlug } = Astro.props
+const current = entries.find((entry) => entry.port === portSlug)
+---
+
+<details data-page-port-switcher>
+  <summary
+    class="topnav-chip cursor-pointer list-none px-2 py-1 text-sm"
+    aria-label="This page in other programming languages"
+  >
+    {current?.name ?? 'In other ports'}
+  </summary>
+  <ul class="absolute right-0 z-50 mt-1 w-full min-w-48 rounded border border-edge bg-surface py-1 shadow-lg">
+    {entries.map((entry) => (
+      <li>
+        {entry.links.length ? entry.links.map((link) => (
+          <a
+            class="flex items-baseline justify-between gap-3 px-3 py-1.5 text-sm hover:bg-edge/30"
+            href={link.href}
+            aria-current={entry.port === portSlug ? 'page' : undefined}
+          >
+            <span class:list={[entry.port === portSlug && 'font-semibold']}>{entry.name}</span>
+            {entry.links.length > 1 && <span class="text-xs text-muted">{link.label}</span>}
+          </a>
+        )) : (
+          <span
+            class="flex items-baseline justify-between gap-3 px-3 py-1.5 text-sm text-muted"
+            aria-disabled="true"
+          >
+            <span>{entry.name}</span>
+            <span class="text-xs">Unavailable</span>
+          </span>
+        )}
+      </li>
+    ))}
+  </ul>
+</details>

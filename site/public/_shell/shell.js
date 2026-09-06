@@ -1,228 +1,188 @@
-/**
- * libtmux.org shell — runtime chrome for foreign generators.
- *
- * Served from a stable URL (/_shell/shell.js) and loaded via each foreign
- * generator's own script-injection flag (Sphinx: html_js_files; the same
- * mechanism works for rustdoc's --html-in-header, Dokka's templatesDir, and
- * DocC's header.html/footer.html if this bridge is ever extended to them —
- * see notes/research/03-design-token-bridge.md). Vanilla JS, no framework,
- * no build step, so it runs unmodified inside whatever HTML each generator
- * emits.
- *
- * Three jobs, matching notes/status.md's "Python and C++ are unskinned
- * islands" glitch exactly:
- *
- *   1. Inject a header (port switcher + version switcher + search link) and
- *      footer (port list) so a Sphinx page reads as the same site as the
- *      Astro-rendered ports, not a different website.
- *   2. The version switcher: a <libtmux-version-switcher> custom element
- *      with the IDENTICAL contract as
- *      site/src/components/VersionSwitcher.astro — same element name, same
- *      dataset keys, same /versions.json shape, same path-preserving
- *      navigation, same ecosystem-port suppression. Kept in sync by hand;
- *      if that component's contract changes, this must change with it.
- *   3. A dark-mode shim: shim, don't replace (design-token-bridge.md §4).
- *      Furo keeps its own toggle, its own `theme` localStorage key, and its
- *      own body[data-theme] attribute — this only mirrors the *resolved*
- *      value onto html[data-theme], which is the attribute tokens.css
- *      reads (see tokens.css's own header comment for why :root/html, not
- *      body).
- *
- * PORTS below is a copy of the fields this file needs from
- * site/src/lib/ports.ts (name, whether the port has an ecosystem host, and
- * for those the exact ecosystemHost URL). A runtime script has no bundler and
- * cannot import that module; ThemeScript.astro accepts the identical
- * trade-off for theme-config.ts, for the same reason.
- *
- * It is generated rather than hand-kept: run scripts/gen-shell-ports.mjs, and
- * `--check` in the test suite fails when it drifts. It had already drifted as
- * a hand-kept copy — the sentence here named a `referenceMode` field that
- * ports.ts no longer has. Do not edit between the markers.
- */
+/** Shared navigation and theme integration for native API generators. */
 ;(function () {
   'use strict'
 
   // >>> generated from site/src/lib/ports.ts by scripts/gen-shell-ports.mjs
   var PORTS = [
-    {"slug":"py","name":"Python","mode":"self-hosted"},
-    {"slug":"ts","name":"TypeScript","mode":"self-hosted"},
-    {"slug":"rs","name":"Rust","mode":"ecosystem","home":"https://docs.rs/libtmux"},
-    {"slug":"go","name":"Go","mode":"ecosystem","home":"https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux"},
-    {"slug":"java","name":"Java","mode":"ecosystem","home":"https://javadoc.io/doc/io.github.libtmux/libtmux"},
-    {"slug":"dotnet","name":".NET","mode":"self-hosted"},
-    {"slug":"cxx","name":"C++","mode":"self-hosted"},
-    {"slug":"swift","name":"Swift","mode":"self-hosted"},
+    {"slug":"py","name":"Python","versionedDocs":true},
+    {"slug":"ts","name":"TypeScript","versionedDocs":true},
+    {"slug":"rs","name":"Rust","versionedDocs":true},
+    {"slug":"go","name":"Go","versionedDocs":true},
+    {"slug":"java","name":"Java","versionedDocs":true},
+    {"slug":"dotnet","name":".NET","versionedDocs":true},
+    {"slug":"cxx","name":"C++","versionedDocs":true},
+    {"slug":"swift","name":"Swift","versionedDocs":true},
   ]
   // <<< end generated
 
-  // ---------------------------------------------------------------------
-  // Where are we? The site's own URL scheme (ports.ts, versions.ts) is
-  // /<port>/<version>/..., which every self-hosted port's build uses
-  // uniformly — so parsing location.pathname is sufficient and needs no
-  // per-generator config plumbed through conf.py.
-  // ---------------------------------------------------------------------
-  var routeMatch = /^\/([a-z]+)\/([^/]+)\//.exec(location.pathname)
-  var currentPort = routeMatch ? routeMatch[1] : null
-  var currentVersion = routeMatch ? routeMatch[2] : null
-  var portMeta = null
-  for (var i = 0; i < PORTS.length; i++) {
-    if (PORTS[i].slug === currentPort) {
-      portMeta = PORTS[i]
-      break
-    }
+  var portNames = PORTS.map(function (port) { return port.slug }).join('|')
+  var routeMatch = new RegExp('^(.*?)/(' + portNames + ')/([^/]+)/(.*)$').exec(location.pathname)
+  var siteRoot = routeMatch ? routeMatch[1] : '/en'
+  var currentPort = routeMatch ? routeMatch[2] : null
+  var currentVersion = routeMatch ? routeMatch[3] : null
+  var pagePath = routeMatch ? routeMatch[4] : ''
+  var portMeta = PORTS.find(function (port) { return port.slug === currentPort })
+  var portDefaults = {}
+  var pageLinks
+  var manifest = fetch(siteRoot + '/versions.json', { cache: 'no-cache' })
+    .then(function (response) { return response.ok ? response.json() : null })
+    .catch(function () { return null })
+
+  function portHome(port) {
+    var version = port.slug === currentPort ? currentVersion : (portDefaults[port.slug] || 'latest')
+    return siteRoot + '/' + port.slug + '/' + (port.versionedDocs ? version + '/' : '')
   }
 
-  // ---------------------------------------------------------------------
-  // Version switcher — identical contract to VersionSwitcher.astro.
-  // ---------------------------------------------------------------------
   function defineVersionSwitcher() {
     if (customElements.get('libtmux-version-switcher')) return
-
     class LibtmuxVersionSwitcher extends HTMLElement {
       connectedCallback() {
         var select = this.querySelector('select')
         var port = this.dataset.port
         var current = this.dataset.current
         if (!select || !port) return
-
-        fetch('/versions.json', { cache: 'no-cache' })
-          .then(function (res) {
-            if (!res.ok) return null
-            return res.json()
+        manifest.then(function (data) {
+          if (!data || data.schema !== 1) return
+          var entries = (data.ports[port] || []).filter(function (entry) { return entry.supported })
+          if (!entries.length) return
+          select.innerHTML = ''
+          entries.forEach(function (entry) {
+            var option = document.createElement('option')
+            option.value = entry.slug
+            option.textContent = entry.eol ? entry.label + ' (end of life)' : entry.label
+            option.selected = entry.slug === current
+            select.appendChild(option)
           })
-          .then(function (manifest) {
-            // Offline, or the manifest is not deployed yet: the baked-in
-            // single option (current version) stays, which is correct
-            // rather than empty — same fallback VersionSwitcher.astro takes.
-            if (!manifest || manifest.schema !== 1) return
-
-            var entries = (manifest.ports[port] || []).filter(function (e) {
-              return e.supported
-            })
-            if (entries.length === 0) return
-
-            select.innerHTML = ''
-            for (var j = 0; j < entries.length; j++) {
-              var entry = entries[j]
-              var opt = document.createElement('option')
-              opt.value = entry.slug
-              opt.textContent = entry.eol ? entry.label + ' (end of life)' : entry.label
-              if (entry.slug === current) opt.selected = true
-              select.appendChild(opt)
+          select.addEventListener('change', function () {
+            if (select.value && select.value !== current) {
+              location.href = siteRoot + '/' + port + '/' + select.value + '/' + pagePath + location.hash
             }
-
-            select.addEventListener('change', function () {
-              var next = select.value
-              if (!next || next === current) return
-              // Keep the reader on the same page across the version jump
-              // when that page exists; the 404 handler sends them to the
-              // version root when it does not.
-              var path = location.pathname
-              var marker = '/' + port + '/' + current + '/'
-              var rest = path.indexOf(marker) === 0 ? path.slice(marker.length) : ''
-              location.href = '/' + port + '/' + next + '/' + rest
-            })
           })
-          .catch(function () {
-            /* offline or manifest missing — baked-in option stands */
-          })
+        })
       }
     }
     customElements.define('libtmux-version-switcher', LibtmuxVersionSwitcher)
   }
 
   function buildVersionSwitcher(port, version) {
-    // Ecosystem ports have no local version tree on this site — their
-    // versions live on docs.rs / pkg.go.dev / javadoc.io. Offering a
-    // switcher here would navigate to a /rs/<version>/ prefix that never
-    // existed. Mirrors VersionSwitcher.astro's own guard exactly. Not
-    // reachable for py/cxx today (both self-hosted); kept so this file
-    // needs no change if it is later loaded on an ecosystem host's page
-    // (e.g. docs.rs via [package.metadata.docs.rs] rustdoc-args).
-    if (!port || port.mode === 'ecosystem') return null
-
-    var el = document.createElement('libtmux-version-switcher')
-    el.dataset.port = port.slug
-    el.dataset.current = version
-    el.className = 'lt-shell-version'
-
-    var label = document.createElement('label')
-    label.className = 'lt-shell-sr-only'
-    label.setAttribute('for', 'libtmux-version')
-    label.textContent = 'Version'
-
+    if (!port || !port.versionedDocs) return null
+    var element = document.createElement('libtmux-version-switcher')
+    element.dataset.port = port.slug
+    element.dataset.current = version
+    element.className = 'lt-shell-version'
     var select = document.createElement('select')
-    select.id = 'libtmux-version'
     select.setAttribute('aria-label', 'Version of the ' + port.name + ' documentation')
-
-    var opt = document.createElement('option')
-    opt.value = version
-    opt.textContent = version
-    opt.selected = true
-    select.appendChild(opt)
-
-    el.appendChild(label)
-    el.appendChild(select)
-    return el
+    var option = document.createElement('option')
+    option.value = version
+    option.textContent = version
+    option.selected = true
+    select.appendChild(option)
+    element.appendChild(select)
+    return element
   }
 
-  // ---------------------------------------------------------------------
-  // Header + footer injection.
-  // ---------------------------------------------------------------------
+  function dropdown(label, accessibleLabel) {
+    var details = document.createElement('details')
+    details.className = 'lt-shell-dropdown'
+    var summary = document.createElement('summary')
+    summary.textContent = label
+    summary.setAttribute('aria-label', accessibleLabel)
+    var list = document.createElement('ul')
+    details.appendChild(summary)
+    details.appendChild(list)
+    return details
+  }
+
+  function refreshPagePorts() {
+    var control = document.querySelector('[data-page-port-switcher]')
+    if (!control) return
+    var list = control.querySelector('ul')
+    list.innerHTML = ''
+    var symbols = pageLinks && pageLinks.symbols[currentPort] || {}
+    var hash = ''
+    try { hash = decodeURIComponent(location.hash.slice(1)) } catch (_) { /* Invalid fragment. */ }
+    var subject = hash ? document.getElementById(hash) : null
+    var signature = subject && subject.closest('dt.sig')
+    var pageSignature = document.querySelector('dt.sig[id]')
+    var matches = symbols[hash] || (signature
+      ? symbols[signature.id]
+      : pageSignature && symbols[pageSignature.id]) || []
+    var indexPage = /^api\/(?:index\.html)?$/.test(pagePath)
+    PORTS.forEach(function (port) {
+      var links = matches.filter(function (entry, i, all) {
+        return entry.port === port.slug && all.findIndex(function (candidate) {
+          return candidate.port === entry.port && candidate.href === entry.href
+        }) === i
+      })
+      if (indexPage && pageLinks) links = [{ href: pageLinks.indexes[port.slug] }]
+      if (port.slug === currentPort) links = [{ href: location.pathname + location.hash }]
+      var item = document.createElement('li')
+      if (links.length) {
+        links.forEach(function (entry) {
+          var link = document.createElement('a')
+          link.href = entry.href
+          link.textContent = port.name + (links.length > 1 ? ': ' + entry.label : '')
+          if (port.slug === currentPort) link.setAttribute('aria-current', 'page')
+          item.appendChild(link)
+        })
+      } else {
+        var disabled = document.createElement('span')
+        disabled.textContent = port.name + ' (Unavailable)'
+        disabled.setAttribute('aria-disabled', 'true')
+        item.appendChild(disabled)
+      }
+      list.appendChild(item)
+    })
+  }
+
   function buildHeader() {
     var header = document.createElement('div')
     header.className = 'lt-shell-header'
     header.setAttribute('data-lt-shell', 'header')
-
     var brand = document.createElement('a')
     brand.className = 'lt-shell-brand'
-    // Root-relative, like every other link this file builds (SiteHeader.astro
-    // uses href="/" too) — an absolute libtmux.org URL would jump a PR
-    // preview or local build to production instead of staying on it.
-    brand.href = '/'
+    brand.href = siteRoot + '/'
     brand.textContent = 'libtmux'
     header.appendChild(brand)
-
     var nav = document.createElement('nav')
     nav.className = 'lt-shell-nav'
     nav.setAttribute('aria-label', 'Language')
-    for (var i = 0; i < PORTS.length; i++) {
-      var p = PORTS[i]
-      var a = document.createElement('a')
-      var active = p.slug === currentPort
-      // Mirrors PortSwitcher.astro exactly: the active port links to its
-      // own version root (portHomeUrl()), every other port to its bare
-      // landing page — ecosystem ports always leave the site.
-      if (p.mode === 'ecosystem') a.href = p.home
-      else if (active) a.href = '/' + p.slug + '/' + currentVersion + '/'
-      else a.href = '/' + p.slug + '/'
-      a.textContent = p.name
-      a.className = 'lt-shell-nav-link' + (active ? ' lt-shell-nav-link--active' : '')
-      if (active) a.setAttribute('aria-current', 'page')
-      if (p.mode === 'ecosystem') {
-        var ext = document.createElement('span')
-        ext.className = 'lt-shell-external'
-        ext.title = 'API reference hosted on ' + p.name + "'s ecosystem host"
-        ext.textContent = '↗'
-        a.appendChild(document.createTextNode(' '))
-        a.appendChild(ext)
-      }
-      nav.appendChild(a)
-    }
+    PORTS.forEach(function (port) {
+      var link = document.createElement('a')
+      link.href = portHome(port)
+      link.dataset.portHome = port.slug
+      link.textContent = port.name
+      link.className = 'lt-shell-nav-link' + (port.slug === currentPort ? ' lt-shell-nav-link--active' : '')
+      if (port.slug === currentPort) link.setAttribute('aria-current', 'page')
+      nav.appendChild(link)
+    })
     header.appendChild(nav)
-
-    if (portMeta && currentVersion) {
-      var vs = buildVersionSwitcher(portMeta, currentVersion)
-      if (vs) header.appendChild(vs)
-    }
-
-    var search = document.createElement('a')
-    search.className = 'lt-shell-search-link'
-    search.href = '/search/'
-    search.setAttribute('aria-label', 'Search the documentation')
-    search.textContent = 'Search'
-    header.appendChild(search)
-
+    var versionSwitcher = buildVersionSwitcher(portMeta, currentVersion)
+    if (versionSwitcher) header.appendChild(versionSwitcher)
+    var pageSwitchers = document.createElement('div')
+    pageSwitchers.className = 'lt-shell-page-switchers'
+    pageSwitchers.setAttribute('data-page-switchers', '')
+    var pageSwitcher = dropdown(portMeta ? portMeta.name : 'In other ports', 'This page in other programming languages')
+    pageSwitcher.setAttribute('data-page-port-switcher', '')
+    pageSwitchers.appendChild(pageSwitcher)
+    var localeSwitcher = dropdown('English', 'Available translations')
+    var localeItem = document.createElement('li')
+    var localeLink = document.createElement('a')
+    localeLink.href = location.pathname
+    localeLink.textContent = 'English'
+    localeLink.lang = 'en'
+    localeLink.setAttribute('aria-current', 'true')
+    localeItem.appendChild(localeLink)
+    localeSwitcher.querySelector('ul').appendChild(localeItem)
+    pageSwitchers.appendChild(localeSwitcher)
+    header.appendChild(pageSwitchers)
+    ;[['Reference', '/reference/'], ['MCP', '/mcp/'], ['Search', '/search/']].forEach(function (entry) {
+      var link = document.createElement('a')
+      link.className = 'lt-shell-search-link'
+      link.href = siteRoot + entry[1]
+      link.textContent = entry[0]
+      header.appendChild(link)
+    })
     return header
   }
 
@@ -230,33 +190,30 @@
     var footer = document.createElement('div')
     footer.className = 'lt-shell-footer'
     footer.setAttribute('data-lt-shell', 'footer')
-
     var list = document.createElement('ul')
     list.className = 'lt-shell-footer-list'
-    for (var i = 0; i < PORTS.length; i++) {
-      var p = PORTS[i]
-      var li = document.createElement('li')
-      var a = document.createElement('a')
-      a.href = p.mode === 'ecosystem' ? p.home : '/' + p.slug + '/'
-      a.textContent = p.name
-      li.appendChild(a)
-      list.appendChild(li)
-    }
-    var noticesLi = document.createElement('li')
-    var noticesA = document.createElement('a')
-    noticesA.href = '/third-party-notices/'
-    noticesA.textContent = 'Third-party notices'
-    noticesLi.appendChild(noticesA)
-    list.appendChild(noticesLi)
-
+    PORTS.forEach(function (port) {
+      var item = document.createElement('li')
+      var link = document.createElement('a')
+      link.href = portHome(port)
+      link.dataset.portHome = port.slug
+      link.textContent = port.name
+      item.appendChild(link)
+      list.appendChild(item)
+    })
+    var item = document.createElement('li')
+    var link = document.createElement('a')
+    link.href = siteRoot + '/third-party-notices/'
+    link.textContent = 'Third-party notices'
+    item.appendChild(link)
+    list.appendChild(item)
     footer.appendChild(list)
     return footer
   }
 
   var CHROME_STYLE =
     '.lt-shell-header,.lt-shell-footer{font-family:var(--lt-font-sans,sans-serif);' +
-    'font-size:0.875rem;background:var(--lt-color-bg,#fff);color:var(--lt-color-fg,#000);' +
-    'box-sizing:border-box}' +
+    'font-size:0.875rem;background:var(--lt-color-bg,#fff);color:var(--lt-color-fg,#000);box-sizing:border-box}' +
     '.lt-shell-header *,.lt-shell-footer *{box-sizing:border-box}' +
     '.lt-shell-header{display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;' +
     'padding:0.6rem 1rem;border-bottom:1px solid var(--lt-color-border,#eeebee)}' +
@@ -268,38 +225,55 @@
     '.lt-shell-nav-link:hover{background:var(--lt-color-bg-hover,#efeff4)}' +
     '.lt-shell-nav-link--active{font-weight:600;color:var(--lt-color-accent,#0a4bff);' +
     'background:var(--lt-color-bg-secondary,#f8f9fb)}' +
-    '.lt-shell-external{font-size:0.75rem;opacity:0.6}' +
     '.lt-shell-version select{border:1px solid var(--lt-color-border,#eeebee);' +
     'border-radius:var(--lt-radius,0.375rem);padding:0.2rem 0.4rem;font-size:0.85rem;' +
     'background:var(--lt-color-bg,#fff);color:var(--lt-color-fg,#000)}' +
     '.lt-shell-search-link{padding:0.25rem 0.6rem;border:1px solid var(--lt-color-border,#eeebee);' +
     'border-radius:var(--lt-radius,0.375rem);color:var(--lt-color-fg,#000);text-decoration:none}' +
     '.lt-shell-search-link:hover{background:var(--lt-color-bg-hover,#efeff4)}' +
-    '.lt-shell-footer{margin-top:2rem;padding:1.5rem 1rem;' +
-    'border-top:1px solid var(--lt-color-border,#eeebee)}' +
-    '.lt-shell-footer-list{list-style:none;display:flex;flex-wrap:wrap;' +
-    'gap:0 1rem;margin:0;padding:0}' +
+    '.lt-shell-page-switchers{position:relative;display:flex;flex-wrap:nowrap;align-items:center;flex-shrink:0;gap:1rem;min-width:14rem}' +
+    '.lt-shell-dropdown summary{list-style:none;cursor:pointer;padding:.25rem .5rem;border-radius:var(--lt-radius,.375rem)}' +
+    '.lt-shell-dropdown summary::-webkit-details-marker{display:none}' +
+    '.lt-shell-dropdown summary:hover{background:var(--lt-color-bg-hover,#efeff4)}' +
+    '.lt-shell-dropdown ul{position:absolute;right:0;z-index:50;width:100%;min-width:12rem;list-style:none;margin:.25rem 0 0;padding:.25rem 0;' +
+    'border:1px solid var(--lt-color-border,#eeebee);border-radius:.25rem;background:var(--lt-color-bg,#fff);box-shadow:0 10px 15px -3px #0003}' +
+    '.lt-shell-dropdown li a,.lt-shell-dropdown li>span{display:block;padding:.375rem .75rem;color:inherit;text-decoration:none}' +
+    '.lt-shell-dropdown li a:hover{background:var(--lt-color-bg-hover,#efeff4)}' +
+    '.lt-shell-dropdown [aria-current]{font-weight:600}' +
+    '.lt-shell-dropdown [aria-disabled]{color:var(--lt-color-fg-secondary,#5a5c63)}' +
+    '.lt-shell-footer{margin-top:2rem;padding:1.5rem 1rem;border-top:1px solid var(--lt-color-border,#eeebee)}' +
+    '.lt-shell-footer-list{list-style:none;display:flex;flex-wrap:wrap;gap:0 1rem;margin:0;padding:0}' +
     '.lt-shell-footer-list a{color:var(--lt-color-fg-secondary,#5a5c63);text-decoration:none}' +
-    '.lt-shell-footer-list a:hover{text-decoration:underline}' +
-    '.lt-shell-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;' +
-    'overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}'
+    '.lt-shell-footer-list a:hover{text-decoration:underline}'
 
   function injectChrome() {
-    if (document.getElementById('lt-shell-style')) return // idempotent
-
+    if (document.getElementById('lt-shell-style')) return
     var style = document.createElement('style')
     style.id = 'lt-shell-style'
     style.textContent = CHROME_STYLE
     document.head.appendChild(style)
-
     defineVersionSwitcher()
-
-    if (document.body.firstChild) {
-      document.body.insertBefore(buildHeader(), document.body.firstChild)
-    } else {
-      document.body.appendChild(buildHeader())
-    }
+    document.body.insertBefore(buildHeader(), document.body.firstChild)
     document.body.appendChild(buildFooter())
+    refreshPagePorts()
+    manifest.then(function (data) {
+      if (!data || data.schema !== 1) return
+      portDefaults = data.defaultVersion || {}
+      document.querySelectorAll('[data-port-home]').forEach(function (link) {
+        var port = PORTS.find(function (entry) { return entry.slug === link.dataset.portHome })
+        if (port) link.href = portHome(port)
+      })
+    })
+    fetch(siteRoot + '/page-links.json')
+      .then(function (response) { return response.ok ? response.json() : null })
+      .then(function (data) {
+        if (data && data.schema === 1) {
+          pageLinks = data
+          refreshPagePorts()
+        }
+      })
+      .catch(function () { /* Keep unavailable entries disabled when the manifest cannot load. */ })
+    window.addEventListener('hashchange', refreshPagePorts)
   }
 
   // ---------------------------------------------------------------------
