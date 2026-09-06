@@ -1,6 +1,18 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
+/**
+ * The committed copy of every source a fence inlines, written by
+ * `scripts/gen-example-sources.mjs`.
+ *
+ * A static import, like `site/src/data/mcp-tools.json` elsewhere, and not a
+ * path read at runtime: this module is bundled, so `import.meta.url` inside
+ * the build points at `.astro/.prerender/chunks/`, and a path relative to it
+ * resolves to nothing. That failure is quiet in the worst way — the cache
+ * simply looks empty, and the build reports the source as missing rather than
+ * as unreadable.
+ */
+import CACHE from '../data/example-sources.json' with { type: 'json' }
 import { visit } from 'unist-util-visit'
 
 /**
@@ -149,17 +161,35 @@ export function remarkPortCode() {
  */
 export function readFence(owner, meta, pagePath) {
   const abs = join(expand(CHECKOUTS[owner] ?? ''), meta.file)
-  try {
-    let source = readFileSync(abs, 'utf8')
-    if (meta.region) {
-      const sliced = sliceRegion(source, meta.region)
-      if (sliced === null) throw new Error(`region "${meta.region}" not found`)
-      source = sliced
-    }
-    return source.replace(/\s+$/, '')
-  } catch (err) {
+  /*
+   * The checkout wins when it is there, so a local build always shows what
+   * the port currently tests and the cache can never mask a change. The cache
+   * is what makes the build run where the checkouts are not — every CI runner
+   * — and `gen-example-sources.mjs --check` in the suite is what keeps the two
+   * in step. Only both being absent is an error.
+   */
+  let source
+  if (existsSync(abs)) source = readFileSync(abs, 'utf8')
+  else source = CACHE[`${owner}:${meta.file}`]
+
+  if (source === undefined) {
     // Fail the build rather than ship a silently empty example: a missing
     // tested source is exactly the drift this is meant to catch.
-    throw new Error(`${pagePath ?? 'page'}: cannot inline ${meta.file} for ${owner} — ${err.message}`)
+    throw new Error(
+      `${pagePath ?? 'page'}: cannot inline ${meta.file} for ${owner} — ` +
+        `absent from ${CHECKOUTS[owner] ?? '<no checkout configured>'} and from ` +
+        'site/src/data/example-sources.json (run scripts/gen-example-sources.mjs)',
+    )
   }
+
+  if (meta.region) {
+    const sliced = sliceRegion(source, meta.region)
+    if (sliced === null) {
+      throw new Error(
+        `${pagePath ?? 'page'}: cannot inline ${meta.file} for ${owner} — region "${meta.region}" not found`,
+      )
+    }
+    source = sliced
+  }
+  return source.replace(/\s+$/, '')
 }

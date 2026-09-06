@@ -89,6 +89,16 @@ node scripts/gen-api-model.mjs --check
 # table is generated and compared here for the same reason the API models are:
 # a hand-kept copy rots silently, and this one already had — its comment named
 # a `referenceMode` field ports.ts no longer has.
+# Prose inlines the code each port actually tests, read from that port's
+# checkout. CI has none, so the resolved sources are committed and compared
+# here — the same contract as the API models above. Without it the cache rots
+# into showing code no port runs any more, which is worse than no example.
+step 'example sources'
+node scripts/gen-example-sources.mjs --check
+
+step 'example sources (negative)'
+node scripts/gen-example-sources.negative.mjs
+
 step 'shell port table'
 node scripts/gen-shell-ports.mjs --check
 
