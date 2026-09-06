@@ -53,7 +53,11 @@ jobs:
           LIBTMUX_DOCS_VERSION: latest
           LIBTMUX_DOCS_VERSION_KIND: trunk
           LIBTMUX_DOCS_IS_DEFAULT: 'true'
-          LIBTMUX_DOCS_BASE: /
+          # Locale is the outermost segment. Astro's base changes the URLs it
+          # emits, not where it writes them, so dist/ stays flat and the
+          # publish step below puts it under the matching prefix.
+          LIBTMUX_DOCS_BASE: /en/
+          LIBTMUX_DOCS_ROOT: /en/
           LIBTMUX_DOCS_SITE: https://libtmux.org
         run: pnpm build
 
@@ -180,6 +184,10 @@ jobs:
           BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
         run: |
           set -euo pipefail
+          # Everything the shell publishes lives under the locale, matching
+          # LIBTMUX_DOCS_BASE above and what scripts/build-site.sh assembles
+          # locally. The bucket root holds only what sits above every locale.
+          locale="${LIBTMUX_DOCS_LOCALE:-en}"
           # The port slugs come from ports.ts, emitted by the build job into
           # its own artifact — this job has no checkout, and a second hand-kept
           # copy here is what the list used to be. `manifest` is added locally
@@ -242,7 +250,7 @@ jobs:
           done
 
           for name in "${dirs[@]}"; do
-            aws s3 sync "dist/$name/" "s3://$BUCKET/$name/" \
+            aws s3 sync "dist/$name/" "s3://$BUCKET/$locale/$name/" \
               --delete \
               --cache-control "public, max-age=0, s-maxage=300"
           done
@@ -253,7 +261,7 @@ jobs:
           # there to always be a qualified, non-bare prefix, so it and
           # <slug>/index.html are disjoint keys by construction.
           for name in "${reserved_index_dirs[@]}"; do
-            aws s3 cp "dist/$name/index.html" "s3://$BUCKET/$name/index.html" \
+            aws s3 cp "dist/$name/index.html" "s3://$BUCKET/$locale/$name/index.html" \
               --cache-control "public, max-age=0, s-maxage=300"
           done
 
@@ -266,11 +274,21 @@ jobs:
           root_files=()
           while IFS= read -r -d '' f; do
             name=$(basename "$f")
-            aws s3 cp "$f" "s3://$BUCKET/$name" \
+            aws s3 cp "$f" "s3://$BUCKET/$locale/$name" \
               --cache-control "public, max-age=0, s-maxage=300"
             root_files+=("$name")
           done < <(find dist -maxdepth 1 -type f -print0)
 
+          # A crawler reads robots.txt only at the origin root, whatever prefix
+          # the site sits under. Its contents already name every path through
+          # the site root, so the copy needs no edit — the same lift
+          # scripts/build-site.sh does locally.
+          if [[ -f dist/robots.txt ]]; then
+            aws s3 cp dist/robots.txt "s3://$BUCKET/robots.txt" \
+              --cache-control "public, max-age=0, s-maxage=300"
+          fi
+
+          printf '%s\n' "$locale" > "$RUNNER_TEMP/shell-locale.txt"
           printf '%s\n' "${dirs[@]}" > "$RUNNER_TEMP/shell-dirs.txt"
           printf '%s\n' "${root_files[@]}" > "$RUNNER_TEMP/shell-root-files.txt"
           printf '%s\n' "${reserved_index_dirs[@]}" > "$RUNNER_TEMP/shell-reserved-index-dirs.txt"
@@ -285,18 +303,25 @@ jobs:
           # object CloudFront's directory-index rule rewrites that request
           # to — never '/<slug>/*', which would reach into the version
           # tree a port's own deploy owns at the same prefix.
+          #
+          # Every path is under the locale the publish step wrote to, except
+          # robots.txt, which is lifted to the origin root and so is named
+          # there. `/` itself is not listed: the edge function answers it, and
+          # the redirect is not an object this job owns.
+          locale=$(cat "$RUNNER_TEMP/shell-locale.txt")
           paths=()
           while IFS= read -r name; do
             [[ -n "$name" ]] || continue
-            paths+=("/$name")
+            paths+=("/$locale/$name")
+            [[ "$name" == "robots.txt" ]] && paths+=("/robots.txt")
           done < "$RUNNER_TEMP/shell-root-files.txt"
           while IFS= read -r name; do
             [[ -n "$name" ]] || continue
-            paths+=("/$name/*")
+            paths+=("/$locale/$name/*")
           done < "$RUNNER_TEMP/shell-dirs.txt"
           while IFS= read -r name; do
             [[ -n "$name" ]] || continue
-            paths+=("/$name/")
+            paths+=("/$locale/$name/")
           done < "$RUNNER_TEMP/shell-reserved-index-dirs.txt"
           aws cloudfront create-invalidation \
             --distribution-id "${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}" \

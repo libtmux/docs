@@ -112,6 +112,7 @@ jobs:
       - name: Validate path-prefix
         env:
           PREFIX_IN: ${{ inputs.path-prefix }}
+          PORT_IN: ${{ inputs.port }}
         run: |
           set -euo pipefail
           p="$PREFIX_IN"
@@ -126,6 +127,20 @@ jobs:
               exit 1
             fi
           done
+          # A port's objects live under the locale, like everything else the
+          # site serves. Applied here rather than asked of the caller: this
+          # workflow is invoked from each port's own repository, and moving
+          # the segment would otherwise mean a coordinated edit across eight
+          # of them. Validation runs on the caller's own prefix above, so a
+          # bare reserved name is still refused before the locale is added.
+          #
+          # Only a port publish is relocated. A pull-request preview owns its
+          # whole prefix and nests the site inside it, so it keeps the shape
+          # its own build was given.
+          locale="${LIBTMUX_DOCS_LOCALE:-en}"
+          if [[ -n "${PORT_IN:-}" ]]; then
+            p="$locale/$p"
+          fi
           echo "PREFIX=$p" >> "$GITHUB_ENV"
 
       - name: Resolve cache policy from version-kind

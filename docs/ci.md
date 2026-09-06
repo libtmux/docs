@@ -81,6 +81,14 @@ canonical URL, never edge rewrites of the tag's bytes. The second call adds
       environment: docs
 ```
 
+The prefix a caller passes is its own — `py/stable`, `py/v0.46.2` — and the
+workflow prepends the locale before writing, so those objects land at
+`en/py/stable` and `en/py/v0.46.2`. That is applied on this side rather than
+asked of the caller because the caller is each port's own repository, and
+moving a segment would otherwise be a coordinated edit across eight of them. A
+pull-request preview keeps its own shape: it owns its whole prefix and nests
+the site inside it.
+
 `path-prefix` is validated inside the reusable workflow: non-empty, no
 leading or trailing slash, no `..` segment, and never a bare reserved name
 (`py`, `ts`, `rs`, `go`, `java`, `dotnet`, `cxx`, `swift`, `manifest`,
