@@ -12,6 +12,7 @@ import {
   type ApiSymbol,
   type ExtractOptions,
   type PortSlug,
+  type SymbolKind,
 } from './model.ts'
 
 /**
@@ -28,6 +29,71 @@ import {
  * with partial classes. All of them are "resolve a name against the table
  * this pass builds", not "infer a type".
  */
+
+/** Kinds an extension block can attach members to. */
+const EXTENDABLE: ReadonlySet<SymbolKind> = new Set([
+  'class',
+  'interface',
+  'struct',
+  'enum',
+  'trait',
+  'exception',
+])
+
+/**
+ * Fold an extension block onto the type it extends.
+ *
+ * Rust writes `impl Window { … }` in a submodule of the one declaring
+ * `Window`, or in a sibling of it, and `use super::Window` at the top of the
+ * file is the compiler's proof that it is the same type. Extracted per file,
+ * each block became a top-level type of its own: `window::Window` showed 39
+ * members while two undocumented pages beside it held 22 more, and
+ * `server::Server` showed 46 while four held 50.
+ *
+ * It is also why `` [`Window`] `` did not link. Three symbols shared the name
+ * and none was nearer the referring page than the others, so the resolver
+ * declined to guess — correctly, given what it was shown.
+ *
+ * A block folds only onto a *unique* declaration of its name. Rust lets two
+ * modules declare different types called `Error`; where that happens the
+ * block stays where it is rather than attaching to the wrong one. Across
+ * libtmux-rs 16 blocks fold and none is ambiguous, and the 38 blocks on types
+ * the crate does not export are left alone for want of anything to fold onto.
+ *
+ * The ids are rewritten and `mergePartials` below does the folding, which is
+ * the same operation C# needed for `partial class`.
+ */
+export function mergeExtensions(symbols: ApiSymbol[], kind: SymbolKind | undefined): ApiSymbol[] {
+  if (!kind) return symbols
+  const declarations = new Map<string, Set<string>>()
+  for (const s of symbols) {
+    if (s.parent || s.kind === kind || !EXTENDABLE.has(s.kind)) continue
+    const ids = declarations.get(s.name) ?? new Set<string>()
+    ids.add(s.id)
+    declarations.set(s.name, ids)
+  }
+
+  const moves = new Map<string, string>()
+  for (const s of symbols) {
+    if (s.parent || s.kind !== kind) continue
+    const ids = declarations.get(s.name)
+    if (ids?.size === 1) moves.set(s.id, [...ids][0])
+  }
+  if (moves.size === 0) return symbols
+
+  const rehome = (id: string) => {
+    for (const [from, to] of moves) {
+      if (id === from) return to
+      if (id.startsWith(`${from}.`)) return to + id.slice(from.length)
+    }
+    return id
+  }
+  return symbols.map((s) => ({
+    ...s,
+    id: rehome(s.id),
+    parent: s.parent ? rehome(s.parent) : s.parent,
+  }))
+}
 
 /**
  * One symbol per id, merging declarations that the language considers one.
@@ -352,7 +418,7 @@ export async function extractProject(opts: {
   }
 
   // Before inheritance, so a base class is one type rather than several.
-  const merged = mergePartials(symbols)
+  const merged = mergePartials(mergeExtensions(symbols, spec?.extensionKind))
 
   const resolved = options.inheritedMembers
     ? resolveInheritance(merged, options.inheritanceStopList)

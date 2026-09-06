@@ -66,7 +66,7 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Pane.capture_pane',
       ts: 'pane.Pane.capture',
-      rs: 'pane.observe.Pane.capture',
+      rs: 'pane.Pane.capture',
       go: 'tmux.Pane.Capture',
       java: 'io.github.libtmux.Pane.Pane.capture',
       dotnet: 'LibTmux.Pane.CaptureAsync',
@@ -226,7 +226,7 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Server.clients',
       ts: 'server.Server.clients',
-      rs: 'server.discovery.Server.clients',
+      rs: 'server.Server.clients',
       go: 'tmux.Server.Clients',
       java: 'io.github.libtmux.Server.Server.clients',
       dotnet: 'LibTmux.Server.Clients',
@@ -254,7 +254,7 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Window.session',
       ts: 'window.Window.session',
-      rs: 'window.navigation.Window.session',
+      rs: 'window.Window.session',
       go: 'tmux.Window.Session',
       java: 'io.github.libtmux.Window.Window.session',
       dotnet: 'LibTmux.Window.Session',
@@ -308,7 +308,7 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Server.sessions',
       ts: 'server.Server.sessions',
-      rs: 'server.discovery.Server.sessions',
+      rs: 'server.Server.sessions',
       go: 'tmux.Server.Sessions',
       java: 'io.github.libtmux.Server.Server.sessions',
       dotnet: 'LibTmux.Server.Sessions',
@@ -456,7 +456,7 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Window.panes',
       ts: 'window.Window.panes',
-      rs: 'window.navigation.Window.panes',
+      rs: 'window.Window.panes',
       go: 'tmux.Window.Panes',
       java: 'io.github.libtmux.Window.Window.panes',
       dotnet: 'LibTmux.Window.Panes',
@@ -484,7 +484,7 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Server.windows',
       ts: 'server.Server.windows',
-      rs: 'server.discovery.Server.windows',
+      rs: 'server.Server.windows',
       go: 'tmux.Server.Windows',
       java: 'io.github.libtmux.Server.Server.windows',
       dotnet: 'LibTmux.Server.Windows',
@@ -497,7 +497,7 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Server.panes',
       ts: 'server.Server.panes',
-      rs: 'server.discovery.Server.panes',
+      rs: 'server.Server.panes',
       go: 'tmux.Server.Panes',
       java: 'io.github.libtmux.Server.Server.panes',
       dotnet: 'LibTmux.Server.Panes',
@@ -525,7 +525,7 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Window.active_pane',
       ts: 'window.Window.activePane',
-      rs: 'window.navigation.Window.active_pane',
+      rs: 'window.Window.active_pane',
       go: 'tmux.Window.ActivePane',
       java: 'io.github.libtmux.Window.Window.activePane',
       dotnet: 'LibTmux.Window.ActivePane',

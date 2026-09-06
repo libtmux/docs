@@ -265,8 +265,14 @@ export class SymbolIndex {
    *
    * A candidate must share at least one leading segment. Without that floor
    * this would pick an arbitrary winner for names that are ambiguous *and*
-   * unrelated — Rust's `Error` resolves to three types under `error.`, none of
-   * them near the `session.` page asking, and it stays plain, which is right.
+   * unrelated, and a bare `Error` on a `session.` page would land on whichever
+   * of them the model happened to list first.
+   *
+   * The floor is strict enough that a language whose types are siblings gets
+   * no link from it at all: `Window` written in `pane::Pane` shares nothing
+   * with `window::Window`. That is why Rust's `impl` blocks are folded onto
+   * the type they extend before this runs — with one candidate the question
+   * never reaches here.
    */
   private static nearest(candidates: ApiSymbol[], context?: ApiSymbol): ApiSymbol | undefined {
     if (!context || candidates.length === 0) return undefined

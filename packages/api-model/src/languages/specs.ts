@@ -64,6 +64,9 @@ export const TYPESCRIPT: LanguageSpec = {
 
 export const RUST: LanguageSpec = {
   grammar: 'rust',
+  // `class` is only ever `impl_item` here: Rust has no other construct that
+  // maps to it, so the kind is what identifies an extension block.
+  extensionKind: 'class',
   containers: {
     struct_item: 'struct',
     enum_item: 'enum',

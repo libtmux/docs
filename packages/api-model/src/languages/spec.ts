@@ -41,6 +41,15 @@ export interface LanguageSpec {
    * reference until it was read in the dialect it was written in.
    */
   docDialect?: 'xml' | 'javadoc'
+  /**
+   * The container kind this language reserves for extension blocks.
+   *
+   * Rust's `impl Window { … }` declares nothing; it attaches members to a
+   * type declared elsewhere, often in another file. The project pass folds
+   * such a block onto that type, so naming the kind here is what tells it
+   * which containers are blocks rather than declarations.
+   */
+  extensionKind?: SymbolKind
   /** Declarations that own members: classes, structs, traits, interfaces. */
   containers: Record<string, SymbolKind>
   /** Declarations that are members: methods, fields, properties. */
