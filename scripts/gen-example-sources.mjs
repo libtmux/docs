@@ -34,7 +34,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const plugin = join(root, 'site/src/plugins/remark-port-code.mjs')
-const { CHECKOUTS, LANG_TO_PORT, expand, parseMeta } = await import(`file://${plugin}`)
+const { LANG_TO_PORT, checkoutFor, parseMeta } = await import(`file://${plugin}`)
 
 const CONTENT = join(root, 'site/src/content/docs')
 const outArg = process.argv.indexOf('--out')
@@ -72,15 +72,15 @@ for (const md of markdownFiles(CONTENT)) {
 const cache = {}
 const missing = []
 for (const [key, { owner, file }] of [...wanted].sort((a, b) => a[0].localeCompare(b[0]))) {
-  const abs = join(expand(CHECKOUTS[owner] ?? ''), file)
+  const checkout = checkoutFor(owner)
+  const abs = join(checkout, file)
   if (!existsSync(abs)) {
-    missing.push(`${key} (looked in ${CHECKOUTS[owner] ?? '<no checkout configured>'})`)
+    missing.push(`${key} (looked in ${checkout})`)
     continue
   }
   cache[key] = readFileSync(abs, 'utf8')
 }
 
-const next = `${JSON.stringify(cache, null, 2)}\n`
 const current = existsSync(OUT) ? readFileSync(OUT, 'utf8') : ''
 
 /*

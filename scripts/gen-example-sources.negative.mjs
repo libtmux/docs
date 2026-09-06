@@ -12,17 +12,19 @@
  * would break a build rather than mislead a reader — `readFence` throws when
  * a source is in neither the checkout nor the cache.
  */
-import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, dirname } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { CHECKOUTS } from '../site/src/plugins/remark-port-code.mjs'
+import sources from '../site/src/data/example-sources.json' with { type: 'json' }
 
 const script = join(dirname(fileURLToPath(import.meta.url)), 'gen-example-sources.mjs')
 
 function run(args) {
   try {
-    return { code: 0, out: execFileSync('node', [script, ...args], { encoding: 'utf8', stdio: 'pipe' }) }
+    return { code: 0, out: execFileSync('node', [script, ...args], { encoding: 'utf8', stdio: 'pipe', env }) }
   } catch (err) {
     return { code: err.status, out: `${err.stdout ?? ''}${err.stderr ?? ''}` }
   }
@@ -30,6 +32,17 @@ function run(args) {
 
 const dir = mkdtempSync(join(tmpdir(), 'gen-example-sources-'))
 const fixture = join(dir, 'cache.json')
+const env = { ...process.env }
+for (const port of Object.keys(CHECKOUTS)) env[`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}`] = join(dir, port)
+const sample = Object.keys(sources).sort()[0]
+const sampleText = '// isolated example source\n'
+for (const [key, text] of Object.entries(sources)) {
+  const [port, file] = key.split(':')
+  const path = join(dir, port, file)
+  mkdirSync(dirname(path), { recursive: true })
+  writeFileSync(path, key === sample ? sampleText : text)
+}
+process.on('exit', () => rmSync(dir, { recursive: true, force: true }))
 
 let failures = 0
 const check = (name, ok, detail) => {
@@ -46,6 +59,7 @@ if (generated.code !== 0) {
   process.exit(1)
 }
 const pristine = readFileSync(fixture, 'utf8')
+if (JSON.parse(pristine)[sample] !== sampleText) throw new Error('Generator ignored the fixture checkout')
 
 {
   const res = run(['--check', '--out', fixture])
@@ -76,8 +90,6 @@ for (const [name, mutate] of mutations) {
   const res = run(['--check', '--out', fixture])
   check(name, res.code === 1 && /stale/.test(res.out), `exit ${res.code}: ${res.out.trim()}`)
 }
-
-rmSync(dir, { recursive: true, force: true })
 
 if (failures) {
   console.error(`\ngen-example-sources.negative: ${failures} case(s) did not behave as required.`)
