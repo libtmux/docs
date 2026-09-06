@@ -1,4 +1,5 @@
 ---
+import { ALL_TRANSLATED } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import SearchPanel from '../components/SearchPanel.astro'
 
@@ -18,7 +19,9 @@ import SearchPanel from '../components/SearchPanel.astro'
  */
 ---
 
-<BaseLayout title="Search" description="Search the libtmux documentation.">
+<BaseLayout title="Search" description="Search the libtmux documentation."
+  localeStatuses={ALL_TRANSLATED}
+>
   <main class="mx-auto max-w-7xl px-4 py-12">
     <h1 class="text-3xl font-semibold tracking-tight">Search</h1>
     <div class="mt-8">

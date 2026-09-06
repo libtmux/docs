@@ -1,4 +1,5 @@
 ---
+import { ALL_TRANSLATED } from '../i18n/resolve'
 import McpInstall from '../components/widgets/McpInstall.astro'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { PORTS } from '../lib/ports'
@@ -30,6 +31,8 @@ const mcpPorts = PORTS
   title="MCP server"
   description="Drive tmux from an AI agent. Install the libtmux MCP server in Claude Code, Claude Desktop, Cursor, VS Code, Codex, Zed, opencode or Windsurf."
   pagePath="mcp"
+
+  localeStatuses={ALL_TRANSLATED}
 >
   <main class="mx-auto max-w-4xl px-4 py-12">
     <h1 class="text-3xl font-semibold tracking-tight">MCP server</h1>

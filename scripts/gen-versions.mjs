@@ -55,19 +55,26 @@ function git(cwd, args) {
 
 const BRANCH_RE = /^v\d+\.x$/
 
-/** The two entries every port gets even with no checkout to inspect. */
+/**
+ * The entry every port gets when there is no checkout to inspect.
+ *
+ * Trunk alone. A seeded `stable` could only resolve to `latest`, which is an
+ * alias from the word for "the released version" to the unreleased one — the
+ * claim this generator exists to stop making. Absent is honest: it says we do
+ * not know of a release, rather than naming trunk as one.
+ *
+ * This is the normal path in CI, which has no port checkouts, so the seed is
+ * what most builds actually publish.
+ */
 function seedEntries() {
-  return [
-    { slug: 'latest', label: 'latest', kind: 'trunk', supported: true },
-    { slug: 'stable', label: 'stable', kind: 'alias', resolvesTo: 'latest', supported: true },
-  ]
+  return [{ slug: 'latest', label: 'latest', kind: 'trunk', supported: true }]
 }
 
 function deriveEntries(port) {
   const { checkout, tagGrammar } = port
   const dir = expandHome(checkout)
   if (!existsSync(dir)) {
-    return { entries: seedEntries(), defaultVersion: 'stable', note: `checkout not found at ${checkout}` }
+    return { entries: seedEntries(), defaultVersion: 'latest', note: `checkout not found at ${checkout}` }
   }
 
   let refs
@@ -76,7 +83,7 @@ function deriveEntries(port) {
   } catch {
     return {
       entries: seedEntries(),
-      defaultVersion: 'stable',
+      defaultVersion: 'latest',
       note: `git for-each-ref failed in ${checkout} (not a git repo?)`,
     }
   }
@@ -145,7 +152,7 @@ function main() {
 
   for (const port of PORTS) {
     const derived = opts.seed
-      ? { entries: seedEntries(), defaultVersion: 'stable' }
+      ? { entries: seedEntries(), defaultVersion: 'latest' }
       : deriveEntries(port)
     if (derived.note) process.stderr.write(`gen-versions: ${port.slug}: ${derived.note}\n`)
     manifest.ports[port.slug] = sortVersions(derived.entries, port.tagGrammar)

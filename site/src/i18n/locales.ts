@@ -8,6 +8,8 @@
  * `src/content/docs/<locale>/` produces no URLs at all, by design. See
  * `resolve.ts` for why untranslated pages are absent rather than falling back.
  */
+import { LOCALES_ROOT } from '../lib/site-root.ts'
+
 export const LOCALES = ['en', 'ja'] as const
 export type Locale = (typeof LOCALES)[number]
 
@@ -44,7 +46,12 @@ export const DEFAULT_LOCALE_PREFIXED = true
  * Locales are siblings of each other, not children of the current build, so
  * this cannot be derived from the site root the way an in-locale path can —
  * a Japanese alternate is `/ja/`, whatever prefix the English build carries.
+ *
+ * It is composed through `LOCALES_ROOT`, the prefix above every locale, which
+ * is empty in production and `/pr-42` in a preview. A bare `/ja/` would walk
+ * a preview's reader onto the live site.
  */
 export function localeRoot(locale: string): string {
-  return locale === DEFAULT_LOCALE && !DEFAULT_LOCALE_PREFIXED ? '/' : `/${locale}/`
+  const base = LOCALES_ROOT
+  return locale === DEFAULT_LOCALE && !DEFAULT_LOCALE_PREFIXED ? `${base}/` : `${base}/${locale}/`
 }

@@ -1,4 +1,5 @@
 ---
+import { ALL_TRANSLATED } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { PORTS } from '../lib/ports'
 import { withRoot } from '../lib/site-root'
@@ -34,7 +35,9 @@ const portDefaults: Record<string, string> = (() => {
 })()
 ---
 
-<BaseLayout title="Page not found" noindex={true}>
+<BaseLayout title="Page not found" noindex={true}
+  localeStatuses={ALL_TRANSLATED}
+>
   <main class="mx-auto max-w-2xl px-4 py-16">
     <h1 class="text-3xl font-semibold tracking-tight">Page not found</h1>
     <p class="mt-3">

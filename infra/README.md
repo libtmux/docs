@@ -87,19 +87,35 @@ distribution is out of scope for the three files above, which configure
 
 ## The bare-language-root redirect and its KeyValueStore
 
-`/py` and `/py/` 302 to that port's current default version (normally
-`/py/stable/`). The destination comes from one CloudFront KeyValueStore,
-associated with `cloudfront-function.js`, holding one key per port slug:
+`/en/py` and `/en/py/` 302 to that port's current default version (normally
+`/en/py/stable/`). The destination comes from one CloudFront KeyValueStore,
+associated with `cloudfront-function.js`, holding one key per port that
+publishes a version prefix:
 
 ```
 py:default     -> "stable"
 ts:default     -> "stable"
-rs:default     -> "stable"
-...
+dotnet:default -> "stable"
+cxx:default    -> "stable"
+swift:default  -> "stable"
 ```
 
+Those five and no others: they are the ports whose repositories call
+`reusable-deploy.yml`, which is what puts a `<slug>/<version>/` prefix in the
+bucket. rs, go and java publish none, so a key for them would 302 a reader to
+a prefix nobody builds — a 404 reached through a redirect, which is worse
+than the miss it replaced. On a miss the function falls through to the
+ordinary rules and serves the port landing page that is already there, which
+is the whole of what `/en/rs/` is meant to offer. The traced table below
+records that path.
+
+The key is the port slug, never the locale: the redirect is only reachable
+under a locale prefix (rule 1 is anchored on it) and every locale resolves a
+port to the same version, so a per-locale key would be the same value written
+`LOCALES` times and one more thing to keep in step.
+
 This mirrors `versions.ts`'s `VersionManifest.defaultVersion` — a
-`Record<portSlug, versionSlug>` — one for one; it exists in the KVS at all
+`Record<portSlug, versionSlug>` — for the ports it covers; it exists in the KVS at all
 only because a CloudFront Function cannot read `/versions.json` off the
 origin at request time. Whichever pipeline publishes a new default version
 writes the matching key with `cloudfront-keyvaluestore update-keys

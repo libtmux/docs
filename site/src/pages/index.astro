@@ -1,4 +1,5 @@
 ---
+import { ALL_TRANSLATED, buildLocale } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { PORTS, PORT_BY_SLUG, portPageUrl, referenceUrl } from '../lib/ports'
 import PortHero from '../components/PortHero.astro'
@@ -34,8 +35,8 @@ const explore = [
     body: 'Task-oriented walkthroughs — install tmux, pick a port, and run the round trip every real program starts from.',
   },
   {
-    // Composed here rather than at the point of render: four of these five
-    // are shared prose and live under this build's own root, while the
+    // Composed here rather than at the point of render: the rest of this
+    // list is shared prose and lives under this build's own root, while the
     // reference is built in the default locale only. One list, two roots.
     href: withPortRoot('/reference/'),
     label: 'API reference',
@@ -86,6 +87,14 @@ const versionSections = versionRootPort
  */
 const homeLocales = await localesFor('')
 
+/*
+ * `localeStatuses` is ALL_TRANSLATED here while `locales` stays homeLocales.
+ * They answer different questions: `locales` drives the hreflang cluster and
+ * must name only real translations, while the switcher is chrome and has to
+ * offer every locale this route is generated in — which is all of them, since
+ * it is a route rather than a collection entry.
+ */
+
 ---
 
 {
@@ -120,9 +129,10 @@ const homeLocales = await localesFor('')
 <BaseLayout
   title="libtmux"
   description="A typed tmux control library for Python, TypeScript, Rust, Go, Java, .NET, C++ and Swift — one API shape, one documentation site."
-  locale={DEFAULT_LOCALE}
+  locale={buildLocale()}
   locales={homeLocales}
   sourcePath="/"
+  localeStatuses={ALL_TRANSLATED}
 >
   <main class="mx-auto max-w-7xl px-4 py-12 sm:py-16">
     <!-- Hero -->

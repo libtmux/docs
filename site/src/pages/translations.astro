@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { LOCALES, LOCALE_LABEL, DEFAULT_LOCALE, localeRoot, type Locale } from '../i18n/locales'
-import { buildLocale, localeOf, localeStatusesFor, type LocaleStatus } from '../i18n/resolve'
+import { ALL_TRANSLATED, buildLocale, localeOf, localeStatusesFor, type LocaleStatus } from '../i18n/resolve'
 import { t } from '../i18n/ui'
 
 /**
@@ -55,15 +55,7 @@ const STATUS_KEY = {
  */
 const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').length
 
-/*
- * This page's own status, for the switcher in the header. Chrome rather than
- * content: it is generated per locale and complete in each, so every locale
- * is 'translated'. Without it the control that links here would be the one
- * control missing on the page it links to.
- */
-const pageStatuses = Object.fromEntries(
-  LOCALES.map((l) => [l, 'translated' as LocaleStatus]),
-)
+
 ---
 
 <BaseLayout
@@ -73,7 +65,7 @@ const pageStatuses = Object.fromEntries(
   sourcePath="translations"
   locale={locale}
   switcherPath=""
-  localeStatuses={pageStatuses}
+  localeStatuses={ALL_TRANSLATED}
 >
   <div class="mx-auto max-w-4xl px-4 py-10">
     <h1 class="text-3xl font-bold tracking-tight">{t(locale, 'i18n.coverage')}</h1>

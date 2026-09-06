@@ -62,8 +62,8 @@ function byOrderThenLabel<T extends OrderedLabel>(items: T[]): T[] {
  *
  * The locale comes off, and only the locale. A translated entry is stored as
  * `ja/concepts/queries` but served from a build whose base is already `/ja/`,
- * so keeping the prefix here composed `/ja/ja/concepts/` — 56 sidebar links
- * per Japanese page, all dead. Do not strip a `<port>/` prefix as well:
+ * so keeping the prefix here composed `/ja/ja/concepts/` — every sidebar
+ * link on a translated page, dead. Do not strip a `<port>/` prefix as well:
  * entries are not nested under one today, and if they ever are, `entry.id`
  * already includes it because that route's own param does too.
  */
@@ -161,10 +161,11 @@ export async function getSidebar(
   // carries the field. A page that *does* name a port stays exclusive to it.
   //
   // The source locale defines the page set, in every locale. Scoping the set
-  // itself to `locale` instead left the Japanese sidebar listing the 2 pages
-  // translated so far out of 28, and hid all 26 placeholder pages that exist
-  // precisely so every page answers in every language — a nav that shrinks as
-  // you switch language is worse than one that admits what is untranslated.
+  // itself to `locale` instead left a translated build's sidebar listing only
+  // the pages translated so far, and hid every placeholder page — the pages
+  // that exist precisely so every page answers in every language. A nav that
+  // shrinks as you switch language is worse than one that admits what is
+  // untranslated.
   const entries = await getCollection(
     'docs',
     (entry) =>

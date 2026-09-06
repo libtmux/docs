@@ -34,6 +34,26 @@ export function withRoot(path: string): string {
 }
 
 /**
+ * The prefix above every locale.
+ *
+ * Empty in production, where `/en/` and `/ja/` sit at the origin root. A
+ * pull-request preview nests the whole site — locales included — under
+ * `/pr-42/`, and a locale's URL is composed from the locale root rather than
+ * from this build's own root, so without this every cross-locale link, every
+ * hreflang alternate and every `x-default` in a preview pointed at
+ * production. That is the same class of leak `SITE_ROOT` exists to stop, one
+ * level further out.
+ *
+ * Separate from `SITE_ROOT` because they answer different questions:
+ * `SITE_ROOT` is where *this* build is mounted (`/pr-42/ja` for a preview's
+ * Japanese build), while this is where *any* locale begins (`/pr-42`).
+ */
+export const LOCALES_ROOT: string = (process.env.LIBTMUX_DOCS_LOCALES_ROOT || '').replace(
+  /\/+$/,
+  '',
+)
+
+/**
  * Whether this build mounts the whole site rather than one port's subtree.
  *
  * The port, deliberately not the base. `site/src/i18n/resolve.ts` makes the

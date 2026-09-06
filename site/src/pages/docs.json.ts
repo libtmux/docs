@@ -4,6 +4,7 @@ import { DEFAULT_LOCALE } from '../i18n/locales.ts'
 import { localeOf } from '../i18n/resolve.ts'
 import { API_MODELS, PORT_NAME, ownersOf } from '../lib/api-models.ts'
 import { hasReference, PORTS, referenceUrl } from '../lib/ports.ts'
+import { PORT_ROOT } from '../lib/site-root.ts'
 
 /**
  * `/docs.json` — the agent manifest.
@@ -29,6 +30,9 @@ import { hasReference, PORTS, referenceUrl } from '../lib/ports.ts'
 export const GET: APIRoute = async ({ site }) => {
   const origin = (site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
   const base = import.meta.env.BASE_URL
+  // Where the reference and its inventories actually live. PORT_ROOT has no
+  // trailing slash; every use below joins a path that has no leading one.
+  const refBase = `${PORT_ROOT}/`
 
   const entries = await getCollection(
     'docs',
@@ -56,8 +60,11 @@ export const GET: APIRoute = async ({ site }) => {
       title: `${PORT_NAME[port] ?? port} API reference`,
       description: `${model.symbols.length} symbols extracted from source, ${types.length} with their own page.`,
       section: 'API reference',
-      url: `${origin}${base}reference/${port}/`,
-      markdownUrl: `${origin}${base}reference/${port}/objects.inv`,
+      // refBase, not base: the reference is generated in the default locale
+      // only, so a Japanese manifest advertising /ja/reference/… names pages
+      // nothing builds. Nothing parses this file, so nothing reported it.
+      url: `${origin}${refBase}reference/${port}/`,
+      markdownUrl: `${origin}${refBase}reference/${port}/objects.inv`,
       headings: types.slice(0, 200).map((t) => ({
         id: t.publicId ?? t.id,
         level: 2,
@@ -79,7 +86,7 @@ export const GET: APIRoute = async ({ site }) => {
       // Not in gp-sphinx's schema. Additive rather than a rename, so a reader
       // of the original shape is unaffected, and it is the entry point that
       // matters most for an agent that already speaks Sphinx.
-      inventory: `${base}objects.inv`,
+      inventory: `${refBase}objects.inv`,
     },
     ports: PORTS.map((p) => ({
       slug: p.slug,
@@ -91,7 +98,7 @@ export const GET: APIRoute = async ({ site }) => {
         ? {
             symbols: API_MODELS[p.slug].symbols.length,
             extractor: API_MODELS[p.slug].extractor,
-            inventory: `${base}reference/${p.slug}/objects.inv`,
+            inventory: `${refBase}reference/${p.slug}/objects.inv`,
           }
         : null,
     })),

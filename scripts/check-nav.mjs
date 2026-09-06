@@ -40,7 +40,7 @@ const dirArg = process.argv.indexOf('--dir')
 const dir = dirArg === -1 ? join(root, 'site/src/data/api') : process.argv[dirArg + 1]
 /*
  * From ports.ts on a real run, like every other check in this directory. The
- * literal that stood here was the eighth hand-kept copy of the port list, and
+ * literal that stood here was one more hand-kept copy of the port list, and
  * the one place a ninth port would have been skipped in silence rather than
  * reported: a port absent from the list is a port whose nav is never checked.
  * A fixture run still derives its ports from the fixture, since that is the

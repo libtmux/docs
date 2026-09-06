@@ -91,7 +91,7 @@ list_locales() {
     process.stdout.write(LOCALES.join(" "))
   '
 }
-LIBTMUX_DOCS_ROOT="/$locale/"
+LIBTMUX_DOCS_ROOT="${LIBTMUX_DOCS_LOCALES_ROOT:-}/$locale/"
 export LIBTMUX_DOCS_ROOT
 
 # Only one Astro build may run in this working tree at a time.
@@ -383,8 +383,15 @@ export LIBTMUX_DOCS_PORT_DEFAULTS
 
 # Port trees are rendered in the default locale only, so every locale links
 # across to them rather than expecting a copy beneath itself.
-LIBTMUX_DOCS_PORT_ROOT="/$locale"
+LIBTMUX_DOCS_PORT_ROOT="${LIBTMUX_DOCS_LOCALES_ROOT:-}/$locale"
 export LIBTMUX_DOCS_PORT_ROOT
+
+# The prefix above every locale: empty for a production-shaped assembly, and
+# `/pr-42` for a preview, which nests the locales rather than sitting beside
+# them. Cross-locale links compose through it, so leaving it unset in a
+# preview is what sent a preview's reader to the live site.
+LIBTMUX_DOCS_LOCALES_ROOT="${LIBTMUX_DOCS_LOCALES_ROOT:-}"
+export LIBTMUX_DOCS_LOCALES_ROOT
 
 IFS=',' read -r -a versions <<<"$versions_arg"
 
@@ -448,6 +455,7 @@ build_shell() {
       LIBTMUX_DOCS_PORT_DEFAULTS="${LIBTMUX_DOCS_PORT_DEFAULTS:-}" \
       LIBTMUX_DOCS_LOCALE="${LIBTMUX_DOCS_LOCALE:-}" \
       LIBTMUX_DOCS_PORT_ROOT="${LIBTMUX_DOCS_PORT_ROOT:-}" \
+      LIBTMUX_DOCS_LOCALES_ROOT="${LIBTMUX_DOCS_LOCALES_ROOT:-}" \
       LIBTMUX_DOCS_VERSION="$version" \
       LIBTMUX_DOCS_VERSION_KIND="$kind" \
       LIBTMUX_DOCS_IS_DEFAULT="$is_default" \
@@ -954,8 +962,8 @@ log "building shell root (shared prose)"
 for shell_locale in $(list_locales); do
   log "building the shell for $shell_locale (base=/$shell_locale/)"
   LIBTMUX_DOCS_LOCALE="$shell_locale" \
-    LIBTMUX_DOCS_ROOT="/$shell_locale/" \
-    build_shell "/$shell_locale/" "latest" "trunk" "true" "stable" "$out_dir/$shell_locale"
+    LIBTMUX_DOCS_ROOT="${LIBTMUX_DOCS_LOCALES_ROOT:-}/$shell_locale/" \
+    build_shell "${LIBTMUX_DOCS_LOCALES_ROOT:-}/$shell_locale/" "latest" "trunk" "true" "stable" "$out_dir/$shell_locale"
 done
 
 # Every port's home page (site/src/pages/[port]/index.astro) is built here,
@@ -1091,8 +1099,21 @@ fi
 # ---------------------------------------------------------------------------
 
 if [ "$skip_pagefind" -eq 0 ]; then
-  log "indexing $site_out with Pagefind"
-  (cd "$site_dir" && pnpm exec pagefind --site "$site_out")
+  # One index per locale, not one for the default locale's tree. Every page
+  # carries a search chip, so a locale with no index of its own had a control
+  # that fetched a directory nothing wrote — and because that fetch happens in
+  # the browser, no link check or build step could see it fail. The port trees
+  # live under the default locale, so that pass still covers them.
+  #
+  # Separate indexes rather than one shared one: Pagefind stems by language,
+  # and a single index would stem Japanese pages with English rules. The
+  # placeholders carry data-pagefind-ignore, so a locale's index holds what is
+  # really written in it.
+  for index_locale in $(list_locales); do
+    [ -d "$out_dir/$index_locale" ] || continue
+    log "indexing $out_dir/$index_locale with Pagefind"
+    (cd "$site_dir" && pnpm exec pagefind --site "$out_dir/$index_locale")
+  done
 else
   log "skipping Pagefind (--skip-pagefind)"
 fi

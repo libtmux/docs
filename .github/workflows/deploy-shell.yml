@@ -28,8 +28,34 @@ concurrency:
   queue: max
 
 jobs:
-  build:
+  # The locale list comes from site/src/i18n/locales.ts, the same module the
+  # assembly and the switcher read, so adding a locale needs no edit here.
+  # A matrix over a hand-written list would be one more copy to forget.
+  locales:
     runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.read.outputs.list }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: read
+        run: |
+          set -euo pipefail
+          list=$(node --input-type=module -e "
+            const { LOCALES } = await import('./site/src/i18n/locales.ts')
+            process.stdout.write(JSON.stringify(LOCALES))
+          ")
+          echo "list=$list" >> "$GITHUB_OUTPUT"
+          echo "locales: $list"
+
+  build:
+    needs: locales
+    runs-on: ubuntu-latest
+    strategy:
+      # One build per locale. Astro's base changes the URLs a build emits, and
+      # a build carries exactly one, so a locale is a separate build rather
+      # than a separate output directory of the same one.
+      matrix:
+        locale: ${{ fromJSON(needs.locales.outputs.list) }}
     steps:
       - uses: actions/checkout@v7
 
@@ -56,8 +82,12 @@ jobs:
           # Locale is the outermost segment. Astro's base changes the URLs it
           # emits, not where it writes them, so dist/ stays flat and the
           # publish step below puts it under the matching prefix.
-          LIBTMUX_DOCS_BASE: /en/
-          LIBTMUX_DOCS_ROOT: /en/
+          LIBTMUX_DOCS_BASE: /${{ matrix.locale }}/
+          LIBTMUX_DOCS_ROOT: /${{ matrix.locale }}/
+          LIBTMUX_DOCS_LOCALE: ${{ matrix.locale }}
+          # The port trees and the reference are built in the default locale
+          # only, so every locale links across to them.
+          LIBTMUX_DOCS_PORT_ROOT: /en
           LIBTMUX_DOCS_SITE: https://libtmux.org
         run: pnpm build
 
@@ -68,13 +98,20 @@ jobs:
           LIBTMUX_DOCS_VERSION: pr-${{ github.event.pull_request.number }}
           LIBTMUX_DOCS_VERSION_KIND: pr
           LIBTMUX_DOCS_IS_DEFAULT: 'false'
-          LIBTMUX_DOCS_BASE: /pr-${{ github.event.pull_request.number }}/
+          LIBTMUX_DOCS_BASE: /pr-${{ github.event.pull_request.number }}/${{ matrix.locale }}/
+          LIBTMUX_DOCS_LOCALE: ${{ matrix.locale }}
+          # A preview nests every locale, not just this build, so the prefix
+          # above them all is the preview's own. Cross-locale links, hreflang
+          # alternates and x-default compose through it; without it each of
+          # them named the live site from inside a preview.
+          LIBTMUX_DOCS_LOCALES_ROOT: /pr-${{ github.event.pull_request.number }}
+          LIBTMUX_DOCS_PORT_ROOT: /pr-${{ github.event.pull_request.number }}/en
           # A preview nests the whole site, so "/" is not the site root here.
           # BASE cannot stand in for that: /py/stable/ and /pr-42/ have the
           # same shape, and only one of them moves the root. Everything that
           # emits a root-relative link — the rehype pass over Markdown, the
           # port and version switchers, ports.ts's URL builders — reads this.
-          LIBTMUX_DOCS_ROOT: /pr-${{ github.event.pull_request.number }}/
+          LIBTMUX_DOCS_ROOT: /pr-${{ github.event.pull_request.number }}/${{ matrix.locale }}/
           LIBTMUX_DOCS_SITE: https://libtmux.org
         run: pnpm build
 
@@ -93,11 +130,13 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: shell-dist
+          name: shell-dist-${{ matrix.locale }}
           path: site/dist
           retention-days: 1
 
+      # Identical in every matrix leg, so only one writes it.
       - uses: actions/upload-artifact@v7
+        if: matrix.locale == 'en'
         with:
           name: reserved-prefixes
           path: reserved-prefixes.txt
@@ -115,7 +154,10 @@ jobs:
   # goes public, add that handoff (notes/research/06/07) rather than
   # widening this `if`.
   publish-preview:
-    needs: build
+    needs: [locales, build]
+    strategy:
+      matrix:
+        locale: ${{ fromJSON(needs.locales.outputs.list) }}
     if: |
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository
@@ -124,8 +166,11 @@ jobs:
       id-token: write
     uses: ./.github/workflows/reusable-deploy.yml
     with:
-      path-prefix: pr-${{ github.event.pull_request.number }}
-      artifact: shell-dist
+      # The locale is part of the prefix here rather than added by
+      # reusable-deploy.yml, which only relocates a *port* publish: a preview
+      # owns its whole prefix and nests the site inside it, locales included.
+      path-prefix: pr-${{ github.event.pull_request.number }}/${{ matrix.locale }}
+      artifact: shell-dist-${{ matrix.locale }}
       version-kind: pr
       environment: docs-preview
     secrets:
@@ -157,9 +202,16 @@ jobs:
   # had, just scoped to the one object the shell actually owns at that
   # prefix instead of the whole prefix a port's own CI also writes to.
   publish-root:
-    needs: build
+    needs: [locales, build]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    strategy:
+      # Serially, not in parallel: every leg writes the bucket-root files
+      # (robots.txt) and creates an invalidation, and two legs racing there
+      # would have one of them win arbitrarily.
+      max-parallel: 1
+      matrix:
+        locale: ${{ fromJSON(needs.locales.outputs.list) }}
     environment: docs
     permissions:
       contents: read
@@ -167,7 +219,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
         with:
-          name: shell-dist
+          name: shell-dist-${{ matrix.locale }}
           path: dist
 
       - uses: actions/download-artifact@v8
@@ -187,7 +239,7 @@ jobs:
           # Everything the shell publishes lives under the locale, matching
           # LIBTMUX_DOCS_BASE above and what scripts/build-site.sh assembles
           # locally. The bucket root holds only what sits above every locale.
-          locale="${LIBTMUX_DOCS_LOCALE:-en}"
+          locale="${{ matrix.locale }}"
           # The port slugs come from ports.ts, emitted by the build job into
           # its own artifact — this job has no checkout, and a second hand-kept
           # copy here is what the list used to be. `manifest` is added locally

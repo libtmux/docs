@@ -159,6 +159,24 @@ export async function localeStatusesFor(sourceId: string): Promise<Record<string
  * Drives the placeholder routes: one per (locale, untranslated page) pair, so
  * every page answers in every locale.
  */
+/**
+ * Every locale, all translated — the locale status of a page that has no
+ * per-locale content to be missing.
+ *
+ * The chrome pages (the landing page, parity, search, MCP, this project's
+ * coverage page) are generated once per locale and are complete in each, so
+ * there is nothing for `localeStatusesFor` to compute about them; they still
+ * need the switcher, which renders from this map.
+ *
+ * Passed explicitly by each such page rather than defaulted in the layout.
+ * A layout default cannot tell them apart from the reference, which is built
+ * in the default locale only — defaulting there put a switcher on every
+ * reference page advertising a Japanese twin of it that is never built.
+ */
+export const ALL_TRANSLATED: Record<string, LocaleStatus> = Object.fromEntries(
+  LOCALES.map((l) => [l, 'translated' as LocaleStatus]),
+)
+
 export async function placeholderPairs(): Promise<{ locale: Locale; sourceId: string }[]> {
   const entries = await getCollection('docs')
   const sources = entries.filter((e) => localeOf(e.id) === DEFAULT_LOCALE).map((e) => e.id)
