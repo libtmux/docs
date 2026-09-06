@@ -33,10 +33,15 @@ on:
       version-kind:
         description: >
           A site/src/lib/versions.ts VersionKind: 'trunk' | 'tag' | 'branch'
-          | 'pr' | 'alias'. Drives Cache-Control and invalidation — the
-          caller states what it built, this workflow decides how it is
-          cached, so a caller can't hand an immutable tag a five-minute TTL
-          by copy-paste.
+          | 'pr' | 'alias'. Drives Cache-Control — the caller states what it
+          built, this workflow decides how it is cached, so a caller can't
+          hand an immutable tag a five-minute TTL by copy-paste.
+
+          This workflow issues no invalidation. A mutable prefix carries
+          `s-maxage=300`, so the edge picks a republish up within five
+          minutes by itself, and an immutable tag prefix never changes at
+          all. The one place invalidation still earns its path is the site's
+          entry points, which deploy-shell.yml refreshes.
         required: true
         type: string
       port:
@@ -151,15 +156,11 @@ jobs:
           case "$KIND" in
             tag)
               # Immutable tag prefixes never change their bytes once
-              # published, so a year-long TTL costs nothing and invalidating
-              # them would be pure waste (notes/research/06, "Invalidation:
-              # mutable pointers only").
+              # published, so a year-long TTL costs nothing.
               echo "CACHE_CONTROL=public, max-age=31536000, immutable" >> "$GITHUB_ENV"
-              echo "DO_INVALIDATE=false" >> "$GITHUB_ENV"
               ;;
             trunk|branch|pr|alias)
               echo "CACHE_CONTROL=public, max-age=0, s-maxage=300" >> "$GITHUB_ENV"
-              echo "DO_INVALIDATE=true" >> "$GITHUB_ENV"
               ;;
             *)
               echo "::error::unknown version-kind '$KIND'" >&2
@@ -265,14 +266,3 @@ jobs:
           done
           echo "::error::manifest/${PORT}.json still conflicting after 3 attempts" >&2
           exit 1
-
-      - name: Invalidate this prefix only
-        if: env.DO_INVALIDATE == 'true'
-        run: |
-          set -euo pipefail
-          # Never a whole language root: $PREFIX is already this one
-          # version's own key (e.g. 'py/stable', not 'py'), enforced by the
-          # validation step above.
-          aws cloudfront create-invalidation \
-            --distribution-id "${{ secrets.distribution }}" \
-            --paths "/$PREFIX/*"

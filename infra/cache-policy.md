@@ -17,13 +17,15 @@ fixed-TTL policy that ignores the header outright.
 
 | Path class | Example | `VersionKind` | Cache-Control | Sync cadence | Invalidated? |
 | --- | --- | --- | --- | --- | --- |
-| Immutable tag | `/py/v0.46.2/` | `tag` | `public, max-age=31536000, immutable` | once, at release, never rewritten | never |
-| Rebuilt version prefix | `/py/v0.x/` | `branch` | `public, max-age=0, s-maxage=300` | every push to that branch | yes, `/py/v0.x/*` |
-| Mutable alias | `/py/stable/`, `/py/latest/` | `alias`, `trunk` | `public, max-age=0, s-maxage=300` | every release / every push to trunk | yes, `/<port>/<alias>/*` |
-| PR preview | `/py/pr-123/` | `pr` | `public, max-age=0, s-maxage=300` | every push to the PR | yes, `/py/pr-123/*` (own preview bucket/distribution — see README) |
-| Version manifest | `/versions.json` | — | `public, max-age=0, s-maxage=60` (or `no-cache`) | every publish, any port | yes, `/versions.json` |
-| Shell + locale roots | `/`, `/ja/`, `/concepts/…` | — | `public, max-age=0, s-maxage=300` | every shell push | yes, shell's own paths |
-| Error page | `/404.html` | — | `public, max-age=0, s-maxage=300` | every shell push | yes, `/404.html` |
+| Immutable tag | `/en/py/v0.46.2/` | `tag` | `public, max-age=31536000, immutable` | once, at release, never rewritten | never — the bytes never change |
+| Rebuilt version prefix | `/en/py/v0.x/` | `branch` | `public, max-age=0, s-maxage=300` | every push to that branch | no — expires in 5 min |
+| Mutable alias | `/en/py/stable/`, `/en/py/latest/` | `alias`, `trunk` | `public, max-age=0, s-maxage=300` | every release / every push to trunk | no — expires in 5 min |
+| PR preview | `/pr-123/en/` | `pr` | `public, max-age=0, s-maxage=300` | every push to the PR | no — expires in 5 min, and is deleted when the PR closes |
+| Version manifest | `/en/versions.json` | — | `public, max-age=0, s-maxage=60` (or `no-cache`) | every publish, any port | no — its own TTL is already a minute |
+| Locale landing page | `/en/`, `/ja/` | — | `public, max-age=0, s-maxage=300` | every shell push | **yes** — the one path still spent |
+| Origin root | `/` | — | `public, max-age=0, s-maxage=300` | never written; the edge function answers it | cannot be — generated per request, never stored |
+| Shell prose | `/en/concepts/…` | — | `public, max-age=0, s-maxage=300` | every shell push | no — expires in 5 min |
+| Error page | `/en/404.html` | — | `public, max-age=0, s-maxage=300` | every shell push | no — expires in 5 min |
 | Content-hashed assets (optional 3rd pass) | `/py/stable/_astro/*.css` | — | `public, max-age=31536000, immutable` | every push that changes the hash | never (name changes instead) |
 
 Only a `tag` prefix is immutable. A `branch` version (`v0.x`) *looks* like a
@@ -97,29 +99,68 @@ $ aws s3 cp s3://libtmux-docs/py/stable/ \
     --cache-control "public, max-age=0, s-maxage=300"
 ```
 
-## Invalidation: mutable pointers only
+## Invalidation: almost never
 
-Invalidate the exact prefixes marked "yes" above — never a whole language
-root such as `/py/*`, which would also invalidate every immutable tag
-underneath it for zero benefit (their bytes never change, so there is nothing
-stale to clear):
+The deploy workflows issue one invalidation path per publish — each locale's
+landing page, `/en/` or `/ja/` — and nothing else:
 
 ```console
 $ aws cloudfront create-invalidation \
     --distribution-id "$LIBTMUX_DOCS_DISTRIBUTION" \
-    --paths "/py/stable/*"
+    --paths "/en/"
 ```
 
-Invalidation quota is 1,000 free paths per **account** per month, not per
-distribution, and a wildcard like `/py/stable/*` counts as a single path
-regardless of how many objects match it — every invalidation this policy
-issues is one wildcard, so the quota is not a practical constraint at any
-realistic release cadence.
+Everything else is left to expire. Every mutable object is written with
+`s-maxage=300`, so the edge refreshes it within five minutes unprompted, and
+an immutable tag prefix never changes at all — invalidating either clears a
+cache entry that was already going to be correct. The landing page is the
+exception only because it is what a person reloads to see whether a deploy
+landed.
 
-Cloudflare, sitting in front of CloudFront (README), never sees a CloudFront
-invalidation — it has its own edge cache. With Cache Rules set to respect
-origin headers, `s-maxage=300` bounds Cloudflare's own staleness window to five
-minutes after a deploy; that is the trade to accept if the goal is dropping
-the existing purge-everything step. If five minutes of possible staleness is
-unacceptable, keep a purge-on-deploy step as a zero-staleness fallback layered
-on top of, not instead of, the Cache-Control split above.
+`/` is deliberately not invalidated, and cannot usefully be. The edge
+function answers the origin root itself, so CloudFront never stores it:
+
+```console
+$ curl -sI https://libtmux.org/ | grep -i x-cache
+x-cache: FunctionGeneratedResponse from cloudfront
+```
+
+A generated response has no cache entry to clear. `/en/` by contrast answers
+`x-cache: Hit from cloudfront` with an `age`, which is what makes a path
+spent there worth something.
+
+### What a path costs
+
+The quota is 1,000 free paths per **account** per month — across every
+distribution in it, not per distribution, so this site shares the allowance
+with every other site in `~/work/tf-config`. Above that, AWS charges per
+path.
+
+A wildcard counts as a single path regardless of how many objects it matches:
+`/*` against a bucket of 100,000 objects is one path, not 100,000. The charge
+is per path *submitted*, so bundling many paths into one `create-invalidation`
+call saves nothing — the old shell publish sent about thirty paths per locale
+in a single request and was billed for all of them.
+
+That makes the direct cost of invalidation small at any realistic cadence.
+It is not why this policy invalidates so little: the reason is that a path
+buys five minutes against `s-maxage=300`, and mostly on pages nobody has
+requested yet.
+
+See <https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PayingForInvalidation.html>.
+
+### Cloudflare in front
+
+Cloudflare never sees a CloudFront invalidation — it has its own edge cache,
+so a purge there is a separate action. Measured on the live site, it is not
+currently caching HTML at all:
+
+```console
+$ curl -sI https://libtmux.org/en/ | grep -i cf-cache-status
+cf-cache-status: DYNAMIC
+```
+
+So Cloudflare adds no staleness window today. If that changes — a Cache Rule
+that starts respecting `s-maxage` — the bound becomes five minutes after a
+deploy, and a purge step would be the way to shorten it.
+

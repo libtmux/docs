@@ -51,11 +51,8 @@ jobs:
           fi
           aws s3 rm "s3://$BUCKET/pr-$PR/" --recursive
 
-      - name: Invalidate the deleted prefix
-        env:
-          PR: ${{ github.event.pull_request.number }}
-        run: |
-          set -euo pipefail
-          aws cloudfront create-invalidation \
-            --distribution-id "${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}" \
-            --paths "/pr-$PR/*"
+      # No invalidation. The preview's objects are gone, and the prefix was
+      # written with `s-maxage=300`, so the edge stops serving what is left of
+      # it within five minutes. Paying a path to shave that off a URL whose
+      # pull request is already closed is the clearest case of an invalidation
+      # buying nothing.

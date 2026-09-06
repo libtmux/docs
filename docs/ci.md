@@ -46,21 +46,31 @@ sync into this bucket at all:
 **Contradictions** below — some research notes in `../notes/research/` say
 otherwise and are wrong).
 
-## Version, prefix, cache policy and invalidation
+## Version, prefix and cache policy
 
 `reusable-deploy.yml`'s `version-kind` input is a
-`site/src/lib/versions.ts` `VersionKind`. It alone decides caching and
-invalidation — a caller states what it built, this workflow decides how it
-is served, so a caller cannot hand an immutable tag a five-minute TTL by
-copy-paste:
+`site/src/lib/versions.ts` `VersionKind`. It alone decides caching — a
+caller states what it built, this workflow decides how it is served, so a
+caller cannot hand an immutable tag a five-minute TTL by copy-paste:
 
-| `version-kind` | Example `path-prefix` | Cache-Control | Invalidated? |
-|---|---|---|---|
-| `tag` | `py/v0.46.2` | `public, max-age=31536000, immutable` | never — bytes never change |
-| `trunk` | `py/latest` | `public, max-age=0, s-maxage=300` | yes, `/py/latest/*` |
-| `branch` | `py/v0.x` | `public, max-age=0, s-maxage=300` | yes, `/py/v0.x/*` |
-| `alias` | `py/stable` | `public, max-age=0, s-maxage=300` | yes, `/py/stable/*` |
-| `pr` | `pr-42` | `public, max-age=0, s-maxage=300` | yes, `/pr-42/*` |
+| `version-kind` | Example `path-prefix` | Cache-Control |
+|---|---|---|
+| `tag` | `py/v0.46.2` | `public, max-age=31536000, immutable` |
+| `trunk` | `py/latest` | `public, max-age=0, s-maxage=300` |
+| `branch` | `py/v0.x` | `public, max-age=0, s-maxage=300` |
+| `alias` | `py/stable` | `public, max-age=0, s-maxage=300` |
+| `pr` | `pr-42` | `public, max-age=0, s-maxage=300` |
+
+No column for invalidation, because this workflow issues none. Every mutable
+prefix above carries `s-maxage=300`, so the edge picks up a republish within
+five minutes by itself, and an immutable tag prefix never changes at all —
+an invalidation there would clear a cache entry that was already correct.
+The one path still invalidated is each locale's landing page, by
+`deploy-shell.yml`, because it is what a person reloads immediately after a
+deploy. The origin root `/` is not among them: the edge function answers it
+per request, so CloudFront never caches it — it returns
+`x-cache: FunctionGeneratedResponse` every time — and invalidating a URL that
+is generated rather than stored clears nothing.
 
 A tag push on a port repo normally calls `reusable-deploy.yml` twice — once
 with `version-kind: tag` at the immutable prefix, once more with

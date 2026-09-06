@@ -320,15 +320,10 @@ jobs:
           # Root-level files (index.html, 404.html, robots.txt,
           # sitemap-*.xml, versions.json, favicon.svg, ...) copied without
           # --delete: a plain `cp` pass can never remove a sibling prefix,
-          # so this half needs no denylist. Process substitution, not a
-          # pipe, so $root_files survives into this shell for the
-          # invalidation step below instead of dying with a `| while` subshell.
-          root_files=()
+          # so this half needs no denylist.
           while IFS= read -r -d '' f; do
-            name=$(basename "$f")
-            aws s3 cp "$f" "s3://$BUCKET/$locale/$name" \
+            aws s3 cp "$f" "s3://$BUCKET/$locale/$(basename "$f")" \
               --cache-control "public, max-age=0, s-maxage=300"
-            root_files+=("$name")
           done < <(find dist -maxdepth 1 -type f -print0)
 
           # A crawler reads robots.txt only at the origin root, whatever prefix
@@ -340,41 +335,37 @@ jobs:
               --cache-control "public, max-age=0, s-maxage=300"
           fi
 
+          # Only the locale crosses into the next step now. The three lists
+          # that used to be written here fed the per-path invalidation and
+          # have no other reader.
           printf '%s\n' "$locale" > "$RUNNER_TEMP/shell-locale.txt"
-          printf '%s\n' "${dirs[@]}" > "$RUNNER_TEMP/shell-dirs.txt"
-          printf '%s\n' "${root_files[@]}" > "$RUNNER_TEMP/shell-root-files.txt"
-          printf '%s\n' "${reserved_index_dirs[@]}" > "$RUNNER_TEMP/shell-reserved-index-dirs.txt"
 
-      - name: Invalidate shell-owned paths only
+      # Only the two entry points, and only because they are the pages a
+      # person checks first after a deploy. Everything else is written with
+      # `s-maxage=300`, so the edge refreshes it within five minutes on its
+      # own — an invalidation there buys five minutes and nothing else.
+      #
+      # This used to enumerate every root file, every top-level directory and
+      # every port landing page: around thirty paths per locale, per deploy,
+      # against a 1,000-path monthly free tier. A wildcard counts as one path
+      # however many objects it matches, so the bill was cents rather than the
+      # hundreds a per-object model would suggest — but the paths bought
+      # almost nothing, which is the actual reason they are gone.
+      - name: Invalidate the entry points
         run: |
           set -euo pipefail
-          # Never a whole language root, and never a bare '/*' either —
-          # that would also invalidate every port's cached responses even
-          # though the shell doesn't own that data. A reserved prefix's
-          # landing page is invalidated as exactly '/<slug>/' — the precise
-          # object CloudFront's directory-index rule rewrites that request
-          # to — never '/<slug>/*', which would reach into the version
-          # tree a port's own deploy owns at the same prefix.
-          #
-          # Every path is under the locale the publish step wrote to, except
-          # robots.txt, which is lifted to the origin root and so is named
-          # there. `/` itself is not listed: the edge function answers it, and
-          # the redirect is not an object this job owns.
           locale=$(cat "$RUNNER_TEMP/shell-locale.txt")
-          paths=()
-          while IFS= read -r name; do
-            [[ -n "$name" ]] || continue
-            paths+=("/$locale/$name")
-            [[ "$name" == "robots.txt" ]] && paths+=("/robots.txt")
-          done < "$RUNNER_TEMP/shell-root-files.txt"
-          while IFS= read -r name; do
-            [[ -n "$name" ]] || continue
-            paths+=("/$locale/$name/*")
-          done < "$RUNNER_TEMP/shell-dirs.txt"
-          while IFS= read -r name; do
-            [[ -n "$name" ]] || continue
-            paths+=("/$locale/$name/")
-          done < "$RUNNER_TEMP/shell-reserved-index-dirs.txt"
+          # This locale's landing page, and nothing else. The locale comes from
+          # this matrix leg, so the Japanese publish refreshes /ja/ rather than
+          # a tree it did not write.
+          #
+          # `/` is deliberately absent. The edge function answers it directly,
+          # so CloudFront never caches it — a request returns
+          # `x-cache: FunctionGeneratedResponse from cloudfront` every time,
+          # and Cloudflare reports it `DYNAMIC`. Invalidating a URL that is
+          # generated per request spends a path to clear an entry that does not
+          # exist. `/<locale>/` by contrast is a real object: it answers
+          # `Hit from cloudfront` with an age.
           aws cloudfront create-invalidation \
             --distribution-id "${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}" \
-            --paths "${paths[@]}"
+            --paths "/$locale/"
