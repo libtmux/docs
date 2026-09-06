@@ -20,11 +20,14 @@ trap 'rm -rf "$tmp"' EXIT
 # unversioned path with no fallback, so once its prose moved under a version
 # every case here died on a missing file rather than testing anything.
 locale="${LIBTMUX_DOCS_LOCALE:-en}"
+# The site root within the tree. `_site` is the bucket root and also holds
+# robots.txt, which sits above every locale; the check reads the site.
+site_out="_site/$locale"
+[ -d "$site_out" ] || site_out=_site
 
 page_for() {
   local port="$1" root candidate
-  # The locale tree first, then the bare form, mirroring check-sidebar-refs.mjs.
-  for root in "_site/$locale/$port" "_site/$port"; do
+  for root in "$site_out/$port"; do
     candidate="$root/concepts/index.html"
     if [ -f "$candidate" ]; then printf '%s' "$candidate"; return 0; fi
     for dir in "$root"/*/; do
@@ -48,7 +51,7 @@ if n == 0:
 open(path, 'w', encoding='utf8').write(out)
 PY
   local out code
-  out=$(node scripts/check-sidebar-refs.mjs 2>&1); code=$?
+  out=$(node scripts/check-sidebar-refs.mjs "$site_out" 2>&1); code=$?
   cp "$tmp/page.bak" "$page"
   if [ "$code" -eq 0 ]; then
     printf '  FAIL  %-32s check still passed\n' "$name"; return 1
@@ -71,7 +74,7 @@ drop 'our reference removed'   "$rs" '/reference/rs/' 'rs: sidebar does not link
 drop 'ecosystem link removed'  "$rs" 'docs.rs'        'rs: sidebar does not link docs.rs' || fails=1
 drop 'upstream reference gone' "$py" '/api/'          'py: sidebar does not link the upstream gp-sphinx reference' || fails=1
 
-if node scripts/check-sidebar-refs.mjs >/dev/null 2>&1; then
+if node scripts/check-sidebar-refs.mjs "$site_out" >/dev/null 2>&1; then
   printf '  ok    %-32s exit 0\n' 'restored'
 else
   printf '  FAIL  %-32s did not recover\n' 'restored'; fails=1
