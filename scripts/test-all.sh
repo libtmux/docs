@@ -200,6 +200,16 @@ node scripts/check-canonicals.mjs "$site_out"
 step 'reference canonicals (negative)'
 node scripts/check-canonicals.negative.mjs
 
+# The function CloudFront actually runs is the copy in the infrastructure
+# repository, because Terraform cannot read across repositories. The edit that
+# would go unnoticed is exactly the one the check above guards — an extension
+# allowlist changed here, correct here, and not deployed.
+step 'edge function copy'
+node scripts/check-edge-function-copy.mjs
+
+step 'edge function copy (negative)'
+node scripts/check-edge-function-copy.negative.mjs
+
 step 'edge extensions'
 node scripts/check-edge-extensions.mjs "$out"
 

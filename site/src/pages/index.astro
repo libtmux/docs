@@ -10,6 +10,7 @@ import PackageInstall from '../components/widgets/PackageInstall.astro'
 import { QUICKSTARTS } from '../lib/quickstarts'
 import { withPortRoot, withRoot } from '../lib/site-root'
 import { localesFor } from '../i18n/resolve'
+import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE } from '../i18n/locales'
 
 /**
@@ -88,6 +89,34 @@ const versionSections = versionRootPort
 const homeLocales = await localesFor('')
 
 /*
+ * The landing page a locale has written for itself.
+ *
+ * This page is a route rather than a collection entry, because English has no
+ * `index.md` — the hero below is the English landing page. A locale that does
+ * write one (`ja/index.md`) has it shadowed by this route, since a static
+ * route wins over `[...slug]`'s empty param, so `/ja/` answered with the
+ * English body: the exact duplicate a placeholder exists to avoid, and the
+ * only route page in that locale's sitemap.
+ *
+ * Rendered here rather than left to `[...slug]`, because the shadowing cannot
+ * be turned off from a static route.
+ */
+const locale = buildLocale()
+const landingEntry =
+  locale === DEFAULT_LOCALE
+    ? undefined
+    : (await getCollection('docs')).find((e) => e.id === locale)
+const LandingContent = landingEntry ? (await render(landingEntry)).Content : undefined
+
+/*
+ * A locale with no landing page of its own falls back to the English body, so
+ * it is marked noindex for the same reason a placeholder is: one English text
+ * indexed at two URLs is worse for both. `<html lang>` says `en` there too —
+ * it describes the body, not the prefix it is served under.
+ */
+const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
+
+/*
  * `localeStatuses` is ALL_TRANSLATED here while `locales` stays homeLocales.
  * They answer different questions: `locales` drives the hreflang cluster and
  * must name only real translations, while the switcher is chrome and has to
@@ -127,13 +156,19 @@ const homeLocales = await localesFor('')
   ) : (
 
 <BaseLayout
-  title="libtmux"
-  description="A typed tmux control library for Python, TypeScript, Rust, Go, Java, .NET, C++ and Swift — one API shape, one documentation site."
-  locale={buildLocale()}
+  title={landingEntry?.data.title ?? 'libtmux'}
+  description={landingEntry?.data.description ?? 'A typed tmux control library for Python, TypeScript, Rust, Go, Java, .NET, C++ and Swift — one API shape, one documentation site.'}
+  locale={LandingContent ? locale : DEFAULT_LOCALE}
   locales={homeLocales}
   sourcePath="/"
   localeStatuses={ALL_TRANSLATED}
+  noindex={noindexLanding}
 >
+  {LandingContent ? (
+    <main class="mx-auto max-w-3xl px-4 py-12 sm:py-16">
+      <LandingContent />
+    </main>
+  ) : (
   <main class="mx-auto max-w-7xl px-4 py-12 sm:py-16">
     <!-- Hero -->
     <section class="max-w-3xl">
@@ -234,6 +269,7 @@ const homeLocales = await localesFor('')
       </div>
     </section>
   </main>
+  )}
 </BaseLayout>
   )
 }

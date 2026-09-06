@@ -2,6 +2,7 @@
 import { getCollection, render, type CollectionEntry } from 'astro:content'
 import DocsLayout from '../layouts/DocsLayout.astro'
 import { DEFAULT_LOCALE, LOCALE_LABEL, localeRoot, type Locale } from '../i18n/locales'
+import { contributeLink } from '../i18n/contribute'
 import { t } from '../i18n/ui'
 import { withRoot } from '../lib/site-root'
 import {
@@ -114,6 +115,22 @@ const englishHref = `${localeRoot(DEFAULT_LOCALE)}${sourceId}/`
  */
 const showToc = placeholderLocale ? false : entry.data.tableOfContents
 
+/*
+ * Where this page's reader becomes its translator.
+ *
+ * `entry` is the English source on a placeholder and the translation itself
+ * on a translated page, and `translationPath` is idempotent for exactly that
+ * reason. `exists` is the same fact the route already used to decide whether
+ * to render a placeholder at all, rather than a second lookup that could
+ * disagree with the first.
+ */
+const contribute = entry.filePath
+  ? contributeLink(entry.filePath, locale, !placeholderLocale, {
+      title: entry.data.title,
+      description: entry.data.description,
+    })
+  : undefined
+
 // In a language build the shared prose IS that language's page: the remark
 // plugin has already dropped every other port's code fences, so it is
 // distinct content deserving its own canonical, not a duplicate of the root.
@@ -161,8 +178,15 @@ const port = entry.data.port ?? buildPort
           </a>
         </p>
         <p class="mt-4 text-sm">
+          {contribute && (
+            <a class="underline" href={contribute.href} rel="noopener" target="_blank">
+              {t(placeholderLocale, 'i18n.startTranslation')}
+            </a>
+          )}
+        </p>
+        <p class="mt-1 text-sm">
           <a class="underline" href={withRoot('/translations/')}>
-            {t(placeholderLocale, 'i18n.contribute')}
+            {t(placeholderLocale, 'i18n.coverageLink')}
           </a>
         </p>
       </div>
@@ -184,7 +208,23 @@ const port = entry.data.port ?? buildPort
             </a>
           </p>
         )}
+        {contribute && (
+          <p class="mt-1">
+            <a class="underline" href={contribute.href} rel="noopener" target="_blank">
+              {t(locale, 'i18n.improveTranslation')}
+            </a>
+          </p>
+        )}
       </div>
+    )
+  }
+  {
+    !placeholderLocale && locale === DEFAULT_LOCALE && contribute && (
+      <p class="mb-2 text-sm opacity-80">
+        <a class="underline" href={contribute.href} rel="noopener" target="_blank">
+          {t(locale, 'i18n.editPage')}
+        </a>
+      </p>
     )
   }
   {

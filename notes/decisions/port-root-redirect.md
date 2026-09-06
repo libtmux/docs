@@ -46,9 +46,11 @@ permanently, by design:
 
 Only **py, ts, cxx** have both a published local version tree and a
 CloudFront-level bare-root redirect (`infra/cloudfront-function.js` rule 1:
-`/py` or `/py/` with no further path segment does a KVS lookup on
-`<slug>:default` and 302s to `/py/stable/` before the request ever reaches
-the origin). For those three, `dist/py/index.html` is legitimately
+`/en/py` or `/en/py/` with no further path segment does a KVS lookup on
+`<slug>:default` and 302s to `/en/py/stable/` before the request ever reaches
+the origin). Rule 1 is anchored on the locale segment, so the unprefixed
+`/py` is claimed by nothing and 404s — the short form stays unowned, which is
+what keeps a port slug from colliding with a locale code. For those three, `dist/py/index.html` is legitimately
 unreachable in production — but that's a property of the *reader's* path
 through CloudFront, not a reason to stop the shell from building or
 publishing it:
@@ -87,9 +89,9 @@ is rejected with "qualify it, e.g. '$r/stable'"), so a port's own `sync
 shell's `<slug>/index.html` and a port's `<slug>/stable/` tree are disjoint
 keys; putting one can never race or clobber the other.
 
-### A correction this decision surfaces
+### A correction this decision surfaced, now made
 
-`cloudfront-function.js`'s own self-check table has a stale row:
+The traced request table used to carry a stale row:
 
 ```
 | `/rs`  | 1 (KVS)  | 302 -> `/rs/stable/` — ecosystem ports still carry
@@ -97,16 +99,23 @@ keys; putting one can never race or clobber the other.
                        external (ports.ts referenceUrl) |
 ```
 
-That's the *pre-fix* behavior `notes/status.md` describes and reverses.
-Under current `ports.ts`, `rs`/`go`/`java` must never get a `<slug>:default`
-KVS entry — there's no version prefix to point it at — so `/rs` and `/rs/`
-fall through to the ordinary rules exactly like the table's own `/ja` row
-(KVS misses, rule 2/3 handles it). This decision depends on that reading
-(sections above list rs/go/java among the ports the landing page serves
-permanently); the stale row itself is `cloudfront-function.js`'s to fix, not
-this assignment's file, but it should not survive uncorrected — it documents
-behavior that would 404 every ecosystem port's landing page if implemented
-as written.
+That was the *pre-fix* behaviour `notes/status.md` describes and reverses,
+and it documented something that would 404 every ecosystem port's landing
+page if implemented as written: nothing publishes an `rs/<version>/` prefix,
+so there is no redirect target to point at.
+
+`rs`, `go` and `java` must never get a `<slug>:default` KVS entry. `/en/rs`
+and `/en/rs/` fall through to the ordinary rules exactly like the table's own
+`/ja` row — the lookup misses, and rule 2 or 3 serves the landing page that
+is already there, which is the whole of what that prefix is meant to offer.
+
+The row is corrected in `infra/README.md`, which now holds the traced table
+(it moved out of `cloudfront-function.js` to keep that file under
+CloudFront's 10 KB source quota). The KeyValueStore in
+`~/work/tf-config` — `terraform/sites/libtmux.org/main.tf` — is provisioned
+with no rows at all, and only the five ports whose own repositories publish a
+version prefix ever get one written by CI, so the absence is enforced by what
+exists rather than by this note.
 
 ## Implementation
 

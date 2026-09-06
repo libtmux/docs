@@ -4,6 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import { LOCALES, LOCALE_LABEL, DEFAULT_LOCALE, localeRoot, type Locale } from '../i18n/locales'
 import { ALL_TRANSLATED, buildLocale, localeOf, localeStatusesFor, type LocaleStatus } from '../i18n/resolve'
 import { t } from '../i18n/ui'
+import { contributeLink } from '../i18n/contribute'
 
 /**
  * Translation coverage: every shared prose page, and each locale's status for
@@ -31,7 +32,12 @@ const locale = buildLocale()
 const entries = await getCollection('docs')
 const sources = entries
   .filter((e) => localeOf(e.id) === DEFAULT_LOCALE)
-  .map((e) => ({ sourceId: e.id, title: e.data.title }))
+  .map((e) => ({
+    sourceId: e.id,
+    title: e.data.title,
+    description: e.data.description,
+    filePath: e.filePath,
+  }))
   .sort((a, b) => a.sourceId.localeCompare(b.sourceId))
 
 const rows = await Promise.all(
@@ -70,6 +76,13 @@ const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').l
   <div class="mx-auto max-w-4xl px-4 py-10">
     <h1 class="text-3xl font-bold tracking-tight">{t(locale, 'i18n.coverage')}</h1>
     <p class="mt-3 text-muted">{t(locale, 'i18n.coverageIntro')}</p>
+
+    <!-- Said once, here, rather than beside every link: the repository is
+         private, so an editor link 404s for anyone outside it. A stranger
+         following one otherwise cannot tell that from a broken link. -->
+    <p class="mt-3 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm dark:border-amber-800 dark:bg-amber-950">
+      {t(locale, 'i18n.accessNote')}
+    </p>
 
     <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-1 text-sm">
       {
@@ -113,11 +126,31 @@ const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').l
                     {row.title}
                   </a>
                 </th>
-                {columns.map((l) => (
-                  <td class="py-2 pr-4" data-status={row.statuses[l]}>
-                    {t(locale, STATUS_KEY[row.statuses[l] as LocaleStatus])}
-                  </td>
-                ))}
+                {columns.map((l) => {
+                  const status = row.statuses[l] as LocaleStatus
+                  /* The cell is the way in: the status names what is needed
+                     and the link opens the file that would hold it — the
+                     editor where it exists, a prefilled new file where it
+                     does not. A coverage page that only reports is a list of
+                     work with no way to start it. */
+                  const link = row.filePath
+                    ? contributeLink(row.filePath, l, status !== 'placeholder', {
+                        title: row.title,
+                        description: row.description,
+                      })
+                    : undefined
+                  return (
+                    <td class="py-2 pr-4" data-status={status}>
+                      {link ? (
+                        <a class="underline" href={link.href} rel="noopener" target="_blank">
+                          {t(locale, STATUS_KEY[status])}
+                        </a>
+                      ) : (
+                        t(locale, STATUS_KEY[status])
+                      )}
+                    </td>
+                  )
+                })}
               </tr>
             ))
           }
