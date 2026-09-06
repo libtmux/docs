@@ -48,6 +48,7 @@ jobs:
           echo "locales: $list"
 
   build:
+    if: github.event_name != 'pull_request'
     needs: locales
     runs-on: ubuntu-latest
     strategy:
@@ -67,13 +68,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Both branches build the same 'docs' collection through the same
-      # astro.config.ts; only the version env vars differ (astro.config.ts's
-      # own doc comment names all five). Production is the one indexable
-      # build (LIBTMUX_DOCS_IS_DEFAULT=true), so it is the only one that
-      # emits a sitemap.
       - name: Build (production root)
-        if: github.event_name != 'pull_request'
         working-directory: site
         env:
           LIBTMUX_DOCS_VERSION: latest
@@ -88,30 +83,6 @@ jobs:
           # The port trees and the reference are built in the default locale
           # only, so every locale links across to them.
           LIBTMUX_DOCS_PORT_ROOT: /en
-          LIBTMUX_DOCS_SITE: https://libtmux.org
-        run: pnpm build
-
-      - name: Build (PR preview)
-        if: github.event_name == 'pull_request'
-        working-directory: site
-        env:
-          LIBTMUX_DOCS_VERSION: pr-${{ github.event.pull_request.number }}
-          LIBTMUX_DOCS_VERSION_KIND: pr
-          LIBTMUX_DOCS_IS_DEFAULT: 'false'
-          LIBTMUX_DOCS_BASE: /pr-${{ github.event.pull_request.number }}/${{ matrix.locale }}/
-          LIBTMUX_DOCS_LOCALE: ${{ matrix.locale }}
-          # A preview nests every locale, not just this build, so the prefix
-          # above them all is the preview's own. Cross-locale links, hreflang
-          # alternates and x-default compose through it; without it each of
-          # them named the live site from inside a preview.
-          LIBTMUX_DOCS_LOCALES_ROOT: /pr-${{ github.event.pull_request.number }}
-          LIBTMUX_DOCS_PORT_ROOT: /pr-${{ github.event.pull_request.number }}/en
-          # A preview nests the whole site, so "/" is not the site root here.
-          # BASE cannot stand in for that: /py/stable/ and /pr-42/ have the
-          # same shape, and only one of them moves the root. Everything that
-          # emits a root-relative link — the rehype pass over Markdown, the
-          # port and version switchers, ports.ts's URL builders — reads this.
-          LIBTMUX_DOCS_ROOT: /pr-${{ github.event.pull_request.number }}/${{ matrix.locale }}/
           LIBTMUX_DOCS_SITE: https://libtmux.org
         run: pnpm build
 
@@ -142,6 +113,38 @@ jobs:
           path: reserved-prefixes.txt
           retention-days: 1
 
+  build-preview:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+          cache: pnpm
+      - name: Install audit tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y ripgrep
+      - run: pnpm install --frozen-lockfile
+      - name: Assemble and check preview
+        env:
+          PREVIEW_PREFIX: pr-${{ github.event.pull_request.number }}
+          LIBTMUX_DOCS_LOCALES_ROOT: /pr-${{ github.event.pull_request.number }}
+          LIBTMUX_DOCS_VERSION: pr-${{ github.event.pull_request.number }}
+          LIBTMUX_DOCS_VERSION_KIND: pr
+          LIBTMUX_DOCS_IS_DEFAULT: 'false'
+        run: |
+          pnpm build:site
+          bash scripts/check-preview.sh _site "$PREVIEW_PREFIX"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: preview-dist
+          path: _site/pr-${{ github.event.pull_request.number }}/
+          if-no-files-found: error
+          retention-days: 1
+
   # Same-repo PRs only. Fork PRs get no secrets on `pull_request` by
   # design (a fork's build step above still runs, with no OIDC and no
   # secrets in scope — GITHUB_TOKEN aside — so a malicious build script
@@ -162,10 +165,7 @@ jobs:
   # bolted on the day the repo's visibility changed. Widening this `if` is
   # never the answer (notes/research/06, 07).
   publish-preview:
-    needs: [locales, build]
-    strategy:
-      matrix:
-        locale: ${{ fromJSON(needs.locales.outputs.list) }}
+    needs: build-preview
     if: |
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository
@@ -174,11 +174,8 @@ jobs:
       id-token: write
     uses: ./.github/workflows/reusable-deploy.yml
     with:
-      # The locale is part of the prefix here rather than added by
-      # reusable-deploy.yml, which only relocates a *port* publish: a preview
-      # owns its whole prefix and nests the site inside it, locales included.
-      path-prefix: pr-${{ github.event.pull_request.number }}/${{ matrix.locale }}
-      artifact: shell-dist-${{ matrix.locale }}
+      path-prefix: pr-${{ github.event.pull_request.number }}
+      artifact: preview-dist
       version-kind: pr
       environment: docs-preview
     secrets:

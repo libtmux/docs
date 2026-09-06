@@ -78,11 +78,19 @@ site_dir="$repo_root/site"
 out_dir="${LIBTMUX_DOCS_OUT_DIR:-$repo_root/_site}"
 site_origin="${LIBTMUX_DOCS_SITE:-https://libtmux.org}"
 
-# Locale is the outermost segment, so every page this assembly renders lives
-# under it. `$out_dir` stays the bucket root — logs and robots.txt belong
-# there, above any locale — and `$site_out` is where the site itself goes.
+# Keep the bucket root for absolute-link checks; previews mount below it.
+LIBTMUX_DOCS_LOCALES_ROOT="${LIBTMUX_DOCS_LOCALES_ROOT:-}"
+LIBTMUX_DOCS_LOCALES_ROOT="${LIBTMUX_DOCS_LOCALES_ROOT%/}"
+export LIBTMUX_DOCS_LOCALES_ROOT
+assembly_out="$out_dir$LIBTMUX_DOCS_LOCALES_ROOT"
 locale="${LIBTMUX_DOCS_LOCALE:-en}"
-site_out="$out_dir/$locale"
+site_out="$assembly_out/$locale"
+preview_build=0
+root_version=latest
+if [ "${LIBTMUX_DOCS_VERSION_KIND:-}" = pr ]; then
+  preview_build=1
+  root_version="${LIBTMUX_DOCS_VERSION:-latest}"
+fi
 
 # Every locale the shell is published in, from the module that owns them.
 list_locales() {
@@ -386,13 +394,6 @@ export LIBTMUX_DOCS_PORT_DEFAULTS
 LIBTMUX_DOCS_PORT_ROOT="${LIBTMUX_DOCS_LOCALES_ROOT:-}/$locale"
 export LIBTMUX_DOCS_PORT_ROOT
 
-# The prefix above every locale: empty for a production-shaped assembly, and
-# `/pr-42` for a preview, which nests the locales rather than sitting beside
-# them. Cross-locale links compose through it, so leaving it unset in a
-# preview is what sent a preview's reader to the live site.
-LIBTMUX_DOCS_LOCALES_ROOT="${LIBTMUX_DOCS_LOCALES_ROOT:-}"
-export LIBTMUX_DOCS_LOCALES_ROOT
-
 IFS=',' read -r -a versions <<<"$versions_arg"
 
 # A slug that names a source other than HEAD would be a lie.
@@ -430,6 +431,10 @@ done
 
 build_shell() {
   local base="$1" version="$2" kind="$3" is_default="$4" default_version="$5" outdir="$6"
+  if [ "$preview_build" -eq 1 ]; then
+    kind='pr'
+    is_default=false
+  fi
   mkdir -p "$outdir"
 
   local key cached
@@ -588,7 +593,7 @@ render_staged_reference() {
   local rc=0
   rm -rf "$build_out"
   LIBTMUX_DOCS_PORT="$slug" build_shell \
-    "/$locale/$slug/$version/" "$version" "$(kind_for_version "$version")" \
+    "$LIBTMUX_DOCS_PORT_ROOT/$slug/$version/" "$version" "$(kind_for_version "$version")" \
     false "$version" "$build_out" || rc=$?
 
   if [ "$rc" -eq 0 ] && [ -d "$build_out/api" ]; then
@@ -972,10 +977,10 @@ log "building shell root (shared prose)"
 # build emitting two locales gave one of them the other's prefix — a Japanese
 # page whose every link pointed into /en/.
 for shell_locale in $(list_locales); do
-  log "building the shell for $shell_locale (base=/$shell_locale/)"
+  log "building the shell for $shell_locale (base=$LIBTMUX_DOCS_LOCALES_ROOT/$shell_locale/)"
   LIBTMUX_DOCS_LOCALE="$shell_locale" \
     LIBTMUX_DOCS_ROOT="${LIBTMUX_DOCS_LOCALES_ROOT:-}/$shell_locale/" \
-    build_shell "${LIBTMUX_DOCS_LOCALES_ROOT:-}/$shell_locale/" "latest" "trunk" "true" "stable" "$out_dir/$shell_locale"
+    build_shell "$LIBTMUX_DOCS_LOCALES_ROOT/$shell_locale/" "$root_version" "trunk" "true" "stable" "$assembly_out/$shell_locale"
 done
 
 # Every port's home page (site/src/pages/[port]/index.astro) is built here,
@@ -1026,9 +1031,9 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     # eight are built here, all eight are versioned, which is also what
     # every one of those ecosystems does. The branch stays because
     # `versionedDocs: false` stays supported, not because anything uses it.
-    log "building $name ($slug) prose only (base=/$slug/, reference on $ecosystem_host)"
+    log "building $name ($slug) prose only (base=$LIBTMUX_DOCS_PORT_ROOT/$slug/, reference on $ecosystem_host)"
     LIBTMUX_DOCS_PORT="$slug" \
-      build_shell "/$locale/$slug/" "stable" "alias" "false" "stable" "$site_out/$slug"
+      build_shell "$LIBTMUX_DOCS_PORT_ROOT/$slug/" "stable" "alias" "false" "stable" "$site_out/$slug"
     # That build just overwrote this port's home page with a copy of the
     # site homepage — see the snapshot comment above. Put the real one back.
     [ -f "$port_home_snapshots/$slug.html" ] &&
@@ -1049,13 +1054,13 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     [ "$version" = "$default_version" ] && is_default=true
 
     port_out="$site_out/$slug/$version"
-    log "building $name ($slug)/$version (base=/$locale/$slug/$version/, kind=$kind, default=$is_default)"
+    log "building $name ($slug)/$version (base=$LIBTMUX_DOCS_PORT_ROOT/$slug/$version/)"
     # LIBTMUX_DOCS_PORT is what makes this a *language* build rather than a
     # copy of the shared prose: the remark plugin drops every code fence
     # belonging to another port, and Seo/sidebar treat the page as that
     # port's own rather than a duplicate of the root's.
     LIBTMUX_DOCS_PORT="$slug" \
-      build_shell "/$locale/$slug/$version/" "$version" "$kind" "$is_default" "$default_version" "$port_out"
+      build_shell "$LIBTMUX_DOCS_PORT_ROOT/$slug/$version/" "$version" "$kind" "$is_default" "$default_version" "$port_out"
 
     if [ "$skip_refs" -eq 1 ]; then
       summary_rows+=("$slug|$version|$renderer|skipped|--skip-refs")
@@ -1078,7 +1083,7 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     if [ "$slug" != "py" ]; then
       mkdir -p "$port_out/api"
       write_reference_redirect "$slug" "$port_out/api/index.html"
-      summary_rows+=("$slug|$version|redirect|redirected|to /$locale/reference/$slug/")
+      summary_rows+=("$slug|$version|redirect|redirected|to $LIBTMUX_DOCS_PORT_ROOT/reference/$slug/")
       continue
     fi
 
@@ -1100,11 +1105,10 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
   done
 done < <(list_ports)
 
-# robots.txt is read only at the true origin root, whatever prefix the site
-# itself sits under, so it is lifted out of the locale tree. Its own contents
-# already name every path through the site root, so the copy needs no edit.
+# Production owns the origin's robots.txt; a preview keeps its copy inside
+# its publish prefix.
 if [ -f "$site_out/robots.txt" ]; then
-  cp "$site_out/robots.txt" "$out_dir/robots.txt"
+  cp "$site_out/robots.txt" "$assembly_out/robots.txt"
 fi
 
 # ---------------------------------------------------------------------------
@@ -1126,9 +1130,9 @@ if [ "$skip_pagefind" -eq 0 ]; then
   # placeholders carry data-pagefind-ignore, so a locale's index holds what is
   # really written in it.
   for index_locale in $(list_locales); do
-    [ -d "$out_dir/$index_locale" ] || continue
-    log "indexing $out_dir/$index_locale with Pagefind"
-    (cd "$site_dir" && pnpm exec pagefind --site "$out_dir/$index_locale")
+    [ -d "$assembly_out/$index_locale" ] || continue
+    log "indexing $assembly_out/$index_locale with Pagefind"
+    (cd "$site_dir" && pnpm exec pagefind --site "$assembly_out/$index_locale")
   done
 else
   log "skipping Pagefind (--skip-pagefind)"
@@ -1218,7 +1222,7 @@ while IFS='|' read -r slug _name _versioned renderer _rest; do
     *) continue ;;
   esac
   for version in "${versions[@]}"; do
-    vendored_args+=(--vendored "$locale/$slug/$version")
+    vendored_args+=(--vendored "${LIBTMUX_DOCS_LOCALES_ROOT#/}/$locale/$slug/$version")
   done
 done < <(list_ports)
 
