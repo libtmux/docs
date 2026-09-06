@@ -26,6 +26,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 const PORT_BY_LABEL: Record<string, string> = Object.fromEntries(
   Object.entries(PORT_NAME).map(([slug, name]) => [name, slug]),
 )
+PORT_BY_LABEL['C#'] = 'dotnet'
 
 
 export interface DanglingReference {
@@ -137,6 +138,7 @@ export function rehypeApiLinks() {
     begin()
     const r = getResolver()
     const buildPort = process.env.LIBTMUX_DOCS_PORT || undefined
+    const sections: { depth: number; port?: string }[] = []
 
     const walk = (node: El, inLink: boolean, rowPort: string | undefined, fence: { lang?: string }, before: { text: string }) => {
       const kids = node.children
@@ -159,7 +161,12 @@ export function rehypeApiLinks() {
         }
         return
       }
-      if (node.tagName === 'h1' || node.tagName === 'h2' || node.tagName === 'h3') fence.lang = undefined
+      if (/^h[1-6]$/.test(node.tagName ?? '')) {
+        const depth = Number(node.tagName![1])
+        while (sections.length && sections.at(-1)!.depth >= depth) sections.pop()
+        sections.push({ depth, port: PORT_BY_LABEL[textOf(node).trim()] ?? sections.at(-1)?.port })
+        fence.lang = undefined
+      }
 
       const block = node.tagName && BLOCKS.has(node.tagName)
       const scope = block ? { text: '' } : before
@@ -177,7 +184,7 @@ export function rehypeApiLinks() {
         }
         if (child.tagName === 'code' && !inLink) {
           const text = textOf(child).trim()
-          const ctx = { pagePort: rowPort ?? fence.lang ?? buildPort, before: scope.text }
+          const ctx = { pagePort: rowPort ?? fence.lang ?? sections.at(-1)?.port ?? buildPort, before: scope.text }
           const wrapped = linkFor(text, ctx, r)
           if (wrapped) {
             kids[i] = { type: 'element', tagName: 'a', properties: wrapped.properties, children: [child] } as El
@@ -203,7 +210,7 @@ export function rehypeApiLinks() {
           properties: {
             href: `https://github.com/${meta.repo}/${kind}/${meta.revision}/${d.path}`,
             class: 'api-mention api-mention--file',
-            title: `${d.path} — ${meta.repo}`,
+            title: `${d.path}: ${meta.repo}`,
             rel: 'nofollow noopener',
           },
         }

@@ -111,31 +111,14 @@ const section = (pagePath.split('/').filter(Boolean)[0] ?? 'home').toLowerCase()
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href={withRoot('/favicon.svg')} type="image/svg+xml" />
     {/*
-      Preload the faces the pages actually open with, and only those.
-
-      Two mechanisms, doing different jobs. The gate in ThemeScript holds the
-      page until `document.fonts.ready`, which waits for every face the
-      document uses — so nothing can be seen arriving late whatever is on this
-      list. The list decides how *soon* the gate lifts: a preloaded face is
-      fetched beside the critical CSS instead of being discovered when the CSS
-      is parsed.
-
-      That makes preloading the families entire actively worse, not merely
-      wasteful. It is 395 KB at the highest priority the browser has, ten
-      faces of which no page opens with, competing for bandwidth with the ten
-      that hold the paint back.
-
-      The list is measured, and `scripts/check-fonts.mjs` fails in both
-      directions — a face an archetype opens with that is missing here, and a
-      face here that no archetype opens with. Which archetype demands each,
-      and why, is in notes/gp-sphinx-parity.md; regenerate it from the check
-      rather than editing by hand.
+      Preload faces used on initial pages, as measured by check-fonts.mjs.
+      ThemeScript waits for document.fonts.ready; preloading starts those
+      requests before CSS discovery. See notes/gp-sphinx-parity.md.
     */}
     <Font
       cssVariable="--font-ibm-plex-sans"
       preload={[
         { weight: 400, style: 'normal' },
-        { weight: 400, style: 'italic' },
         { weight: 500, style: 'normal' },
         { weight: 600, style: 'normal' },
         { weight: 700, style: 'normal' },

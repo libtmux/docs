@@ -6,6 +6,8 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { readInventory } from '../src/inventory.ts'
 import type { ApiModel } from '../src/model.ts'
 import { Resolver, notASymbol, toPath } from '../src/resolver.ts'
+import { proseMentions } from '../src/mentions.ts'
+import { portFromSentence } from '../src/prose.ts'
 
 /**
  * The resolver, against the corpus it exists for.
@@ -46,6 +48,13 @@ d('resolver', () => {
     expect(toPath('await server.sessions()')).toEqual(['server', 'sessions'])
     expect(toPath('server->sessions()')).toEqual(['server', 'sessions'])
     expect(toPath('libtmux::Server::wait_for(ch)')).toEqual(['libtmux', 'Server', 'wait_for'])
+  })
+
+  it('preserves an exact Swift selector instead of resolving its same-named property', () => {
+    for (const id of ['Snapshot.panes(of:)', 'Snapshot.panes']) {
+      const result = r.resolve('swift', id)
+      expect('symbol' in result ? result.symbol.publicId : undefined).toBe(id)
+    }
   })
 
   it('scopes an ambiguous member by its receiver', () => {
@@ -109,21 +118,15 @@ d('resolver', () => {
     let linkable = 0
     let resolved = 0
     for (const f of walk(docs)) {
-      for (const line of readFileSync(f, 'utf8').split('\n')) {
-        if (!line.startsWith('|')) continue
-        const cols = line.split('|').map((c) => c.trim())
-        const port = LABEL[cols[1]]
+      for (const mention of proseMentions(readFileSync(f, 'utf8'), LABEL)) {
+        const { text, before } = mention
+        const port = portFromSentence(before) ?? mention.port
         if (!port) continue
-        for (const col of cols.slice(2)) {
-          for (const m of col.matchAll(/`([^`]+)`/g)) {
-            const text = m[1]
-            if (!/^[A-Za-z_.][\w.]*(\s*\(|\.)/.test(text) && !/\(\)$/.test(text)) continue
-            const res = r.resolve(port, text)
-            if (res.how === 'not-a-symbol') continue
-            linkable++
-            if (!['ambiguous', 'no-symbol'].includes(res.how)) resolved++
-          }
-        }
+        if (!/^[A-Za-z_.][\w.]*(\s*\(|\.)/.test(text) && !/\(\)$/.test(text)) continue
+        const res = r.resolve(port, text)
+        if (res.how === 'not-a-symbol') continue
+        linkable++
+        if (!['ambiguous', 'no-symbol'].includes(res.how)) resolved++
       }
     }
     expect(linkable).toBeGreaterThan(200)

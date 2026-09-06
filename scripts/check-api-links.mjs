@@ -19,7 +19,7 @@
 import { existsSync, globSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Resolver, decideFilePath, decideMention, isLikelyReference, looksLikeApiMention, notASymbol, notApiReason, readInventory } from '../packages/api-model/src/index.ts'
+import { Resolver, decideFilePath, decideMention, isLikelyReference, looksLikeApiMention, notASymbol, notApiReason, proseMentions, readInventory } from '../packages/api-model/src/index.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const { PORTS: PORT_DEFS } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
@@ -92,49 +92,6 @@ const EXCEPTIONS = new Map()
 const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|md|toml|json|ya?ml|sh)$/
 const PORT_BY_LABEL = { Python: 'py', TypeScript: 'ts', Rust: 'rs', Go: 'go', Java: 'java', '.NET': 'dotnet', 'C#': 'dotnet', 'C++': 'cxx', Swift: 'swift' }
 
-const LANG_TO_PORT = {
-  python: 'py', py: 'py', typescript: 'ts', ts: 'ts', javascript: 'ts', js: 'ts',
-  rust: 'rs', rs: 'rs', go: 'go', java: 'java', csharp: 'dotnet', cs: 'dotnet',
-  cpp: 'cxx', 'c++': 'cxx', swift: 'swift',
-}
-
-/**
- * Fenced blocks blanked, so offsets and line numbers still line up — and the
- * language of the fence each line follows.
- *
- * A paragraph under a ```go fence is about Go even when it never says so.
- * That is how this corpus is written: a fence per port, then a sentence or
- * two explaining it, and the explanation names `README.md` or `tmuxtest/`
- * without repeating the language. Without this, those spans are ambiguous
- * across all eight repositories and cannot be linked at all.
- *
- * A heading ends the binding, so a fence does not colour the rest of the page.
- */
-function withoutFences(src) {
-  let out = '', fence = null, lang = undefined
-  const perLine = []
-  for (const line of src.split('\n')) {
-    const m = /^\s*(```|~~~)\s*([\w+-]*)/.exec(line)
-    if (fence) {
-      perLine.push(undefined)
-      out += '\n'
-      if (m) fence = null
-      continue
-    }
-    if (m) {
-      fence = m[1]
-      lang = LANG_TO_PORT[(m[2] || '').toLowerCase()]
-      perLine.push(undefined)
-      out += '\n'
-      continue
-    }
-    if (/^#{1,6}\s/.test(line)) lang = undefined
-    perLine.push(lang)
-    out += line + '\n'
-  }
-  return { body: out, perLine }
-}
-
 const files = process.argv.slice(2).filter((a) => !a.startsWith('--'))
 const targets = files.length
   ? files.map((f) => resolve(f))
@@ -146,33 +103,14 @@ const missingFiles = []
 
 for (const file of targets) {
   const raw = readFileSync(file, 'utf8')
-  const { body, perLine } = withoutFences(
-    raw.replace(/^---\n[\s\S]*?\n---\n/, (m) => '\n'.repeat(m.split('\n').length - 1)),
-  )
-  /** The port of the nearest fence above this offset, if any. */
-  const fencePort = (i) => perLine[body.slice(0, i).split('\n').length - 1]
-  const lineOf = (i) => body.slice(0, i).split('\n').length
-  // A table row that names its port in the first cell tells the linker which
-  // language the rest of the row is in.
-  const rowPort = (i) => {
-    const line = body.slice(body.lastIndexOf('\n', i - 1) + 1, body.indexOf('\n', i))
-    const first = line.startsWith('|') ? line.split('|')[1]?.trim() : undefined
-    return first ? PORT_BY_LABEL[first] : undefined
-  }
-
-  for (const m of body.matchAll(/(?<!`)`([^`\n]+)`(?!`)/g)) {
-    const text = m[1].trim()
-    if (!text) continue
-    const before = body.slice(Math.max(0, m.index - 400), m.index)
-    const after = body.slice(m.index + m[0].length, m.index + m[0].length + 2)
-    // Already a link: [`x`](…) — the span is the label of one.
-    if (before.endsWith('[') && after.startsWith('](')) { tally.alreadyLinked++; continue }
+  for (const { text, port: ctxPort, before, line, linked } of proseMentions(raw, PORT_BY_LABEL)) {
+    if (linked) { tally.alreadyLinked++; continue }
 
     if (FILE_RE.test(text) || text.endsWith('/')) {
-      const d = decideFilePath(text, { before, pagePort: fencePort(m.index) }, trees)
+      const d = decideFilePath(text, { before, pagePort: ctxPort }, trees)
       if (d.kind === 'link') tally.file++
       else if (d.kind === 'skip') tally.notASymbol++
-      else { tally.fileMissing++; missingFiles.push({ file, line: lineOf(m.index), text, why: d.why }) }
+      else { tally.fileMissing++; missingFiles.push({ file, line, text, why: d.why }) }
       continue
     }
     // The same two filters the linker applies, in the same order. This lint
@@ -182,7 +120,6 @@ for (const file of targets) {
     if (notASymbol(text) || !looksLikeApiMention(text)) { tally.notASymbol++; continue }
 
 
-    const ctxPort = rowPort(m.index) ?? fencePort(m.index)
     const linkable = [ctxPort, ...PORTS].some(
       (p) => p && decideMention(text, { pagePort: p, before }, resolver, models).kind === 'link',
     )
@@ -192,7 +129,7 @@ for (const file of targets) {
     // is not a dangling reference when it does not.
     if (linkable) tally.willLink++
     else if (!isLikelyReference(text) || notApiReason(text) || EXCEPTIONS.has(text)) tally.notASymbol++
-    else { tally.unresolved++; unresolved.push({ file, line: lineOf(m.index), text }) }
+    else { tally.unresolved++; unresolved.push({ file, line, text }) }
   }
 }
 

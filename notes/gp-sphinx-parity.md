@@ -149,57 +149,43 @@ column, where `Error` occurs three times in Rust and `Server` five. Repeats —
 and only repeats — get a muted module suffix; qualifying all 553 Rust entries
 would bury the name being scanned for under the path that is not.
 
-**Ten preloaded faces, and the page held until they arrive.** gp-sphinx sets
-`font-display: block` and preloads the eight faces its pages open with. This
-site sets the same `block` on all twenty webfont faces, preloads the ten its
-own pages open with, and additionally gates the page on
-`document.fonts.ready`.
+**Preload fonts used on initial pages.** The shared layout preloads nine
+faces measured by `scripts/check-fonts.mjs`, sets `font-display: block`, and
+waits for `document.fonts.ready` before revealing the page. Other faces remain
+available through CSS and load when needed.
 
-The gate is there because `block` does not block on its own. Astro's
-`optimizedFallbacks` appends a metric-matched family backed by
-`local("Courier New")` with `font-display: swap`, so while Plex Mono sits in
-its block period the browser has an immediately available next family and
-draws with it. With the woff2 files delayed 1.2s the wordmark painted in
-Courier at 300ms and became Plex when the file landed. Sans carries no such
-fallback family, which is why only the monospace looked late.
+The visibility gate prevents a fallback font from appearing while Plex loads.
+Astro's `optimizedFallbacks` provides a metric-matched family backed by
+`local("Courier New")` with `font-display: swap`. That fallback can paint even
+while Plex Mono is in its block period. In the original delayed-font test,
+the wordmark painted in Courier at 300ms and changed when Plex arrived.
 
-Gate and list do different jobs. The gate decides that nothing is *seen*
-arriving late — it waits on every face the document uses, not just the
-preloaded ones. The list decides how soon the gate lifts, which is why it is
-the faces the pages open with and not the families entire: preloading all
-twenty is 395 KB at the browser's highest priority, half of it faces no page
-opens with, competing with the ten that are holding the paint.
+Preloading starts font requests alongside critical CSS. Loading every face at
+that priority competes with the fonts the initial page needs. The gate waits
+for every face the document uses, including faces outside the preload list.
 
-Every face, the archetype that first demands it, and what demands it —
-measured with `scripts/check-fonts.mjs`, not chosen:
+The current browser check observes these faces:
 
-| face | first demanded by | what demands it |
-|---|---|---|
-| Sans 400 | home | nav links and body text; every archetype |
-| Sans 400 italic | topic | `<em>` in prose |
-| Sans 500 | port page | the "Python API reference" link |
-| Sans 600 | home | the `<h1>`; headings on most archetypes |
-| Sans 700 | symbol index | the `<strong>` letter heading; `h1` on topics |
-| Mono 400 | home | code blocks — `$ pip install libtmux` |
-| Mono 400 italic | ref java | type annotations in a signature |
-| Mono 600 | home | the `libtmux` wordmark; signature names everywhere |
-| Mono 700 | reference entry | the qualified name in a signature |
-| Mono 700 italic | reference entry | the kind keyword in a signature |
+| Face | Example pages that use it initially |
+|---|---|
+| Sans 400 | All sampled page types |
+| Sans 500 | Traversal topic, attach-and-send-keys example |
+| Sans 600 | Home and most sampled page types |
+| Sans 700 | Symbol index, topics, examples, member references |
+| Mono 400 | Home, reference entries, examples |
+| Mono 400 italic | Python and .NET member references |
+| Mono 600 | All sampled page types |
+| Mono 700 | Reference entries |
+| Mono 700 italic | Reference entries |
 
-gp-sphinx's list carries Mono 400 italic too, for a different reason: Pygments
-sets comment tokens in italic. Ours is Java type annotations. It also has no
-equivalent of our Mono 600 — the API name treatment is a semibold monospace
-here.
+The browser check fails when an initial page needs an unpreloaded face or a
+preloaded face appears in none of the sampled pages. It covers layout types,
+a reference entry for each port, and member references. The native Sphinx
+page uses its own preload list and is checked separately.
 
-`check-fonts.mjs` fails in both directions, so this table cannot drift: a face
-an archetype opens with that is missing from the list, and a face on the list
-that no archetype opens with. Sixteen archetypes, including one reference
-entry per port — widening it to per-port is what found Mono 400 italic, which
-seven archetypes' worth of sampling had missed.
-
-Measured with fonts delayed 1.2s, on the home page, a reference entry, a topic
-and a Java reference entry: the first visible frame is pixel-identical to the
-fully settled page in every case, and CLS is 0.0000.
+The delayed-font test holds font responses for 1.2s. On the home page, a
+reference entry, a topic, and a Java reference entry, the first visible frame
+matches the settled page and CLS is 0.0000.
 
 **`.prose h1` is 700, not the typography plugin's 800.** IBM Plex ships no
 800, so an 800 was a weight the browser faked by smearing the Bold, on the

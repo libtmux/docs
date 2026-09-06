@@ -1,27 +1,9 @@
 #!/usr/bin/env node
-/**
- * Which prose pages mention which symbols, computed before anything renders.
- *
- * A symbol page can then say where it is discussed, which is the reverse of
- * what `rehype-api-links` already does forward.
- *
- * Computed rather than recorded. The obvious design has the rehype plugin note
- * each mention as it resolves one, and it is wrong twice over: a render-time
- * recorder observes nothing on a cached build and reports that as "no
- * mentions", indistinguishable from prose that stopped referring to the API —
- * and with the assembly's fingerprint cache hitting on every unchanged run,
- * that would be almost always. It also cannot be tested without rendering
- * 1,872 pages and grepping the output.
- *
- * The resolver is pure, so none of that is necessary: the same answer comes
- * from the Markdown and the models, with no build in the loop.
- *
- * Usage: node scripts/gen-mentions.mjs [--check]
- */
+/** Build "Discussed in" backlinks from source, including when rendering is cached. */
 import { existsSync, globSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Resolver, notASymbol, tableMentions } from '../packages/api-model/src/index.ts'
+import { Resolver, decideMention, isLikelyReference, notASymbol, notApiReason, proseMentions } from '../packages/api-model/src/index.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const contentDir = join(root, 'site/src/content/docs')
@@ -45,26 +27,26 @@ const PORT_BY_LABEL = {
   Swift: 'swift',
 }
 
-if (check) {
-  if (!existsSync(out)) {
-    console.error('gen-mentions: mentions.json missing — run without --check')
-    process.exit(1)
-  }
-  const data = JSON.parse(readFileSync(out, 'utf8'))
-  console.log(
-    `gen-mentions: ${data.mentions.length} mentions, ${data.dangling.length} unresolved, generated ${data.generated}`,
-  )
-  process.exit(0)
-}
-
-const models = PORTS.map((port) => join(modelDir, `${port}.json`))
+const modelList = PORTS.map((port) => join(modelDir, `${port}.json`))
   .filter((f) => existsSync(f))
   .map((f) => JSON.parse(readFileSync(f, 'utf8')))
-if (!models.length) {
-  console.error('gen-mentions: no models — run scripts/gen-api-model.mjs first')
+if (!modelList.length) {
+  console.error('gen-mentions: no models; run scripts/gen-api-model.mjs first')
   process.exit(1)
 }
-const resolver = new Resolver(models)
+const models = Object.fromEntries(modelList.map((model) => [model.port, model]))
+const resolver = new Resolver(modelList)
+// Match the renderer's external names before considering a cross-port fallback.
+for (const [file, project, baseUrl, langs] of [
+  ['python', 'Python', 'https://docs.python.org/3/', ['py']],
+  ['jdk', 'Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', ['java']],
+  ['dom', 'MDN', 'https://developer.mozilla.org/', ['ts']],
+]) {
+  const inventory = JSON.parse(readFileSync(join(root, `site/src/data/inventories/${file}.entries.json`), 'utf8'))
+  resolver.addInventory(project, baseUrl, inventory.e.map(([name, uri]) => ({
+    name, uri, type: 'std:label', priority: 1, dispname: '-',
+  })), langs)
+}
 
 /** `site/src/content/docs/topics/traversal.md` becomes `/topics/traversal/`. */
 function pageOf(file) {
@@ -97,16 +79,18 @@ for (const file of globSync('**/*.{md,mdx}', { cwd: contentDir }).sort()) {
   const title = titleOf(source, full)
   const section = file.split('/')[0]
 
-  for (const { port, text, line } of tableMentions(source, PORT_BY_LABEL)) {
+  for (const { port: pagePort, text, line, before } of proseMentions(source, PORT_BY_LABEL)) {
     if (notASymbol(text)) continue
-    const res = resolver.resolve(port, text)
-    if (res.how === 'ambiguous' || res.how === 'no-symbol' || res.how === 'not-a-symbol') {
-      dangling.push({ port, text, page, line, why: res.how })
+    const decision = decideMention(text, { pagePort, before }, resolver, models)
+    if (decision.kind !== 'link') {
+      if (decision.kind === 'unresolved' && pagePort && isLikelyReference(text) && !notApiReason(text)) {
+        dangling.push({ port: pagePort, text, page, line, why: decision.why })
+      }
       continue
     }
-    // Federated and module hits point outside the reference, and a symbol page
-    // is what carries a backlink, so only symbol hits produce one.
-    if (res.how === 'federated' || res.how === 'module-index') continue
+    const port = decision.port
+    const res = resolver.resolve(port, text)
+    if (!('symbol' in res)) continue
 
     const symbol = res.symbol.id
     // `(port, symbol, page)` is the key: a symbol named three times on one
@@ -125,11 +109,16 @@ mentions.sort(
     a.page.localeCompare(b.page),
 )
 
-mkdirSync(dirname(out), { recursive: true })
-writeFileSync(
-  out,
-  `${JSON.stringify({ generated: new Date().toISOString(), mentions, dangling }, null, 1)}\n`,
-)
+if (check) {
+  const existing = existsSync(out) ? JSON.parse(readFileSync(out, 'utf8')) : undefined
+  if (JSON.stringify(existing?.mentions) !== JSON.stringify(mentions) || JSON.stringify(existing?.dangling) !== JSON.stringify(dangling)) {
+    console.error('gen-mentions: index missing or stale; run node scripts/gen-mentions.mjs')
+    process.exit(1)
+  }
+} else {
+  mkdirSync(dirname(out), { recursive: true })
+  writeFileSync(out, `${JSON.stringify({ generated: new Date().toISOString(), mentions, dangling }, null, 1)}\n`)
+}
 
 const pages = new Set(mentions.map((m) => m.page)).size
 const symbols = new Set(mentions.map((m) => `${m.port}:${m.symbol}`)).size

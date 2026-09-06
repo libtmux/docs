@@ -8,30 +8,22 @@ sidebar:
 tableOfContents: true
 ---
 
-"Attach" means two different things in this ecosystem, and mixing them up is
-the most common way to be surprised. This guide is about the first: your
-program obtaining a live handle to a running (or freshly created) tmux
-server and session. It is not a terminal takeover — your process keeps its
-own stdin and stdout, and tmux keeps running whether or not anything is
-looking at it. Every port's object API works this way, and it's what the
-rest of this guide, and the [flagship example](/examples/attach-and-send-keys/),
-means by "attach."
+Obtain a server and session handle to control tmux from your program. Your
+process keeps its own stdin and stdout, and tmux continues running
+independently. [Attach and send keys](/examples/attach-and-send-keys/)
+demonstrates this workflow.
 
-The other kind is real: Python's `Session.attach()` runs `tmux
-attach-session` and hands your process's own terminal to tmux — this is how
-[tmuxp](https://tmuxp.git-pull.com/) finishes, after it has built a
-workspace with the first kind of attach. If you want that, look for it by
-name in your port's reference; it isn't covered further here.
+Attaching your terminal is a separate operation. Python's `Session.attach()`
+runs `tmux attach-session` and hands the terminal to tmux.
+[tmuxp](https://tmuxp.git-pull.com/) uses it after building a workspace. Check
+your port's reference if your program needs to hand over the terminal.
 
 ## Which socket a bare constructor reaches
 
-Every port lets you name a socket explicitly, but a call with no arguments
-still has to land somewhere, and that "somewhere" is worth knowing before
-you're debugging why two processes can't see the same session. Reading the
-socket back from inside a pane — `TMUX` / `TMUX_PANE`, the variables tmux
-writes into every pane it spawns — is a separate call in every port that
-offers it, kept apart from the bare constructor on purpose: a plain `Server()`
-never guesses that you're inside tmux.
+Use an explicit socket when several tmux servers may be running. The examples
+below show each constructor's defaults and environment-aware alternatives. To
+locate the server from inside a pane, use the port's environment lookup API for
+`TMUX` and `TMUX_PANE`.
 
 ```python
 # Server() with no arguments talks to tmux's own default socket.
@@ -45,7 +37,7 @@ server = libtmux.Server.from_env()
 
 ```typescript
 // Behaves like the other ports' bare form. Naming a socket wasn't confirmed
-// against a checked snippet for this page — check the port's own reference.
+// against a checked snippet for this page: check the port's own reference.
 const server = new Server();
 ```
 
@@ -84,7 +76,7 @@ Server fromPane = await Server.FromEnvironment();
 ```
 
 ```cpp
-// Four named constructors instead of one flexible one — pick the one that
+// Four named constructors instead of one flexible one: pick the one that
 // names how you're reaching this tmux:
 libtmux::Server::from_env();          // inside tmux
 libtmux::Server::at_socket_name(name);
@@ -93,7 +85,7 @@ libtmux::Server::at_default();        // "my tmux", to a person
 ```
 
 ```swift
-// The literal quickstart — there is no bare no-argument constructor, so
+// The literal quickstart: there is no bare no-argument constructor, so
 // naming the socket is not optional the way it is elsewhere.
 let server = try Server(socketName: "default")
 ```
@@ -118,7 +110,7 @@ time.
 
 ```python
 # default only stands in for *absence*: an ambiguous match still raises
-# MultipleObjectsReturned even with a default supplied — handing back an
+# MultipleObjectsReturned even with a default supplied: handing back an
 # arbitrary match from several is how a script ends up driving the wrong
 # pane. See Filtering and queries.
 session = server.sessions.get(session_name="demo", default=None)
@@ -154,27 +146,20 @@ if try await server.hasSession("work") == false {
 }
 ```
 
-Sources: Go's is `examples/filter-query/main.go`, the `docs:query-in-tmux`
-region the README quotes. Java's exact ternary is
-`examples/.../BuildAWorkspace.java`, one of the four programs the examples
-module's own test compiles and runs — `Selections.exactlyOne(...)` is the
-alternative shape when "found more than one" should be a distinct error
-rather than "found none," see
-[Filtering and querying, in practice](../querying-and-filtering/). Swift's
-`hasSession` is `Examples/Sources/ExampleCode/Querying.swift`, matched
-against the README by `Scripts/check_examples.py` and exercised by
+Sources: Go uses `examples/filter-query/main.go`, region `docs:query-in-tmux`.
+Java uses `examples/.../BuildAWorkspace.java`, run by the examples module's
+tests. For exactly-one lookup semantics, see [Filtering and querying, in
+practice](../querying-and-filtering/). Swift uses
+`Examples/Sources/ExampleCode/Querying.swift`, checked against the README by
+`Scripts/check_examples.py` and exercised by
 `Examples/Tests/ExampleTests/ModeTests.swift`.
 
-.NET's `Server.HasSessionAsync(name)` exists in source
-(`src/LibTmux/Server.Lifecycle.cs`), and `CreateSessionAsync` takes a
-`ReplaceExisting` option that kills and recreates rather than throwing
-`TmuxSessionExistsException` — but neither appears in a checked README
-snippet as of this page, so the *existence* of the method is verified and
-the exact call shape is not, until it's quoted somewhere `ReadmeExampleTests`
-compiles. Rust and C++ both have a query layer capable of the same check
-(see [Filtering and querying, in practice](../querying-and-filtering/)), but
-neither exposes a single `has_session`-shaped call, and no README quotes the
-"session exists by name" pattern directly — so it isn't guessed at here.
+.NET exposes `Server.HasSessionAsync(name)` in
+`src/LibTmux/Server.Lifecycle.cs`. Its `CreateSessionAsync` supports
+`ReplaceExisting`, which kills and recreates the session. Rust and C++ provide
+query APIs for session lookup. See [Filtering and querying, in
+practice](../querying-and-filtering/) and the port references for the call
+signatures; this page has no tested excerpt for those combinations.
 
 ## Where to go next
 

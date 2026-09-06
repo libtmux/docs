@@ -75,6 +75,7 @@ for (const file of markdownFiles(contentRoot)) {
   const lines = readFileSync(file, 'utf8').split('\n')
 
   let fenceLang = null
+  let sectionPort = null
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
 
@@ -103,6 +104,15 @@ for (const file of markdownFiles(contentRoot)) {
       // and is not part of the path. Strip it rather than reporting a miss.
       if (from) record(LANG_TO_PORT[fenceLang], from[1].replace(/'s$/, ''), rel, i + 1, 'From comment')
       continue
+    }
+
+    const heading = line.match(/^#{1,6}\s+(.+?)\s*$/)
+    if (heading) sectionPort = TABLE_PORT[heading[1].toLowerCase()] ?? null
+
+    if (sectionPort && !line.startsWith('|')) {
+      for (const m of line.matchAll(/`([^`]+)`/g)) {
+        if (looksLikePath(m[1])) record(sectionPort, m[1], rel, i + 1, 'port section')
+      }
     }
 
     // Provenance table row: | Python | `src/libtmux/pane.py` (...) | ... |

@@ -8,9 +8,7 @@ sidebar:
 tableOfContents: true
 ---
 
-Every libtmux port works through the same four nouns, because they aren't a
-design choice a port made — they're tmux's own hierarchy, and a port's object
-model is a typed proxy over it:
+libtmux models tmux's server, session, window, and pane objects:
 
 ```
 Server
@@ -20,33 +18,25 @@ Server
 └── Client (attached view)
 ```
 
-A `Server` owns sessions. A `Session` owns windows. A `Window` owns panes. A
-`Pane` is where commands actually run — it's the thing you type into and
-read output from. Whatever a port calls these (Python's `Server`/`Session`/
-`Window`/`Pane`, C++'s value types of the same names, Go's `tmux.Session` and
-`tmux.Window`), you are always navigating this same tree: a server's
-sessions, a session's windows, a window's panes.
+A `Server` contains sessions. Each `Session` contains links to windows, and each
+`Window` contains panes. Commands run inside a `Pane`, where you send input and
+capture output. A window can be linked to more than one session.
 
 ## Stable identity, not name or index
 
-tmux assigns each session, window, and pane a unique ID the moment it's
-created, and every port tracks objects by that ID rather than by name or
-position — names get renamed, indexes shift when a window in front of yours
-closes, but the ID is stable for the object's lifetime:
+tmux assigns a unique ID to each session, window, and pane at creation. The ID
+remains stable for that object's lifetime even if its name or index changes:
 
 | Object | ID prefix | Example |
 |--------|-----------|---------|
 | Session | `$` | `$13` |
 | Window | `@` | `@3243` |
 | Pane | `%` | `%5433` |
-| Server | — | identified by socket name or path instead |
+| Server | - | identified by socket name or path instead |
 
-Ports that hand you a live-refreshing handle (Python's `Session.refresh()`)
-use the ID to re-fetch the same object tmux still recognizes; ports that hand
-you an immutable snapshot (TypeScript's `Selection`, Swift's `Snapshot`,
-Go's "records never refresh behind you" values) use the ID to compare two
-snapshots and confirm they're talking about the same underlying object across
-reads.
+Python handles use the object ID to refresh their fields. Immutable snapshots,
+such as those in TypeScript, Swift, and Go, use IDs to identify the same tmux
+object across reads.
 
 Walking the whole tree, in each port:
 
@@ -178,44 +168,29 @@ for session in snapshot.sessions {
 
 ## Client: a view, not a child
 
-`Client` is the one thing in the diagram that isn't a child of anything.
-Where a `Session` owns its `Window`s and a `Window` owns its `Pane`s, a
-`Client` is an attached terminal that *points at* whichever session, window,
-and pane it's currently viewing — one `$ tmux attach` from a person's
-terminal. The same server can host several clients at once, each looking at
-something different, and a client's view can change the instant that person
-runs `switch-client` or `select-window`. That's why a client's session/
-window/pane fields are a snapshot of where it was pointed when you read it,
-not a live relationship you can walk the way you walk from a pane up to its
-window.
+A `Client` represents a terminal attached to a session. Several clients can view
+the same server, and each can switch sessions or windows independently. Client
+fields describe the view at the time of the read.
 
-This distinction matters for one very concrete reason across every port: a
-control-mode connection (see
-[Control mode vs one-shot](../transports/)) *is* a client. Opening one
-adds a row to `list-clients`, counts toward `session_attached`, and is
-visible to anything that keys off attachment — including policies like
-`destroy-unattached`, which will tear down a session the moment your
-program's control client detaches from it.
+A [control-mode connection](../transports/) is also a client. It appears in
+`list-clients`, counts toward `session_attached`, and affects
+attachment-dependent behavior such as `destroy-unattached`. Closing the last
+attached client can therefore destroy a session configured with that option.
 
 ## What differs between ports
 
-The hierarchy above is fixed. What ports disagree on, on purpose, is:
+Ports differ in how they read state and report failures:
 
-- **Whether a held object refreshes.** Python's objects re-read from tmux
-  when you call `.refresh()`, but otherwise reflect the state at construction.
-  TypeScript, Swift, and Go's Rust-flavored "read once into an immutable
-  snapshot, then query it like data" model goes further: the whole server is
-  read in one pass, and every relationship you walk after that touches no
-  further tmux state at all.
-- **Sync vs async.** Python and Java block on every call, matching tmux's own
-  subprocess model directly. Rust, Go, TypeScript, C#, and Swift make every
-  tmux round trip an explicit `async`/`await`, because the underlying work —
-  starting a process or reading a socket — is I/O.
-- **How failure surfaces.** Some ports raise (Python's `LibTmuxException`
-  hierarchy, C#'s exceptions); C++ returns `expected<T, CommandFailure>` and
-  never throws for a tmux-side failure; a few treat a nonzero-exit tmux
-  command as data rather than an error, because (as C++'s docs put it)
-  `has-session` answering "no" is a reply, not a failure.
+- **Refreshing state.** Python objects reflect their last read until you call
+  `.refresh()`. TypeScript, Swift, and Go also provide snapshots whose
+  relationships can be queried without another tmux command.
+- **Blocking and async calls.** Python and Java use blocking calls. Rust,
+  TypeScript, .NET, and Swift provide async APIs. Go uses ordinary calls with
+  contexts for cancellation and deadlines.
+- **Failure handling.** Python and .NET raise exceptions. C++ returns
+  `expected<T, CommandFailure>`. Some commands have an expected negative answer,
+  such as `has-session` when a session is absent; check the method's result
+  contract before treating that answer as a failure.
 
-None of that changes the shape in the diagram above. It changes what it
-costs you to read from it, and how you find out when something went wrong.
+See [Control mode vs one-shot](../transports/) for command costs and connection
+behavior.

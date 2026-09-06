@@ -1,6 +1,6 @@
 ---
 title: Workspaces
-description: Building a multi-pane layout from code, and the tmuxp-shaped declarative builders most ports ship alongside it.
+description: Build pane layouts with the object API or a workspace configuration file.
 sidebar:
   label: Workspaces
   group: Concepts
@@ -8,20 +8,16 @@ sidebar:
 tableOfContents: true
 ---
 
-A workspace is a window carved into panes, each running something specific —
-an editor in one, a dev server in another, a log tail in a third. Every
-port's object API can build one imperatively: open a window, split it,
-arrange the splits, send a command into each pane. Most also ship a
-declarative layer on top, shaped after [tmuxp](https://tmuxp.git-pull.com/)'s
-YAML/JSON workspace files, for the common case where the layout is
-data rather than logic.
+A workspace arranges windows and panes for a task, such as editing code, running
+a development server, and following logs. Build it with the object API when the
+layout depends on program logic. Use a declarative builder when you want to
+store the layout in a configuration file, such as
+[tmuxp](https://tmuxp.git-pull.com/) YAML or JSON.
 
 ## Building one imperatively
 
-The pattern is the same shape everywhere: create a window, split it as many
-times as you need panes, apply a layout to tile them evenly, then drive each
-pane. Grounded in Python's API (the most fully documented of the eight), a
-typical two-pane-plus-logs workspace looks like this:
+Create a window, split it into panes, apply a layout, and send each pane its
+command:
 
 ```python
 def create_dev_workspace(session, name='dev'):
@@ -112,28 +108,19 @@ let logs = try await server.split(terminal, direction: .right)
 try await server.selectLayout(window, "main-vertical")
 ```
 
-`Window.split()` (or the equivalent `Pane.split()`) is the one method that
-turns a single-pane window into a workspace; direction (`PaneDirection.Right`
-for side-by-side, the default for stacked) and `size` control the split.
-`select_layout()` re-tiles everything afterward without touching what's
-running in each pane — tmux ships five built-ins (`even-horizontal`,
-`even-vertical`, `main-horizontal`, `main-vertical`, `tiled`), and you can
-switch layouts as often as you like.
+`Window.split()` or `Pane.split()` adds a pane. Direction and size control its
+placement. `select_layout()` rearranges the panes while their processes continue
+running. tmux provides `even-horizontal`, `even-vertical`, `main-horizontal`,
+`main-vertical`, and `tiled` layouts.
 
-New windows default to created-in-the-background across the ports that
-document the choice explicitly (Python's `attach=False`, C++'s "created
-detached: a library call that stole the terminal would be a surprise, and
-attaching is a separate decision") — building a workspace shouldn't yank
-focus around as each piece comes up. Splitting and resizing are each a
-tmux round trip, same as any other mutation; see
-[Control mode vs one-shot](../transports/) for what that costs at
-scale and how to fold several into one invocation.
+Python's `attach=False` and C++'s detached creation keep new windows in the
+background. Check the creation defaults for your port if focus matters. Splits
+and resizes require tmux commands; [Control mode vs one-shot](../transports/)
+covers their transport costs and batching.
 
 ## Building one declaratively
 
-Describing a session as data and applying it is common enough that six of
-the eight ports ship a purpose-built package for it, each reading (or
-authoring) a tmuxp-shaped configuration:
+These packages read or build workspace configurations based on tmuxp:
 
 | Port | Package | Shape |
 |------|---------|-------|
@@ -145,9 +132,8 @@ authoring) a tmuxp-shaped configuration:
 | C# | `LibTmux.Workspace` | reads tmuxp YAML directly |
 | Swift | `TmuxWorkspace` | Swift, JSON, or YAML (YAML needs the `YAMLWorkspaces` trait) |
 
-TypeScript's shape is representative of the idea across all of them —
-declare the session, apply it, and applying twice converges rather than
-duplicating:
+TypeScript's `applyWorkspace` applies a desired configuration. Applying the same
+configuration again reuses its existing objects:
 
 ```ts
 await applyWorkspace(server, {
@@ -192,14 +178,12 @@ let workspace = Workspace(
 let session = try await WorkspaceBuilder.build(workspace, on: server)
 ```
 
-C++ is the exception: rather than shipping its own builder, its README
-points straight at tmuxp — "you want a workspace from a config file, tmuxp
-already does that, and does it well" — and its `examples/workspace/` is a
-worked example of driving tmuxp's format from C++ rather than a package of
-its own:
+C++ provides a consumer example in `examples/workspace/` that reads tmuxp
+configuration. The workspace builder is part of that example, rather than a
+library package:
 
 ```cpp
-// Not a package — this is the examples/workspace/ consumer, showing the
+// Not a package: this is the examples/workspace/ consumer, showing the
 // shape a tmuxp document builds into rather than a library entry point.
 const workspace::Workspace description{
     .session_name = "dev",
@@ -209,11 +193,8 @@ const auto built = workspace::build(server, description);
 
 ## Cleaning up
 
-A workspace meant to live only for the span of a task — a test run, a
-scripted demo — doesn't have to be torn down by hand. Python's `Window` and
-`Session` are context managers: the object is created on entry and killed on
-exit, including when something inside the `with` block raises, so a workspace
-built for one purpose never outlives it as a stray window:
+For temporary workspaces, Python's `Window` and `Session` context managers kill
+their objects on block exit, including when the block raises:
 
 ```python
 with session.new_window(window_name='temp-window') as temp_win:
@@ -248,7 +229,6 @@ await pane.SendTextAsync("echo temporary workspace");
 // session is gone here, even if an exception unwound through the block
 ```
 
-Whether another port's window or session handle offers the same
-context-manager convenience is worth checking against that port's own
-reference rather than assuming — kill methods (`window.kill()`,
-`session.kill()`) are the one thing verified across all of them.
+See [Context managers](/topics/context-managers/) for cleanup support in each
+port. Use explicit kill methods when the handle does not provide scope-based
+cleanup.

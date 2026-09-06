@@ -8,29 +8,22 @@ sidebar:
 tableOfContents: true
 ---
 
-"Which pane is running the tests?" is the question every port's query layer
-exists to answer, and they answer it with strikingly similar shapes even
-though the syntax varies a lot. Two ideas recur everywhere:
+Use a collection filter to find matching sessions, windows, or panes. Use an
+exactly-one lookup when your next operation requires a single target.
 
-- **Filtering returns a collection; getting one insists on exactly one.** A
-  `.filter()` (or `.where()`) call always gives you back zero or more
-  matches. A `.get()` (or `.one()`, `Selections.exactlyOne()`) call is a
-  different promise: it hands you the single object itself, and raises a
-  distinct, specific error when reality doesn't match that promise — one
-  error for "found nothing," a different one for "found more than one." No
-  port's `get()`-shaped method silently returns "the first match" the way a
-  hand-rolled `results[0]` would.
-- **Where the filter runs is a real choice, not an implementation detail.**
-  Every port that reads a live server can filter in its own language *after*
-  reading everything, or push the filter down into tmux's own format
-  expressions so tmux returns only the matching rows. Which one is faster
-  depends on how much data you're throwing away.
+- **Filtering returns a collection; exactly-one lookup checks the result
+  count.** A `.filter()` or `.where()` call returns zero or more matches. Methods
+  such as `.get()`, `.one()`, and `Selections.exactlyOne()` return one object or
+  report a missing or ambiguous match.
+
+- **Choose where to filter.** Filter a snapshot in your program when you need
+  several queries over the same data. A tmux format filter can reduce the rows
+  returned by a live read. The cost depends on the data and queries you need.
 
 ## Python: `.filter()` and `.get()`, Django-style
 
-Every collection libtmux hands you — `server.sessions`, `session.windows`,
-`window.panes` — is a `QueryList`, and you narrow it by calling `.filter()`
-with keyword arguments, optionally suffixed with a lookup:
+`server.sessions`, `session.windows`, and `window.panes` are `QueryList`
+collections. Call `.filter()` with field names and optional lookup suffixes:
 
 ```python
 >>> session.windows.filter(window_name__startswith='api')
@@ -39,25 +32,17 @@ with keyword arguments, optionally suffixed with a lookup:
 >>> session.windows.filter(window_name__iregex=r'n?vim')
 ```
 
-`exact`, `contains`, `startswith`, `endswith`, `regex`, and their
-case-insensitive `i`-prefixed twins are all available, and conditions chain
-with AND either by passing several keywords to one call or by chaining
-`.filter().filter()`. `.get()` insists on exactly one result, taking a
-`default` for "give me a fallback instead of raising when nothing matches" —
-but a `default` only stands in for *absence*; an ambiguous match
-(`MultipleObjectsReturned`) still raises even with one supplied, because
-handing back an arbitrary match from several is how a script ends up driving
-the wrong pane.
+Lookups include `exact`, `contains`, `startswith`, `endswith`, `regex`, and
+their case-insensitive `i`-prefixed variants. Multiple keywords and chained
+`.filter()` calls combine with AND. `.get()` requires exactly one match. Its
+`default` argument handles an absent result; multiple matches still raise
+`MultipleObjectsReturned`.
 
-Server-wide collections (`server.windows`, `server.panes`) additionally
-enumerate `winlink`s rather than windows — a window shared across two
-sessions (via `link-window`, or a tmuxp-style grouped session) appears once
-per session that links it, so a point lookup against a server-wide
-collection can be genuinely, correctly ambiguous. `Window.linked_sessions`
-answers "which sessions hold this" directly when that's what you actually
-want. For known IDs, `Pane.from_pane_id()` / `Window.from_window_id()` ask
-tmux to resolve the ID itself — tmux can't return more than one match for an
-ID, so they're the right tool when `.get()` would be overkill.
+Server-wide collections (`server.windows`, `server.panes`) enumerate window
+links. A window linked to two sessions appears once per session, so a lookup can
+be ambiguous even when the window ID is unique. Use `Window.linked_sessions` to
+find its sessions. For a known ID, use `Pane.from_pane_id()` or
+`Window.from_window_id()` to resolve the object directly.
 
 For servers with hundreds or thousands of panes, `.filter()` still builds
 every object before you discard the ones that don't match. `search_sessions`,
@@ -68,19 +53,16 @@ to the server instead, so libtmux builds objects only for the matches:
 >>> server.search_sessions(filter='#{==:#{session_name},alpha-1}')
 ```
 
-The trade-off: Python-side lookups (`__regex`, `in`, set membership) work
-everywhere and need no tmux version beyond the library's own floor; tmux's
-own filter grammar needs tmux ≥ 3.2, and a malformed expression fails
-*silently* — an unknown format token expands to empty, which the filter
-engine reads as false, so a bad filter and a filter that matched nothing
-look identical. If a `search_*()` call unexpectedly returns empty, swap in
-`#{m:*,#{session_name}}` first to confirm the issue is syntax, not data.
+Python-side lookups work with the library's supported tmux versions. The tmux
+filter grammar requires tmux 3.2 or newer. An unknown format token expands to an
+empty value, so a malformed filter can look like a valid filter with no matches.
+If `search_*()` unexpectedly returns no results, try `#{m:*,#{session_name}}` to
+check that the session data is available.
 
 ## TypeScript: criteria as data
 
-TypeScript's `Selection.where()` takes structured, serializable criteria
-rather than a predicate function — the query is data you could write to a
-config file or send over MCP, not code:
+TypeScript's `Selection.where()` accepts structured, serializable criteria that
+can be stored in a configuration file or sent through MCP:
 
 ```ts
 snapshot.sessions.where({
@@ -91,41 +73,34 @@ snapshot.sessions.where({
 });
 ```
 
-`some` / `every` / `none` quantify over a relation the same way SQL's
-`EXISTS` does, and `{ mode: "insensitive" }` opts into case-insensitivity
-per comparison rather than via a separate lookup name. `.filter()` exists
-alongside `.where()` for an ordinary predicate function, and the two are
-deliberately never overloaded into each other — one is a value you can
-encode and decode (`encodeWhereDocument` / `decodeWhereDocument`), the other
-is arbitrary code. `.one()` throws `NoMatchError` / `MultipleMatchesError`;
-`.oneOrUndefined()` is the `default`-shaped escape hatch.
+`some`, `every`, and `none` test related objects. `{ mode: "insensitive" }`
+enables case-insensitive comparison. Use `.where()` for criteria that can be
+encoded with `encodeWhereDocument` and decoded with `decodeWhereDocument`; use
+`.filter()` for a predicate function. `.one()` throws `NoMatchError` or
+`MultipleMatchesError`. `.oneOrUndefined()` permits an absent result.
 
 ## Go, Rust, Java, C++: typed fields that fail queries at compile time
 
-Four of the ports lean on their type systems to make an impossible
-comparison a compile error rather than a runtime empty result:
+These ports use typed fields to reject invalid comparisons at compile time:
 
 - **Go** offers both `tmux.PaneFilter{Active: tmux.Ptr(true), ...}` structs
   that push down into `SearchPanes` (one tmux command, only matches
   returned), and a `snapshot()` read followed by `tmuxq.Where(panes,
   predicate)` when you want several answers from one read.
-- **Rust**'s typed field handles reject nonsense at the type level —
-  `fields.pane_active.eq(true)` compiles because the field is a flag, but
-  the equivalent `.gt(...)` on it would not. Expressions compose with
-  `.and()`, and with the `serde` feature a query lowers to a versioned JSON
-  envelope so it can travel through a config file or an MCP call.
+- **Rust** uses typed fields: `fields.pane_active.eq(true)` is valid, but
+  `.gt(...)` on that boolean field is not. Expressions compose with `.and()`.
+  With the `serde` feature, a query can be encoded as a versioned JSON document
+  for configuration or MCP.
 - **Java** exposes each field as a typed accessor (`Pane_.index()`,
   `Session_.name()`) that plugs straight into an ordinary `Stream.filter()`;
   `Pane_.index().startsWith("2")` doesn't compile because the index is a
   number, not a string. `Selections.exactlyOne(...)` is the `.get()`-shaped
   call, throwing `NoMatchException` or `MultipleMatchesException`.
-- **C++**'s `FilterExpr` composes with `&&`, `||`, and `!` over tmux's own
-  fields (`pane::command.starts_with("nv") && pane::active`), and
-  `pane::active.starts_with("x")` is a build failure, not a query that
-  silently returns nothing — a property the port's own test suite asserts by
-  compiling code that should *not* compile.
+- **C++** composes `FilterExpr` values with `&&`, `||`, and `!`, as in
+  `pane::command.starts_with("nv") && pane::active`. Invalid field operations
+  such as `pane::active.starts_with("x")` fail to compile.
 
-The same shape, port by port:
+Examples of typed and local filters:
 
 ```rust
 use libtmux::query::{Filterable as _, QueryIteratorExt as _};
@@ -187,7 +162,7 @@ IReadOnlyList<Session> matched = sessions.Matching<Session>(
 
 ```cpp
 // A filter is a value built from typed fields; `window::active.starts_with(...)`
-// would not compile — a flag has no string operations.
+// would not compile: a flag has no string operations.
 const auto interesting =
     libtmux::window::name.starts_with("e") || libtmux::window::name == "logs";
 
@@ -204,7 +179,7 @@ if (const auto only = libtmux::exactly_one(logs); only.has_value()) {
 // Filter locally with the standard library:
 let editors = try await server.panes().filter { $0.currentCommand == "nvim" }
 
-// Or build a filter that travels — stored, sent, replayed elsewhere:
+// Or build a filter that travels: stored, sent, replayed elsewhere:
 let expression = try FilterExpr<Pane>.where(\.currentCommand, .isIn(["nvim", "vim"]))
 let matching = try await server.panes().filter(expression)
 ```
@@ -217,7 +192,5 @@ let matching = try await server.panes().filter(expression)
 | TypeScript | `.where()` / `.filter()` | `.one()` | `NoMatchError` (or `.oneOrUndefined()`) | `MultipleMatchesError` |
 | Java | `Stream.filter()` | `Selections.exactlyOne()` | `NoMatchException` | `MultipleMatchesException` |
 
-Go, Rust, C++, C#, and Swift each have some form of "find the one match" too,
-but this page only lists the exact exception/result names verified above —
-check the port's own reference for the rest rather than assuming the pattern
-carries the same identifier.
+See the Go, Rust, C++, .NET, and Swift references for their exactly-one result
+types and failure handling.

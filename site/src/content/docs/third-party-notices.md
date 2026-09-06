@@ -39,9 +39,9 @@ Doxygen or any modified version of it.
 Three ports deep-link to the canonical host their ecosystem already uses,
 rather than duplicating it here:
 
-- Rust — [docs.rs](https://docs.rs/libtmux)
-- Go — [pkg.go.dev](https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux)
-- Java and Kotlin — [javadoc.io](https://javadoc.io/doc/io.github.libtmux/libtmux)
+- Rust: [docs.rs](https://docs.rs/libtmux)
+- Go: [pkg.go.dev](https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux)
+- Java and Kotlin: [javadoc.io](https://javadoc.io/doc/io.github.libtmux/libtmux)
 
 Those sites are operated independently of this project and carry their own
 terms.
