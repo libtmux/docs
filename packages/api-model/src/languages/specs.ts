@@ -115,6 +115,12 @@ export const RUST: LanguageSpec = {
   ],
   commentTypes: ['line_comment', 'block_comment'],
   attributeTypes: ['attribute_item'],
+  // A module compiled only for tests is not API. Rust keeps its unit tests
+  // beside the code they exercise, so this is the whole of `mod tests`.
+  skipNode: (node) =>
+    node.type === 'mod_item' &&
+    node.previousNamedSibling?.type === 'attribute_item' &&
+    /#\[\s*cfg\s*\(\s*test\s*\)\s*\]/.test(node.previousNamedSibling.text),
   stripDoc: stripSlashDoc,
   modifiers: { async: 'async', unsafe: 'unsafe', 'pub(crate)': 'private' },
   // `impl Pane { … }` names the type it extends in `type`, not `name`. The

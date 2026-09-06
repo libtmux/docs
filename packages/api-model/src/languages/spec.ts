@@ -59,6 +59,15 @@ export interface LanguageSpec {
   /** Comment node types that can carry documentation. */
   commentTypes: string[]
   /**
+   * A container the walk should not descend into at all.
+   *
+   * Rust puts its unit tests in a `#[cfg(test)] mod tests` beside the code, so
+   * a walk that treats every module as transparent publishes the test
+   * doubles: `RefusingExecutor` and `ComposedSessionExecutor` had pages in the
+   * reference and exist only inside `server.rs`'s test module.
+   */
+  skipNode?: (node: Node) => boolean
+  /**
    * Node types that sit between a doc comment and what it documents.
    *
    * Rust writes `#[derive(Clone)]` and `#[must_use = "…"]` under the doc
@@ -255,6 +264,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     const f = { ...DEFAULT_FIELDS, ...spec.fields }
 
     if (spec.transparent?.includes(child.type)) {
+      if (spec.skipNode?.(child)) continue
       walk(child, ctx, parent)
       continue
     }

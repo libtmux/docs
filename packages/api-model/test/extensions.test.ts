@@ -60,10 +60,23 @@ describe('an extension block belongs to the type it extends', () => {
     expect(mergeExtensions(symbols, 'class').map((s) => s.id)).toEqual(symbols.map((s) => s.id))
   })
 
-  it('leaves a block on a type the port does not export', () => {
-    // `impl str { … }` and blocks on unexported types have nothing to fold
-    // onto; libtmux-rs has 38 of them.
+  it('drops a block on a type the port does not export', () => {
+    // `impl PartialEq<str> for TmuxText` names `str`, and blocks on private
+    // types name those. Neither is a declaration, so neither is a page about
+    // anything — libtmux-rs had 33 of them in the reference.
     const symbols = [sym('formats.text.str', 'class'), member('formats.text.str.width')]
+    expect(mergeExtensions(symbols, 'class')).toEqual([])
+  })
+
+  it('still leaves one alone when the name is ambiguous rather than absent', () => {
+    // Absent and ambiguous are different: nothing to attach to versus more
+    // than one candidate. Dropping the second would lose real members.
+    const symbols = [
+      sym('a.Error', 'enum'),
+      sym('b.Error', 'struct'),
+      sym('c.Error', 'class'),
+      member('c.Error.code'),
+    ]
     expect(mergeExtensions(symbols, 'class').map((s) => s.id)).toEqual(symbols.map((s) => s.id))
   })
 

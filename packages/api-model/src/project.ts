@@ -74,10 +74,22 @@ export function mergeExtensions(symbols: ApiSymbol[], kind: SymbolKind | undefin
   }
 
   const moves = new Map<string, string>()
+  const orphans = new Set<string>()
   for (const s of symbols) {
     if (s.parent || s.kind !== kind) continue
     const ids = declarations.get(s.name)
     if (ids?.size === 1) moves.set(s.id, [...ids][0])
+    // An extension naming a type this model does not hold is an extension of
+    // something the port does not export: a private type, a foreign one like
+    // `str` or `OsString`, or a generic parameter. It is not a declaration, so
+    // there is nothing for it to be a page about — 33 of libtmux-rs's had one.
+    else if (!ids?.size) orphans.add(s.id)
+  }
+  if (moves.size === 0 && orphans.size === 0) return symbols
+
+  if (orphans.size) {
+    const under = (id: string) => [...orphans].some((o) => id === o || id.startsWith(`${o}.`))
+    symbols = symbols.filter((s) => !under(s.id))
   }
   if (moves.size === 0) return symbols
 
