@@ -39,6 +39,7 @@ jobs:
   # A matrix over a hand-written list would be one more copy to forget.
   locales:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       list: ${{ steps.read.outputs.list }}
     steps:
@@ -57,6 +58,7 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: locales
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       # One build per locale. Astro's base changes the URLs a build emits, and
       # a build carries exactly one, so a locale is a separate build rather
@@ -216,6 +218,7 @@ jobs:
     needs: [locales, build]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       # Serially, not in parallel: every leg writes the bucket-root files
       # (robots.txt) and creates an invalidation, and two legs racing there
