@@ -217,7 +217,12 @@ let stale = 0
 let skipped = 0
 for (const [port, cfg] of Object.entries(PORTS)) {
   if (only && only !== port) continue
-  const checkout = expand(cfg.checkout)
+  // `build-site.sh` and `remark-port-code.mjs` already read this, and the
+  // reason is the same here: doc-comment work happens on a port's `docs-site`
+  // worktree, and without an override there is no way to see its effect on
+  // the reference until the branch lands.
+  const override = process.env[`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}`]
+  const checkout = expand(override || cfg.checkout)
   if (!existsSync(checkout)) {
     // Generating without source is impossible, so that still fails. Checking
     // without source is merely unanswerable, and a fresh clone and a CI runner
