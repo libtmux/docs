@@ -1,0 +1,72 @@
+---
+/**
+ * The bar that says this site describes an alpha.
+ *
+ * Sits directly under the header and scrolls away with the page rather than
+ * pinning: the header is `sticky top-0`, and a second sticky strip would take
+ * a permanent bite out of every viewport for a sentence a reader needs once.
+ *
+ * Dismissal is remembered, and the remembering has to survive first paint.
+ * `ThemeScript` reads the key in <head> and sets `data-prerelease` on the
+ * root before any body markup is parsed, so a reader who has dismissed this
+ * never sees it flash — the same shape as the theme and the package picker.
+ * The rule that acts on the attribute lives in `global.css`, which is in the
+ * critical CSS; a scoped style here would arrive too late to prevent the
+ * flash it exists to prevent.
+ *
+ * No-JS readers keep the bar, which is the right failure: it is a notice, and
+ * showing it twice is better than a dismiss button that silently does
+ * nothing.
+ */
+---
+
+<div class="prerelease-notice" data-prerelease-notice>
+  <div class="prerelease-notice__inner">
+    <p class="prerelease-notice__text">
+      <strong class="prerelease-notice__badge">Prerelease</strong>
+      <span>
+        This site documents an <strong>alpha</strong> of libtmux. Its structure,
+        URLs and APIs are subject to change.
+      </span>
+    </p>
+    <button
+      class="prerelease-notice__dismiss"
+      type="button"
+      data-prerelease-dismiss
+      aria-label="Dismiss the prerelease notice"
+    >
+      Dismiss
+    </button>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'libtmux-docs.prerelease-notice'
+
+  /**
+   * Hide the bar for good, and do it through the same attribute <head> reads.
+   *
+   * Setting the attribute rather than the element's own style is what makes
+   * the next page load free of it: the rule is already in the critical CSS,
+   * so the following paint has the bar gone rather than removing it.
+   */
+  function dismiss() {
+    try {
+      localStorage.setItem(STORAGE_KEY, 'dismissed')
+    } catch {
+      // A reader with storage blocked still gets the dismissal for this page.
+    }
+    document.documentElement.setAttribute('data-prerelease', 'dismissed')
+  }
+
+  function bind() {
+    for (const button of document.querySelectorAll<HTMLElement>('[data-prerelease-dismiss]')) {
+      if (button.dataset.bound) continue
+      button.dataset.bound = 'yes'
+      button.addEventListener('click', dismiss)
+    }
+  }
+
+  bind()
+  document.addEventListener('astro:after-swap', bind)
+</script>

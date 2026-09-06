@@ -66,6 +66,20 @@
   }
 
   /**
+   * Whether the prerelease bar has been dismissed, resolved in <head>.
+   *
+   * Same reason as the picker above: read beside the bar's own markup, a
+   * reader who dismissed it last visit would watch it paint and vanish. Read
+   * here it is an attribute the first paint already carries, and `global.css`
+   * keys the bar's `display` off it, so the bar is never drawn at all.
+   */
+  function applyPrereleaseNotice() {
+    if (localStorage.getItem('libtmux-docs.prerelease-notice') === 'dismissed') {
+      document.documentElement.setAttribute('data-prerelease', 'dismissed');
+    }
+  }
+
+  /**
    * Hold the page until the real faces are in, then show it once.
    *
    * `font-display: block` is not enough on its own, and the reason is the
@@ -113,12 +127,14 @@
   // Apply theme immediately on load
   applyTheme();
   applyPackagePort();
+  applyPrereleaseNotice();
   gateOnFonts();
 
   // Expose for the bundled astro:after-swap handler below so the logic isn't
   // duplicated (inline scripts can't be imported from).
   window.__applyTheme = applyTheme;
   window.__applyPackagePort = applyPackagePort;
+  window.__applyPrereleaseNotice = applyPrereleaseNotice;
 
   // Listen for system preference changes
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -139,5 +155,6 @@
   document.addEventListener('astro:after-swap', () => {
     window.__applyTheme?.()
     window.__applyPackagePort?.()
+    window.__applyPrereleaseNotice?.()
   })
 </script>

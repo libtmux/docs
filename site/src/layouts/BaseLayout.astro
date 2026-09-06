@@ -8,6 +8,7 @@ import { Font } from 'astro:assets'
 import BackToTop from '../components/BackToTop.astro'
 import Seo from '../components/Seo.astro'
 import SiteFooter from '../components/SiteFooter.astro'
+import PrereleaseNotice from '../components/PrereleaseNotice.astro'
 import SiteHeader from '../components/SiteHeader.astro'
 import ThemeScript from '../components/ThemeScript.astro'
 import SearchModal from '../components/SearchModal.astro'
@@ -196,6 +197,10 @@ const localePagePath = localeSourcePath(Astro.url.pathname, buildLocale())
         />
       )
     }
+    {/* Under the header and inside the same `bare` guard: a page without the
+        top bar is an embedded or vendored one, and a notice about this site's
+        stability has no business appearing there. */}
+    {!bare && <PrereleaseNotice />}
     <!-- `data-pagefind-body` scopes the index to the page's own content.
          Without it Pagefind indexed the header and footer on all 1,066
          pages, so every nav label outranked the prose that mentioned it
