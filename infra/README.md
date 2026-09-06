@@ -137,3 +137,38 @@ purge-everything step the current pipeline runs on every deploy; if five
 minutes of possible staleness is unacceptable, keep a purge step as a
 zero-staleness fallback layered on top, not a replacement for the
 Cache-Control split.
+
+
+## Viewer-request rules
+
+Traced by hand against the rules in `cloudfront-function.js`, in order. "port"
+means any of the eight slugs in `ports.ts`; the function itself has no list of
+them and trusts the KeyValueStore lookup to miss for anything that is not one.
+
+| Request URI | Rule that fires | Result |
+| --- | --- | --- |
+| `/` | 0 (origin root) | 302 to `/en/`, the one redirect off an unprefixed path |
+| `/en/` | 2 (directory index) | rewrite to `/en/index.html` |
+| `/en/py` | 1 (KVS, `parts[3]` undefined) | 302 to `/en/py/stable/`, or whatever `py:default` holds |
+| `/en/py/` | 1 (KVS, `parts[3]` empty) | 302 to `/en/py/stable/` |
+| `/en/rs` | 1 attempted, KVS misses | falls through to rule 3: 301 to `/en/rs/`. rs, go and java publish no version prefix, so they get no key to point at |
+| `/en/py/stable` | 3 (extensionless) | 301 to `/en/py/stable/` |
+| `/en/py/latest` | 3 | 301 to `/en/py/latest/`, never the KVS default — `parts[3]` is truthy |
+| `/en/py/v0.46.2` | 3 (`2` is not an asset extension) | 301 to `/en/py/v0.46.2/` |
+| `/en/dotnet/stable/api/libtmux.client` | 3 (`client` is not an asset extension) | 301 with a trailing slash |
+| `/en/reference/py/objects.inv` | none (`inv` is an asset extension) | passes through — this is how an external Sphinx project resolves intersphinx into this site |
+| `/en/py/stable/api/.buildinfo` | none (`buildinfo` is an asset extension) | passes through; a leading dot is a separator like any other |
+| `/en/pagefind/pagefind.js` | none (`js` is an asset extension) | passes through |
+| `/en/versions.json` | none (dot excludes rule 1, `json` is an asset extension) | passes through |
+| `/robots.txt` | none | passes through; it sits above every locale |
+| `/py` | 3 (extensionless) | 301 to `/py/`, then rule 2, then a 403 remapped to `/404.html`. The unprefixed short form is claimed by nothing |
+| `/ja/` | 1 attempted, KVS misses | rewrite to `/ja/index.html` once a second locale is built |
+
+Rule 3's redirect is safe for a genuinely missing path: `/nope` 301s to
+`/nope/`, rule 2 turns that into `/nope/index.html`, which 403s and is
+remapped to the error page. One extra hop, same destination — and it is why
+an unprefixed port slug needs no special case to stay unclaimed.
+
+Swift's DocC output needs no rule of its own: `--transform-for-static-hosting`
+writes a real `index.html` per route, so every DocC page is a genuine object.
+An SPA fallback here would only paper over a non-static build.

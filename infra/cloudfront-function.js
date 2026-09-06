@@ -2,7 +2,9 @@
  * Viewer-request function for the libtmux.org CloudFront distribution.
  * Runtime: cloudfront-js-2.0.
  *
- * Three rules, and the order matters. The KVS lookup runs first because both
+ * Four rules, and the order matters. The origin root is answered first and
+ * alone; every other path is already below a locale. The KVS lookup runs next
+ * because both
  * bare forms it targets would otherwise be swallowed: `/py` has no extension,
  * so rule 3 would 301 it to `/py/` and stop; `/py/` ends in `/`, so rule 2
  * would append `index.html` and hand the origin a 403. Running the lookup
@@ -22,39 +24,59 @@ import cf from 'cloudfront'
 
 const kvsHandle = cf.kvs()
 
+/** The locale the site is published under. Every page lives below it. */
+const DEFAULT_LOCALE = 'en'
+
 async function handler(event) {
     const request = event.request
     const uri = request.uri
     const parts = uri.split('/') // '/py/stable/' -> ['', 'py', 'stable', '']
 
-    // --- 1. Bare language root: "/py" or "/py/" -> 302 to that port's
-    // current default version (e.g. "/py/stable/"), looked up in the KVS.
+    // --- 0. The origin root. Every page is published under a locale, so the
+    // bare root is the one URL with nothing behind it.
     //
-    // The guard has three parts, all necessary:
-    //   - parts[1] truthy:            there is a first segment at all (not "/").
-    //   - !parts[1].includes('.'):    excludes root-level *files* that also
-    //     have an empty/undefined parts[2] but are not a port slug —
-    //     "/versions.json", "/404.html", "/robots.txt", "/favicon.ico".
-    //     Without this, each of those pays for a KVS lookup that can only
-    //     ever miss.
-    //   - !parts[2]:                  parts[2] is undefined for "/py" and ""
-    //     for "/py/" (split's empty trailing element) — either way, nothing
-    //     follows the first segment. A qualified path like "/py/v0.46.2" or
-    //     "/py/stable" has a truthy parts[2] and must NOT hit this branch:
-    //     it already names a real version and must get its own trailing
-    //     slash (rule 3 below), not be redirected to a *different* version.
-    if (parts[1] && !parts[1].includes('.') && !parts[2]) {
+    // A fixed target, not negotiated on Accept-Language: a negotiated redirect
+    // may not be shared between readers, and this is the site's most linked
+    // URL. Cached as a mutable pointer (cache-policy.md), so changing the
+    // default locale takes effect within the edge TTL.
+    if (uri === '/') {
+        return {
+            statusCode: 302,
+            statusDescription: 'Found',
+            headers: {
+                location: { value: `/${DEFAULT_LOCALE}/` },
+                'cache-control': { value: 'public, max-age=0, s-maxage=300' },
+            },
+        }
+    }
+
+    // --- 1. Bare port root under a locale: "/en/py" or "/en/py/" -> 302 to
+    // that port's current default version, looked up in the KVS.
+    //
+    // Anchored on the locale, so an unprefixed "/py" is not claimed by this
+    // rule and falls through to a 404. Ports live below a locale now; the
+    // short form belongs to nothing.
+    //
+    // The rest of the guard:
+    //   - parts[2] truthy:            there is a port segment at all.
+    //   - !parts[2].includes('.'):    excludes files that sit directly under
+    //     the locale — "/en/versions.json", "/en/404.html" — each of which
+    //     would otherwise pay for a lookup that can only miss.
+    //   - !parts[3]:                  nothing follows the port. "/en/py/stable"
+    //     already names a version and must get its own trailing slash from
+    //     rule 3, not be redirected to a different one.
+    if (parts[1] === DEFAULT_LOCALE && parts[2] && !parts[2].includes('.') && !parts[3]) {
         try {
             // Key shape "<slug>:default", value the alias slug it resolves
             // to — mirrors versions.ts's `defaultVersion: Record<port, slug>`
             // one-for-one. CI writes these with `update-keys --if-match` as
             // part of publishing a build that changes a port's default.
-            const dest = await kvsHandle.get(`${parts[1]}:default`)
+            const dest = await kvsHandle.get(`${parts[2]}:default`)
             return {
                 statusCode: 302,
                 statusDescription: 'Found',
                 headers: {
-                    location: { value: `/${parts[1]}/${dest}/` },
+                    location: { value: `/${parts[1]}/${parts[2]}/${dest}/` },
                     // A pointer to a pointer: never cache the redirect
                     // itself, only the page it lands on (cache-policy.md).
                     'cache-control': { value: 'no-store' },
@@ -132,32 +154,8 @@ const ASSET_EXTENSIONS = {
 }
 
 /**
- * Self-check — traced by hand against the three rules above, in order.
- * "port" below means any of the eight slugs in ports.ts (PORT_BY_SLUG);
- * the function itself has no list of them, it trusts the KVS lookup to
- * miss for anything that isn't one.
- *
- * | Request URI                              | Rule that fires        | Result                                   |
- * |-------------------------------------------|-------------------------|-------------------------------------------|
- * | `/`                                        | 2 (directory index)     | rewrite -> `/index.html`                   |
- * | `/py`                                      | 1 (KVS, parts[2] undef) | 302 -> `/py/stable/` (or whatever `py:default` holds) |
- * | `/py/`                                     | 1 (KVS, parts[2] "")    | 302 -> `/py/stable/`                       |
- * | `/rs`                                      | 1 attempted, KVS misses | falls through to rule 3: 301 -> `/rs/`, then rule 2 serves `/rs/index.html` — rs, go and java publish no version prefix, so they get no `<slug>:default` key to point at (notes/decisions/port-root-redirect.md) |
- * | `/py/stable`                                | 3 (extensionless)       | 301 -> `/py/stable/`                       |
- * | `/py/stable/`                               | 2 (directory index)     | rewrite -> `/py/stable/index.html`         |
- * | `/py/latest`                                | 3 (extensionless)       | 301 -> `/py/latest/` (never the KVS default — `parts[2]` is truthy) |
- * | `/py/v0.46.2/`                              | 2 (directory index)     | rewrite -> `/py/v0.46.2/index.html`        |
- * | `/py/v0.46.2` (no trailing slash)           | 3 (`2` is not an asset extension) | 301 -> `/py/v0.46.2/` |
- * | `/dotnet/stable/api/libtmux.client`         | 3 (`client` is not an asset extension) | 301 -> `/dotnet/stable/api/libtmux.client/` |
- * | `/py/stable/_astro/x.css`                   | none (`css` is an asset extension) | passes through unchanged        |
- * | `/swift/stable/documentation/libtmux/`      | 2 (directory index)     | rewrite -> `.../index.html` — a real DocC-emitted object, no SPA fallback needed |
- * | `/ja`                                      | 1 attempted, KVS misses | falls through to rule 3: 301 -> `/ja/`     |
- * | `/ja/`                                     | 1 attempted, KVS misses | falls through to rule 2: rewrite -> `/ja/index.html` |
- * | `/ja/concepts`                              | 3 (extensionless)       | 301 -> `/ja/concepts/`                     |
- * | `/versions.json`                            | none (dot excludes rule 1, `json` is an asset extension) | passes through unchanged |
- * | `/404.html`                                 | none (same as above)    | passes through unchanged                   |
- *
- * Rule 3's redirect is safe for a genuinely missing path too: `/nope` 301s to
- * `/nope/`, which rule 2 turns into `/nope/index.html`, which 403s and is
- * remapped to `/404.html`. One extra hop, same destination.
+ * The rule each URL shape takes, traced by hand, lives in infra/README.md
+ * under "Viewer-request rules". It is prose rather than a comment here
+ * because CloudFront counts comments against this file's 10 KB source quota,
+ * and the table is the largest thing in it.
  */
