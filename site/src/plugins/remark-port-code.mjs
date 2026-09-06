@@ -89,6 +89,26 @@ export const CHECKOUTS = {
 export const expand = (p) => (p.startsWith('~/') ? join(homedir(), p.slice(2)) : p)
 
 /**
+ * Where a port's sources actually are, for this run.
+ *
+ * `CHECKOUTS` names the paths on the machine this site is normally assembled
+ * on. A CI runner has none of them: it checks a port out wherever the runner
+ * puts it, so a build there resolved `~/work/libtmux/libtmux-rs-docs`, found
+ * nothing, and failed every `file=` fence in that port's pages.
+ *
+ * `LIBTMUX_DOCS_CHECKOUT_<SLUG>` overrides one port, uppercased —
+ * `LIBTMUX_DOCS_CHECKOUT_RS=/home/runner/work/libtmux-rs/libtmux-rs`. Per
+ * port rather than one root, because a runner building one port has exactly
+ * that port checked out and should not be able to satisfy another port's
+ * fences by accident: an unset override is an error at read time, which is
+ * the behaviour that catches a half-configured job.
+ */
+export function checkoutFor(owner) {
+  const override = process.env[`LIBTMUX_DOCS_CHECKOUT_${owner.toUpperCase()}`]
+  return expand(override || CHECKOUTS[owner] || '')
+}
+
+/**
  * Parse `file="examples/x.py"` and `region="name"` out of a fence's meta.
  * @param {string | null | undefined} meta
  * @returns {{ file?: string, region?: string }}
@@ -160,7 +180,7 @@ export function remarkPortCode() {
  * @returns {string}
  */
 export function readFence(owner, meta, pagePath) {
-  const abs = join(expand(CHECKOUTS[owner] ?? ''), meta.file)
+  const abs = join(checkoutFor(owner), meta.file)
   /*
    * The checkout wins when it is there, so a local build always shows what
    * the port currently tests and the cache can never mask a change. The cache
@@ -177,7 +197,7 @@ export function readFence(owner, meta, pagePath) {
     // tested source is exactly the drift this is meant to catch.
     throw new Error(
       `${pagePath ?? 'page'}: cannot inline ${meta.file} for ${owner} — ` +
-        `absent from ${CHECKOUTS[owner] ?? '<no checkout configured>'} and from ` +
+        `absent from ${checkoutFor(owner) || '<no checkout configured>'} and from ` +
         'site/src/data/example-sources.json (run scripts/gen-example-sources.mjs)',
     )
   }

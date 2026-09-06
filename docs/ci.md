@@ -278,11 +278,18 @@ The two options considered:
    so running from the default branch in this repo's own trust context,
    downloads it by run ID and publishes to a preview-only role and prefix.
 
-This repo is private (see `../README.md`) — a fork PR is not a real scenario
-yet, and a `workflow_run` handoff is a fourth workflow file that must
-validate `head_sha`/`head_repository` correctly to stay safe, which is more
-surface than today's threat model justifies. If this repo goes public,
-switch to option 2 rather than widening the `if` on option 1.
+This repo went public on 2026-09-06, so a fork PR is now a real scenario and
+option 1 is what ships: a fork's PR builds and is checked, and gets no
+preview URL. That is a degraded experience, not an exposure — no secret and
+no OIDC token is in scope for a fork's `pull_request` run.
+
+Option 2 remains the documented improvement and has not been taken. A
+`workflow_run` handoff runs with secrets against a ref the forker controls,
+and every published failure of that pattern comes from trusting `head_sha`
+or `head_repository` without re-validating them in the trusted context. It
+deserves its own change and its own review rather than being added the day
+the repository's visibility changed. Widening the `if` on option 1 is never
+the alternative.
 
 ## `pr-preview-cleanup.yml`
 
@@ -380,14 +387,15 @@ not encoded here.
   (no `v` prefix); `versions.ts`'s own doc comment writes `v0.x`. This
   document follows `versions.ts`.
 - `ports.ts` lists Python's repo as `tmux-python/libtmux` — a different
-  GitHub organization from `libtmux/*`. A private repo's `workflow_call` is
-  only callable by workflows in the same repository, the same organization,
-  or explicitly allowed via that repo's Actions settings; `libtmux/docs`
-  cannot serve a cross-org caller as a private repo without that repo owner
-  opting in on the `libtmux-docs` side (Settings → Actions → "Access" for
-  the private reusable workflow). This blocks Python's opt-in specifically,
-  not the design in general — noted here since it isn't called out
-  elsewhere.
+  GitHub organization from `libtmux/*`. This is why `libtmux/docs` is a
+  public repository. A reusable workflow in a *private* repo cannot be
+  called by a public repo at all — no Actions access policy lifts that, it
+  is a visibility rule — and private sharing stops at the organization
+  boundary in any case, so a cross-org caller like `tmux-python/libtmux`
+  could never have reached one. The shared publish step has to be reachable
+  from eight public repositories across two organizations, so the repository
+  holding it is public. Nothing in it is a secret: every caller passes its
+  own `role-arn`, `bucket` and `distribution`.
 - `../README.md`'s layout table puts "deploy workflows" under `infra/`; the
   assignment that produced this document placed them at
   `.github/workflows/` instead — the only location GitHub Actions itself

@@ -3,7 +3,8 @@
 Unified documentation site for every libtmux language port: Python, TypeScript,
 Rust, Go, Java/Kotlin, .NET, C++, and Swift — one domain model, one site.
 
-Private while under construction.
+Public. Pull requests welcome — the pages carry an edit link to the file
+behind them.
 
 |            |                                                          |
 | ---------- | -------------------------------------------------------- |

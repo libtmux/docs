@@ -727,6 +727,17 @@ build_reference_cached() {
 # branch would have invalidated everything.
 reference_source_dir() {
   local slug="$1" checkout="$2"
+  # LIBTMUX_DOCS_CHECKOUT_<SLUG> wins outright when set, and skips the
+  # worktree probing below: a CI runner has one port checked out at a path it
+  # chose, with no `-docs` sibling to find. Same variable the prose fences
+  # read (site/src/plugins/remark-port-code.mjs), so a job configures a port's
+  # location once and both halves of the build agree.
+  local override_var="LIBTMUX_DOCS_CHECKOUT_$(printf '%s' "$slug" | tr '[:lower:]' '[:upper:]')"
+  local override="${!override_var:-}"
+  if [ -n "$override" ]; then
+    printf '%s\n' "${override/#\~/$HOME}"
+    return 0
+  fi
   local expanded="${checkout/#\~/$HOME}"
   local worktree="${expanded}-docs"
   case "$slug" in

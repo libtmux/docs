@@ -77,12 +77,6 @@ const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').l
     <h1 class="text-3xl font-bold tracking-tight">{t(locale, 'i18n.coverage')}</h1>
     <p class="mt-3 text-muted">{t(locale, 'i18n.coverageIntro')}</p>
 
-    <!-- Said once, here, rather than beside every link: the repository is
-         private, so an editor link 404s for anyone outside it. A stranger
-         following one otherwise cannot tell that from a broken link. -->
-    <p class="mt-3 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm dark:border-amber-800 dark:bg-amber-950">
-      {t(locale, 'i18n.accessNote')}
-    </p>
 
     <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-1 text-sm">
       {

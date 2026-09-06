@@ -95,19 +95,26 @@ publishes a version prefix:
 ```
 py:default     -> "stable"
 ts:default     -> "stable"
+rs:default     -> "latest"
+go:default     -> "latest"
+java:default   -> "latest"
 dotnet:default -> "stable"
 cxx:default    -> "stable"
 swift:default  -> "stable"
 ```
 
-Those five and no others: they are the ports whose repositories call
-`reusable-deploy.yml`, which is what puts a `<slug>/<version>/` prefix in the
-bucket. rs, go and java publish none, so a key for them would 302 a reader to
-a prefix nobody builds — a 404 reached through a redirect, which is worse
-than the miss it replaced. On a miss the function falls through to the
-ordinary rules and serves the port landing page that is already there, which
-is the whole of what `/en/rs/` is meant to offer. The traced table below
-records that path.
+All eight. rs, go and java were excluded until 2026-09-06, on the grounds
+that nothing published an `rs/<version>/` prefix for a row to point at — a
+row with no target 302s a reader to a 404, which is worse than the miss it
+replaces. That reasoning was about the *reference*, which for those three
+lives on docs.rs, pkg.go.dev and javadoc.io. Their versioned prose tree is
+built and linked exactly like every other port's, so once they publish it the
+bare port root should reach it.
+
+A miss is still handled gracefully: the function falls through to the
+directory-index rule and serves the landing page already at that prefix, so a
+port that has not published yet degrades rather than breaks. The traced table
+below records that path.
 
 The key is the port slug, never the locale: the redirect is only reachable
 under a locale prefix (rule 1 is anchored on it) and every locale resolves a
@@ -167,7 +174,7 @@ them and trusts the KeyValueStore lookup to miss for anything that is not one.
 | `/en/` | 2 (directory index) | rewrite to `/en/index.html` |
 | `/en/py` | 1 (KVS, `parts[3]` undefined) | 302 to `/en/py/stable/`, or whatever `py:default` holds |
 | `/en/py/` | 1 (KVS, `parts[3]` empty) | 302 to `/en/py/stable/` |
-| `/en/rs` | 1 attempted, KVS misses | falls through to rule 3: 301 to `/en/rs/`. rs, go and java publish no version prefix, so they get no key to point at |
+| `/en/rs` | 1 (KVS) | 302 to `/en/rs/latest/`, or whatever `rs:default` holds. Every port has a row since 2026-09-06; before a port's first publish the lookup misses and rule 3 serves `/en/rs/` instead |
 | `/en/py/stable` | 3 (extensionless) | 301 to `/en/py/stable/` |
 | `/en/py/latest` | 3 | 301 to `/en/py/latest/`, never the KVS default — `parts[3]` is truthy |
 | `/en/py/v0.46.2` | 3 (`2` is not an asset extension) | 301 to `/en/py/v0.46.2/` |

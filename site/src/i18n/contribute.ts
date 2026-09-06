@@ -15,19 +15,15 @@ import { DEFAULT_LOCALE, type Locale } from './locales.ts'
  * remote: a contributor's fork is made from the former, and a link to a
  * personal fork would be an invitation into someone else's namespace.
  *
- * KNOWN LIMIT, decided rather than overlooked: that repository is private
- * while the site is under construction, so these links reach collaborators
- * only and everyone else gets GitHub's 404 — indistinguishable, from their
- * side, from a broken link. The alternatives were to make the repository
- * public, or to route contributions somewhere needing no repository access
- * (a public content-only repository, or an issue-form intake). Shipping the
- * links as they are was chosen over both, on the grounds that they work for
- * the people who can use them today and cost nothing to widen later.
+ * The repository is public, so these links work for anyone: a reader who
+ * spots a mistranslation can open the editor, and GitHub offers them a fork
+ * and a pull request without any access being granted first.
  *
- * The coverage page carries `i18n.accessNote` so a reader meets that 404 with
- * an explanation instead of a dead end. If the repository goes public, or a
- * contribution target that needs no access appears, this file and that string
- * are the two places to change.
+ * It was private until 2026-09-06, and the links reached collaborators only —
+ * everyone else got GitHub's 404, indistinguishable from a broken link. The
+ * coverage page carried a note saying so. That note is gone with the reason
+ * for it; this paragraph is what stops it being reintroduced as a fix for a
+ * problem that no longer exists.
  */
 export const CONTRIBUTE_REPO = 'libtmux/docs'
 export const CONTRIBUTE_BRANCH = 'main'

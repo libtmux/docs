@@ -30,8 +30,6 @@ export const ui = {
     'i18n.improveTranslation': 'Improve this translation on GitHub',
     'i18n.editPage': 'Edit this page on GitHub',
     'i18n.coverageLink': 'See what else needs translating',
-    'i18n.accessNote':
-      'Editing needs access to the documentation repository, which is private while the site is under construction. If a link below gives you a GitHub 404, that is why — open an issue and we will find another way to take your translation.',
   },
   ja: {
     'i18n.untranslated': 'このページはまだ翻訳されていません。',
@@ -54,8 +52,6 @@ export const ui = {
     'i18n.improveTranslation': 'GitHub でこの翻訳を改善する',
     'i18n.editPage': 'GitHub でこのページを編集する',
     'i18n.coverageLink': '他に翻訳が必要なページを見る',
-    'i18n.accessNote':
-      '編集にはドキュメントリポジトリへのアクセス権が必要です。サイトは構築中のため、現在このリポジトリは非公開です。下のリンクで GitHub の 404 が表示される場合はそれが理由です。Issue を立てていただければ別の方法を検討します。',
   },
 } satisfies Record<Locale, Record<string, string>>
 

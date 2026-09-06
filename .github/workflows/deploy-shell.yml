@@ -146,13 +146,21 @@ jobs:
   # design (a fork's build step above still runs, with no OIDC and no
   # secrets in scope — GITHUB_TOKEN aside — so a malicious build script
   # gains nothing); this job's `if` is what keeps it that way, not the
-  # trigger. Chosen over a `workflow_run` handoff for two reasons: this
-  # repo is private, so a fork PR is not a real scenario yet (README:
-  # "Private while under construction"), and a handoff needs a fourth
-  # workflow file, all validating `head_sha`/`head_repository` correctly,
-  # which is more surface than today's threat model justifies. If the repo
-  # goes public, add that handoff (notes/research/06/07) rather than
-  # widening this `if`.
+  # trigger.
+  #
+  # The repository went public on 2026-09-06, so a fork pull request is now
+  # a real scenario rather than a hypothetical one. The guard is unchanged
+  # and still correct: a fork PR builds and is checked, and simply gets no
+  # preview URL. That is a degraded experience, not an exposure.
+  #
+  # The documented improvement is a `workflow_run` handoff that publishes a
+  # fork's already-built artifact from a trusted context. It is deliberately
+  # NOT taken here: such a workflow runs with secrets against a ref the
+  # forker controls, and every published mistake in that pattern comes from
+  # trusting `head_sha` or `head_repository` without re-validating them. It
+  # is worth building carefully, on its own, with its own review — not
+  # bolted on the day the repo's visibility changed. Widening this `if` is
+  # never the answer (notes/research/06, 07).
   publish-preview:
     needs: [locales, build]
     strategy:

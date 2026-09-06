@@ -89,7 +89,7 @@ is rejected with "qualify it, e.g. '$r/stable'"), so a port's own `sync
 shell's `<slug>/index.html` and a port's `<slug>/stable/` tree are disjoint
 keys; putting one can never race or clobber the other.
 
-### A correction this decision surfaced, now made
+### A correction this decision surfaced, then outgrew
 
 The traced request table used to carry a stale row:
 
@@ -99,23 +99,22 @@ The traced request table used to carry a stale row:
                        external (ports.ts referenceUrl) |
 ```
 
-That was the *pre-fix* behaviour `notes/status.md` describes and reverses,
-and it documented something that would 404 every ecosystem port's landing
-page if implemented as written: nothing publishes an `rs/<version>/` prefix,
-so there is no redirect target to point at.
+That was the *pre-fix* behaviour `notes/status.md` describes and reverses. It
+was corrected to "rs, go and java get no key", on the grounds that nothing
+published an `rs/<version>/` prefix to point at.
 
-`rs`, `go` and `java` must never get a `<slug>:default` KVS entry. `/en/rs`
-and `/en/rs/` fall through to the ordinary rules exactly like the table's own
-`/ja` row — the lookup misses, and rule 2 or 3 serves the landing page that
-is already there, which is the whole of what that prefix is meant to offer.
+Both readings are now superseded. From 2026-09-06 every port publishes its
+versioned prose tree, so every port has a `<slug>:default` row and `/en/rs`
+302s like any other. The distinction that kept flipping was never about the
+prose: it is about where a port's *reference* lives. docs.rs, pkg.go.dev and
+javadoc.io host the reference for rs, go and java; the versioned prose tree
+is built and linked for all eight regardless, and `versionedDocs: true` in
+`ports.ts` says so for all eight.
 
-The row is corrected in `infra/README.md`, which now holds the traced table
-(it moved out of `cloudfront-function.js` to keep that file under
-CloudFront's 10 KB source quota). The KeyValueStore in
-`~/work/tf-config` — `terraform/sites/libtmux.org/main.tf` — is provisioned
-with no rows at all, and only the five ports whose own repositories publish a
-version prefix ever get one written by CI, so the absence is enforced by what
-exists rather than by this note.
+A miss still degrades rather than breaks: the lookup fails, rule 2 or 3
+serves the landing page already at that prefix, and that is what a port sees
+before its first publish.
+
 
 ## Implementation
 
