@@ -556,6 +556,7 @@ html[data-theme="purple"][data-theme-mode="dark"] {
 /* Inline code (not in pre blocks) */
 @layer components {
   .prose code:not(pre code) {
+    overflow-wrap: anywhere;
     @apply bg-gray-100 dark:bg-gray-800 text-[var(--theme-primary)] dark:text-[var(--theme-accent)];
     @apply px-1.5 py-0.5 rounded text-sm font-medium;
     @apply before:content-none! after:content-none!;
@@ -575,21 +576,8 @@ html[data-theme="purple"][data-theme-mode="dark"] {
   color: var(--text-color);
 }
 
-/*
- * Tables.
- *
- * There was not one table rule in any stylesheet in this repository, so every
- * table rendered on Tailwind Typography's defaults: columns sized by content
- * alone, so a wide code cell squeezed the prose beside it to two words a line,
- * and a table wider than its column pushed the page sideways instead of
- * scrolling itself.
- *
- * The palette is gp-sphinx's, like everything else — see gp-sphinx-tokens.css.
- */
+/* Keep row groups in one table grid; the block contains horizontal scrolling. */
 @layer components {
-  /* The scroll container. A table is the one block that legitimately exceeds
-     the measure, and it should carry that itself rather than hand it to the
-     page. */
   .prose :where(table) {
     display: block;
     width: 100%;
@@ -597,15 +585,6 @@ html[data-theme="purple"][data-theme-mode="dark"] {
     overflow-x: auto;
     border-collapse: collapse;
     font-size: 0.9em;
-  }
-
-  /* `auto` rather than `fixed`: the columns here hold names of very different
-     lengths — a port name against a paragraph of prose — and fixed layout
-     gives them equal width, which is the opposite of what they need. */
-  .prose :where(table) > :where(thead, tbody) {
-    display: table;
-    width: 100%;
-    table-layout: auto;
   }
 
   .prose :where(th) {
@@ -627,14 +606,13 @@ html[data-theme="purple"][data-theme-mode="dark"] {
     border-bottom: 0;
   }
 
-  /* A cell holding a symbol or a command should not wrap mid-name, and it is
-     the column that decides the width — not the longest identifier in it. */
-  .prose :where(td) > :where(code):only-child,
-  .prose :where(th) > :where(code):only-child {
-    white-space: nowrap;
+  .prose :where(td) {
+    min-width: 6rem;
+    overflow-wrap: anywhere;
   }
 
   .prose :where(td code, th code) {
+    white-space: normal;
     background: var(--color-inline-code-background);
     border: 1px solid var(--color-background-border);
     border-radius: 0.2em;
