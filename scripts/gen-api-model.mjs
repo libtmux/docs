@@ -150,7 +150,24 @@ const PORTS = {
     repo: 'tmux-python/libtmux',
     // libtmux's own conf.py passes both; specialMembers is ours, because
     // `__enter__` and `__getitem__` are part of how the library is used.
-    options: { privateMembers: true, specialMembers: true, inheritedMembers: true },
+    //
+    // `privateMembers` is about those dunders, not about private packages.
+    // `_vendor` is bundled third-party code whose documentation is somebody
+    // else's, and `_compat` is shims for Python versions rather than API.
+    //
+    // `_internal` stays. It is spelled private and is not in `__all__`, but
+    // `Server.sessions` returns a `QueryList` from it, so a caller holds one
+    // and needs its page — excluding it cost 161 cross-references from public
+    // signatures. Whether to move it is libtmux's decision.
+    //
+    // A leading underscore on a class says the same thing about the class;
+    // `__enter__` starts with two and is unaffected.
+    options: {
+      privateMembers: true,
+      specialMembers: true,
+      inheritedMembers: true,
+      excludePaths: [/(^|\.)_vendor\./, /(^|\.)_compat\./, /(^|\.)_[A-Z]/],
+    },
   },
   ts: {
     checkout: '~/work/libtmux/libtmux-ts',
