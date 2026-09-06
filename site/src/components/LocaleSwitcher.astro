@@ -33,7 +33,7 @@ const entries = Object.entries(localeStatuses) as [Locale, LocaleStatus][]
             the interface language can still find the control. */}
         <span lang={locale}>{LOCALE_LABEL[locale]}</span>
       </summary>
-      <ul class="absolute right-0 z-50 mt-1 w-full min-w-48 rounded border border-edge bg-surface py-1 shadow-lg">
+      <ul class="absolute left-0 z-50 mt-1 w-64 max-w-[calc(100vw-2rem)] rounded border border-edge bg-surface py-1 shadow-lg">
         {entries.map(([l, status]) => (
           <li>
             <a

@@ -43,30 +43,32 @@ const {
   <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 py-3">
     <a href={withRoot('/')} class="font-mono text-lg font-semibold tracking-tight">libtmux</a>
     <div class="flex-1"><PortSwitcher portSlug={portSlug} version={version} /></div>
-    <VersionSwitcher portSlug={pagePath.startsWith('reference') ? undefined : portSlug} version={version} />
-    <div class="relative flex min-w-56 shrink-0 flex-nowrap items-center gap-4" data-page-switchers>
-      <PagePortSwitcher entries={pagePorts} portSlug={portSlug} />
-      {
-        localeStatuses && (
-          <LocaleSwitcher
-            locale={locale}
-            sourcePath={sourcePath ?? pagePath}
-            localeStatuses={localeStatuses}
-          />
-        )
-      }
+    <div class="relative flex max-w-full flex-wrap items-center gap-4" data-header-controls>
+      <VersionSwitcher portSlug={pagePath.startsWith('reference') ? undefined : portSlug} version={version} />
+      <div class="flex shrink-0 flex-nowrap items-center gap-4" data-page-switchers>
+        <PagePortSwitcher entries={pagePorts} portSlug={portSlug} />
+        {
+          localeStatuses && (
+            <LocaleSwitcher
+              locale={locale}
+              sourcePath={sourcePath ?? pagePath}
+              localeStatuses={localeStatuses}
+            />
+          )
+        }
+      </div>
+      <a
+        href={withPortRoot('/reference/')}
+        class="topnav-chip px-2 py-1 text-sm"
+      >Reference</a>
+      <a href={withRoot('/mcp/')} class="topnav-chip px-2 py-1 text-sm">MCP</a>
+      <a
+        href={withRoot('/search/')}
+        class="topnav-chip border border-edge px-2 py-1 text-sm"
+        aria-label="Search the documentation"
+      >
+        Search
+      </a>
     </div>
-    <a
-      href={withPortRoot('/reference/')}
-      class="topnav-chip px-2 py-1 text-sm"
-    >Reference</a>
-    <a href={withRoot('/mcp/')} class="topnav-chip px-2 py-1 text-sm">MCP</a>
-    <a
-      href={withRoot('/search/')}
-      class="topnav-chip border border-edge px-2 py-1 text-sm"
-      aria-label="Search the documentation"
-    >
-      Search
-    </a>
   </div>
 </header>
