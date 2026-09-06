@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-06T13:33:04.836Z",
+ "generated": "2026-09-06T19:20:37.904Z",
  "mentions": [
   {
    "port": "cxx",
@@ -1263,6 +1263,13 @@
   },
   {
    "port": "java",
+   "symbol": "io.github.libtmux.batch.Batch.Batch",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "java",
    "symbol": "io.github.libtmux.Channel.Channel.drain",
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
@@ -1271,9 +1278,37 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.control.ControlClient.ControlClient",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.control.ControlClient.ControlClient",
    "page": "/examples/capture-pane-output/",
    "title": "Capture pane output",
    "section": "examples"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.control.ControlClient.ControlClient.attach",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.control.ControlClient.ControlClient.send",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.control.ControlClient.ControlClient.subscribeEvents",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
   },
   {
    "port": "java",
@@ -2124,23 +2159,37 @@
   },
   {
    "port": "rs",
-   "symbol": "pane.observe.Pane.wait_for_text",
-   "page": "/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.observe.Pane.wait_for_text",
-   "page": "/guides/testing-with-libtmux/",
-   "title": "Testing with libtmux",
-   "section": "guides"
+   "symbol": "pane.Pane.append_option",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
   },
   {
    "port": "rs",
    "symbol": "pane.Pane.from_env",
    "page": "/topics/environment/",
    "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.hook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.option_names",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.options",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
    "section": "topics"
   },
   {
@@ -2166,6 +2215,55 @@
   },
   {
    "port": "rs",
+   "symbol": "pane.Pane.set_hook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.set_option",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.typed_option",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.unset_hook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.unset_option",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.wait_for_text",
+   "page": "/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.wait_for_text",
+   "page": "/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
    "symbol": "pane.Pane.window",
    "page": "/topics/traversal/",
    "title": "Traversal",
@@ -2177,69 +2275,6 @@
    "page": "/examples/capture-pane-output/",
    "title": "Capture pane output",
    "section": "examples"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.settings.Pane.append_option",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.settings.Pane.hook",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.settings.Pane.option_names",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.settings.Pane.options",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.settings.Pane.set_hook",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.settings.Pane.set_option",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.settings.Pane.typed_option",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.settings.Pane.unset_hook",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.settings.Pane.unset_option",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
   },
   {
    "port": "rs",
@@ -2257,30 +2292,9 @@
   },
   {
    "port": "rs",
-   "symbol": "server.channels.Server.signal_channel",
-   "page": "/topics/waiting-and-retry/",
-   "title": "Waiting and retrying",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.channels.Server.wait_for_channel",
-   "page": "/topics/waiting-and-retry/",
-   "title": "Waiting and retrying",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
    "symbol": "server.ChannelWait.Signalled",
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.discovery.Server.sessions",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
    "section": "topics"
   },
   {
@@ -2302,6 +2316,13 @@
    "symbol": "server.Server.check_alive",
    "page": "/topics/socket-and-servers/",
    "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.environment_all",
+   "page": "/topics/environment/",
+   "title": "Environment",
    "section": "topics"
   },
   {
@@ -2334,23 +2355,37 @@
   },
   {
    "port": "rs",
-   "symbol": "server.settings.Server.environment_all",
+   "symbol": "server.Server.sessions",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.set_environment",
    "page": "/topics/environment/",
    "title": "Environment",
    "section": "topics"
   },
   {
    "port": "rs",
-   "symbol": "server.settings.Server.set_environment",
+   "symbol": "server.Server.signal_channel",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.unset_environment",
    "page": "/topics/environment/",
    "title": "Environment",
    "section": "topics"
   },
   {
    "port": "rs",
-   "symbol": "server.settings.Server.unset_environment",
-   "page": "/topics/environment/",
-   "title": "Environment",
+   "symbol": "server.Server.wait_for_channel",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
    "section": "topics"
   },
   {
@@ -2358,6 +2393,13 @@
    "symbol": "session.Session.active_window",
    "page": "/topics/traversal/",
    "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.Session.environment_all",
+   "page": "/topics/environment/",
+   "title": "Environment",
    "section": "topics"
   },
   {
@@ -2390,30 +2432,23 @@
   },
   {
    "port": "rs",
+   "symbol": "session.Session.set_environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.Session.unset_environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
    "symbol": "session.Session.windows",
    "page": "/topics/traversal/",
    "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.settings.Session.environment_all",
-   "page": "/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.settings.Session.set_environment",
-   "page": "/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "session.settings.Session.unset_environment",
-   "page": "/topics/environment/",
-   "title": "Environment",
    "section": "topics"
   },
   {
@@ -2446,37 +2481,9 @@
   },
   {
    "port": "rs",
-   "symbol": "window.navigation.Window.active_pane",
+   "symbol": "window.Window.active_pane",
    "page": "/topics/traversal/",
    "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "window.navigation.Window.panes",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "window.navigation.Window.search_panes",
-   "page": "/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "window.navigation.Window.session",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "window.settings.Window.set_hook",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
    "section": "topics"
   },
   {
@@ -2484,6 +2491,34 @@
    "symbol": "window.Window.from_env",
    "page": "/topics/environment/",
    "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "window.Window.panes",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "window.Window.search_panes",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "window.Window.session",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "window.Window.set_hook",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
    "section": "topics"
   },
   {
@@ -2499,6 +2534,13 @@
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "ControlSession.send(_:)",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
   },
   {
    "port": "swift",
