@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro'
+import { SITE_ROOT } from '../lib/site-root'
 
 /**
  * robots.txt, generated so it can name the sitemap by absolute URL.
@@ -18,7 +19,15 @@ import type { APIRoute } from 'astro'
  * Pagefind's index shards, which are large, numerous and meaningless as pages.
  */
 export const GET: APIRoute = ({ site }) => {
-  const sitemap = site ? new URL('sitemap-index.xml', site).href : '/sitemap-index.xml'
+  /*
+   * Every path here is composed through the site root. A crawler reads
+   * robots.txt only at the true origin root, but the tree it describes sits
+   * under a locale prefix, so a bare `/pagefind/` or a sitemap at the origin
+   * names something nothing serves. `SITE_ROOT` is empty at the site root, so
+   * this is unchanged there.
+   */
+  const at = (path: string) => `${SITE_ROOT}${path}`
+  const sitemap = site ? new URL(at('/sitemap-index.xml'), site).href : at('/sitemap-index.xml')
 
   const body = `# https://www.robotstxt.org/robotstxt.html
 User-agent: *
@@ -26,13 +35,13 @@ Allow: /
 
 # Pull-request previews. Every page in one is already noindex; this keeps
 # them from being fetched at all.
-Disallow: /pr-
+Disallow: ${at('/pr-')}
 
 # Component and layout demos: real URLs, no reader-facing content.
-Disallow: /demo
+Disallow: ${at('/demo')}
 
 # Pagefind's index shards — binary fragments, not documents.
-Disallow: /pagefind/
+Disallow: ${at('/pagefind/')}
 
 Sitemap: ${sitemap}
 `

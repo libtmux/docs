@@ -78,6 +78,14 @@ site_dir="$repo_root/site"
 out_dir="${LIBTMUX_DOCS_OUT_DIR:-$repo_root/_site}"
 site_origin="${LIBTMUX_DOCS_SITE:-https://libtmux.org}"
 
+# Locale is the outermost segment, so every page this assembly renders lives
+# under it. `$out_dir` stays the bucket root — logs and robots.txt belong
+# there, above any locale — and `$site_out` is where the site itself goes.
+locale="${LIBTMUX_DOCS_LOCALE:-en}"
+site_out="$out_dir/$locale"
+LIBTMUX_DOCS_ROOT="/$locale/"
+export LIBTMUX_DOCS_ROOT
+
 # Only one Astro build may run in this working tree at a time.
 #
 # Two concurrent assemblies interleave into `_site` and produce a tree whose
@@ -556,7 +564,7 @@ render_staged_reference() {
   local rc=0
   rm -rf "$build_out"
   LIBTMUX_DOCS_PORT="$slug" build_shell \
-    "/$slug/$version/" "$version" "$(kind_for_version "$version")" \
+    "/$locale/$slug/$version/" "$version" "$(kind_for_version "$version")" \
     false "$version" "$build_out" || rc=$?
 
   if [ "$rc" -eq 0 ] && [ -d "$build_out/api" ]; then
@@ -594,7 +602,8 @@ render_staged_reference() {
 # still points at the real page.
 write_reference_redirect() {
   local slug="$1" dest="$2"
-  local target="${site_origin%/}/reference/$slug/"
+  # Through the site root, like every other link the assembly emits.
+  local target="${site_origin%/}/$locale/reference/$slug/"
   cat >"$dest" <<HTML
 <!doctype html>
 <html lang="en">
@@ -603,10 +612,10 @@ write_reference_redirect() {
     <title>API reference moved</title>
     <link rel="canonical" href="$target" />
     <meta name="robots" content="noindex, follow" />
-    <meta http-equiv="refresh" content="0; url=/reference/$slug/" />
+    <meta http-equiv="refresh" content="0; url=/$locale/reference/$slug/" />
   </head>
   <body>
-    <p>This reference now lives at <a href="/reference/$slug/">/reference/$slug/</a>.</p>
+    <p>This reference now lives at <a href="/$locale/reference/$slug/">/$locale/reference/$slug/</a>.</p>
   </body>
 </html>
 HTML
@@ -923,7 +932,7 @@ build_reference() {
 # ---------------------------------------------------------------------------
 
 log "building shell root (shared prose)"
-build_shell "/" "latest" "trunk" "true" "stable" "$out_dir"
+build_shell "/$locale/" "latest" "trunk" "true" "stable" "$site_out"
 
 # Every port's home page (site/src/pages/[port]/index.astro) is built here,
 # at the root, because its own getStaticPaths() only emits routes for the
@@ -936,7 +945,7 @@ build_shell "/" "latest" "trunk" "true" "stable" "$out_dir"
 port_home_snapshots="$scratch/port-homes"
 mkdir -p "$port_home_snapshots"
 while IFS='|' read -r slug _name _versioned _renderer _generator _checkout _ecosystem_host; do
-  [ -f "$out_dir/$slug/index.html" ] && cp "$out_dir/$slug/index.html" "$port_home_snapshots/$slug.html"
+  [ -f "$site_out/$slug/index.html" ] && cp "$site_out/$slug/index.html" "$port_home_snapshots/$slug.html"
 done < <(list_ports)
 
 # gen-versions.mjs's derived manifest supersedes the static two-entry seed
@@ -948,7 +957,7 @@ done < <(list_ports)
 # at the end against what was actually assembled: a git tag is evidence that
 # a release happened, not that its docs were published, and offering a reader
 # a version that 404s is worse than not listing it.
-cp "$manifest" "$out_dir/versions.json"
+cp "$manifest" "$site_out/versions.json"
 
 # ---------------------------------------------------------------------------
 # 2/3. Self-hosted ports: shell build per port x version, plus reference
@@ -975,11 +984,11 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     # `versionedDocs: false` stays supported, not because anything uses it.
     log "building $name ($slug) prose only (base=/$slug/, reference on $ecosystem_host)"
     LIBTMUX_DOCS_PORT="$slug" \
-      build_shell "/$slug/" "stable" "alias" "false" "stable" "$out_dir/$slug"
+      build_shell "/$locale/$slug/" "stable" "alias" "false" "stable" "$site_out/$slug"
     # That build just overwrote this port's home page with a copy of the
     # site homepage — see the snapshot comment above. Put the real one back.
     [ -f "$port_home_snapshots/$slug.html" ] &&
-      cp "$port_home_snapshots/$slug.html" "$out_dir/$slug/index.html"
+      cp "$port_home_snapshots/$slug.html" "$site_out/$slug/index.html"
     summary_rows+=("$slug|-|$versioned|prose|one unversioned prose tree; see versionedDocs in ports.ts")
     continue
   fi
@@ -995,14 +1004,14 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     is_default=false
     [ "$version" = "$default_version" ] && is_default=true
 
-    port_out="$out_dir/$slug/$version"
-    log "building $name ($slug)/$version (base=/$slug/$version/, kind=$kind, default=$is_default)"
+    port_out="$site_out/$slug/$version"
+    log "building $name ($slug)/$version (base=/$locale/$slug/$version/, kind=$kind, default=$is_default)"
     # LIBTMUX_DOCS_PORT is what makes this a *language* build rather than a
     # copy of the shared prose: the remark plugin drops every code fence
     # belonging to another port, and Seo/sidebar treat the page as that
     # port's own rather than a duplicate of the root's.
     LIBTMUX_DOCS_PORT="$slug" \
-      build_shell "/$slug/$version/" "$version" "$kind" "$is_default" "$default_version" "$port_out"
+      build_shell "/$locale/$slug/$version/" "$version" "$kind" "$is_default" "$default_version" "$port_out"
 
     if [ "$skip_refs" -eq 1 ]; then
       summary_rows+=("$slug|$version|$renderer|skipped|--skip-refs")
@@ -1025,7 +1034,7 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     if [ "$slug" != "py" ]; then
       mkdir -p "$port_out/api"
       write_reference_redirect "$slug" "$port_out/api/index.html"
-      summary_rows+=("$slug|$version|redirect|redirected|to /reference/$slug/")
+      summary_rows+=("$slug|$version|redirect|redirected|to /$locale/reference/$slug/")
       continue
     fi
 
@@ -1043,6 +1052,13 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
   done
 done < <(list_ports)
 
+# robots.txt is read only at the true origin root, whatever prefix the site
+# itself sits under, so it is lifted out of the locale tree. Its own contents
+# already name every path through the site root, so the copy needs no edit.
+if [ -f "$site_out/robots.txt" ]; then
+  cp "$site_out/robots.txt" "$out_dir/robots.txt"
+fi
+
 # ---------------------------------------------------------------------------
 # 4. One Pagefind pass over the assembled tree, so search spans the shell,
 # every Sphinx/DocC-rendered port and (once wired up) the Astro-rendered
@@ -1051,8 +1067,8 @@ done < <(list_ports)
 # ---------------------------------------------------------------------------
 
 if [ "$skip_pagefind" -eq 0 ]; then
-  log "indexing $out_dir with Pagefind"
-  (cd "$site_dir" && pnpm exec pagefind --site "$out_dir")
+  log "indexing $site_out with Pagefind"
+  (cd "$site_dir" && pnpm exec pagefind --site "$site_out")
 else
   log "skipping Pagefind (--skip-pagefind)"
 fi
@@ -1069,7 +1085,7 @@ fi
 # version that would 404. A port without a version tree gets an empty list:
 # it has no /<port>/<version>/ prefix at all, so there is nothing to keep.
 # ---------------------------------------------------------------------------
-LIBTMUX_DOCS_OUT="$out_dir" \
+LIBTMUX_DOCS_OUT="$site_out" \
 LIBTMUX_DOCS_UNVERSIONED="$(list_ports | awk -F'|' '$3 != "versioned" { printf "%s ", $1 }')" \
 node -e '
   const fs = require("node:fs"), path = require("node:path")
@@ -1141,7 +1157,7 @@ while IFS='|' read -r slug _name _versioned renderer _rest; do
     *) continue ;;
   esac
   for version in "${versions[@]}"; do
-    vendored_args+=(--vendored "$slug/$version")
+    vendored_args+=(--vendored "$locale/$slug/$version")
   done
 done < <(list_ports)
 

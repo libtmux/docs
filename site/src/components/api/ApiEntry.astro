@@ -2,6 +2,7 @@
 import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
 import { conceptsFor } from '@libtmux/api-model'
 import { PORT_NAME, mentionsOf, referenceHref } from '../../lib/api-models'
+import { withRoot } from '../../lib/site-root'
 import { highlight } from '../../lib/highlight'
 import ApiBadge from './ApiBadge.astro'
 import ApiDoc from './ApiDoc.astro'
@@ -623,7 +624,7 @@ const hasBody =
                 .map((m, j) => (
                   <>
                     {j > 0 && ', '}
-                    <a href={m.page}>{m.title ?? m.page}</a>
+                    <a href={withRoot(m.page)}>{m.title ?? m.page}</a>
                   </>
                 ))}
             </>
