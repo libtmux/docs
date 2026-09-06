@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-06T20:24:15.354Z",
+ "generated": "2026-09-06T20:26:33.349Z",
  "mentions": [
   {
    "port": "cxx",
@@ -1256,20 +1256,6 @@
   },
   {
    "port": "go",
-   "symbol": "workspace.Bool",
-   "page": "/guides/querying-and-filtering/",
-   "title": "Filtering and querying, in practice",
-   "section": "guides"
-  },
-  {
-   "port": "go",
-   "symbol": "workspace.Bool",
-   "page": "/topics/socket-and-servers/",
-   "title": "Socket and servers",
-   "section": "topics"
-  },
-  {
-   "port": "go",
    "symbol": "workspace.Build",
    "page": "/examples/workspace-from-file/",
    "title": "Build a workspace from a file",
@@ -1449,13 +1435,6 @@
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.query.Fields.Fields.TextField.contains",
-   "page": "/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
   },
   {
    "port": "java",
@@ -2159,13 +2138,6 @@
   },
   {
    "port": "rs",
-   "symbol": "formats.SemanticOwner.Mode",
-   "page": "/topics/waiting-and-retry/",
-   "title": "Waiting and retrying",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
    "symbol": "freeze.freeze",
    "page": "/examples/workspace-from-file/",
    "title": "Build a workspace from a file",
@@ -2292,10 +2264,24 @@
   },
   {
    "port": "rs",
+   "symbol": "pane.Pane.window_id",
+   "page": "/topics/format-tokens/",
+   "title": "Format-token fields",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
    "symbol": "pane.PaneWait.Dead",
    "page": "/examples/capture-pane-output/",
    "title": "Capture pane output",
    "section": "examples"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.Plan",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
   },
   {
    "port": "rs",
@@ -2471,6 +2457,13 @@
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "src.WorkspaceBuilder.plan",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
   },
   {
    "port": "rs",
@@ -2940,6 +2933,13 @@
    "page": "/examples/workspace-from-file/",
    "title": "Build a workspace from a file",
    "section": "examples"
+  },
+  {
+   "port": "ts",
+   "symbol": "common.LogicalRefBase.connection",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
   },
   {
    "port": "ts",
@@ -3522,6 +3522,13 @@
    "text": "send_text(text)",
    "page": "/topics/pane-interaction/",
    "line": 81,
+   "why": "no port defines it"
+  },
+  {
+   "port": "go",
+   "text": "Mode",
+   "page": "/topics/waiting-and-retry/",
+   "line": 144,
    "why": "no port defines it"
   },
   {

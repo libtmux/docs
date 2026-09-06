@@ -143,17 +143,18 @@ function docCommentFor(node: Node, spec: LanguageSpec): string | undefined {
   }
   let cursor: Node | null = anchor.previousNamedSibling
   let expectedRow = anchor.startPosition.row
-  // Attributes are part of the declaration, not a break in it, so the doc
-  // comment above them still documents it. Adjacency is still required: a
-  // comment separated from the attributes by a blank line is a section marker.
-  while (cursor && spec.attributeTypes?.includes(cursor.type)) {
+  // Attributes and ordinary comments are part of the declaration, not a break
+  // in it, so a doc comment above them still documents it — and they
+  // interleave: `Plan` in libtmux-rs is a doc block, three `#[derive]`s, a
+  // two-line `//` note, then the struct. Two loops in sequence stopped at
+  // whichever kind came second, so this is one loop over both.
+  //
+  // Adjacency is still required throughout: a blank line ends the search.
+  while (cursor) {
     if (cursor.endPosition.row < expectedRow - 1) break
-    expectedRow = cursor.startPosition.row
-    cursor = cursor.previousNamedSibling
-  }
-  while (cursor && spec.commentTypes.includes(cursor.type)) {
-    if (cursor.endPosition.row < expectedRow - 1) break
-    const stripped = spec.stripDoc(cursor.text)
+    const isComment = spec.commentTypes.includes(cursor.type)
+    if (!isComment && !spec.attributeTypes?.includes(cursor.type)) break
+    const stripped = isComment ? spec.stripDoc(cursor.text) : undefined
     if (stripped === undefined) {
       // A comment the language does not count as documentation, sitting
       // between a declaration and its doc comment. libtmux-ts writes

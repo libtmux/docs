@@ -150,10 +150,15 @@ export const RUST: LanguageSpec = {
   // Session` either, for the same reason: a variant is as public as its enum,
   // and there is no syntax to say otherwise. Adding `enum_variant` to the
   // members map changed nothing at all until this line changed with it.
+  //
+  // `pub(crate)`, `pub(super)` and `pub(in path)` are all visibility modifiers
+  // and none of them is public: 110 of libtmux-rs's top-level symbols are
+  // restricted that way, and `pub(crate) struct RequestId` had a page saying
+  // it was part of the API. rustdoc's default shows what is `pub`.
   isExported: (node) =>
     node.type === 'impl_item' ||
     node.type === 'enum_variant' ||
-    node.children.some((c) => c?.type === 'visibility_modifier'),
+    node.children.some((c) => c?.type === 'visibility_modifier' && c.text.trim() === 'pub'),
   fields: { returns: 'return_type' },
 }
 
