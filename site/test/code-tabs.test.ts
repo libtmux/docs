@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { Window } from 'happy-dom'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
+import { SITE_BUILT, SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
 
 /**
  * The code-tab group, driven the way a reader drives it.
@@ -20,7 +20,7 @@ import { SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
 // `describe` reports as a pass — while the suites beside it ran.
 const PAGE = join(SITE_ROOT, 'topics/architecture/index.html')
 
-const describeIfBuilt = existsSync(PAGE) ? describe : describe.skip
+const describeIfBuilt = SITE_BUILT && existsSync(PAGE) ? describe : describe.skip
 
 describeIfBuilt('code tabs', () => {
   let window: Window

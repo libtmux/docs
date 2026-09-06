@@ -4,6 +4,7 @@ import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
+const SOURCE_ONLY = process.env.LIBTMUX_DOCS_TEST_SOURCE_ONLY === '1'
 
 export const BUCKET_ROOT: string = process.env.LIBTMUX_DOCS_TEST_SITE
   ? resolve(process.env.LIBTMUX_DOCS_TEST_SITE)
@@ -33,13 +34,15 @@ function assemblyRunning(): boolean {
   }
 }
 
-export const ASSEMBLY_RUNNING: boolean = assemblyRunning()
+export const ASSEMBLY_RUNNING: boolean = !SOURCE_ONLY && assemblyRunning()
 
 /** Whether a complete tree is present for these suites to read. */
-export const SITE_BUILT: boolean = !ASSEMBLY_RUNNING && existsSync(join(SITE_ROOT, 'index.html'))
+export const SITE_BUILT: boolean = !SOURCE_ONLY && !ASSEMBLY_RUNNING && existsSync(join(SITE_ROOT, 'index.html'))
 
 /** Report why output suites could not run. */
-export const SKIP_REASON: string | undefined = ASSEMBLY_RUNNING
+export const SKIP_REASON: string | undefined = SOURCE_ONLY
+  ? 'source-only mode excludes assembled-output checks'
+  : ASSEMBLY_RUNNING
   ? `an assembly holds .build.lock — suites reading ${SITE_ROOT} were skipped rather than ` +
     'measuring a tree mid-rebuild'
   : !existsSync(join(SITE_ROOT, 'index.html'))

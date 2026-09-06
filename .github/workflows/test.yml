@@ -47,4 +47,4 @@ jobs:
       # cheapest-first inside the script so a failure arrives as early as it
       # can.
       - name: test-all
-        run: pnpm test
+        run: pnpm test:publication
