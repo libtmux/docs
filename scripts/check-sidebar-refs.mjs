@@ -28,8 +28,20 @@ const { PORTS: PORT_DEFS } = await import(`file://${resolve(root, 'site/src/lib/
 const PORTS = PORT_DEFS.map((p) => p.slug)
 
 /** A page under each port that renders the docs shell. */
+// The locale segment a served href carries, stripped before comparison. The
+// tree itself is whatever root this check was handed.
+const LOCALE = process.env.LIBTMUX_DOCS_LOCALE ?? 'en'
+
 function pageFor(port) {
-  const unversioned = join(SITE, port, 'concepts', 'index.html')
+  return pageUnder(join(SITE, port))
+}
+
+/** A served href as a path below the site root, with the locale removed. */
+const pathOf = (href) =>
+  href.replace(/^https?:\/\/[^/]+/, '').replace(new RegExp(`^/${LOCALE}/`), '/')
+
+function pageUnder(portDir) {
+  const unversioned = join(portDir, 'concepts', 'index.html')
   if (existsSync(unversioned)) return unversioned
   /*
    * Whichever versions were built, rather than a slug guessed in advance.
@@ -37,7 +49,6 @@ function pageFor(port) {
    * this reported seven ports as having no shell page at all when what they
    * had was a shell page somewhere this function did not look.
    */
-  const portDir = join(SITE, port)
   if (!existsSync(portDir)) return undefined
   for (const version of readdirSync(portDir)) {
     const candidate = join(portDir, version, 'concepts', 'index.html')
@@ -105,7 +116,14 @@ for (const port of PORTS) {
     }
   }
 
-  const ours = sidebar.findIndex((l) => l.href.replace(/^https?:\/\/[^/]+/, '') === `/reference/${port}/`)
+  /*
+   * Compared without the locale segment. The sidebar composes through the
+   * site root, so the href carries whatever prefix the tree was built under —
+   * asserting the bare form here would make this check fail on a correctly
+   * prefixed build, and asserting the prefixed form would fail on an
+   * unprefixed one.
+   */
+  const ours = sidebar.findIndex((l) => pathOf(l.href) === `/reference/${port}/`)
   if (ours === -1) failures.push(`${port}: sidebar does not link /reference/${port}/`)
   else if (ours !== 0) failures.push(`${port}: /reference/${port}/ is entry ${ours}, not first`)
 
@@ -123,9 +141,11 @@ for (const port of PORTS) {
     failures.push('py: sidebar does not link the upstream gp-sphinx reference')
   }
 
-  // Every internal reference link must be a page that exists.
+  // Every internal reference link must be a page that exists. The href is a
+  // served URL and carries the locale segment; SITE is the site root, which is
+  // that segment, so it comes off before the two are joined.
   for (const l of sidebar.filter((x) => !x.external && x.href.includes('/reference/'))) {
-    const path = l.href.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '')
+    const path = pathOf(l.href).replace(/^\//, '')
     if (!existsSync(join(SITE, path, 'index.html'))) {
       failures.push(`${port}: ${l.href} is linked but not built`)
     }

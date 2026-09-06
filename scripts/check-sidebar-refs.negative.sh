@@ -19,13 +19,18 @@ trap 'rm -rf "$tmp"' EXIT
 # Naming a slug in advance is what broke this: `rs` was hard-coded to the
 # unversioned path with no fallback, so once its prose moved under a version
 # every case here died on a missing file rather than testing anything.
+locale="${LIBTMUX_DOCS_LOCALE:-en}"
+
 page_for() {
-  local port="$1" candidate
-  candidate="_site/$port/concepts/index.html"
-  if [ -f "$candidate" ]; then printf '%s' "$candidate"; return 0; fi
-  for dir in "_site/$port"/*/; do
-    candidate="${dir}concepts/index.html"
+  local port="$1" root candidate
+  # The locale tree first, then the bare form, mirroring check-sidebar-refs.mjs.
+  for root in "_site/$locale/$port" "_site/$port"; do
+    candidate="$root/concepts/index.html"
     if [ -f "$candidate" ]; then printf '%s' "$candidate"; return 0; fi
+    for dir in "$root"/*/; do
+      candidate="${dir}concepts/index.html"
+      if [ -f "$candidate" ]; then printf '%s' "$candidate"; return 0; fi
+    done
   done
   return 1
 }

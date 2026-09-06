@@ -149,8 +149,12 @@ grep -qE 'Test Files.*failed' /tmp/libtmux-output-tests.log && exit 1
 # What a port's sidebar offers is not a link-checking question: every link
 # here resolved before this check existed, because the missing ones were
 # simply never emitted.
+# The checks below read the site; `$out` is the bucket root, which also holds
+# robots.txt above every locale. The site itself is one segment in.
+site_out="$out/${LIBTMUX_DOCS_LOCALE:-en}"
+
 step 'sidebar references'
-node scripts/check-sidebar-refs.mjs "$out"
+node scripts/check-sidebar-refs.mjs "$site_out"
 
 # A cross-reference that stops resolving still renders, as plain code, so no
 # link breaks and nothing else fails. Only a floor catches it.
@@ -158,7 +162,7 @@ step 'sidebar references (negative)'
 ./scripts/check-sidebar-refs.negative.sh
 
 step 'cross-reference resolution'
-node scripts/check-xrefs.mjs "$out"
+node scripts/check-xrefs.mjs "$site_out"
 
 step 'cross-reference resolution (negative)'
 node scripts/check-xrefs.negative.mjs
@@ -166,7 +170,7 @@ node scripts/check-xrefs.negative.mjs
 # A type name that resolves to nothing still renders, as plain text. Swift's
 # conformances rendered mangled symbol ids that way through a green suite.
 step 'type name resolution'
-node scripts/check-type-links.mjs "$out"
+node scripts/check-type-links.mjs "$site_out"
 
 step 'type name resolution (negative)'
 node scripts/check-type-links.negative.mjs
@@ -177,7 +181,7 @@ node scripts/check-type-links.negative.mjs
 # The reference tree carries no version and no locale, so a page there has no
 # other page to point at. Nothing else asserts a canonical anywhere.
 step 'reference canonicals'
-node scripts/check-canonicals.mjs "$out"
+node scripts/check-canonicals.mjs "$site_out"
 
 step 'reference canonicals (negative)'
 node scripts/check-canonicals.negative.mjs
@@ -189,7 +193,7 @@ step 'edge extensions (negative)'
 node scripts/check-edge-extensions.negative.mjs
 
 step 'api fidelity'
-node scripts/check-api-fidelity.mjs "$out"
+node scripts/check-api-fidelity.mjs "$site_out"
 
 # The visual checks need the pages served, and style parity needs the gp-sphinx
 # twin as well — which only a full assembly produces. Both run against a
