@@ -2,6 +2,7 @@
 import type { Graph, WithContext, Thing } from 'schema-dts'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { canonicalUrl, robotsFor, type VersionEntry } from '../lib/versions'
+import { IS_ROOT_BUILD } from '../lib/site-root'
 
 /**
  * Every head tag that search engines care about, in one place.
@@ -97,8 +98,10 @@ const isDefault = version === defaultVersion
  * The real signal is whether this build is the one mounted at the site root.
  * Only that build's copy of a shared page is the canonical one.
  */
-const isRootShellBuild =
-  (process.env.LIBTMUX_DOCS_BASE ?? '/') === '/' && versionEntry.kind !== 'pr'
+// IS_ROOT_BUILD, not a base comparison: a root build under a locale prefix
+// still mounts the whole site, and reading the base marked every shared page
+// noindex the moment one was added.
+const isRootShellBuild = IS_ROOT_BUILD && versionEntry.kind !== 'pr'
 const indexable = portSlug ? isDefault : isRootShellBuild
 
 const robots = noindex ? 'noindex, nofollow' : robotsFor(versionEntry, indexable)

@@ -32,3 +32,19 @@ export function withRoot(path: string): string {
   if (!path.startsWith('/') || path.startsWith('//')) return path
   return `${SITE_ROOT}${path}`
 }
+
+/**
+ * Whether this build mounts the whole site rather than one port's subtree.
+ *
+ * The port, deliberately not the base. `site/src/i18n/resolve.ts` makes the
+ * same argument for `localesEnabled()`: a pull-request preview carries a
+ * non-root base with no port, and gating on the base silences exactly the
+ * build that most needs to show a change.
+ *
+ * Three callers inferred this from `base === '/'` instead, and each would
+ * have flipped silently the moment the root build gained a locale prefix —
+ * no sitemap emitted, every shared page marked noindex, no port landing
+ * pages. They are one helper now because keeping them in sync by hand has
+ * already failed once.
+ */
+export const IS_ROOT_BUILD: boolean = !process.env.LIBTMUX_DOCS_PORT

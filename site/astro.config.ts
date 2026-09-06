@@ -38,7 +38,8 @@ const versionKind = env.LIBTMUX_DOCS_VERSION_KIND ?? 'trunk'
 // prose — the very URLs Seo.astro marks noindex and canonicalises back to the
 // root. A sitemap that lists pages we tell crawlers to ignore is worse than
 // no sitemap, so require the root mount as well.
-const isRootBuild = base === '/'
+// Not `base === '/'`: the root build's own base gains a locale prefix.
+const isRootBuild = !env.LIBTMUX_DOCS_PORT
 const wantSitemap = isDefaultBuild && isRootBuild && versionKind !== 'pr'
 
 export default defineConfig({

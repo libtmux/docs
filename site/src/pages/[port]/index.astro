@@ -7,6 +7,7 @@ import ApiReferences from '../../components/ApiReferences.astro'
 import ProseText from '../../components/ProseText.astro'
 import PackageInstall from '../../components/widgets/PackageInstall.astro'
 import { PORTS, portPageUrl, type Port } from '../../lib/ports'
+import { IS_ROOT_BUILD } from '../../lib/site-root'
 import { QUICKSTARTS } from '../../lib/quickstarts'
 
 /**
@@ -27,7 +28,7 @@ export function getStaticPaths() {
   // renders this same route, so without this guard /cxx/stable/ also emits
   // /cxx/stable/py/, /cxx/stable/rs/ and six more — eight nonsense copies per
   // build that nothing links to.
-  if ((process.env.LIBTMUX_DOCS_BASE ?? '/') !== '/') return []
+  if (!IS_ROOT_BUILD) return []
 
   return PORTS.map((port) => ({
     params: { port: port.slug },
