@@ -23,7 +23,7 @@
  * Usage: node scripts/gen-api-model.mjs [--port py] [--check]
  */
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -194,6 +194,7 @@ const PORTS = {
   cxx: {
     checkout: '~/work/libtmux/libtmux-cxx-docs',
     root: '.',
+    doxygen: 'xml',
     repo: 'libtmux/libtmux-cxx',
     options: {},
   },
@@ -244,6 +245,28 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     console.error(`gen-api-model: no source roots exist for ${port}`)
     process.exit(1)
   }
+  // C++ prose reaches the model through Doxygen XML, which is a build product
+  // of the headers rather than the headers themselves. Nothing regenerated it
+  // here — `build-site.sh` builds its own copy for the Sphinx render — so the
+  // committed model was extracted from XML three days older than the comments
+  // it was meant to carry, and 24 documented symbols read as undocumented.
+  if (cfg.doxygen) {
+    const xml = join(checkout, cfg.doxygen)
+    if (!existsSync(xml)) {
+      console.error(`gen-api-model: ${port} has no Doxygen XML at ${cfg.doxygen} — run doxygen in ${cfg.checkout}`)
+      process.exit(1)
+    }
+    const stale = git(checkout, 'log', '-1', '--format=%ct', '--', 'include')
+    const built = statSync(join(xml, 'index.xml')).mtimeMs / 1000
+    if (stale && Number(stale) > built) {
+      console.error(
+        `gen-api-model: ${port} Doxygen XML predates the headers it describes — ` +
+          `run doxygen in ${cfg.checkout} and re-run`,
+      )
+      process.exit(1)
+    }
+  }
+
   const model = await extractProject({
     port,
     root: roots[0],
