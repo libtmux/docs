@@ -16,6 +16,9 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 SERVE_URL="${LIBTMUX_DOCS_SERVE:-http://localhost:8080}"
+# The served site, one locale segment below the origin. serve.sh serves the
+# bucket root, so a page URL carries the prefix the assembly built under.
+SERVE_SITE="$SERVE_URL/${LIBTMUX_DOCS_LOCALE:-en}"
 skip_build=false
 [[ "${1:-}" == "--skip-build" ]] && skip_build=true
 
@@ -199,25 +202,25 @@ node scripts/check-api-fidelity.mjs "$site_out"
 # twin as well — which only a full assembly produces. Both run against a
 # running server; `pnpm test` reports that they were not run rather than
 # implying they passed.
-if curl -sf -o /dev/null "$SERVE_URL/reference/py/libtmux-server/"; then
+if curl -sf -o /dev/null "$SERVE_SITE/reference/py/libtmux-server/"; then
   # Type is checked here rather than with the static suites because half of
   # it is a rendering question: which faces a page opens with is answered by
   # laying the page out, not by reading its HTML.
   step 'fonts'
-  (cd site && node scripts/check-fonts.mjs --url "$SERVE_URL")
+  (cd site && node scripts/check-fonts.mjs --url "$SERVE_SITE")
 
   # The mobile shell is behaviour, not pixels: which drawer is open, what has
   # focus, whether the toolbar is there at all at a given width. None of it
   # shows up in a screenshot of one viewport.
   step 'mobile navigation'
-  (cd site && node scripts/check-mobile-nav.mjs "$SERVE_URL")
+  (cd site && node scripts/check-mobile-nav.mjs "$SERVE_SITE")
 
   step 'visual regression'
-  (cd site && node scripts/check-visual.mjs "$SERVE_URL")
+  (cd site && node scripts/check-visual.mjs "$SERVE_SITE")
 
-  if curl -sf -o /dev/null "$SERVE_URL/py/stable/api/api/libtmux.server/"; then
+  if curl -sf -o /dev/null "$SERVE_SITE/py/stable/api/api/libtmux.server/"; then
     step 'style parity with gp-sphinx'
-    (cd site && node scripts/check-style-parity.mjs "$SERVE_URL")
+    (cd site && node scripts/check-style-parity.mjs "$SERVE_SITE")
   else
     printf '\nstyle parity skipped: no gp-sphinx page at %s — run scripts/build-site.sh\n' "$SERVE_URL"
     note_skip 'style parity'
