@@ -9,9 +9,43 @@ name: reusable-deploy
 # one port's toolchain choice to another's (docs/ci.md, "shared file vs
 # shared execution").
 #
-# Callers in other repositories pin an exact tag (`@v1`) and bump it on
-# review, same as any other dependency — see docs/ci.md for the opt-in
-# recipe. This file never sets `concurrency`: groups are workflow-level on
+# Callers pin a full-length commit SHA, with the release name in a trailing
+# comment:
+#
+#   uses: libtmux/docs/.github/workflows/reusable-deploy.yml@<sha>  # v0.1.0-alpha.1
+#
+# Not the tag. This workflow is not an inert dependency: `uses:` executes it
+# inside the caller's repository with `id-token: write` and a role that can
+# PutObject and DeleteObject on the live bucket. A tag can be repointed, so
+# pinning one means this repository can change what runs in eight other
+# repositories with no diff and no review in any of them — which is the same
+# objection that rules out `@main`, only slower. A SHA cannot be repointed.
+# GitHub's own hardening guidance says the same, and its Actions policy can now
+# enforce SHA pinning on reusable-workflow references.
+#
+# Expect to bump the SHA by hand. Dependabot and Renovate can read the trailing
+# comment and offer the bump, but only where the caller has enabled the
+# `github-actions` ecosystem — and as of 2026-09-06 none of the eight port
+# repositories has: seven carry a dependabot.yml for their own language
+# ecosystem (cargo, nuget, npm and so on) and none lists github-actions, and
+# the Python repository has no dependabot.yml at all. So the comment is
+# documentation here, not automation, and a release of this workflow reaches a
+# caller when a human moves it. Enabling that ecosystem in a port is a separate
+# change with its own review, not something to fold into a deploy PR.
+#
+# The tags are a 0.x prerelease series and will keep moving: this workflow has
+# not published successfully from any port yet, so a `v1` would claim a settled
+# interface that does not exist. The series name is for humans and changelogs;
+# the SHA is what callers depend on. It becomes v1 when a port has actually
+# published through it.
+#
+# Pin the same SHA in BOTH places a caller touches this repository: the `uses:`
+# below, and the `actions/checkout` of libtmux/docs that a port needs to run
+# scripts/build-site.sh. The failure this prevents is specific — a caller pins
+# `uses:` and leaves the checkout on the default branch, so the workflow reads
+# as pinned in review while the build script it actually runs drifts with this
+# repository's main. A SHA is also the only ref for which "the same" still
+# means the same thing an hour later. This file never sets `concurrency`: groups are workflow-level on
 # the *caller*, so a shared group name here would silently merge queues
 # across repositories that have nothing to do with each other.
 

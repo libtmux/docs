@@ -173,7 +173,9 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: libtmux/docs/.github/workflows/reusable-deploy.yml@v1
+    # Full-length SHA, release name in the comment: this runs with id-token:
+    # write and a bucket-writing role, and a tag can be repointed.
+    uses: libtmux/docs/.github/workflows/reusable-deploy.yml@0cd5a3f10c70bf55130ab6a02d5177f6318beaca # v0.1.0-alpha.1
     with:
       path-prefix: py/v0.46.2
       artifact: docs-html
