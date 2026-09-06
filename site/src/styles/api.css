@@ -540,6 +540,21 @@
   padding: 0.75rem 0.9rem;
 }
 
+/* Shiki writes both themes as custom properties, and something has to read
+   them. The gp-sphinx parity sheet does that for the per-symbol examples,
+   whose markup sits inside its `dl.py > dd .highlight`; these tabs are this
+   site's own component and matched no such rule, so a cross-port example
+   rendered in the inherited foreground colour — every token one flat grey.
+   Scoped to the panel rather than to `.shiki` at large, so the parity sheet
+   stays the only thing styling the pages it emulates. */
+.api-example-panel .shiki span {
+  color: var(--shiki-light);
+}
+
+[data-theme-mode='dark'] .api-example-panel .shiki span {
+  color: var(--shiki-dark);
+}
+
 /* Each radio reveals the panel at its own position. Generated in the
    component's own style block, since the count varies per instance. */
 .api-example-intro {

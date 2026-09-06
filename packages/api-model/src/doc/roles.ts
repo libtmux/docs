@@ -31,6 +31,8 @@ const ROLES = new Set([
 export type DocSpan =
   | { kind: 'text'; text: string }
   | { kind: 'code'; text: string }
+  /** `**like this**`, which Markdown and reST spell the same way. */
+  | { kind: 'strong'; text: string }
   /** `[server_manual]_` — points at a citation the References section defines. */
   | { kind: 'citation'; target: string; label: string }
   | {
@@ -157,6 +159,19 @@ const XML_PARAMREF_RE = /<(?:paramref|typeparamref)\s+name="([^"]+)"\s*\/?>/g
  */
 const XML_LANGWORD_RE = /<see\s+langword="([^"]+)"\s*\/?>(?:<\/see>)?/g
 const XML_CODE_RE = /<c>([^<]+)<\/c>/g
+/**
+ * `**strong**`, in the one spelling Markdown and reST share.
+ *
+ * Only the doubled form. A single `*` is emphasis in both, and also a glob, a
+ * multiplication sign and a footnote marker, so matching it would claim prose
+ * that is not markup. The doubled form is unambiguous and is what the corpus
+ * uses: fourteen spans across Rust and Python, every one of them a lead-in
+ * label like `**Connecting.**` that read as literal asterisks.
+ *
+ * Not language-gated, because no port's dialect gives `**` another meaning.
+ */
+const STRONG_RE = /\*\*(?!\s)([^*\n]+?)(?<!\s)\*\*/g
+
 /** A bare double-backtick literal, which is never a link. */
 const LITERAL_RE = /``([^`]+)``/g
 /** A single-backtick reference, which napoleon also resolves. */
@@ -234,6 +249,10 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
 
   type Hit = { start: number; end: number; span: DocSpan }
   const hits: Hit[] = []
+
+  for (const m of text.matchAll(STRONG_RE)) {
+    hits.push({ start: m.index, end: m.index + m[0].length, span: { kind: 'strong', text: m[1] } })
+  }
 
   if (syntax.has('intra-doc')) {
     for (const m of text.matchAll(INTRA_DOC_PAREN_RE)) {

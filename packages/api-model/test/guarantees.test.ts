@@ -316,6 +316,19 @@ describe('each language gets its own spelling of a cross-reference', () => {
     ])
   })
 
+  it('bold reaches the page as bold, and prose keeps its asterisks', () => {
+    // `server::Server` opens six paragraphs with `**Connecting.**` and the
+    // like. Rendered as text they were literal asterisks, which is what the
+    // reference showed once the doc comment behind `#[derive]` was readable.
+    const strong = (t: string, l?: string) =>
+      tokenizeDoc(t, l).filter((s) => s.kind === 'strong').map((s) => (s as { text: string }).text)
+    expect(strong('**Connecting.** `new` takes the socket.', 'rs')).toEqual(['Connecting.'])
+    // A single asterisk is emphasis, a glob and a multiplication sign, so it
+    // is left alone. Both of these are prose.
+    expect(strong('a * b and 2 * 3', 'rs')).toEqual([])
+    expect(strong('glob *.py here', 'py')).toEqual([])
+  })
+
   it('a summary reaches metadata as prose, not markup', () => {
     expect(docSummaryText('Typed fields of {@link Pane}.', 'java')).toBe('Typed fields of Pane.')
     expect(docSummaryText('Call ``Server/kill()`` first.', 'swift')).toBe('Call Server/kill() first.')
