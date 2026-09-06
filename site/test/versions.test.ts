@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { compareTags, sortVersions, type VersionEntry } from '../src/lib/versions'
+import { compareTags, parseTag, sortVersions, type VersionEntry } from '../src/lib/versions'
 
 /**
  * Ordering the switcher and the generated manifest both depend on.
@@ -50,12 +50,12 @@ describe('sortVersions', () => {
     ])
   })
 
-  it('does not yet order PEP 440 suffixes', () => {
-    // Python writes `v0.11.0b1`, with no hyphen, so compareTags reads the
-    // whole thing as the version core. Recorded rather than hidden: closing
-    // it needs a per-port tag grammar, not a change to this comparator.
-    const ordered = sortVersions(tags(['v0.11.0', 'v0.11.0b1', 'v0.11.0a2'])).map((e) => e.slug)
-    expect(ordered).not.toEqual(['v0.11.0', 'v0.11.0b1', 'v0.11.0a2'])
+  it('orders PEP 440 suffixes under that grammar', () => {
+    // Python writes the suffix with no separator, and a post-release comes
+    // after the release it follows. Both shapes are real tags in that repo.
+    expect(
+      sortVersions(tags(['v0.15.0a1', 'v0.15.0', 'v0.15.0post0', 'v0.15.0b2']), 'pep440').map((e) => e.slug),
+    ).toEqual(['v0.15.0post0', 'v0.15.0', 'v0.15.0b2', 'v0.15.0a1'])
   })
 
   it('ranks aliases before trunk before tags', () => {
@@ -65,5 +65,38 @@ describe('sortVersions', () => {
       { slug: 'stable', label: 'stable', kind: 'alias', supported: true },
     ]
     expect(sortVersions(entries).map((e) => e.slug)).toEqual(['stable', 'latest', 'v0.1.0'])
+  })
+})
+
+describe('parseTag', () => {
+  it('reads a PEP 440 suffix that SemVer cannot', () => {
+    expect(parseTag('v0.11.0b0', 'pep440')).toEqual({ nums: [0, 11, 0], pre: 'b0' })
+    // The SemVer grammar rejects it outright rather than mis-reading it — the
+    // previous hyphen-splitting parser produced NaN for the patch number.
+    expect(parseTag('v0.11.0b0', 'semver')).toBeNull()
+  })
+
+  it('reads a bare release under either grammar', () => {
+    expect(parseTag('v1.2.3', 'semver')).toEqual({ nums: [1, 2, 3], pre: null })
+    expect(parseTag('v1.2.3', 'pep440')).toEqual({ nums: [1, 2, 3], pre: null })
+  })
+
+  it('rejects a two-component version', () => {
+    // Python has v0.3, v0.4 and v0.5 from before it used three components.
+    expect(parseTag('v0.3', 'pep440')).toBeNull()
+  })
+})
+
+describe('compareTags across grammars', () => {
+  it('ranks a post-release above its own release', () => {
+    expect(compareTags('v0.15.0post0', 'v0.15.0', 'pep440')).toBeLessThan(0)
+  })
+
+  it('ranks a prerelease below its own release', () => {
+    expect(compareTags('v0.15.0a1', 'v0.15.0', 'pep440')).toBeGreaterThan(0)
+  })
+
+  it('orders post-releases numerically among themselves', () => {
+    expect(compareTags('v0.23.0post2', 'v0.23.0post1', 'pep440')).toBeLessThan(0)
   })
 })

@@ -30,7 +30,7 @@ const repoRoot = dirname(here)
 const siteLib = join(repoRoot, 'site', 'src', 'lib')
 
 const { PORTS } = await import(`file://${join(siteLib, 'ports.ts')}`)
-const { sortVersions, compareTags } = await import(`file://${join(siteLib, 'versions.ts')}`)
+const { sortVersions, compareTags, parseTag } = await import(`file://${join(siteLib, 'versions.ts')}`)
 
 function parseArgs(argv) {
   const opts = { out: undefined, seed: false, overrides: undefined }
@@ -53,7 +53,6 @@ function git(cwd, args) {
   return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
 }
 
-const TAG_RE = /^v\d+\.\d+\.\d+(?:-[\w.]+)?$/
 const BRANCH_RE = /^v\d+\.x$/
 
 /** The two entries every port gets even with no checkout to inspect. */
@@ -64,25 +63,33 @@ function seedEntries() {
   ]
 }
 
-function deriveEntries(checkout) {
+function deriveEntries(port) {
+  const { checkout, tagGrammar } = port
   const dir = expandHome(checkout)
-  if (!existsSync(dir)) return { entries: seedEntries(), note: `checkout not found at ${checkout}` }
+  if (!existsSync(dir)) {
+    return { entries: seedEntries(), defaultVersion: 'stable', note: `checkout not found at ${checkout}` }
+  }
 
   let refs
   try {
     refs = git(dir, ['for-each-ref', '--format=%(refname:short)\t%(creatordate:iso-strict)', 'refs/tags', 'refs/heads'])
   } catch {
-    return { entries: seedEntries(), note: `git for-each-ref failed in ${checkout} (not a git repo?)` }
+    return {
+      entries: seedEntries(),
+      defaultVersion: 'stable',
+      note: `git for-each-ref failed in ${checkout} (not a git repo?)`,
+    }
   }
 
   const tags = []
   const branches = []
   for (const line of refs.split('\n').filter(Boolean)) {
     const [name, date] = line.split('\t')
-    if (TAG_RE.test(name)) tags.push({ name, date })
+    const parsed = parseTag(name, tagGrammar)
+    if (parsed) tags.push({ name, date, pre: parsed.pre })
     else if (BRANCH_RE.test(name)) branches.push({ name, date })
   }
-  tags.sort((a, b) => compareTags(a.name, b.name))
+  tags.sort((a, b) => compareTags(a.name, b.name, tagGrammar))
 
   let headDate
   try {
@@ -91,19 +98,23 @@ function deriveEntries(checkout) {
     headDate = undefined
   }
 
+  // `tags` is already newest-first, so the first match in each case is the one
+  // the alias should name. A suffix decides these, not a hyphen: `v0.11.0b0`
+  // has no hyphen and is not a release.
+  const stableTag = tags.find((t) => t.pre === null)?.name
+  const preTag = tags.find((t) => t.pre !== null)?.name
+
   const entries = [
     { slug: 'latest', label: 'latest', kind: 'trunk', supported: true, ...(headDate ? { published: headDate } : {}) },
-    {
-      slug: 'stable',
-      label: 'stable',
-      kind: 'alias',
-      resolvesTo: tags.find((t) => !t.name.includes('-'))?.name ?? 'latest',
-      supported: true,
-    },
+    // Absent, not pointed at trunk. An alias called `stable` that resolves to
+    // an unreleased HEAD tells a reader — and, through robotsFor, a search
+    // engine — the opposite of the truth.
+    ...(stableTag ? [{ slug: 'stable', label: 'stable', kind: 'alias', resolvesTo: stableTag, supported: true }] : []),
+    ...(preTag ? [{ slug: 'next', label: 'next', kind: 'alias', resolvesTo: preTag, supported: true }] : []),
     ...tags.map((t) => ({ slug: t.name, label: t.name, kind: 'tag', supported: true, ...(t.date ? { published: t.date } : {}) })),
     ...branches.map((b) => ({ slug: b.name, label: b.name, kind: 'branch', supported: true, ...(b.date ? { published: b.date } : {}) })),
   ]
-  return { entries, note: undefined }
+  return { entries, defaultVersion: stableTag ? 'stable' : 'latest', note: undefined }
 }
 
 function mergeOverrides(manifest, overridesPath) {
@@ -133,14 +144,15 @@ function main() {
   const manifest = { schema: 1, ports: {}, defaultVersion: {} }
 
   for (const port of PORTS) {
-    const { entries, note } = opts.seed ? { entries: seedEntries() } : deriveEntries(port.checkout)
-    if (note) process.stderr.write(`gen-versions: ${port.slug}: ${note}\n`)
-    manifest.ports[port.slug] = sortVersions(entries)
-    // 'stable' is the site-wide default everywhere it appears — see
-    // src/pages/index.astro's referenceUrl(p, 'stable') links, which already
-    // assume this. A port with no tags yet still gets a 'stable' alias
-    // (resolving to 'latest'), so this holds unconditionally.
-    manifest.defaultVersion[port.slug] = 'stable'
+    const derived = opts.seed
+      ? { entries: seedEntries(), defaultVersion: 'stable' }
+      : deriveEntries(port)
+    if (derived.note) process.stderr.write(`gen-versions: ${port.slug}: ${derived.note}\n`)
+    manifest.ports[port.slug] = sortVersions(derived.entries, port.tagGrammar)
+    // Not unconditionally 'stable' any more: a port with no release has no
+    // stable entry to point at, and naming one anyway is what made seven of
+    // eight ports advertise trunk as their released version.
+    manifest.defaultVersion[port.slug] = derived.defaultVersion
   }
 
   const final = mergeOverrides(manifest, opts.overrides)

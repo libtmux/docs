@@ -83,6 +83,55 @@ export function canonicalUrl(
 }
 
 /**
+ * How a port writes its version tags.
+ *
+ * Python follows PEP 440 and the rest follow SemVer, and the two disagree
+ * about more than punctuation: PEP 440 writes a suffix with no separator
+ * (`v0.11.0b0`) and has post-releases, which come *after* the release they
+ * follow. A single grammar cannot serve both, and reading a PEP 440 tag with
+ * the SemVer one yields NaN for the patch number.
+ */
+export type TagGrammar = 'semver' | 'pep440'
+
+interface Grammar {
+  re: RegExp
+  /** Where a suffix sits relative to a bare release. Higher is newer. */
+  rank: (pre: string | null) => number
+}
+
+const GRAMMARS: Record<TagGrammar, Grammar> = {
+  semver: {
+    re: /^v(\d+)\.(\d+)\.(\d+)(?:-([\w.]+))?$/,
+    rank: (pre) => (pre === null ? 0 : -1),
+  },
+  pep440: {
+    // `rc` and `dev` are permitted by PEP 440 and unused here; matching them
+    // costs nothing and avoids a silent drop if one is ever tagged.
+    re: /^v(\d+)\.(\d+)\.(\d+)((?:a|b|rc)\d+|post\d+|dev\d+)?$/,
+    rank: (pre) => {
+      if (pre === null) return 0
+      if (pre.startsWith('post')) return 1
+      if (pre.startsWith('dev')) return -2
+      return -1
+    },
+  },
+}
+
+export interface ParsedTag {
+  nums: number[]
+  /** The suffix, or null for a bare release. */
+  pre: string | null
+}
+
+/** A tag slug read under one port's grammar, or null when it is not a tag. */
+export function parseTag(name: string, grammar: TagGrammar): ParsedTag | null {
+  const m = GRAMMARS[grammar].re.exec(name)
+  if (!m) return null
+  const [, major, minor, patch, pre] = m
+  return { nums: [Number(major), Number(minor), Number(patch)], pre: pre ?? null }
+}
+
+/**
  * Newest-first precedence for two tag slugs.
  *
  * Lives here rather than beside the manifest generator because it is ordering,
@@ -90,25 +139,25 @@ export function canonicalUrl(
  * same reason it imports `sortVersions`, so the switcher and the manifest
  * cannot disagree about which release is newer.
  *
- * A release outranks any of its own prereleases. Prerelease identifiers
- * collate numerically, so `alpha.10` is newer than `alpha.9`; plain
- * lexicographic order puts it between `alpha.1` and `alpha.2`.
+ * Rank settles precedence before the suffix is compared at all, so a
+ * post-release outranks its own release and a prerelease does not. Numeric
+ * collation then breaks ties inside one rank: `alpha.10` after `alpha.9`,
+ * `post1` after `post0`.
  */
-export function compareTags(a: string, b: string): number {
-  const parse = (s: string) => {
-    const [core, pre] = s.slice(1).split('-', 2)
-    return { nums: core.split('.').map(Number), pre: pre ?? null }
-  }
-  const pa = parse(a)
-  const pb = parse(b)
+export function compareTags(a: string, b: string, grammar: TagGrammar = 'semver'): number {
+  const pa = parseTag(a, grammar)
+  const pb = parseTag(b, grammar)
+  if (!pa || !pb) return pa ? -1 : pb ? 1 : 0
   for (let i = 0; i < 3; i += 1) {
     const d = (pb.nums[i] ?? 0) - (pa.nums[i] ?? 0)
     if (d !== 0) return d
   }
+  const { rank } = GRAMMARS[grammar]
+  const ra = rank(pa.pre)
+  const rb = rank(pb.pre)
+  if (ra !== rb) return rb - ra
   if (pa.pre === pb.pre) return 0
-  if (pa.pre === null) return -1
-  if (pb.pre === null) return 1
-  return pb.pre.localeCompare(pa.pre, undefined, { numeric: true })
+  return (pb.pre ?? '').localeCompare(pa.pre ?? '', undefined, { numeric: true })
 }
 
 /**
@@ -121,11 +170,11 @@ export function compareTags(a: string, b: string): number {
  * prerelease above the release it precedes. This function is what the
  * switcher renders, so it is the ordering that has to be right.
  */
-export function sortVersions(entries: VersionEntry[]): VersionEntry[] {
+export function sortVersions(entries: VersionEntry[], grammar: TagGrammar = 'semver'): VersionEntry[] {
   const rank: Record<VersionKind, number> = { alias: 0, trunk: 1, tag: 2, branch: 3, pr: 4 }
   return [...entries].sort((a, b) => {
     if (rank[a.kind] !== rank[b.kind]) return rank[a.kind] - rank[b.kind]
-    if (a.kind === 'tag' && b.kind === 'tag') return compareTags(a.slug, b.slug)
+    if (a.kind === 'tag' && b.kind === 'tag') return compareTags(a.slug, b.slug, grammar)
     return b.slug.localeCompare(a.slug, undefined, { numeric: true })
   })
 }

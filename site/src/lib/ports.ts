@@ -12,6 +12,7 @@
 // the extension; Vite does not care either way. Any future import added here
 // needs the same, or the build dies before it renders a page.
 import { withRoot } from './site-root.ts'
+import type { TagGrammar } from './versions.ts'
 
 
 /**
@@ -59,6 +60,12 @@ export interface Port {
    * side effect.
    */
   versionedDocs: boolean
+  /**
+   * How this port writes its version tags. Python follows PEP 440, which
+   * attaches a suffix with no separator and has post-releases; the rest
+   * follow SemVer. Reading one with the other's grammar drops the tag.
+   */
+  tagGrammar: TagGrammar
   renderer: Renderer
   /**
    * The canonical reference in that language's own ecosystem, where there is
@@ -102,6 +109,7 @@ export const PORTS: readonly Port[] = [
     checkout: '~/work/python/libtmux',
     worktree: '~/work/python/libtmux-python-docs',
     versionedDocs: true,
+    tagGrammar: 'pep440',
     renderer: 'sphinx',
     generator: 'Sphinx + sphinx-gp-theme',
     install: 'pip install libtmux',
@@ -115,6 +123,7 @@ export const PORTS: readonly Port[] = [
     checkout: '~/work/libtmux/libtmux-ts',
     worktree: '~/work/libtmux/libtmux-ts-docs',
     versionedDocs: true,
+    tagGrammar: 'semver',
     renderer: 'astro',
     generator: '@microsoft/api-extractor JSON',
     install: 'bun add @libtmux/libtmux',
@@ -128,6 +137,7 @@ export const PORTS: readonly Port[] = [
     checkout: '~/work/libtmux/libtmux-rs',
     worktree: '~/work/libtmux/libtmux-rs-docs',
     versionedDocs: true,
+    tagGrammar: 'semver',
     renderer: 'none',
     ecosystemHost: {
       name: 'docs.rs',
@@ -150,6 +160,7 @@ export const PORTS: readonly Port[] = [
     checkout: '~/work/libtmux/libtmux-go',
     worktree: '~/work/libtmux/libtmux-go-docs',
     versionedDocs: true,
+    tagGrammar: 'semver',
     renderer: 'none',
     ecosystemHost: {
       name: 'pkg.go.dev',
@@ -171,6 +182,7 @@ export const PORTS: readonly Port[] = [
     checkout: '~/work/libtmux/libtmux-java',
     worktree: '~/work/libtmux/libtmux-java-docs',
     versionedDocs: true,
+    tagGrammar: 'semver',
     renderer: 'none',
     ecosystemHost: {
       name: 'javadoc.io',
@@ -191,6 +203,7 @@ export const PORTS: readonly Port[] = [
     checkout: '~/work/libtmux/libtmux-dotnet',
     worktree: '~/work/libtmux/libtmux-dotnet-docs',
     versionedDocs: true,
+    tagGrammar: 'semver',
     renderer: 'astro',
     generator: 'docfx metadata (--outputFormat markdown)',
     install: 'dotnet add package LibTmux',
@@ -204,6 +217,7 @@ export const PORTS: readonly Port[] = [
     checkout: '~/work/libtmux/libtmux-cxx',
     worktree: '~/work/libtmux/libtmux-cxx-docs',
     versionedDocs: true,
+    tagGrammar: 'semver',
     renderer: 'sphinx',
     generator: 'Doxygen XML to Breathe to Sphinx',
     install: 'vcpkg install libtmux-cxx',
@@ -217,6 +231,7 @@ export const PORTS: readonly Port[] = [
     checkout: '~/work/libtmux/libtmux-swift',
     worktree: '~/work/libtmux/libtmux-swift-docs',
     versionedDocs: true,
+    tagGrammar: 'semver',
     renderer: 'native-skinned',
     generator: 'DocC (swift-docc-plugin)',
     install: '.package(url: "https://github.com/libtmux/libtmux-swift", from: "0.1.0")',
