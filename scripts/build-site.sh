@@ -1218,7 +1218,18 @@ while IFS='|' read -r slug _name _versioned renderer _rest; do
 done < <(list_ports)
 
 printf '\n'
-if ! node "$(dirname "$0")/check-links.mjs" "$out_dir" --all "${vendored_args[@]}"; then
+# A `--ports` build is partial by construction, and the link checker reads the
+# whole tree: every port NOT built is missing, and the port switcher on every
+# page links to all of them. A single-port run reports ~82,000 broken links,
+# none of them real, which drowns the ones that would be. Skipped rather than
+# scoped, because a built port's pages legitimately link into the trees that
+# were not built — there is no honest subset to check.
+#
+# Said out loud rather than silently: a run that checks nothing must not read
+# like a run that found nothing.
+if [ -n "$ports_filter" ]; then
+  log "skipping the link check: --ports built a partial tree, so cross-port links cannot resolve"
+elif ! node "$(dirname "$0")/check-links.mjs" "$out_dir" --all "${vendored_args[@]}"; then
   printf 'build-site: broken internal links from pages this repo generates (see the list above)\n' >&2
   exit 1
 fi
