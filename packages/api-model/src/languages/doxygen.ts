@@ -78,6 +78,20 @@ const tag = (xml: string, name: string): string | undefined => {
   return m ? m[1] : undefined
 }
 
+/**
+ * The descriptions belonging to the compound itself, not to its first member.
+ *
+ * Doxygen writes a type's own `briefdescription` and `detaileddescription`
+ * last, between the final `</sectiondef>` and `<location>`.
+ */
+const ownDescriptions = (xml: string): { brief: string; detail: string } => {
+  const end = xml.lastIndexOf('<location ')
+  const scope = end === -1 ? xml : xml.slice(0, end)
+  const start = scope.lastIndexOf('</sectiondef>')
+  const tail = start === -1 ? scope : scope.slice(start)
+  return { brief: tag(tail, 'briefdescription') ?? '', detail: tag(tail, 'detaileddescription') ?? '' }
+}
+
 const attr = (xml: string, name: string): string | undefined =>
   new RegExp(`${name}="([^"]*)"`).exec(xml)?.[1]
 
@@ -160,8 +174,15 @@ export function extractDoxygen(xmlDir: string, sourceRoot = ''): ApiSymbol[] {
     if (!owner) continue
 
     if (kind && compound[1] !== 'namespace') {
-      const brief = textOf(tag(xml, 'briefdescription') ?? '')
-      const detail = textOf(tag(xml, 'detaileddescription') ?? '')
+      // A compound's own descriptions sit at the end of `<compounddef>`, after
+      // every `<sectiondef>` and immediately before `<location>`. Taking the
+      // first ones in the file took a *member's* instead, so `AttachCommand`
+      // was documented with "Exec-order arguments; empty after this value is
+      // moved from." — and where the first member had none, which is usual,
+      // the type was reported as undocumented while its prose sat in the file.
+      const own = ownDescriptions(xml)
+      const brief = textOf(own.brief)
+      const detail = textOf(own.detail)
       const location = /<location file="([^"]*)"[^>]*line="(\d+)"/.exec(xml)
       const bases = [...xml.matchAll(/<basecompoundref[^>]*>([\s\S]*?)<\/basecompoundref>/g)].map(
         (m) => textOf(m[1]),
