@@ -141,7 +141,7 @@ announce its own completion:
 |------|--------|------|
 | Python | `server.wait_for(channel, set_flag=True)` | `server.wait_for(channel)` |
 | TypeScript | not exposed as public API: used only inside the test-server's own startup handshake | - |
-| Go | `server.WaitFor(ctx, tmux.WaitForRequest{Channel: name, Mode: tmux.WaitForModeSignal})` | `tmux.WaitForRequest{Channel: name}` (the zero-value `Mode` waits) |
+| Go | `server.WaitFor(ctx, tmux.WaitForRequest{Channel: name, Mode: tmux.WaitForModeSignal})` | `tmux.WaitForRequest{Channel: name}` (the zero-value `WaitForRequest.Mode` waits) |
 | Rust | `server.signal_channel(name).await?` | `server.wait_for_channel(name, timeout).await?` → `ChannelWait::Signalled` or `TimedOut` |
 | Java | `server.channel(name).signal()` | `server.channel(name).await(timeout)` → a `WakeReason`, never silently "success" |
 | .NET | `server.OpenWaitChannel(name)` returns a `TmuxWaitChannel`; signalling is the same request with a different mode | `await using` the channel, then `WaitAsync(budget)` |
