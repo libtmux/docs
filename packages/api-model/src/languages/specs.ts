@@ -164,6 +164,7 @@ export const GO: LanguageSpec = {
 
 export const JAVA: LanguageSpec = {
   grammar: 'java',
+  docDialect: 'javadoc',
   containers: {
     class_declaration: 'class',
     interface_declaration: 'interface',
@@ -185,6 +186,7 @@ export const JAVA: LanguageSpec = {
 
 export const CSHARP: LanguageSpec = {
   grammar: 'csharp',
+  docDialect: 'xml',
   containers: {
     class_declaration: 'class',
     interface_declaration: 'interface',

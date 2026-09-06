@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import type { Node } from 'web-tree-sitter'
 import { parseMarkdownDocFull } from '../doc/markdown.ts'
 import { parseXmlDoc } from '../doc/csharp.ts'
+import { parseJavadoc } from '../doc/javadoc.ts'
 import {
   DEFAULT_EXTRACT_OPTIONS,
   type ApiSymbol,
@@ -32,6 +33,14 @@ import { type GrammarName, parserFor } from '../parser.ts'
 
 export interface LanguageSpec {
   grammar: GrammarName
+  /**
+   * The dialect this language's doc comments are written in.
+   *
+   * Markdown when unset, which is what Rust, TypeScript and Go write. C# is
+   * documentation XML and Java is HTML; both printed their markup into the
+   * reference until it was read in the dialect it was written in.
+   */
+  docDialect?: 'xml' | 'javadoc'
   /** Declarations that own members: classes, structs, traits, interfaces. */
   containers: Record<string, SymbolKind>
   /** Declarations that are members: methods, fields, properties. */
@@ -287,10 +296,13 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
 /**
  * A doc comment to a doc block, in the spelling this language uses.
  *
- * C# is XML, not Markdown, and treating it as prose printed every tag. It is
- * also the only one here whose comment carries parameter and exception
+ * C# is XML and Java is HTML, and treating either as prose printed every tag.
+ * C# is also the only one here whose comment carries parameter and exception
  * documentation inline, so those are lifted onto the signature the way
  * Python's NumPy sections already are.
+ *
+ * The dialect is declared on the spec rather than tested for by grammar name,
+ * so adding a port that documents in markup is a field rather than a branch.
  */
 function docFor(
   raw: string | undefined,
@@ -298,8 +310,13 @@ function docFor(
   signatures: Signature[],
 ): DocBlock | undefined {
   if (!raw) return undefined
-  const { doc, params, returnsDoc, raises } =
-    spec.grammar === 'csharp' ? parseXmlDoc(raw) : parseMarkdownDocFull(raw, spec.grammar)
+  const parse =
+    spec.docDialect === 'xml'
+      ? parseXmlDoc
+      : spec.docDialect === 'javadoc'
+        ? parseJavadoc
+        : (text: string) => parseMarkdownDocFull(text, spec.grammar)
+  const { doc, params, returnsDoc, raises } = parse(raw)
 
   const sig = signatures[0]
   if (sig) {

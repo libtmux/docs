@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { Resolver, notASymbol } from '../src/resolver.ts'
 import { tokenizeDoc } from '../src/doc/roles.ts'
+import { javadocToMarkdown, parseJavadoc } from '../src/doc/javadoc.ts'
 import { tableMentions } from '../src/mentions.ts'
 import { readInventory, writeInventory } from '../src/inventory.ts'
 import type { ApiModel } from '../src/model.ts'
@@ -287,6 +288,33 @@ describe('each language gets its own spelling of a cross-reference', () => {
 
   it('an undeclared language still gets reST, which the Python corpus needs', () => {
     expect(ref(tokenizeDoc('See :meth:`Pane.send_keys` now.'))).toEqual(['Pane.send_keys'])
+  })
+})
+
+describe('a doc comment is read in the dialect it was written in', () => {
+  /**
+   * Javadoc is HTML by specification, and reading it as prose printed 192
+   * `<p>` and 7 `<pre>` across 146 pages of the Java reference — the same
+   * failure C# XML had before `parseXmlDoc`.
+   *
+   * The hard part is that a doc comment also contains `List<String>` and
+   * `<socket>`. Only javadoc's own vocabulary may be translated.
+   */
+  it('javadoc HTML becomes the model, and other angle brackets survive', () => {
+    const md = javadocToMarkdown(
+      'Takes a {@code List<String>} at a <socket> path.\n\n<p>Then <em>waits</em>.',
+    )
+    expect(md).toContain('List<String>')
+    expect(md).toContain('<socket>')
+    expect(md).not.toContain('<p>')
+    expect(md).toContain('*waits*')
+  })
+
+  it('javadoc example blocks reach the renderer that draws examples', () => {
+    const { doc } = parseJavadoc('Creates it.\n\n<pre>{@code\nvar s = server.newSession();\n}</pre>')
+    expect(doc.examples?.map((e) => [e.lang, e.code])).toEqual([
+      ['java', 'var s = server.newSession();'],
+    ])
   })
 })
 
