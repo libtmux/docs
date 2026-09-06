@@ -92,6 +92,12 @@ const ownDescriptions = (xml: string): { brief: string; detail: string } => {
   return { brief: tag(tail, 'briefdescription') ?? '', detail: tag(tail, 'detaileddescription') ?? '' }
 }
 
+/** The part of an enum's `<memberdef>` that describes the enum, not its values. */
+const afterEnumValues = (block: string): string => {
+  const last = block.lastIndexOf('</enumvalue>')
+  return last === -1 ? block : block.slice(last)
+}
+
 const attr = (xml: string, name: string): string | undefined =>
   new RegExp(`${name}="([^"]*)"`).exec(xml)?.[1]
 
@@ -219,8 +225,12 @@ export function extractDoxygen(xmlDir: string, sourceRoot = ''): ApiSymbol[] {
 
       const parent = kind && compound[1] !== 'namespace' ? owner : undefined
       const id = parent ? `${parent}::${name}` : `${owner}::${name}`
-      const brief = textOf(tag(block, 'briefdescription') ?? '')
-      const detail = textOf(tag(block, 'detaileddescription') ?? '')
+      // An enum's own descriptions come after its values', the same way a
+      // compound's come after its members'. Reading the first ones documented
+      // `StringOp` as "iequals" — the brief of its second enumerator.
+      const scope = attr(block, 'kind') === 'enum' ? afterEnumValues(block) : block
+      const brief = textOf(tag(scope, 'briefdescription') ?? '')
+      const detail = textOf(tag(scope, 'detaileddescription') ?? '')
       const returnType = textOf(tag(block, 'type') ?? '')
       const returnDoc = textOf(tag(block, 'simplesect') ?? '')
 
