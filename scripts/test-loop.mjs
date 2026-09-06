@@ -50,9 +50,10 @@ function run(command, args) {
   return promise
 }
 const node = (...args) => run(process.execPath, args)
-const pnpm = (...args) => process.env.npm_execpath
-  ? node(process.env.npm_execpath, ...args)
-  : run('pnpm', args)
+const pnpm = (...args) => {
+  const entry = process.env.npm_execpath ?? 'pnpm'
+  return /\.[cm]?js$/.test(entry) ? node(entry, ...args) : run(entry, args)
+}
 const tests = (directory, names = []) => node(vitest, 'run', '--root', directory,
   ...names.map((name) => `test/${name}.test.ts`))
 
