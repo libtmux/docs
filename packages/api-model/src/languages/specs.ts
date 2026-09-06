@@ -60,13 +60,17 @@ export const TYPESCRIPT: LanguageSpec = {
   stripDoc: stripBlockDoc,
   modifiers: { static: 'static', abstract: 'abstract', async: 'async', readonly: 'readonly', private: 'private' },
   // TypeScript was the only port with no visibility test, so the reference
-  // published 42 module-private declarations — `ExceptionOptions`,
-  // `sortedDataEntries`, the `PaneRow` shapes — none of which any export list
-  // in the port names, and none of which a caller can import.
+  // published module-private declarations as public API. A declaration whose
+  // parent is the file itself was not exported; anything else reached here is
+  // a member of something that was.
   //
-  // A declaration whose parent is the file itself was not exported. Anything
-  // else reached here is a member of something that was.
-  isExported: (node) => node.parent?.type !== 'program',
+  // Only functions. A module-private *type* is still named by the public
+  // signatures that use it — `Pane.format` is a `PaneRow` — and dropping
+  // those cost 472 cross-references, which is a worse reference than one
+  // carrying a page for a shape a caller cannot import. Exporting them is the
+  // port's decision to make. A private function is named by nothing.
+  isExported: (node) =>
+    node.parent?.type !== 'program' || node.type !== 'function_declaration',
   fields: { returns: 'return_type' },
 }
 

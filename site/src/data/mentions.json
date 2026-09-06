@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-06T19:52:35.825Z",
+ "generated": "2026-09-06T20:00:52.877Z",
  "mentions": [
   {
    "port": "cxx",
@@ -2117,13 +2117,6 @@
   },
   {
    "port": "rs",
-   "symbol": "control.actor.OpenedConnection.connection",
-   "page": "/concepts/transports/",
-   "title": "Control mode vs one-shot",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
    "symbol": "error.ControlModeErrorKind",
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
@@ -2926,13 +2919,6 @@
    "page": "/examples/workspace-from-file/",
    "title": "Build a workspace from a file",
    "section": "examples"
-  },
-  {
-   "port": "ts",
-   "symbol": "exc.LibTmuxException.subcommand",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
   },
   {
    "port": "ts",
