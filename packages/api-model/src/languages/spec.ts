@@ -145,7 +145,20 @@ function docCommentFor(node: Node, spec: LanguageSpec): string | undefined {
   while (cursor && spec.commentTypes.includes(cursor.type)) {
     if (cursor.endPosition.row < expectedRow - 1) break
     const stripped = spec.stripDoc(cursor.text)
-    if (stripped === undefined) break
+    if (stripped === undefined) {
+      // A comment the language does not count as documentation, sitting
+      // between a declaration and its doc comment. libtmux-ts writes
+      // `// eslint-disable-next-line` there, and the directive has to stay on
+      // the line above the class for the suppression to apply — so the doc
+      // comment cannot move down past it, and `Pane` had no summary.
+      //
+      // Only before any documentation has been collected. A plain comment
+      // *above* a doc block belongs to whatever is above it, not to this.
+      if (lines.length) break
+      expectedRow = cursor.startPosition.row
+      cursor = cursor.previousNamedSibling
+      continue
+    }
     lines.unshift(stripped)
     expectedRow = cursor.startPosition.row
     cursor = cursor.previousNamedSibling

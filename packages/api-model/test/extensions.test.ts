@@ -110,4 +110,33 @@ describe('a doc comment reaches past the attributes under it', () => {
     expect(doc('Command')).toBe('One tmux command, and what it will do.')
     expect(doc('Unrelated')).toBeUndefined()
   })
+
+  it('reaches past a lint directive, but not past one above the doc', async () => {
+    const { extractWithSpec } = await import('../src/languages/spec.ts')
+    const { TYPESCRIPT } = await import('../src/languages/specs.ts')
+    const { mkdtempSync, writeFileSync } = await import('node:fs')
+    const { join } = await import('node:path')
+    const { tmpdir } = await import('node:os')
+
+    const dir = mkdtempSync(join(tmpdir(), 'directives-'))
+    const file = join(dir, 'pane.ts')
+    writeFileSync(
+      file,
+      [
+        '/** One pane on one tmux server. */',
+        '// eslint-disable-next-line typescript/no-unsafe-declaration-merging -- reason.',
+        'export class Pane {}',
+        '',
+        '// Not documentation, and nothing above it.',
+        '/** Belongs to Window. */',
+        'export class Window {}',
+        '',
+      ].join('\n'),
+    )
+    const symbols = await extractWithSpec(TYPESCRIPT, file, 'pane')
+    const doc = (n: string) => symbols.find((s) => s.name === n && !s.parent)?.doc?.summary
+    expect(doc('Pane')).toBe('One pane on one tmux server.')
+    // The plain comment sits above the doc block, so it is not part of it.
+    expect(doc('Window')).toBe('Belongs to Window.')
+  })
 })
