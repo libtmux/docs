@@ -174,13 +174,15 @@ const PORTS = {
     // and needs its page — excluding it cost 161 cross-references from public
     // signatures. Whether to move it is libtmux's decision.
     //
-    // A leading underscore on a class says the same thing about the class;
-    // `__enter__` starts with two and is unaffected.
+    // No rule for a leading underscore on a class. `_DefaultOptionScope` is
+    // spelled private and is named in 97 public type annotations as the
+    // default scope, so removing it rendered all 97 as plain text. The
+    // reference is better with a page for it than without one.
     options: {
       privateMembers: true,
       specialMembers: true,
       inheritedMembers: true,
-      excludePaths: [/(^|\.)_vendor\./, /(^|\.)_compat\./, /(^|\.)_[A-Z]/],
+      excludePaths: [/(^|\.)_vendor\./, /(^|\.)_compat\./],
     },
   },
   ts: {
