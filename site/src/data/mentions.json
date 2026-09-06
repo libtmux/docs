@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-06T20:31:59.973Z",
+ "generated": "2026-09-06T20:37:08.038Z",
  "mentions": [
   {
    "port": "cxx",
@@ -1175,6 +1175,13 @@
    "symbol": "tmux.SessionFromEnv",
    "page": "/topics/environment/",
    "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.WaitForRequest.Mode",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
    "section": "topics"
   },
   {
@@ -3522,13 +3529,6 @@
    "text": "send_text(text)",
    "page": "/topics/pane-interaction/",
    "line": 81,
-   "why": "no port defines it"
-  },
-  {
-   "port": "go",
-   "text": "Mode",
-   "page": "/topics/waiting-and-retry/",
-   "line": 144,
    "why": "no port defines it"
   },
   {
