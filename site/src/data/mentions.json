@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-06T20:03:46.747Z",
+ "generated": "2026-09-06T20:14:36.957Z",
  "mentions": [
   {
    "port": "cxx",
@@ -745,6 +745,13 @@
   },
   {
    "port": "dotnet",
+   "symbol": "LibTmux.TmuxDispatchState.Unknown",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
    "symbol": "LibTmux.TmuxEnvironment.GetAllAsync",
    "page": "/topics/environment/",
    "title": "Environment",
@@ -864,6 +871,13 @@
   },
   {
    "port": "dotnet",
+   "symbol": "LibTmux.TmuxWaitChannel.WaitAsync",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
    "symbol": "LibTmux.Window.ActivePane",
    "page": "/topics/traversal/",
    "title": "Traversal",
@@ -965,6 +979,13 @@
    "symbol": "tmux.NotificationStream",
    "page": "/topics/context-managers/",
    "title": "Context managers",
+   "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.Capture",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
    "section": "topics"
   },
   {
@@ -3476,13 +3497,6 @@
    "why": "no port defines it"
   },
   {
-   "port": "dotnet",
-   "text": "Unknown",
-   "page": "/topics/errors-and-exceptions/",
-   "line": 66,
-   "why": "no port defines it"
-  },
-  {
    "port": "rs",
    "text": "TimedOut",
    "page": "/topics/errors-and-exceptions/",
@@ -3515,13 +3529,6 @@
    "text": "TimedOut",
    "page": "/topics/waiting-and-retry/",
    "line": 145,
-   "why": "no port defines it"
-  },
-  {
-   "port": "dotnet",
-   "text": "WaitAsync(budget)",
-   "page": "/topics/waiting-and-retry/",
-   "line": 147,
    "why": "no port defines it"
   }
  ]

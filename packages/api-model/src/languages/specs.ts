@@ -240,9 +240,14 @@ export const CSHARP: LanguageSpec = {
   modifiers: { static: 'static', abstract: 'abstract', async: 'async', private: 'private', readonly: 'readonly' },
   // An enum member carries no access modifier — it is as public as its enum —
   // so the modifier test rejected every one of them.
+  // `internal` is not public API: the compiler refuses to name an internal
+  // type in a public signature, so nothing a caller can reach mentions one.
+  // Accepting it published 100 of libtmux-dotnet's implementation types —
+  // `FormatCatalog`, `PsmuxBinaryTrust`, `Utf8BackslashDecoder` — as though a
+  // consumer could use them.
   isExported: (node) =>
     node.type === 'enum_member_declaration' ||
-    node.children.some((c) => c?.type === 'modifier' && /\b(public|protected|internal)\b/.test(c.text)),
+    node.children.some((c) => c?.type === 'modifier' && /\b(public|protected)\b/.test(c.text)),
   fields: { returns: 'type' },
 }
 
