@@ -37,7 +37,7 @@ const NAME = /^[A-Za-z_][A-Za-z0-9_.]*$/
         href={span.link.href}
         class:list={['api-type-link', chip && 'api-literal api-literal--link']}
         rel={span.link.external ? 'nofollow noopener' : undefined}
-        title={span.link.external ? `${span.text} — ${span.link.project ?? "external"}` : span.link.symbol?.publicId}
+        title={span.link.external ? `${span.text} (${span.link.project ?? "external"})` : span.link.symbol?.publicId}
       >{span.text}</a>
     ) : (
       <span class:list={['api-punct', chip && NAME.test(span.text) && 'api-literal']}>{span.text}</span>

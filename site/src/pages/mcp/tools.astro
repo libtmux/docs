@@ -1,7 +1,7 @@
 ---
 import { ALL_TRANSLATED } from '../../i18n/resolve'
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { PORTS, PORT_BY_SLUG } from '../../lib/ports'
+import { PORT_BY_SLUG } from '../../lib/ports'
 import { withPortRoot, withRoot } from '../../lib/site-root'
 import mcpTools from '../../data/mcp-tools.json'
 
@@ -48,7 +48,7 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
 
 <BaseLayout
   title="MCP tool surface"
-  description={`Which MCP tools each libtmux port actually registers: ${data.universe.length} distinct names across eight ports, ${everywhere.length} of them present in all eight.`}
+  description={`MCP tool availability by language, including wire prefixes and platform limits.`}
   pagePath="mcp/tools"
 
   localeStatuses={ALL_TRANSLATED}
@@ -56,57 +56,47 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
   <main class="mx-auto max-w-5xl px-4 py-12">
     <h1 class="text-3xl font-semibold tracking-tight">MCP tool surface</h1>
     <p class="mt-3 max-w-3xl text-lg">
-      Every port ships an MCP server, and they do not agree on what the tools
-      are called. Across the eight, <strong>{data.universe.length} distinct tool
-      names</strong> are registered; <strong>{everywhere.length}</strong> of
-      them exist in all eight, and {soleOwner} exist in exactly one.
+      Check which tools your MCP server registers before configuring a client.
+      The ports register <strong>{data.universe.length} distinct tool
+      names</strong>. Of these, <strong>{everywhere.length}</strong> are
+      registered in every port, and {soleOwner} in only one.
     </p>
     <p class="mt-3 max-w-3xl text-sm opacity-80">
-      This page exists because the claim it replaces was unfalsifiable from any
-      one port's documentation. The numbers below are extracted from each
-      port's own registration site — a FastMCP call, an <code>rmcp</code>
-      attribute, an <code>[McpServerTool]</code>, a catalog literal — by
-      <code>scripts/gen-mcp-tools.mjs</code>, which refuses to write a matrix
-      unless its Python rule reproduces, name for name, the {data.referenceDocumented}
-      tools libtmux-mcp documents itself.
+      The table uses tool registrations extracted from each port's source.
+      The extraction checks the Python names against the
+      {data.referenceDocumented} tools documented by libtmux-mcp.
     </p>
 
-    <h2 class="mt-10 text-xl font-semibold">Two things to know before you configure a client</h2>
+    <h2 class="mt-10 text-xl font-semibold">Names and platform limits</h2>
     <div class="mt-4 space-y-4 max-w-3xl">
       <p>
         <strong>{prefixed.map((s) => PORT_BY_SLUG[s].name).join(' and ')} prefix
-        every tool with <code>tmux_</code></strong> on the wire. The other six
-        do not. An agent told to call <code>capture_pane</code> finds nothing on
-        a {PORT_BY_SLUG[prefixed[0]].name} server, and one told to call
-        <code>tmux_capture_pane</code> finds nothing on the other six. The
-        prefix is stripped in the table below so the comparison is about
-        capability rather than spelling.
+        every tool with <code>tmux_</code></strong> on the wire. For example, use
+        <code>tmux_capture_pane</code> on a
+        {PORT_BY_SLUG[prefixed[0]].name} server and <code>capture_pane</code>
+        on servers without that prefix. The table omits prefixes when
+        comparing names.
       </p>
       <p>
-        <strong>Size varies by a factor of {spread}.</strong>{' '}
+        <strong>Tool counts vary by a factor of {spread}.</strong>{' '}
         {ranked.map((r, i) => (
           <>
             {i > 0 ? ', ' : ''}
             {PORT_BY_SLUG[r.slug].name} {r.n}
           </>
-        ))}. C++ is deliberately the smallest, and smaller still on
-        Windows: eight of its twelve tools sit behind
-        <code>#if !defined(_WIN32)</code>, so a Windows build registers four
-        read-only tools and nothing that mutates. The comment above that guard
-        gives the reason — psmux 3.3.7 "can report another process's same-name
-        mutation as its own", so the catalog stays read-only there until
-        ownership can be proven. On Windows the six-tool common vocabulary
-        below shrinks to two: <code>list_sessions</code> and
-        <code>list_windows</code>.
+        ))}. C++ registers four read-only tools on Windows. Its mutation tools
+        are disabled because psmux 3.3.7 cannot reliably establish ownership
+        of a mutation. On Windows, only <code>list_sessions</code> and
+        <code>list_windows</code> from the common tool list below remain
+        available in every port.
       </p>
     </div>
 
-    <h2 class="mt-12 text-xl font-semibold">The part every port agrees on</h2>
+    <h2 class="mt-12 text-xl font-semibold">Tools registered in every port</h2>
     <p class="mt-2 max-w-3xl">
-      Six tools are registered by all eight ports. If you are writing an agent
-      prompt that has to work against any libtmux MCP server, this is the
-      vocabulary it can assume — on a non-Windows host; see the C++ caveat
-      above:
+      These {everywhere.length} tools are registered in every port on
+      non-Windows hosts. Apply the wire prefixes and C++ Windows limits
+      described above.
     </p>
     <ul class="mt-4 flex flex-wrap gap-2">
       {
@@ -118,11 +108,10 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
       }
     </ul>
 
-    <h2 class="mt-12 text-xl font-semibold">Every tool, and who has it</h2>
+    <h2 class="mt-12 text-xl font-semibold">Tool availability</h2>
     <p class="mt-2 max-w-3xl text-sm opacity-80">
-      Sorted by how many ports register it. A name means the tool is registered,
-      not that its arguments match — argument parity is a separate question this
-      page does not answer.
+      Sorted by the number of ports that register each name. Arguments and
+      behavior can differ; check the chosen server's tool schema.
     </p>
     <div class="mt-4 overflow-x-auto">
       <table class="w-full min-w-max border-collapse text-sm">
@@ -188,7 +177,7 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
                 </td>
                 <td class="px-3 py-2">{data.ports[s].tools.length}</td>
                 <td class="px-3 py-2 font-mono text-xs">
-                  {data.ports[s].wirePrefix || '—'}
+                  {data.ports[s].wirePrefix || 'None'}
                 </td>
                 <td class="px-3 py-2 font-mono text-xs opacity-70">{data.ports[s].source}</td>
               </tr>
@@ -202,7 +191,6 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
       Install a server from <a class="hover:underline" href={withRoot('/mcp/')}>the MCP page</a>,
       or read the reference implementation's per-tool documentation in the
       {' '}<a class="hover:underline" href={withPortRoot('/py/')}>Python port</a>.
-      {PORTS.length} ports, one protocol, and — for now — {data.universe.length} names.
     </p>
   </main>
 </BaseLayout>

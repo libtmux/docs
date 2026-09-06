@@ -13,27 +13,21 @@ import { localesFor } from '../i18n/resolve'
 import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE } from '../i18n/locales'
 
-/**
- * Onward links below the fold. Each points at a section another agent owns
- * (concepts/ and guides/ pre-date this page; topics/ and examples/ are
- * assembled in this same batch) — home only links out, it never restates
- * their content.
- */
 const explore = [
   {
     href: withRoot('/topics/'),
     label: 'Topics',
-    body: 'Deep dives into one subject at a time — architecture, traversal, options and hooks — compared across all eight ports.',
+    body: 'Architecture, traversal, options and hooks, with examples in each language.',
   },
   {
     href: withRoot('/concepts/'),
     label: 'Concepts',
-    body: 'The mental model every port shares before you read any one port’s own reference: the object hierarchy, transports, and filtering.',
+    body: 'How servers, sessions, windows and panes relate, and how to connect to and query them.',
   },
   {
     href: withRoot('/guides/'),
     label: 'Guides',
-    body: 'Task-oriented walkthroughs — install tmux, pick a port, and run the round trip every real program starts from.',
+    body: 'Install tmux and a libtmux package, then create sessions and control panes.',
   },
   {
     // Composed here rather than at the point of render: the rest of this
@@ -41,12 +35,12 @@ const explore = [
     // reference is built in the default locale only. One list, two roots.
     href: withPortRoot('/reference/'),
     label: 'API reference',
-    body: 'Every public symbol in all eight ports, extracted from source and cross-linked — 13,753 of them, in one place and one style.',
+    body: 'API signatures and documentation, with links to related guides and corresponding APIs in other languages.',
   },
   {
     href: withRoot('/examples/'),
     label: 'Examples',
-    body: 'The same concrete task, worked through in each of the eight ports side by side, so you can compare syntax directly.',
+    body: 'Programs for creating workspaces, sending keys and capturing output.',
   },
 ] as const
 
@@ -65,7 +59,7 @@ const { version: buildVersion } = buildTarget(process.env)
 const versionSections = versionRootPort
   ? [
       { href: portPageUrl(versionRootPort, buildVersion, 'topics'), label: 'Topics', body: `Subject-by-subject, with ${versionRootPort.name} in every code block.` },
-      { href: portPageUrl(versionRootPort, buildVersion, 'guides'), label: 'Guides', body: `Task-shaped walkthroughs for ${versionRootPort.name}.` },
+      { href: portPageUrl(versionRootPort, buildVersion, 'guides'), label: 'Guides', body: `Task guides for ${versionRootPort.name}.` },
       { href: portPageUrl(versionRootPort, buildVersion, 'examples'), label: 'Examples', body: 'Complete programs, sourced from the code each port tests.' },
       { href: portPageUrl(versionRootPort, buildVersion, 'concepts'), label: 'Concepts', body: 'The domain model every port shares.' },
     ]
@@ -138,7 +132,7 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
         <p class="mt-4 text-sm text-muted">
           You are reading the <strong>{buildVersion}</strong> documentation. Use
           the version control in the header to move between releases, or the
-          language control to read the same page in another port.
+          port dropdown to find a corresponding page in another language.
         </p>
         <div class="mt-10 grid gap-4 sm:grid-cols-2">
           {versionSections.map((s) => (
@@ -157,7 +151,7 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
 
 <BaseLayout
   title={landingEntry?.data.title ?? 'libtmux'}
-  description={landingEntry?.data.description ?? 'A typed tmux control library for Python, TypeScript, Rust, Go, Java, .NET, C++ and Swift — one API shape, one documentation site.'}
+  description={landingEntry?.data.description ?? 'Control tmux from Python, TypeScript, Rust, Go, Java, .NET, C++ or Swift. Installation, task guides and API reference.'}
   locale={LandingContent ? locale : DEFAULT_LOCALE}
   locales={homeLocales}
   sourcePath="/"
@@ -174,13 +168,12 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
     <section class="max-w-3xl">
       <h1 class="text-4xl font-semibold tracking-tight sm:text-5xl">libtmux</h1>
       <p class="mt-4 text-xl text-muted">
-        Drive a real tmux from your language of choice.
+        Control tmux from your application.
       </p>
       <p class="mt-4 max-w-2xl text-base leading-relaxed opacity-80">
-        Server, session, window, pane — the same object hierarchy tmux itself
-        defines, typed and ported to eight languages. Script a workspace,
-        harness a TUI in tests, or give an assistant hands on a terminal,
-        without hand-rolling a subprocess wrapper first.
+        libtmux provides objects for tmux servers, sessions, windows and panes.
+        Use them to create a workspace, send input to a terminal program, or
+        capture its output in a test.
       </p>
       <div class="mt-8 flex flex-wrap items-center gap-3">
         <a
@@ -193,7 +186,7 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
           href={withRoot('/topics/')}
           class="rounded border border-edge px-4 py-2 text-sm font-semibold hover:bg-surface-hover"
         >
-          Browse Topics
+          Browse topics
         </a>
         <a
           href="https://github.com/libtmux"
@@ -208,10 +201,9 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
     <section class="mt-16">
       <h2 class="text-xl font-semibold">Quickstart</h2>
       <p class="mt-2 max-w-2xl text-sm opacity-80">
-        Pick your language below — the install line and the example both
-        follow it. Each snippet is that port's own opening example; see
+        Choose a language to see its install command and opening example. See
         <a class="underline" href={withRoot('/examples/attach-and-send-keys/')}>Attach and send keys</a>
-        for one task written out in all eight.
+        for examples of creating a session and sending input in each language.
       </p>
       <div class="mt-4 max-w-2xl">
         <PackageInstall snippets={QUICKSTARTS} />
@@ -220,11 +212,10 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
 
     <!-- Ports -->
     <section class="mt-16">
-      <h2 class="text-xl font-semibold">Eight ports, one API shape</h2>
+      <h2 class="text-xl font-semibold">Language libraries</h2>
       <p class="mt-2 max-w-2xl text-sm opacity-80">
-        Rust, Go, and Java deep-link to the canonical host their own
-        ecosystem already uses (docs.rs, pkg.go.dev, javadoc.io); the rest
-        are self-hosted here, in the same design.
+        Choose a library for installation instructions and API documentation.
+        Each reference includes links to related APIs in other languages.
       </p>
       <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {
@@ -238,11 +229,6 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
               <p class="mt-1 font-mono text-xs opacity-70">{p.packageName}</p>
               <pre class="mt-3 overflow-x-auto rounded bg-surface px-2 py-1.5 font-mono text-xs"><code>{p.install}</code></pre>
               <p class="mt-3 text-sm">
-                {/* Every port has one here. Three also have a canonical host
-                    of their own, which the port's own page offers alongside;
-                    this card links ours, and the "not published yet" branch
-                    that used to sit here described four ports that between
-                    them ship 5,000 pages. */}
                 <a class="hover:underline" href={referenceUrl(p)}>API reference</a>
               </p>
             </article>
