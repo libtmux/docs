@@ -41,7 +41,10 @@ jobs:
           cache: pnpm
 
       - name: Install audit tools
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y ripgrep
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y ripgrep fd-find
+          sudo ln -s /usr/bin/fdfind /usr/local/bin/fd
 
       - run: pnpm install --frozen-lockfile
 
