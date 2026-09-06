@@ -23,7 +23,7 @@ const SLUGS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'] as cons
 type Slug = (typeof SLUGS)[number]
 
 interface ToolData {
-  ports: Record<string, { tools: string[]; wirePrefix: string; source: string }>
+  ports: Record<string, { tools: string[]; wirePrefix: string; selectable: boolean; source: string }>
   universe: string[]
   coverage: Record<string, string[]>
   referenceDocumented: number | null
@@ -35,6 +35,11 @@ const buildPort = process.env.LIBTMUX_DOCS_PORT || undefined
 const counts = SLUGS.map((s) => ({ slug: s, n: data.ports[s].tools.length }))
 const ranked = [...counts].sort((a, b) => b.n - a.n)
 const prefixed = SLUGS.filter((s) => data.ports[s].wirePrefix)
+// Which ports can be narrowed, read from the matrix rather than named here:
+// the capability model is being adopted port by port, so a sentence naming
+// them would be wrong by the time it was read.
+const selectable = SLUGS.filter((s) => data.ports[s].selectable)
+const fixedSurface = SLUGS.filter((s) => !data.ports[s].selectable)
 
 const byCoverage = (n: number) => data.universe.filter((t) => data.coverage[t].length === n)
 const everywhere = byCoverage(8)
@@ -77,6 +82,20 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
         {PORT_BY_SLUG[prefixed[0]].name} server and <code>capture_pane</code>
         on servers without that prefix. The table omits prefixes when
         comparing names.
+      </p>
+      <p>
+        <strong>
+          {selectable.map((sl) => PORT_BY_SLUG[sl].name).join(', ')} let a
+          client choose which tools the server offers.
+        </strong>{' '}
+        <code>LIBTMUX_TOOLSETS</code> picks whole groups and{' '}
+        <code>LIBTMUX_TOOLS</code> and <code>LIBTMUX_EXCLUDE_TOOLS</code> name
+        individual ones. The other{' '}
+        {fixedSurface.length === 1 ? 'port serves' : `${fixedSurface.length} serve`}{' '}
+        whatever they register and cannot be narrowed:{' '}
+        {fixedSurface.map((sl) => PORT_BY_SLUG[sl].name).join(', ')}. That
+        matters most where the count is highest — a client that wants three
+        tools still receives all of them.
       </p>
       <p>
         <strong>Tool counts vary by a factor of {spread}.</strong>{' '}

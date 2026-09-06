@@ -42,6 +42,8 @@ const PORTS = [
   {
     slug: 'py',
     dir: '~/work/python/libtmux-mcp/src/libtmux_mcp/tools',
+    // Registration is under `tools/`; the toolset middleware is a level up.
+    serverDir: '~/work/python/libtmux-mcp/src/libtmux_mcp',
     glob: '**/*.py',
     // FastMCP: mcp.tool(<annotations>)(function) — the function name is the
     // wire name. The decorator form is not used here.
@@ -144,6 +146,31 @@ function filesIn(dir, glob, exclude = []) {
   }
 }
 
+/**
+ * Whether a port's server lets a caller choose which tools it serves.
+ *
+ * The capability model these ports are converging on reads `LIBTMUX_TOOLSETS`
+ * to pick unordered groups, and `LIBTMUX_TOOLS` / `LIBTMUX_EXCLUDE_TOOLS` to
+ * name individual ones. Without it a client gets whatever the port
+ * registers — 59 tools on one port and 12 on another — and cannot narrow it.
+ *
+ * That is the difference between a usable MCP server and a firehose, and it
+ * is not visible from the tool list, which is why it is recorded here beside
+ * the names rather than described in prose that would go stale.
+ *
+ * Detected by reading the port's own source, on the same terms as the names:
+ * a port that reads the variable supports it, and one that only mentions it
+ * in a changelog or a test fixture does not.
+ */
+function selectsToolsets(dir) {
+  if (!existsSync(dir)) return false
+  for (const file of filesIn(dir, '**/*')) {
+    if (/(^|\/)(tests?|__tests__|fixtures?)\//.test(file)) continue
+    if (readFileSync(file, 'utf8').includes('LIBTMUX_TOOLSETS')) return true
+  }
+  return false
+}
+
 const results = {}
 const missing = []
 for (const port of PORTS) {
@@ -160,6 +187,7 @@ for (const port of PORTS) {
   results[port.slug] = {
     tools: [...names].sort(),
     wirePrefix: port.wirePrefix ?? '',
+    selectable: selectsToolsets(expand(port.serverDir ?? port.dir)),
     source: port.dir,
   }
 }

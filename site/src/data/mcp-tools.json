@@ -59,6 +59,7 @@
         "wait_for_text"
       ],
       "wirePrefix": "",
+      "selectable": true,
       "source": "~/work/python/libtmux-mcp/src/libtmux_mcp/tools"
     },
     "ts": {
@@ -110,6 +111,7 @@
         "wait_for_text"
       ],
       "wirePrefix": "",
+      "selectable": true,
       "source": "~/work/libtmux/libtmux-ts/packages/mcp/src"
     },
     "rs": {
@@ -164,6 +166,7 @@
         "what_changed"
       ],
       "wirePrefix": "",
+      "selectable": false,
       "source": "~/work/libtmux/libtmux-rs/crates/tmux-mcp/src/tools"
     },
     "go": {
@@ -229,6 +232,7 @@
         "wait_for_text"
       ],
       "wirePrefix": "",
+      "selectable": false,
       "source": "~/work/libtmux/libtmux-go/mcp"
     },
     "java": {
@@ -280,6 +284,7 @@
         "wait_for_text"
       ],
       "wirePrefix": "",
+      "selectable": true,
       "source": "~/work/libtmux/libtmux-java/libtmux-mcp/src/main/java/io/github/libtmux/mcp"
     },
     "dotnet": {
@@ -328,6 +333,7 @@
         "whoami"
       ],
       "wirePrefix": "tmux_",
+      "selectable": false,
       "source": "~/work/libtmux/libtmux-dotnet/src/LibTmux.Mcp"
     },
     "cxx": {
@@ -346,6 +352,7 @@
         "wait_for_text"
       ],
       "wirePrefix": "",
+      "selectable": false,
       "source": "~/work/libtmux/libtmux-cxx/apps/mcp/src"
     },
     "swift": {
@@ -390,6 +397,7 @@
         "watch_format"
       ],
       "wirePrefix": "",
+      "selectable": false,
       "source": "~/work/libtmux/libtmux-swift/Sources/LibTmuxMCP"
     }
   },
