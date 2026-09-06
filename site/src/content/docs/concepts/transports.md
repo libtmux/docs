@@ -36,7 +36,7 @@ connections. Some ports also batch commands into one invocation:
 | Rust | `plan` feature, sequential | `plan`, folded | `control-mode` feature |
 | C# | "One-shot" mode | "Chained" mode (`server.Chain()`) | "Control" mode (`EnterControlModeAsync`) |
 | C++ | bounded subprocess (default) | `Chain` | `Server::control()` → `Connection` |
-| Java | every call | - | not documented here: see the port's own reference |
+| Java | every call | `Batch` | `ControlClient` (`attach`, `send`, `subscribeEvents`) |
 | Swift | default | - | `server.connect()` / `.watch()` (notifications; see below) |
 
 Choose based on whether you need command results, notifications, or a batch of
@@ -49,8 +49,9 @@ TypeScript's `connect()` adds an event observer while commands such as
 tmux processes. A dedicated process provides a completion boundary for output
 from alias-expanded or waiting commands.
 
-Go's `Session.OpenControl`, .NET's `EnterControlModeAsync`, and Rust's
-`control-mode` feature can send commands through the persistent connection.
+Go's `Session.OpenControl`, .NET's `EnterControlModeAsync`, Java's
+`ControlClient.send`, and Rust's `control-mode` feature can send commands
+through the persistent connection.
 Check your port's transport API before assuming that subscribing to events also
 changes how commands run.
 

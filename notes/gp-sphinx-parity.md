@@ -203,10 +203,12 @@ changes the weight without restyling the heading scale.
   `#L85` and highlights one line. The extractors all know where a declaration
   ends — tree-sitter has `endPosition`, Doxygen has `bodyend` — so this is a
   field the model does not carry yet rather than information it lacks.
-- **Go, Java and .NET have almost no examples.** Not a rendering gap: Go puts
-  them in `Example` test functions and the other two rarely write them in doc
-  comments. Extracting Go's would mean reading its test files, which is a
-  different mechanism from everything else here.
+- **Go and .NET have almost no examples.** Not a rendering gap: Go puts them
+  in `Example` test functions and .NET rarely writes them in doc comments.
+  Extracting Go's would mean reading its test files, which is a different
+  mechanism from everything else here. Java's seven were a rendering gap —
+  javadoc fences with `<pre>{@code …}</pre>`, and reading that as prose hid
+  them inside a printed tag.
 - **Go's indented code blocks are not detected.** Go spells a code block with
   indentation rather than a fence. Three symbols in libtmux-go use one, and
   after comment-marker stripping the block's first line is flush with the
@@ -230,6 +232,12 @@ wide.
 Cross-references in every language. Inline parsing used to be one reST-shaped
 tokenizer for all eight ports while block parsing dispatched properly, so Go,
 Java, .NET, Swift and TypeScript rendered every reference as literal text.
+
+Javadoc's HTML. A javadoc comment is HTML by specification and was being read
+as prose, so 192 `<p>` and 7 `<pre>` printed across 146 pages of the Java
+reference. The dialect is now declared on the language spec, beside C#'s, and
+translated on the way into the doc model — the source keeps its tags, which
+javadoc's own output needs.
 
 C# documentation XML. It was left in place on the reasoning that `<summary>`
 and `<param>` are structure a renderer could use — correct, and then no
