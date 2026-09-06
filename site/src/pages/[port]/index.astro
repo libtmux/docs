@@ -43,7 +43,20 @@ interface Props {
 const { port } = Astro.props as Props
 // process.env, not import.meta.env: import.meta.env.LIBTMUX_DOCS_* goes
 // stale across repeated astro builds in one tree (see BaseLayout.astro).
-const defaultVersion = process.env.LIBTMUX_DOCS_DEFAULT_VERSION ?? 'stable'
+//
+// The per-port map, not the single LIBTMUX_DOCS_DEFAULT_VERSION: this route
+// renders all eight landing pages inside the one root build, so a single
+// value cannot be right for eight ports whose defaults differ. `latest` is
+// the fallback because every port has one; `stable` is the entry that may be
+// absent, and linking at it produced four dead links per port.
+const PORT_DEFAULTS: Record<string, string> = (() => {
+  try {
+    return JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
+  } catch {
+    return {}
+  }
+})()
+const defaultVersion = PORT_DEFAULTS[port.slug] ?? process.env.LIBTMUX_DOCS_DEFAULT_VERSION ?? 'latest'
 const quickstart = QUICKSTARTS[port.slug]
 
 /*

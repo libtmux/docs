@@ -20,9 +20,21 @@ const { portSlug, version, pagePath = '' } = Astro.props as Props
 
 // Switching language resets to that port's default, the way Playwright's
 // language switcher does: version numbers are per-port, so carrying v0.46.2
-// from Python to TypeScript would name a version that never existed. The
-// 'stable' alias is every self-hosted port's default and always resolves.
-const DEFAULT_ALIAS = 'stable'
+// from Python to TypeScript would name a version that never existed.
+//
+// That default is per-port and cannot be a constant. A port with no release
+// has no `stable` entry, and nothing builds a tree there — hard-coding it
+// linked seven of eight ports at a URL the assembly does not produce. The
+// build passes the manifest's own map; `latest` is the fallback because every
+// port has one, where `stable` is exactly what may be missing.
+const PORT_DEFAULTS: Record<string, string> = (() => {
+  try {
+    return JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
+  } catch {
+    return {}
+  }
+})()
+const defaultFor = (slug: string) => PORT_DEFAULTS[slug] ?? 'latest'
 ---
 
 <nav aria-label="Language" class="flex flex-wrap gap-1">
@@ -31,7 +43,7 @@ const DEFAULT_ALIAS = 'stable'
       const active = p.slug === portSlug
       return (
         <a
-          href={portPageUrl(p, active ? version : DEFAULT_ALIAS, pagePath)}
+          href={portPageUrl(p, active ? version : defaultFor(p.slug), pagePath)}
           class:list={[
             'rounded px-2 py-1 text-sm transition-colors',
             'topnav-chip',

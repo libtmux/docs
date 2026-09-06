@@ -323,6 +323,31 @@ default_version_for() {
   '
 }
 
+# Whether this port's manifest actually lists a version slug.
+#
+# `stable` is absent for a port with no release, so building one would serve a
+# tree the switcher does not list and the reader cannot reach by any offered
+# route. site/test/site-pruning.test.ts asserts the two agree.
+port_lists_version() {
+  LIBTMUX_DOCS_MANIFEST="$manifest" LIBTMUX_DOCS_PORT="$1" LIBTMUX_DOCS_VERSION_SLUG="$2" node -e '
+    const fs = require("node:fs")
+    const m = JSON.parse(fs.readFileSync(process.env.LIBTMUX_DOCS_MANIFEST, "utf8"))
+    const entries = m.ports[process.env.LIBTMUX_DOCS_PORT] ?? []
+    process.exit(entries.some((e) => e.slug === process.env.LIBTMUX_DOCS_VERSION_SLUG) ? 0 : 1)
+  '
+}
+
+# Every port's default version, as JSON, for the components that link across
+# ports. `stable` is not a safe constant any more: a port with no release has
+# no stable entry, so a switcher hard-coding it links at a tree nothing builds.
+port_defaults_json() {
+  LIBTMUX_DOCS_MANIFEST="$manifest" node -e '
+    const fs = require("node:fs")
+    const m = JSON.parse(fs.readFileSync(process.env.LIBTMUX_DOCS_MANIFEST, "utf8"))
+    process.stdout.write(JSON.stringify(m.defaultVersion))
+  '
+}
+
 kind_for_version() {
   case "$1" in
     latest) echo trunk ;;
@@ -336,6 +361,9 @@ kind_for_version() {
       ;;
   esac
 }
+
+LIBTMUX_DOCS_PORT_DEFAULTS="$(port_defaults_json)"
+export LIBTMUX_DOCS_PORT_DEFAULTS
 
 IFS=',' read -r -a versions <<<"$versions_arg"
 
@@ -377,9 +405,9 @@ build_shell() {
   mkdir -p "$outdir"
 
   local key cached
-  key="$(printf '%s|%s|%s|%s|%s|%s|%s' \
+  key="$(printf '%s|%s|%s|%s|%s|%s|%s|%s' \
     "$base_fingerprint" "$base" "$version" "$kind" "$is_default" "$default_version" \
-    "${LIBTMUX_DOCS_PORT:-}" | sha256sum | cut -c1-40)"
+    "${LIBTMUX_DOCS_PORT:-}" "${LIBTMUX_DOCS_PORT_DEFAULTS:-}" | sha256sum | cut -c1-40)"
   cached="$cache_dir/shell-$key"
   if [ "$no_cache" -eq 0 ] && [ -d "$cached" ]; then
     cp -a "$cached/." "$outdir/"
@@ -395,6 +423,7 @@ build_shell() {
     LIBTMUX_DOCS_BASE="$base" \
       LIBTMUX_DOCS_ROOT="${LIBTMUX_DOCS_ROOT:-/}" \
       LIBTMUX_DOCS_SITE="$site_origin" \
+      LIBTMUX_DOCS_PORT_DEFAULTS="${LIBTMUX_DOCS_PORT_DEFAULTS:-}" \
       LIBTMUX_DOCS_VERSION="$version" \
       LIBTMUX_DOCS_VERSION_KIND="$kind" \
       LIBTMUX_DOCS_IS_DEFAULT="$is_default" \
@@ -958,6 +987,10 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
   default_version="$(default_version_for "$slug")"
 
   for version in "${versions[@]}"; do
+    if ! port_lists_version "$slug" "$version"; then
+      summary_rows+=("$slug|$version|-|not listed|no such version in this port's manifest")
+      continue
+    fi
     kind="$(kind_for_version "$version")"
     is_default=false
     [ "$version" = "$default_version" ] && is_default=true
