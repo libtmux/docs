@@ -59,6 +59,14 @@ export const TYPESCRIPT: LanguageSpec = {
   commentTypes: ['comment'],
   stripDoc: stripBlockDoc,
   modifiers: { static: 'static', abstract: 'abstract', async: 'async', readonly: 'readonly', private: 'private' },
+  // TypeScript was the only port with no visibility test, so the reference
+  // published 42 module-private declarations — `ExceptionOptions`,
+  // `sortedDataEntries`, the `PaneRow` shapes — none of which any export list
+  // in the port names, and none of which a caller can import.
+  //
+  // A declaration whose parent is the file itself was not exported. Anything
+  // else reached here is a member of something that was.
+  isExported: (node) => node.parent?.type !== 'program',
   fields: { returns: 'return_type' },
 }
 
