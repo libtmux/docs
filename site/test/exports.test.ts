@@ -122,17 +122,19 @@ describeIfAssembled('published exports', () => {
   })
 
   describe('native shell assets', () => {
-    it.each(['latest', 'stable'].filter((version) => has(`${SITE_PREFIX}py/${version}/api/api/libtmux.session/index.html`)))(
-      '%s loads the shell script and tokens from this locale tree', (version) => {
-        const html = read(`py/${version}/api/api/libtmux.session/index.html`)
-        const script = /<script\b[^>]*src="([^"]*\/_shell\/shell\.js[^"]*)"/.exec(html)?.[1]
-        expect(script).toBe(`/${SITE_PREFIX}_shell/shell.js`)
-        expect(has(script!)).toBe(true)
-        const css = read(`py/${version}/api/_static/libtmux-org.css`)
-        expect(css).toContain(`url('/${SITE_PREFIX}_shell/tokens.css')`)
-        expect(has(`${SITE_PREFIX}_shell/tokens.css`)).toBe(true)
-      },
-    )
+    for (const version of ['latest', 'stable']) {
+      it.skipIf(!has(`${SITE_PREFIX}py/${version}/api/api/libtmux.session/index.html`))(
+        `${version} loads the shell script and tokens from this locale tree`, () => {
+          const html = read(`py/${version}/api/api/libtmux.session/index.html`)
+          const script = /<script\b[^>]*src="([^"]*\/_shell\/shell\.js[^"]*)"/.exec(html)?.[1]
+          expect(script).toBe(`/${SITE_PREFIX}_shell/shell.js`)
+          expect(has(script!)).toBe(true)
+          const css = read(`py/${version}/api/_static/libtmux-org.css`)
+          expect(css).toContain(`url('/${SITE_PREFIX}_shell/tokens.css')`)
+          expect(has(`${SITE_PREFIX}_shell/tokens.css`)).toBe(true)
+        },
+      )
+    }
   })
 
   describe('native navigation manifest', () => {
