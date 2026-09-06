@@ -27,15 +27,16 @@ import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const checking = process.argv.includes('--check')
 const expand = (p) => (p.startsWith('~/') ? join(homedir(), p.slice(2)) : p)
 
 /**
  * How each port names a tool, and where it says so.
  *
- * `wirePrefix` is not cosmetic. Java and .NET put every tool behind `tmux_`,
- * so an agent configured for one of those two and pointed at any other port
- * finds no tool by the name it expects. It is stripped here so the comparison
- * is about capability rather than spelling, and reported separately.
+ * `wirePrefix` is not cosmetic. .NET puts every tool behind `tmux_`, so an
+ * agent configured for it and pointed at any other port finds no tool by the
+ * name it expects. It is stripped here so the comparison is about capability
+ * rather than spelling, and reported separately.
  */
 const PORTS = [
   {
@@ -77,12 +78,10 @@ const PORTS = [
     slug: 'java',
     dir: '~/work/libtmux/libtmux-java/libtmux-mcp/src/main/java/io/github/libtmux/mcp',
     glob: 'Catalog.java',
-    // Anchored on the registration helper rather than the prefix, so an
-    // unprefixed tool would show up as a prefix violation below instead of
-    // silently not existing.
-    pattern: /ToolSpec\.of\(\s*"(?:tmux_)?([a-z_]+)"/gs,
-    prefixProbe: /ToolSpec\.of\(\s*"([a-z_]+)"/gs,
-    wirePrefix: 'tmux_',
+    // Anchored on `tools.add`, the registration itself, because the catalog
+    // reaches it through five factories and two decorators. Yields exactly the
+    // 45 names of `CapabilityRegistryTest.CATALOG_ORDER`.
+    pattern: /tools\.add\(\s*(?:\w+\(\s*)+"([a-z][a-z0-9_]*)"/gs,
   },
   {
     slug: 'dotnet',
@@ -166,13 +165,21 @@ for (const port of PORTS) {
 }
 
 if (missing.length) {
-  console.error(`gen-mcp-tools: no checkout for ${missing.join(', ')} — refusing to write a partial matrix`)
+  // A partial matrix says "this port registers no tools", which is worse than
+  // no matrix, so neither mode proceeds. Only --check tolerates it: CI clones
+  // this repository alone and the comparison happens where the ports are.
+  const note = `gen-mcp-tools: no checkout for ${missing.join(', ')}`
+  if (checking) {
+    console.log(`${note} — skipping the comparison`)
+    process.exit(0)
+  }
+  console.error(`${note} — refusing to write a partial matrix`)
   process.exit(1)
 }
 
 // A port that declares a wire prefix must use it for *every* tool. Without
 // this the prefix-stripping pattern is self-confirming: an unprefixed tool
-// would simply not be found, and the claim "Java and .NET prefix every tool"
+// would simply not be found, and the claim that a port prefixes every tool
 // would be true only of the tools the instrument can see.
 for (const port of PORTS) {
   if (!port.prefixProbe) continue
@@ -228,7 +235,7 @@ const outFlag = process.argv.indexOf('--out')
 const out = outFlag === -1 ? join(repoRoot, 'site/src/data/mcp-tools.json') : process.argv[outFlag + 1]
 const text = JSON.stringify(payload, null, 2) + '\n'
 
-if (process.argv.includes('--check')) {
+if (checking) {
   const current = existsSync(out) ? readFileSync(out, 'utf8') : ''
   if (current !== text) {
     console.error(`gen-mcp-tools: ${out} is stale — re-run without --check`)

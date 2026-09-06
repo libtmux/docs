@@ -96,6 +96,14 @@ node scripts/gen-shell-ports.mjs --check
 step 'shell port table (negative)'
 node scripts/gen-shell-ports.negative.mjs
 
+# /mcp/ and /mcp/tools/ count and compare the tools each port registers, read
+# from that port's own registration site. Absent from this gate, the matrix
+# went stale unnoticed: libtmux-java replaced ToolSpec.of with a capability
+# registry and its 45 tools extracted as none. Skips when the sibling
+# checkouts are absent, as the API models above do.
+step 'mcp tool matrix'
+node scripts/gen-mcp-tools.mjs --check
+
 step 'source links'
 node scripts/check-source-links.mjs
 

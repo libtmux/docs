@@ -63,53 +63,51 @@
     },
     "ts": {
       "tools": [
-        "build_workspace",
+        "call_read_tools_batch",
         "capture_pane",
-        "delete_buffer",
-        "display_message",
-        "get_pane",
+        "capture_since",
+        "clear_pane_scrollback",
+        "create_session",
+        "create_window",
+        "find_pane_by_position",
+        "get_pane_info",
+        "get_server_info",
+        "get_session_info",
+        "get_tmux_variables",
+        "get_window_info",
         "kill_pane",
         "kill_session",
         "kill_window",
-        "list_buffers",
         "list_panes",
         "list_sessions",
         "list_windows",
-        "load_buffer",
-        "move_pane",
         "move_window",
-        "new_session",
-        "new_window",
-        "observe",
-        "paste_buffer",
         "paste_text",
-        "pipe_pane",
         "rename_session",
         "rename_window",
         "resize_pane",
         "resize_window",
         "respawn_pane",
-        "run_command",
-        "save_buffer",
+        "run_shell_command",
         "search_panes",
         "select_layout",
         "select_pane",
         "select_window",
         "send_keys",
-        "server_info",
-        "set_environment",
-        "set_option",
+        "send_keys_batch",
+        "set_history_limit",
+        "set_mouse_enabled",
         "set_pane_title",
-        "show_buffer",
+        "set_synchronize_panes",
         "show_environment",
         "show_hooks",
-        "show_options",
-        "split_pane",
+        "show_option",
+        "signal_channel",
+        "snapshot_pane",
+        "split_window",
         "swap_pane",
-        "swap_window",
-        "unset_option",
-        "wait_for_text",
-        "whoami"
+        "wait_for_channel",
+        "wait_for_text"
       ],
       "wirePrefix": "",
       "source": "~/work/libtmux/libtmux-ts/packages/mcp/src"
@@ -235,37 +233,53 @@
     },
     "java": {
       "tools": [
-        "apply_workspace",
+        "call_read_tools_batch",
         "capture_pane",
         "capture_since",
-        "drain_channel",
-        "kill",
-        "list_clients",
+        "clear_pane_scrollback",
+        "create_session",
+        "create_window",
+        "find_pane_by_position",
+        "get_pane_info",
+        "get_server_info",
+        "get_session_info",
+        "get_tmux_variables",
+        "get_window_info",
+        "kill_pane",
+        "kill_session",
+        "kill_window",
         "list_panes",
-        "list_servers",
         "list_sessions",
         "list_windows",
-        "new_session",
-        "new_window",
+        "move_window",
         "paste_text",
-        "rename",
+        "rename_session",
+        "rename_window",
         "resize_pane",
-        "run",
+        "resize_window",
+        "respawn_pane",
+        "run_shell_command",
         "search_panes",
-        "select",
         "select_layout",
+        "select_pane",
+        "select_window",
         "send_keys",
-        "set_option",
+        "send_keys_batch",
+        "set_history_limit",
+        "set_mouse_enabled",
+        "set_pane_title",
+        "set_synchronize_panes",
         "show_environment",
         "show_hooks",
-        "show_options",
+        "show_option",
         "signal_channel",
-        "split_pane",
+        "snapshot_pane",
+        "split_window",
+        "swap_pane",
         "wait_for_channel",
-        "wait_for_text",
-        "whoami"
+        "wait_for_text"
       ],
-      "wirePrefix": "tmux_",
+      "wirePrefix": "",
       "source": "~/work/libtmux/libtmux-java/libtmux-mcp/src/main/java/io/github/libtmux/mcp"
     },
     "dotnet": {
@@ -390,6 +404,7 @@
     "capture_pane",
     "capture_since",
     "clear_pane",
+    "clear_pane_scrollback",
     "create_session",
     "create_window",
     "delete_buffer",
@@ -397,7 +412,6 @@
     "describe_filters",
     "describe_server",
     "display_message",
-    "drain_channel",
     "enter_copy_mode",
     "exit_copy_mode",
     "expand_format",
@@ -406,23 +420,21 @@
     "find_sessions",
     "forget_job",
     "get_job",
-    "get_pane",
     "get_pane_info",
     "get_recipe",
     "get_server_info",
     "get_session_info",
+    "get_tmux_variables",
     "get_window_info",
     "hierarchy",
     "inspect_tmux",
     "job",
     "job_status",
-    "kill",
     "kill_pane",
     "kill_server",
     "kill_session",
     "kill_window",
     "list_buffers",
-    "list_clients",
     "list_jobs",
     "list_panes",
     "list_servers",
@@ -436,7 +448,6 @@
     "move_window",
     "new_session",
     "new_window",
-    "observe",
     "paste_buffer",
     "paste_text",
     "pipe_pane",
@@ -452,7 +463,7 @@
     "run_commands",
     "run_plan",
     "run_shell",
-    "save_buffer",
+    "run_shell_command",
     "search_panes",
     "select",
     "select_layout",
@@ -463,8 +474,11 @@
     "send_text",
     "server_info",
     "set_environment",
+    "set_history_limit",
+    "set_mouse_enabled",
     "set_option",
     "set_pane_title",
+    "set_synchronize_panes",
     "show_buffer",
     "show_environment",
     "show_hook",
@@ -479,9 +493,7 @@
     "start_command",
     "start_job",
     "swap_pane",
-    "swap_window",
     "tail_pane",
-    "unset_option",
     "wait_for_channel",
     "wait_for_idle",
     "wait_for_output",
@@ -493,11 +505,9 @@
   ],
   "coverage": {
     "apply_workspace": [
-      "java",
       "swift"
     ],
     "build_workspace": [
-      "ts",
       "go"
     ],
     "call_destructive_tools_batch": [
@@ -507,7 +517,9 @@
       "go"
     ],
     "call_read_tools_batch": [
-      "py"
+      "py",
+      "ts",
+      "java"
     ],
     "call_readonly_tools_batch": [
       "go"
@@ -527,6 +539,7 @@
     ],
     "capture_since": [
       "py",
+      "ts",
       "rs",
       "go",
       "java",
@@ -538,21 +551,28 @@
       "go",
       "dotnet"
     ],
+    "clear_pane_scrollback": [
+      "ts",
+      "java"
+    ],
     "create_session": [
       "py",
+      "ts",
       "rs",
       "go",
+      "java",
       "dotnet",
       "cxx"
     ],
     "create_window": [
       "py",
+      "ts",
       "go",
+      "java",
       "dotnet"
     ],
     "delete_buffer": [
       "py",
-      "ts",
       "go"
     ],
     "describe": [
@@ -566,12 +586,8 @@
     ],
     "display_message": [
       "py",
-      "ts",
       "go",
       "dotnet"
-    ],
-    "drain_channel": [
-      "java"
     ],
     "enter_copy_mode": [
       "py",
@@ -586,7 +602,9 @@
     ],
     "find_pane_by_position": [
       "py",
-      "go"
+      "ts",
+      "go",
+      "java"
     ],
     "find_panes": [
       "rs"
@@ -600,27 +618,36 @@
     "get_job": [
       "go"
     ],
-    "get_pane": [
-      "ts"
-    ],
     "get_pane_info": [
       "py",
-      "go"
+      "ts",
+      "go",
+      "java"
     ],
     "get_recipe": [
       "go"
     ],
     "get_server_info": [
       "py",
-      "go"
+      "ts",
+      "go",
+      "java"
     ],
     "get_session_info": [
       "py",
-      "go"
+      "ts",
+      "go",
+      "java"
+    ],
+    "get_tmux_variables": [
+      "ts",
+      "java"
     ],
     "get_window_info": [
       "py",
-      "go"
+      "ts",
+      "go",
+      "java"
     ],
     "hierarchy": [
       "dotnet"
@@ -634,14 +661,12 @@
     "job_status": [
       "rs"
     ],
-    "kill": [
-      "java"
-    ],
     "kill_pane": [
       "py",
       "ts",
       "rs",
       "go",
+      "java",
       "dotnet",
       "swift"
     ],
@@ -657,6 +682,7 @@
       "ts",
       "rs",
       "go",
+      "java",
       "dotnet",
       "swift"
     ],
@@ -665,15 +691,12 @@
       "ts",
       "rs",
       "go",
+      "java",
       "dotnet",
       "swift"
     ],
     "list_buffers": [
-      "ts",
       "dotnet"
-    ],
-    "list_clients": [
-      "java"
     ],
     "list_jobs": [
       "rs",
@@ -693,7 +716,6 @@
       "py",
       "rs",
       "go",
-      "java",
       "dotnet",
       "swift"
     ],
@@ -728,36 +750,27 @@
     ],
     "load_buffer": [
       "py",
-      "ts",
       "go"
     ],
     "move_pane": [
-      "ts",
       "go"
     ],
     "move_window": [
       "py",
       "ts",
-      "go"
+      "go",
+      "java"
     ],
     "new_session": [
-      "ts",
-      "java",
       "swift"
     ],
     "new_window": [
-      "ts",
       "rs",
-      "java",
       "cxx",
       "swift"
     ],
-    "observe": [
-      "ts"
-    ],
     "paste_buffer": [
       "py",
-      "ts",
       "go"
     ],
     "paste_text": [
@@ -771,7 +784,6 @@
     ],
     "pipe_pane": [
       "py",
-      "ts",
       "rs",
       "go"
     ],
@@ -780,19 +792,20 @@
     ],
     "rename": [
       "rs",
-      "java",
       "swift"
     ],
     "rename_session": [
       "py",
       "ts",
       "go",
+      "java",
       "dotnet"
     ],
     "rename_window": [
       "py",
       "ts",
       "go",
+      "java",
       "dotnet"
     ],
     "resize_pane": [
@@ -807,23 +820,23 @@
     "resize_window": [
       "py",
       "ts",
-      "go"
+      "go",
+      "java"
     ],
     "respawn_pane": [
       "py",
       "ts",
       "rs",
       "go",
+      "java",
       "dotnet",
       "swift"
     ],
     "run": [
-      "java",
       "dotnet"
     ],
     "run_command": [
       "py",
-      "ts",
       "rs",
       "go",
       "swift"
@@ -837,8 +850,9 @@
     "run_shell": [
       "swift"
     ],
-    "save_buffer": [
-      "ts"
+    "run_shell_command": [
+      "ts",
+      "java"
     ],
     "search_panes": [
       "py",
@@ -851,7 +865,6 @@
       "swift"
     ],
     "select": [
-      "java",
       "swift"
     ],
     "select_layout": [
@@ -868,6 +881,7 @@
       "ts",
       "rs",
       "go",
+      "java",
       "dotnet"
     ],
     "select_window": [
@@ -875,6 +889,7 @@
       "ts",
       "rs",
       "go",
+      "java",
       "dotnet"
     ],
     "send_keys": [
@@ -889,40 +904,50 @@
     ],
     "send_keys_batch": [
       "py",
+      "ts",
       "go",
+      "java",
       "dotnet"
     ],
     "send_text": [
       "cxx"
     ],
     "server_info": [
-      "ts",
       "dotnet"
     ],
     "set_environment": [
       "py",
-      "ts",
       "rs",
       "go",
       "swift"
     ],
+    "set_history_limit": [
+      "ts",
+      "java"
+    ],
+    "set_mouse_enabled": [
+      "ts",
+      "java"
+    ],
     "set_option": [
       "py",
-      "ts",
       "rs",
       "go",
-      "java",
       "swift"
     ],
     "set_pane_title": [
       "py",
       "ts",
       "go",
+      "java",
       "dotnet"
+    ],
+    "set_synchronize_panes": [
+      "ts",
+      "java"
     ],
     "show_buffer": [
       "py",
-      "ts",
       "go"
     ],
     "show_environment": [
@@ -948,17 +973,18 @@
     ],
     "show_option": [
       "py",
+      "ts",
       "rs",
-      "go"
+      "go",
+      "java"
     ],
     "show_options": [
-      "ts",
-      "java",
       "dotnet",
       "swift"
     ],
     "signal_channel": [
       "py",
+      "ts",
       "rs",
       "go",
       "java",
@@ -969,20 +995,22 @@
     ],
     "snapshot_pane": [
       "py",
+      "ts",
       "rs",
       "go",
+      "java",
       "dotnet"
     ],
     "split_pane": [
-      "ts",
       "rs",
-      "java",
       "dotnet",
       "swift"
     ],
     "split_window": [
       "py",
-      "go"
+      "ts",
+      "go",
+      "java"
     ],
     "start_command": [
       "rs"
@@ -993,19 +1021,15 @@
     "swap_pane": [
       "py",
       "ts",
-      "go"
-    ],
-    "swap_window": [
-      "ts"
+      "go",
+      "java"
     ],
     "tail_pane": [
       "dotnet"
     ],
-    "unset_option": [
-      "ts"
-    ],
     "wait_for_channel": [
       "py",
+      "ts",
       "rs",
       "go",
       "java",
@@ -1037,8 +1061,6 @@
       "rs"
     ],
     "whoami": [
-      "ts",
-      "java",
       "dotnet"
     ]
   },

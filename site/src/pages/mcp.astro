@@ -16,13 +16,16 @@ import { withPortRoot, withRoot } from '../lib/site-root'
 // All eight ship a server. The earlier hardcoded six predated checking:
 // libtmux-cxx has apps/mcp/ and libtmux-swift has Sources/LibTmuxMCP/, both
 // with a registered tool catalog — see /mcp/tools/ for what each registers.
-const toolCount = mcpTools.ports as Record<string, { tools: string[] }>
+const toolCount = mcpTools.ports as Record<string, { tools: string[]; wirePrefix: string }>
 // Read from the generated matrix rather than retyped into the prose: these
 // three numbers move whenever any port registers a tool, and a sentence is
 // the one place a stale number never surfaces as an error.
 const toolUniverse = (mcpTools.universe as string[]).length
 const coverage = mcpTools.coverage as Record<string, string[]>
 const universalTools = (mcpTools.universe as string[]).filter((t) => coverage[t].length === 8).length
+// Which ports prefix is a fact of the matrix too. Java dropped `tmux_` when it
+// converged on the shared vocabulary and this sentence still named it.
+const prefixed = PORTS.filter((p) => toolCount[p.slug]?.wirePrefix)
 const referenceTools = toolCount.py.tools.length
 const mcpPorts = PORTS
 ---
@@ -80,8 +83,10 @@ const mcpPorts = PORTS
     </ul>
     <p class="mt-4 text-sm text-muted">
       Tool availability and names vary by server. There are {toolUniverse}
-      distinct names, with {universalTools} registered in every port. Java and
-      .NET prefix tool names with <code>tmux_</code>. Check the
+      distinct names, with {universalTools} registered in every port.{' '}
+      {prefixed.map((p) => p.name).join(' and ')}{' '}
+      {prefixed.length === 1 ? 'prefixes' : 'prefix'} tool names with{' '}
+      <code>tmux_</code>. Check the
       <a class="hover:underline" href={withRoot('/mcp/tools/')}>tool surface</a>
       before configuring an agent. For library API coverage, see
       <a class="hover:underline" href={withRoot('/parity/')}>parity</a>.

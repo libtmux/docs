@@ -70,8 +70,9 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
     <h2 class="mt-10 text-xl font-semibold">Names and platform limits</h2>
     <div class="mt-4 space-y-4 max-w-3xl">
       <p>
-        <strong>{prefixed.map((s) => PORT_BY_SLUG[s].name).join(' and ')} prefix
-        every tool with <code>tmux_</code></strong> on the wire. For example, use
+        <strong>{prefixed.map((s) => PORT_BY_SLUG[s].name).join(' and ')}{' '}
+        {prefixed.length === 1 ? 'prefixes' : 'prefix'} every tool with{' '}
+        <code>tmux_</code></strong> on the wire. For example, use
         <code>tmux_capture_pane</code> on a
         {PORT_BY_SLUG[prefixed[0]].name} server and <code>capture_pane</code>
         on servers without that prefix. The table omits prefixes when
