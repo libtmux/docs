@@ -1,9 +1,8 @@
 import { readFileSync, existsSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { Window } from 'happy-dom'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { SITE_ROOT } from './site-root'
+import { SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
 
 /**
  * The code-tab group, driven the way a reader drives it.
@@ -15,7 +14,6 @@ import { SITE_ROOT } from './site-root'
  * switching together, and the choice surviving a reload — are actually
  * exercised rather than asserted.
  */
-const here = dirname(fileURLToPath(import.meta.url))
 // SITE_ROOT, not a hardcoded `_site`: `test-all.sh` injects the tree it just
 // built, and every other assembled-tree suite reads it from there. This one
 // looked somewhere else, so it could skip — silently, since a skipped
@@ -29,7 +27,7 @@ describeIfBuilt('code tabs', () => {
   let document: Document
 
   const load = (stored?: string) => {
-    window = new Window({ url: 'https://libtmux.org/topics/architecture/' })
+    window = new Window({ url: `https://libtmux.org/${SITE_PREFIX}topics/architecture/` })
     document = window.document as unknown as Document
     if (stored) window.localStorage.setItem('libtmux-code-tab', stored)
     const html = readFileSync(PAGE, 'utf8')
@@ -80,8 +78,8 @@ describeIfBuilt('code tabs', () => {
         if (!isModuleOnly(inline)) evaluate(inline)
         continue
       }
-      if (!src.startsWith('/_astro/')) continue
-      const asset = join(here, '../../_site', src)
+      if (!src.includes('/_astro/')) continue
+      const asset = publishedPath(src)
       if (!existsSync(asset)) continue
       const source = readFileSync(asset, 'utf8')
       if (!isModuleOnly(source)) evaluate(source)

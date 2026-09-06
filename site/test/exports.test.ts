@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { PORTS } from '../src/lib/ports'
-import { SITE_BUILT, siteHas, sitePath } from './site-root'
+import { SITE_BUILT, SITE_PREFIX, publishedHas, publishedPath, sitePath } from './site-root'
 
 /**
  * The published machine-readable artifacts, checked for shape and counts.
@@ -17,15 +17,16 @@ import { SITE_BUILT, siteHas, sitePath } from './site-root'
  * These run against the assembled `_site`, not a dev server, because that is
  * what deploys.
  */
-const has = siteHas
+const has = publishedHas
 const read = (p: string) => readFileSync(sitePath(p), 'utf8')
+const readPublished = (p: string) => readFileSync(publishedPath(p), 'utf8')
 
 const describeIfAssembled = SITE_BUILT ? describe : describe.skip
 
 describeIfAssembled('published exports', () => {
   describe('robots.txt', () => {
     it('names the sitemap by absolute URL', () => {
-      const body = read('robots.txt')
+      const body = readPublished('robots.txt')
       const sitemap = /^Sitemap:\s*(\S+)$/m.exec(body)?.[1]
       expect(sitemap, 'a Sitemap: line').toBeTruthy()
       expect(() => new URL(sitemap!)).not.toThrow()
@@ -33,8 +34,8 @@ describeIfAssembled('published exports', () => {
     })
 
     it('keeps crawlers out of previews, demos and the search index', () => {
-      const body = read('robots.txt')
-      for (const path of ['/pr-', '/demo', '/pagefind/']) {
+      const body = readPublished('robots.txt')
+      for (const path of ['/pr-', `/${SITE_PREFIX}demo`, `/${SITE_PREFIX}pagefind/`]) {
         expect(body, `Disallow: ${path}`).toMatch(new RegExp(`^Disallow:\\s*${path}`, 'm'))
       }
     })
@@ -56,7 +57,7 @@ describeIfAssembled('published exports', () => {
       const files = [...index.matchAll(/<loc>([^<]+)<\/loc>/g)]
         .map((m) => new URL(m[1]).pathname.replace(/^\//, ''))
         .filter(has)
-      const urls = files.flatMap((f) => [...read(f).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]))
+      const urls = files.flatMap((f) => [...readPublished(f).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]))
       expect(urls.length, 'sitemap has entries').toBeGreaterThan(0)
       expect(urls.filter((u) => /\/pr-|\/demo/.test(u))).toEqual([])
     })
@@ -124,10 +125,10 @@ describeIfAssembled('published exports', () => {
     it('is a complete cluster wherever it appears, including x-default', () => {
       // A partial cluster is worse than none: a page that advertises `ja` but
       // not `x-default` tells a crawler the site has no fallback.
-      for (const page of ['index.html', 'concepts/index.html', 'ja/index.html']) {
+      for (const page of [`${SITE_PREFIX}index.html`, `${SITE_PREFIX}concepts/index.html`, 'ja/index.html']) {
         if (!has(page)) continue
-        const html = read(page)
-        const tags = [...html.matchAll(/hreflang="([^"]+)"/g)].map((m) => m[1])
+        const html = readPublished(page)
+        const tags = [...html.matchAll(/<link\b[^>]*hreflang="([^"]+)"/g)].map((m) => m[1])
         if (tags.length === 0) continue
         expect(tags, `${page} advertises a default`).toContain('x-default')
         expect(new Set(tags).size, `${page} has no duplicate hreflang`).toBe(tags.length)
