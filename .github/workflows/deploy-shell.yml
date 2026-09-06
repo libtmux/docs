@@ -25,7 +25,13 @@ permissions:
 
 concurrency:
   group: ${{ github.event_name == 'pull_request' && format('deploy-shell-pr-{0}', github.event.pull_request.number) || 'deploy-shell' }}
-  queue: max
+  # A preview of a superseded commit is worth nothing, so a new push replaces
+  # the run it obsoletes. Queueing them instead made six runs pile up behind
+  # one another in twenty minutes, each waiting out the one before it.
+  #
+  # Never for a push to trunk: that job syncs S3 and invalidates CloudFront,
+  # and a deploy cancelled halfway through leaves the site inconsistent.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # The locale list comes from site/src/i18n/locales.ts, the same module the
