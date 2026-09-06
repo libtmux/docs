@@ -1,22 +1,4 @@
-/**
- * The same idea, named differently in each port.
- *
- * Eight libraries wrapping one tool do not converge on one vocabulary:
- * Python's `capture_pane` is `capture` almost everywhere else, `Pane.split`
- * in five ports is `Window.split` in C++, and Swift puts on `Server` what the
- * others put on `Pane`. Nothing derivable from the source says these are the
- * same operation, and no amount of name similarity would prove it —
- * `Session.attached` is a property in Java and a verb in others.
- *
- * So this is hand-maintained, deliberately. What keeps it from rotting is
- * `concepts.test.ts`, which resolves every id below against the extracted
- * models: a rename upstream fails the test rather than silently dropping a
- * link.
- *
- * A port that genuinely lacks an operation says so. "No direct equivalent" is
- * a real answer to "how do I do this here", and a better one than an empty
- * cell.
- */
+/** Source-verified relationships across ports; similar spelling does not prove matching behavior. */
 export interface Concept {
   /** What the operation does, in one line, in no particular language. */
   label: string
@@ -27,6 +9,58 @@ export interface Concept {
 }
 
 export const CONCEPTS: Record<string, Concept> = {
+  server: {
+    label: 'A tmux server',
+    symbols: {
+      py: 'libtmux.Server',
+      ts: 'server.Server',
+      rs: 'server.Server',
+      go: 'tmux.Server',
+      java: 'io.github.libtmux.Server.Server',
+      dotnet: 'LibTmux.Server',
+      cxx: 'libtmux::Server',
+      swift: 'Server',
+    },
+  },
+  session: {
+    label: 'A tmux session',
+    symbols: {
+      py: 'libtmux.Session',
+      ts: 'session.Session',
+      rs: 'session.Session',
+      go: 'tmux.Session',
+      java: 'io.github.libtmux.Session.Session',
+      dotnet: 'LibTmux.Session',
+      cxx: 'libtmux::Session',
+      swift: 'Session',
+    },
+  },
+  window: {
+    label: 'A tmux window',
+    symbols: {
+      py: 'libtmux.Window',
+      ts: 'window.Window',
+      rs: 'window.Window',
+      go: 'tmux.Window',
+      java: 'io.github.libtmux.Window.Window',
+      dotnet: 'LibTmux.Window',
+      cxx: 'libtmux::Window',
+      swift: 'Window',
+    },
+  },
+  pane: {
+    label: 'A tmux pane',
+    symbols: {
+      py: 'libtmux.Pane',
+      ts: 'pane.Pane',
+      rs: 'pane.Pane',
+      go: 'tmux.Pane',
+      java: 'io.github.libtmux.Pane.Pane',
+      dotnet: 'LibTmux.Pane',
+      cxx: 'libtmux::Pane',
+      swift: 'Pane',
+    },
+  },
   'capture-pane': {
     label: 'Read a pane’s visible contents',
     symbols: {
@@ -37,7 +71,7 @@ export const CONCEPTS: Record<string, Concept> = {
       java: 'io.github.libtmux.Pane.Pane.capture',
       dotnet: 'LibTmux.Pane.CaptureAsync',
       cxx: 'libtmux::Pane::capture',
-      swift: 'Server.capture(_:since:limit:)',
+      swift: 'Server.capture(_:includingHistory:)',
     },
   },
   'send-keys': {
@@ -64,8 +98,170 @@ export const CONCEPTS: Record<string, Concept> = {
       go: 'tmux.Pane.Split',
       java: 'io.github.libtmux.Pane.Pane.split',
       dotnet: 'LibTmux.Pane.SplitAsync',
-      cxx: 'libtmux::Window::split',
       swift: 'Server.split(_:direction:size:startDirectory:)',
+    },
+    absent: {
+      cxx: 'no direct pane target; Window.split splits the active pane',
+    },
+  },
+  'split-window': {
+    label: "Split a window's active pane",
+    symbols: {
+      py: 'libtmux.Window.split',
+      ts: 'window.Window.split',
+      rs: 'window.Window.split',
+      go: 'tmux.Window.SplitPane',
+      java: 'io.github.libtmux.Window.Window.split',
+      dotnet: 'LibTmux.Window.SplitPaneAsync',
+      cxx: 'libtmux::Window::split',
+      swift: 'Server.splitWindow(_:direction:size:startDirectory:)',
+    },
+  },
+  'respawn-pane': {
+    label: "Restart a pane's command",
+    symbols: {
+      py: 'libtmux.Pane.respawn',
+      ts: 'pane.Pane.respawn',
+      rs: 'pane.Pane.respawn',
+      go: 'tmux.Pane.Respawn',
+      java: 'io.github.libtmux.Pane.Pane.respawn',
+      dotnet: 'LibTmux.Pane.RespawnAsync',
+      cxx: 'libtmux::Pane::respawn',
+      swift: 'Server.respawn(_:running:killingExisting:)',
+    },
+  },
+  'clear-history': {
+    label: "Clear a pane's scrollback",
+    symbols: {
+      py: 'libtmux.Pane.clear_history',
+      ts: 'pane.Pane.clearHistory',
+      rs: 'pane.Pane.clear_history',
+      go: 'tmux.Pane.ClearHistory',
+      java: 'io.github.libtmux.Pane.Pane.clearHistory',
+      dotnet: 'LibTmux.Pane.ClearHistoryAsync',
+      cxx: 'libtmux::Pane::clear_history',
+      swift: 'Server.clearHistory(_:)',
+    },
+  },
+  'set-pane-title': {
+    label: "Set a pane's title",
+    symbols: {
+      py: 'libtmux.Pane.set_title',
+      ts: 'pane.Pane.setTitle',
+      rs: 'pane.Pane.set_title',
+      go: 'tmux.Pane.SetTitle',
+      java: 'io.github.libtmux.Pane.Pane.retitle',
+      dotnet: 'LibTmux.Pane.SetTitleAsync',
+      cxx: 'libtmux::Pane::set_title',
+      swift: 'Server.setTitle(_:of:)',
+    },
+  },
+  'paste-buffer': {
+    label: 'Paste a buffer into a pane',
+    symbols: {
+      py: 'libtmux.Pane.paste_buffer',
+      ts: 'pane.Pane.pasteBuffer',
+      rs: 'pane.Pane.paste_buffer',
+      go: 'tmux.Pane.PasteBuffer',
+      java: 'io.github.libtmux.Pane.Pane.pasteBuffer',
+      dotnet: 'LibTmux.Pane.PasteBufferAsync',
+      cxx: 'libtmux::Pane::paste',
+      swift: 'Server.paste(buffer:into:)',
+    },
+  },
+  'select-layout': {
+    label: "Set a window's pane layout",
+    symbols: {
+      py: 'libtmux.Window.select_layout',
+      ts: 'window.Window.selectLayout',
+      rs: 'window.Window.select_layout',
+      go: 'tmux.Window.SelectLayout',
+      java: 'io.github.libtmux.Window.Window.selectLayout',
+      dotnet: 'LibTmux.Window.SelectLayoutAsync',
+      cxx: 'libtmux::Window::select_layout',
+      swift: 'Server.selectLayout(_:_:)',
+    },
+  },
+  'rotate-panes': {
+    label: "Rotate panes within a window",
+    symbols: {
+      py: 'libtmux.Window.rotate',
+      ts: 'window.Window.rotate',
+      rs: 'window.Window.rotate',
+      go: 'tmux.Window.Rotate',
+      java: 'io.github.libtmux.Window.Window.rotate',
+      dotnet: 'LibTmux.Window.RotateAsync',
+      cxx: 'libtmux::Window::rotate',
+      swift: 'Server.rotate(_:upward:)',
+    },
+  },
+  'unlink-window': {
+    label: 'Unlink a window from a session',
+    symbols: {
+      py: 'libtmux.Window.unlink',
+      ts: 'window.Window.unlink',
+      rs: 'window.Window.unlink',
+      go: 'tmux.Window.Unlink',
+      java: 'io.github.libtmux.Window.Window.unlink',
+      dotnet: 'LibTmux.Window.UnlinkAsync',
+      cxx: 'libtmux::Window::unlink',
+      swift: 'Server.unlink(_:)',
+    },
+  },
+  'source-file': {
+    label: 'Load a tmux configuration file',
+    symbols: {
+      py: 'libtmux.Server.source_file',
+      ts: 'server.Server.sourceFile',
+      rs: 'server.Server.source_file',
+      go: 'tmux.Server.SourceFile',
+      java: 'io.github.libtmux.Server.Server.sourceFile',
+      dotnet: 'LibTmux.Server.SourceFileAsync',
+      cxx: 'libtmux::Server::source_file',
+      swift: 'Server.sourceFile(_:)',
+    },
+  },
+  'list-clients': {
+    label: "List the server's attached clients",
+    symbols: {
+      py: 'libtmux.Server.clients',
+      ts: 'server.Server.clients',
+      rs: 'server.discovery.Server.clients',
+      go: 'tmux.Server.Clients',
+      java: 'io.github.libtmux.Server.Server.clients',
+      dotnet: 'LibTmux.Server.Clients',
+      cxx: 'libtmux::Server::clients',
+      swift: 'Server.clients()',
+    },
+  },
+  'pane-window': {
+    label: "Find a pane's containing window",
+    symbols: {
+      py: 'libtmux.Pane.window',
+      ts: 'pane.Pane.window',
+      rs: 'pane.Pane.window',
+      go: 'tmux.Pane.Window',
+      java: 'io.github.libtmux.Pane.Pane.window',
+      dotnet: 'LibTmux.Pane.Window',
+      cxx: 'libtmux::Pane::window',
+    },
+    absent: {
+      swift: 'no direct accessor; match Pane.windowID against Snapshot.windows',
+    },
+  },
+  'window-session': {
+    label: "Find the session containing a window placement",
+    symbols: {
+      py: 'libtmux.Window.session',
+      ts: 'window.Window.session',
+      rs: 'window.navigation.Window.session',
+      go: 'tmux.Window.Session',
+      java: 'io.github.libtmux.Window.Window.session',
+      dotnet: 'LibTmux.Window.Session',
+      cxx: 'libtmux::Window::session',
+    },
+    absent: {
+      swift: 'a Window has no single parent; Snapshot.sessions(of:) lists every linking session',
     },
   },
   'new-session': {
@@ -137,7 +333,7 @@ export const CONCEPTS: Record<string, Concept> = {
   },
   'kill-session': {
     label: 'End a session',
-    // Swift kills through the server with a target — `Server.kill(_:)` serves session, window and pane alike, where the others put the verb on the object.
+    // Swift overloads this method for sessions, windows, and panes.
     symbols: {
       py: 'libtmux.Session.kill',
       ts: 'session.Session.kill',
@@ -252,7 +448,7 @@ export const CONCEPTS: Record<string, Concept> = {
       java: 'io.github.libtmux.Session.Session.windows',
       dotnet: 'LibTmux.Session.Windows',
       cxx: 'libtmux::Session::windows',
-      swift: 'Server.windows()',
+      swift: 'Snapshot.windows(of:)',
     },
   },
   'list-panes': {
@@ -265,6 +461,47 @@ export const CONCEPTS: Record<string, Concept> = {
       java: 'io.github.libtmux.Window.Window.panes',
       dotnet: 'LibTmux.Window.Panes',
       cxx: 'libtmux::Window::panes',
+      swift: 'Snapshot.panes(of:)',
+    },
+  },
+  'list-session-panes': {
+    label: "List a session's panes",
+    symbols: {
+      py: 'libtmux.Session.panes',
+      ts: 'session.Session.panes',
+      rs: 'session.Session.panes',
+      go: 'tmux.Session.Panes',
+      dotnet: 'LibTmux.Session.Panes',
+      cxx: 'libtmux::Session::panes',
+      swift: 'Snapshot.panes(of:)',
+    },
+    absent: {
+      java: 'no direct accessor; traverse Session.windows and Window.panes',
+    },
+  },
+  'list-server-windows': {
+    label: "List the server's windows",
+    symbols: {
+      py: 'libtmux.Server.windows',
+      ts: 'server.Server.windows',
+      rs: 'server.discovery.Server.windows',
+      go: 'tmux.Server.Windows',
+      java: 'io.github.libtmux.Server.Server.windows',
+      dotnet: 'LibTmux.Server.Windows',
+      cxx: 'libtmux::Server::windows',
+      swift: 'Server.windows()',
+    },
+  },
+  'list-server-panes': {
+    label: "List the server's panes",
+    symbols: {
+      py: 'libtmux.Server.panes',
+      ts: 'server.Server.panes',
+      rs: 'server.discovery.Server.panes',
+      go: 'tmux.Server.Panes',
+      java: 'io.github.libtmux.Server.Server.panes',
+      dotnet: 'LibTmux.Server.Panes',
+      cxx: 'libtmux::Server::panes',
       swift: 'Server.panes()',
     },
   },
@@ -313,7 +550,7 @@ export const CONCEPTS: Record<string, Concept> = {
   },
 }
 
-/** Every concept naming this symbol, for the "in other languages" block. */
+/** Every concept naming this symbol, including concepts sharing an overload group. */
 export function conceptsFor(port: string, publicId: string): Concept[] {
   return Object.values(CONCEPTS).filter((c) => c.symbols[port] === publicId)
 }

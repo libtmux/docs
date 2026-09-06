@@ -1,4 +1,4 @@
-import { SymbolIndex, type ApiModel, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
+import { conceptsFor, SymbolIndex, type ApiModel, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
 import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
@@ -298,6 +298,20 @@ export function referenceHref(port: string, publicId: string): string | undefine
   // prose, so it runs in every locale's build — while the reference itself is
   // generated only in the default locale's tree.
   return withPortRoot(`/reference/${port}/${symbol.slug ?? pageSlug(publicId)}/`)
+}
+
+/** Source-verified equivalents, shared by reference entries and page navigation. */
+export function referenceAlternatives(port: string, publicId: string) {
+  return conceptsFor(port, publicId).map((concept) => ({
+    label: concept.label,
+    ports: Object.entries(PORT_NAME).map(([targetPort, name]) => ({
+      port: targetPort,
+      name,
+      publicId: concept.symbols[targetPort],
+      href: concept.symbols[targetPort] ? referenceHref(targetPort, concept.symbols[targetPort]) : undefined,
+      absent: concept.absent?.[targetPort],
+    })),
+  }))
 }
 
 interface MentionIndex {

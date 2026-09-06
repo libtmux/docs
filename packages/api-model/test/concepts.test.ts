@@ -24,6 +24,26 @@ for (const port of PORTS) {
 }
 
 describe('concept map', () => {
+  it('keeps scoped listings separate from server-wide listings', () => {
+    expect(CONCEPTS['list-windows'].symbols.swift).toBe('Snapshot.windows(of:)')
+    expect(CONCEPTS['list-panes'].symbols.swift).toBe('Snapshot.panes(of:)')
+    expect(CONCEPTS['list-server-windows']?.symbols.swift).toBe('Server.windows()')
+    expect(CONCEPTS['list-server-panes']?.symbols.swift).toBe('Server.panes()')
+  })
+
+  it('links visible capture to the visible capture overload', () => {
+    expect(CONCEPTS['capture-pane'].symbols.swift).toBe('Server.capture(_:includingHistory:)')
+  })
+
+  it('does not substitute a window target for a pane target', () => {
+    expect(CONCEPTS['split-window'].symbols.cxx).toBe('libtmux::Window::split')
+    expect(CONCEPTS['split-pane'].symbols.cxx).toBeUndefined()
+  })
+
+  it('does not claim that a Swift window has one parent session', () => {
+    expect(CONCEPTS['window-session'].symbols.swift).toBeUndefined()
+  })
+
   it.runIf(models.size)('every symbol it names exists', () => {
     const missing: string[] = []
     for (const [id, concept] of Object.entries(CONCEPTS)) {

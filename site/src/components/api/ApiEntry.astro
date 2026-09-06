@@ -1,7 +1,6 @@
 ---
 import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
-import { conceptsFor } from '@libtmux/api-model'
-import { PORT_NAME, mentionsOf, referenceHref } from '../../lib/api-models'
+import { mentionsOf, referenceAlternatives } from '../../lib/api-models'
 import { withRoot } from '../../lib/site-root'
 import { highlight } from '../../lib/highlight'
 import ApiBadge from './ApiBadge.astro'
@@ -67,27 +66,10 @@ const kind = symbol.kind
 const DOMAIN: Record<string, string> = { py: 'py', ts: 'js', cxx: 'cpp' }
 const domain = port ? (DOMAIN[port] ?? 'std') : 'py'
 
-/**
- * The same operation in the other seven ports.
- *
- * Only for symbols the concept map names, which is a short hand-maintained
- * list: nothing in the source says `capture_pane` and `capture` are the same
- * thing, and name similarity would not prove it.
- */
-const concepts = port ? conceptsFor(port, anchor) : []
-const elsewhere = concepts.map((c) => ({
-  label: c.label,
-  ports: Object.keys(PORT_NAME)
-    .filter((p) => p !== port)
-    .map((p) => ({
-      port: p,
-      name: PORT_NAME[p] ?? p,
-      publicId: c.symbols[p],
-      href: c.symbols[p] ? referenceHref(p, c.symbols[p]) : undefined,
-      absent: c.absent?.[p],
-    }))
-    .filter((e) => e.publicId || e.absent),
-}))
+const elsewhere = port ? referenceAlternatives(port, anchor).map((group) => ({
+  ...group,
+  ports: group.ports.filter((entry) => entry.port !== port),
+})) : []
 
 const inheritedHref = symbol.inheritedFrom
   ? index.resolve(symbol.inheritedFrom, 'class')?.href
@@ -637,7 +619,7 @@ const hasBody =
       elsewhere.map((c) => (
         <details class="api-elsewhere">
           <summary>
-            In other languages <span class="api-elsewhere-label">{c.label}</span>
+            In other ports <span class="api-elsewhere-label">{c.label}</span>
           </summary>
           <ul>
             {c.ports.map((e) => (
