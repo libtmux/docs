@@ -15,7 +15,7 @@
  *
  * Usage: node scripts/check-sidebar-refs.mjs [site-dir]
  */
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -29,8 +29,19 @@ const PORTS = PORT_DEFS.map((p) => p.slug)
 
 /** A page under each port that renders the docs shell. */
 function pageFor(port) {
-  for (const p of [`${port}/concepts/index.html`, `${port}/stable/concepts/index.html`]) {
-    if (existsSync(join(SITE, p))) return join(SITE, p)
+  const unversioned = join(SITE, port, 'concepts', 'index.html')
+  if (existsSync(unversioned)) return unversioned
+  /*
+   * Whichever versions were built, rather than a slug guessed in advance.
+   * `stable` was the guess, and it is absent for a port with no release — so
+   * this reported seven ports as having no shell page at all when what they
+   * had was a shell page somewhere this function did not look.
+   */
+  const portDir = join(SITE, port)
+  if (!existsSync(portDir)) return undefined
+  for (const version of readdirSync(portDir)) {
+    const candidate = join(portDir, version, 'concepts', 'index.html')
+    if (existsSync(candidate)) return candidate
   }
   return undefined
 }

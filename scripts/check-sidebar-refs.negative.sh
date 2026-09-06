@@ -14,8 +14,24 @@ cd "$(dirname "$0")/.."
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
-drop() {  # name, page, href-substring
-  local name="$1" page="$2" needle="$3"
+# Whichever version was built, mirroring check-sidebar-refs.mjs's pageFor().
+#
+# Naming a slug in advance is what broke this: `rs` was hard-coded to the
+# unversioned path with no fallback, so once its prose moved under a version
+# every case here died on a missing file rather than testing anything.
+page_for() {
+  local port="$1" candidate
+  candidate="_site/$port/concepts/index.html"
+  if [ -f "$candidate" ]; then printf '%s' "$candidate"; return 0; fi
+  for dir in "_site/$port"/*/; do
+    candidate="${dir}concepts/index.html"
+    if [ -f "$candidate" ]; then printf '%s' "$candidate"; return 0; fi
+  done
+  return 1
+}
+
+drop() {  # name, page, href-substring, expected-message
+  local name="$1" page="$2" needle="$3" says="$4"
   cp "$page" "$tmp/page.bak"
   python3 - "$page" "$needle" <<'PY'
 import re, sys
@@ -32,18 +48,23 @@ PY
   if [ "$code" -eq 0 ]; then
     printf '  FAIL  %-32s check still passed\n' "$name"; return 1
   fi
+  # The message, not just the exit code. A build-layout change that made the
+  # mutation a no-op would still exit non-zero for its own reasons, and this
+  # would have read as a pass.
+  if ! printf '%s' "$out" | grep -qF "$says"; then
+    printf '  FAIL  %-32s exit 1 but never said: %s\n' "$name" "$says"; return 1
+  fi
   printf '  ok    %-32s exit 1: %s\n' "$name" \
     "$(printf '%s' "$out" | grep -m1 -E '^  ' | sed 's/^ *//' | cut -c1-58)"
 }
 
 fails=0
-rs=_site/rs/concepts/index.html
-py=_site/py/stable/concepts/index.html
-[ -f "$py" ] || py=_site/py/concepts/index.html
+rs=$(page_for rs) || { echo 'no rs shell page under _site — run ./scripts/build-site.sh' >&2; exit 1; }
+py=$(page_for py) || { echo 'no py shell page under _site — run ./scripts/build-site.sh' >&2; exit 1; }
 
-drop 'our reference removed'   "$rs" '/reference/rs/'  || fails=1
-drop 'ecosystem link removed'  "$rs" 'docs.rs'         || fails=1
-drop 'upstream reference gone' "$py" '/api/'           || fails=1
+drop 'our reference removed'   "$rs" '/reference/rs/' 'rs: sidebar does not link /reference/rs/' || fails=1
+drop 'ecosystem link removed'  "$rs" 'docs.rs'        'rs: sidebar does not link docs.rs' || fails=1
+drop 'upstream reference gone' "$py" '/api/'          'py: sidebar does not link the upstream gp-sphinx reference' || fails=1
 
 if node scripts/check-sidebar-refs.mjs >/dev/null 2>&1; then
   printf '  ok    %-32s exit 0\n' 'restored'

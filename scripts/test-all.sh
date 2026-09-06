@@ -154,6 +154,9 @@ node scripts/check-sidebar-refs.mjs "$out"
 
 # A cross-reference that stops resolving still renders, as plain code, so no
 # link breaks and nothing else fails. Only a floor catches it.
+step 'sidebar references (negative)'
+./scripts/check-sidebar-refs.negative.sh
+
 step 'cross-reference resolution'
 node scripts/check-xrefs.mjs "$out"
 
