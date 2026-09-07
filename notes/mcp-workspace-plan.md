@@ -13,11 +13,11 @@ Store authored product pages in
 reading layout and equivalent-page switcher. Global MCP pages remain
 available at the locale root.
 
-- [ ] Test product path resolution and equivalent-page availability.
-- [ ] Add product metadata, route selection, scoped sidebars, and home cards.
-- [ ] Author overview, topics, guides, examples, and API pages for both
+- [x] Test product path resolution and equivalent-page availability.
+- [x] Add product metadata, route selection, scoped sidebars, and home cards.
+- [x] Author overview, topics, guides, examples, and API pages for both
   products across all eight ports, using verified source revisions.
-- [ ] Check that each rendered port page contains its own instructions.
+- [x] Check that each rendered port page contains its own instructions.
 
 ## Reference and provenance
 
@@ -25,23 +25,47 @@ Extend the shared API model with product ownership and source provenance.
 Keep existing reference URLs, and reuse the renderer for scoped product API
 pages. Extract protocol operations separately from public language APIs.
 
-- [ ] Test per-symbol repository and revision links before changing extraction.
-- [ ] Extract workspace and MCP APIs from the selected docs worktrees and
+- [x] Test per-symbol repository and revision links before changing extraction.
+- [x] Extract workspace and MCP APIs from the selected docs worktrees and
   separate Python repositories.
-- [ ] Generate MCP registrations and available request/result schemas.
-- [ ] Add product reference navigation and verify actual equivalent APIs.
-- [ ] Refresh source excerpts, mentions, and generated catalogs.
+- [x] Generate MCP registrations and available request/result schemas.
+- [x] Add product reference navigation and verify actual equivalent APIs.
+- [x] Refresh source excerpts, mentions, and generated catalogs.
 
 ## Integration and review
 
-- [ ] Include product pages in locale search and machine-readable exports.
-- [ ] Verify canonical URLs, real language alternatives, structured data,
+- [x] Include product pages in locale search and machine-readable exports.
+- [x] Verify canonical URLs, real language alternatives, structured data,
   breadcrumbs, sitemaps, and nested Pagefind loading.
-- [ ] Run the required outer loop before each implementation commit.
+- [x] Run the required outer loop before each implementation commit.
 - [ ] Regenerate changed inputs, assemble the full site, and run the local
   publication audit. Report unavailable checks explicitly.
-- [ ] Inspect desktop and mobile pages and execute representative examples
+- [x] Inspect desktop and mobile pages and execute representative examples
   in isolated environments where supported.
 - [ ] Leave a local development server and full-build review server running.
 - [ ] Give the user review URLs, build identity, results, and limitations;
   iterate on feedback before declaring design acceptance.
+
+## Reference audit
+
+The expanded reference retains some names as plain text because they have no
+documentation target. Python's ceiling is 138: new conditional CLI aliases,
+launch types, and a private callback alias add 56 occurrences, while typing
+links remove 20. Go's ceiling is 107: named return labels add four occurrences
+and a `uint64` link removes one. C++'s ceiling is 259: `const` qualifiers and
+the declared `Integer` template parameter add 23 occurrences, while `char`
+links remove four. The other ports meet their previous ceilings.
+
+Java's reference floor is 1,647 after excluding 13 package-private overloads
+from public method groups. Comparing all Java output pages confirms that
+retained signatures lose no links and no page or export disappears. The
+other ports have higher reference floors after the dependency-link audit.
+
+Swift's graph records inherited origins for declarations without source
+locations. These remain visible without fabricated source links. The
+fidelity check requires a source link whenever the model supplies one and
+keeps unexplained missing locations in its coverage denominator.
+
+The visual baselines include the added Go MCP module and API counts, new
+symbol-index entries, and the Swift MCP example backlink. Desktop and mobile
+layouts retain the existing shell and typography.
