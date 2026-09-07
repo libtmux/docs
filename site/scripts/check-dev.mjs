@@ -27,7 +27,7 @@ try {
   assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
   assert.equal((await manifest.json()).schema, 1)
   const paths = ['concepts/server-session-window-pane', 'mcp/tools', 'reference/ts/session-session-panes',
-    'ts/latest/workspace/guides', 'ts/latest/mcp/tools']
+    'ts/latest/workspace/guides', 'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/tmux_capture_pane']
   for (const path of paths) {
     const response = await page.goto(`${base}/${path}/`, { waitUntil: 'networkidle' })
     assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
@@ -35,7 +35,7 @@ try {
     assert.equal(await page.locator('nav[aria-label="Language"] a').first().getAttribute('href'), '/en/py/stable/')
     const switcher = page.locator('[data-page-port-switcher]')
     const hasSwitcher = path !== 'mcp/tools'
-    const expected = path.startsWith('reference/')
+    const expected = path === 'dotnet/latest/mcp/tools/tmux_capture_pane' ? `/en/${path}/` : path.startsWith('reference/')
       ? '/en/reference/py/libtmux-session-panes/' : `/en/py/stable/${path.replace(/^ts\/latest\//, '')}/`
     if (hasSwitcher) assert.equal(await switcher.locator('a').first().getAttribute('href'), expected)
     if (path.startsWith('reference/')) {
@@ -64,7 +64,7 @@ try {
       assert(menu && menu.x >= 0 && menu.x + menu.width <= 390, `${path}: dropdown leaves phone viewport`)
     }
   }
-  console.log('Fresh Astro + browser: prose, MCP table and API equivalent; 1440/768/390px PASS')
+  console.log('Fresh Astro + browser: prose, workspace, MCP tools and API equivalent; 1440/768/390px PASS')
 } finally {
   await browser?.close()
   await server.stop()
