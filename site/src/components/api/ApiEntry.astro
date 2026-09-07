@@ -632,7 +632,18 @@ const hasBody =
                 ) : e.publicId ? (
                   <code>{e.publicId}</code>
                 ) : (
-                  <span class="api-elsewhere-absent">{e.absent}</span>
+                  <span class="api-elsewhere-absent">
+                    {/*
+                      The reason names symbols in another port, in backticks,
+                      the way the rest of the reference writes them. Rendering
+                      the string as-is printed the backticks. `ApiDoc` is the
+                      wrong tool: it resolves a name against this page's own
+                      port, and these names are deliberately from another.
+                    */}
+                    {e.absent
+                      ?.split(/`([^`]+)`/)
+                      .map((part, i) => (i % 2 ? <code>{part}</code> : part))}
+                  </span>
                 )}
               </li>
             ))}

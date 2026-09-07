@@ -268,9 +268,14 @@
 .api-elsewhere-port {
   opacity: 0.6;
 }
+/*
+ * Dimmed, not italic. The 0.6 opacity already reads as an aside, and the
+ * italic was the only thing on a reference entry that opened with IBM Plex
+ * Sans italic — one more font file fetched during first paint for a
+ * distinction the opacity had already made.
+ */
 .api-elsewhere-absent {
   opacity: 0.6;
-  font-style: italic;
 }
 
 /* The member list on a type page. Capped and scrollable: Pane declares 257
