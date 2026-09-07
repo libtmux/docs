@@ -66,6 +66,20 @@ const kind = symbol.kind
 const DOMAIN: Record<string, string> = { py: 'py', ts: 'js', cxx: 'cpp' }
 const domain = port ? (DOMAIN[port] ?? 'std') : 'py'
 
+/**
+ * An absent reason, split so its backticked symbol names render as code.
+ *
+ * The reason names symbols in another port, the way the rest of the
+ * reference writes them, and rendering the string as-is printed the
+ * backticks. `ApiDoc` is the wrong tool: it resolves a name against the
+ * page's own port, and these names are deliberately from another one.
+ *
+ * A frontmatter function rather than an expression in the template. A regex
+ * literal in the markup body parses as JSX, and `astro check` read the `<`
+ * that never came as an unclosed tag through to the end of the file.
+ */
+const absentParts = (text?: string) => (text ?? '').split(/`([^`]+)`/)
+
 const elsewhere = port ? referenceAlternatives(port, anchor).map((group) => ({
   ...group,
   ports: group.ports.filter((entry) => entry.port !== port),
@@ -633,16 +647,9 @@ const hasBody =
                   <code>{e.publicId}</code>
                 ) : (
                   <span class="api-elsewhere-absent">
-                    {/*
-                      The reason names symbols in another port, in backticks,
-                      the way the rest of the reference writes them. Rendering
-                      the string as-is printed the backticks. `ApiDoc` is the
-                      wrong tool: it resolves a name against this page's own
-                      port, and these names are deliberately from another.
-                    */}
-                    {e.absent
-                      ?.split(/`([^`]+)`/)
-                      .map((part, i) => (i % 2 ? <code>{part}</code> : part))}
+                    {absentParts(e.absent).map((part, i) =>
+                      i % 2 ? <code>{part}</code> : part,
+                    )}
                   </span>
                 )}
               </li>
