@@ -725,6 +725,31 @@
 }
 
 /*
+ * A type card whose whole area is clickable without nesting a link.
+ *
+ * The card used to be one `a` wrapping the name and the summary. A summary
+ * carries cross-references, and `a` inside `a` is not parseable HTML: the
+ * browser ended the card at the first nested link and left the rest as the
+ * grid's next cell, so a type's prose rendered beside a different type's
+ * name. Only the name is a link now, and this stretches its hit area over
+ * the card. The links inside the summary are raised back above it.
+ */
+.api-index-card {
+  position: relative;
+  display: block;
+}
+
+.api-index-card__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.api-index-card p a {
+  position: relative;
+}
+
+/*
  * `Bases:` — every conformance, wrapped.
  *
  * Apple lists all of them: `Int` shows twenty-eight protocols, Copyable and
