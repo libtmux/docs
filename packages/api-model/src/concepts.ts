@@ -9,6 +9,49 @@ export interface Concept {
 }
 
 export const CONCEPTS: Record<string, Concept> = {
+  'workspace-description': {
+    label: 'Describe a workspace as data',
+    symbols: {
+      ts: 'config.Workspace',
+      rs: 'config.Workspace',
+      go: 'workspace.Workspace',
+      java: 'io.github.libtmux.workspace.Workspace.Workspace',
+      dotnet: 'LibTmux.Workspace.WorkspaceFile',
+      cxx: 'libtmux::workspace::Workspace',
+      swift: 'Workspace',
+    },
+    absent: {
+      py: 'tmuxp uses configuration dictionaries rather than a dedicated workspace value type',
+    },
+  },
+  'build-workspace': {
+    label: 'Build a session from a workspace description',
+    symbols: {
+      py: 'tmuxp.workspace.builder.ClassicWorkspaceBuilder.build',
+      ts: 'builder.applyWorkspace',
+      rs: 'src.WorkspaceBuilder.build',
+      go: 'workspace.Build',
+      java: 'io.github.libtmux.workspace.WorkspaceBuilder.WorkspaceBuilder.build',
+      dotnet: 'LibTmux.Workspace.WorkspaceBuilder.BuildAsync',
+      cxx: 'libtmux::workspace::build',
+      swift: 'WorkspaceBuilder.build(_:on:)',
+    },
+  },
+  'freeze-workspace': {
+    label: 'Export a live session as workspace data',
+    symbols: {
+      py: 'tmuxp.workspace.freezer.freeze',
+      rs: 'freeze.freeze',
+    },
+    absent: {
+      ts: 'the workspace package applies descriptions but does not export live sessions',
+      go: 'the workspace module builds descriptions but has no live-session export',
+      java: 'the workspace module builds descriptions but has no live-session export',
+      dotnet: 'the workspace package builds descriptions but has no live-session export',
+      cxx: 'the source-only workspace consumer builds descriptions but has no live-session export',
+      swift: 'encoding a Workspace serializes an existing description; it does not read a live session',
+    },
+  },
   server: {
     label: 'A tmux server',
     symbols: {

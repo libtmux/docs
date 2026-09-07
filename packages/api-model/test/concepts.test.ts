@@ -24,6 +24,29 @@ for (const port of PORTS) {
 }
 
 describe('concept map', () => {
+  it.runIf(models.size)('workspace concepts stay within the workspace product', () => {
+    for (const id of ['workspace-description', 'build-workspace', 'freeze-workspace']) {
+      for (const [port, publicId] of Object.entries(CONCEPTS[id].symbols)) {
+        const model = models.get(port)
+        if (!model) continue
+        const symbol = model.symbols.find((entry) => (entry.publicId ?? entry.id) === publicId)
+        expect(symbol?.product, `${id} ${port}: ${publicId}`).toBe('workspace')
+      }
+    }
+  })
+
+  it.runIf(models.size)('live workspace export takes a session rather than a description', () => {
+    for (const [port, publicId] of Object.entries(CONCEPTS['freeze-workspace'].symbols)) {
+      const model = models.get(port)
+      if (!model) continue
+      const symbol = model.symbols.find((entry) => (entry.publicId ?? entry.id) === publicId)
+      expect(symbol?.signatures.some((signature) =>
+        signature.params.some((parameter) => /\bSession\b/.test(parameter.type ?? '')),
+      ), `${port}: ${publicId}`).toBe(true)
+    }
+    expect(CONCEPTS['freeze-workspace'].symbols.swift).toBeUndefined()
+  })
+
   it('keeps scoped listings separate from server-wide listings', () => {
     expect(CONCEPTS['list-windows'].symbols.swift).toBe('Snapshot.windows(of:)')
     expect(CONCEPTS['list-panes'].symbols.swift).toBe('Snapshot.panes(of:)')
