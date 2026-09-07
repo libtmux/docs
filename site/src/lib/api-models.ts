@@ -3,6 +3,7 @@ import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
 import pythonInv from '../data/inventories/python.entries.json'
+import dependencyInv from '../data/inventories/dependencies.entries.json'
 import { withPortRoot } from './site-root'
 import cxxNav from '../data/api/cxx.nav.json'
 import dotnetNav from '../data/api/dotnet.nav.json'
@@ -207,6 +208,9 @@ const INVENTORIES: {
     langs: ['ts'],
     project: 'MDN Web Docs',
   },
+  ...dependencyInv.map((data) => ({
+    data, baseUrl: data.baseUrl, langs: data.langs, project: data.project,
+  })),
 ]
 
 interface InventorySidecar {

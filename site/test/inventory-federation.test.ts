@@ -81,6 +81,28 @@ describe('indexFor attaches the inventories', () => {
     }
     expect(core.linkType(signature.returns!, reader).find((span) => span.text === 'Workspace')?.link?.href).toMatch(/^#/)
   })
+
+  it('links dependency types in real product signatures and keeps their language scope', () => {
+    const cases = [
+      ['rs', 'ErrorData', 'docs.rs/rmcp/3.1.2'],
+      ['java', 'McpSyncServer', 'mcp-core/2.0.1'],
+      ['dotnet', 'ProgressNotificationValue', 'csharp.sdk.modelcontextprotocol.io'],
+      ['py', 'FastMCP', 'gofastmcp.com'],
+      ['ts', 'McpServer', 'typescript-sdk/blob/1.30.0'],
+      ['go', 'sdk.Tool', 'go-sdk@v1.6.1'],
+    ] as const
+    for (const [port, name, target] of cases) {
+      const model = API_MODELS[port]
+      const symbol = model.symbols.find((entry) => entry.product === 'mcp'
+        && entry.signatures.some((signature) => [signature.returns, ...signature.params.map((param) => param.type)]
+          .some((annotation) => annotation?.includes(name))))!
+      expect(symbol, `${port} signature names ${name}`).toBeDefined()
+      const link = productApiIndex(model, 'latest').linkType(name, symbol)[0].link
+      expect(link?.external, `${port} ${name}`).toBe(true)
+      expect(link?.href).toContain(target)
+      expect(indexFor(API_MODELS.swift, href).linkType(name)[0].link?.external).not.toBe(true)
+    }
+  })
 })
 
 describe('each sidecar agrees with the .inv beside it', () => {
