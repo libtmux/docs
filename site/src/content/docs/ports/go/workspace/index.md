@@ -9,9 +9,9 @@ sidebar:
 tableOfContents: true
 ---
 
-The `workspace` module parses tmuxp-style YAML and builds a session through
-libtmux's Go API. It is a separate module, so applications using only the core
-client do not acquire a YAML dependency.
+The `workspace` module parses [tmuxp-style](https://tmuxp.git-pull.com) YAML
+and builds a session through libtmux's Go API. It is a separate module, so
+applications using only the core client do not acquire a YAML dependency.
 
 Parsing validates the whole document before construction. Building returns
 the created session, including a session handle alongside an error when later
