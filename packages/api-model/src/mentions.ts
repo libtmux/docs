@@ -1,14 +1,4 @@
 /**
- * Which code spans in prose are worth resolving against the reference.
- *
- * Shared, because two things need the same answer and would otherwise drift:
- * `rehype-api-links` decides it while rendering an HTML table, and
- * `scripts/gen-mentions.mjs` decides it while reading the Markdown that table
- * came from. A heuristic living in one of them and copied into the other is a
- * divergence waiting for the first edit.
- */
-
-/**
  * A code span that might name a symbol.
  *
  * Deliberately loose — the resolver is what decides whether a name exists, and
@@ -91,6 +81,83 @@ export function tableMentions(
         if (text && looksLikeApiMention(text)) out.push({ port, text, line: i + 1 })
       }
     }
+  }
+  return out
+}
+
+export interface ProseMention {
+  text: string
+  port?: string
+  before: string
+  linked?: boolean
+  /** 1-based source line. */
+  line: number
+}
+
+const FENCE_PORT: Record<string, string> = {
+  python: 'py', py: 'py', typescript: 'ts', ts: 'ts', javascript: 'ts', js: 'ts',
+  rust: 'rs', rs: 'rs', go: 'go', java: 'java', csharp: 'dotnet', cs: 'dotnet',
+  cpp: 'cxx', 'c++': 'cxx', swift: 'swift',
+}
+
+/** Inline references in prose, including port sections, tables, and existing links. */
+export function proseMentions(markdown: string, portByLabel: Record<string, string>): ProseMention[] {
+  const out: ProseMention[] = []
+  const lines = markdown.split('\n')
+  const context: { port?: string; before: string }[] = []
+  const bodyLines = lines.map(() => '')
+  const sections: { depth: number; port?: string }[] = []
+  let fence: string | undefined
+  let fencePort: string | undefined
+  let paragraph = ''
+  let frontmatter = false
+
+  for (const [i, line] of lines.entries()) {
+    if (i === 0 && line.trim() === '---') { frontmatter = true; continue }
+    if (frontmatter) {
+      if (line.trim() === '---') frontmatter = false
+      continue
+    }
+    const boundary = /^\s{0,3}(`{3,}|~{3,})\s*([\w+-]*)/.exec(line)
+    if (fence) {
+      if (boundary && boundary[1][0] === fence[0] && boundary[1].length >= fence.length) fence = undefined
+      continue
+    }
+    if (boundary) {
+      fence = boundary[1]
+      fencePort = FENCE_PORT[boundary[2].toLowerCase()]
+      paragraph = ''
+      continue
+    }
+    const heading = /^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$/.exec(line)
+    if (heading) {
+      const depth = heading[1].length
+      while (sections.length && sections.at(-1)!.depth >= depth) sections.pop()
+      sections.push({ depth, port: portByLabel[heading[2]] ?? sections.at(-1)?.port })
+      fencePort = undefined
+      paragraph = ''
+      continue
+    }
+    if (!line.trim()) { paragraph = ''; continue }
+    const row = line.trim().startsWith('|') ? splitRow(line.trim()) : undefined
+    const port = (row && portByLabel[row[0]]) ?? fencePort ?? sections.at(-1)?.port
+    context[i] = { port, before: paragraph }
+    bodyLines[i] = line
+    paragraph = row ? '' : `${paragraph}${line}\n`
+  }
+
+  const body = bodyLines.join('\n')
+  for (const match of body.matchAll(/(?<!`)(`+)([^`]+)\1(?!`)/g)) {
+    if (/\n\s*\n/.test(match[2])) continue
+    const text = match[2].replace(/\n/g, ' ').trim()
+    if (!text) continue
+    const beforeMatch = body.slice(0, match.index)
+    const line = beforeMatch.split('\n').length
+    const ctx = context[line - 1]
+    if (!ctx) continue
+    const before = ctx.before + beforeMatch.slice(beforeMatch.lastIndexOf('\n') + 1)
+    const linked = body[match.index - 1] === '[' && body.slice(match.index + match[0].length).startsWith('](')
+    out.push({ text, port: ctx.port, before, line, ...(linked ? { linked: true } : {}) })
   }
   return out
 }

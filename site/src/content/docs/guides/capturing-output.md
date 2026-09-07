@@ -1,6 +1,6 @@
 ---
 title: Capturing output
-description: The visible pane versus its scrollback, why polling capture_pane in a loop is the wrong default, and what each port offers instead.
+description: Read a pane's screen or scrollback and wait for output or a completion signal.
 sidebar:
   label: Capturing output
   group: Guides
@@ -8,10 +8,9 @@ sidebar:
 tableOfContents: true
 ---
 
-Reading what a pane printed is the other half of the round trip
-[Sending keys](../sending-keys/) covers the first half of. Two questions
-come up every time: how much of the pane do you get back, and how do you
-know when the thing you're waiting for has actually appeared?
+Capture a pane to read its visible screen or scrollback. After [Sending
+keys](../sending-keys/), wait for the expected output or a completion signal
+before reading the result.
 
 ## Visible pane vs. scrollback
 
@@ -49,7 +48,7 @@ let visible = pane.capture().await?;
 ```
 
 ```cpp
-// A capture that doesn't fit is reported, not silently truncated —
+// A capture that doesn't fit is reported, not silently truncated:
 // output_limit says how much you're prepared to hold.
 const auto visible = pane.capture();
 const auto history = pane.capture({.whole_history = true});
@@ -72,13 +71,14 @@ section, quoted verbatim from `examples/05-readme.cpp`'s `capture` region
 and checked by `tools/docs/check_readme.py`. Swift's is `README.md`,
 "Change what is there."
 
-## Don't poll — wait for the text instead
+<a id="dont-poll-wait-for-the-text-instead"></a>
 
-Reading a pane the instant after you send to it races the shell, as
-[Sending keys](../sending-keys/#the-race-you-cant-see-from-the-call-site)
-covers. A fixed `sleep` "fixes" this by guessing a delay that's either too
-short (flaky) or too long (slow) — every port that takes testing or
-automation seriously ships something better:
+## Wait for the expected text
+
+An immediate capture can race the shell, as [Sending
+keys](../sending-keys/#the-race-you-cant-see-from-the-call-site) explains. Wait
+for the expected text with a timeout so your program stops promptly when the
+output arrives and reports a failure if it never does:
 
 ```go
 // A wait that times out fails with the screen the pane last held rather
@@ -111,7 +111,7 @@ await found;
 ```
 
 ```java
-// A client has to attach first — attaching is what makes tmux push
+// A client has to attach first: attaching is what makes tmux push
 // %output at all; a client that never attaches hears command replies and
 // nothing else.
 EventSubscription<PaneOutput> output = client.subscribeOutput(32);
@@ -133,12 +133,10 @@ string output = await TmuxWait.UntilAsync(
 try await server.waitForOutput(in: pane, matching: [ready], stoppingAt: [failed])
 ```
 
-Python's own pytest plugin gives tests a real, isolated server (see
-[Testing with libtmux](../testing-with-libtmux/)), but a documented
-wait-for-text helper for ordinary, non-test code wasn't found in the checked
-source for this page — `server.wait_for(...)`, below, covers the adjacent
-"wait for a signal" case. C++ has no equivalent poll-for-text helper either;
-its own wait primitive is the signal channel covered next.
+Python's pytest plugin supplies isolated test servers; see [Testing with
+libtmux](../testing-with-libtmux/). For Python and C++ signal-based waiting, use
+the `wait-for` APIs below. This page does not include a wait-for-text helper for
+those ports.
 
 Sources: Go's is `tmux/tmuxtest/screen.go`, quoted in `README.md`'s "Testing
 your own code" section. Rust's is `crates/libtmux/README.md`, doctested.
@@ -154,9 +152,8 @@ open-ended to wait on a single pattern.
 
 ## When the pane can announce itself: `wait-for`, not scraping
 
-If the command you're running can be made to say when it's done — appending
-`; tmux wait-for -S done` to it, say — several ports expose tmux's own
-signal-channel primitive directly, which needs no text matching at all:
+If you control the command, have it signal completion with `tmux wait-for -S
+done`. Wait on the same channel to avoid matching screen text:
 
 ```python
 >>> server.new_session(session_name='wait_test')
@@ -164,14 +161,10 @@ Session(...)
 >>> server.wait_for('test_channel', set_flag=True)
 ```
 
-Verified doctest, `src/libtmux/server.py`. C++'s `Server::wait_for(channel,
-timeout)` is the same idea, with a specific reason to prefer it over
-scraping output for a marker: "a server that dies under a waiter makes tmux
-exit zero, which is indistinguishable from being signalled — a caller
-would carry on as though the other side had spoken. This reports that as a
-failure instead" (source: `include/libtmux/server.hpp`). Swift's
-`server.wait(for:)` channel example runs a build and blocks on its own
-completion signal rather than watching for text to scroll by:
+The Python example is a doctest in `src/libtmux/server.py`. C++'s
+`Server::wait_for(channel, timeout)`, declared in `include/libtmux/server.hpp`,
+also detects a server that dies during the wait. Swift's `server.wait(for:)`
+example waits for a build to signal completion:
 
 ```swift file="Examples/Sources/ExampleCode/Waiting.swift" region="guides-capturing-output-176"
 ```
@@ -183,9 +176,9 @@ race, and nothing polls," runnable as `examples/orchestrate.rs`.
 
 ## Where to go next
 
-- [Filtering and querying, in practice](../querying-and-filtering/) — once
+- [Filtering and querying, in practice](../querying-and-filtering/): once
   you're reading more than one pane, finding the right one to capture.
-- [Testing with libtmux](../testing-with-libtmux/) — the isolated-server
+- [Testing with libtmux](../testing-with-libtmux/): the isolated-server
   fixtures that make waiting on real tmux practical inside a test suite.
-- [Capture pane output](/examples/capture-pane-output/) — the full
+- [Capture pane output](/examples/capture-pane-output/): the full
   sourced code for the patterns above.

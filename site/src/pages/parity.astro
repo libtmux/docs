@@ -94,7 +94,7 @@ const scopeNotes = PARITY_PORTS.flatMap((slug) => {
  * all unknown), but the matrix renders whatever the tally actually holds
  * rather than assuming that. */
 function cellSummary(tally: Tally | undefined): { text: string; title: string } {
-  if (!tally) return { text: '—', title: 'No rows for this module in this ledger.' }
+  if (!tally) return { text: 'No rows', title: 'No rows for this module in this ledger.' }
   const parts: string[] = []
   if (tally.testVerified) parts.push(`${tally.testVerified} verified`)
   if (tally.claimed) parts.push(`${tally.claimed} claimed`)
@@ -102,7 +102,7 @@ function cellSummary(tally: Tally | undefined): { text: string; title: string } 
   const dispositionText = Object.entries(tally.disposition)
     .map(([k, v]) => `${k}: ${v}`)
     .join(', ')
-  return { text: parts.join(' · ') || '0', title: `disposition — ${dispositionText}` }
+  return { text: parts.join(' · ') || '0', title: `disposition: ${dispositionText}` }
 }
 
 function cellClass(tally: Tally | undefined): string {
@@ -167,8 +167,8 @@ const dotnetGoVerifiedSummary = `${verifiedSummary('.NET', parity.ports.dotnet)}
                     {host}
                     {external && <span class="ml-1 opacity-60" aria-hidden="true">&#8599;&#65038;</span>}
                   </td>
-                  <td class="px-3 py-2">{port.renderer === 'none' ? '—' : port.renderer}</td>
-                  <td class="px-3 py-2">{port.generator || '—'}</td>
+                  <td class="px-3 py-2">{port.renderer === 'none' ? 'Not applicable' : port.renderer}</td>
+                  <td class="px-3 py-2">{port.generator || 'Not applicable'}</td>
                 </tr>
               )
             })
@@ -181,8 +181,7 @@ const dotnetGoVerifiedSummary = `${verifiedSummary('.NET', parity.ports.dotnet)}
     <p class="mt-3 max-w-2xl">
       Four ports publish a per-symbol Python-parity ledger, each in its own format (Rust, C++ and
       TypeScript keep trackers too, in three more shapes not sampled here). Every cell below is
-      marked by what its ledger's own cited evidence resolves to on this machine, not by how
-      confident the ledger's prose sounds:
+      marked according to the evidence found in its source checkout during the build:
     </p>
     <dl class="mt-4 max-w-2xl space-y-2 text-sm">
       <div class="flex gap-2">
@@ -250,7 +249,7 @@ const dotnetGoVerifiedSummary = `${verifiedSummary('.NET', parity.ports.dotnet)}
     </div>
     <p class="mt-3 max-w-2xl text-xs opacity-70">
       .NET and Go publish per-symbol ledgers that are entirely pre-triaged; on this build,
-      {dotnetGoVerifiedSummary} resolve as test-verified — the cited evidence (a test file for
+      {dotnetGoVerifiedSummary} resolve as test-verified: the cited evidence (a test file for
       .NET, a test function for Go) exists in that port's checkout. Java's and Swift's ledgers
       carry no per-symbol
       implementation-status field at all: Java's by explicit disclaimer in its own source files
@@ -266,10 +265,8 @@ const dotnetGoVerifiedSummary = `${verifiedSummary('.NET', parity.ports.dotnet)}
     <p class="mt-2 max-w-2xl text-sm">
       Rows are the union of modules across all four ledgers. Only .NET's ledger has its own module
       field, used directly; Go, Java and Swift have none, so their rows are derived mechanically
-      from each entry's source-file path instead (see scripts/normalise-parity.mjs's
-      <code>deriveModule</code>) — the same rule for all three, so their keys line up with each
-      other and, for files .NET's ledger also covers, with .NET's own field. An em dash means the
-      ledger has no rows at all for that module; for .NET, most of the
+      from each entry's source-file path instead using the same mapping as .NET's module field. “No rows” means the
+      ledger has no entries for that module; for .NET, most of the
       <code>_internal</code>/<code>_vendor</code> rows are that by declared scope
       (public-API-only), not by omission.
     </p>
@@ -313,7 +310,7 @@ const dotnetGoVerifiedSummary = `${verifiedSummary('.NET', parity.ports.dotnet)}
       }
       <li>
         <span class="font-medium">Go:</span> the "Python revision" column above reads "not
-        recorded" rather than a guess — see the revision-skew note above for what Go's manifest
+        recorded". See the revision-skew note above for what Go's manifest
         records instead.
       </li>
     </ul>

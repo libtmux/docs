@@ -209,6 +209,25 @@ jobs:
           name: ${{ inputs.artifact }}
           path: dist
 
+      - name: Normalize native shell asset URLs
+        if: inputs.port != ''
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          # Matches scripts/normalize-native-shell.mjs without a private checkout.
+          root = "/" + os.environ["PREFIX"].split("/", 1)[0]
+          shell_url = re.compile(r"""(['"(])(?:https?://libtmux\.org)?/_shell/""")
+          for path in Path("dist").rglob("*"):
+              if path.is_file() and path.suffix in {".html", ".css"}:
+                  original = path.read_text()
+                  normalized = shell_url.sub(lambda match: match[1] + root + "/_shell/", original)
+                  if normalized != original:
+                      path.write_text(normalized)
+          PY
+
       - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.role-arn }}

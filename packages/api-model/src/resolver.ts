@@ -240,6 +240,10 @@ export class Resolver {
     const why = notASymbol(text)
     if (why) return { how: 'not-a-symbol', why }
 
+    // Selector labels distinguish Swift methods from same-named properties.
+    const exact = this.byQualified.get(port + ' ' + text.trim())
+    if (exact) return { how: 'module', symbol: exact.symbol, port }
+
     const parts = toPath(text)
     if (!parts.length) return { how: 'not-a-symbol', why: 'empty after normalisation' }
 

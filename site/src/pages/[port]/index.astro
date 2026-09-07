@@ -78,22 +78,22 @@ const quickstart = QUICKSTARTS[port.slug]
 const cards = [
   {
     label: 'Topics',
-    body: `Deep dives into one subject at a time, in ${port.name}: architecture, traversal, options and hooks.`,
+    body: `Architecture, traversal, options and hooks in ${port.name}.`,
     href: portPageUrl(port, defaultVersion, 'topics'),
   },
   {
     label: 'Guides',
-    body: `Task-oriented walkthroughs in ${port.name} — install tmux, then the round trip every real program starts from.`,
+    body: `Install tmux and use ${port.name} to create sessions and control panes.`,
     href: portPageUrl(port, defaultVersion, 'guides'),
   },
   {
     label: 'Examples',
-    body: `The same concrete tasks worked through in ${port.name}, with each snippet checked by the port's own tests.`,
+    body: `Programs for creating workspaces, sending keys and capturing output in ${port.name}.`,
     href: portPageUrl(port, defaultVersion, 'examples'),
   },
   {
     label: 'Concepts',
-    body: 'The domain model every port shares — the object hierarchy, transports and filtering.',
+    body: 'The object hierarchy, transports and filtering.',
     href: portPageUrl(port, defaultVersion, 'concepts'),
   },
 ] as const

@@ -23,7 +23,7 @@
  * Usage: node scripts/gen-api-model.mjs [--port py] [--check]
  */
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -36,6 +36,20 @@ import { NAV } from '../packages/api-model/src/nav-config.ts'
 import { compileNav } from '../packages/api-model/src/nav.ts'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+
+/** The newest modification time anywhere under a directory. */
+function newestMtime(dir) {
+  let newest = 0
+  const walk = (d) => {
+    for (const entry of readdirSync(d, { withFileTypes: true })) {
+      const full = join(d, entry.name)
+      if (entry.isDirectory()) walk(full)
+      else newest = Math.max(newest, statSync(full).mtimeMs)
+    }
+  }
+  if (existsSync(dir)) walk(dir)
+  return newest
+}
 
 /** Four base-36 characters of a string, enough to separate 96 collisions. */
 function shortHash(text) {
@@ -150,7 +164,26 @@ const PORTS = {
     repo: 'tmux-python/libtmux',
     // libtmux's own conf.py passes both; specialMembers is ours, because
     // `__enter__` and `__getitem__` are part of how the library is used.
-    options: { privateMembers: true, specialMembers: true, inheritedMembers: true },
+    //
+    // `privateMembers` is about those dunders, not about private packages.
+    // `_vendor` is bundled third-party code whose documentation is somebody
+    // else's, and `_compat` is shims for Python versions rather than API.
+    //
+    // `_internal` stays. It is spelled private and is not in `__all__`, but
+    // `Server.sessions` returns a `QueryList` from it, so a caller holds one
+    // and needs its page — excluding it cost 161 cross-references from public
+    // signatures. Whether to move it is libtmux's decision.
+    //
+    // No rule for a leading underscore on a class. `_DefaultOptionScope` is
+    // spelled private and is named in 97 public type annotations as the
+    // default scope, so removing it rendered all 97 as plain text. The
+    // reference is better with a page for it than without one.
+    options: {
+      privateMembers: true,
+      specialMembers: true,
+      inheritedMembers: true,
+      excludePaths: [/(^|\.)_vendor\./, /(^|\.)_compat\./],
+    },
   },
   ts: {
     checkout: '~/work/libtmux/libtmux-ts',
@@ -194,6 +227,7 @@ const PORTS = {
   cxx: {
     checkout: '~/work/libtmux/libtmux-cxx-docs',
     root: '.',
+    artifact: { dir: 'xml', from: 'include', what: 'Doxygen XML', build: 'doxygen Doxyfile' },
     repo: 'libtmux/libtmux-cxx',
     options: {},
   },
@@ -203,6 +237,12 @@ const PORTS = {
   swift: {
     checkout: '~/work/libtmux/libtmux-swift-docs',
     root: '.',
+    artifact: {
+      dir: 'symbolgraph',
+      from: 'Sources',
+      what: 'symbol graph',
+      build: 'swift build -Xswiftc -emit-symbol-graph',
+    },
     repo: 'libtmux/libtmux-swift',
     options: {},
   },
@@ -216,7 +256,12 @@ let stale = 0
 let skipped = 0
 for (const [port, cfg] of Object.entries(PORTS)) {
   if (only && only !== port) continue
-  const checkout = expand(cfg.checkout)
+  // `build-site.sh` and `remark-port-code.mjs` already read this, and the
+  // reason is the same here: doc-comment work happens on a port's `docs-site`
+  // worktree, and without an override there is no way to see its effect on
+  // the reference until the branch lands.
+  const override = process.env[`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}`]
+  const checkout = expand(override || cfg.checkout)
   if (!existsSync(checkout)) {
     // Generating without source is impossible, so that still fails. Checking
     // without source is merely unanswerable, and a fresh clone and a CI runner
@@ -244,6 +289,33 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     console.error(`gen-api-model: no source roots exist for ${port}`)
     process.exit(1)
   }
+  // Two ports reach the model through a build product rather than through
+  // their own source: C++ through Doxygen XML, Swift through a symbol graph.
+  // Nothing here regenerated or checked either, and both had drifted three
+  // days behind the comments they were meant to carry — 24 documented C++
+  // symbols read as undocumented, and Swift's newest prose was simply absent.
+  //
+  // Compared on modification time rather than commit time so uncommitted work
+  // counts: doc-comment work on a port is uncommitted for as long as it takes
+  // to write, which is exactly when this matters.
+  if (cfg.artifact) {
+    const built = join(checkout, cfg.artifact.dir)
+    if (!existsSync(built)) {
+      console.error(
+        `gen-api-model: ${port} has no ${cfg.artifact.what} at ${cfg.artifact.dir} — ` +
+          `run ${cfg.artifact.build} in ${cfg.checkout}`,
+      )
+      process.exit(1)
+    }
+    if (newestMtime(built) < newestMtime(join(checkout, cfg.artifact.from))) {
+      console.error(
+        `gen-api-model: ${port}'s ${cfg.artifact.what} predates the source it describes — ` +
+          `run ${cfg.artifact.build} in ${cfg.checkout} and re-run`,
+      )
+      process.exit(1)
+    }
+  }
+
   const model = await extractProject({
     port,
     root: roots[0],

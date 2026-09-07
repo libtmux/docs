@@ -168,6 +168,24 @@ jobs:
           path: docs/_build/html
           retention-days: 1
 
+### What the artifact must contain
+
+The assembled `<locale>/<port>/<version>` tree, not the port's own doc-tool
+output. That tree is the shared shell rendered with the port's code fences,
+with the port's reference nested at `api/` inside it — `build-site.sh --ports
+<slug>` produces it, and a caller uploads `_site/en/<slug>/latest` verbatim.
+
+Uploading the port's own build instead replaces the whole tree with it. That
+failure publishes cleanly: the run is green and the URL returns 200, serving
+the wrong site. It happened to Python's first publish, where `/en/py/latest/`
+served Furo and `/en/py/latest/concepts/` 403'd.
+
+`--skip-refs` is a per-port judgement, not a default. For seven ports `api/`
+is a redirect to `/reference/<slug>/`, so skipping the reference generators
+costs nothing. Python's `api/` is the real gp-sphinx render that
+`site/scripts/check-style-parity.mjs` measures against, so its build must not
+skip them — and its runner needs `uv`.
+
   publish:
     needs: build
     permissions:
@@ -175,7 +193,7 @@ jobs:
       id-token: write
     # Full-length SHA, release name in the comment: this runs with id-token:
     # write and a bucket-writing role, and a tag can be repointed.
-    uses: libtmux/docs/.github/workflows/reusable-deploy.yml@0cd5a3f10c70bf55130ab6a02d5177f6318beaca # v0.1.0-alpha.1
+    uses: libtmux/docs/.github/workflows/reusable-deploy.yml@ce9d7edd63f6a543801d9b93366ecad5e158c0ec # v0.1.0-alpha.2
     with:
       path-prefix: py/v0.46.2
       artifact: docs-html

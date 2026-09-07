@@ -31,20 +31,11 @@ const { PORTS } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}
 const BEGIN = '  // >>> generated from site/src/lib/ports.ts by scripts/gen-shell-ports.mjs'
 const END = '  // <<< end generated'
 
-/*
- * Only the fields this script's consumer reads. `mode` is not a field of
- * `Port`: it is the presence of `ecosystemHost`, named here as the shell's
- * own vocabulary rather than duplicated as a second flag in `ports.ts`.
- */
-const rows = PORTS.map((p) => {
-  const entry = {
-    slug: p.slug,
-    name: p.name,
-    mode: p.ecosystemHost ? 'ecosystem' : 'self-hosted',
-  }
-  if (p.ecosystemHost) entry.home = p.ecosystemHost.url
-  return entry
-})
+const rows = PORTS.map((p) => ({
+  slug: p.slug,
+  name: p.name,
+  versionedDocs: p.versionedDocs,
+}))
 
 // Two spaces of body indent inside the IIFE, matching the file around it.
 const body = rows.map((r) => `    ${JSON.stringify(r)},`).join('\n')

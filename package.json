@@ -10,8 +10,11 @@
     "build:site": "./scripts/build-site.sh",
     "type-check": "pnpm run --recursive type-check",
     "lint": "pnpm run --recursive lint && oxlint scripts",
-    "test": "./scripts/test-all.sh",
-    "test:fast": "./scripts/test-all.sh --skip-build"
+    "test": "node scripts/test-loop.mjs outer",
+    "test:inner": "node scripts/test-loop.mjs inner",
+    "test:medium": "node scripts/test-loop.mjs medium",
+    "test:fast": "node scripts/test-loop.mjs medium",
+    "test:publication": "./scripts/test-all.sh"
   },
   "engines": {
     "node": ">=24"

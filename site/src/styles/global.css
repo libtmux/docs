@@ -556,6 +556,7 @@ html[data-theme="purple"][data-theme-mode="dark"] {
 /* Inline code (not in pre blocks) */
 @layer components {
   .prose code:not(pre code) {
+    overflow-wrap: anywhere;
     @apply bg-gray-100 dark:bg-gray-800 text-[var(--theme-primary)] dark:text-[var(--theme-accent)];
     @apply px-1.5 py-0.5 rounded text-sm font-medium;
     @apply before:content-none! after:content-none!;
@@ -575,21 +576,8 @@ html[data-theme="purple"][data-theme-mode="dark"] {
   color: var(--text-color);
 }
 
-/*
- * Tables.
- *
- * There was not one table rule in any stylesheet in this repository, so every
- * table rendered on Tailwind Typography's defaults: columns sized by content
- * alone, so a wide code cell squeezed the prose beside it to two words a line,
- * and a table wider than its column pushed the page sideways instead of
- * scrolling itself.
- *
- * The palette is gp-sphinx's, like everything else — see gp-sphinx-tokens.css.
- */
+/* Keep row groups in one table grid; the block contains horizontal scrolling. */
 @layer components {
-  /* The scroll container. A table is the one block that legitimately exceeds
-     the measure, and it should carry that itself rather than hand it to the
-     page. */
   .prose :where(table) {
     display: block;
     width: 100%;
@@ -597,15 +585,6 @@ html[data-theme="purple"][data-theme-mode="dark"] {
     overflow-x: auto;
     border-collapse: collapse;
     font-size: 0.9em;
-  }
-
-  /* `auto` rather than `fixed`: the columns here hold names of very different
-     lengths — a port name against a paragraph of prose — and fixed layout
-     gives them equal width, which is the opposite of what they need. */
-  .prose :where(table) > :where(thead, tbody) {
-    display: table;
-    width: 100%;
-    table-layout: auto;
   }
 
   .prose :where(th) {
@@ -627,14 +606,13 @@ html[data-theme="purple"][data-theme-mode="dark"] {
     border-bottom: 0;
   }
 
-  /* A cell holding a symbol or a command should not wrap mid-name, and it is
-     the column that decides the width — not the longest identifier in it. */
-  .prose :where(td) > :where(code):only-child,
-  .prose :where(th) > :where(code):only-child {
-    white-space: nowrap;
+  .prose :where(td) {
+    min-width: 6rem;
+    overflow-wrap: anywhere;
   }
 
   .prose :where(td code, th code) {
+    white-space: normal;
     background: var(--color-inline-code-background);
     border: 1px solid var(--color-background-border);
     border-radius: 0.2em;
@@ -645,4 +623,507 @@ html[data-theme="purple"][data-theme-mode="dark"] {
   .prose :where(tbody tr:hover) {
     background: var(--color-api-background-hover);
   }
+}
+
+/*
+ * The prerelease bar, and the rule that keeps it from flashing.
+ *
+ * `display: none` on a document attribute rather than on a class the bar
+ * gives itself: `ThemeScript` sets `data-prerelease` in <head>, so a reader
+ * who dismissed this on a previous visit gets a first paint with the bar
+ * already absent. Written as a class toggle it would paint and then vanish,
+ * which is the flicker the attribute exists to avoid.
+ *
+ * Not sticky. The header above it is, and a second pinned strip costs every
+ * viewport on every page for a sentence that is read once.
+ */
+html[data-prerelease='dismissed'] .prerelease-notice {
+  display: none;
+}
+
+.prerelease-notice {
+  border-bottom: 1px solid var(--color-background-border);
+  /* Mixed into the surface rather than laid over the page as a translucent
+     tint. `--theme-accent` is a palette value and does not change with the
+     colour scheme, so a transparent wash of it reads differently on white
+     than on #131416; composing it against the surface token, which does
+     change, gives one weight in both. */
+  background: color-mix(in oklch, var(--theme-accent) 12%, var(--color-background-secondary));
+}
+
+.prerelease-notice__inner {
+  margin-inline: auto;
+  max-width: 80rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+}
+
+.prerelease-notice__text {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+/* Carries the weight so the bar reads as a notice at a glance rather than as
+   another row of navigation. Both tokens are palette values, and the accent
+   is light in every palette, so the dark text token contrasts against it in
+   either colour scheme. */
+.prerelease-notice__badge {
+  /* `inline-flex` with `line-height: 1`, not the inherited 1.4. A block-level
+     strong inside the flex paragraph centred its *box* against the sentence
+     while its glyphs sat high inside that box, so the row lined up on paper
+     and looked off by a pixel or two on screen. Centring the label inside its
+     own box is what makes the three read as one line. */
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0.25rem;
+  background: var(--theme-accent);
+  color: var(--theme-text);
+  padding: 0.2rem 0.4rem;
+  font-size: 0.6875rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Beside the sentence, not pinned to the far edge. Pushed right it sat a
+   screen-width away from the text it dismisses and read as an orphan; the
+   sentence does not grow, so the two stay together at any width. Styled as
+   the header's own chips are, so it reads as a control rather than as a word
+   with a faint box round it. */
+.prerelease-notice__dismiss {
+  /* Same treatment, and for the same reason: a button's own line box was
+     making it half again the height of the sentence beside it, so
+     `align-items: center` had a tall box to centre and the label inside it
+     drifted. Padding sets the height rather than an inherited line-height. */
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  border: 1px solid color-mix(in oklch, currentColor, transparent 75%);
+  border-radius: 0.375rem;
+  background: color-mix(in oklch, currentColor, transparent 92%);
+  color: inherit;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.prerelease-notice__dismiss:hover {
+  border-color: color-mix(in oklch, currentColor, transparent 55%);
+  background: color-mix(in oklch, currentColor, transparent 84%);
+}
+
+.prerelease-notice__dismiss:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
+/* Below the header's own wrap point the sentence needs the full width, so the
+   button moves under it rather than squeezing the text to two words a line. */
+@media (max-width: 30rem) {
+  .prerelease-notice__inner {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .prerelease-notice__dismiss {
+    align-self: flex-end;
+  }
+}
+
+/*
+ * The colour-scheme control, and why its selected state is CSS.
+ *
+ * `ThemeScript` sets `data-color-scheme` on the root in <head>, so the right
+ * segment can be highlighted by the first paint rather than corrected by a
+ * script running after the markup. Keyed on the *preference* rather than on
+ * `data-theme-mode`: a reader who chose Auto should see Auto lit, not
+ * whichever of light and dark it currently resolves to.
+ *
+ * `:checked` is the fallback for the moment before the attribute exists and
+ * for a reader with no JavaScript, where the radio group still works on its
+ * own.
+ */
+.scheme-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  margin: 0;
+  border: 1px solid var(--color-background-border);
+  border-radius: var(--radius-md, 0.375rem);
+  padding: 0.125rem;
+}
+
+.scheme-switch__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: calc(var(--radius-md, 0.375rem) - 0.125rem);
+  padding: 0.2rem 0.45rem;
+  color: var(--topnav-link-color);
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.scheme-switch__option:hover {
+  background: color-mix(in oklch, var(--topnav-background), var(--topnav-text-color) 10%);
+}
+
+.scheme-switch__icon {
+  display: inline-flex;
+}
+
+.scheme-switch__option:has(input:checked),
+html[data-color-scheme='system'] .scheme-switch__option[data-scheme='system'],
+html[data-color-scheme='light'] .scheme-switch__option[data-scheme='light'],
+html[data-color-scheme='dark'] .scheme-switch__option[data-scheme='dark'] {
+  background: color-mix(in oklch, var(--topnav-background), var(--topnav-text-color) 16%);
+  font-weight: 600;
+}
+
+/* The attribute is the authority once it exists. Without this, the server's
+   `checked` on Auto would keep Auto highlighted alongside the real choice,
+   because `:has(input:checked)` above matches independently. */
+html[data-color-scheme] .scheme-switch__option:not([data-scheme]) {
+  background: none;
+}
+
+html[data-color-scheme='light'] .scheme-switch__option[data-scheme='system'],
+html[data-color-scheme='dark'] .scheme-switch__option[data-scheme='system'],
+html[data-color-scheme='system'] .scheme-switch__option[data-scheme='light'],
+html[data-color-scheme='dark'] .scheme-switch__option[data-scheme='light'],
+html[data-color-scheme='system'] .scheme-switch__option[data-scheme='dark'],
+html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
+  background: none;
+  font-weight: 400;
+}
+
+.scheme-switch__option:focus-within {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 1px;
+}
+
+/* The header is tight before it wraps, and the icons carry the meaning on
+   their own once a reader has used the control twice. */
+@media (max-width: 60rem) {
+  .scheme-switch__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .scheme-switch__option {
+    padding: 0.25rem 0.35rem;
+  }
+}
+
+/*
+ * The top bar, and what it does when there is not enough room.
+ *
+ * It used to wrap. Eight language chips, four controls and three links on one
+ * flex line became three rows and a 207px header on a 320px phone — a third
+ * of the viewport, above the docs shell's own mobile toolbar. Wrapping is what
+ * a bar does when nobody has decided what to drop.
+ *
+ * So it drops. One row at every width; the languages leave the bar first, then
+ * the secondary controls, into a disclosure that is already in the markup.
+ */
+.site-header__bar {
+  margin-inline: auto;
+  max-width: 80rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  min-height: 3rem;
+}
+
+.site-header__mark {
+  flex: none;
+}
+
+.site-header__spacer {
+  flex: 1;
+}
+
+.site-header__always {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+}
+
+/* The languages hold the middle of the bar and never wrap; below the width
+   where all eight fit they are not shown here at all. */
+.site-header__ports {
+  min-width: 0;
+  display: none;
+}
+
+.site-header__ports > nav {
+  flex-wrap: nowrap;
+}
+
+.site-header__search {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+/* ── The disclosure ─────────────────────────────────────
+ *
+ * `<details>` rather than a button and a script: the open state, the toggle
+ * semantics and a closed panel that is really out of the tab order all come
+ * with the element.
+ */
+.site-header__menu {
+  position: relative;
+  flex: none;
+}
+
+.site-header__menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--color-background-border);
+  border-radius: var(--radius-md, 0.375rem);
+  padding: 0.3rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1;
+  cursor: pointer;
+  list-style: none;
+}
+
+.site-header__menu-button::-webkit-details-marker {
+  display: none;
+}
+
+/* Hangs from the right edge, so it can never push the document sideways the
+   way the locale panel's `left-0` did — that was the horizontal scrollbar on
+   every phone width. Capped against the viewport rather than the header, and
+   scrollable, because a landscape phone is 320px tall and this panel holds
+   eight languages and six controls. */
+.site-header__panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  z-index: 50;
+  /* Fixed, not `max-content`. Sized to content, the panel changed width every
+     time a list inside it opened — and not only outward: opening one switches
+     its row to a column, so the intrinsic width fell from "three controls side
+     by side" to "the widest one alone", 258px to 128px and back up to 187px.
+     The panel jumped narrower, then wider, under the cursor.
+
+     17rem clears the widest measured state with room for a longer version
+     string or a translated label. */
+  width: 17rem;
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100dvh - 5rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.5rem;
+  background: var(--color-background-secondary);
+  box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.35);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Two columns of languages rather than eight chips in a column: the panel
+   stays under a phone's fold in landscape, where there are 320px of height. */
+.site-header__panel-ports > nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem;
+}
+
+.site-header__panel-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  border-top: 1px solid var(--color-background-border);
+  padding-top: 0.75rem;
+}
+
+.site-header__panel-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* ── Where the pieces move ──────────────────────────────
+ *
+ * 64rem is where all eight languages, the controls and the links fit on one
+ * line with room to spare. Below it the languages go to the panel; the bar
+ * keeps the wordmark, the colour scheme, search and the menu.
+ */
+.site-header__wide-link {
+  display: none;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+@media (min-width: 64rem) {
+  .site-header__ports {
+    display: block;
+  }
+
+  .site-header__menu-label {
+    display: none;
+  }
+
+  /* Reference and MCP sit beside search, and the panel stops repeating what
+     the bar already shows: the eight languages are in the bar at this width,
+     and a menu that lists them again is a second answer to a settled
+     question. What is left in the panel is the three controls that were never
+     in the bar. */
+  .site-header__wide-link {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .site-header__panel-ports,
+  .site-header__panel-links {
+    display: none;
+  }
+
+  /* The separator had nothing left to separate. `:first-of-type` matched the
+     hidden ports block — also a div, and display:none does not remove an
+     element from that count — so the one remaining row kept a rule above it
+     and drew a stray line across the top of the menu. */
+  .site-header__panel-controls {
+    border-top: 0;
+    padding-top: 0;
+  }
+}
+
+/* Narrow phones: the search label goes, the icon stays. Below this the bar is
+   a wordmark and three controls, which is what fits on 320px. */
+@media (max-width: 26rem) {
+  .site-header__search-label {
+    display: none;
+  }
+
+  .site-header__bar {
+    gap: 0.5rem;
+    padding-inline: 0.75rem;
+  }
+}
+
+/* A landscape phone has ~320px of height and the sticky bar is charged
+   against every one of them. */
+@media (max-height: 30rem) {
+  .site-header__bar {
+    min-height: 2.5rem;
+    padding-block: 0.25rem;
+  }
+}
+
+/*
+ * A dropdown inside the menu is not a dropdown.
+ *
+ * The panel scrolls, and a scrolling box is a clipping context: an absolutely
+ * positioned child of it is cut off at its edge rather than floating over the
+ * page. The language list opened inside the menu and was sliced in half.
+ *
+ * So inside the panel these expand in place instead. The panel already
+ * scrolls, which is the behaviour a nested list wants anyway — one surface
+ * that grows, rather than a second surface fighting the first for room on a
+ * screen that has none.
+ */
+.site-header__panel details > ul {
+  position: static;
+  width: auto;
+  max-width: none;
+  margin-top: 0.35rem;
+  border: 0;
+  border-left: 2px solid var(--color-background-border);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  padding-left: 0.5rem;
+}
+
+/* The row wraps once a list opens inside it, so each control keeps its own
+   line rather than the open one shoving its neighbours off the end. */
+.site-header__panel-row:has(details[open]) {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.site-header__panel details {
+  min-width: 0;
+}
+
+/*
+ * The page's own language control, on the page's own title row.
+ *
+ * No positioning and no width: it is one item in the flex row that holds the
+ * heading, so it costs the layout nothing beyond its own size. Given a band
+ * of its own above the content it was 1280x40 to show a single chip, and
+ * every page started a row lower for it.
+ */
+/*
+ * Never squeezed, and pushed to the right of whatever line it lands on.
+ *
+ * The title row wraps, so at 390px the control drops below a long heading
+ * rather than being carried 18px past the right edge, which is what it did
+ * when the row could not wrap and this could not shrink. `margin-left` keeps
+ * it right-aligned on that second line, where `justify-content` no longer
+ * has a second item to push it against.
+ */
+.page-ports {
+  flex: none;
+  margin-left: auto;
+}
+
+/* Its list opens over the article, so it hangs from the right edge and never
+   widens the document — the same rule the header's dropdowns needed. */
+.page-ports details {
+  position: relative;
+}
+
+.page-ports details > ul {
+  right: 0;
+  left: auto;
+}
+
+.page-port-switcher__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  line-height: 1;
+}
+
+/* Points down when the list is closed and up when it is open, so the control
+   says which way it is going rather than only that it opens. */
+.page-port-switcher__caret {
+  transition: transform 120ms ease;
+}
+
+[open] > .page-port-switcher__summary .page-port-switcher__caret {
+  transform: rotate(180deg);
 }

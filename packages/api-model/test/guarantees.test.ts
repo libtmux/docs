@@ -5,7 +5,8 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { Resolver, notASymbol } from '../src/resolver.ts'
-import { tokenizeDoc } from '../src/doc/roles.ts'
+import { tokenizeDoc, docSummaryText } from '../src/doc/roles.ts'
+import { javadocToMarkdown, parseJavadoc } from '../src/doc/javadoc.ts'
 import { tableMentions } from '../src/mentions.ts'
 import { readInventory, writeInventory } from '../src/inventory.ts'
 import type { ApiModel } from '../src/model.ts'
@@ -216,8 +217,27 @@ describe('doc comments give up their examples', () => {
     // A bare fence in a Rust doc comment is Rust, and `no_run` is a doctest
     // attribute rather than a language — a renderer asked to highlight
     // `compile_fail` highlights nothing.
-    const wrong = blocks.filter((b) => b.lang !== lang)
+    //
+    // A fence that names a different language is authored, not mis-tagged:
+    // `target::SessionName` shows a shell transcript of tmux rejecting a name,
+    // which is the point of the example. So the assertion is that no doctest
+    // attribute survives as a language, and that the port's own language still
+    // accounts for nearly all of the blocks.
+    const attributes = new Set([
+      '',
+      'no_run',
+      'should_panic',
+      'compile_fail',
+      'ignore',
+      'edition2015',
+      'edition2018',
+      'edition2021',
+      'edition2024',
+    ])
+    const wrong = blocks.filter((b) => attributes.has(b.lang))
     expect(wrong.slice(0, 3).map((b) => b.lang), `${port} mis-tagged blocks`).toEqual([])
+    const own = blocks.filter((b) => b.lang === lang).length
+    expect(own / blocks.length, `${port} examples tagged ${lang}`).toBeGreaterThan(0.9)
   })
 
   it.each(['rs', 'ts', 'py'])('%s leaves no fence behind in a body', (port) => {
@@ -272,10 +292,46 @@ describe('each language gets its own spelling of a cross-reference', () => {
     ])
   })
 
+  it('rustdoc links to an item in scope, and through Markdown syntax', () => {
+    // The `::` guard that keeps `[see below]` from being a reference also
+    // excluded every link to an item already in scope. Backticks disambiguate.
+    expect(ref(tokenizeDoc('Unlike [`Window`], a pane is one thing.', 'rs'))).toEqual(['Window'])
+    // rustdoc accepts an item path where Markdown expects a URL.
+    expect(ref(tokenizeDoc('Unlike [`Window`](crate::Window), it is.', 'rs'))).toEqual(['Window'])
+    expect(ref(tokenizeDoc('See [`run`](Self::run) first.', 'rs'))).toEqual(['.run'])
+    // A real URL and a relative path are still Markdown links.
+    expect(ref(tokenizeDoc('see [design](../docs/design.md) and [x](http://a)', 'rs'))).toEqual([])
+  })
+
   it('C# see-cref, with the addressing prefix removed', () => {
     expect(ref(tokenizeDoc('See <see cref="T:LibTmux.Server"/> for more.', 'dotnet'))).toEqual([
       'LibTmux.Server',
     ])
+  })
+
+  it('a C# keyword is a literal, not a member', () => {
+    const spans = tokenizeDoc('Or <see langword="null" /> for the default.', 'dotnet')
+    expect(spans.filter((s) => s.kind === 'code').map((s) => (s as { text: string }).text)).toEqual([
+      'null',
+    ])
+  })
+
+  it('bold reaches the page as bold, and prose keeps its asterisks', () => {
+    // `server::Server` opens six paragraphs with `**Connecting.**` and the
+    // like. Rendered as text they were literal asterisks, which is what the
+    // reference showed once the doc comment behind `#[derive]` was readable.
+    const strong = (t: string, l?: string) =>
+      tokenizeDoc(t, l).filter((s) => s.kind === 'strong').map((s) => (s as { text: string }).text)
+    expect(strong('**Connecting.** `new` takes the socket.', 'rs')).toEqual(['Connecting.'])
+    // A single asterisk is emphasis, a glob and a multiplication sign, so it
+    // is left alone. Both of these are prose.
+    expect(strong('a * b and 2 * 3', 'rs')).toEqual([])
+    expect(strong('glob *.py here', 'py')).toEqual([])
+  })
+
+  it('a summary reaches metadata as prose, not markup', () => {
+    expect(docSummaryText('Typed fields of {@link Pane}.', 'java')).toBe('Typed fields of Pane.')
+    expect(docSummaryText('Call ``Server/kill()`` first.', 'swift')).toBe('Call Server/kill() first.')
   })
 
   it('DocC gives double backticks the meaning reST gives single ones', () => {
@@ -287,6 +343,33 @@ describe('each language gets its own spelling of a cross-reference', () => {
 
   it('an undeclared language still gets reST, which the Python corpus needs', () => {
     expect(ref(tokenizeDoc('See :meth:`Pane.send_keys` now.'))).toEqual(['Pane.send_keys'])
+  })
+})
+
+describe('a doc comment is read in the dialect it was written in', () => {
+  /**
+   * Javadoc is HTML by specification, and reading it as prose printed 192
+   * `<p>` and 7 `<pre>` across 146 pages of the Java reference — the same
+   * failure C# XML had before `parseXmlDoc`.
+   *
+   * The hard part is that a doc comment also contains `List<String>` and
+   * `<socket>`. Only javadoc's own vocabulary may be translated.
+   */
+  it('javadoc HTML becomes the model, and other angle brackets survive', () => {
+    const md = javadocToMarkdown(
+      'Takes a {@code List<String>} at a <socket> path.\n\n<p>Then <em>waits</em>.',
+    )
+    expect(md).toContain('List<String>')
+    expect(md).toContain('<socket>')
+    expect(md).not.toContain('<p>')
+    expect(md).toContain('*waits*')
+  })
+
+  it('javadoc example blocks reach the renderer that draws examples', () => {
+    const { doc } = parseJavadoc('Creates it.\n\n<pre>{@code\nvar s = server.newSession();\n}</pre>')
+    expect(doc.examples?.map((e) => [e.lang, e.code])).toEqual([
+      ['java', 'var s = server.newSession();'],
+    ])
   })
 })
 

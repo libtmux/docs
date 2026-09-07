@@ -1,6 +1,6 @@
 ---
 title: Filtering and querying, in practice
-description: The exactly-one identifiers concepts/queries.md leaves for your own port's reference, plus copy-paste recipes for the questions that come up most.
+description: Filter tmux objects, require one match, and choose where a query runs.
 sidebar:
   label: Querying and filtering
   group: Guides
@@ -8,14 +8,10 @@ sidebar:
 tableOfContents: true
 ---
 
-[Filtering and queries](/concepts/queries/) is the mental model: why a
-"find zero or more" call and a "give me exactly one" call are different
-promises, and where each port draws the line between filtering after a read
-and pushing a filter down into tmux itself. Read that first if you haven't.
-This page is the how-to companion — it picks up exactly where that page's
-own cardinality table stops (it verified Python, TypeScript, and Java's
-exact identifiers and left the rest as "check the port's own reference"),
-and adds the recipes worth having on hand.
+Find sessions, windows, or panes with collection filters and exactly-one
+lookups. [Filtering and queries](/concepts/queries/) explains the result-count
+contracts and the choice between local and tmux-side filtering. This guide adds
+examples for common queries.
 
 ## Filling in the rest of the cardinality table
 
@@ -25,10 +21,8 @@ and adds the recipes worth having on hand.
 | Rust | `.iter().matching(&expr)` | `.exactly_one()` | prints via the error's `Display` | same, one error type covers both |
 | C++ | `range \| libtmux::matching(expr)` | `libtmux::exactly_one(range)` | `.error()` says which way it went wrong | same call, same error type |
 
-Sources: Go's `tmuxq.ExactlyOne` is exercised by `ExampleExactlyOne` in
-`tmuxq/example_test.go` — a Go `Example` function with a checked
-`// Output:` comment, so `go test` fails if the sentinel behavior ever
-changes:
+Go's `ExampleExactlyOne` in `tmuxq/example_test.go` checks the result with `go
+test` and `// Output:` assertions:
 
 ```go
 _, err := tmuxq.ExactlyOne(noActivePanes, func(pane *pane) bool { return pane.active })
@@ -58,15 +52,11 @@ if (const auto one = libtmux::exactly_one(addressed); one.has_value()) {
 }
 ```
 
-**.NET and Swift don't have a checked snippet for this page to quote.**
-.NET's `IEnumerable<T>.Matching<T>(expression)` (see below) returns a plain
-`IReadOnlyList<Session>`, and ordinary LINQ `.Single()` / `.SingleOrDefault()`
-would sit on top of it the way they would any list — but no README block
-demonstrates that combination as of this page, so it isn't presented as
-verified. Swift's closest checked call is `hasSession(_:)`, which answers
-existence as a `Bool` rather than cardinality — see
-[Attaching to tmux](../attaching-to-tmux/#finding-a-session-instead-of-always-creating-one).
-Check each port's own reference before relying on either gap.
+For .NET and Swift result-count handling, consult the port reference. The
+examples here demonstrate .NET's `IEnumerable<T>.Matching<T>(expression)`
+returning an `IReadOnlyList<Session>` and Swift's `hasSession(_:)` returning a
+`Bool`. The latter checks existence; see [Attaching to
+tmux](../attaching-to-tmux/#finding-a-session-instead-of-always-creating-one).
 
 ## Declarative filters that travel, beyond Python and TypeScript
 
@@ -79,8 +69,7 @@ lookups and TypeScript's `.where()` documents. Two more ports build the same
 // evaluated locally over objects you already hold rather than compiled
 // into tmux's own format language. Translate<T>(...) produces the document
 // directly when you want the wire form without also running the filter.
-// Stable wire names — Session.Name becomes session_name — and a fixed
-// twelve-field catalog are what make the document portable at all.
+// Stable wire names map Session.Name to session_name in the query document.
 IReadOnlyList<Session> building = sessions.Matching<Session>(
     session => session.Name.StartsWith("build", StringComparison.Ordinal) && session.Attached);
 ```
@@ -113,32 +102,27 @@ let editors = try RegexPattern("^(n?vim|hx)$", options: [.caseInsensitive])
 let expression = FilterExpr<Pane>.where(\.currentCommand, .matches(editors))
 ```
 
-Java, .NET, Go, Rust, and C++: no case-insensitive comparison was found
-quoted in a checked source for this page; several almost certainly expose
-one (a plain lowercasing comparison, or a regex flag, works everywhere as a
-fallback), but this page only lists what it verified. Sources: Python's
-lookup is [Filtering and queries](../../concepts/queries/) (this site). TypeScript's is `README.md`,
-"What querying looks like." Swift's is
+For case-insensitive matching in Java, .NET, Go, Rust, and C++, consult the port
+reference. Sources for the examples above: Python's lookup is covered in
+[Filtering and queries](../../concepts/queries/); TypeScript's is in
+`README.md`, "What querying looks like"; Swift's is in
 `Examples/Sources/ExampleCode/Filtering.swift`.
 
 ## Push the filter into tmux, or read once and filter locally
 
-This tradeoff is the subject of most of [Filtering and
-queries](/concepts/queries/) — Python's
-`search_sessions()` against `.filter()`, Go's `SearchPanes` against a
-`snapshot()` plus `tmuxq.Where`. The short version, if you only remember
-one thing: pushing down costs a stricter tmux version (≥ 3.2 for Python's
-format grammar) and fails *silently* on a malformed expression rather than
-erroring, because an unknown format token expands to empty. If a
-push-down search unexpectedly comes back empty, confirm the issue is syntax
-before assuming it's data.
+Use a tmux-side filter to reduce the rows returned, or query a snapshot when you
+need several answers from one read. [Filtering and queries](/concepts/queries/)
+compares Python's `search_sessions()` with `.filter()`, and Go's `SearchPanes`
+with a snapshot plus `tmuxq.Where`. Check the required tmux version. Unknown
+format tokens expand to empty values, so validate an unexpectedly empty search
+before concluding that no objects match.
 
 ## Where to go next
 
-- [Attach and send keys](/examples/attach-and-send-keys/) — its
+- [Attach and send keys](/examples/attach-and-send-keys/): its
   "Finding an existing session instead" section is this guide's recipes
   applied to one concrete lookup.
-- [Testing with libtmux](../testing-with-libtmux/) — most of the fixtures
+- [Testing with libtmux](../testing-with-libtmux/): most of the fixtures
   there hand you a server with exactly one thing on it, which is precisely
   when an exactly-one query is the right tool instead of a filter you then
   index into.

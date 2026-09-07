@@ -12,6 +12,12 @@ declare global {
      * once rather than corrected twice.
      */
     __applyPackagePort?: () => void
+    /**
+     * Set by the same inline script. Resolves whether the prerelease bar was
+     * dismissed on a previous visit, so a reader who closed it never sees it
+     * paint and disappear.
+     */
+    __applyPrereleaseNotice?: () => void
   }
 }
 

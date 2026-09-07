@@ -1,29 +1,9 @@
 ---
-import { LOCALE_LABEL, localeRoot, type Locale } from '../i18n/locales'
+import { LOCALE_LABEL, localePageHref, type Locale } from '../i18n/locales'
 import type { LocaleStatus } from '../i18n/resolve'
 import { withRoot } from '../lib/site-root'
 import { t } from '../i18n/ui'
 
-/**
- * Locale switcher — the third axis, beside the port and version controls.
- *
- * Links, inside a native <details>, rather than the <select> the other two
- * switchers use. Those fetch their options at runtime (a tag build published
- * months ago must still list versions released after it), so they need script
- * either way; the locale list is known at build time, so this works with
- * scripting disabled and needs no custom element.
- *
- * Each target composes through `localeRoot`, never `withRoot`: another locale
- * is a sibling tree, not a child of this build, so `/ja/…` is right whatever
- * prefix the current build carries. Composing through the site root is what
- * produced `/ja/ja/concepts/`.
- *
- * Renders nothing below two locales — a control offering only the page you
- * are already on is furniture. That also suppresses it on port pages: a port
- * build sets LIBTMUX_DOCS_PORT, `localesEnabled()` goes false, and the map
- * arrives with the single default entry, which is honest — the port trees and
- * the reference are built in English only.
- */
 interface Props {
   locale: Locale
   /** This page's path with any locale prefix removed. */
@@ -38,14 +18,13 @@ const STATUS_KEY = {
   placeholder: 'i18n.statusPlaceholder',
 } as const satisfies Record<LocaleStatus, string>
 
-const path = sourcePath.replace(/^\/+|\/+$/g, '')
-const href = (l: string) => `${localeRoot(l)}${path}${path ? '/' : ''}`
+const href = (locale: string) => localePageHref(locale, sourcePath)
 const entries = Object.entries(localeStatuses) as [Locale, LocaleStatus][]
 ---
 
 {
-  entries.length > 1 && (
-    <details class="relative">
+  entries.length > 0 && (
+    <details>
       <summary
         class="topnav-chip cursor-pointer list-none px-2 py-1 text-sm"
         aria-label={t(locale, 'i18n.available')}
@@ -54,7 +33,7 @@ const entries = Object.entries(localeStatuses) as [Locale, LocaleStatus][]
             the interface language can still find the control. */}
         <span lang={locale}>{LOCALE_LABEL[locale]}</span>
       </summary>
-      <ul class="absolute right-0 z-50 mt-1 min-w-48 rounded border border-edge bg-surface py-1 shadow-lg">
+      <ul class="absolute right-0 z-50 mt-1 w-64 max-w-[calc(100vw-2rem)] rounded border border-edge bg-surface py-1 shadow-lg">
         {entries.map(([l, status]) => (
           <li>
             <a

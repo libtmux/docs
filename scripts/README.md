@@ -141,15 +141,24 @@ reproduces libtmux-mcp's own documented tool set name for name, every port
 declaring a wire prefix carries it on every tool, and all eight checkouts are
 present — a partial matrix looks exactly like a finding.
 
+Assemble a complete preview:
+
 ```console
-$ bash scripts/check-preview.sh
+$ LIBTMUX_DOCS_LOCALES_ROOT=/pr-42 \
+    LIBTMUX_DOCS_VERSION=pr-42 \
+    LIBTMUX_DOCS_VERSION_KIND=pr \
+    pnpm build:site
 ```
 
-Builds the shell the way `deploy-shell.yml` builds a pull request preview
-(`LIBTMUX_DOCS_BASE` and `LIBTMUX_DOCS_ROOT` both `/pr-42/`) and fails if any
-absolute URL in the output leaves that prefix. A link that escapes is not a
-404 a crawler catches — it is a working link to production, clicked with the
-preview's own header still on screen.
+Audit the assembled preview before publishing:
+
+```console
+$ bash scripts/check-preview.sh _site pr-42
+```
+
+Checks the actual preview artifact for URLs escaping its prefix and internal
+links whose pages or fragments are missing. The deployment workflow runs this
+audit before uploading the complete preview, including its port/version trees.
 
 ```console
 $ node scripts/audit-site.mjs && node scripts/crawl-site.mjs

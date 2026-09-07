@@ -1,32 +1,12 @@
 ---
-import { PORTS, portPageUrl } from '../lib/ports'
+import { PORTS, portHomeUrl } from '../lib/ports'
 
-/**
- * Port switcher. Eight languages, one control.
- *
- * No outbound marker on any of them. Rust, Go and Java used to carry one,
- * which was wrong twice over: the chip links to that port's page on this site
- * and never left it, and the reference it was warning about is no longer
- * external-only — every port now has one here. Where the ecosystem host is
- * offered, `ApiReferences.astro` marks it, on the link that actually leaves.
- */
 interface Props {
   portSlug?: string
   version: string
-  /** Path within the current port+version, so switching keeps the page. */
-  pagePath?: string
 }
-const { portSlug, version, pagePath = '' } = Astro.props as Props
+const { portSlug, version } = Astro.props as Props
 
-// Switching language resets to that port's default, the way Playwright's
-// language switcher does: version numbers are per-port, so carrying v0.46.2
-// from Python to TypeScript would name a version that never existed.
-//
-// That default is per-port and cannot be a constant. A port with no release
-// has no `stable` entry, and nothing builds a tree there — hard-coding it
-// linked seven of eight ports at a URL the assembly does not produce. The
-// build passes the manifest's own map; `latest` is the fallback because every
-// port has one, where `stable` is exactly what may be missing.
 const PORT_DEFAULTS: Record<string, string> = (() => {
   try {
     return JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
@@ -43,7 +23,7 @@ const defaultFor = (slug: string) => PORT_DEFAULTS[slug] ?? 'latest'
       const active = p.slug === portSlug
       return (
         <a
-          href={portPageUrl(p, active ? version : defaultFor(p.slug), pagePath)}
+          href={portHomeUrl(p, active ? version : defaultFor(p.slug))}
           class:list={[
             'rounded px-2 py-1 text-sm transition-colors',
             'topnav-chip',

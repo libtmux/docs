@@ -1,22 +1,9 @@
 ---
-/**
- * One onward link on a port's home page — Topics, Guides, Examples, API
- * reference. Same visual language as the card grid on the root `index.astro`
- * ("Eight ports, one API shape" section), pulled out here because the port
- * home page needs four of them and a landing-page-only inline block would
- * mean writing the border/hover classes out four times.
- *
- * `href` is optional: a port with no published reference yet (.NET, Swift)
- * still gets a card in the same grid position, so the four-card layout
- * doesn't reflow — it just renders unlinked, with `body` carrying the
- * explanation instead of a destination.
- */
 interface Props {
   label: string
   body: string
   href?: string
-  /** Adds the outbound-link glyph and opens in a new tab — an ecosystem
-   *  reference (docs.rs, pkg.go.dev, javadoc.io) leaving libtmux.org. */
+  /** Marks an external destination and opens it in a new tab. */
   external?: boolean
 }
 

@@ -265,18 +265,17 @@ const SPLITS: Record<string, { id: string; label: string; re: string }[]> = {
     { id: 'fields', label: 'Fields', re: 'Field' },
     { id: 'operators', label: 'Operators', re: 'Operator|Op$|Quantifier|Combine|Negation' },
     { id: 'expressions', label: 'Expressions', re: 'Expr|Node|Constant|Predicate' },
-    { id: 'wire', label: 'Serialisation', re: '^Wire|^Raw|Visitor$|Seed$|Decode|Encode' },
+    // No Serialisation entry. Rust's wire types are `pub(crate)` and .NET's
+    // are `internal`, so once the reference stopped publishing what the ports
+    // do not export, this claimed nothing anywhere.
   ],
+  // What is left of Internal is Python's `_internal` and Java's internal
+  // packages. Materialisation, Compatibility, Diagnostics, Formats,
+  // Environment, Capabilities and Server all went with .NET's 504 internal
+  // symbols and Rust's 528 crate-private ones, and the dead-rule check said so.
   internal: [
-    { id: 'materialisation', label: 'Materialisation', re: 'Materiali|Hydrat|Reader|Framer|Row|Projection' },
-    { id: 'compatibility', label: 'Compatibility', re: 'Compat|Alias|Dialect|Psmux|Version' },
-    { id: 'diagnostics', label: 'Diagnostics', re: 'Log|Diagnostic|Trace|Failure' },
     { id: 'commands', label: 'Commands', re: 'Command|Dispatch|Transport|Connection|Process|Endpoint' },
-    { id: 'formats', label: 'Formats', re: 'Format' },
     { id: 'options', label: 'Options', re: 'Option' },
-    { id: 'environment', label: 'Environment', re: 'Environment' },
-    { id: 'capabilities', label: 'Capabilities', re: 'Capabilit|Catalog' },
-    { id: 'server', label: 'Server', re: 'Server' },
   ],
   workspace: [
     { id: 'plan', label: 'Plans', re: 'Plan|Workspace' },

@@ -1,44 +1,6 @@
 #!/usr/bin/env node
-// Cross-generator smoke test for the design-token bridge (see
-// notes/research/03-design-token-bridge.md and notes/status.md, "Python and
-// C++ are unskinned islands"). Run after scripts/build-site.sh.
-//
-// A generator upgrade (a new Furo release renaming a --color-* variable, a
-// theme change dropping html_css_files entirely) can silently produce a
-// page that LOOKS built — it has a title, it has content — while carrying
-// none of the shared chrome. Nothing else in this build catches that: the
-// page is not empty, so audit-site.mjs's content check passes, and the
-// link crawl only follows hrefs, so it never notices that shell.js is
-// simply absent. This script is the thing that walks the whole tree for
-// that specific glitch, per status.md's "Tooling not built yet" ask.
-//
-// Checks, per self-hosted Sphinx port (site/src/lib/ports.ts is read
-// directly — never hand-duplicate the port list here):
-//
-//   1. Every built <port>/<version>/api/ page's <head> carries a
-//      libtmux-org.css link and a shell.js script tag pointing at the
-//      real production URL.
-//   2. The adapter stylesheet actually shipped to _static/ still imports
-//      tokens.css from that same URL.
-//   3. Every --color-* name the adapter maps FROM Furo actually exists in
-//      that build's own generated CSS — the check that catches a Furo
-//      upgrade renaming a variable out from under the mapping.
-//   4. Every --lt-* name the adapter maps TO exists in our own
-//      site/public/_shell/tokens.css — catches a typo on our side.
-//   5. /_shell/tokens.css and /_shell/shell.js were actually published at
-//      the site root (Astro's public/ passthrough can only be assumed
-//      until it's been walked once).
-//
-// Usage:
-//   node scripts/inject-shell.mjs [--site <dir>]
-//
-//   --site <dir>   Assembled site root (default: <repo>/_site, matching
-//                   build-site.sh's own out_dir).
-//
-// Exits non-zero if any built reference page fails a check. A port with no
-// built reference yet is reported as skipped, not failed — matching
-// build-site.sh's own "absent toolchain is a skip" philosophy, since this
-// script is meant to run against however much of the tree got built.
+// Validate native shell assets and the adapter's generated CSS tokens.
+// Usage: node scripts/inject-shell.mjs --site _site
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -59,9 +21,11 @@ function parseArgs(argv) {
 }
 const opts = parseArgs(process.argv.slice(2))
 
-const SHELL_ORIGIN = 'https://libtmux.org'
-const TOKENS_URL = `${SHELL_ORIGIN}/_shell/tokens.css`
-const SHELL_JS_URL = `${SHELL_ORIGIN}/_shell/shell.js`
+const locale = process.env.LIBTMUX_DOCS_LOCALE || 'en'
+const siteDir = existsSync(join(opts.site, locale, 'index.html')) ? join(opts.site, locale) : opts.site
+const shellRoot = `${(process.env.LIBTMUX_DOCS_LOCALES_ROOT || '').replace(/\/+$/, '')}/${locale}/_shell`
+const TOKENS_URL = `${shellRoot}/tokens.css`
+const SHELL_JS_URL = `${shellRoot}/shell.js`
 const ADAPTER_BASENAME = 'libtmux-org.css'
 
 /** Strip /* ... *\/ comments before scanning for custom-property names —
@@ -128,25 +92,25 @@ const checked = []
 
 // --- Shared runtime artifacts actually published at the site root -------
 for (const [name, url] of [
-  ['/_shell/tokens.css', join(opts.site, '_shell', 'tokens.css')],
-  ['/_shell/shell.js', join(opts.site, '_shell', 'shell.js')],
+  [TOKENS_URL, join(siteDir, '_shell', 'tokens.css')],
+  [SHELL_JS_URL, join(siteDir, '_shell', 'shell.js')],
 ]) {
   if (!existsSync(url)) failures.push(`${name} was not published to the assembled site root`)
 }
 
-const ownTokenNames = readOwnTokenNames(opts.site)
+const ownTokenNames = readOwnTokenNames(siteDir)
 
 // --- Per-port, per-version reference pages --------------------------------
 const sphinxPorts = PORTS.filter((p) => p.renderer === 'sphinx')
 for (const port of sphinxPorts) {
-  const versions = builtVersions(opts.site, port.slug)
+  const versions = builtVersions(siteDir, port.slug)
   if (versions.length === 0) {
-    skipped.push(`${port.slug}: no built reference under ${join(opts.site, port.slug)}`)
+    skipped.push(`${port.slug}: no built reference under ${join(siteDir, port.slug)}`)
     continue
   }
 
   for (const version of versions) {
-    const apiDir = join(opts.site, port.slug, version, 'api')
+    const apiDir = join(siteDir, port.slug, version, 'api')
     const label = `${port.slug}/${version}`
 
     // A meta-refresh redirect stub (e.g. Furo's own search.html, overridden
@@ -155,8 +119,16 @@ for (const port of sphinxPorts) {
     // carries no chrome; audit-site.mjs excludes the same pages from its own
     // checks by the same marker string.
     const pages = apiPages(apiDir).filter(
-      (p) => !readFileSync(p, 'utf8').includes('You should have been redirected'),
+      (p) => {
+        const html = readFileSync(p, 'utf8')
+        return !html.includes('You should have been redirected') &&
+          !/<meta[^>]*http-equiv=["']refresh["']/i.test(html)
+      },
     )
+    if (pages.length === 0) {
+      skipped.push(`${label}: redirects to the shared reference`)
+      continue
+    }
     let pagesMissingLink = 0
     let pagesMissingScript = 0
     for (const pagePath of pages) {

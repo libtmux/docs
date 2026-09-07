@@ -1,15 +1,6 @@
 #!/usr/bin/env bash
-# Everything that can say the docs are wrong, in one command.
-#
-# Ordered cheapest-first so a failure arrives as early as it can: unit tests
-# in under a second, lint and type-check in tens of seconds, then a real build
-# — because several classes of defect here are invisible to all three.
-#
-# The build is not optional and not a formality. A page whose every link
-# points at a fragment that does not exist type-checks, lints and builds
-# clean; so does a reference that sends Go readers to Python's manual. Only
-# rendering the site and reading the output catches those, which is what the
-# dangling-reference ceiling and scripts/check-links.mjs do here.
+# Publication audit: source checks, complete assembly, output and browser audits.
+# This has no development-loop time budget; use pnpm test for fresh sampled rendering.
 #
 # Usage: scripts/test-all.sh [--skip-build]
 set -euo pipefail
@@ -104,6 +95,14 @@ node scripts/gen-shell-ports.mjs --check
 
 step 'shell port table (negative)'
 node scripts/gen-shell-ports.negative.mjs
+
+# /mcp/ and /mcp/tools/ count and compare the tools each port registers, read
+# from that port's own registration site. Absent from this gate, the matrix
+# went stale unnoticed: libtmux-java replaced ToolSpec.of with a capability
+# registry and its 45 tools extracted as none. Skips when the sibling
+# checkouts are absent, as the API models above do.
+step 'mcp tool matrix'
+node scripts/gen-mcp-tools.mjs --check
 
 step 'source links'
 node scripts/check-source-links.mjs
@@ -231,7 +230,7 @@ node scripts/check-api-fidelity.mjs "$site_out"
 
 # The visual checks need the pages served, and style parity needs the gp-sphinx
 # twin as well — which only a full assembly produces. Both run against a
-# running server; `pnpm test` reports that they were not run rather than
+# running server; `pnpm test:publication` reports that they were not run rather than
 # implying they passed.
 if curl -sf -o /dev/null "$SERVE_SITE/reference/py/libtmux-server/"; then
   # Type is checked here rather than with the static suites because half of
@@ -246,23 +245,32 @@ if curl -sf -o /dev/null "$SERVE_SITE/reference/py/libtmux-server/"; then
   step 'mobile navigation'
   (cd site && node scripts/check-mobile-nav.mjs "$SERVE_SITE")
 
+  step 'table layout'
+  (cd site && node scripts/check-tables.mjs "$SERVE_SITE")
+
   step 'visual regression'
   (cd site && node scripts/check-visual.mjs "$SERVE_SITE")
 
   if curl -sf -o /dev/null "$SERVE_SITE/py/stable/api/api/libtmux.server/"; then
+    step 'native page navigation'
+    (cd site && node scripts/check-native-shell.mjs "$SERVE_SITE")
+
     step 'style parity with gp-sphinx'
     (cd site && node scripts/check-style-parity.mjs "$SERVE_SITE")
   else
     printf '\nstyle parity skipped: no gp-sphinx page at %s — run scripts/build-site.sh\n' "$SERVE_URL"
     note_skip 'style parity'
+    note_skip 'native page navigation'
     skip_reason="no gp-sphinx page at $SERVE_URL — run scripts/build-site.sh"
   fi
 else
   printf '\nvisual checks skipped: nothing serving at %s\n' "$SERVE_URL"
   note_skip 'fonts'
   note_skip 'mobile navigation'
+  note_skip 'table layout'
   note_skip 'visual regression'
   note_skip 'style parity'
+  note_skip 'native page navigation'
   skip_reason="nothing serving at $SERVE_URL — run scripts/serve.sh"
 fi
 

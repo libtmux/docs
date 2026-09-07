@@ -63,7 +63,10 @@ const ARCHETYPES = [
   // not: a C++ signature and a Go one reach for different faces, and the
   // goal is no missing text in *any* port rather than in the one that was
   // checked.
-  ['ref py', '/reference/py/libtmux-_compat-legacyversion/', true],
+  // `libtmux.Server`, not a `_compat` shim: the reference stopped publishing
+  // the vendored and compatibility modules, and a sample page has to be one
+  // the port actually exports if it is to keep being built.
+  ['ref py', '/reference/py/libtmux-server/', true],
   ['ref ts', '/reference/ts/builder-applywindowcontext/', true],
   ['ref rs', '/reference/rs/blocking-runtime/', true],
   ['ref go', '/reference/go/tmux-activityaction/', true],

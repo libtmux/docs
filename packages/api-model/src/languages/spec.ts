@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import type { Node } from 'web-tree-sitter'
 import { parseMarkdownDocFull } from '../doc/markdown.ts'
 import { parseXmlDoc } from '../doc/csharp.ts'
+import { parseJavadoc } from '../doc/javadoc.ts'
 import {
   DEFAULT_EXTRACT_OPTIONS,
   type ApiSymbol,
@@ -32,6 +33,23 @@ import { type GrammarName, parserFor } from '../parser.ts'
 
 export interface LanguageSpec {
   grammar: GrammarName
+  /**
+   * The dialect this language's doc comments are written in.
+   *
+   * Markdown when unset, which is what Rust, TypeScript and Go write. C# is
+   * documentation XML and Java is HTML; both printed their markup into the
+   * reference until it was read in the dialect it was written in.
+   */
+  docDialect?: 'xml' | 'javadoc'
+  /**
+   * The container kind this language reserves for extension blocks.
+   *
+   * Rust's `impl Window { … }` declares nothing; it attaches members to a
+   * type declared elsewhere, often in another file. The project pass folds
+   * such a block onto that type, so naming the kind here is what tells it
+   * which containers are blocks rather than declarations.
+   */
+  extensionKind?: SymbolKind
   /** Declarations that own members: classes, structs, traits, interfaces. */
   containers: Record<string, SymbolKind>
   /** Declarations that are members: methods, fields, properties. */
@@ -40,6 +58,29 @@ export interface LanguageSpec {
   transparent?: string[]
   /** Comment node types that can carry documentation. */
   commentTypes: string[]
+  /**
+   * A container the walk should not descend into at all.
+   *
+   * Rust puts its unit tests in a `#[cfg(test)] mod tests` beside the code, so
+   * a walk that treats every module as transparent publishes the test
+   * doubles: `RefusingExecutor` and `ComposedSessionExecutor` had pages in the
+   * reference and exist only inside `server.rs`'s test module.
+   */
+  skipNode?: (node: Node) => boolean
+  /**
+   * Node types that sit between a doc comment and what it documents.
+   *
+   * Rust writes `#[derive(Clone)]` and `#[must_use = "…"]` under the doc
+   * comment and above the item, and the walk up from the declaration stopped
+   * at the first sibling that was not a comment. That hid the prose on 488
+   * Rust symbols and 188 of its examples: `pub struct Command` documents
+   * itself with a runnable example and rendered blank.
+   *
+   * Only Rust needs this so far. C# writes `[Obsolete]` in the same position
+   * but its grammar keeps the attribute inside the declaration, so the walk
+   * never sees it.
+   */
+  attributeTypes?: string[]
   /** Strip a doc comment's markers. Returning undefined rejects the comment. */
   stripDoc: (raw: string) => string | undefined
   /** Keywords or attributes that map to model modifiers. */
@@ -102,10 +143,32 @@ function docCommentFor(node: Node, spec: LanguageSpec): string | undefined {
   }
   let cursor: Node | null = anchor.previousNamedSibling
   let expectedRow = anchor.startPosition.row
-  while (cursor && spec.commentTypes.includes(cursor.type)) {
+  // Attributes and ordinary comments are part of the declaration, not a break
+  // in it, so a doc comment above them still documents it — and they
+  // interleave: `Plan` in libtmux-rs is a doc block, three `#[derive]`s, a
+  // two-line `//` note, then the struct. Two loops in sequence stopped at
+  // whichever kind came second, so this is one loop over both.
+  //
+  // Adjacency is still required throughout: a blank line ends the search.
+  while (cursor) {
     if (cursor.endPosition.row < expectedRow - 1) break
-    const stripped = spec.stripDoc(cursor.text)
-    if (stripped === undefined) break
+    const isComment = spec.commentTypes.includes(cursor.type)
+    if (!isComment && !spec.attributeTypes?.includes(cursor.type)) break
+    const stripped = isComment ? spec.stripDoc(cursor.text) : undefined
+    if (stripped === undefined) {
+      // A comment the language does not count as documentation, sitting
+      // between a declaration and its doc comment. libtmux-ts writes
+      // `// eslint-disable-next-line` there, and the directive has to stay on
+      // the line above the class for the suppression to apply — so the doc
+      // comment cannot move down past it, and `Pane` had no summary.
+      //
+      // Only before any documentation has been collected. A plain comment
+      // *above* a doc block belongs to whatever is above it, not to this.
+      if (lines.length) break
+      expectedRow = cursor.startPosition.row
+      cursor = cursor.previousNamedSibling
+      continue
+    }
     lines.unshift(stripped)
     expectedRow = cursor.startPosition.row
     cursor = cursor.previousNamedSibling
@@ -202,6 +265,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     const f = { ...DEFAULT_FIELDS, ...spec.fields }
 
     if (spec.transparent?.includes(child.type)) {
+      if (spec.skipNode?.(child)) continue
       walk(child, ctx, parent)
       continue
     }
@@ -287,10 +351,13 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
 /**
  * A doc comment to a doc block, in the spelling this language uses.
  *
- * C# is XML, not Markdown, and treating it as prose printed every tag. It is
- * also the only one here whose comment carries parameter and exception
+ * C# is XML and Java is HTML, and treating either as prose printed every tag.
+ * C# is also the only one here whose comment carries parameter and exception
  * documentation inline, so those are lifted onto the signature the way
  * Python's NumPy sections already are.
+ *
+ * The dialect is declared on the spec rather than tested for by grammar name,
+ * so adding a port that documents in markup is a field rather than a branch.
  */
 function docFor(
   raw: string | undefined,
@@ -298,8 +365,13 @@ function docFor(
   signatures: Signature[],
 ): DocBlock | undefined {
   if (!raw) return undefined
-  const { doc, params, returnsDoc, raises } =
-    spec.grammar === 'csharp' ? parseXmlDoc(raw) : parseMarkdownDocFull(raw, spec.grammar)
+  const parse =
+    spec.docDialect === 'xml'
+      ? parseXmlDoc
+      : spec.docDialect === 'javadoc'
+        ? parseJavadoc
+        : (text: string) => parseMarkdownDocFull(text, spec.grammar)
+  const { doc, params, returnsDoc, raises } = parse(raw)
 
   const sig = signatures[0]
   if (sig) {

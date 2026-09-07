@@ -8,41 +8,81 @@ sidebar:
 tableOfContents: true
 ---
 
-A command that changes tmux's state — new window, split, send a keystroke —
-answers as soon as tmux has accepted it, not once whatever it triggered has
-actually happened. [Pane interaction](../pane-interaction/#waiting-for-something-to-finish)
-covers the specific, common case of that: waiting for text to show up in a
-pane. This page is the more general version — waiting for *any* condition to
-become true — and the one mechanism that isn't polling at all: tmux's own
-`wait-for` signal channel, which every port reaches in some form.
+After sending input or starting a process, wait for the state your next step
+requires. [Pane
+interaction](../pane-interaction/#waiting-for-something-to-finish) covers
+waiting for screen text. This page covers arbitrary conditions and tmux's named
+`wait-for` signal channels.
 
 ## Polling a condition
 
-The shape is always the same: call a check, and if it isn't true yet, wait a
-short interval and call it again, until it's true or a deadline passes. Some
-ports ship this as a reusable helper; most of the ones that do restrict it to
-their test-support surface, because it's a fixture's problem far more often
-than a production program's:
+Polling checks a condition repeatedly until it succeeds or a deadline expires.
+The helpers below expose an interval and timeout; several live in test-support
+packages:
 
-| Port | Helper | Where it lives |
-|------|--------|-----------------|
-| Python | `libtmux.test.retry_until(fn, seconds=, interval=)` | `libtmux.test` — ships in the same package, but under the test-support module; raises `WaitTimeout` |
-| TypeScript | `connectedServer.waitFor(matches, options)` | the public library itself — but only on a control-mode connection ([Control mode vs one-shot](/concepts/transports/)), and the condition is a predicate over a whole `ServerSnapshot`, not a boolean thunk |
-| Go | `tmuxtest.WaitFor(ctx, interval, condition)` | `tmuxtest`, a separate test-support package from `tmux` |
-| Rust | `libtmux::test::retry_until(within, condition)` | `libtmux::test`, gated behind the `test-support` Cargo feature — an explicit opt-in, not just a namespace |
-| Java | — | not found in the shipped library; a package-private `Await.until(...)` exists only inside the `integration-tests` module, which downstream code cannot depend on |
-| .NET | `LibTmux.Testing.TmuxWait.UntilAsync(probe, timeout, interval)` | `LibTmux.Testing`, part of the same shipped `LibTmux` package |
-| C++ | — | no generic condition-poll helper found in the public library; a `wait_until` exists only in the private `testing` component, for waiting on a spawned child process, not on tmux state |
-| Swift | — | a `waitUntil` helper exists only inside the test target's own support code, not shipped |
+### Python
 
-Reading down that table: five ports ship *something*, and four of those five
-mark it as test-support rather than production API — Python, Rust, and Go by
-namespace or feature flag, .NET by putting it under `LibTmux.Testing` in the
-same package. TypeScript's `waitFor` is the one genuine exception: it's part
-of the ordinary public surface, not a test helper, because it answers a
-different question — "has the *server* reached this state" rather than "has
-this boolean become true" — and it needs a live connection to do it safely
-(subscribe first, then read, so a change landing in between isn't missed).
+**Helper:** `libtmux.test.retry_until(fn, seconds=, interval=)`
+
+**Where it lives:** The `libtmux.test` module in the main package; raises
+`WaitTimeout`.
+
+### TypeScript
+
+**Helper:** `connectedServer.waitFor(matches, options)`
+
+**Where it lives:** The public control-connection API. Tests a predicate over
+`ServerSnapshot`; see [Control mode vs one-shot](/concepts/transports/).
+
+### Go
+
+**Helper:** `tmuxtest.WaitFor(ctx, interval, condition)`
+
+**Where it lives:** `tmuxtest`, a separate test-support package from `tmux`
+
+### Rust
+
+**Helper:** `libtmux::test::retry_until(within, condition)`
+
+**Where it lives:** `libtmux::test`, enabled with the `test-support` Cargo
+feature.
+
+### Java
+
+**Helper:** Not listed.
+
+**Where it lives:** not found in the shipped library; a package-private
+`Await.until(...)` exists only inside the `integration-tests` module, which
+downstream code cannot depend on
+
+### .NET
+
+**Helper:** `LibTmux.Testing.TmuxWait.UntilAsync(probe, timeout, interval)`
+
+**Where it lives:** `LibTmux.Testing`, part of the same shipped `LibTmux`
+package
+
+### C++
+
+**Helper:** Not listed.
+
+**Where it lives:** no generic condition-poll helper found in the public
+library; a `wait_until` exists only in the private `testing` component, for
+waiting on a spawned child process, not on tmux state
+
+### Swift
+
+**Helper:** Not listed.
+
+**Where it lives:** a `waitUntil` helper exists only inside the test target's
+own support code, not shipped
+
+### Examples
+
+Python, Rust, Go, and .NET provide general polling helpers in their test-support
+APIs. TypeScript's public `waitFor` instead waits on a server-snapshot predicate
+through a control connection. It subscribes before reading so it does not miss a
+change between those steps.
 
 ```python
 def is_window_up(pane, name):
@@ -85,26 +125,23 @@ await LibTmux.Testing.TmuxWait.UntilAsync(
     TimeSpan.FromMilliseconds(50));
 ```
 
-Java, C++, and Swift have no shipped equivalent to reach for here: the
-pattern is the same one written by hand — a loop, a check, a `sleep`, a
-deadline — that [Pane interaction](../pane-interaction/#waiting-for-something-to-finish)
-already shows Python writing out before `retry_until` covered the generic
-case.
+For Java, C++, and Swift, this page lists no public arbitrary-condition polling
+helper. Use a loop with a deadline and interval if a more specific wait API does
+not fit; [Pane
+interaction](../pane-interaction/#waiting-for-something-to-finish) covers output
+waits.
 
 ## tmux's own wait-for channel
 
-Polling asks tmux the same question over and over. `wait-for` asks tmux to
-*tell you* once, by having one command signal a named channel and another
-block until it's signalled — no repeated round trips, and no interval to
-tune. It's tmux's own primitive (`wait-for -S <channel>` to signal,
-`wait-for <channel>` to block), not something any port invented, and every
-one of the eight reaches it in some form:
+Use `tmux wait-for -S <channel>` to signal and `tmux wait-for <channel>` to
+block until signalled. This avoids repeated screen captures when the command can
+announce its own completion:
 
 | Port | Signal | Wait |
 |------|--------|------|
 | Python | `server.wait_for(channel, set_flag=True)` | `server.wait_for(channel)` |
-| TypeScript | not exposed as public API — used only inside the test-server's own startup handshake | — |
-| Go | `server.WaitFor(ctx, tmux.WaitForRequest{Channel: name, Mode: tmux.WaitForModeSignal})` | `tmux.WaitForRequest{Channel: name}` (the zero-value `Mode` waits) |
+| TypeScript | not exposed as public API: used only inside the test-server's own startup handshake | - |
+| Go | `server.WaitFor(ctx, tmux.WaitForRequest{Channel: name, Mode: tmux.WaitForModeSignal})` | `tmux.WaitForRequest{Channel: name}` (the zero-value `WaitForRequest.Mode` waits) |
 | Rust | `server.signal_channel(name).await?` | `server.wait_for_channel(name, timeout).await?` → `ChannelWait::Signalled` or `TimedOut` |
 | Java | `server.channel(name).signal()` | `server.channel(name).await(timeout)` → a `WakeReason`, never silently "success" |
 | .NET | `server.OpenWaitChannel(name)` returns a `TmuxWaitChannel`; signalling is the same request with a different mode | `await using` the channel, then `WaitAsync(budget)` |
@@ -148,26 +185,15 @@ try await server.signal("built")
 try await server.wait(for: "built")
 ```
 
-A signal sent before anyone is waiting is not lost — tmux latches it, so the
-next wait on that channel returns immediately. This is why the pattern shown
-above (signal, then wait) is safe even though it looks backwards: the whole
-point of a channel is that the two calls don't need to race each other.
-Whoever is *waiting* wants the pattern the other way round — start the wait,
-then run the command that signals it — but that's the same latch working in
-your favor either way, not something you need to sequence carefully.
+tmux remembers a signal sent before a waiter starts. The next wait on that
+channel returns immediately, so completion is not lost when the command finishes
+first.
 
-Two ports go further and turn the naive version of this into a real
-guardrail rather than leaving it as a footgun. tmux's own `wait-for` exits
-successfully both when the channel was genuinely signalled and when the
-*server itself* went away out from under the waiter — a dead server makes
-tmux's client exit zero, indistinguishable from a real signal, if nothing
-checks further. Java's `WakeReason` and Swift's `wait(for:)` (which compares
-the server's process ID before and after) both refuse to conflate the two;
-plain `wait-for` output alone cannot tell them apart.
+A raw `wait-for` client can exit zero when the server dies, as well as when the
+channel is signalled. Java's `WakeReason` and Swift's `wait(for:)` distinguish
+server loss from a signal; Swift checks the server PID before and after the
+wait.
 
-Java's `Channel` documents a second trap the others don't call out as
-directly: a signal sent when nobody is waiting is remembered and satisfies
-the *next* wait, possibly from an unrelated later run — so a channel's
-history isn't yours alone unless you `drain()` it first to start from a
-known state, or otherwise pick a name specific enough that two unrelated
-pieces of work never collide on it.
+Use a channel name specific to the task, or clear an old signal with Java's
+`drain()` when appropriate. A remembered signal can otherwise satisfy an
+unrelated later wait.

@@ -1,0 +1,56 @@
+---
+import type { PagePortLink } from '../lib/page-port-links'
+
+interface Props {
+  entries: PagePortLink[]
+  portSlug?: string
+}
+const { entries, portSlug } = Astro.props
+const current = entries.find((entry) => entry.port === portSlug)
+---
+
+<details data-page-port-switcher>
+  {/*
+    The label is the language this page is in, which is the useful half of the
+    answer. On its own it was ambiguous to the point of being wrong — a chip
+    reading "Go" in the corner of a page is a verb before it is a language —
+    so it carries a mark and a caret and reads as a picker.
+  */}
+  <summary
+    class="topnav-chip page-port-switcher__summary cursor-pointer list-none text-sm"
+    aria-label="This page in other programming languages"
+  >
+    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+      <circle cx="8" cy="8" r="6.25" />
+      <path d="M1.9 6.1h12.2M1.9 9.9h12.2M8 1.75c1.7 1.9 2.5 4 2.5 6.25S9.7 12.35 8 14.25C6.3 12.35 5.5 10.25 5.5 8S6.3 3.65 8 1.75Z" />
+    </svg>
+    <span>{current?.name ?? 'In other ports'}</span>
+    <svg class="page-port-switcher__caret" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+      <path d="M4 6.5 8 10.5l4-4" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </summary>
+  <ul class="absolute right-0 z-50 mt-1 w-64 max-w-[calc(100vw-2rem)] rounded border border-edge bg-surface py-1 shadow-lg">
+    {entries.map((entry) => (
+      <li>
+        {entry.links.length ? entry.links.map((link) => (
+          <a
+            class="flex items-baseline justify-between gap-3 px-3 py-1.5 text-sm hover:bg-edge/30"
+            href={link.href}
+            aria-current={entry.port === portSlug ? 'page' : undefined}
+          >
+            <span class:list={[entry.port === portSlug && 'font-semibold']}>{entry.name}</span>
+            {entry.links.length > 1 && <span class="text-xs text-muted">{link.label}</span>}
+          </a>
+        )) : (
+          <span
+            class="flex items-baseline justify-between gap-3 px-3 py-1.5 text-sm text-muted"
+            aria-disabled="true"
+          >
+            <span>{entry.name}</span>
+            <span class="text-xs">Unavailable</span>
+          </span>
+        )}
+      </li>
+    ))}
+  </ul>
+</details>

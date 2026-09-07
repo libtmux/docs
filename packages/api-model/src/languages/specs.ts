@@ -47,6 +47,11 @@ export const TYPESCRIPT: LanguageSpec = {
     method_definition: 'method',
     method_signature: 'method',
     function_declaration: 'function',
+    // An overload set declares each form separately and documents the first,
+    // then writes an implementation signature TypeScript hides from callers.
+    // Only the implementation was extracted, so `splitSize` reached the page
+    // with the one signature it cannot be called with, and no prose at all.
+    function_signature: 'function',
     public_field_definition: 'attribute',
     property_signature: 'property',
     type_alias_declaration: 'typealias',
@@ -59,11 +64,27 @@ export const TYPESCRIPT: LanguageSpec = {
   commentTypes: ['comment'],
   stripDoc: stripBlockDoc,
   modifiers: { static: 'static', abstract: 'abstract', async: 'async', readonly: 'readonly', private: 'private' },
+  // TypeScript was the only port with no visibility test, so the reference
+  // published module-private declarations as public API. A declaration whose
+  // parent is the file itself was not exported; anything else reached here is
+  // a member of something that was.
+  //
+  // Only functions. A module-private *type* is still named by the public
+  // signatures that use it — `Pane.format` is a `PaneRow` — and dropping
+  // those cost 472 cross-references, which is a worse reference than one
+  // carrying a page for a shape a caller cannot import. Exporting them is the
+  // port's decision to make. A private function is named by nothing.
+  isExported: (node) =>
+    node.parent?.type !== 'program' ||
+    (node.type !== 'function_declaration' && node.type !== 'function_signature'),
   fields: { returns: 'return_type' },
 }
 
 export const RUST: LanguageSpec = {
   grammar: 'rust',
+  // `class` is only ever `impl_item` here: Rust has no other construct that
+  // maps to it, so the kind is what identifies an extension block.
+  extensionKind: 'class',
   containers: {
     struct_item: 'struct',
     enum_item: 'enum',
@@ -93,6 +114,13 @@ export const RUST: LanguageSpec = {
     'enum_variant_list',
   ],
   commentTypes: ['line_comment', 'block_comment'],
+  attributeTypes: ['attribute_item'],
+  // A module compiled only for tests is not API. Rust keeps its unit tests
+  // beside the code they exercise, so this is the whole of `mod tests`.
+  skipNode: (node) =>
+    node.type === 'mod_item' &&
+    node.previousNamedSibling?.type === 'attribute_item' &&
+    /#\[\s*cfg\s*\(\s*test\s*\)\s*\]/.test(node.previousNamedSibling.text),
   stripDoc: stripSlashDoc,
   modifiers: { async: 'async', unsafe: 'unsafe', 'pub(crate)': 'private' },
   // `impl Pane { … }` names the type it extends in `type`, not `name`. The
@@ -122,10 +150,15 @@ export const RUST: LanguageSpec = {
   // Session` either, for the same reason: a variant is as public as its enum,
   // and there is no syntax to say otherwise. Adding `enum_variant` to the
   // members map changed nothing at all until this line changed with it.
+  //
+  // `pub(crate)`, `pub(super)` and `pub(in path)` are all visibility modifiers
+  // and none of them is public: 110 of libtmux-rs's top-level symbols are
+  // restricted that way, and `pub(crate) struct RequestId` had a page saying
+  // it was part of the API. rustdoc's default shows what is `pub`.
   isExported: (node) =>
     node.type === 'impl_item' ||
     node.type === 'enum_variant' ||
-    node.children.some((c) => c?.type === 'visibility_modifier'),
+    node.children.some((c) => c?.type === 'visibility_modifier' && c.text.trim() === 'pub'),
   fields: { returns: 'return_type' },
 }
 
@@ -164,6 +197,7 @@ export const GO: LanguageSpec = {
 
 export const JAVA: LanguageSpec = {
   grammar: 'java',
+  docDialect: 'javadoc',
   containers: {
     class_declaration: 'class',
     interface_declaration: 'interface',
@@ -185,6 +219,7 @@ export const JAVA: LanguageSpec = {
 
 export const CSHARP: LanguageSpec = {
   grammar: 'csharp',
+  docDialect: 'xml',
   containers: {
     class_declaration: 'class',
     interface_declaration: 'interface',
@@ -216,9 +251,14 @@ export const CSHARP: LanguageSpec = {
   modifiers: { static: 'static', abstract: 'abstract', async: 'async', private: 'private', readonly: 'readonly' },
   // An enum member carries no access modifier — it is as public as its enum —
   // so the modifier test rejected every one of them.
+  // `internal` is not public API: the compiler refuses to name an internal
+  // type in a public signature, so nothing a caller can reach mentions one.
+  // Accepting it published 100 of libtmux-dotnet's implementation types —
+  // `FormatCatalog`, `PsmuxBinaryTrust`, `Utf8BackslashDecoder` — as though a
+  // consumer could use them.
   isExported: (node) =>
     node.type === 'enum_member_declaration' ||
-    node.children.some((c) => c?.type === 'modifier' && /\b(public|protected|internal)\b/.test(c.text)),
+    node.children.some((c) => c?.type === 'modifier' && /\b(public|protected)\b/.test(c.text)),
   fields: { returns: 'type' },
 }
 

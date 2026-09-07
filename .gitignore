@@ -15,3 +15,8 @@ site/src/content/api/
 
 # Content-addressed cache of assembled shell builds (scripts/build-site.sh).
 .build-cache/
+
+# `scripts/check-visual.mjs` writes one of these beside a baseline when a
+# comparison fails, and never removes it. Committed, they outlive the failure
+# they document and read as a difference that is still there.
+site/test/baselines/*.diff.png

@@ -200,10 +200,10 @@ export function decideMention(
 
   const link = (port: string, res: ReturnType<Resolver['resolve']>): MentionDecision | undefined => {
     if (res.how === 'federated') {
-      return { kind: 'link', port, href: res.href, title: `${text} — ${res.project}`, external: true }
+      return { kind: 'link', port, href: res.href, title: `${text}: ${res.project}`, external: true }
     }
     if (res.how === 'module-index') {
-      return { kind: 'link', port, href: `/reference/${port}/#${res.module}`, title: `${res.module} — module`, external: false }
+      return { kind: 'link', port, href: `/reference/${port}/#${res.module}`, title: `${res.module}: module`, external: false }
     }
     // Every outcome that carries a symbol, not just the two most common.
     // `module` and `chained` resolve to a real symbol too — dropping them
@@ -215,7 +215,7 @@ export function decideMention(
         kind: 'link',
         port,
         href: hrefFor(port, model, res.symbol),
-        title: `${res.symbol.publicId ?? res.symbol.id} — ${PORT_NAME[port] ?? port}`,
+        title: `${res.symbol.publicId ?? res.symbol.id}: ${PORT_NAME[port] ?? port}`,
         external: false,
       }
     }

@@ -105,6 +105,14 @@ never the bare `<slug>/*` — because the called workflow runs
 widens the delete to the port's whole tree, wiping every previously
 published version of it on the next deploy.
 
+Native HTML and CSS use the shell assets under the default locale. Both
+`build-site.sh` and the reusable publish workflow normalize older
+`/_shell/` URLs before publication. Callers pin the reusable workflow to a
+commit; publishing this repository alone does not update those callers.
+The maintainer must update the workflow pin to a revision containing this
+normalization before republishing native documentation. Keep any docs
+checkout pin at the same revision as the reusable workflow.
+
 ## Checklist summary
 
 - [ ] `ports.ts`: new `Port` entry, `referenceMode`/`renderer` decided

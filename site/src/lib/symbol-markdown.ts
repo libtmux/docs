@@ -60,7 +60,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (params.some((p) => p.doc)) {
     out.push('## Parameters', '')
     for (const p of params) {
-      out.push(`- \`${p.name}\`${p.type ? ` (${p.type})` : ''}${p.doc ? ` — ${p.doc}` : ''}`)
+      out.push(`- \`${p.name}\`${p.type ? ` (${p.type})` : ''}${p.doc ? `: ${p.doc}` : ''}`)
     }
     out.push('')
   }
@@ -70,7 +70,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
 
   if (sig0?.raises?.length) {
     out.push('## Raises', '')
-    for (const r of sig0.raises) out.push(`- \`${r.type}\`${r.doc ? ` — ${r.doc}` : ''}`)
+    for (const r of sig0.raises) out.push(`- \`${r.type}\`${r.doc ? `: ${r.doc}` : ''}`)
     out.push('')
   }
 
@@ -84,7 +84,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (members.length) {
     out.push('## Members', '')
     for (const m of members) {
-      out.push(`- \`${m.name}\` (${m.kind})${m.doc?.summary ? ` — ${m.doc.summary}` : ''}`)
+      out.push(`- \`${m.name}\` (${m.kind})${m.doc?.summary ? `: ${m.doc.summary}` : ''}`)
     }
     out.push('')
   }

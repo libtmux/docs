@@ -1,7 +1,6 @@
 ---
 import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
-import { conceptsFor } from '@libtmux/api-model'
-import { PORT_NAME, mentionsOf, referenceHref } from '../../lib/api-models'
+import { mentionsOf, referenceAlternatives } from '../../lib/api-models'
 import { withRoot } from '../../lib/site-root'
 import { highlight } from '../../lib/highlight'
 import ApiBadge from './ApiBadge.astro'
@@ -68,26 +67,23 @@ const DOMAIN: Record<string, string> = { py: 'py', ts: 'js', cxx: 'cpp' }
 const domain = port ? (DOMAIN[port] ?? 'std') : 'py'
 
 /**
- * The same operation in the other seven ports.
+ * An absent reason, split so its backticked symbol names render as code.
  *
- * Only for symbols the concept map names, which is a short hand-maintained
- * list: nothing in the source says `capture_pane` and `capture` are the same
- * thing, and name similarity would not prove it.
+ * The reason names symbols in another port, the way the rest of the
+ * reference writes them, and rendering the string as-is printed the
+ * backticks. `ApiDoc` is the wrong tool: it resolves a name against the
+ * page's own port, and these names are deliberately from another one.
+ *
+ * A frontmatter function rather than an expression in the template. A regex
+ * literal in the markup body parses as JSX, and `astro check` read the `<`
+ * that never came as an unclosed tag through to the end of the file.
  */
-const concepts = port ? conceptsFor(port, anchor) : []
-const elsewhere = concepts.map((c) => ({
-  label: c.label,
-  ports: Object.keys(PORT_NAME)
-    .filter((p) => p !== port)
-    .map((p) => ({
-      port: p,
-      name: PORT_NAME[p] ?? p,
-      publicId: c.symbols[p],
-      href: c.symbols[p] ? referenceHref(p, c.symbols[p]) : undefined,
-      absent: c.absent?.[p],
-    }))
-    .filter((e) => e.publicId || e.absent),
-}))
+const absentParts = (text?: string) => (text ?? '').split(/`([^`]+)`/)
+
+const elsewhere = port ? referenceAlternatives(port, anchor).map((group) => ({
+  ...group,
+  ports: group.ports.filter((entry) => entry.port !== port),
+})) : []
 
 const inheritedHref = symbol.inheritedFrom
   ? index.resolve(symbol.inheritedFrom, 'class')?.href
@@ -637,7 +633,7 @@ const hasBody =
       elsewhere.map((c) => (
         <details class="api-elsewhere">
           <summary>
-            In other languages <span class="api-elsewhere-label">{c.label}</span>
+            In other ports <span class="api-elsewhere-label">{c.label}</span>
           </summary>
           <ul>
             {c.ports.map((e) => (
@@ -650,7 +646,11 @@ const hasBody =
                 ) : e.publicId ? (
                   <code>{e.publicId}</code>
                 ) : (
-                  <span class="api-elsewhere-absent">{e.absent}</span>
+                  <span class="api-elsewhere-absent">
+                    {absentParts(e.absent).map((part, i) =>
+                      i % 2 ? <code>{part}</code> : part,
+                    )}
+                  </span>
                 )}
               </li>
             ))}

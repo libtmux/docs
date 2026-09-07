@@ -10,56 +10,41 @@ tableOfContents: true
 
 ## Install tmux
 
-Every port's floor is tmux 3.2a — it's the oldest release all eight are
-tested against, so anything from there through whatever your package manager
-ships today will work. Confirm what you have:
+The common tmux baseline documented here is 3.2a. Individual features can
+require a newer release; check your port's compatibility notes. Confirm your
+installed version:
 
 ```console
 $ tmux -V
 ```
 
-If that prints something older than `tmux 3.2a`, or `tmux` isn't found at
-all, install a current one through your platform's package manager before
-going further — how to do that is outside libtmux's scope, since libtmux
-drives an existing tmux rather than bundling one.
+If `tmux` is missing or older than 3.2a, install a supported version with your
+platform's package manager. libtmux uses an installed tmux executable.
 
 ## Pick a port
 
-All eight ports drive the same tmux the same way underneath — the choice is
-your project's language, not a difference in what's possible. Use the port
-switcher at the top of any page, or jump straight to a landing page:
-[Python](/py/), [TypeScript](/ts/), [Rust](/rs/), [Go](/go/),
-[Java and Kotlin](/java/), [.NET](/dotnet/), [C++](/cxx/),
-[Swift](/swift/). If you're not sure yet,
-[Server, session, window, pane](/concepts/server-session-window-pane/) and
-[Control mode vs one-shot](/concepts/transports/) cover what's shared and
-what's worth knowing before you commit.
+Choose the port for your project's language: [Python](/py/), [TypeScript](/ts/),
+[Rust](/rs/), [Go](/go/), [Java and Kotlin](/java/), [.NET](/dotnet/),
+[C++](/cxx/), or [Swift](/swift/). [Server, session, window,
+pane](/concepts/server-session-window-pane/) explains the shared model, and
+[Control mode vs one-shot](/concepts/transports/) covers transport differences.
 
-Every port carries an `-alpha` prerelease tag today except Python, which is
-the long-established original the others are ports *of* — pin an exact
-version everywhere else, and expect the newer ports' APIs to still move.
+For a prerelease package, pin an exact version and check its release notes
+before upgrading. API availability and defaults can differ between ports.
 
 ## Run the smallest thing that proves it works
 
-Start a tmux session to connect to — in one terminal:
+Start a tmux session to connect to: in one terminal:
 
 ```console
 $ tmux new-session -s foo -n bar
 ```
 
-In a second terminal, install your port's package and run the round trip
-below: connect, get a pane, send it a command, and read back what printed.
-Python's block attaches to the `foo` session above; the rest create their
-own instead, so `foo` is never touched by anything but Python's — either
-way you'll see the same round trip happen. The install command is repeated
-as a comment on the first line of each block — it isn't part of the source
-being quoted, just this page naming it next to the code. Python's block is
-a live doctest, run against a real, isolated tmux session on every run of
-the test suite (`README.md` and `src/libtmux` are `pytest`'s `testpaths`,
-see `pyproject.toml`); every other block here is the same source
-[Attach and send keys](/examples/attach-and-send-keys/) quotes in full, or a
-shorter cut of it — see that page for exactly how each is checked, for the
-full version of any block trimmed here, and for the rest of that round trip.
+In a second terminal, install your port's package and run its example. The
+Python example uses the `foo` session above; the other examples create their own
+sessions. Installation commands appear in comments at the start of each block.
+[Attach and send keys](/examples/attach-and-send-keys/) provides the full
+examples, their source files, and their validation details.
 
 ```python
 # pip install libtmux
@@ -121,7 +106,7 @@ if err := pane.SendKeys(ctx, tmux.SendKeysRequest{Command: &command, Literal: tr
 use libtmux::Server;
 
 // TestServer is the isolated, disposable form of this used under `test-support`
-// for the port's own tests (see Testing with libtmux) — real code just calls
+// for the port's own tests (see Testing with libtmux): real code just calls
 // Server::new() directly, as below.
 let server = Server::new()?;
 let session = server.new_session("work").await?;
@@ -193,20 +178,15 @@ let lines = try await server.capture(pane)
 
 ## What just happened
 
-Connecting reaches the tmux server already running on the machine (or starts
-one) — nothing above draws a terminal of its own. Sending a command types it
-into the pane as if at a keyboard and, where the call takes one, an `enter`
-or `literal` argument decides whether it also presses Enter and whether tmux
-may read the text as one of its own key names instead of characters — see
-[Sending keys](../sending-keys/) for exactly how each port draws that line.
-Capturing reads the pane's visible screen back as a list of lines, top to
-bottom. That round trip — get a pane, send it something, read back what
-happened — is the shape nearly everything else in this documentation builds
-on.
+A server handle targets tmux without taking over your terminal. Creating a
+session starts the server if needed. Sending keys writes input to a pane; the
+method's Enter and literal-text options control how tmux interprets it. [Sending
+keys](../sending-keys/) explains those defaults. Capture methods read the pane's
+screen or a requested scrollback range.
 
 ## Where to go next
 
-- [Concepts](/concepts/) for the mental model behind what you just did —
+- [Concepts](/concepts/) for the mental model behind what you just did:
   the object hierarchy, how commands actually reach tmux, and how filtering
   works once you have more than one session to choose from.
 - [Attaching to tmux](../attaching-to-tmux/), [Sending keys](../sending-keys/),
@@ -215,4 +195,4 @@ on.
 - [Attach and send keys](/examples/attach-and-send-keys/) for the fully
   checked version of every block above, and how each one is verified.
 - Your port's own API reference (via the port switcher) once you're ready
-  to build something real.
+  to look up method details.

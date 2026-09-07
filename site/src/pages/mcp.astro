@@ -16,13 +16,16 @@ import { withPortRoot, withRoot } from '../lib/site-root'
 // All eight ship a server. The earlier hardcoded six predated checking:
 // libtmux-cxx has apps/mcp/ and libtmux-swift has Sources/LibTmuxMCP/, both
 // with a registered tool catalog — see /mcp/tools/ for what each registers.
-const toolCount = mcpTools.ports as Record<string, { tools: string[] }>
+const toolCount = mcpTools.ports as Record<string, { tools: string[]; wirePrefix: string }>
 // Read from the generated matrix rather than retyped into the prose: these
 // three numbers move whenever any port registers a tool, and a sentence is
 // the one place a stale number never surfaces as an error.
 const toolUniverse = (mcpTools.universe as string[]).length
 const coverage = mcpTools.coverage as Record<string, string[]>
 const universalTools = (mcpTools.universe as string[]).filter((t) => coverage[t].length === 8).length
+// Which ports prefix is a fact of the matrix too. Java dropped `tmux_` when it
+// converged on the shared vocabulary and this sentence still named it.
+const prefixed = PORTS.filter((p) => toolCount[p.slug]?.wirePrefix)
 const referenceTools = toolCount.py.tools.length
 const mcpPorts = PORTS
 ---
@@ -44,15 +47,14 @@ const mcpPorts = PORTS
 
     <h2 class="mt-10 text-xl font-semibold">Install</h2>
     <p class="mt-2 text-sm text-muted">
-      Pick your client, install method and scope. Every combination below is
-      rendered server-side, so the command you see is the command you get —
-      nothing is assembled in the browser.
+      Choose your client, install method and configuration scope, then run the
+      displayed command.
     </p>
     <div class="mt-4">
       <McpInstall />
     </div>
 
-    <h2 class="mt-12 text-xl font-semibold">Scope, and why it matters</h2>
+    <h2 class="mt-12 text-xl font-semibold">Configuration scope</h2>
     <p class="mt-3">
       Most clients distinguish a <strong>user</strong> scope, which follows you
       across every project, from a <strong>project</strong> scope committed
@@ -63,8 +65,8 @@ const mcpPorts = PORTS
 
     <h2 class="mt-12 text-xl font-semibold">Ports with an MCP server</h2>
     <p class="mt-3">
-      All eight ports ship one. The reference implementation is Python, whose
-      {referenceTools} tools are the set the others are measured against:
+      Each library below provides an MCP server. Python is the reference
+      implementation and registers {referenceTools} tools:
     </p>
     <ul class="mt-4 space-y-1">
       {
@@ -80,14 +82,14 @@ const mcpPorts = PORTS
       }
     </ul>
     <p class="mt-4 text-sm text-muted">
-      They do <em>not</em> agree on tool names. Across the eight servers,
-      {toolUniverse} distinct names are registered and {universalTools} exist in
-      all of them; Java and .NET prefix every tool with <code>tmux_</code> on
-      the wire. What each port
-      actually registers is on the
+      Tool availability and names vary by server. There are {toolUniverse}
+      distinct names, with {universalTools} registered in every port.{' '}
+      {prefixed.map((p) => p.name).join(' and ')}{' '}
+      {prefixed.length === 1 ? 'prefixes' : 'prefix'} tool names with{' '}
+      <code>tmux_</code>. Check the
       <a class="hover:underline" href={withRoot('/mcp/tools/')}>tool surface</a>
-      page, extracted from each port's own source. Symbol-level library parity
-      is a separate axis — see <a class="hover:underline" href={withRoot('/parity/')}>parity</a>.
+      before configuring an agent. For library API coverage, see
+      <a class="hover:underline" href={withRoot('/parity/')}>parity</a>.
     </p>
   </main>
 </BaseLayout>

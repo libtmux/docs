@@ -1,8 +1,10 @@
 ---
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { conceptsFor, moduleOf, modulesIn } from '@libtmux/api-model'
+import { conceptsFor, docSummaryText, moduleOf, modulesIn } from '@libtmux/api-model'
 import ApiEntry from '../../components/api/ApiEntry.astro'
 import ApiExampleTabs from '../../components/api/ApiExampleTabs.astro'
+import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
+import { pagePortsFor } from '../../lib/page-ports-for'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { withRoot } from '../../lib/site-root'
 import { API_MODELS, API_NAV, OWNER_KINDS, PORT_NAME, indexFor, ownersOf, pageSlug, referenceHref, topLevelTypesOf } from '../../lib/api-models'
@@ -120,6 +122,7 @@ const hrefFor = (s: ApiSymbol): string =>
  * every Python page after it resolved against nothing. `indexFor` now refuses
  * to cache a model with no symbols, which is the guard that makes this safe.
  */
+const pagePorts = await pagePortsFor(slug ? `reference/${slug}` : 'reference', model?.port)
 const index = indexFor(model ?? { port: 'py', extractor: '', symbols: [] }, hrefFor)
 
 /**
@@ -456,14 +459,18 @@ const title = owner
   title={title}
   description={
     owner
-      ? `${owner.doc?.summary ?? owner.name} — ${members.length} members, extracted from source.`
+      ? // The summary is written in this port's doc dialect, and a card, a
+        // meta tag and a JSON-LD blob all take a string: `{@link Pane}` and
+        // ``Server`` reached all three as markup.
+        owner.doc?.summary
+        ? docSummaryText(owner.doc.summary, model?.port)
+        : `${owner.publicId ?? owner.name} API documentation.`
       : model
-        ? `Every public symbol in libtmux for ${PORT_NAME[model.port] ?? model.port}: ${model.symbols.length}, extracted from source.`
-        : 'The libtmux API reference for every language, extracted from source and rendered through one set of components.'
+        ? `Types, methods, and functions in libtmux for ${PORT_NAME[model.port] ?? model.port}.`
+        : 'Types, methods, and functions in the libtmux language libraries.'
   }
   pagePath={slug ? `reference/${slug}` : 'reference'}
   noindex={true}
-  switcherPath=""
 >
   <!-- The content column is capped at 47rem, which is 752px — gp-sphinx
        renders 754 from Furo's `46em` against a 16.4px root. Uncapped it ran
@@ -562,12 +569,26 @@ const title = owner
            signature, a doc comment or prose, and without this the fragment
            had nothing to land on: the page was right and the scroll position
            was the top of it. -->
-      <h1
-        id={owner ? (owner.publicId ?? owner.id) : undefined}
-        class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight"
-      >
-        <SymbolName name={title} />
-      </h1>
+      {/*
+        The language control shares the title's row rather than taking one of
+        its own: it is a fact about this page, and a whole band above the
+        heading spent a section's worth of space saying it.
+      */}
+      <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+        <h1
+          id={owner ? (owner.publicId ?? owner.id) : undefined}
+          class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight"
+        >
+          <SymbolName name={title} />
+        </h1>
+        {
+          pagePorts.length > 0 && (
+            <div class="page-ports" data-pagefind-ignore="all">
+              <PagePortSwitcher entries={pagePorts} portSlug={model?.port} />
+            </div>
+          )
+        }
+      </div>
 
       {
         !owner && !model && (
@@ -678,21 +699,29 @@ const title = owner
                   </span>
                 </summary>
                 <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                  {/*
+                    The card is a div and only its name is the link. A summary
+                    carries cross-references, and an `a` inside an `a` is not
+                    parseable: the browser closed the card at the first nested
+                    link and left the description behind as the grid's next
+                    cell, so a type's prose sat beside the wrong card. The
+                    `::after` in `api-index-card` keeps the whole card
+                    clickable without nesting anything.
+                  */}
                   {mod.types.map((o) => (
-                    <a
-                      class="block rounded border border-slate-200 p-3 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800"
-                      href={hrefFor(o)}
-                    >
-                      <span class="font-mono font-semibold">{o.name}</span>
-                      <span class="ml-2 text-xs opacity-60">
-                        {model.symbols.filter((s) => s.parent === o.id).length} members
-                      </span>
+                    <div class="api-index-card rounded border border-slate-200 p-3 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800">
+                      <a class="api-index-card__link" href={hrefFor(o)}>
+                        <span class="font-mono font-semibold">{o.name}</span>
+                        <span class="ml-2 text-xs opacity-60">
+                          {model.symbols.filter((s) => s.parent === o.id).length} members
+                        </span>
+                      </a>
                       {o.doc?.summary && (
                         <p class="mt-1 text-sm opacity-80">
                           <ApiDoc text={o.doc.summary} index={index} context={o} citations={false} />
                         </p>
                       )}
-                    </a>
+                    </div>
                   ))}
                 </div>
                 {mod.free.length > 0 && (

@@ -66,22 +66,53 @@ This runs `astro check` for the site and Oxlint's type-check mode for the
 plain TypeScript packages. The theme also exposes `type-check:tsc` for a
 direct compiler check; it is separate from the root gate.
 
-Run the fast checks while iterating:
+Use the inner loop for cross-port mappings, native navigation, and native
+asset normalization:
 
 ```console
-$ pnpm run test:fast
+$ pnpm test:inner
 ```
 
-This skips assembly and output checks. Run the full gate for changes to
-rendering, reference extraction, links, or build behavior:
+Run every workspace source suite, lint, and generated mention/navigation
+freshness checks in the medium loop:
+
+```console
+$ pnpm test:medium
+```
+
+Run the outer loop before committing:
 
 ```console
 $ pnpm test
 ```
 
-`scripts/test-all.sh` defines the checks; `.github/workflows/test.yml`
-defines their CI environment. Report skipped checks explicitly. Missing port
-checkouts or a missing local server can leave checks unexercised.
+The outer loop adds type checks and starts its own Astro development server
+from current source. Browser checks cover prose, an MCP table, API equivalents,
+and phone dropdown placement at 1440, 768, and 390 pixels. The sampled renderer
+does not reuse `_site`. The runtime budgets are under 2, 10, and 60 seconds for inner,
+medium, and outer respectively; measure the complete pnpm command when
+changing a loop. `test:fast` aliases medium. The runner stops an over-budget
+loop and fails.
+
+Browser checks use Playwright's installed Chromium by default. To use local
+Chrome:
+
+```console
+$ LIBTMUX_DOCS_BROWSER_CHANNEL=chrome pnpm test
+```
+
+Keep the complete assembly, all output suites, link audits, source/model
+freshness, and full browser matrix in the publication audit:
+
+```console
+$ pnpm test:publication
+```
+
+This audit is not limited to 60 seconds. `scripts/test-all.sh` defines it;
+`.github/workflows/test.yml` runs it in CI. Report skipped checks explicitly.
+Missing port checkouts or a missing local server can leave publication
+checks unexercised. Development loops deliberately exclude assembled-output
+suites; they do not establish publication readiness.
 
 Add focused regression coverage for behavior changes and confirm that a new
 check fails when its intended invariant is broken. Root policy-guide edits
@@ -95,6 +126,26 @@ plugin. Reuse it for output assertions. The package's `vitest.config.ts`
 loads `src/test/setup.ts`, whose serializer normalizes only the Tailwind
 version banner. Preserve that setup; changes to selectors or CSS structure
 must remain visible in snapshots.
+
+### Links between ports and guides
+
+[`concepts.ts`](packages/api-model/src/concepts.ts) maps equivalent APIs by
+their public symbol IDs. Check behavior and scope in each port's source
+before adding a mapping. Record an absence when a port has no equivalent;
+similar names alone do not establish one. An overloaded page can belong to
+several concepts. The page dropdown and "In other ports" use these mappings,
+and tests require every mapped target to resolve.
+
+"Discussed in" comes from API mentions in guides, including tables and
+sections headed with a port name. After editing those mentions, regenerate
+the index:
+
+```console
+$ node scripts/gen-mentions.mjs
+```
+
+The publication audit checks index freshness, rendered links, navigation targets,
+and table layout at desktop, tablet, and phone widths.
 
 ## Building and previewing
 
@@ -121,7 +172,7 @@ $ ./scripts/serve.sh
 ```
 
 The server listens at `http://localhost:8080`. Leave it running in another
-terminal when running the full gate to exercise browser checks. Style parity
+terminal when running the publication audit to exercise browser checks. Style parity
 also requires the generated Sphinx pages; check the run's skip summary.
 
 ## Pull requests

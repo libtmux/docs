@@ -8,21 +8,17 @@ sidebar:
 tableOfContents: true
 ---
 
-[Server, session, window, pane](/concepts/server-session-window-pane/)
-covers the shape of the tree and what it means for a handle to be
-live-refreshing versus an immutable snapshot. This page is the practical
-side of that: the actual calls that move you from one level to another in
-each port, and the two questions that come up once you're holding more than
-one object — is this one *in* that collection, and are these two handles
-the *same* underlying tmux object.
+Use relationships to move between sessions, windows, and panes. [Server,
+session, window, pane](/concepts/server-session-window-pane/) explains the
+hierarchy and snapshot model. This page covers relationship calls, collection
+membership, and object identity.
 
 ## Down the hierarchy
 
-Every port gives you a way to list a level's children. Whether that costs a
-fresh tmux round trip or reads a snapshot already in memory is the sync/live
-vs. async/snapshot split [Server, session, window,
-pane](/concepts/server-session-window-pane/) already covers — the
-table below is only the call shape:
+List children through the parent object or a captured snapshot. Whether a read
+issues another tmux command depends on the API, independently of whether the
+call is async; see [Server, session, window,
+pane](/concepts/server-session-window-pane/).
 
 | Port | Server → sessions | Session → windows | Window → panes |
 |------|--------------------|--------------------|-----------------|
@@ -35,23 +31,65 @@ table below is only the call shape:
 | C++ | `server->sessions()` | `session->windows()` | `window->panes()` |
 | Swift | `server.sessions()`, or `snapshot.windows(of: session)` for windows/panes once you have a `Snapshot` | see previous column | see previous column |
 
-TypeScript's `session.windows` and `window.panes` are plain getters, not
-async calls: the one `await server.sessions()` reads the whole graph, and
-everything you reach from an object it returned is answered out of that
-already-loaded graph rather than a further tmux call — the same is true of
-`window.panes` in the table above. Rust additionally has a narrower
-`server.attached_sessions()`, scoped to sessions with a client attached —
-a real, separate method from the unscoped `sessions()` in the table, not a
-substitute for it.
+TypeScript's `session.windows` and `window.panes` read the graph loaded by
+`await server.sessions()` without additional tmux commands. Rust also provides
+`server.attached_sessions()` to list only sessions with an attached client.
+
+## All panes in a session
+
+Use a session-wide pane collection when the task spans several windows, such
+as finding a command or capturing output from every pane. A window linked to
+multiple sessions still refers to the same tmux panes. Check whether the API
+reads live state or traverses a captured graph before reusing its result.
+
+### Python
+
+`libtmux.Session.panes` runs a session-scoped `list-panes -s` read. Use it to
+list panes across the session's windows without manually listing each window.
+
+### TypeScript
+
+`session.Session.panes` returns a `Selection` from the session's captured
+graph. Reading it does not issue another tmux command; refresh the snapshot
+when you need newer state.
+
+### Rust
+
+`session.Session.panes` performs a live listing and returns a `Result` from
+the async call. Handle a command failure before using the returned panes.
+
+### Go
+
+`tmux.Session.Panes` reads captured relations without another tmux command.
+The relation must have been included in the read that produced the session;
+an uncaptured relation does not establish that the session has no panes.
+
+### .NET
+
+`LibTmux.Session.Panes` reads the session's captured relations. It does not
+issue a tmux command; an incomplete capture may lack the required relation.
+
+### C++
+
+`libtmux::Session::panes` runs a session-scoped `list-panes` command. Inspect
+the returned result before traversing the panes.
+
+### Swift
+
+`Snapshot.panes(of:)` accepts a session or a window. The session overload
+traverses the captured graph and deduplicates pane IDs without a tmux read.
+
+### Java
+
+Java has no direct session-wide pane member. Traverse `Session.windows()`
+and then `Window.panes()` in the captured relations. Deduplicate pane IDs
+when combining results from sessions that may share linked windows.
 
 ## Up the hierarchy
 
-The reverse direction — pane to window, window to session — is where ports
-diverge on cost even when the *name* looks the same. Some answer from data
-the handle already carries (no tmux call, ports where a snapshot loaded the
-whole graph); others make a fresh call every time (matching a live-refreshing
-handle's contract in general — see [Server, session, window,
-pane](/concepts/server-session-window-pane/)):
+Parent lookups may read captured data or query tmux again. Check the method's
+read and failure semantics; [Server, session, window,
+pane](/concepts/server-session-window-pane/) introduces that distinction:
 
 | Port | Pane → window | Window → session |
 |------|----------------|--------------------|
@@ -62,24 +100,16 @@ pane](/concepts/server-session-window-pane/)):
 | Java | `pane.window()` | `window.session()` |
 | .NET | `pane.Window` (property) | `window.Session` (property) |
 | C++ | `pane->window()` | `window->session()` |
-| Swift | `pane.windowID`, then look it up via `Snapshot` | not a per-window field — join through the snapshot instead |
+| Swift | `pane.windowID`, then look it up via `Snapshot` | not a per-window field: join through the snapshot instead |
 
-Go's and Rust's `bool`/`Option` results exist because a pane or window can
-outlive the parent it once had (the window was killed, the pane moved) —
-both let you ask "does this relationship still hold" without an exception
-for the ordinary case of a stale handle. .NET's `.Window` / `.Session`
-properties are synchronous because they're read from the same snapshot the
-handle was materialized with, the same reasoning as .NET's `.ActiveWindow` /
-`.ActivePane` below — they throw `IncompleteSnapshotException` rather than
-making a surprise tmux call if that handle wasn't captured with enough
-context to answer.
+Go and Rust return optional relationship results. .NET's `.Window`, `.Session`,
+`.ActiveWindow`, and `.ActivePane` read captured state synchronously and throw
+`IncompleteSnapshotException` if that capture lacks the required context.
 
 ## One walk, down and back up
 
-The same round trip in each port: take the first session, walk down to a
-window and a pane, then walk back up and check the object you land on is the
-one you started from — using each port's own answer to "is this the same
-object?" from the table below.
+Start with a session, traverse to a window and pane, then look up the parent and
+compare its identity with the starting object:
 
 ```python
 session = server.sessions[0]
@@ -173,16 +203,12 @@ active child directly rather than making you filter a list:
 | Java | `session.activeWindow()` → `Optional<Window>` | `window.activePane()` → `Optional<Pane>` |
 | .NET | `session.ActiveWindow` (property) | `window.ActivePane` (property) |
 | C++ | `session->active_window()` | `window->active_pane()` |
-| Swift | filter for `isActive` on `snapshot.windows(of: session)` — `Window` carries its own `window_active` flag rather than the session exposing an accessor | same pattern, on the pane's own active flag |
+| Swift | filter for `isActive` on `snapshot.windows(of: session)`: `Window` carries its own `window_active` flag rather than the session exposing an accessor | same pattern, on the pane's own active flag |
 
-Swift's shape here is the one genuinely different design: every other port
-puts the "give me the active one" behavior on the *parent* (a method or
-property on `Session`/`Window`); Swift puts an `isActive` boolean on the
-*child* instead and leaves finding it to a snapshot filter. Both answer the
-same question — [Format-token fields](../format-tokens/) covers the
-equivalent field-level view (`window_active`, `pane_active`, and friends)
-that every port's active-child *and* plain-listing paths ultimately read
-from.
+In Swift, filter snapshot children by `isActive`. Other ports expose an
+active-child method or property on the parent. [Format-token
+fields](../format-tokens/) describes the underlying `window_active` and
+`pane_active` fields.
 
 ## Is it in that collection?
 
@@ -192,45 +218,33 @@ array, slice, or list:
 
 - **Python** overloads `in` directly on its `QueryList`: `window in
   session.windows`, `pane in window.panes`.
-- **Java**, **C++**, and **.NET** get back a plain `List`/`std::vector`/
-  `IReadOnlyList` and use whatever that language's standard library offers
-  for it (`.contains()`, a linear search) — a libtmux-specific membership
-  method is not part of what's verified for any of them.
-- **TypeScript**'s `session.windows` and similar are typed `Selection<T>`,
-  not a plain array — it's iterable, but whether it exposes its own
-  `.includes()`-shaped membership check wasn't verified for this page;
-  spreading it into an array first (`[...session.windows]`) is the safe
-  fallback either way.
-- **Go** and **Rust** are the same, over a `[]Window` slice or `Vec<Window>`
-  — Go has no built-in generic `Contains` for a slice at all; reach for
-  `slices.Contains` (stdlib, Go 1.21+) or compare `.ID()` values yourself.
+- **Java**, **C++**, and **.NET** return standard collections. Use their
+  standard membership operations with the identity comparison appropriate to the
+  port.
+- **TypeScript** returns iterable `Selection<T>` objects. Iterate over the
+  selection and compare IDs, or spread it into an array for standard array
+  operations.
+- **Go** and **Rust** return slices or vectors. Iterate and compare object IDs
+  when testing membership by tmux identity.
 
 ## Is this the same object?
 
-Two handles can describe the same tmux window without being the same Python
-object, the same Go value, or (per the trap below) comparing equal by
-default — so "same underlying object" is answered by ID, and ports differ in
-whether they've wired that into `==`/`.equals()` for you or leave it to you
-to compare the ID field explicitly:
+Compare IDs to determine whether two handles refer to the same tmux object on
+the same server. Equality operators vary by port:
 
 | Port | How you check |
 |------|----------------|
 | Python | `window.window_id == other.window_id` (or `pane.pane_id == ...`) |
 | TypeScript | compare `.id` |
-| Go | `pane.ID() == other.ID()` — `PaneID` is a plain, `==`-comparable `string` |
-| Rust | `pane.id() == other.id()` — verified from the port's own doctests, not struct equality |
-| Java | `pane.equals(other)` — overridden to compare server identity plus pane ID |
-| .NET | `pane.Equals(other)` — overridden to compare a generation counter plus ID |
-| C++ | `pane == other` — `operator==` is defined directly on `Session`/`Window`/`Pane` |
-| Swift | compare `.id` explicitly — see the trap below |
+| Go | `pane.ID() == other.ID()`: `PaneID` is a plain, `==`-comparable `string` |
+| Rust | `pane.id() == other.id()`: verified from the port's own doctests, not struct equality |
+| Java | `pane.equals(other)`: overridden to compare server identity plus pane ID |
+| .NET | `pane.Equals(other)`: overridden to compare a generation counter plus ID |
+| C++ | `pane == other`: `operator==` is defined directly on `Session`/`Window`/`Pane` |
+| Swift | compare `.id` for identity; see the equality note below |
 
-**The Swift trap.** `Session`, `Window`, and `Pane` are plain
-`Hashable`/`Codable` structs in Swift with no custom `==` or `hash(into:)`
-of their own, which means Swift's compiler-synthesized equality compares
-*every* stored property — width, height, the current command, all of it —
-not just the ID. Two reads of what is genuinely the same tmux pane, taken a
-moment apart, will compare `!=` the instant anything about that pane
-changes, even though `pane1.id == pane2.id` is still true. Java, .NET, and
-C++ deliberately override equality to mean identity; Swift does not, so
-`==` there answers "identical snapshot," not "same object" — compare `.id`
-when that's the question you mean to ask.
+**Swift's equality compares captured state.** Compiler-synthesized equality for
+`Session`, `Window`, and `Pane` compares every stored property, including
+dimensions and current command. Two reads can compare unequal even when they
+describe the same tmux object. Compare `.id` when checking identity on the same
+server.

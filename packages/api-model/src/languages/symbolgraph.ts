@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import type { ApiSymbol, Modifier, Param, Signature, SymbolKind } from '../model.ts'
+import { parseMarkdownDocFull } from '../doc/markdown.ts'
 
 /**
  * Swift from its compiler's own symbol graph, not from tree-sitter.
@@ -174,19 +175,19 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
       const id = path.join('.')
       const doc = raw.docComment?.lines.map((l) => l.text).join('\n').trim()
       const signature = signatureOf(raw)
-      const [summary, ...body] = (doc ?? '').split('\n\n')
+      // Swift doc comments are Markdown, and this used to split on the first
+      // blank line and keep the rest as one string — the same thing the spec
+      // extractor did before `parseMarkdownDocFull`, and with the same result:
+      // 76 fenced blocks never became examples and four reached the page as
+      // literal ``` fences inside a paragraph.
+      const parsed = doc ? parseMarkdownDocFull(doc, 'swift') : undefined
 
       const existing = byId.get(id)
       if (existing) {
         // An overload set. Keep every signature, and let the documented one
         // supply the prose — Swift's generated `==`/`!=` pairs carry none.
         if (signature) existing.signatures.push(signature)
-        if (doc && !existing.doc) {
-          existing.doc = {
-            summary: summary.replace(/\s+/g, ' ').trim(),
-            body: body.join('\n\n') || undefined,
-          }
-        }
+        if (parsed && !existing.doc) existing.doc = parsed.doc
         if (existing.signatures.length > 1 && !existing.modifiers.includes('overload')) {
           existing.modifiers.push('overload')
         }
@@ -202,7 +203,7 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
         parent: path.length > 1 ? path.slice(0, -1).join('.') : undefined,
         signatures: signature ? [signature] : [],
         type: signature ? undefined : fragmentText(raw.names.subHeading),
-        doc: doc ? { summary: summary.replace(/\s+/g, ' ').trim(), body: body.join('\n\n') || undefined } : undefined,
+        doc: parsed?.doc,
         extends: conformedNames(conformances, raw.identifier.precise),
         source: {
           file: (raw.location?.uri ?? '').replace(/^file:\/\//, ''),

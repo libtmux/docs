@@ -55,3 +55,18 @@ export function localeRoot(locale: string): string {
   const base = LOCALES_ROOT
   return locale === DEFAULT_LOCALE && !DEFAULT_LOCALE_PREFIXED ? `${base}/` : `${base}/${locale}/`
 }
+
+/** The page path below its build locale, including Astro's flat error page. */
+export function localeSourcePath(pathname: string, buildLocale: string): string {
+  const root = localeRoot(buildLocale)
+  const path = (pathname.startsWith(root) ? pathname.slice(root.length) : pathname)
+    .replace(/^\/+|\/+$/g, '')
+  return path.replace(/(^|\/)404$/, '$1404.html')
+}
+
+/** A locale page URL; HTML files keep their extension without a trailing slash. */
+export function localePageHref(locale: string, sourcePath: string): string {
+  const path = sourcePath.replace(/^\/+|\/+$/g, '')
+  const suffix = path && !path.endsWith('.html') ? '/' : ''
+  return `${localeRoot(locale)}${path}${suffix}`
+}

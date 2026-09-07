@@ -194,16 +194,13 @@ function parseDotnet(checkout) {
   return {
     available: true,
     ledgerFormat:
-      'Structured JSON, one row per Python public-API symbol, all pre-triaged: ' +
-      'destinationStatus is approved (has a C# destination) / excluded (deliberately ' +
-      'not carried, with a reason) / internalized (implemented, no public 1:1 destination).',
+      'JSON entries map Python public symbols to approved C# destinations, ' +
+      'exclusions with reasons, or internal implementations without a public equivalent.',
     ledgerPaths: [tildify(ledgerPath)],
     pythonRevision: ledger.sourceRevision ?? null,
     scopeNote:
-      'Scoped to public API surface only (python-public-api.json in the same ' +
-      'directory is the matching 626-symbol extraction) — no rows at all for ' +
-      "Python's _internal/_vendor modules. A module missing here is out of this " +
-      'ledger’s declared scope, not an omission.',
+      'Covers the public API extracted in python-public-api.json. ' +
+      "Python's _internal and _vendor modules are outside this ledger's scope.",
     portTally,
     byModule,
   }
@@ -264,18 +261,15 @@ function parseGo(checkout) {
   return {
     available: true,
     ledgerFormat:
-      'Structured JSON, one entry per Python symbol/branch (classes, methods, ' +
-      'fields, parameter branches, ...), each with a `source` file path and a ' +
-      '`proof` array citing a Go test function. PARITY.md: the manifest gate ' +
-      '"rejects... unproved entries" — checked here by resolving each citation, ' +
-      'not assumed.',
+      'JSON entries cover Python symbols and parameter branches. Each records ' +
+      'a source path and test-function citations, which this site checks for existence.',
     ledgerPaths: [tildify(manifestPath), tildify(join(checkout, 'PARITY.md'))],
     // No single Python git revision is recorded anywhere in this manifest — only
     // a sha256 digest per source file (source_digests). Surfaced in
     // revisionSkew.note (built from this field, not a hardcoded sentence) rather
     // than silently left null.
     pythonRevision: null,
-    pythonRevisionNote: 'records no single Python git revision — only a sha256 content digest per source file',
+    pythonRevisionNote: 'records SHA-256 digests per source file, without a shared Python Git revision',
     scopeNote: null,
     portTally,
     byModule,
@@ -380,30 +374,20 @@ function parseJava(checkout) {
   return {
     available: true,
     ledgerFormat:
-      'Two generated Markdown tables, no structured data file. ' +
-      `python-api.md (${rows.length} rows) catalogues Python’s public surface with ` +
-      'an intended Java disposition — by its own header, "not a record of what is ' +
-      `implemented here". test-map.md (${testMap.dataRows} rows) catalogues planned ` +
-      'contract tests, by its own header "a catalogue, not a status report": all ' +
-      'but a handful are status "planned parity", for a test class the ledger says ' +
-      'does not exist yet (checked here, not just quoted — see contractClassesFound ' +
-      'below).',
+      `python-api.md inventories ${rows.length} Python symbols; test-map.md ` +
+      `inventories ${testMap.dataRows} test cases. These Markdown tables describe ` +
+      'planned Java treatments and tests, rather than completed implementations.',
     ledgerPaths: [tildify(apiPath), tildify(testMapPath)],
     pythonRevision,
     scopeNote:
-      'Per-module rows below come from python-api.md only — test-map.md is keyed ' +
-      'by pytest node IDs and doctest chunks, not Python symbols, so it cannot be ' +
-      'bucketed by module; its own totals are reported once at the port level ' +
-      'instead: ' +
-      `${testMap.dataRows} rows, status counts ${JSON.stringify(testMap.statusCounts)}. ` +
-      `The ${testMap.statusCounts['deliberate Java correction'] ?? 0} rows status ` +
-      '"deliberate Java correction" are test-map.md’s own prose "defect decisions" ' +
-      '(2 decisions, 3 rows — Server.attached_sessions is cited under two evidence ' +
-      'keys) that the ledger says *are* implemented; each still cites a ' +
-      'PythonBehaviorParityTest method, the very class confirmed absent from the ' +
-      'checkout, so this script marks them "claimed" rather than upgrading them on ' +
-      'the strength of the status label alone. Folded into the port tally below, ' +
-      'not counted twice against python-api.md’s own module rows.',
+      'Module counts use python-api.md. test-map.md identifies pytest cases ' +
+      'and doctest chunks instead of symbols, so its counts are reported separately: ' +
+      `${testMap.dataRows} rows, with statuses ${JSON.stringify(testMap.statusCounts)}. ` +
+      `Its ${testMap.statusCounts['deliberate Java correction'] ?? 0} ` +
+      '"deliberate Java correction" rows assert implementation but cite methods ' +
+      'on the missing PythonBehaviorParityTest class. They count as claimed in ' +
+      'the port total only. Server.attached_sessions has two evidence entries, ' +
+      'so row counts can exceed the number of distinct corrections.',
     contractClassesFound: { PythonApiParityContract: apiContractFound, PythonBehaviorParityTest: behaviorContractExists },
     unparsedSourceEvidence: unparsed,
     portTally: (() => {
@@ -448,11 +432,9 @@ function parseSwift(checkout) {
   return {
     available: true,
     ledgerFormat:
-      'Structured JSON, Python-side extraction only: public surface, behavior ' +
-      'contracts, format fields, query contracts, source fingerprints. No field in ' +
-      'any of the five files records whether Swift has implemented a given symbol ' +
-      '— python-behavior-contracts.json’s `swiftAdaptation` (direct/adapted/' +
-      'consolidated) records a planned translation strategy, not completion.',
+      'JSON inventories Python APIs, behavior, formats, queries, and source ' +
+      'fingerprints. swiftAdaptation describes a planned translation strategy; ' +
+      'the files record no Swift implementation status.',
     ledgerPaths: [tildify(apiPath)],
     pythonRevision: api.pythonSource?.commit?.slice(0, 7) ?? null,
     pythonRevisionDescribe: api.pythonSource?.describe ?? null,
@@ -466,11 +448,9 @@ function parseSwift(checkout) {
     // actual surface.
     scopeNote:
       `${inheritedFieldRows} of this ledger's ${api.entries.length} entries ` +
-      "are kind \"inherited-dataclass-field\" — the same Python dataclass field " +
-      'counted again for every subclass that inherits it (libtmux.neo, almost ' +
-      'entirely), not that many distinct symbols. A module row where Swift’s ' +
-      "count runs several times another port's for the same file is this, not " +
-      'several times the actual surface.',
+      'are inherited dataclass fields, counted once for each inheriting subclass, ' +
+      'mostly in libtmux.neo. These repeated entries increase row counts without ' +
+      'increasing the number of distinct Python symbols.',
     portTally,
     byModule,
   }
@@ -499,15 +479,15 @@ function describeRevisionSkew(ports) {
     }
   }
   if (groups.size <= 1 && notes.length === 0) {
-    return 'Every port with a recorded Python revision pins the same one; no skew to report.'
+    return 'All recorded Python revisions match.'
   }
   const pinned = [...groups.entries()].map(
     ([label, slugs]) => `${slugs.join(' and ')} ${slugs.length === 1 ? 'pins' : 'pin'} ${label}`,
   )
   return (
-    'The ledgers are not pinned to the same Python revision: ' +
+    'Recorded baselines: ' +
     [...pinned, ...notes].join('; ') +
-    '. Comparing coverage across ports assumes a shared baseline that does not, in fact, exist.'
+    '. The ledgers do not establish a shared Python baseline for comparing coverage.'
   )
 }
 
@@ -542,9 +522,9 @@ function main() {
     // No generatedAt: every regen would otherwise diff on that line alone. The
     // revisions each ledger pins itself to are the meaningful "as of" markers.
     legend: {
-      testVerified: 'The cited test (file, for .NET; function, for Go) exists in that port’s checkout.',
-      claimed: 'An implementation or test is asserted, but the ledger cites nothing resolvable.',
-      unknown: 'The ledger disclaims implementation status for this row, or carries no status field at all.',
+      testVerified: 'The cited test file (.NET) or function (Go) exists. This does not mean the test was run.',
+      claimed: 'The ledger asserts an implementation or test without a resolvable citation.',
+      unknown: 'The ledger records no implementation status for this row.',
     },
     revisionSkew: {
       note: describeRevisionSkew(ports),

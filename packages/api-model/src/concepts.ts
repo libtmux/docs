@@ -1,22 +1,4 @@
-/**
- * The same idea, named differently in each port.
- *
- * Eight libraries wrapping one tool do not converge on one vocabulary:
- * Python's `capture_pane` is `capture` almost everywhere else, `Pane.split`
- * in five ports is `Window.split` in C++, and Swift puts on `Server` what the
- * others put on `Pane`. Nothing derivable from the source says these are the
- * same operation, and no amount of name similarity would prove it —
- * `Session.attached` is a property in Java and a verb in others.
- *
- * So this is hand-maintained, deliberately. What keeps it from rotting is
- * `concepts.test.ts`, which resolves every id below against the extracted
- * models: a rename upstream fails the test rather than silently dropping a
- * link.
- *
- * A port that genuinely lacks an operation says so. "No direct equivalent" is
- * a real answer to "how do I do this here", and a better one than an empty
- * cell.
- */
+/** Source-verified relationships across ports; similar spelling does not prove matching behavior. */
 export interface Concept {
   /** What the operation does, in one line, in no particular language. */
   label: string
@@ -27,17 +9,69 @@ export interface Concept {
 }
 
 export const CONCEPTS: Record<string, Concept> = {
+  server: {
+    label: 'A tmux server',
+    symbols: {
+      py: 'libtmux.Server',
+      ts: 'server.Server',
+      rs: 'server.Server',
+      go: 'tmux.Server',
+      java: 'io.github.libtmux.Server.Server',
+      dotnet: 'LibTmux.Server',
+      cxx: 'libtmux::Server',
+      swift: 'Server',
+    },
+  },
+  session: {
+    label: 'A tmux session',
+    symbols: {
+      py: 'libtmux.Session',
+      ts: 'session.Session',
+      rs: 'session.Session',
+      go: 'tmux.Session',
+      java: 'io.github.libtmux.Session.Session',
+      dotnet: 'LibTmux.Session',
+      cxx: 'libtmux::Session',
+      swift: 'Session',
+    },
+  },
+  window: {
+    label: 'A tmux window',
+    symbols: {
+      py: 'libtmux.Window',
+      ts: 'window.Window',
+      rs: 'window.Window',
+      go: 'tmux.Window',
+      java: 'io.github.libtmux.Window.Window',
+      dotnet: 'LibTmux.Window',
+      cxx: 'libtmux::Window',
+      swift: 'Window',
+    },
+  },
+  pane: {
+    label: 'A tmux pane',
+    symbols: {
+      py: 'libtmux.Pane',
+      ts: 'pane.Pane',
+      rs: 'pane.Pane',
+      go: 'tmux.Pane',
+      java: 'io.github.libtmux.Pane.Pane',
+      dotnet: 'LibTmux.Pane',
+      cxx: 'libtmux::Pane',
+      swift: 'Pane',
+    },
+  },
   'capture-pane': {
     label: 'Read a pane’s visible contents',
     symbols: {
       py: 'libtmux.Pane.capture_pane',
       ts: 'pane.Pane.capture',
-      rs: 'pane.observe.Pane.capture',
+      rs: 'pane.Pane.capture',
       go: 'tmux.Pane.Capture',
       java: 'io.github.libtmux.Pane.Pane.capture',
       dotnet: 'LibTmux.Pane.CaptureAsync',
       cxx: 'libtmux::Pane::capture',
-      swift: 'Server.capture(_:since:limit:)',
+      swift: 'Server.capture(_:includingHistory:)',
     },
   },
   'send-keys': {
@@ -64,8 +98,170 @@ export const CONCEPTS: Record<string, Concept> = {
       go: 'tmux.Pane.Split',
       java: 'io.github.libtmux.Pane.Pane.split',
       dotnet: 'LibTmux.Pane.SplitAsync',
-      cxx: 'libtmux::Window::split',
       swift: 'Server.split(_:direction:size:startDirectory:)',
+    },
+    absent: {
+      cxx: 'no direct pane target; Window.split splits the active pane',
+    },
+  },
+  'split-window': {
+    label: "Split a window's active pane",
+    symbols: {
+      py: 'libtmux.Window.split',
+      ts: 'window.Window.split',
+      rs: 'window.Window.split',
+      go: 'tmux.Window.SplitPane',
+      java: 'io.github.libtmux.Window.Window.split',
+      dotnet: 'LibTmux.Window.SplitPaneAsync',
+      cxx: 'libtmux::Window::split',
+      swift: 'Server.splitWindow(_:direction:size:startDirectory:)',
+    },
+  },
+  'respawn-pane': {
+    label: "Restart a pane's command",
+    symbols: {
+      py: 'libtmux.Pane.respawn',
+      ts: 'pane.Pane.respawn',
+      rs: 'pane.Pane.respawn',
+      go: 'tmux.Pane.Respawn',
+      java: 'io.github.libtmux.Pane.Pane.respawn',
+      dotnet: 'LibTmux.Pane.RespawnAsync',
+      cxx: 'libtmux::Pane::respawn',
+      swift: 'Server.respawn(_:running:killingExisting:)',
+    },
+  },
+  'clear-history': {
+    label: "Clear a pane's scrollback",
+    symbols: {
+      py: 'libtmux.Pane.clear_history',
+      ts: 'pane.Pane.clearHistory',
+      rs: 'pane.Pane.clear_history',
+      go: 'tmux.Pane.ClearHistory',
+      java: 'io.github.libtmux.Pane.Pane.clearHistory',
+      dotnet: 'LibTmux.Pane.ClearHistoryAsync',
+      cxx: 'libtmux::Pane::clear_history',
+      swift: 'Server.clearHistory(_:)',
+    },
+  },
+  'set-pane-title': {
+    label: "Set a pane's title",
+    symbols: {
+      py: 'libtmux.Pane.set_title',
+      ts: 'pane.Pane.setTitle',
+      rs: 'pane.Pane.set_title',
+      go: 'tmux.Pane.SetTitle',
+      java: 'io.github.libtmux.Pane.Pane.retitle',
+      dotnet: 'LibTmux.Pane.SetTitleAsync',
+      cxx: 'libtmux::Pane::set_title',
+      swift: 'Server.setTitle(_:of:)',
+    },
+  },
+  'paste-buffer': {
+    label: 'Paste a buffer into a pane',
+    symbols: {
+      py: 'libtmux.Pane.paste_buffer',
+      ts: 'pane.Pane.pasteBuffer',
+      rs: 'pane.Pane.paste_buffer',
+      go: 'tmux.Pane.PasteBuffer',
+      java: 'io.github.libtmux.Pane.Pane.pasteBuffer',
+      dotnet: 'LibTmux.Pane.PasteBufferAsync',
+      cxx: 'libtmux::Pane::paste',
+      swift: 'Server.paste(buffer:into:)',
+    },
+  },
+  'select-layout': {
+    label: "Set a window's pane layout",
+    symbols: {
+      py: 'libtmux.Window.select_layout',
+      ts: 'window.Window.selectLayout',
+      rs: 'window.Window.select_layout',
+      go: 'tmux.Window.SelectLayout',
+      java: 'io.github.libtmux.Window.Window.selectLayout',
+      dotnet: 'LibTmux.Window.SelectLayoutAsync',
+      cxx: 'libtmux::Window::select_layout',
+      swift: 'Server.selectLayout(_:_:)',
+    },
+  },
+  'rotate-panes': {
+    label: "Rotate panes within a window",
+    symbols: {
+      py: 'libtmux.Window.rotate',
+      ts: 'window.Window.rotate',
+      rs: 'window.Window.rotate',
+      go: 'tmux.Window.Rotate',
+      java: 'io.github.libtmux.Window.Window.rotate',
+      dotnet: 'LibTmux.Window.RotateAsync',
+      cxx: 'libtmux::Window::rotate',
+      swift: 'Server.rotate(_:upward:)',
+    },
+  },
+  'unlink-window': {
+    label: 'Unlink a window from a session',
+    symbols: {
+      py: 'libtmux.Window.unlink',
+      ts: 'window.Window.unlink',
+      rs: 'window.Window.unlink',
+      go: 'tmux.Window.Unlink',
+      java: 'io.github.libtmux.Window.Window.unlink',
+      dotnet: 'LibTmux.Window.UnlinkAsync',
+      cxx: 'libtmux::Window::unlink',
+      swift: 'Server.unlink(_:)',
+    },
+  },
+  'source-file': {
+    label: 'Load a tmux configuration file',
+    symbols: {
+      py: 'libtmux.Server.source_file',
+      ts: 'server.Server.sourceFile',
+      rs: 'server.Server.source_file',
+      go: 'tmux.Server.SourceFile',
+      java: 'io.github.libtmux.Server.Server.sourceFile',
+      dotnet: 'LibTmux.Server.SourceFileAsync',
+      cxx: 'libtmux::Server::source_file',
+      swift: 'Server.sourceFile(_:)',
+    },
+  },
+  'list-clients': {
+    label: "List the server's attached clients",
+    symbols: {
+      py: 'libtmux.Server.clients',
+      ts: 'server.Server.clients',
+      rs: 'server.Server.clients',
+      go: 'tmux.Server.Clients',
+      java: 'io.github.libtmux.Server.Server.clients',
+      dotnet: 'LibTmux.Server.Clients',
+      cxx: 'libtmux::Server::clients',
+      swift: 'Server.clients()',
+    },
+  },
+  'pane-window': {
+    label: "Find a pane's containing window",
+    symbols: {
+      py: 'libtmux.Pane.window',
+      ts: 'pane.Pane.window',
+      rs: 'pane.Pane.window',
+      go: 'tmux.Pane.Window',
+      java: 'io.github.libtmux.Pane.Pane.window',
+      dotnet: 'LibTmux.Pane.Window',
+      cxx: 'libtmux::Pane::window',
+    },
+    absent: {
+      swift: 'no direct accessor; match Pane.windowID against Snapshot.windows',
+    },
+  },
+  'window-session': {
+    label: "Find the session containing a window placement",
+    symbols: {
+      py: 'libtmux.Window.session',
+      ts: 'window.Window.session',
+      rs: 'window.Window.session',
+      go: 'tmux.Window.Session',
+      java: 'io.github.libtmux.Window.Window.session',
+      dotnet: 'LibTmux.Window.Session',
+      cxx: 'libtmux::Window::session',
+    },
+    absent: {
+      swift: 'a Window has no single parent; Snapshot.sessions(of:) lists every linking session',
     },
   },
   'new-session': {
@@ -112,7 +308,7 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Server.sessions',
       ts: 'server.Server.sessions',
-      rs: 'server.discovery.Server.sessions',
+      rs: 'server.Server.sessions',
       go: 'tmux.Server.Sessions',
       java: 'io.github.libtmux.Server.Server.sessions',
       dotnet: 'LibTmux.Server.Sessions',
@@ -137,7 +333,7 @@ export const CONCEPTS: Record<string, Concept> = {
   },
   'kill-session': {
     label: 'End a session',
-    // Swift kills through the server with a target — `Server.kill(_:)` serves session, window and pane alike, where the others put the verb on the object.
+    // Swift overloads this method for sessions, windows, and panes.
     symbols: {
       py: 'libtmux.Session.kill',
       ts: 'session.Session.kill',
@@ -252,7 +448,7 @@ export const CONCEPTS: Record<string, Concept> = {
       java: 'io.github.libtmux.Session.Session.windows',
       dotnet: 'LibTmux.Session.Windows',
       cxx: 'libtmux::Session::windows',
-      swift: 'Server.windows()',
+      swift: 'Snapshot.windows(of:)',
     },
   },
   'list-panes': {
@@ -260,11 +456,52 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Window.panes',
       ts: 'window.Window.panes',
-      rs: 'window.navigation.Window.panes',
+      rs: 'window.Window.panes',
       go: 'tmux.Window.Panes',
       java: 'io.github.libtmux.Window.Window.panes',
       dotnet: 'LibTmux.Window.Panes',
       cxx: 'libtmux::Window::panes',
+      swift: 'Snapshot.panes(of:)',
+    },
+  },
+  'list-session-panes': {
+    label: "List a session's panes",
+    symbols: {
+      py: 'libtmux.Session.panes',
+      ts: 'session.Session.panes',
+      rs: 'session.Session.panes',
+      go: 'tmux.Session.Panes',
+      dotnet: 'LibTmux.Session.Panes',
+      cxx: 'libtmux::Session::panes',
+      swift: 'Snapshot.panes(of:)',
+    },
+    absent: {
+      java: 'no direct accessor; traverse Session.windows and Window.panes',
+    },
+  },
+  'list-server-windows': {
+    label: "List the server's windows",
+    symbols: {
+      py: 'libtmux.Server.windows',
+      ts: 'server.Server.windows',
+      rs: 'server.Server.windows',
+      go: 'tmux.Server.Windows',
+      java: 'io.github.libtmux.Server.Server.windows',
+      dotnet: 'LibTmux.Server.Windows',
+      cxx: 'libtmux::Server::windows',
+      swift: 'Server.windows()',
+    },
+  },
+  'list-server-panes': {
+    label: "List the server's panes",
+    symbols: {
+      py: 'libtmux.Server.panes',
+      ts: 'server.Server.panes',
+      rs: 'server.Server.panes',
+      go: 'tmux.Server.Panes',
+      java: 'io.github.libtmux.Server.Server.panes',
+      dotnet: 'LibTmux.Server.Panes',
+      cxx: 'libtmux::Server::panes',
       swift: 'Server.panes()',
     },
   },
@@ -288,7 +525,7 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Window.active_pane',
       ts: 'window.Window.activePane',
-      rs: 'window.navigation.Window.active_pane',
+      rs: 'window.Window.active_pane',
       go: 'tmux.Window.ActivePane',
       java: 'io.github.libtmux.Window.Window.activePane',
       dotnet: 'LibTmux.Window.ActivePane',
@@ -311,9 +548,2610 @@ export const CONCEPTS: Record<string, Concept> = {
       swift: 'Server.isRunning()',
     },
   },
+  'server-options': {
+    label: 'Read the options set on the server',
+    symbols: {
+      py: 'libtmux.Server.show_options',
+      ts: 'server.Server.showOptions',
+      rs: 'server.Server.options',
+      go: 'tmux.Server.Options',
+      java: 'io.github.libtmux.Server.Server.options',
+      dotnet: 'LibTmux.Server.Options',
+      cxx: 'libtmux::Server::options',
+      swift: 'Server.options(_:)',
+    },
+  },
+  'session-options': {
+    label: 'Read the options set on a session',
+    symbols: {
+      py: 'libtmux.Session.show_options',
+      ts: 'session.Session.showOptions',
+      rs: 'session.Session.options',
+      go: 'tmux.Session.Options',
+      java: 'io.github.libtmux.Session.Session.options',
+      dotnet: 'LibTmux.Session.Options',
+      cxx: 'libtmux::Session::options',
+      swift: 'Server.options(_:)',
+    },
+  },
+  'window-options': {
+    label: 'Read the options set on a window',
+    symbols: {
+      py: 'libtmux.Window.show_options',
+      ts: 'window.Window.showOptions',
+      rs: 'window.Window.options',
+      go: 'tmux.Window.Options',
+      java: 'io.github.libtmux.Window.Window.options',
+      dotnet: 'LibTmux.Window.Options',
+      cxx: 'libtmux::Window::options',
+      swift: 'Server.options(_:)',
+    },
+  },
+  'pane-options': {
+    label: 'Read the options set on a pane',
+    symbols: {
+      py: 'libtmux.Pane.show_options',
+      ts: 'pane.Pane.showOptions',
+      rs: 'pane.Pane.options',
+      go: 'tmux.Pane.Options',
+      java: 'io.github.libtmux.Pane.Pane.options',
+      dotnet: 'LibTmux.Pane.Options',
+      cxx: 'libtmux::Pane::options',
+      swift: 'Server.options(_:)',
+    },
+  },
+  'server-option': {
+    label: 'Read one server option',
+    symbols: {
+      py: 'libtmux.Server.show_option',
+      rs: 'server.Server.get_option',
+      go: 'tmux.Server.RawOption',
+      swift: 'Server.option(_:scope:)',
+    },
+    absent: {
+      ts: 'no single-option read; `Server.showOptions` returns them all',
+      java: 'reached through `Server.options`, whose `Options.get` reads one',
+      dotnet: 'reached through `Server.Options`, whose `TmuxOptions.GetAsync` reads one',
+      cxx: 'no single-option read; `Server::options` returns them all',
+    },
+  },
+  'session-option': {
+    label: 'Read one session option',
+    symbols: {
+      py: 'libtmux.Session.show_option',
+      rs: 'session.Session.get_option',
+      go: 'tmux.Session.RawOption',
+      cxx: 'libtmux::Session::option',
+      swift: 'Server.option(_:scope:)',
+    },
+    absent: {
+      ts: 'no single-option read; `Session.showOptions` returns them all',
+      java: 'reached through `Session.options`, whose `Options.get` reads one',
+      dotnet: 'reached through `Session.Options`, whose `TmuxOptions.GetAsync` reads one',
+    },
+  },
+  'window-option': {
+    label: 'Read one window option',
+    symbols: {
+      py: 'libtmux.Window.show_option',
+      rs: 'window.Window.get_option',
+      go: 'tmux.Window.RawOption',
+      cxx: 'libtmux::Window::option',
+      swift: 'Server.option(_:scope:)',
+    },
+    absent: {
+      ts: 'no single-option read; `Window.showOptions` returns them all',
+      java: 'reached through `Window.options`, whose `Options.get` reads one',
+      dotnet: 'reached through `Window.Options`, whose `TmuxOptions.GetAsync` reads one',
+    },
+  },
+  'pane-option': {
+    label: 'Read one pane option',
+    symbols: {
+      py: 'libtmux.Pane.show_option',
+      rs: 'pane.Pane.get_option',
+      go: 'tmux.Pane.RawOption',
+      cxx: 'libtmux::Pane::option',
+      swift: 'Server.option(_:scope:)',
+    },
+    absent: {
+      ts: 'no single-option read; `Pane.showOptions` returns them all',
+      java: 'reached through `Pane.options`, whose `Options.get` reads one',
+      dotnet: 'reached through `Pane.Options`, whose `TmuxOptions.GetAsync` reads one',
+    },
+  },
+  'set-server-option': {
+    label: 'Set a server option',
+    symbols: {
+      py: 'libtmux.Server.set_option',
+      ts: 'server.Server.setOption',
+      rs: 'server.Server.set_option',
+      go: 'tmux.Server.SetOption',
+      cxx: 'libtmux::Server::set_server_option',
+      swift: 'Server.setOption(_:to:scope:)',
+    },
+    absent: {
+      java: 'reached through `Server.options`, whose `Options` carries the write',
+      dotnet: 'reached through `Server.Options`, whose `TmuxOptions` carries the write',
+    },
+  },
+  'set-session-option': {
+    label: 'Set a session option',
+    symbols: {
+      py: 'libtmux.Session.set_option',
+      ts: 'session.Session.setOption',
+      rs: 'session.Session.set_option',
+      go: 'tmux.Session.SetOption',
+      cxx: 'libtmux::Session::set_option',
+      swift: 'Server.setOption(_:to:scope:)',
+    },
+    absent: {
+      java: 'reached through `Session.options`, whose `Options` carries the write',
+      dotnet: 'reached through `Session.Options`, whose `TmuxOptions` carries the write',
+    },
+  },
+  'set-window-option': {
+    label: 'Set a window option',
+    symbols: {
+      py: 'libtmux.Window.set_option',
+      ts: 'window.Window.setOption',
+      rs: 'window.Window.set_option',
+      go: 'tmux.Window.SetOption',
+      cxx: 'libtmux::Window::set_option',
+      swift: 'Server.setOption(_:to:scope:)',
+    },
+    absent: {
+      java: 'reached through `Window.options`, whose `Options` carries the write',
+      dotnet: 'reached through `Window.Options`, whose `TmuxOptions` carries the write',
+    },
+  },
+  'set-pane-option': {
+    label: 'Set a pane option',
+    symbols: {
+      py: 'libtmux.Pane.set_option',
+      ts: 'pane.Pane.setOption',
+      rs: 'pane.Pane.set_option',
+      go: 'tmux.Pane.SetOption',
+      cxx: 'libtmux::Pane::set_option',
+      swift: 'Server.setOption(_:to:scope:)',
+    },
+    absent: {
+      java: 'reached through `Pane.options`, whose `Options` carries the write',
+      dotnet: 'reached through `Pane.Options`, whose `TmuxOptions` carries the write',
+    },
+  },
+  'unset-server-option': {
+    label: 'Unset a server option',
+    symbols: {
+      py: 'libtmux.Server.unset_option',
+      ts: 'server.Server.unsetOption',
+      rs: 'server.Server.unset_option',
+      go: 'tmux.Server.UnsetOption',
+      swift: 'Server.unsetOption(_:scope:)',
+    },
+    absent: {
+      java: 'reached through `Server.options`, whose `Options` carries the write',
+      dotnet: 'reached through `Server.Options`, whose `TmuxOptions` carries the write',
+      cxx: 'no equivalent on `Server`',
+    },
+  },
+  'unset-session-option': {
+    label: 'Unset a session option',
+    symbols: {
+      py: 'libtmux.Session.unset_option',
+      ts: 'session.Session.unsetOption',
+      rs: 'session.Session.unset_option',
+      go: 'tmux.Session.UnsetOption',
+      cxx: 'libtmux::Session::unset_option',
+      swift: 'Server.unsetOption(_:scope:)',
+    },
+    absent: {
+      java: 'reached through `Session.options`, whose `Options` carries the write',
+      dotnet: 'reached through `Session.Options`, whose `TmuxOptions` carries the write',
+    },
+  },
+  'unset-window-option': {
+    label: 'Unset a window option',
+    symbols: {
+      py: 'libtmux.Window.unset_option',
+      ts: 'window.Window.unsetOption',
+      rs: 'window.Window.unset_option',
+      go: 'tmux.Window.UnsetOption',
+      cxx: 'libtmux::Window::unset_option',
+      swift: 'Server.unsetOption(_:scope:)',
+    },
+    absent: {
+      java: 'reached through `Window.options`, whose `Options` carries the write',
+      dotnet: 'reached through `Window.Options`, whose `TmuxOptions` carries the write',
+    },
+  },
+  'unset-pane-option': {
+    label: 'Unset a pane option',
+    symbols: {
+      py: 'libtmux.Pane.unset_option',
+      ts: 'pane.Pane.unsetOption',
+      rs: 'pane.Pane.unset_option',
+      go: 'tmux.Pane.UnsetOption',
+      cxx: 'libtmux::Pane::unset_option',
+      swift: 'Server.unsetOption(_:scope:)',
+    },
+    absent: {
+      java: 'reached through `Pane.options`, whose `Options` carries the write',
+      dotnet: 'reached through `Pane.Options`, whose `TmuxOptions` carries the write',
+    },
+  },
+  'global-options': {
+    label: 'Read the defaults every session inherits',
+    symbols: {
+      ts: 'server.Server.showGlobalOptions',
+      java: 'io.github.libtmux.Server.Server.globalOptions',
+      cxx: 'libtmux::Server::global_options',
+    },
+    absent: {
+      py: 'no equivalent on `Server`',
+      rs: 'no whole-table read; `Server.get_global_option` reads one',
+      go: 'no equivalent on `Server`',
+      dotnet: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'set-global-option': {
+    label: 'Set a default every session inherits',
+    symbols: {
+      ts: 'server.Server.setGlobalOption',
+      rs: 'server.Server.set_global_option',
+      cxx: 'libtmux::Server::set_global_option',
+    },
+    absent: {
+      py: 'no equivalent on `Server`',
+      go: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      dotnet: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'server-hooks': {
+    label: "Read the server's global hooks",
+    symbols: {
+      py: 'libtmux.Server.show_hooks',
+      ts: 'server.Server.showHooks',
+      rs: 'server.Server.hooks',
+      java: 'io.github.libtmux.Server.Server.hooks',
+      dotnet: 'LibTmux.Server.Hooks',
+      cxx: 'libtmux::Server::hooks',
+      swift: 'Server.hooks(_:)',
+    },
+    absent: {
+      go: 'no equivalent on `Server`',
+    },
+  },
+  'session-hooks': {
+    label: "Read a session's hooks",
+    symbols: {
+      py: 'libtmux.Session.show_hooks',
+      ts: 'session.Session.showHooks',
+      rs: 'session.Session.hooks',
+      go: 'tmux.Session.Hooks',
+      java: 'io.github.libtmux.Session.Session.hooks',
+      dotnet: 'LibTmux.Session.Hooks',
+      cxx: 'libtmux::Session::hooks',
+      swift: 'Server.hooks(_:)',
+    },
+  },
+  'window-hooks': {
+    label: "Read a window's hooks",
+    symbols: {
+      py: 'libtmux.Window.show_hooks',
+      ts: 'window.Window.showHooks',
+      go: 'tmux.Window.Hooks',
+      java: 'io.github.libtmux.Window.Window.hooks',
+      dotnet: 'LibTmux.Window.Hooks',
+      swift: 'Server.hooks(_:)',
+    },
+    absent: {
+      rs: 'no whole-table read; `Window.hook` reads one',
+      cxx: 'no equivalent on `Window`',
+    },
+  },
+  'pane-hooks': {
+    label: "Read a pane's hooks",
+    symbols: {
+      py: 'libtmux.Pane.show_hooks',
+      ts: 'pane.Pane.showHooks',
+      go: 'tmux.Pane.Hooks',
+      java: 'io.github.libtmux.Pane.Pane.hooks',
+      dotnet: 'LibTmux.Pane.Hooks',
+      swift: 'Server.hooks(_:)',
+    },
+    absent: {
+      rs: 'no whole-table read; `Pane.hook` reads one',
+      cxx: 'no equivalent on `Pane`',
+    },
+  },
+  'set-server-hook': {
+    label: 'Bind a command to a global hook',
+    symbols: {
+      py: 'libtmux.Server.set_hook',
+      ts: 'server.Server.setHook',
+      rs: 'server.Server.set_hook',
+      swift: 'Server.setHook(_:to:at:in:)',
+    },
+    absent: {
+      go: 'no equivalent on `Server`',
+      java: 'reached through `Server.hooks`, whose `Hooks` carries the write',
+      dotnet: 'reached through `Server.Hooks`, whose `TmuxHooks` carries the write',
+      cxx: 'no equivalent on `Server`',
+    },
+  },
+  'set-session-hook': {
+    label: 'Bind a command to a session hook',
+    symbols: {
+      py: 'libtmux.Session.set_hook',
+      ts: 'session.Session.setHook',
+      rs: 'session.Session.set_hook',
+      go: 'tmux.Session.SetHook',
+      cxx: 'libtmux::Session::set_hook',
+      swift: 'Server.setHook(_:to:at:in:)',
+    },
+    absent: {
+      java: 'reached through `Session.hooks`, whose `Hooks` carries the write',
+      dotnet: 'reached through `Session.Hooks`, whose `TmuxHooks` carries the write',
+    },
+  },
+  'set-window-hook': {
+    label: 'Bind a command to a window hook',
+    symbols: {
+      py: 'libtmux.Window.set_hook',
+      ts: 'window.Window.setHook',
+      rs: 'window.Window.set_hook',
+      go: 'tmux.Window.SetHook',
+      swift: 'Server.setHook(_:to:at:in:)',
+    },
+    absent: {
+      java: 'reached through `Window.hooks`, whose `Hooks` carries the write',
+      dotnet: 'reached through `Window.Hooks`, whose `TmuxHooks` carries the write',
+      cxx: 'no equivalent on `Window`',
+    },
+  },
+  'set-pane-hook': {
+    label: 'Bind a command to a pane hook',
+    symbols: {
+      py: 'libtmux.Pane.set_hook',
+      ts: 'pane.Pane.setHook',
+      rs: 'pane.Pane.set_hook',
+      go: 'tmux.Pane.SetHook',
+      swift: 'Server.setHook(_:to:at:in:)',
+    },
+    absent: {
+      java: 'reached through `Pane.hooks`, whose `Hooks` carries the write',
+      dotnet: 'reached through `Pane.Hooks`, whose `TmuxHooks` carries the write',
+      cxx: 'no equivalent on `Pane`',
+    },
+  },
+  'unset-server-hook': {
+    label: 'Unbind a global hook',
+    symbols: {
+      py: 'libtmux.Server.unset_hook',
+      ts: 'server.Server.unsetHook',
+      rs: 'server.Server.unset_hook',
+      swift: 'Server.unsetHook(_:in:)',
+    },
+    absent: {
+      go: 'no equivalent on `Server`',
+      java: 'reached through `Server.hooks`, whose `Hooks` carries the write',
+      dotnet: 'reached through `Server.Hooks`, whose `TmuxHooks` carries the write',
+      cxx: 'no equivalent on `Server`',
+    },
+  },
+  'unset-session-hook': {
+    label: 'Unbind a session hook',
+    symbols: {
+      py: 'libtmux.Session.unset_hook',
+      ts: 'session.Session.unsetHook',
+      rs: 'session.Session.unset_hook',
+      go: 'tmux.Session.UnsetHook',
+      swift: 'Server.unsetHook(_:in:)',
+    },
+    absent: {
+      java: 'reached through `Session.hooks`, whose `Hooks` carries the write',
+      dotnet: 'reached through `Session.Hooks`, whose `TmuxHooks` carries the write',
+      cxx: 'no equivalent on `Session`',
+    },
+  },
+  'unset-window-hook': {
+    label: 'Unbind a window hook',
+    symbols: {
+      py: 'libtmux.Window.unset_hook',
+      ts: 'window.Window.unsetHook',
+      rs: 'window.Window.unset_hook',
+      go: 'tmux.Window.UnsetHook',
+      swift: 'Server.unsetHook(_:in:)',
+    },
+    absent: {
+      java: 'reached through `Window.hooks`, whose `Hooks` carries the write',
+      dotnet: 'reached through `Window.Hooks`, whose `TmuxHooks` carries the write',
+      cxx: 'no equivalent on `Window`',
+    },
+  },
+  'unset-pane-hook': {
+    label: 'Unbind a pane hook',
+    symbols: {
+      py: 'libtmux.Pane.unset_hook',
+      ts: 'pane.Pane.unsetHook',
+      rs: 'pane.Pane.unset_hook',
+      go: 'tmux.Pane.UnsetHook',
+      swift: 'Server.unsetHook(_:in:)',
+    },
+    absent: {
+      java: 'reached through `Pane.hooks`, whose `Hooks` carries the write',
+      dotnet: 'reached through `Pane.Hooks`, whose `TmuxHooks` carries the write',
+      cxx: 'no equivalent on `Pane`',
+    },
+  },
+  'set-session-hooks': {
+    label: 'Write a session hook and its indexed commands at once',
+    symbols: {
+      py: 'libtmux.Session.set_hooks',
+      rs: 'session.Session.set_hooks',
+      go: 'tmux.Session.SetHooks',
+    },
+    absent: {
+      ts: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      dotnet: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'set-window-hooks': {
+    label: 'Write a window hook and its indexed commands at once',
+    symbols: {
+      py: 'libtmux.Window.set_hooks',
+      rs: 'window.Window.set_hooks',
+      go: 'tmux.Window.SetHooks',
+    },
+    absent: {
+      ts: 'no equivalent on `Window`',
+      java: 'no equivalent on `Window`',
+      dotnet: 'no equivalent on `Window`',
+      cxx: 'no equivalent on `Window`',
+      swift: 'no equivalent on `Window`',
+    },
+  },
+  'run-session-hook': {
+    label: "Run a session hook's commands now",
+    symbols: {
+      py: 'libtmux.Session.run_hook',
+      go: 'tmux.Session.RunHook',
+      swift: 'Server.runHook(_:in:)',
+    },
+    absent: {
+      ts: 'no equivalent on `Session`',
+      rs: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      dotnet: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+    },
+  },
+  'run-window-hook': {
+    label: "Run a window hook's commands now",
+    symbols: {
+      py: 'libtmux.Window.run_hook',
+      go: 'tmux.Window.RunHook',
+      swift: 'Server.runHook(_:in:)',
+    },
+    absent: {
+      ts: 'no equivalent on `Window`',
+      rs: 'no equivalent on `Window`',
+      java: 'no equivalent on `Window`',
+      dotnet: 'no equivalent on `Window`',
+      cxx: 'no equivalent on `Window`',
+    },
+  },
+  'run-pane-hook': {
+    label: "Run a pane hook's commands now",
+    symbols: {
+      py: 'libtmux.Pane.run_hook',
+      go: 'tmux.Pane.RunHook',
+      swift: 'Server.runHook(_:in:)',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      rs: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+      dotnet: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+    },
+  },
+  'server-environment': {
+    label: "Read the server's global environment",
+    symbols: {
+      py: 'libtmux.Server.show_environment',
+      ts: 'server.Server.showEnvironment',
+      rs: 'server.Server.environment',
+      go: 'tmux.Server.ShowEnvironment',
+      dotnet: 'LibTmux.Server.Environment',
+      swift: 'Server.environment(_:)',
+    },
+    absent: {
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+    },
+  },
+  'session-environment': {
+    label: "Read a session's environment",
+    symbols: {
+      py: 'libtmux.Session.show_environment',
+      ts: 'session.Session.showEnvironment',
+      rs: 'session.Session.environment',
+      go: 'tmux.Session.ShowEnvironment',
+      dotnet: 'LibTmux.Session.Environment',
+      swift: 'Server.environment(_:)',
+    },
+    absent: {
+      java: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+    },
+  },
+  'set-server-environment': {
+    label: "Set a variable in the server's environment",
+    symbols: {
+      py: 'libtmux.Server.set_environment',
+      ts: 'server.Server.setEnvironment',
+      rs: 'server.Server.set_environment',
+      go: 'tmux.Server.SetEnvironment',
+      swift: 'Server.setEnvironment(_:to:in:)',
+    },
+    absent: {
+      java: 'no equivalent on `Server`',
+      dotnet: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+    },
+  },
+  'set-session-environment': {
+    label: "Set a variable in a session's environment",
+    symbols: {
+      py: 'libtmux.Session.set_environment',
+      ts: 'session.Session.setEnvironment',
+      rs: 'session.Session.set_environment',
+      go: 'tmux.Session.SetEnvironment',
+      swift: 'Server.setEnvironment(_:to:in:)',
+    },
+    absent: {
+      java: 'no equivalent on `Session`',
+      dotnet: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+    },
+  },
+  'unset-server-environment': {
+    label: "Unset a variable in the server's environment",
+    symbols: {
+      py: 'libtmux.Server.unset_environment',
+      ts: 'server.Server.unsetEnvironment',
+      rs: 'server.Server.unset_environment',
+      go: 'tmux.Server.UnsetEnvironment',
+      swift: 'Server.unsetEnvironment(_:in:)',
+    },
+    absent: {
+      java: 'no equivalent on `Server`',
+      dotnet: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+    },
+  },
+  'unset-session-environment': {
+    label: "Unset a variable in a session's environment",
+    symbols: {
+      py: 'libtmux.Session.unset_environment',
+      ts: 'session.Session.unsetEnvironment',
+      rs: 'session.Session.unset_environment',
+      go: 'tmux.Session.UnsetEnvironment',
+      swift: 'Server.unsetEnvironment(_:in:)',
+    },
+    absent: {
+      java: 'no equivalent on `Session`',
+      dotnet: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+    },
+  },
+  'remove-server-environment': {
+    label: 'Mark a variable so new processes start without it',
+    symbols: {
+      py: 'libtmux.Server.remove_environment',
+      ts: 'server.Server.removeEnvironment',
+      go: 'tmux.Server.RemoveEnvironment',
+      swift: 'Server.removeEnvironment(_:in:)',
+    },
+    absent: {
+      rs: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      dotnet: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+    },
+  },
+  'remove-session-environment': {
+    label: 'Mark a session variable so new processes start without it',
+    symbols: {
+      py: 'libtmux.Session.remove_environment',
+      ts: 'session.Session.removeEnvironment',
+      go: 'tmux.Session.RemoveEnvironment',
+      swift: 'Server.removeEnvironment(_:in:)',
+    },
+    absent: {
+      rs: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      dotnet: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+    },
+  },
+  'list-buffers': {
+    label: 'List the paste buffers',
+    symbols: {
+      py: 'libtmux.Server.list_buffers',
+      ts: 'server.Server.listBuffers',
+      rs: 'server.Server.buffer_names',
+      go: 'tmux.Server.ListBuffers',
+      java: 'io.github.libtmux.Server.Server.buffers',
+      dotnet: 'LibTmux.Server.GetBuffersAsync',
+      cxx: 'libtmux::Server::buffers',
+      swift: 'Server.buffers()',
+    },
+  },
+  'show-buffer': {
+    label: "Read a paste buffer's contents",
+    symbols: {
+      py: 'libtmux.Server.show_buffer',
+      ts: 'server.Server.showBuffer',
+      rs: 'server.Server.buffer',
+      go: 'tmux.Server.ShowBuffer',
+      dotnet: 'LibTmux.Server.GetBufferAsync',
+      swift: 'Server.buffer(named:)',
+    },
+    absent: {
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+    },
+  },
+  'set-buffer': {
+    label: 'Put text into a paste buffer',
+    symbols: {
+      py: 'libtmux.Server.set_buffer',
+      ts: 'server.Server.setBuffer',
+      rs: 'server.Server.set_buffer',
+      go: 'tmux.Server.SetBuffer',
+      dotnet: 'LibTmux.Server.SetBufferAsync',
+      cxx: 'libtmux::Server::set_buffer',
+      swift: 'Server.setBuffer(_:named:)',
+    },
+    absent: {
+      java: 'no equivalent on `Server`',
+    },
+  },
+  'delete-buffer': {
+    label: 'Delete a paste buffer',
+    symbols: {
+      py: 'libtmux.Server.delete_buffer',
+      ts: 'server.Server.deleteBuffer',
+      rs: 'server.Server.delete_buffer',
+      go: 'tmux.Server.DeleteBuffer',
+      dotnet: 'LibTmux.Server.DeleteBufferAsync',
+      swift: 'Server.deleteBuffer(named:)',
+    },
+    absent: {
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+    },
+  },
+  'load-buffer': {
+    label: 'Fill a paste buffer from a file',
+    symbols: {
+      py: 'libtmux.Server.load_buffer',
+      ts: 'server.Server.loadBuffer',
+      go: 'tmux.Server.LoadBuffer',
+      dotnet: 'LibTmux.Server.LoadBufferAsync',
+      cxx: 'libtmux::Server::load_buffer',
+      swift: 'Server.loadBuffer(from:named:)',
+    },
+    absent: {
+      rs: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+    },
+  },
+  'save-buffer': {
+    label: 'Write a paste buffer to a file',
+    symbols: {
+      py: 'libtmux.Server.save_buffer',
+      ts: 'server.Server.saveBuffer',
+      go: 'tmux.Server.SaveBuffer',
+      dotnet: 'LibTmux.Server.SaveBufferAsync',
+      cxx: 'libtmux::Server::save_buffer',
+      swift: 'Server.saveBuffer(named:to:)',
+    },
+    absent: {
+      rs: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+    },
+  },
+  'has-session': {
+    label: 'Whether a session with this name exists',
+    symbols: {
+      py: 'libtmux.Server.has_session',
+      ts: 'server.Server.hasSession',
+      rs: 'server.Server.has_session',
+      go: 'tmux.Server.HasSession',
+      java: 'io.github.libtmux.Server.Server.hasSession',
+      dotnet: 'LibTmux.Server.HasSessionAsync',
+      swift: 'Server.hasSession(_:)',
+    },
+    absent: {
+      cxx: 'no equivalent on `Server`',
+    },
+  },
+  'run-shell': {
+    label: 'Run a shell command through tmux',
+    symbols: {
+      py: 'libtmux.Server.run_shell',
+      ts: 'server.Server.runShell',
+      rs: 'server.Server.run_shell',
+      go: 'tmux.Server.RunShell',
+      java: 'io.github.libtmux.Server.Server.runShell',
+      dotnet: 'LibTmux.Server.RunShellAsync',
+      cxx: 'libtmux::Server::run_shell',
+    },
+    absent: {
+      swift: '`Server.run(_:in:)` types a command into a pane rather than running it on the host',
+    },
+  },
+  'if-shell': {
+    label: 'Run one tmux command or another, on a shell test',
+    symbols: {
+      py: 'libtmux.Server.if_shell',
+      ts: 'server.Server.ifShell',
+      go: 'tmux.Server.IfShell',
+      java: 'io.github.libtmux.Server.Server.ifShell',
+      dotnet: 'LibTmux.Server.IfShellAsync',
+    },
+    absent: {
+      rs: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'list-commands': {
+    label: 'List the commands this tmux understands',
+    symbols: {
+      py: 'libtmux.Server.list_commands',
+      ts: 'server.Server.listCommands',
+      go: 'tmux.Server.ListCommands',
+      java: 'io.github.libtmux.Server.Server.listCommands',
+      dotnet: 'LibTmux.Server.GetCommandsAsync',
+      cxx: 'libtmux::Server::commands',
+    },
+    absent: {
+      rs: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'list-keys': {
+    label: 'List the key bindings',
+    symbols: {
+      py: 'libtmux.Server.list_keys',
+      go: 'tmux.Server.ListKeys',
+      java: 'io.github.libtmux.Server.Server.listKeys',
+      dotnet: 'LibTmux.Server.GetKeysAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'bind-key': {
+    label: 'Bind a key to a tmux command',
+    symbols: {
+      py: 'libtmux.Server.bind_key',
+      rs: 'server.Server.bind_key',
+      go: 'tmux.Server.BindKey',
+      java: 'io.github.libtmux.Server.Server.bindKey',
+      dotnet: 'LibTmux.Server.BindKeyAsync',
+      cxx: 'libtmux::Server::bind_key',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'unbind-key': {
+    label: 'Unbind a key',
+    symbols: {
+      py: 'libtmux.Server.unbind_key',
+      rs: 'server.Server.unbind_key',
+      go: 'tmux.Server.UnbindKey',
+      java: 'io.github.libtmux.Server.Server.unbindKey',
+      dotnet: 'LibTmux.Server.UnbindKeyAsync',
+      cxx: 'libtmux::Server::unbind_key',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'show-messages': {
+    label: "Read the server's message log",
+    symbols: {
+      py: 'libtmux.Server.show_messages',
+      go: 'tmux.Server.ShowMessages',
+      java: 'io.github.libtmux.Server.Server.messages',
+      dotnet: 'LibTmux.Server.GetMessagesAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      cxx: '`Server::show_message` posts a message rather than reading the log',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'prompt-history': {
+    label: 'Read what has been typed at command prompts',
+    symbols: {
+      py: 'libtmux.Server.show_prompt_history',
+      rs: 'server.Server.prompt_history',
+      go: 'tmux.Server.ShowPromptHistory',
+      java: 'io.github.libtmux.Server.Server.promptHistory',
+      dotnet: 'LibTmux.Server.GetPromptHistoryAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'clear-prompt-history': {
+    label: 'Forget what has been typed at command prompts',
+    symbols: {
+      py: 'libtmux.Server.clear_prompt_history',
+      rs: 'server.Server.clear_prompt_history',
+      go: 'tmux.Server.ClearPromptHistory',
+      java: 'io.github.libtmux.Server.Server.clearPromptHistory',
+      dotnet: 'LibTmux.Server.ClearPromptHistoryAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'command-prompt': {
+    label: 'Ask a client for input and run a command with it',
+    symbols: {
+      py: 'libtmux.Server.command_prompt',
+      rs: 'server.Server.command_prompt',
+      go: 'tmux.Server.CommandPrompt',
+      dotnet: 'LibTmux.Server.ShowCommandPromptAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'confirm-before': {
+    label: 'Ask a client to confirm before running a command',
+    symbols: {
+      py: 'libtmux.Server.confirm_before',
+      go: 'tmux.Server.ConfirmBefore',
+      dotnet: 'LibTmux.Server.ConfirmBeforeAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'display-menu': {
+    label: 'Show a menu over a client',
+    symbols: {
+      py: 'libtmux.Server.display_menu',
+      rs: 'server.Server.display_menu',
+      go: 'tmux.Server.DisplayMenu',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      dotnet: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'server-display-message': {
+    label: 'Show a message on a client',
+    symbols: {
+      py: 'libtmux.Server.display_message',
+      go: 'tmux.Server.DisplayMessage',
+      dotnet: 'LibTmux.Server.DisplayMessageAsync',
+      cxx: 'libtmux::Server::show_message',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'detach-client': {
+    label: 'Detach one client',
+    symbols: {
+      py: 'libtmux.Server.detach_client',
+      go: 'tmux.Server.DetachClient',
+      dotnet: 'LibTmux.Server.DetachClientAsync',
+      swift: 'Server.detach(_:)',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+    },
+  },
+  'detach-all-clients': {
+    label: 'Detach every client on the server',
+    symbols: {
+      py: 'libtmux.Server.detach_all_clients',
+      go: 'tmux.Server.DetachAllClients',
+      dotnet: 'LibTmux.Server.DetachAllClientsAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'lock-server': {
+    label: 'Lock every client attached to the server',
+    symbols: {
+      py: 'libtmux.Server.lock_server',
+      rs: 'server.Server.lock_all',
+      go: 'tmux.Server.LockServer',
+      java: 'io.github.libtmux.Server.Server.lock',
+      dotnet: 'LibTmux.Server.LockAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'lock-client': {
+    label: 'Lock one client',
+    symbols: {
+      py: 'libtmux.Server.lock_client',
+      go: 'tmux.Server.LockClient',
+      dotnet: 'LibTmux.Server.LockClientAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'suspend-client': {
+    label: 'Suspend one client',
+    symbols: {
+      py: 'libtmux.Server.suspend_client',
+      go: 'tmux.Server.SuspendClient',
+      dotnet: 'LibTmux.Server.SuspendClientAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'refresh-client': {
+    label: "Redraw a client's display",
+    symbols: {
+      py: 'libtmux.Server.refresh_client',
+      go: 'tmux.Server.RefreshClient',
+      dotnet: 'LibTmux.Server.RefreshClientAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'switch-client': {
+    label: 'Switch a client to another session',
+    symbols: {
+      py: 'libtmux.Server.switch_client',
+      go: 'tmux.Server.SwitchClient',
+      dotnet: 'LibTmux.Server.SwitchClientAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'kill-session-by-name': {
+    label: 'End a session named from the server',
+    symbols: {
+      py: 'libtmux.Server.kill_session',
+      go: 'tmux.Server.KillSession',
+      java: 'io.github.libtmux.Server.Server.killSession',
+      dotnet: 'LibTmux.Server.KillSessionAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'raise-if-dead': {
+    label: 'Fail unless the server is answering',
+    symbols: {
+      py: 'libtmux.Server.raise_if_dead',
+      ts: 'server.Server.raiseIfDead',
+      go: 'tmux.Server.RaiseIfDead',
+      java: 'io.github.libtmux.Server.Server.raiseIfDead',
+      dotnet: 'LibTmux.Server.RaiseIfDeadAsync',
+    },
+    absent: {
+      rs: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'start-server': {
+    label: 'Start the server without creating a session',
+    symbols: {
+      py: 'libtmux.Server.start_server',
+      rs: 'server.Server.start',
+      go: 'tmux.Server.Start',
+      dotnet: 'LibTmux.Server.StartServerAsync',
+      swift: 'Server.startServer()',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+    },
+  },
+  'server-version': {
+    label: 'Which tmux this server runs',
+    symbols: {
+      ts: 'server.Server.version',
+      go: 'tmux.Server.Version',
+      java: 'io.github.libtmux.Server.Server.version',
+      dotnet: 'LibTmux.Server.Version',
+      swift: 'Server.version()',
+    },
+    absent: {
+      py: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      cxx: '`Server::tmux_version` asks the executable with `tmux -V` without reaching a server',
+    },
+  },
+  'snapshot': {
+    label: 'Capture the whole hierarchy at one instant',
+    symbols: {
+      ts: 'server.Server.snapshot',
+      go: 'tmux.Server.Snapshot',
+      java: 'io.github.libtmux.Server.Server.snapshot',
+      dotnet: 'LibTmux.Server.CaptureSnapshotAsync',
+      swift: 'Server.snapshot()',
+    },
+    absent: {
+      py: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+    },
+  },
+  'server-cmd': {
+    label: 'Run a tmux command this port does not model',
+    symbols: {
+      py: 'libtmux.Server.cmd',
+      ts: 'server.Server.cmd',
+      rs: 'server.Server.cmd',
+      go: 'tmux.Server.Cmd',
+      java: 'io.github.libtmux.Server.Server.cmd',
+    },
+    absent: {
+      dotnet: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'session-cmd': {
+    label: 'Run a tmux command addressed at a session',
+    symbols: {
+      py: 'libtmux.Session.cmd',
+      ts: 'session.Session.cmd',
+      rs: 'session.Session.cmd',
+      go: 'tmux.Session.Cmd',
+    },
+    absent: {
+      java: 'no equivalent on `Session`',
+      dotnet: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'window-cmd': {
+    label: 'Run a tmux command addressed at a window',
+    symbols: {
+      py: 'libtmux.Window.cmd',
+      ts: 'window.Window.cmd',
+      rs: 'window.Window.cmd',
+      go: 'tmux.Window.Cmd',
+    },
+    absent: {
+      java: 'no equivalent on `Window`',
+      dotnet: 'no equivalent on `Window`',
+      cxx: 'no equivalent on `Window`',
+      swift: 'no equivalent on `Window`',
+    },
+  },
+  'pane-cmd': {
+    label: 'Run a tmux command addressed at a pane',
+    symbols: {
+      py: 'libtmux.Pane.cmd',
+      ts: 'pane.Pane.cmd',
+      rs: 'pane.Pane.cmd',
+      go: 'tmux.Pane.Cmd',
+    },
+    absent: {
+      java: 'no equivalent on `Pane`',
+      dotnet: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'chain-commands': {
+    label: 'Run several commands in one tmux invocation',
+    symbols: {
+      rs: 'server.Server.chain',
+      java: 'io.github.libtmux.Server.Server.chain',
+      dotnet: 'LibTmux.Server.Chain',
+      cxx: 'libtmux::Server::run_chain',
+    },
+    absent: {
+      py: 'no equivalent on `Server`',
+      ts: 'no equivalent on `Server`',
+      go: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'wait-for': {
+    label: 'Wait for, signal or lock a channel',
+    symbols: {
+      py: 'libtmux.Server.wait_for',
+      rs: 'server.Server.wait_for_channel',
+      go: 'tmux.Server.WaitFor',
+      dotnet: 'LibTmux.Server.WaitForAsync',
+      cxx: 'libtmux::Server::wait_for',
+      swift: 'Server.wait(for:)',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+    },
+  },
+  'server-from-env': {
+    label: 'The server this process is running inside',
+    symbols: {
+      py: 'libtmux.Server.from_env',
+      rs: 'server.Server.from_env',
+      dotnet: 'LibTmux.Server.FromEnvironment',
+      cxx: 'libtmux::Server::from_env',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      go: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'session-from-env': {
+    label: 'The session this process is running inside',
+    symbols: {
+      py: 'libtmux.Session.from_env',
+      ts: 'session.Session.fromEnv',
+      rs: 'session.Session.from_env',
+      dotnet: 'LibTmux.Session.FromEnvironmentAsync',
+    },
+    absent: {
+      go: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'config-file': {
+    label: 'The configuration file this server was pointed at',
+    symbols: {
+      py: 'libtmux.Server.config_file',
+      ts: 'server.Server.configFile',
+      rs: 'server.Server.config_file',
+      go: 'tmux.Server.ConfigFile',
+    },
+    absent: {
+      java: 'no equivalent on `Server`',
+      dotnet: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'socket-path': {
+    label: 'The socket path this server addresses',
+    symbols: {
+      py: 'libtmux.Server.socket_path',
+      ts: 'server.Server.socketPath',
+      rs: 'server.Server.socket_path',
+      go: 'tmux.Server.SocketPath',
+    },
+    absent: {
+      java: 'no equivalent on `Server`',
+      dotnet: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'attached-sessions': {
+    label: 'List the sessions a client is attached to',
+    symbols: {
+      py: 'libtmux.Server.attached_sessions',
+      rs: 'server.Server.attached_sessions',
+      java: 'io.github.libtmux.Server.Server.attachedSessions',
+      dotnet: 'LibTmux.Server.GetAttachedSessionsAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      go: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'get-session': {
+    label: 'Look one session up by target',
+    symbols: {
+      rs: 'server.Server.session',
+      go: 'tmux.Server.Session',
+      dotnet: 'LibTmux.Server.GetSessionAsync',
+      cxx: 'libtmux::Server::session',
+    },
+    absent: {
+      py: 'no equivalent on `Server`',
+      ts: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'get-window': {
+    label: 'Look one window up by target',
+    symbols: {
+      rs: 'server.Server.window_by_id',
+      go: 'tmux.Server.Window',
+      dotnet: 'LibTmux.Server.GetWindowAsync',
+      cxx: 'libtmux::Server::window',
+    },
+    absent: {
+      py: 'no equivalent on `Server`',
+      ts: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'get-pane': {
+    label: 'Look one pane up by target',
+    symbols: {
+      rs: 'server.Server.pane_by_id',
+      go: 'tmux.Server.Pane',
+      dotnet: 'LibTmux.Server.GetPaneAsync',
+      cxx: 'libtmux::Server::pane',
+    },
+    absent: {
+      py: 'no equivalent on `Server`',
+      ts: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'search-sessions': {
+    label: 'Filter the sessions with a tmux expression',
+    symbols: {
+      py: 'libtmux.Server.search_sessions',
+      go: 'tmux.Server.SearchSessions',
+      dotnet: 'LibTmux.Server.SearchSessionsAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'search-server-windows': {
+    label: 'Filter every window with a tmux expression',
+    symbols: {
+      py: 'libtmux.Server.search_windows',
+      go: 'tmux.Server.SearchWindows',
+      dotnet: 'LibTmux.Server.SearchWindowsAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'search-server-panes': {
+    label: 'Filter every pane with a tmux expression',
+    symbols: {
+      py: 'libtmux.Server.search_panes',
+      go: 'tmux.Server.SearchPanes',
+      dotnet: 'LibTmux.Server.SearchPanesAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Server`',
+      rs: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'search-session-windows': {
+    label: "Filter a session's windows with a tmux expression",
+    symbols: {
+      py: 'libtmux.Session.search_windows',
+      rs: 'session.Session.search_windows',
+      go: 'tmux.Session.SearchWindows',
+      dotnet: 'LibTmux.Session.SearchWindowsAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'search-session-panes': {
+    label: "Filter a session's panes with a tmux expression",
+    symbols: {
+      py: 'libtmux.Session.search_panes',
+      go: 'tmux.Session.SearchPanes',
+      dotnet: 'LibTmux.Session.SearchPanesAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Session`',
+      rs: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'search-window-panes': {
+    label: "Filter a window's panes with a tmux expression",
+    symbols: {
+      py: 'libtmux.Window.search_panes',
+      rs: 'window.Window.search_panes',
+      go: 'tmux.Window.SearchPanes',
+      dotnet: 'LibTmux.Window.SearchPanesAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Window`',
+      java: 'no equivalent on `Window`',
+      cxx: 'no equivalent on `Window`',
+      swift: 'no equivalent on `Window`',
+    },
+  },
+  'session-id': {
+    label: "A session's stable tmux id",
+    symbols: {
+      py: 'libtmux.Session.id',
+      rs: 'session.Session.id',
+      go: 'tmux.Session.ID',
+      java: 'io.github.libtmux.Session.Session.id',
+      dotnet: 'LibTmux.Session.Id',
+      cxx: 'libtmux::Session::id',
+      swift: 'Session.id',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Session.format`, tmux's own row",
+    },
+  },
+  'window-id': {
+    label: "A window's stable tmux id",
+    symbols: {
+      py: 'libtmux.Window.id',
+      rs: 'window.Window.id',
+      go: 'tmux.Window.ID',
+      java: 'io.github.libtmux.Window.Window.id',
+      dotnet: 'LibTmux.Window.Id',
+      cxx: 'libtmux::Window::id',
+      swift: 'Window.id',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Window.format`, tmux's own row",
+    },
+  },
+  'pane-id': {
+    label: "A pane's stable tmux id",
+    symbols: {
+      py: 'libtmux.Pane.id',
+      rs: 'pane.Pane.id',
+      go: 'tmux.Pane.ID',
+      java: 'io.github.libtmux.Pane.Pane.id',
+      dotnet: 'LibTmux.Pane.Id',
+      cxx: 'libtmux::Pane::id',
+      swift: 'Pane.id',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Pane.format`, tmux's own row",
+    },
+  },
+  'session-name': {
+    label: "A session's name",
+    symbols: {
+      py: 'libtmux.Session.name',
+      rs: 'session.Session.name',
+      go: 'tmux.Session.Name',
+      java: 'io.github.libtmux.Session.Session.name',
+      dotnet: 'LibTmux.Session.Name',
+      cxx: 'libtmux::Session::name',
+      swift: 'Session.name',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Session.format`, tmux's own row",
+    },
+  },
+  'window-name': {
+    label: "A window's name",
+    symbols: {
+      py: 'libtmux.Window.name',
+      rs: 'window.Window.name',
+      go: 'tmux.Window.Name',
+      java: 'io.github.libtmux.Window.Window.name',
+      dotnet: 'LibTmux.Window.Name',
+      cxx: 'libtmux::Window::name',
+      swift: 'Window.name',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Window.format`, tmux's own row",
+    },
+  },
+  'window-index': {
+    label: "A window's index in its session",
+    symbols: {
+      py: 'libtmux.Window.index',
+      rs: 'window.Window.index',
+      go: 'tmux.Window.Index',
+      java: 'io.github.libtmux.Window.Window.index',
+      dotnet: 'LibTmux.Window.Index',
+      cxx: 'libtmux::Window::index',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Window.format`, tmux's own row",
+      swift: 'no equivalent on `Window`',
+    },
+  },
+  'pane-index': {
+    label: "A pane's index in its window",
+    symbols: {
+      py: 'libtmux.Pane.index',
+      rs: 'pane.Pane.index',
+      go: 'tmux.Pane.Index',
+      java: 'io.github.libtmux.Pane.Pane.index',
+      dotnet: 'LibTmux.Pane.Index',
+      cxx: 'libtmux::Pane::index',
+      swift: 'Pane.index',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Pane.format`, tmux's own row",
+    },
+  },
+  'window-height': {
+    label: "A window's height in cells",
+    symbols: {
+      py: 'libtmux.Window.height',
+      rs: 'window.Window.height',
+      go: 'tmux.Window.Height',
+      dotnet: 'LibTmux.Window.Height',
+      cxx: 'libtmux::Window::height',
+      swift: 'Window.height',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Window.format`, tmux's own row",
+      java: 'no equivalent on `Window`',
+    },
+  },
+  'window-width': {
+    label: "A window's width in cells",
+    symbols: {
+      py: 'libtmux.Window.width',
+      rs: 'window.Window.width',
+      go: 'tmux.Window.Width',
+      dotnet: 'LibTmux.Window.Width',
+      cxx: 'libtmux::Window::width',
+      swift: 'Window.width',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Window.format`, tmux's own row",
+      java: 'no equivalent on `Window`',
+    },
+  },
+  'pane-height': {
+    label: "A pane's height in cells",
+    symbols: {
+      py: 'libtmux.Pane.height',
+      rs: 'pane.Pane.height',
+      go: 'tmux.Pane.Height',
+      dotnet: 'LibTmux.Pane.Height',
+      cxx: 'libtmux::Pane::height',
+      swift: 'Pane.height',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Pane.format`, tmux's own row",
+      java: 'no equivalent on `Pane`',
+    },
+  },
+  'pane-width': {
+    label: "A pane's width in cells",
+    symbols: {
+      py: 'libtmux.Pane.width',
+      rs: 'pane.Pane.width',
+      go: 'tmux.Pane.Width',
+      dotnet: 'LibTmux.Pane.Width',
+      cxx: 'libtmux::Pane::width',
+      swift: 'Pane.width',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Pane.format`, tmux's own row",
+      java: 'no equivalent on `Pane`',
+    },
+  },
+  'pane-title': {
+    label: "A pane's title",
+    symbols: {
+      py: 'libtmux.Pane.title',
+      rs: 'pane.Pane.title',
+      go: 'tmux.Pane.Title',
+      java: 'io.github.libtmux.Pane.Pane.title',
+      dotnet: 'LibTmux.Pane.Title',
+      cxx: 'libtmux::Pane::title',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Pane.format`, tmux's own row",
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'window-active': {
+    label: 'Whether this was the active window when captured',
+    symbols: {
+      py: 'libtmux.Window.window_active',
+      rs: 'window.Window.is_active',
+      go: 'tmux.Window.Active',
+      java: 'io.github.libtmux.Window.Window.active',
+      cxx: 'libtmux::Window::active',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Window.format`, tmux's own row",
+      dotnet: 'no equivalent on `Window`',
+      swift: 'no equivalent on `Window`',
+    },
+  },
+  'pane-active': {
+    label: 'Whether this was the active pane when captured',
+    symbols: {
+      py: 'libtmux.Pane.pane_active',
+      rs: 'pane.Pane.is_active',
+      go: 'tmux.Pane.Active',
+      java: 'io.github.libtmux.Pane.Pane.active',
+      cxx: 'libtmux::Pane::active',
+      swift: 'Pane.isActive',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Pane.format`, tmux's own row",
+      dotnet: 'no equivalent on `Pane`',
+    },
+  },
+  'session-attached': {
+    label: 'Whether a client was attached when captured',
+    symbols: {
+      py: 'libtmux.Session.session_attached',
+      rs: 'session.Session.is_attached',
+      go: 'tmux.Session.Attached',
+      java: 'io.github.libtmux.Session.Session.attached',
+      dotnet: 'LibTmux.Session.Attached',
+      cxx: 'libtmux::Session::attached',
+      swift: 'Session.isAttached',
+    },
+    absent: {
+      ts: "no accessor; the field is read from `Session.format`, tmux's own row",
+    },
+  },
+  'session-created': {
+    label: 'When the session was created',
+    symbols: {
+      py: 'libtmux.Session.session_created',
+      rs: 'session.Session.created',
+      go: 'tmux.Session.Created',
+      cxx: 'libtmux::Session::created',
+      swift: 'Session.createdAt',
+    },
+    absent: {
+      ts: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      dotnet: 'no equivalent on `Session`',
+    },
+  },
+  'session-path': {
+    label: 'The directory a new window in this session starts in',
+    symbols: {
+      rs: 'session.Session.path',
+      go: 'tmux.Session.Path',
+      cxx: 'libtmux::Session::path',
+    },
+    absent: {
+      py: 'no equivalent on `Session`',
+      ts: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      dotnet: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'session-window-count': {
+    label: 'How many windows the session holds',
+    symbols: {
+      rs: 'session.Session.window_count',
+      go: 'tmux.Session.WindowCount',
+      cxx: 'libtmux::Session::window_count',
+      swift: 'Session.windowCount',
+    },
+    absent: {
+      py: 'no equivalent on `Session`',
+      ts: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      dotnet: 'no equivalent on `Session`',
+    },
+  },
+  'window-pane-count': {
+    label: 'How many panes the window holds',
+    symbols: {
+      rs: 'window.Window.pane_count',
+      go: 'tmux.Window.PaneCount',
+      cxx: 'libtmux::Window::pane_count',
+      swift: 'Window.paneCount',
+    },
+    absent: {
+      py: 'no equivalent on `Window`',
+      ts: 'no equivalent on `Window`',
+      java: 'no equivalent on `Window`',
+      dotnet: 'no equivalent on `Window`',
+    },
+  },
+  'window-layout': {
+    label: "tmux's own description of a window's layout",
+    symbols: {
+      py: 'libtmux.Window.window_layout',
+      rs: 'window.Window.layout',
+      go: 'tmux.Window.Layout',
+      java: 'io.github.libtmux.Window.Window.layout',
+      cxx: 'libtmux::Window::layout',
+    },
+    absent: {
+      ts: 'no equivalent on `Window`',
+      dotnet: 'no equivalent on `Window`',
+      swift: 'no equivalent on `Window`',
+    },
+  },
+  'pane-current-command': {
+    label: 'The command tmux reports running in a pane',
+    symbols: {
+      py: 'libtmux.Pane.pane_current_command',
+      rs: 'pane.Pane.current_command',
+      go: 'tmux.Pane.CurrentCommand',
+      java: 'io.github.libtmux.Pane.Pane.currentCommand',
+      cxx: 'libtmux::Pane::command',
+      swift: 'Pane.currentCommand',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      dotnet: 'no equivalent on `Pane`',
+    },
+  },
+  'pane-current-path': {
+    label: "A pane process's working directory",
+    symbols: {
+      py: 'libtmux.Pane.pane_current_path',
+      rs: 'pane.Pane.current_path',
+      go: 'tmux.Pane.CurrentPath',
+      java: 'io.github.libtmux.Pane.Pane.currentPath',
+      swift: 'Pane.currentPath',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      dotnet: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+    },
+  },
+  'pane-pid': {
+    label: 'The process id of the program in a pane',
+    symbols: {
+      py: 'libtmux.Pane.pid',
+      rs: 'pane.Pane.pid',
+      java: 'io.github.libtmux.Pane.Pane.pid',
+      cxx: 'libtmux::Pane::pid',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      go: 'no equivalent on `Pane`',
+      dotnet: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'pane-tty': {
+    label: "A pane's controlling terminal",
+    symbols: {
+      rs: 'pane.Pane.tty',
+      go: 'tmux.Pane.TTY',
+      cxx: 'libtmux::Pane::tty',
+    },
+    absent: {
+      py: 'no equivalent on `Pane`',
+      ts: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+      dotnet: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'pane-at-top': {
+    label: 'Whether a pane touches the top of its window',
+    symbols: {
+      py: 'libtmux.Pane.at_top',
+      rs: 'pane.Pane.is_at_top',
+      go: 'tmux.Pane.AtTop',
+      dotnet: 'LibTmux.Pane.AtTop',
+      cxx: 'libtmux::Pane::at_top',
+      swift: 'Pane.isAtTop',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+    },
+  },
+  'pane-at-bottom': {
+    label: 'Whether a pane touches the bottom of its window',
+    symbols: {
+      py: 'libtmux.Pane.at_bottom',
+      rs: 'pane.Pane.is_at_bottom',
+      go: 'tmux.Pane.AtBottom',
+      dotnet: 'LibTmux.Pane.AtBottom',
+      cxx: 'libtmux::Pane::at_bottom',
+      swift: 'Pane.isAtBottom',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+    },
+  },
+  'pane-at-left': {
+    label: 'Whether a pane touches the left of its window',
+    symbols: {
+      py: 'libtmux.Pane.at_left',
+      rs: 'pane.Pane.is_at_left',
+      go: 'tmux.Pane.AtLeft',
+      dotnet: 'LibTmux.Pane.AtLeft',
+      cxx: 'libtmux::Pane::at_left',
+      swift: 'Pane.isAtLeft',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+    },
+  },
+  'pane-at-right': {
+    label: 'Whether a pane touches the right of its window',
+    symbols: {
+      py: 'libtmux.Pane.at_right',
+      rs: 'pane.Pane.is_at_right',
+      go: 'tmux.Pane.AtRight',
+      dotnet: 'LibTmux.Pane.AtRight',
+      cxx: 'libtmux::Pane::at_right',
+      swift: 'Pane.isAtRight',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+    },
+  },
+  'pane-window-id': {
+    label: 'The id of the window holding a pane',
+    symbols: {
+      py: 'libtmux.Pane.window_id',
+      rs: 'pane.Pane.window_id',
+      go: 'tmux.Pane.WindowID',
+      cxx: 'libtmux::Pane::window_id',
+      swift: 'Pane.windowID',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+      dotnet: 'no equivalent on `Pane`',
+    },
+  },
+  'pane-session-id': {
+    label: 'The id of the session a pane was reached through',
+    symbols: {
+      py: 'libtmux.Pane.session_id',
+      rs: 'pane.Pane.session_id',
+      go: 'tmux.Pane.SessionID',
+      cxx: 'libtmux::Pane::session_id',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+      dotnet: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'window-session-id': {
+    label: 'The id of the session a window was reached through',
+    symbols: {
+      py: 'libtmux.Window.session_id',
+      rs: 'window.Window.session_id',
+      go: 'tmux.Window.SessionID',
+      cxx: 'libtmux::Window::session_id',
+    },
+    absent: {
+      ts: 'no equivalent on `Window`',
+      java: 'no equivalent on `Window`',
+      dotnet: 'no equivalent on `Window`',
+      swift: 'no equivalent on `Window`',
+    },
+  },
+  'pane-session': {
+    label: 'The session containing a pane',
+    symbols: {
+      py: 'libtmux.Pane.session',
+      ts: 'pane.Pane.session',
+      go: 'tmux.Pane.Session',
+      dotnet: 'LibTmux.Pane.Session',
+      cxx: 'libtmux::Pane::session',
+    },
+    absent: {
+      rs: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'session-server': {
+    label: 'The server a session lives on',
+    symbols: {
+      py: 'libtmux.Session.server',
+      ts: 'session.Session.server',
+      go: 'tmux.Session.Server',
+      java: 'io.github.libtmux.Session.Session.server',
+      dotnet: 'LibTmux.Session.Server',
+    },
+    absent: {
+      rs: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'window-server': {
+    label: 'The server a window lives on',
+    symbols: {
+      py: 'libtmux.Window.server',
+      ts: 'window.Window.server',
+      go: 'tmux.Window.Server',
+      java: 'io.github.libtmux.Window.Window.server',
+      dotnet: 'LibTmux.Window.Server',
+    },
+    absent: {
+      rs: 'no equivalent on `Window`',
+      cxx: 'no equivalent on `Window`',
+      swift: 'no equivalent on `Window`',
+    },
+  },
+  'pane-server': {
+    label: 'The server a pane lives on',
+    symbols: {
+      py: 'libtmux.Pane.server',
+      ts: 'pane.Pane.server',
+      go: 'tmux.Pane.Server',
+      java: 'io.github.libtmux.Pane.Pane.server',
+      dotnet: 'LibTmux.Pane.Server',
+    },
+    absent: {
+      rs: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'linked-sessions': {
+    label: 'Every session a window is linked into',
+    symbols: {
+      py: 'libtmux.Window.linked_sessions',
+      ts: 'window.Window.linkedSessions',
+      rs: 'window.Window.linked_sessions',
+      go: 'tmux.Window.LinkedSessions',
+      dotnet: 'LibTmux.Window.LinkedSessions',
+    },
+    absent: {
+      java: 'no equivalent on `Window`',
+      cxx: '`Window::linked_sessions` counts them rather than listing them',
+      swift: 'no equivalent on `Window`',
+    },
+  },
+  'session-active-pane': {
+    label: "The active pane of a session's active window",
+    symbols: {
+      py: 'libtmux.Session.active_pane',
+      ts: 'session.Session.activePane',
+      go: 'tmux.Session.ActivePane',
+      java: 'io.github.libtmux.Session.Session.activePane',
+      dotnet: 'LibTmux.Session.ActivePane',
+      cxx: 'libtmux::Session::active_pane',
+    },
+    absent: {
+      rs: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'refresh-session': {
+    label: 'Read a session again',
+    symbols: {
+      py: 'libtmux.Session.refresh',
+      ts: 'session.Session.refreshed',
+      rs: 'session.Session.refresh',
+      go: 'tmux.Session.Refresh',
+      java: 'io.github.libtmux.Session.Session.refresh',
+      dotnet: 'LibTmux.Session.RefreshAsync',
+      cxx: 'libtmux::Session::refresh',
+    },
+    absent: {
+      swift: 'reads are snapshots; `Server.snapshot()` takes a new one rather than refreshing a handle',
+    },
+  },
+  'refresh-window': {
+    label: 'Read a window again',
+    symbols: {
+      py: 'libtmux.Window.refresh',
+      ts: 'window.Window.refreshed',
+      rs: 'window.Window.refresh',
+      go: 'tmux.Window.Refresh',
+      java: 'io.github.libtmux.Window.Window.refresh',
+      dotnet: 'LibTmux.Window.RefreshAsync',
+      cxx: 'libtmux::Window::refresh',
+    },
+    absent: {
+      swift: 'reads are snapshots; `Server.snapshot()` takes a new one rather than refreshing a handle',
+    },
+  },
+  'refresh-pane': {
+    label: 'Read a pane again',
+    symbols: {
+      py: 'libtmux.Pane.refresh',
+      ts: 'pane.Pane.refreshed',
+      rs: 'pane.Pane.refresh',
+      go: 'tmux.Pane.Refresh',
+      java: 'io.github.libtmux.Pane.Pane.refresh',
+      dotnet: 'LibTmux.Pane.RefreshAsync',
+      cxx: 'libtmux::Pane::refresh',
+    },
+    absent: {
+      swift: 'reads are snapshots; `Server.snapshot()` takes a new one rather than refreshing a handle',
+    },
+  },
+  'next-layout': {
+    label: "Apply a window's next layout preset",
+    symbols: {
+      py: 'libtmux.Window.next_layout',
+      ts: 'window.Window.nextLayout',
+      rs: 'window.Window.next_layout',
+      go: 'tmux.Window.NextLayout',
+      java: 'io.github.libtmux.Window.Window.nextLayout',
+      dotnet: 'LibTmux.Window.SelectNextLayoutAsync',
+      cxx: 'libtmux::Window::next_layout',
+      swift: 'Server.nextLayout(_:)',
+    },
+  },
+  'previous-layout': {
+    label: "Apply a window's previous layout preset",
+    symbols: {
+      py: 'libtmux.Window.previous_layout',
+      ts: 'window.Window.previousLayout',
+      rs: 'window.Window.previous_layout',
+      go: 'tmux.Window.PreviousLayout',
+      dotnet: 'LibTmux.Window.SelectPreviousLayoutAsync',
+      cxx: 'libtmux::Window::previous_layout',
+      swift: 'Server.previousLayout(_:)',
+    },
+    absent: {
+      java: '`Window.applyLayout` restores a named layout; there is no previous step',
+    },
+  },
+  'resize-window': {
+    label: 'Resize a window',
+    symbols: {
+      py: 'libtmux.Window.resize',
+      ts: 'window.Window.resize',
+      rs: 'window.Window.resize',
+      go: 'tmux.Window.Resize',
+      java: 'io.github.libtmux.Window.Window.resizeTo',
+      dotnet: 'LibTmux.Window.ResizeAsync',
+      cxx: 'libtmux::Window::resize',
+    },
+    absent: {
+      swift: 'both `Server.resize` overloads size a pane, not a window',
+    },
+  },
+  'respawn-window': {
+    label: "Restart the command in a window's active pane",
+    symbols: {
+      py: 'libtmux.Window.respawn',
+      ts: 'window.Window.respawn',
+      rs: 'window.Window.respawn',
+      go: 'tmux.Window.Respawn',
+      java: 'io.github.libtmux.Window.Window.respawn',
+      dotnet: 'LibTmux.Window.RespawnAsync',
+    },
+    absent: {
+      cxx: 'no equivalent on `Window`',
+      swift: 'no equivalent on `Window`',
+    },
+  },
+  'link-window': {
+    label: 'Link a window into another session',
+    symbols: {
+      py: 'libtmux.Window.link',
+      ts: 'window.Window.link',
+      rs: 'window.Window.link_to',
+      go: 'tmux.Window.Link',
+      java: 'io.github.libtmux.Window.Window.linkTo',
+      dotnet: 'LibTmux.Window.LinkAsync',
+      cxx: 'libtmux::Window::link_to',
+      swift: 'Server.link(_:into:)',
+    },
+  },
+  'move-window': {
+    label: 'Move a window to another session or index',
+    symbols: {
+      py: 'libtmux.Window.move_window',
+      ts: 'window.Window.move',
+      rs: 'window.Window.move_to',
+      go: 'tmux.Window.Move',
+      java: 'io.github.libtmux.Window.Window.moveTo',
+      dotnet: 'LibTmux.Window.MoveAsync',
+      cxx: 'libtmux::Window::move_to',
+      swift: 'Server.move(_:to:)',
+    },
+  },
+  'swap-window': {
+    label: 'Exchange two windows',
+    symbols: {
+      py: 'libtmux.Window.swap',
+      ts: 'window.Window.swapWith',
+      rs: 'window.Window.swap_with',
+      go: 'tmux.Window.Swap',
+      dotnet: 'LibTmux.Window.SwapAsync',
+      cxx: 'libtmux::Window::swap_with',
+      swift: 'Server.swap(_:with:)',
+    },
+    absent: {
+      java: 'no equivalent on `Window`',
+    },
+  },
+  'select-pane-in-window': {
+    label: 'Make a pane of a window active',
+    symbols: {
+      py: 'libtmux.Window.select_pane',
+      go: 'tmux.Window.SelectPane',
+      dotnet: 'LibTmux.Window.SelectPaneAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Window`',
+      rs: 'no equivalent on `Window`',
+      java: 'no equivalent on `Window`',
+      cxx: 'no equivalent on `Window`',
+      swift: 'no equivalent on `Window`',
+    },
+  },
+  'last-pane': {
+    label: 'Return to the pane that was active before',
+    symbols: {
+      py: 'libtmux.Window.last_pane',
+      rs: 'window.Window.last_pane',
+      go: 'tmux.Window.LastPane',
+      dotnet: 'LibTmux.Window.SelectLastPaneAsync',
+      cxx: 'libtmux::Window::select_last_pane',
+      swift: 'Server.selectLastPane(in:)',
+    },
+    absent: {
+      ts: 'no equivalent on `Window`',
+      java: 'no equivalent on `Window`',
+    },
+  },
+  'window-display-message': {
+    label: 'Show a message on the client viewing a window',
+    symbols: {
+      py: 'libtmux.Window.display_message',
+      rs: 'window.Window.display',
+      go: 'tmux.Window.DisplayMessage',
+      dotnet: 'LibTmux.Window.DisplayMessageAsync',
+      cxx: 'libtmux::Window::show_message',
+    },
+    absent: {
+      ts: 'no equivalent on `Window`',
+      java: 'no equivalent on `Window`',
+      swift: 'no equivalent on `Window`',
+    },
+  },
+  'select-window-in-session': {
+    label: 'Make a window of a session active',
+    symbols: {
+      py: 'libtmux.Session.select_window',
+      ts: 'session.Session.selectWindow',
+      go: 'tmux.Session.SelectWindow',
+      java: 'io.github.libtmux.Session.Session.selectWindow',
+      dotnet: 'LibTmux.Session.SelectWindowAsync',
+    },
+    absent: {
+      rs: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'next-window': {
+    label: 'Move to the next window of a session',
+    symbols: {
+      py: 'libtmux.Session.next_window',
+      rs: 'session.Session.next_window',
+      go: 'tmux.Session.NextWindow',
+      java: 'io.github.libtmux.Session.Session.nextWindow',
+      dotnet: 'LibTmux.Session.SelectNextWindowAsync',
+      cxx: 'libtmux::Session::select_next_window',
+      swift: 'Server.selectNextWindow(in:)',
+    },
+    absent: {
+      ts: '`Session.selectWindow` takes `next`, `previous` or `last`',
+    },
+  },
+  'previous-window': {
+    label: 'Move to the previous window of a session',
+    symbols: {
+      py: 'libtmux.Session.previous_window',
+      rs: 'session.Session.previous_window',
+      go: 'tmux.Session.PreviousWindow',
+      java: 'io.github.libtmux.Session.Session.previousWindow',
+      dotnet: 'LibTmux.Session.SelectPreviousWindowAsync',
+      cxx: 'libtmux::Session::select_previous_window',
+      swift: 'Server.selectPreviousWindow(in:)',
+    },
+    absent: {
+      ts: '`Session.selectWindow` takes `next`, `previous` or `last`',
+    },
+  },
+  'last-window': {
+    label: 'Return to the window that was active before',
+    symbols: {
+      py: 'libtmux.Session.last_window',
+      rs: 'session.Session.last_window',
+      go: 'tmux.Session.LastWindow',
+      java: 'io.github.libtmux.Session.Session.lastWindow',
+      dotnet: 'LibTmux.Session.SelectLastWindowAsync',
+      cxx: 'libtmux::Session::select_last_window',
+      swift: 'Server.selectLastWindow(in:)',
+    },
+    absent: {
+      ts: '`Session.selectWindow` takes `next`, `previous` or `last`',
+    },
+  },
+  'kill-window-by-target': {
+    label: 'Close a window named from its session',
+    symbols: {
+      py: 'libtmux.Session.kill_window',
+      go: 'tmux.Session.KillWindow',
+      dotnet: 'LibTmux.Session.KillWindowAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Session`',
+      rs: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'detach-session-clients': {
+    label: 'Detach every client attached to a session',
+    symbols: {
+      py: 'libtmux.Session.detach_client',
+      ts: 'session.Session.detach',
+      rs: 'session.Session.detach_clients',
+      go: 'tmux.Session.DetachClients',
+      java: 'io.github.libtmux.Session.Session.detachClients',
+      dotnet: 'LibTmux.Session.DetachClientAsync',
+      cxx: 'libtmux::Session::detach_clients',
+      swift: 'Server.detachClients(from:)',
+    },
+  },
+  'lock-session': {
+    label: 'Lock every client attached to a session',
+    symbols: {
+      py: 'libtmux.Session.lock_session',
+      rs: 'session.Session.lock',
+      go: 'tmux.Session.Lock',
+      dotnet: 'LibTmux.Session.LockAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'switch-client-to-session': {
+    label: "Switch the caller's client to a session",
+    symbols: {
+      py: 'libtmux.Session.switch_client',
+      go: 'tmux.Session.SwitchClient',
+      dotnet: 'LibTmux.Session.SwitchClientAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Session`',
+      rs: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'break-pane': {
+    label: 'Move a pane out into a window of its own',
+    symbols: {
+      py: 'libtmux.Pane.break_pane',
+      ts: 'pane.Pane.breakOut',
+      rs: 'pane.Pane.break_out',
+      go: 'tmux.Pane.BreakPane',
+      java: 'io.github.libtmux.Pane.Pane.breakOut',
+      dotnet: 'LibTmux.Pane.BreakAsync',
+      cxx: 'libtmux::Pane::break_out',
+      swift: 'Server.breakPane(_:from:named:)',
+    },
+  },
+  'join-pane': {
+    label: 'Move a pane into another window',
+    symbols: {
+      py: 'libtmux.Pane.join',
+      ts: 'pane.Pane.joinTo',
+      go: 'tmux.Pane.Join',
+      java: 'io.github.libtmux.Pane.Pane.joinTo',
+      dotnet: 'LibTmux.Pane.JoinAsync',
+      cxx: 'libtmux::Pane::join',
+      swift: 'Server.join(_:into:direction:size:)',
+    },
+    absent: {
+      rs: 'no equivalent on `Pane`',
+    },
+  },
+  'move-pane': {
+    label: 'Move a pane to another position',
+    symbols: {
+      py: 'libtmux.Pane.move',
+      go: 'tmux.Pane.Move',
+      dotnet: 'LibTmux.Pane.MoveAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      rs: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+      swift: '`Server.move(_:to:)` moves a window, not a pane',
+    },
+  },
+  'swap-pane': {
+    label: 'Exchange two panes',
+    symbols: {
+      py: 'libtmux.Pane.swap',
+      ts: 'pane.Pane.swapWith',
+      rs: 'pane.Pane.swap_with',
+      go: 'tmux.Pane.Swap',
+      java: 'io.github.libtmux.Pane.Pane.swapWith',
+      dotnet: 'LibTmux.Pane.SwapAsync',
+      cxx: 'libtmux::Pane::swap_with',
+    },
+    absent: {
+      swift: '`Server.swap(_:with:)` swaps windows, not panes',
+    },
+  },
+  'set-pane-height': {
+    label: "Set a pane's height",
+    symbols: {
+      py: 'libtmux.Pane.set_height',
+      go: 'tmux.Pane.SetHeight',
+      dotnet: 'LibTmux.Pane.SetHeightAsync',
+      cxx: 'libtmux::Pane::set_height',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      rs: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'set-pane-width': {
+    label: "Set a pane's width",
+    symbols: {
+      py: 'libtmux.Pane.set_width',
+      go: 'tmux.Pane.SetWidth',
+      dotnet: 'LibTmux.Pane.SetWidthAsync',
+      cxx: 'libtmux::Pane::set_width',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      rs: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'pipe-pane': {
+    label: "Copy a pane's output to a shell command",
+    symbols: {
+      py: 'libtmux.Pane.pipe',
+      ts: 'pane.Pane.pipeTo',
+      rs: 'pane.Pane.pipe',
+      go: 'tmux.Pane.Pipe',
+      java: 'io.github.libtmux.Pane.Pane.pipeTo',
+      dotnet: 'LibTmux.Pane.PipeAsync',
+      cxx: 'libtmux::Pane::pipe_to',
+      swift: 'Server.pipe(_:to:)',
+    },
+  },
+  'copy-mode': {
+    label: 'Put a pane into copy mode',
+    symbols: {
+      py: 'libtmux.Pane.copy_mode',
+      ts: 'pane.Pane.enterCopyMode',
+      rs: 'pane.Pane.copy_mode',
+      go: 'tmux.Pane.CopyMode',
+      java: 'io.github.libtmux.Pane.Pane.copyMode',
+      dotnet: 'LibTmux.Pane.EnterCopyModeAsync',
+      cxx: 'libtmux::Pane::enter_copy_mode',
+    },
+    absent: {
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'clock-mode': {
+    label: 'Show the clock in a pane',
+    symbols: {
+      py: 'libtmux.Pane.clock_mode',
+      rs: 'pane.Pane.clock_mode',
+      go: 'tmux.Pane.ClockMode',
+      java: 'io.github.libtmux.Pane.Pane.clockMode',
+      dotnet: 'LibTmux.Pane.EnterClockModeAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'customize-mode': {
+    label: "Open tmux's option editor in a pane",
+    symbols: {
+      py: 'libtmux.Pane.customize_mode',
+      ts: 'pane.Pane.customizeMode',
+      go: 'tmux.Pane.CustomizeMode',
+      java: 'io.github.libtmux.Pane.Pane.customizeMode',
+      dotnet: 'LibTmux.Pane.EnterCustomizeModeAsync',
+    },
+    absent: {
+      rs: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'choose-tree': {
+    label: 'Open the session and window chooser in a pane',
+    symbols: {
+      py: 'libtmux.Pane.choose_tree',
+      ts: 'pane.Pane.chooseTree',
+      go: 'tmux.Pane.ChooseTree',
+      java: 'io.github.libtmux.Pane.Pane.chooseTree',
+      dotnet: 'LibTmux.Pane.ChooseTreeAsync',
+    },
+    absent: {
+      rs: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'choose-buffer': {
+    label: 'Open the paste buffer chooser in a pane',
+    symbols: {
+      py: 'libtmux.Pane.choose_buffer',
+      ts: 'pane.Pane.chooseBuffer',
+      go: 'tmux.Pane.ChooseBuffer',
+      java: 'io.github.libtmux.Pane.Pane.chooseBuffer',
+      dotnet: 'LibTmux.Pane.ChooseBufferAsync',
+    },
+    absent: {
+      rs: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'choose-client': {
+    label: 'Open the client chooser in a pane',
+    symbols: {
+      py: 'libtmux.Pane.choose_client',
+      go: 'tmux.Pane.ChooseClient',
+      java: 'io.github.libtmux.Pane.Pane.chooseClient',
+      dotnet: 'LibTmux.Pane.ChooseClientAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      rs: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'find-window': {
+    label: 'Search windows interactively from a pane',
+    symbols: {
+      py: 'libtmux.Pane.find_window',
+      ts: 'pane.Pane.findWindow',
+      go: 'tmux.Pane.FindWindow',
+      java: 'io.github.libtmux.Pane.Pane.findWindow',
+      dotnet: 'LibTmux.Pane.FindWindowAsync',
+    },
+    absent: {
+      rs: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'send-prefix': {
+    label: 'Send the configured prefix key to a pane',
+    symbols: {
+      py: 'libtmux.Pane.send_prefix',
+      ts: 'pane.Pane.sendPrefix',
+      rs: 'pane.Pane.send_prefix',
+      go: 'tmux.Pane.SendPrefix',
+      dotnet: 'LibTmux.Pane.SendPrefixAsync',
+    },
+    absent: {
+      java: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'clear-pane': {
+    label: "Clear a pane by running the shell's reset",
+    symbols: {
+      py: 'libtmux.Pane.clear',
+      go: 'tmux.Pane.Clear',
+      dotnet: 'LibTmux.Pane.ClearAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      rs: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'reset-pane': {
+    label: "Reset a pane's terminal state and drop its history",
+    symbols: {
+      py: 'libtmux.Pane.reset',
+      go: 'tmux.Pane.Reset',
+      dotnet: 'LibTmux.Pane.ResetAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      rs: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'press-enter': {
+    label: 'Press Enter in a pane',
+    symbols: {
+      py: 'libtmux.Pane.enter',
+      go: 'tmux.Pane.Enter',
+      dotnet: 'LibTmux.Pane.EnterAsync',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      rs: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'pane-display-message': {
+    label: 'Show a message on the client viewing a pane',
+    symbols: {
+      py: 'libtmux.Pane.display_message',
+      ts: 'pane.Pane.displayMessage',
+      rs: 'pane.Pane.display',
+      go: 'tmux.Pane.DisplayMessage',
+      dotnet: 'LibTmux.Pane.DisplayMessageAsync',
+      cxx: 'libtmux::Pane::show_message',
+    },
+    absent: {
+      java: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'display-popup': {
+    label: 'Open a popup over the client showing a pane',
+    symbols: {
+      py: 'libtmux.Pane.display_popup',
+      ts: 'pane.Pane.displayPopup',
+      go: 'tmux.Pane.DisplayPopup',
+      dotnet: 'LibTmux.Pane.DisplayPopupAsync',
+    },
+    absent: {
+      rs: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+      cxx: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'server-get-environment': {
+    label: "Read one variable from the server's environment",
+    symbols: {
+      ts: 'server.Server.getEnvironment',
+      rs: 'server.Server.environment',
+      go: 'tmux.Server.GetEnvironment',
+    },
+    absent: {
+      py: 'no single-variable read; the whole table is returned',
+      java: 'no single-variable read; the whole table is returned',
+      dotnet: 'no single-variable read; the whole table is returned',
+      cxx: 'no single-variable read; the whole table is returned',
+      swift: 'no single-variable read; the whole table is returned',
+    },
+  },
+  'session-get-environment': {
+    label: "Read one variable from a session's environment",
+    symbols: {
+      ts: 'session.Session.getEnvironment',
+      rs: 'session.Session.environment',
+      go: 'tmux.Session.GetEnvironment',
+    },
+    absent: {
+      py: 'no single-variable read; the whole table is returned',
+      java: 'no single-variable read; the whole table is returned',
+      dotnet: 'no single-variable read; the whole table is returned',
+      cxx: 'no single-variable read; the whole table is returned',
+      swift: 'no single-variable read; the whole table is returned',
+    },
+  },
 }
 
-/** Every concept naming this symbol, for the "in other languages" block. */
+/** Every concept naming this symbol, including concepts sharing an overload group. */
 export function conceptsFor(port: string, publicId: string): Concept[] {
   return Object.values(CONCEPTS).filter((c) => c.symbols[port] === publicId)
 }

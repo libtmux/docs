@@ -268,9 +268,14 @@
 .api-elsewhere-port {
   opacity: 0.6;
 }
+/*
+ * Dimmed, not italic. The 0.6 opacity already reads as an aside, and the
+ * italic was the only thing on a reference entry that opened with IBM Plex
+ * Sans italic — one more font file fetched during first paint for a
+ * distinction the opacity had already made.
+ */
 .api-elsewhere-absent {
   opacity: 0.6;
-  font-style: italic;
 }
 
 /* The member list on a type page. Capped and scrollable: Pane declares 257
@@ -540,6 +545,21 @@
   padding: 0.75rem 0.9rem;
 }
 
+/* Shiki writes both themes as custom properties, and something has to read
+   them. The gp-sphinx parity sheet does that for the per-symbol examples,
+   whose markup sits inside its `dl.py > dd .highlight`; these tabs are this
+   site's own component and matched no such rule, so a cross-port example
+   rendered in the inherited foreground colour — every token one flat grey.
+   Scoped to the panel rather than to `.shiki` at large, so the parity sheet
+   stays the only thing styling the pages it emulates. */
+.api-example-panel .shiki span {
+  color: var(--shiki-light);
+}
+
+[data-theme-mode='dark'] .api-example-panel .shiki span {
+  color: var(--shiki-dark);
+}
+
 /* Each radio reveals the panel at its own position. Generated in the
    component's own style block, since the count varies per instance. */
 .api-example-intro {
@@ -707,6 +727,31 @@
 
 .api-index-section:not([open]) > .api-index-summary {
   opacity: 0.7;
+}
+
+/*
+ * A type card whose whole area is clickable without nesting a link.
+ *
+ * The card used to be one `a` wrapping the name and the summary. A summary
+ * carries cross-references, and `a` inside `a` is not parseable HTML: the
+ * browser ended the card at the first nested link and left the rest as the
+ * grid's next cell, so a type's prose rendered beside a different type's
+ * name. Only the name is a link now, and this stretches its hit area over
+ * the card. The links inside the summary are raised back above it.
+ */
+.api-index-card {
+  position: relative;
+  display: block;
+}
+
+.api-index-card__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.api-index-card p a {
+  position: relative;
 }
 
 /*

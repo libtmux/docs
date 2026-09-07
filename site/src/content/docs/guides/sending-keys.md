@@ -8,22 +8,16 @@ sidebar:
 tableOfContents: true
 ---
 
-Every port's version of `send_keys` is really `tmux send-keys` wearing that
-port's calling convention, and `send-keys` has one behavior worth
-understanding before you rely on it: **tmux can read the text you send
-either as literal characters or as tmux's own key vocabulary** (`C-c`,
-`Enter`, `Up`). Without a literal flag, `q` sent to a pane running `less` is
-a keypress; the same `q` sent literally is the character `q`, which happens
-to also quit `less` — so the ambiguity mostly hides until the text you're
-sending collides with a real key name.
+Send literal text to type characters into a pane, or send tmux key names such as
+`C-c`, `Enter`, and `Up` to press those keys. Check the method's literal-text
+and Enter defaults: typing the word `Enter` and pressing Enter are different
+operations.
 
 ## Literal text, key names, and whether Enter follows
 
-Each block below sends the same two things a port can send — text and,
-separately, a named key — and shows whether pressing Enter is the default,
-an option, or a second call you make yourself. Source citations sit as
-comments in each block; see [Attach and send keys](/examples/attach-and-send-keys/)
-for the same calls in their full, checked context.
+These examples show each port's text, named-key, and Enter behavior. [Attach and
+send keys](/examples/attach-and-send-keys/) provides the full source examples
+and validation details.
 
 ```python
 # literal=True disables tmux's key-name lookup; left at its default, a
@@ -31,7 +25,7 @@ for the same calls in their full, checked context.
 pane.send_keys(cmd, literal=True)
 
 # enter defaults to True. Pass enter=False to type without submitting, then
-# press Enter yourself — the README's own example, to show the steps apart.
+# press Enter yourself: the README's own example, to show the steps apart.
 pane.send_keys('echo hey', enter=False)
 pane.enter()
 ```
@@ -69,7 +63,7 @@ pane.send_key_names(["C-c"]).await?;
 // followed by a newline the caller did not ask for.
 pane.send_text("echo hey");
 
-// One named key, sent separately — this is how Enter gets pressed.
+// One named key, sent separately: this is how Enter gets pressed.
 pane.send_key("Enter");
 ```
 
@@ -79,7 +73,7 @@ await pane.EnterAsync(ct);
 ```
 
 ```java
-// Sends the text and submits it as one call — no separate literal switch
+// Sends the text and submits it as one call: no separate literal switch
 // and no documented "type without submitting" step as of this page.
 pane.sendLine("echo hey");
 ```
@@ -90,38 +84,30 @@ pane.sendLine("echo hey");
 try await server.run("echo hey", in: pane)
 ```
 
-Java, .NET, and Swift send exactly the text given, without a separate
-literal switch to reach for — the type signature doesn't offer the
-ambiguous path in the first place. Confirm against your own port's
-reference before assuming a call is unambiguous for input that looks like a
-key name (a literal `#` in an option value has this same class of gotcha —
-see the option-naming note in [Concepts](/concepts/)).
+Check each method's input contract before sending text that could be a key name.
+Some ports separate text and key-name methods; others use a literal-text flag.
+[Concepts](/concepts/) introduces the shared tmux model.
 
 ## The race you can't see from the call site
 
-tmux accepts a `send-keys` command the instant it's issued — before the
-shell in that pane has necessarily started, and before whatever you sent
-has necessarily finished. Two ports say this outright, and a third ships
-the fix without spelling out the reason:
+Completing `send-keys` means tmux accepted the input. The shell may still be
+starting, and the command may still be running. The port examples provide
+different ways to wait:
 
-- **Rust**: "tmux hands back a pane the moment it forks, before the shell
-  in it has started" — the comment sits directly above a `retry_until`
-  loop in `README.md`'s query example.
-- **Go**: doesn't say the same sentence, but ships the fix for it —
-  `tmuxtest.WaitForShellReady` exists specifically for a pane that hasn't
-  started its shell yet.
-- **.NET**: "tmux accepts a command before the shell has finished it, so
-  the result is waited for rather than assumed" — from `README.md`'s
-  "Running something, and reading it back" section.
+- **Rust** uses a `retry_until` loop in the README's query example to wait for
+  the shell.
+- **Go** provides `tmuxtest.WaitForShellReady` for tests that need a ready
+  shell.
+- **.NET** demonstrates waiting for command output in the README's "Running
+  something, and reading it back" section.
 
-The fix in every case is the same shape: don't read a pane immediately
-after sending to it; wait for the text you expect to actually appear. That
-waiting mechanism — what each port offers instead of a fixed `sleep` — is
-the subject of the next guide.
+Wait for shell readiness before sending input when startup matters. Then wait
+for the command's expected output or a completion signal before reading its
+result. The next guide covers those waiting APIs.
 
 ## Where to go next
 
-- [Capturing output](../capturing-output/) — reading back what you just
+- [Capturing output](../capturing-output/): reading back what you just
   sent, and waiting for it correctly instead of guessing a delay.
-- [Attach and send keys](/examples/attach-and-send-keys/) — the full
+- [Attach and send keys](/examples/attach-and-send-keys/): the full
   sourced round trip this guide picks apart piece by piece.
