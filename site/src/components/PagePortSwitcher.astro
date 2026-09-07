@@ -16,7 +16,7 @@ const current = entries.find((entry) => entry.port === portSlug)
   >
     {current?.name ?? 'In other ports'}
   </summary>
-  <ul class="absolute left-0 z-50 mt-1 w-64 max-w-[calc(100vw-2rem)] rounded border border-edge bg-surface py-1 shadow-lg">
+  <ul class="absolute right-0 z-50 mt-1 w-64 max-w-[calc(100vw-2rem)] rounded border border-edge bg-surface py-1 shadow-lg">
     {entries.map((entry) => (
       <li>
         {entry.links.length ? entry.links.map((link) => (
