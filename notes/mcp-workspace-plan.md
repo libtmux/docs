@@ -38,11 +38,11 @@ pages. Extract protocol operations separately from public language APIs.
 - [x] Verify canonical URLs, real language alternatives, structured data,
   breadcrumbs, sitemaps, and nested Pagefind loading.
 - [x] Run the required outer loop before each implementation commit.
-- [ ] Regenerate changed inputs, assemble the full site, and run the local
+- [x] Regenerate changed inputs, assemble the full site, and run the local
   publication audit. Report unavailable checks explicitly.
 - [x] Inspect desktop and mobile pages and execute representative examples
   in isolated environments where supported.
-- [ ] Leave a local development server and full-build review server running.
+- [x] Leave a local development server and full-build review server running.
 - [ ] Give the user review URLs, build identity, results, and limitations;
   iterate on feedback before declaring design acceptance.
 
@@ -69,3 +69,28 @@ keeps unexplained missing locations in its coverage denominator.
 The visual baselines include the added Go MCP module and API counts, new
 symbol-index entries, and the Swift MCP example backlink. Desktop and mobile
 layouts retain the existing shell and typography.
+
+## Local verification
+
+The complete publication audit passes for the assembled site: 15,627 HTML
+pages, 1,982,767 checked links, and no broken targets. All 204 output tests,
+235 API-model tests, and 36 theme tests pass. Browser checks cover 36 visual
+comparisons, 24 navigation checks, and 78 table layouts, plus fonts, native
+navigation, and Sphinx style parity. All publication stages ran.
+
+The final outer loop passes in 37.30 seconds, within its 60-second budget.
+One earlier output run hit three test timeouts; unchanged standalone runs
+and the complete rerun passed. No timeout limits or concurrency defaults
+were changed.
+
+Runtime protocol discovery covers all eight ports. Representative workspace
+examples ran across the ports; the C++ YAML example and full C++ consumer
+suite remain unexecuted. Some MCP embedding examples received compilation
+checks rather than execution; runtime discovery validates their registered
+protocol surface separately.
+
+The complete preview runs on ports 8081 and 8082. The development server on
+port 4321 provides live content; use the complete preview for assembled
+port navigation and search. The Go install guide selects `@latest`, and its
+workspace overview links the `tmuxp` name to the upstream documentation.
+Section-structure and visual acceptance remain pending user review.
