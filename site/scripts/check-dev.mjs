@@ -64,6 +64,19 @@ try {
       assert(menu && menu.x >= 0 && menu.x + menu.width <= 390, `${path}: dropdown leaves phone viewport`)
     }
   }
+  for (const path of [
+    'py/stable/workspace/api/tmuxp-workspace-builder-classicworkspacebuilder',
+    'java/latest/workspace/api/io-github-libtmux-workspace-workspacebuilder-workspacebuilder',
+  ]) {
+    const response = await page.goto(`${base}/${path}/`, { waitUntil: 'networkidle' })
+    assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
+    await page.evaluate(() => document.fonts.ready)
+    for (const width of [1440, 768, 390]) {
+      await page.setViewportSize({ width, height: 1000 })
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
+      assert(overflow <= 1, `${path} at ${width}px: declaration page overflow ${overflow}px`)
+    }
+  }
   console.log('Fresh Astro + browser: prose, workspace, MCP tools and API equivalent; 1440/768/390px PASS')
 } finally {
   await browser?.close()

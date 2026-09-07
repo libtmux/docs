@@ -183,7 +183,7 @@ const breadcrumbs = product && port ? [
         {breadcrumbs.length > 0 && (
           <nav aria-label="Breadcrumb" class="not-prose mb-4 text-sm opacity-80" data-pagefind-ignore="all">
             <ol class="flex flex-wrap gap-x-2 gap-y-1">
-              {breadcrumbs.map((item, i) => <li class="flex gap-2">
+              {breadcrumbs.map((item, i) => <li class="flex min-w-0 gap-2 wrap-anywhere">
                 {i > 0 && <span aria-hidden="true">/</span>}
                 {i === breadcrumbs.length - 1 ? <span aria-current="page">{item.name}</span> : <a class="hover:underline" href={item.url}>{item.name}</a>}
               </li>)}
