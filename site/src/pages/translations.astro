@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content'
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { LOCALES, LOCALE_LABEL, DEFAULT_LOCALE, localeRoot, type Locale } from '../i18n/locales'
+import { LOCALES, LOCALE_LABEL, DEFAULT_LOCALE, localeRoot } from '../i18n/locales'
 import { ALL_TRANSLATED, buildLocale, localeOf, localeStatusesFor, type LocaleStatus } from '../i18n/resolve'
 import { t } from '../i18n/ui'
 import { contributeLink } from '../i18n/contribute'
@@ -31,7 +31,7 @@ const locale = buildLocale()
 // original is not a thing the content collection can hold.
 const entries = await getCollection('docs')
 const sources = entries
-  .filter((e) => localeOf(e.id) === DEFAULT_LOCALE)
+  .filter((e) => localeOf(e.id) === DEFAULT_LOCALE && !e.data.product)
   .map((e) => ({
     sourceId: e.id,
     title: e.data.title,
