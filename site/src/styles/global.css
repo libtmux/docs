@@ -1085,8 +1085,18 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
  * of its own above the content it was 1280x40 to show a single chip, and
  * every page started a row lower for it.
  */
+/*
+ * Never squeezed, and pushed to the right of whatever line it lands on.
+ *
+ * The title row wraps, so at 390px the control drops below a long heading
+ * rather than being carried 18px past the right edge, which is what it did
+ * when the row could not wrap and this could not shrink. `margin-left` keeps
+ * it right-aligned on that second line, where `justify-content` no longer
+ * has a second item to push it against.
+ */
 .page-ports {
   flex: none;
+  margin-left: auto;
 }
 
 /* Its list opens over the article, so it hangs from the right edge and never
