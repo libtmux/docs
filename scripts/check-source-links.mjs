@@ -20,6 +20,8 @@ import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { PORTS } from '../site/src/lib/ports.ts'
+
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const expand = (p) => (p.startsWith('~/') ? join(homedir(), p.slice(2)) : p)
 const arg = (name) => {
@@ -35,15 +37,10 @@ const only = arg('--port')
  * graph path names the sources, and that is the repository the blob URL
  * addresses too.
  */
-const CHECKOUT = {
-  py: '~/work/python/libtmux',
-  ts: '~/work/libtmux/libtmux-ts',
-  rs: '~/work/libtmux/libtmux-rs',
-  go: '~/work/libtmux/libtmux-go',
-  java: '~/work/libtmux/libtmux-java',
-  dotnet: '~/work/libtmux/libtmux-dotnet',
-  cxx: '~/work/libtmux/libtmux-cxx',
-  swift: '~/work/libtmux/libtmux-swift',
+const CHECKOUT = Object.fromEntries(PORTS.map((port) => [port.slug, port.checkout]))
+const PRODUCT_CHECKOUT = {
+  'tmux-python/tmuxp': '~/work/python/tmuxp',
+  'tmux-python/libtmux-mcp': '~/work/python/libtmux-mcp',
 }
 
 /**
@@ -82,8 +79,8 @@ for (const [port, where] of Object.entries(CHECKOUT)) {
     skipped++
     continue
   }
-  const repo = expand(where)
-  if (!existsSync(repo)) {
+  const fallbackRepo = expand(where)
+  if (!existsSync(fallbackRepo)) {
     // A machine without the sibling checkouts cannot check this port, which
     // is not the same as the port being wrong.
     console.log(`check-source-links: ${port} skipped, no checkout at ${where}`)
@@ -92,7 +89,17 @@ for (const [port, where] of Object.entries(CHECKOUT)) {
   }
 
   const model = JSON.parse(readFileSync(modelPath, 'utf8'))
-  const rev = model.revision
+  const units = new Map()
+  for (const symbol of model.symbols) {
+    const repository = symbol.source.repo ?? model.repo
+    const revision = symbol.source.revision ?? model.revision
+    const key = `${repository}@${revision}`
+    if (!units.has(key)) units.set(key, { repository, revision, symbols: [] })
+    units.get(key).symbols.push(symbol)
+  }
+  for (const unit of units.values()) {
+  const repo = expand(PRODUCT_CHECKOUT[unit.repository] ?? where)
+  const rev = unit.revision
   if (!rev) {
     report(port, 'model records no revision, so every source link is unbuildable')
     continue
@@ -128,7 +135,7 @@ for (const [port, where] of Object.entries(CHECKOUT)) {
   let past = 0
   let firstMissing = ''
   let noLine = 0
-  for (const s of model.symbols) {
+  for (const s of unit.symbols) {
     const file = s.source?.file
     if (!file) continue
     if (file.startsWith('..') || file.startsWith('/')) {
@@ -154,10 +161,11 @@ for (const [port, where] of Object.entries(CHECKOUT)) {
   if (past) report(port, `${past} symbols point past the end of their file at ${rev.slice(0, 8)}`)
   if (!missing && !past) {
     console.log(
-      `check-source-links: ${port} ${model.symbols.length} symbols, ${lengths.size} files ` +
+      `check-source-links: ${port} ${unit.repository} ${unit.symbols.length} symbols, ${lengths.size} files ` +
         `at ${rev.slice(0, 8)} (${publicRemotes.join(', ')})` +
         (noLine ? `, ${noLine} without a line` : ''),
     )
+  }
   }
 }
 

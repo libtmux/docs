@@ -26,7 +26,7 @@ interface Props {
   symbol: ApiSymbol
   index: SymbolIndex
   /** Repository blob URL builder, for the source link. */
-  sourceUrl?: (file: string, line?: number) => string
+  sourceUrl?: (symbol: ApiSymbol) => string | undefined
   /** This entry's port. Enables the cross-language block; omit to hide it. */
   port?: string
   /**
@@ -97,7 +97,7 @@ const inheritedHref = symbol.inheritedFrom
  * *declares* it, which is where a reader wanting the code needs to go; the
  * entry already says which class that is.
  */
-const source = sourceUrl ? sourceUrl(symbol.source.file, symbol.source.line) : undefined
+const source = sourceUrl?.(symbol)
 
 /** The keyword a declaration of this kind opens with, where one exists. */
 const KEYWORD: Record<string, string> = {

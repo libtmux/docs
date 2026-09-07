@@ -137,7 +137,7 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
     ),
   },
   { id: 'snapshots', label: 'Snapshots', match: nameOrPath('Snapshot|Capture', '(^|/)snapshots?[./]') },
-  { id: 'workspace', label: 'Workspaces', match: nameOrPath('Workspace|Plan', '(^|/)plan[./]') },
+  { id: 'workspace', label: 'Workspaces', match: nameOrPath('Workspace|Plan', '(^|/)plan[./]|(^|/)tmuxp/') },
   // tmux's own object hierarchy, in tmux's order.
   { id: 'server', label: 'Server', match: nameOrPath('^Server|Server$', '(^|/)server[./]') },
   { id: 'session', label: 'Session', match: nameOrPath('Session', '(^|/)session[./]') },

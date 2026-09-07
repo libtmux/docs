@@ -101,9 +101,11 @@ d('resolver', () => {
 
   it('answers the cross-port question the estate is for', () => {
     expect(r.portsWith('sessions').length).toBeGreaterThan(3)
-    // And is honest that name matching does not bridge a rename: this is the
-    // evidence for needing an explicit concept map.
-    expect(r.portsWith('capture_pane')).toEqual(['py'])
+    // Rust's MCP handler shares the spelling; that does not make it a core
+    // Pane API equivalent. Semantic equivalents remain in the concept map.
+    expect(r.portsWith('capture_pane')).toEqual(['py', 'rs'])
+    const rust = r.resolve('rs', 'mcp.src.TmuxTools.capture_pane')
+    expect('symbol' in rust ? rust.symbol.product : undefined).toBe('mcp')
   })
 
   it('resolves most of the real corpus', () => {

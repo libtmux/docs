@@ -43,8 +43,8 @@ export const GET: APIRoute = ({ props, site }) => {
 
   const origin = (site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
   const slug = symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)
-  const repo = (model as { repo?: string }).repo
-  const rev = (model as { revision?: string }).revision
+  const repo = symbol.source.repo ?? model.repo
+  const rev = symbol.source.revision ?? model.revision
   const file = symbol.source?.file
 
   return new Response(

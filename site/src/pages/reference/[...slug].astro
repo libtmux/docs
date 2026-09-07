@@ -1,6 +1,6 @@
 ---
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { conceptsFor, docSummaryText, moduleOf, modulesIn } from '@libtmux/api-model'
+import { conceptsFor, docSummaryText, moduleOf, modulesIn, sourceUrl as apiSourceUrl } from '@libtmux/api-model'
 import ApiEntry from '../../components/api/ApiEntry.astro'
 import ApiExampleTabs from '../../components/api/ApiExampleTabs.astro'
 import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
@@ -278,12 +278,7 @@ const exampleGroups = [
   }),
 ]
 
-const repo = (model as { repo?: string } | undefined)?.repo ?? 'tmux-python/libtmux'
-const rev = model?.revision ?? 'HEAD'
-// A symbol whose line could not be carried to the public commit links to
-// the file alone; `#Lundefined` is the alternative and it scrolls nowhere.
-const sourceUrl = (file: string, line?: number): string =>
-  `https://github.com/${repo}/blob/${rev}/${file}${line ? `#L${line}` : ''}`
+const sourceUrl = (symbol: ApiSymbol): string | undefined => model ? apiSourceUrl(model, symbol) : undefined
 
 const members = owner && model
   ? model.symbols
@@ -814,7 +809,7 @@ const title = owner
                 <>
                   <dt>Source</dt>
                   <dd>
-                    <a href={sourceUrl(owner.source.file, owner.source.line)} rel="nofollow noopener">
+                    <a href={sourceUrl(owner)} rel="nofollow noopener">
                       {owner.source.file}
                     </a>
                   </dd>

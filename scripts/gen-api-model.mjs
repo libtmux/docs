@@ -1,34 +1,19 @@
 #!/usr/bin/env node
 /**
- * Extract a port's API model to JSON, ahead of the Astro build.
- *
- * The site reads `site/src/data/api/<port>.json`. Unlike its neighbours
- * `parity.json` and `mcp-tools.json`, this one is *not* checked in —
- * `.gitignore` names the directory. It is 5 MB of derived JSON that changes
- * whenever any of eight sibling ports does, and its diff says nothing a
- * reader can use.
- *
- * Extraction is separate from the Astro build because that build runs
- * fourteen times per assembly, and because the source checkouts are siblings
- * of this repository rather than dependencies of it: a shell build on a
- * machine without `~/work/python/libtmux` would silently render an empty
- * reference. Generating once, up front, turns that into one loud failure, and
- * `--check` says when a model is stale.
- *
- * Because the models are not in the tree, a fresh clone has none until this
- * runs — so everything that reads them (`gen-mentions.mjs`,
- * `check-source-links.mjs`) reports their absence rather than counting it as
- * zero.
- *
+ * Extract versioned source provenance and the public API model for each port.
+ * Run once before assembly; Astro reads the generated JSON in every build.
  * Usage: node scripts/gen-api-model.mjs [--port py] [--check]
  */
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { homedir, tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { PORTS as PORT_DEFS } from '../site/src/lib/ports.ts'
+import { extractDoxygen } from '../packages/api-model/src/languages/doxygen.ts'
 import { mapLine, parseHunks } from '../packages/api-model/src/source-lines.ts'
 import { extractProject } from '../packages/api-model/src/project.ts'
+import { scopeProductSymbols } from '../packages/api-model/src/product-exports.ts'
 import { pageSlug, OWNER_KINDS } from '../packages/api-model/src/prose.ts'
 import { moduleOf } from '../packages/api-model/src/modules.ts'
 import { CONCEPTS } from '../packages/api-model/src/concepts.ts'
@@ -36,6 +21,7 @@ import { NAV } from '../packages/api-model/src/nav-config.ts'
 import { compileNav } from '../packages/api-model/src/nav.ts'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const portBySlug = Object.fromEntries(PORT_DEFS.map((port) => [port.slug, port]))
 
 /** The newest modification time anywhere under a directory. */
 function newestMtime(dir) {
@@ -73,6 +59,28 @@ function git(repo, ...args) {
   } catch {
     return undefined
   }
+}
+
+/** Read package versions from their owning manifest, independent of docs URL labels. */
+function packageVersion(checkout, port, product) {
+  const read = (file) => existsSync(join(checkout, file)) ? readFileSync(join(checkout, file), 'utf8') : ''
+  if (port === 'py') return /^version\s*=\s*"([^"]+)"/m.exec(read('pyproject.toml'))?.[1]
+  if (port === 'ts') return JSON.parse(read(`packages/${product === 'core' ? 'libtmux' : product}/package.json`)).version
+  if (port === 'rs') {
+    const crate = product === 'core' ? 'libtmux' : product === 'workspace' ? 'tmux-workspace' : 'tmux-mcp'
+    return /^version\s*=\s*"([^"]+)"/m.exec(read(`crates/${crate}/Cargo.toml`))?.[1]
+      ?? /^version\s*=\s*"([^"]+)"/m.exec(read('Cargo.toml'))?.[1]
+  }
+  if (port === 'java') return /^libtmuxVersion=(.+)$/m.exec(read('gradle.properties'))?.[1]
+  if (port === 'dotnet') {
+    const props = read('Directory.Build.props')
+    const prefix = /<VersionPrefix>([^<]+)</.exec(props)?.[1]
+    const suffix = /<VersionSuffix>([^<]+)</.exec(props)?.[1]
+    return prefix ? `${prefix}${suffix ? `-${suffix}` : ''}` : undefined
+  }
+  if (port === 'cxx') return read('VERSION').trim() || undefined
+  if (port === 'swift') return /static let current = "([^"]+)"/.exec(read('Sources/LibTmux/LibTmuxVersion.swift'))?.[1]
+  return undefined
 }
 
 /**
@@ -261,7 +269,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   // worktree, and without an override there is no way to see its effect on
   // the reference until the branch lands.
   const override = process.env[`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}`]
-  const checkout = expand(override || cfg.checkout)
+  const checkout = expand(override || portBySlug[port].worktree)
   if (!existsSync(checkout)) {
     // Generating without source is impossible, so that still fails. Checking
     // without source is merely unanswerable, and a fresh clone and a CI runner
@@ -323,6 +331,103 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     revision,
     options: cfg.options,
   })
+
+  const legacyIds = new Set(model.symbols.map((symbol) => symbol.id))
+  const sourceUnits = [{ checkout, repo: cfg.repo, revision, head, symbols: model.symbols }]
+  const mcpRoots = {
+    ts: 'packages/mcp/src', rs: 'crates/tmux-mcp/src', go: 'mcp',
+    java: 'libtmux-mcp/src/main/java', dotnet: 'src/LibTmux.Mcp',
+  }
+  const extras = port === 'py'
+    ? [
+      { product: 'workspace', checkout: expand(process.env.LIBTMUX_DOCS_WORKSPACE_PY || '~/work/python/tmuxp'), root: 'src', repo: 'tmux-python/tmuxp', package: 'tmuxp' },
+      { product: 'mcp', checkout: expand(process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp'), root: 'src', repo: 'tmux-python/libtmux-mcp', package: 'libtmux-mcp' },
+    ]
+    : mcpRoots[port] ? [{ product: 'mcp', checkout, root: mcpRoots[port], repo: cfg.repo }] : []
+  for (const extra of extras) {
+    const extraHead = git(extra.checkout, 'rev-parse', 'HEAD')
+    if (!extraHead || !existsSync(join(extra.checkout, extra.root))) throw new Error(`Missing ${port} ${extra.product} source`)
+    const extraRevision = publicRevision(extra.checkout, extraHead, port, extra.repo)
+    const extracted = await extractProject({
+      port, root: join(extra.checkout, extra.root), revision: extraRevision,
+      options: { ...cfg.options, privateMembers: false, specialMembers: true },
+    })
+    // These crates use file-relative names. Prefix the additional package so
+    // its server and error declarations cannot merge with core declarations.
+    if (port === 'ts' || port === 'rs') {
+      for (const symbol of extracted.symbols) {
+        symbol.id = `mcp.${symbol.id}`
+        if (symbol.publicId) symbol.publicId = `mcp.${symbol.publicId}`
+        if (symbol.parent) symbol.parent = `mcp.${symbol.parent}`
+        if (symbol.inheritedFrom) symbol.inheritedFrom = `mcp.${symbol.inheritedFrom}`
+      }
+    }
+    for (const symbol of extracted.symbols) symbol.product = extra.product
+    if (model.pruned) model.pruned.dropped += extracted.pruned?.dropped ?? 0
+    sourceUnits.push({ ...extra, revision: extraRevision, head: extraHead, symbols: extracted.symbols })
+    model.symbols = [...model.symbols, ...extracted.symbols]
+  }
+  if (port === 'cxx') {
+    const output = mkdtempSync(join(tmpdir(), 'libtmux-docs-cxx-reference-'))
+    const quote = (value) => `"${value.replaceAll('"', '\\"')}"`
+    const config = [
+      `@INCLUDE = ${quote(join(checkout, 'Doxyfile'))}`,
+      `INPUT = ${quote(join(checkout, 'examples/workspace/include'))} ${quote(join(checkout, 'apps/mcp/include'))}`,
+      `OUTPUT_DIRECTORY = ${quote(output)}`,
+      `STRIP_FROM_PATH = ${quote(checkout)}`,
+      'EXTRACT_ALL = YES', 'WARN_AS_ERROR = NO',
+    ].join('\n')
+    execFileSync('doxygen', ['-'], { cwd: checkout, input: config, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] })
+    const symbols = extractDoxygen(join(output, 'xml'), checkout)
+      .filter((symbol) => /^(examples\/workspace|apps\/mcp)\//.test(symbol.source.file))
+    sourceUnits[0].symbols.push(...symbols)
+    rmSync(output, { recursive: true })
+  }
+  if (model.pruned) model.pruned.kept = model.symbols.length
+  const productOf = (file) => /(?:^|\/)(?:workspace|TmuxWorkspace|LibTmux\.Workspace|libtmux-workspace)(?:\/|$)|crates\/tmux-workspace\//.test(file)
+    ? 'workspace'
+    : /(?:^|\/)(?:mcp|LibTmuxMCP|LibTmux\.Mcp|libtmux-mcp)(?:\/|$)|crates\/tmux-mcp\//.test(file) ? 'mcp' : 'core'
+  const packages = {
+    ts: { workspace: '@libtmux/workspace', mcp: '@libtmux/mcp' },
+    rs: { workspace: 'tmux-workspace', mcp: 'tmux-mcp' },
+    go: { workspace: 'github.com/libtmux/libtmux-go/workspace', mcp: 'github.com/libtmux/libtmux-go/mcp' },
+    java: { workspace: 'libtmux-workspace', mcp: 'libtmux-mcp' },
+    dotnet: { workspace: 'LibTmux.Workspace', mcp: 'LibTmux.Mcp' },
+    cxx: { workspace: 'workspace consumer', mcp: 'mcp_tools consumer' },
+    swift: { workspace: 'TmuxWorkspace', mcp: 'LibTmuxMCP' },
+  }
+  model.sources = []
+  for (const unit of sourceUnits) {
+    const bases = [unit.checkout, unit.checkout.replace(/-docs$/, '')]
+    for (const symbol of unit.symbols) {
+      const file = symbol.source.file
+      const base = bases.find((candidate) => file.startsWith(`${candidate}/`)) ?? unit.checkout
+      const relativeFile = isAbsolute(file) ? relative(base, file) : file
+      symbol.product ??= productOf(relativeFile)
+      symbol.source = { ...symbol.source, file: relativeFile, repo: unit.repo, revision: unit.revision, extractedRevision: unit.head }
+    }
+    for (const product of ['workspace', 'mcp']) {
+      const symbols = unit.symbols.filter((symbol) => symbol.product === product)
+      if (!symbols.length) continue
+      let entries = []
+      if (port === 'ts') {
+        const manifest = JSON.parse(readFileSync(join(unit.checkout, `packages/${product}/package.json`), 'utf8'))
+        entries = Object.values(manifest.exports).flatMap((entry) => typeof entry === 'object' && entry.bun ? [resolve(unit.checkout, `packages/${product}`, entry.bun)] : [])
+      } else if (port === 'rs') entries = [join(unit.checkout, `crates/tmux-${product}/src/lib.rs`)]
+      scopeProductSymbols(symbols, { port, root: unit.checkout, entries, readSource: (file) => readFileSync(file, 'utf8') })
+    }
+    remapLines(unit.checkout, unit.symbols, unit.revision, unit.head)
+    for (const product of new Set(unit.symbols.map((symbol) => symbol.product))) {
+      model.sources.push({
+        product, package: unit.package ?? packages[port]?.[product] ?? portBySlug[port].packageName,
+        repo: unit.repo, revision: unit.revision, extractedRevision: unit.head,
+        version: packageVersion(unit.checkout, port, product),
+      })
+    }
+  }
+
+  model.symbols = model.symbols.filter((symbol) => symbol.apiScope !== 'internal' || legacyIds.has(symbol.id))
+  if (model.pruned) model.pruned.kept = model.symbols.length
 
   /**
    * A source path a blob URL can use.
@@ -386,9 +491,6 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   }
 
   model.repo = cfg.repo
-
-  // Lines are the extracted commit's; the link names the public one.
-  const moved = remapLines(checkout, model.symbols, revision, head)
 
   const out = join(repoRoot, 'site/src/data/api', `${port}.json`)
   mkdirSync(dirname(out), { recursive: true })
@@ -489,10 +591,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     `gen-api-model: ${port} -> ${model.symbols.length} symbols ` +
       `(${Object.entries(kinds).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k}:${v}`).join(' ')}) ` +
       `${(text.length / 1024 / 1024).toFixed(1)} MB` +
-      (disambiguated ? ` [${disambiguated} slugs disambiguated]` : '') +
-      (moved.shifted || moved.dropped
-        ? ` [${revision?.slice(0, 8)}: ${moved.shifted} lines shifted, ${moved.dropped} dropped]`
-        : ''),
+      (disambiguated ? ` [${disambiguated} slugs disambiguated]` : ''),
   )
 }
 if (check && skipped) console.log(`gen-api-model: ${skipped} port(s) skipped`)
