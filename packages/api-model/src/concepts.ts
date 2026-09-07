@@ -605,11 +605,11 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Server.show_option',
       rs: 'server.Server.get_option',
+      go: 'tmux.Server.RawOption',
       swift: 'Server.option(_:scope:)',
     },
     absent: {
       ts: 'no single-option read; `Server.showOptions` returns them all',
-      go: 'no single-option read; `Server.Options` returns them all',
       java: 'reached through `Server.options`, whose `Options.get` reads one',
       dotnet: 'reached through `Server.Options`, whose `TmuxOptions.GetAsync` reads one',
       cxx: 'no single-option read; `Server::options` returns them all',
@@ -620,12 +620,12 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Session.show_option',
       rs: 'session.Session.get_option',
+      go: 'tmux.Session.RawOption',
       cxx: 'libtmux::Session::option',
       swift: 'Server.option(_:scope:)',
     },
     absent: {
       ts: 'no single-option read; `Session.showOptions` returns them all',
-      go: 'no single-option read; `Session.Options` returns them all',
       java: 'reached through `Session.options`, whose `Options.get` reads one',
       dotnet: 'reached through `Session.Options`, whose `TmuxOptions.GetAsync` reads one',
     },
@@ -635,12 +635,12 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Window.show_option',
       rs: 'window.Window.get_option',
+      go: 'tmux.Window.RawOption',
       cxx: 'libtmux::Window::option',
       swift: 'Server.option(_:scope:)',
     },
     absent: {
       ts: 'no single-option read; `Window.showOptions` returns them all',
-      go: 'no single-option read; `Window.Options` returns them all',
       java: 'reached through `Window.options`, whose `Options.get` reads one',
       dotnet: 'reached through `Window.Options`, whose `TmuxOptions.GetAsync` reads one',
     },
@@ -650,12 +650,12 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Pane.show_option',
       rs: 'pane.Pane.get_option',
+      go: 'tmux.Pane.RawOption',
       cxx: 'libtmux::Pane::option',
       swift: 'Server.option(_:scope:)',
     },
     absent: {
       ts: 'no single-option read; `Pane.showOptions` returns them all',
-      go: 'no single-option read; `Pane.Options` returns them all',
       java: 'reached through `Pane.options`, whose `Options.get` reads one',
       dotnet: 'reached through `Pane.Options`, whose `TmuxOptions.GetAsync` reads one',
     },
@@ -789,7 +789,7 @@ export const CONCEPTS: Record<string, Concept> = {
     },
     absent: {
       py: 'no equivalent on `Server`',
-      rs: 'no equivalent on `Server`',
+      rs: 'no whole-table read; `Server.get_global_option` reads one',
       go: 'no equivalent on `Server`',
       dotnet: 'no equivalent on `Server`',
       swift: 'no equivalent on `Server`',
@@ -849,7 +849,7 @@ export const CONCEPTS: Record<string, Concept> = {
       swift: 'Server.hooks(_:)',
     },
     absent: {
-      rs: 'no equivalent on `Window`',
+      rs: 'no whole-table read; `Window.hook` reads one',
       cxx: 'no equivalent on `Window`',
     },
   },
@@ -864,7 +864,7 @@ export const CONCEPTS: Record<string, Concept> = {
       swift: 'Server.hooks(_:)',
     },
     absent: {
-      rs: 'no equivalent on `Pane`',
+      rs: 'no whole-table read; `Pane.hook` reads one',
       cxx: 'no equivalent on `Pane`',
     },
   },
@@ -1387,7 +1387,7 @@ export const CONCEPTS: Record<string, Concept> = {
     absent: {
       ts: 'no equivalent on `Server`',
       rs: 'no equivalent on `Server`',
-      cxx: 'no equivalent on `Server`',
+      cxx: '`Server::show_message` posts a message rather than reading the log',
       swift: 'no equivalent on `Server`',
     },
   },
@@ -1472,12 +1472,12 @@ export const CONCEPTS: Record<string, Concept> = {
       py: 'libtmux.Server.display_message',
       go: 'tmux.Server.DisplayMessage',
       dotnet: 'LibTmux.Server.DisplayMessageAsync',
+      cxx: 'libtmux::Server::show_message',
     },
     absent: {
       ts: 'no equivalent on `Server`',
       rs: 'no equivalent on `Server`',
       java: 'no equivalent on `Server`',
-      cxx: 'no equivalent on `Server`',
       swift: 'no equivalent on `Server`',
     },
   },
@@ -1487,13 +1487,13 @@ export const CONCEPTS: Record<string, Concept> = {
       py: 'libtmux.Server.detach_client',
       go: 'tmux.Server.DetachClient',
       dotnet: 'LibTmux.Server.DetachClientAsync',
+      swift: 'Server.detach(_:)',
     },
     absent: {
       ts: 'no equivalent on `Server`',
       rs: 'no equivalent on `Server`',
       java: 'no equivalent on `Server`',
       cxx: 'no equivalent on `Server`',
-      swift: 'no equivalent on `Server`',
     },
   },
   'detach-all-clients': {
@@ -1515,13 +1515,13 @@ export const CONCEPTS: Record<string, Concept> = {
     label: 'Lock every client attached to the server',
     symbols: {
       py: 'libtmux.Server.lock_server',
+      rs: 'server.Server.lock_all',
       go: 'tmux.Server.LockServer',
       java: 'io.github.libtmux.Server.Server.lock',
       dotnet: 'LibTmux.Server.LockAsync',
     },
     absent: {
       ts: 'no equivalent on `Server`',
-      rs: 'no equivalent on `Server`',
       cxx: 'no equivalent on `Server`',
       swift: 'no equivalent on `Server`',
     },
@@ -1643,7 +1643,7 @@ export const CONCEPTS: Record<string, Concept> = {
     absent: {
       py: 'no equivalent on `Server`',
       rs: 'no equivalent on `Server`',
-      cxx: 'no equivalent on `Server`',
+      cxx: '`Server::tmux_version` asks the executable with `tmux -V` without reaching a server',
     },
   },
   'snapshot': {
@@ -1652,12 +1652,12 @@ export const CONCEPTS: Record<string, Concept> = {
       ts: 'server.Server.snapshot',
       go: 'tmux.Server.Snapshot',
       java: 'io.github.libtmux.Server.Server.snapshot',
+      dotnet: 'LibTmux.Server.CaptureSnapshotAsync',
       swift: 'Server.snapshot()',
     },
     absent: {
       py: 'no equivalent on `Server`',
       rs: 'no equivalent on `Server`',
-      dotnet: 'no equivalent on `Server`',
       cxx: 'no equivalent on `Server`',
     },
   },
@@ -1727,12 +1727,12 @@ export const CONCEPTS: Record<string, Concept> = {
       rs: 'server.Server.chain',
       java: 'io.github.libtmux.Server.Server.chain',
       dotnet: 'LibTmux.Server.Chain',
+      cxx: 'libtmux::Server::run_chain',
     },
     absent: {
       py: 'no equivalent on `Server`',
       ts: 'no equivalent on `Server`',
       go: 'no equivalent on `Server`',
-      cxx: 'no equivalent on `Server`',
       swift: 'no equivalent on `Server`',
     },
   },
@@ -1740,15 +1740,15 @@ export const CONCEPTS: Record<string, Concept> = {
     label: 'Wait for, signal or lock a channel',
     symbols: {
       py: 'libtmux.Server.wait_for',
+      rs: 'server.Server.wait_for_channel',
       go: 'tmux.Server.WaitFor',
       dotnet: 'LibTmux.Server.WaitForAsync',
       cxx: 'libtmux::Server::wait_for',
+      swift: 'Server.wait(for:)',
     },
     absent: {
       ts: 'no equivalent on `Server`',
-      rs: 'no equivalent on `Server`',
       java: 'no equivalent on `Server`',
-      swift: 'no equivalent on `Server`',
     },
   },
   'server-from-env': {
@@ -1756,13 +1756,13 @@ export const CONCEPTS: Record<string, Concept> = {
     symbols: {
       py: 'libtmux.Server.from_env',
       rs: 'server.Server.from_env',
+      dotnet: 'LibTmux.Server.FromEnvironment',
       cxx: 'libtmux::Server::from_env',
     },
     absent: {
       ts: 'no equivalent on `Server`',
       go: 'no equivalent on `Server`',
       java: 'no equivalent on `Server`',
-      dotnet: 'no equivalent on `Server`',
       swift: 'no equivalent on `Server`',
     },
   },
@@ -1772,11 +1772,11 @@ export const CONCEPTS: Record<string, Concept> = {
       py: 'libtmux.Session.from_env',
       ts: 'session.Session.fromEnv',
       rs: 'session.Session.from_env',
+      dotnet: 'LibTmux.Session.FromEnvironmentAsync',
     },
     absent: {
       go: 'no equivalent on `Session`',
       java: 'no equivalent on `Session`',
-      dotnet: 'no equivalent on `Session`',
       cxx: 'no equivalent on `Session`',
       swift: 'no equivalent on `Session`',
     },
@@ -1784,12 +1784,12 @@ export const CONCEPTS: Record<string, Concept> = {
   'config-file': {
     label: 'The configuration file this server was pointed at',
     symbols: {
+      py: 'libtmux.Server.config_file',
       ts: 'server.Server.configFile',
       rs: 'server.Server.config_file',
       go: 'tmux.Server.ConfigFile',
     },
     absent: {
-      py: 'no equivalent on `Server`',
       java: 'no equivalent on `Server`',
       dotnet: 'no equivalent on `Server`',
       cxx: 'no equivalent on `Server`',
@@ -1799,12 +1799,12 @@ export const CONCEPTS: Record<string, Concept> = {
   'socket-path': {
     label: 'The socket path this server addresses',
     symbols: {
+      py: 'libtmux.Server.socket_path',
       ts: 'server.Server.socketPath',
       rs: 'server.Server.socket_path',
       go: 'tmux.Server.SocketPath',
     },
     absent: {
-      py: 'no equivalent on `Server`',
       java: 'no equivalent on `Server`',
       dotnet: 'no equivalent on `Server`',
       cxx: 'no equivalent on `Server`',
@@ -1844,6 +1844,7 @@ export const CONCEPTS: Record<string, Concept> = {
   'get-window': {
     label: 'Look one window up by target',
     symbols: {
+      rs: 'server.Server.window_by_id',
       go: 'tmux.Server.Window',
       dotnet: 'LibTmux.Server.GetWindowAsync',
       cxx: 'libtmux::Server::window',
@@ -1851,7 +1852,6 @@ export const CONCEPTS: Record<string, Concept> = {
     absent: {
       py: 'no equivalent on `Server`',
       ts: 'no equivalent on `Server`',
-      rs: 'no equivalent on `Server`',
       java: 'no equivalent on `Server`',
       swift: 'no equivalent on `Server`',
     },
@@ -2144,14 +2144,14 @@ export const CONCEPTS: Record<string, Concept> = {
   'window-active': {
     label: 'Whether this was the active window when captured',
     symbols: {
+      py: 'libtmux.Window.window_active',
+      rs: 'window.Window.is_active',
       go: 'tmux.Window.Active',
       java: 'io.github.libtmux.Window.Window.active',
       cxx: 'libtmux::Window::active',
     },
     absent: {
-      py: 'no equivalent on `Window`',
       ts: "no accessor; the field is read from `Window.format`, tmux's own row",
-      rs: 'no equivalent on `Window`',
       dotnet: 'no equivalent on `Window`',
       swift: 'no equivalent on `Window`',
     },
@@ -2159,31 +2159,31 @@ export const CONCEPTS: Record<string, Concept> = {
   'pane-active': {
     label: 'Whether this was the active pane when captured',
     symbols: {
+      py: 'libtmux.Pane.pane_active',
+      rs: 'pane.Pane.is_active',
       go: 'tmux.Pane.Active',
       java: 'io.github.libtmux.Pane.Pane.active',
       cxx: 'libtmux::Pane::active',
+      swift: 'Pane.isActive',
     },
     absent: {
-      py: 'no equivalent on `Pane`',
       ts: "no accessor; the field is read from `Pane.format`, tmux's own row",
-      rs: 'no equivalent on `Pane`',
       dotnet: 'no equivalent on `Pane`',
-      swift: 'no equivalent on `Pane`',
     },
   },
   'session-attached': {
     label: 'Whether a client was attached when captured',
     symbols: {
+      py: 'libtmux.Session.session_attached',
+      rs: 'session.Session.is_attached',
       go: 'tmux.Session.Attached',
       java: 'io.github.libtmux.Session.Session.attached',
       dotnet: 'LibTmux.Session.Attached',
       cxx: 'libtmux::Session::attached',
+      swift: 'Session.isAttached',
     },
     absent: {
-      py: 'no equivalent on `Session`',
       ts: "no accessor; the field is read from `Session.format`, tmux's own row",
-      rs: 'no equivalent on `Session`',
-      swift: 'no equivalent on `Session`',
     },
   },
   'session-created': {
@@ -2192,13 +2192,13 @@ export const CONCEPTS: Record<string, Concept> = {
       rs: 'session.Session.created',
       go: 'tmux.Session.Created',
       cxx: 'libtmux::Session::created',
+      swift: 'Session.createdAt',
     },
     absent: {
       py: 'no equivalent on `Session`',
       ts: 'no equivalent on `Session`',
       java: 'no equivalent on `Session`',
       dotnet: 'no equivalent on `Session`',
-      swift: 'no equivalent on `Session`',
     },
   },
   'session-path': {
@@ -2264,13 +2264,13 @@ export const CONCEPTS: Record<string, Concept> = {
   'pane-current-command': {
     label: 'The command tmux reports running in a pane',
     symbols: {
+      py: 'libtmux.Pane.pane_current_command',
       rs: 'pane.Pane.current_command',
       go: 'tmux.Pane.CurrentCommand',
       java: 'io.github.libtmux.Pane.Pane.currentCommand',
       swift: 'Pane.currentCommand',
     },
     absent: {
-      py: 'no equivalent on `Pane`',
       ts: 'no equivalent on `Pane`',
       dotnet: 'no equivalent on `Pane`',
       cxx: 'no equivalent on `Pane`',
@@ -2279,13 +2279,13 @@ export const CONCEPTS: Record<string, Concept> = {
   'pane-current-path': {
     label: "A pane process's working directory",
     symbols: {
+      py: 'libtmux.Pane.pane_current_path',
       rs: 'pane.Pane.current_path',
       go: 'tmux.Pane.CurrentPath',
       java: 'io.github.libtmux.Pane.Pane.currentPath',
       swift: 'Pane.currentPath',
     },
     absent: {
-      py: 'no equivalent on `Pane`',
       ts: 'no equivalent on `Pane`',
       dotnet: 'no equivalent on `Pane`',
       cxx: 'no equivalent on `Pane`',
@@ -2294,12 +2294,12 @@ export const CONCEPTS: Record<string, Concept> = {
   'pane-pid': {
     label: 'The process id of the program in a pane',
     symbols: {
+      py: 'libtmux.Pane.pid',
       rs: 'pane.Pane.pid',
       java: 'io.github.libtmux.Pane.Pane.pid',
       cxx: 'libtmux::Pane::pid',
     },
     absent: {
-      py: 'no equivalent on `Pane`',
       ts: 'no equivalent on `Pane`',
       go: 'no equivalent on `Pane`',
       dotnet: 'no equivalent on `Pane`',
@@ -2325,72 +2325,72 @@ export const CONCEPTS: Record<string, Concept> = {
     label: 'Whether a pane touches the top of its window',
     symbols: {
       py: 'libtmux.Pane.at_top',
+      rs: 'pane.Pane.is_at_top',
       go: 'tmux.Pane.AtTop',
       dotnet: 'LibTmux.Pane.AtTop',
       cxx: 'libtmux::Pane::at_top',
+      swift: 'Pane.isAtTop',
     },
     absent: {
       ts: 'no equivalent on `Pane`',
-      rs: 'no equivalent on `Pane`',
       java: 'no equivalent on `Pane`',
-      swift: 'no equivalent on `Pane`',
     },
   },
   'pane-at-bottom': {
     label: 'Whether a pane touches the bottom of its window',
     symbols: {
       py: 'libtmux.Pane.at_bottom',
+      rs: 'pane.Pane.is_at_bottom',
       go: 'tmux.Pane.AtBottom',
       dotnet: 'LibTmux.Pane.AtBottom',
       cxx: 'libtmux::Pane::at_bottom',
+      swift: 'Pane.isAtBottom',
     },
     absent: {
       ts: 'no equivalent on `Pane`',
-      rs: 'no equivalent on `Pane`',
       java: 'no equivalent on `Pane`',
-      swift: 'no equivalent on `Pane`',
     },
   },
   'pane-at-left': {
     label: 'Whether a pane touches the left of its window',
     symbols: {
       py: 'libtmux.Pane.at_left',
+      rs: 'pane.Pane.is_at_left',
       go: 'tmux.Pane.AtLeft',
       dotnet: 'LibTmux.Pane.AtLeft',
       cxx: 'libtmux::Pane::at_left',
+      swift: 'Pane.isAtLeft',
     },
     absent: {
       ts: 'no equivalent on `Pane`',
-      rs: 'no equivalent on `Pane`',
       java: 'no equivalent on `Pane`',
-      swift: 'no equivalent on `Pane`',
     },
   },
   'pane-at-right': {
     label: 'Whether a pane touches the right of its window',
     symbols: {
       py: 'libtmux.Pane.at_right',
+      rs: 'pane.Pane.is_at_right',
       go: 'tmux.Pane.AtRight',
       dotnet: 'LibTmux.Pane.AtRight',
       cxx: 'libtmux::Pane::at_right',
+      swift: 'Pane.isAtRight',
     },
     absent: {
       ts: 'no equivalent on `Pane`',
-      rs: 'no equivalent on `Pane`',
       java: 'no equivalent on `Pane`',
-      swift: 'no equivalent on `Pane`',
     },
   },
   'pane-window-id': {
     label: 'The id of the window holding a pane',
     symbols: {
+      py: 'libtmux.Pane.window_id',
       rs: 'pane.Pane.window_id',
       go: 'tmux.Pane.WindowID',
       cxx: 'libtmux::Pane::window_id',
       swift: 'Pane.windowID',
     },
     absent: {
-      py: 'no equivalent on `Pane`',
       ts: 'no equivalent on `Pane`',
       java: 'no equivalent on `Pane`',
       dotnet: 'no equivalent on `Pane`',
@@ -2399,12 +2399,12 @@ export const CONCEPTS: Record<string, Concept> = {
   'pane-session-id': {
     label: 'The id of the session a pane was reached through',
     symbols: {
+      py: 'libtmux.Pane.session_id',
       rs: 'pane.Pane.session_id',
       go: 'tmux.Pane.SessionID',
       cxx: 'libtmux::Pane::session_id',
     },
     absent: {
-      py: 'no equivalent on `Pane`',
       ts: 'no equivalent on `Pane`',
       java: 'no equivalent on `Pane`',
       dotnet: 'no equivalent on `Pane`',
@@ -2414,12 +2414,12 @@ export const CONCEPTS: Record<string, Concept> = {
   'window-session-id': {
     label: 'The id of the session a window was reached through',
     symbols: {
+      py: 'libtmux.Window.session_id',
       rs: 'window.Window.session_id',
       go: 'tmux.Window.SessionID',
       cxx: 'libtmux::Window::session_id',
     },
     absent: {
-      py: 'no equivalent on `Window`',
       ts: 'no equivalent on `Window`',
       java: 'no equivalent on `Window`',
       dotnet: 'no equivalent on `Window`',
@@ -2444,13 +2444,13 @@ export const CONCEPTS: Record<string, Concept> = {
   'session-server': {
     label: 'The server a session lives on',
     symbols: {
+      py: 'libtmux.Session.server',
+      ts: 'session.Session.server',
       go: 'tmux.Session.Server',
       java: 'io.github.libtmux.Session.Session.server',
       dotnet: 'LibTmux.Session.Server',
     },
     absent: {
-      py: 'no equivalent on `Session`',
-      ts: 'no equivalent on `Session`',
       rs: 'no equivalent on `Session`',
       cxx: 'no equivalent on `Session`',
       swift: 'no equivalent on `Session`',
@@ -2459,13 +2459,13 @@ export const CONCEPTS: Record<string, Concept> = {
   'window-server': {
     label: 'The server a window lives on',
     symbols: {
+      py: 'libtmux.Window.server',
+      ts: 'window.Window.server',
       go: 'tmux.Window.Server',
       java: 'io.github.libtmux.Window.Window.server',
       dotnet: 'LibTmux.Window.Server',
     },
     absent: {
-      py: 'no equivalent on `Window`',
-      ts: 'no equivalent on `Window`',
       rs: 'no equivalent on `Window`',
       cxx: 'no equivalent on `Window`',
       swift: 'no equivalent on `Window`',
@@ -2474,13 +2474,13 @@ export const CONCEPTS: Record<string, Concept> = {
   'pane-server': {
     label: 'The server a pane lives on',
     symbols: {
+      py: 'libtmux.Pane.server',
+      ts: 'pane.Pane.server',
       go: 'tmux.Pane.Server',
       java: 'io.github.libtmux.Pane.Pane.server',
       dotnet: 'LibTmux.Pane.Server',
     },
     absent: {
-      py: 'no equivalent on `Pane`',
-      ts: 'no equivalent on `Pane`',
       rs: 'no equivalent on `Pane`',
       cxx: 'no equivalent on `Pane`',
       swift: 'no equivalent on `Pane`',
@@ -2783,16 +2783,16 @@ export const CONCEPTS: Record<string, Concept> = {
   'detach-session-clients': {
     label: 'Detach every client attached to a session',
     symbols: {
+      py: 'libtmux.Session.detach_client',
       rs: 'session.Session.detach_clients',
       go: 'tmux.Session.DetachClients',
       java: 'io.github.libtmux.Session.Session.detachClients',
+      dotnet: 'LibTmux.Session.DetachClientAsync',
       cxx: 'libtmux::Session::detach_clients',
       swift: 'Server.detachClients(from:)',
     },
     absent: {
-      py: 'no equivalent on `Session`',
       ts: 'no equivalent on `Session`',
-      dotnet: 'no equivalent on `Session`',
     },
   },
   'lock-session': {
@@ -2948,10 +2948,10 @@ export const CONCEPTS: Record<string, Concept> = {
       rs: 'pane.Pane.clock_mode',
       go: 'tmux.Pane.ClockMode',
       java: 'io.github.libtmux.Pane.Pane.clockMode',
+      dotnet: 'LibTmux.Pane.EnterClockModeAsync',
     },
     absent: {
       ts: 'no equivalent on `Pane`',
-      dotnet: 'no equivalent on `Pane`',
       cxx: 'no equivalent on `Pane`',
       swift: 'no equivalent on `Pane`',
     },
@@ -2963,10 +2963,10 @@ export const CONCEPTS: Record<string, Concept> = {
       ts: 'pane.Pane.customizeMode',
       go: 'tmux.Pane.CustomizeMode',
       java: 'io.github.libtmux.Pane.Pane.customizeMode',
+      dotnet: 'LibTmux.Pane.EnterCustomizeModeAsync',
     },
     absent: {
       rs: 'no equivalent on `Pane`',
-      dotnet: 'no equivalent on `Pane`',
       cxx: 'no equivalent on `Pane`',
       swift: 'no equivalent on `Pane`',
     },
