@@ -3,6 +3,8 @@ import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
 import { conceptsFor, docSummaryText, moduleOf, modulesIn } from '@libtmux/api-model'
 import ApiEntry from '../../components/api/ApiEntry.astro'
 import ApiExampleTabs from '../../components/api/ApiExampleTabs.astro'
+import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
+import { pagePortsFor } from '../../lib/page-ports-for'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { withRoot } from '../../lib/site-root'
 import { API_MODELS, API_NAV, OWNER_KINDS, PORT_NAME, indexFor, ownersOf, pageSlug, referenceHref, topLevelTypesOf } from '../../lib/api-models'
@@ -120,6 +122,7 @@ const hrefFor = (s: ApiSymbol): string =>
  * every Python page after it resolved against nothing. `indexFor` now refuses
  * to cache a model with no symbols, which is the guard that makes this safe.
  */
+const pagePorts = await pagePortsFor(slug ? `reference/${slug}` : 'reference', model?.port)
 const index = indexFor(model ?? { port: 'py', extractor: '', symbols: [] }, hrefFor)
 
 /**
@@ -566,12 +569,26 @@ const title = owner
            signature, a doc comment or prose, and without this the fragment
            had nothing to land on: the page was right and the scroll position
            was the top of it. -->
-      <h1
-        id={owner ? (owner.publicId ?? owner.id) : undefined}
-        class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight"
-      >
-        <SymbolName name={title} />
-      </h1>
+      {/*
+        The language control shares the title's row rather than taking one of
+        its own: it is a fact about this page, and a whole band above the
+        heading spent a section's worth of space saying it.
+      */}
+      <div class="flex items-start justify-between gap-4">
+        <h1
+          id={owner ? (owner.publicId ?? owner.id) : undefined}
+          class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight"
+        >
+          <SymbolName name={title} />
+        </h1>
+        {
+          pagePorts.length > 0 && (
+            <div class="page-ports" data-pagefind-ignore="all">
+              <PagePortSwitcher entries={pagePorts} portSlug={model?.port} />
+            </div>
+          )
+        }
+      </div>
 
       {
         !owner && !model && (

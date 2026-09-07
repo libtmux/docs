@@ -9,6 +9,8 @@ import { buildTarget } from '../lib/versions'
 import CodeTabs from '../components/CodeTabs.astro'
 import { generateToC } from '../utils/generateToC'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
+import PagePortSwitcher from '../components/PagePortSwitcher.astro'
+import { pagePortsFor } from '../lib/page-ports-for'
 import BaseLayout from './BaseLayout.astro'
 
 /**
@@ -80,6 +82,7 @@ const currentPath = Astro.url.pathname
 
 const tocItems =
   tableOfContents && headings.length > 0 ? generateToC(headings) : []
+const pagePorts = await pagePortsFor(sourcePath ?? pagePath, port)
 ---
 
 <BaseLayout
@@ -165,7 +168,21 @@ const tocItems =
 
     <main class="min-w-0 flex-1">
       <article class="prose max-w-[80ch] dark:prose-invert">
-        <h1 id={PAGE_TITLE_ID}>{title}</h1>
+        {/*
+          Beside the title, not above it. The control answers a question about
+          this page, and given a band of its own it pushed the article down a
+          row to show one chip.
+        */}
+        <div class="flex items-start justify-between gap-4">
+          <h1 id={PAGE_TITLE_ID}>{title}</h1>
+          {
+            pagePorts.length > 0 && (
+              <div class="page-ports not-prose" data-pagefind-ignore="all">
+                <PagePortSwitcher entries={pagePorts} portSlug={port} />
+              </div>
+            )
+          }
+        </div>
         <slot />
       </article>
     </main>

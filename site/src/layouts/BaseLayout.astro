@@ -190,7 +190,6 @@ const localePagePath = localeSourcePath(Astro.url.pathname, buildLocale())
           portSlug={navPort}
           version={navVersion}
           pagePath={sourcePath ?? pagePath}
-          pagePorts={pagePorts}
           locale={locale as Locale}
           sourcePath={localePagePath}
           localeStatuses={(process.env.LIBTMUX_DOCS_PORT ? { en: 'translated' } : localeStatuses ?? { en: 'translated' }) as Record<string, LocaleStatus>}

@@ -1076,3 +1076,44 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 .site-header__panel details {
   min-width: 0;
 }
+
+/*
+ * The page's own language control, on the page's own title row.
+ *
+ * No positioning and no width: it is one item in the flex row that holds the
+ * heading, so it costs the layout nothing beyond its own size. Given a band
+ * of its own above the content it was 1280x40 to show a single chip, and
+ * every page started a row lower for it.
+ */
+.page-ports {
+  flex: none;
+}
+
+/* Its list opens over the article, so it hangs from the right edge and never
+   widens the document — the same rule the header's dropdowns needed. */
+.page-ports details {
+  position: relative;
+}
+
+.page-ports details > ul {
+  right: 0;
+  left: auto;
+}
+
+.page-port-switcher__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  line-height: 1;
+}
+
+/* Points down when the list is closed and up when it is open, so the control
+   says which way it is going rather than only that it opens. */
+.page-port-switcher__caret {
+  transition: transform 120ms ease;
+}
+
+[open] > .page-port-switcher__summary .page-port-switcher__caret {
+  transform: rotate(180deg);
+}
