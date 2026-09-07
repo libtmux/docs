@@ -56,4 +56,4 @@ A separate package-consumer program parses workspace data through the packed
 package to check that the optional dependency is usable outside the source
 project. Rendering this page is not an execution of either test path.
 
-[README example](https://github.com/libtmux/libtmux-dotnet/blob/8bf692bd33869e0c572a446310e96c771c9c07fd/src/LibTmux.Workspace/README.md); [Package consumer](https://github.com/libtmux/libtmux-dotnet/blob/8bf692bd33869e0c572a446310e96c771c9c07fd/tests/LibTmux.PackageConsumer/Program.cs).
+[README example](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Workspace/README.md); [Package consumer](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/tests/LibTmux.PackageConsumer/Program.cs).

@@ -79,19 +79,20 @@ for (const file of globSync('**/*.{md,mdx}', { cwd: contentDir }).sort()) {
   const title = titleOf(source, full)
   const section = file.split('/')[0]
   const authoredPort = /^ports\/([^/]+)\//.exec(file)?.[1]
+  const product = /^ports\/[^/]+\/(workspace|mcp)\//.exec(file)?.[1]
 
-  for (const { port: contextPort, text, line, before } of proseMentions(source, PORT_BY_LABEL)) {
+  for (const { port: contextPort, text, line, before, linked } of proseMentions(source, PORT_BY_LABEL)) {
     const pagePort = contextPort ?? authoredPort
     if (notASymbol(text)) continue
-    const decision = decideMention(text, { pagePort, before }, resolver, models)
+    const decision = decideMention(text, { pagePort, product, before }, resolver, models)
     if (decision.kind !== 'link') {
-      if (decision.kind === 'unresolved' && pagePort && isLikelyReference(text) && !notApiReason(text)) {
+      if (!linked && decision.kind === 'unresolved' && pagePort && isLikelyReference(text) && !notApiReason(text)) {
         dangling.push({ port: pagePort, text, page, line, why: decision.why })
       }
       continue
     }
     const port = decision.port
-    const res = resolver.resolve(port, text)
+    const res = resolver.resolve(port, text, product)
     if (!('symbol' in res)) continue
 
     const symbol = res.symbol.id

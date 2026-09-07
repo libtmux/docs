@@ -95,7 +95,7 @@ const PORT_BY_LABEL = { Python: 'py', TypeScript: 'ts', Rust: 'rs', Go: 'go', Ja
 const files = process.argv.slice(2).filter((a) => !a.startsWith('--'))
 const targets = files.length
   ? files.map((f) => resolve(f))
-  : globSync('{topics,guides,concepts,examples}/**/*.md', { cwd: CONTENT }).map((f) => join(CONTENT, f))
+  : globSync('{topics,guides,concepts,examples,ports}/**/*.{md,mdx}', { cwd: CONTENT }).map((f) => join(CONTENT, f))
 
 const tally = { willLink: 0, file: 0, fileMissing: 0, notASymbol: 0, unresolved: 0, alreadyLinked: 0 }
 const unresolved = []
@@ -103,11 +103,17 @@ const missingFiles = []
 
 for (const file of targets) {
   const raw = readFileSync(file, 'utf8')
+  const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(raw)?.[1] ?? ''
+  const authoredPort = /^port:\s*['"]?([a-z]+)['"]?\s*$/m.exec(frontmatter)?.[1]
+    ?? /^ports\/([^/]+)\//.exec(file.replace(`${CONTENT}/`, ''))?.[1]
+  const product = /^product:\s*['"]?(core|workspace|mcp)['"]?\s*$/m.exec(frontmatter)?.[1]
+    ?? /^ports\/[^/]+\/(workspace|mcp)\//.exec(file.replace(`${CONTENT}/`, ''))?.[1]
   for (const { text, port: ctxPort, before, line, linked } of proseMentions(raw, PORT_BY_LABEL)) {
     if (linked) { tally.alreadyLinked++; continue }
+    const pagePort = ctxPort ?? authoredPort
 
     if (FILE_RE.test(text) || text.endsWith('/')) {
-      const d = decideFilePath(text, { before, pagePort: ctxPort }, trees)
+      const d = decideFilePath(text, { before, pagePort }, trees)
       if (d.kind === 'link') tally.file++
       else if (d.kind === 'skip') tally.notASymbol++
       else { tally.fileMissing++; missingFiles.push({ file, line, text, why: d.why }) }
@@ -120,9 +126,11 @@ for (const file of targets) {
     if (notASymbol(text) || !looksLikeApiMention(text)) { tally.notASymbol++; continue }
 
 
-    const linkable = [ctxPort, ...PORTS].some(
-      (p) => p && decideMention(text, { pagePort: p, before }, resolver, models).kind === 'link',
-    )
+    const linkable = (authoredPort ? [pagePort] : [ctxPort, ...PORTS]).some((port) => {
+      if (!port) return false
+      const decision = decideMention(text, { pagePort: port, product, before }, resolver, models)
+      return decision.kind === 'link'
+    })
     // `notApiReason` gates *reporting*, not linking — exactly as the plugin
     // does. A span it names still gets offered to the resolver, because a
     // `TMUX_TMPDIR` that happens to resolve is a link worth having; it simply
@@ -136,7 +144,7 @@ for (const file of targets) {
 const rel = (f) => f.replace(`${CONTENT}/`, '')
 const ms = Date.now() - started
 if (process.argv.includes('--json')) {
-  console.log(JSON.stringify({ tally, unresolved, missingFiles, ms }, null, 1))
+  console.log(JSON.stringify({ pages: targets.map(rel), tally, unresolved, missingFiles, ms }, null, 1))
 } else {
   console.log(`check-api-links: ${targets.length} pages in ${ms}ms`)
   console.log(`  already a link        ${String(tally.alreadyLinked).padStart(5)}`)

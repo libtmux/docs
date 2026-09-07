@@ -8,7 +8,7 @@ sidebar:
   order: 4
 ---
 
-`LibTmux.Mcp` is packaged with `PackAsTool`. Its source has public
+`LibTmux.Mcp` is distributed as a .NET tool package. Its source has public
 classes, but installing the executable does not provide an ordinary
 NuGet library reference for embedding.
 

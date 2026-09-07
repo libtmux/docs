@@ -27,7 +27,7 @@ operations fail and leave a partial workspace.
 
 ## Package and runtime
 
-Import `github.com/libtmux/libtmux-go/workspace` together with the core `tmux`
+Import [`github.com/libtmux/libtmux-go/workspace`](https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace) together with the core `tmux`
 package. Building requires tmux on the host. Parsing and configuration
 validation do not start a tmux server.
 

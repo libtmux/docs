@@ -53,7 +53,7 @@ caller is done; the workspace function does not transfer ownership.
 
 ## Inspect the result
 
-Use `SearchWindows` or a fresh server snapshot to inspect membership. Do not
+Use `Session.SearchWindows` or a fresh server snapshot to inspect membership. Do not
 expect the handle returned by a creation call to contain populated relations.
 Review missing working directories before building if falling back to the
 home directory would make the workspace run in the wrong location.

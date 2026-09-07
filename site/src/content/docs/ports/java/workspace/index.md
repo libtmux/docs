@@ -26,7 +26,7 @@ instead of accepting a larger file with missing behavior.
 
 ## Package and runtime
 
-Use the `io.github.libtmux:libtmux-workspace` artifact with the libtmux BOM.
+Use the [`io.github.libtmux:libtmux-workspace`](https://central.sonatype.com/artifact/io.github.libtmux/libtmux-workspace) artifact with the libtmux BOM.
 The module targets Java 21 and requires tmux on the host for building. Parsing
 YAML does not create a session.
 
@@ -34,4 +34,4 @@ This module does not load Python plugins or implement tmuxp's CLI. Use the
 [Python workspace documentation](https://tmuxp.git-pull.com/) when those
 features are required.
 
-[Module documentation](https://github.com/libtmux/libtmux-java/blob/320c9dcbdb10a0df02b778f09f79a8abc9942745/libtmux-workspace/README.md)
+[Module documentation](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/README.md)

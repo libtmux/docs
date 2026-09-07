@@ -40,7 +40,7 @@ windows:
     panes: [/bin/sh, /bin/sh]
 ```
 
-In an async application, read the file with `std::fs::read_to_string`, parse it
+In an async application, read the file with [`std::fs::read_to_string`](https://doc.rust-lang.org/std/fs/fn.read_to_string.html), parse it
 with `Workspace::from_yaml`, and construct `WorkspaceBuilder::new(&server)`
 using your libtmux server handle. `build(&workspace).await` returns the newly
 created session.

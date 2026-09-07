@@ -8,7 +8,8 @@ sidebar:
   order: 4
 ---
 
-`LibTmuxMCP` is a SwiftPM library product.
+[`LibTmuxMCP`](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Package.swift)
+is a SwiftPM library product.
 `libtmux-mcp` wraps it in a stdio executable. Public Swift types and
 MCP wire operations have separate names and responsibilities.
 

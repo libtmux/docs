@@ -36,4 +36,4 @@ tmux on a supported host.
 The consumer creates a new session. It does not converge an existing session
 or export a live session back to a workspace file.
 
-[Consumer documentation](https://github.com/libtmux/libtmux-cxx/blob/3770a3f83d73aeb4af01c25c3d817733fa558c99/examples/workspace/README.md)
+[Consumer documentation](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/examples/workspace/README.md)

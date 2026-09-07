@@ -8,7 +8,9 @@ sidebar:
   order: 3
 ---
 
-The Swift example package uses the public `LibTmuxMCP` product directly.
+The Swift example package uses the public
+[`LibTmuxMCP`](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Package.swift)
+product directly.
 It demonstrates the default readonly surface and an exact typed
 selection without launching a stdio subprocess.
 

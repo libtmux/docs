@@ -62,4 +62,4 @@ retention entries, then apply promptly. Replan after any failure or outside
 change. See [Topics](../topics/) for command replay and pruning policies and
 [Examples](../examples/) for the package's integration example.
 
-[Parsing implementation](https://github.com/libtmux/libtmux-ts/blob/1ecdab14e15764bfdc5e23c5060f45512a0991f2/packages/workspace/src/config.ts); [Application implementation](https://github.com/libtmux/libtmux-ts/blob/1ecdab14e15764bfdc5e23c5060f45512a0991f2/packages/workspace/src/builder.ts).
+[Parsing implementation](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/packages/workspace/src/config.ts); [Application implementation](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/packages/workspace/src/builder.ts).

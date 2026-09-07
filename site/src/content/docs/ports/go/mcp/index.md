@@ -8,7 +8,8 @@ sidebar:
   order: 0
 ---
 
-`github.com/libtmux/libtmux-go/mcp` is a separate Go module that exposes
+[`github.com/libtmux/libtmux-go/mcp`](https://github.com/libtmux/libtmux-go/blob/5f808882015a975a65acc7f9da5b3ff0d5cbdc91/mcp/README.md)
+is a separate Go module that exposes
 tmux through MCP. Its executable is `libtmux-mcp`. Installing the core
 tmux module does not install this server or its protocol dependencies.
 

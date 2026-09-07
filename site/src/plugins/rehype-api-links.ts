@@ -2,10 +2,12 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { visit } from 'unist-util-visit'
-import { decideFilePath, decideMention, isLikelyReference, notASymbol, notApiReason, type Resolver } from '@libtmux/api-model'
+import { decideFilePath, decideMention, isLikelyReference, notASymbol, notApiReason, type ApiProduct, type MentionContext, type Resolver } from '@libtmux/api-model'
 import { getResolver } from '../lib/prose-resolver'
 import { API_MODELS, PORT_NAME } from '../lib/api-models'
 import { withPortRoot } from '../lib/site-root'
+import { productApiHref } from '../lib/product-api'
+import { buildTarget } from '../lib/versions'
 
 /**
  * Link the API mentions in a prose table to the reference.
@@ -134,10 +136,13 @@ type El = { type?: string; tagName?: string; value?: string; properties?: Record
  * language of the fence above, then the port this build is for.
  */
 export function rehypeApiLinks() {
-  return (tree: unknown, file?: { data?: { astro?: { frontmatter?: { port?: string } } } }) => {
+  return (tree: unknown, file?: { data?: { astro?: { frontmatter?: { port?: string; product?: ApiProduct } } } }) => {
     begin()
     const r = getResolver()
     const buildPort = file?.data?.astro?.frontmatter?.port ?? (process.env.LIBTMUX_DOCS_PORT || undefined)
+    const product = file?.data?.astro?.frontmatter?.product
+    let defaults: Record<string, string> = {}
+    try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
     const sections: { depth: number; port?: string }[] = []
 
     const walk = (node: El, inLink: boolean, rowPort: string | undefined, fence: { lang?: string }, before: { text: string }) => {
@@ -184,7 +189,7 @@ export function rehypeApiLinks() {
         }
         if (child.tagName === 'code' && !inLink) {
           const text = textOf(child).trim()
-          const ctx = { pagePort: rowPort ?? fence.lang ?? sections.at(-1)?.port ?? buildPort, before: scope.text }
+          const ctx = { pagePort: rowPort ?? fence.lang ?? sections.at(-1)?.port ?? buildPort, product, before: scope.text }
           const wrapped = linkFor(text, ctx, r)
           if (wrapped) {
             kids[i] = { type: 'element', tagName: 'a', properties: wrapped.properties, children: [child] } as El
@@ -198,7 +203,7 @@ export function rehypeApiLinks() {
     }
 
     /** The anchor for one span, or nothing when it should stay plain. */
-    const linkFor = (text: string, ctx: { pagePort?: string; before: string }, r: Resolver) => {
+    const linkFor = (text: string, ctx: MentionContext, r: Resolver) => {
       if (!text) return undefined
       if (FILE_RE.test(text) || text.endsWith('/')) {
         const d = decideFilePath(text, ctx, TREES)
@@ -233,12 +238,22 @@ export function rehypeApiLinks() {
         return undefined
       }
       if (d.kind !== 'link') return undefined
+      let href = withPortRoot(d.href)
+      if (ctx.product && !d.external) {
+        const res = r.resolve(d.port, text, ctx.product)
+        if ('symbol' in res) {
+          const version = d.port === process.env.LIBTMUX_DOCS_PORT
+            ? buildTarget(process.env).version
+            : (defaults[d.port] ?? 'latest')
+          href = productApiHref(API_MODELS[d.port], res.symbol, version)
+        }
+      }
       return {
         properties: {
           // withPortRoot: this rewrites prose, which is built in every
           // locale, into reference URLs, which exist in the default locale
           // only. withRoot sent a Japanese page to /ja/reference/….
-          href: withPortRoot(d.href),
+          href,
           class: 'api-mention',
           title: d.title,
           ...(d.external ? { rel: 'nofollow noopener' } : {}),

@@ -44,7 +44,7 @@ finally:
     server.kill()
 ```
 
-The builder stores the resulting session on `builder.session`. Its `build`
+The builder stores the resulting session on `ClassicWorkspaceBuilder.session`. Its `build`
 method does not return that session as the return value. The code uses a new
 socket for each run so cleanup cannot select a normal user server.
 

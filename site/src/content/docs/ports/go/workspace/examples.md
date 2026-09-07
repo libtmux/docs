@@ -16,7 +16,7 @@ and tears down its own server with an independent cleanup deadline.
 ## Build a session
 
 `Example` parses YAML, builds the session, and searches its resulting windows.
-`ExampleBuildInto` creates the initial session connection explicitly and
+[`ExampleBuildInto`](https://github.com/libtmux/libtmux-go/blob/5f808882015a975a65acc7f9da5b3ff0d5cbdc91/workspace/example_test.go) creates the initial session connection explicitly and
 populates it through `BuildInto`. The final example checks an unknown field.
 
 ```go file="workspace/example_test.go"

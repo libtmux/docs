@@ -18,7 +18,9 @@ a custom policy or transport. Its executable supplies the stdio launcher.
 the definitions available under that selection.
 
 The resulting type integrates with rmcp's server machinery; the
-[embedding example](../examples/) uses `ServiceExt` and a stdio transport.
+[embedding example](../examples/) uses
+[`ServiceExt`](https://docs.rs/rmcp/3.1.2/rmcp/service/trait.ServiceExt.html)
+and a stdio transport.
 The [crate API](https://docs.rs/tmux-mcp) documents the Rust exports.
 
 ## Protocol contract

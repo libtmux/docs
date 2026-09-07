@@ -8,7 +8,8 @@ sidebar:
   order: 0
 ---
 
-`io.github.libtmux:libtmux-mcp` provides a Java MCP server and a
+[`io.github.libtmux:libtmux-mcp`](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-mcp/README.md)
+provides a Java MCP server and a
 `libtmux-mcp` application launcher. It discovers tmux objects, captures
 terminal output, runs framed shell commands, and applies typed topology
 operations.

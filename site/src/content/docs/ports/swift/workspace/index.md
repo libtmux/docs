@@ -10,7 +10,7 @@ tableOfContents: true
 ---
 
 `TmuxWorkspace` builds a tmux session from Swift values or a tmuxp-style
-configuration. It is a SwiftPM library product beside the core `LibTmux`
+configuration. It is a SwiftPM library product beside the core [`LibTmux`](/reference/swift/)
 product.
 
 Swift and JSON descriptions work without a YAML dependency. Enable the
@@ -35,4 +35,4 @@ unreleased source examples from the released alpha package. Use a matching
 source revision for these examples, or consult the release's own README when
 pinning a published version.
 
-[Product and version guidance](https://github.com/libtmux/libtmux-swift/blob/46b003c3606e03f1e4ce1ecfc92d87748e4c2095/README.md)
+[Product and version guidance](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/README.md)

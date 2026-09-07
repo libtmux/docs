@@ -9,14 +9,14 @@ sidebar:
 tableOfContents: true
 ---
 
-Add `TmuxWorkspace` and `LibTmux` to a SwiftPM target. This isolated example
+Add `TmuxWorkspace` and [`LibTmux`](/reference/swift/) to a SwiftPM target. This isolated example
 also uses the public `TmuxFixture` product for server startup and cleanup. The
 following dependency selects the source revision used by these examples:
 
 ```swift
 .package(
     url: "https://github.com/libtmux/libtmux-swift.git",
-    revision: "46b003c3606e03f1e4ce1ecfc92d87748e4c2095"
+    revision: "f02a4668570e1cc5198c941413750e021f42c214"
 )
 ```
 
@@ -70,7 +70,7 @@ $ swift run
 
 ## Read configuration
 
-Use `Workspace.decode(json:)` with `Data`, or `Workspace.decode(yaml:)` with a
+Use `Workspace.decode(json:)` with [`Data`](https://developer.apple.com/documentation/foundation/data), or `Workspace.decode(yaml:)` with a
 string when the YAML trait is enabled. Review unsupported fields before
 moving a Python workspace to this structural subset.
 
@@ -79,6 +79,6 @@ application, pass an already running server and retain the result instead. A
 build failure triggers the builder's own cleanup attempt; inspect
 `rollbackFailed` because it reports that the cleanup also failed.
 
-[Package products and toolchain](https://github.com/libtmux/libtmux-swift/blob/46b003c3606e03f1e4ce1ecfc92d87748e4c2095/Package.swift); [Build contract](https://github.com/libtmux/libtmux-swift/blob/46b003c3606e03f1e4ce1ecfc92d87748e4c2095/Sources/TmuxWorkspace/WorkspaceBuilder.swift).
+[Package products and toolchain](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Package.swift); [Build contract](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/TmuxWorkspace/WorkspaceBuilder.swift).
 
-[Isolated server fixture](https://github.com/libtmux/libtmux-swift/blob/46b003c3606e03f1e4ce1ecfc92d87748e4c2095/Tests/TmuxFixture/TmuxFixture.swift).
+[Isolated server fixture](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Tests/TmuxFixture/TmuxFixture.swift).

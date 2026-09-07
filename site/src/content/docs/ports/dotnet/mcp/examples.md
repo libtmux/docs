@@ -51,6 +51,4 @@ For commands that outlast one call, use `tmux_start_job` and collect
 with `tmux_job`.
 
 The [factory source](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Mcp/McpTools.cs)
-defines ownership. The port's documentation snippet uses
-`RunAndReadExitStatus` collection metadata; this rendered excerpt does
-not execute that source check.
+defines ownership.

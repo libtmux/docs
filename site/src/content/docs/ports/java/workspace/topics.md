@@ -46,4 +46,4 @@ exception on the original exception. Inspect suppressed exceptions before
 assuming the partial session was removed. Removing tmux objects cannot undo
 external effects already produced by shell commands.
 
-[Construction and cleanup](https://github.com/libtmux/libtmux-java/blob/320c9dcbdb10a0df02b778f09f79a8abc9942745/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceApplier.java); [YAML validation](https://github.com/libtmux/libtmux-java/blob/320c9dcbdb10a0df02b778f09f79a8abc9942745/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceParser.java).
+[Construction and cleanup](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceApplier.java); [YAML validation](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceParser.java).

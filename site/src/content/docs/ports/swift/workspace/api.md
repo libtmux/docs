@@ -9,7 +9,7 @@ sidebar:
 tableOfContents: true
 ---
 
-Import `TmuxWorkspace` for the configuration and builder, and `LibTmux` for
+Import `TmuxWorkspace` for the configuration and builder, and [`LibTmux`](/reference/swift/) for
 the server and returned session value.
 
 ## Configuration values
@@ -40,4 +40,4 @@ tmux errors, and failure of rollback.
 report the initiating problem and separately inspect whether cleanup left
 objects behind. The supplied server remains owned by the caller.
 
-[Value and decoding contracts](https://github.com/libtmux/libtmux-swift/blob/46b003c3606e03f1e4ce1ecfc92d87748e4c2095/Sources/TmuxWorkspace/Workspace.swift); [Builder contract](https://github.com/libtmux/libtmux-swift/blob/46b003c3606e03f1e4ce1ecfc92d87748e4c2095/Sources/TmuxWorkspace/WorkspaceBuilder.swift).
+[Value and decoding contracts](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/TmuxWorkspace/Workspace.swift); [Builder contract](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/TmuxWorkspace/WorkspaceBuilder.swift).

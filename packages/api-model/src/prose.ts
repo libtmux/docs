@@ -1,4 +1,4 @@
-import type { ApiModel, ApiSymbol } from './model.ts'
+import type { ApiModel, ApiProduct, ApiSymbol } from './model.ts'
 import type { Resolver } from './resolver.ts'
 
 /**
@@ -183,6 +183,12 @@ export type MentionDecision =
   | { kind: 'skip'; why: string }
   | { kind: 'unresolved'; why: string; tried: string[] }
 
+export interface MentionContext {
+  pagePort?: string
+  product?: ApiProduct
+  before?: string
+}
+
 /**
  * Resolve one span, in order of how much the context tells us.
  *
@@ -192,7 +198,7 @@ export type MentionDecision =
  */
 export function decideMention(
   text: string,
-  ctx: { pagePort?: string; before?: string },
+  ctx: MentionContext,
   resolver: Resolver,
   models: Record<string, ApiModel>,
 ): MentionDecision {
@@ -223,17 +229,22 @@ export function decideMention(
   }
 
   const named = ctx.before ? portFromSentence(ctx.before) : undefined
+  const tried: string[] = []
   for (const port of [named, ctx.pagePort]) {
     if (!port || !models[port]) continue
-    const hit = link(port, resolver.resolve(port, text))
+    const res = resolver.resolve(port, text, ctx.product)
+    tried.push(`${port}:${res.how}`)
+    const hit = link(port, res)
     if (hit) return hit
   }
+  // Product pages have an authored port. Shared comparisons retain their
+  // cross-port fallback when a preceding fence only suggests a language.
+  if (ctx.product && tried.length) return { kind: 'unresolved', why: 'not defined in the stated port', tried }
 
   // Nothing said which language. One claimant is an answer; several are not.
   const claims: { port: string; decision: MentionDecision }[] = []
-  const tried: string[] = []
   for (const port of Object.keys(models)) {
-    const res = resolver.resolve(port, text)
+    const res = resolver.resolve(port, text, ctx.product)
     tried.push(`${port}:${res.how}`)
     const hit = link(port, res)
     if (hit) claims.push({ port, decision: hit })
@@ -283,6 +294,9 @@ export function decideFilePath(
   // `src/{server,session}/` is one span naming several paths. Linking it
   // would have to pick one; saying so is better than picking.
   if (/[{}*]/.test(t)) return { kind: 'skip', why: 'pattern, not a path' }
+  if (/\b(?:save|write|create)\b[^.!?]*\bas\s*$/i.test(ctx.before ?? '')) {
+    return { kind: 'skip', why: 'file created by the example' }
+  }
 
   const dir = t.endsWith('/')
   const needle = dir ? t.slice(0, -1) : t

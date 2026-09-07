@@ -170,6 +170,7 @@ export const GO: LanguageSpec = {
     method_declaration: 'method',
     field_declaration: 'attribute',
     const_spec: 'constant',
+    var_spec: 'attribute',
   },
   transparent: ['type_declaration', 'const_declaration', 'var_declaration', 'struct_type', 'interface_type', 'field_declaration_list'],
   commentTypes: ['comment'],

@@ -28,7 +28,7 @@ for parameter and error details.
 
 `tmuxp.workspace.builder.WorkspaceBuilder` is the compatibility alias for
 `ClassicWorkspaceBuilder`. Construct it with expanded `session_config` and a
-libtmux server, call `build`, then read `builder.session`.
+libtmux server, call `build`, then read `ClassicWorkspaceBuilder.session`.
 
 `WorkspaceBuilderProtocol` defines the interface used by the CLI, including
 construction callbacks, building into an optional existing session, and

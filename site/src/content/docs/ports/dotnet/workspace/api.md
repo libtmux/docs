@@ -41,4 +41,4 @@ keeps a `PartialResult` when state could be materialized before failure. It
 can be null when no such result could be read. Inspect live tmux state before
 retrying; a missing result does not prove that no command reached tmux.
 
-[Result contract](https://github.com/libtmux/libtmux-dotnet/blob/8bf692bd33869e0c572a446310e96c771c9c07fd/src/LibTmux.Workspace/WorkspaceResult.cs); [Failure contract](https://github.com/libtmux/libtmux-dotnet/blob/8bf692bd33869e0c572a446310e96c771c9c07fd/src/LibTmux.Workspace/WorkspaceBuildException.cs).
+[Result contract](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Workspace/WorkspaceResult.cs); [Failure contract](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Workspace/WorkspaceBuildException.cs).

@@ -53,4 +53,4 @@ failure. There is no rollback, and a transport failure may leave command
 delivery uncertain. Do not infer that replaying the same command is safe from
 a failed apply alone.
 
-[Workspace behavior](https://github.com/libtmux/libtmux-ts/blob/1ecdab14e15764bfdc5e23c5060f45512a0991f2/packages/workspace/README.md)
+[Workspace behavior](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/packages/workspace/README.md)

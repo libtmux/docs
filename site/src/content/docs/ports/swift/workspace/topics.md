@@ -48,4 +48,4 @@ cleanup task. Cancellation of the build does not itself cancel that cleanup.
 cleanup error. Inspect both before deciding whether a partial session remains.
 Removing a session cannot undo external effects already caused by its commands.
 
-[Configuration model](https://github.com/libtmux/libtmux-swift/blob/46b003c3606e03f1e4ce1ecfc92d87748e4c2095/Sources/TmuxWorkspace/Workspace.swift); [Builder and rollback](https://github.com/libtmux/libtmux-swift/blob/46b003c3606e03f1e4ce1ecfc92d87748e4c2095/Sources/TmuxWorkspace/WorkspaceBuilder.swift).
+[Configuration model](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/TmuxWorkspace/Workspace.swift); [Builder and rollback](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/TmuxWorkspace/WorkspaceBuilder.swift).

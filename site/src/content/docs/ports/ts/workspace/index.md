@@ -34,4 +34,4 @@ The workspace format uses familiar tmuxp field names, with its own validation
 and convergence rules. Python plugins and tmuxp's configuration search are not
 part of this package.
 
-[Package documentation](https://github.com/libtmux/libtmux-ts/blob/1ecdab14e15764bfdc5e23c5060f45512a0991f2/packages/workspace/README.md)
+[Package documentation](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/packages/workspace/README.md)

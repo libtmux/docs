@@ -9,7 +9,8 @@ sidebar:
 ---
 
 `libtmux-mcp` is the Swift stdio executable.
-`LibTmuxMCP` is the SwiftPM library product for embedding the same
+[`LibTmuxMCP`](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Package.swift)
+is the SwiftPM library product for embedding the same
 tools. They expose tmux discovery, captures, waits, input, configuration,
 and workspace application.
 

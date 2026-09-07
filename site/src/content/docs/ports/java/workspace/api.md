@@ -9,7 +9,7 @@ sidebar:
 tableOfContents: true
 ---
 
-The `io.github.libtmux.workspace` package exposes the builder facade and
+The [`io.github.libtmux.workspace`](https://github.com/libtmux/libtmux-java/tree/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/src/main/java/io/github/libtmux/workspace) package exposes the builder facade and
 configuration records. Applications can parse YAML or construct the records
 before building through a core `Server`.
 
@@ -45,4 +45,4 @@ the original exception and attach cleanup failures as suppressed exceptions.
 The caller retains ownership of the supplied server and the successful
 session. Use the core session API for later inspection or removal.
 
-[Public builder contract](https://github.com/libtmux/libtmux-java/blob/320c9dcbdb10a0df02b778f09f79a8abc9942745/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceBuilder.java)
+[Public builder contract](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceBuilder.java)

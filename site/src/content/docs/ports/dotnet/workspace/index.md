@@ -32,4 +32,4 @@ contracts can change between alpha versions.
 The accepted format is a closed subset. Unknown keys, Python plugins,
 configuration search paths, and tmuxp hooks are not silently accepted.
 
-[Package documentation](https://github.com/libtmux/libtmux-dotnet/blob/8bf692bd33869e0c572a446310e96c771c9c07fd/src/LibTmux.Workspace/README.md)
+[Package documentation](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Workspace/README.md)

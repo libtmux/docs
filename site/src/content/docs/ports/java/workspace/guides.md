@@ -73,4 +73,4 @@ it does not serve as workspace removal.
 If construction fails, inspect the exception and its suppressed cleanup
 failures. [Topics](../topics/) describes the builder's cleanup scope.
 
-[Dependency and workspace usage](https://github.com/libtmux/libtmux-java/blob/320c9dcbdb10a0df02b778f09f79a8abc9942745/libtmux-workspace/README.md); [Server lifetime API](https://github.com/libtmux/libtmux-java/blob/320c9dcbdb10a0df02b778f09f79a8abc9942745/libtmux/src/main/java/io/github/libtmux/Server.java).
+[Dependency and workspace usage](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/README.md); [Server lifetime API](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux/src/main/java/io/github/libtmux/Server.java).

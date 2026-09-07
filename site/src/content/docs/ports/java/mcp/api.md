@@ -16,7 +16,9 @@ not determine whether a tool exists on the wire.
 
 `TmuxMcpServer.overStdio(server)` serves through standard input and
 output. `TmuxMcpServer.serving(server, transport)` accepts a custom
-`McpServerTransportProvider`. Both return an SDK `McpSyncServer`.
+[`McpServerTransportProvider`](https://github.com/modelcontextprotocol/java-sdk/blob/v2.0.1/mcp-core/src/main/java/io/modelcontextprotocol/spec/McpServerTransportProvider.java).
+Both return an SDK
+[`McpSyncServer`](https://github.com/modelcontextprotocol/java-sdk/blob/v2.0.1/mcp-core/src/main/java/io/modelcontextprotocol/server/McpSyncServer.java).
 
 The returned server owns its transport. Ownership transfers on entry,
 including startup failure. The embedding application owns the broader

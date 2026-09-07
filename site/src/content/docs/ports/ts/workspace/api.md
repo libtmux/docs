@@ -43,4 +43,4 @@ The language API builds workspaces directly. Availability through an MCP
 server is a separate protocol capability; consult this port's
 [MCP section](../../mcp/) for its advertised tools.
 
-[Public exports](https://github.com/libtmux/libtmux-ts/blob/1ecdab14e15764bfdc5e23c5060f45512a0991f2/packages/workspace/package.json)
+[Public exports](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/packages/workspace/package.json)

@@ -45,4 +45,4 @@ Run both groups with the [consumer guide](../guides/). These tests exercise
 the consumer's public use of libtmux; they do not make its workspace types part
 of the installed core package.
 
-[Builder test](https://github.com/libtmux/libtmux-cxx/blob/3770a3f83d73aeb4af01c25c3d817733fa558c99/examples/workspace/tests/workspace_test.cpp); [YAML tests](https://github.com/libtmux/libtmux-cxx/blob/3770a3f83d73aeb4af01c25c3d817733fa558c99/examples/workspace/tests/tmuxp_test.cpp).
+[Builder test](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/examples/workspace/tests/workspace_test.cpp); [YAML tests](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/examples/workspace/tests/tmuxp_test.cpp).

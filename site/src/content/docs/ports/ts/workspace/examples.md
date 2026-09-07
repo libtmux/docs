@@ -39,4 +39,4 @@ The source include keeps this page's code aligned with the example. Rendering
 the page alone does not execute the integration suite. For a smaller runnable
 entry point, use the [application guide](../guides/).
 
-[Example source](https://github.com/libtmux/libtmux-ts/blob/1ecdab14e15764bfdc5e23c5060f45512a0991f2/examples/workspace/workspace.ts)
+[Example source](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/examples/workspace/workspace.ts)

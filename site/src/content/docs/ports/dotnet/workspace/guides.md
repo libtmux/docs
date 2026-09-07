@@ -71,4 +71,4 @@ long as your application needs it. Inspect
 after a failure and decide what to remove; the builder has no automatic
 rollback.
 
-[Builder API](https://github.com/libtmux/libtmux-dotnet/blob/8bf692bd33869e0c572a446310e96c771c9c07fd/src/LibTmux.Workspace/WorkspaceBuilder.cs); [Owned server lifetime](https://github.com/libtmux/libtmux-dotnet/blob/8bf692bd33869e0c572a446310e96c771c9c07fd/src/LibTmux/Server.Lifecycle.cs).
+[Builder API](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Workspace/WorkspaceBuilder.cs); [Owned server lifetime](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux/Server.Lifecycle.cs).

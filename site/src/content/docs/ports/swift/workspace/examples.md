@@ -9,7 +9,7 @@ sidebar:
 tableOfContents: true
 ---
 
-The port's `ExampleCode` package contains functions for describing a workspace
+The port's [`ExampleCode`](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Examples/Package.swift) package contains functions for describing a workspace
 in Swift, building it, and reading JSON or YAML. Its tests compile and call
 those functions.
 
@@ -43,4 +43,4 @@ The port also checks correspondence between these source functions and its
 README examples. Source inclusion in this page keeps the excerpt current;
 it does not run the Swift tests during site rendering.
 
-[Example source](https://github.com/libtmux/libtmux-swift/blob/46b003c3606e03f1e4ce1ecfc92d87748e4c2095/Examples/Sources/ExampleCode/Workspaces.swift)
+[Example source](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Examples/Sources/ExampleCode/Workspaces.swift)

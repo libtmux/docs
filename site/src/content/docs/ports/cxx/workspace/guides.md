@@ -40,7 +40,7 @@ The tests exercise both YAML parsing and typed configuration. The
 ## Use it in an application
 
 The `workspace_builder` CMake target provides the consumer include directory,
-links the core `libtmux::libtmux` target publicly, and keeps yaml-cpp private
+links the core [`libtmux::libtmux`](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/examples/workspace/CMakeLists.txt) target publicly, and keeps yaml-cpp private
 to the YAML reader. If you adapt the consumer, preserve those dependency
 boundaries and include the parser implementation when using `parse_tmuxp`.
 
@@ -53,4 +53,4 @@ because earlier operations may remain.
 There is no separate installed workspace product in this source tree. Do not
 expect core package managers to expose `libtmux_consumers/workspace.hpp`.
 
-[Consumer build targets](https://github.com/libtmux/libtmux-cxx/blob/3770a3f83d73aeb4af01c25c3d817733fa558c99/examples/workspace/CMakeLists.txt)
+[Consumer build targets](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/examples/workspace/CMakeLists.txt)
