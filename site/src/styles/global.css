@@ -927,7 +927,15 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   right: 0;
   top: calc(100% + 0.5rem);
   z-index: 50;
-  width: max-content;
+  /* Fixed, not `max-content`. Sized to content, the panel changed width every
+     time a list inside it opened — and not only outward: opening one switches
+     its row to a column, so the intrinsic width fell from "three controls side
+     by side" to "the widest one alone", 258px to 128px and back up to 187px.
+     The panel jumped narrower, then wider, under the cursor.
+
+     17rem clears the widest measured state with room for a longer version
+     string or a translated label. */
+  width: 17rem;
   max-width: calc(100vw - 2rem);
   max-height: calc(100dvh - 5rem);
   overflow-y: auto;
