@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { readInventory } from '@libtmux/api-model'
 import { API_MODELS, indexFor } from '../src/lib/api-models'
+import { productApiIndex } from '../src/lib/product-api'
 
 /**
  * The federation is reachable from a build, not just from a unit test.
@@ -57,6 +58,28 @@ describe('indexFor attaches the inventories', () => {
         expect(hit?.external, `${port} resolved ${name} externally`).not.toBe(true)
       }
     }
+  })
+
+  it('links a workspace signature through the same inventories without sharing route caches', () => {
+    const model = API_MODELS.java
+    const reader = model.symbols.find((symbol) => symbol.product === 'workspace'
+      && symbol.name === 'read' && symbol.source.file.endsWith('/WorkspaceBuilder.java'))!
+    expect(reader, 'WorkspaceBuilder.read declaration').toBeDefined()
+    const signature = reader.signatures[0]
+    const annotation = signature.params.find((param) => param.name === 'file')!.type!
+    const core = indexFor(model, href)
+    for (const version of ['latest', 'stable']) {
+      const product = productApiIndex(model, version)
+      const external = product.linkType(annotation, reader).find((span) => span.text === 'Path')?.link
+      expect(external, `${version} workspace file parameter`).toMatchObject({
+        external: true,
+        href: 'https://docs.oracle.com/en/java/javase/21/docs/api/java/nio/file/Path.html',
+      })
+      const workspace = product.linkType(signature.returns!, reader).find((span) => span.text === 'Workspace')?.link
+      expect(workspace?.href).toContain(`/java/${version}/workspace/api/`)
+      expect(productApiIndex(model, version)).toBe(product)
+    }
+    expect(core.linkType(signature.returns!, reader).find((span) => span.text === 'Workspace')?.link?.href).toMatch(/^#/)
   })
 })
 

@@ -1,4 +1,5 @@
-import { SymbolIndex, symbolsForProduct, type ApiModel, type ApiSymbol } from '@libtmux/api-model'
+import { symbolsForProduct, type ApiModel, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
+import { createApiIndex } from './api-models'
 import { PORT_BY_SLUG, portPageUrl, type DocProduct } from './ports'
 import { withPortRoot } from './site-root'
 
@@ -43,7 +44,7 @@ export function productApiIndex(model: ApiModel, version: string): SymbolIndex {
   if (!versions) { versions = new Map(); indexes.set(model, versions) }
   let index = versions.get(version)
   if (!index) {
-    index = new SymbolIndex(model.symbols, (symbol) => productApiHref(model, symbol, version), model.port)
+    index = createApiIndex(model, (symbol) => productApiHref(model, symbol, version))
     versions.set(version, index)
   }
   return index
