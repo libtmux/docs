@@ -35,9 +35,13 @@ try {
     assert.equal(await page.locator('nav[aria-label="Language"] a').first().getAttribute('href'), '/en/py/stable/')
     const switcher = page.locator('[data-page-port-switcher]')
     const hasSwitcher = path !== 'mcp/tools'
-    const expected = path === 'dotnet/latest/mcp/tools/tmux_capture_pane' ? `/en/${path}/` : path.startsWith('reference/')
+    const expected = path === 'dotnet/latest/mcp/tools/tmux_capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : path.startsWith('reference/')
       ? '/en/reference/py/libtmux-session-panes/' : `/en/py/stable/${path.replace(/^ts\/latest\//, '')}/`
     if (hasSwitcher) assert.equal(await switcher.locator('a').first().getAttribute('href'), expected)
+    if (path === 'dotnet/latest/mcp/tools/tmux_capture_pane') {
+      assert.equal(await switcher.locator('a').count(), 8)
+      assert.equal(await switcher.locator('a[aria-current="page"]').getAttribute('href'), `/en/${path}/`)
+    }
     if (path.startsWith('reference/')) {
       assert.match(await switcher.locator('[aria-disabled="true"]').textContent(), /Java/)
       const target = await page.request.get(base.replace(/\/en$/, '') + expected)

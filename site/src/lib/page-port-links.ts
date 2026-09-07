@@ -15,6 +15,11 @@ const symbolsByRoute = new Map<string, ApiSymbol>(Object.entries(API_MODELS).fla
 /** Static routes emitted in each port build, verified against assembled pages. */
 export const SHARED_PAGE_PATHS = ['mcp', 'mcp/tools', 'parity', 'search', 'translations'] as const
 
+const DISTINCT_MCP_OPERATIONS: Partial<Record<string, string>> = {
+  run_command: 'swift', // Raw tmux command, not a shell command in a pane.
+  clear_pane: 'rs', // Scrollback only; leaves the visible screen intact.
+}
+
 export interface PagePortLink {
   port: string
   name: string
@@ -48,6 +53,8 @@ export function pagePortLinks({
   const symbolPort = productReference ? portSlug : referencePort
   const alternatives = symbol ? referenceAlternatives(symbolPort!, symbol.publicId ?? symbol.id) : []
   const entries = docs.filter((entry) => docsPath(entry) === path)
+  const tool = path.startsWith('mcp/tools/') && portSlug
+    ? MCP_REFERENCE[portSlug]?.registrations.find((entry) => entry.wireName === path.slice('mcp/tools/'.length)) : undefined
 
   return PORTS.map((port) => {
     const targetVersion = port.slug === portSlug ? version : (defaults[port.slug] ?? 'latest')
@@ -70,8 +77,11 @@ export function pagePortLinks({
         const href = productReference ? portPageUrl(port, targetVersion, path) : referenceHref(symbolPort, symbol.publicId ?? symbol.id)
         if (href) links = [{ href }]
       }
-    } else if (path.startsWith('mcp/tools/') && port.slug === portSlug && MCP_REFERENCE[port.slug]?.registrations.some((tool) => tool.wireName === path.slice('mcp/tools/'.length))) {
-      links = [{ href: portPageUrl(port, targetVersion, path) }]
+    } else if (tool) {
+      const target = MCP_REFERENCE[port.slug]?.registrations.find((entry) => entry.name === tool.name)
+      const distinctPort = DISTINCT_MCP_OPERATIONS[tool.name]
+      const sameOperation = !distinctPort || (port.slug === distinctPort) === (portSlug === distinctPort)
+      if (target && sameOperation) links = [{ href: portPageUrl(port, targetVersion, `mcp/tools/${target.wireName}`) }]
     } else if ((SHARED_PAGE_PATHS as readonly string[]).includes(path) || entries.some((entry) => docsEntryAvailable(entry, port.slug))) {
       links = [{ href: portPageUrl(port, targetVersion, path) }]
     }
