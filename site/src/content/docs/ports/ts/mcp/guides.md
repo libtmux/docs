@@ -18,7 +18,7 @@ With Node 22 or newer:
 
 ```console
 $ LIBTMUX_SOCKET=docs-agent LIBTMUX_TOOLSETS=inspect \
-    npx -y @libtmux/mcp@0.1.0-alpha.8
+    npx -y @libtmux/mcp@latest
 ```
 
 The process waits for MCP requests on stdin. Its diagnostics go to stderr.
@@ -30,7 +30,7 @@ For clients using the `mcpServers` format:
   "mcpServers": {
     "tmux-typescript": {
       "command": "npx",
-      "args": ["-y", "@libtmux/mcp@0.1.0-alpha.8"],
+      "args": ["-y", "@libtmux/mcp@latest"],
       "env": {
         "LIBTMUX_SOCKET": "docs-agent",
         "LIBTMUX_TOOLSETS": "inspect"

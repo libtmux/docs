@@ -19,7 +19,7 @@ stdio transport. It waits for an MCP client to send requests.
 
 ```console
 $ LIBTMUX_SOCKET=docs-agent LIBTMUX_TOOLSETS=inspect \
-    uvx libtmux-mcp==0.1.0a22
+    uvx libtmux-mcp@latest
 ```
 
 For a client that accepts an `mcpServers` object, use:
@@ -29,7 +29,7 @@ For a client that accepts an `mcpServers` object, use:
   "mcpServers": {
     "tmux-python": {
       "command": "uvx",
-      "args": ["libtmux-mcp==0.1.0a22"],
+      "args": ["libtmux-mcp@latest"],
       "env": {
         "LIBTMUX_SOCKET": "docs-agent",
         "LIBTMUX_TOOLSETS": "inspect"

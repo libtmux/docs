@@ -14,7 +14,7 @@ connecting a client. Go 1.26 or newer is required to build it.
 ## Install the command
 
 ```console
-$ go install github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@v0.0.1-alpha.8
+$ go install github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@latest
 ```
 
 Make Go's binary installation directory available to the MCP client's

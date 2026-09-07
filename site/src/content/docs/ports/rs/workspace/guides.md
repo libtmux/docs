@@ -13,14 +13,14 @@ Build a workspace by parsing its YAML and passing it to `WorkspaceBuilder`.
 Install tmux first, then add the crate to a Rust project:
 
 ```console
-$ cargo add tmux-workspace@0.1.0-alpha.9
+$ cargo add tmux-workspace
 ```
 
 The runnable [example](../examples/) also uses libtmux's isolated test server.
 Enable its `test-support` feature:
 
 ```console
-$ cargo add libtmux@0.1.0-alpha.9 --features test-support
+$ cargo add libtmux --features test-support
 ```
 
 Add the Tokio runtime used by the example:

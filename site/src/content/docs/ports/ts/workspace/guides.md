@@ -10,10 +10,10 @@ tableOfContents: true
 ---
 
 Apply a workspace to create its session, windows, and panes. Install tmux on
-the host, then add the matching package versions from the workspace release:
+the host, then add the workspace package and core library:
 
 ```console
-$ bun add --exact @libtmux/workspace@0.1.0-alpha.8 libtmux@0.1.0-alpha.8
+$ bun add @libtmux/workspace libtmux
 ```
 
 ## Create a session

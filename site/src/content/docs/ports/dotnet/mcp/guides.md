@@ -13,10 +13,12 @@ Install `LibTmux.Mcp` as a tool and configure the MCP client to launch
 
 ## Install the tool
 
+Include prereleases while the package is in alpha:
+
 ```console
 $ dotnet tool install \
     --global \
-    --version 0.0.0-alpha.10 \
+    --prerelease \
     LibTmux.Mcp
 ```
 
