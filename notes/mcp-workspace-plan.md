@@ -73,21 +73,29 @@ layouts retain the existing shell and typography.
 ## Local verification
 
 The complete publication audit passes for the assembled site: 15,627 HTML
-pages, 1,982,767 checked links, and no broken targets. All 204 output tests,
+pages, 1,984,341 checked links, and no broken targets. All 208 output tests,
 235 API-model tests, and 36 theme tests pass. Browser checks cover 36 visual
 comparisons, 24 navigation checks, and 78 table layouts, plus fonts, native
 navigation, and Sphinx style parity. All publication stages ran.
 
-The final outer loop passes in 37.30 seconds, within its 60-second budget.
+The final outer loop passes in 37.69 seconds, within its 60-second budget.
 One earlier output run hit three test timeouts; unchanged standalone runs
 and the complete rerun passed. No timeout limits or concurrency defaults
 were changed.
 
 Runtime protocol discovery covers all eight ports. Representative workspace
-examples ran across the ports; the C++ YAML example and full C++ consumer
-suite remain unexecuted. Some MCP embedding examples received compilation
-checks rather than execution; runtime discovery validates their registered
-protocol surface separately.
+examples ran across the ports. The C++ workspace consumer suite passes all
+21 tests, including YAML parsing and application to isolated tmux servers,
+using the documented Clang 18 and libc++ preset. Its source matches the
+public revision linked by the examples. Some MCP embedding examples received
+compilation checks rather than execution; runtime discovery validates their
+registered protocol surface separately.
+
+Individual MCP tool pages link to counterparts by the catalog's normalized
+operation name, preserving each port's wire name. Swift's raw tmux
+`run_command` and Rust's scrollback-only `clear_pane` remain separate from
+the same-named tools with different operations. Regression checks cover both
+directions, absent tools, version selection, and .NET's wire-name prefix.
 
 The complete preview runs on ports 8081 and 8082. The development server on
 port 4321 provides live content; use the complete preview for assembled
