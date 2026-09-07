@@ -6,6 +6,9 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
+out="$(node --input-type=module -e 'import { resolve } from "node:path"; console.log(resolve(process.env.LIBTMUX_DOCS_OUT_DIR || "_site"))')"
+export LIBTMUX_DOCS_OUT_DIR="$out"
+export LIBTMUX_DOCS_TEST_SITE="$out"
 SERVE_URL="${LIBTMUX_DOCS_SERVE:-http://localhost:8080}"
 # The served site, one locale segment below the origin. serve.sh serves the
 # bucket root, so a page URL carries the prefix the assembly built under.
@@ -108,7 +111,7 @@ step 'source links'
 node scripts/check-source-links.mjs
 
 step 'unit tests'
-pnpm run --recursive --if-present test
+LIBTMUX_DOCS_TEST_SOURCE_ONLY=1 pnpm run --recursive --if-present test
 
 step 'lint'
 pnpm run lint
@@ -140,7 +143,6 @@ fi
 # reader gets, not a near-copy of it.
 step 'build'
 ./scripts/build-site.sh
-out="$(pwd)/_site"
 
 # Named explicitly rather than left to the default. It is the same directory,
 # and saying so is what stops the next person reintroducing a scratch build
@@ -153,7 +155,7 @@ out="$(pwd)/_site"
 # skipping is not a failure, but it is a check that did not run and the reader
 # should be told which.
 step 'output tests'
-LIBTMUX_DOCS_TEST_SITE="$out" pnpm --filter @libtmux/site exec vitest run --reporter=verbose 2>&1 \
+LIBTMUX_DOCS_TEST_SOURCE_ONLY=0 pnpm --filter @libtmux/site exec vitest run --reporter=verbose 2>&1 \
   | tee /tmp/libtmux-output-tests.log \
   | grep -vE '^\s+[✓·]' || true
 if grep -qE '[0-9]+ skipped' /tmp/libtmux-output-tests.log; then
