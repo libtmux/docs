@@ -99,12 +99,10 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
         </strong>{' '}
         <code>LIBTMUX_TOOLSETS</code> picks whole groups and{' '}
         <code>LIBTMUX_TOOLS</code> and <code>LIBTMUX_EXCLUDE_TOOLS</code> name
-        individual ones. The other{' '}
-        {fixedSurface.length === 1 ? 'port serves' : `${fixedSurface.length} serve`}{' '}
-        whatever they register and cannot be narrowed:{' '}
-        {fixedSurface.map((sl) => PORT_BY_SLUG[sl].name).join(', ')}. That
-        matters most where the count is highest — a client that wants three
-        tools still receives all of them.
+        individual ones. {' '}
+        {fixedSurface.map((sl) => PORT_BY_SLUG[sl].name).join(', ')} use other
+        policy or registration rules. Read the chosen port's MCP guides for
+        its defaults and available restrictions.
       </p>
       <p>
         <strong>Tool counts vary by a factor of {spread}.</strong>{' '}

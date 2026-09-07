@@ -52,7 +52,7 @@ for (const [file, project, baseUrl, langs] of [
 function pageOf(file) {
   const rel = relative(contentDir, file).replace(/\.mdx?$/, '')
   const path = rel.endsWith('/index') ? rel.slice(0, -'/index'.length) : rel
-  return `/${path}/`
+  return `/${path.replace(/^ports\/([^/]+)\//, '$1/latest/')}/`
 }
 
 /** The heading a page carries, so a backlink can be labelled. */
@@ -78,8 +78,10 @@ for (const file of globSync('**/*.{md,mdx}', { cwd: contentDir }).sort()) {
   const page = pageOf(full)
   const title = titleOf(source, full)
   const section = file.split('/')[0]
+  const authoredPort = /^ports\/([^/]+)\//.exec(file)?.[1]
 
-  for (const { port: pagePort, text, line, before } of proseMentions(source, PORT_BY_LABEL)) {
+  for (const { port: contextPort, text, line, before } of proseMentions(source, PORT_BY_LABEL)) {
+    const pagePort = contextPort ?? authoredPort
     if (notASymbol(text)) continue
     const decision = decideMention(text, { pagePort, before }, resolver, models)
     if (decision.kind !== 'link') {

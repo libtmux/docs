@@ -13,17 +13,19 @@ import { getSidebar, isActivePath } from '../../lib/sidebar'
 import { DEFAULT_LOCALE, type Locale } from '../../i18n/locales'
 import SidebarLink from './SidebarLink.astro'
 import SidebarSection from './SidebarSection.astro'
+import type { DocProduct } from '../../lib/ports'
 
 interface Props {
   port?: string
+  product?: DocProduct
   version: string
   currentPath: string
   /** Scopes the nav to one locale, the way `port` scopes it to one port. */
   locale?: Locale
 }
 
-const { port, version, currentPath, locale = DEFAULT_LOCALE } = Astro.props
-const items = await getSidebar(port, version, locale)
+const { port, product, version, currentPath, locale = DEFAULT_LOCALE } = Astro.props
+const items = await getSidebar(port, version, locale, product)
 ---
 
 <nav aria-label="Documentation" class="sidebar-nav">

@@ -17,10 +17,11 @@ interface Props {
   /** The modal autofocuses and closes on Escape; the page does neither. */
   modal?: boolean
 }
+import { withRoot } from '../lib/site-root'
 const { modal = false } = Astro.props as Props
 ---
 
-<div class="search-panel" data-modal={modal ? 'true' : undefined}>
+<div class="search-panel" data-modal={modal ? 'true' : undefined} data-search-bundle={withRoot('/pagefind/')}>
   <div class="search-panel__field">
     <svg class="search-panel__icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
       <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="2"></circle>
@@ -227,11 +228,10 @@ const { modal = false } = Astro.props as Props
 <script>
   import { mountSearchPanel } from '../lib/search-panel'
 
-  const bundlePath = `${import.meta.env.BASE_URL}pagefind/`
   for (const root of document.querySelectorAll<HTMLElement>('.search-panel')) {
     if (root.dataset.mounted) continue
     root.dataset.mounted = 'true'
-    const handle = mountSearchPanel(root, bundlePath)
+    const handle = mountSearchPanel(root, root.dataset.searchBundle!)
 
     const dialog = root.closest('dialog')
     if (dialog) {

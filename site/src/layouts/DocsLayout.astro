@@ -12,6 +12,7 @@ import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import PagePortSwitcher from '../components/PagePortSwitcher.astro'
 import { pagePortsFor } from '../lib/page-ports-for'
 import BaseLayout from './BaseLayout.astro'
+import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, type DocProduct } from '../lib/ports'
 
 /**
  * The documentation reading shell: sidebar | content | table of contents.
@@ -34,6 +35,8 @@ interface Props {
   description?: string
   /** Which port's nav to scope the sidebar to. Omit for shell pages with no port. */
   port?: string
+  product?: DocProduct
+  version?: string
   /** Path within the current port+version, e.g. 'guides/panes'. Forwarded to BaseLayout for canonical/SEO. */
   pagePath?: string
   noindex?: boolean
@@ -57,6 +60,8 @@ const {
   title,
   description,
   port,
+  product,
+  version: requestedVersion,
   pagePath = '',
   noindex = false,
   updated,
@@ -71,7 +76,7 @@ const {
 
 // process.env, not import.meta.env: import.meta.env.LIBTMUX_DOCS_* goes
 // stale across repeated astro builds in one tree (see BaseLayout.astro).
-const { version } = buildTarget(process.env)
+const version = requestedVersion ?? buildTarget(process.env).version
 
 // Astro.url.pathname rather than `pagePath`: the sidebar only needs *a*
 // consistent value to diff against the hrefs it built itself
@@ -82,7 +87,12 @@ const currentPath = Astro.url.pathname
 
 const tocItems =
   tableOfContents && headings.length > 0 ? generateToC(headings) : []
-const pagePorts = await pagePortsFor(sourcePath ?? pagePath, port)
+const pagePorts = await pagePortsFor(sourcePath ?? pagePath, port, version)
+const breadcrumbs = product && port ? [
+  { name: PORT_BY_SLUG[port].name, url: portPageUrl(PORT_BY_SLUG[port], version) },
+  { name: DOC_PRODUCTS[product].label, url: portPageUrl(PORT_BY_SLUG[port], version, product) },
+  ...(pagePath !== product ? [{ name: title, url: portPageUrl(PORT_BY_SLUG[port], version, pagePath) }] : []),
+] : []
 ---
 
 <BaseLayout
@@ -90,6 +100,7 @@ const pagePorts = await pagePortsFor(sourcePath ?? pagePath, port)
   description={description}
   pagePath={pagePath}
   portSlug={port}
+  version={version}
   noindex={noindex}
   updated={updated}
   locale={locale}
@@ -97,6 +108,7 @@ const pagePorts = await pagePortsFor(sourcePath ?? pagePath, port)
   sourcePath={sourcePath}
   canonicalOverride={canonicalOverride}
   localeStatuses={localeStatuses}
+  breadcrumbs={breadcrumbs}
 >
   <CodeTabs />
   <!-- Mobile toolbar: sidebar + ToC toggles. The three-column layout below hides
@@ -147,7 +159,7 @@ const pagePorts = await pagePortsFor(sourcePath ?? pagePath, port)
           </svg>
         </button>
       </div>
-      <Sidebar locale={locale} port={port} version={version} currentPath={currentPath} />
+      <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} />
     </div>
   </aside>
 
@@ -162,12 +174,22 @@ const pagePorts = await pagePortsFor(sourcePath ?? pagePath, port)
   <div class="mx-auto flex max-w-[100rem] gap-8 px-6 py-8">
     <aside class="hidden w-64 shrink-0 lg:block">
       <div class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
-        <Sidebar locale={locale} port={port} version={version} currentPath={currentPath} />
+        <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} />
       </div>
     </aside>
 
     <main class="min-w-0 flex-1">
       <article class="prose max-w-[80ch] dark:prose-invert">
+        {breadcrumbs.length > 0 && (
+          <nav aria-label="Breadcrumb" class="not-prose mb-4 text-sm opacity-80" data-pagefind-ignore="all">
+            <ol class="flex flex-wrap gap-x-2 gap-y-1">
+              {breadcrumbs.map((item, i) => <li class="flex gap-2">
+                {i > 0 && <span aria-hidden="true">/</span>}
+                {i === breadcrumbs.length - 1 ? <span aria-current="page">{item.name}</span> : <a class="hover:underline" href={item.url}>{item.name}</a>}
+              </li>)}
+            </ol>
+          </nav>
+        )}
         {/*
           Beside the title, not above it. The control answers a question about
           this page, and given a band of its own it pushed the article down a

@@ -8,10 +8,18 @@ const { localePageHref, localeSourcePath } = await import('../src/i18n/locales')
 const docs = [
   { id: 'concepts/model', data: {} },
   { id: 'guides/python-only', data: { port: 'py' } },
+  { id: 'ports/ts/workspace/guides', data: { port: 'ts', product: 'workspace' } },
+  { id: 'ports/rs/workspace/guides', data: { port: 'rs', product: 'workspace' } },
 ]
 const options = { version: 'v1.2.3', defaults: { py: 'stable', ts: 'latest' }, docs }
 
 describe('matching pages in another port', () => {
+  it('switches product guides only where the matching page is authored', () => {
+    const links = pagePortLinks({ ...options, pagePath: 'workspace/guides', portSlug: 'ts' })
+    expect(links.find((p) => p.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/v1.2.3/workspace/guides/')
+    expect(links.find((p) => p.port === 'rs')?.links[0].href).toBe('/pr-42/en/rs/latest/workspace/guides/')
+    expect(links.find((p) => p.port === 'py')?.links).toEqual([])
+  })
   it('preserves the prose page and chooses the target port default', () => {
     const links = pagePortLinks({ ...options, pagePath: 'concepts/model', portSlug: 'py' })
     expect(links.find((p) => p.port === 'py')?.links[0].href).toBe('/pr-42/en/py/v1.2.3/concepts/model/')

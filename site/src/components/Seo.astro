@@ -1,6 +1,6 @@
 ---
 import type { Graph, WithContext, Thing } from 'schema-dts'
-import { PORT_BY_SLUG } from '../lib/ports'
+import { DOC_PRODUCTS, PORT_BY_SLUG, type DocProduct } from '../lib/ports'
 import { canonicalUrl, robotsFor, type VersionEntry } from '../lib/versions'
 import { IS_ROOT_BUILD, SITE_ROOT } from '../lib/site-root'
 import { localeRoot } from '../i18n/locales'
@@ -54,6 +54,7 @@ interface Props {
    * one, and that is what a crawler should be told.
    */
   canonicalOverride?: string
+  breadcrumbs?: { name: string; url: string }[]
 }
 
 const {
@@ -71,6 +72,7 @@ const {
   locale = 'en',
   sourcePath,
   canonicalOverride,
+  breadcrumbs = [],
 } = Astro.props as Props
 
 const origin = (Astro.site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
@@ -87,7 +89,7 @@ const rootedOrigin = `${origin}${SITE_ROOT}`
 // Shared shell pages are canonical to themselves. Port pages canonicalise to
 // the same path under the port's default version.
 const canonical = canonicalOverride
-  ? `${origin}${canonicalOverride}`
+  ? new URL(canonicalOverride, origin).href
   : portSlug
   ? canonicalUrl(rootedOrigin, portSlug, version, defaultVersion, pagePath, existsInDefault)
   : `${rootedOrigin}/${pagePath.replace(/^\/+/, '').replace(/\/+$/, '')}${pagePath.replace(/^\/+/, '') ? '/' : ''}`
@@ -146,7 +148,7 @@ const graph: Graph = {
     ...(pagePath
       ? [
           {
-            '@type': 'TechArticle' as const,
+            '@type': /^(mcp|workspace)\/(api|tools)(\/|$)/.test(pagePath) ? 'APIReference' as const : 'TechArticle' as const,
             '@id': `${canonical}#article`,
             url: canonical,
             headline: title,
@@ -156,13 +158,18 @@ const graph: Graph = {
             ...(updated ? { dateModified: updated } : {}),
             ...(port
               ? {
-                  programmingLanguage: port.language,
-                  about: { '@type': 'SoftwareSourceCode' as const, name: port.packageName },
+                  about: { '@type': 'SoftwareSourceCode' as const, name: DOC_PRODUCTS[pagePath.split('/')[0] as DocProduct]?.label ?? port.packageName, programmingLanguage: port.language },
                 }
               : {}),
           },
         ]
       : []),
+    ...(breadcrumbs.length ? [{
+      '@type': 'BreadcrumbList' as const,
+      itemListElement: breadcrumbs.map((item, i) => ({
+        '@type': 'ListItem' as const, position: i + 1, name: item.name, item: new URL(item.url, origin).href,
+      })),
+    }] : []),
   ],
 }
 ---

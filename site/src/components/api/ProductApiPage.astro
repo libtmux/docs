@@ -1,0 +1,30 @@
+---
+import { docSummaryText, sourceUrl, symbolsForProduct, type ApiModel, type ApiSymbol } from '@libtmux/api-model'
+import DocsLayout from '../../layouts/DocsLayout.astro'
+import ApiEntry from './ApiEntry.astro'
+import { productApiHref, productApiIndex } from '../../lib/product-api'
+import type { DocProduct } from '../../lib/ports'
+import '../../styles/api.css'
+import '../../styles/vendor/gp-sphinx-api.css'
+interface Props { model: ApiModel; symbol: ApiSymbol; version: string }
+const { model, symbol, version } = Astro.props
+const product = symbol.product as DocProduct
+const hrefFor = (entry: ApiSymbol) => productApiHref(model, entry, version)
+const index = productApiIndex(model, version)
+const members = symbolsForProduct(model, product).filter((entry) => entry.parent === symbol.id)
+const pagePath = `${product}/api/${symbol.slug}`
+---
+
+<DocsLayout title={symbol.publicId ?? symbol.name} description={symbol.doc?.summary ? docSummaryText(symbol.doc.summary, model.port) : `${symbol.name} API documentation.`}
+  port={model.port} product={product} version={version} pagePath={pagePath} tableOfContents={false}>
+  <p><a href="../">API reference</a> · <a href={`../${symbol.slug}.md`}>Markdown</a></p>
+  {symbol.apiScope === 'supporting' && <p>This type appears in public signatures. It is not a package entry point.</p>}
+  <ApiEntry symbol={symbol} index={index} port={model.port} heading sourceUrl={(entry) => sourceUrl(model, entry)} />
+  {members.length > 0 && <section>
+    <h2>Members</h2>
+    {members.map((member) => <>
+      <p><a href={hrefFor(member)}><code>{member.name}</code></a></p>
+      <ApiEntry symbol={member} index={index} port={model.port} member sourceUrl={(entry) => sourceUrl(model, entry)} />
+    </>)}
+  </section>}
+</DocsLayout>

@@ -3,8 +3,9 @@ import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE } from '../i18n/locales.ts'
 import { localeOf } from '../i18n/resolve.ts'
 import { API_MODELS, PORT_NAME, ownersOf } from '../lib/api-models.ts'
-import { hasReference, PORTS, referenceUrl } from '../lib/ports.ts'
+import { DOC_PRODUCTS, hasReference, PORTS, portPageUrl, referenceUrl } from '../lib/ports.ts'
 import { PORT_ROOT } from '../lib/site-root.ts'
+import { docsRoutePath } from '../lib/docs-paths.ts'
 
 /**
  * `/docs.json` — the agent manifest.
@@ -33,10 +34,13 @@ export const GET: APIRoute = async ({ site }) => {
   // Where the reference and its inventories actually live. PORT_ROOT has no
   // trailing slash; every use below joins a path that has no leading one.
   const refBase = `${PORT_ROOT}/`
+  const port = process.env.LIBTMUX_DOCS_PORT
+  let defaults: Record<string, string> = {}
+  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
 
   const entries = await getCollection(
     'docs',
-    (entry) => entry.data.port === undefined && localeOf(entry.id) === DEFAULT_LOCALE,
+    (entry) => (!port || !entry.data.port || entry.data.port === port) && localeOf(entry.id) === DEFAULT_LOCALE,
   )
 
   const pages = []
@@ -46,8 +50,8 @@ export const GET: APIRoute = async ({ site }) => {
       title: entry.data.title,
       description: entry.data.description ?? '',
       section: entry.data.sidebar?.group ?? 'Documentation',
-      url: `${origin}${base}${entry.id}/`,
-      markdownUrl: `${origin}${base}llms-full.txt`,
+      url: `${origin}${entry.data.product && !port ? refBase : base}${docsRoutePath(entry, port, defaults)}/`,
+      markdownUrl: `${origin}${entry.data.product && !port ? refBase : base}llms-full.txt`,
       headings: headings.map((h) => ({ id: h.slug, level: h.depth, text: h.text })),
     })
   }
@@ -94,6 +98,13 @@ export const GET: APIRoute = async ({ site }) => {
       language: p.language,
       package: p.packageName,
       reference: hasReference(p) ? referenceUrl(p, 'stable') : null,
+      products: Object.entries(DOC_PRODUCTS).map(([slug, product]) => ({
+        slug, name: product.label,
+        url: portPageUrl(p, defaults[p.slug] ?? 'latest', slug),
+        reference: portPageUrl(p, defaults[p.slug] ?? 'latest', `${slug}/api`),
+        ...(slug === 'mcp' ? { protocol: portPageUrl(p, defaults[p.slug] ?? 'latest', 'mcp/tools').replace(/\/$/, '.json') } : {}),
+        source: API_MODELS[p.slug]?.sources?.find((source) => source.product === slug),
+      })),
       extracted: API_MODELS[p.slug]
         ? {
             symbols: API_MODELS[p.slug].symbols.length,

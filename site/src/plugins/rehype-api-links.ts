@@ -134,10 +134,10 @@ type El = { type?: string; tagName?: string; value?: string; properties?: Record
  * language of the fence above, then the port this build is for.
  */
 export function rehypeApiLinks() {
-  return (tree: unknown) => {
+  return (tree: unknown, file?: { data?: { astro?: { frontmatter?: { port?: string } } } }) => {
     begin()
     const r = getResolver()
-    const buildPort = process.env.LIBTMUX_DOCS_PORT || undefined
+    const buildPort = file?.data?.astro?.frontmatter?.port ?? (process.env.LIBTMUX_DOCS_PORT || undefined)
     const sections: { depth: number; port?: string }[] = []
 
     const walk = (node: El, inLink: boolean, rowPort: string | undefined, fence: { lang?: string }, before: { text: string }) => {
