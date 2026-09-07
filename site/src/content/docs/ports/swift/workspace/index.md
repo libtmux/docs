@@ -9,9 +9,9 @@ sidebar:
 tableOfContents: true
 ---
 
-`TmuxWorkspace` builds a tmux session from Swift values or a tmuxp-style
-configuration. It is a SwiftPM library product beside the core [`LibTmux`](/reference/swift/)
-product.
+`TmuxWorkspace` builds a tmux session from Swift values or a
+[tmuxp](https://tmuxp.git-pull.com)-style configuration. It is a SwiftPM
+library product beside the core [`LibTmux`](/reference/swift/) product.
 
 Swift and JSON descriptions work without a YAML dependency. Enable the
 `YAMLWorkspaces` package trait to add YAML decoding. Building uses the same

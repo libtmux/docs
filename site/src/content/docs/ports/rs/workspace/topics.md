@@ -15,10 +15,10 @@ server.
 
 ## Configuration
 
-`Workspace::from_yaml` accepts tmuxp-style session, window, and pane data. The
-configuration supports working directories, commands, environment variables,
-options, focus, and layouts. Unknown keys are listed in `unsupported_keys` and
-ignored.
+`Workspace::from_yaml` accepts [tmuxp](https://tmuxp.git-pull.com)-style
+session, window, and pane data. The configuration supports working directories,
+commands, environment variables, options, focus, and layouts. Unknown keys are
+listed in `unsupported_keys` and ignored.
 That behavior differs from a strict parser: successful parsing does not prove
 that every field in a larger tmuxp file was applied.
 

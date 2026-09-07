@@ -9,7 +9,8 @@ sidebar:
 tableOfContents: true
 ---
 
-`tmux-workspace` creates a tmux session from a tmuxp-style YAML description.
+`tmux-workspace` creates a tmux session from a
+[tmuxp](https://tmuxp.git-pull.com)-style YAML description.
 The crate uses the public libtmux API and returns a typed session handle. A
 separate `freeze` operation records an existing session as workspace data.
 

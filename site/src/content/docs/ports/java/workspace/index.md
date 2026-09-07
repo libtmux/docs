@@ -13,9 +13,10 @@ tableOfContents: true
 libtmux's Java API and returns the session after capturing the completed
 window and pane structure.
 
-The module supports a focused tmuxp subset: session names, windows, layouts,
-panes, and ordered shell commands. It rejects unknown configuration fields
-instead of accepting a larger file with missing behavior.
+The module supports a focused [tmuxp](https://tmuxp.git-pull.com) subset:
+session names, windows, layouts, panes, and ordered shell commands. It rejects
+unknown configuration fields instead of accepting a larger file with missing
+behavior.
 
 ## Start here
 

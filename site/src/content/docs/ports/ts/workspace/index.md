@@ -30,8 +30,8 @@ Node and Bun; its YAML convenience parser requires Bun. You can use validated
 JavaScript objects under either runtime. Real tmux control requires tmux on
 the host. The package documents Linux as its supported runtime platform.
 
-The workspace format uses familiar tmuxp field names, with its own validation
-and convergence rules. Python plugins and tmuxp's configuration search are not
-part of this package.
+The workspace format uses familiar [tmuxp](https://tmuxp.git-pull.com) field
+names, with its own validation and convergence rules. Python plugins and
+tmuxp's configuration search are not part of this package.
 
 [Package documentation](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/packages/workspace/README.md)

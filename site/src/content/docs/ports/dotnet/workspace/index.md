@@ -9,9 +9,9 @@ sidebar:
 tableOfContents: true
 ---
 
-`LibTmux.Workspace` reads a tmuxp-style YAML file and builds its session through
-LibTmux. It returns the session, materialized windows, and any layouts that
-tmux rejected while leaving their windows usable.
+`LibTmux.Workspace` reads a [tmuxp](https://tmuxp.git-pull.com)-style YAML file
+and builds its session through LibTmux. It returns the session, materialized
+windows, and any layouts that tmux rejected while leaving their windows usable.
 
 Use it from a launcher or another .NET application that already controls a
 tmux server. The package adds YAML parsing separately from the core client.

@@ -10,8 +10,8 @@ tableOfContents: true
 ---
 
 The C++ repository includes a workspace consumer that builds a described tmux
-session and reads tmuxp-style YAML. It exercises libtmux's public API from a
-separate target.
+session and reads [tmuxp](https://tmuxp.git-pull.com)-style YAML. It exercises
+libtmux's public API from a separate target.
 
 The workspace headers and parser belong to `examples/workspace`. They are
 not installed with the core libtmux package. Use the consumer from a source
