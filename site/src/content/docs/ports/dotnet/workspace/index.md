@@ -1,0 +1,35 @@
+---
+title: "Workspace Manager for .NET"
+description: "Build tmux sessions from YAML with LibTmux.Workspace."
+port: dotnet
+product: workspace
+sidebar:
+  label: Overview
+  order: 0
+tableOfContents: true
+---
+
+`LibTmux.Workspace` reads a tmuxp-style YAML file and builds its session through
+LibTmux. It returns the session, materialized windows, and any layouts that
+tmux rejected while leaving their windows usable.
+
+Use it from a launcher or another .NET application that already controls a
+tmux server. The package adds YAML parsing separately from the core client.
+
+## Start here
+
+- [Guides](./guides/) install the package and build an isolated workspace.
+- [Topics](./topics/) explain validation, readiness, and partial results.
+- [Examples](./examples/) connect the documented example to its checks.
+- [API](./api/) covers configuration, results, and builder options.
+
+## Package and runtime
+
+The package targets .NET 8 and .NET 10 and uses YamlDotNet. tmux must run on
+the host. Pin the prerelease selected by your package manager because public
+contracts can change between alpha versions.
+
+The accepted format is a closed subset. Unknown keys, Python plugins,
+configuration search paths, and tmuxp hooks are not silently accepted.
+
+[Package documentation](https://github.com/libtmux/libtmux-dotnet/blob/8bf692bd33869e0c572a446310e96c771c9c07fd/src/LibTmux.Workspace/README.md)
