@@ -3149,6 +3149,156 @@ export const CONCEPTS: Record<string, Concept> = {
       swift: 'no single-variable read; the whole table is returned',
     },
   },
+  'server-colors': {
+    label: 'How many colours the terminal was declared to have',
+    symbols: {
+      py: 'libtmux.Server.colors',
+      ts: 'server.Server.colors',
+      rs: 'server.Server.colors',
+    },
+    absent: {
+      go: 'no equivalent on `Server`',
+      java: 'no equivalent on `Server`',
+      dotnet: 'no equivalent on `Server`',
+      cxx: 'no equivalent on `Server`',
+      swift: 'no equivalent on `Server`',
+    },
+  },
+  'socket-name': {
+    label: 'The socket name this server addresses',
+    symbols: {
+      py: 'libtmux.Server.socket_name',
+      ts: 'server.Server.socketName',
+      rs: 'server.Server.socket_name',
+    },
+    absent: {
+      go: '`Server.SocketPath` reports the resolved path instead',
+      java: 'no equivalent on `Server`',
+      dotnet: 'no equivalent on `Server`',
+      cxx: '`Server::at_socket_name` sets it rather than reading it',
+      swift: '`Server.init(socketName:)` takes it rather than reporting it',
+    },
+  },
+  'pane-dead': {
+    label: 'Whether the pane’s program has exited',
+    symbols: {
+      py: 'libtmux.Pane.pane_dead',
+      rs: 'pane.Pane.is_dead',
+      go: 'tmux.Pane.Dead',
+      cxx: 'libtmux::Pane::dead',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+      dotnet: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'pane-in-mode': {
+    label: 'Whether the pane is in a mode',
+    symbols: {
+      py: 'libtmux.Pane.pane_in_mode',
+      rs: 'pane.Pane.is_in_mode',
+      go: 'tmux.Pane.InMode',
+      cxx: 'libtmux::Pane::in_mode',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      java: '`Pane.mode` names the mode rather than reporting a flag',
+      dotnet: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'pane-path': {
+    label: 'The path a pane was started in',
+    symbols: {
+      py: 'libtmux.Pane.pane_path',
+      go: 'tmux.Pane.Path',
+      cxx: 'libtmux::Pane::path',
+    },
+    absent: {
+      ts: 'no equivalent on `Pane`',
+      rs: 'no equivalent on `Pane`',
+      java: 'no equivalent on `Pane`',
+      dotnet: 'no equivalent on `Pane`',
+      swift: 'no equivalent on `Pane`',
+    },
+  },
+  'session-group': {
+    label: 'The group a session belongs to',
+    symbols: {
+      py: 'libtmux.Session.session_group',
+      go: 'tmux.Session.Group',
+      cxx: 'libtmux::Session::group',
+    },
+    absent: {
+      ts: 'no equivalent on `Session`',
+      rs: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      dotnet: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'session-grouped': {
+    label: 'Whether a session shares its windows with a group',
+    symbols: {
+      py: 'libtmux.Session.session_grouped',
+      go: 'tmux.Session.Grouped',
+      cxx: 'libtmux::Session::grouped',
+    },
+    absent: {
+      ts: 'no equivalent on `Session`',
+      rs: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      dotnet: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'session-last-attached': {
+    label: 'When a client last attached to a session',
+    symbols: {
+      py: 'libtmux.Session.session_last_attached',
+      rs: 'session.Session.last_attached',
+      go: 'tmux.Session.LastAttached',
+    },
+    absent: {
+      ts: 'no equivalent on `Session`',
+      java: 'no equivalent on `Session`',
+      dotnet: 'no equivalent on `Session`',
+      cxx: 'no equivalent on `Session`',
+      swift: 'no equivalent on `Session`',
+    },
+  },
+  'window-activity': {
+    label: 'When a window last showed activity',
+    symbols: {
+      py: 'libtmux.Window.window_activity',
+      rs: 'window.Window.last_activity',
+      go: 'tmux.Window.Activity',
+      cxx: 'libtmux::Window::activity',
+    },
+    absent: {
+      ts: 'no equivalent on `Window`',
+      java: 'no equivalent on `Window`',
+      dotnet: 'no equivalent on `Window`',
+      swift: 'no equivalent on `Window`',
+    },
+  },
+  'window-linked': {
+    label: 'Whether a window is linked into more than one session',
+    symbols: {
+      py: 'libtmux.Window.window_linked',
+      rs: 'window.Window.is_linked',
+      go: 'tmux.Window.Linked',
+      java: 'io.github.libtmux.Window.Window.linked',
+    },
+    absent: {
+      ts: 'no equivalent on `Window`',
+      dotnet: 'no equivalent on `Window`',
+      cxx: 'no equivalent on `Window`',
+      swift: 'no equivalent on `Window`',
+    },
+  },
 }
 
 /** Every concept naming this symbol, including concepts sharing an overload group. */
