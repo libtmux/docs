@@ -136,10 +136,14 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
         source: string
         target: string
         targetFallback?: string
+        sourceOrigin?: { identifier: string; displayName: string }
       }[]
     }
 
     const titleOf = new Map(graph.symbols.map((s) => [s.identifier.precise, s.pathComponents]))
+    const origins = new Map((graph.relationships ?? [])
+      .filter((relationship) => relationship.kind === 'memberOf' && relationship.sourceOrigin)
+      .map((relationship) => [relationship.source, relationship.sourceOrigin!.displayName]))
     for (const rel of graph.relationships ?? []) {
       if (rel.kind !== 'conformsTo') continue
       // A target outside this graph — every standard library protocol — is
@@ -181,6 +185,12 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
       // 76 fenced blocks never became examples and four reached the page as
       // literal ``` fences inside a paragraph.
       const parsed = doc ? parseMarkdownDocFull(doc, 'swift') : undefined
+      const source: ApiSymbol['source'] = {
+        file: (raw.location?.uri ?? '').replace(/^file:\/\//, ''),
+        ...(raw.location?.uri && raw.location.position?.line !== undefined
+          ? { line: raw.location.position.line + 1 } : {}),
+      }
+      const inheritedFrom = source.file ? undefined : origins.get(raw.identifier.precise)
 
       const existing = byId.get(id)
       if (existing) {
@@ -188,6 +198,12 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
         // supply the prose — Swift's generated `==`/`!=` pairs carry none.
         if (signature) existing.signatures.push(signature)
         if (parsed && !existing.doc) existing.doc = parsed.doc
+        if (!existing.source.file && source.file) {
+          existing.source = source
+          delete existing.inheritedFrom
+        } else if (!existing.source.file && inheritedFrom) {
+          existing.inheritedFrom ??= inheritedFrom
+        }
         if (existing.signatures.length > 1 && !existing.modifiers.includes('overload')) {
           existing.modifiers.push('overload')
         }
@@ -205,10 +221,8 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
         type: signature ? undefined : fragmentText(raw.names.subHeading),
         doc: parsed?.doc,
         extends: conformedNames(conformances, raw.identifier.precise),
-        source: {
-          file: (raw.location?.uri ?? '').replace(/^file:\/\//, ''),
-          line: raw.location?.position?.line ?? 1,
-        },
+        source,
+        inheritedFrom,
       }
       byId.set(id, sym)
       symbols.push(sym)

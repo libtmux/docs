@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import type { ApiModel, ApiSymbol } from '../src/model.ts'
-import { sourceUrl, symbolsForProduct } from '../src/products.ts'
+import { inheritProductFromOwners, sourceUrl, symbolsForProduct } from '../src/products.ts'
 
 const symbol: ApiSymbol = {
   id: 'tmuxp.WorkspaceBuilder', name: 'WorkspaceBuilder', kind: 'class',
@@ -24,6 +24,17 @@ describe('product reference provenance', () => {
 
   it('does not invent a repository for an unproven source', () => {
     expect(sourceUrl({ ...model, repo: undefined }, { ...symbol, source: { file: 'api.py' } })).toBeUndefined()
+  })
+
+  it('assigns members without files to their owning product independent of order', () => {
+    const nested: ApiSymbol = { ...symbol, id: 'Workspace.Nested.value', parent: 'Workspace.Nested', product: 'core', source: { file: '' } }
+    const container: ApiSymbol = { ...symbol, id: 'Workspace.Nested', parent: 'Workspace', product: 'core', source: { file: '' } }
+    const owner: ApiSymbol = { ...symbol, id: 'Workspace', product: 'workspace' }
+    const ownSource: ApiSymbol = { ...symbol, id: 'Workspace.external', parent: 'Workspace', product: 'mcp' }
+    const symbols = [nested, container, owner, ownSource]
+    inheritProductFromOwners(symbols)
+    expect(symbols.map((entry) => entry.product)).toEqual(['workspace', 'workspace', 'workspace', 'mcp'])
+    expect(nested.source).toEqual({ file: '' })
   })
 })
 

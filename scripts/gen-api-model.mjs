@@ -14,6 +14,7 @@ import { extractDoxygen } from '../packages/api-model/src/languages/doxygen.ts'
 import { mapLine, parseHunks } from '../packages/api-model/src/source-lines.ts'
 import { extractProject } from '../packages/api-model/src/project.ts'
 import { scopeProductSymbols } from '../packages/api-model/src/product-exports.ts'
+import { inheritProductFromOwners } from '../packages/api-model/src/products.ts'
 import { pageSlug, OWNER_KINDS } from '../packages/api-model/src/prose.ts'
 import { moduleOf } from '../packages/api-model/src/modules.ts'
 import { CONCEPTS } from '../packages/api-model/src/concepts.ts'
@@ -406,6 +407,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       symbol.product ??= productOf(relativeFile)
       symbol.source = { ...symbol.source, file: relativeFile, repo: unit.repo, revision: unit.revision, extractedRevision: unit.head }
     }
+    inheritProductFromOwners(unit.symbols)
     for (const product of ['workspace', 'mcp']) {
       const symbols = unit.symbols.filter((symbol) => symbol.product === product)
       if (!symbols.length) continue
