@@ -88,10 +88,13 @@ const PORTS = [
   {
     slug: 'dotnet',
     dir: '~/work/libtmux/libtmux-dotnet/src/LibTmux.Mcp',
-    glob: '**/*.cs',
-    pattern: /McpServerTool\(Name = "tmux_([a-z_]+)"/g,
-    prefixProbe: /McpServerTool\(Name = "([a-z_]+)"/g,
-    wirePrefix: 'tmux_',
+    glob: 'CapabilityModel.cs',
+    // The catalog is one list of `ToolDefinition` built by four factories, so
+    // the factory name is the anchor. It used to be an `McpServerTool`
+    // attribute on each method; that scan kept passing while returning
+    // nothing once the port moved to this model, which is why the four names
+    // are spelled out rather than matched by shape.
+    pattern: /^\s+(?:Inspect|ManageTool|Execute|TeardownTool)\(\s*"([a-z][a-z0-9_]*)"/gm,
   },
   {
     slug: 'cxx',
@@ -246,6 +249,21 @@ if (existsSync(docsDir)) {
 }
 
 const slugs = PORTS.map((p) => p.slug)
+
+/*
+ * A port whose server is on disk always registers something. Zero means the
+ * pattern stopped matching, not that the tools went away: .NET moved from an
+ * `McpServerTool` attribute per method to one capability list, and this scan
+ * kept exiting 0 while reporting `dotnet:0` until the staleness check noticed
+ * the file had emptied.
+ */
+const silent = PORTS.filter((p) => results[p.slug].tools.length === 0 && existsSync(expand(p.dir)))
+if (silent.length) {
+  console.error('gen-mcp-tools: a port with a server on disk matched no tools')
+  for (const p of silent) console.error(`  ${p.slug}: ${p.dir} (${p.glob})`)
+  process.exit(1)
+}
+
 const universe = [...new Set(slugs.flatMap((s) => results[s].tools))].sort()
 const coverage = Object.fromEntries(
   universe.map((t) => [t, slugs.filter((s) => results[s].tools.includes(t))]),
