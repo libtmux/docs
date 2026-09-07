@@ -1,5 +1,5 @@
 import { symbolsForProduct, type ApiModel, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
-import { createApiIndex } from './api-models'
+import { API_MODELS, createApiIndex, referenceAlternatives } from './api-models'
 import { PORT_BY_SLUG, portPageUrl, type DocProduct } from './ports'
 import { withPortRoot } from './site-root'
 
@@ -9,6 +9,24 @@ export function productApiHref(model: ApiModel, symbol: ApiSymbol, version: stri
     return portPageUrl(PORT_BY_SLUG[model.port], version, `${symbol.product}/api/${symbol.slug}`)
   }
   return withPortRoot(`/reference/${model.port}/${symbol.slug}/`)
+}
+
+/** Equivalent declarations stay in their product and target port's version. */
+export function productApiAlternatives(model: ApiModel, symbol: ApiSymbol, version: string, defaults: Record<string, string>) {
+  return referenceAlternatives(model.port, symbol.publicId ?? symbol.id).map((group) => ({
+    ...group,
+    ports: group.ports.map((entry) => {
+      const target = API_MODELS[entry.port]
+      const declaration = entry.publicId
+        ? target?.symbols.find((candidate) => (candidate.publicId ?? candidate.id) === entry.publicId) : undefined
+      return {
+        ...entry,
+        href: declaration
+          ? productApiHref(target, declaration, entry.port === model.port ? version : (defaults[entry.port] ?? 'latest'))
+          : entry.href,
+      }
+    }),
+  }))
 }
 
 /** Product symbols share one route list between HTML and Markdown exports. */

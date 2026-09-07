@@ -29,6 +29,8 @@ interface Props {
   sourceUrl?: (symbol: ApiSymbol) => string | undefined
   /** This entry's port. Enables the cross-language block; omit to hide it. */
   port?: string
+  /** Override equivalent links for a product or version context. */
+  alternativesFor?: (symbol: ApiSymbol) => ReturnType<typeof referenceAlternatives>
   /**
    * This entry is a member of the page's subject.
    *
@@ -49,7 +51,7 @@ interface Props {
    */
   heading?: boolean
 }
-const { symbol, index, sourceUrl, port, heading = false, member = false } = Astro.props as Props
+const { symbol, index, sourceUrl, port, alternativesFor, heading = false, member = false } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
 
@@ -80,7 +82,7 @@ const domain = port ? (DOMAIN[port] ?? 'std') : 'py'
  */
 const absentParts = (text?: string) => (text ?? '').split(/`([^`]+)`/)
 
-const elsewhere = port ? referenceAlternatives(port, anchor).map((group) => ({
+const elsewhere = port ? (alternativesFor?.(symbol) ?? referenceAlternatives(port, anchor)).map((group) => ({
   ...group,
   ports: group.ports.filter((entry) => entry.port !== port),
 })) : []

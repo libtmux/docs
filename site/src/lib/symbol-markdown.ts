@@ -49,6 +49,9 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (ctx.source) facts.push(`- **Source:** ${ctx.source}`)
   if (ctx.canonical) facts.push(`- **Page:** ${ctx.canonical}`)
   if (facts.length) out.push(...facts, '')
+  if (symbol.apiScope === 'supporting') {
+    out.push('This type appears in public signatures. It is not a package entry point.', '')
+  }
 
   const sig = signatureLine(symbol)
   if (sig) out.push('```', sig, '```', '')
