@@ -1,9 +1,7 @@
 ---
 import '../styles/global.css'
-import { getCollection } from 'astro:content'
-import { pagePortLinks } from '../lib/page-port-links'
-import { buildLocale, localeOf } from '../i18n/resolve'
-import { DEFAULT_LOCALE, localeSourcePath } from '../i18n/locales'
+import { buildLocale } from '../i18n/resolve'
+import { localeSourcePath } from '../i18n/locales'
 import { Font } from 'astro:assets'
 import BackToTop from '../components/BackToTop.astro'
 import Seo from '../components/Seo.astro'
@@ -101,13 +99,6 @@ try {
   portDefaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
 } catch { /* Unconfigured builds use each port's latest tree. */ }
 const navVersion = process.env.LIBTMUX_DOCS_PORT ? target.version : (portDefaults[navPort ?? ''] ?? 'latest')
-const pagePorts = pagePortLinks({
-  pagePath: sourcePath ?? pagePath,
-  portSlug: navPort,
-  version: navVersion,
-  defaults: portDefaults,
-  docs: (await getCollection('docs')).filter((entry) => localeOf(entry.id) === DEFAULT_LOCALE),
-})
 const localePagePath = localeSourcePath(Astro.url.pathname, buildLocale())
 
 ---
