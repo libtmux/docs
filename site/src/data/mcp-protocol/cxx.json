@@ -1,0 +1,753 @@
+{
+  "generated": "scripts/gen-mcp-protocol.mjs",
+  "repo": "libtmux/libtmux-cxx",
+  "revision": "3770a3f83d73aeb4af01c25c3d817733fa558c99",
+  "selection": {},
+  "protocol": {
+    "capabilities": {
+      "tools": {}
+    },
+    "prompts": [],
+    "protocolVersion": "2025-11-25",
+    "resources": [],
+    "resourceTemplates": [],
+    "serverInfo": {
+      "name": "libtmux-cxx",
+      "title": "libtmux C++ tmux server",
+      "version": "0.1.0-alpha.6"
+    },
+    "tools": [
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Capture a tmux pane"
+        },
+        "description": "Return the visible rendered text of one pane. Use wait_for_text when waiting for future output.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "target": {
+              "description": "Pane ID such as `%1`, or a tmux pane target.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "target"
+          ],
+          "type": "object"
+        },
+        "name": "capture_pane",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "pane_id": {
+              "pattern": "^%[0-9]+$",
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "pane_id",
+            "text"
+          ],
+          "type": "object"
+        },
+        "title": "Capture a tmux pane"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false,
+          "title": "Create a tmux session"
+        },
+        "description": "Create a detached session and return its stable ID and name.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "Unique session name.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "create_session",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "session_id": {
+              "pattern": "^\\$[0-9]+$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "session_id"
+          ],
+          "type": "object"
+        },
+        "title": "Create a tmux session"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Inspect tmux"
+        },
+        "description": "Inspect sessions, their windows, and their panes in one typed result. Start here and retain every owning session ID.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {},
+          "required": [],
+          "type": "object"
+        },
+        "name": "inspect_tmux",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "panes": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "command": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "pattern": "^%[0-9]+$",
+                    "type": "string"
+                  },
+                  "session_id": {
+                    "pattern": "^\\$[0-9]+$",
+                    "type": "string"
+                  },
+                  "window_id": {
+                    "pattern": "^@[0-9]+$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "active",
+                  "command",
+                  "id",
+                  "session_id",
+                  "window_id"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "sessions": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "attached": {
+                    "type": "boolean"
+                  },
+                  "id": {
+                    "pattern": "^\\$[0-9]+$",
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "window_count": {
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "attached",
+                  "id",
+                  "name",
+                  "window_count"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "windows": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "id": {
+                    "pattern": "^@[0-9]+$",
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "session_id": {
+                    "pattern": "^\\$[0-9]+$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "active",
+                  "id",
+                  "index",
+                  "name",
+                  "session_id"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "panes",
+            "sessions",
+            "windows"
+          ],
+          "type": "object"
+        },
+        "title": "Inspect tmux"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "List all tmux panes"
+        },
+        "description": "List every pane with stable pane, window, and session IDs plus the running command. Prefer pane IDs as targets.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {},
+          "required": [],
+          "type": "object"
+        },
+        "name": "list_panes",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "panes": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "command": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "pattern": "^%[0-9]+$",
+                    "type": "string"
+                  },
+                  "session_id": {
+                    "pattern": "^\\$[0-9]+$",
+                    "type": "string"
+                  },
+                  "window_id": {
+                    "pattern": "^@[0-9]+$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "active",
+                  "command",
+                  "id",
+                  "session_id",
+                  "window_id"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "panes"
+          ],
+          "type": "object"
+        },
+        "title": "List all tmux panes"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "List panes in a session"
+        },
+        "description": "List panes through an exact owning session. Pane IDs repeat between psmux sessions, so keep the returned session ID.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "session": {
+              "description": "Stable session ID such as `$0`, or its name.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "session"
+          ],
+          "type": "object"
+        },
+        "name": "list_session_panes",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "panes": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "command": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "pattern": "^%[0-9]+$",
+                    "type": "string"
+                  },
+                  "session_id": {
+                    "pattern": "^\\$[0-9]+$",
+                    "type": "string"
+                  },
+                  "window_id": {
+                    "pattern": "^@[0-9]+$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "active",
+                  "command",
+                  "id",
+                  "session_id",
+                  "window_id"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "panes"
+          ],
+          "type": "object"
+        },
+        "title": "List panes in a session"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "List tmux sessions"
+        },
+        "description": "List each session as stable id and name. Prefer the id in later calls because names can change.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {},
+          "required": [],
+          "type": "object"
+        },
+        "name": "list_sessions",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "sessions": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "attached": {
+                    "type": "boolean"
+                  },
+                  "id": {
+                    "pattern": "^\\$[0-9]+$",
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "window_count": {
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "attached",
+                  "id",
+                  "name",
+                  "window_count"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "sessions"
+          ],
+          "type": "object"
+        },
+        "title": "List tmux sessions"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "List windows in a session"
+        },
+        "description": "List windows through an exact owning session. This is the safe window discovery path on psmux.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "session": {
+              "description": "Stable session ID such as `$0`, or its name.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "session"
+          ],
+          "type": "object"
+        },
+        "name": "list_windows",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "windows": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "id": {
+                    "pattern": "^@[0-9]+$",
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "session_id": {
+                    "pattern": "^\\$[0-9]+$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "active",
+                  "id",
+                  "index",
+                  "name",
+                  "session_id"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "windows"
+          ],
+          "type": "object"
+        },
+        "title": "List windows in a session"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false,
+          "title": "Create a tmux window"
+        },
+        "description": "Create a detached window through an exact owning session and return stable window and session IDs.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "Name for the new window.",
+              "maxLength": 512,
+              "type": "string"
+            },
+            "session": {
+              "description": "Stable session ID such as `$0`, or its name.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "session",
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "new_window",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "session_id": {
+              "pattern": "^\\$[0-9]+$",
+              "type": "string"
+            },
+            "window_id": {
+              "pattern": "^@[0-9]+$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "session_id",
+            "window_id"
+          ],
+          "type": "object"
+        },
+        "title": "Create a tmux window"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Search visible pane text"
+        },
+        "description": "Find panes whose visible rendered text contains a substring. Returns stable pane IDs and the matching line.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "text": {
+              "description": "Non-empty substring to search for.",
+              "maxLength": 4096,
+              "type": "string"
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "type": "object"
+        },
+        "name": "search_panes",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "matches": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "line": {
+                    "type": "string"
+                  },
+                  "pane_id": {
+                    "pattern": "^%[0-9]+$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "line",
+                  "pane_id"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "matches"
+          ],
+          "type": "object"
+        },
+        "title": "Search visible pane text"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Press named tmux keys"
+        },
+        "description": "Press validated tmux key names such as `Enter` or `C-c`. Use send_text for literal characters.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "keys": {
+              "description": "Space-separated tmux key names. Every key is validated before any is sent.",
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "target": {
+              "description": "Pane ID such as `%1`, or a tmux pane target.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "target",
+            "keys"
+          ],
+          "type": "object"
+        },
+        "name": "send_keys",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "pane_id": {
+              "pattern": "^%[0-9]+$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "pane_id"
+          ],
+          "type": "object"
+        },
+        "title": "Press named tmux keys"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Type literal pane text"
+        },
+        "description": "Type literal characters into one pane. Key names are not interpreted; include a newline to submit a shell line.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "target": {
+              "description": "Pane ID such as `%1`, or a tmux pane target.",
+              "maxLength": 512,
+              "type": "string"
+            },
+            "text": {
+              "description": "Literal text to type, including any newline.",
+              "maxLength": 1048576,
+              "type": "string"
+            }
+          },
+          "required": [
+            "target",
+            "text"
+          ],
+          "type": "object"
+        },
+        "name": "send_text",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "pane_id": {
+              "pattern": "^%[0-9]+$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "pane_id"
+          ],
+          "type": "object"
+        },
+        "title": "Type literal pane text"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Wait for pane text"
+        },
+        "description": "Wait for text without blocking other MCP requests. Uses tmux control-output events when available and bounded capture polling otherwise.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "target": {
+              "description": "Pane ID such as `%1`, or a tmux pane target.",
+              "maxLength": 512,
+              "type": "string"
+            },
+            "text": {
+              "description": "Non-empty substring to wait for.",
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "timeout_ms": {
+              "description": "Timeout in milliseconds, from 1 through 60000. Defaults to 10000.",
+              "maximum": 60000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "target",
+            "text"
+          ],
+          "type": "object"
+        },
+        "name": "wait_for_text",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "elapsed_ms": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "matched": {
+              "type": "boolean"
+            },
+            "mode": {
+              "type": "string"
+            },
+            "pane_id": {
+              "pattern": "^%[0-9]+$",
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            },
+            "timed_out": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "elapsed_ms",
+            "matched",
+            "mode",
+            "text",
+            "timed_out"
+          ],
+          "type": "object"
+        },
+        "title": "Wait for pane text"
+      }
+    ]
+  }
+}

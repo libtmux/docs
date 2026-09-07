@@ -1,0 +1,4468 @@
+{
+  "generated": "scripts/gen-mcp-protocol.mjs",
+  "repo": "libtmux/libtmux-go",
+  "revision": "5f808882015a975a65acc7f9da5b3ff0d5cbdc91",
+  "selection": {
+    "LIBTMUX_SAFETY": "destructive",
+    "LIBTMUX_MCP_CAPABILITIES": "all",
+    "LIBTMUX_MCP_PROMPTS_AS_TOOLS": "1"
+  },
+  "protocol": {
+    "capabilities": {
+      "completions": {},
+      "logging": {},
+      "prompts": {
+        "listChanged": true
+      },
+      "resources": {
+        "listChanged": true,
+        "subscribe": true
+      },
+      "tools": {
+        "listChanged": true
+      }
+    },
+    "prompts": [
+      {
+        "arguments": [
+          {
+            "description": "The pane id to look at, such as %1. Omit to be told how to find it.",
+            "name": "pane"
+          }
+        ],
+        "description": "Work out what a pane is doing and why it is stuck or failing.",
+        "name": "diagnose_pane",
+        "title": "Diagnose a Pane"
+      },
+      {
+        "arguments": [
+          {
+            "description": "The pane that is not answering, such as %1. Omit to be told how to find it.",
+            "name": "pane"
+          }
+        ],
+        "description": "Get back a pane that has stopped answering, and work out why it stopped.",
+        "name": "recover_pane",
+        "title": "Recover a Stuck Pane"
+      },
+      {
+        "arguments": [
+          {
+            "description": "What the workspace is for, such as \"the api and its tests\".",
+            "name": "task"
+          }
+        ],
+        "description": "Lay out a session for a piece of work, and start what runs in it.",
+        "name": "set_up_workspace",
+        "title": "Set Up a Workspace"
+      },
+      {
+        "arguments": [
+          {
+            "description": "The pane id to follow, such as %1. Omit to be told how to find it.",
+            "name": "pane"
+          }
+        ],
+        "description": "Follow a pane across several turns without re-reading what you have already read.",
+        "name": "watch_pane",
+        "title": "Watch a Pane"
+      }
+    ],
+    "protocolVersion": "2025-11-25",
+    "resources": [
+      {
+        "description": "Every session on this tmux server, with its windows and panes.",
+        "mimeType": "application/json",
+        "name": "tmux sessions",
+        "title": "Every tmux Session",
+        "uri": "tmux://sessions"
+      }
+    ],
+    "resourceTemplates": [
+      {
+        "description": "One pane's identity, position, and what it is running, addressed by pane id without its sigil, so %1 is written 1.",
+        "mimeType": "application/json",
+        "name": "tmux pane",
+        "title": "One tmux Pane",
+        "uriTemplate": "tmux://panes/{pane}"
+      },
+      {
+        "description": "What one pane is showing, as text, addressed by pane id without its sigil, so %1 is written 1.",
+        "mimeType": "text/plain",
+        "name": "tmux pane content",
+        "title": "Contents of One Pane",
+        "uriTemplate": "tmux://panes/{pane}/content"
+      },
+      {
+        "description": "One session's windows and what it holds, addressed by name.",
+        "mimeType": "application/json",
+        "name": "tmux session",
+        "title": "One tmux Session",
+        "uriTemplate": "tmux://sessions/{session}"
+      },
+      {
+        "description": "The windows of one session, addressed by session name.",
+        "mimeType": "application/json",
+        "name": "tmux session windows",
+        "title": "Windows of One Session",
+        "uriTemplate": "tmux://sessions/{session}/windows"
+      },
+      {
+        "description": "One window's panes and layout, addressed by window id without its sigil, so @1 is written 1.",
+        "mimeType": "application/json",
+        "name": "tmux window",
+        "title": "One tmux Window",
+        "uriTemplate": "tmux://windows/{window}"
+      },
+      {
+        "description": "The panes of one window, addressed by window id without its sigil, so @1 is written 1.",
+        "mimeType": "application/json",
+        "name": "tmux window panes",
+        "title": "Panes of One Window",
+        "uriTemplate": "tmux://windows/{window}/panes"
+      }
+    ],
+    "serverInfo": {
+      "name": "libtmux",
+      "version": "v0.0.1-alpha.8"
+    },
+    "tools": [
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "workspace-create"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Build a tmuxp Workspace"
+        },
+        "description": "Create a session from a tmuxp-style YAML workspace document: windows, panes, layouts, and the command each pane runs, in one call.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "document": {
+              "description": "a tmuxp-style YAML workspace document",
+              "type": "string"
+            }
+          },
+          "required": [
+            "document"
+          ],
+          "type": "object"
+        },
+        "name": "build_workspace",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "sessionId": {
+              "type": "string"
+            },
+            "sessionName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "sessionId",
+            "sessionName"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-destroy"
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "openWorldHint": false,
+          "title": "Batch of Ending Tools"
+        },
+        "description": "Run several tools in one request, in order, including the ones that end something. Stops at the first failure, and nothing it already ended comes back; the reply names the calls it skipped.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "calls": {
+              "description": "the calls to run, in order",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "arguments": {
+                    "additionalProperties": true,
+                    "description": "the tool's arguments",
+                    "type": "object"
+                  },
+                  "tool": {
+                    "description": "the name of the tool to call",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "tool"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "null",
+                "array"
+              ]
+            },
+            "onError": {
+              "description": "what a failing call does to the calls after it; empty stops the batch",
+              "enum": [
+                "",
+                "stop",
+                "continue"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "calls"
+          ],
+          "type": "object"
+        },
+        "name": "call_destructive_tools_batch",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "completed": {
+              "type": "integer"
+            },
+            "failed": {
+              "type": "integer"
+            },
+            "results": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  },
+                  "result": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "tool": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "tool"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "skipped": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array"
+              ]
+            }
+          },
+          "required": [
+            "results",
+            "completed",
+            "skipped"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "pane-control"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Batch of Changing Tools"
+        },
+        "description": "Run several tools in one request, in order, including ones that change tmux. Laying out a window is a split, a resize, and a command per pane; this makes it one call. Stops at the first failure, and what already ran stays, because tmux has no transaction; the reply names the calls it skipped.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "calls": {
+              "description": "the calls to run, in order",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "arguments": {
+                    "additionalProperties": true,
+                    "description": "the tool's arguments",
+                    "type": "object"
+                  },
+                  "tool": {
+                    "description": "the name of the tool to call",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "tool"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "null",
+                "array"
+              ]
+            },
+            "onError": {
+              "description": "what a failing call does to the calls after it; empty stops the batch",
+              "enum": [
+                "",
+                "stop",
+                "continue"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "calls"
+          ],
+          "type": "object"
+        },
+        "name": "call_mutating_tools_batch",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "completed": {
+              "type": "integer"
+            },
+            "failed": {
+              "type": "integer"
+            },
+            "results": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  },
+                  "result": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "tool": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "tool"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "skipped": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array"
+              ]
+            }
+          },
+          "required": [
+            "results",
+            "completed",
+            "skipped"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "metadata-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Batch of Reading Tools"
+        },
+        "description": "Run several reading tools in one request, in order. Refuses the whole batch if any call would change tmux, so a batch believed to be read-only never alters a session. Stops at the first failure, and names the calls it skipped.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "calls": {
+              "description": "the calls to run, in order",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "arguments": {
+                    "additionalProperties": true,
+                    "description": "the tool's arguments",
+                    "type": "object"
+                  },
+                  "tool": {
+                    "description": "the name of the tool to call",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "tool"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "null",
+                "array"
+              ]
+            },
+            "onError": {
+              "description": "what a failing call does to the calls after it; empty stops the batch",
+              "enum": [
+                "",
+                "stop",
+                "continue"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "calls"
+          ],
+          "type": "object"
+        },
+        "name": "call_readonly_tools_batch",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "completed": {
+              "type": "integer"
+            },
+            "failed": {
+              "type": "integer"
+            },
+            "results": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  },
+                  "result": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "tool": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "tool"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "skipped": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array"
+              ]
+            }
+          },
+          "required": [
+            "results",
+            "completed",
+            "skipped"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "content-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Capture a tmux Pane"
+        },
+        "description": "Read what one pane holds: its visible screen, or its scrollback too with includeHistory. The reply is bounded and says what it dropped. Pass styles for a program that reports success or failure in colour rather than in words, which a capture otherwise strips. Use capture_since instead to read a pane repeatedly without paying for the same screen each time.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "endLine": {
+              "description": "last row to read, on the same scale as startLine",
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "includeHistory": {
+              "description": "read scrollback as well as the visible screen",
+              "type": "boolean"
+            },
+            "joinWrapped": {
+              "description": "rejoin lines the terminal wrapped, as tmux does it; a multi-row shell prompt can be joined to the line after it, so prefer run_command for output you ran yourself",
+              "type": "boolean"
+            },
+            "maxBytes": {
+              "description": "how many bytes to return at most, keeping the last lines",
+              "type": "integer"
+            },
+            "maxLines": {
+              "description": "how many lines to return at most, keeping the last ones",
+              "type": "integer"
+            },
+            "paneId": {
+              "description": "a tmux pane id such as %1; empty reads the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to read when paneId is empty",
+              "type": "string"
+            },
+            "startLine": {
+              "description": "first row to read; 0 is the top of the screen and negatives are history",
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "styles": {
+              "description": "keep colour and attribute escape sequences, for a program that says pass or fail in colour rather than in words",
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "name": "capture_pane",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "lines": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "paneId": {
+              "type": "string"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "truncatedBytes": {
+              "type": "integer"
+            },
+            "truncatedLines": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "paneId",
+            "truncated"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "content-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Read What a Pane Wrote Since"
+        },
+        "description": "Read only what a pane wrote since the cursor a previous call returned, and get a cursor for next time. Call it once with no cursor to start. This is how to watch a pane across turns: a quiet pane returns nothing rather than its whole screen again. linesMissed reports that tmux discarded scrollback in between, so the reply is the current screen rather than everything since.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "cursor": {
+              "description": "the cursor a previous capture_since returned; empty starts a new reading",
+              "type": "string"
+            },
+            "maxBytes": {
+              "description": "how many bytes to return at most, keeping the last lines",
+              "type": "integer"
+            },
+            "maxLines": {
+              "description": "how many lines to return at most, keeping the last ones",
+              "type": "integer"
+            },
+            "paneId": {
+              "description": "the tmux pane id to read; the cursor already names it",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to read when paneId is empty",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "capture_since",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "cursor": {
+              "type": "string"
+            },
+            "lines": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "linesMissed": {
+              "type": "boolean"
+            },
+            "paneId": {
+              "type": "string"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "truncatedBytes": {
+              "type": "integer"
+            },
+            "truncatedLines": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "paneId",
+            "cursor",
+            "lines",
+            "linesMissed",
+            "truncated"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "pane-control"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "title": "Clear a tmux Pane"
+        },
+        "description": "Clear a pane's screen, and its scrollback when asked. Clearing what has already been read keeps later captures small.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "history": {
+              "description": "also discard the pane's scrollback",
+              "type": "boolean"
+            },
+            "paneId": {
+              "description": "the tmux pane id to clear; empty clears the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to clear when paneId is empty",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "clear_pane",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "historyCleared": {
+              "type": "boolean"
+            },
+            "paneId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId",
+            "historyCleared"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "workspace-create"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Create a tmux Session"
+        },
+        "description": "Start one session and return its id and name. The MCP runtime stays attached through its private control connection.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "command": {
+              "description": "a command for the first window to run instead of a shell",
+              "type": "string"
+            },
+            "name": {
+              "description": "the new session's name",
+              "type": "string"
+            },
+            "startDirectory": {
+              "description": "the session's working directory",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "create_session",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "sessionId": {
+              "type": "string"
+            },
+            "sessionName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "sessionId",
+            "sessionName"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "workspace-create"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Create a tmux Window"
+        },
+        "description": "Add one window to a session and return its id and the id of the pane tmux made with it. Use build_workspace instead when a whole session is being laid out from a document.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "command": {
+              "description": "a command for the window to run instead of a shell",
+              "type": "string"
+            },
+            "name": {
+              "description": "the new window's name",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "the exact session name to add the window to",
+              "type": "string"
+            },
+            "startDirectory": {
+              "description": "the window's working directory",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "create_window",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "type": "string"
+            },
+            "windowId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId",
+            "paneId"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-settings"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "title": "Delete a tmux Buffer"
+        },
+        "description": "Remove a buffer in the libtmux-mcp- namespace once nothing else will paste it. A buffer left behind stays on the tmux server for anyone attached to paste by hand, and tmux keeps a bounded stack of them, so the oldest is dropped to make room for a new one.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "the buffer to remove, as load_buffer returned it",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "delete_buffer",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "deleted": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "deleted"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "pane-control"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Expand a tmux Format"
+        },
+        "description": "Expand a tmux format; tmux's #() syntax runs a shell command, so treat the format as operator-powerful. Use formats such as #{pane_current_path} or #{window_flags} to inspect anything about tmux that no tool here has its own answer for.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "format": {
+              "description": "a tmux format string, such as #{pane_current_path}",
+              "type": "string"
+            },
+            "paneId": {
+              "description": "the pane the format is about; empty uses the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to evaluate against when paneId is empty",
+              "type": "string"
+            }
+          },
+          "required": [
+            "format"
+          ],
+          "type": "object"
+        },
+        "name": "display_message",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "value",
+            "paneId"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "pane-control"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Enter Copy Mode"
+        },
+        "description": "Put a pane into tmux's copy mode, where keys scroll and select rather than reaching the program in the pane. Leave it with exit_copy_mode: keys sent to a pane still in copy mode do not reach the shell.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "description": "the tmux pane id; empty uses the active pane",
+              "type": "string"
+            },
+            "scrollUp": {
+              "description": "enter one page above the bottom",
+              "type": "boolean"
+            },
+            "sessionName": {
+              "description": "which session's active pane to use when paneId is empty",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "enter_copy_mode",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "inCopyMode": {
+              "type": "boolean"
+            },
+            "paneId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId",
+            "inCopyMode"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "pane-control"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "title": "Leave Copy Mode"
+        },
+        "description": "Return a pane from copy mode to passing keys to the program running in it.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "description": "the tmux pane id; empty uses the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to use when paneId is empty",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "exit_copy_mode",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "inCopyMode": {
+              "type": "boolean"
+            },
+            "paneId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId",
+            "inCopyMode"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "metadata-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Find a Neighbouring Pane"
+        },
+        "description": "Report the pane bordering one side of another: above, below, left, or right. Reads tmux's coordinates, so asking does not change which pane is active.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "direction": {
+              "description": "the side to look toward",
+              "enum": [
+                "above",
+                "below",
+                "left",
+                "right"
+              ],
+              "type": "string"
+            },
+            "paneId": {
+              "description": "the tmux pane id to look from; empty looks from the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to look from when paneId is empty",
+              "type": "string"
+            }
+          },
+          "required": [
+            "direction"
+          ],
+          "type": "object"
+        },
+        "name": "find_pane_by_position",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "found": {
+              "type": "boolean"
+            },
+            "geometry": {
+              "additionalProperties": false,
+              "properties": {
+                "height": {
+                  "type": "integer"
+                },
+                "left": {
+                  "type": "integer"
+                },
+                "top": {
+                  "type": "integer"
+                },
+                "width": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "left",
+                "top",
+                "width",
+                "height"
+              ],
+              "type": "object"
+            },
+            "paneId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId",
+            "found",
+            "geometry"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "content-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Collect a Detached Command"
+        },
+        "description": "Collect a command started with run_command and detach. Without timeoutSeconds it reports whether the command has finished and returns at once, which is what to call between other work; with one it waits that long. A finished job reports its exit status and its output, and answers the same way however often you ask.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "jobId": {
+              "description": "the handle a detached run_command returned",
+              "type": "string"
+            },
+            "maxBytes": {
+              "description": "how many bytes to return at most, keeping the last lines",
+              "type": "integer"
+            },
+            "maxLines": {
+              "description": "how many lines of output to return at most, keeping the last ones",
+              "type": "integer"
+            },
+            "timeoutSeconds": {
+              "description": "wait up to this long for the command to finish; zero reports whether it has and returns at once",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "jobId"
+          ],
+          "type": "object"
+        },
+        "name": "get_job",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "collectionPending": {
+              "type": "boolean"
+            },
+            "command": {
+              "type": "string"
+            },
+            "effectiveTimeoutSeconds": {
+              "type": "integer"
+            },
+            "elapsedSeconds": {
+              "type": "number"
+            },
+            "exitStatus": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "finished": {
+              "type": "boolean"
+            },
+            "jobId": {
+              "type": "string"
+            },
+            "linesMissed": {
+              "type": "boolean"
+            },
+            "output": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "outputUnavailable": {
+              "type": "string"
+            },
+            "paneId": {
+              "type": "string"
+            },
+            "running": {
+              "type": "string"
+            },
+            "timeoutClamped": {
+              "type": "boolean"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "truncatedBytes": {
+              "type": "integer"
+            },
+            "truncatedLines": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "jobId",
+            "paneId",
+            "command",
+            "finished",
+            "elapsedSeconds",
+            "truncated"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "metadata-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Describe a tmux Pane"
+        },
+        "description": "One pane's state without its contents: what it runs, its process id, whether that process has exited and with what status, how much scrollback there is, and whether the pane is in a mode that will eat the keys you send it.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "description": "the tmux pane id to describe; empty describes the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to describe when paneId is empty",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "get_pane_info",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "dead": {
+              "type": "boolean"
+            },
+            "exitStatus": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "historyLimit": {
+              "type": "integer"
+            },
+            "historyLines": {
+              "type": "integer"
+            },
+            "inMode": {
+              "type": "boolean"
+            },
+            "pane": {
+              "additionalProperties": false,
+              "properties": {
+                "active": {
+                  "type": "boolean"
+                },
+                "currentCommand": {
+                  "type": "string"
+                },
+                "geometry": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "height": {
+                      "type": "integer"
+                    },
+                    "left": {
+                      "type": "integer"
+                    },
+                    "top": {
+                      "type": "integer"
+                    },
+                    "width": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "left",
+                    "top",
+                    "width",
+                    "height"
+                  ],
+                  "type": "object"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "index": {
+                  "type": "integer"
+                },
+                "isCaller": {
+                  "type": [
+                    "null",
+                    "boolean"
+                  ]
+                },
+                "session": {
+                  "type": "string"
+                },
+                "window": {
+                  "type": "string"
+                },
+                "windowId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "session",
+                "window",
+                "windowId",
+                "index",
+                "currentCommand",
+                "active",
+                "geometry",
+                "isCaller"
+              ],
+              "type": "object"
+            },
+            "path": {
+              "type": "string"
+            },
+            "pid": {
+              "type": "integer"
+            },
+            "title": {
+              "type": "string"
+            },
+            "zoomed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "pane",
+            "title",
+            "path",
+            "pid",
+            "dead",
+            "zoomed",
+            "inMode",
+            "historyLines",
+            "historyLimit"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "metadata-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Read a tmux Recipe"
+        },
+        "description": "How to do one of the jobs this server is for, in the order that avoids the traps its tools have: diagnose_pane (what a pane is doing and why it is stuck), watch_pane (follow one across turns without re-reading it), recover_pane (get back one that stopped answering), set_up_workspace (lay out a session for a piece of work). The same text this server offers as MCP prompts.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "argument": {
+              "description": "the pane id the recipe is about, such as %1, or for set_up_workspace what the workspace is for",
+              "type": "string"
+            },
+            "name": {
+              "description": "which recipe to read",
+              "enum": [
+                "diagnose_pane",
+                "watch_pane",
+                "recover_pane",
+                "set_up_workspace"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "get_recipe",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "steps": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "summary",
+            "steps"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "metadata-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Describe the tmux Server"
+        },
+        "description": "Which tmux socket these tools address, its version, how much it holds, and whether this MCP server is itself running in one of its panes. Ask this first: insideThisServer true means a pane you act on may be the terminal this is running in.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "includeMessages": {
+              "description": "add tmux's own server message log, which records what tmux refused and why",
+              "type": "boolean"
+            },
+            "maxBytes": {
+              "description": "how many bytes of log messages to return at most, keeping the most recent",
+              "type": "integer"
+            },
+            "maxLines": {
+              "description": "how many log messages to return at most, keeping the most recent",
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "name": "get_server_info",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "alive": {
+              "type": "boolean"
+            },
+            "attachedClients": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "controlMode": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "session": {
+                    "type": "string"
+                  },
+                  "tty": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "controlMode"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "callerPaneId": {
+              "type": "string"
+            },
+            "capabilities": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "clients": {
+              "type": "integer"
+            },
+            "insideThisServer": {
+              "type": "boolean"
+            },
+            "messages": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "messagesUnavailable": {
+              "type": "string"
+            },
+            "panes": {
+              "type": "integer"
+            },
+            "rejectedCapabilities": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "safetyLevel": {
+              "type": "string"
+            },
+            "sessions": {
+              "type": "integer"
+            },
+            "socketPath": {
+              "type": "string"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "truncatedBytes": {
+              "type": "integer"
+            },
+            "truncatedLines": {
+              "type": "integer"
+            },
+            "version": {
+              "type": "string"
+            },
+            "windows": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "socketPath",
+            "version",
+            "alive",
+            "sessions",
+            "windows",
+            "panes",
+            "clients",
+            "attachedClients",
+            "insideThisServer",
+            "safetyLevel",
+            "capabilities",
+            "truncated"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "metadata-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Describe a tmux Session"
+        },
+        "description": "One session's windows, working directory, and when it was created.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "sessionName": {
+              "description": "the exact session name; empty uses the only session",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "get_session_info",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "activeWindowId": {
+              "type": "string"
+            },
+            "created": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            },
+            "session": {
+              "additionalProperties": false,
+              "properties": {
+                "attached": {
+                  "type": "integer"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "windows": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "windows",
+                "attached"
+              ],
+              "type": "object"
+            },
+            "windows": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "panes": {
+                    "type": "integer"
+                  },
+                  "session": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "session",
+                  "name",
+                  "index",
+                  "panes",
+                  "active"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "array"
+              ]
+            }
+          },
+          "required": [
+            "session",
+            "path",
+            "created",
+            "activeWindowId",
+            "windows"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "metadata-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Describe a tmux Window"
+        },
+        "description": "One window's size, layout string, and panes. The layout string is what select_layout accepts back, so a layout worth keeping can be read here and applied later.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "sessionName": {
+              "description": "which session's current window to describe when windowId is empty",
+              "type": "string"
+            },
+            "windowId": {
+              "description": "the tmux window id to describe; empty describes the current window",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "get_window_info",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "height": {
+              "type": "integer"
+            },
+            "layout": {
+              "type": "string"
+            },
+            "panes": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "currentCommand": {
+                    "type": "string"
+                  },
+                  "geometry": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "height": {
+                        "type": "integer"
+                      },
+                      "left": {
+                        "type": "integer"
+                      },
+                      "top": {
+                        "type": "integer"
+                      },
+                      "width": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "left",
+                      "top",
+                      "width",
+                      "height"
+                    ],
+                    "type": "object"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer"
+                  },
+                  "isCaller": {
+                    "type": [
+                      "null",
+                      "boolean"
+                    ]
+                  },
+                  "session": {
+                    "type": "string"
+                  },
+                  "window": {
+                    "type": "string"
+                  },
+                  "windowId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "session",
+                  "window",
+                  "windowId",
+                  "index",
+                  "currentCommand",
+                  "active",
+                  "geometry",
+                  "isCaller"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "width": {
+              "type": "integer"
+            },
+            "window": {
+              "additionalProperties": false,
+              "properties": {
+                "active": {
+                  "type": "boolean"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "index": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "panes": {
+                  "type": "integer"
+                },
+                "session": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "session",
+                "name",
+                "index",
+                "panes",
+                "active"
+              ],
+              "type": "object"
+            },
+            "zoomed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "window",
+            "layout",
+            "width",
+            "height",
+            "zoomed",
+            "panes"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-destroy"
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "openWorldHint": false,
+          "title": "Kill a tmux Pane"
+        },
+        "description": "End one pane and the program running in it. A pane that was its window's last takes the window with it, which the reply says.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "description": "the tmux pane id to kill, such as %1",
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId"
+          ],
+          "type": "object"
+        },
+        "name": "kill_pane",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "killed": {
+              "type": "string"
+            },
+            "windowEnded": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "killed",
+            "windowEnded"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-destroy"
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "openWorldHint": false,
+          "title": "Kill the tmux Server"
+        },
+        "description": "End the whole tmux server: every session, every window, every program. Requires confirm to be true.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "confirm": {
+              "description": "must be true; this ends every session on the server",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "confirm"
+          ],
+          "type": "object"
+        },
+        "name": "kill_server",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "sessionsKilled": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "sessionsKilled"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-destroy"
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "openWorldHint": false,
+          "title": "Kill a tmux Session"
+        },
+        "description": "End one session by its exact name, and every window and program in it. Nothing brings it back.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "sessionName": {
+              "description": "the exact name of the session to kill",
+              "type": "string"
+            }
+          },
+          "required": [
+            "sessionName"
+          ],
+          "type": "object"
+        },
+        "name": "kill_session",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "killed": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "killed"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-destroy"
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "openWorldHint": false,
+          "title": "Kill a tmux Window"
+        },
+        "description": "End one window and its panes. A window that was its session's last takes the session with it, which the reply says.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "windowId": {
+              "description": "the tmux window id to kill, such as @1",
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId"
+          ],
+          "type": "object"
+        },
+        "name": "kill_window",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "killed": {
+              "type": "string"
+            },
+            "sessionEnded": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "killed",
+            "sessionEnded"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "metadata-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "List tmux Panes"
+        },
+        "description": "List tmux panes with their session, window, index, and current command. Narrow with sessionName, windowId, command, pathUnder, dead, or active rather than listing the server and discarding most of the answer: on a busy server that is the difference between one pane and forty. Ask for detail full to add each pane's exit status, path, title, and history size, which is how to check on several panes without capturing any of them. Returns an empty list when the server is not running.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "active": {
+              "description": "keep only active panes, or only inactive ones",
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "command": {
+              "description": "keep panes whose current command contains this text, ignoring case",
+              "type": "string"
+            },
+            "dead": {
+              "description": "keep only panes whose process has exited, or only those still running",
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "detail": {
+              "description": "how much to report per pane; full adds exit status, path, title, and history size",
+              "enum": [
+                "",
+                "standard",
+                "full"
+              ],
+              "type": "string"
+            },
+            "pathUnder": {
+              "description": "keep panes whose working directory is at or below this path",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "list only this session's panes",
+              "type": "string"
+            },
+            "windowId": {
+              "description": "list only this window's panes, such as @1",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "list_panes",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "panes": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "currentCommand": {
+                    "type": "string"
+                  },
+                  "geometry": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "height": {
+                        "type": "integer"
+                      },
+                      "left": {
+                        "type": "integer"
+                      },
+                      "top": {
+                        "type": "integer"
+                      },
+                      "width": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "left",
+                      "top",
+                      "width",
+                      "height"
+                    ],
+                    "type": "object"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer"
+                  },
+                  "isCaller": {
+                    "type": [
+                      "null",
+                      "boolean"
+                    ]
+                  },
+                  "session": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "dead": {
+                        "type": "boolean"
+                      },
+                      "exitStatus": {
+                        "type": [
+                          "null",
+                          "integer"
+                        ]
+                      },
+                      "historyLines": {
+                        "type": "integer"
+                      },
+                      "inMode": {
+                        "type": "boolean"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "dead",
+                      "historyLines",
+                      "inMode"
+                    ],
+                    "type": [
+                      "null",
+                      "object"
+                    ]
+                  },
+                  "window": {
+                    "type": "string"
+                  },
+                  "windowId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "session",
+                  "window",
+                  "windowId",
+                  "index",
+                  "currentCommand",
+                  "active",
+                  "geometry",
+                  "isCaller"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "serverNote": {
+              "type": "string"
+            },
+            "skipped": {
+              "type": "integer"
+            },
+            "total": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "panes",
+            "total"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "metadata-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "List tmux Servers"
+        },
+        "description": "The tmux servers running on this machine, with the one these tools address marked. tmux leaves a socket file behind when a server exits, so the ones nothing is listening on are left out unless includeDead asks for them. Discovery only: no tool here can be pointed at another one, which is decided when this server is started.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "includeDead": {
+              "description": "include socket files with no server running, which tmux leaves behind when a server exits",
+              "type": "boolean"
+            },
+            "maxServers": {
+              "description": "how many servers to report at most (default 100, maximum 1000); the target is always kept",
+              "type": "integer"
+            },
+            "name": {
+              "description": "keep servers whose name contains this text, ignoring case",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "list_servers",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "searchedIn": {
+              "type": "string"
+            },
+            "servers": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "alive": {
+                    "type": "boolean"
+                  },
+                  "isTarget": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "sessions": {
+                    "type": "integer"
+                  },
+                  "socketPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "socketPath",
+                  "name",
+                  "isTarget",
+                  "alive",
+                  "sessions"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "skipped": {
+              "type": "integer"
+            },
+            "total": {
+              "type": "integer"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "unreachableNote": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "servers",
+            "total",
+            "searchedIn",
+            "truncated"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "metadata-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "List tmux Sessions"
+        },
+        "description": "Sessions with their name, window count, and how many clients are attached. Narrow with name, or with attached to find which sessions somebody is actually looking at.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "attached": {
+              "description": "keep only sessions a client is attached to, or only those nobody is watching",
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "name": {
+              "description": "keep sessions whose name contains this text, ignoring case",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "list_sessions",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "serverNote": {
+              "type": "string"
+            },
+            "sessions": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "attached": {
+                    "type": "integer"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "windows": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "windows",
+                  "attached"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "skipped": {
+              "type": "integer"
+            },
+            "total": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "sessions",
+            "total"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "metadata-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "List tmux Windows"
+        },
+        "description": "Windows with their session, name, index, pane count, and whether each is its session's current one. Narrow with sessionName, name, or active.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "active": {
+              "description": "keep only current windows, or only the others",
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "name": {
+              "description": "keep windows whose name contains this text, ignoring case",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "list only this session's windows",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "list_windows",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "serverNote": {
+              "type": "string"
+            },
+            "skipped": {
+              "type": "integer"
+            },
+            "total": {
+              "type": "integer"
+            },
+            "windows": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "panes": {
+                    "type": "integer"
+                  },
+                  "session": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "session",
+                  "name",
+                  "index",
+                  "panes",
+                  "active"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "array"
+              ]
+            }
+          },
+          "required": [
+            "windows",
+            "total"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-settings"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Stage Text in a tmux Buffer"
+        },
+        "description": "Put text into a named tmux buffer, ready to paste into a pane once or several times. paste_text is the shorter road when the text goes into one pane once.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "a name for the buffer; empty makes one up",
+              "type": "string"
+            },
+            "text": {
+              "description": "the text to store in the buffer",
+              "type": "string"
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "type": "object"
+        },
+        "name": "load_buffer",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "bytes"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-layout"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Move a tmux Pane"
+        },
+        "description": "Move a pane into another window, or break it out into a window of its own by naming no destination. The pane keeps its id and whatever it is running, which killing and splitting again does not. Moving a window's last pane destroys that window.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "direction": {
+              "description": "where the moved pane goes in the destination; empty puts it below",
+              "enum": [
+                "",
+                "below",
+                "above",
+                "right",
+                "left"
+              ],
+              "type": "string"
+            },
+            "focus": {
+              "description": "make the pane active where it lands, moving what a person sees",
+              "type": "boolean"
+            },
+            "name": {
+              "description": "the new window's name when breaking the pane out",
+              "type": "string"
+            },
+            "paneId": {
+              "description": "the tmux pane id to move, such as %1",
+              "type": "string"
+            },
+            "percentage": {
+              "description": "the moved pane's share of the destination window, 1 to 100",
+              "type": "integer"
+            },
+            "toWindowId": {
+              "description": "the window to move the pane into, such as @2; empty breaks it out into a new window",
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId"
+          ],
+          "type": "object"
+        },
+        "name": "move_pane",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "brokenOut": {
+              "type": "boolean"
+            },
+            "paneId": {
+              "type": "string"
+            },
+            "windowId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId",
+            "windowId",
+            "brokenOut"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-layout"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "title": "Move a tmux Window"
+        },
+        "description": "Move a window to another index, or into another session. It keeps its id.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "index": {
+              "description": "the index to move it to; omit to use the next free one",
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "sessionName": {
+              "description": "the session to move it to; empty keeps it in its own",
+              "type": "string"
+            },
+            "windowId": {
+              "description": "the tmux window id to move",
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId"
+          ],
+          "type": "object"
+        },
+        "name": "move_window",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "index": {
+              "type": "integer"
+            },
+            "session": {
+              "type": "string"
+            },
+            "windowId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId",
+            "session",
+            "index"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "pane-control"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Paste a tmux Buffer"
+        },
+        "description": "Deliver a staged buffer into a pane as text, with no tmux key names read. The name load_buffer returned reaches the buffer, and so does the short one passed to it.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "delete": {
+              "description": "remove the buffer once it has been pasted",
+              "type": "boolean"
+            },
+            "name": {
+              "description": "the buffer to paste, as load_buffer returned it",
+              "type": "string"
+            },
+            "paneId": {
+              "description": "the tmux pane id to paste into; empty uses the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to paste into when paneId is empty",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "paste_buffer",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "paneId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "paneId"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "pane-control"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Paste Text into a Pane"
+        },
+        "description": "Deliver text into a pane exactly, with no tmux key names read. Use this for anything you did not write by hand: a word like \"Escape\" in the middle of it would otherwise be sent as that key.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "bracket": {
+              "description": "mark the text as pasted so an editor does not auto-indent it; on by default",
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "enter": {
+              "description": "press Enter after the text",
+              "type": "boolean"
+            },
+            "paneId": {
+              "description": "the tmux pane id to paste into; empty uses the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to paste into when paneId is empty",
+              "type": "string"
+            },
+            "text": {
+              "description": "the text to deliver, taken literally",
+              "type": "string"
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "type": "object"
+        },
+        "name": "paste_text",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "type": "integer"
+            },
+            "paneId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId",
+            "bytes"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "pane-control"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Pipe a Pane's Output"
+        },
+        "description": "Send everything a pane writes to a shell command as well as to the screen, such as \"cat >> /tmp/build.log\". Use it for output too large for scrollback, which is lost before anyone reads it. Call again with no command to stop.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "command": {
+              "description": "a shell command to write the pane's output to, such as cat >> /tmp/build.log; empty stops piping",
+              "type": "string"
+            },
+            "paneId": {
+              "description": "the tmux pane id to pipe; empty uses the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to pipe when paneId is empty",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "pipe_pane",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "type": "string"
+            },
+            "piping": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "paneId",
+            "piping"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-layout"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "title": "Rename a tmux Session"
+        },
+        "description": "Give a session a name a person will recognise. Its id does not change.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "the new session name",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "the exact session to rename; empty uses the only session",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "rename_session",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "sessionId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "sessionId",
+            "name"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-layout"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "title": "Rename a tmux Window"
+        },
+        "description": "Name a window, which also stops tmux renaming it after whatever is running in it.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "the new window name",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's current window to rename when windowId is empty",
+              "type": "string"
+            },
+            "windowId": {
+              "description": "the tmux window id to rename; empty uses the current window",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "rename_window",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "windowId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId",
+            "name"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-layout"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Resize a tmux Pane"
+        },
+        "description": "Set one pane's width or height in cells, or toggle it between its layout size and the whole window. Reports the size tmux settled on, which a layout may constrain.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "height": {
+              "description": "the pane's new height in cells",
+              "type": "integer"
+            },
+            "paneId": {
+              "description": "the tmux pane id to resize; empty resizes the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to resize when paneId is empty",
+              "type": "string"
+            },
+            "width": {
+              "description": "the pane's new width in cells",
+              "type": "integer"
+            },
+            "zoom": {
+              "description": "toggle the pane between its size and the whole window",
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "name": "resize_pane",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "height": {
+              "type": "integer"
+            },
+            "paneId": {
+              "type": "string"
+            },
+            "width": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "paneId",
+            "width",
+            "height"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-layout"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Resize a tmux Window"
+        },
+        "description": "Set a window's size in cells. Worth doing before running something whose output is laid out in columns, since a window no client is attached to is whatever size tmux guessed.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "height": {
+              "description": "the window's new height in cells",
+              "type": "integer"
+            },
+            "sessionName": {
+              "description": "which session's current window to resize when windowId is empty",
+              "type": "string"
+            },
+            "width": {
+              "description": "the window's new width in cells",
+              "type": "integer"
+            },
+            "windowId": {
+              "description": "the tmux window id to resize; empty uses the current window",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "resize_window",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "height": {
+              "type": "integer"
+            },
+            "width": {
+              "type": "integer"
+            },
+            "windowId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId",
+            "width",
+            "height"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "workspace-create"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Restart a Pane's Program"
+        },
+        "description": "Restart what a pane runs, keeping the pane and its place in the layout. Use it on a pane whose program exited rather than killing the pane and splitting a new one. A command that exits takes the pane with it, and the window if it was the last one: set remain-on-exit on the window first to keep it as a dead pane list_panes can report.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "command": {
+              "description": "a command to run instead; empty restarts what the pane ran before",
+              "type": "string"
+            },
+            "kill": {
+              "description": "end a program that is still running first",
+              "type": "boolean"
+            },
+            "paneId": {
+              "description": "the tmux pane id to restart; empty uses the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to restart when paneId is empty",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "respawn_pane",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "gone": {
+              "type": "boolean"
+            },
+            "paneId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "pane-control"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Run a Command in a Pane"
+        },
+        "description": "Run a POSIX-compatible shell command in one pane, wait for it to finish, and return its exit status and its output. Prefer this to send_keys followed by capture_pane: it does not read the screen to decide the command is done, so the shell's echo of the command cannot be mistaken for the command's output, and an exit status is something no capture recovers. Pass detach for a command you do not need the answer to yet, such as a build: it returns a jobId at once, you do other work, and get_job collects the status and the output later.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "command": {
+              "description": "the POSIX-compatible shell command to run",
+              "type": "string"
+            },
+            "detach": {
+              "description": "return a jobId at once instead of waiting; collect it later with get_job",
+              "type": "boolean"
+            },
+            "maxBytes": {
+              "description": "how many bytes of output to return at most, keeping the last lines",
+              "type": "integer"
+            },
+            "maxLines": {
+              "description": "how many lines of output to return at most, keeping the last ones",
+              "type": "integer"
+            },
+            "paneId": {
+              "description": "the tmux pane id to run the command in; empty uses the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to run in when paneId is empty",
+              "type": "string"
+            },
+            "suppressHistory": {
+              "description": "keep the command out of the shell's history by prefixing a space",
+              "type": "boolean"
+            },
+            "timeoutSeconds": {
+              "description": "how long to wait before giving up",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "command"
+          ],
+          "type": "object"
+        },
+        "name": "run_command",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "detached": {
+              "type": "boolean"
+            },
+            "effectiveTimeoutSeconds": {
+              "type": "integer"
+            },
+            "exitStatus": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "jobId": {
+              "type": "string"
+            },
+            "linesMissed": {
+              "type": "boolean"
+            },
+            "output": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "outputUnavailable": {
+              "type": "string"
+            },
+            "paneId": {
+              "type": "string"
+            },
+            "running": {
+              "type": "string"
+            },
+            "timedOut": {
+              "type": "boolean"
+            },
+            "timeoutClamped": {
+              "type": "boolean"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "truncatedBytes": {
+              "type": "integer"
+            },
+            "truncatedLines": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "paneId",
+            "timedOut",
+            "truncated"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "content-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Search tmux Panes"
+        },
+        "description": "Find which panes show some text, and what they showed. Answers \"which pane has the failing test\" in one call, where capturing each pane in turn costs one per pane.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "includeHistory": {
+              "description": "search scrollback as well as the visible screens",
+              "type": "boolean"
+            },
+            "matchCase": {
+              "description": "require the capitalisation to match",
+              "type": "boolean"
+            },
+            "maxMatchesPerPane": {
+              "description": "how many matching lines to report per pane",
+              "type": "integer"
+            },
+            "maxPanes": {
+              "description": "how many matching panes to report at most",
+              "type": "integer"
+            },
+            "regex": {
+              "description": "read text as a regular expression",
+              "type": "boolean"
+            },
+            "sessionName": {
+              "description": "search only this session's panes",
+              "type": "string"
+            },
+            "text": {
+              "description": "text to look for in each pane's contents",
+              "type": "string"
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "type": "object"
+        },
+        "name": "search_panes",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "morePanes": {
+              "type": "integer"
+            },
+            "panes": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "matches": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "row": {
+                          "type": "integer"
+                        },
+                        "text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "row",
+                        "text"
+                      ],
+                      "type": "object"
+                    },
+                    "type": [
+                      "array"
+                    ]
+                  },
+                  "moreMatches": {
+                    "type": "integer"
+                  },
+                  "pane": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "active": {
+                        "type": "boolean"
+                      },
+                      "currentCommand": {
+                        "type": "string"
+                      },
+                      "geometry": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "height": {
+                            "type": "integer"
+                          },
+                          "left": {
+                            "type": "integer"
+                          },
+                          "top": {
+                            "type": "integer"
+                          },
+                          "width": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "left",
+                          "top",
+                          "width",
+                          "height"
+                        ],
+                        "type": "object"
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "index": {
+                        "type": "integer"
+                      },
+                      "isCaller": {
+                        "type": [
+                          "null",
+                          "boolean"
+                        ]
+                      },
+                      "session": {
+                        "type": "string"
+                      },
+                      "window": {
+                        "type": "string"
+                      },
+                      "windowId": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "session",
+                      "window",
+                      "windowId",
+                      "index",
+                      "currentCommand",
+                      "active",
+                      "geometry",
+                      "isCaller"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "pane",
+                  "matches"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "array"
+              ]
+            }
+          },
+          "required": [
+            "panes"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-layout"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "title": "Arrange a Window's Panes"
+        },
+        "description": "Arrange a window's panes with one of tmux's presets (even-horizontal, even-vertical, main-horizontal, main-vertical, tiled, and the mirrored pair from tmux 3.5), spread them evenly, or restore a layout string read from get_window_info.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "layout": {
+              "description": "even-horizontal, even-vertical, main-horizontal, main-vertical, tiled, main-horizontal-mirrored or main-vertical-mirrored from tmux 3.5, or a layout string from get_window_info",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's current window to arrange when windowId is empty",
+              "type": "string"
+            },
+            "spread": {
+              "description": "give every pane an equal share of the space",
+              "type": "boolean"
+            },
+            "windowId": {
+              "description": "the tmux window id to arrange; empty uses the current window",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "select_layout",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "layout": {
+              "type": "string"
+            },
+            "windowId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId",
+            "layout"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-layout"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "title": "Select a tmux Pane"
+        },
+        "description": "Make one pane its window's active pane, which is where a person's keystrokes go.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "description": "the tmux pane id to make active",
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId"
+          ],
+          "type": "object"
+        },
+        "name": "select_pane",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-layout"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "title": "Select a tmux Window"
+        },
+        "description": "Make one window its session's current window, which is what puts a person in front of a window this client created.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "windowId": {
+              "description": "the tmux window id to make current",
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId"
+          ],
+          "type": "object"
+        },
+        "name": "select_window",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "windowId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "pane-control"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Send Keys to a Pane"
+        },
+        "description": "Type into one pane and press Enter. tmux key names are read, so \"C-c\" interrupts what the pane is running, which is how to recover a pane left busy by a run_command that timed out. Use paste_text for content you did not write by hand, and run_command when you want the exit status.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "command": {
+              "description": "what to type, read as tmux key names: \"C-c\" interrupts the pane and \"Escape\" is a key rather than those letters; use paste_text for text to take literally",
+              "type": "string"
+            },
+            "paneId": {
+              "description": "a tmux pane id such as %1; empty types into the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to type into when paneId is empty",
+              "type": "string"
+            },
+            "suppressHistory": {
+              "description": "keep the command out of the shell's history by prefixing a space",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "command"
+          ],
+          "type": "object"
+        },
+        "name": "send_keys",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "type": "string"
+            },
+            "sent": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId",
+            "sent"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "pane-control"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Send a Sequence of Keys"
+        },
+        "description": "Send several tmux key names to a pane in order, with no Enter appended. This is how to drive a program that reads keys rather than lines: quit a pager, answer a prompt, leave an editor.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "keys": {
+              "description": "tmux key names to send in order, such as [\"C-c\", \"q\", \"Enter\"]",
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "null",
+                "array"
+              ]
+            },
+            "literal": {
+              "description": "send the keys as characters rather than as tmux key names",
+              "type": "boolean"
+            },
+            "paneId": {
+              "description": "the tmux pane id to send to; empty uses the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to send to when paneId is empty",
+              "type": "string"
+            }
+          },
+          "required": [
+            "keys"
+          ],
+          "type": "object"
+        },
+        "name": "send_keys_batch",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "type": "string"
+            },
+            "sent": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "paneId",
+            "sent"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-settings"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "title": "Set a Session's Environment"
+        },
+        "description": "Set or remove a variable for processes a session starts from now on. It changes nothing already running.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "the variable to set",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "the session to write; empty uses the only session",
+              "type": "string"
+            },
+            "unset": {
+              "description": "remove the variable instead of setting it",
+              "type": "boolean"
+            },
+            "value": {
+              "description": "the value to set",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "set_environment",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "sessionName": {
+              "type": "string"
+            },
+            "unset": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "sessionName",
+            "name",
+            "unset"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-settings"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "title": "Set a tmux Option"
+        },
+        "description": "Set one tmux option. Pane scope by default, which affects that pane and nothing else; server scope changes every session the person has open.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "the tmux option name, such as history-limit",
+              "type": "string"
+            },
+            "paneId": {
+              "description": "the pane to set the option on",
+              "type": "string"
+            },
+            "scope": {
+              "description": "the scope to set at; empty sets at pane scope",
+              "enum": [
+                "",
+                "server",
+                "session",
+                "window",
+                "pane"
+              ],
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "the session to set the option on",
+              "type": "string"
+            },
+            "value": {
+              "description": "the value to set",
+              "type": "string"
+            },
+            "windowId": {
+              "description": "the window to set the option on",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "value"
+          ],
+          "type": "object"
+        },
+        "name": "set_option",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "scope": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "scope",
+            "value"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-layout"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "title": "Title a tmux Pane"
+        },
+        "description": "Set the title tmux draws on a pane's border, which is how to label which pane is which in a layout someone else will read.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "description": "the tmux pane id to title; empty uses the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to title when paneId is empty",
+              "type": "string"
+            },
+            "title": {
+              "description": "the new pane title",
+              "type": "string"
+            }
+          },
+          "required": [
+            "title"
+          ],
+          "type": "object"
+        },
+        "name": "set_pane_title",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId",
+            "title"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "content-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Read a tmux Buffer"
+        },
+        "description": "Read a buffer in the libtmux-mcp- namespace. Names outside it are prefixed before lookup, so other tmux buffers remain unreachable.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "maxBytes": {
+              "description": "how many bytes to return at most, keeping the last lines",
+              "type": "integer"
+            },
+            "maxLines": {
+              "description": "how many lines to return at most, keeping the last ones",
+              "type": "integer"
+            },
+            "name": {
+              "description": "the buffer to read, as load_buffer returned it",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "show_buffer",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "lines": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "name": {
+              "type": "string"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "truncatedBytes": {
+              "type": "integer"
+            },
+            "truncatedLines": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "name",
+            "truncated"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "content-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Read a Session's Environment"
+        },
+        "description": "What new processes in a session will inherit. Panes already running keep the environment they started with, so this is what the next pane gets rather than what the current one has.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "maxBytes": {
+              "description": "how many bytes of listing to return at most",
+              "type": "integer"
+            },
+            "maxLines": {
+              "description": "how many variables to return at most",
+              "type": "integer"
+            },
+            "name": {
+              "description": "one variable to read, with its value; empty lists every name with its scope and no values. Several values at once: put several of these in call_readonly_tools_batch",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "the session to read; empty uses the only session",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "show_environment",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "sessionName": {
+              "type": "string"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "truncatedBytes": {
+              "type": "integer"
+            },
+            "truncatedLines": {
+              "type": "integer"
+            },
+            "valuesWithheld": {
+              "type": "boolean"
+            },
+            "variables": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "removed": {
+                    "type": "boolean"
+                  },
+                  "scope": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "scope"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "array"
+              ]
+            }
+          },
+          "required": [
+            "sessionName",
+            "variables",
+            "truncated"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "content-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Read tmux Hooks"
+        },
+        "description": "The commands tmux will run on its own at a given scope. This is the explanation for behaviour no tool here caused. Pass name to ask about one hook rather than reading the whole table. Reading only: a hook belongs in a person's tmux configuration, not in a connection that will end.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "report only this hook, such as pane-died; empty reports every hook in force",
+              "type": "string"
+            },
+            "paneId": {
+              "description": "the pane to read hooks on",
+              "type": "string"
+            },
+            "scope": {
+              "description": "the scope to read at; empty reads at pane scope",
+              "enum": [
+                "",
+                "server",
+                "session",
+                "window",
+                "pane"
+              ],
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "the session to read hooks on",
+              "type": "string"
+            },
+            "windowId": {
+              "description": "the window to read hooks on",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "show_hooks",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "hooks": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "command": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "command"
+                ],
+                "type": "object"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "scope": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "scope",
+            "hooks"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "content-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Read a tmux Option"
+        },
+        "description": "Read one tmux option at server, session, window, or pane scope. Options explain behaviour a pane's contents do not: history-limit is why scrollback stopped, remain-on-exit is why a dead pane is still there.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "the tmux option name, such as history-limit",
+              "type": "string"
+            },
+            "paneId": {
+              "description": "the pane to read the option on",
+              "type": "string"
+            },
+            "scope": {
+              "description": "the scope to read at; empty reads at pane scope",
+              "enum": [
+                "",
+                "server",
+                "session",
+                "window",
+                "pane"
+              ],
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "the session to read the option on",
+              "type": "string"
+            },
+            "windowId": {
+              "description": "the window to read the option on",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "show_option",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "scope": {
+              "type": "string"
+            },
+            "set": {
+              "type": "boolean"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "scope",
+            "value",
+            "set"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "pane-control"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Signal a tmux Channel"
+        },
+        "description": "Signal a tmux wait-for channel, releasing whoever waits on it.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "channel": {
+              "description": "the tmux wait-for channel to signal",
+              "type": "string"
+            }
+          },
+          "required": [
+            "channel"
+          ],
+          "type": "object"
+        },
+        "name": "signal_channel",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "channel": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "channel"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "content-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Snapshot a tmux Pane"
+        },
+        "description": "One pane's contents together with what it is, where it sits, and whether its process has exited. Prefer this to capture_pane followed by get_pane_info when one response is enough. State and content are collected sequentially, not atomically.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "includeHistory": {
+              "description": "read scrollback as well as the visible screen",
+              "type": "boolean"
+            },
+            "maxBytes": {
+              "description": "how many bytes to return at most, keeping the last lines",
+              "type": "integer"
+            },
+            "maxLines": {
+              "description": "how many lines to return at most, keeping the last ones",
+              "type": "integer"
+            },
+            "paneId": {
+              "description": "the tmux pane id to describe; empty describes the active pane",
+              "type": "string"
+            },
+            "sessionName": {
+              "description": "which session's active pane to describe when paneId is empty",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "snapshot_pane",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "dead": {
+              "type": "boolean"
+            },
+            "exitStatus": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "lines": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "pane": {
+              "additionalProperties": false,
+              "properties": {
+                "active": {
+                  "type": "boolean"
+                },
+                "currentCommand": {
+                  "type": "string"
+                },
+                "geometry": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "height": {
+                      "type": "integer"
+                    },
+                    "left": {
+                      "type": "integer"
+                    },
+                    "top": {
+                      "type": "integer"
+                    },
+                    "width": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "left",
+                    "top",
+                    "width",
+                    "height"
+                  ],
+                  "type": "object"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "index": {
+                  "type": "integer"
+                },
+                "isCaller": {
+                  "type": [
+                    "null",
+                    "boolean"
+                  ]
+                },
+                "session": {
+                  "type": "string"
+                },
+                "window": {
+                  "type": "string"
+                },
+                "windowId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "session",
+                "window",
+                "windowId",
+                "index",
+                "currentCommand",
+                "active",
+                "geometry",
+                "isCaller"
+              ],
+              "type": "object"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "truncatedBytes": {
+              "type": "integer"
+            },
+            "truncatedLines": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "lines",
+            "pane",
+            "dead",
+            "truncated"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "workspace-create"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Split a tmux Pane"
+        },
+        "description": "Divide one pane in two, placing the new one below, above, to the right of, or to the left of it, and return the new pane's id.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "command": {
+              "description": "a command for the new pane to run instead of a shell",
+              "type": "string"
+            },
+            "direction": {
+              "description": "where the new pane goes; empty puts it below",
+              "enum": [
+                "",
+                "below",
+                "above",
+                "right",
+                "left"
+              ],
+              "type": "string"
+            },
+            "paneId": {
+              "description": "the tmux pane id to split; empty splits the active pane",
+              "type": "string"
+            },
+            "percentage": {
+              "description": "the new pane's share of the space, 1 to 100",
+              "type": "integer"
+            },
+            "sessionName": {
+              "description": "which session's active pane to split when paneId is empty",
+              "type": "string"
+            },
+            "startDirectory": {
+              "description": "the new pane's working directory",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": "split_window",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "tmux-layout"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Swap Two tmux Panes"
+        },
+        "description": "Exchange two panes' positions. Both keep their ids, so anything addressing them still can.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "keepFocus": {
+              "description": "leave the active pane where it was",
+              "type": "boolean"
+            },
+            "paneId": {
+              "description": "one of the two panes to exchange",
+              "type": "string"
+            },
+            "withPaneId": {
+              "description": "the other pane to exchange it with",
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId",
+            "withPaneId"
+          ],
+          "type": "object"
+        },
+        "name": "swap_pane",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "type": "string"
+            },
+            "withPaneId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId",
+            "withPaneId"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "pane-control"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "openWorldHint": false,
+          "title": "Wait on a tmux Channel"
+        },
+        "description": "Wait until something signals a tmux wait-for channel. Timeout or cancellation ends this call but cannot remove tmux's global waiter; a later signal may be consumed by it, so do not reuse channel names.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "channel": {
+              "description": "the tmux wait-for channel to wait on",
+              "type": "string"
+            },
+            "timeoutSeconds": {
+              "description": "how long to wait before giving up",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "channel"
+          ],
+          "type": "object"
+        },
+        "name": "wait_for_channel",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "effectiveTimeoutSeconds": {
+              "type": "integer"
+            },
+            "signalled": {
+              "type": "boolean"
+            },
+            "timeoutClamped": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "signalled",
+            "effectiveTimeoutSeconds"
+          ],
+          "type": "object"
+        }
+      },
+      {
+        "_meta": {
+          "io.github.libtmux/capability": "content-read"
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Wait for Pane Output"
+        },
+        "description": "Wait until a pane writes one of several patterns. It takes one exact screen baseline after attaching, then reads what the pane produces without polling. Use it for output the client did not author, such as a service announcing it is ready. Pass stop with the markers of failure you already know, so a run that failed returns at once instead of at the deadline. Omit patterns to wait for any output at all. Matching retains the most recent one megabyte and reports any older prefix as truncation. When you cannot predict what finishing prints, set idleSeconds and wait for the pane to go quiet instead.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "idleSeconds": {
+              "description": "end the wait once the pane has written nothing for this many seconds",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "matchCase": {
+              "description": "require the capitalisation to match",
+              "type": "boolean"
+            },
+            "maxBytes": {
+              "description": "how many bytes of output to return at most, keeping the last lines",
+              "type": "integer"
+            },
+            "maxLines": {
+              "description": "how many lines of output to return at most, keeping the last ones",
+              "type": "integer"
+            },
+            "paneId": {
+              "description": "the tmux pane id to watch; empty watches the active pane",
+              "type": "string"
+            },
+            "patterns": {
+              "description": "any one of these ends the wait; empty waits for any output",
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "null",
+                "array"
+              ]
+            },
+            "regex": {
+              "description": "read the patterns as regular expressions",
+              "type": "boolean"
+            },
+            "sessionName": {
+              "description": "which session's active pane to watch when paneId is empty",
+              "type": "string"
+            },
+            "sinceEntry": {
+              "description": "ignore what the pane already shows and match only new output",
+              "type": "boolean"
+            },
+            "stop": {
+              "description": "markers of failure that end the wait early, such as \"error:\"",
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "null",
+                "array"
+              ]
+            },
+            "timeoutSeconds": {
+              "description": "how long to wait before giving up",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "name": "wait_for_text",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "effectiveTimeoutSeconds": {
+              "type": "integer"
+            },
+            "elapsedSeconds": {
+              "type": "number"
+            },
+            "entryNote": {
+              "type": "string"
+            },
+            "found": {
+              "type": "boolean"
+            },
+            "lines": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "matched": {
+              "type": "string"
+            },
+            "matchedAtEntry": {
+              "type": "boolean"
+            },
+            "outcome": {
+              "type": "string"
+            },
+            "paneId": {
+              "type": "string"
+            },
+            "timeoutClamped": {
+              "type": "boolean"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "truncatedBytes": {
+              "type": "integer"
+            },
+            "truncatedLines": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "paneId",
+            "outcome",
+            "found",
+            "matchedAtEntry",
+            "elapsedSeconds",
+            "effectiveTimeoutSeconds",
+            "truncated"
+          ],
+          "type": "object"
+        }
+      }
+    ]
+  }
+}
