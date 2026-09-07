@@ -36,6 +36,8 @@ interface Props {
   portSlug?: string
   version?: string
   noindex?: boolean
+  /** Include this page in the local search index. */
+  searchable?: boolean
   updated?: string
   /** Suppress the site header, for embedded/preview renders. */
   bare?: boolean
@@ -60,6 +62,7 @@ const {
   portSlug,
   version: requestedVersion,
   noindex = false,
+  searchable = true,
   updated,
   bare = false,
   locale = 'en',
@@ -203,7 +206,7 @@ const localePagePath = localeSourcePath(Astro.url.pathname, buildLocale())
          once. The filters are what make a 1,000-symbol reference searchable
          at all: "sessions" is a different question in Go than in Swift. -->
     <div
-      data-pagefind-body
+      data-pagefind-body={searchable ? '' : undefined}
       data-pagefind-filter={`port:${portSlug ? (PORT_NAME[portSlug] ?? portSlug) : 'All languages'}`}
     >
       <div data-pagefind-filter={`section:${section}`} data-pagefind-ignore="all" hidden></div>
