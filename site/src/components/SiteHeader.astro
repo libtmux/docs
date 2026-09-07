@@ -38,39 +38,93 @@ const {
 ---
 
 <header
-  class="sticky top-0 z-40 border-b border-edge"
+  class="site-header sticky top-0 z-40 border-b border-edge"
   style="background: var(--topnav-background); backdrop-filter: blur(var(--topnav-backdrop-blur, 8px));"
 >
-  <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 py-3">
-    <a href={withRoot('/')} class="font-mono text-lg font-semibold tracking-tight">libtmux</a>
-    <div class="flex-1"><PortSwitcher portSlug={portSlug} version={version} /></div>
-    <div class="relative flex max-w-full flex-wrap items-center gap-4" data-header-controls>
-      <VersionSwitcher portSlug={pagePath.startsWith('reference') ? undefined : portSlug} version={version} />
-      <div class="flex shrink-0 flex-nowrap items-center gap-4" data-page-switchers>
-        <PagePortSwitcher entries={pagePorts} portSlug={portSlug} />
-        {
-          localeStatuses && (
-            <LocaleSwitcher
-              locale={locale}
-              sourcePath={sourcePath ?? pagePath}
-              localeStatuses={localeStatuses}
-            />
-          )
-        }
-      </div>
-      <a
-        href={withPortRoot('/reference/')}
-        class="topnav-chip px-2 py-1 text-sm"
-      >Reference</a>
-      <a href={withRoot('/mcp/')} class="topnav-chip px-2 py-1 text-sm">MCP</a>
-      <ColorSchemeSwitcher />
+  <div class="site-header__bar">
+    <a href={withRoot('/')} class="site-header__mark font-mono text-lg font-semibold tracking-tight">libtmux</a>
+
+    {/*
+      The eight languages are the primary navigation and stay in the bar for as
+      long as they fit on one line. Below that they move into the menu rather
+      than wrapping: wrapped, they were three rows of chips and a 207px header
+      on a 320px phone, which is a third of the viewport spent before the page
+      begins — and that sat above the docs shell's own mobile toolbar.
+    */}
+    <div class="site-header__ports"><PortSwitcher portSlug={portSlug} version={version} /></div>
+
+    <div class="site-header__spacer"></div>
+
+    {/*
+      Always visible, at every width. Reading in the wrong colour scheme is
+      uncomfortable in a way that reaching one menu deeper for the language
+      list is not, and search is the control a reader wants when the page they
+      landed on is the wrong one.
+    */}
+    <div class="site-header__always">
+      {/*
+        In the bar from 64rem up, and in the panel below it. Rendered in both
+        places and shown in one: which of the two is right depends on the
+        width, and a link has no state to keep in step.
+      */}
+      {/*
+        Three places to go, then the one control that changes how they look.
+        Reference, MCP and Search are the same kind of thing and read as a set;
+        the colour scheme sat between them and split the set for no reason.
+      */}
+      <a href={withPortRoot('/reference/')} class="topnav-chip site-header__wide-link">Reference</a>
+      <a href={withRoot('/mcp/')} class="topnav-chip site-header__wide-link">MCP</a>
       <a
         href={withRoot('/search/')}
-        class="topnav-chip border border-edge px-2 py-1 text-sm"
+        class="topnav-chip site-header__search border border-edge"
         aria-label="Search the documentation"
       >
-        Search
+        <svg class="site-header__search-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.25" />
+          <path d="M10.2 10.2 14 14" stroke-linecap="round" />
+        </svg>
+        <span class="site-header__search-label">Search</span>
       </a>
+      <ColorSchemeSwitcher />
     </div>
+
+    {/*
+      One disclosure rather than a scripted drawer. `<details>` brings its own
+      toggle semantics, its own keyboard handling and a closed state that is
+      genuinely out of the tab order, none of which has to be kept true by
+      hand — the same reason the locale switcher is one.
+    */}
+    <details class="site-header__menu">
+      <summary class="topnav-chip site-header__menu-button" aria-label="More navigation">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path d="M2 4h12M2 8h12M2 12h12" stroke-linecap="round" />
+        </svg>
+        <span class="site-header__menu-label">Menu</span>
+      </summary>
+
+      <div class="site-header__panel">
+        {/* Hidden from 64rem up, where the same eight are already in the bar. */}
+        <div class="site-header__panel-ports">
+          <PortSwitcher portSlug={portSlug} version={version} />
+        </div>
+        <div class="site-header__panel-row site-header__panel-controls">
+          <VersionSwitcher portSlug={pagePath.startsWith('reference') ? undefined : portSlug} version={version} />
+          <PagePortSwitcher entries={pagePorts} portSlug={portSlug} />
+          {
+            localeStatuses && (
+              <LocaleSwitcher
+                locale={locale}
+                sourcePath={sourcePath ?? pagePath}
+                localeStatuses={localeStatuses}
+              />
+            )
+          }
+        </div>
+        <div class="site-header__panel-row site-header__panel-links">
+          <a href={withPortRoot('/reference/')} class="topnav-chip px-2 py-1 text-sm">Reference</a>
+          <a href={withRoot('/mcp/')} class="topnav-chip px-2 py-1 text-sm">MCP</a>
+        </div>
+      </div>
+    </details>
   </div>
 </header>
