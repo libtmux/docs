@@ -9,7 +9,7 @@ sidebar:
 tableOfContents: true
 ---
 
-The `workspace` module parses [tmuxp-style](https://tmuxp.git-pull.com) YAML
+The `workspace` module parses [tmuxp](https://tmuxp.git-pull.com)-style YAML
 and builds a session through libtmux's Go API. It is a separate module, so
 applications using only the core client do not acquire a YAML dependency.
 
