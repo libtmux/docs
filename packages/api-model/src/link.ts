@@ -313,8 +313,15 @@ export class SymbolIndex {
         const owner = this.byDeclared.get(context.parent)
         scopes.push(owner?.publicId ?? context.parent)
       }
+      if (this.lang === 'cxx') {
+        let scope = own
+        while (scope.includes('::')) {
+          scope = scope.slice(0, scope.lastIndexOf('::'))
+          scopes.push(scope)
+        }
+      }
       for (const scope of scopes) {
-        const hit = this.byPublic.get(`${scope}.${clean}`)
+        const hit = this.byPublic.get(`${scope}${this.lang === 'cxx' ? '::' : '.'}${clean}`)
         if (hit) return { href: this.hrefFor(hit), external: false, symbol: hit }
       }
       // A relative reference must not fall through to a global bare-name
@@ -403,14 +410,14 @@ export class SymbolIndex {
     // `::` is part of a name, not punctuation between two. Splitting there
     // turned `std::vector` into `std` and `vector`, so neither half matched
     // anything and C++ annotations rendered almost entirely plain.
-    const re = /(["'][^"']*["']|[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*)|([^A-Za-z_"']+)/g
+    const re = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*|["'][^"']*["']|[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*)|([^A-Za-z_"'/]+|["'/])/g
     for (const m of annotation.matchAll(re)) {
       const [whole, ident, other] = m
       if (other !== undefined || !ident) {
         out.push({ text: whole })
         continue
       }
-      if (/^["']/.test(ident)) {
+      if (/^(?:["']|\/[/*])/.test(ident)) {
         out.push({ text: ident })
         continue
       }

@@ -91,3 +91,20 @@ describe('a bare name with more than one candidate', () => {
     expect(linkFor(tied, 'Thing', 'Thing', sym('a.d.Caller', 'method'))).toBeUndefined()
   })
 })
+
+it('resolves C++ core and workspace types through their enclosing namespaces', () => {
+  const cpp = (id: string) => ({ ...sym(id), name: id.split('::').at(-1)! })
+  const symbols = ['libtmux::Pane', 'libtmux::workspace::Pane'].map(cpp)
+  const idx = new SymbolIndex(symbols, (symbol) => `/${symbol.id}/`, 'cxx')
+  expect(linkFor(idx, 'Pane', 'Pane', cpp('libtmux::Window::split'))?.href).toBe('/libtmux::Pane/')
+  expect(linkFor(idx, 'Pane', 'Pane', cpp('libtmux::workspace::Window::panes'))?.href).toBe('/libtmux::workspace::Pane/')
+  expect(linkFor(idx, 'Pane', 'Pane', cpp('other::Window::split'))).toBeUndefined()
+})
+
+it('preserves comments in inline types without interpreting their prose as references', () => {
+  const idx = new SymbolIndex([sym('Server')], (symbol) => `/${symbol.id}/`, 'ts')
+  const annotation = "{ /** Server's startup environment. */ server: Server; // Server host\n}"
+  const spans = idx.linkType(annotation)
+  expect(spans.map((span) => span.text).join('')).toBe(annotation)
+  expect(spans.filter((span) => span.link).map((span) => span.text)).toEqual(['Server'])
+})
