@@ -39,6 +39,19 @@ function resolves(href: string): boolean {
   return existsSync(join(SITE, clean)) || existsSync(join(SITE, clean, 'index.html'))
 }
 
+/**
+ * Sampled pages that are not about one document, so no other port serves a
+ * matching page: the locale home, each port's home, and the MCP tool table,
+ * which is one global page rather than a per-port one.
+ */
+const NO_PAGE_COUNTERPART = [
+  'en/index.html',
+  'ja/index.html',
+  'py/index.html',
+  'rs/index.html',
+  'mcp/tools/index.html',
+]
+
 const pages = samplePages()
 
 describeIfAssembled('switcher targets', () => {
@@ -58,7 +71,23 @@ describeIfAssembled('switcher targets', () => {
       const pattern = new RegExp(`/${port.slug}/${port.versionedDocs ? '[^/]+/' : ''}$`)
       expect(hrefs.some((href) => pattern.test(href)), `${page}: ${port.slug} root`).toBe(true)
     }
+    /*
+     * The page-port control renders on the page's own title row, so a page
+     * that is not about one document has nothing to switch and renders
+     * none: the site home, a port home, the MCP tool table. It used to sit
+     * in the header, where every page had one whether or not it meant
+     * anything, which is why this expected it everywhere.
+     *
+     * The exceptions are listed rather than sniffed from the markup. A page
+     * that stops carrying the control fails here and someone decides
+     * whether that was the intent, which is the regression worth catching.
+     */
     const menu = /<details[^>]*data-page-port-switcher[^>]*>([\s\S]*?)<\/details>/.exec(html)
+    const noDocument = NO_PAGE_COUNTERPART.some((suffix) => page.endsWith(suffix))
+    if (noDocument) {
+      expect(menu, `${page} is listed as having no counterpart but renders the control`).toBeNull()
+      return
+    }
     expect(menu, `${page} has a matching-page control`).not.toBeNull()
     const counterparts = [...menu![1].matchAll(/href="([^"]+)"/g)].map((match) => match[1])
     expect(counterparts.length, `${page} has an available counterpart`).toBeGreaterThan(0)
