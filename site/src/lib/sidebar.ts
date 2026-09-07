@@ -18,7 +18,7 @@
  */
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
-import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, type DocProduct } from './ports'
+import { PORT_BY_SLUG, type DocProduct } from './ports'
 import { withPortRoot, withRoot } from './site-root'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { localeOf, sourceIdOf } from '../i18n/resolve'
@@ -236,17 +236,8 @@ export async function getSidebar(
    * general form of "notices last" rather than a special case for one file.
    */
   if (port === undefined) return [...groups, ...ungrouped]
-  const sections: SidebarGroupItem = {
-    type: 'group', label: PORT_BY_SLUG[port].name,
-    items: [
-      { type: 'link', label: 'Core library', href: portPageUrl(PORT_BY_SLUG[port], version) },
-      ...Object.entries(DOC_PRODUCTS).map(([slug, info]): SidebarLinkItem => ({
-        type: 'link', label: info.label, href: portPageUrl(PORT_BY_SLUG[port], version, slug),
-      })),
-    ],
-  }
-  if (product) return [sections, ...ungrouped, ...groups]
-  return [sections, ...referenceEntries(port, version), ...groups, ...ungrouped]
+  if (product) return [...ungrouped, ...groups]
+  return [...referenceEntries(port, version), ...groups, ...ungrouped]
 }
 
 /**

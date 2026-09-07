@@ -9,11 +9,11 @@
  * the desktop column — so it owns no positioning of its own; the caller
  * decides how it's placed.
  */
-import { getSidebar, isActivePath } from '../../lib/sidebar'
+import { getSidebar, isActivePath, type SidebarLinkItem } from '../../lib/sidebar'
 import { DEFAULT_LOCALE, type Locale } from '../../i18n/locales'
 import SidebarLink from './SidebarLink.astro'
 import SidebarSection from './SidebarSection.astro'
-import type { DocProduct } from '../../lib/ports'
+import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, type DocProduct } from '../../lib/ports'
 
 interface Props {
   port?: string
@@ -26,8 +26,18 @@ interface Props {
 
 const { port, product, version, currentPath, locale = DEFAULT_LOCALE } = Astro.props
 const items = await getSidebar(port, version, locale, product)
+const portInfo = port ? PORT_BY_SLUG[port] : undefined
+const products: SidebarLinkItem[] = portInfo ? [
+  { type: 'link', label: 'Core library', href: portPageUrl(portInfo, version) },
+  ...Object.entries(DOC_PRODUCTS).map(([slug, info]): SidebarLinkItem => ({
+    type: 'link', label: info.label, href: portPageUrl(portInfo, version, slug),
+  })),
+] : []
 ---
 
+{portInfo && <nav aria-label="Products" class="product-nav">
+  <SidebarSection label={portInfo.name} items={products} currentPath={currentPath} />
+</nav>}
 <nav aria-label="Documentation" class="sidebar-nav">
   {
     items.map((item) =>
