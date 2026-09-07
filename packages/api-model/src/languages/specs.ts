@@ -215,7 +215,21 @@ export const JAVA: LanguageSpec = {
   commentTypes: ['line_comment', 'block_comment', 'comment'],
   stripDoc: stripBlockDoc,
   modifiers: { static: 'static', abstract: 'abstract', private: 'private', final: 'readonly' },
-  isExported: (node) => !node.children.some((c) => c?.type === 'modifiers' && /\bprivate\b/.test(c.text)),
+  isExported: (node) => {
+    const modifiers = node.children.find((child) => child?.type === 'modifiers')?.text ?? ''
+    if (/\bprivate\b/.test(modifiers)) return false
+    if (node.type === 'method_declaration' || node.type === 'constructor_declaration') {
+      if (/\b(public|protected)\b/.test(modifiers) || node.parent?.type === 'interface_body') return true
+      // Keep existing internal records, but do not merge their signatures into
+      // an advertised overload set. Interface methods are implicitly public.
+      const name = node.childForFieldName('name')?.text
+      return !node.parent?.namedChildren.some((sibling) =>
+        sibling?.type === node.type && sibling.childForFieldName('name')?.text === name &&
+        sibling.children.some((child) => child?.type === 'modifiers' && /\b(public|protected)\b/.test(child.text)),
+      )
+    }
+    return true
+  },
 }
 
 export const CSHARP: LanguageSpec = {
