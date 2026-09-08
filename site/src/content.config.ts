@@ -17,6 +17,8 @@ const docs = defineCollection({
     description: z.string().optional(),
     /** Restricts a page to one port's section, e.g. 'py'. Omit for shared pages. */
     port: z.string().optional(),
+    /** Product pages are authored separately for each port. */
+    product: z.enum(['mcp', 'workspace']).optional(),
     /** Sidebar placement. */
     sidebar: z
       .object({

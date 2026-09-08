@@ -18,10 +18,11 @@
  */
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
-import { PORT_BY_SLUG } from './ports'
+import { PORT_BY_SLUG, type DocProduct } from './ports'
 import { withPortRoot, withRoot } from './site-root'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { localeOf, sourceIdOf } from '../i18n/resolve'
+import { docsPath, docsRoutePath } from './docs-paths'
 
 export interface SidebarLinkItem {
   type: 'link'
@@ -68,12 +69,13 @@ function byOrderThenLabel<T extends OrderedLabel>(items: T[]): T[] {
  * already includes it because that route's own param does too.
  */
 export function entryPath(entry: CollectionEntry<'docs'>): string {
-  return sourceIdOf(entry.id)
+  return docsPath({ ...entry, id: sourceIdOf(entry.id) })
 }
 
 /** `entryPath`, joined to this build's own base and given the trailing slash `trailingSlash: 'always'` expects. */
-function linkHref(entry: CollectionEntry<'docs'>): string {
-  const path = entryPath(entry)
+function linkHref(entry: CollectionEntry<'docs'>, version: string): string {
+  const path = docsRoutePath({ ...entry, id: sourceIdOf(entry.id) }, process.env.LIBTMUX_DOCS_PORT,
+    entry.data.port ? { [entry.data.port]: version } : {})
   const base = import.meta.env.BASE_URL
   return path ? `${base}${path}/` : base
 }
@@ -151,6 +153,7 @@ export async function getSidebar(
   port: string | undefined,
   version: string,
   locale: Locale = DEFAULT_LOCALE,
+  product?: DocProduct,
 ): Promise<SidebarItem[]> {
   if (port !== undefined && !PORT_BY_SLUG[port]) throw new Error(`sidebar.ts: unknown port slug "${port}"`)
 
@@ -170,6 +173,7 @@ export async function getSidebar(
     'docs',
     (entry) =>
       (entry.data.port === undefined || entry.data.port === port) &&
+      entry.data.product === product &&
       localeOf(entry.id) === DEFAULT_LOCALE,
   )
 
@@ -190,7 +194,7 @@ export async function getSidebar(
     const localised = translated.get(entryPath(entry)) ?? entry
     return {
       label: localised.data.sidebar?.label ?? localised.data.title,
-      href: linkHref(entry),
+      href: linkHref(entry, version),
       order: entry.data.sidebar?.order,
       group: entry.data.sidebar?.group,
     }
@@ -232,6 +236,7 @@ export async function getSidebar(
    * general form of "notices last" rather than a special case for one file.
    */
   if (port === undefined) return [...groups, ...ungrouped]
+  if (product) return [...ungrouped, ...groups]
   return [...referenceEntries(port, version), ...groups, ...ungrouped]
 }
 

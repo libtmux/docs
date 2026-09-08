@@ -1,4 +1,4 @@
-import type { ApiModel, ApiSymbol } from './model.ts'
+import type { ApiModel, ApiProduct, ApiSymbol } from './model.ts'
 import type { InventoryEntry } from './inventory.ts'
 import { modulesIn } from './modules.ts'
 
@@ -98,7 +98,8 @@ export const DEFAULT_TEMPLATES: UrlTemplate[] = [
  * makes a resolver look worse than it is and hides the failures that matter.
  */
 export function notASymbol(text: string): string | undefined {
-  if (/\.(py|ts|go|rs|java|cs|cpp|hpp|swift|md|json|toml|sh)\b/.test(text)) return 'a filename'
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) return 'a protocol URI'
+  if (/\.(py|ts|go|rs|java|cs|cpp|hpp|swift|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
   if (/(^|\s)--?[A-Za-z]/.test(text)) return 'a command-line flag'
   if (/[=<>!]=|\s[=<>]\s/.test(text)) return 'an expression, not a reference'
   if (/^new\s/.test(text)) return 'a constructor call'
@@ -209,7 +210,14 @@ export class Resolver {
   }
 
   private members(port: string, name: string): Row[] {
-    return (this.byMember.get(name) ?? []).filter((r) => r.port === port)
+    return (this.byMember.get(name) ?? []).filter((r) => r.port === port && r.symbol.apiScope !== 'internal')
+  }
+
+  private static preferProduct(rows: Row[], product: ApiProduct = 'core'): Row[] {
+    const matching = rows.filter((r) => (r.symbol.product ?? 'core') === product)
+    if (matching.length) return matching
+    const core = rows.filter((r) => (r.symbol.product ?? 'core') === 'core')
+    return core.length ? core : rows
   }
 
   /**
@@ -236,7 +244,7 @@ export class Resolver {
   }
 
   /** Resolve one mention within one port. */
-  resolve(port: string, text: string): Resolution {
+  resolve(port: string, text: string, product?: ApiProduct): Resolution {
     const why = notASymbol(text)
     if (why) return { how: 'not-a-symbol', why }
 
@@ -254,15 +262,22 @@ export class Resolver {
     if (whole) return { how: 'module', symbol: whole.symbol, port }
 
     const member = parts[parts.length - 1]
-    const local = Resolver.preferTypeOverConstructor(this.members(port, member))
-    if (local.length === 1) return { how: 'unique', symbol: local[0].symbol, port }
+    const candidates = Resolver.preferTypeOverConstructor(this.members(port, member))
+    if (candidates.length === 1) return { how: 'unique', symbol: candidates[0].symbol, port }
+    let local = Resolver.preferProduct(candidates, product)
+    if (parts.length === 1) {
+      // A bare type name does not name an unrelated enum variant or property.
+      const types = candidates.filter((r) => TYPE_KINDS.has(r.symbol.kind))
+      if (types.length) local = Resolver.preferProduct(types, product)
+      if (local.length === 1) return { how: 'unique', symbol: local[0].symbol, port }
+    }
 
     if (parts.length > 1) {
       const receiver = parts[parts.length - 2]
       // Prose names a variable after its type; both spellings occur.
       for (const cand of [receiver, receiver[0].toUpperCase() + receiver.slice(1)]) {
         const owners = this.members(port, cand).filter((r) => TYPE_KINDS.has(r.symbol.kind))
-        const scoped = local.filter((r) => owners.some((o) => r.symbol.parent === o.symbol.id))
+        const scoped = Resolver.preferProduct(candidates.filter((r) => owners.some((o) => r.symbol.parent === o.symbol.id)), product)
         if (scoped.length === 1) return { how: 'scoped', symbol: scoped[0].symbol, port }
         if (scoped.length > 1) {
           const prefix = this.primary[port]
@@ -271,7 +286,7 @@ export class Resolver {
         }
       }
       // Fallback: the receiver is a property whose declared type owns the member.
-      for (const via of this.members(port, receiver)) {
+      for (const via of Resolver.preferProduct(this.members(port, receiver), product)) {
         const declared = via.symbol.type ?? via.symbol.signatures[0]?.returns
         if (!declared) continue
         const bare = declared
@@ -281,12 +296,14 @@ export class Resolver {
           .pop()
           ?.trim()
         if (!bare) continue
-        const owner = this.members(port, bare).find((r) => TYPE_KINDS.has(r.symbol.kind))
+        const owner = Resolver.preferProduct(this.members(port, bare), product).find((r) => TYPE_KINDS.has(r.symbol.kind))
         if (!owner) continue
         const hit = local.filter((r) => r.symbol.parent === owner.symbol.id)
         if (hit.length === 1) return { how: 'chained', symbol: hit[0].symbol, port }
       }
     }
+
+    if (local.length === 1) return { how: 'unique', symbol: local[0].symbol, port }
 
     const qualified = parts.join('.')
 

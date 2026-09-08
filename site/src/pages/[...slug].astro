@@ -1,244 +1,61 @@
 ---
-import { getCollection, render, type CollectionEntry } from 'astro:content'
-import DocsLayout from '../layouts/DocsLayout.astro'
+import { getCollection, type CollectionEntry } from 'astro:content'
+import DocPage from '../components/docs/DocPage.astro'
+import McpOverview from '../components/mcp/Overview.astro'
+import McpTools from '../components/mcp/Tools.astro'
+import ProductApiPage from '../components/api/ProductApiPage.astro'
+import { API_MODELS } from '../lib/api-models'
+import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
+import { productApiRoutes } from '../lib/product-api'
+import { buildTarget } from '../lib/versions'
+import ToolReference from '../components/mcp/ToolReference.astro'
+import { mcpReferenceRoutes } from '../lib/mcp-reference'
 import { docsEntryAvailable } from '../lib/page-port-links'
-import { DEFAULT_LOCALE, LOCALE_LABEL, localeRoot, type Locale } from '../i18n/locales'
-import { contributeLink } from '../i18n/contribute'
-import { t } from '../i18n/ui'
-import { withRoot } from '../lib/site-root'
-import {
-  buildLocale,
-  localeOf,
-  localeStatusesFor,
-  localesEnabled,
-  localesFor,
-  placeholderPairs,
-  sourceIdOf,
-  translationState,
-} from '../i18n/resolve'
+import { docsRoutePath } from '../lib/docs-paths'
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
+import { buildLocale, localeOf, placeholderPairs, sourceIdOf } from '../i18n/resolve'
 
-/**
- * Shell prose route: every hand-written page in the `docs` collection
- * (guides, cross-language concepts, examples, the parity narrative) renders
- * through here. Per-port reference trees never enter this collection — see
- * content.config.ts — so this route never competes with a Sphinx or docfx
- * output tree for a URL.
- *
- * `entry.id` is already the collection's slug: the glob loader's default
- * `generateId` github-slugifies each path segment and strips a trailing
- * `/index`, so `guides/panes.md` -> `guides/panes` and `guides/index.md` ->
- * `guides`. That id is both the route param and `pagePath` below.
- */
 export async function getStaticPaths() {
   const entries = await getCollection('docs')
-  // A translated page belongs to the root mount only. This route runs in all
-  // fourteen shell builds, so without the guard `/py/stable/ja/concepts/`
-  // would exist — a URL with no meaning, since the reference is never
-  // localised and per-port prose is already the language-filtered English.
-  //
-  // Untranslated pages are *absent* under `/ja/`, not filled in with English.
-  // A fallback page would be near-byte-identical duplicate content that
-  // Pagefind then indexes as Japanese, with Japanese stemming applied to
-  // English prose. Absence is the honest answer; /ja/ lists what exists.
-  /*
-   * One locale per build, and the route param carries no locale of its own.
-   *
-   * A translation's entry id is `ja/concepts`, but this build is already
-   * mounted at `/ja/`, so using the id verbatim wrote `/ja/ja/concepts/`.
-   * The param is the path below whichever locale root this build has, which
-   * is exactly `sourceIdOf`.
-   */
   const locale = buildLocale()
+  const port = process.env.LIBTMUX_DOCS_PORT
+  let defaults: Record<string, string> = {}
+  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
   const real = entries
-    .filter((entry) => localeOf(entry.id) === locale && docsEntryAvailable(entry, process.env.LIBTMUX_DOCS_PORT))
+    .filter((entry) => localeOf(entry.id) === locale && docsEntryAvailable(entry, port))
     .map((entry) => ({
-      params: { slug: sourceIdOf(entry.id) },
-      props: { entry },
+      params: { slug: docsRoutePath({ ...entry, id: sourceIdOf(entry.id) }, port, defaults) },
+      props: { entry, version: entry.data.product && !port ? (defaults[entry.data.port!] ?? 'latest') : undefined },
     }))
-  if (locale === DEFAULT_LOCALE) return real
-
-  /*
-   * A placeholder for every page a locale has no translation of, so every
-   * page answers in every locale.
-   *
-   * This is not the fallback `notes/research/25-as-built.md` rejected. That
-   * one emitted the English body under `<html lang="ja">`, which is duplicate
-   * content and puts English prose through Japanese stemming. A placeholder
-   * carries none of the body: it says the page is untranslated, links to the
-   * English one, and offers the reader a way to write it.
-   */
+  const global = !port ? [
+    { params: { slug: 'mcp' }, props: { globalPage: 'mcp' } },
+    { params: { slug: 'mcp/tools' }, props: { globalPage: 'tools' } },
+  ] : []
+  const reference = locale === DEFAULT_LOCALE ? productApiRoutes(API_MODELS, port, defaults, buildTarget(process.env).version)
+    .map(({ path, ...props }) => ({ params: { slug: path }, props })) : []
+  const protocol = locale === DEFAULT_LOCALE ? mcpReferenceRoutes(port, defaults, buildTarget(process.env).version)
+    .map(({ path, port: mcpPort, ...props }) => ({ params: { slug: path }, props: { ...props, mcpPort } })) : []
+  if (locale === DEFAULT_LOCALE) return [...real, ...global, ...reference, ...protocol]
   const placeholders = (await placeholderPairs())
     .filter((pair) => pair.locale === locale)
     .map(({ sourceId }) => ({
       params: { slug: sourceId },
-      props: {
-        entry: entries.find((e) => e.id === sourceId)!,
-        placeholderLocale: locale,
-      },
+      props: { entry: entries.find((entry) => entry.id === sourceId)!, placeholderLocale: locale },
     }))
-  return [...real, ...placeholders]
+  return [...real, ...global, ...placeholders]
 }
 
 interface Props {
-  entry: CollectionEntry<'docs'>
-  /** Set when this URL stands in for a translation that does not exist. */
+  entry?: CollectionEntry<'docs'>
   placeholderLocale?: Locale
+  globalPage?: string
+  version?: string
+  model?: ApiModel
+  symbol?: ApiSymbol
+  mcpPort?: string
+  toolName?: string
 }
-
-const { entry, placeholderLocale } = Astro.props as Props
-const { Content, headings } = await render(entry)
-
-// On a placeholder the entry IS the English source, so the locale is the one
-// this URL stands in for rather than the one the entry belongs to.
-const locale = placeholderLocale ?? localeOf(entry.id)
-const sourceId = placeholderLocale ? entry.id : sourceIdOf(entry.id)
-const all = await getCollection('docs')
-const source = all.find((e) => e.id === sourceId)
-const state = locale === DEFAULT_LOCALE ? 'translated' : translationState(entry, source)
-// Only locales that actually have this page. Advertising an alternate that
-// does not exist is worse than advertising none: it points a search engine,
-// and a reader, at a 404. A placeholder is not a translation, so it is not an
-// alternate either — the cluster names only what is really written.
-const locales = localesEnabled() ? await localesFor(sourceId) : [DEFAULT_LOCALE]
-const translations = locales.filter((l) => l !== locale)
-const localeStatuses = localesEnabled() ? await localeStatusesFor(sourceId) : { [DEFAULT_LOCALE]: 'translated' as const }
-// Another locale's tree, so it composes through that locale's root rather
-// than this build's — withRoot would have produced /ja/concepts/ for a page
-// that lives at /en/concepts/.
-const englishHref = `${localeRoot(DEFAULT_LOCALE)}${sourceId}/`
-
-/*
- * A placeholder gets no table of contents. `headings` is the English entry's,
- * but a placeholder deliberately renders no <Content />, so each of those
- * anchors points into a body that is not on the page — a contents list for
- * nothing, and every heading link dead in both the sidebar copy and the
- * mobile drawer.
- */
-const showToc = placeholderLocale ? false : entry.data.tableOfContents
-
-/*
- * Where this page's reader becomes its translator.
- *
- * `entry` is the English source on a placeholder and the translation itself
- * on a translated page, and `translationPath` is idempotent for exactly that
- * reason. `exists` is the same fact the route already used to decide whether
- * to render a placeholder at all, rather than a second lookup that could
- * disagree with the first.
- */
-const contribute = entry.filePath
-  ? contributeLink(entry.filePath, locale, !placeholderLocale, {
-      title: entry.data.title,
-      description: entry.data.description,
-    })
-  : undefined
-
-// In a language build the shared prose IS that language's page: the remark
-// plugin has already dropped every other port's code fences, so it is
-// distinct content deserving its own canonical, not a duplicate of the root.
-// The root build sets no port, so root prose stays canonical at the root.
-const buildPort = process.env.LIBTMUX_DOCS_PORT || undefined
-const port = entry.data.port ?? buildPort
-
-// `entry.data.port` is undefined for the shared pages (concepts, guides,
-// examples); DocsLayout and lib/sidebar.ts's `getSidebar` treat that as "the
-// shell's shared section", not an error.
-//
-// `canonical` (content.config.ts) still has nowhere to go: DocsLayout
-// forwards pagePath/noindex/updated to BaseLayout's Seo, but an explicit
-// per-page canonical override has no matching prop on either layout.
+const { entry, placeholderLocale, globalPage, version, model, symbol, mcpPort, toolName } = Astro.props
 ---
 
-<DocsLayout
-  title={entry.data.title}
-  description={entry.data.description}
-  port={port}
-  headings={placeholderLocale ? [] : headings}
-  pagePath={sourceId}
-  noindex={entry.data.noindex || Boolean(placeholderLocale)}
-  canonicalOverride={placeholderLocale ? englishHref : undefined}
-  updated={entry.data.updated}
-  tableOfContents={showToc}
-  locale={locale}
-  locales={placeholderLocale ? [] : locales}
-  sourcePath={sourceId}
-  localeStatuses={localeStatuses}
->
-  {
-    placeholderLocale && (
-      /*
-       * The whole page. No English body: a reader following a link here
-       * asked for this language, and handing them prose they did not ask for
-       * is what absence was chosen over. `data-pagefind-ignore` keeps it out
-       * of the index, so a search in this locale does not surface a stub.
-       */
-      <div data-pagefind-ignore class="rounded border border-amber-300 bg-amber-50 px-4 py-6 dark:border-amber-800 dark:bg-amber-950">
-        <p class="font-medium">{t(placeholderLocale, 'i18n.untranslated')}</p>
-        <p class="mt-2">
-          <a class="underline" href={englishHref} hreflang={DEFAULT_LOCALE} lang={DEFAULT_LOCALE}>
-            {t(placeholderLocale, 'i18n.readEnglish')}
-          </a>
-        </p>
-        <p class="mt-4 text-sm">
-          {contribute && (
-            <a class="underline" href={contribute.href} rel="noopener" target="_blank">
-              {t(placeholderLocale, 'i18n.startTranslation')}
-            </a>
-          )}
-        </p>
-        <p class="mt-1 text-sm">
-          <a class="underline" href={withRoot('/translations/')}>
-            {t(placeholderLocale, 'i18n.coverageLink')}
-          </a>
-        </p>
-      </div>
-    )
-  }
-  {
-    !placeholderLocale && locale !== DEFAULT_LOCALE && (
-      <div class="mb-6 rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm dark:border-amber-800 dark:bg-amber-950">
-        {state === 'stale' && (
-          <p class="font-medium">
-            {t(locale, 'i18n.stale')}: {t(locale, 'i18n.staleBody')}
-          </p>
-        )}
-        {entry.data.reviewed === false && <p>{t(locale, 'i18n.unreviewed')}</p>}
-        {source && (
-          <p class="mt-1">
-            <a class="underline" href={englishHref}>
-              {t(locale, 'i18n.readEnglish')}
-            </a>
-          </p>
-        )}
-        {contribute && (
-          <p class="mt-1">
-            <a class="underline" href={contribute.href} rel="noopener" target="_blank">
-              {t(locale, 'i18n.improveTranslation')}
-            </a>
-          </p>
-        )}
-      </div>
-    )
-  }
-  {
-    !placeholderLocale && locale === DEFAULT_LOCALE && contribute && (
-      <p class="mb-2 text-sm opacity-80">
-        <a class="underline" href={contribute.href} rel="noopener" target="_blank">
-          {t(locale, 'i18n.editPage')}
-        </a>
-      </p>
-    )
-  }
-  {
-    !placeholderLocale && locale === DEFAULT_LOCALE && translations.length > 0 && (
-      <p class="mb-6 text-sm opacity-80">
-        {t(locale, 'i18n.available')}:{' '}
-        {translations.map((l) => (
-          <a class="underline" href={`${localeRoot(l)}${sourceId}/`}>
-            {LOCALE_LABEL[l]}
-          </a>
-        ))}
-      </p>
-    )
-  }
-  {!placeholderLocale && <Content />}
-</DocsLayout>
+{globalPage === 'mcp' ? <McpOverview /> : globalPage === 'tools' ? <McpTools /> : mcpPort ? <ToolReference port={mcpPort} toolName={toolName} version={version!} /> : model && symbol ? <ProductApiPage model={model} symbol={symbol} version={version!} /> : entry && <DocPage entry={entry} version={version} placeholderLocale={placeholderLocale} />}

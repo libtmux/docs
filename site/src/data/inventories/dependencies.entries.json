@@ -1,0 +1,101 @@
+[
+  {
+    "project": "rmcp",
+    "version": "3.1.2",
+    "langs": ["rs"],
+    "baseUrl": "https://docs.rs/rmcp/3.1.2/rmcp/",
+    "e": [
+      ["ErrorData", "model/struct.ErrorData.html"],
+      ["Json", "handler/server/wrapper/struct.Json.html"],
+      ["Parameters", "handler/server/wrapper/struct.Parameters.html"],
+      ["ReadResourceResult", "model/struct.ReadResourceResult.html"],
+      ["PromptMessage", "model/struct.PromptMessage.html"],
+      ["ListResourcesResult", "model/struct.ListResourcesResult.html"],
+      ["ListResourceTemplatesResult", "model/struct.ListResourceTemplatesResult.html"],
+      ["rmcp::model::Tool", "model/struct.Tool.html"]
+    ]
+  },
+  {
+    "project": "MCP Java SDK",
+    "version": "2.0.1",
+    "langs": ["java"],
+    "baseUrl": "https://javadoc.io/static/io.modelcontextprotocol.sdk/mcp-core/2.0.1/io/modelcontextprotocol/",
+    "e": [
+      ["McpSyncServer", "server/McpSyncServer.html"],
+      ["McpServerTransportProvider", "spec/McpServerTransportProvider.html"]
+    ]
+  },
+  {
+    "project": "MCP C# SDK",
+    "version": "2.2.0",
+    "langs": ["dotnet"],
+    "baseUrl": "https://csharp.sdk.modelcontextprotocol.io/api/",
+    "e": [
+      ["McpException", "ModelContextProtocol.McpException.html"],
+      ["ProgressNotificationValue", "ModelContextProtocol.ProgressNotificationValue.html"],
+      ["IMcpServerBuilder", "Microsoft.Extensions.DependencyInjection.IMcpServerBuilder.html"]
+    ]
+  },
+  {
+    "project": "Microsoft.Extensions",
+    "version": "10",
+    "langs": ["dotnet"],
+    "baseUrl": "https://learn.microsoft.com/dotnet/api/",
+    "e": [
+      ["ILogger", "microsoft.extensions.logging.ilogger"],
+      ["IServiceCollection", "microsoft.extensions.dependencyinjection.iservicecollection"]
+    ]
+  },
+  {
+    "project": "FastMCP",
+    "version": "4.0.2",
+    "langs": ["py"],
+    "baseUrl": "https://gofastmcp.com/python-sdk/",
+    "e": [
+      ["FastMCP", "fastmcp-server-server#fastmcp"],
+      ["Context", "fastmcp-server-context#context"],
+      ["MiddlewareContext", "fastmcp-server-middleware-middleware#middlewarecontext"]
+    ]
+  },
+  {
+    "project": "tmuxp",
+    "version": "1.74.0",
+    "langs": ["py"],
+    "baseUrl": "https://tmuxp.git-pull.com/",
+    "e": [
+      ["Colors", "internals/api/_internal/colors/#tmuxp._internal.colors.Colors"],
+      ["ColorMode", "internals/api/_internal/colors/#tmuxp._internal.colors.ColorMode"],
+      ["PluginConfigSchema", "internals/api/_internal/types/#tmuxp._internal.types.PluginConfigSchema"]
+    ]
+  },
+  {
+    "project": "libtmux-mcp",
+    "version": "0.1.0a22",
+    "langs": ["py"],
+    "baseUrl": "https://libtmux-mcp.git-pull.com/",
+    "e": [
+      ["ExpectedToolError", "reference/api/utils/#libtmux_mcp._utils.ExpectedToolError"]
+    ]
+  },
+  {
+    "project": "MCP Go SDK",
+    "version": "1.6.1",
+    "langs": ["go"],
+    "baseUrl": "https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk@v1.6.1/mcp",
+    "e": [
+      ["mcp.Transport", "#Transport"],
+      ["sdk.Transport", "#Transport"],
+      ["sdk.ServerSessionOptions", "#ServerSessionOptions"],
+      ["sdk.Tool", "#Tool"]
+    ]
+  },
+  {
+    "project": "MCP TypeScript SDK",
+    "version": "1.30.0",
+    "langs": ["ts"],
+    "baseUrl": "https://github.com/modelcontextprotocol/typescript-sdk/blob/1.30.0/",
+    "e": [
+      ["McpServer", "src/server/mcp.ts#L72"]
+    ]
+  }
+]

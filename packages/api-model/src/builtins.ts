@@ -39,6 +39,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Int32: dotnet('system.int32'),
     long: dotnet('system.int64'),
     Int64: dotnet('system.int64'),
+    double: dotnet('system.double'),
     void: dotnet('system.void'),
     object: dotnet('system.object'),
     byte: dotnet('system.byte'),
@@ -52,6 +53,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     TimeoutException: dotnet('system.timeoutexception'),
     ProcessStartInfo: dotnet('system.diagnostics.processstartinfo'),
     ReadOnlySpan: dotnet('system.readonlyspan-1'),
+    ReadOnlyMemory: dotnet('system.readonlymemory-1'),
     Span: dotnet('system.span-1'),
     Task: dotnet('system.threading.tasks.task'),
     ValueTask: dotnet('system.threading.tasks.valuetask'),
@@ -63,6 +65,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     IAsyncEnumerable: dotnet('system.collections.generic.iasyncenumerable-1'),
     IAsyncDisposable: dotnet('system.iasyncdisposable'),
     IDisposable: dotnet('system.idisposable'),
+    IProgress: dotnet('system.iprogress-1'),
     Func: dotnet('system.func-1'),
     Action: dotnet('system.action'),
     TimeSpan: dotnet('system.timespan'),
@@ -97,10 +100,13 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Cow: rust('borrow/enum.Cow.html'),
     Into: rust('convert/trait.Into.html'),
     From: rust('convert/trait.From.html'),
+    AsRef: rust('convert/trait.AsRef.html'),
     Iterator: rust('iter/trait.Iterator.html'),
+    IntoIterator: rust('iter/trait.IntoIterator.html'),
     Display: rust('fmt/trait.Display.html'),
     Drop: rust('ops/trait.Drop.html'),
     OsStr: rust('ffi/struct.OsStr.html'),
+    OsString: rust('ffi/struct.OsString.html'),
   },
   go: {
     bool: go('builtin#bool'),
@@ -109,6 +115,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     int64: go('builtin#int64'),
     int32: go('builtin#int32'),
     uint32: go('builtin#uint32'),
+    uint64: go('builtin#uint64'),
     byte: go('builtin#byte'),
     rune: go('builtin#rune'),
     float64: go('builtin#float64'),
@@ -127,6 +134,8 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     bool: cpp('language/bool_literal'),
     int: cpp('language/types'),
     long: cpp('language/types'),
+    double: cpp('language/types'),
+    char: cpp('language/types'),
     size_t: cpp('types/size_t'),
     'std::string': cpp('string/basic_string'),
     'std::string_view': cpp('string/basic_string_view'),
@@ -143,6 +152,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
   swift: {
     String: swift('string'),
     Int: swift('int'),
+    UInt64: swift('uint64'),
     Bool: swift('bool'),
     Double: swift('double'),
     Array: swift('array'),
@@ -159,6 +169,8 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Duration: swift('duration'),
     Decoder: swift('decoder'),
     Encoder: swift('encoder'),
+    Data: 'https://developer.apple.com/documentation/foundation/data',
+    AsyncStream: swift('asyncstream'),
     // Protocols every conformance in the Swift symbol graphs resolves to.
     // `Bases:` renders these, so an unmapped one shows as bare text.
     Actor: swift('actor'),
@@ -210,7 +222,11 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     byte: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.1',
     void: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5',
   },
-  py: {},
+  py: {
+    Unpack: 'https://docs.python.org/3/library/typing.html#typing.Unpack',
+    TypeGuard: 'https://docs.python.org/3/library/typing.html#typing.TypeGuard',
+    TypeAlias: 'https://docs.python.org/3/library/typing.html#typing.TypeAlias',
+  },
 }
 
 /** The documentation URL for a language's own type, if this is one. */

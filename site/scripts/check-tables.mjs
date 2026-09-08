@@ -1,15 +1,27 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
-import { globSync } from 'node:fs'
+import { globSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
+import { docsRoutePath } from '../src/lib/docs-paths.ts'
 
-const base = process.argv.find((arg) => arg.startsWith('http')) ?? 'http://localhost:8080/en'
+const base = (process.argv.find((arg) => arg.startsWith('http')) ?? 'http://localhost:8080/en').replace(/\/$/, '')
 const content = fileURLToPath(new URL('../src/content/docs/', import.meta.url))
+const versions = await fetch(`${base}/versions.json`)
+assert(versions.ok, `Version manifest: HTTP ${versions.status}`)
+const { defaultVersion } = await versions.json()
 const paths = [
   ...globSync('**/*.{md,mdx}', { cwd: content })
     .filter((path) => !path.startsWith('ja/'))
-    .map((path) => `/${path.replace(/\.(md|mdx)$/, '').replace(/\/index$/, '')}/`),
+    .map((path) => {
+      const raw = readFileSync(join(content, path), 'utf8')
+      const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(raw)?.[1] ?? ''
+      const port = /^port:\s*['"]?([a-z]+)['"]?\s*$/m.exec(frontmatter)?.[1]
+      const product = /^product:\s*['"]?(core|workspace|mcp)['"]?\s*$/m.exec(frontmatter)?.[1]
+      const id = path.replace(/\.(md|mdx)$/, '').replace(/\/index$/, '')
+      return `/${docsRoutePath({ id, data: { port, product } }, undefined, defaultVersion)}/`
+    }),
   '/mcp/tools/',
   '/parity/',
   '/translations/',

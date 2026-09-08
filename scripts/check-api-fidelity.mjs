@@ -19,6 +19,7 @@
 import { readFileSync, globSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { sourceUrl } from '../packages/api-model/src/products.ts'
 
 const root = process.argv[2]
 // `root` above is the assembled site this run measures; the port list comes
@@ -83,6 +84,10 @@ const failures = []
 const summary = []
 
 for (const port of PORTS) {
+  const model = JSON.parse(readFileSync(join(repoRoot, `site/src/data/api/${port}.json`), 'utf8'))
+  const symbols = new Map(model.symbols.flatMap((symbol) => [
+    [symbol.id, symbol], [symbol.publicId ?? symbol.id, symbol],
+  ]))
   const pages = globSync(`reference/${port}/**/index.html`, { cwd: root })
   if (!pages.length) {
     failures.push(`${port}: no reference pages built`)
@@ -92,6 +97,7 @@ for (const port of PORTS) {
   let entries = 0
   let permalinks = 0
   let sources = 0
+  let eligible = 0
   let mobile = 0
   const missingHooks = new Map()
   const badPermalink = []
@@ -102,6 +108,13 @@ for (const port of PORTS) {
 
     for (const attrs of entriesIn(html)) {
       entries++
+      const id = attrs.id?.replace(/&(amp|lt|gt|quot|#39);/g, (_, entity) =>
+        ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" })[entity])
+      const symbol = symbols.get(id)
+      if (!symbol?.inheritedFrom || symbol.source.file) eligible++
+      if (symbol && sourceUrl(model, symbol) && attrs['data-has-source'] !== 'true') {
+        failures.push(`${port}: ${rel}#${id} omits its known source link`)
+      }
       for (const hook of HOOKS) {
         if (attrs[hook] === undefined || attrs[hook] === '') {
           missingHooks.set(hook, (missingHooks.get(hook) ?? 0) + 1)
@@ -131,20 +144,19 @@ for (const port of PORTS) {
     failures.push(`${port}: ${badPermalink.length} permalinks to a missing id, e.g. ${badPermalink[0]}`)
   }
 
-  const rate = entries ? Math.round((sources / entries) * 100) : 0
-  summary.push({ port, pages: pages.length, entries, sources, rate })
-  // A source link needs a file and a line, and not every extractor records
-  // them for every symbol — a synthesised entry has nowhere to point. The
-  // floor is what stops that becoming the normal case.
+  const rate = eligible ? Math.round((sources / eligible) * 100) : 100
+  summary.push({ port, pages: pages.length, entries, eligible, sources, rate })
+  // Graph-proven inherited entries without locations have nowhere to link.
+  // Unexplained missing locations still count against the coverage floor.
   if (rate < 90) {
-    failures.push(`${port}: only ${rate}% of entries link to source (${sources}/${entries})`)
+    failures.push(`${port}: only ${rate}% of source-eligible entries link to source (${sources}/${eligible})`)
   }
 }
 
-console.log('port     pages  entries  source  rate')
+console.log('port     pages  entries  eligible  source  rate')
 for (const s of summary) {
   console.log(
-    `${s.port.padEnd(8)} ${String(s.pages).padStart(5)}  ${String(s.entries).padStart(7)}  ${String(s.sources).padStart(6)}  ${String(s.rate).padStart(3)}%`,
+    `${s.port.padEnd(8)} ${String(s.pages).padStart(5)}  ${String(s.entries).padStart(7)}  ${String(s.eligible).padStart(8)}  ${String(s.sources).padStart(6)}  ${String(s.rate).padStart(3)}%`,
   )
 }
 

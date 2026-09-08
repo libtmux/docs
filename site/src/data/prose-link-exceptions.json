@@ -19,9 +19,5 @@
   "an expression, not a name": {
     "why": "an example of a call, with arguments; there is no single symbol to point at",
     "spans": ["Kill(ctx)", "WaitAsync(budget)", "defer conn.Close()", "fields.pane_active.eq(true)", "force_cleanup()", "send_text(text)", "throws(TmuxError)", "with Server()", "pane.zoomedFlag"]
-  },
-  "errors the extractor does not surface": {
-    "why": "package-level error values in Go, which the model records as constants without their package path",
-    "spans": ["ErrDaemonReplaced", "tmuxq.ErrMultipleMatches", "tmuxq.ErrNoMatch"]
   }
 }

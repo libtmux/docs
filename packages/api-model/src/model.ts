@@ -16,6 +16,18 @@
 /** The eight ports, by the slug the site already uses. */
 export type PortSlug = 'py' | 'ts' | 'rs' | 'go' | 'java' | 'dotnet' | 'cxx' | 'swift'
 
+export type ApiProduct = 'core' | 'workspace' | 'mcp'
+
+/** One independently versioned repository or package contributing reference entries. */
+export interface ApiSource {
+  product: ApiProduct
+  package: string
+  repo: string
+  revision?: string
+  extractedRevision?: string
+  version?: string
+}
+
 /**
  * What a symbol *is*.
  *
@@ -142,6 +154,10 @@ export interface DocBlock {
 
 /** One documented symbol. */
 export interface ApiSymbol {
+  /** Product exporting this declaration; absent in older core models. */
+  product?: ApiProduct
+  /** Importable declaration, signature-only contract, or a retained legacy internal entry. */
+  apiScope?: 'exported' | 'supporting' | 'internal'
   /**
    * Declaration id: where the symbol is actually written,
    * `libtmux.pane.Pane.capture_pane`.
@@ -181,7 +197,7 @@ export interface ApiSymbol {
    * link names — see `source-lines.ts`. The link then points at the file,
    * which is honest, rather than at a line that has moved.
    */
-  source: { file: string; line?: number }
+  source: { file: string; line?: number; repo?: string; revision?: string; extractedRevision?: string }
   /**
    * Set when this symbol reached its parent through a base class rather than
    * being written there.
@@ -201,6 +217,8 @@ export interface ApiSymbol {
 /** Everything extracted from one port's source tree. */
 export interface ApiModel {
   port: PortSlug
+  repo?: string
+  sources?: ApiSource[]
   /** Commit the tree was at, so a rendered page can say what it describes. */
   revision?: string
   /** Extractor version, so a stale model is detectable rather than silent. */

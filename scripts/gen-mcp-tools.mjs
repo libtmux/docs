@@ -23,7 +23,8 @@
 import { execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join, dirname, resolve } from 'node:path'
+import { join, dirname, relative, resolve } from 'node:path'
+import { mapLine, parseHunks } from '../packages/api-model/src/source-lines.ts'
 import { fileURLToPath } from 'node:url'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -88,13 +89,10 @@ const PORTS = [
   {
     slug: 'dotnet',
     dir: '~/work/libtmux/libtmux-dotnet/src/LibTmux.Mcp',
-    glob: 'CapabilityModel.cs',
-    // The catalog is one list of `ToolDefinition` built by four factories, so
-    // the factory name is the anchor. It used to be an `McpServerTool`
-    // attribute on each method; that scan kept passing while returning
-    // nothing once the port moved to this model, which is why the four names
-    // are spelled out rather than matched by shape.
-    pattern: /^\s+(?:Inspect|ManageTool|Execute|TeardownTool)\(\s*"([a-z][a-z0-9_]*)"/gm,
+    glob: '**/*.cs',
+    pattern: /\[McpServerTool\(\s*Name\s*=\s*"(tmux_[a-z][a-z0-9_]*)"/g,
+    wirePrefix: 'tmux_',
+
   },
   {
     slug: 'cxx',
@@ -126,6 +124,16 @@ const PORTS = [
  */
 const portsModule = resolve(dirname(dirname(fileURLToPath(import.meta.url))), 'site/src/lib/ports.ts')
 const { PORTS: PORT_DEFS } = await import(`file://${portsModule}`)
+const portBySlug = Object.fromEntries(PORT_DEFS.map((port) => [port.slug, port]))
+for (const port of PORTS) {
+  const definition = portBySlug[port.slug]
+  const configured = process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || definition.worktree
+  const oldRoot = definition.checkout
+  port.dir = port.slug === 'py' ? port.dir.replace('~/work/python/libtmux-mcp', process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp') : port.dir.replace(oldRoot, configured)
+  port.checkout = expand(port.slug === 'py' ? process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp' : configured)
+  port.repo = port.slug === 'py' ? 'tmux-python/libtmux-mcp' : definition.repo
+  if (port.serverDir) port.serverDir = join(port.checkout, 'src/libtmux_mcp')
+}
 const declaredSlugs = new Set(PORT_DEFS.map((port) => port.slug))
 const coveredSlugs = new Set(PORTS.map((port) => port.slug))
 const absentHere = [...declaredSlugs].filter((slug) => !coveredSlugs.has(slug))
@@ -174,6 +182,7 @@ function selectsToolsets(dir) {
   return false
 }
 
+const git = (checkout, ...args) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8' }).trim()
 const results = {}
 const missing = []
 for (const port of PORTS) {
@@ -182,16 +191,41 @@ for (const port of PORTS) {
     missing.push(port.slug)
     continue
   }
-  const names = new Set()
+  const head = git(port.checkout, 'rev-parse', 'HEAD')
+  const apiModel = JSON.parse(readFileSync(join(repoRoot, 'site/src/data/api', `${port.slug}.json`), 'utf8'))
+  const revision = apiModel.sources?.find((source) => source.repo === port.repo && source.product === 'mcp')?.revision ?? head
+  const names = new Map()
   for (const file of filesIn(dir, port.glob, port.exclude)) {
     const text = readFileSync(file, 'utf8')
-    for (const m of text.matchAll(port.pattern)) names.add(port.capture ? port.capture(m) : m[1])
+    const path = relative(port.checkout, file)
+    const hunks = head === revision ? [] : parseHunks(git(port.checkout, 'diff', '-U0', `${revision}..${head}`, '--', path))
+    for (const match of text.matchAll(port.pattern)) {
+      const wireName = port.capture ? port.capture(match) : match[1]
+      const name = port.wirePrefix ? wireName.replace(new RegExp(`^${port.wirePrefix}`), '') : wireName
+      const line = mapLine(hunks, text.slice(0, match.index).split('\n').length)
+      names.set(name, { wireName, source: { repo: port.repo, revision, extractedRevision: head, file: path, ...(line ? { line } : {}) } })
+    }
   }
+  const snapshotFile = join(repoRoot, 'site/src/data/mcp-protocol', `${port.slug}.json`)
+  const snapshot = existsSync(snapshotFile) ? JSON.parse(readFileSync(snapshotFile, 'utf8')) : undefined
+  if (snapshot && snapshot.revision !== head) throw new Error(`${port.slug}: MCP protocol snapshot describes another source revision`)
+  const protocols = new Map((snapshot?.protocol.tools ?? []).map((tool) => [tool.name, tool]))
+  const registrations = [...names.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([name, registration]) => {
+    const tool = protocols.get(registration.wireName)
+    return {
+      name, ...registration, description: tool?.description ?? '',
+      schemaStatus: tool ? 'runtime' : 'unavailable',
+      ...(tool ? { inputSchema: tool.inputSchema, outputSchema: tool.outputSchema, annotations: tool.annotations, meta: tool._meta } : {}),
+    }
+  })
+  const unregistered = [...protocols.keys()].filter((name) => !registrations.some((registration) => registration.wireName === name))
+  if (unregistered.length) throw new Error(`${port.slug}: runtime tools absent from source registrations: ${unregistered.join(', ')}`)
   results[port.slug] = {
-    tools: [...names].sort(),
+    tools: [...names.keys()].sort(), registrations,
     wirePrefix: port.wirePrefix ?? '',
     selectable: selectsToolsets(expand(port.serverDir ?? port.dir)),
-    source: port.dir,
+    source: relative(port.checkout, dir), repo: port.repo, revision, extractedRevision: head,
+    ...(snapshot ? { selection: snapshot.selection, protocol: { ...snapshot.protocol, tools: undefined } } : {}),
   }
 }
 

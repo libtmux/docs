@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { readInventory } from '@libtmux/api-model'
 import { API_MODELS, indexFor } from '../src/lib/api-models'
+import { productApiIndex } from '../src/lib/product-api'
 
 /**
  * The federation is reachable from a build, not just from a unit test.
@@ -56,6 +57,50 @@ describe('indexFor attaches the inventories', () => {
         const hit = index.resolve(name, 'class')
         expect(hit?.external, `${port} resolved ${name} externally`).not.toBe(true)
       }
+    }
+  })
+
+  it('links a workspace signature through the same inventories without sharing route caches', () => {
+    const model = API_MODELS.java
+    const reader = model.symbols.find((symbol) => symbol.product === 'workspace'
+      && symbol.name === 'read' && symbol.source.file.endsWith('/WorkspaceBuilder.java'))!
+    expect(reader, 'WorkspaceBuilder.read declaration').toBeDefined()
+    const signature = reader.signatures[0]
+    const annotation = signature.params.find((param) => param.name === 'file')!.type!
+    const core = indexFor(model, href)
+    for (const version of ['latest', 'stable']) {
+      const product = productApiIndex(model, version)
+      const external = product.linkType(annotation, reader).find((span) => span.text === 'Path')?.link
+      expect(external, `${version} workspace file parameter`).toMatchObject({
+        external: true,
+        href: 'https://docs.oracle.com/en/java/javase/21/docs/api/java/nio/file/Path.html',
+      })
+      const workspace = product.linkType(signature.returns!, reader).find((span) => span.text === 'Workspace')?.link
+      expect(workspace?.href).toContain(`/java/${version}/workspace/api/`)
+      expect(productApiIndex(model, version)).toBe(product)
+    }
+    expect(core.linkType(signature.returns!, reader).find((span) => span.text === 'Workspace')?.link?.href).toMatch(/^#/)
+  })
+
+  it('links dependency types in real product signatures and keeps their language scope', () => {
+    const cases = [
+      ['rs', 'ErrorData', 'docs.rs/rmcp/3.1.2'],
+      ['java', 'McpSyncServer', 'mcp-core/2.0.1'],
+      ['dotnet', 'ProgressNotificationValue', 'csharp.sdk.modelcontextprotocol.io'],
+      ['py', 'FastMCP', 'gofastmcp.com'],
+      ['ts', 'McpServer', 'typescript-sdk/blob/1.30.0'],
+      ['go', 'sdk.Tool', 'go-sdk@v1.6.1'],
+    ] as const
+    for (const [port, name, target] of cases) {
+      const model = API_MODELS[port]
+      const symbol = model.symbols.find((entry) => entry.product === 'mcp'
+        && entry.signatures.some((signature) => [signature.returns, ...signature.params.map((param) => param.type)]
+          .some((annotation) => annotation?.includes(name))))!
+      expect(symbol, `${port} signature names ${name}`).toBeDefined()
+      const link = productApiIndex(model, 'latest').linkType(name, symbol)[0].link
+      expect(link?.external, `${port} ${name}`).toBe(true)
+      expect(link?.href).toContain(target)
+      expect(indexFor(API_MODELS.swift, href).linkType(name)[0].link?.external).not.toBe(true)
     }
   })
 })

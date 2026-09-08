@@ -1,0 +1,84 @@
+---
+import { Code } from 'astro-expressive-code/components'
+import DocsLayout from '../../layouts/DocsLayout.astro'
+import { PORT_BY_SLUG, portPageUrl } from '../../lib/ports'
+import { MCP_REFERENCE, renderToolDescription, toolSummary } from '../../lib/mcp-reference'
+interface Props { port: string; version: string; toolName?: string }
+const { port, version, toolName } = Astro.props
+const info = PORT_BY_SLUG[port]
+const reference = MCP_REFERENCE[port]
+const tool = reference.registrations.find((entry) => entry.wireName === toolName)
+const descriptionHtml = tool ? await renderToolDescription(tool.description) : undefined
+const title = tool ? tool.wireName : `${info.name} MCP tools`
+const pagePath = tool ? `mcp/tools/${tool.wireName}` : 'mcp/tools'
+const properties = (tool?.inputSchema?.properties ?? {}) as Record<string, { type?: string | string[]; description?: string; default?: unknown; $ref?: string }>
+const required = (tool?.inputSchema?.required ?? []) as string[]
+const protocolSections = [
+  { id: 'resources', title: 'Resources', items: reference.protocol.resources },
+  { id: 'resource-templates', title: 'Resource templates', items: reference.protocol.resourceTemplates },
+  { id: 'prompts', title: 'Prompts', items: reference.protocol.prompts },
+]
+const headings = tool ? [
+  { depth: 2, slug: 'arguments', text: 'Arguments' },
+  { depth: 2, slug: 'schemas', text: 'Schemas' },
+] : [
+  { depth: 2, slug: 'tools', text: 'Tools' },
+  ...protocolSections.map((section) => ({ depth: 2, slug: section.id, text: section.title })),
+]
+---
+
+<DocsLayout title={title} description={tool ? toolSummary(tool.description) : `Tools, resources, and prompts advertised by the ${info.name} MCP server.`}
+  port={port} product="mcp" version={version} pagePath={pagePath} headings={headings}>
+  {tool ? <>
+    <Fragment set:html={descriptionHtml} />
+    <p><a href="../">All {info.name} tools</a> · <a href={`../${tool.wireName}.json`}>JSON</a> · <a href={`https://github.com/${tool.source.repo}/blob/${tool.source.revision}/${tool.source.file}${tool.source.line ? `#L${tool.source.line}` : ''}`}>Source</a></p>
+    <h2 id="arguments">Arguments</h2>
+    {Object.keys(properties).length ? <dl>
+      {Object.entries(properties).map(([name, property]) => <>
+        <dt><code>{name}</code> <span class="text-sm opacity-75">{required.includes(name) ? 'required' : 'optional'}{property.type ? ` · ${Array.isArray(property.type) ? property.type.join(' | ') : property.type}` : ''}</span></dt>
+        <dd>{property.description ?? 'See the schema for this argument’s constraints.'}
+          {Object.hasOwn(property, 'default') && <p>Default: <code>{JSON.stringify(property.default)}</code>.</p>}
+        </dd>
+      </>)}
+    </dl> : <p>{tool.inputSchema ? 'This tool has no top-level named arguments. Consult its schema below.' : 'An input schema is not available for this tool.'}</p>}
+    <h2 id="schemas">Schemas</h2>
+    <p>The schema defines required fields, nested values, defaults, and validation constraints.</p>
+    {[
+      { label: 'Input schema', value: tool.inputSchema },
+      { label: 'Output schema', value: tool.outputSchema },
+      { label: 'Tool annotations', value: tool.annotations },
+    ].filter((item) => item.value).map((item) => <details data-pagefind-ignore="all">
+      <summary>{item.label}</summary>
+      <Code code={JSON.stringify(item.value, null, 2)} lang="json" />
+    </details>)}
+  </> : <>
+    <p>Use the wire name shown here when calling a tool. The {info.name} server
+      advertises {reference.registrations.length} tools with the reference configuration below.
+      Your client’s list follows the policy configured for its server.</p>
+    <p>Read the <a href="../guides/">setup guide</a> before choosing tool access.
+      The <a href="../api/">language API reference</a> covers embedding and implementation types.</p>
+    {port === 'cxx' && <p>This is the POSIX catalog. The Windows preview exposes a smaller read-only surface; see <a href="../topics/">platform limits</a>.</p>}
+    <p><a href="../tools.json">Download the protocol catalog as JSON</a>.</p>
+    <details>
+      <summary>Reference configuration</summary>
+      {Object.keys(reference.selection).length ? <dl>{Object.entries(reference.selection).map(([name, value]) => <>
+        <dt><code>{name}</code></dt><dd><code>{value}</code></dd>
+      </>)}</dl> : <p>No tool-selection environment variables are set.</p>}
+      <p>Protocol version: <code>{reference.protocol.protocolVersion}</code>.</p>
+    </details>
+    <h2 id="tools">Tools</h2>
+    <dl>{reference.registrations.map((entry) => <>
+      <dt><a href={portPageUrl(info, version, `mcp/tools/${entry.wireName}`)}><code>{entry.wireName}</code></a></dt>
+      <dd>{toolSummary(entry.description)}</dd>
+    </>)}</dl>
+    {protocolSections.map((section) => <section>
+      <h2 id={section.id}>{section.title}</h2>
+      {section.items.length ? <dl>{section.items.map((item) => <>
+        <dt><code>{item.uriTemplate ?? item.uri ?? item.name}</code></dt>
+        <dd>{item.description}
+          {Boolean(item.arguments?.length) && <ul>{item.arguments!.map((argument) => <li><code>{argument.name}</code>: {argument.required ? 'required' : 'optional'}{argument.description ? `. ${argument.description}` : ''}</li>)}</ul>}
+        </dd>
+      </>)}</dl> : <p>This server does not advertise {section.title.toLowerCase()} in this configuration.</p>}
+    </section>)}
+  </>}
+</DocsLayout>

@@ -3,6 +3,7 @@ import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
 import pythonInv from '../data/inventories/python.entries.json'
+import dependencyInv from '../data/inventories/dependencies.entries.json'
 import { withPortRoot } from './site-root'
 import cxxNav from '../data/api/cxx.nav.json'
 import dotnetNav from '../data/api/dotnet.nav.json'
@@ -207,6 +208,9 @@ const INVENTORIES: {
     langs: ['ts'],
     project: 'MDN Web Docs',
   },
+  ...dependencyInv.map((data) => ({
+    data, baseUrl: data.baseUrl, langs: data.langs, project: data.project,
+  })),
 ]
 
 interface InventorySidecar {
@@ -231,6 +235,15 @@ const entriesOf = (inv: InventorySidecar): InventoryEntry[] =>
     dispname: '-',
   }))
 
+/** Build an index with this site's language-scoped external inventories. */
+export function createApiIndex(model: ApiModel, hrefFor: (s: ApiSymbol) => string): SymbolIndex {
+  const index = new SymbolIndex(model.symbols, hrefFor, model.port)
+  for (const { data, baseUrl, langs, project } of INVENTORIES) {
+    index.addInventory(baseUrl, entriesOf(data), langs, project)
+  }
+  return index
+}
+
 const indexes = new Map<string, SymbolIndex>()
 
 /**
@@ -246,8 +259,8 @@ const indexes = new Map<string, SymbolIndex>()
  * built fresh on every page and would never compare equal. That is sound only
  * while every caller's `hrefFor` depends on nothing but the port, which is
  * true of the one caller: it closes over `model` and reads `model.port`. A
- * caller wanting different hrefs for the same port must not use this — build
- * a `SymbolIndex` directly.
+ * caller wanting different hrefs for the same port uses `createApiIndex`
+ * with a separate cache.
  *
  * The miss logs, so a build says how many were built. More lines than ports
  * means the key stopped matching and the memo is silently doing nothing.
@@ -261,15 +274,12 @@ const indexes = new Map<string, SymbolIndex>()
  * extraction bug.
  */
 export function indexFor(model: ApiModel, hrefFor: (s: ApiSymbol) => string): SymbolIndex {
-  if (model.symbols.length === 0) return new SymbolIndex(model.symbols, hrefFor, model.port)
+  if (model.symbols.length === 0) return createApiIndex(model, hrefFor)
 
   const cached = indexes.get(model.port)
   if (cached) return cached
 
-  const index = new SymbolIndex(model.symbols, hrefFor, model.port)
-  for (const { data, baseUrl, langs, project } of INVENTORIES) {
-    index.addInventory(baseUrl, entriesOf(data), langs, project)
-  }
+  const index = createApiIndex(model, hrefFor)
   indexes.set(model.port, index)
   console.log(`[api-index] built ${model.port}`)
   return index

@@ -1,6 +1,6 @@
 ---
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { conceptsFor, docSummaryText, moduleOf, modulesIn } from '@libtmux/api-model'
+import { conceptsFor, docSummaryText, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
 import ApiEntry from '../../components/api/ApiEntry.astro'
 import ApiExampleTabs from '../../components/api/ApiExampleTabs.astro'
 import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
@@ -43,10 +43,14 @@ export async function getStaticPaths() {
   // type `undefined`, and every push after it fails.
   const paths: {
     params: { slug: string | undefined }
-    props: { model: ApiModel | undefined; owner: ApiSymbol | undefined }
+    props: { model: ApiModel | undefined; owner: ApiSymbol | undefined; searchable?: boolean }
   }[] = [{ params: { slug: undefined }, props: { model: undefined, owner: undefined } }]
 
   for (const [port, model] of Object.entries(API_MODELS)) {
+    const productIds = new Set([
+      ...symbolsForProduct(model, 'mcp'),
+      ...symbolsForProduct(model, 'workspace'),
+    ].map((symbol) => symbol.id))
     paths.push({ params: { slug: port }, props: { model, owner: undefined } })
     // Every symbol, not only the types with members. A method that lives as
     // an anchor on someone else's page cannot be listed in a sidebar, cannot
@@ -58,7 +62,7 @@ export async function getStaticPaths() {
     for (const owner of model.symbols) {
       paths.push({
         params: { slug: `${port}/${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}` },
-        props: { model, owner },
+        props: { model, owner, searchable: !productIds.has(owner.id) },
       })
     }
   }
@@ -68,8 +72,9 @@ export async function getStaticPaths() {
 interface Props {
   model?: ApiModel
   owner?: ApiSymbol
+  searchable?: boolean
 }
-const { model, owner } = Astro.props as Props
+const { model, owner, searchable = true } = Astro.props as Props
 /*
  * The route param is the page's own path below `/reference/`, so composing
  * `pagePath` from it cannot disagree with the URL. Deriving it from `owner`
@@ -278,12 +283,7 @@ const exampleGroups = [
   }),
 ]
 
-const repo = (model as { repo?: string } | undefined)?.repo ?? 'tmux-python/libtmux'
-const rev = model?.revision ?? 'HEAD'
-// A symbol whose line could not be carried to the public commit links to
-// the file alone; `#Lundefined` is the alternative and it scrolls nowhere.
-const sourceUrl = (file: string, line?: number): string =>
-  `https://github.com/${repo}/blob/${rev}/${file}${line ? `#L${line}` : ''}`
+const sourceUrl = (symbol: ApiSymbol): string | undefined => model ? apiSourceUrl(model, symbol) : undefined
 
 const members = owner && model
   ? model.symbols
@@ -471,6 +471,7 @@ const title = owner
   }
   pagePath={slug ? `reference/${slug}` : 'reference'}
   noindex={true}
+  searchable={searchable}
 >
   <!-- The content column is capped at 47rem, which is 752px — gp-sphinx
        renders 754 from Furo's `46em` against a 16.4px root. Uncapped it ran
@@ -814,7 +815,7 @@ const title = owner
                 <>
                   <dt>Source</dt>
                   <dd>
-                    <a href={sourceUrl(owner.source.file, owner.source.line)} rel="nofollow noopener">
+                    <a href={sourceUrl(owner)} rel="nofollow noopener">
                       {owner.source.file}
                     </a>
                   </dd>

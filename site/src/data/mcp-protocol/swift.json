@@ -1,0 +1,2557 @@
+{
+  "generated": "scripts/gen-mcp-protocol.mjs",
+  "repo": "libtmux/libtmux-swift",
+  "revision": "46b003c3606e03f1e4ce1ecfc92d87748e4c2095",
+  "selection": {
+    "LIBTMUX_SAFETY": "destructive"
+  },
+  "protocol": {
+    "capabilities": {
+      "prompts": {
+        "listChanged": false
+      },
+      "resources": {
+        "listChanged": false,
+        "subscribe": false
+      },
+      "tools": {
+        "listChanged": false
+      }
+    },
+    "prompts": [
+      {
+        "arguments": [
+          {
+            "description": "What to call the session.",
+            "name": "session",
+            "required": true
+          },
+          {
+            "description": "Where its panes start.",
+            "name": "directory",
+            "required": false
+          }
+        ],
+        "description": "Create a multi-window, multi-pane session in one call rather than a sequence of splits.",
+        "name": "build_workspace",
+        "title": "Build a development session"
+      },
+      {
+        "arguments": [],
+        "description": "Identify the pane this agent is running in before changing anything around it.",
+        "name": "find_my_pane",
+        "title": "Work out where you are"
+      },
+      {
+        "arguments": [
+          {
+            "description": "The shell command to run.",
+            "name": "command",
+            "required": true
+          },
+          {
+            "description": "The opaque pane ref returned by list_panes or snapshot. Re-list after this MCP process restarts; raw %N pane ids are invalid.",
+            "name": "pane",
+            "required": true
+          }
+        ],
+        "description": "Run a shell command in a pane and get its exit status, without polling or prompt-matching.",
+        "name": "run_and_wait",
+        "title": "Run a command and wait for it"
+      },
+      {
+        "arguments": [
+          {
+            "description": "The opaque pane ref returned by list_panes or snapshot. Re-list after this MCP process restarts; raw %N pane ids are invalid.",
+            "name": "pane",
+            "required": true
+          },
+          {
+            "description": "A bounded regular expression that means it is ready.",
+            "name": "ready",
+            "required": false
+          }
+        ],
+        "description": "Wait for a daemon, dev server or build that another process started to reach a known state.",
+        "name": "watch_until_ready",
+        "title": "Wait for something you did not start"
+      }
+    ],
+    "protocolVersion": "2025-11-25",
+    "resources": [
+      {
+        "description": "The filterable fields of each object, their types and aliases — what a `filter` argument may name.",
+        "mimeType": "application/json",
+        "name": "filters",
+        "title": "Filter vocabulary",
+        "uri": "tmux://filters"
+      },
+      {
+        "description": "Every session on this server.",
+        "mimeType": "application/json",
+        "name": "sessions",
+        "title": "All sessions",
+        "uri": "tmux://sessions"
+      },
+      {
+        "description": "Sessions, windows, panes and clients collected from separate listings, with exact window links and no endpoint metadata.",
+        "mimeType": "application/json",
+        "name": "snapshot",
+        "title": "Server snapshot",
+        "uri": "tmux://snapshot"
+      }
+    ],
+    "resourceTemplates": [
+      {
+        "description": "What tmux reports about a pane selected by a ref from list_panes.",
+        "mimeType": "application/json",
+        "name": "pane",
+        "title": "One pane",
+        "uriTemplate": "tmux://panes/{pane}"
+      },
+      {
+        "description": "The newest bounded slice of a pane's rendered text. Plain text, because terminal output is neither JSON nor markup.",
+        "mimeType": "text/plain",
+        "name": "pane-content",
+        "title": "What a pane is showing",
+        "uriTemplate": "tmux://panes/{pane}/content"
+      },
+      {
+        "description": "Every session-local window occurrence, including its exact $session:index target, selected by a ref from list_sessions.",
+        "mimeType": "application/json",
+        "name": "session-windows",
+        "title": "Windows of a session",
+        "uriTemplate": "tmux://sessions/{session}/windows"
+      }
+    ],
+    "serverInfo": {
+      "name": "libtmux",
+      "title": "tmux",
+      "version": "0.1.0-alpha.3"
+    },
+    "tools": [
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Build a session from a plan"
+        },
+        "description": "Builds a whole session — windows, panes, directories, commands — from one declarative plan.\n\nOne call instead of a create-split-split-send sequence whose pane refs you have to thread by hand. The plan is tmuxp's shape, so an existing workspace file can be passed through unchanged.\n\nRefuses rather than adopting a session that already exists, so two callers building the same workspace never silently share one.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "plan": {
+              "description": "The workspace, as JSON: session_name, optional start_directory, and windows[] each with panes[].",
+              "type": "object"
+            }
+          },
+          "required": [
+            "plan"
+          ],
+          "type": "object"
+        },
+        "name": "apply_workspace",
+        "outputSchema": {
+          "properties": {
+            "panes": {
+              "items": {
+                "properties": {
+                  "currentCommand": {
+                    "type": "string"
+                  },
+                  "currentPath": {
+                    "type": "string"
+                  },
+                  "height": {
+                    "type": "integer"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer"
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  },
+                  "isAtBottom": {
+                    "type": "boolean"
+                  },
+                  "isAtLeft": {
+                    "type": "boolean"
+                  },
+                  "isAtRight": {
+                    "type": "boolean"
+                  },
+                  "isAtTop": {
+                    "type": "boolean"
+                  },
+                  "ref": {
+                    "type": "string"
+                  },
+                  "width": {
+                    "type": "integer"
+                  },
+                  "windowID": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "currentCommand",
+                  "currentPath",
+                  "height",
+                  "id",
+                  "index",
+                  "isActive",
+                  "isAtBottom",
+                  "isAtLeft",
+                  "isAtRight",
+                  "isAtTop",
+                  "ref",
+                  "width",
+                  "windowID"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "session": {
+              "properties": {
+                "createdAt": {
+                  "type": "integer"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "isAttached": {
+                  "type": "boolean"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "ref": {
+                  "type": "string"
+                },
+                "windowCount": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "createdAt",
+                "id",
+                "isAttached",
+                "name",
+                "ref",
+                "windowCount"
+              ],
+              "type": "object"
+            },
+            "windows": {
+              "items": {
+                "properties": {
+                  "height": {
+                    "type": "integer"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer"
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  },
+                  "linkRef": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "paneCount": {
+                    "type": "integer"
+                  },
+                  "sessionID": {
+                    "type": "string"
+                  },
+                  "target": {
+                    "type": "string"
+                  },
+                  "width": {
+                    "type": "integer"
+                  },
+                  "windowRef": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "height",
+                  "id",
+                  "index",
+                  "isActive",
+                  "linkRef",
+                  "name",
+                  "paneCount",
+                  "sessionID",
+                  "target",
+                  "width",
+                  "windowRef"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "panes",
+            "session",
+            "windows"
+          ],
+          "type": "object"
+        },
+        "title": "Build a session from a plan"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Read a pane's contents"
+        },
+        "description": "The text a pane is showing, as a person would read it.\n\nReturns the rendered grid, so escape sequences and cursor motion are already resolved. For watching a pane over time, wait_for_output costs less: this returns everything every call, most of which you have already seen.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "history": {
+              "default": false,
+              "description": "Include the scrollback from its start, not just the visible rows.",
+              "type": "boolean"
+            },
+            "max_lines": {
+              "default": 200,
+              "description": "Keep at most this many lines, dropping the oldest. The end of a pane is almost always the part that matters.",
+              "maximum": 2000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "pane": {
+              "description": "A pane ref returned by list_panes or snapshot. Re-list after this MCP process restarts.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "pane"
+          ],
+          "type": "object"
+        },
+        "name": "capture_pane",
+        "outputSchema": {
+          "properties": {
+            "droppedLines": {
+              "type": "integer"
+            },
+            "lines": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "pane": {
+              "type": "string"
+            },
+            "paneRef": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "droppedLines",
+            "lines",
+            "pane",
+            "paneRef"
+          ],
+          "type": "object"
+        },
+        "title": "Read a pane's contents"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Read what a pane has printed since last time"
+        },
+        "description": "Answers only what is new since a cursor, so watching a pane does not re-send what you have already read.\n\nThe tool for watching something over several turns. Call it once with no cursor to start — it answers nothing and hands back a mark — then pass that cursor to each later call and get only the difference. A pane that has been quiet answers an empty list.\n\n`linesMissed` says the previous mark no longer survives or the grid changed, so continuity cannot be proved; `lines` is then empty and the returned cursor is a fresh mark. `restarted` says the pane was respawned, so the cursor described a program that is no longer running. `droppedLines` counts candidate rows omitted by the requested line or raw-text byte limit.\n\nUse wait_for_output instead when you want to block until something appears rather than to check what has appeared.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "cursor": {
+              "description": "The cursor a previous call returned. Omit to start watching from now.",
+              "type": "string"
+            },
+            "max_lines": {
+              "default": 200,
+              "description": "Keep at most this many new lines, dropping the oldest.",
+              "maximum": 2000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "pane": {
+              "description": "A pane ref returned by list_panes or snapshot. Re-list after this MCP process restarts.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "pane"
+          ],
+          "type": "object"
+        },
+        "name": "capture_since",
+        "outputSchema": {
+          "properties": {
+            "cursor": {
+              "type": "string"
+            },
+            "droppedLines": {
+              "type": "integer"
+            },
+            "lines": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "linesMissed": {
+              "type": "boolean"
+            },
+            "pane": {
+              "type": "string"
+            },
+            "paneRef": {
+              "type": "string"
+            },
+            "restarted": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "cursor",
+            "droppedLines",
+            "lines",
+            "linesMissed",
+            "pane",
+            "paneRef",
+            "restarted"
+          ],
+          "type": "object"
+        },
+        "title": "Read what a pane has printed since last time"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Describe the filter vocabulary"
+        },
+        "description": "The filterable fields of each object, their types, and aliases.\n\nRead this before writing a `filter` argument. The vocabulary is generated from the same registry the library filters through, so a field named here is one that works, and a rename carries its old name as an alias rather than breaking a stored expression.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {},
+          "required": [],
+          "type": "object"
+        },
+        "name": "describe_filters",
+        "title": "Describe the filter vocabulary"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Describe this server"
+        },
+        "description": "What tmux this is, which optional features it supports, and where the caller sits in it.\n\nCall this first in an unfamiliar session. It answers, in one call, the questions that otherwise cost a turn each: the tmux version and whether it is inside the supported range, which pane this MCP is running in (so you never kill your own), the safety tier in force, and the ceiling every wait is clamped to.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {},
+          "required": [],
+          "type": "object"
+        },
+        "name": "describe_server",
+        "outputSchema": {
+          "properties": {
+            "callerPane": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "callerSession": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "capabilities": {
+              "properties": {
+                "controlModeBatching": {
+                  "type": "boolean"
+                },
+                "formatSubscriptions": {
+                  "type": "boolean"
+                },
+                "pushOutput": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "controlModeBatching",
+                "formatSubscriptions",
+                "pushOutput"
+              ],
+              "type": "object"
+            },
+            "endpoint": {
+              "type": "string"
+            },
+            "isSupported": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "ref": {
+              "type": "string"
+            },
+            "safetyTier": {
+              "type": "string"
+            },
+            "serverProcessID": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "sessionCount": {
+              "type": "integer"
+            },
+            "tmuxVersion": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "waitCeilingSeconds": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "capabilities",
+            "endpoint",
+            "ref",
+            "safetyTier",
+            "sessionCount",
+            "waitCeilingSeconds"
+          ],
+          "type": "object"
+        },
+        "title": "Describe this server"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Kill a pane"
+        },
+        "description": "Ends a pane and whatever is running in it.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "confirm_self": {
+              "default": false,
+              "description": "Proceed when a target is, or could become, a container of this MCP's pane. Window and session kills on the caller's server require this because membership can change before a separate kill executes.",
+              "type": "boolean"
+            },
+            "pane": {
+              "description": "A pane ref returned by list_panes or snapshot. Re-list after this MCP process restarts.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "pane"
+          ],
+          "type": "object"
+        },
+        "name": "kill_pane",
+        "outputSchema": {
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string"
+            },
+            "ref": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "ref"
+          ],
+          "type": "object"
+        },
+        "title": "Kill a pane"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Kill the whole tmux server"
+        },
+        "description": "Ends every session on this server, and the server with them.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "confirm_self": {
+              "default": false,
+              "description": "Proceed when a target is, or could become, a container of this MCP's pane. Window and session kills on the caller's server require this because membership can change before a separate kill executes.",
+              "type": "boolean"
+            },
+            "server_ref": {
+              "description": "The current server ref returned by describe_server. Re-read it after MCP restart.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "server_ref"
+          ],
+          "type": "object"
+        },
+        "name": "kill_server",
+        "outputSchema": {
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string"
+            },
+            "ref": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "ref"
+          ],
+          "type": "object"
+        },
+        "title": "Kill the whole tmux server"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Kill a session"
+        },
+        "description": "Ends a session and every window in it.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "confirm_self": {
+              "default": false,
+              "description": "Proceed when a target is, or could become, a container of this MCP's pane. Window and session kills on the caller's server require this because membership can change before a separate kill executes.",
+              "type": "boolean"
+            },
+            "target": {
+              "description": "A session ref to kill.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "target"
+          ],
+          "type": "object"
+        },
+        "name": "kill_session",
+        "outputSchema": {
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string"
+            },
+            "ref": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "ref"
+          ],
+          "type": "object"
+        },
+        "title": "Kill a session"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Kill a window"
+        },
+        "description": "Ends a window and every pane in it.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "confirm_self": {
+              "default": false,
+              "description": "Proceed when a target is, or could become, a container of this MCP's pane. Window and session kills on the caller's server require this because membership can change before a separate kill executes.",
+              "type": "boolean"
+            },
+            "target": {
+              "description": "A global windowRef to kill.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "target"
+          ],
+          "type": "object"
+        },
+        "name": "kill_window",
+        "outputSchema": {
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string"
+            },
+            "ref": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "ref"
+          ],
+          "type": "object"
+        },
+        "title": "Kill a window"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "List panes"
+        },
+        "description": "Every pane on the server, optionally filtered.\n\nEach row carries a process-local ref for later reads. Re-list after this MCP process restarts. Searches pane *metadata* — what a pane is running, where it is, how big it is. For what a pane has printed, use search_panes or capture_pane; no filter here reads terminal text.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "fields": {
+              "description": "Only these response fields from each record. Omit for every field. Use it when one field answers the question — a listing of a busy server is mostly context you will not read. Target refs are always retained.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "filter": {
+              "description": "A filter expression as JSON, as described by describe_filters.",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "name": "list_panes",
+        "outputSchema": {
+          "properties": {
+            "panes": {
+              "items": {
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "panes"
+          ],
+          "type": "object"
+        },
+        "title": "List panes"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Find the tmux servers that are running"
+        },
+        "description": "Every tmux server listening on a socket, which is the one question no other tool can answer.\n\nEverything else here addresses the server this process was pointed at. This says what else is there — for arriving in an unfamiliar machine, or for noticing that the session you want is on a different socket.\n\nA socket file is not a running server: tmux leaves the file behind when it exits, so each one is asked whether it answers and the ones that do not are left out. At most 4,096 entries are inspected and 128 socket candidates are probed, with two seconds allowed for each; `truncated` says more may remain.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "directories": {
+              "description": "Where to look. Defaults to TMUX_TMPDIR, or tmux's own default socket directory for this user.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "name": "list_servers",
+        "outputSchema": {
+          "properties": {
+            "servers": {
+              "items": {
+                "properties": {
+                  "processID": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "sessionCount": {
+                    "type": "integer"
+                  },
+                  "socketPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sessionCount",
+                  "socketPath"
+                ],
+                "type": "object"
+              },
+              "maxItems": 128,
+              "type": "array"
+            },
+            "truncated": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "servers",
+            "truncated"
+          ],
+          "type": "object"
+        },
+        "title": "Find the tmux servers that are running"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "List sessions"
+        },
+        "description": "Every session, optionally selected by what its panes are running.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "fields": {
+              "description": "Only these response fields from each record. Omit for every field. Use it when one field answers the question — a listing of a busy server is mostly context you will not read. Target refs are always retained.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "pane_relation": {
+              "description": "A quantifier (some, every, none) and a pane filter, as JSON, selecting sessions by their panes.",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "name": "list_sessions",
+        "outputSchema": {
+          "properties": {
+            "sessions": {
+              "items": {
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "sessions"
+          ],
+          "type": "object"
+        },
+        "title": "List sessions"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "List windows"
+        },
+        "description": "Every session-local window occurrence, optionally filtered by its global window facts.\n\nEach row carries a process-local ref for later reads. Re-list after this MCP process restarts. A global window can be linked into several sessions or more than once in one session. Each occurrence therefore repeats the global id, name, size and pane count and adds sessionID, index, isActive and the exact $session:index target. A filter evaluates the global Window first, then returns every link to each matching window.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "fields": {
+              "description": "Only these response fields from each record. Omit for every field. Use it when one field answers the question — a listing of a busy server is mostly context you will not read. Target refs are always retained.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "filter": {
+              "description": "A Window filter expression as JSON, as described by describe_filters. Link fields such as target are not filterable.",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "name": "list_windows",
+        "outputSchema": {
+          "properties": {
+            "windows": {
+              "items": {
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "windows"
+          ],
+          "type": "object"
+        },
+        "title": "List windows"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Create a session"
+        },
+        "description": "Creates a detached session and returns it.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "What to call it. Must not already exist.",
+              "type": "string"
+            },
+            "start_directory": {
+              "description": "Where its first window starts.",
+              "type": "string"
+            },
+            "window_name": {
+              "description": "What to call its first window.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "new_session",
+        "outputSchema": {
+          "properties": {
+            "createdAt": {
+              "type": "integer"
+            },
+            "id": {
+              "type": "string"
+            },
+            "isAttached": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": "string"
+            },
+            "ref": {
+              "type": "string"
+            },
+            "windowCount": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "createdAt",
+            "id",
+            "isAttached",
+            "name",
+            "ref",
+            "windowCount"
+          ],
+          "type": "object"
+        },
+        "title": "Create a session"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Create a window"
+        },
+        "description": "Creates a window in a session and returns it.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "What to call it.",
+              "type": "string"
+            },
+            "start_directory": {
+              "description": "Where it starts.",
+              "type": "string"
+            },
+            "target": {
+              "description": "A session ref from list_sessions or snapshot.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "target"
+          ],
+          "type": "object"
+        },
+        "name": "new_window",
+        "outputSchema": {
+          "properties": {
+            "height": {
+              "type": "integer"
+            },
+            "id": {
+              "type": "string"
+            },
+            "index": {
+              "type": "integer"
+            },
+            "isActive": {
+              "type": "boolean"
+            },
+            "linkRef": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "paneCount": {
+              "type": "integer"
+            },
+            "sessionID": {
+              "type": "string"
+            },
+            "target": {
+              "type": "string"
+            },
+            "width": {
+              "type": "integer"
+            },
+            "windowRef": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "height",
+            "id",
+            "index",
+            "isActive",
+            "linkRef",
+            "name",
+            "paneCount",
+            "sessionID",
+            "target",
+            "width",
+            "windowRef"
+          ],
+          "type": "object"
+        },
+        "title": "Create a window"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Paste text into a pane"
+        },
+        "description": "Puts text into a pane without any of it being read as a key name.\n\nsend_keys interprets `C-c`, `Enter` and the rest, which is what you want for driving a program and exactly wrong for text that might contain them. This pastes, so the content arrives as content.\n\nThe staging buffer is deleted afterwards, so nothing is left in tmux's paste history.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "pane": {
+              "description": "A pane ref returned by list_panes or snapshot. Re-list after this MCP process restarts.",
+              "type": "string"
+            },
+            "text": {
+              "description": "The text to paste.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "pane",
+            "text"
+          ],
+          "type": "object"
+        },
+        "name": "paste_text",
+        "outputSchema": {
+          "properties": {
+            "characters": {
+              "type": "integer"
+            },
+            "pane": {
+              "type": "string"
+            },
+            "paneRef": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "characters",
+            "pane",
+            "paneRef"
+          ],
+          "type": "object"
+        },
+        "title": "Paste text into a pane"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Evaluate a tmux format"
+        },
+        "description": "Evaluates any tmux format, reaching fields the listings do not carry.\n\nThe escape hatch for anything tmux can report but this server does not model — `#{pane_dead}` or `#{window_bell_flag}`. A stale target ref is refused; re-list after this MCP process restarts. With no target, null means tmux returned no server-level value, while an empty field is `\"\"`. A template running a shell command with `#(...)` is refused: double the `#` to read it as text, or use `run_shell`.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "target": {
+              "description": "A session ref, exact window linkRef, or pane ref; omit for the server.",
+              "type": "string"
+            },
+            "template": {
+              "description": "A tmux format, such as #{pane_current_command}.",
+              "type": "string"
+            },
+            "window_link": {
+              "description": "Exact linkRef for a pane whose window has several links. Returned by list_windows.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "template"
+          ],
+          "type": "object"
+        },
+        "name": "read_format",
+        "outputSchema": {
+          "properties": {
+            "value": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "title": "Evaluate a tmux format"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Rename a session or window"
+        },
+        "description": "Gives a session or window a new name.\n\nNames are what a person reads; ids are what a tool should target. Renaming does not change an id, so anything already holding one keeps working.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "What to call it.",
+              "type": "string"
+            },
+            "target": {
+              "description": "A session ref or global windowRef to rename.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "target",
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "rename",
+        "outputSchema": {
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "ref": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "name",
+            "ref"
+          ],
+          "type": "object"
+        },
+        "title": "Rename a session or window"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Resize a pane"
+        },
+        "description": "Sets a pane's width or height in cells.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "height": {
+              "description": "Rows.",
+              "type": "integer"
+            },
+            "pane": {
+              "description": "A pane ref returned by list_panes or snapshot. Re-list after this MCP process restarts.",
+              "type": "string"
+            },
+            "width": {
+              "description": "Columns.",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "pane"
+          ],
+          "type": "object"
+        },
+        "name": "resize_pane",
+        "outputSchema": {
+          "properties": {
+            "height": {
+              "type": "integer"
+            },
+            "pane": {
+              "type": "string"
+            },
+            "paneRef": {
+              "type": "string"
+            },
+            "width": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "height",
+            "pane",
+            "paneRef",
+            "width"
+          ],
+          "type": "object"
+        },
+        "title": "Resize a pane"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Restart what runs in a pane"
+        },
+        "description": "Replaces the process in a pane, keeping the pane itself.\n\nThe recovery action: a pane whose program has wedged or exited gets a new one without the pane ref changing, so anything holding that ref keeps working. Watchers are told — capture_since reports `restarted` rather than reading the new program's output as a continuation of the old one's.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "command": {
+              "description": "What to run. Omit for the pane's default command.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "confirm_self": {
+              "default": false,
+              "description": "Proceed when a target is, or could become, a container of this MCP's pane. Window and session kills on the caller's server require this because membership can change before a separate kill executes.",
+              "type": "boolean"
+            },
+            "pane": {
+              "description": "A pane ref returned by list_panes or snapshot. Re-list after this MCP process restarts.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "pane"
+          ],
+          "type": "object"
+        },
+        "name": "respawn_pane",
+        "outputSchema": {
+          "properties": {
+            "pane": {
+              "type": "string"
+            },
+            "paneRef": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "pane",
+            "paneRef"
+          ],
+          "type": "object"
+        },
+        "title": "Restart what runs in a pane"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Run one tmux command"
+        },
+        "description": "Runs one explicitly confirmed raw tmux command in isolation.\n\nThe unsafe escape hatch for anything above. Prefer a typed tool: this bypasses typed targets, caller protection, and command-specific checks. Arguments are passed to tmux without a shell, so this layer does not expand or word-split them; tmux commands can still run shells, aliases, command lists, and sourced configuration.\n\nA nonzero exit is reported rather than thrown — `has-session` answers a question that way. The daemon incarnation is checked atomically, the client has a finite deadline, and stdout and stderr are each capped at 256 KiB. Directly named terminal commands are refused early, but that convenience check is not a safety boundary.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "arguments": {
+              "description": "Its arguments.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "command": {
+              "description": "The tmux command name, such as new-window.",
+              "type": "string"
+            },
+            "confirm_unsafe": {
+              "description": "Set true to acknowledge that a raw tmux command bypasses typed target, caller, and command-specific safety checks.",
+              "type": "boolean"
+            },
+            "server_ref": {
+              "description": "The current server ref returned by describe_server. Re-read it after MCP restart.",
+              "type": "string"
+            },
+            "timeout": {
+              "default": 10,
+              "description": "Seconds before the isolated tmux client is cancelled. Clamped to the server wait ceiling.",
+              "type": "number"
+            }
+          },
+          "required": [
+            "server_ref",
+            "command",
+            "confirm_unsafe"
+          ],
+          "type": "object"
+        },
+        "name": "run_command",
+        "outputSchema": {
+          "properties": {
+            "exitCode": {
+              "type": "integer"
+            },
+            "serverRef": {
+              "type": "string"
+            },
+            "standardError": {
+              "type": "string"
+            },
+            "standardOutput": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "exitCode",
+            "serverRef",
+            "standardError",
+            "standardOutput"
+          ],
+          "type": "object"
+        },
+        "title": "Run one tmux command"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Run several tmux commands"
+        },
+        "description": "Runs up to 16 confirmed raw tmux commands and attributes each result.\n\nThe batch form of run_command, with the same unsafe boundary, daemon fence, output cap, and one deadline for the entire batch. Each command uses its own isolated client, so output belongs to the step that produced it rather than to one merged stream.\n\nStops at the first failure, as tmux does. Every command that ran carries its own output and status.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "commands": {
+              "description": "The commands, as JSON: an array of {command, arguments[]} objects.",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "arguments": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "command": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "command"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "confirm_unsafe": {
+              "description": "Set true to acknowledge that a raw tmux command bypasses typed target, caller, and command-specific safety checks.",
+              "type": "boolean"
+            },
+            "server_ref": {
+              "description": "The current server ref returned by describe_server. Re-read it after MCP restart.",
+              "type": "string"
+            },
+            "timeout": {
+              "default": 10,
+              "description": "Seconds before the isolated tmux client is cancelled. Clamped to the server wait ceiling.",
+              "type": "number"
+            }
+          },
+          "required": [
+            "server_ref",
+            "commands",
+            "confirm_unsafe"
+          ],
+          "type": "object"
+        },
+        "name": "run_commands",
+        "outputSchema": {
+          "properties": {
+            "requested": {
+              "type": "integer"
+            },
+            "serverRef": {
+              "type": "string"
+            },
+            "steps": {
+              "items": {
+                "properties": {
+                  "command": {
+                    "type": "string"
+                  },
+                  "exitCode": {
+                    "type": "integer"
+                  },
+                  "standardError": {
+                    "type": "string"
+                  },
+                  "standardOutput": {
+                    "type": "string"
+                  },
+                  "step": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "command",
+                  "exitCode",
+                  "standardError",
+                  "standardOutput",
+                  "step"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "stoppedEarly": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "requested",
+            "serverRef",
+            "steps",
+            "stoppedEarly"
+          ],
+          "type": "object"
+        },
+        "title": "Run several tmux commands"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Run a shell command in a pane"
+        },
+        "description": "Runs a command line in a pane, waits for it to finish, and reports its exit status and output.\n\nThe tool for a command you wrote. It composes a tmux channel into the command so completion is signalled rather than guessed — no prompt regex or polling. `linesMissed` is true when the bounded capture cannot retain the command's start. In that case `droppedLines` counts only omissions known from the retained tail.\n\nUse send_keys instead for keystrokes a program is meant to interpret, for anything interactive, or when the shell state has to persist across calls in a way a one-shot command cannot express.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "command": {
+              "description": "The shell command line to run.",
+              "type": "string"
+            },
+            "max_lines": {
+              "default": 200,
+              "description": "Keep at most this many lines of output, dropping the oldest.",
+              "maximum": 2000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "pane": {
+              "description": "A pane ref returned by list_panes or snapshot. Re-list after this MCP process restarts.",
+              "type": "string"
+            },
+            "timeout": {
+              "default": 30,
+              "description": "Seconds to wait for it to finish. Clamped by the server ceiling. On a timeout the command keeps running in the pane.",
+              "type": "number"
+            }
+          },
+          "required": [
+            "pane",
+            "command"
+          ],
+          "type": "object"
+        },
+        "name": "run_shell",
+        "outputSchema": {
+          "properties": {
+            "droppedLines": {
+              "type": "integer"
+            },
+            "effectiveTimeout": {
+              "type": "number"
+            },
+            "exitStatus": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "linesMissed": {
+              "type": "boolean"
+            },
+            "output": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "pane": {
+              "type": "string"
+            },
+            "paneRef": {
+              "type": "string"
+            },
+            "seconds": {
+              "type": "number"
+            },
+            "timedOut": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "droppedLines",
+            "effectiveTimeout",
+            "linesMissed",
+            "output",
+            "pane",
+            "paneRef",
+            "seconds",
+            "timedOut"
+          ],
+          "type": "object"
+        },
+        "title": "Run a shell command in a pane"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Search what panes have printed"
+        },
+        "description": "Finds a regular expression in the contents of every pane.\n\nThe tool for \"which pane mentions X\". Reads content, where list_panes reads metadata. Each match carries its pane ref and line, so the answer is directly actionable.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "case_insensitive": {
+              "default": false,
+              "description": "Match the pattern without case distinctions.",
+              "type": "boolean"
+            },
+            "filter": {
+              "description": "A pane filter as JSON, to search a subset. Searching every pane on a busy server is the expensive case.",
+              "type": "object"
+            },
+            "history": {
+              "default": false,
+              "description": "Search the scrollback too, not just the visible rows.",
+              "type": "boolean"
+            },
+            "max_lines_per_pane": {
+              "default": 500,
+              "description": "Search at most this many newest rows in each pane.",
+              "maximum": 2000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "max_matches": {
+              "default": 50,
+              "description": "Stop after this many matches.",
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "pattern": {
+              "description": "A regular expression in LibTmux's bounded dialect.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "pattern"
+          ],
+          "type": "object"
+        },
+        "name": "search_panes",
+        "outputSchema": {
+          "properties": {
+            "matches": {
+              "items": {
+                "properties": {
+                  "line": {
+                    "type": "integer"
+                  },
+                  "pane": {
+                    "type": "string"
+                  },
+                  "paneRef": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "line",
+                  "pane",
+                  "paneRef",
+                  "text"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "panesAvailable": {
+              "type": "integer"
+            },
+            "panesSearched": {
+              "type": "integer"
+            },
+            "truncated": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "matches",
+            "panesAvailable",
+            "panesSearched",
+            "truncated"
+          ],
+          "type": "object"
+        },
+        "title": "Search what panes have printed"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Make a pane or window active"
+        },
+        "description": "Changes which pane or window is the active one.\n\nWorth knowing because \"active\" is what a command reaches when it names a window and stops there — so this changes what later calls mean, not just what a person would see.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "target": {
+              "description": "A pane ref from list_panes or exact linkRef from list_windows.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "target"
+          ],
+          "type": "object"
+        },
+        "name": "select",
+        "outputSchema": {
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string"
+            },
+            "ref": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "ref"
+          ],
+          "type": "object"
+        },
+        "title": "Make a pane or window active"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Apply a layout to a window"
+        },
+        "description": "Rearranges a window's panes with one of tmux's own layouts.\n\nOne call instead of resizing panes individually, and the result is a layout tmux maintains rather than sizes that drift as panes come and go.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "layout": {
+              "description": "A tmux layout name, or a layout string tmux printed.",
+              "enum": [
+                "even-horizontal",
+                "even-vertical",
+                "main-horizontal",
+                "main-vertical",
+                "tiled"
+              ],
+              "type": "string"
+            },
+            "target": {
+              "description": "A global windowRef from list_windows or snapshot.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "target",
+            "layout"
+          ],
+          "type": "object"
+        },
+        "name": "select_layout",
+        "outputSchema": {
+          "properties": {
+            "layout": {
+              "type": "string"
+            },
+            "window": {
+              "type": "string"
+            },
+            "windowRef": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "layout",
+            "window",
+            "windowRef"
+          ],
+          "type": "object"
+        },
+        "title": "Apply a layout to a window"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Send keys to a pane"
+        },
+        "description": "Sends keys to a pane, as if typed.\n\nRaw input: no completion is waited for and no output is returned. Key names such as `C-c`, `Enter` and `Escape` are interpreted by tmux unless `literal` is set. For a shell command whose result you want, use run_shell.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "keys": {
+              "description": "The keys to send, one entry per key or string. `Enter` is a key name, not a newline.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "literal": {
+              "default": false,
+              "description": "Send the characters as-is, without interpreting key names.",
+              "type": "boolean"
+            },
+            "pane": {
+              "description": "A pane ref returned by list_panes or snapshot. Re-list after this MCP process restarts.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "pane",
+            "keys"
+          ],
+          "type": "object"
+        },
+        "name": "send_keys",
+        "outputSchema": {
+          "properties": {
+            "keys": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "pane": {
+              "type": "string"
+            },
+            "paneRef": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "keys",
+            "pane",
+            "paneRef"
+          ],
+          "type": "object"
+        },
+        "title": "Send keys to a pane"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Set what new panes inherit"
+        },
+        "description": "Sets a global variable in the environment tmux gives new processes.\n\nTakes effect for panes started *after* it. A pane already running has the environment it was given, and nothing can reach into it.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "The variable.",
+              "type": "string"
+            },
+            "value": {
+              "description": "What to set it to. Omit to unset it.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "set_environment",
+        "outputSchema": {
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "serverRef": {
+              "type": "string"
+            },
+            "value": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "serverRef"
+          ],
+          "type": "object"
+        },
+        "title": "Set what new panes inherit"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Set a tmux option"
+        },
+        "description": "Sets a server or global tmux option.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "The option name.",
+              "type": "string"
+            },
+            "scope": {
+              "default": "server",
+              "description": "The server table, or the global session table.",
+              "enum": [
+                "server",
+                "global"
+              ],
+              "type": "string"
+            },
+            "value": {
+              "description": "What to set it to.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "value"
+          ],
+          "type": "object"
+        },
+        "name": "set_option",
+        "outputSchema": {
+          "properties": {
+            "exitCode": {
+              "type": "integer"
+            },
+            "serverRef": {
+              "type": "string"
+            },
+            "standardError": {
+              "type": "string"
+            },
+            "standardOutput": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "exitCode",
+            "serverRef",
+            "standardError",
+            "standardOutput"
+          ],
+          "type": "object"
+        },
+        "title": "Set a tmux option"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Read the environment new panes inherit"
+        },
+        "description": "The global variables tmux gives a process it starts, which is not this process's environment.\n\nA pane inherits tmux's environment, not the one the client was launched with. This is where to look when a command works in your shell and not in a pane, and set_environment is where to fix it — for panes started *after* the change.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {},
+          "required": [],
+          "type": "object"
+        },
+        "name": "show_environment",
+        "outputSchema": {
+          "properties": {
+            "variables": {
+              "items": {
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "variables"
+          ],
+          "type": "object"
+        },
+        "title": "Read the environment new panes inherit"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Read the hooks that are bound"
+        },
+        "description": "The global commands tmux runs when something happens.\n\nRead-only on purpose. A hook outlives this process — it is server state, not a subscription — so one written from here would keep firing long after the conversation that set it ended, with nothing to say where it came from. Put hooks in your tmux config, where they can be read and removed.\n\nOnly bound hooks are listed. tmux knows many names with nothing on them, and an unbound name is a place a hook could go rather than a hook.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {},
+          "required": [],
+          "type": "object"
+        },
+        "name": "show_hooks",
+        "outputSchema": {
+          "properties": {
+            "hooks": {
+              "items": {
+                "properties": {
+                  "command": {
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "command",
+                  "index",
+                  "name"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "hooks"
+          ],
+          "type": "object"
+        },
+        "title": "Read the hooks that are bound"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Read tmux options"
+        },
+        "description": "What a tmux option is set to, or every option in a table.\n\nReports what tmux has been *told*, not its built-in defaults, so a fresh local table is legitimately empty. Local session, window, and pane tables require an opaque target ref so dispatch mode cannot change which object answers.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "One option to read. Omit for every option in the table.",
+              "type": "string"
+            },
+            "scope": {
+              "default": "server",
+              "description": "The exact table to read.",
+              "enum": [
+                "server",
+                "global_session",
+                "global_window",
+                "session",
+                "window",
+                "pane"
+              ],
+              "type": "string"
+            },
+            "target": {
+              "description": "A session ref, windowRef, or pane ref. Required for a local scope; omit for server and global scopes.",
+              "type": "string"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "name": "show_options",
+        "outputSchema": {
+          "properties": {
+            "options": {
+              "items": {
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "value"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "options"
+          ],
+          "type": "object"
+        },
+        "title": "Read tmux options"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Release a tmux channel"
+        },
+        "description": "Releases one waiter on a channel.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "channel": {
+              "description": "The channel name to signal.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "channel"
+          ],
+          "type": "object"
+        },
+        "name": "signal_channel",
+        "outputSchema": {
+          "properties": {
+            "channel": {
+              "type": "string"
+            },
+            "signalled": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "channel",
+            "signalled"
+          ],
+          "type": "object"
+        },
+        "title": "Release a tmux channel"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Read the server as one value"
+        },
+        "description": "Sessions, global windows, exact window links, panes and clients in one value.\n\nOne tool call instead of walking the hierarchy level by level. The daemon identity is checked before and after the listings, so a daemon replacement is reported. Another client can mutate the same daemon between listings, so the result is not a tmux transaction. The answer carries hierarchy facts, not the endpoint or socket path used to read them. Its refs expire when this MCP process restarts. Prefer this whenever you want more than one level.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {},
+          "required": [],
+          "type": "object"
+        },
+        "name": "snapshot",
+        "title": "Read the server as one value"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Split a pane"
+        },
+        "description": "Splits a pane and returns the new one.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "direction": {
+              "default": "below",
+              "description": "Where the new pane goes, relative to the one being split.",
+              "enum": [
+                "below",
+                "right",
+                "above",
+                "left"
+              ],
+              "type": "string"
+            },
+            "pane": {
+              "description": "A pane ref returned by list_panes or snapshot. Re-list after this MCP process restarts.",
+              "type": "string"
+            },
+            "start_directory": {
+              "description": "Where the new pane starts.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "pane"
+          ],
+          "type": "object"
+        },
+        "name": "split_pane",
+        "outputSchema": {
+          "properties": {
+            "currentCommand": {
+              "type": "string"
+            },
+            "currentPath": {
+              "type": "string"
+            },
+            "height": {
+              "type": "integer"
+            },
+            "id": {
+              "type": "string"
+            },
+            "index": {
+              "type": "integer"
+            },
+            "isActive": {
+              "type": "boolean"
+            },
+            "isAtBottom": {
+              "type": "boolean"
+            },
+            "isAtLeft": {
+              "type": "boolean"
+            },
+            "isAtRight": {
+              "type": "boolean"
+            },
+            "isAtTop": {
+              "type": "boolean"
+            },
+            "ref": {
+              "type": "string"
+            },
+            "width": {
+              "type": "integer"
+            },
+            "windowID": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "currentCommand",
+            "currentPath",
+            "height",
+            "id",
+            "index",
+            "isActive",
+            "isAtBottom",
+            "isAtLeft",
+            "isAtRight",
+            "isAtTop",
+            "ref",
+            "width",
+            "windowID"
+          ],
+          "type": "object"
+        },
+        "title": "Split a pane"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Wait on a tmux channel"
+        },
+        "description": "Blocks until this tmux server's channel is signalled. The only wait that infers nothing.\n\nDeterministic where every other wait is a heuristic: tmux blocks server-side and returns on the signal itself. Use this only when another process is already arranged to signal a channel on this exact server.\n\nWhen you start the command, use run_shell instead. It addresses the right server, signals after success or failure, and reports the exit status without a second call.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "channel": {
+              "description": "The channel name to block on.",
+              "type": "string"
+            },
+            "timeout": {
+              "default": 30,
+              "description": "Seconds to wait. Clamped by the server ceiling.",
+              "type": "number"
+            }
+          },
+          "required": [
+            "channel"
+          ],
+          "type": "object"
+        },
+        "name": "wait_for_channel",
+        "outputSchema": {
+          "properties": {
+            "channel": {
+              "type": "string"
+            },
+            "effectiveTimeout": {
+              "type": "number"
+            },
+            "released": {
+              "type": "boolean"
+            },
+            "seconds": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "channel",
+            "effectiveTimeout",
+            "released",
+            "seconds"
+          ],
+          "type": "object"
+        },
+        "title": "Wait on a tmux channel"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Wait for a pane to print something"
+        },
+        "description": "Blocks until a pane prints matching text, with tmux output events driving each capture.\n\nFor output you did not author: a daemon printing `ready`, a dev server someone else started, a build you attached to. tmux pushes pane output over a control connection. A low-rate liveness check detects a pane removed while it is quiet.\n\nOmit `patterns` to wait for any new output at all — the right choice when what will be printed is not known. Always pass `stops` when a failure marker exists: a build that fails after five seconds should not hold this open for the rest of the timeout.\n\nThe condition is checked before it is blocked on: text already on screen returns at once with `matchedAtEntry: true`, because \"wait until it is listening\" is answered by something already listening. Set `require_fresh` when only a NEW occurrence counts — re-running a command whose output looks identical to last time.\n\nRead the result before changing anything:\n- `outcome: \"timedOut\"` with `sawNewOutput: false` — the pane stayed quiet. The thing never ran; no pattern fixes that.\n- `outcome: \"timedOut\"` with output — it printed something else. `tail` holds what it actually said; fix the pattern from that.\n- `outcome: \"stopped\"` — a `stops` marker hit. `matched` says which.\n- `outcome: \"expiredWhileReading\"` — the timeout was too short to read the pane at all, so the other fields report nothing. Ask again with a longer one; the pattern is not the problem.\n- `outcome: \"alternateScreen\"` — a pager, editor, or full-screen program held the pane, and tmux fills that grid without adding to history, so matching was suppressed rather than run against what the program painted. Read the screen with `capture_pane`; a different pattern changes nothing.\n\nFor a command you wrote yourself, run_shell is cheaper and exact.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "case_insensitive": {
+              "default": false,
+              "description": "Match every success and stop pattern without case distinctions.",
+              "type": "boolean"
+            },
+            "pane": {
+              "description": "A pane ref returned by list_panes or snapshot. Re-list after this MCP process restarts.",
+              "type": "string"
+            },
+            "patterns": {
+              "description": "Bounded regular expressions, any of which ends the wait. Omit for any new output at all.",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 32,
+              "type": "array"
+            },
+            "require_fresh": {
+              "default": false,
+              "description": "Only count output that arrives after this call, so a match already on screen is waited past rather than returned. For re-running a command whose output looks identical.",
+              "type": "boolean"
+            },
+            "stops": {
+              "description": "Bounded regular expressions that end the wait as a failure. Put error markers here.",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 32,
+              "type": "array"
+            },
+            "timeout": {
+              "default": 30,
+              "description": "Seconds to wait. Clamped by the server ceiling; the result reports what was actually enforced.",
+              "type": "number"
+            }
+          },
+          "required": [
+            "pane"
+          ],
+          "type": "object"
+        },
+        "name": "wait_for_output",
+        "outputSchema": {
+          "properties": {
+            "effectiveTimeout": {
+              "type": "number"
+            },
+            "matched": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "matchedAtEntry": {
+              "type": "boolean"
+            },
+            "matchedIndex": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "outcome": {
+              "type": "string"
+            },
+            "paneRef": {
+              "type": "string"
+            },
+            "sawNewOutput": {
+              "type": "boolean"
+            },
+            "seconds": {
+              "type": "number"
+            },
+            "tail": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "effectiveTimeout",
+            "matchedAtEntry",
+            "outcome",
+            "paneRef",
+            "sawNewOutput",
+            "seconds",
+            "tail"
+          ],
+          "type": "object"
+        },
+        "title": "Wait for a pane to print something"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Wait for a tmux format to change"
+        },
+        "description": "Blocks until a tmux format takes a matching value, without reading any scrollback.\n\nThe cheapest wait there is, and the one to reach for when the question is about *state* rather than text: has the foreground command changed, has the pane died, has a window rung its bell. tmux evaluates the format and reports changes itself.\n\n`#{pane_current_command}` answers \"is my command done?\" exactly, with no prompt regex to guess and no output to read back. Values are reported at most once a second, so this notices a change rather than timing one.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "case_insensitive": {
+              "default": false,
+              "description": "Match the value without case distinctions.",
+              "type": "boolean"
+            },
+            "format": {
+              "description": "A tmux format, such as #{pane_current_command}. One running a shell command with #(...) is refused.",
+              "type": "string"
+            },
+            "matching": {
+              "description": "A bounded regular expression the value must match to end the wait. Omit to return on the first change of any kind.",
+              "type": "string"
+            },
+            "pane": {
+              "description": "A pane ref returned by list_panes or snapshot. Re-list after this MCP process restarts.",
+              "type": "string"
+            },
+            "timeout": {
+              "default": 30,
+              "description": "Seconds to wait. Clamped by the server ceiling.",
+              "type": "number"
+            },
+            "window_link": {
+              "description": "Exact linkRef from list_windows. Required only when the pane has several links.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "format",
+            "pane"
+          ],
+          "type": "object"
+        },
+        "name": "watch_format",
+        "outputSchema": {
+          "properties": {
+            "effectiveTimeout": {
+              "type": "number"
+            },
+            "linkRef": {
+              "type": "string"
+            },
+            "outcome": {
+              "type": "string"
+            },
+            "paneRef": {
+              "type": "string"
+            },
+            "seconds": {
+              "type": "number"
+            },
+            "value": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "effectiveTimeout",
+            "linkRef",
+            "outcome",
+            "paneRef",
+            "seconds"
+          ],
+          "type": "object"
+        },
+        "title": "Wait for a tmux format to change"
+      }
+    ]
+  }
+}

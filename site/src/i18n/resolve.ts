@@ -179,7 +179,7 @@ export const ALL_TRANSLATED: Record<string, LocaleStatus> = Object.fromEntries(
 
 export async function placeholderPairs(): Promise<{ locale: Locale; sourceId: string }[]> {
   const entries = await getCollection('docs')
-  const sources = entries.filter((e) => localeOf(e.id) === DEFAULT_LOCALE).map((e) => e.id)
+  const sources = entries.filter((e) => localeOf(e.id) === DEFAULT_LOCALE && !e.data.product).map((e) => e.id)
   const pairs: { locale: Locale; sourceId: string }[] = []
   for (const locale of LOCALES) {
     if (locale === DEFAULT_LOCALE) continue

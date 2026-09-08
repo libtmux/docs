@@ -23,10 +23,14 @@
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
 import { LANG_TO_PORT, parseMeta, readFence } from '../plugins/remark-port-code.mjs'
-import { PORT_BY_SLUG, hasReference, referenceUrl } from './ports.ts'
+import { PORT_BY_SLUG, hasReference, portPageUrl, referenceUrl } from './ports.ts'
 import { DEFAULT_LOCALE } from '../i18n/locales.ts'
 import { localeOf } from '../i18n/resolve.ts'
 import { buildTarget } from './versions.ts'
+import { docsPath, docsRoutePath } from './docs-paths.ts'
+import { PORT_ROOT } from './site-root.ts'
+import { API_MODELS } from './api-models.ts'
+import { productApiHref, productApiRoots } from './product-api.ts'
 
 export interface LlmsPage {
   title: string
@@ -95,7 +99,8 @@ export function resolvePortCode(body: string, port: string | undefined): string 
 function sectionOf(entry: CollectionEntry<'docs'>): string {
   const group = entry.data.sidebar?.group
   if (group) return group
-  const [first] = entry.id.split('/')
+  if (entry.data.product) return `${PORT_BY_SLUG[entry.data.port!].name} ${entry.data.product === 'mcp' ? 'MCP' : 'Workspace Manager'}`
+  const [first] = docsPath(entry).split('/')
   return first === entry.id ? 'Overview' : first[0].toUpperCase() + first.slice(1)
 }
 
@@ -105,24 +110,36 @@ function sectionOf(entry: CollectionEntry<'docs'>): string {
  */
 export async function llmsPages(origin: string, base: string): Promise<LlmsPage[]> {
   const port = process.env.LIBTMUX_DOCS_PORT || undefined
+  let defaults: Record<string, string> = {}
+  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
   // Default locale only. A translation is a different document at a different
   // URL, and listing `ja/concepts` beside `concepts` in one file would hand an
   // agent the same page twice in two languages.
   const entries = await getCollection(
     'docs',
     (entry) =>
-      (entry.data.port === undefined || entry.data.port === port) &&
+      (!port || entry.data.port === undefined || entry.data.port === port) &&
       localeOf(entry.id) === DEFAULT_LOCALE,
   )
   return entries
-    .map((entry) => ({
+    .map((entry) => {
+      const entryPort = entry.data.port
+      const version = port ? buildTarget(process.env).version : (defaults[entryPort ?? ''] ?? 'latest')
+      let body = resolvePortCode(entry.body ?? '', entryPort ?? port)
+      if (entryPort && entry.data.product && docsPath(entry) === `${entry.data.product}/api`) {
+        const model = API_MODELS[entryPort]
+        const symbols = productApiRoots(model, entry.data.product)
+        body += `\n\n## API declarations\n\n${symbols.map((symbol) => `- [${symbol.publicId ?? symbol.name}](${origin}${productApiHref(model, symbol, version)})`).join('\n')}\n`
+        if (entry.data.product === 'mcp') body += `\n[Protocol catalog](${origin}${portPageUrl(PORT_BY_SLUG[entryPort], version, 'mcp/tools').replace(/\/$/, '.json')})\n`
+      }
+      return {
       title: entry.data.title,
       description: entry.data.description ?? '',
-      url: `${origin}${base}${entry.id}/`,
+      url: `${origin}${entry.data.product && !port ? `${PORT_ROOT}/` : base}${docsRoutePath(entry, port, defaults)}/`,
       section: sectionOf(entry),
-      body: resolvePortCode(entry.body ?? '', port),
+      body,
       order: entry.data.sidebar?.order ?? Number.MAX_SAFE_INTEGER,
-    }))
+    }})
     .sort((a, b) => a.section.localeCompare(b.section) || a.order - b.order || a.title.localeCompare(b.title))
 }
 

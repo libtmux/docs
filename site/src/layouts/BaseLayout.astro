@@ -34,7 +34,10 @@ interface Props {
   pagePath?: string
   /** Port slug when this page belongs to one. */
   portSlug?: string
+  version?: string
   noindex?: boolean
+  /** Include this page in the local search index. */
+  searchable?: boolean
   updated?: string
   /** Suppress the site header, for embedded/preview renders. */
   bare?: boolean
@@ -48,6 +51,7 @@ interface Props {
   canonicalOverride?: string
   /** Every locale's status for this page, for the locale switcher. */
   localeStatuses?: Record<string, string>
+  breadcrumbs?: { name: string; url: string }[]
 
 }
 
@@ -56,7 +60,9 @@ const {
   description,
   pagePath: requestedPagePath,
   portSlug,
+  version: requestedVersion,
   noindex = false,
+  searchable = true,
   updated,
   bare = false,
   locale = 'en',
@@ -64,6 +70,7 @@ const {
   sourcePath,
   canonicalOverride,
   localeStatuses,
+  breadcrumbs,
 } = Astro.props as Props
 
 
@@ -74,6 +81,7 @@ const routePath = (Astro.url.pathname.startsWith(buildBase)
 const pagePath = requestedPagePath ?? (routePath === portSlug ? '' : routePath)
 
 const target = buildTarget(process.env)
+if (requestedVersion) target.version = requestedVersion
 
 // Until the manifest is fetched client-side, treat this build's own version
 // as the entry we know about. The switcher replaces this at runtime.
@@ -83,7 +91,6 @@ const versionEntry: VersionEntry = {
   kind: target.kind,
   supported: true,
 }
-const defaultVersion = process.env.LIBTMUX_DOCS_DEFAULT_VERSION ?? 'stable'
 /**
  * Which part of the site this page is in, as a search filter.
  *
@@ -98,6 +105,7 @@ let portDefaults: Record<string, string> = {}
 try {
   portDefaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
 } catch { /* Unconfigured builds use each port's latest tree. */ }
+const defaultVersion = portDefaults[portSlug ?? ''] ?? process.env.LIBTMUX_DOCS_DEFAULT_VERSION ?? 'latest'
 const navVersion = process.env.LIBTMUX_DOCS_PORT ? target.version : (portDefaults[navPort ?? ''] ?? 'latest')
 const localePagePath = localeSourcePath(Astro.url.pathname, buildLocale())
 
@@ -160,6 +168,7 @@ const localePagePath = localeSourcePath(Astro.url.pathname, buildLocale())
       versionEntry={versionEntry}
       noindex={noindex}
       updated={updated}
+      breadcrumbs={breadcrumbs}
     />
     {/* The switcher reads the live manifest, so a version published after
         this build still appears here. */}
@@ -197,7 +206,7 @@ const localePagePath = localeSourcePath(Astro.url.pathname, buildLocale())
          once. The filters are what make a 1,000-symbol reference searchable
          at all: "sessions" is a different question in Go than in Swift. -->
     <div
-      data-pagefind-body
+      data-pagefind-body={searchable ? '' : undefined}
       data-pagefind-filter={`port:${portSlug ? (PORT_NAME[portSlug] ?? portSlug) : 'All languages'}`}
     >
       <div data-pagefind-filter={`section:${section}`} data-pagefind-ignore="all" hidden></div>

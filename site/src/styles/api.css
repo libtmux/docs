@@ -129,6 +129,10 @@
   line-height: 1.7;
   overflow-wrap: anywhere;
 }
+.gp-sphinx-api-signature {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .api-name { font-weight: 600; }
 .api-punct { opacity: 0.65; }
 .api-param-name { color: var(--api-kind-attribute-fg); }

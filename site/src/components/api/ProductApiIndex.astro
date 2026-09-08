@@ -1,0 +1,27 @@
+---
+import { docSummaryText } from '@libtmux/api-model'
+import { API_MODELS } from '../../lib/api-models'
+import { productApiHref, productApiRoots } from '../../lib/product-api'
+import type { DocProduct } from '../../lib/ports'
+interface Props { port: string; product: DocProduct; version: string }
+const { port, product, version } = Astro.props
+const model = API_MODELS[port]
+const symbols = productApiRoots(model, product)
+const groups = [
+  { title: 'Exports', symbols: symbols.filter((symbol) => symbol.apiScope !== 'supporting') },
+  { title: 'Types used in signatures', symbols: symbols.filter((symbol) => symbol.apiScope === 'supporting') },
+]
+---
+
+<section aria-labelledby="generated-api">
+  <h2 id="generated-api">API declarations</h2>
+  <p>Follow a declaration for its signature, members, documentation, and source.</p>
+  {groups.filter((group) => group.symbols.length).map((group) => <section>
+    <h3>{group.title}</h3>
+    {group.title === 'Types used in signatures' && <p>These types describe returned values or parameters; they are not package entry points.</p>}
+    <dl>{group.symbols.map((symbol) => <>
+        <dt><a href={productApiHref(model, symbol, version)}><code>{symbol.publicId ?? symbol.name}</code></a></dt>
+        {symbol.doc?.summary && <dd>{docSummaryText(symbol.doc.summary, port)}</dd>}
+      </>)}</dl>
+  </section>)}
+</section>

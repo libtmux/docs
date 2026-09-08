@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -124,5 +124,39 @@ describe('symbol graph conformances', () => {
     // Not a silent drop: an unresolvable target stays visible, so the check
     // that greps for `s:`-prefixed types can still catch it.
     expect(basesOf(graph([['s:s7UnknownP', undefined]]))).toEqual(['s:s7UnknownP'])
+  })
+})
+
+describe('symbol graph source locations', () => {
+  function sourceGraph(locatedFirst: boolean) {
+    const dir = mkdtempSync(join(tmpdir(), 'symbolgraph-source-'))
+    dirs.push(dir)
+    const file = join(dir, 'Thing.symbols.json')
+    const entry = {
+      identifier: { precise: 'generated-init' }, kind: { identifier: 'swift.init' },
+      pathComponents: ['Thing', 'init(from:)'], names: { title: 'init(from:)' }, accessLevel: 'public',
+    }
+    const located = { ...entry, identifier: { precise: 'declared-init' }, location: { uri: 'file:///Sources/Thing.swift', position: { line: 12 } } }
+    writeFileSync(file, JSON.stringify({
+      symbols: locatedFirst ? [located, entry] : [entry, located],
+      relationships: [{ kind: 'memberOf', source: 'generated-init', target: 'Thing', sourceOrigin: { identifier: 'Decodable-init', displayName: 'Decodable.init(from:)' } }],
+    }))
+    return file
+  }
+
+  it.each([false, true])('retains a concrete source when merging overloads, located first: %s', (locatedFirst) => {
+    const symbols = extractSymbolGraph([sourceGraph(locatedFirst)])
+    expect(symbols).toHaveLength(1)
+    expect(symbols[0].source).toEqual({ file: '/Sources/Thing.swift', line: 13 })
+  })
+
+  it('records an inherited origin without fabricating a source location', () => {
+    const file = sourceGraph(false)
+    const content = JSON.parse(readFileSync(file, 'utf8'))
+    content.symbols.pop()
+    writeFileSync(file, JSON.stringify(content))
+    const symbol = extractSymbolGraph([file])[0]
+    expect(symbol.source).toEqual({ file: '' })
+    expect(symbol.inheritedFrom).toBe('Decodable.init(from:)')
   })
 })

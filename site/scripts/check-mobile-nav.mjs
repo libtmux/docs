@@ -122,6 +122,24 @@ for (const [w, want] of [[360, true], [390, true], [768, true], [1023, true], [1
   note(visible === want, `toolbar ${want ? 'visible' : 'hidden'} at ${w}px`)
   await p.close()
 }
+for (const width of [390, 1440]) {
+  const p = await page(WITH_TOC, width)
+  await p.keyboard.press('Control+k')
+  await p.locator('#search-modal input[type="search"]').fill('workspace')
+  const results = p.locator('#search-modal .search-panel__results')
+  await results.locator('a').first().waitFor()
+  const box = await results.boundingBox()
+  const dialog = await p.locator('#search-modal').boundingBox()
+  note(box && dialog && box.y + box.height <= dialog.y + dialog.height,
+    `search results fit inside the dialog at ${width}px`)
+  if (box) {
+    await p.mouse.move(box.x + box.width / 2, box.y + Math.min(50, box.height / 2))
+    await p.mouse.wheel(0, 500)
+    await p.waitForTimeout(150)
+    note(await results.evaluate((el) => el.scrollTop > 0), `search results scroll at ${width}px`)
+  }
+  await p.close()
+}
 console.log(`check-mobile-nav: ${ok.length} checks passed`)
 if (fails.length) {
   console.error(`\ncheck-mobile-nav: ${fails.length} failure(s):`)

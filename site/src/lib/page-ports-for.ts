@@ -13,7 +13,7 @@ import { pagePortLinks, type PagePortLink } from './page-port-links'
  * be narrowed to the default locale first, or that an unconfigured build
  * falls back to each port's latest tree.
  */
-export async function pagePortsFor(pagePath: string, portSlug?: string): Promise<PagePortLink[]> {
+export async function pagePortsFor(pagePath: string, portSlug?: string, version?: string): Promise<PagePortLink[]> {
   let defaults: Record<string, string> = {}
   try {
     defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
@@ -23,7 +23,7 @@ export async function pagePortsFor(pagePath: string, portSlug?: string): Promise
   return pagePortLinks({
     pagePath,
     portSlug,
-    version: defaults[portSlug ?? ''] ?? 'latest',
+    version: version ?? defaults[portSlug ?? ''] ?? 'latest',
     defaults,
     docs: (await getCollection('docs')).filter((entry) => localeOf(entry.id) === DEFAULT_LOCALE),
   })
