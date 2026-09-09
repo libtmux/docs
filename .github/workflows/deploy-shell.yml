@@ -1,10 +1,7 @@
 name: deploy-shell
 
-# This repo's own build: the bucket root (landing, concepts, guides,
-# examples, parity, search — site/src/content.config.ts's 'docs'
-# collection) plus PR previews of the same pages. No port ever calls this
-# file; each self-hosted port owns its own docs.yml calling
-# reusable-deploy.yml instead (docs/ci.md).
+# Publish the shared shell and latest port documentation. Native API trees
+# and historical versions remain owned by their port publishers.
 #
 # The shell has no versioned URL space of its own (notes/research/06: root
 # is always "whatever's on trunk," never /latest/ or /stable/ like a port).
@@ -74,7 +71,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Build (production root)
+      - name: Install assembly tools
+        if: matrix.locale == 'en'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y ripgrep
+
+      - name: Build production documentation
         working-directory: site
         env:
           LIBTMUX_DOCS_VERSION: latest
@@ -90,18 +93,39 @@ jobs:
           # only, so every locale links across to them.
           LIBTMUX_DOCS_PORT_ROOT: /en
           LIBTMUX_DOCS_SITE: https://libtmux.org
-        run: pnpm build
+        run: |
+          if [[ '${{ matrix.locale }}' == en ]]; then
+            pnpm --workspace-root build:site --versions latest
+          else
+            pnpm build
+          fi
 
       # publish-root needs the port slugs to know which prefixes it must not
       # bulk-touch, and it has no checkout of its own. Emitting the list here
       # ties it to the commit that produced the tree, which a second hand-kept
       # copy in that job could not do.
-      - name: Emit the reserved prefixes from ports.ts
+      - name: Emit publication ownership metadata
+        if: matrix.locale == 'en'
         run: |
           set -euo pipefail
           node --input-type=module -e "
-            const { writeFileSync } = await import('node:fs')
+            const { readdirSync, rmSync, writeFileSync } = await import('node:fs')
             const { PORTS, DOC_PRODUCTS } = await import('./site/src/lib/ports.ts')
+            const { DEFAULT_LOCALE } = await import('./site/src/i18n/locales.ts')
+            const paths = { schema: 1, locale: DEFAULT_LOCALE, directories: [], files: [] }
+            for (const port of PORTS) {
+              const prefix = port.slug + '/latest'
+              for (const entry of readdirSync('_site/' + DEFAULT_LOCALE + '/' + prefix, { withFileTypes: true })) {
+                if (entry.isSymbolicLink()) throw new Error('Unexpected symlink in shell assembly: ' + prefix + '/' + entry.name)
+                // The assembly checks native targets; this artifact never publishes them.
+                if (entry.name === 'api') {
+                  rmSync('_site/' + DEFAULT_LOCALE + '/' + prefix + '/api', { recursive: true })
+                  continue
+                }
+                paths[entry.isDirectory() ? 'directories' : 'files'].push(prefix + '/' + entry.name)
+              }
+            }
+            writeFileSync('shell-paths.json', JSON.stringify(paths) + '\n')
             writeFileSync('reserved-products.txt', Object.keys(DOC_PRODUCTS).join('\n') + '\n')
             process.stdout.write(PORTS.map((p) => p.slug).join('\n') + '\n')
           " > reserved-prefixes.txt
@@ -110,7 +134,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: shell-dist-${{ matrix.locale }}
-          path: site/dist
+          path: ${{ matrix.locale == 'en' && '_site/en' || 'site/dist' }}
           retention-days: 1
 
       # Identical in every matrix leg, so only one writes it.
@@ -121,6 +145,7 @@ jobs:
           path: |
             reserved-prefixes.txt
             reserved-products.txt
+            shell-paths.json
           retention-days: 1
 
   build-preview:
@@ -276,9 +301,9 @@ jobs:
         run: |
           set -euo pipefail
           locale="${{ matrix.locale }}"
-          # The artifact declares the shell-owned ports and products. Missing
+          # The artifact declares the shell-owned ports, products and paths. Missing
           # metadata must never turn a reserved port into an unrestricted sync.
-          for metadata in reserved-prefixes.txt reserved-products.txt; do
+          for metadata in reserved-prefixes.txt reserved-products.txt shell-paths.json; do
             if [[ ! -s "$metadata" ]]; then
               echo "::error::$metadata is missing or empty" >&2
               exit 1
@@ -286,7 +311,14 @@ jobs:
           done
           mapfile -t reserved < reserved-prefixes.txt
           mapfile -t products < reserved-products.txt
-          for name in "${reserved[@]}" "${products[@]}"; do
+          if ! jq -e '.schema == 1 and (.locale | type == "string") and (.directories | type == "array") and (.files | type == "array") and (all(.directories[], .files[]; type == "string"))' shell-paths.json > /dev/null; then
+            echo '::error::invalid shell-paths.json ownership metadata' >&2
+            exit 1
+          fi
+          port_locale=$(jq -r '.locale' shell-paths.json)
+          mapfile -t shell_dirs < <(jq -r '.directories[]' shell-paths.json)
+          mapfile -t shell_files < <(jq -r '.files[]' shell-paths.json)
+          for name in "${reserved[@]}" "${products[@]}" "$port_locale"; do
             if [[ ! "$name" =~ ^[a-z][a-z0-9-]*$ ]]; then
               echo "::error::invalid ownership name '$name'" >&2
               exit 1
@@ -302,8 +334,39 @@ jobs:
               exit 1
             fi
           done
+          for path in "${shell_dirs[@]}" "${shell_files[@]}"; do
+            if [[ ! "$path" =~ ^([a-z][a-z0-9-]*)/latest/([a-zA-Z0-9_][a-zA-Z0-9_.-]*)$ ]]; then
+              echo "::error::invalid shell-owned path: $path" >&2
+              exit 1
+            fi
+            port=${BASH_REMATCH[1]}
+            child=${BASH_REMATCH[2]}
+            known=false
+            for candidate in "${reserved[@]}"; do
+              [[ "$port" == "$candidate" ]] && known=true && break
+            done
+            if [[ "$known" == false || "$port" == manifest || "$child" == api ]]; then
+              echo "::error::$path is outside shell-owned paths" >&2
+              exit 1
+            fi
+          done
+          if [[ "$locale" == "$port_locale" ]]; then
+            for path in "${shell_dirs[@]}"; do
+              [[ -d "dist/$path" ]] || { echo "::error::missing shell directory: $path" >&2; exit 1; }
+            done
+            for path in "${shell_files[@]}"; do
+              [[ -f "dist/$path" ]] || { echo "::error::missing shell file: $path" >&2; exit 1; }
+            done
+            for port in "${reserved[@]}"; do
+              [[ "$port" == manifest ]] && continue
+              for path in index.html "${products[@]/%//index.html}"; do
+                [[ -f "dist/$port/latest/$path" ]] || { echo "::error::missing version entry page: $port/latest/$path" >&2; exit 1; }
+              done
+            done
+          fi
           dirs=()
           reserved_index_dirs=()
+          version_files=()
           for entry in dist/*; do
             [[ -d "$entry" ]] || continue
             name=${entry##*/}
@@ -322,26 +385,33 @@ jobs:
             for child in "$entry"/*; do
               [[ "$child" == "$entry/index.html" ]] && continue
               if [[ "$child" != "$entry/latest" || ! -d "$child" ]]; then
-                echo "::error::$child is outside shell-owned product paths" >&2
+                echo "::error::$child is outside shell-owned latest paths" >&2
                 exit 1
               fi
-              for product_dir in "$child"/*; do
-                product=${product_dir##*/}
+              for shell_entry in "$child"/*; do
+                path=${shell_entry#dist/}
                 allowed=false
-                for candidate in "${products[@]}"; do
-                  [[ "$product" == "$candidate" ]] && allowed=true && break
-                done
-                if [[ "$allowed" == false || ! -d "$product_dir" || ! -f "$product_dir/index.html" ]]; then
-                  echo "::error::$product_dir is outside shell-owned product paths" >&2
+                if [[ -d "$shell_entry" ]]; then
+                  for candidate in "${shell_dirs[@]}"; do
+                    [[ "$path" == "$candidate" ]] && allowed=true && break
+                  done
+                  dirs+=("$path")
+                elif [[ -f "$shell_entry" ]]; then
+                  for candidate in "${shell_files[@]}"; do
+                    [[ "$path" == "$candidate" ]] && allowed=true && break
+                  done
+                  version_files+=("$path")
+                fi
+                if [[ "$allowed" == false ]]; then
+                  echo "::error::$shell_entry is outside declared shell-owned paths" >&2
                   exit 1
                 fi
-                dirs+=("$name/latest/$product")
               done
             done
             reserved_index_dirs+=("$name")
           done
 
-          # Each deleting sync owns its exact subtree, never a locale, port,
+          # Each deleting sync owns one shell subtree, never a locale, port,
           # or version root shared with a native documentation publisher.
           for name in "${dirs[@]}"; do
             aws s3 sync "dist/$name/" "s3://$BUCKET/$locale/$name/" \
@@ -350,6 +420,10 @@ jobs:
           done
           for name in "${reserved_index_dirs[@]}"; do
             aws s3 cp "dist/$name/index.html" "s3://$BUCKET/$locale/$name/index.html" \
+              --cache-control "public, max-age=0, s-maxage=300"
+          done
+          for path in "${version_files[@]}"; do
+            aws s3 cp "dist/$path" "s3://$BUCKET/$locale/$path" \
               --cache-control "public, max-age=0, s-maxage=300"
           done
           for file in dist/*; do

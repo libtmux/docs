@@ -109,6 +109,30 @@ function redirectsTo(path: string, target: string): void {
 }
 
 describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
+  it.each(PORTS.map((port) => port.slug))('%s exposes products from latest homes and core navigation', (port) => {
+    for (const section of ['', 'guides/', 'topics/']) {
+      const path = `${port}/latest/${section}`
+      inspect(path, (document) => {
+        const navigation = document.querySelectorAll(section ? 'nav[aria-label="Products"]' : 'main')
+        expect(navigation.length, `${path} product entry points`).toBeGreaterThan(0)
+        for (const container of navigation) {
+          for (const product of products) {
+            const expected = urlFor(`${port}/latest/${product}/`).pathname
+            const link = [...container.querySelectorAll('a[href]')]
+              .find((entry) => new URL(entry.getAttribute('href')!, urlFor(path)).pathname === expected)
+            expect(link, `${path} links to ${expected}`).toBeDefined()
+            expect(link!.textContent, `${path} product label`).toContain(product === 'workspace' ? 'Workspace Manager' : 'MCP')
+            expect(resolves(link!.getAttribute('href')!, urlFor(path).href), `${path} resolves ${expected}`).toBe(true)
+          }
+        }
+        const assets = [...document.querySelectorAll('script[src], link[rel="stylesheet"][href], link[rel="preload"][as="font"][href]')]
+          .map((asset) => asset.getAttribute('src') ?? asset.getAttribute('href')!)
+        expect(assets.length, `${path} linked assets`).toBeGreaterThan(0)
+        expect([...new Set(assets)].filter((href) => !resolves(href, urlFor(path).href)), `${path} missing assets`).toEqual([])
+      })
+    }
+  })
+
   it('serves both products and every section with the chosen port content', () => {
     for (const page of pages()) inspect(page.path, (document) => {
       const article = document.querySelector('article')!
@@ -128,7 +152,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(hrefs.filter((href) => new URL(href, urlFor(page.path)).origin === 'https://libtmux.org'
         && /\/ports\/(?:py|ts|rs|go|java|dotnet|cxx|swift)\//.test(href)),
         `${page.path} storage identities in public links`).toEqual([])
-      if (!page.section) inspect(`${page.port}/${page.version}/`, (home) => {
+      if (!page.section && page.version !== 'latest') inspect(`${page.port}/${page.version}/`, (home) => {
         const entryPoints = [...home.querySelectorAll('main a[href]')]
           .map((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname)
         expect(entryPoints, `${page.path} port-home entry point`).toContain(urlFor(page.path).pathname)
