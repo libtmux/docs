@@ -18,10 +18,11 @@ and `execute`; deletion tools require an explicit selection.
 
 ## Start here
 
+- [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) connect a client and select a tmux socket.
 - [Topics](./topics/) explain toolsets, trust, waiting, and caller context.
-- [Examples](./examples/) inspect the protocol catalog from Python.
-- [API](./api/) separates Python entry points from MCP tool contracts.
+- [Examples](./examples/) call a tool, then explore server internals.
+- [Language API](./api/) documents embedding and implementation types.
 
 For declarative session configuration, use the
 [Workspace Manager](../workspace/), provided by the separate `tmuxp`

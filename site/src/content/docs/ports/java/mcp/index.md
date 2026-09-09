@@ -19,10 +19,11 @@ toolsets at startup. It serves MCP over stdin and stdout.
 
 ## Start here
 
+- [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) build the launcher and connect a client.
 - [Topics](./topics/) explain toolsets, input preflight, and wait semantics.
-- [Examples](./examples/) show the public embedding boundary.
-- [API](./api/) separates Java entry points from wire operations.
+- [Examples](./examples/) call a tool, then explore server internals.
+- [Language API](./api/) documents embedding and implementation types.
 
 The only MCP resource is the static `tmux://capabilities` report.
 The server does not register workflow prompts or dynamic resource

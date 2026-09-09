@@ -3,7 +3,7 @@ import { API_MODELS, pageSlug, referenceAlternatives, referenceHref } from './ap
 import { PORTS, portHomeUrl, portPageUrl, referenceUrl } from './ports'
 import { docsPath, type DocsPage } from './docs-paths'
 import { productApiHref } from './product-api'
-import { MCP_REFERENCE } from './mcp-reference'
+import { MCP_REFERENCE, equivalentMcpTool } from './mcp-reference'
 
 const symbolsByRoute = new Map<string, ApiSymbol>(Object.entries(API_MODELS).flatMap(([port, model]) =>
   model.symbols.map((symbol) => [
@@ -14,11 +14,6 @@ const symbolsByRoute = new Map<string, ApiSymbol>(Object.entries(API_MODELS).fla
 
 /** Static routes emitted in each port build, verified against assembled pages. */
 export const SHARED_PAGE_PATHS = ['mcp', 'mcp/tools', 'parity', 'search', 'translations'] as const
-
-const DISTINCT_MCP_OPERATIONS: Partial<Record<string, string>> = {
-  run_command: 'swift', // Raw tmux command, not a shell command in a pane.
-  clear_pane: 'rs', // Scrollback only; leaves the visible screen intact.
-}
 
 export interface PagePortLink {
   port: string
@@ -48,7 +43,7 @@ export function pagePortLinks({
   const path = pagePath.replace(/^\/+|\/+$/g, '')
   const [, referencePort, symbolSlug] = path.split('/')
   const isReference = path === 'reference' || path.startsWith('reference/')
-  const productReference = /^(mcp|workspace)\/api\/(.+)$/.exec(path)
+  const productReference = /^(mcp|workspace)\/(?:internals\/)?api\/(.+)$/.exec(path)
   const symbol = symbolsByRoute.get(productReference ? `reference/${portSlug}/${productReference[2]}` : path)
   const symbolPort = productReference ? portSlug : referencePort
   const alternatives = symbol ? referenceAlternatives(symbolPort!, symbol.publicId ?? symbol.id) : []
@@ -78,10 +73,8 @@ export function pagePortLinks({
         if (href) links = [{ href }]
       }
     } else if (tool) {
-      const target = MCP_REFERENCE[port.slug]?.registrations.find((entry) => entry.name === tool.name)
-      const distinctPort = DISTINCT_MCP_OPERATIONS[tool.name]
-      const sameOperation = !distinctPort || (port.slug === distinctPort) === (portSlug === distinctPort)
-      if (target && sameOperation) links = [{ href: portPageUrl(port, targetVersion, `mcp/tools/${target.wireName}`) }]
+      const target = equivalentMcpTool(portSlug!, tool.wireName, port.slug)
+      if (target) links = [{ href: portPageUrl(port, targetVersion, `mcp/tools/${target.wireName}`) }]
     } else if ((SHARED_PAGE_PATHS as readonly string[]).includes(path) || entries.some((entry) => docsEntryAvailable(entry, port.slug))) {
       links = [{ href: portPageUrl(port, targetVersion, path) }]
     }

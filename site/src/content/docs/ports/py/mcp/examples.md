@@ -1,6 +1,6 @@
 ---
 title: Python MCP examples
-description: Inspect the registered Python server through a FastMCP client and choose command workflows.
+description: List sessions through the Python MCP server and inspect implementation examples.
 port: py
 product: mcp
 sidebar:
@@ -8,11 +8,35 @@ sidebar:
   order: 3
 ---
 
+Connect the server using the [setup guide](../guides/), then call
+[`list_sessions`](../tools/list_sessions/) from your MCP client.
+
+## List sessions
+
+This is the `params` object for an MCP `tools/call` request. Send it
+through the connected client:
+
+```json
+{
+  "name": "list_sessions",
+  "arguments": {}
+}
+```
+
+Use the returned session IDs when choosing a window or pane. The
+[tool reference](../tools/list_sessions/) describes this port's result
+and optional arguments.
+
+## Internals
+
+The following examples are for applications that embed or extend the server.
+Installing and connecting an MCP client does not require this code.
+
 Use a FastMCP client to inspect the same registered server that the
 `libtmux-mcp` executable serves. This checks the advertised contract
 without creating tmux sessions.
 
-## Inspect the catalog in Python
+### Inspect the catalog in Python
 
 Run this in an environment containing `libtmux-mcp`. It uses the
 production factory and closes the in-process client when the context ends.
@@ -40,7 +64,7 @@ registers tools and applies visibility once. The
 exercise this client/factory pattern. Set selection variables before
 importing the server in a fresh process.
 
-## Run and observe through a client
+### Run and observe through a client
 
 On a disposable session, ask the client to create a pane, run
 `printf 'ready\n'` with `run_command`, and report its typed exit

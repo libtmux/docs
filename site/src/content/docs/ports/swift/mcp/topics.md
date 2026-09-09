@@ -57,4 +57,4 @@ cleanup failure is reported with the original error.
 
 [Executable configuration](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/libtmux-mcp/README.md),
 [reference semantics](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/LibTmuxMCP/README.md),
-and [workspace behavior](../../workspace/topics/).
+and [workspace behavior](../../workspace/internals/topics/).

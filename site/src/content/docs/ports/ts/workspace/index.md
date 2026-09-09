@@ -1,6 +1,6 @@
 ---
-title: "Workspace Manager for TypeScript"
-description: "Build and converge tmux sessions with @libtmux/workspace."
+title: "Workspace Manager for TypeScript (in development)"
+description: "The TypeScript workspace manager is unfinished; builder APIs are available, but there is no workspace loader CLI."
 port: ts
 product: workspace
 sidebar:
@@ -9,29 +9,25 @@ sidebar:
 tableOfContents: true
 ---
 
-`@libtmux/workspace` applies a declared session layout to a libtmux `Server`.
-Describe windows, panes, working directories, and shell commands as data.
-Applying the same description again reuses matching objects.
+**Workspace Manager for TypeScript is in development and is not a finished
+workspace application.** This port has no CLI equivalent to `tmuxp load`.
 
-The package manages tmux structure. It does not supervise processes or restart
-commands that have exited. Commands run only in newly created panes by default.
+The current implementation is `@libtmux/workspace`, a library for applying and converging workspace descriptions.
+Using it requires application code. Installing or building it does not provide
+a command that accepts a workspace file and loads your session.
+
+## Load a workspace from the terminal
+
+Use [tmuxp](https://tmuxp.git-pull.com/) for the existing workspace CLI. Its
+[Python workspace guide](/py/latest/workspace/guides/) covers installation and
+`tmuxp load` with YAML or JSON configuration. tmuxp is a separate Python
+application, not a TypeScript command.
 
 ## Start here
 
-- [Guides](./guides/) install the package and apply a workspace.
-- [Topics](./topics/) explain ownership, pruning, and command policy.
-- [Examples](./examples/) show the source example and its integration checks.
-- [API](./api/) connects parsing, planning, application, and failure types.
+The [Internals](./internals/) section documents the current builder:
 
-## Package and runtime
-
-Use `@libtmux/workspace` alongside `libtmux`. The published package supports
-Node and Bun; its YAML convenience parser requires Bun. You can use validated
-JavaScript objects under either runtime. Real tmux control requires tmux on
-the host. The package documents Linux as its supported runtime platform.
-
-The workspace format uses familiar [tmuxp](https://tmuxp.git-pull.com) field
-names, with its own validation and convergence rules. Python plugins and
-tmuxp's configuration search are not part of this package.
-
-[Package documentation](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/packages/workspace/README.md)
+- [Guides](./internals/guides/) show application setup and builder calls.
+- [Topics](./internals/topics/) explain supported configuration and behavior.
+- [Examples](./internals/examples/) exercise the library or source consumer.
+- [API](./internals/api/) covers the builder and configuration interfaces.

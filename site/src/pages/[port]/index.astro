@@ -6,7 +6,7 @@ import DocCard from '../../components/DocCard.astro'
 import ApiReferences from '../../components/ApiReferences.astro'
 import ProseText from '../../components/ProseText.astro'
 import PackageInstall from '../../components/widgets/PackageInstall.astro'
-import { DOC_PRODUCTS, PORTS, portPageUrl, type Port } from '../../lib/ports'
+import { DOC_PRODUCTS, PORTS, portPageUrl, productDescription, type DocProduct, type Port } from '../../lib/ports'
 import { IS_ROOT_BUILD } from '../../lib/site-root'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
@@ -76,7 +76,7 @@ const quickstart = QUICKSTARTS[port.slug]
  * which also makes this grid match the one on `/<port>/<version>/`.
  */
 const cards = [
-  ...Object.entries(DOC_PRODUCTS).map(([slug, info]) => ({ href: portPageUrl(port, defaultVersion, slug), label: info.label, body: info.description })),
+  ...Object.entries(DOC_PRODUCTS).map(([slug, info]) => ({ href: portPageUrl(port, defaultVersion, slug), label: info.label, body: productDescription(port, slug as DocProduct) })),
   {
     label: 'Topics',
     body: `Architecture, traversal, options and hooks in ${port.name}.`,

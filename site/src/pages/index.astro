@@ -1,7 +1,7 @@
 ---
 import { ALL_TRANSLATED, buildLocale } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { DOC_PRODUCTS, PORTS, PORT_BY_SLUG, portPageUrl, referenceUrl } from '../lib/ports'
+import { DOC_PRODUCTS, PORTS, PORT_BY_SLUG, portPageUrl, productDescription, type DocProduct, referenceUrl } from '../lib/ports'
 import PortHero from '../components/PortHero.astro'
 import DocCard from '../components/DocCard.astro'
 import ApiReferences from '../components/ApiReferences.astro'
@@ -62,7 +62,7 @@ const versionSections = versionRootPort
       { href: portPageUrl(versionRootPort, buildVersion, 'guides'), label: 'Guides', body: `Task guides for ${versionRootPort.name}.` },
       { href: portPageUrl(versionRootPort, buildVersion, 'examples'), label: 'Examples', body: 'Complete programs, sourced from the code each port tests.' },
       { href: portPageUrl(versionRootPort, buildVersion, 'concepts'), label: 'Concepts', body: 'The domain model every port shares.' },
-      ...Object.entries(DOC_PRODUCTS).map(([slug, info]) => ({ href: portPageUrl(versionRootPort, buildVersion, slug), label: info.label, body: info.description })),
+      ...Object.entries(DOC_PRODUCTS).map(([slug, info]) => ({ href: portPageUrl(versionRootPort, buildVersion, slug), label: info.label, body: productDescription(versionRootPort, slug as DocProduct) })),
     ]
   : []
 

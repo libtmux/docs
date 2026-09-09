@@ -1,0 +1,85 @@
+---
+title: "Use the Swift workspace builder"
+description: "Use the in-development Swift workspace builder from application code."
+port: swift
+product: workspace
+sidebar:
+  group: Internals
+  label: Guides
+  order: 2
+tableOfContents: true
+---
+
+Add `TmuxWorkspace` and [`LibTmux`](/reference/swift/) to a SwiftPM target. This isolated example
+also uses the public `TmuxFixture` product for server startup and cleanup. The
+following dependency selects the source revision used by these examples:
+
+```swift
+.package(
+    url: "https://github.com/libtmux/libtmux-swift.git",
+    revision: "f02a4668570e1cc5198c941413750e021f42c214"
+)
+```
+
+Add the products to the target's dependencies:
+
+```swift
+.product(name: "LibTmux", package: "libtmux-swift"),
+.product(name: "TmuxWorkspace", package: "libtmux-swift"),
+.product(name: "TmuxFixture", package: "libtmux-swift")
+```
+
+Use the toolchain specified by the port's package manifest and install tmux.
+For YAML input, enable `traits: ["YAMLWorkspaces"]` on the package dependency.
+Swift values and JSON need no trait.
+
+## Build an isolated session
+
+Place this entry point in your executable target. `withTmuxServer` starts a
+private server and removes it after the closure, including when building
+throws. The workspace builder needs a running server for its initial session
+lookup.
+
+```swift
+import LibTmux
+import TmuxFixture
+import TmuxWorkspace
+
+@main
+struct WorkspaceGuide {
+    static func main() async throws {
+        try await withTmuxServer { @Sendable server in
+            let workspace = Workspace(
+                sessionName: "guide",
+                windows: [WindowPlan(
+                    windowName: "editor",
+                    panes: [PanePlan(), PanePlan()]
+                )]
+            )
+            let session = try await WorkspaceBuilder.build(workspace, on: server)
+            print(session.name)
+        }
+    }
+}
+```
+
+Run the executable through SwiftPM:
+
+```console
+$ swift run
+```
+
+## Read configuration
+
+Use `Workspace.decode(json:)` with [`Data`](https://developer.apple.com/documentation/foundation/data), or `Workspace.decode(yaml:)` with a
+string when the YAML trait is enabled. Review unsupported fields before
+moving a Python workspace to this structural subset.
+
+The fixture removes the server after inspecting the session name. In an
+application, pass an already running server and retain the result instead. A
+build failure triggers the builder's own cleanup attempt; inspect
+`rollbackFailed` because it reports that the cleanup also failed.
+
+[Package products and toolchain](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Package.swift); [Build contract](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/TmuxWorkspace/WorkspaceBuilder.swift).
+
+[Isolated server fixture](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Tests/TmuxFixture/TmuxFixture.swift).

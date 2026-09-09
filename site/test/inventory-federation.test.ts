@@ -76,7 +76,7 @@ describe('indexFor attaches the inventories', () => {
         href: 'https://docs.oracle.com/en/java/javase/21/docs/api/java/nio/file/Path.html',
       })
       const workspace = product.linkType(signature.returns!, reader).find((span) => span.text === 'Workspace')?.link
-      expect(workspace?.href).toContain(`/java/${version}/workspace/api/`)
+      expect(workspace?.href).toContain(`/java/${version}/workspace/internals/api/`)
       expect(productApiIndex(model, version)).toBe(product)
     }
     expect(core.linkType(signature.returns!, reader).find((span) => span.text === 'Workspace')?.link?.href).toMatch(/^#/)

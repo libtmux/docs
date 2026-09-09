@@ -3,7 +3,7 @@ import { docSummaryText, sourceUrl, symbolsForProduct, type ApiModel, type ApiSy
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import ApiEntry from './ApiEntry.astro'
 import { productApiAlternatives, productApiHref, productApiIndex } from '../../lib/product-api'
-import type { DocProduct } from '../../lib/ports'
+import { productApiPath, type DocProduct } from '../../lib/ports'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
 interface Props { model: ApiModel; symbol: ApiSymbol; version: string }
@@ -12,7 +12,7 @@ const product = symbol.product as DocProduct
 const hrefFor = (entry: ApiSymbol) => productApiHref(model, entry, version)
 const index = productApiIndex(model, version)
 const members = symbolsForProduct(model, product).filter((entry) => entry.parent === symbol.id)
-const pagePath = `${product}/api/${symbol.slug}`
+const pagePath = `${productApiPath(product)}/${symbol.slug}`
 let defaults: Record<string, string> = {}
 try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
 const alternativesFor = (entry: ApiSymbol) => productApiAlternatives(model, entry, version, defaults)

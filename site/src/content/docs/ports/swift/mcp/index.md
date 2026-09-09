@@ -20,10 +20,11 @@ tmux is required at runtime.
 
 ## Start here
 
+- [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) build the executable and configure its environment.
 - [Topics](./topics/) explain tiers, exact tool selection, and opaque targets.
-- [Examples](./examples/) embed the source-backed tool example.
-- [API](./api/) separates Swift types from wire tools and resources.
+- [Examples](./examples/) call a tool, then explore server internals.
+- [Language API](./api/) documents embedding and implementation types.
 
 The default tier is readonly. Writing tools need explicit opt-in.
 Resources expose snapshots, sessions, filter vocabulary, and pane content;

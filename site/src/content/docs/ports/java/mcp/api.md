@@ -4,9 +4,12 @@ description: Find the public TmuxMcpServer entry points and the separate schema-
 port: java
 product: mcp
 sidebar:
-  label: API
+  label: Language API
   order: 4
 ---
+
+For MCP client requests, use the [tool reference](../tools/). This page
+covers language APIs for embedding or extending the server.
 
 `TmuxMcpServer` is the public Java entry point. The MCP catalog includes
 operations implemented by package-private classes; Java visibility does
@@ -38,6 +41,6 @@ It reports tool selection, connection provenance, and capability
 declarations. The server does not register prompts or dynamic hierarchy
 subscriptions.
 
-Use the [Workspace Manager API](../../workspace/api/) for declarative
+Use the [Workspace builder API](../../workspace/internals/api/) for declarative
 configuration. It is a separate Java library and has no corresponding
 workspace-file MCP route.

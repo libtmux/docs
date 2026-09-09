@@ -1,8 +1,9 @@
 ---
 import { ALL_TRANSLATED } from '../../i18n/resolve'
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { PORT_BY_SLUG } from '../../lib/ports'
-import { withPortRoot, withRoot } from '../../lib/site-root'
+import { PORT_BY_SLUG, portPageUrl } from '../../lib/ports'
+import { withRoot } from '../../lib/site-root'
+import { buildTarget } from '../../lib/versions'
 import mcpTools from '../../data/mcp-tools.json'
 
 /**
@@ -31,6 +32,10 @@ interface ToolData {
 const data = mcpTools as ToolData
 
 const buildPort = process.env.LIBTMUX_DOCS_PORT || undefined
+const version = buildTarget(process.env).version
+let defaults: Record<string, string> = {}
+try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
+const toolUrl = (port: Slug, tool = '') => portPageUrl(PORT_BY_SLUG[port], port === buildPort ? version : (defaults[port] ?? 'latest'), `mcp/tools${tool ? `/${data.ports[port].wirePrefix}${tool}` : ''}`)
 
 const counts = SLUGS.map((s) => ({ slug: s, n: data.ports[s].tools.length }))
 const ranked = [...counts].sort((a, b) => b.n - a.n)
@@ -65,6 +70,10 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
       The ports register <strong>{data.universe.length} distinct tool
       names</strong>. Of these, <strong>{everywhere.length}</strong> are
       registered in every port, and {soleOwner} in only one.
+    </p>
+    <p class="mt-3 max-w-3xl">
+      All of these MCP servers are in development. A registered tool is not
+      a stability guarantee; follow its link for the port's current contract.
     </p>
     <p class="mt-3 max-w-3xl text-sm opacity-80">
       The table uses tool registrations extracted from each port's source.
@@ -167,9 +176,9 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
                 {SLUGS.map((s) => (
                   <td class="px-2 py-1.5 text-center">
                     {row.ports.includes(s) ? (
-                      <span title={`${PORT_BY_SLUG[s].name} registers ${data.ports[s].wirePrefix}${row.tool}`}>
+                      <a href={toolUrl(s, row.tool)} class="hover:underline" aria-label={`${PORT_BY_SLUG[s].name}: ${data.ports[s].wirePrefix}${row.tool}`} title={`${PORT_BY_SLUG[s].name} registers ${data.ports[s].wirePrefix}${row.tool}`}>
                         &#10003;
-                      </span>
+                      </a>
                     ) : (
                       <span class="opacity-25">&#183;</span>
                     )}
@@ -198,7 +207,7 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
             SLUGS.map((s) => (
               <tr class="border-b border-edge">
                 <td class="px-3 py-2 font-medium">
-                  <a class="hover:underline" href={withPortRoot(`/${s}/`)}>
+                  <a class="hover:underline" href={toolUrl(s)}>
                     {PORT_BY_SLUG[s].name}
                   </a>
                 </td>
@@ -217,7 +226,7 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
     <p class="mt-8 text-sm opacity-80">
       Install a server from <a class="hover:underline" href={withRoot('/mcp/')}>the MCP page</a>,
       or read the reference implementation's per-tool documentation in the
-      {' '}<a class="hover:underline" href={withPortRoot('/py/')}>Python port</a>.
+      {' '}<a class="hover:underline" href={toolUrl('py')}>Python tool reference</a>.
     </p>
   </main>
 </BaseLayout>

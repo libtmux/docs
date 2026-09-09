@@ -1,6 +1,6 @@
 ---
-title: "Workspace Manager for Swift"
-description: "Build tmux sessions from Swift values, JSON, or optional YAML with TmuxWorkspace."
+title: "Workspace Manager for Swift (in development)"
+description: "The Swift workspace manager is unfinished; builder APIs are available, but there is no workspace loader CLI."
 port: swift
 product: workspace
 sidebar:
@@ -9,30 +9,25 @@ sidebar:
 tableOfContents: true
 ---
 
-`TmuxWorkspace` builds a tmux session from Swift values or a
-[tmuxp](https://tmuxp.git-pull.com)-style configuration. It is a SwiftPM
-library product beside the core [`LibTmux`](/reference/swift/) product.
+**Workspace Manager for Swift is in development and is not a finished
+workspace application.** This port has no CLI equivalent to `tmuxp load`.
 
-Swift and JSON descriptions work without a YAML dependency. Enable the
-`YAMLWorkspaces` package trait to add YAML decoding. Building uses the same
-async core server API under either format.
+The current implementation is `TmuxWorkspace`, a SwiftPM library product for describing and building sessions.
+Using it requires application code. Installing or building it does not provide
+a command that accepts a workspace file and loads your session.
+
+## Load a workspace from the terminal
+
+Use [tmuxp](https://tmuxp.git-pull.com/) for the existing workspace CLI. Its
+[Python workspace guide](/py/latest/workspace/guides/) covers installation and
+`tmuxp load` with YAML or JSON configuration. tmuxp is a separate Python
+application, not a Swift command.
 
 ## Start here
 
-- [Guides](./guides/) select the product and build an isolated session.
-- [Topics](./topics/) explain format limits, values, and cleanup.
-- [Examples](./examples/) include the port's compiled workspace source.
-- [API](./api/) covers configuration and builder errors.
+The [Internals](./internals/) section documents the current builder:
 
-## Existing sessions and versions
-
-The builder refuses an existing session with the requested name. On a later
-failure, it attempts to remove the exact session it created and reports both
-errors if cleanup also fails.
-
-These pages describe the current source API. The port distinguishes its
-unreleased source examples from the released alpha package. Use a matching
-source revision for these examples, or consult the release's own README when
-pinning a published version.
-
-[Product and version guidance](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/README.md)
+- [Guides](./internals/guides/) show application setup and builder calls.
+- [Topics](./internals/topics/) explain supported configuration and behavior.
+- [Examples](./internals/examples/) exercise the library or source consumer.
+- [API](./internals/api/) covers the builder and configuration interfaces.

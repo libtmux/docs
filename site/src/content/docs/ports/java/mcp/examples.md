@@ -1,6 +1,6 @@
 ---
 title: Java MCP examples
-description: Embed the Java MCP server over an application-owned tmux server and transport.
+description: List sessions through the Java MCP server and inspect implementation examples.
 port: java
 product: mcp
 sidebar:
@@ -8,11 +8,35 @@ sidebar:
   order: 3
 ---
 
+Connect the server using the [setup guide](../guides/), then call
+[`list_sessions`](../tools/list_sessions/) from your MCP client.
+
+## List sessions
+
+This is the `params` object for an MCP `tools/call` request. Send it
+through the connected client:
+
+```json
+{
+  "name": "list_sessions",
+  "arguments": {}
+}
+```
+
+Use the returned session IDs when choosing a window or pane. The
+[tool reference](../tools/list_sessions/) describes this port's result
+and optional arguments.
+
+## Internals
+
+The following examples are for applications that embed or extend the server.
+Installing and connecting an MCP client does not require this code.
+
 The public Java entry point accepts an existing libtmux `Server`.
 An application can supply a custom MCP transport or use the stdio
 entry point that the launcher uses.
 
-## Supply a transport
+### Supply a transport
 
 This method exposes the
 [public serving contract](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-mcp/src/main/java/io/github/libtmux/mcp/TmuxMcpServer.java):
@@ -41,7 +65,7 @@ The method reads selection from the process environment. Set that
 environment before creating the server. For a subprocess that manages its
 own lifecycle, use the [launcher guide](../guides/).
 
-## Inspect command completion
+### Inspect command completion
 
 On a disposable session, use an MCP client to discover a pane and invoke
 `run_shell_command`. Read its typed exit status and output. Use

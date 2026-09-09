@@ -23,3 +23,12 @@ export function docsRoutePath(
   const port = entry.data.port!
   return `${port}/${defaults[port] ?? 'latest'}/${path}`
 }
+
+/** Preserve published workspace URLs without aliasing Python's CLI pages. */
+export function workspaceRedirects(paths: string[]): { path: string; target: string }[] {
+  const published = new Set(paths)
+  return paths.flatMap((target) => {
+    const path = target.replace(/(^|\/)workspace\/internals\/(topics|guides|examples|api)(\/|$)/, '$1workspace/$2$3')
+    return path !== target && !published.has(path) ? [{ path, target }] : []
+  })
+}

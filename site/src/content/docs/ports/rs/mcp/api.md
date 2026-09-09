@@ -4,9 +4,12 @@ description: Find TmuxTools, surface tiers, schema-bearing registrations, and MC
 port: rs
 product: mcp
 sidebar:
-  label: API
+  label: Language API
   order: 4
 ---
+
+For MCP client requests, use the [tool reference](../tools/). This page
+covers language APIs for embedding or extending the server.
 
 The `tmux_mcp` crate exports the tool surface for applications that need
 a custom policy or transport. Its executable supplies the stdio launcher.
@@ -35,7 +38,7 @@ for individual objects and pane content. Prompts depend on the selected
 tier.
 
 MCP `run_plan` uses the core operation-plan model.
-[Workspace Manager API](../../workspace/api/) describes the separate
+[Workspace builder API](../../workspace/internals/api/) describes the separate
 workspace parser, builder, and live-session export.
 
 [Crate source and examples](https://github.com/libtmux/libtmux-rs/tree/9331cdf556ea7a1f2589e9c3e6cece6ccdc7765c/crates/tmux-mcp).

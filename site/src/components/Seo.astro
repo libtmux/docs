@@ -148,7 +148,7 @@ const graph: Graph = {
     ...(pagePath
       ? [
           {
-            '@type': /^(mcp|workspace)\/(api|tools)(\/|$)/.test(pagePath) ? 'APIReference' as const : 'TechArticle' as const,
+            '@type': /^(mcp|workspace)\/(internals\/)?(api|tools)(\/|$)/.test(pagePath) ? 'APIReference' as const : 'TechArticle' as const,
             '@id': `${canonical}#article`,
             url: canonical,
             headline: title,

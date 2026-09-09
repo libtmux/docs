@@ -4,9 +4,12 @@ description: Find the TypeScript server factory and the MCP tool, schema, and ca
 port: ts
 product: mcp
 sidebar:
-  label: API
+  label: Language API
   order: 4
 ---
+
+For MCP client requests, use the [tool reference](../tools/). This page
+covers language APIs for embedding or extending the server.
 
 Import the server factory to embed MCP. Use protocol tool names when
 communicating through an MCP client.
@@ -42,4 +45,4 @@ hierarchy-resource subscriptions.
 [Resource registration](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/packages/mcp/src/resources.ts).
 
 Workspace parsing and application belong to
-[`@libtmux/workspace`](../../workspace/api/), not to a workspace MCP tool.
+[`@libtmux/workspace`](../../workspace/internals/api/), not to a workspace MCP tool.

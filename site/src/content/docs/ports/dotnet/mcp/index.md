@@ -18,10 +18,11 @@ Its registered operations use the `tmux_` prefix, including
 
 ## Start here
 
+- [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) install the tool and choose a socket.
 - [Topics](./topics/) explain tiers, result limits, jobs, and subscriptions.
-- [Examples](./examples/) show the direct tool-class contract.
-- [API](./api/) distinguishes the executable, source APIs, and wire tools.
+- [Examples](./examples/) call a tool, then explore server internals.
+- [Language API](./api/) documents embedding and implementation types.
 
 The default surface tier is `mutating`. Dedicated removal requires
 `destructive`; `readonly` omits writing tools.

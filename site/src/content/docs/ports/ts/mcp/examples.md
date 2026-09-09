@@ -1,6 +1,6 @@
 ---
 title: TypeScript MCP examples
-description: Connect an in-process MCP client and run the source-backed agent workflow.
+description: List sessions through the TypeScript MCP server and inspect implementation examples.
 port: ts
 product: mcp
 sidebar:
@@ -8,10 +8,34 @@ sidebar:
   order: 3
 ---
 
+Connect the server using the [setup guide](../guides/), then call
+[`list_sessions`](../tools/list_sessions/) from your MCP client.
+
+## List sessions
+
+This is the `params` object for an MCP `tools/call` request. Send it
+through the connected client:
+
+```json
+{
+  "name": "list_sessions",
+  "arguments": {}
+}
+```
+
+Use the returned session IDs when choosing a window or pane. The
+[tool reference](../tools/list_sessions/) describes this port's result
+and optional arguments.
+
+## Internals
+
+The following examples are for applications that embed or extend the server.
+Installing and connecting an MCP client does not require this code.
+
 The port's `mcp-agent` example connects an MCP client and server with linked
 in-memory transports. The same tool names and arguments are used over stdio.
 
-## Connect an embedded client
+### Connect an embedded client
 
 This function comes from the
 [agent example](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/examples/mcp-agent/mcp-agent.ts).
@@ -40,7 +64,7 @@ The caller owns the returned client. Close it after use. The complete
 example adds helpers for `run_shell_command`, `wait_for_text`,
 `capture_since`, and topology creation.
 
-## Run the example's checks
+### Run the example's checks
 
 From the TypeScript repository after installing its dependencies:
 
@@ -54,4 +78,4 @@ They cover exit status, echoed command text, waits, and successive cursor
 reads. Rendering this excerpt does not execute those tests.
 
 For declarative application code, see
-[Workspace Manager examples](../../workspace/examples/).
+[Workspace builder examples](../../workspace/internals/examples/).

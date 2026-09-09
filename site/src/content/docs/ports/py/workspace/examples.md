@@ -1,6 +1,6 @@
 ---
 title: "Python workspace examples"
-description: "A tmuxp source workspace and an isolated Python builder example."
+description: "Load tmux workspaces from YAML or JSON with the tmuxp CLI."
 port: py
 product: workspace
 sidebar:
@@ -9,55 +9,78 @@ sidebar:
 tableOfContents: true
 ---
 
-The upstream workspace examples are YAML and JSON files that can be loaded
-with the tmuxp CLI. Start with the two-pane file in the [guide](../guides/),
-then use the Python builder when your application needs direct access to the
-resulting libtmux session.
+Save a workspace file and pass it to [tmuxp](https://tmuxp.git-pull.com/).
+These examples require tmuxp and tmux; the [guide](../guides/) covers
+installation. No Python program is needed.
 
-## Build from Python data
+## Load YAML
 
-Run this inside an environment containing tmuxp and its compatible libtmux
-dependency. The example expands shorthand and inherited defaults before
-calling the classic builder, then removes its dedicated server.
+Save this upstream two-pane example as `workspace.yaml`:
 
-```python
-from uuid import uuid4
-
-import libtmux
-from tmuxp.workspace import loader
-from tmuxp.workspace.builder import WorkspaceBuilder
-
-config = {
-    "session_name": "workspace-example",
-    "windows": [
-        {"window_name": "editor", "panes": ["echo ready", "echo ready"]}
-    ],
-}
-expanded = loader.trickle(loader.expand(config))
-server = libtmux.Server(socket_name=f"workspace-{uuid4().hex}")
-try:
-    builder = WorkspaceBuilder(session_config=expanded, server=server)
-    builder.build()
-    print(builder.session.name)
-    print(len(builder.session.windows))
-finally:
-    server.kill()
+```yaml
+session_name: 2-pane-vertical
+windows:
+  - window_name: my test window
+    panes:
+      - echo hello
+      - echo hello
 ```
 
-The builder stores the resulting session on `ClassicWorkspaceBuilder.session`. Its `build`
-method does not return that session as the return value. The code uses a new
-socket for each run so cleanup cannot select a normal user server.
+Load the workspace and attach to it:
 
-## Verification and further examples
+```console
+$ tmuxp load workspace.yaml
+```
 
-The example combines the loader sequence used by the CLI with the classic
-builder's documented API. The upstream builder tests exercise its expanded
-configuration contract, and freezer tests cover reading live sessions back
-into configuration.
+Inside tmux, the loader offers to switch clients or append windows. Detach
+with your tmux prefix followed by `d` to leave the session running.
 
-Read the upstream [configuration examples](https://tmuxp.git-pull.com/configuration/examples/)
-for focus, layouts, directories, environment values, and command shorthand.
-Those examples depend on their commands and paths; inspect each file before
-loading it on your own server.
+## Load JSON without attaching
 
-[Builder examples and contract](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/workspace/builder/classic.py); [Builder tests](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/tests/workspace/test_builder.py).
+The same configuration fields also work in JSON. Save this separate workspace
+as `workspace.json`:
+
+```json
+{
+  "session_name": "json-workspace",
+  "windows": [
+    {
+      "window_name": "editor",
+      "panes": ["echo ready", "echo ready"]
+    }
+  ]
+}
+```
+
+Load it detached on a dedicated socket:
+
+```console
+$ tmuxp load \
+    -L workspace-json-example \
+    -d \
+    workspace.json
+```
+
+Inspect its panes:
+
+```console
+$ tmux -L workspace-json-example list-panes -t '=json-workspace:editor'
+```
+
+Remove the example session when finished:
+
+```console
+$ tmux -L workspace-json-example kill-session -t '=json-workspace'
+```
+
+## More configurations
+
+The upstream [configuration examples](https://tmuxp.git-pull.com/configuration/examples/)
+cover layouts, focus, directories, environment values, and command shorthand.
+The [load reference](https://tmuxp.git-pull.com/cli/load/) documents file
+selection, attachment, and existing sessions.
+
+For contributors studying how a file becomes a session, see the
+[internal builder example](../internals/examples/).
+
+[Two-pane YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/2-pane-vertical.yaml)

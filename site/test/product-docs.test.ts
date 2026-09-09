@@ -25,12 +25,26 @@ interface StructuredEntry {
   itemListElement?: { name: string; item: string }[]
 }
 
+interface DocsManifest {
+  pages: { url: string; markdownUrl: string }[]
+  ports: {
+    slug: string
+    products: { slug: string; inDevelopment: boolean; cli?: string | null; reference: string; protocol?: string }[]
+  }[]
+}
+
 const products = ['mcp', 'workspace'] as const
-const sections = ['', 'topics', 'guides', 'examples', 'api']
 const read = (path: string) => readFileSync(sitePath(path), 'utf8')
 const manifest = (): Manifest => JSON.parse(read('versions.json'))
 const urlFor = (path: string) => new URL(`/${SITE_PREFIX}${path}`, 'https://libtmux.org')
 const productUrl = /\/(?:py|ts|rs|go|java|dotnet|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
+
+function sectionsFor(port: string, product: ProductPage['product']): string[] {
+  if (product === 'mcp') return ['', 'topics', 'guides', 'examples', 'api']
+  return port === 'py'
+    ? ['', 'topics', 'guides', 'examples', 'internals', 'internals/topics', 'internals/examples', 'internals/api']
+    : ['', 'internals', 'internals/topics', 'internals/guides', 'internals/examples', 'internals/api']
+}
 
 function pages(): ProductPage[] {
   const versions = manifest()
@@ -38,7 +52,7 @@ function pages(): ProductPage[] {
     const supported = versions.ports[port.slug]?.filter((entry) => entry.supported) ?? []
     expect(supported.length, `${port.slug} has assembled supported versions`).toBeGreaterThan(0)
     return supported.flatMap(({ slug: version }) => products.flatMap((product) =>
-      sections.map((section) => ({
+      sectionsFor(port.slug, product).map((section) => ({
         port: port.slug, name: port.name, version, product, section,
         path: `${port.slug}/${version}/${product}/${section ? `${section}/` : ''}`,
       }))))
@@ -75,6 +89,25 @@ function graph(document: Window['document']): StructuredEntry[] {
     })
 }
 
+function developmentStatus(document: Window['document'], path: string): void {
+  const status = document.querySelector('[aria-label="Development status"]')
+  expect(status, `${path} development status`).not.toBeNull()
+  expect(status!.textContent, `${path} development status`).toMatch(/in development/i)
+}
+
+function redirectsTo(path: string, target: string): void {
+  inspect(path, (document) => {
+    const refresh = document.querySelector('meta[http-equiv="refresh"]')?.getAttribute('content')
+    expect(refresh, `${path} redirects`).toBeDefined()
+    const destination = refresh!.match(/url=(.+)$/i)?.[1]
+    expect(destination, `${path} redirect destination`).toBeDefined()
+    expect(new URL(destination!, urlFor(path)).pathname, path).toBe(urlFor(target).pathname)
+    expect(resolves(destination!, urlFor(path).href), `${path} redirect target exists`).toBe(true)
+    expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href'), `${path} canonical`).toBe(urlFor(target).href)
+    expect(document.querySelector('[data-pagefind-body]'), `${path} redirects are not searchable`).toBeNull()
+  })
+}
+
 describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   it('serves both products and every section with the chosen port content', () => {
     for (const page of pages()) inspect(page.path, (document) => {
@@ -103,9 +136,43 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
+  it('distinguishes unfinished products and groups workspace implementation docs under Internals', () => {
+    for (const page of pages()) inspect(page.path, (document) => {
+      if (page.product === 'mcp' || (page.port !== 'py' && page.section)) developmentStatus(document, page.path)
+      const navigation = document.querySelectorAll('nav[aria-label="Documentation"]')
+      expect(navigation.length, `${page.path} documentation navigation`).toBeGreaterThan(0)
+      for (const nav of navigation) {
+        if (page.product === 'mcp') {
+          const tools = [...nav.querySelectorAll('a[href]')].find((link) => link.textContent.trim() === 'Tools')
+          expect(tools, `${page.path} Tools navigation`).toBeDefined()
+          const href = tools!.getAttribute('href')!
+          expect(new URL(href, urlFor(page.path)).pathname).toBe(urlFor(`${page.port}/${page.version}/mcp/tools/`).pathname)
+          expect(resolves(href, urlFor(page.path).href), href).toBe(true)
+        } else {
+          const internals = [...nav.querySelectorAll('.sidebar-section')]
+            .find((section) => section.querySelector('.section-label')?.textContent.trim() === 'Internals')
+          expect(internals, `${page.path} Internals navigation group`).toBeDefined()
+          const hrefs = [...internals!.querySelectorAll('a[href]')]
+            .map((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname)
+          for (const section of sectionsFor(page.port, 'workspace').filter((entry) => entry.startsWith('internals'))) {
+            expect(hrefs, `${page.path} ${section} navigation`).toContain(urlFor(`${page.port}/${page.version}/workspace/${section}/`).pathname)
+          }
+        }
+      }
+      if (page.product === 'workspace' && page.port !== 'py' && !page.section) {
+        const intro = [...document.querySelectorAll('article strong')].map((element) => element.textContent).join(' ')
+        expect(intro, `${page.path} unfinished workspace application`).toMatch(/is in development and is not a finished\s+workspace application/i)
+        expect(document.querySelector('article')!.textContent, `${page.path} no user CLI`).toMatch(/no CLI equivalent to\s+tmuxp load/i)
+        const upstream = [...document.querySelectorAll('article a[href]')]
+          .find((link) => link.getAttribute('href') === 'https://tmuxp.git-pull.com/')
+        expect(upstream?.textContent, `${page.path} tmuxp reference`).toBe('tmuxp')
+      }
+    })
+  })
+
   it('links generated declarations and schema-bearing tools inside their product', () => {
-    for (const page of pages().filter((entry) => entry.section === 'api')) {
-      const prefix = `${page.port}/${page.version}/${page.product}/api/`
+    for (const page of pages().filter((entry) => entry.section === 'api' || entry.section === 'internals/api')) {
+      const prefix = `${page.port}/${page.version}/${page.product}/${page.section}/`
       const declarations = inspect(page.path, (document) =>
         [...document.querySelectorAll('[aria-labelledby="generated-api"] a[href]')]
           .map((link) => ({ href: link.getAttribute('href')!, title: link.textContent.trim() })))
@@ -119,11 +186,20 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       inspect(samplePath, (document) => {
         expect(document.querySelector('article h1')?.textContent).toBe(sample.title)
         expect(graph(document).some((entry) => entry['@type'] === 'APIReference')).toBe(true)
+        if (page.product === 'workspace') {
+          const labels = [...document.querySelectorAll('nav[aria-label="Breadcrumb"] a, nav[aria-label="Breadcrumb"] [aria-current="page"]')]
+            .map((item) => item.textContent.trim())
+          expect(labels.slice(0, 3)).toEqual([page.name, 'Workspace Manager', 'Internals'])
+          expect(graph(document).find((entry) => entry['@type'] === 'BreadcrumbList')?.itemListElement?.map((item) => item.name)).toEqual(labels)
+        } else developmentStatus(document, samplePath)
       })
+      if (page.product === 'workspace') redirectsTo(samplePath.replace('/internals/api/', '/api/'), samplePath)
       if (page.product !== 'mcp') continue
       const toolsPath = `${page.port}/${page.version}/mcp/tools/`
-      const tools = inspect(toolsPath, (document) =>
-        [...document.querySelectorAll('article dt a[href]')].map((link) => link.getAttribute('href')!))
+      const tools = inspect(toolsPath, (document) => {
+        developmentStatus(document, toolsPath)
+        return [...document.querySelectorAll('article dt a[href]')].map((link) => link.getAttribute('href')!)
+      })
       expect(tools.length, `${toolsPath} protocol tools`).toBeGreaterThan(0)
       for (const href of tools) {
         expect(new URL(href, urlFor(toolsPath)).pathname).toMatch(new RegExp(`^/${SITE_PREFIX}${toolsPath}[^/]+/$`))
@@ -131,6 +207,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       }
       const toolPath = new URL(tools[0], urlFor(toolsPath)).pathname.slice(SITE_PREFIX.length + 1)
       inspect(toolPath, (document) => {
+        developmentStatus(document, toolPath)
         const input = [...document.querySelectorAll('details')]
           .find((detail) => detail.querySelector('summary')?.textContent === 'Input schema')
         expect(input, `${toolPath} input schema`).toBeDefined()
@@ -144,12 +221,17 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     const defaults = manifest().defaultVersion
     for (const page of pages()) inspect(page.path, (document) => {
       const links = [...document.querySelectorAll('[data-page-port-switcher] a[href]')]
-      expect(links.length, `${page.path} port counterparts`).toBe(PORTS.length)
+      const available = PORTS.filter((port) => sectionsFor(port.slug, page.product).includes(page.section))
+      expect(links.length, `${page.path} port counterparts`).toBe(available.length)
       for (const port of PORTS) {
         const version = port.slug === page.port ? page.version : defaults[port.slug]
         const expected = urlFor(`${port.slug}/${version}/${page.product}/${page.section ? `${page.section}/` : ''}`).pathname
         expect(links.some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === expected),
-          `${page.path} counterpart ${expected}`).toBe(true)
+          `${page.path} counterpart ${expected}`).toBe(available.includes(port))
+        if (!available.includes(port)) {
+          const unavailable = [...document.querySelectorAll('[data-page-port-switcher] [aria-disabled="true"]')]
+          expect(unavailable.some((entry) => entry.textContent.includes(port.name)), `${page.path} unavailable ${port.name}`).toBe(true)
+        }
       }
       const crumb = document.querySelector('nav[aria-label="Breadcrumb"]')!
       expect(crumb, page.path).not.toBeNull()
@@ -158,8 +240,21 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(structured?.itemListElement?.map((item) => item.name), page.path).toEqual(labels)
       expect(labels[0]).toBe(page.name)
       expect(labels[1]).toBe(page.product === 'mcp' ? 'MCP' : 'Workspace Manager')
+      if (page.section.startsWith('internals/')) expect(labels[2]).toBe('Internals')
       for (const item of structured!.itemListElement!) expect(resolves(item.item), item.item).toBe(true)
       expect(new URL(structured!.itemListElement!.at(-1)!.item).pathname).toBe(urlFor(page.path).pathname)
+    })
+  })
+
+  it('redirects previous workspace implementation URLs without replacing Python CLI docs', () => {
+    for (const page of pages().filter((entry) => entry.product === 'workspace'
+      && (entry.section === 'internals/api' || (entry.port !== 'py' && entry.section.startsWith('internals/'))))) {
+      redirectsTo(page.path.replace('/internals/', '/'), page.path)
+    }
+    for (const page of pages().filter((entry) => entry.port === 'py' && entry.product === 'workspace'
+      && ['guides', 'examples'].includes(entry.section))) inspect(page.path, (document) => {
+      expect(document.querySelector('meta[http-equiv="refresh"]'), `${page.path} remains a user guide`).toBeNull()
+      expect(document.querySelector('article')!.textContent, `${page.path} CLI usage`).toContain('tmuxp load')
     })
   })
 
@@ -191,7 +286,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
 
   it('exports real product URLs, resolved examples, and canonical sitemap entries', () => {
     const defaults = manifest().defaultVersion
-    const index = JSON.parse(read('docs.json')) as { pages: { url: string; markdownUrl: string }[] }
+    const index = JSON.parse(read('docs.json')) as DocsManifest
     const llms = read('llms.txt')
     const sitemapFiles = [...read('sitemap-index.xml').matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname)
     const sitemap = sitemapFiles.map((path) => readFileSync(publishedPath(path), 'utf8')).join('\n')
@@ -200,15 +295,33 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(index.pages.some((entry) => entry.url === url), `${url} in docs.json`).toBe(true)
       expect(llms, `${url} in llms.txt`).toContain(`](${url})`)
       expect(sitemap, `${url} in sitemap`).toContain(`<loc>${url}</loc>`)
+      if (page.product === 'workspace' && (page.section === 'internals/api'
+        || (page.port !== 'py' && page.section.startsWith('internals/')))) {
+        const legacy = url.replace('/workspace/internals/', '/workspace/')
+        expect(sitemap, `${legacy} redirect is not canonical`).not.toContain(`<loc>${legacy}</loc>`)
+      }
     }
     const exportRoots = new Set(['', ...pages().map((page) => `${page.port}/${page.version}/`)])
     for (const root of exportRoots) {
       const body = read(`${root}llms-full.txt`)
       expect(body, `${root} resolved file inclusions`).not.toMatch(/```[^\n]*file="[^"\n]+"[^\n]*\n\s*```/)
-      const exported = JSON.parse(read(`${root}docs.json`)) as { pages: { url: string; markdownUrl: string }[] }
+      const exported = JSON.parse(read(`${root}docs.json`)) as DocsManifest
+      for (const port of PORTS) {
+        const advertised = exported.ports.find((entry) => entry.slug === port.slug)!
+        for (const product of products) {
+          const metadata = advertised.products.find((entry) => entry.slug === product)!
+          expect(metadata.inDevelopment, `${root}${port.slug} ${product} development status`).toBe(product === 'mcp' || port.slug !== 'py')
+          const section = product === 'workspace' ? 'internals/api' : 'api'
+          expect(new URL(metadata.reference, urlFor(root)).pathname).toBe(urlFor(`${port.slug}/${defaults[port.slug]}/${product}/${section}/`).pathname)
+          if (product === 'workspace') expect(metadata.cli, `${root}${port.slug} user CLI`).toBe(port.slug === 'py' ? 'tmuxp load' : null)
+          else expect(resolves(metadata.protocol!, urlFor(root).href), `${root}${port.slug} MCP protocol`).toBe(true)
+        }
+      }
       for (const entry of exported.pages.filter((entry) => productUrl.test(entry.url))) {
         expect(resolves(entry.url), entry.url).toBe(true)
         expect(resolves(entry.markdownUrl), entry.markdownUrl).toBe(true)
+        expect(entry.url, `${root} canonical workspace API exports`).not.toMatch(/\/workspace\/api(?:\/|$)/)
+        expect(entry.url, `${root} canonical workspace prose exports`).not.toMatch(/\/(?:ts|rs|go|java|dotnet|cxx|swift)\/[^/]+\/workspace\/(?:topics|guides|examples)(?:\/|$)/)
         if (root) expect(new URL(entry.url).pathname).toContain(`/${SITE_PREFIX}${root}`)
       }
     }

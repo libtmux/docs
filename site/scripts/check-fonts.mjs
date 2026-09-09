@@ -94,10 +94,10 @@ const ARCHETYPES = [
  */
 function isRedirectStub(html) {
   const redirects = /http-equiv=["']?refresh/i.test(html) || /window\.location\.(href|replace)/.test(html)
-  if (!redirects) return false
+  if (!redirects || /<(?:main|article)\b/i.test(html)) return false
   const text = html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    // Astro repeats potentially long paths in the title and code labels.
+    .replace(/<(script|style|title|code)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()

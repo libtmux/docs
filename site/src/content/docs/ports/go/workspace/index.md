@@ -1,6 +1,6 @@
 ---
-title: "Workspace Manager for Go"
-description: "Parse tmuxp-style YAML and build sessions with the Go workspace module."
+title: "Workspace Manager for Go (in development)"
+description: "The Go workspace manager is unfinished; builder APIs are available, but there is no workspace loader CLI."
 port: go
 product: workspace
 sidebar:
@@ -9,31 +9,25 @@ sidebar:
 tableOfContents: true
 ---
 
-The `workspace` module parses [tmuxp](https://tmuxp.git-pull.com)-style YAML
-and builds a session through libtmux's Go API. It is a separate module, so
-applications using only the core client do not acquire a YAML dependency.
+**Workspace Manager for Go is in development and is not a finished
+workspace application.** This port has no CLI equivalent to `tmuxp load`.
 
-Parsing validates the whole document before construction. Building returns
-the created session, including a session handle alongside an error when later
-operations fail and leave a partial workspace.
+The current implementation is `workspace`, a library module for parsing YAML and building sessions.
+Using it requires application code. Installing or building it does not provide
+a command that accepts a workspace file and loads your session.
+
+## Load a workspace from the terminal
+
+Use [tmuxp](https://tmuxp.git-pull.com/) for the existing workspace CLI. Its
+[Python workspace guide](/py/latest/workspace/guides/) covers installation and
+`tmuxp load` with YAML or JSON configuration. tmuxp is a separate Python
+application, not a Go command.
 
 ## Start here
 
-- [Guides](./guides/) install the module and choose a build operation.
-- [Topics](./topics/) explain validation, connection ownership, and tmuxp
-  limits.
-- [Examples](./examples/) include the executable Go examples.
-- [API](./api/) covers parsing, building, and configuration values.
+The [Internals](./internals/) section documents the current builder:
 
-## Package and runtime
-
-Import [`github.com/libtmux/libtmux-go/workspace`](https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace) together with the core `tmux`
-package. Building requires tmux on the host. Parsing and configuration
-validation do not start a tmux server.
-
-The module supports tmuxp field names for windows, panes, commands, options,
-environment variables, and working directories. Python plugins and
-`before_script` are rejected. Inspect the supported subset when moving an
-existing Python workspace to Go.
-
-[Workspace module documentation](https://github.com/libtmux/libtmux-go/blob/5f808882015a975a65acc7f9da5b3ff0d5cbdc91/workspace/README.md)
+- [Guides](./internals/guides/) show application setup and builder calls.
+- [Topics](./internals/topics/) explain supported configuration and behavior.
+- [Examples](./internals/examples/) exercise the library or source consumer.
+- [API](./internals/api/) covers the builder and configuration interfaces.

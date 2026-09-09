@@ -13,7 +13,7 @@ describe('API links in port sections', () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"go":"stable"}')
     const paragraph = element('p', element('code', text('workspace.Parse')))
     rehypeApiLinks()({ type: 'root', children: [paragraph] }, { data: { astro: { frontmatter: { port: 'go', product: 'workspace' } } } })
-    expect(paragraph.children?.[0].properties?.href).toBe('/go/stable/workspace/api/workspace-parse/')
+    expect(paragraph.children?.[0].properties?.href).toBe('/go/stable/workspace/internals/api/workspace-parse/')
   })
 
   it('keeps the current product version while preserving core reference URLs', () => {
@@ -22,7 +22,7 @@ describe('API links in port sections', () => {
     const product = element('p', element('code', text('workspace.Parse')))
     const core = element('p', element('code', text('tmux.Server')))
     rehypeApiLinks()({ type: 'root', children: [product, core] }, { data: { astro: { frontmatter: { port: 'go', product: 'workspace' } } } })
-    expect(product.children?.[0].properties?.href).toBe('/go/v0.1/workspace/api/workspace-parse/')
+    expect(product.children?.[0].properties?.href).toBe('/go/v0.1/workspace/internals/api/workspace-parse/')
     expect(core.children?.[0].properties?.href).toBe('/reference/go/tmux-server/')
   })
 
