@@ -25,6 +25,14 @@ interface StructuredEntry {
   itemListElement?: { name: string; item: string }[]
 }
 
+interface DocsManifest {
+  pages: { url: string; markdownUrl: string }[]
+  ports: {
+    slug: string
+    products: { slug: string; inDevelopment: boolean; cli?: string | null; reference: string; protocol?: string }[]
+  }[]
+}
+
 const products = ['mcp', 'workspace'] as const
 const read = (path: string) => readFileSync(sitePath(path), 'utf8')
 const manifest = (): Manifest => JSON.parse(read('versions.json'))
@@ -278,7 +286,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
 
   it('exports real product URLs, resolved examples, and canonical sitemap entries', () => {
     const defaults = manifest().defaultVersion
-    const index = JSON.parse(read('docs.json')) as { pages: { url: string; markdownUrl: string }[] }
+    const index = JSON.parse(read('docs.json')) as DocsManifest
     const llms = read('llms.txt')
     const sitemapFiles = [...read('sitemap-index.xml').matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname)
     const sitemap = sitemapFiles.map((path) => readFileSync(publishedPath(path), 'utf8')).join('\n')
@@ -297,7 +305,18 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     for (const root of exportRoots) {
       const body = read(`${root}llms-full.txt`)
       expect(body, `${root} resolved file inclusions`).not.toMatch(/```[^\n]*file="[^"\n]+"[^\n]*\n\s*```/)
-      const exported = JSON.parse(read(`${root}docs.json`)) as { pages: { url: string; markdownUrl: string }[] }
+      const exported = JSON.parse(read(`${root}docs.json`)) as DocsManifest
+      for (const port of PORTS) {
+        const advertised = exported.ports.find((entry) => entry.slug === port.slug)!
+        for (const product of products) {
+          const metadata = advertised.products.find((entry) => entry.slug === product)!
+          expect(metadata.inDevelopment, `${root}${port.slug} ${product} development status`).toBe(product === 'mcp' || port.slug !== 'py')
+          const section = product === 'workspace' ? 'internals/api' : 'api'
+          expect(new URL(metadata.reference, urlFor(root)).pathname).toBe(urlFor(`${port.slug}/${defaults[port.slug]}/${product}/${section}/`).pathname)
+          if (product === 'workspace') expect(metadata.cli, `${root}${port.slug} user CLI`).toBe(port.slug === 'py' ? 'tmuxp load' : null)
+          else expect(resolves(metadata.protocol!, urlFor(root).href), `${root}${port.slug} MCP protocol`).toBe(true)
+        }
+      }
       for (const entry of exported.pages.filter((entry) => productUrl.test(entry.url))) {
         expect(resolves(entry.url), entry.url).toBe(true)
         expect(resolves(entry.markdownUrl), entry.markdownUrl).toBe(true)
