@@ -4,9 +4,12 @@ description: Find Python server entry points, typed models, and the separate MCP
 port: py
 product: mcp
 sidebar:
-  label: API
+  label: Language API
   order: 4
 ---
+
+For MCP client requests, use the [tool reference](../tools/). This page
+covers language APIs for embedding or extending the server.
 
 The Python API and MCP protocol expose different interfaces. Python callers
 import functions and models; MCP clients send registered tool names and
@@ -39,5 +42,5 @@ their existence does not make them separate MCP tools.
 - [Registration source](https://github.com/tmux-python/libtmux-mcp/blob/v0.1.0a22/src/libtmux_mcp/server.py)
 
 Use [Examples](../examples/) to inspect the protocol with an in-process
-client. Use the [Workspace Manager API](../../workspace/api/) for tmuxp
+client. Use the [Workspace builder API](../../workspace/internals/api/) for tmuxp
 configuration and builders.

@@ -3,7 +3,7 @@ import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE } from '../i18n/locales.ts'
 import { localeOf } from '../i18n/resolve.ts'
 import { API_MODELS, PORT_NAME, ownersOf } from '../lib/api-models.ts'
-import { DOC_PRODUCTS, hasReference, PORTS, portPageUrl, referenceUrl } from '../lib/ports.ts'
+import { DOC_PRODUCTS, hasReference, PORTS, portPageUrl, productApiPath, productInDevelopment, referenceUrl, type DocProduct } from '../lib/ports.ts'
 import { PORT_ROOT } from '../lib/site-root.ts'
 import { docsRoutePath } from '../lib/docs-paths.ts'
 
@@ -100,8 +100,10 @@ export const GET: APIRoute = async ({ site }) => {
       reference: hasReference(p) ? referenceUrl(p, 'stable') : null,
       products: Object.entries(DOC_PRODUCTS).map(([slug, product]) => ({
         slug, name: product.label,
+        inDevelopment: productInDevelopment(p, slug as DocProduct),
+        ...(slug === 'workspace' ? { cli: p.workspaceCli ?? null } : {}),
         url: portPageUrl(p, defaults[p.slug] ?? 'latest', slug),
-        reference: portPageUrl(p, defaults[p.slug] ?? 'latest', `${slug}/api`),
+        reference: portPageUrl(p, defaults[p.slug] ?? 'latest', productApiPath(slug as DocProduct)),
         ...(slug === 'mcp' ? { protocol: portPageUrl(p, defaults[p.slug] ?? 'latest', 'mcp/tools').replace(/\/$/, '.json') } : {}),
         source: API_MODELS[p.slug]?.sources?.find((source) => source.product === slug),
       })),

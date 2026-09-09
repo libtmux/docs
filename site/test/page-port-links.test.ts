@@ -8,16 +8,16 @@ const { localePageHref, localeSourcePath } = await import('../src/i18n/locales')
 const docs = [
   { id: 'concepts/model', data: {} },
   { id: 'guides/python-only', data: { port: 'py' } },
-  { id: 'ports/ts/workspace/guides', data: { port: 'ts', product: 'workspace' } },
-  { id: 'ports/rs/workspace/guides', data: { port: 'rs', product: 'workspace' } },
+  { id: 'ports/ts/workspace/internals/guides', data: { port: 'ts', product: 'workspace' } },
+  { id: 'ports/rs/workspace/internals/guides', data: { port: 'rs', product: 'workspace' } },
 ]
 const options = { version: 'v1.2.3', defaults: { py: 'stable', ts: 'latest' }, docs }
 
 describe('matching pages in another port', () => {
   it('switches product guides only where the matching page is authored', () => {
-    const links = pagePortLinks({ ...options, pagePath: 'workspace/guides', portSlug: 'ts' })
-    expect(links.find((p) => p.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/v1.2.3/workspace/guides/')
-    expect(links.find((p) => p.port === 'rs')?.links[0].href).toBe('/pr-42/en/rs/latest/workspace/guides/')
+    const links = pagePortLinks({ ...options, pagePath: 'workspace/internals/guides', portSlug: 'ts' })
+    expect(links.find((p) => p.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/v1.2.3/workspace/internals/guides/')
+    expect(links.find((p) => p.port === 'rs')?.links[0].href).toBe('/pr-42/en/rs/latest/workspace/internals/guides/')
     expect(links.find((p) => p.port === 'py')?.links).toEqual([])
   })
   it('preserves the prose page and chooses the target port default', () => {
@@ -58,13 +58,13 @@ describe('matching pages in another port', () => {
     const swift = pagePortLinks({ ...options, pagePath: 'mcp/tools/run_command', portSlug: 'swift' })
     expect(swift.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['swift'])
     const python = pagePortLinks({ ...options, pagePath: 'mcp/tools/run_command', portSlug: 'py' })
-    expect(python.find((entry) => entry.port === 'swift')?.links).toEqual([])
+    expect(python.find((entry) => entry.port === 'swift')?.links[0]?.href).toBe('/pr-42/en/swift/latest/mcp/tools/run_shell/')
     expect(python.find((entry) => entry.port === 'go')?.links[0]?.href).toBe('/pr-42/en/go/latest/mcp/tools/run_command/')
   })
 
   it('keeps scrollback-only clearing separate from clearing the visible screen', () => {
     const rust = pagePortLinks({ ...options, pagePath: 'mcp/tools/clear_pane', portSlug: 'rs' })
-    expect(rust.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['rs'])
+    expect(rust.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['ts', 'rs', 'java'])
     const python = pagePortLinks({ ...options, pagePath: 'mcp/tools/clear_pane', portSlug: 'py' })
     expect(python.find((entry) => entry.port === 'rs')?.links).toEqual([])
     expect(python.find((entry) => entry.port === 'dotnet')?.links[0]?.href).toBe('/pr-42/en/dotnet/latest/mcp/tools/tmux_clear_pane/')
@@ -103,5 +103,31 @@ describe('locale switcher targets', () => {
     ['/pr-42/en/dotnet/latest/api/libtmux.client/', 'en', '/pr-42/en/dotnet/latest/api/libtmux.client/'],
   ])('keeps the English counterpart of %s inside its preview', (pathname, locale, expected) => {
     expect(localePageHref('en', localeSourcePath(pathname, locale))).toBe(expected)
+  })
+})
+
+
+describe('workspace documentation compatibility', () => {
+  it('keeps CLI guides distinct from builder guides', () => {
+    const entries = [...docs, { id: 'ports/py/workspace/guides', data: { port: 'py', product: 'workspace' } }]
+    const cli = pagePortLinks({ ...options, docs: entries, pagePath: 'workspace/guides', portSlug: 'py' })
+    expect(cli.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['py'])
+    const internals = pagePortLinks({ ...options, docs: entries, pagePath: 'workspace/internals/guides', portSlug: 'ts' })
+    expect(internals.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['ts', 'rs'])
+  })
+
+  it('redirects old builder paths while retaining real Python user pages', async () => {
+    const { workspaceRedirects } = await import('../src/lib/docs-paths')
+    expect(workspaceRedirects([
+      'py/stable/workspace/examples', 'py/stable/workspace/internals/examples',
+      'go/latest/workspace/internals/examples', 'go/latest/workspace/internals/api/builder',
+      'go/latest/workspace/internals', 'go/latest/guides',
+    ])).toEqual([
+      { path: 'go/latest/workspace/examples', target: 'go/latest/workspace/internals/examples' },
+      { path: 'go/latest/workspace/api/builder', target: 'go/latest/workspace/internals/api/builder' },
+    ])
+    expect(workspaceRedirects(['workspace/internals/api/builder'])).toEqual([
+      { path: 'workspace/api/builder', target: 'workspace/internals/api/builder' },
+    ])
   })
 })

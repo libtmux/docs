@@ -18,7 +18,7 @@
  */
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
-import { PORT_BY_SLUG, type DocProduct } from './ports'
+import { PORT_BY_SLUG, portPageUrl, type DocProduct } from './ports'
 import { withPortRoot, withRoot } from './site-root'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { localeOf, sourceIdOf } from '../i18n/resolve'
@@ -236,7 +236,12 @@ export async function getSidebar(
    * general form of "notices last" rather than a special case for one file.
    */
   if (port === undefined) return [...groups, ...ungrouped]
-  if (product) return [...ungrouped, ...groups]
+  if (product) {
+    if (product === 'mcp') ungrouped.splice(1, 0, {
+      type: 'link', label: 'Tools', href: portPageUrl(PORT_BY_SLUG[port], version, 'mcp/tools'),
+    })
+    return [...ungrouped, ...groups]
+  }
   return [...referenceEntries(port, version), ...groups, ...ungrouped]
 }
 

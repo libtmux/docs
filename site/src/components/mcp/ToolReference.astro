@@ -8,7 +8,7 @@ const { port, version, toolName } = Astro.props
 const info = PORT_BY_SLUG[port]
 const reference = MCP_REFERENCE[port]
 const tool = reference.registrations.find((entry) => entry.wireName === toolName)
-const descriptionHtml = tool ? await renderToolDescription(tool.description) : undefined
+const descriptionHtml = tool ? await renderToolDescription(tool.description, { port, version, toolName }) : undefined
 const title = tool ? tool.wireName : `${info.name} MCP tools`
 const pagePath = tool ? `mcp/tools/${tool.wireName}` : 'mcp/tools'
 const properties = (tool?.inputSchema?.properties ?? {}) as Record<string, { type?: string | string[]; description?: string; default?: unknown; $ref?: string }>

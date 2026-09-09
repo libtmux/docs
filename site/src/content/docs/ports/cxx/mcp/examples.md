@@ -1,6 +1,6 @@
 ---
 title: C++ MCP examples
-description: Inspect the C++ consumer catalog and follow a discovery-first MCP workflow.
+description: List sessions through the C++ MCP server and inspect implementation examples.
 port: cxx
 product: mcp
 sidebar:
@@ -8,11 +8,35 @@ sidebar:
   order: 3
 ---
 
+Connect the server using the [setup guide](../guides/), then call
+[`list_sessions`](../tools/list_sessions/) from your MCP client.
+
+## List sessions
+
+This is the `params` object for an MCP `tools/call` request. Send it
+through the connected client:
+
+```json
+{
+  "name": "list_sessions",
+  "arguments": {}
+}
+```
+
+Use the returned session IDs when choosing a window or pane. The
+[tool reference](../tools/list_sessions/) describes this port's result
+and optional arguments.
+
+## Internals
+
+The following examples are for applications that embed or extend the server.
+Installing and connecting an MCP client does not require this code.
+
 The MCP consumer separates its tool model from JSON-RPC encoding.
 Source applications can inspect that model without starting a tmux
 server.
 
-## Inspect the consumer catalog
+### Inspect the consumer catalog
 
 This program uses the declarations in the
 [consumer header](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/apps/mcp/include/libtmux_consumers/mcp.hpp):
@@ -38,7 +62,7 @@ The [consumer tests](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8
 exercise the same catalog and direct calls. This small listing program
 is a source-derived example, not one of those collected tests.
 
-## Drive the executable
+### Drive the executable
 
 After connecting an MCP client using the [guide](../guides/), start with
 `inspect_tmux`. Select one returned session and call `list_windows`

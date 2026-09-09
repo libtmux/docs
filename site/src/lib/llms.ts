@@ -23,7 +23,7 @@
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
 import { LANG_TO_PORT, parseMeta, readFence } from '../plugins/remark-port-code.mjs'
-import { PORT_BY_SLUG, hasReference, portPageUrl, referenceUrl } from './ports.ts'
+import { PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, referenceUrl } from './ports.ts'
 import { DEFAULT_LOCALE } from '../i18n/locales.ts'
 import { localeOf } from '../i18n/resolve.ts'
 import { buildTarget } from './versions.ts'
@@ -126,7 +126,7 @@ export async function llmsPages(origin: string, base: string): Promise<LlmsPage[
       const entryPort = entry.data.port
       const version = port ? buildTarget(process.env).version : (defaults[entryPort ?? ''] ?? 'latest')
       let body = resolvePortCode(entry.body ?? '', entryPort ?? port)
-      if (entryPort && entry.data.product && docsPath(entry) === `${entry.data.product}/api`) {
+      if (entryPort && entry.data.product && docsPath(entry) === productApiPath(entry.data.product)) {
         const model = API_MODELS[entryPort]
         const symbols = productApiRoots(model, entry.data.product)
         body += `\n\n## API declarations\n\n${symbols.map((symbol) => `- [${symbol.publicId ?? symbol.name}](${origin}${productApiHref(model, symbol, version)})`).join('\n')}\n`

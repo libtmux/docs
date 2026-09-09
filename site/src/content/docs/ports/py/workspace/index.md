@@ -21,10 +21,10 @@ workspace builders.
 ## Start here
 
 - [Guides](./guides/) install tmuxp and load a workspace on a dedicated socket.
-- [Topics](./topics/) explain expansion, builders, existing sessions, and
-  exports.
-- [Examples](./examples/) show a source workspace and a Python builder example.
-- [API](./api/) maps loading, building, freezing, and extension interfaces.
+- [Topics](./topics/) explain configuration, existing sessions, and exports.
+- [Examples](./examples/) load YAML and JSON through the CLI.
+- [Internals](./internals/) describe the builder pipeline and Python APIs for
+  contributors and extension authors.
 
 ## Package and documentation
 
@@ -33,8 +33,7 @@ resolver choose a compatible libtmux version. The MCP server is another
 application with its own requirements, so use separate tool environments when
 their dependency ranges differ.
 
-These internal pages connect the Python implementation to the port documentation
-system. The [tmuxp documentation](https://tmuxp.git-pull.com/) remains the
-complete upstream guide to its CLI, workspace format, and extension APIs.
+The [tmuxp documentation](https://tmuxp.git-pull.com/) provides the complete
+upstream CLI reference, workspace format, and extension documentation.
 
 [Upstream quickstart source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/docs/quickstart.md)

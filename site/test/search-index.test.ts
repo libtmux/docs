@@ -6,7 +6,12 @@ import { SITE_BUILT, sitePath } from './site-root'
 it.skipIf(!SITE_BUILT)('indexes scoped product declarations while retaining core, internal, and index pages', () => {
   const cases = [
     ['reference/go/workspace-build', false],
-    ['go/latest/workspace/api/workspace-build', true],
+    ['go/latest/workspace/api/workspace-build', false],
+    ['go/latest/workspace/internals/api/workspace-build', true],
+    ['go/latest/workspace/guides', false],
+    ['go/latest/workspace/internals/guides', true],
+    ['py/latest/workspace/guides', true],
+    ['py/latest/workspace/internals', true],
     ['reference/ts/mcp-startup-serverstartup', false],
     ['ts/latest/mcp/api/mcp-startup-serverstartup', true],
     ['reference/ts/builder-applywindowcontext', true],

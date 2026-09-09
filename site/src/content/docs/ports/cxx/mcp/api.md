@@ -4,9 +4,12 @@ description: Distinguish installed protocol tools from the C++ source consumer's
 port: cxx
 product: mcp
 sidebar:
-  label: API
+  label: Language API
   order: 4
 ---
+
+For MCP client requests, use the [tool reference](../tools/). This page
+covers language APIs for embedding or extending the server.
 
 The installed product is `libtmux-mcp-server`. Its public MCP operations
 are available through the protocol. The C++ tool model lives in a source
@@ -38,5 +41,5 @@ JSON text. Strict argument validation precedes tmux execution.
 [Protocol tests](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/apps/mcp/tests/protocol_test.cpp)
 cover supported lifecycle revisions and result shapes.
 
-[Workspace Manager API](../../workspace/api/) documents a separate source
+[Workspace builder API](../../workspace/internals/api/) documents a separate source
 consumer; it is not a workspace operation in this MCP catalog.

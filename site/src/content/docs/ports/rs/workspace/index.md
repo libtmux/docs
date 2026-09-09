@@ -1,6 +1,6 @@
 ---
-title: "Workspace Manager for Rust"
-description: "Build tmux sessions from YAML and export live layouts with tmux-workspace."
+title: "Workspace Manager for Rust (in development)"
+description: "The Rust workspace manager is unfinished; builder APIs are available, but there is no workspace loader CLI."
 port: rs
 product: workspace
 sidebar:
@@ -9,31 +9,25 @@ sidebar:
 tableOfContents: true
 ---
 
-`tmux-workspace` creates a tmux session from a
-[tmuxp](https://tmuxp.git-pull.com)-style YAML description.
-The crate uses the public libtmux API and returns a typed session handle. A
-separate `freeze` operation records an existing session as workspace data.
+**Workspace Manager for Rust is in development and is not a finished
+workspace application.** This port has no CLI equivalent to `tmuxp load`.
 
-Building creates a new session. It refuses an already existing session with
-the requested name, so repeated builds require a new name or explicit cleanup.
+The current implementation is `tmux-workspace`, a library crate for building workspace descriptions and freezing sessions.
+Using it requires application code. Installing or building it does not provide
+a command that accepts a workspace file and loads your session.
+
+## Load a workspace from the terminal
+
+Use [tmuxp](https://tmuxp.git-pull.com/) for the existing workspace CLI. Its
+[Python workspace guide](/py/latest/workspace/guides/) covers installation and
+`tmuxp load` with YAML or JSON configuration. tmuxp is a separate Python
+application, not a Rust command.
 
 ## Start here
 
-- [Guides](./guides/) install the crate and build a workspace.
-- [Topics](./topics/) explain plans, parsing, failures, and export limits.
-- [Examples](./examples/) build and freeze an isolated session.
-- [API](./api/) covers the public configuration and builder types.
+The [Internals](./internals/) section documents the current builder:
 
-## Package and runtime
-
-Add `tmux-workspace` separately from the core crate. Workspace creation and
-freezing are asynchronous and require a running Tokio runtime and tmux on the
-host. Pin a prerelease explicitly; a stable-only Cargo requirement does not
-select an alpha release.
-
-The format covers a subset of tmuxp. Unknown keys are recorded in
-`unsupported_keys` by
-the parser. Review those lists before assuming a Python workspace's setup
-hooks or configuration have taken effect.
-
-[Crate documentation](https://github.com/libtmux/libtmux-rs/blob/9331cdf556ea7a1f2589e9c3e6cece6ccdc7765c/crates/tmux-workspace/README.md)
+- [Guides](./internals/guides/) show application setup and builder calls.
+- [Topics](./internals/topics/) explain supported configuration and behavior.
+- [Examples](./internals/examples/) exercise the library or source consumer.
+- [API](./internals/api/) covers the builder and configuration interfaces.

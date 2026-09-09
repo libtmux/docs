@@ -20,10 +20,11 @@ capabilities.
 
 ## Start here
 
+- [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) install the command and diagnose its connection.
 - [Topics](./topics/) explain capabilities, operation ceilings, and jobs.
-- [Examples](./examples/) run the in-process agent workflow.
-- [API](./api/) covers the managed embedding instance and protocol catalog.
+- [Examples](./examples/) call a tool, then explore server internals.
+- [Language API](./api/) documents embedding and implementation types.
 
 The server includes resources, subscriptions, prompts, and a
 `build_workspace` tool backed by the

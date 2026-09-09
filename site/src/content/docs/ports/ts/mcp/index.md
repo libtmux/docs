@@ -18,10 +18,11 @@ macOS artifact checks do not establish runtime support.
 
 ## Start here
 
+- [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) install and connect a client.
 - [Topics](./topics/) explain toolsets, socket provenance, and waiting.
-- [Examples](./examples/) connect an MCP client inside a TypeScript program.
-- [API](./api/) separates embedding functions from the wire tool catalog.
+- [Examples](./examples/) call a tool, then explore server internals.
+- [Language API](./api/) documents embedding and implementation types.
 
 The server exposes a static `tmux://capabilities` resource. It does not
 register workflow prompts or dynamic hierarchy resources.

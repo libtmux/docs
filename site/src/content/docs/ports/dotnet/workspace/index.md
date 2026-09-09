@@ -1,6 +1,6 @@
 ---
-title: "Workspace Manager for .NET"
-description: "Build tmux sessions from YAML with LibTmux.Workspace."
+title: "Workspace Manager for .NET (in development)"
+description: "The .NET workspace manager is unfinished; builder APIs are available, but there is no workspace loader CLI."
 port: dotnet
 product: workspace
 sidebar:
@@ -9,27 +9,25 @@ sidebar:
 tableOfContents: true
 ---
 
-`LibTmux.Workspace` reads a [tmuxp](https://tmuxp.git-pull.com)-style YAML file
-and builds its session through LibTmux. It returns the session, materialized
-windows, and any layouts that tmux rejected while leaving their windows usable.
+**Workspace Manager for .NET is in development and is not a finished
+workspace application.** This port has no CLI equivalent to `tmuxp load`.
 
-Use it from a launcher or another .NET application that already controls a
-tmux server. The package adds YAML parsing separately from the core client.
+The current implementation is `LibTmux.Workspace`, a library package for parsing YAML and building sessions.
+Using it requires application code. Installing or building it does not provide
+a command that accepts a workspace file and loads your session.
+
+## Load a workspace from the terminal
+
+Use [tmuxp](https://tmuxp.git-pull.com/) for the existing workspace CLI. Its
+[Python workspace guide](/py/latest/workspace/guides/) covers installation and
+`tmuxp load` with YAML or JSON configuration. tmuxp is a separate Python
+application, not a .NET command.
 
 ## Start here
 
-- [Guides](./guides/) install the package and build an isolated workspace.
-- [Topics](./topics/) explain validation, readiness, and partial results.
-- [Examples](./examples/) connect the documented example to its checks.
-- [API](./api/) covers configuration, results, and builder options.
+The [Internals](./internals/) section documents the current builder:
 
-## Package and runtime
-
-The package targets .NET 8 and .NET 10 and uses YamlDotNet. tmux must run on
-the host. Pin the prerelease selected by your package manager because public
-contracts can change between alpha versions.
-
-The accepted format is a closed subset. Unknown keys, Python plugins,
-configuration search paths, and tmuxp hooks are not silently accepted.
-
-[Package documentation](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Workspace/README.md)
+- [Guides](./internals/guides/) show application setup and builder calls.
+- [Topics](./internals/topics/) explain supported configuration and behavior.
+- [Examples](./internals/examples/) exercise the library or source consumer.
+- [API](./internals/api/) covers the builder and configuration interfaces.

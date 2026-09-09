@@ -27,7 +27,8 @@ try {
   assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
   assert.equal((await manifest.json()).schema, 1)
   const paths = ['concepts/server-session-window-pane', 'mcp/tools', 'reference/ts/session-session-panes',
-    'ts/latest/workspace/guides', 'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/tmux_capture_pane']
+    'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
+    'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/tmux_capture_pane']
   for (const path of paths) {
     const response = await page.goto(`${base}/${path}/`, { waitUntil: 'networkidle' })
     assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
@@ -35,9 +36,17 @@ try {
     assert.equal(await page.locator('nav[aria-label="Language"] a').first().getAttribute('href'), '/en/py/stable/')
     const switcher = page.locator('[data-page-port-switcher]')
     const hasSwitcher = path !== 'mcp/tools'
-    const expected = path === 'dotnet/latest/mcp/tools/tmux_capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : path.startsWith('reference/')
+    const expected = path.includes('workspace/') ? `/en/${path}/`
+      : path === 'dotnet/latest/mcp/tools/tmux_capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : path.startsWith('reference/')
       ? '/en/reference/py/libtmux-session-panes/' : `/en/py/stable/${path.replace(/^ts\/latest\//, '')}/`
     if (hasSwitcher) assert.equal(await switcher.locator('a').first().getAttribute('href'), expected)
+    if (path === 'py/stable/workspace/guides') {
+      assert.equal(await switcher.locator('a').count(), 1, 'Only Python has a workspace CLI guide')
+      assert.equal(await switcher.locator('[aria-disabled="true"]').count(), 7)
+    }
+    if (path === 'ts/latest/workspace/internals/guides') {
+      assert.match(await switcher.locator('[aria-disabled="true"]').textContent(), /Python/)
+    }
     if (path === 'dotnet/latest/mcp/tools/tmux_capture_pane') {
       assert.equal(await switcher.locator('a').count(), 8)
       assert.equal(await switcher.locator('a[aria-current="page"]').getAttribute('href'), `/en/${path}/`)
@@ -69,8 +78,8 @@ try {
     }
   }
   for (const path of [
-    'py/stable/workspace/api/tmuxp-workspace-builder-classicworkspacebuilder',
-    'java/latest/workspace/api/io-github-libtmux-workspace-workspacebuilder-workspacebuilder',
+    'py/stable/workspace/internals/api/tmuxp-workspace-builder-classicworkspacebuilder',
+    'java/latest/workspace/internals/api/io-github-libtmux-workspace-workspacebuilder-workspacebuilder',
   ]) {
     const response = await page.goto(`${base}/${path}/`, { waitUntil: 'networkidle' })
     assert(response?.ok(), `${path}: HTTP ${response?.status()}`)

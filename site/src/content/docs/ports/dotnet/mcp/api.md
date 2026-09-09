@@ -4,9 +4,12 @@ description: Distinguish the .NET tool package, source embedding APIs, and tmux-
 port: dotnet
 product: mcp
 sidebar:
-  label: API
+  label: Language API
   order: 4
 ---
+
+For MCP client requests, use the [tool reference](../tools/). This page
+covers language APIs for embedding or extending the server.
 
 `LibTmux.Mcp` is distributed as a .NET tool package. Its source has public
 classes, but installing the executable does not provide an ordinary
@@ -40,4 +43,4 @@ and pane content. Prompts include `tmux_run_and_report`,
 
 [Protocol behavior](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/docs/mcp/README.md).
 For a published configuration library, use
-[Workspace Manager API](../../workspace/api/).
+[Workspace builder API](../../workspace/internals/api/).

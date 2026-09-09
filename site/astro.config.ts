@@ -17,6 +17,7 @@ import { rehypeCodeTabs } from './src/plugins/rehype-code-tabs.mjs'
 import { danglingReport } from './src/integrations/dangling-report'
 import { inventory } from './src/integrations/inventory'
 import { rehypeApiLinks } from './src/plugins/rehype-api-links'
+import { PORT_BY_SLUG } from './src/lib/ports.ts'
 
 /**
  * Every build targets one version. CI supplies these; a bare `pnpm dev`
@@ -77,6 +78,12 @@ const isPlaceholder = (page: string): boolean => {
   return !translated.has(path)
 }
 
+const isWorkspaceRedirect = (page: string): boolean => {
+  const match = new URL(page).pathname.match(/\/([^/]+)\/[^/]+\/workspace\/(topics|guides|examples|api)(?:\/|$)/)
+  const port = match && PORT_BY_SLUG[match[1]]
+  return Boolean(port && (match![2] === 'api' || !port.workspaceCli))
+}
+
 const isRootBuild = !env.LIBTMUX_DOCS_PORT
 const wantSitemap = isDefaultBuild && isRootBuild && versionKind !== 'pr'
 
@@ -101,7 +108,7 @@ export default defineConfig({
       ? [
           sitemap({
             filter: (page) =>
-              !page.includes('/pr-') && !page.includes('/demo') && !isPlaceholder(page),
+              !page.includes('/pr-') && !page.includes('/demo') && !isPlaceholder(page) && !isWorkspaceRedirect(page),
           }),
         ]
       : []),

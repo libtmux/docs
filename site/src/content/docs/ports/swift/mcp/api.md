@@ -4,9 +4,12 @@ description: Find Swift embedding types, typed tool authority, and the separate 
 port: swift
 product: mcp
 sidebar:
-  label: API
+  label: Language API
   order: 4
 ---
+
+For MCP client requests, use the [tool reference](../tools/). This page
+covers language APIs for embedding or extending the server.
 
 [`LibTmuxMCP`](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Package.swift)
 is a SwiftPM library product.
@@ -41,5 +44,5 @@ Prompts include `run_and_wait`, `watch_until_ready`,
 [Resource source](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/LibTmuxMCP/Resources.swift)
 and [prompt source](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/LibTmuxMCP/Prompts.swift).
 
-The [Workspace Manager API](../../workspace/api/) owns workspace decoding
+The [Workspace builder API](../../workspace/internals/api/) owns workspace decoding
 and construction. `apply_workspace` exposes that behavior over MCP.

@@ -2,6 +2,7 @@
 import { getCollection, render, type CollectionEntry } from 'astro:content'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import { docsPath } from '../../lib/docs-paths'
+import { productApiPath } from '../../lib/ports'
 import ProductApiIndex from '../api/ProductApiIndex.astro'
 import { buildTarget } from '../../lib/versions'
 import { API_MODELS } from '../../lib/api-models'
@@ -80,7 +81,7 @@ const contribute = entry.filePath
 const buildPort = process.env.LIBTMUX_DOCS_PORT || undefined
 const port = entry.data.port ?? buildPort
 const packageSource = port && entry.data.product ? API_MODELS[port]?.sources?.find((source) => source.product === entry.data.product) : undefined
-const isProductApi = entry.data.product && pagePath === `${entry.data.product}/api`
+const isProductApi = entry.data.product && pagePath === productApiPath(entry.data.product)
 
 // `entry.data.port` is undefined for the shared pages (concepts, guides,
 // examples); DocsLayout and lib/sidebar.ts's `getSidebar` treat that as "the

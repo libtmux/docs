@@ -18,10 +18,11 @@ hierarchy discovery only.
 
 ## Start here
 
+- [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) build the executable and select an endpoint.
 - [Topics](./topics/) explain platform coverage, identifiers, and failures.
-- [Examples](./examples/) inspect the consumer tool model.
-- [API](./api/) distinguishes consumer headers from protocol operations.
+- [Examples](./examples/) call a tool, then explore server internals.
+- [Language API](./api/) documents embedding and implementation types.
 
 The server offers tools only. It does not offer resources, prompts,
 subscriptions, or configurable toolsets.

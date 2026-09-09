@@ -11,7 +11,7 @@ import { buildTarget } from '../lib/versions'
 import ToolReference from '../components/mcp/ToolReference.astro'
 import { mcpReferenceRoutes } from '../lib/mcp-reference'
 import { docsEntryAvailable } from '../lib/page-port-links'
-import { docsRoutePath } from '../lib/docs-paths'
+import { docsRoutePath, workspaceRedirects } from '../lib/docs-paths'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { buildLocale, localeOf, placeholderPairs, sourceIdOf } from '../i18n/resolve'
 
@@ -35,7 +35,11 @@ export async function getStaticPaths() {
     .map(({ path, ...props }) => ({ params: { slug: path }, props })) : []
   const protocol = locale === DEFAULT_LOCALE ? mcpReferenceRoutes(port, defaults, buildTarget(process.env).version)
     .map(({ path, port: mcpPort, ...props }) => ({ params: { slug: path }, props: { ...props, mcpPort } })) : []
-  if (locale === DEFAULT_LOCALE) return [...real, ...global, ...reference, ...protocol]
+  if (locale === DEFAULT_LOCALE) {
+    const redirects = workspaceRedirects([...real, ...reference].map((route) => route.params.slug))
+      .map(({ path, target }) => ({ params: { slug: path }, props: { redirect: target } }))
+    return [...real, ...global, ...reference, ...protocol, ...redirects]
+  }
   const placeholders = (await placeholderPairs())
     .filter((pair) => pair.locale === locale)
     .map(({ sourceId }) => ({
@@ -46,6 +50,7 @@ export async function getStaticPaths() {
 }
 
 interface Props {
+  redirect?: string
   entry?: CollectionEntry<'docs'>
   placeholderLocale?: Locale
   globalPage?: string
@@ -55,7 +60,8 @@ interface Props {
   mcpPort?: string
   toolName?: string
 }
-const { entry, placeholderLocale, globalPage, version, model, symbol, mcpPort, toolName } = Astro.props
+const { entry, placeholderLocale, globalPage, version, model, symbol, mcpPort, toolName, redirect } = Astro.props
+if (redirect) return Astro.redirect(`${import.meta.env.BASE_URL.replace(/\/$/, '')}/${redirect}/`, 301)
 ---
 
 {globalPage === 'mcp' ? <McpOverview /> : globalPage === 'tools' ? <McpTools /> : mcpPort ? <ToolReference port={mcpPort} toolName={toolName} version={version!} /> : model && symbol ? <ProductApiPage model={model} symbol={symbol} version={version!} /> : entry && <DocPage entry={entry} version={version} placeholderLocale={placeholderLocale} />}

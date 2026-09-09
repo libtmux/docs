@@ -1,6 +1,6 @@
 ---
-title: "Workspace Manager for C++"
-description: "Build tmux workspaces with the C++ repository consumer and its YAML reader."
+title: "Workspace Manager for C++ (in development)"
+description: "The C++ workspace manager is unfinished; builder APIs are available, but there is no workspace loader CLI."
 port: cxx
 product: workspace
 sidebar:
@@ -9,31 +9,25 @@ sidebar:
 tableOfContents: true
 ---
 
-The C++ repository includes a workspace consumer that builds a described tmux
-session and reads [tmuxp](https://tmuxp.git-pull.com)-style YAML. It exercises
-libtmux's public API from a separate target.
+**Workspace Manager for C++ is in development and is not a finished
+workspace application.** This port has no CLI equivalent to `tmuxp load`.
 
-The workspace headers and parser belong to `examples/workspace`. They are
-not installed with the core libtmux package. Use the consumer from a source
-checkout or adapt it into your own application with its dependencies.
+The current implementation is `workspace_builder`, a source-checkout consumer for parsing YAML and building sessions.
+Using it requires application code. Installing or building it does not provide
+a command that accepts a workspace file and loads your session.
+
+## Load a workspace from the terminal
+
+Use [tmuxp](https://tmuxp.git-pull.com/) for the existing workspace CLI. Its
+[Python workspace guide](/py/latest/workspace/guides/) covers installation and
+`tmuxp load` with YAML or JSON configuration. tmuxp is a separate Python
+application, not a C++ command.
 
 ## Start here
 
-- [Guides](./guides/) build and run the consumer's existing tests.
-- [Topics](./topics/) explain supported data, command order, and failure
-  effects.
-- [Examples](./examples/) connect the typed workspace example to real-tmux
-  tests.
-- [API](./api/) describes the consumer's headers and result types.
+The [Internals](./internals/) section documents the current builder:
 
-## Dependencies
-
-The workspace builder uses the core C++ API. Reading YAML adds yaml-cpp to the
-consumer target; the core library does not acquire that dependency. Building
-and exercising the consumer requires the repository's CMake toolchain and
-tmux on a supported host.
-
-The consumer creates a new session. It does not converge an existing session
-or export a live session back to a workspace file.
-
-[Consumer documentation](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/examples/workspace/README.md)
+- [Guides](./internals/guides/) show application setup and builder calls.
+- [Topics](./internals/topics/) explain supported configuration and behavior.
+- [Examples](./internals/examples/) exercise the library or source consumer.
+- [API](./internals/api/) covers the builder and configuration interfaces.

@@ -1,6 +1,6 @@
 ---
-title: "Workspace Manager for Java"
-description: "Build tmux sessions from validated YAML with libtmux-workspace."
+title: "Workspace Manager for Java (in development)"
+description: "The Java workspace manager is unfinished; builder APIs are available, but there is no workspace loader CLI."
 port: java
 product: workspace
 sidebar:
@@ -9,30 +9,25 @@ sidebar:
 tableOfContents: true
 ---
 
-`libtmux-workspace` builds a new tmux session from a YAML description. It uses
-libtmux's Java API and returns the session after capturing the completed
-window and pane structure.
+**Workspace Manager for Java is in development and is not a finished
+workspace application.** This port has no CLI equivalent to `tmuxp load`.
 
-The module supports a focused [tmuxp](https://tmuxp.git-pull.com) subset:
-session names, windows, layouts, panes, and ordered shell commands. It rejects
-unknown configuration fields instead of accepting a larger file with missing
-behavior.
+The current implementation is `libtmux-workspace`, a library module for parsing a YAML subset and building sessions.
+Using it requires application code. Installing or building it does not provide
+a command that accepts a workspace file and loads your session.
+
+## Load a workspace from the terminal
+
+Use [tmuxp](https://tmuxp.git-pull.com/) for the existing workspace CLI. Its
+[Python workspace guide](/py/latest/workspace/guides/) covers installation and
+`tmuxp load` with YAML or JSON configuration. tmuxp is a separate Python
+application, not a Java command.
 
 ## Start here
 
-- [Guides](./guides/) add the dependency and build a workspace.
-- [Topics](./topics/) explain validation, construction order, and cleanup.
-- [Examples](./examples/) show the module's documented build result.
-- [API](./api/) covers the public builder and configuration records.
+The [Internals](./internals/) section documents the current builder:
 
-## Package and runtime
-
-Use the [`io.github.libtmux:libtmux-workspace`](https://central.sonatype.com/artifact/io.github.libtmux/libtmux-workspace) artifact with the libtmux BOM.
-The module targets Java 21 and requires tmux on the host for building. Parsing
-YAML does not create a session.
-
-This module does not load Python plugins or implement tmuxp's CLI. Use the
-[Python workspace documentation](https://tmuxp.git-pull.com/) when those
-features are required.
-
-[Module documentation](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/README.md)
+- [Guides](./internals/guides/) show application setup and builder calls.
+- [Topics](./internals/topics/) explain supported configuration and behavior.
+- [Examples](./internals/examples/) exercise the library or source consumer.
+- [API](./internals/api/) covers the builder and configuration interfaces.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { API_MODELS, referenceAlternatives } from '../src/lib/api-models'
-import { productApiAlternatives } from '../src/lib/product-api'
+import { productApiAlternatives, productApiRoutes } from '../src/lib/product-api'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 
 describe('product reference equivalents', () => {
@@ -8,10 +8,25 @@ describe('product reference equivalents', () => {
     const model = API_MODELS.go
     const symbol = model.symbols.find((entry) => entry.id === 'workspace.Build')!
     const group = productApiAlternatives(model, symbol, 'v1.2.3', { ts: 'stable' })[0]
-    expect(group.ports.find((entry) => entry.port === 'go')?.href).toBe('/go/v1.2.3/workspace/api/workspace-build/')
-    expect(group.ports.find((entry) => entry.port === 'ts')?.href).toBe('/ts/stable/workspace/api/builder-applyworkspace/')
-    expect(group.ports.find((entry) => entry.port === 'rs')?.href).toBe('/rs/latest/workspace/api/src-workspacebuilder-build/')
+    expect(group.ports.find((entry) => entry.port === 'go')?.href).toBe('/go/v1.2.3/workspace/internals/api/workspace-build/')
+    expect(group.ports.find((entry) => entry.port === 'ts')?.href).toBe('/ts/stable/workspace/internals/api/builder-applyworkspace/')
+    expect(group.ports.find((entry) => entry.port === 'rs')?.href).toBe('/rs/latest/workspace/internals/api/src-workspacebuilder-build/')
     expect(referenceAlternatives('go', symbol.id)[0].ports.find((entry) => entry.port === 'ts')?.href).toBe('/reference/ts/builder-applyworkspace/')
+  })
+
+  it('publishes every workspace declaration under Internals without moving MCP APIs', () => {
+    for (const [port, model] of Object.entries(API_MODELS)) {
+      const routes = productApiRoutes({ [port]: model }, port, {}, 'stable')
+      for (const product of ['workspace', 'mcp']) {
+        const declarations = routes.filter((route) => route.symbol.product === product)
+        expect(declarations.length, `${port} ${product} declarations`).toBeGreaterThan(0)
+        for (const route of declarations) {
+          const section = product === 'workspace' ? 'workspace/internals/api' : 'mcp/api'
+          expect(route.path).toBe(`${section}/${route.symbol.slug}`)
+          expect(route.version).toBe('stable')
+        }
+      }
+    }
   })
 
   it('preserves absent equivalents rather than inventing product links', () => {

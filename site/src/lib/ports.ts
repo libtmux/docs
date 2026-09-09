@@ -45,6 +45,8 @@ export interface Port {
   worktree: string
   /** Whether this port has a documentation tree for each supported version. */
   versionedDocs: boolean
+  /** Installed command that loads a workspace file, when this port has one. */
+  workspaceCli?: string
   /**
    * How this port writes its version tags. Python follows PEP 440, which
    * attaches a suffix with no separator and has post-releases; the rest
@@ -69,6 +71,7 @@ export const PORTS: readonly Port[] = [
     name: 'Python',
     language: 'Python',
     packageName: 'libtmux',
+    workspaceCli: 'tmuxp load',
     repo: 'tmux-python/libtmux',
     checkout: '~/work/python/libtmux',
     worktree: '~/work/python/libtmux-python-docs',
@@ -199,6 +202,23 @@ export const PORTS: readonly Port[] = [
 export const PORT_BY_SLUG: Readonly<Record<string, Port>> = Object.fromEntries(
   PORTS.map((p) => [p.slug, p]),
 )
+
+/** User-facing workspace loaders are distinct from unfinished builder libraries. */
+export function productInDevelopment(port: Port, product: DocProduct): boolean {
+  return product === 'mcp' || !port.workspaceCli
+}
+
+export function productDescription(port: Port, product: DocProduct): string {
+  if (product === 'workspace') return port.workspaceCli
+    ? `Load workspace configuration files with ${port.workspaceCli}.`
+    : 'In development. Workspace builder internals; no workspace loader CLI.'
+  return `In development. ${DOC_PRODUCTS.mcp.description}`
+}
+
+/** Language APIs for workspace builders belong to implementation documentation. */
+export function productApiPath(product: DocProduct): string {
+  return product === 'workspace' ? 'workspace/internals/api' : 'mcp/api'
+}
 
 /** Ports that get a per-version documentation tree. */
 export const VERSIONED_PORTS = PORTS.filter((p) => p.versionedDocs)

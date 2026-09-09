@@ -18,10 +18,11 @@ includes shell commands and terminal input.
 
 ## Start here
 
+- [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) install the executable and choose a socket.
 - [Topics](./topics/) explain tiers, live-stream effects, and job lifetimes.
-- [Examples](./examples/) embed a read-only server and inspect its catalog.
-- [API](./api/) distinguishes Rust types from MCP tools.
+- [Examples](./examples/) call a tool, then explore server internals.
+- [Language API](./api/) documents embedding and implementation types.
 
 The Rust [Workspace Manager](../workspace/) is a separate crate. MCP's
 `run_plan` executes typed operations; it is not the workspace crate's

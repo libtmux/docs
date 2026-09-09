@@ -1,12 +1,12 @@
 import { symbolsForProduct, type ApiModel, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
 import { API_MODELS, createApiIndex, referenceAlternatives } from './api-models'
-import { PORT_BY_SLUG, portPageUrl, type DocProduct } from './ports'
+import { PORT_BY_SLUG, portPageUrl, productApiPath, type DocProduct } from './ports'
 import { withPortRoot } from './site-root'
 
 /** Keep core references stable while product declarations stay in their section. */
 export function productApiHref(model: ApiModel, symbol: ApiSymbol, version: string): string {
   if (symbol.product && symbol.product !== 'core' && symbol.apiScope !== 'internal') {
-    return portPageUrl(PORT_BY_SLUG[model.port], version, `${symbol.product}/api/${symbol.slug}`)
+    return portPageUrl(PORT_BY_SLUG[model.port], version, `${productApiPath(symbol.product)}/${symbol.slug}`)
   }
   return withPortRoot(`/reference/${model.port}/${symbol.slug}/`)
 }
@@ -40,7 +40,7 @@ export function productApiRoutes(
     .flatMap(([port, model]) => {
       const version = buildPort ? buildVersion : (defaults[port] ?? 'latest')
       return [...symbolsForProduct(model, 'mcp'), ...symbolsForProduct(model, 'workspace')].map((symbol) => ({
-        path: `${buildPort ? '' : `${port}/${version}/`}${symbol.product}/api/${symbol.slug}`,
+        path: `${buildPort ? '' : `${port}/${version}/`}${productApiPath(symbol.product as DocProduct)}/${symbol.slug}`,
         model, symbol, version,
       }))
     })
