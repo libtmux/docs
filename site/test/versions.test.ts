@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
+import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { compareTags, parseTag, sortVersions, type VersionEntry } from '../src/lib/versions'
+
+it('keeps the production fallback manifest in sync with the seed generator', () => {
+  const generated = execFileSync(process.execPath, [
+    new URL('../../scripts/gen-versions.mjs', import.meta.url).pathname, '--seed',
+  ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  const fallback = readFileSync(new URL('../public/versions.json', import.meta.url), 'utf8')
+  expect(JSON.parse(fallback)).toEqual(JSON.parse(generated))
+})
 
 /**
  * Ordering the switcher and the generated manifest both depend on.
