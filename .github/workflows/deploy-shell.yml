@@ -414,8 +414,11 @@ jobs:
           # Each deleting sync owns one shell subtree, never a locale, port,
           # or version root shared with a native documentation publisher.
           for name in "${dirs[@]}"; do
+            # Cached HTML can still reference assets from the previous build.
+            sync_options=(--delete)
+            [[ "${name##*/}" == _astro ]] && sync_options=()
             aws s3 sync "dist/$name/" "s3://$BUCKET/$locale/$name/" \
-              --delete \
+              "${sync_options[@]}" \
               --cache-control "public, max-age=0, s-maxage=300"
           done
           for name in "${reserved_index_dirs[@]}"; do

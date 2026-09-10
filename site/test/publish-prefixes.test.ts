@@ -131,7 +131,8 @@ describe('production shell publication boundaries', () => {
       .map((section) => `s3://docs-test/${locale}/${port.slug}/latest/${section}/`)))
     for (const args of syncs) {
       const destination = args[3]
-      expect(args).toContain('--delete')
+      if (destination.endsWith('/_astro/')) expect(args, destination).not.toContain('--delete')
+      else expect(args, destination).toContain('--delete')
       expect(destination === `s3://docs-test/${locale}/_astro/` || productPrefixes.has(destination), destination).toBe(true)
       for (const port of PORTS) for (const preserved of ['latest/api/index.html', 'stable/api/index.html', 'v0.1.0/mcp/index.html']) {
         expect(`s3://docs-test/${locale}/${port.slug}/${preserved}`.startsWith(destination), `${destination} preserves ${preserved}`).toBe(false)
