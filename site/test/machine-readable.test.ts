@@ -145,6 +145,42 @@ describe.skipIf(!SITE_BUILT)('machine-readable footer', () => {
     expect(problems.slice(0, 40), `${problems.length} footer problems across ${checked} pages`).toEqual([])
   }, 600_000)
 
+  // llms-full.txt is the page twins concatenated, so the two cannot drift:
+  // a section and the twin of the page it names are the same text.
+  it('keeps llms-full.txt and the page twins in step', () => {
+    const problems: string[] = []
+    let checked = 0
+    for (const locale of LOCALES.filter((locale) => existsSync(join(BUCKET_ROOT, locale, 'llms-full.txt')))) {
+      for (const section of readFileSync(join(BUCKET_ROOT, locale, 'llms-full.txt'), 'utf8').split('\n---\n\n').slice(1)) {
+        const url = /^Source: (\S+)$/m.exec(section)?.[1]
+        if (!url) {
+          problems.push(`${locale}/llms-full.txt: a section names no page`)
+          continue
+        }
+        const page = join(BUCKET_ROOT, decodeURIComponent(new URL(url).pathname).replace(/^\//, ''), 'index.html')
+        if (!existsSync(page)) {
+          problems.push(`${locale}/llms-full.txt: ${url} has no page`)
+          continue
+        }
+        const alternate = footerOf(readFileSync(page, 'utf8'))?.alternate
+        const path = alternate && new URL(alternate, url).pathname
+        const twin = path && join(BUCKET_ROOT, path.replace(/^\//, ''))
+        if (!path || !twin || !existsSync(twin)) {
+          problems.push(`${locale}/llms-full.txt: ${url} names no Markdown`)
+          continue
+        }
+        // A placeholder names the original's twin rather than duplicating it,
+        // so only a page that owns its Markdown can be compared with it.
+        const here = new URL(url).pathname
+        if (path !== (path.endsWith('/index.md') ? `${here}index.md` : `${here.replace(/\/$/, '')}.md`)) continue
+        checked++
+        if (readFileSync(twin, 'utf8').trim() !== section.trim()) problems.push(`${locale}/llms-full.txt: ${url} differs from ${alternate}`)
+      }
+    }
+    expect(checked, 'llms-full.txt sections found').toBeGreaterThan(0)
+    expect(problems.slice(0, 20), `${problems.length} llms-full.txt problems across ${checked} sections`).toEqual([])
+  })
+
   // A translation build lists English entries at its own URLs, where a page is
   // either a translation with its own twin or a placeholder linking English.
   it('gives each docs.json page the Markdown that page names', () => {

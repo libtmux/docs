@@ -25,7 +25,7 @@ import type { CollectionEntry } from 'astro:content'
 import { LANG_TO_PORT, parseMeta, readFence } from '../plugins/remark-port-code.mjs'
 import { PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, referenceUrl } from './ports.ts'
 import { DEFAULT_LOCALE } from '../i18n/locales.ts'
-import { localeOf, sourceIdOf } from '../i18n/resolve.ts'
+import { buildLocale, localeOf, sourceIdOf } from '../i18n/resolve.ts'
 import { buildTarget } from './versions.ts'
 import { docsPath, docsRoutePath, type DocsPage } from './docs-paths.ts'
 import { docsEntryAvailable } from './page-port-links.ts'
@@ -121,8 +121,16 @@ export async function llmsPages(origin: string, base: string): Promise<LlmsPage[
       (!port || entry.data.port === undefined || entry.data.port === port) &&
       localeOf(entry.id) === DEFAULT_LOCALE,
   )
+  // The same page the routes serve: a translation where this locale has one,
+  // so a section and that page's `.md` twin stay one text rather than two.
+  let defaults: Record<string, string> = {}
+  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
+  const locale = buildLocale()
+  const translations = new Map(locale === DEFAULT_LOCALE ? []
+    : localeProse(await getCollection('docs'), locale, port, defaults)
+      .map(({ entry, route }) => [route, entry] as const))
   return entries
-    .map((entry) => llmsPage(entry, origin, base))
+    .map((entry) => llmsPage(translations.get(docsRoutePath(entry, port, defaults)) ?? entry, origin, base))
     .sort((a, b) => a.section.localeCompare(b.section) || a.order - b.order || a.title.localeCompare(b.title))
 }
 
