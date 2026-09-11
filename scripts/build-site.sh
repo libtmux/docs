@@ -1103,12 +1103,15 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     ref_status="${result%%$'\t'*}"
     ref_reason="${result#*$'\t'}"
 
+    mkdir -p "$port_out/api"
     if [ "$ref_status" = "built" ]; then
-      mkdir -p "$port_out/api"
       cp -a "$ref_outdir/." "$port_out/api/"
       node "$script_dir/normalize-native-shell.mjs" "$port_out/api" "$LIBTMUX_DOCS_PORT_ROOT"
-    elif [ "$ref_status" = "skipped" ]; then
-      mkdir -p "$port_out/api"
+    else
+      # Anything other than a build leaves nothing to publish, but the port
+      # index links here regardless. Fall back to the same redirect the other
+      # seven ports get, so the link resolves instead of 404ing. `else` rather
+      # than `skipped` alone: a sphinx-build that fails dangles the same link.
       write_reference_redirect "$slug" "$port_out/api/index.html"
     fi
 

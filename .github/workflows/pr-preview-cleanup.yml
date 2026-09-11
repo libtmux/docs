@@ -32,6 +32,7 @@ concurrency:
 jobs:
   cleanup:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: docs-preview-cleanup
     steps:
       - uses: aws-actions/configure-aws-credentials@v6
