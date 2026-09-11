@@ -44,23 +44,28 @@ export const GET: APIRoute = async ({ site }) => {
     'docs',
     (entry) => (!port || !entry.data.port || entry.data.port === port) && localeOf(entry.id) === DEFAULT_LOCALE,
   )
-  // The routes this build serves from translations rather than placeholders.
+  // What this build serves at each route: a translation where it has one, and
+  // the default locale's page where a placeholder stands in for it.
   const locale = buildLocale()
-  const translated = new Set(locale === DEFAULT_LOCALE ? []
-    : localeProse(await getCollection('docs'), locale, port, defaults).map(({ route }) => route))
+  const translations = new Map(locale === DEFAULT_LOCALE ? []
+    : localeProse(await getCollection('docs'), locale, port, defaults)
+      .map(({ entry, route }) => [route, entry] as const))
 
   const pages = []
   for (const entry of entries) {
-    const { headings } = await render(entry)
     const path = docsRoutePath(entry, port, defaults)
     const route = `${path}/`
-    const twinBase = locale === DEFAULT_LOCALE || translated.has(path) ? base : localeRoot(DEFAULT_LOCALE)
+    // A translated page is described in its own language, so an agent reading
+    // the Japanese manifest is not handed English titles for Japanese pages.
+    const served = translations.get(path) ?? entry
+    const { headings } = await render(served)
+    const twinBase = locale === DEFAULT_LOCALE || translations.has(path) ? base : localeRoot(DEFAULT_LOCALE)
     pages.push({
-      title: entry.data.title,
-      description: entry.data.description ?? '',
-      section: entry.data.sidebar?.group ?? 'Documentation',
+      title: served.data.title,
+      description: served.data.description ?? '',
+      section: served.data.sidebar?.group ?? 'Documentation',
       url: `${origin}${entry.data.product && !port ? refBase : base}${route}`,
-      markdownUrl: `${origin}${markdownPath(`${entry.data.product && !port ? refBase : twinBase}${route}`, isIndexSource(entry.filePath))}`,
+      markdownUrl: `${origin}${markdownPath(`${entry.data.product && !port ? refBase : twinBase}${route}`, isIndexSource(served.filePath))}`,
       headings: headings.map((h) => ({ id: h.slug, level: h.depth, text: h.text })),
     })
   }

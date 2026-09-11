@@ -151,7 +151,7 @@ describe.skipIf(!SITE_BUILT)('machine-readable footer', () => {
     const problems: string[] = []
     let checked = 0
     for (const locale of LOCALES.filter((locale) => existsSync(join(BUCKET_ROOT, locale, 'docs.json')))) {
-      const manifest = JSON.parse(readFileSync(join(BUCKET_ROOT, locale, 'docs.json'), 'utf8')) as { pages: { url: string; markdownUrl: string }[] }
+      const manifest = JSON.parse(readFileSync(join(BUCKET_ROOT, locale, 'docs.json'), 'utf8')) as { pages: { url: string; markdownUrl: string; title: string }[] }
       for (const entry of manifest.pages) {
         const file = join(BUCKET_ROOT, decodeURIComponent(new URL(entry.url).pathname).replace(/^\//, ''), 'index.html')
         if (!existsSync(file)) {
@@ -160,8 +160,17 @@ describe.skipIf(!SITE_BUILT)('machine-readable footer', () => {
         }
         checked++
         const alternate = footerOf(readFileSync(file, 'utf8'))?.alternate
-        if (!alternate || new URL(alternate, entry.url).pathname !== new URL(entry.markdownUrl).pathname) {
+        const twin = new URL(entry.markdownUrl).pathname
+        if (!alternate || new URL(alternate, entry.url).pathname !== twin) {
           problems.push(`${locale}/docs.json: ${entry.url} lists ${entry.markdownUrl}, its page names ${alternate}`)
+          continue
+        }
+        // A manifest entry describes the document that locale serves, so a
+        // translated page is titled in its own language, not the original's.
+        const md = join(BUCKET_ROOT, twin.replace(/^\//, ''))
+        const title = existsSync(md) ? readFileSync(md, 'utf8').split('\n')[0].replace(/^# /, '') : undefined
+        if (title !== undefined && title !== entry.title) {
+          problems.push(`${locale}/docs.json: ${entry.url} is titled "${entry.title}", its Markdown "${title}"`)
         }
       }
     }
