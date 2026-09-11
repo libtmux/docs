@@ -114,7 +114,15 @@ node scripts/gen-example-sources.negative.mjs
 step 'docs arena (negative)'
 node scripts/docs-arena.negative.mjs
 
+# Running a source and quoting it are two different files until something
+# compares them. This is that comparison; its negative needs no worktree and
+# proves the comparison can fail, so it runs everywhere.
+step 'quote drift (negative)'
+node scripts/arena/check-quote-drift.negative.mjs
+
 if [[ "${LIBTMUX_DOCS_ARENA:-}" == 1 ]]; then
+  step 'quote drift'
+  node scripts/arena/check-quote-drift.mjs
   step 'docs arena'
   node scripts/docs-arena.mjs --require
 else

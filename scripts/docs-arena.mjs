@@ -43,10 +43,22 @@ function step(worktree, { cwd, command }) {
   }
 }
 
+// Coverage has two kinds of key and they can never match each other. A quoted
+// file is `slug:path`, recorded by gen-example-sources when a page fences it.
+// A doctest page is `slug:page:path`: there the page is the executable unit,
+// and it lives in the port's own documentation tree, which gen-example-sources
+// never scans. Counted in one bucket, a page looked like a quoted file nothing
+// quoted, and a file the arena runs but no page shows looked like coverage.
+const isPage = (key) => key.split(':')[1] === 'page'
 const executed = new Set(ARTIFACTS.flatMap((entry) => entry.runs))
+const executedFiles = [...executed].filter((key) => !isPage(key))
+const executedPages = [...executed].filter(isPage).sort()
+const runFiles = new Set(executedFiles)
 const quoted = Object.keys(sources).sort()
-console.log(`quoted and run in the arena: ${quoted.filter((key) => executed.has(key)).join(', ') || 'none'}`)
-console.log(`quoted with no arena adapter yet: ${quoted.filter((key) => !executed.has(key)).join(', ') || 'none'}`)
+console.log(`quoted and run in the arena: ${quoted.filter((key) => runFiles.has(key)).join(', ') || 'none'}`)
+console.log(`quoted with no arena adapter yet: ${quoted.filter((key) => !runFiles.has(key)).join(', ') || 'none'}`)
+console.log(`run in the arena but quoted by no page: ${executedFiles.filter((key) => !Object.hasOwn(sources, key)).sort().join(', ') || 'none'}`)
+console.log(`pages run in the arena: ${executedPages.join(', ') || 'none'}`)
 
 let tmuxBin
 let tmuxProblem
