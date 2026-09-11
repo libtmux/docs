@@ -162,7 +162,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
 
   it('distinguishes unfinished products and groups workspace implementation docs under Internals', () => {
     for (const page of pages()) inspect(page.path, (document) => {
-      if (page.product === 'mcp' || (page.port !== 'py' && page.section)) developmentStatus(document, page.path)
+      if (page.product === 'mcp' || page.port !== 'py') developmentStatus(document, page.path)
       const navigation = document.querySelectorAll('nav[aria-label="Documentation"]')
       expect(navigation.length, `${page.path} documentation navigation`).toBeGreaterThan(0)
       for (const nav of navigation) {
@@ -184,9 +184,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         }
       }
       if (page.product === 'workspace' && page.port !== 'py' && !page.section) {
-        const intro = [...document.querySelectorAll('article strong')].map((element) => element.textContent).join(' ')
-        expect(intro, `${page.path} unfinished workspace application`).toMatch(/is in development and is not a finished\s+workspace application/i)
-        expect(document.querySelector('article')!.textContent, `${page.path} no user CLI`).toMatch(/no CLI equivalent to\s+tmuxp load/i)
+        const status = document.querySelector('[aria-label="Development status"]')!.textContent
+        expect(status, `${page.path} unfinished workspace application`).toMatch(/not a finished\s+workspace application/i)
+        expect(status, `${page.path} no user CLI`).toMatch(/no CLI equivalent to\s+tmuxp load/i)
+        expect(document.querySelector('article')!.textContent.match(/is in development/gi), `${page.path} states maturity once`).toHaveLength(1)
         const upstream = [...document.querySelectorAll('article a[href]')]
           .find((link) => link.getAttribute('href') === 'https://tmuxp.git-pull.com/')
         expect(upstream?.textContent, `${page.path} tmuxp reference`).toBe('tmuxp')

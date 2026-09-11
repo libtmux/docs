@@ -88,7 +88,7 @@ const currentPath = Astro.url.pathname
 const tocItems =
   tableOfContents && headings.length > 0 ? generateToC(headings) : []
 const pagePorts = await pagePortsFor(sourcePath ?? pagePath, port, version)
-const development = product && port && productInDevelopment(PORT_BY_SLUG[port], product) && pagePath !== 'workspace'
+const development = product && port && productInDevelopment(PORT_BY_SLUG[port], product)
 const workspaceInternals = product === 'workspace' && pagePath.startsWith('workspace/internals/')
 const breadcrumbs = product && port ? [
   { name: PORT_BY_SLUG[port].name, url: portPageUrl(PORT_BY_SLUG[port], version) },
@@ -211,7 +211,7 @@ const breadcrumbs = product && port ? [
         {development && <aside aria-label="Development status" class="my-5 rounded border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-950">
           <strong>{DOC_PRODUCTS[product!].label} is in development.</strong>
           <p class="mb-0 mt-1">{product === 'workspace'
-            ? 'This port is not a finished workspace application. It has no workspace loader CLI; these pages document builder internals.'
+            ? <>This port is not a finished workspace application. It has no CLI equivalent to <code>tmuxp load</code>; these pages document builder internals.</>
             : 'Server behavior and tool contracts may change. Tool availability depends on the server configuration.'}</p>
         </aside>}
         <slot />
