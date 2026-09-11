@@ -1,10 +1,7 @@
 name: deploy-shell
 
-# This repo's own build: the bucket root (landing, concepts, guides,
-# examples, parity, search — site/src/content.config.ts's 'docs'
-# collection) plus PR previews of the same pages. No port ever calls this
-# file; each self-hosted port owns its own docs.yml calling
-# reusable-deploy.yml instead (docs/ci.md).
+# Publish the shared shell and latest port documentation. Native API trees
+# and historical versions remain owned by their port publishers.
 #
 # The shell has no versioned URL space of its own (notes/research/06: root
 # is always "whatever's on trunk," never /latest/ or /stable/ like a port).
@@ -74,7 +71,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Build (production root)
+      - name: Install assembly tools
+        if: matrix.locale == 'en'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y ripgrep
+
+      - name: Build production documentation
         working-directory: site
         env:
           LIBTMUX_DOCS_VERSION: latest
@@ -90,17 +93,40 @@ jobs:
           # only, so every locale links across to them.
           LIBTMUX_DOCS_PORT_ROOT: /en
           LIBTMUX_DOCS_SITE: https://libtmux.org
-        run: pnpm build
+        run: |
+          if [[ '${{ matrix.locale }}' == en ]]; then
+            pnpm --workspace-root build:site --versions latest
+          else
+            pnpm build
+          fi
 
       # publish-root needs the port slugs to know which prefixes it must not
       # bulk-touch, and it has no checkout of its own. Emitting the list here
       # ties it to the commit that produced the tree, which a second hand-kept
       # copy in that job could not do.
-      - name: Emit the reserved prefixes from ports.ts
+      - name: Emit publication ownership metadata
+        if: matrix.locale == 'en'
         run: |
           set -euo pipefail
           node --input-type=module -e "
-            const { PORTS } = await import('./site/src/lib/ports.ts')
+            const { readdirSync, rmSync, writeFileSync } = await import('node:fs')
+            const { PORTS, DOC_PRODUCTS } = await import('./site/src/lib/ports.ts')
+            const { DEFAULT_LOCALE } = await import('./site/src/i18n/locales.ts')
+            const paths = { schema: 1, locale: DEFAULT_LOCALE, directories: [], files: [] }
+            for (const port of PORTS) {
+              const prefix = port.slug + '/latest'
+              for (const entry of readdirSync('_site/' + DEFAULT_LOCALE + '/' + prefix, { withFileTypes: true })) {
+                if (entry.isSymbolicLink()) throw new Error('Unexpected symlink in shell assembly: ' + prefix + '/' + entry.name)
+                // The assembly checks native targets; this artifact never publishes them.
+                if (entry.name === 'api') {
+                  rmSync('_site/' + DEFAULT_LOCALE + '/' + prefix + '/api', { recursive: true })
+                  continue
+                }
+                paths[entry.isDirectory() ? 'directories' : 'files'].push(prefix + '/' + entry.name)
+              }
+            }
+            writeFileSync('shell-paths.json', JSON.stringify(paths) + '\n')
+            writeFileSync('reserved-products.txt', Object.keys(DOC_PRODUCTS).join('\n') + '\n')
             process.stdout.write(PORTS.map((p) => p.slug).join('\n') + '\n')
           " > reserved-prefixes.txt
           cat reserved-prefixes.txt
@@ -108,7 +134,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: shell-dist-${{ matrix.locale }}
-          path: site/dist
+          path: ${{ matrix.locale == 'en' && '_site/en' || 'site/dist' }}
           retention-days: 1
 
       # Identical in every matrix leg, so only one writes it.
@@ -116,7 +142,10 @@ jobs:
         if: matrix.locale == 'en'
         with:
           name: reserved-prefixes
-          path: reserved-prefixes.txt
+          path: |
+            reserved-prefixes.txt
+            reserved-products.txt
+            shell-paths.json
           retention-days: 1
 
   build-preview:
@@ -189,31 +218,55 @@ jobs:
       bucket: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
       distribution: ${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}
 
-  # Bucket root is shared with eight language prefixes this repo must never
-  # bulk-touch. reusable-deploy.yml's single-prefix `sync --delete` doesn't
-  # fit here — production output spans several top-level directories (the
-  # 'docs' collection's own routes, plus /ja/ once i18n lands) — so this
-  # job does its own sync, one directory at a time, denylist-checked
-  # against every reserved language/manifest name before anything is
-  # written. This is the workflow-level twin of the IAM NotResource policy
-  # in notes/research/07: a bug here should fail the run, not depend on IAM
-  # alone to fail closed.
-  #
-  # A reserved prefix is not entirely off limits, though: [port]/index.astro
-  # renders once per port (site root build only), so dist/py/, dist/ts/, and
-  # six more each hold exactly that one port's landing page and nothing
-  # else. notes/decisions/port-root-redirect.md is the decision that page
-  # stays there rather than move: for rs/go/java (ecosystem — no local
-  # version prefix to redirect to) and dotnet/swift (not published yet) it's
-  # the only content /<slug>/ ever serves; for py/ts/cxx it's a fallback for
-  # when infra/cloudfront-function.js's KVS-driven redirect can't resolve.
-  # The sync step below writes that one file with `cp`, never `sync
-  # --delete`, and asserts it really is the only thing there before writing
-  # anything — same fail-closed property the old all-or-nothing denylist
-  # had, just scoped to the one object the shell actually owns at that
-  # prefix instead of the whole prefix a port's own CI also writes to.
-  publish-root:
+  check-publish:
+    if: github.event_name != 'pull_request'
     needs: [locales, build]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        locale: ${{ fromJSON(needs.locales.outputs.list) }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: shell-dist-${{ matrix.locale }}
+          path: dist
+      - uses: actions/download-artifact@v8
+        with:
+          name: reserved-prefixes
+      - name: Exercise the production publisher without uploading
+        env:
+          LOCALE: ${{ matrix.locale }}
+          BUCKET: reproduction
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import re
+          import textwrap
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/deploy-shell.yml').read_text()
+          step = workflow.split('      - name: Sync top-level directories, denylist-checked\n', 1)[1]
+          block = step.split('        run: |\n', 1)[1]
+          lines = []
+          for line in block.splitlines():
+              if line.strip() and not line.startswith('          '):
+                  break
+              lines.append(line)
+          script = textwrap.dedent('\n'.join(lines))
+          script = re.sub(r'\$\{\{\s*matrix\.locale\s*\}\}', os.environ['LOCALE'], script)
+          Path('publish-root.sh').write_text(script)
+          Path('bin').mkdir()
+          aws = Path('bin/aws')
+          aws.write_text('#!/usr/bin/env bash\nprintf "aws"; printf " %q" "$@"; printf "\\n"\n')
+          aws.chmod(0o755)
+          PY
+          export PATH="$PWD/bin:$PATH"
+          bash publish-root.sh
+
+  publish-root:
+    needs: [locales, build, check-publish]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     strategy:
@@ -247,100 +300,140 @@ jobs:
           BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
         run: |
           set -euo pipefail
-          # Everything the shell publishes lives under the locale, matching
-          # LIBTMUX_DOCS_BASE above and what scripts/build-site.sh assembles
-          # locally. The bucket root holds only what sits above every locale.
           locale="${{ matrix.locale }}"
-          # The port slugs come from ports.ts, emitted by the build job into
-          # its own artifact — this job has no checkout, and a second hand-kept
-          # copy here is what the list used to be. `manifest` is added locally
-          # because it is this bucket's convention, not a port.
-          #
-          # Fail closed if the artifact is missing: an empty reserved list
-          # would let this job sync straight over a port's version tree.
-          if [[ ! -s reserved-prefixes.txt ]]; then
-            echo "::error::reserved-prefixes.txt is missing or empty — refusing to sync without a denylist" >&2
+          # The artifact declares the shell-owned ports, products and paths. Missing
+          # metadata must never turn a reserved port into an unrestricted sync.
+          for metadata in reserved-prefixes.txt reserved-products.txt shell-paths.json; do
+            if [[ ! -s "$metadata" ]]; then
+              echo "::error::$metadata is missing or empty" >&2
+              exit 1
+            fi
+          done
+          mapfile -t reserved < reserved-prefixes.txt
+          mapfile -t products < reserved-products.txt
+          if ! jq -e '.schema == 1 and (.locale | type == "string") and (.directories | type == "array") and (.files | type == "array") and (all(.directories[], .files[]; type == "string"))' shell-paths.json > /dev/null; then
+            echo '::error::invalid shell-paths.json ownership metadata' >&2
             exit 1
           fi
-          mapfile -t reserved < reserved-prefixes.txt
+          port_locale=$(jq -r '.locale' shell-paths.json)
+          mapfile -t shell_dirs < <(jq -r '.directories[]' shell-paths.json)
+          mapfile -t shell_files < <(jq -r '.files[]' shell-paths.json)
+          for name in "${reserved[@]}" "${products[@]}" "$port_locale"; do
+            if [[ ! "$name" =~ ^[a-z][a-z0-9-]*$ ]]; then
+              echo "::error::invalid ownership name '$name'" >&2
+              exit 1
+            fi
+          done
           reserved+=(manifest)
-          printf 'reserved prefixes: %s\n' "${reserved[*]}"
-          #
-          # `_shell` is deliberately not reserved here, and the asymmetry is
-          # the point: this job is the shell, and `_shell/` is the shell's own
-          # prefix — `site/public/_shell/{shell.js,tokens.css,README.md}` is
-          # published by nothing else. reusable-deploy.yml keeps `_shell` in
-          # its own list because a *port* writing there would be clobbering
-          # someone else's data. Reserving it in both places was what made
-          # publish-root fail on every trunk push.
-          #
-          # Whether the prefix should be versioned (`_shell/v1/`, so a
-          # breaking change cannot break every generator that already baked
-          # in the URL) is open and recorded in
-          # notes/decisions/port-root-redirect.md. Owning the prefix here
-          # does not foreclose it.
-          #
-          # manifest/ stays reserved: it has no shell output, so anything
-          # appearing there is a build that changed shape.
+          shopt -s nullglob dotglob globstar
+          # Validate the entire artifact before the first AWS operation.
+          # Following links could publish files outside the validated subtree.
+          for entry in dist dist/**; do
+            if [[ -L "$entry" ]]; then
+              echo "::error::symlink in publication artifact: $entry" >&2
+              exit 1
+            fi
+          done
+          for path in "${shell_dirs[@]}" "${shell_files[@]}"; do
+            if [[ ! "$path" =~ ^([a-z][a-z0-9-]*)/latest/([a-zA-Z0-9_][a-zA-Z0-9_.-]*)$ ]]; then
+              echo "::error::invalid shell-owned path: $path" >&2
+              exit 1
+            fi
+            port=${BASH_REMATCH[1]}
+            child=${BASH_REMATCH[2]}
+            known=false
+            for candidate in "${reserved[@]}"; do
+              [[ "$port" == "$candidate" ]] && known=true && break
+            done
+            if [[ "$known" == false || "$port" == manifest || "$child" == api ]]; then
+              echo "::error::$path is outside shell-owned paths" >&2
+              exit 1
+            fi
+          done
+          if [[ "$locale" == "$port_locale" ]]; then
+            for path in "${shell_dirs[@]}"; do
+              [[ -d "dist/$path" ]] || { echo "::error::missing shell directory: $path" >&2; exit 1; }
+            done
+            for path in "${shell_files[@]}"; do
+              [[ -f "dist/$path" ]] || { echo "::error::missing shell file: $path" >&2; exit 1; }
+            done
+            for port in "${reserved[@]}"; do
+              [[ "$port" == manifest ]] && continue
+              for path in index.html "${products[@]/%//index.html}"; do
+                [[ -f "dist/$port/latest/$path" ]] || { echo "::error::missing version entry page: $port/latest/$path" >&2; exit 1; }
+              done
+            done
+          fi
           dirs=()
           reserved_index_dirs=()
-          for entry in dist/*/; do
+          version_files=()
+          for entry in dist/*; do
             [[ -d "$entry" ]] || continue
-            name=$(basename "$entry")
+            name=${entry##*/}
             is_reserved=false
-            for r in "${reserved[@]}"; do
-              [[ "$name" == "$r" ]] && is_reserved=true && break
+            for port in "${reserved[@]}"; do
+              [[ "$name" == "$port" ]] && is_reserved=true && break
             done
             if [[ "$is_reserved" == false ]]; then
               dirs+=("$name")
               continue
             fi
-
-            # notes/decisions/port-root-redirect.md: the shell owns exactly
-            # one file under a reserved prefix, [port]/index.astro's own
-            # index.html — Astro puts every shared chunk under one
-            # root-level _astro/, never dist/<slug>/_astro/, so there is no
-            # legitimate second entry here. Anything else means the build
-            # changed shape in a way this job hasn't been taught about;
-            # fail rather than silently sync or skip content a port's own
-            # reusable-deploy.yml owns at this same prefix.
-            mapfile -t contents < <(find "${entry%/}" -mindepth 1 -maxdepth 1 -printf '%f\n' | sort)
-            if [[ "${#contents[@]}" -ne 1 || "${contents[0]}" != "index.html" ]]; then
-              echo "::error::dist/$name/ is a reserved language/manifest prefix and must contain exactly index.html, found: ${contents[*]:-<empty>}" >&2
+            if [[ "$name" == manifest || ! -f "$entry/index.html" ]]; then
+              echo "::error::$entry is not a shell-owned port landing tree" >&2
               exit 1
             fi
+            for child in "$entry"/*; do
+              [[ "$child" == "$entry/index.html" ]] && continue
+              if [[ "$child" != "$entry/latest" || ! -d "$child" ]]; then
+                echo "::error::$child is outside shell-owned latest paths" >&2
+                exit 1
+              fi
+              for shell_entry in "$child"/*; do
+                path=${shell_entry#dist/}
+                allowed=false
+                if [[ -d "$shell_entry" ]]; then
+                  for candidate in "${shell_dirs[@]}"; do
+                    [[ "$path" == "$candidate" ]] && allowed=true && break
+                  done
+                  dirs+=("$path")
+                elif [[ -f "$shell_entry" ]]; then
+                  for candidate in "${shell_files[@]}"; do
+                    [[ "$path" == "$candidate" ]] && allowed=true && break
+                  done
+                  version_files+=("$path")
+                fi
+                if [[ "$allowed" == false ]]; then
+                  echo "::error::$shell_entry is outside declared shell-owned paths" >&2
+                  exit 1
+                fi
+              done
+            done
             reserved_index_dirs+=("$name")
           done
 
+          # Each deleting sync owns one shell subtree, never a locale, port,
+          # or version root shared with a native documentation publisher.
           for name in "${dirs[@]}"; do
+            # Cached HTML can still reference assets from the previous build.
+            sync_options=(--delete)
+            [[ "${name##*/}" == _astro ]] && sync_options=()
             aws s3 sync "dist/$name/" "s3://$BUCKET/$locale/$name/" \
-              --delete \
+              "${sync_options[@]}" \
               --cache-control "public, max-age=0, s-maxage=300"
           done
-
-          # One object per reserved prefix, never a directory sync: this
-          # must not be able to touch anything a port's own
-          # reusable-deploy.yml wrote under <slug>/<version>/ — validated
-          # there to always be a qualified, non-bare prefix, so it and
-          # <slug>/index.html are disjoint keys by construction.
           for name in "${reserved_index_dirs[@]}"; do
             aws s3 cp "dist/$name/index.html" "s3://$BUCKET/$locale/$name/index.html" \
               --cache-control "public, max-age=0, s-maxage=300"
           done
-
-          # Root-level files (index.html, 404.html, robots.txt,
-          # sitemap-*.xml, versions.json, favicon.svg, ...) copied without
-          # --delete: a plain `cp` pass can never remove a sibling prefix,
-          # so this half needs no denylist.
-          while IFS= read -r -d '' f; do
-            aws s3 cp "$f" "s3://$BUCKET/$locale/$(basename "$f")" \
+          for path in "${version_files[@]}"; do
+            aws s3 cp "dist/$path" "s3://$BUCKET/$locale/$path" \
               --cache-control "public, max-age=0, s-maxage=300"
-          done < <(find dist -maxdepth 1 -type f -print0)
-
-          # A crawler reads robots.txt only at the origin root, whatever prefix
-          # the site sits under. Its contents already name every path through
-          # the site root, so the copy needs no edit — the same lift
-          # scripts/build-site.sh does locally.
+          done
+          for file in dist/*; do
+            [[ -f "$file" ]] || continue
+            aws s3 cp "$file" "s3://$BUCKET/$locale/${file##*/}" \
+              --cache-control "public, max-age=0, s-maxage=300"
+          done
           if [[ -f dist/robots.txt ]]; then
             aws s3 cp dist/robots.txt "s3://$BUCKET/robots.txt" \
               --cache-control "public, max-age=0, s-maxage=300"

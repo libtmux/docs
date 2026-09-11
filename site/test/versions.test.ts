@@ -1,5 +1,70 @@
 import { describe, expect, it } from 'vitest'
-import { compareTags, parseTag, sortVersions, type VersionEntry } from '../src/lib/versions'
+import { execFileSync } from 'node:child_process'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { compareTags, parseTag, selectBuildVersions, sortVersions, type VersionEntry, type VersionManifest } from '../src/lib/versions'
+
+it('keeps the production fallback manifest in sync with the seed generator', () => {
+  const generated = execFileSync(process.execPath, [
+    new URL('../../scripts/gen-versions.mjs', import.meta.url).pathname, '--seed',
+  ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  const fallback = readFileSync(new URL('../public/versions.json', import.meta.url), 'utf8')
+  expect(JSON.parse(fallback)).toEqual(JSON.parse(generated))
+})
+
+describe('assembly version selection', () => {
+  const candidate: VersionManifest = {
+    schema: 1,
+    ports: {
+      py: [
+        { slug: 'stable', label: 'stable', kind: 'alias', resolvesTo: 'v0.62.0', supported: true },
+        { slug: 'latest', label: 'latest', kind: 'trunk', supported: true },
+        { slug: 'v0.62.0', label: 'v0.62.0', kind: 'tag', supported: true },
+      ],
+      go: [{ slug: 'latest', label: 'latest', kind: 'trunk', supported: true }],
+    },
+    defaultVersion: { py: 'stable', go: 'latest' },
+  }
+
+  it('keeps alias metadata without inventing versions or mutating the candidate', () => {
+    const original = structuredClone(candidate)
+    const selected = selectBuildVersions(candidate, ['stable'])
+    expect(selected.ports).toEqual({ py: [candidate.ports.py[0]], go: [] })
+    expect(selected.defaultVersion).toEqual({ py: 'stable' })
+    expect(candidate).toEqual(original)
+  })
+
+  it.each([
+    ['latest', 'latest'],
+    ['latest,stable', 'stable'],
+  ])('sets rendered defaults from --versions %s before building', (selected, pythonDefault) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-build-versions-'))
+    try {
+      writeFileSync(join(directory, 'gen-versions.mjs'),
+        "import { writeFileSync } from 'node:fs'; writeFileSync(process.argv[3], process.env.TEST_VERSION_MANIFEST);\n")
+      const buildScript = readFileSync(new URL('../../scripts/build-site.sh', import.meta.url), 'utf8')
+      const bookkeeping = buildScript.split('# Version bookkeeping\n')[1]?.split('# One Astro build invocation.')[0]
+      expect(bookkeeping).toBeTruthy()
+      const output = execFileSync('bash', ['-euc', `${bookkeeping}\nnode -e 'console.log(process.env.LIBTMUX_DOCS_PORT_DEFAULTS)'`], {
+        encoding: 'utf8',
+        env: {
+          ...process.env, scratch: directory, script_dir: directory,
+          repo_root: new URL('../../', import.meta.url).pathname,
+          site_dir: new URL('../', import.meta.url).pathname,
+          locale: 'en', versions_arg: selected,
+          TEST_VERSION_MANIFEST: JSON.stringify(candidate),
+        },
+      })
+      expect(JSON.parse(output)).toEqual({ py: pythonDefault, go: 'latest' })
+      const manifest = JSON.parse(readFileSync(join(directory, 'versions.json'), 'utf8')) as VersionManifest
+      expect(manifest.ports.py.map((entry) => entry.slug)).toEqual(selected === 'latest' ? ['latest'] : ['stable', 'latest'])
+      expect(manifest.defaultVersion).toEqual({ py: pythonDefault, go: 'latest' })
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+})
 
 /**
  * Ordering the switcher and the generated manifest both depend on.

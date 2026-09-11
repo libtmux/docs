@@ -45,6 +45,21 @@ export interface VersionManifest {
   defaultVersion: Record<string, string>
 }
 
+/** Select the versions being built before rendering links and canonicals. */
+export function selectBuildVersions(manifest: VersionManifest, selected: readonly string[]): VersionManifest {
+  const slugs = new Set(selected)
+  const ports: VersionManifest['ports'] = {}
+  const defaultVersion: VersionManifest['defaultVersion'] = {}
+  for (const [port, entries] of Object.entries(manifest.ports)) {
+    const kept = entries.filter((entry) => slugs.has(entry.slug))
+    ports[port] = kept
+    const existing = manifest.defaultVersion[port]
+    const fallback = kept[0]?.slug
+    if (fallback) defaultVersion[port] = kept.some((entry) => entry.slug === existing) ? existing : fallback
+  }
+  return { ...manifest, ports, defaultVersion }
+}
+
 /**
  * Robots policy per version kind.
  *

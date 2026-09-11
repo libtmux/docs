@@ -109,6 +109,30 @@ function redirectsTo(path: string, target: string): void {
 }
 
 describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
+  it.each(PORTS.map((port) => port.slug))('%s exposes products from latest homes and core navigation', (port) => {
+    for (const section of ['', 'guides/', 'topics/']) {
+      const path = `${port}/latest/${section}`
+      inspect(path, (document) => {
+        const navigation = document.querySelectorAll(section ? 'nav[aria-label="Products"]' : 'main')
+        expect(navigation.length, `${path} product entry points`).toBeGreaterThan(0)
+        for (const container of navigation) {
+          for (const product of products) {
+            const expected = urlFor(`${port}/latest/${product}/`).pathname
+            const link = [...container.querySelectorAll('a[href]')]
+              .find((entry) => new URL(entry.getAttribute('href')!, urlFor(path)).pathname === expected)
+            expect(link, `${path} links to ${expected}`).toBeDefined()
+            expect(link!.textContent, `${path} product label`).toContain(product === 'workspace' ? 'Workspace Manager' : 'MCP')
+            expect(resolves(link!.getAttribute('href')!, urlFor(path).href), `${path} resolves ${expected}`).toBe(true)
+          }
+        }
+        const assets = [...document.querySelectorAll('script[src], link[rel="stylesheet"][href], link[rel="preload"][as="font"][href]')]
+          .map((asset) => asset.getAttribute('src') ?? asset.getAttribute('href')!)
+        expect(assets.length, `${path} linked assets`).toBeGreaterThan(0)
+        expect([...new Set(assets)].filter((href) => !resolves(href, urlFor(path).href)), `${path} missing assets`).toEqual([])
+      })
+    }
+  })
+
   it('serves both products and every section with the chosen port content', () => {
     for (const page of pages()) inspect(page.path, (document) => {
       const article = document.querySelector('article')!
@@ -128,7 +152,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(hrefs.filter((href) => new URL(href, urlFor(page.path)).origin === 'https://libtmux.org'
         && /\/ports\/(?:py|ts|rs|go|java|dotnet|cxx|swift)\//.test(href)),
         `${page.path} storage identities in public links`).toEqual([])
-      if (!page.section) inspect(`${page.port}/${page.version}/`, (home) => {
+      if (!page.section && page.version !== 'latest') inspect(`${page.port}/${page.version}/`, (home) => {
         const entryPoints = [...home.querySelectorAll('main a[href]')]
           .map((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname)
         expect(entryPoints, `${page.path} port-home entry point`).toContain(urlFor(page.path).pathname)
@@ -138,7 +162,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
 
   it('distinguishes unfinished products and groups workspace implementation docs under Internals', () => {
     for (const page of pages()) inspect(page.path, (document) => {
-      if (page.product === 'mcp' || (page.port !== 'py' && page.section)) developmentStatus(document, page.path)
+      if (page.product === 'mcp' || page.port !== 'py') developmentStatus(document, page.path)
       const navigation = document.querySelectorAll('nav[aria-label="Documentation"]')
       expect(navigation.length, `${page.path} documentation navigation`).toBeGreaterThan(0)
       for (const nav of navigation) {
@@ -160,9 +184,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         }
       }
       if (page.product === 'workspace' && page.port !== 'py' && !page.section) {
-        const intro = [...document.querySelectorAll('article strong')].map((element) => element.textContent).join(' ')
-        expect(intro, `${page.path} unfinished workspace application`).toMatch(/is in development and is not a finished\s+workspace application/i)
-        expect(document.querySelector('article')!.textContent, `${page.path} no user CLI`).toMatch(/no CLI equivalent to\s+tmuxp load/i)
+        const status = document.querySelector('[aria-label="Development status"]')!.textContent
+        expect(status, `${page.path} unfinished workspace application`).toMatch(/not a finished\s+workspace application/i)
+        expect(status, `${page.path} no user CLI`).toMatch(/no CLI equivalent to\s+tmuxp load/i)
+        expect(document.querySelector('article')!.textContent.match(/is in development/gi), `${page.path} states maturity once`).toHaveLength(1)
         const upstream = [...document.querySelectorAll('article a[href]')]
           .find((link) => link.getAttribute('href') === 'https://tmuxp.git-pull.com/')
         expect(upstream?.textContent, `${page.path} tmuxp reference`).toBe('tmuxp')

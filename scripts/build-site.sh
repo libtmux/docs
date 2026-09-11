@@ -339,6 +339,17 @@ NODE
 manifest="$scratch/versions.json"
 node "$script_dir/gen-versions.mjs" --out "$manifest"
 
+# Defaults must describe this build before any links or canonicals are rendered.
+LIBTMUX_DOCS_MANIFEST="$manifest" LIBTMUX_DOCS_BUILD_VERSIONS="$versions_arg" LIBTMUX_DOCS_SITE_DIR="$site_dir" \
+node --input-type=module -e '
+  import { readFileSync, writeFileSync } from "node:fs"
+  const { selectBuildVersions } = await import(`file://${process.env.LIBTMUX_DOCS_SITE_DIR}/src/lib/versions.ts`)
+  const file = process.env.LIBTMUX_DOCS_MANIFEST
+  const candidate = JSON.parse(readFileSync(file, "utf8"))
+  const selected = process.env.LIBTMUX_DOCS_BUILD_VERSIONS.split(",")
+  writeFileSync(file, JSON.stringify(selectBuildVersions(candidate, selected), null, 2) + "\n")
+'
+
 default_version_for() {
   LIBTMUX_DOCS_MANIFEST="$manifest" LIBTMUX_DOCS_PORT="$1" node -e '
     const fs = require("node:fs")

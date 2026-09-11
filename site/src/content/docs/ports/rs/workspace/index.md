@@ -9,9 +9,6 @@ sidebar:
 tableOfContents: true
 ---
 
-**Workspace Manager for Rust is in development and is not a finished
-workspace application.** This port has no CLI equivalent to `tmuxp load`.
-
 The current implementation is `tmux-workspace`, a library crate for building workspace descriptions and freezing sessions.
 Using it requires application code. Installing or building it does not provide
 a command that accepts a workspace file and loads your session.

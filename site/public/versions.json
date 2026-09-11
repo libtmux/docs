@@ -3,13 +3,6 @@
   "ports": {
     "py": [
       {
-        "slug": "stable",
-        "label": "stable",
-        "kind": "alias",
-        "resolvesTo": "latest",
-        "supported": true
-      },
-      {
         "slug": "latest",
         "label": "latest",
         "kind": "trunk",
@@ -17,13 +10,6 @@
       }
     ],
     "ts": [
-      {
-        "slug": "stable",
-        "label": "stable",
-        "kind": "alias",
-        "resolvesTo": "latest",
-        "supported": true
-      },
       {
         "slug": "latest",
         "label": "latest",
@@ -33,13 +19,6 @@
     ],
     "rs": [
       {
-        "slug": "stable",
-        "label": "stable",
-        "kind": "alias",
-        "resolvesTo": "latest",
-        "supported": true
-      },
-      {
         "slug": "latest",
         "label": "latest",
         "kind": "trunk",
@@ -47,13 +26,6 @@
       }
     ],
     "go": [
-      {
-        "slug": "stable",
-        "label": "stable",
-        "kind": "alias",
-        "resolvesTo": "latest",
-        "supported": true
-      },
       {
         "slug": "latest",
         "label": "latest",
@@ -63,13 +35,6 @@
     ],
     "java": [
       {
-        "slug": "stable",
-        "label": "stable",
-        "kind": "alias",
-        "resolvesTo": "latest",
-        "supported": true
-      },
-      {
         "slug": "latest",
         "label": "latest",
         "kind": "trunk",
@@ -77,13 +42,6 @@
       }
     ],
     "dotnet": [
-      {
-        "slug": "stable",
-        "label": "stable",
-        "kind": "alias",
-        "resolvesTo": "latest",
-        "supported": true
-      },
       {
         "slug": "latest",
         "label": "latest",
@@ -93,13 +51,6 @@
     ],
     "cxx": [
       {
-        "slug": "stable",
-        "label": "stable",
-        "kind": "alias",
-        "resolvesTo": "latest",
-        "supported": true
-      },
-      {
         "slug": "latest",
         "label": "latest",
         "kind": "trunk",
@@ -107,13 +58,6 @@
       }
     ],
     "swift": [
-      {
-        "slug": "stable",
-        "label": "stable",
-        "kind": "alias",
-        "resolvesTo": "latest",
-        "supported": true
-      },
       {
         "slug": "latest",
         "label": "latest",
@@ -123,13 +67,13 @@
     ]
   },
   "defaultVersion": {
-    "py": "stable",
-    "ts": "stable",
-    "rs": "stable",
-    "go": "stable",
-    "java": "stable",
-    "dotnet": "stable",
-    "cxx": "stable",
-    "swift": "stable"
+    "py": "latest",
+    "ts": "latest",
+    "rs": "latest",
+    "go": "latest",
+    "java": "latest",
+    "dotnet": "latest",
+    "cxx": "latest",
+    "swift": "latest"
   }
 }
