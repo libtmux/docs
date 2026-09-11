@@ -12,6 +12,7 @@ import { withPortRoot, withRoot } from '../lib/site-root'
 import { localesFor } from '../i18n/resolve'
 import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE } from '../i18n/locales'
+import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath } from '../i18n/contribute'
 
 const explore = [
   {
@@ -158,6 +159,8 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
   sourcePath="/"
   localeStatuses={ALL_TRANSLATED}
   noindex={noindexLanding}
+  pageSource={landingEntry?.filePath ? { repo: CONTRIBUTE_REPO, path: repoPath(landingEntry.filePath), ref: CONTRIBUTE_BRANCH } : undefined}
+  markdown={landingEntry ? 'source' : 'rendered'}
 >
   {LandingContent ? (
     <main class="mx-auto max-w-3xl px-4 py-12 sm:py-16">

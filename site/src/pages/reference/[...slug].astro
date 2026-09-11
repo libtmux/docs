@@ -9,6 +9,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import { withRoot } from '../../lib/site-root'
 import { API_MODELS, API_NAV, OWNER_KINDS, PORT_NAME, indexFor, ownersOf, pageSlug, referenceHref, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG } from '../../lib/ports'
+import { symbolSource } from '../../lib/markdown-twins'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
 import ApiDoc from '../../components/api/ApiDoc.astro'
@@ -472,6 +473,9 @@ const title = owner
   pagePath={slug ? `reference/${slug}` : 'reference'}
   noindex={true}
   searchable={searchable}
+  pageSource={owner && model ? symbolSource(model, owner) : undefined}
+  markdown={owner ? 'source' : 'rendered'}
+  markdownIndex={!owner}
 >
   <!-- The content column is capped at 47rem, which is 752px — gp-sphinx
        renders 754 from Furo's `46em` against a 16.4px root. Uncapped it ran

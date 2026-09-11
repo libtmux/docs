@@ -110,8 +110,6 @@ function sectionOf(entry: CollectionEntry<'docs'>): string {
  */
 export async function llmsPages(origin: string, base: string): Promise<LlmsPage[]> {
   const port = process.env.LIBTMUX_DOCS_PORT || undefined
-  let defaults: Record<string, string> = {}
-  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
   // Default locale only. A translation is a different document at a different
   // URL, and listing `ja/concepts` beside `concepts` in one file would hand an
   // agent the same page twice in two languages.
@@ -122,25 +120,42 @@ export async function llmsPages(origin: string, base: string): Promise<LlmsPage[
       localeOf(entry.id) === DEFAULT_LOCALE,
   )
   return entries
-    .map((entry) => {
-      const entryPort = entry.data.port
-      const version = port ? buildTarget(process.env).version : (defaults[entryPort ?? ''] ?? 'latest')
-      let body = resolvePortCode(entry.body ?? '', entryPort ?? port)
-      if (entryPort && entry.data.product && docsPath(entry) === productApiPath(entry.data.product)) {
-        const model = API_MODELS[entryPort]
-        const symbols = productApiRoots(model, entry.data.product)
-        body += `\n\n## API declarations\n\n${symbols.map((symbol) => `- [${symbol.publicId ?? symbol.name}](${origin}${productApiHref(model, symbol, version)})`).join('\n')}\n`
-        if (entry.data.product === 'mcp') body += `\n[Protocol catalog](${origin}${portPageUrl(PORT_BY_SLUG[entryPort], version, 'mcp/tools').replace(/\/$/, '.json')})\n`
-      }
-      return {
-      title: entry.data.title,
-      description: entry.data.description ?? '',
-      url: `${origin}${entry.data.product && !port ? `${PORT_ROOT}/` : base}${docsRoutePath(entry, port, defaults)}/`,
-      section: sectionOf(entry),
-      body,
-      order: entry.data.sidebar?.order ?? Number.MAX_SAFE_INTEGER,
-    }})
+    .map((entry) => llmsPage(entry, origin, base))
     .sort((a, b) => a.section.localeCompare(b.section) || a.order - b.order || a.title.localeCompare(b.title))
+}
+
+/**
+ * One prose page as this build serves it: its URL, and its Markdown with code
+ * narrowed to the build's port and `file=` fences filled in. llms-full.txt
+ * concatenates these, and the page's `.md` twin is one of them, so the two
+ * cannot drift.
+ *
+ * `entry.id` must be the source id, without a translation's locale prefix,
+ * because the route path is derived from it.
+ */
+export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: string): LlmsPage & { order: number } {
+  const port = process.env.LIBTMUX_DOCS_PORT || undefined
+  let defaults: Record<string, string> = {}
+  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
+  const entryPort = entry.data.port
+  const version = port ? buildTarget(process.env).version : (defaults[entryPort ?? ''] ?? 'latest')
+  let body = resolvePortCode(entry.body ?? '', entryPort ?? port)
+  if (entryPort && entry.data.product && docsPath(entry) === productApiPath(entry.data.product)) {
+    const model = API_MODELS[entryPort]
+    const symbols = productApiRoots(model, entry.data.product)
+    body += `\n\n## API declarations\n\n${symbols.map((symbol) => `- [${symbol.publicId ?? symbol.name}](${origin}${productApiHref(model, symbol, version)})`).join('\n')}\n`
+    if (entry.data.product === 'mcp') body += `\n[Protocol catalog](${origin}${portPageUrl(PORT_BY_SLUG[entryPort], version, 'mcp/tools').replace(/\/$/, '.json')})\n`
+  }
+  // A locale's landing entry routes to '', which is the root itself.
+  const path = docsRoutePath(entry, port, defaults)
+  return {
+    title: entry.data.title,
+    description: entry.data.description ?? '',
+    url: `${origin}${entry.data.product && !port ? `${PORT_ROOT}/` : base}${path ? `${path}/` : ''}`,
+    section: sectionOf(entry),
+    body,
+    order: entry.data.sidebar?.order ?? Number.MAX_SAFE_INTEGER,
+  }
 }
 
 /** The one-line header both files share, naming the port when there is one. */

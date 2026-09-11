@@ -13,8 +13,11 @@ import SearchModal from '../components/SearchModal.astro'
 import { pickerPaintRules } from '../lib/picker-paint'
 import { buildTarget } from '../lib/versions'
 import type { VersionEntry } from '../lib/versions'
-import { withRoot } from '../lib/site-root'
+import { withPortRoot, withRoot } from '../lib/site-root'
 import { PORT_NAME } from '../lib/api-models'
+import { PORT_BY_SLUG } from '../lib/ports'
+import { markdownPath, type PageSource } from '../lib/markdown-twins'
+import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath } from '../i18n/contribute'
 import type { Locale } from '../i18n/locales'
 import type { LocaleStatus } from '../i18n/resolve'
 
@@ -52,7 +55,19 @@ interface Props {
   /** Every locale's status for this page, for the locale switcher. */
   localeStatuses?: Record<string, string>
   breadcrumbs?: { name: string; url: string }[]
-
+  /** The file this page is rendered from. Defaults to the route's own `.astro` file. */
+  pageSource?: PageSource
+  /** Whether this page's Markdown twin is `<page>/index.md` rather than `<page>.md`. */
+  markdownIndex?: boolean
+  /**
+   * Who writes this page's Markdown twin: a `.md` route built from the page's
+   * source, or the post-build conversion of the rendered page, the default. A
+   * page whose twin another build writes, such as a placeholder's English
+   * original, passes its `href`.
+   */
+  markdown?: 'source' | 'rendered' | { href: string }
+  /** The repository behind the footer's GitHub icon, when it is not the page's source or port. */
+  repository?: string
 }
 
 const {
@@ -71,6 +86,10 @@ const {
   canonicalOverride,
   localeStatuses,
   breadcrumbs,
+  pageSource,
+  markdownIndex,
+  markdown = 'rendered',
+  repository,
 } = Astro.props as Props
 
 
@@ -108,6 +127,31 @@ try {
 const defaultVersion = portDefaults[portSlug ?? ''] ?? process.env.LIBTMUX_DOCS_DEFAULT_VERSION ?? 'latest'
 const navVersion = process.env.LIBTMUX_DOCS_PORT ? target.version : (portDefaults[navPort ?? ''] ?? 'latest')
 const localePagePath = localeSourcePath(Astro.url.pathname, buildLocale())
+
+/*
+ * The machine-readable footer: this page's source file, its Markdown twin,
+ * and the docs.json and llms files of the narrowest tree it belongs to, its
+ * port and version when it has one and otherwise this locale.
+ *
+ * A page that names no source is attributed to its route file. Resolving the
+ * route pattern against the files that exist fails the build for a route this
+ * cannot place, rather than printing a path that 404s.
+ */
+const routeFile = pageSource ? undefined : Object.keys(import.meta.glob('../pages/**/*.astro'))
+  .map((file) => file.replace(/^\.\.\/pages\//, ''))
+  .find((file) => file.replace(/\.astro$/, '').replace(/(^|\/)index$/, '') === Astro.routePattern.replace(/^\/|\/$/g, ''))
+if (!pageSource && !routeFile) throw new Error(`BaseLayout: no source file for route ${Astro.routePattern}`)
+const source: PageSource = pageSource ?? { repo: CONTRIBUTE_REPO, path: repoPath(`src/pages/${routeFile}`), ref: CONTRIBUTE_BRANCH }
+const markdownHref = typeof markdown === 'object'
+  ? markdown.href
+  : markdownPath(Astro.url.pathname, markdownIndex ?? Astro.url.pathname === buildBase)
+const versionRoot = portSlug ? withPortRoot(`/${portSlug}/${target.version}/`) : undefined
+const llmsRoot = versionRoot && Astro.url.pathname.startsWith(versionRoot) ? versionRoot : withRoot('/')
+// The repository the page documents: a product's own, else the one its source
+// is in, else its port's. Python's MCP server and tmuxp are separate repos.
+const githubRepo = repository
+  ?? (source.repo !== CONTRIBUTE_REPO ? source.repo : undefined)
+  ?? ((navPort && PORT_BY_SLUG[navPort]?.repo) || CONTRIBUTE_REPO)
 
 ---
 
@@ -173,6 +217,9 @@ const localePagePath = localeSourcePath(Astro.url.pathname, buildLocale())
     {/* The switcher reads the live manifest, so a version published after
         this build still appears here. */}
     <link rel="preload" href={withRoot('/versions.json')} as="fetch" crossorigin="anonymous" />
+    {/* Where an agent finds this page as Markdown without guessing the
+        suffix. `data-twin` tells integrations/markdown-twins.ts who writes it. */}
+    <link rel="alternate" type="text/markdown" href={markdownHref} data-twin={typeof markdown === 'object' ? 'elsewhere' : markdown} />
   </head>
   <!--
     No colour utilities on `body`.
@@ -212,7 +259,7 @@ const localePagePath = localeSourcePath(Astro.url.pathname, buildLocale())
       <div data-pagefind-filter={`section:${section}`} data-pagefind-ignore="all" hidden></div>
       <slot />
     </div>
-    {!bare && <SiteFooter />}
+    {!bare && <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} githubRepo={githubRepo} />}
     <BackToTop />
     <SearchModal />
   </body>

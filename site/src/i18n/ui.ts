@@ -30,6 +30,9 @@ export const ui = {
     'i18n.improveTranslation': 'Improve this translation on GitHub',
     'i18n.editPage': 'Edit this page on GitHub',
     'i18n.coverageLink': 'See what else needs translating',
+    'footer.source': 'Source',
+    'footer.machineReadable': 'Machine-readable',
+    'footer.rawSource': 'raw source',
   },
   ja: {
     'i18n.untranslated': 'このページはまだ翻訳されていません。',
@@ -52,6 +55,9 @@ export const ui = {
     'i18n.improveTranslation': 'GitHub でこの翻訳を改善する',
     'i18n.editPage': 'GitHub でこのページを編集する',
     'i18n.coverageLink': '他に翻訳が必要なページを見る',
+    'footer.source': 'ソース',
+    'footer.machineReadable': '機械可読',
+    'footer.rawSource': '生のソース',
   },
 } satisfies Record<Locale, Record<string, string>>
 

@@ -6,6 +6,7 @@ import { PORTS, portPageUrl } from '../../lib/ports'
 import { API_MODELS } from '../../lib/api-models'
 import mcpTools from '../../data/mcp-tools.json'
 import { withPortRoot, withRoot } from '../../lib/site-root'
+import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO } from '../../i18n/contribute'
 
 /**
  * The MCP server page.
@@ -37,7 +38,7 @@ try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } ca
   title="MCP server"
   description="Drive tmux from an AI agent. Install the libtmux MCP server in Claude Code, Claude Desktop, Cursor, VS Code, Codex, Zed, opencode or Windsurf."
   pagePath="mcp"
-
+  pageSource={{ repo: CONTRIBUTE_REPO, path: 'site/src/components/mcp/Overview.astro', ref: CONTRIBUTE_BRANCH }}
   localeStatuses={ALL_TRANSLATED}
 >
   <main class="mx-auto max-w-4xl px-4 py-12">

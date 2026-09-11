@@ -3,6 +3,7 @@ import { Code } from 'astro-expressive-code/components'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import { PORT_BY_SLUG, portPageUrl } from '../../lib/ports'
 import { MCP_REFERENCE, renderToolDescription, toolSummary } from '../../lib/mcp-reference'
+import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO } from '../../i18n/contribute'
 interface Props { port: string; version: string; toolName?: string }
 const { port, version, toolName } = Astro.props
 const info = PORT_BY_SLUG[port]
@@ -28,7 +29,10 @@ const headings = tool ? [
 ---
 
 <DocsLayout title={title} description={tool ? toolSummary(tool.description) : `Tools, resources, and prompts advertised by the ${info.name} MCP server.`}
-  port={port} product="mcp" version={version} pagePath={pagePath} headings={headings}>
+  port={port} product="mcp" version={version} pagePath={pagePath} headings={headings}
+  pageSource={tool
+    ? { repo: tool.source.repo, path: tool.source.file, ref: tool.source.revision }
+    : { repo: CONTRIBUTE_REPO, path: 'site/src/components/mcp/ToolReference.astro', ref: CONTRIBUTE_BRANCH }}>
   {tool ? <>
     <Fragment set:html={descriptionHtml} />
     <p><a href="../">All {info.name} tools</a> · <a href={`../${tool.wireName}.json`}>JSON</a> · <a href={`https://github.com/${tool.source.repo}/blob/${tool.source.revision}/${tool.source.file}${tool.source.line ? `#L${tool.source.line}` : ''}`}>Source</a></p>

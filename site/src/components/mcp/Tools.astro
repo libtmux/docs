@@ -5,6 +5,7 @@ import { PORT_BY_SLUG, portPageUrl } from '../../lib/ports'
 import { withRoot } from '../../lib/site-root'
 import { buildTarget } from '../../lib/versions'
 import mcpTools from '../../data/mcp-tools.json'
+import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO } from '../../i18n/contribute'
 
 /**
  * The cross-port MCP tool surface.
@@ -60,7 +61,7 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
   title="MCP tool surface"
   description={`MCP tool availability by language, including wire prefixes and platform limits.`}
   pagePath="mcp/tools"
-
+  pageSource={{ repo: CONTRIBUTE_REPO, path: 'site/src/components/mcp/Tools.astro', ref: CONTRIBUTE_BRANCH }}
   localeStatuses={ALL_TRANSLATED}
 >
   <main class="mx-auto max-w-5xl px-4 py-12">
