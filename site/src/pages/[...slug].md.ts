@@ -4,12 +4,11 @@ import { sourceUrl } from '@libtmux/api-model'
 import { API_MODELS } from '../lib/api-models'
 import { productApiHref, productApiRoutes } from '../lib/product-api'
 import { symbolMarkdown } from '../lib/symbol-markdown'
-import { buildLocale, localeOf, sourceIdOf } from '../i18n/resolve'
+import { buildLocale } from '../i18n/resolve'
 import { DEFAULT_LOCALE } from '../i18n/locales'
 import { buildTarget } from '../lib/versions'
-import { docsRoutePath, workspaceRedirects } from '../lib/docs-paths'
-import { docsEntryAvailable } from '../lib/page-port-links'
-import { llmsPage } from '../lib/llms'
+import { workspaceRedirects } from '../lib/docs-paths'
+import { llmsPage, localeProse } from '../lib/llms'
 import { isIndexSource, markdownDocument, markdownSlug } from '../lib/markdown-twins'
 
 type Props =
@@ -31,13 +30,11 @@ export async function getStaticPaths() {
   const port = process.env.LIBTMUX_DOCS_PORT
   let defaults: Record<string, string> = {}
   try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
-  const prose = (await getCollection('docs'))
-    .filter((entry) => localeOf(entry.id) === locale && docsEntryAvailable(entry, port))
-    .map((entry) => {
-      const source = { ...entry, id: sourceIdOf(entry.id) }
-      const slug = markdownSlug(docsRoutePath(source, port, defaults), isIndexSource(entry.filePath))
-      return { params: { slug }, props: { entry: source } as Props }
-    })
+  const prose = localeProse(await getCollection('docs'), locale, port, defaults)
+    .map(({ entry, route }) => ({
+      params: { slug: markdownSlug(route, isIndexSource(entry.filePath)) },
+      props: { entry } as Props,
+    }))
   if (locale !== DEFAULT_LOCALE) return prose
   const routes = productApiRoutes(API_MODELS, port, defaults, buildTarget(process.env).version)
     .map(({ path, model, symbol, version }) => ({ params: { slug: path }, props: { port: model.port, id: symbol.id, version } as Props }))

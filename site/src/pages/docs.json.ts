@@ -1,13 +1,13 @@
 import type { APIRoute } from 'astro'
 import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales.ts'
-import { buildLocale, localeOf, sourceIdOf } from '../i18n/resolve.ts'
+import { buildLocale, localeOf } from '../i18n/resolve.ts'
 import { API_MODELS, PORT_NAME, ownersOf } from '../lib/api-models.ts'
 import { DOC_PRODUCTS, hasReference, PORTS, portPageUrl, productApiPath, productInDevelopment, referenceUrl, type DocProduct } from '../lib/ports.ts'
 import { PORT_ROOT } from '../lib/site-root.ts'
 import { docsRoutePath } from '../lib/docs-paths.ts'
 import { isIndexSource, markdownPath } from '../lib/markdown-twins.ts'
-import { docsEntryAvailable } from '../lib/page-port-links.ts'
+import { localeProse } from '../lib/llms.ts'
 
 /**
  * `/docs.json` — the agent manifest.
@@ -44,11 +44,10 @@ export const GET: APIRoute = async ({ site }) => {
     'docs',
     (entry) => (!port || !entry.data.port || entry.data.port === port) && localeOf(entry.id) === DEFAULT_LOCALE,
   )
-  // The routes `[...slug].astro` builds from translations, chosen the same way.
+  // The routes this build serves from translations rather than placeholders.
   const locale = buildLocale()
-  const translated = new Set(locale === DEFAULT_LOCALE ? [] : (await getCollection('docs'))
-    .filter((entry) => localeOf(entry.id) === locale && docsEntryAvailable(entry, port))
-    .map((entry) => docsRoutePath({ ...entry, id: sourceIdOf(entry.id) }, port, defaults)))
+  const translated = new Set(locale === DEFAULT_LOCALE ? []
+    : localeProse(await getCollection('docs'), locale, port, defaults).map(({ route }) => route))
 
   const pages = []
   for (const entry of entries) {

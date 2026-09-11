@@ -25,9 +25,11 @@ import type { CollectionEntry } from 'astro:content'
 import { LANG_TO_PORT, parseMeta, readFence } from '../plugins/remark-port-code.mjs'
 import { PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, referenceUrl } from './ports.ts'
 import { DEFAULT_LOCALE } from '../i18n/locales.ts'
-import { localeOf } from '../i18n/resolve.ts'
+import { localeOf, sourceIdOf } from '../i18n/resolve.ts'
 import { buildTarget } from './versions.ts'
-import { docsPath, docsRoutePath } from './docs-paths.ts'
+import { docsPath, docsRoutePath, type DocsPage } from './docs-paths.ts'
+import { docsEntryAvailable } from './page-port-links.ts'
+import type { Locale } from '../i18n/locales.ts'
 import { PORT_ROOT } from './site-root.ts'
 import { API_MODELS } from './api-models.ts'
 import { productApiHref, productApiRoots } from './product-api.ts'
@@ -156,6 +158,27 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
     body,
     order: entry.data.sidebar?.order ?? Number.MAX_SAFE_INTEGER,
   }
+}
+
+/**
+ * The prose entries this locale serves, each paired with its route.
+ *
+ * `[...slug].md.ts` writes one Markdown twin per entry and `docs.json` names
+ * them. Deriving the set twice is how a manifest comes to advertise a file
+ * nothing builds, so both read it from here.
+ */
+export function localeProse<T extends DocsPage>(
+  entries: T[],
+  locale: Locale,
+  port?: string,
+  defaults: Record<string, string> = {},
+): { entry: T; route: string }[] {
+  return entries
+    .filter((entry) => localeOf(entry.id) === locale && docsEntryAvailable(entry, port))
+    .map((entry) => {
+      const source = { ...entry, id: sourceIdOf(entry.id) } as T
+      return { entry: source, route: docsRoutePath(source, port, defaults) }
+    })
 }
 
 /** The one-line header both files share, naming the port when there is one. */
