@@ -19,7 +19,7 @@
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
 import { PORT_BY_SLUG, portPageUrl, type DocProduct } from './ports'
-import { withPortRoot, withRoot } from './site-root'
+import { withPortRoot } from './site-root'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { localeOf, sourceIdOf } from '../i18n/resolve'
 import { docsPath, docsRoutePath } from './docs-paths'
