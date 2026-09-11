@@ -84,7 +84,9 @@ function assemblyFixture(): string {
   return directory
 }
 
-describe('production shell publication boundaries', () => {
+// Each case shells out to the publisher, which is given 10s of its own, so
+// the default 5s per test could never cover one under load.
+describe('production shell publication boundaries', { timeout: 30_000 }, () => {
   it('omits locally generated native APIs before declaring the assembled publication artifact', () => {
     const directory = assemblyFixture()
     const expected = JSON.parse(readFileSync(join(directory, 'shell-paths.json'), 'utf8')) as { directories: string[]; files: string[] }
