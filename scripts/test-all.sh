@@ -106,6 +106,21 @@ node scripts/gen-example-sources.mjs --check
 step 'example sources (negative)'
 node scripts/gen-example-sources.negative.mjs
 
+# The sources above are quoted; the docs arena runs them, each against a tmux
+# server it owns and lends through that port's arena adapter. Its negative
+# needs only tmux and proves the supervisor rejects every way an adapter can
+# fake contact. The port lane needs each sibling tmux-arena worktree and its
+# toolchain, so it runs only when asked for.
+step 'docs arena (negative)'
+node scripts/docs-arena.negative.mjs
+
+if [[ "${LIBTMUX_DOCS_ARENA:-}" == 1 ]]; then
+  step 'docs arena'
+  node scripts/docs-arena.mjs --require
+else
+  note_skip 'docs arena ports'
+fi
+
 step 'shell port table'
 node scripts/gen-shell-ports.mjs --check
 

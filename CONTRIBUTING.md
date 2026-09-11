@@ -114,6 +114,23 @@ Missing port checkouts, a missing local server, or a missing `shellcheck`
 can leave publication checks unexercised. Development loops deliberately exclude assembled-output
 suites; they do not establish publication readiness.
 
+Run the port examples these docs quote against a tmux server the docs own:
+
+```console
+$ pnpm test:arena
+```
+
+`scripts/docs-arena.mjs` starts tmux itself with `-D -S` and an empty
+config, lends that server to each port's arena adapter in the
+`<checkout>-tmux-arena` worktree beside the port's checkout, and requires
+one `LIBTMUX_ARENA_EVIDENCE` record naming the server's live challenge, PID,
+and socket. It then withholds the socket and requires the adapter to fail
+without evidence and without reaching any other server. A port without its
+worktree or toolchain is reported as not run; `--require` makes that a
+failure, and `--port <slug>` selects ports. The publication audit runs only
+the supervisor's negative checks, which need tmux alone, unless
+`LIBTMUX_DOCS_ARENA=1`.
+
 Add focused regression coverage for behavior changes and confirm that a new
 check fails when its intended invariant is broken. Root policy-guide edits
 need link, command, and diff review rather than new tests. Content edits
