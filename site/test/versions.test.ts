@@ -3,6 +3,7 @@ import { execFileSync, spawnSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { compareTags, parseTag, selectBuildVersions, sortVersions, type VersionEntry, type VersionManifest } from '../src/lib/versions'
 
 it('keeps the production fallback manifest in sync with the seed generator', () => {
@@ -12,6 +13,10 @@ it('keeps the production fallback manifest in sync with the seed generator', () 
   const fallback = readFileSync(new URL('../public/versions.json', import.meta.url), 'utf8')
   expect(JSON.parse(fallback)).toEqual(JSON.parse(generated))
 })
+
+// The bookkeeping the build sources, driven here rather than reassembled from
+// the script's text.
+const bookkeeping = fileURLToPath(new URL('../../scripts/version-bookkeeping.sh', import.meta.url))
 
 describe('assembly version selection', () => {
   const candidate: VersionManifest = {
@@ -43,10 +48,7 @@ describe('assembly version selection', () => {
     try {
       writeFileSync(join(directory, 'gen-versions.mjs'),
         "import { writeFileSync } from 'node:fs'; writeFileSync(process.argv[3], process.env.TEST_VERSION_MANIFEST);\n")
-      const buildScript = readFileSync(new URL('../../scripts/build-site.sh', import.meta.url), 'utf8')
-      const bookkeeping = buildScript.split('# Version bookkeeping\n')[1]?.split('# One Astro build invocation.')[0]
-      expect(bookkeeping).toBeTruthy()
-      const output = execFileSync('bash', ['-euc', `${bookkeeping}\nnode -e 'console.log(process.env.LIBTMUX_DOCS_PORT_DEFAULTS)'`], {
+      const output = execFileSync('bash', ['-euc', `. ${bookkeeping}\nnode -e 'console.log(process.env.LIBTMUX_DOCS_PORT_DEFAULTS)'`], {
         encoding: 'utf8',
         env: {
           ...process.env, scratch: directory, script_dir: directory,
@@ -72,9 +74,7 @@ describe('assembly version selection', () => {
     try {
       writeFileSync(join(directory, 'gen-versions.mjs'),
         "import { writeFileSync } from 'node:fs'; writeFileSync(process.argv[3], process.env.TEST_VERSION_MANIFEST);\n")
-      const buildScript = readFileSync(new URL('../../scripts/build-site.sh', import.meta.url), 'utf8')
-      const bookkeeping = buildScript.split('# Version bookkeeping\n')[1]?.split('# One Astro build invocation.')[0]
-      const result = spawnSync('bash', ['-euc', `${bookkeeping}\ndefault_version_for go`], {
+      const result = spawnSync('bash', ['-euc', `. ${bookkeeping}\ndefault_version_for go`], {
         encoding: 'utf8',
         env: {
           ...process.env, scratch: directory, script_dir: directory,
