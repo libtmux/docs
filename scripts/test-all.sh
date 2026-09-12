@@ -176,14 +176,21 @@ step 'build'
 # skipping is not a failure, but it is a check that did not run and the reader
 # should be told which.
 step 'output tests'
+output_log="$(mktemp "${TMPDIR:-/tmp}/libtmux-output-tests.XXXXXX")"
+trap 'rm -f "$output_log"' EXIT
+set +e
 LIBTMUX_DOCS_TEST_SOURCE_ONLY=0 pnpm --filter @libtmux/site exec vitest run --reporter=verbose 2>&1 \
-  | tee /tmp/libtmux-output-tests.log \
-  | grep -vE '^\s+[✓·]' || true
-if grep -qE '[0-9]+ skipped' /tmp/libtmux-output-tests.log; then
+  | tee "$output_log" \
+  | rg -v '^\s+[✓·]'
+output_codes=("${PIPESTATUS[@]}")
+set -e
+if (( output_codes[0] != 0 )); then exit "${output_codes[0]}"; fi
+if (( output_codes[1] != 0 )); then exit "${output_codes[1]}"; fi
+if (( output_codes[2] > 1 )); then exit "${output_codes[2]}"; fi
+if rg -q '[0-9]+ skipped' "$output_log"; then
   printf '\nskipped suites (a skip is a check that did not run):\n'
-  grep -E '^\s*[↓-]|skipped' /tmp/libtmux-output-tests.log | head -20
+  rg -m 20 '^\s*[↓-]|skipped' "$output_log"
 fi
-grep -qE 'Test Files.*failed' /tmp/libtmux-output-tests.log && exit 1
 
 # No link step here. `build-site.sh` above already ran the authoritative one —
 # `check-links.mjs "$out" --all` plus a `--vendored` exclusion per port and
