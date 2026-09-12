@@ -171,6 +171,42 @@ export const ARTIFACTS = [
     ],
     run: () => ({ cwd: '.', command: ['build/cxx-dev/examples/libtmux_example_01_tour'] }),
   },
+  // The other examples that can borrow. Each names its own artifact and
+  // builds its own target; the configure step is shared, and docs-arena
+  // runs a given command once per worktree.
+  {
+    slug: 'cxx',
+    artifact: 'cpp-workspace',
+    runs: ['cxx:examples/02-workspace.cpp'],
+    tools: ['cmake'],
+    prepare: () => [
+      { cwd: '.', command: ['cmake', '--preset', 'cxx-dev'] },
+      { cwd: '.', command: ['cmake', '--build', '--preset', 'cxx-dev', '--target', 'libtmux_example_02_workspace'] },
+    ],
+    run: () => ({ cwd: '.', command: ['build/cxx-dev/examples/libtmux_example_02_workspace'] }),
+  },
+  {
+    slug: 'cxx',
+    artifact: 'cpp-readme',
+    runs: ['cxx:examples/05-readme.cpp'],
+    tools: ['cmake'],
+    prepare: () => [
+      { cwd: '.', command: ['cmake', '--preset', 'cxx-dev'] },
+      { cwd: '.', command: ['cmake', '--build', '--preset', 'cxx-dev', '--target', 'libtmux_example_05_readme'] },
+    ],
+    run: () => ({ cwd: '.', command: ['build/cxx-dev/examples/libtmux_example_05_readme'] }),
+  },
+  {
+    slug: 'cxx',
+    artifact: 'cpp-streaming',
+    runs: ['cxx:examples/06-streaming.cpp'],
+    tools: ['cmake'],
+    prepare: () => [
+      { cwd: '.', command: ['cmake', '--preset', 'cxx-dev'] },
+      { cwd: '.', command: ['cmake', '--build', '--preset', 'cxx-dev', '--target', 'libtmux_example_06_streaming'] },
+    ],
+    run: () => ({ cwd: '.', command: ['build/cxx-dev/examples/libtmux_example_06_streaming'] }),
+  },
   {
     slug: 'swift',
     artifact: 'swift-querying',
