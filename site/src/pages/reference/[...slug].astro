@@ -665,19 +665,40 @@ const title = owner
                   </span>
                 </h2>
                 {/*
-                  Names and counts only; the types themselves are listed above,
-                  under the bucket that claims them. This section exists so
-                  `#<module>` still resolves — the definition block, the prose
-                  linker and the inventories all point at those anchors, and
-                  grouping by bucket without keeping them broke 9,160 links.
+                  A disclosure per module, because the sections below this one
+                  group by bucket rather than by module: `libtmux.neo` names
+                  nothing a reader can click through to, and this list said so
+                  with a bare name and a count. A module with 65 symbols read
+                  as a dead end.
+
+                  The `id` stays exactly where it was, on the element the count
+                  sits beside. `#<module>` is what the definition block, the
+                  prose linker and the inventories all point at — 9,160 links —
+                  and a fragment that lands on a closed disclosure still lands
+                  on the right row. The script at the foot of this page opens
+                  it; without JavaScript it is one click, which is what a
+                  `<details>` is for.
                 */}
-                <ul class="mt-3 grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
+                <ul class="api-module-index mt-3 grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
                   {moduleGroups.map((m) => (
-                    <li id={m.name || undefined} class="scroll-mt-24 font-mono text-sm">
-                      {m.name || 'Types'}
-                      <span class="ml-2 font-sans text-xs opacity-60">
-                        {m.types.length + m.free.length}
-                      </span>
+                    <li>
+                      <details id={m.name || undefined} class="api-module scroll-mt-24">
+                        <summary class="api-module__name font-mono text-sm">
+                          {m.name || 'Types'}
+                          <span class="ml-2 font-sans text-xs opacity-60">
+                            {m.types.length + m.free.length}
+                          </span>
+                        </summary>
+                        <ul class="api-module__symbols">
+                          {[...m.types, ...m.free].map((sym) => (
+                            <li>
+                              <a class="api-module__symbol" href={hrefFor(sym)}>
+                                <SymbolName name={sym.name} />
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
                     </li>
                   ))}
                 </ul>
@@ -944,6 +965,30 @@ const title = owner
     // listens for one. The hand-rolled button it replaced needed a delegated
     // listener, because a page can hold 600 examples and 600 listeners is a
     // cost paid on every load for a control most readers never press.
+
+    // Open the disclosure a fragment points at.
+    //
+    // A browser opens a <details> that *contains* the target, but not one that
+    // *is* the target — and `#<module>` on the index is the disclosure itself,
+    // which is where 9,160 links from prose, signatures and the inventories
+    // land. Without this they arrived at a closed row.
+    //
+    // getElementById, not querySelector: a module id is `mcp.server` or
+    // `libtmux.neo`, and the dots are class selectors to a CSS parser.
+    ;(() => {
+      const reveal = () => {
+        const id = decodeURIComponent(location.hash.slice(1))
+        if (!id) return
+        const target = document.getElementById(id)
+        if (!target) return
+        for (let el = target; el; el = el.parentElement) {
+          if (el.tagName === 'DETAILS') el.open = true
+        }
+        target.scrollIntoView()
+      }
+      reveal()
+      window.addEventListener('hashchange', reveal)
+    })()
 
     // Collapse the contents disclosure where it would otherwise push the page
     // below the fold. Re-runs after a client-side navigation.

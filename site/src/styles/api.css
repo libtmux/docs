@@ -732,6 +732,41 @@
 }
 
 /*
+ * The module index: one disclosure per module, each listing its own symbols.
+ *
+ * The sections below it group by bucket, not by module, so a module name had
+ * nothing to click through to — it was a name and a count, and `libtmux.types`
+ * with 65 beside it read as a dead end. Keeping the marker here, unlike
+ * `.api-index-summary` above, is the point: these rows are controls rather
+ * than headings, and the triangle is what says so.
+ */
+.api-module__name {
+  cursor: pointer;
+  color: var(--color-link);
+}
+
+.api-module__name:hover {
+  text-decoration: underline;
+}
+
+.api-module__symbols {
+  margin: 0.25rem 0 0.5rem 1rem;
+  padding: 0;
+  list-style: none;
+  border-left: 1px solid var(--color-background-border);
+  padding-left: 0.75rem;
+}
+
+.api-module__symbol {
+  display: block;
+  padding: 0.0625rem 0;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+/*
  * A type card whose whole area is clickable without nesting a link.
  *
  * The card used to be one `a` wrapping the name and the summary. A summary
