@@ -166,7 +166,10 @@ const PROBES = {
     return Object.keys(body.releases ?? {}).filter((v) => (body.releases[v] ?? []).length > 0)
   },
   async ts() {
-    const { missing, body } = await getJson('https://registry.npmjs.org/@libtmux%2flibtmux')
+    // `libtmux`, not the scoped `@libtmux/libtmux` this probe used to ask for.
+    // The scoped name 404s, which classified a published package as having
+    // nothing on npm and sent the prompt down the git install branch.
+    const { missing, body } = await getJson('https://registry.npmjs.org/libtmux')
     if (missing || !body || body.error) return null
     return Object.keys(body.versions ?? {})
   },

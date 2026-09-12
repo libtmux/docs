@@ -8,8 +8,8 @@
       "tag": "v0.62.0"
     },
     "ts": {
-      "status": "unpublished",
-      "version": null,
+      "status": "prerelease",
+      "version": "0.1.0-alpha.8",
       "stable": null,
       "tag": "v0.1.0-alpha.8"
     },

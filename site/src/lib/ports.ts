@@ -260,6 +260,7 @@ export const PORTS: readonly Port[] = [
     slug: 'ts',
     name: 'TypeScript',
     language: 'TypeScript',
+
     packageName: 'libtmux',
     repo: 'libtmux/libtmux-ts',
     checkout: '~/work/libtmux/libtmux-ts',
@@ -298,9 +299,12 @@ export const PORTS: readonly Port[] = [
     registry: { name: 'npm', url: 'https://www.npmjs.com/package/libtmux', icon: 'npm' },
     initProject: { code: 'bun init', lang: 'console' },
     installForms: {
-      stable: { code: 'bun add @libtmux/libtmux', lang: 'console' },
-      prerelease: { code: 'bun add @libtmux/libtmux@{version}', lang: 'console' },
-      git: { code: 'bun add github:libtmux/libtmux-ts#{tag}', lang: 'console' },
+      stable: { code: 'bun add libtmux', lang: 'console' },
+      prerelease: { code: 'bun add libtmux@{version}', lang: 'console' },
+      // A git install takes the workspace root, which is `@libtmux/repo` and
+      // carries no library, so the import fails with "Cannot find module".
+      // Depend on the package directory instead.
+      git: { code: 'git clone --branch {tag} https://github.com/libtmux/libtmux-ts && bun add ./libtmux-ts/packages/libtmux', lang: 'console' },
     },
   },
   {
