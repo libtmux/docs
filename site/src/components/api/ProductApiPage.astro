@@ -4,6 +4,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro'
 import ApiEntry from './ApiEntry.astro'
 import { productApiAlternatives, productApiHref, productApiIndex } from '../../lib/product-api'
 import { productApiPath, type DocProduct } from '../../lib/ports'
+import { symbolSource } from '../../lib/markdown-twins'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
 interface Props { model: ApiModel; symbol: ApiSymbol; version: string }
@@ -19,7 +20,8 @@ const alternativesFor = (entry: ApiSymbol) => productApiAlternatives(model, entr
 ---
 
 <DocsLayout title={symbol.publicId ?? symbol.name} description={symbol.doc?.summary ? docSummaryText(symbol.doc.summary, model.port) : `${symbol.name} API documentation.`}
-  port={model.port} product={product} version={version} pagePath={pagePath} tableOfContents={false}>
+  port={model.port} product={product} version={version} pagePath={pagePath} tableOfContents={false}
+  pageSource={symbolSource(model, symbol)} markdown="source">
   <p><a href="../">API reference</a> · <a href={`../${symbol.slug}.md`}>Markdown</a></p>
   {symbol.apiScope === 'supporting' && <p>This type appears in public signatures. It is not a package entry point.</p>}
   <ApiEntry symbol={symbol} index={index} port={model.port} alternativesFor={alternativesFor} heading sourceUrl={(entry) => sourceUrl(model, entry)} />

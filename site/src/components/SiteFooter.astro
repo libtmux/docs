@@ -1,6 +1,26 @@
 ---
+import type { Locale } from '../i18n/locales'
+import { t } from '../i18n/ui'
 import { PORTS } from '../lib/ports'
+import { rawSourceUrl, type PageSource } from '../lib/markdown-twins'
 import { withPortRoot, withRoot } from '../lib/site-root'
+
+/**
+ * The shared footer. Its last line is the one gp-sphinx gives every page of
+ * libtmux.git-pull.com: the page's source, then its Markdown, raw source,
+ * docs.json, llms.txt and llms-full.txt. BaseLayout computes the targets.
+ */
+interface Props {
+  locale: Locale
+  source: PageSource
+  markdownHref: string
+  /** The narrowest tree with its own docs.json and llms files. */
+  llmsRoot: string
+  /** The repository behind the GitHub icon: this page's port, else this site. */
+  githubRepo: string
+}
+
+const { locale, source, markdownHref, llmsRoot, githubRepo } = Astro.props
 ---
 
 <footer class="mt-16 border-t border-edge">
@@ -16,5 +36,22 @@ import { withPortRoot, withRoot } from '../lib/site-root'
       ))}
       <li><a class="hover:underline" href={withRoot('/third-party-notices/')}>Third-party notices</a></li>
     </ul>
+    <div class="mt-6 flex items-start justify-between gap-4 border-t border-edge pt-4 opacity-80">
+      <div class="page-source min-w-0 wrap-anywhere">
+        {t(locale, 'footer.source')}: <code>{source.path}</code>
+        &#183;
+        {t(locale, 'footer.machineReadable')}:
+        <a class="muted-link underline" href={markdownHref}>Markdown</a>,
+        <a class="muted-link underline" href={rawSourceUrl(source)}>{t(locale, 'footer.rawSource')}</a>,
+        <a class="muted-link underline" href={`${llmsRoot}docs.json`}>docs.json</a>,
+        <a class="muted-link underline" href={`${llmsRoot}llms.txt`}>llms.txt</a>,
+        <a class="muted-link underline" href={`${llmsRoot}llms-full.txt`}>llms-full.txt</a>
+      </div>
+      <div class="icons shrink-0">
+        <a class="muted-link" href={`https://github.com/${githubRepo}/`} aria-label="GitHub">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
+        </a>
+      </div>
+    </div>
   </div>
 </footer>

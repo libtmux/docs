@@ -25,9 +25,11 @@ import type { CollectionEntry } from 'astro:content'
 import { LANG_TO_PORT, parseMeta, readFence } from '../plugins/remark-port-code.mjs'
 import { PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, referenceUrl } from './ports.ts'
 import { DEFAULT_LOCALE } from '../i18n/locales.ts'
-import { localeOf } from '../i18n/resolve.ts'
+import { buildLocale, localeOf, sourceIdOf } from '../i18n/resolve.ts'
 import { buildTarget } from './versions.ts'
-import { docsPath, docsRoutePath } from './docs-paths.ts'
+import { docsPath, docsRoutePath, type DocsPage } from './docs-paths.ts'
+import { docsEntryAvailable } from './page-port-links.ts'
+import type { Locale } from '../i18n/locales.ts'
 import { PORT_ROOT } from './site-root.ts'
 import { API_MODELS } from './api-models.ts'
 import { productApiHref, productApiRoots } from './product-api.ts'
@@ -110,8 +112,6 @@ function sectionOf(entry: CollectionEntry<'docs'>): string {
  */
 export async function llmsPages(origin: string, base: string): Promise<LlmsPage[]> {
   const port = process.env.LIBTMUX_DOCS_PORT || undefined
-  let defaults: Record<string, string> = {}
-  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
   // Default locale only. A translation is a different document at a different
   // URL, and listing `ja/concepts` beside `concepts` in one file would hand an
   // agent the same page twice in two languages.
@@ -121,26 +121,72 @@ export async function llmsPages(origin: string, base: string): Promise<LlmsPage[
       (!port || entry.data.port === undefined || entry.data.port === port) &&
       localeOf(entry.id) === DEFAULT_LOCALE,
   )
+  // The same page the routes serve: a translation where this locale has one,
+  // so a section and that page's `.md` twin stay one text rather than two.
+  let defaults: Record<string, string> = {}
+  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
+  const locale = buildLocale()
+  const translations = new Map(locale === DEFAULT_LOCALE ? []
+    : localeProse(await getCollection('docs'), locale, port, defaults)
+      .map(({ entry, route }) => [route, entry] as const))
   return entries
-    .map((entry) => {
-      const entryPort = entry.data.port
-      const version = port ? buildTarget(process.env).version : (defaults[entryPort ?? ''] ?? 'latest')
-      let body = resolvePortCode(entry.body ?? '', entryPort ?? port)
-      if (entryPort && entry.data.product && docsPath(entry) === productApiPath(entry.data.product)) {
-        const model = API_MODELS[entryPort]
-        const symbols = productApiRoots(model, entry.data.product)
-        body += `\n\n## API declarations\n\n${symbols.map((symbol) => `- [${symbol.publicId ?? symbol.name}](${origin}${productApiHref(model, symbol, version)})`).join('\n')}\n`
-        if (entry.data.product === 'mcp') body += `\n[Protocol catalog](${origin}${portPageUrl(PORT_BY_SLUG[entryPort], version, 'mcp/tools').replace(/\/$/, '.json')})\n`
-      }
-      return {
-      title: entry.data.title,
-      description: entry.data.description ?? '',
-      url: `${origin}${entry.data.product && !port ? `${PORT_ROOT}/` : base}${docsRoutePath(entry, port, defaults)}/`,
-      section: sectionOf(entry),
-      body,
-      order: entry.data.sidebar?.order ?? Number.MAX_SAFE_INTEGER,
-    }})
+    .map((entry) => llmsPage(translations.get(docsRoutePath(entry, port, defaults)) ?? entry, origin, base))
     .sort((a, b) => a.section.localeCompare(b.section) || a.order - b.order || a.title.localeCompare(b.title))
+}
+
+/**
+ * One prose page as this build serves it: its URL, and its Markdown with code
+ * narrowed to the build's port and `file=` fences filled in. llms-full.txt
+ * concatenates these, and the page's `.md` twin is one of them, so the two
+ * cannot drift.
+ *
+ * `entry.id` must be the source id, without a translation's locale prefix,
+ * because the route path is derived from it.
+ */
+export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: string): LlmsPage & { order: number } {
+  const port = process.env.LIBTMUX_DOCS_PORT || undefined
+  let defaults: Record<string, string> = {}
+  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
+  const entryPort = entry.data.port
+  const version = port ? buildTarget(process.env).version : (defaults[entryPort ?? ''] ?? 'latest')
+  let body = resolvePortCode(entry.body ?? '', entryPort ?? port)
+  if (entryPort && entry.data.product && docsPath(entry) === productApiPath(entry.data.product)) {
+    const model = API_MODELS[entryPort]
+    const symbols = productApiRoots(model, entry.data.product)
+    body += `\n\n## API declarations\n\n${symbols.map((symbol) => `- [${symbol.publicId ?? symbol.name}](${origin}${productApiHref(model, symbol, version)})`).join('\n')}\n`
+    if (entry.data.product === 'mcp') body += `\n[Protocol catalog](${origin}${portPageUrl(PORT_BY_SLUG[entryPort], version, 'mcp/tools').replace(/\/$/, '.json')})\n`
+  }
+  // A locale's landing entry routes to '', which is the root itself.
+  const path = docsRoutePath(entry, port, defaults)
+  return {
+    title: entry.data.title,
+    description: entry.data.description ?? '',
+    url: `${origin}${entry.data.product && !port ? `${PORT_ROOT}/` : base}${path ? `${path}/` : ''}`,
+    section: sectionOf(entry),
+    body,
+    order: entry.data.sidebar?.order ?? Number.MAX_SAFE_INTEGER,
+  }
+}
+
+/**
+ * The prose entries this locale serves, each paired with its route.
+ *
+ * `[...slug].md.ts` writes one Markdown twin per entry and `docs.json` names
+ * them. Deriving the set twice is how a manifest comes to advertise a file
+ * nothing builds, so both read it from here.
+ */
+export function localeProse<T extends DocsPage>(
+  entries: T[],
+  locale: Locale,
+  port?: string,
+  defaults: Record<string, string> = {},
+): { entry: T; route: string }[] {
+  return entries
+    .filter((entry) => localeOf(entry.id) === locale && docsEntryAvailable(entry, port))
+    .map((entry) => {
+      const source = { ...entry, id: sourceIdOf(entry.id) } as T
+      return { entry: source, route: docsRoutePath(source, port, defaults) }
+    })
 }
 
 /** The one-line header both files share, naming the port when there is one. */

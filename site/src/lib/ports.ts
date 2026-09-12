@@ -1,7 +1,7 @@
 /** Port identities, source locations, renderers, and documentation URLs. */
 
 // build-site.sh imports this module with bare Node; local imports need `.ts`.
-import { withPortRoot, withRoot } from './site-root.ts'
+import { withPortRoot } from './site-root.ts'
 import type { TagGrammar } from './versions.ts'
 
 

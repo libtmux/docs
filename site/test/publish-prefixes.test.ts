@@ -35,6 +35,7 @@ function fixture(products = true): string {
   const files: string[] = []
   for (const port of PORTS) {
     write(join(directory, `dist/${port.slug}/index.html`))
+    write(join(directory, `dist/${port.slug}/index.md`), '# Port\n')
     if (products) {
       for (const name of ['index.html', 'docs.json']) {
         const path = `${port.slug}/latest/${name}`
@@ -83,7 +84,9 @@ function assemblyFixture(): string {
   return directory
 }
 
-describe('production shell publication boundaries', () => {
+// Each case shells out to the publisher, which is given 10s of its own, so
+// the default 5s per test could never cover one under load.
+describe('production shell publication boundaries', { timeout: 30_000 }, () => {
   it('omits locally generated native APIs before declaring the assembled publication artifact', () => {
     const directory = assemblyFixture()
     const expected = JSON.parse(readFileSync(join(directory, 'shell-paths.json'), 'utf8')) as { directories: string[]; files: string[] }
@@ -141,7 +144,7 @@ describe('production shell publication boundaries', () => {
     const copies = result.commands.filter((args) => args[1] === 'cp')
     expect(copies.some((args) => args.includes('--recursive'))).toBe(false)
     expect(copies.map((args) => args[3]).sort()).toEqual([
-      ...PORTS.map((port) => `s3://docs-test/${locale}/${port.slug}/index.html`),
+      ...PORTS.flatMap((port) => ['index.html', 'index.md'].map((file) => `s3://docs-test/${locale}/${port.slug}/${file}`)),
       ...PORTS.flatMap((port) => ['index.html', 'docs.json'].map((file) => `s3://docs-test/${locale}/${port.slug}/latest/${file}`)),
       `s3://docs-test/${locale}/index.html`, `s3://docs-test/${locale}/robots.txt`, 's3://docs-test/robots.txt',
     ].sort())

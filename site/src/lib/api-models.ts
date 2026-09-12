@@ -162,7 +162,7 @@ export function pageSlug(id: string): string {
   return id
     .toLowerCase()
     .replaceAll('.', '-')
-    .replace(/[^a-z0-9_:()\[\]-]+/g, '-')
+    .replace(/[^a-z0-9_:()[\]-]+/g, '-')
     .replace(/-{2,}/g, '-')
     .replace(/^-|-$/g, '')
 }

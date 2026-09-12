@@ -12,6 +12,8 @@ import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import PagePortSwitcher from '../components/PagePortSwitcher.astro'
 import { pagePortsFor } from '../lib/page-ports-for'
 import BaseLayout from './BaseLayout.astro'
+import type { PageSource } from '../lib/markdown-twins'
+import { API_MODELS } from '../lib/api-models'
 import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, productInDevelopment, type DocProduct } from '../lib/ports'
 
 /**
@@ -54,6 +56,10 @@ interface Props {
   canonicalOverride?: string
   /** Every locale's status for this page, for the locale switcher. */
   localeStatuses?: Record<string, string>
+  /** Forwarded to BaseLayout's machine-readable footer. */
+  pageSource?: PageSource
+  markdownIndex?: boolean
+  markdown?: 'source' | 'rendered' | { href: string }
 }
 
 const {
@@ -72,6 +78,9 @@ const {
   sourcePath,
   canonicalOverride,
   localeStatuses,
+  pageSource,
+  markdownIndex,
+  markdown,
 } = Astro.props as Props
 
 // process.env, not import.meta.env: import.meta.env.LIBTMUX_DOCS_* goes
@@ -112,6 +121,10 @@ const breadcrumbs = product && port ? [
   canonicalOverride={canonicalOverride}
   localeStatuses={localeStatuses}
   breadcrumbs={breadcrumbs}
+  pageSource={pageSource}
+  markdownIndex={markdownIndex}
+  markdown={markdown}
+  repository={product && port ? API_MODELS[port]?.sources?.find((source) => source.product === product)?.repo : undefined}
 >
   <CodeTabs />
   <!-- Mobile toolbar: sidebar + ToC toggles. The three-column layout below hides

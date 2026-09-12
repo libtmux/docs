@@ -111,6 +111,30 @@ duplicates against each other unless told which one wins.
   JSON-LD graph — `WebSite` on the landing page, `TechArticle` (carrying
   `programmingLanguage` and `about.name`) on every port page.
 
+## The machine-readable surface
+
+Every page ends with its source path and links to five things: its own
+Markdown, that source on GitHub, `docs.json`, `llms.txt` and `llms-full.txt`.
+The Markdown is also advertised in the head as
+`<link rel="alternate" type="text/markdown">`, and placed the way gp-sphinx
+places it, `docname + ".md"`, so `/topics/panes/` pairs with
+`/topics/panes.md` and an index page with `index.md` inside its own
+directory. `site/src/lib/markdown-twins.ts` owns that one rule; the footer,
+the head link, `docs.json` and every writer read it from there.
+
+Where the text comes from depends on the page. Prose pages and API
+declarations have a source, so their Markdown is generated from it — the same
+resolved text `llms-full.txt` carries, which is why a section of that file and
+a page's Markdown are one text rather than two. Pages assembled from
+components and data have no source, so `site/src/integrations/markdown-twins.ts`
+converts their rendered HTML after the build. A page that declares a source
+twin and does not get one fails the build, which is the gap behind
+`notes/upstream/sphinx-gp-llms-md-twins.md`.
+
+A translation build describes what that locale serves: a translated page is
+listed and written in its own language, while a placeholder renders the
+default locale's text and links its Markdown rather than duplicating the file.
+
 ## Search
 
 `site/src/integrations/pagefind.ts` runs the Pagefind CLI once per build,

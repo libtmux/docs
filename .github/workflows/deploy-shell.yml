@@ -383,7 +383,7 @@ jobs:
               exit 1
             fi
             for child in "$entry"/*; do
-              [[ "$child" == "$entry/index.html" ]] && continue
+              [[ "$child" == "$entry/index.html" || "$child" == "$entry/index.md" ]] && continue
               if [[ "$child" != "$entry/latest" || ! -d "$child" ]]; then
                 echo "::error::$child is outside shell-owned latest paths" >&2
                 exit 1
@@ -424,6 +424,11 @@ jobs:
           for name in "${reserved_index_dirs[@]}"; do
             aws s3 cp "dist/$name/index.html" "s3://$BUCKET/$locale/$name/index.html" \
               --cache-control "public, max-age=0, s-maxage=300"
+            # The port home's Markdown twin, which its footer links.
+            if [[ -f "dist/$name/index.md" ]]; then
+              aws s3 cp "dist/$name/index.md" "s3://$BUCKET/$locale/$name/index.md" \
+                --cache-control "public, max-age=0, s-maxage=300"
+            fi
           done
           for path in "${version_files[@]}"; do
             aws s3 cp "dist/$path" "s3://$BUCKET/$locale/$path" \

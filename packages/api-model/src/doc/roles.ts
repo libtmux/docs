@@ -371,7 +371,8 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
   // with one inside a role and swallow everything between them. In
   // ``:meth:`send keys <Pane.send_keys>` plus `Window`.`` that consumed the
   // `Window` reference entirely.
-  const masked = [...text]
+  // Code units, not code points: `hits` are regex indices into the string.
+  const masked = text.split('')
   for (const hit of hits) {
     for (let i = hit.start; i < hit.end; i++) masked[i] = ' '
   }

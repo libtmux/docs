@@ -226,6 +226,14 @@ changes the weight without restyling the heading scale.
 
 ## Closed since this file was written
 
+The machine-readable line. gp-sphinx ends every page with its source path
+and links to that page's Markdown, raw source, `docs.json`, `llms.txt` and
+`llms-full.txt`. This site served the llms files and the manifest, but no page
+named them and prose pages had no Markdown of their own. Every page now
+carries the line and a GitHub icon for the repository it documents; a page
+assembled from components gets its Markdown from a post-build conversion of
+the rendered HTML, since it has no source to copy.
+
 The content measure. gp-sphinx caps at Furo's `46em`, 754px against its
 16.4px root; the reference had no cap and ran to 960px — a third wider than
 this site's own prose pages at 704. Capped at 47rem, 752px. The style-parity

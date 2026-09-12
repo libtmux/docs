@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import { PORT_BY_SLUG } from '../../lib/ports'
+import { isIndexSource } from '../../lib/markdown-twins'
 
 /**
  * The generated API reference for whichever port this build targets.
@@ -39,6 +40,7 @@ const pagePath = rest ? `api/${rest}` : 'api'
   port={entry.data.port}
   headings={headings}
   pagePath={pagePath}
+  markdownIndex={isIndexSource(entry.filePath)}
 >
   <Content />
   {

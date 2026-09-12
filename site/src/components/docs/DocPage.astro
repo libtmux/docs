@@ -7,7 +7,8 @@ import ProductApiIndex from '../api/ProductApiIndex.astro'
 import { buildTarget } from '../../lib/versions'
 import { API_MODELS } from '../../lib/api-models'
 import { DEFAULT_LOCALE, LOCALE_LABEL, localeRoot, type Locale } from '../../i18n/locales'
-import { contributeLink } from '../../i18n/contribute'
+import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, contributeLink, repoPath } from '../../i18n/contribute'
+import { isIndexSource, markdownPath } from '../../lib/markdown-twins'
 import { t } from '../../i18n/ui'
 import { withRoot } from '../../lib/site-root'
 import {
@@ -108,6 +109,9 @@ const isProductApi = entry.data.product && pagePath === productApiPath(entry.dat
   locales={placeholderLocale || entry.data.product ? [] : locales}
   sourcePath={entry.data.product ? pagePath : sourceId}
   localeStatuses={localeStatuses}
+  pageSource={entry.filePath ? { repo: CONTRIBUTE_REPO, path: repoPath(entry.filePath), ref: CONTRIBUTE_BRANCH } : undefined}
+  markdownIndex={isIndexSource(entry.filePath)}
+  markdown={placeholderLocale ? { href: markdownPath(englishHref, isIndexSource(entry.filePath)) } : 'source'}
 >
   {
     placeholderLocale && (

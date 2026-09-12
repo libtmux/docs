@@ -1,11 +1,13 @@
 import type { APIRoute } from 'astro'
 import { getCollection, render } from 'astro:content'
-import { DEFAULT_LOCALE } from '../i18n/locales.ts'
-import { localeOf } from '../i18n/resolve.ts'
+import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales.ts'
+import { buildLocale, localeOf } from '../i18n/resolve.ts'
 import { API_MODELS, PORT_NAME, ownersOf } from '../lib/api-models.ts'
 import { DOC_PRODUCTS, hasReference, PORTS, portPageUrl, productApiPath, productInDevelopment, referenceUrl, type DocProduct } from '../lib/ports.ts'
 import { PORT_ROOT } from '../lib/site-root.ts'
 import { docsRoutePath } from '../lib/docs-paths.ts'
+import { isIndexSource, markdownPath } from '../lib/markdown-twins.ts'
+import { localeProse } from '../lib/llms.ts'
 
 /**
  * `/docs.json` — the agent manifest.
@@ -21,12 +23,12 @@ import { docsRoutePath } from '../lib/docs-paths.ts'
  *     pages: [ { title, description, section, url, markdownUrl,
  *                headings: [ { id, level, text } ] } ] }
  *
- * `markdownUrl` is the one field we diverge on, and deliberately. gp-sphinx
- * points it at a per-page Markdown twin; we publish none, and the upstream
- * twin generator has the bug recorded in `10-llms-and-agents.md` — it copies
- * source rather than resolved content, so an autodoc page's twin is the
- * unresolved directive. Pointing at `llms-full.txt`, which *is* resolved,
- * is honest; pointing at a file we do not emit would not be.
+ * `markdownUrl` is the twin the page itself names, placed by
+ * `lib/markdown-twins.ts`. Ours are written from resolved content; gp-sphinx's
+ * copy source, so an autodoc page's twin is the unresolved directive
+ * (`10-llms-and-agents.md`). A translation build lists the default locale's
+ * pages at its own URLs. Each is a translation with its own twin or a
+ * placeholder that names the English one.
  */
 export const GET: APIRoute = async ({ site }) => {
   const origin = (site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
@@ -42,16 +44,28 @@ export const GET: APIRoute = async ({ site }) => {
     'docs',
     (entry) => (!port || !entry.data.port || entry.data.port === port) && localeOf(entry.id) === DEFAULT_LOCALE,
   )
+  // What this build serves at each route: a translation where it has one, and
+  // the default locale's page where a placeholder stands in for it.
+  const locale = buildLocale()
+  const translations = new Map(locale === DEFAULT_LOCALE ? []
+    : localeProse(await getCollection('docs'), locale, port, defaults)
+      .map(({ entry, route }) => [route, entry] as const))
 
   const pages = []
   for (const entry of entries) {
-    const { headings } = await render(entry)
+    const path = docsRoutePath(entry, port, defaults)
+    const route = `${path}/`
+    // A translated page is described in its own language, so an agent reading
+    // the Japanese manifest is not handed English titles for Japanese pages.
+    const served = translations.get(path) ?? entry
+    const { headings } = await render(served)
+    const twinBase = locale === DEFAULT_LOCALE || translations.has(path) ? base : localeRoot(DEFAULT_LOCALE)
     pages.push({
-      title: entry.data.title,
-      description: entry.data.description ?? '',
-      section: entry.data.sidebar?.group ?? 'Documentation',
-      url: `${origin}${entry.data.product && !port ? refBase : base}${docsRoutePath(entry, port, defaults)}/`,
-      markdownUrl: `${origin}${entry.data.product && !port ? refBase : base}llms-full.txt`,
+      title: served.data.title,
+      description: served.data.description ?? '',
+      section: served.data.sidebar?.group ?? 'Documentation',
+      url: `${origin}${entry.data.product && !port ? refBase : base}${route}`,
+      markdownUrl: `${origin}${markdownPath(`${entry.data.product && !port ? refBase : twinBase}${route}`, isIndexSource(served.filePath))}`,
       headings: headings.map((h) => ({ id: h.slug, level: h.depth, text: h.text })),
     })
   }
@@ -68,7 +82,7 @@ export const GET: APIRoute = async ({ site }) => {
       // only, so a Japanese manifest advertising /ja/reference/… names pages
       // nothing builds. Nothing parses this file, so nothing reported it.
       url: `${origin}${refBase}reference/${port}/`,
-      markdownUrl: `${origin}${refBase}reference/${port}/objects.inv`,
+      markdownUrl: `${origin}${refBase}reference/${port}/index.md`,
       headings: types.slice(0, 200).map((t) => ({
         id: t.publicId ?? t.id,
         level: 2,
