@@ -159,8 +159,12 @@ export interface Port {
    * cases, and only one of them is an install command. A reader running the
    * prompt in an empty directory gets a manifest first; one running it in an
    * existing project skips this.
+   *
+   * An `InstallForm` rather than a string because C++ has no init command to
+   * name. Its entry is an instruction, and `lang: 'text'` is what stops it
+   * being indented into a code block that a reader would try to paste.
    */
-  initProject: string
+  initProject: InstallForm
   /**
    * The three ways to depend on this port, so a prompt can name the one that
    * matches the registry rather than the one we wish were true.
@@ -228,7 +232,7 @@ export const PORTS: readonly Port[] = [
       },
     ],
     registry: { name: 'PyPI', url: 'https://pypi.org/project/libtmux/', icon: 'pypi' },
-    initProject: 'uv init',
+    initProject: { code: 'uv init', lang: 'console' },
     installForms: {
       stable: { code: 'pip install libtmux', lang: 'console' },
       prerelease: { code: "pip install --pre 'libtmux=={version}'", lang: 'console' },
@@ -275,7 +279,7 @@ export const PORTS: readonly Port[] = [
       },
     ],
     registry: { name: 'npm', url: 'https://www.npmjs.com/package/libtmux', icon: 'npm' },
-    initProject: 'bun init',
+    initProject: { code: 'bun init', lang: 'console' },
     installForms: {
       stable: { code: 'bun add @libtmux/libtmux', lang: 'console' },
       prerelease: { code: 'bun add @libtmux/libtmux@{version}', lang: 'console' },
@@ -309,7 +313,7 @@ export const PORTS: readonly Port[] = [
       },
     ],
     registry: { name: 'crates.io', url: 'https://crates.io/crates/libtmux', icon: 'crates' },
-    initProject: 'cargo init',
+    initProject: { code: 'cargo init', lang: 'console' },
     installForms: {
       stable: { code: 'cargo add libtmux', lang: 'console' },
       // Cargo treats a prerelease as out of range for a plain requirement, so
@@ -344,7 +348,7 @@ export const PORTS: readonly Port[] = [
       },
     ],
     registry: { name: 'pkg.go.dev', url: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux', icon: 'go' },
-    initProject: 'go mod init example.com/tmuxdemo',
+    initProject: { code: 'go mod init example.com/tmuxdemo', lang: 'console' },
     installForms: {
       stable: { code: 'go get github.com/libtmux/libtmux-go', lang: 'console' },
       // `go get` without a version resolves the highest release, and a
@@ -405,7 +409,7 @@ export const PORTS: readonly Port[] = [
       },
     ],
     registry: { name: 'Maven Central', url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux', icon: 'maven' },
-    initProject: 'gradle init --type java-application --dsl kotlin',
+    initProject: { code: 'gradle init --type java-application --dsl kotlin', lang: 'console' },
     installForms: {
       // Gradle has no unpinned form, so every spelling carries the version.
       // This is the field that used to read `:VERSION` and shipped that word
@@ -436,7 +440,7 @@ export const PORTS: readonly Port[] = [
       },
     ],
     registry: { name: 'NuGet', url: 'https://www.nuget.org/packages/LibTmux', icon: 'nuget' },
-    initProject: 'dotnet new console',
+    initProject: { code: 'dotnet new console', lang: 'console' },
     installForms: {
       stable: { code: 'dotnet add package LibTmux', lang: 'console' },
       // NuGet resolves a stable release unless a version is named. `--version`
@@ -494,7 +498,11 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
         note: 'Then add_subdirectory(third_party/libtmux) and link libtmux::libtmux.',
       },
     ],
-    initProject: 'write a CMakeLists.txt with cmake_minimum_required(VERSION 3.24) and project()',
+    initProject: {
+      // CMake has no scaffolding command, so this step is an instruction.
+      code: 'write a CMakeLists.txt declaring cmake_minimum_required and project(), targeting C++23.',
+      lang: 'text',
+    },
     installForms: {
       stable: { code: 'vcpkg install libtmux-cxx', lang: 'console' },
       prerelease: { code: 'vcpkg install libtmux-cxx', lang: 'console' },
@@ -539,7 +547,7 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     ],
     // SwiftPM resolves from the repository itself, so the repository is the
     // registry page a reader checks for versions.
-    initProject: 'swift package init --type executable',
+    initProject: { code: 'swift package init --type executable', lang: 'console' },
     installForms: {
       stable: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", from: "{version}")', lang: 'swift' },
       // `from:` means "this version up to the next major" and SwiftPM excludes
