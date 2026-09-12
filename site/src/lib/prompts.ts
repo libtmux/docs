@@ -66,14 +66,27 @@ export interface PromptContext {
   version: string
 }
 
-/** The pieces the browser assembles, one port's worth. */
-export interface PromptParts {
-  /** Everything common to this port: context, facts, reading list, setup steps. */
-  setup: string
-  /** Each topic's own section, keyed by topic id. `setup` has no section. */
-  sections: Readonly<Record<string, string>>
+/**
+ * The half of a prompt that does not depend on the language.
+ *
+ * Shipped once for all eight ports, which is the whole economy of this module.
+ * Building the sections per port instead cost 97 KB on the landing page:
+ * identical text repeated eight times, because a topic body names no API and
+ * its anchors are shared pages that sit above the version axis.
+ */
+export interface SharedParts {
   /** Opening instruction per topic id. */
   openings: Readonly<Record<string, string>>
+  /** Each topic's section, without any port's note. `setup` has none. */
+  sections: Readonly<Record<string, string>>
+}
+
+/** The half that does depend on the language. */
+export interface PortParts {
+  /** Context, facts, reading list and setup steps for this port. */
+  setup: string
+  /** Topic id to this port's extra line, only where the topic writes one. */
+  notes: Readonly<Record<string, string>>
 }
 
 const SETUP_ID = 'setup'
@@ -368,20 +381,49 @@ function installStep(port: Port, entry: RegistryEntry, install: InstallForm, wor
 }
 
 /**
+ * Every topic's section, built once and shared by all eight ports.
+ *
+ * Takes only the context, which is the proof that a topic body is
+ * language-independent: there is no `Port` in scope to leak one in.
+ */
+export function sharedParts(ctx: PromptContext): SharedParts {
+  const sections: Record<string, string> = {}
+  const openings: Record<string, string> = {}
+  for (const topic of TOPICS) {
+    openings[topic.id] = topic.opening
+    if (topic.id === SETUP_ID) continue
+    const anchors = topic.pages.map((path) => [pageUrl(ctx, path), pageTitle(path)] as const)
+    sections[topic.id] = [
+      // The label repeated as a header. The opening instruction is at the top
+      // of the prompt and the work is at the bottom, with the whole setup block
+      // between them, so without this the reader meets "What it does" with
+      // nothing saying what "it" is.
+      topic.label,
+      '',
+      topic.body,
+      '',
+      'Anchor it in these pages:',
+      linkList(anchors),
+    ].join('\n')
+  }
+  return { openings, sections }
+}
+
+/**
  * One port's share of every prompt.
  *
  * Everything here is a fact about the port or the registry. Nothing about what
  * the reader is building appears, which is what lets one topic body serve all
  * eight languages.
  */
-export function promptParts(args: {
+export function portParts(args: {
   port: Port
   entry: RegistryEntry
   install: InstallForm
   /** `releaseWording(port, entry)`; passed in so this module imports no values. */
   wording: string
   ctx: PromptContext
-}): PromptParts {
+}): PortParts {
   const { port, entry, install, wording, ctx } = args
 
   const reading: (readonly [string, string])[] = [
@@ -431,29 +473,13 @@ export function promptParts(args: {
     '- Follow the conventions already in this repository.',
   ].join('\n')
 
-  const sections: Record<string, string> = {}
-  const openings: Record<string, string> = {}
+  const notes: Record<string, string> = {}
   for (const topic of TOPICS) {
-    openings[topic.id] = topic.opening
-    if (topic.id === SETUP_ID) continue
-    const anchors = topic.pages.map((path) => [pageUrl(ctx, path), pageTitle(path)] as const)
     const note = topic.portNotes?.[port.slug]
-    sections[topic.id] = [
-      // The label repeated as a header. The opening instruction is at the top
-      // of the prompt and the work is at the bottom, with the whole setup
-      // block between them, so without this the reader meets "What it does"
-      // with nothing saying what "it" is.
-      topic.label,
-      '',
-      topic.body,
-      '',
-      'Anchor it in these pages:',
-      linkList(anchors),
-      ...(note ? ['', wrap(`For ${port.name}: ${note}`)] : []),
-    ].join('\n')
+    if (note) notes[topic.id] = wrap(`For ${port.name}: ${note}`)
   }
 
-  return { setup, sections, openings }
+  return { setup, notes }
 }
 
 /** A readable label for a doc path, for the right-hand column of a link list. */
@@ -463,20 +489,28 @@ function pageTitle(path: string): string {
 }
 
 /**
- * The finished prompt for one topic.
+ * The finished prompt for one port and topic.
  *
  * This is the function the browser runs too, so it stays a pure string
- * operation over `PromptParts`. The widget ships the parts once and calls this
- * on every picker change rather than downloading seventy-two prompts.
+ * operation over the two halves. The widget ships the shared half once and one
+ * port block each, then calls this on every picker change rather than
+ * downloading seventy-two finished prompts.
  */
-export function composeFromParts(parts: PromptParts, topicId: string): string {
-  const opening = parts.openings[topicId]
+export function composeFromParts(shared: SharedParts, port: PortParts, topicId: string): string {
+  const opening = shared.openings[topicId]
   if (!opening) throw new Error(`composeFromParts: no topic "${topicId}"`)
-  const section = parts.sections[topicId]
-  return [wrap(opening), '', parts.setup, ...(section ? ['', section] : [])].join('\n')
+  const section = shared.sections[topicId]
+  const note = port.notes[topicId]
+  return [
+    wrap(opening),
+    '',
+    port.setup,
+    ...(section ? ['', section] : []),
+    ...(note ? ['', note] : []),
+  ].join('\n')
 }
 
 /** Convenience for the routes and tests, which have the port to hand. */
-export function composePrompt(args: Parameters<typeof promptParts>[0] & { topicId: string }): string {
-  return composeFromParts(promptParts(args), args.topicId)
+export function composePrompt(args: Parameters<typeof portParts>[0] & { topicId: string }): string {
+  return composeFromParts(sharedParts(args.ctx), portParts(args), args.topicId)
 }

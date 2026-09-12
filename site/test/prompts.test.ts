@@ -5,7 +5,8 @@ import { installCommand, PORTS, releaseWording, type Port } from '../src/lib/por
 import {
   composeFromParts,
   composePrompt,
-  promptParts,
+  portParts,
+  sharedParts,
   TOPICS,
   VERSION_SENTINEL,
   wrap,
@@ -33,7 +34,7 @@ const ctx = { docsBase: DOCS_BASE, version: 'latest' }
 
 function partsFor(port: Port) {
   const entry = registryFor(port)
-  return promptParts({
+  return portParts({
     port,
     entry,
     install: installCommand(port, entry),
@@ -166,23 +167,32 @@ describe('prompt parts', () => {
    * would notice.
    */
   it.each(MATRIX)('$port.slug/$topic.id composes identically from parts', ({ port, topic }) => {
-    expect(composeFromParts(partsFor(port), topic.id)).toBe(promptFor(port, topic.id))
+    expect(composeFromParts(sharedParts(ctx), partsFor(port), topic.id)).toBe(promptFor(port, topic.id))
   })
 
-  it('stays smaller than shipping every finished prompt', () => {
-    const partsBytes = PORTS.reduce((sum, port) => {
+  /**
+   * The widget's payload, measured rather than assumed.
+   *
+   * The first version of this module built every topic section per port, and
+   * the landing page shipped a 97 KB island of eight identical copies. The
+   * bound is here so that regression is a failing test rather than something
+   * noticed while reading a build artefact.
+   */
+  it('ships the shared half once, not once per port', () => {
+    const shared = sharedParts(ctx)
+    const partsBytes =
+      shared.sections ? Object.values(shared.sections).join('').length + Object.values(shared.openings).join('').length : 0
+    const portBytes = PORTS.reduce((sum, port) => {
       const parts = partsFor(port)
-      return sum + parts.setup.length + Object.values(parts.sections).join('').length
+      return sum + parts.setup.length + Object.values(parts.notes).join('').length
     }, 0)
     const wholeBytes = MATRIX.reduce((sum, { port, topic }) => sum + promptFor(port, topic.id).length, 0)
-    // The sections are per-port only because port notes are, so the saving is
-    // real but bounded. Anything above 2x means the parts model stopped paying
-    // for itself and the widget should just ship finished prompts.
-    expect(wholeBytes / partsBytes).toBeGreaterThan(2)
+    expect(wholeBytes / (partsBytes + portBytes)).toBeGreaterThan(4)
+    expect(partsBytes + portBytes).toBeLessThan(40_000)
   })
 
   it('rejects an unknown topic rather than composing a prompt without one', () => {
-    expect(() => composeFromParts(partsFor(PORTS[0]!), 'no-such-topic')).toThrow(/no topic/)
+    expect(() => composeFromParts(sharedParts(ctx), partsFor(PORTS[0]!), 'no-such-topic')).toThrow(/no topic/)
   })
 })
 
