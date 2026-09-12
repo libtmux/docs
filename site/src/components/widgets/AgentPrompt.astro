@@ -1,6 +1,7 @@
 ---
 import { PORTS } from '../../lib/ports'
 import { promptInputs } from '../../lib/registry'
+import { highlightPrompt } from '../../lib/prompt-highlight'
 import { composeFromParts, portParts, sharedParts, TOPICS, VERSION_SENTINEL } from '../../lib/prompts'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { SITE_ROOT } from '../../lib/site-root'
@@ -191,7 +192,7 @@ const activePortRules = items
           data-default={b.port.slug === initialSlug ? true : undefined}
         >
           <div class="lm-agent-prompt__code">
-            <pre><code data-prompt-text>{b.served}</code></pre>
+            <pre><code data-prompt-text set:html={highlightPrompt(b.served)} /></pre>
             <button type="button" class="lm-agent-prompt__copy" data-action="copy" aria-label="Copy the prompt">
               Copy
             </button>
@@ -217,6 +218,13 @@ const activePortRules = items
     --lm-agent-prompt-hover: rgb(0 0 0 / 4%);
     --lm-agent-prompt-code-bg: #f8fafc; /* slate-50 */
     --lm-agent-prompt-mono: var(--font-ibm-plex-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    /* slate-300 / slate-600, matching Sidebar.astro and TableOfContents so
+     * the site has one scrollbar rather than three. */
+    --lm-agent-prompt-scroll: rgb(203 213 225);
+    --lm-agent-prompt-scroll-hover: rgb(148 163 184);
+    --lm-agent-prompt-url: #1d4ed8; /* blue-700 */
+    --lm-agent-prompt-cmd: #047857; /* emerald-700 */
+    --lm-agent-prompt-key: #7c3aed; /* violet-600 */
 
     border: 1px solid var(--lm-agent-prompt-border);
     border-radius: 0.375rem;
@@ -232,6 +240,11 @@ const activePortRules = items
     --lm-agent-prompt-fg-muted: #94a3b8; /* slate-400 */
     --lm-agent-prompt-hover: rgb(255 255 255 / 6%);
     --lm-agent-prompt-code-bg: #0f172a; /* slate-900 */
+    --lm-agent-prompt-scroll: rgb(71 85 105);
+    --lm-agent-prompt-scroll-hover: rgb(100 116 139);
+    --lm-agent-prompt-url: #7dd3fc; /* sky-300 */
+    --lm-agent-prompt-cmd: #6ee7b7; /* emerald-300 */
+    --lm-agent-prompt-key: #c4b5fd; /* violet-300 */
   }
 
   .lm-agent-prompt__tabs {
@@ -338,13 +351,21 @@ const activePortRules = items
 
   .lm-agent-prompt__code pre {
     margin: 0;
+    /* The default scrollbar is a light chunk against a dark panel. `thin`
+     * plus explicit colours is the standard property; the WebKit rules below
+     * say the same thing for browsers that ignore it. */
+    scrollbar-width: thin;
+    scrollbar-color: var(--lm-agent-prompt-scroll) transparent;
     /* The prompt is pre-wrapped to 76 columns, so it needs no horizontal
      * scrolling at desktop width; the cap keeps a long one from taking over
      * the page, and it stays selectable in one gesture. */
     max-height: 26rem;
     overflow: auto;
     background: var(--lm-agent-prompt-code-bg);
-    padding: 0.9rem 1rem;
+    /* The right padding clears the copy button, the same way
+     * PackageInstall.astro's does, so a long line runs out of room before it
+     * runs under the button rather than passing behind it. */
+    padding: 0.9rem 3.25rem 0.9rem 1rem;
   }
 
   .lm-agent-prompt__code code {
@@ -355,10 +376,39 @@ const activePortRules = items
     color: var(--lm-agent-prompt-fg);
   }
 
+  .lm-agent-prompt__code pre::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .lm-agent-prompt__code pre::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .lm-agent-prompt__code pre::-webkit-scrollbar-thumb {
+    background: var(--lm-agent-prompt-scroll);
+    border-radius: 2px;
+  }
+
+  .lm-agent-prompt__code pre::-webkit-scrollbar-thumb:hover {
+    background: var(--lm-agent-prompt-scroll-hover);
+  }
+
+  /* Tokens. A prompt has no grammar to highlight, so these mark the things a
+   * reader looks for: what to run, what to read, and what the facts are. */
+  .lm-agent-prompt__code .lm-ph-url { color: var(--lm-agent-prompt-url); }
+  .lm-agent-prompt__code .lm-ph-cmd { color: var(--lm-agent-prompt-cmd); }
+  .lm-agent-prompt__code .lm-ph-code { color: var(--lm-agent-prompt-cmd); }
+  .lm-agent-prompt__code .lm-ph-key { color: var(--lm-agent-prompt-key); }
+  .lm-agent-prompt__code .lm-ph-heading { color: var(--lm-agent-prompt-fg); font-weight: 600; }
+  .lm-agent-prompt__code .lm-ph-marker { color: var(--lm-agent-prompt-fg-muted); }
+
   .lm-agent-prompt__copy {
     position: absolute;
-    top: 0.5rem;
-    right: 0.6rem;
+    /* Clear of the scrollbar, which takes the first 4px of this edge. At
+     * 0.6rem the button sat about five pixels off it and read as flush. */
+    top: 0.6rem;
+    right: 0.85rem;
     appearance: none;
     border: 1px solid var(--lm-agent-prompt-border);
     border-radius: 0.25rem;
@@ -388,7 +438,7 @@ const activePortRules = items
 
   .lm-agent-prompt--compact .lm-agent-prompt__code pre {
     max-height: 18rem;
-    padding: 0.7rem 0.8rem;
+    padding: 0.7rem 3.25rem 0.7rem 0.8rem;
   }
 
   @media (max-width: 40rem) {
@@ -407,6 +457,7 @@ const activePortRules = items
   // ports.ts would drag site-root.ts, which reads process.env at module scope,
   // into a bundle where `process` does not exist.
   import { composeFromParts, TOPIC_BY_ID, type PortParts, type SharedParts } from '../../lib/prompts'
+  import { highlightPrompt } from '../../lib/prompt-highlight'
 
   interface Island {
     sentinel: string
@@ -472,7 +523,10 @@ const activePortRules = items
       // blanking the prompt.
       return
     }
-    target.textContent = text.replaceAll(island.sentinel, version ?? entry.version)
+    // innerHTML, not textContent: the same highlighter the server used, so a
+    // recomposed prompt is coloured identically to the one that shipped.
+    // highlightPrompt escapes before it adds a tag.
+    target.innerHTML = highlightPrompt(text.replaceAll(island.sentinel, version ?? entry.version))
     const summary = widget.querySelector<HTMLElement>('[data-summary]')
     const known = TOPIC_BY_ID[topic]
     if (summary && known) summary.textContent = known.summary
@@ -553,6 +607,8 @@ const activePortRules = items
   }
 
   function copyPrompt(button: HTMLElement) {
+    // textContent, so the spans the highlighter added never reach the
+    // clipboard. What is copied is the prompt, byte for byte.
     const text = button.closest('.lm-agent-prompt__code')?.querySelector('[data-prompt-text]')?.textContent
     if (!text) return
     const done = () => {

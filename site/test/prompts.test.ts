@@ -12,6 +12,7 @@ import {
   wrap,
 } from '../src/lib/prompts'
 import { registryFor } from '../src/lib/registry'
+import { highlightPrompt } from '../src/lib/prompt-highlight'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { BUCKET_ROOT, SITE_BUILT, SKIP_REASON } from './site-root'
@@ -202,6 +203,43 @@ describe('prompt legibility', () => {
 
   it('indents continuation lines it is given an indent for', () => {
     expect(wrap('alpha beta gamma delta', 12, '  ').split('\n').slice(1).every((l) => l.startsWith('  '))).toBe(true)
+  })
+})
+
+describe('prompt highlighting', () => {
+  /**
+   * The widget renders highlighted HTML and the copy button reads
+   * `textContent`, so whatever the highlighter does has to survive having its
+   * tags stripped and its entities decoded. If it does not, the reader copies
+   * something other than the prompt and no test elsewhere would notice: the
+   * `.txt` routes and the published-bytes check never go through this path.
+   */
+  const asTextContent = (html: string): string =>
+    html
+      .replace(/<[^>]+>/g, '')
+      .replaceAll('&amp;', '&')
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#39;', "'")
+
+  it.each(MATRIX)('$port.slug/$topic.id survives highlighting byte for byte', ({ port, topic }) => {
+    const text = promptFor(port, topic.id)
+    expect(asTextContent(highlightPrompt(text))).toBe(text)
+  })
+
+  it('escapes markup rather than emitting it', () => {
+    const html = highlightPrompt('a <script>alert(1)</script> & "quoted"')
+    expect(html).not.toContain('<script>')
+    expect(html).toContain('&lt;script&gt;')
+    expect(asTextContent(html)).toBe('a <script>alert(1)</script> & "quoted"')
+  })
+
+  it('marks the things a reader looks for', () => {
+    const html = highlightPrompt('Package:    libtmux (PyPI)\n- https://libtmux.org/en/\n    uv add libtmux')
+    expect(html, 'field name').toContain('lm-ph-key')
+    expect(html, 'url').toContain('lm-ph-url')
+    expect(html, 'indented command').toContain('lm-ph-cmd')
   })
 })
 
