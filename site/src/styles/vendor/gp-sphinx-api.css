@@ -278,18 +278,6 @@ dl.py > dd .gp-sphinx-api-example-intro {
   margin: 0.75rem 0 0.5rem;
 }
 
-dl.py > dd pre.highlight {
-  background: var(--color-background-secondary);
-  border: 1px solid var(--color-background-border);
-  border-radius: 0.25rem;
-  padding: 0.625rem 0.75rem;
-  margin: 0 0 0.5rem;
-  overflow-x: auto;
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  line-height: 1.5;
-}
-
 dl.py > dd dl.citation > dt {
   font-weight: 600;
   font-family: var(--font-mono);
@@ -320,33 +308,19 @@ dl.py > dd .gp-sphinx-api-description li {
 
 /* ── Highlighted examples ──────────────────────────────
  *
- * Shiki emits both themes as custom properties and CSS picks; the same markup
- * serves a reader in either, with no flash and no JavaScript. The card around
- * it is the same one an unhighlighted block gets, so a failed highlight looks
- * like a plain example rather than like a broken one. */
-dl.py > dd .highlight pre.shiki {
-  background: var(--color-background-secondary) !important;
-  border: 1px solid var(--color-background-border);
-  border-radius: 0.25rem;
-  padding: 0.625rem 0.75rem;
+ * The block is Expressive Code, the component every fenced block on this site
+ * renders through, so its typeface, size, frame, theming and copy button come
+ * from `ec.config.mjs` and are not restated here.
+ *
+ * What stood here instead was a second code system: a hand-rolled card around
+ * raw Shiki markup, at 0.8125rem in a different mono face, with a copy button
+ * of its own that only appeared on hover. That is what made an example inside
+ * a reference entry look unlike every other example on the site.
+ *
+ * All that is left is the rhythm between an entry's prose and its examples,
+ * which is this sheet's business rather than Expressive Code's. */
+dl.py > dd .gp-sphinx-api-example .expressive-code {
   margin: 0 0 0.5rem;
-  overflow-x: auto;
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  line-height: 1.5;
-}
-
-dl.py > dd .highlight pre.shiki code {
-  font-family: inherit;
-  font-size: inherit;
-}
-
-dl.py > dd .highlight span {
-  color: var(--shiki-light);
-}
-
-[data-theme-mode='dark'] dl.py > dd .highlight span {
-  color: var(--shiki-dark);
 }
 
 /* ── Signature fold ────────────────────────────────────
@@ -434,65 +408,6 @@ dl.py > dd .admonition.warning {
 
 [data-theme-mode='dark'] dl.py > dd .admonition.warning {
   border-left-color: #f97316;
-}
-
-/* ── Example copy button ───────────────────────────────
- *
- * Sits over the block's top-right, appearing on hover or keyboard focus. It
- * stays reachable by tab when hidden — an affordance that only exists for a
- * mouse is not one. */
-.gp-sphinx-api-example {
-  position: relative;
-}
-
-.gp-sphinx-api-copy {
-  position: absolute;
-  top: 0.375rem;
-  right: 0.375rem;
-  z-index: 1;
-  appearance: none;
-  cursor: pointer;
-  border: 1px solid var(--color-background-border);
-  border-radius: 0.25rem;
-  background: var(--color-background-primary, #fff);
-  color: var(--color-foreground-muted);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  line-height: 1;
-  padding: 0.25rem 0.4375rem;
-  opacity: 0;
-  transition: opacity 0.1s ease-out;
-}
-
-.gp-sphinx-api-example:hover .gp-sphinx-api-copy,
-.gp-sphinx-api-copy:focus-visible {
-  opacity: 1;
-}
-
-.gp-sphinx-api-copy:hover {
-  color: var(--color-link);
-  border-color: var(--color-link);
-}
-
-.gp-sphinx-api-copy[data-copied='true'] {
-  opacity: 1;
-  color: #15803d;
-  border-color: #15803d;
-}
-
-[data-theme-mode='dark'] .gp-sphinx-api-copy {
-  background: #131416;
-}
-
-[data-theme-mode='dark'] .gp-sphinx-api-copy[data-copied='true'] {
-  color: #4ade80;
-  border-color: #4ade80;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .gp-sphinx-api-copy {
-    transition: none;
-  }
 }
 
 /* ── Per-parameter version annotations ─────────────── */

@@ -1,7 +1,8 @@
 ---
 import { ALL_TRANSLATED, buildLocale } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { DOC_PRODUCTS, PORTS, PORT_BY_SLUG, portPageUrl, productDescription, type DocProduct, referenceUrl } from '../lib/ports'
+import DocsLayout from '../layouts/DocsLayout.astro'
+import { DOC_PRODUCTS, PORTS, PORT_BY_SLUG, portPageUrl, primaryInstall, productDescription, type DocProduct, referenceUrl } from '../lib/ports'
 import PortHero from '../components/PortHero.astro'
 import DocCard from '../components/DocCard.astro'
 import ApiReferences from '../components/ApiReferences.astro'
@@ -124,31 +125,57 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
 
 {
   versionRootPort ? (
-    <BaseLayout
+    /*
+     * The documentation shell, not the bare one.
+     *
+     * This is the root of a port's version tree, and every page below it —
+     * `/ts/latest/examples/`, `/ts/latest/guides/panes/` — carries the
+     * sidebar. Landing on the root was the one place the nav disappeared,
+     * which read as leaving the documentation rather than arriving at it.
+     *
+     * `bare` because the page brings its own hero and card grid: the reading
+     * column's prose styles would treat the cards as a document, and its
+     * heading would be a second one under `PortHero`'s.
+     */
+    <DocsLayout
       title={`${versionRootPort.name} ${buildVersion}`}
       description={`libtmux for ${versionRootPort.language}, version ${buildVersion}.`}
-      portSlug={versionRootPort.slug}
+      port={versionRootPort.slug}
+      version={buildVersion}
+      bare
     >
-      <main class="mx-auto max-w-7xl px-4 py-12">
-        <PortHero port={versionRootPort} defaultVersion={buildVersion} />
-        <p class="mt-4 text-sm text-muted">
-          You are reading the <strong>{buildVersion}</strong> documentation. Use
-          the version control in the header to move between releases, or the
-          port dropdown to find a corresponding page in another language.
-        </p>
-        <div class="mt-10 grid gap-4 sm:grid-cols-2">
-          {versionSections.map((s) => (
-            <DocCard href={s.href} label={s.label} body={s.body} />
-          ))}
+      <PortHero port={versionRootPort} defaultVersion={buildVersion} />
+      <p class="mt-4 text-sm text-muted">
+        You are reading the <strong>{buildVersion}</strong> documentation. Use
+        the version control in the header to move between releases, or the
+        port dropdown to find a corresponding page in another language.
+      </p>
+      {/*
+        The install command, on the page a reader actually lands on.
+
+        This is where the port switcher, the version switcher and the sidebar
+        all point, and it said what the package was called without saying how
+        to get it — the install lived one level up at /<port>/, which is a URL
+        nothing in the navigation offers.
+      */}
+      <section class="mt-10 max-w-3xl">
+        <h2 class="text-lg font-semibold">Install</h2>
+        <div class="mt-3">
+          <PackageInstall ports={[versionRootPort.slug]} />
         </div>
-        <ApiReferences port={versionRootPort} version={buildVersion} />
-        <p class="mt-8 text-sm">
-          <a class="hover:underline" href={withPortRoot(`/${versionRootPort.slug}/`)}>
-            All {versionRootPort.name} versions and install instructions
-          </a>
-        </p>
-      </main>
-    </BaseLayout>
+      </section>
+      <div class="mt-10 grid gap-4 sm:grid-cols-2">
+        {versionSections.map((s) => (
+          <DocCard href={s.href} label={s.label} body={s.body} />
+        ))}
+      </div>
+      <ApiReferences port={versionRootPort} version={buildVersion} />
+      <p class="mt-8 text-sm">
+        <a class="hover:underline" href={withPortRoot(`/${versionRootPort.slug}/`)}>
+          All {versionRootPort.name} versions and install instructions
+        </a>
+      </p>
+    </DocsLayout>
   ) : (
 
 <BaseLayout
@@ -231,7 +258,7 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
                 </a>
               </h3>
               <p class="mt-1 font-mono text-xs opacity-70">{p.packageName}</p>
-              <pre class="mt-3 overflow-x-auto rounded bg-surface px-2 py-1.5 font-mono text-xs"><code>{p.install}</code></pre>
+              <pre class="mt-3 overflow-x-auto rounded bg-surface px-2 py-1.5 font-mono text-xs"><code>{primaryInstall(p).code}</code></pre>
               <p class="mt-3 text-sm">
                 <a class="hover:underline" href={referenceUrl(p)}>API reference</a>
               </p>

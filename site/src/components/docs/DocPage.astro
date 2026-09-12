@@ -3,6 +3,7 @@ import { getCollection, render, type CollectionEntry } from 'astro:content'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import { docsPath } from '../../lib/docs-paths'
 import { productApiPath } from '../../lib/ports'
+import McpInstall from '../widgets/McpInstall.astro'
 import ProductApiIndex from '../api/ProductApiIndex.astro'
 import { buildTarget } from '../../lib/versions'
 import { API_MODELS } from '../../lib/api-models'
@@ -83,6 +84,20 @@ const buildPort = process.env.LIBTMUX_DOCS_PORT || undefined
 const port = entry.data.port ?? buildPort
 const packageSource = port && entry.data.product ? API_MODELS[port]?.sources?.find((source) => source.product === entry.data.product) : undefined
 const isProductApi = entry.data.product && pagePath === productApiPath(entry.data.product)
+/*
+ * The install picker belongs on a port's MCP overview.
+ *
+ * `/mcp/` has carried it since the widget was ported, but that page installs
+ * the *Python* server — so a reader who followed the TypeScript nav to
+ * `/ts/latest/mcp/` got eight paragraphs about a server and no way to point a
+ * client at it. Every port ships one; they are obtained eight different ways;
+ * the client and scope axes are identical. See lib/install-matrix.ts.
+ *
+ * Rendered from here rather than from the Markdown because a content-collection
+ * entry cannot import a component, which is the same reason `/mcp/` is an
+ * .astro route.
+ */
+const isMcpOverview = entry.data.product === 'mcp' && pagePath === 'mcp'
 
 // `entry.data.port` is undefined for the shared pages (concepts, guides,
 // examples); DocsLayout and lib/sidebar.ts's `getSidebar` treat that as "the
@@ -99,7 +114,11 @@ const isProductApi = entry.data.product && pagePath === productApiPath(entry.dat
   port={port}
   product={entry.data.product}
   version={version}
-  headings={placeholderLocale ? [] : [...headings, ...(isProductApi ? [{ depth: 2, slug: 'generated-api', text: 'API declarations' }] : [])]}
+  headings={placeholderLocale ? [] : [
+    ...headings,
+    ...(isProductApi ? [{ depth: 2, slug: 'generated-api', text: 'API declarations' }] : []),
+    ...(isMcpOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
+  ]}
   pagePath={pagePath}
   noindex={entry.data.noindex || Boolean(placeholderLocale)}
   canonicalOverride={placeholderLocale ? englishHref : undefined}
@@ -194,6 +213,18 @@ const isProductApi = entry.data.product && pagePath === productApiPath(entry.dat
     <code>{packageSource.package}</code>{packageSource.version ? ` ${packageSource.version}` : ''} · <a href={`https://github.com/${packageSource.repo}/tree/${packageSource.revision}`}>Source</a>
   </p>}
   {!placeholderLocale && <Content />}
+  {!placeholderLocale && isMcpOverview && port && (
+    <>
+      <h2 id="install">Install</h2>
+      <p>
+        Choose your client and configuration scope, then run the command or
+        paste the configuration.
+      </p>
+      <div class="not-prose">
+        <McpInstall port={port} />
+      </div>
+    </>
+  )}
   {!placeholderLocale && entry.data.product && isProductApi &&
     <ProductApiIndex port={port!} product={entry.data.product} version={version ?? buildTarget(process.env).version} />}
 </DocsLayout>

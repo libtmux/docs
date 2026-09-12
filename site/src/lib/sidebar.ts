@@ -138,6 +138,29 @@ export function referenceEntries(port: string, version: string): SidebarLinkItem
 }
 
 /**
+ * The port's own documentation areas, as a sidebar group.
+ *
+ * The four shared sections — the same set `[port]/index.astro` offers as
+ * cards — under this port's prefix, so `/reference/ts/` can hand a reader
+ * back to `/ts/latest/topics/` rather than leave the reference as a place
+ * with no exit. Built from `portPageUrl` rather than spelled out, so the
+ * version axis and the port root stay ports.ts's business.
+ */
+export function portAreas(port: string, version: string): SidebarGroupItem {
+  const p = PORT_BY_SLUG[port]
+  if (!p) throw new Error(`sidebar.ts: unknown port slug "${port}"`)
+  return {
+    type: 'group',
+    label: 'Documentation',
+    items: (['topics', 'guides', 'examples', 'concepts'] as const).map((area) => ({
+      type: 'link',
+      label: `${area[0]!.toUpperCase()}${area.slice(1)}`,
+      href: portPageUrl(p, version, area),
+    })),
+  }
+}
+
+/**
  * The sidebar for one section of the docs collection: pages grouped by
  * `sidebar.group` and ordered by `sidebar.order` (falling back to
  * alphabetical at both the item and group level). Pages without a group

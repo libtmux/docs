@@ -60,6 +60,17 @@ interface Props {
   pageSource?: PageSource
   markdownIndex?: boolean
   markdown?: 'source' | 'rendered' | { href: string }
+  /**
+   * The page brings its own heading and layout.
+   *
+   * A port's version root (`/ts/latest/`) wants this shell — the sidebar, the
+   * mobile drawer, the same three-column frame every page under it has — but
+   * not the reading column: it is a landing page with a hero and a card grid,
+   * not prose, and the `<article class="prose">` below would style the cards
+   * as a document. It also carries its own `<h1>`, so the one this layout
+   * renders would be a second.
+   */
+  bare?: boolean
 }
 
 const {
@@ -81,6 +92,7 @@ const {
   pageSource,
   markdownIndex,
   markdown,
+  bare = false,
 } = Astro.props as Props
 
 // process.env, not import.meta.env: import.meta.env.LIBTMUX_DOCS_* goes
@@ -195,6 +207,7 @@ const breadcrumbs = product && port ? [
     </aside>
 
     <main class="min-w-0 flex-1">
+      {bare ? <slot /> : (
       <article class="prose max-w-[80ch] dark:prose-invert">
         {breadcrumbs.length > 0 && (
           <nav aria-label="Breadcrumb" class="not-prose mb-4 text-sm opacity-80" data-pagefind-ignore="all">
@@ -229,6 +242,7 @@ const breadcrumbs = product && port ? [
         </aside>}
         <slot />
       </article>
+      )}
     </main>
 
     {

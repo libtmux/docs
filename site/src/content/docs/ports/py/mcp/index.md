@@ -18,6 +18,7 @@ and `execute`; deletion tools require an explicit selection.
 
 ## Start here
 
+- [Install](#install) points an MCP client at this server.
 - [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) connect a client and select a tmux socket.
 - [Topics](./topics/) explain toolsets, trust, waiting, and caller context.

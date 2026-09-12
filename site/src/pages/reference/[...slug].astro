@@ -13,6 +13,7 @@ import { symbolSource } from '../../lib/markdown-twins'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
 import ApiDoc from '../../components/api/ApiDoc.astro'
+import Sidebar from '../../components/docs/Sidebar.astro'
 import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
@@ -222,6 +223,29 @@ const currentMembers = currentType
 const portMeta = model ? PORT_BY_SLUG[model.port] : undefined
 
 /**
+ * The version the site menu in the sidebar links its prose at.
+ *
+ * The reference sits above the version axis — one tree, not one per release —
+ * so it has no version of its own to pass on. `LIBTMUX_DOCS_PORT_DEFAULTS` is
+ * the same per-port map `[port]/index.astro` reads for the same reason, and
+ * for the same reason again the fallback is `latest` rather than `stable`:
+ * every port has a `latest`, and `stable` is the entry that may be absent.
+ *
+ * process.env, not import.meta.env — the latter goes stale across repeated
+ * astro builds in one tree (see BaseLayout.astro).
+ */
+const PORT_DEFAULTS: Record<string, string> = (() => {
+  try {
+    return JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
+  } catch {
+    return {}
+  }
+})()
+const menuVersion = model
+  ? (PORT_DEFAULTS[model.port] ?? process.env.LIBTMUX_DOCS_DEFAULT_VERSION ?? 'latest')
+  : 'latest'
+
+/**
  * The module rows of the definition block.
  *
  * `moduleOf` strips the symbol's own name from its path, which for a member
@@ -270,17 +294,35 @@ const counterparts = model
  *
  * Only where the concept map knows a counterpart — an example is a claim that
  * two pieces of code do the same thing, and nothing else here can make it.
+ *
+ * And only where *this* page's language has one to make the claim with.
+ * Without that gate a symbol with no example of its own still got an
+ * "Examples" heading, under which every tab was another language:
+ * `/reference/ts/server-server/` opened on Python doctest output. A reader on
+ * a TypeScript page asked for TypeScript, and a Python-only answer under that
+ * heading reads as the TypeScript example rather than as a substitute for a
+ * missing one. An example is an offer to copy, and there was nothing there to
+ * copy.
  */
-const exampleGroups = [
-  ...(owner?.doc?.examples?.length
-    ? [{ port: model?.port ?? '', examples: owner.doc.examples }]
-    : []),
+const ownExamples = owner?.doc?.examples ?? []
+const exampleGroups = ownExamples.length === 0 ? [] : [
+  { port: model?.port ?? '', examples: ownExamples, index, context: owner },
   ...counterparts.flatMap((c) => {
     const id = conceptEntries.map((x) => x.symbols[c.port]).find((v) => typeof v === 'string')
-    const other = id
-      ? API_MODELS[c.port]?.symbols.find((sym) => (sym.publicId ?? sym.id) === id)
+    const otherModel = API_MODELS[c.port]
+    const other = id && otherModel
+      ? otherModel.symbols.find((sym) => (sym.publicId ?? sym.id) === id)
       : undefined
-    return other?.doc?.examples?.length ? [{ port: c.port, examples: other.doc.examples }] : []
+    if (!other?.doc?.examples?.length || !otherModel) return []
+    // That port's own index, not this page's: the intro is written in the
+    // counterpart's doc dialect and names the counterpart's symbols, so
+    // resolving it here would link the wrong page or, more often, nothing.
+    return [{
+      port: c.port,
+      examples: other.doc.examples,
+      index: indexFor(otherModel, (sym) => referenceHref(c.port, sym.publicId ?? sym.id) ?? withRoot('/reference/')),
+      context: other,
+    }]
   }),
 ]
 
@@ -489,7 +531,22 @@ const title = owner
          first entry. Open by default so it behaves without JavaScript, and
          closed by the script below when the viewport is too narrow to place
          it beside the content. -->
-    <details class="api-toc-shell lg:sticky lg:top-20 lg:self-start" open>
+    <div class="api-sidebar lg:sticky lg:top-20 lg:self-start">
+    {/*
+      The site's own menu, above the symbol tree.
+
+      A reference page had no way out of the reference: `/reference/ts/` listed
+      a thousand TypeScript symbols and not one link back to the TypeScript
+      guides, the workspace pages or the MCP pages. `menuOnly` is what keeps
+      that from costing the tree its place — the page list belongs on the pages
+      that have room for it, and the tree is the navigation here.
+    */}
+    {model && (
+      <div class="api-sidebar__menu" data-pagefind-ignore="all">
+        <Sidebar port={model.port} version={menuVersion} currentPath={Astro.url.pathname} menuOnly />
+      </div>
+    )}
+    <details class="api-toc-shell" open>
       <summary class="api-toc-summary">On this page</summary>
       <nav class="api-toc" aria-label="Contents" data-pagefind-ignore="all">
       {/*
@@ -567,6 +624,7 @@ const title = owner
       ))}
       </nav>
     </details>
+    </div>
 
     <div>
       <!-- The id is the anchor every link to this type uses. `hrefFor` sends a
@@ -657,19 +715,40 @@ const title = owner
                   </span>
                 </h2>
                 {/*
-                  Names and counts only; the types themselves are listed above,
-                  under the bucket that claims them. This section exists so
-                  `#<module>` still resolves — the definition block, the prose
-                  linker and the inventories all point at those anchors, and
-                  grouping by bucket without keeping them broke 9,160 links.
+                  A disclosure per module, because the sections below this one
+                  group by bucket rather than by module: `libtmux.neo` names
+                  nothing a reader can click through to, and this list said so
+                  with a bare name and a count. A module with 65 symbols read
+                  as a dead end.
+
+                  The `id` stays exactly where it was, on the element the count
+                  sits beside. `#<module>` is what the definition block, the
+                  prose linker and the inventories all point at — 9,160 links —
+                  and a fragment that lands on a closed disclosure still lands
+                  on the right row. The script at the foot of this page opens
+                  it; without JavaScript it is one click, which is what a
+                  `<details>` is for.
                 */}
-                <ul class="mt-3 grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
+                <ul class="api-module-index mt-3 grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
                   {moduleGroups.map((m) => (
-                    <li id={m.name || undefined} class="scroll-mt-24 font-mono text-sm">
-                      {m.name || 'Types'}
-                      <span class="ml-2 font-sans text-xs opacity-60">
-                        {m.types.length + m.free.length}
-                      </span>
+                    <li>
+                      <details id={m.name || undefined} class="api-module scroll-mt-24">
+                        <summary class="api-module__name font-mono text-sm">
+                          {m.name || 'Types'}
+                          <span class="ml-2 font-sans text-xs opacity-60">
+                            {m.types.length + m.free.length}
+                          </span>
+                        </summary>
+                        <ul class="api-module__symbols">
+                          {[...m.types, ...m.free].map((sym) => (
+                            <li>
+                              <a class="api-module__symbol" href={hrefFor(sym)}>
+                                <SymbolName name={sym.name} />
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
                     </li>
                   ))}
                 </ul>
@@ -846,7 +925,7 @@ const title = owner
             <div class="mt-6">
               {/*
                 `heading` for a type, `member` for everything else.
-                
+
                 It marked every entry as a heading once every symbol had a
                 page, which gave a method's own page the band and margin
                 gp-sphinx reserves for a type — on a page that already carries
@@ -861,6 +940,7 @@ const title = owner
                 port={model?.port}
                 heading={OWNER_KINDS.has(owner.kind)}
                 member={!OWNER_KINDS.has(owner.kind)}
+                examples={exampleGroups.length <= 1}
               />
             </div>
 
@@ -931,33 +1011,41 @@ const title = owner
   </main>
 
   <script is:inline>
-    // Copy an example to the clipboard. One delegated listener rather than one
-    // per block: a page can carry 600 examples and 600 listeners is a cost
-    // paid on every load for a button most readers never press.
+    // Examples carry Expressive Code's own copy button, so nothing here
+    // listens for one. The hand-rolled button it replaced needed a delegated
+    // listener, because a page can hold 600 examples and 600 listeners is a
+    // cost paid on every load for a control most readers never press.
+
+    // Open the disclosure a fragment points at.
+    //
+    // A browser opens a <details> that *contains* the target, but not one that
+    // *is* the target — and `#<module>` on the index is the disclosure itself,
+    // which is where 9,160 links from prose, signatures and the inventories
+    // land. Without this they arrived at a closed row.
+    //
+    // getElementById, not querySelector: a module id is `mcp.server` or
+    // `libtmux.neo`, and the dots are class selectors to a CSS parser.
     ;(() => {
-      const copy = async (button) => {
-        const text = button.dataset.copy
-        if (!text) return
-        try {
-          await navigator.clipboard.writeText(text)
-        } catch {
-          // Clipboard access can be refused — an insecure origin, a policy, a
-          // browser that asks. Say nothing rather than claim success.
-          button.textContent = 'Failed'
-          setTimeout(() => (button.textContent = 'Copy'), 1200)
-          return
+      const reveal = () => {
+        const id = decodeURIComponent(location.hash.slice(1))
+        if (!id) return
+        const target = document.getElementById(id)
+        if (!target) return
+        let opened = false
+        for (let el = target; el; el = el.parentElement) {
+          if (el.tagName === 'DETAILS' && !el.open) {
+            el.open = true
+            opened = true
+          }
         }
-        button.dataset.copied = 'true'
-        button.textContent = 'Copied'
-        setTimeout(() => {
-          delete button.dataset.copied
-          button.textContent = 'Copy'
-        }, 1200)
+        // Only when opening one moved the page under the browser's own
+        // fragment scroll. Every other reference page's fragment lands on an
+        // ordinary heading, and scrolling it again would fight a restored
+        // position for no reason.
+        if (opened) target.scrollIntoView()
       }
-      document.addEventListener('click', (event) => {
-        const button = event.target.closest?.('.gp-sphinx-api-copy')
-        if (button) copy(button)
-      })
+      reveal()
+      window.addEventListener('hashchange', reveal)
     })()
 
     // Collapse the contents disclosure where it would otherwise push the page

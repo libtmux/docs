@@ -2,7 +2,8 @@
 import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
 import { mentionsOf, referenceAlternatives } from '../../lib/api-models'
 import { withRoot } from '../../lib/site-root'
-import { highlight } from '../../lib/highlight'
+import { Code } from 'astro-expressive-code/components'
+import { codeLang } from '../../lib/highlight'
 import ApiBadge from './ApiBadge.astro'
 import ApiDoc from './ApiDoc.astro'
 import ApiProse from './ApiProse.astro'
@@ -50,8 +51,18 @@ interface Props {
    * bases belong here too.
    */
   heading?: boolean
+  /**
+   * Suppress this entry's own examples.
+   *
+   * The reference page renders a language-switching Examples section below
+   * the entry when a counterpart port carries the same example. Left on, the
+   * page's own language then appeared twice — inline here and as the first
+   * tab there. The caller knows which of the two is showing; this entry does
+   * not.
+   */
+  examples?: boolean
 }
-const { symbol, index, sourceUrl, port, alternativesFor, heading = false, member = false } = Astro.props as Props
+const { symbol, index, sourceUrl, port, alternativesFor, heading = false, member = false, examples: showExamples = true } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
 
@@ -125,7 +136,7 @@ const prename = heading && anchor.endsWith(symbol.name)
 
 const bases = heading ? ((symbol as { extends?: string[] }).extends ?? []) : []
 
-const examples = symbol.doc?.examples ?? []
+const examples = showExamples ? (symbol.doc?.examples ?? []) : []
 const references = symbol.doc?.references ?? []
 
 /**
@@ -137,18 +148,6 @@ const references = symbol.doc?.references ?? []
  */
 const mentions = port ? mentionsOf(port, symbol.id) : []
 const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].sort()
-
-/**
- * Examples, highlighted at build time.
- *
- * Awaited here rather than in a child component so one highlighter serves
- * the whole build; the alternative loads grammars per block. A block that
- * fails to highlight falls back to plain text, because an unhighlighted
- * example is a small loss and a build that dies on an odd docstring is not.
- */
-const highlighted = await Promise.all(
-  examples.map(async (ex) => ({ ...ex, html: await highlight(ex.code, ex.lang) })),
-)
 
 const badges = [
   { label: kind, variant: 'kind' as const, value: kind },
@@ -457,7 +456,7 @@ const hasBody =
       examples.length > 0 && (
         <div class="gp-sphinx-api-examples">
           <p class="rubric">Examples</p>
-          {highlighted.map((ex) => (
+          {examples.map((ex) => (
             <>
               {ex.intro && (
                 <p class="gp-sphinx-api-example-intro">
@@ -465,19 +464,7 @@ const hasBody =
                 </p>
               )}
               <div class="gp-sphinx-api-example">
-                <button
-                  class="gp-sphinx-api-copy"
-                  type="button"
-                  data-copy={ex.code}
-                  aria-label="Copy example to clipboard"
-                >
-                  Copy
-                </button>
-                {ex.html ? (
-                  <div class="highlight" set:html={ex.html} />
-                ) : (
-                  <pre class="highlight"><code class={`language-${ex.lang ?? 'text'}`}>{ex.code}</code></pre>
-                )}
+                <Code code={ex.code} lang={codeLang(ex.lang)} />
               </div>
             </>
           ))}

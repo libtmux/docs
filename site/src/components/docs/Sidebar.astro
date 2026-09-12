@@ -9,7 +9,7 @@
  * the desktop column — so it owns no positioning of its own; the caller
  * decides how it's placed.
  */
-import { getSidebar, isActivePath, type SidebarLinkItem } from '../../lib/sidebar'
+import { getSidebar, isActivePath, portAreas, referenceEntries, type SidebarItem, type SidebarLinkItem } from '../../lib/sidebar'
 import { DEFAULT_LOCALE, type Locale } from '../../i18n/locales'
 import SidebarLink from './SidebarLink.astro'
 import SidebarSection from './SidebarSection.astro'
@@ -22,11 +22,30 @@ interface Props {
   currentPath: string
   /** Scopes the nav to one locale, the way `port` scopes it to one port. */
   locale?: Locale
+  /**
+   * The menu only, without the page list.
+   *
+   * The reference pages have a navigation column of their own — a tree over
+   * twelve thousand symbols — and they had nothing above it: a reader who
+   * reached `/reference/ts/` could not get back to the TypeScript guides
+   * without the browser's back button. The full nav would answer that and
+   * push the tree two screens down, so this renders the part that is a menu
+   * (the port's products, its documentation areas, its references) and leaves
+   * the part that is a page list to the pages that have room for it.
+   */
+  menuOnly?: boolean
 }
 
-const { port, product, version, currentPath, locale = DEFAULT_LOCALE } = Astro.props
-const items = await getSidebar(port, version, locale, product)
+const { port, product, version, currentPath, locale = DEFAULT_LOCALE, menuOnly = false } = Astro.props
 const portInfo = port ? PORT_BY_SLUG[port] : undefined
+// Skipped entirely when the caller wants the menu: `getSidebar` queries the
+// content collection and sorts it, and the reference renders this component on
+// every one of its pages.
+const items: SidebarItem[] = menuOnly
+  ? port
+    ? [portAreas(port, version), { type: 'group', label: 'Reference', items: referenceEntries(port, version) }]
+    : []
+  : await getSidebar(port, version, locale, product)
 const products: SidebarLinkItem[] = portInfo ? [
   { type: 'link', label: 'Core library', href: portPageUrl(portInfo, version) },
   ...Object.entries(DOC_PRODUCTS).map(([slug, info]): SidebarLinkItem => ({

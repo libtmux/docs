@@ -291,6 +291,26 @@
   flex-direction: column;
 }
 
+/*
+ * The reference's left column: the site menu, then the symbol tree.
+ *
+ * It scrolls as one sticky unit rather than letting the tree run past the
+ * viewport — `Pane` alone puts 257 members in it — so the menu above stays
+ * reachable from anywhere on a long page.
+ */
+@media (min-width: 64rem) {
+  .api-sidebar {
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+  }
+}
+
+.api-sidebar__menu {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-background-border, #e2e8f0);
+}
+
 /* The contents disclosure. A plain column at lg and above, where the marker
    and the summary are noise; a disclosure below that, where 98 members ahead
    of the content is two screens of scrolling before anything is read. */
@@ -549,19 +569,17 @@
   padding: 0.75rem 0.9rem;
 }
 
-/* Shiki writes both themes as custom properties, and something has to read
-   them. The gp-sphinx parity sheet does that for the per-symbol examples,
-   whose markup sits inside its `dl.py > dd .highlight`; these tabs are this
-   site's own component and matched no such rule, so a cross-port example
-   rendered in the inherited foreground colour — every token one flat grey.
-   Scoped to the panel rather than to `.shiki` at large, so the parity sheet
-   stays the only thing styling the pages it emulates. */
-.api-example-panel .shiki span {
-  color: var(--shiki-light);
+/* The panels hold Expressive Code blocks, which carry their own theming, so
+   nothing here reads Shiki's custom properties any more. What the panel does
+   own is the gap: Expressive Code's own block margin would double the
+   padding this panel already supplies. */
+.api-example-panel > .expressive-code {
+  margin: 0;
 }
 
-[data-theme-mode='dark'] .api-example-panel .shiki span {
-  color: var(--shiki-dark);
+.api-example-panel > .expressive-code + .expressive-code,
+.api-example-panel > .api-example-intro + .expressive-code {
+  margin-top: 0.75rem;
 }
 
 /* Each radio reveals the panel at its own position. Generated in the
@@ -731,6 +749,41 @@
 
 .api-index-section:not([open]) > .api-index-summary {
   opacity: 0.7;
+}
+
+/*
+ * The module index: one disclosure per module, each listing its own symbols.
+ *
+ * The sections below it group by bucket, not by module, so a module name had
+ * nothing to click through to — it was a name and a count, and `libtmux.types`
+ * with 65 beside it read as a dead end. Keeping the marker here, unlike
+ * `.api-index-summary` above, is the point: these rows are controls rather
+ * than headings, and the triangle is what says so.
+ */
+.api-module__name {
+  cursor: pointer;
+  color: var(--color-link);
+}
+
+.api-module__name:hover {
+  text-decoration: underline;
+}
+
+.api-module__symbols {
+  margin: 0.25rem 0 0.5rem 1rem;
+  padding: 0;
+  list-style: none;
+  border-left: 1px solid var(--color-background-border);
+  padding-left: 0.75rem;
+}
+
+.api-module__symbol {
+  display: block;
+  padding: 0.0625rem 0;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 /*

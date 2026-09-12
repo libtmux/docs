@@ -18,6 +18,7 @@ macOS artifact checks do not establish runtime support.
 
 ## Start here
 
+- [Install](#install) points an MCP client at this server.
 - [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) install and connect a client.
 - [Topics](./topics/) explain toolsets, socket provenance, and waiting.

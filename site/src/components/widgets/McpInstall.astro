@@ -10,7 +10,7 @@ import {
   DEFAULT_COOLDOWN_TYPE,
   DEFAULT_SCOPES,
   defaultCooldownDate,
-  METHODS,
+  serverSpec,
   COOLDOWN_DURATION_SENTINEL,
   COOLDOWN_DATE_SENTINEL,
 } from '../../lib/install-matrix'
@@ -36,10 +36,21 @@ import { highlightInline } from '../../lib/highlight'
  */
 interface Props {
   variant?: 'full' | 'compact'
+  /**
+   * Which port's server to install. Defaults to Python, which is what
+   * `/mcp/` documents and what this widget was ported from.
+   *
+   * The client and scope axes are the same whatever the answer — `claude mcp
+   * add tmux -- <thing>` does not care what `<thing>` is — so a port changes
+   * only the command inside, and the method strip above it. See
+   * `lib/install-matrix.ts` for each port's spec.
+   */
+  port?: string
 }
-const { variant = 'full' } = Astro.props as Props
+const { variant = 'full', port = 'py' } = Astro.props as Props
 
-const panels = buildPanels()
+const spec = serverSpec(port)
+const panels = buildPanels(spec)
 
 /*
  * The config body, highlighted, with its live slots intact.
@@ -93,13 +104,17 @@ const prereqHtml = new Map(
       ] as const),
   ),
 )
-const prehydrateSnippet = buildMcpInstallPrehydrateSnippet()
+const prehydrateSnippet = buildMcpInstallPrehydrateSnippet(spec)
 const scopedClients = CLIENTS.filter((c) => c.scopes.length > 1)
+// Python's alone. Every other port's toolchain has no `--exclude-newer`
+// equivalent, so a control that could only ever say "off" is not a control.
+const hasCooldowns = spec.cooldowns.length > 1
 ---
 
 <Fragment set:html={prehydrateSnippet} />
 <div
   class={`lm-mcp-install lm-mcp-install--${variant}`}
+  data-port={spec.port}
   data-default-scopes={JSON.stringify(DEFAULT_SCOPES)}
   data-default-cooldown-enabled={DEFAULT_COOLDOWN_ENABLED ? '1' : '0'}
   data-default-cooldown-type={DEFAULT_COOLDOWN_TYPE}
@@ -125,7 +140,7 @@ const scopedClients = CLIENTS.filter((c) => c.scopes.length > 1)
 
   <div class="lm-mcp-install__tabs lm-mcp-install__tabs--methods" role="tablist" aria-label="Install method">
     {
-      METHODS.map((method, i) => (
+      spec.methods.map((method, i) => (
         <button
           type="button"
           class="lm-mcp-install__tab"
@@ -140,32 +155,34 @@ const scopedClients = CLIENTS.filter((c) => c.scopes.length > 1)
       ))
     }
 
-    <div class="lm-mcp-install__cooldown-control">
-      <input
-        type="checkbox"
-        id="lm-mcp-install__cooldown-toggle"
-        class="lm-mcp-install__cooldown-toggle"
-        data-action="cooldown-toggle"
-        aria-label="Apply a dependency cooldown"
-      />
-      <button
-        type="button"
-        class="lm-mcp-install__cooldown-label-text"
-        data-action="cooldown-open"
-        aria-label="Toggle cooldown settings"
-      >
-        Configure cooldowns
-      </button>
-      <button
-        type="button"
-        class="lm-mcp-install__cooldown-help"
-        data-action="cooldown-help"
-        aria-label="What are cooldowns?"
-        title="What are cooldowns?"
-      >
-        ?
-      </button>
-    </div>
+    {hasCooldowns && (
+      <div class="lm-mcp-install__cooldown-control">
+        <input
+          type="checkbox"
+          id="lm-mcp-install__cooldown-toggle"
+          class="lm-mcp-install__cooldown-toggle"
+          data-action="cooldown-toggle"
+          aria-label="Apply a dependency cooldown"
+        />
+        <button
+          type="button"
+          class="lm-mcp-install__cooldown-label-text"
+          data-action="cooldown-open"
+          aria-label="Toggle cooldown settings"
+        >
+          Configure cooldowns
+        </button>
+        <button
+          type="button"
+          class="lm-mcp-install__cooldown-help"
+          data-action="cooldown-help"
+          aria-label="What are cooldowns?"
+          title="What are cooldowns?"
+        >
+          ?
+        </button>
+      </div>
+    )}
   </div>
 
   <div class="lm-mcp-install__tabs lm-mcp-install__tabs--scopes" role="tablist" aria-label="Config scope">
@@ -214,9 +231,9 @@ const scopedClients = CLIENTS.filter((c) => c.scopes.length > 1)
               {' '}
               installed:
             </p>
-          ) : panel.method.id === 'pip' ? (
+          ) : panel.pipPrereq ? (
             <>
-              <p class="lm-mcp-install__preamble">Install the packages first:</p>
+              <p class="lm-mcp-install__preamble">{panel.method.id === 'pip' ? 'Install the packages first:' : 'Build or install the server first:'}</p>
               <div class="lm-mcp-install__code lm-mcp-install__code--prereq" data-language="console"><pre><code set:html={prereqHtml.get(panelKey(panel))} /></pre><button type="button" class="lm-mcp-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
               <p class="lm-mcp-install__preamble">Then {panel.client.kind === 'cli' ? 'register' : 'use this config'}:</p>
             </>
@@ -238,7 +255,7 @@ const scopedClients = CLIENTS.filter((c) => c.scopes.length > 1)
     }
   </div>
 
-  <div class="lm-mcp-install__body lm-mcp-install__body--settings" role="dialog" aria-label="Cooldown settings">
+  {hasCooldowns && <div class="lm-mcp-install__body lm-mcp-install__body--settings" role="dialog" aria-label="Cooldown settings">
     <div class="lm-mcp-install__settings-header">
       <button type="button" class="lm-mcp-install__back" data-action="cooldown-back" aria-label="Back to installer">
         <span class="lm-mcp-install__back-icon" aria-hidden="true">
@@ -303,7 +320,7 @@ const scopedClients = CLIENTS.filter((c) => c.scopes.length > 1)
         </a>.
       </p>
     </details>
-  </div>
+  </div>}
 </div>
 
 <script>

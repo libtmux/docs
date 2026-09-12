@@ -50,7 +50,14 @@
   var STORAGE_PREFIX = 'libtmux-docs.mcp-install'
   var STORAGE = {
     client: STORAGE_PREFIX + '.client',
-    method: STORAGE_PREFIX + '.method',
+    // Per port: a client is a fact about the reader and worth carrying
+    // between pages, but a method is a fact about the port. Restoring `uvx`
+    // on the TypeScript page left <html data-mcp-install-method="uvx">
+    // matching no panel selector, and the rule that hides the
+    // server-rendered default had already fired — a widget with no panel.
+    method: function (port) {
+      return STORAGE_PREFIX + '.method.' + (port || 'py')
+    },
     scope: function (client) {
       return STORAGE_PREFIX + '.scope.' + client
     },
@@ -108,7 +115,6 @@
     var widgets = document.querySelectorAll('.lm-mcp-install')
     if (!widgets.length) return
     var savedClient = localStorage.getItem(STORAGE.client)
-    var savedMethod = localStorage.getItem(STORAGE.method)
     var enabled = readCooldownEnabled()
     var type = readCooldownType()
     var days = readCooldownDays()
@@ -120,6 +126,7 @@
       if (clientValue) {
         select(widget, 'client', clientValue, { persist: false, broadcast: false })
       }
+      var savedMethod = localStorage.getItem(STORAGE.method(widget.dataset.port))
       if (savedMethod) {
         select(widget, 'method', savedMethod, { persist: false, broadcast: false })
       }
@@ -309,6 +316,8 @@
         if (clientForScope) {
           localStorage.setItem(STORAGE.scope(clientForScope), value)
         }
+      } else if (kind === 'method') {
+        localStorage.setItem(STORAGE.method(widget.dataset.port), value)
       } else {
         localStorage.setItem(STORAGE[kind], value)
       }

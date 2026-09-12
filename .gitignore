@@ -5,7 +5,11 @@ _site/
 .build.lock
 *.log
 .DS_Store
-_site/
+# A staging assembly: `LIBTMUX_DOCS_OUT_DIR=_site.next ./scripts/build-site.sh`
+# builds one without churning the tree a reviewer is reading. `_site/` was
+# listed twice instead, which left the staging trees people actually make
+# untracked-and-addable — 32,721 built files fit in one `git add -A`.
+_site.*/
 
 # Reference Markdown staged into the content collection by
 # scripts/build-site.sh, then deleted again. Present only mid-build; every

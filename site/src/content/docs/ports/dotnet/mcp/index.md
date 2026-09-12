@@ -18,6 +18,7 @@ Its registered operations use the `tmux_` prefix, including
 
 ## Start here
 
+- [Install](#install) points an MCP client at this server.
 - [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) install the tool and choose a socket.
 - [Topics](./topics/) explain tiers, result limits, jobs, and subscriptions.

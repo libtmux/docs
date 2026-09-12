@@ -18,6 +18,7 @@ includes shell commands and terminal input.
 
 ## Start here
 
+- [Install](#install) points an MCP client at this server.
 - [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) install the executable and choose a socket.
 - [Topics](./topics/) explain tiers, live-stream effects, and job lifetimes.

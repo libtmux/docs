@@ -20,6 +20,7 @@ tmux is required at runtime.
 
 ## Start here
 
+- [Install](#install) points an MCP client at this server.
 - [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) build the executable and configure its environment.
 - [Topics](./topics/) explain tiers, exact tool selection, and opaque targets.

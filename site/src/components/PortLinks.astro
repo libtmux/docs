@@ -1,0 +1,119 @@
+---
+import RegistryIcon from './icons/RegistryIcon.astro'
+import type { Port } from '../lib/ports'
+
+/**
+ * Where a port's code and its package live.
+ *
+ * A port page named its package and then offered no way to reach it: the
+ * repository was reachable only from the site footer, which points at the
+ * `libtmux` organisation rather than at this language's own repository, and
+ * the registry was not linked anywhere at all. A reader who wanted to check a
+ * version, read the changelog or open an issue had to guess the URL.
+ *
+ * The repository is always present, because every port has one. The registry
+ * is present where there is one to link — C++ resolves from this project's own
+ * vcpkg git registry and Swift from the git URL, so for those two the
+ * repository link already is the distribution link, and a second chip
+ * repeating it would say less than its absence does.
+ *
+ * The marks are `currentColor` until the link is hovered or focused; see
+ * `icons/RegistryIcon.astro` for why the brand colour arrives then rather
+ * than always.
+ */
+interface Props {
+  port: Port
+  class?: string
+}
+
+const { port, class: className = '' } = Astro.props as Props
+
+/*
+ * The ecosystem host, unless it is already the registry.
+ *
+ * Go's are the same place: pkg.go.dev is both where the module resolves from
+ * and where its documentation lives, so listing both put two identical chips
+ * side by side. Compared by URL rather than by name, because that is what a
+ * duplicate link actually is.
+ */
+const ecosystem =
+  port.ecosystemHost && port.ecosystemHost.url !== port.registry?.url
+    ? port.ecosystemHost
+    : undefined
+---
+
+<nav class:list={['port-links', className]} aria-label={`${port.name} package and source`}>
+  <a class="port-link" href={`https://github.com/${port.repo}`} rel="noopener">
+    <RegistryIcon icon="github" />
+    <span>{port.repo}</span>
+  </a>
+  {
+    port.registry && (
+      <a class="port-link" href={port.registry.url} rel="noopener">
+        <RegistryIcon icon={port.registry.icon} />
+        <span>{port.registry.name}</span>
+      </a>
+    )
+  }
+  {
+    ecosystem && (
+      <a class="port-link" href={ecosystem.url} rel="noopener">
+        <span>{ecosystem.name}</span>
+      </a>
+    )
+  }
+</nav>
+
+<style>
+  .port-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .port-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.65rem;
+    border: 1px solid var(--color-background-border);
+    border-radius: 999px;
+    color: var(--color-foreground-muted);
+    font-size: 0.8125rem;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+
+  /*
+   * The brand colour, on the whole chip rather than on the mark alone.
+   *
+   * `--icon-brand` is declared on the icon by RegistryIcon, and the icon is a
+   * child of this link, so the value cannot be read from here — a custom
+   * property inherits down, not up. `:has()` moves the rule to the child
+   * instead, which is also what lets one selector serve seven marks.
+   */
+  .port-link:hover,
+  .port-link:focus-visible {
+    border-color: currentColor;
+  }
+
+  .port-link:hover :global(.registry-icon),
+  .port-link:focus-visible :global(.registry-icon) {
+    color: var(--icon-brand);
+  }
+
+  :global([data-theme-mode='dark']) .port-link:hover :global(.registry-icon),
+  :global([data-theme-mode='dark']) .port-link:focus-visible :global(.registry-icon) {
+    color: var(--icon-brand-dark);
+  }
+
+  .port-link:hover span,
+  .port-link:focus-visible span {
+    color: var(--color-foreground-primary);
+  }
+
+  .port-link:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 2px;
+  }
+</style>
