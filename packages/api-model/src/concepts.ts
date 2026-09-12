@@ -317,7 +317,7 @@ export const CONCEPTS: Record<string, Concept> = {
       java: 'io.github.libtmux.Server.Server.newSession',
       dotnet: 'LibTmux.Server.CreateSessionAsync',
       cxx: 'libtmux::Server::new_session',
-      swift: 'Server.newSession(named:startDirectory:windowName:)',
+      swift: 'Server.newSession(named:startDirectory:windowName:width:height:)',
     },
   },
   'new-window': {
@@ -2685,7 +2685,7 @@ export const CONCEPTS: Record<string, Concept> = {
       java: 'io.github.libtmux.Window.Window.moveTo',
       dotnet: 'LibTmux.Window.MoveAsync',
       cxx: 'libtmux::Window::move_to',
-      swift: 'Server.move(_:to:)',
+      swift: 'Server.move(_:to:at:)',
     },
   },
   'swap-window': {
@@ -2906,7 +2906,7 @@ export const CONCEPTS: Record<string, Concept> = {
       rs: 'no equivalent on `Pane`',
       java: 'no equivalent on `Pane`',
       cxx: 'no equivalent on `Pane`',
-      swift: '`Server.move(_:to:)` moves a window, not a pane',
+      swift: '`Server.move(_:to:at:)` moves a window, not a pane',
     },
   },
   'swap-pane': {

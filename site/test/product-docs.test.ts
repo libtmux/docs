@@ -2,7 +2,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
-import { PORTS } from '../src/lib/ports'
+import { PORTS, productDescription, productInDevelopment } from '../src/lib/ports'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
 import { SITE_BUILT, SITE_PREFIX, publishedPath, sitePath } from './site-root'
 
@@ -29,7 +29,7 @@ interface DocsManifest {
   pages: { url: string; markdownUrl: string }[]
   ports: {
     slug: string
-    products: { slug: string; inDevelopment: boolean; cli?: string | null; reference: string; protocol?: string }[]
+    products: { slug: string; inDevelopment: boolean; cli?: string | null; cliAvailability?: string | null; reference: string; protocol?: string }[]
   }[]
 }
 
@@ -38,6 +38,17 @@ const read = (path: string) => readFileSync(sitePath(path), 'utf8')
 const manifest = (): Manifest => JSON.parse(read('versions.json'))
 const urlFor = (path: string) => new URL(`/${SITE_PREFIX}${path}`, 'https://libtmux.org')
 const productUrl = /\/(?:py|ts|rs|go|java|dotnet|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
+
+it('advertises local native loaders while retaining their development status', () => {
+  for (const port of PORTS) {
+    const native = port.slug !== 'py'
+    expect(port.workspaceCli).toBe(native ? 'tmux-workspace load' : 'tmuxp load')
+    expect(port.workspaceCliAvailability).toBe(native ? 'local' : 'released')
+    expect(productInDevelopment(port, 'workspace')).toBe(native)
+    expect(productInDevelopment(port, 'mcp')).toBe(true)
+    if (native) expect(productDescription(port, 'workspace')).toContain('local workspace-cli worktree')
+  }
+})
 
 function sectionsFor(port: string, product: ProductPage['product']): string[] {
   if (product === 'mcp') return ['', 'topics', 'guides', 'examples', 'api']
@@ -66,7 +77,7 @@ function resolves(href: string, from = 'https://libtmux.org/'): boolean {
   return [path, join(path, 'index.html')].some((file) => existsSync(file) && statSync(file).isFile())
 }
 
-function inspect<T>(path: string, check: (document: Window['document']) => T): T {
+async function inspect<T>(path: string, check: (document: Window['document']) => T | Promise<T>): Promise<T> {
   const file = sitePath(path, 'index.html')
   expect(existsSync(file), `assembled product page ${path}`).toBe(true)
   const window = new Window({
@@ -75,9 +86,9 @@ function inspect<T>(path: string, check: (document: Window['document']) => T): T
   })
   try {
     window.document.write(readFileSync(file, 'utf8'))
-    return check(window.document)
+    return await check(window.document)
   } finally {
-    window.close()
+    await window.happyDOM.close()
   }
 }
 
@@ -95,8 +106,8 @@ function developmentStatus(document: Window['document'], path: string): void {
   expect(status!.textContent, `${path} development status`).toMatch(/in development/i)
 }
 
-function redirectsTo(path: string, target: string): void {
-  inspect(path, (document) => {
+async function redirectsTo(path: string, target: string): Promise<void> {
+  await inspect(path, (document) => {
     const refresh = document.querySelector('meta[http-equiv="refresh"]')?.getAttribute('content')
     expect(refresh, `${path} redirects`).toBeDefined()
     const destination = refresh!.match(/url=(.+)$/i)?.[1]
@@ -109,10 +120,10 @@ function redirectsTo(path: string, target: string): void {
 }
 
 describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
-  it.each(PORTS.map((port) => port.slug))('%s exposes products from latest homes and core navigation', (port) => {
+  it.each(PORTS.map((port) => port.slug))('%s exposes products from latest homes and core navigation', async (port) => {
     for (const section of ['', 'guides/', 'topics/']) {
       const path = `${port}/latest/${section}`
-      inspect(path, (document) => {
+      await inspect(path, (document) => {
         const navigation = document.querySelectorAll(section ? 'nav[aria-label="Products"]' : 'main')
         expect(navigation.length, `${path} product entry points`).toBeGreaterThan(0)
         for (const container of navigation) {
@@ -133,8 +144,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     }
   })
 
-  it('serves both products and every section with the chosen port content', () => {
-    for (const page of pages()) inspect(page.path, (document) => {
+  it('serves both products and every section with the chosen port content', async () => {
+    for (const page of pages()) await inspect(page.path, async (document) => {
       const article = document.querySelector('article')!
       expect(article, page.path).not.toBeNull()
       expect(article.querySelectorAll('h1'), page.path).toHaveLength(1)
@@ -152,7 +163,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(hrefs.filter((href) => new URL(href, urlFor(page.path)).origin === 'https://libtmux.org'
         && /\/ports\/(?:py|ts|rs|go|java|dotnet|cxx|swift)\//.test(href)),
         `${page.path} storage identities in public links`).toEqual([])
-      if (!page.section && page.version !== 'latest') inspect(`${page.port}/${page.version}/`, (home) => {
+      if (!page.section && page.version !== 'latest') await inspect(`${page.port}/${page.version}/`, (home) => {
         const entryPoints = [...home.querySelectorAll('main a[href]')]
           .map((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname)
         expect(entryPoints, `${page.path} port-home entry point`).toContain(urlFor(page.path).pathname)
@@ -160,8 +171,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it('distinguishes unfinished products and groups workspace implementation docs under Internals', () => {
-    for (const page of pages()) inspect(page.path, (document) => {
+  it('distinguishes unfinished products and groups workspace implementation docs under Internals', async () => {
+    for (const page of pages()) await inspect(page.path, (document) => {
       if (page.product === 'mcp' || page.port !== 'py') developmentStatus(document, page.path)
       const navigation = document.querySelectorAll('nav[aria-label="Documentation"]')
       expect(navigation.length, `${page.path} documentation navigation`).toBeGreaterThan(0)
@@ -184,10 +195,12 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         }
       }
       if (page.product === 'workspace' && page.port !== 'py' && !page.section) {
-        const status = document.querySelector('[aria-label="Development status"]')!.textContent
-        expect(status, `${page.path} unfinished workspace application`).toMatch(/not a finished\s+workspace application/i)
-        expect(status, `${page.path} no user CLI`).toMatch(/no CLI equivalent to\s+tmuxp load/i)
-        expect(document.querySelector('article')!.textContent.match(/is in development/gi), `${page.path} states maturity once`).toHaveLength(1)
+        const intro = [...document.querySelectorAll('article strong')].map((element) => element.textContent).join(' ')
+        expect(intro, `${page.path} development status`).toMatch(/in development/i)
+        const article = document.querySelector('article')!.textContent
+        expect(article, `${page.path} local CLI worktree`).toContain('workspace-cli')
+        expect(article, `${page.path} native CLI`).toContain('tmux-workspace')
+        expect(article.match(/is in development/gi), `${page.path} states maturity once`).toHaveLength(1)
         const upstream = [...document.querySelectorAll('article a[href]')]
           .find((link) => link.getAttribute('href') === 'https://tmuxp.git-pull.com/')
         expect(upstream?.textContent, `${page.path} tmuxp reference`).toBe('tmuxp')
@@ -195,10 +208,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it('links generated declarations and schema-bearing tools inside their product', () => {
+  it('links generated declarations and schema-bearing tools inside their product', async () => {
     for (const page of pages().filter((entry) => entry.section === 'api' || entry.section === 'internals/api')) {
       const prefix = `${page.port}/${page.version}/${page.product}/${page.section}/`
-      const declarations = inspect(page.path, (document) =>
+      const declarations = await inspect(page.path, (document) =>
         [...document.querySelectorAll('[aria-labelledby="generated-api"] a[href]')]
           .map((link) => ({ href: link.getAttribute('href')!, title: link.textContent.trim() })))
       expect(declarations.length, `${page.path} generated declarations`).toBeGreaterThan(0)
@@ -208,7 +221,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       }
       const sample = declarations[0]
       const samplePath = new URL(sample.href, urlFor(page.path)).pathname.slice(SITE_PREFIX.length + 1)
-      inspect(samplePath, (document) => {
+      await inspect(samplePath, (document) => {
         expect(document.querySelector('article h1')?.textContent).toBe(sample.title)
         expect(graph(document).some((entry) => entry['@type'] === 'APIReference')).toBe(true)
         if (page.product === 'workspace') {
@@ -218,10 +231,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           expect(graph(document).find((entry) => entry['@type'] === 'BreadcrumbList')?.itemListElement?.map((item) => item.name)).toEqual(labels)
         } else developmentStatus(document, samplePath)
       })
-      if (page.product === 'workspace') redirectsTo(samplePath.replace('/internals/api/', '/api/'), samplePath)
+      if (page.product === 'workspace') await redirectsTo(samplePath.replace('/internals/api/', '/api/'), samplePath)
       if (page.product !== 'mcp') continue
       const toolsPath = `${page.port}/${page.version}/mcp/tools/`
-      const tools = inspect(toolsPath, (document) => {
+      const tools = await inspect(toolsPath, (document) => {
         developmentStatus(document, toolsPath)
         return [...document.querySelectorAll('article dt a[href]')].map((link) => link.getAttribute('href')!)
       })
@@ -231,7 +244,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(resolves(href, urlFor(toolsPath).href), href).toBe(true)
       }
       const toolPath = new URL(tools[0], urlFor(toolsPath)).pathname.slice(SITE_PREFIX.length + 1)
-      inspect(toolPath, (document) => {
+      await inspect(toolPath, (document) => {
         developmentStatus(document, toolPath)
         const input = [...document.querySelectorAll('details')]
           .find((detail) => detail.querySelector('summary')?.textContent === 'Input schema')
@@ -242,9 +255,9 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     }
   })
 
-  it('switches to equivalent sections and matches visible breadcrumbs to structured data', () => {
+  it('switches to equivalent sections and matches visible breadcrumbs to structured data', async () => {
     const defaults = manifest().defaultVersion
-    for (const page of pages()) inspect(page.path, (document) => {
+    for (const page of pages()) await inspect(page.path, (document) => {
       const links = [...document.querySelectorAll('[data-page-port-switcher] a[href]')]
       const available = PORTS.filter((port) => sectionsFor(port.slug, page.product).includes(page.section))
       expect(links.length, `${page.path} port counterparts`).toBe(available.length)
@@ -271,21 +284,21 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it('redirects previous workspace implementation URLs without replacing Python CLI docs', () => {
+  it('redirects previous workspace implementation URLs without replacing Python CLI docs', async () => {
     for (const page of pages().filter((entry) => entry.product === 'workspace'
       && (entry.section === 'internals/api' || (entry.port !== 'py' && entry.section.startsWith('internals/'))))) {
-      redirectsTo(page.path.replace('/internals/', '/'), page.path)
+      await redirectsTo(page.path.replace('/internals/', '/'), page.path)
     }
     for (const page of pages().filter((entry) => entry.port === 'py' && entry.product === 'workspace'
-      && ['guides', 'examples'].includes(entry.section))) inspect(page.path, (document) => {
+      && ['guides', 'examples'].includes(entry.section))) await inspect(page.path, (document) => {
       expect(document.querySelector('meta[http-equiv="refresh"]'), `${page.path} remains a user guide`).toBeNull()
       expect(document.querySelector('article')!.textContent, `${page.path} CLI usage`).toContain('tmuxp load')
     })
   })
 
-  it('canonicalizes each version and loads nested search from the locale index', () => {
+  it('canonicalizes each version and loads nested search from the locale index', async () => {
     const defaults = manifest().defaultVersion
-    for (const page of pages()) inspect(page.path, (document) => {
+    for (const page of pages()) await inspect(page.path, (document) => {
       const canonical = document.querySelector('link[rel="canonical"]')?.getAttribute('href')
       const expected = `${page.port}/${defaults[page.port]}/${page.product}/${page.section ? `${page.section}/` : ''}`
       expect(canonical, page.path).toBe(urlFor(expected).href)
@@ -338,15 +351,17 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           expect(metadata.inDevelopment, `${root}${port.slug} ${product} development status`).toBe(product === 'mcp' || port.slug !== 'py')
           const section = product === 'workspace' ? 'internals/api' : 'api'
           expect(new URL(metadata.reference, urlFor(root)).pathname).toBe(urlFor(`${port.slug}/${defaults[port.slug]}/${product}/${section}/`).pathname)
-          if (product === 'workspace') expect(metadata.cli, `${root}${port.slug} user CLI`).toBe(port.slug === 'py' ? 'tmuxp load' : null)
-          else expect(resolves(metadata.protocol!, urlFor(root).href), `${root}${port.slug} MCP protocol`).toBe(true)
+          if (product === 'workspace') {
+            expect(metadata.cli, `${root}${port.slug} user CLI`).toBe(port.slug === 'py' ? 'tmuxp load' : 'tmux-workspace load')
+            expect(metadata.cliAvailability, `${root}${port.slug} CLI availability`).toBe(port.slug === 'py' ? 'released' : 'local')
+          } else expect(resolves(metadata.protocol!, urlFor(root).href), `${root}${port.slug} MCP protocol`).toBe(true)
         }
       }
       for (const entry of exported.pages.filter((entry) => productUrl.test(entry.url))) {
         expect(resolves(entry.url), entry.url).toBe(true)
         expect(resolves(entry.markdownUrl), entry.markdownUrl).toBe(true)
         expect(entry.url, `${root} canonical workspace API exports`).not.toMatch(/\/workspace\/api(?:\/|$)/)
-        expect(entry.url, `${root} canonical workspace prose exports`).not.toMatch(/\/(?:ts|rs|go|java|dotnet|cxx|swift)\/[^/]+\/workspace\/(?:topics|guides|examples)(?:\/|$)/)
+        expect(entry.url, `${root} canonical workspace prose exports`).not.toMatch(/\/(?:ts|rs|go|java|dotnet|cxx|swift)\/[^/]+\/workspace\/(?:topics|guides|examples)\/?$/)
         if (root) expect(new URL(entry.url).pathname).toContain(`/${SITE_PREFIX}${root}`)
       }
     }

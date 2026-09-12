@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "tmux-python/libtmux-mcp",
-  "revision": "1e0c9bc29b6bda00460a854a9bb69ff28ad7f314",
+  "revision": "83016a9f0d80d44b46ec1e735571d6683c0b95b7",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },

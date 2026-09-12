@@ -115,7 +115,7 @@ export const GET: APIRoute = async ({ site }) => {
       products: Object.entries(DOC_PRODUCTS).map(([slug, product]) => ({
         slug, name: product.label,
         inDevelopment: productInDevelopment(p, slug as DocProduct),
-        ...(slug === 'workspace' ? { cli: p.workspaceCli ?? null } : {}),
+        ...(slug === 'workspace' ? { cli: p.workspaceCli ?? null, cliAvailability: p.workspaceCliAvailability ?? null } : {}),
         url: portPageUrl(p, defaults[p.slug] ?? 'latest', slug),
         reference: portPageUrl(p, defaults[p.slug] ?? 'latest', productApiPath(slug as DocProduct)),
         ...(slug === 'mcp' ? { protocol: portPageUrl(p, defaults[p.slug] ?? 'latest', 'mcp/tools').replace(/\/$/, '.json') } : {}),

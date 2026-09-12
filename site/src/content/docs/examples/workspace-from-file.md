@@ -181,8 +181,8 @@ runs against real tmux
 
 **In this page:** prose only
 
-**Checked by:** `examples/workspace/tests/` runs it against real tmux as
-`consumer.workspace`; it exercises the example's own types, not a published
+**Checked by:** `examples/workspace/tests/` runs the consumer suite against
+real tmux; it exercises the example's own types, not a published
 `libtmux` API
 
 ### Swift
