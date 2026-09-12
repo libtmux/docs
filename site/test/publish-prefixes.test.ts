@@ -2,19 +2,15 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { DOC_PRODUCTS, PORTS } from '../src/lib/ports'
 import { DEFAULT_LOCALE } from '../src/i18n/locales'
 
-const workflow = readFileSync(new URL('../../.github/workflows/deploy-shell.yml', import.meta.url), 'utf8')
-const publishStep = workflow.split('      - name: Sync top-level directories, denylist-checked\n')[1]?.split('\n      # Only the two entry points')[0]
-const inline = publishStep?.split('        run: |\n')[1]
-if (!inline) throw new Error('Production shell publisher was not found in deploy-shell.yml')
-const script = inline.split('\n').map((line) => line.replace(/^ {10}/, '')).join('\n')
-const metadataInline = workflow.split('      - name: Emit publication ownership metadata\n')[1]
-  ?.split('\n      - uses:')[0]?.split('        run: |\n')[1]
-if (!metadataInline) throw new Error('Publication metadata step was not found in deploy-shell.yml')
-const metadataScript = metadataInline.split('\n').map((line) => line.replace(/^ {10}/, '')).join('\n')
+// The publisher the deploy runs, not a copy of it: `deploy-shell.yml` and
+// `check-publish` invoke this same file.
+const script = fileURLToPath(new URL('../../scripts/publish-root.sh', import.meta.url))
+const metadataScript = fileURLToPath(new URL('../../scripts/publication-metadata.mjs', import.meta.url))
 const scratch: string[] = []
 afterEach(() => scratch.splice(0).forEach((path) => rmSync(path, { recursive: true, force: true })))
 
@@ -60,11 +56,11 @@ function fixture(products = true): string {
 
 function publish(directory: string, locale = 'en') {
   const record = join(directory, 'aws.jsonl')
-  const result = spawnSync('bash', ['-c', script.replaceAll('${{ matrix.locale }}', locale)], {
+  const result = spawnSync('bash', [script], {
     cwd: directory, encoding: 'utf8', timeout: 10000,
     env: {
       ...process.env, PATH: `${join(directory, 'bin')}:${process.env.PATH}`, BUCKET: 'docs-test',
-      RUNNER_TEMP: directory, AWS_RECORD: record,
+      LOCALE: locale, RUNNER_TEMP: directory, AWS_RECORD: record,
       PUBLISH_TEST_NODE: process.execPath, PUBLISH_TEST_RECORDER: join(directory, 'record-aws.mjs'),
     },
   })
@@ -93,7 +89,7 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     const preserved = [...expected.files, ...expected.directories.map((path) => `${path}/${path.endsWith('/_astro') ? 'shell.js' : 'index.html'}`)]
       .map((path) => [path, readFileSync(join(directory, '_site', DEFAULT_LOCALE, path), 'utf8')] as const)
     for (const file of ['shell-paths.json', 'reserved-prefixes.txt', 'reserved-products.txt']) rmSync(join(directory, file))
-    const result = spawnSync('bash', ['-c', metadataScript], { cwd: directory, encoding: 'utf8', timeout: 10000 })
+    const result = spawnSync(process.execPath, [metadataScript], { cwd: directory, encoding: 'utf8', timeout: 10000 })
     expect(result.error).toBeUndefined()
     expect(result.status, result.stderr).toBe(0)
     const paths = JSON.parse(readFileSync(join(directory, 'shell-paths.json'), 'utf8'))
@@ -112,7 +108,7 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     rmSync(api, { recursive: true })
     write(join(directory, 'outside/index.html'), 'Native publisher output\n')
     symlinkSync(join(directory, 'outside'), api, 'dir')
-    const result = spawnSync('bash', ['-c', metadataScript], { cwd: directory, encoding: 'utf8', timeout: 10000 })
+    const result = spawnSync(process.execPath, [metadataScript], { cwd: directory, encoding: 'utf8', timeout: 10000 })
     expect(result.error).toBeUndefined()
     expect(result.status).toBe(1)
     expect(result.stderr).toContain('symlink')
