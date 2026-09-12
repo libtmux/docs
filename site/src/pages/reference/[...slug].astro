@@ -270,11 +270,19 @@ const counterparts = model
  *
  * Only where the concept map knows a counterpart — an example is a claim that
  * two pieces of code do the same thing, and nothing else here can make it.
+ *
+ * And only where *this* page's language has one to make the claim with.
+ * Without that gate a symbol with no example of its own still got an
+ * "Examples" heading, under which every tab was another language:
+ * `/reference/ts/server-server/` opened on Python doctest output. A reader on
+ * a TypeScript page asked for TypeScript, and a Python-only answer under that
+ * heading reads as the TypeScript example rather than as a substitute for a
+ * missing one. An example is an offer to copy, and there was nothing there to
+ * copy.
  */
-const exampleGroups = [
-  ...(owner?.doc?.examples?.length
-    ? [{ port: model?.port ?? '', examples: owner.doc.examples }]
-    : []),
+const ownExamples = owner?.doc?.examples ?? []
+const exampleGroups = ownExamples.length === 0 ? [] : [
+  { port: model?.port ?? '', examples: ownExamples },
   ...counterparts.flatMap((c) => {
     const id = conceptEntries.map((x) => x.symbols[c.port]).find((v) => typeof v === 'string')
     const other = id
@@ -861,6 +869,7 @@ const title = owner
                 port={model?.port}
                 heading={OWNER_KINDS.has(owner.kind)}
                 member={!OWNER_KINDS.has(owner.kind)}
+                examples={exampleGroups.length <= 1}
               />
             </div>
 

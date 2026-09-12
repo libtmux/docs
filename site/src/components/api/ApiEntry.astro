@@ -50,8 +50,17 @@ interface Props {
    * bases belong here too.
    */
   heading?: boolean
+  /**
+   * Suppress this entry's own examples.
+   *
+   * The reference page renders a language-switching Examples section below the
+   * entry when a counterpart port carries the same example. Left on, the
+   * page's own language then appeared twice — inline here and as the first tab
+   * there. The caller knows which of the two is showing; this entry does not.
+   */
+  examples?: boolean
 }
-const { symbol, index, sourceUrl, port, alternativesFor, heading = false, member = false } = Astro.props as Props
+const { symbol, index, sourceUrl, port, alternativesFor, heading = false, member = false, examples: showExamples = true } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
 
@@ -125,7 +134,7 @@ const prename = heading && anchor.endsWith(symbol.name)
 
 const bases = heading ? ((symbol as { extends?: string[] }).extends ?? []) : []
 
-const examples = symbol.doc?.examples ?? []
+const examples = showExamples ? (symbol.doc?.examples ?? []) : []
 const references = symbol.doc?.references ?? []
 
 /**
