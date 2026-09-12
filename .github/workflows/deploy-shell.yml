@@ -108,27 +108,11 @@ jobs:
         if: matrix.locale == 'en'
         run: |
           set -euo pipefail
-          node --input-type=module -e "
-            const { readdirSync, rmSync, writeFileSync } = await import('node:fs')
-            const { PORTS, DOC_PRODUCTS } = await import('./site/src/lib/ports.ts')
-            const { DEFAULT_LOCALE } = await import('./site/src/i18n/locales.ts')
-            const paths = { schema: 1, locale: DEFAULT_LOCALE, directories: [], files: [] }
-            for (const port of PORTS) {
-              const prefix = port.slug + '/latest'
-              for (const entry of readdirSync('_site/' + DEFAULT_LOCALE + '/' + prefix, { withFileTypes: true })) {
-                if (entry.isSymbolicLink()) throw new Error('Unexpected symlink in shell assembly: ' + prefix + '/' + entry.name)
-                // The assembly checks native targets; this artifact never publishes them.
-                if (entry.name === 'api') {
-                  rmSync('_site/' + DEFAULT_LOCALE + '/' + prefix + '/api', { recursive: true })
-                  continue
-                }
-                paths[entry.isDirectory() ? 'directories' : 'files'].push(prefix + '/' + entry.name)
-              }
-            }
-            writeFileSync('shell-paths.json', JSON.stringify(paths) + '\n')
-            writeFileSync('reserved-products.txt', Object.keys(DOC_PRODUCTS).join('\n') + '\n')
-            process.stdout.write(PORTS.map((p) => p.slug).join('\n') + '\n')
-          " > reserved-prefixes.txt
+          node scripts/publication-metadata.mjs
+          # Beside the metadata rather than under scripts/, so the artifact
+          # holds it at a path publish-root can name without depending on how
+          # upload-artifact roots a multi-path upload.
+          cp scripts/publish-root.sh publish-root.sh
           cat reserved-prefixes.txt
 
       - uses: actions/upload-artifact@v7
@@ -146,6 +130,7 @@ jobs:
             reserved-prefixes.txt
             reserved-products.txt
             shell-paths.json
+            publish-root.sh
           retention-days: 1
 
   build-preview:
@@ -218,6 +203,36 @@ jobs:
       bucket: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
       distribution: ${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}
 
+  # `check-publish` needs the production build's artifact, which only a push
+  # produces, so a pull request never exercised the publisher at all. A preview
+  # assembly has the same shape one locale down, so the same two scripts run
+  # against it here and a mistake in either surfaces on the pull request rather
+  # than on the deploy that uploads. No credentials: the recording stand-in
+  # prints what would have been called.
+  check-publish-preview:
+    if: github.event_name == 'pull_request'
+    needs: build-preview
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: preview-dist
+          path: _site
+      - name: Exercise the publisher against the preview assembly
+        env:
+          LOCALE: en
+          BUCKET: reproduction
+        run: |
+          set -euo pipefail
+          node scripts/publication-metadata.mjs
+          cp scripts/publish-root.sh publish-root.sh
+          mv "_site/$LOCALE" dist
+          mkdir bin
+          printf '%s\n' '#!/usr/bin/env bash' 'printf "aws"; printf " %q" "$@"; printf "\\n"' > bin/aws
+          chmod +x bin/aws
+          PATH="$PWD/bin:$PATH" bash publish-root.sh
+
   check-publish:
     if: github.event_name != 'pull_request'
     needs: [locales, build]
@@ -240,30 +255,12 @@ jobs:
           BUCKET: reproduction
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import os
-          import re
-          import textwrap
-          from pathlib import Path
-
-          workflow = Path('.github/workflows/deploy-shell.yml').read_text()
-          step = workflow.split('      - name: Sync top-level directories, denylist-checked\n', 1)[1]
-          block = step.split('        run: |\n', 1)[1]
-          lines = []
-          for line in block.splitlines():
-              if line.strip() and not line.startswith('          '):
-                  break
-              lines.append(line)
-          script = textwrap.dedent('\n'.join(lines))
-          script = re.sub(r'\$\{\{\s*matrix\.locale\s*\}\}', os.environ['LOCALE'], script)
-          Path('publish-root.sh').write_text(script)
-          Path('bin').mkdir()
-          aws = Path('bin/aws')
-          aws.write_text('#!/usr/bin/env bash\nprintf "aws"; printf " %q" "$@"; printf "\\n"\n')
-          aws.chmod(0o755)
-          PY
-          export PATH="$PWD/bin:$PATH"
-          bash publish-root.sh
+          # A recording stand-in: the run must reach the same decisions it
+          # would in production, and upload nothing while doing so.
+          mkdir bin
+          printf '%s\n' '#!/usr/bin/env bash' 'printf "aws"; printf " %q" "$@"; printf "\\n"' > bin/aws
+          chmod +x bin/aws
+          PATH="$PWD/bin:$PATH" bash scripts/publish-root.sh
 
   publish-root:
     needs: [locales, build, check-publish]
@@ -298,156 +295,8 @@ jobs:
       - name: Sync top-level directories, denylist-checked
         env:
           BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
-        run: |
-          set -euo pipefail
-          locale="${{ matrix.locale }}"
-          # The artifact declares the shell-owned ports, products and paths. Missing
-          # metadata must never turn a reserved port into an unrestricted sync.
-          for metadata in reserved-prefixes.txt reserved-products.txt shell-paths.json; do
-            if [[ ! -s "$metadata" ]]; then
-              echo "::error::$metadata is missing or empty" >&2
-              exit 1
-            fi
-          done
-          mapfile -t reserved < reserved-prefixes.txt
-          mapfile -t products < reserved-products.txt
-          if ! jq -e '.schema == 1 and (.locale | type == "string") and (.directories | type == "array") and (.files | type == "array") and (all(.directories[], .files[]; type == "string"))' shell-paths.json > /dev/null; then
-            echo '::error::invalid shell-paths.json ownership metadata' >&2
-            exit 1
-          fi
-          port_locale=$(jq -r '.locale' shell-paths.json)
-          mapfile -t shell_dirs < <(jq -r '.directories[]' shell-paths.json)
-          mapfile -t shell_files < <(jq -r '.files[]' shell-paths.json)
-          for name in "${reserved[@]}" "${products[@]}" "$port_locale"; do
-            if [[ ! "$name" =~ ^[a-z][a-z0-9-]*$ ]]; then
-              echo "::error::invalid ownership name '$name'" >&2
-              exit 1
-            fi
-          done
-          reserved+=(manifest)
-          shopt -s nullglob dotglob globstar
-          # Validate the entire artifact before the first AWS operation.
-          # Following links could publish files outside the validated subtree.
-          for entry in dist dist/**; do
-            if [[ -L "$entry" ]]; then
-              echo "::error::symlink in publication artifact: $entry" >&2
-              exit 1
-            fi
-          done
-          for path in "${shell_dirs[@]}" "${shell_files[@]}"; do
-            if [[ ! "$path" =~ ^([a-z][a-z0-9-]*)/latest/([a-zA-Z0-9_][a-zA-Z0-9_.-]*)$ ]]; then
-              echo "::error::invalid shell-owned path: $path" >&2
-              exit 1
-            fi
-            port=${BASH_REMATCH[1]}
-            child=${BASH_REMATCH[2]}
-            known=false
-            for candidate in "${reserved[@]}"; do
-              [[ "$port" == "$candidate" ]] && known=true && break
-            done
-            if [[ "$known" == false || "$port" == manifest || "$child" == api ]]; then
-              echo "::error::$path is outside shell-owned paths" >&2
-              exit 1
-            fi
-          done
-          if [[ "$locale" == "$port_locale" ]]; then
-            for path in "${shell_dirs[@]}"; do
-              [[ -d "dist/$path" ]] || { echo "::error::missing shell directory: $path" >&2; exit 1; }
-            done
-            for path in "${shell_files[@]}"; do
-              [[ -f "dist/$path" ]] || { echo "::error::missing shell file: $path" >&2; exit 1; }
-            done
-            for port in "${reserved[@]}"; do
-              [[ "$port" == manifest ]] && continue
-              for path in index.html "${products[@]/%//index.html}"; do
-                [[ -f "dist/$port/latest/$path" ]] || { echo "::error::missing version entry page: $port/latest/$path" >&2; exit 1; }
-              done
-            done
-          fi
-          dirs=()
-          reserved_index_dirs=()
-          version_files=()
-          for entry in dist/*; do
-            [[ -d "$entry" ]] || continue
-            name=${entry##*/}
-            is_reserved=false
-            for port in "${reserved[@]}"; do
-              [[ "$name" == "$port" ]] && is_reserved=true && break
-            done
-            if [[ "$is_reserved" == false ]]; then
-              dirs+=("$name")
-              continue
-            fi
-            if [[ "$name" == manifest || ! -f "$entry/index.html" ]]; then
-              echo "::error::$entry is not a shell-owned port landing tree" >&2
-              exit 1
-            fi
-            for child in "$entry"/*; do
-              [[ "$child" == "$entry/index.html" || "$child" == "$entry/index.md" ]] && continue
-              if [[ "$child" != "$entry/latest" || ! -d "$child" ]]; then
-                echo "::error::$child is outside shell-owned latest paths" >&2
-                exit 1
-              fi
-              for shell_entry in "$child"/*; do
-                path=${shell_entry#dist/}
-                allowed=false
-                if [[ -d "$shell_entry" ]]; then
-                  for candidate in "${shell_dirs[@]}"; do
-                    [[ "$path" == "$candidate" ]] && allowed=true && break
-                  done
-                  dirs+=("$path")
-                elif [[ -f "$shell_entry" ]]; then
-                  for candidate in "${shell_files[@]}"; do
-                    [[ "$path" == "$candidate" ]] && allowed=true && break
-                  done
-                  version_files+=("$path")
-                fi
-                if [[ "$allowed" == false ]]; then
-                  echo "::error::$shell_entry is outside declared shell-owned paths" >&2
-                  exit 1
-                fi
-              done
-            done
-            reserved_index_dirs+=("$name")
-          done
-
-          # Each deleting sync owns one shell subtree, never a locale, port,
-          # or version root shared with a native documentation publisher.
-          for name in "${dirs[@]}"; do
-            # Cached HTML can still reference assets from the previous build.
-            sync_options=(--delete)
-            [[ "${name##*/}" == _astro ]] && sync_options=()
-            aws s3 sync "dist/$name/" "s3://$BUCKET/$locale/$name/" \
-              "${sync_options[@]}" \
-              --cache-control "public, max-age=0, s-maxage=300"
-          done
-          for name in "${reserved_index_dirs[@]}"; do
-            aws s3 cp "dist/$name/index.html" "s3://$BUCKET/$locale/$name/index.html" \
-              --cache-control "public, max-age=0, s-maxage=300"
-            # The port home's Markdown twin, which its footer links.
-            if [[ -f "dist/$name/index.md" ]]; then
-              aws s3 cp "dist/$name/index.md" "s3://$BUCKET/$locale/$name/index.md" \
-                --cache-control "public, max-age=0, s-maxage=300"
-            fi
-          done
-          for path in "${version_files[@]}"; do
-            aws s3 cp "dist/$path" "s3://$BUCKET/$locale/$path" \
-              --cache-control "public, max-age=0, s-maxage=300"
-          done
-          for file in dist/*; do
-            [[ -f "$file" ]] || continue
-            aws s3 cp "$file" "s3://$BUCKET/$locale/${file##*/}" \
-              --cache-control "public, max-age=0, s-maxage=300"
-          done
-          if [[ -f dist/robots.txt ]]; then
-            aws s3 cp dist/robots.txt "s3://$BUCKET/robots.txt" \
-              --cache-control "public, max-age=0, s-maxage=300"
-          fi
-
-          # Only the locale crosses into the next step now. The three lists
-          # that used to be written here fed the per-path invalidation and
-          # have no other reader.
-          printf '%s\n' "$locale" > "$RUNNER_TEMP/shell-locale.txt"
+          LOCALE: ${{ matrix.locale }}
+        run: bash publish-root.sh
 
       # Only the two entry points, and only because they are the pages a
       # person checks first after a deploy. Everything else is written with

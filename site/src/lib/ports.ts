@@ -54,6 +54,14 @@ export interface Port {
    */
   tagGrammar: TagGrammar
   renderer: Renderer
+  /**
+   * Whether this port's own documentation pipeline publishes
+   * `<slug>/<version>/api/`. This repository assembles that tree to measure
+   * style parity against and must never publish it or anything over it. Every
+   * other port answers that path with a redirect to the reference this site
+   * renders, which it does publish.
+   */
+  publishesOwnApi?: boolean
   /** An ecosystem-hosted reference offered alongside the reference on this site. */
   ecosystemHost?: EcosystemHost
   /**
@@ -78,6 +86,7 @@ export const PORTS: readonly Port[] = [
     versionedDocs: true,
     tagGrammar: 'pep440',
     renderer: 'sphinx',
+    publishesOwnApi: true,
     generator: 'Sphinx + sphinx-gp-theme',
     install: 'pip install libtmux',
   },

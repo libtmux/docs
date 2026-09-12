@@ -31,6 +31,19 @@ step 'cached inventories'
 node scripts/fetch-inventories.mjs --check
 node scripts/build-inventories.mjs --check
 
+# `publish-root.sh` is the one script here that can delete objects from a
+# bucket, so it is worth a linter that reads shell. `-x` follows the sourced
+# bookkeeping instead of reporting a caller's variables as unassigned, and the
+# probe is `--version` rather than `command -v` because a version manager's
+# shim resolves and then fails.
+step 'shell scripts'
+if shellcheck --version > /dev/null 2>&1; then
+  shellcheck -x -S warning scripts/*.sh
+else
+  note_skip 'shellcheck (not installed)'
+  echo 'shellcheck not installed; skipped'
+fi
+
 # Source-level, so it needs no assembly and runs in a quarter second. It
 # shares `decideMention` with the linker, so it cannot disagree with the build
 # about what should have been a link.

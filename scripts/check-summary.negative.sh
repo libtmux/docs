@@ -10,7 +10,7 @@
 # to assert one line, so the summary is its own sourceable function and this
 # drives it directly.
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 . scripts/skip-summary.sh
 

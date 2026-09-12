@@ -50,6 +50,17 @@ how to turn a port into a reference URL, self-hosted or ecosystem; nothing
 else in the shell should special-case a port slug to decide where its docs
 live.
 
+`<port>/<version>/api/` is the older path, and it answers differently by port.
+Each assembly writes a `noindex` redirect there to the reference this site
+renders, and the publisher uploads it — except under a port that declares
+`publishesOwnApi`, whose own pipeline publishes that tree. Python is the only
+one today: `/py/<version>/api/` is gp-sphinx rendering upstream's own
+documentation, the oracle `site/scripts/check-style-parity.mjs` measures this
+site against. `scripts/publication-metadata.mjs` drops that tree before the
+artifact is declared, and `scripts/publish-root.sh` refuses the path for such a
+port however the artifact declares it. Deleting it for every port, which is
+what the publisher used to do, left the other seven answering 403.
+
 ## The version axis
 
 Every build is one Astro invocation targeting exactly one version, driven by

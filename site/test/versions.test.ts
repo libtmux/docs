@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { compareTags, parseTag, selectBuildVersions, sortVersions, type VersionEntry, type VersionManifest } from '../src/lib/versions'
 
 it('keeps the production fallback manifest in sync with the seed generator', () => {
@@ -12,6 +13,10 @@ it('keeps the production fallback manifest in sync with the seed generator', () 
   const fallback = readFileSync(new URL('../public/versions.json', import.meta.url), 'utf8')
   expect(JSON.parse(fallback)).toEqual(JSON.parse(generated))
 })
+
+// The bookkeeping the build sources, driven here rather than reassembled from
+// the script's text.
+const bookkeeping = fileURLToPath(new URL('../../scripts/version-bookkeeping.sh', import.meta.url))
 
 describe('assembly version selection', () => {
   const candidate: VersionManifest = {
@@ -43,10 +48,7 @@ describe('assembly version selection', () => {
     try {
       writeFileSync(join(directory, 'gen-versions.mjs'),
         "import { writeFileSync } from 'node:fs'; writeFileSync(process.argv[3], process.env.TEST_VERSION_MANIFEST);\n")
-      const buildScript = readFileSync(new URL('../../scripts/build-site.sh', import.meta.url), 'utf8')
-      const bookkeeping = buildScript.split('# Version bookkeeping\n')[1]?.split('# One Astro build invocation.')[0]
-      expect(bookkeeping).toBeTruthy()
-      const output = execFileSync('bash', ['-euc', `${bookkeeping}\nnode -e 'console.log(process.env.LIBTMUX_DOCS_PORT_DEFAULTS)'`], {
+      const output = execFileSync('bash', ['-euc', `. ${bookkeeping}\nnode -e 'console.log(process.env.LIBTMUX_DOCS_PORT_DEFAULTS)'`], {
         encoding: 'utf8',
         env: {
           ...process.env, scratch: directory, script_dir: directory,
@@ -60,6 +62,30 @@ describe('assembly version selection', () => {
       const manifest = JSON.parse(readFileSync(join(directory, 'versions.json'), 'utf8')) as VersionManifest
       expect(manifest.ports.py.map((entry) => entry.slug)).toEqual(selected === 'latest' ? ['latest'] : ['stable', 'latest'])
       expect(manifest.defaultVersion).toEqual({ py: pythonDefault, go: 'latest' })
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
+  // Naming a slug the build never produced would mislabel which page is
+  // canonical, so the absent key has to stop the build rather than default.
+  it('refuses a default version for a port this build kept nothing of', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-build-versions-'))
+    try {
+      writeFileSync(join(directory, 'gen-versions.mjs'),
+        "import { writeFileSync } from 'node:fs'; writeFileSync(process.argv[3], process.env.TEST_VERSION_MANIFEST);\n")
+      const result = spawnSync('bash', ['-euc', `. ${bookkeeping}\ndefault_version_for go`], {
+        encoding: 'utf8',
+        env: {
+          ...process.env, scratch: directory, script_dir: directory,
+          repo_root: new URL('../../', import.meta.url).pathname,
+          site_dir: new URL('../', import.meta.url).pathname,
+          locale: 'en', versions_arg: 'stable',
+          TEST_VERSION_MANIFEST: JSON.stringify(candidate),
+        },
+      })
+      expect(result.status).toBe(1)
+      expect(result.stderr).toContain('kept none of its versions')
     } finally {
       rmSync(directory, { recursive: true, force: true })
     }
