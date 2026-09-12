@@ -14,14 +14,14 @@
     "lint": "oxlint --type-aware --tsconfig tsconfig.json src"
   },
   "dependencies": {
-    "@astrojs/markdown-remark": "^7.2.4",
+    "@astrojs/markdown-remark": "^7.3.1",
     "@astrojs/mdx": "^7.0.8",
     "@astrojs/sitemap": "^3.7.3",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/ibm-plex-sans": "^5.3.0",
     "@libtmux/api-model": "workspace:*",
     "@libtmux/theme": "workspace:*",
-    "astro": "^7.2.9",
+    "astro": "^7.3.2",
     "class-variance-authority": "^0.7.1",
     "hast-util-from-html": "^2.0.3",
     "hast-util-to-mdast": "^10.1.2",
