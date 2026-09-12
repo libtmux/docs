@@ -9,8 +9,7 @@
  */
 import { PORTS } from './ports'
 import { TOPICS } from './prompts'
-import { buildLocale } from '../i18n/resolve'
-import { DEFAULT_LOCALE } from '../i18n/locales'
+import { DEFAULT_LOCALE, isLocale } from '../i18n/locales'
 
 /**
  * Prompts belong to the root build of the default locale, and nothing else.
@@ -21,8 +20,15 @@ import { DEFAULT_LOCALE } from '../i18n/locales'
  * already apply: prompts cite English pages and carry absolute URLs, so a
  * translated copy would be the English text at a Japanese URL.
  */
-export function buildsPrompts(): boolean {
-  return !process.env.LIBTMUX_DOCS_PORT && buildLocale() === DEFAULT_LOCALE
+export function buildsPrompts(env: NodeJS.ProcessEnv = process.env): boolean {
+  if (env.LIBTMUX_DOCS_PORT) return false
+  // `buildLocale()` from i18n/resolve answers this, and reaching for it costs
+  // more than it saves: that module imports `astro:content`, which exists only
+  // inside an Astro build, so importing it here would make every pure test that
+  // touches a prompt route fail to collect. The rule it encodes is two env
+  // reads, so they are inlined rather than the dependency taken on.
+  const named = env.LIBTMUX_DOCS_LOCALE
+  return !named || !isLocale(named) || named === DEFAULT_LOCALE
 }
 
 /** Every (port, topic) pair, in picker order. */
