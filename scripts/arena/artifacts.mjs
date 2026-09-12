@@ -61,6 +61,26 @@ export const ARTIFACTS = [
       ],
     }),
   },
+  // Two pages on one lend, which is what the per-source evidence is for: the
+  // supervisor asks for a record per declared page, so a page that collected
+  // nothing is a failure rather than a quiet pass.
+  {
+    slug: 'py',
+    artifact: 'python-workspace-and-location',
+    sources: ['docs/topics/workspace_setup.md', 'docs/topics/self_location.md'],
+    runs: ['py:page:docs/topics/workspace_setup.md', 'py:page:docs/topics/self_location.md'],
+    tools: ['uv'],
+    prepare: () => [],
+    run: () => ({
+      cwd: '.',
+      command: [
+        'uv', 'run', '--frozen', 'python', '-B', '-m', 'pytest', '--reruns=0', '-p', 'no:cacheprovider', '-q',
+        '--libtmux-arena-target', 'docs/topics/workspace_setup.md',
+        '--libtmux-arena-target', 'docs/topics/self_location.md',
+        'docs/topics/workspace_setup.md', 'docs/topics/self_location.md',
+      ],
+    }),
+  },
   // One entry per site-quoted ts example. They share the port slug, so
   // `--port ts` and LIBTMUX_DOCS_ARENA_TS still select all four, and each
   // names its own artifact, test file and `runs` key. Install and build steps
@@ -141,6 +161,18 @@ export const ARTIFACTS = [
     tools: ['go'],
     prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'quickstart.test'), './quickstart'] }],
     run: (build) => ({ cwd: 'examples/quickstart', command: [join(build, 'quickstart.test'), '-test.run=^TestQuickstart$', '-test.count=1'] }),
+  },
+  // The library's own documented Example functions, which the API reference
+  // shows. They share one lend: the run refuses to stop it and removes only
+  // what it created, and the evidence comes from TestMain, because `go test`
+  // diffs an Example's stdout against its `// Output:` comment verbatim.
+  {
+    slug: 'go',
+    artifact: 'go-tmux-examples',
+    runs: ['go:tmux/example_test.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: '.', command: ['go', 'test', '-c', '-o', join(build, 'tmux.test'), './tmux'] }],
+    run: (build) => ({ cwd: 'tmux', command: [join(build, 'tmux.test'), '-test.run=^Example', '-test.count=1'] }),
   },
   // The other example programs, each proved on its own lent server. They
   // share the `go` slug, so `--port go` still selects all of them.

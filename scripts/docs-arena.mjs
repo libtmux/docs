@@ -17,7 +17,7 @@ import { tmpdir } from 'node:os'
 import { delimiter, join, resolve } from 'node:path'
 import sources from '../site/src/data/example-sources.json' with { type: 'json' }
 import { ARTIFACTS, arenaWorktree } from './arena/artifacts.mjs'
-import { ArenaFailure, resolveTmux, runFailClosed, runInArena } from './arena/supervisor.mjs'
+import { ArenaFailure, resolveTmux, runFailClosed, runInArena, runInArenaMulti } from './arena/supervisor.mjs'
 
 const argv = process.argv.slice(2)
 const only = new Set(argv.flatMap((arg, index) => (argv[index - 1] === '--port' ? [arg] : [])))
@@ -97,7 +97,13 @@ for (const entry of ARTIFACTS) {
     }
     const { cwd, command } = entry.run(build)
     const target = { tmuxBin, artifact: entry.artifact, command, cwd: resolve(worktree, cwd) }
-    const evidence = await runInArena(target)
+    // An artifact that declares several sources is lent one server for all of
+    // them and answers with one record each, so a page that produced none is
+    // caught. One source is still one record, which is what every other
+    // artifact does.
+    const evidence = entry.sources
+      ? (await runInArenaMulti({ ...target, sources: entry.sources }))[0]
+      : await runInArena(target)
     await runFailClosed(target)
     const ms = Date.now() - startedAt
     results.push({ slug: entry.slug, status: 'pass', detail: `${entry.artifact} reached server ${evidence.server_pid}; failed closed without its socket (${ms}ms)` })
