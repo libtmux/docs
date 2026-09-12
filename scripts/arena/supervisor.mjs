@@ -150,6 +150,16 @@ async function startArena(tmuxBin, artifact) {
   for (const dir of Object.values(dirs)) mkdirSync(dir, { mode: 0o700 })
   const config = join(root, 'tmux.conf')
   writeFileSync(config, '', { mode: 0o600 })
+  // A private HOME with no startup file is a *new* account to an interactive
+  // shell, and zsh answers that with its first-run configuration wizard: the
+  // pane waits for a keypress and prints nothing. An example that sends keys
+  // and reads the pane back then fails on a timeout with empty output, which
+  // says nothing about the example. Four of them did. An empty startup file
+  // is what makes the account look configured; python's own fixture writes
+  // one for the same reason.
+  for (const startup of ['.zshrc', '.zshenv', '.bashrc', '.profile']) {
+    writeFileSync(join(dirs.home, startup), '', { mode: 0o600 })
+  }
 
   // The example keeps HOME so its toolchain finds its caches; tmux never reads it,
   // because the server was started with an explicit empty config. The server
