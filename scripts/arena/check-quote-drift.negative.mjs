@@ -9,7 +9,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { KNOWN_DRIFT, applyKnownDrift, compareOne } from './check-quote-drift.mjs'
+import { KNOWN_DRIFT, applyKnownDrift, compareOne, containsLines } from './check-quote-drift.mjs'
 
 const dir = mkdtempSync(join(tmpdir(), 'quote-drift-negative-'))
 const run = (name, content) => {
@@ -61,14 +61,30 @@ expect(
   'pass',
 )
 
+// A marker lives on `docs-site` and the arena runs from another branch, so the
+// run side has no marker to slice by. The lines still have to be there.
+const runWithoutMarkersButSameLines = ['before', 'shared line', 'after'].join('\n')
+expect(
+  'region markers absent on the run side, lines present',
+  compareOne('k', quotedWithRegion, run('d-lines.txt', runWithoutMarkersButSameLines), new Set(['body'])),
+  'pass',
+)
+
+expect(
+  'region markers absent on the run side, lines changed',
+  compareOne('k', quotedWithRegion, run('d-changed.txt', ['before', 'DIFFERENT line', 'after'].join('\n')), new Set(['body'])),
+  'fail',
+  'with or without its markers',
+)
+
 // The swift Waiting.swift shape: the marker itself exists only on the quoted
 // side; the arena's copy of the file never got it.
-const runWithoutMarker = ['before', 'shared line', 'after'].join('\n')
+const runWithoutMarkerOrLines = ['before', 'after'].join('\n')
 expect(
-  'region missing on the run side',
-  compareOne('k', quotedWithRegion, run('d.txt', runWithoutMarker), new Set(['body'])),
+  'region missing on the run side entirely',
+  compareOne('k', quotedWithRegion, run('d.txt', runWithoutMarkerOrLines), new Set(['body'])),
   'fail',
-  'but not in the file the arena runs',
+  'with or without its markers',
 )
 
 // The swift MCPEmbedding.swift shape: both sides carry the marker, but the

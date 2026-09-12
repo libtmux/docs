@@ -65,6 +65,32 @@ export function regionsByKey(contentDir = CONTENT) {
 const norm = (text) => text.replace(/\s+$/, '')
 
 /**
+ * Whether `block` appears in `text` as consecutive lines, ignoring trailing
+ * whitespace and blank lines at either end.
+ *
+ * Used when the run side carries no marker to slice by: the question is then
+ * whether the lines a page shows are in the file, in order.
+ */
+export function containsLines(text, block) {
+  const lines = (source) => source.split('\n').map((line) => line.replace(/\s+$/, ''))
+  const wanted = lines(block).filter((line, index, all) => !(line === '' && (index === 0 || index === all.length - 1)))
+  const trimmed = wanted.filter((line, index) => !(line === '' && (index === 0 || index === wanted.length - 1)))
+  if (trimmed.length === 0) return true
+  const haystack = lines(text)
+  for (let start = 0; start + trimmed.length <= haystack.length; start += 1) {
+    let matched = true
+    for (let offset = 0; offset < trimmed.length; offset += 1) {
+      if (haystack[start + offset] !== trimmed[offset]) {
+        matched = false
+        break
+      }
+    }
+    if (matched) return true
+  }
+  return false
+}
+
+/**
  * Mismatches this repository has not closed yet, and why.
  *
  * A listed key reports `known` instead of failing. An unlisted mismatch fails,
@@ -120,7 +146,16 @@ export function compareOne(key, quoted, runPath, regions) {
     const quotedSlice = sliceRegion(quoted, region)
     const runSlice = sliceRegion(run, region)
     if (quotedSlice === null) return { key, status: 'fail', reason: `region "${region}" not found in the quoted source itself` }
-    if (runSlice === null) return { key, status: 'fail', reason: `region "${region}" exists in the quoted source but not in the file the arena runs` }
+    if (runSlice === null) {
+      // Expected, not a defect: a region marker lives on the port's
+      // `docs-site` branch and never on the branch the arena runs from, so
+      // there is no marker here to slice by. What the page shows still has to
+      // be in the file, so compare the lines themselves.
+      if (!containsLines(run, quotedSlice)) {
+        return { key, status: 'fail', reason: `region "${region}" is not in the file the arena runs, with or without its markers` }
+      }
+      continue
+    }
     if (norm(quotedSlice) !== norm(runSlice)) {
       return { key, status: 'fail', reason: `region "${region}" content differs between the quoted source and the file the arena runs` }
     }
