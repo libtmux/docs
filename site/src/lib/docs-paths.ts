@@ -32,3 +32,10 @@ export function workspaceRedirects(paths: string[]): { path: string; target: str
     return path !== target && !published.has(path) ? [{ path, target }] : []
   })
 }
+
+/** Old section roots redirect; nested user references have their own content. */
+export function workspaceRedirectPath(path: string, publishedPaths: ReadonlySet<string>): boolean {
+  const normalized = path.replace(/\/$/, '')
+  return !publishedPaths.has(normalized)
+    && (/^workspace\/api(?:\/|$)/.test(normalized) || /^workspace\/(?:topics|guides|examples)$/.test(normalized))
+}
