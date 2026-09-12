@@ -1031,10 +1031,18 @@ const title = owner
         if (!id) return
         const target = document.getElementById(id)
         if (!target) return
+        let opened = false
         for (let el = target; el; el = el.parentElement) {
-          if (el.tagName === 'DETAILS') el.open = true
+          if (el.tagName === 'DETAILS' && !el.open) {
+            el.open = true
+            opened = true
+          }
         }
-        target.scrollIntoView()
+        // Only when opening one moved the page under the browser's own
+        // fragment scroll. Every other reference page's fragment lands on an
+        // ordinary heading, and scrolling it again would fight a restored
+        // position for no reason.
+        if (opened) target.scrollIntoView()
       }
       reveal()
       window.addEventListener('hashchange', reveal)
