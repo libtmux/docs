@@ -24,10 +24,10 @@ export type DocProduct = keyof typeof DOC_PRODUCTS
  *
  * One entry per port, not a list: a reader looking for "where do I get this"
  * wants the registry their toolchain resolves from, and every port has exactly
- * one of those. The ports with no such place say so by having none — C++ is
- * served from this project's own vcpkg git registry rather than the curated
- * one, and Swift resolves from the git URL, so for both of them the repository
- * link already is the distribution link.
+ * one of those. C++ has none to link: it is served from this project's own
+ * vcpkg git registry rather than the curated one, so the repository link
+ * already is the registry URL — the install picker's vcpkg panel is where
+ * that gets explained, because it takes a `vcpkg-configuration.json` to say.
  */
 export interface PackageRegistry {
   /** Display name, e.g. "PyPI". */
@@ -35,7 +35,7 @@ export interface PackageRegistry {
   /** This package's page on that registry. */
   url: string
   /** Which mark `components/icons/RegistryIcon.astro` draws. */
-  icon: 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget'
+  icon: 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget' | 'swift'
 }
 
 /**
@@ -388,6 +388,16 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     tagGrammar: 'semver',
     renderer: 'native-skinned',
     generator: 'DocC (swift-docc-plugin)',
+    // SwiftPM resolves from the git URL, so this is not where the package is
+    // fetched from — it is where a Swift reader goes to see its platforms,
+    // its versions and whether the last release built. `.spi.yml` in the
+    // repository is the opt-in, and the package is in SwiftPackageIndex's
+    // PackageList.
+    registry: {
+      name: 'Swift Package Index',
+      url: 'https://swiftpackageindex.com/libtmux/libtmux-swift',
+      icon: 'swift',
+    },
     installs: [
       {
         label: 'Package.swift',
