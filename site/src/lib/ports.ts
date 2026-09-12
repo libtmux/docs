@@ -19,6 +19,25 @@ export const DOC_PRODUCTS = {
 
 export type DocProduct = keyof typeof DOC_PRODUCTS
 
+/**
+ * Where a port's package is published, for the links row on its pages.
+ *
+ * One entry per port, not a list: a reader looking for "where do I get this"
+ * wants the registry their toolchain resolves from, and every port has exactly
+ * one of those. The ports with no such place say so by having none — C++ is
+ * served from this project's own vcpkg git registry rather than the curated
+ * one, and Swift resolves from the git URL, so for both of them the repository
+ * link already is the distribution link.
+ */
+export interface PackageRegistry {
+  /** Display name, e.g. "PyPI". */
+  name: string
+  /** This package's page on that registry. */
+  url: string
+  /** Which mark `components/icons/RegistryIcon.astro` draws. */
+  icon: 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget'
+}
+
 export interface EcosystemHost {
   /** Display name, e.g. "docs.rs". */
   name: string
@@ -71,6 +90,8 @@ export interface Port {
   generator: string
   /** Shown on the port landing page. */
   install: string
+  /** Where this port's package is published. */
+  registry?: PackageRegistry
 }
 
 export const PORTS: readonly Port[] = [
@@ -89,6 +110,7 @@ export const PORTS: readonly Port[] = [
     publishesOwnApi: true,
     generator: 'Sphinx + sphinx-gp-theme',
     install: 'pip install libtmux',
+    registry: { name: 'PyPI', url: 'https://pypi.org/project/libtmux/', icon: 'pypi' },
   },
   {
     slug: 'ts',
@@ -103,6 +125,7 @@ export const PORTS: readonly Port[] = [
     renderer: 'astro',
     generator: '@microsoft/api-extractor JSON',
     install: 'bun add @libtmux/libtmux',
+    registry: { name: 'npm', url: 'https://www.npmjs.com/package/libtmux', icon: 'npm' },
   },
   {
     slug: 'rs',
@@ -123,6 +146,7 @@ export const PORTS: readonly Port[] = [
     },
     generator: '',
     install: 'cargo add libtmux',
+    registry: { name: 'crates.io', url: 'https://crates.io/crates/libtmux', icon: 'crates' },
   },
   {
     slug: 'go',
@@ -143,6 +167,7 @@ export const PORTS: readonly Port[] = [
     },
     generator: '',
     install: 'go get github.com/libtmux/libtmux-go',
+    registry: { name: 'pkg.go.dev', url: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux', icon: 'go' },
   },
   {
     slug: 'java',
@@ -163,6 +188,7 @@ export const PORTS: readonly Port[] = [
     },
     generator: '',
     install: 'implementation("io.github.libtmux:libtmux:VERSION")',
+    registry: { name: 'Maven Central', url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux', icon: 'maven' },
   },
   {
     slug: 'dotnet',
@@ -177,6 +203,7 @@ export const PORTS: readonly Port[] = [
     renderer: 'astro',
     generator: 'docfx metadata (--outputFormat markdown)',
     install: 'dotnet add package LibTmux',
+    registry: { name: 'NuGet', url: 'https://www.nuget.org/packages/LibTmux', icon: 'nuget' },
   },
   {
     slug: 'cxx',
