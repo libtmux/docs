@@ -12,7 +12,10 @@ import {
   wrap,
 } from '../src/lib/prompts'
 import { registryFor } from '../src/lib/registry'
+import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import { BUCKET_ROOT, SITE_BUILT, SKIP_REASON } from './site-root'
+import { PROMPT_PAIRS, textPath, topicPath } from '../src/lib/prompt-routes'
 
 /**
  * The prompts are the one thing on this site a reader hands to a machine
@@ -255,5 +258,71 @@ describe.skipIf(!SITE_BUILT)(`cited URLs resolve in the assembled tree${SITE_BUI
     expect(urls.length).toBeGreaterThan(0)
     const dead = urls.filter((url) => !resolves(url))
     expect(dead, `not published: ${dead.join(', ')}`).toEqual([])
+  })
+})
+
+/**
+ * What the routes promise, checked against what the build wrote.
+ *
+ * `prompts.json` exists so a runner can enumerate and fetch prompts without a
+ * browser. A manifest that names a file the build did not write, or a hash that
+ * does not match the bytes behind it, is worse than no manifest: it fails in
+ * the consumer rather than here.
+ */
+describe.skipIf(!SITE_BUILT)(`published prompt routes${SITE_BUILT ? '' : ` (${SKIP_REASON})`}`, () => {
+  const published = (path: string) => join(BUCKET_ROOT, 'en', path)
+  const manifest = () => JSON.parse(readFileSync(published('prompts.json'), 'utf8'))
+
+  it('writes a text file for every port and topic', () => {
+    const missing = PROMPT_PAIRS
+      .map(({ port, topic }) => textPath(port.slug, topic.id))
+      .filter((path) => !existsSync(published(path)))
+    expect(missing, `absent: ${missing.join(', ')}`).toEqual([])
+  })
+
+  it('writes a page for the index and every topic', () => {
+    const pages = ['prompts', ...TOPICS.map((t) => topicPath(t.id))]
+    const missing = pages.filter((path) => !existsSync(published(join(path, 'index.html'))))
+    expect(missing, `absent: ${missing.join(', ')}`).toEqual([])
+  })
+
+  it('lists every prompt in the manifest', () => {
+    expect(manifest().prompts).toHaveLength(PROMPT_PAIRS.length)
+  })
+
+  it('names only files it wrote, with hashes that match their bytes', () => {
+    for (const entry of manifest().prompts) {
+      const path = new URL(entry.text).pathname.replace(/^\/en\//, '')
+      const file = published(path)
+      expect(existsSync(file), `${entry.text} is named by prompts.json`).toBe(true)
+      const bytes = readFileSync(file)
+      expect(bytes.length, `${entry.text} length`).toBe(entry.bytes)
+      expect(createHash('sha256').update(bytes).digest('hex'), `${entry.text} sha256`).toBe(entry.sha256)
+    }
+  })
+
+  it('publishes the same bytes the widget composes', () => {
+    for (const { port, topic } of PROMPT_PAIRS) {
+      const file = readFileSync(published(textPath(port.slug, topic.id)), 'utf8')
+      expect(file, `${port.slug}/${topic.id}`).toBe(`${promptFor(port, topic.id)}\n`)
+    }
+  })
+
+  it('offers the prompts in llms.txt, where an agent will look', () => {
+    const body = readFileSync(published('llms.txt'), 'utf8')
+    expect(body).toContain('## Prompts')
+    for (const topic of TOPICS) expect(body, topic.id).toContain(`/${topicPath(topic.id)}/`)
+  })
+
+  /**
+   * Prompts are a root-build concern. Every port+version build renders the same
+   * routes, so without the guard in prompt-routes.ts each of the fourteen trees
+   * carries its own copy under a prefix nothing links to.
+   */
+  it('does not repeat itself under a port and version prefix', () => {
+    const strays = PORTS
+      .map((port) => join('en', port.slug, 'latest', 'prompts'))
+      .filter((path) => existsSync(join(BUCKET_ROOT, path)))
+    expect(strays, `prompts published under a port prefix: ${strays.join(', ')}`).toEqual([])
   })
 })

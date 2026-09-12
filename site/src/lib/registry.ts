@@ -13,7 +13,8 @@
  * assertion and could drift on how it handles a missing port.
  */
 import data from '../data/registry.json'
-import { installCommand, type InstallForm, type Port, type RegistryData, type RegistryEntry } from './ports'
+import { installCommand, releaseWording, type InstallForm, type Port, type RegistryData, type RegistryEntry } from './ports'
+import { portParts, type PortParts, type PromptContext } from './prompts'
 
 export const REGISTRY = data as RegistryData
 
@@ -37,4 +38,28 @@ export function registryFor(port: Port | string): RegistryEntry {
 /** The install command that resolves today, for a port. */
 export function installFor(port: Port): InstallForm {
   return installCommand(port, registryFor(port))
+}
+
+/**
+ * Everything `portParts` needs about a port, gathered once.
+ *
+ * The widget, the three prompt routes and the test suite all need the same
+ * four values, and three of them are derived. Gathering them here keeps
+ * `prompts.ts` free of value imports, which is what lets the browser share its
+ * compose function, while giving every server-side caller one way to reach it.
+ */
+export function promptInputs(port: Port, ctx: PromptContext) {
+  const entry = registryFor(port)
+  return {
+    port,
+    entry,
+    install: installCommand(port, entry),
+    wording: releaseWording(port, entry),
+    ctx,
+  }
+}
+
+/** One port's prompt parts, for a caller that has a context. */
+export function promptPartsFor(port: Port, ctx: PromptContext): PortParts {
+  return portParts(promptInputs(port, ctx))
 }

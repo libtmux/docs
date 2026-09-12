@@ -1,6 +1,6 @@
 ---
-import { PORTS, installCommand, releaseWording } from '../../lib/ports'
-import { registryFor } from '../../lib/registry'
+import { PORTS } from '../../lib/ports'
+import { promptInputs } from '../../lib/registry'
 import { composeFromParts, portParts, sharedParts, TOPICS, VERSION_SENTINEL } from '../../lib/prompts'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { SITE_ROOT } from '../../lib/site-root'
@@ -98,18 +98,16 @@ const sentinelCtx = { docsBase, version: VERSION_SENTINEL }
 const shared = sharedParts(sentinelCtx)
 
 const built = items.map((port) => {
-  const entry = registryFor(port)
-  const common = { port, entry, install: installCommand(port, entry), wording: releaseWording(port, entry) }
   const version = versionFor(port.slug)
   return {
     port,
     version,
     served: composeFromParts(
       sharedParts({ docsBase, version }),
-      portParts({ ...common, ctx: { docsBase, version } }),
+      portParts(promptInputs(port, { docsBase, version })),
       defaultTopic,
     ),
-    parts: portParts({ ...common, ctx: sentinelCtx }),
+    parts: portParts(promptInputs(port, sentinelCtx)),
   }
 })
 
