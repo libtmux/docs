@@ -109,6 +109,10 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/publication-metadata.mjs
+          # Beside the metadata rather than under scripts/, so the artifact
+          # holds it at a path publish-root can name without depending on how
+          # upload-artifact roots a multi-path upload.
+          cp scripts/publish-root.sh publish-root.sh
           cat reserved-prefixes.txt
 
       - uses: actions/upload-artifact@v7
@@ -126,7 +130,7 @@ jobs:
             reserved-prefixes.txt
             reserved-products.txt
             shell-paths.json
-            scripts/publish-root.sh
+            publish-root.sh
           retention-days: 1
 
   build-preview:
@@ -262,7 +266,7 @@ jobs:
         env:
           BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
           LOCALE: ${{ matrix.locale }}
-        run: bash scripts/publish-root.sh
+        run: bash publish-root.sh
 
       # Only the two entry points, and only because they are the pages a
       # person checks first after a deploy. Everything else is written with
