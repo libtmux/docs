@@ -1,5 +1,6 @@
 ---
-import { highlight } from '../../lib/highlight'
+import { Code } from 'astro-expressive-code/components'
+import { codeLang } from '../../lib/highlight'
 import { PORT_NAME } from '../../lib/api-models'
 
 /**
@@ -11,11 +12,21 @@ import { PORT_NAME } from '../../lib/api-models'
  * counterparts, so where a counterpart carries examples they belong here
  * rather than on a page the reader has to go and find.
  *
+ * The page's own language is always the first group; the caller drops the
+ * whole section when it has none, because a language switcher whose every tab
+ * is a language the reader did not ask for is not a switcher.
+ *
  * CSS-only tabs: a radio per language, labels styled as the tab strip, and
  * the checked radio revealing its panel through a sibling selector. No script,
  * so it works on a page with none, and no shared state, so two of these on a
  * page do not fight. The radios are visually hidden rather than absent —
  * removing them takes the keyboard with them.
+ *
+ * The blocks themselves are Expressive Code, the same component every fenced
+ * block on this site renders through. They used to be raw Shiki markup with a
+ * stylesheet of their own, which is why an example here had a different
+ * typeface, a different size and no copy button — a second code system on a
+ * page that already had one.
  */
 interface Props {
   /** Panels in display order; the first is the page's own language. */
@@ -25,15 +36,6 @@ interface Props {
 }
 const { groups, name } = Astro.props as Props
 
-const rendered = await Promise.all(
-  groups.map(async (g) => ({
-    ...g,
-    examples: await Promise.all(
-      g.examples.map(async (ex) => ({ ...ex, html: await highlight(ex.code, ex.lang) })),
-    ),
-  })),
-)
-
 /*
  * One rule per position: the nth checked radio shows the nth panel.
  *
@@ -42,7 +44,7 @@ const rendered = await Promise.all(
  * and the first tab showed nothing at all. Generated because the count varies
  * with how many languages carry an example.
  */
-const panelRules = rendered
+const panelRules = groups
   .map(
     (_, i) =>
       `.api-example-tabs:has(.api-example-radio:nth-of-type(${i + 1}):checked) ` +
@@ -54,10 +56,10 @@ const panelRules = rendered
 <style is:global set:html={panelRules} />
 
 {
-  rendered.length > 0 && (
+  groups.length > 0 && (
     <div class="api-example-tabs">
       <div class="api-example-tabstrip" role="tablist">
-        {rendered.map((g, i) => (
+        {groups.map((g, i) => (
           <>
             <input
               type="radio"
@@ -73,16 +75,12 @@ const panelRules = rendered
         ))}
       </div>
       <div class="api-example-panels">
-      {rendered.map((g) => (
+      {groups.map((g) => (
         <div class="api-example-panel" data-port={g.port}>
           {g.examples.map((ex) => (
             <>
               {ex.intro && <p class="api-example-intro">{ex.intro}</p>}
-              {ex.html ? (
-                <Fragment set:html={ex.html} />
-              ) : (
-                <pre><code>{ex.code}</code></pre>
-              )}
+              <Code code={ex.code} lang={codeLang(ex.lang)} />
             </>
           ))}
         </div>

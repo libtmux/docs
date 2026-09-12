@@ -549,19 +549,17 @@
   padding: 0.75rem 0.9rem;
 }
 
-/* Shiki writes both themes as custom properties, and something has to read
-   them. The gp-sphinx parity sheet does that for the per-symbol examples,
-   whose markup sits inside its `dl.py > dd .highlight`; these tabs are this
-   site's own component and matched no such rule, so a cross-port example
-   rendered in the inherited foreground colour — every token one flat grey.
-   Scoped to the panel rather than to `.shiki` at large, so the parity sheet
-   stays the only thing styling the pages it emulates. */
-.api-example-panel .shiki span {
-  color: var(--shiki-light);
+/* The panels hold Expressive Code blocks, which carry their own theming, so
+   nothing here reads Shiki's custom properties any more. What the panel does
+   own is the gap: Expressive Code's own block margin would double the
+   padding this panel already supplies. */
+.api-example-panel > .expressive-code {
+  margin: 0;
 }
 
-[data-theme-mode='dark'] .api-example-panel .shiki span {
-  color: var(--shiki-dark);
+.api-example-panel > .expressive-code + .expressive-code,
+.api-example-panel > .api-example-intro + .expressive-code {
+  margin-top: 0.75rem;
 }
 
 /* Each radio reveals the panel at its own position. Generated in the

@@ -68,6 +68,51 @@ export async function highlight(code: string, lang: string): Promise<string | un
 }
 
 /**
+ * The language name to hand Expressive Code for a doc-comment example.
+ *
+ * `<Code>` throws on a grammar Shiki does not know, and one bad `lang` in one
+ * docstring would fail the whole build — the opposite of the tradeoff
+ * `highlight` makes two functions above. The list is what the extracted
+ * models actually carry (`python`, `rust`, `ts`, `java`, `swift`, `csharp`,
+ * `console`) plus the aliases a doc comment spells them with; anything else
+ * renders as plain text in the same frame rather than as a build failure.
+ *
+ * Not the `LANGS` list above: that one is small on purpose, because every
+ * grammar it names is loaded eagerly into one long-lived highlighter.
+ * Expressive Code loads grammars lazily from the full Shiki bundle, so naming
+ * a language here costs nothing until a block uses it — which is why `java`,
+ * `swift` and `csharp` can be highlighted here and were flattened to `text`
+ * there.
+ */
+const EC_LANGS = new Set([
+  'python', 'rust', 'ts', 'tsx', 'js', 'jsx', 'java', 'kotlin', 'swift',
+  'csharp', 'cpp', 'c', 'go', 'bash', 'shell', 'console', 'json', 'yaml',
+  'toml', 'xml', 'diff', 'text',
+])
+
+const EC_ALIASES: Record<string, string> = {
+  typescript: 'ts',
+  javascript: 'js',
+  'c++': 'cpp',
+  cxx: 'cpp',
+  py: 'python',
+  rs: 'rust',
+  'c#': 'csharp',
+  cs: 'csharp',
+  sh: 'bash',
+  zsh: 'bash',
+  shellsession: 'console',
+  plaintext: 'text',
+  '': 'text',
+}
+
+export function codeLang(lang?: string): string {
+  const name = (lang ?? '').trim().toLowerCase()
+  const resolved = EC_ALIASES[name] ?? name
+  return EC_LANGS.has(resolved) ? resolved : 'text'
+}
+
+/**
  * The same highlighting, as the inner markup of a `<code>` element.
  *
  * The install widgets assemble their own container — a copy button, a

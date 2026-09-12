@@ -940,34 +940,10 @@ const title = owner
   </main>
 
   <script is:inline>
-    // Copy an example to the clipboard. One delegated listener rather than one
-    // per block: a page can carry 600 examples and 600 listeners is a cost
-    // paid on every load for a button most readers never press.
-    ;(() => {
-      const copy = async (button) => {
-        const text = button.dataset.copy
-        if (!text) return
-        try {
-          await navigator.clipboard.writeText(text)
-        } catch {
-          // Clipboard access can be refused — an insecure origin, a policy, a
-          // browser that asks. Say nothing rather than claim success.
-          button.textContent = 'Failed'
-          setTimeout(() => (button.textContent = 'Copy'), 1200)
-          return
-        }
-        button.dataset.copied = 'true'
-        button.textContent = 'Copied'
-        setTimeout(() => {
-          delete button.dataset.copied
-          button.textContent = 'Copy'
-        }, 1200)
-      }
-      document.addEventListener('click', (event) => {
-        const button = event.target.closest?.('.gp-sphinx-api-copy')
-        if (button) copy(button)
-      })
-    })()
+    // Examples carry Expressive Code's own copy button, so nothing here
+    // listens for one. The hand-rolled button it replaced needed a delegated
+    // listener, because a page can hold 600 examples and 600 listeners is a
+    // cost paid on every load for a control most readers never press.
 
     // Collapse the contents disclosure where it would otherwise push the page
     // below the fold. Re-runs after a client-side navigation.
