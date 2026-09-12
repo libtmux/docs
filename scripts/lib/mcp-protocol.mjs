@@ -8,9 +8,23 @@ export function orderedProtocol(value) {
   return value
 }
 
-/** Read advertised MCP contracts over stdio without invoking a tool or resource. */
+/**
+ * Read advertised MCP contracts over stdio without invoking a tool or resource.
+ * @param {{ command: string, args?: string[], cwd?: string, env?: Record<string, string | undefined>, timeoutMs?: number }} options
+ */
 export async function captureProtocol({ command, args = [], cwd, env = {}, timeoutMs = 30000 }) {
-  const child = spawn(command, args, { cwd, env: { ...process.env, ...env }, stdio: ['pipe', 'pipe', 'pipe'] })
+  const grouped = process.platform !== 'win32'
+  const child = spawn(command, args, { cwd, env: { ...process.env, ...env }, stdio: ['pipe', 'pipe', 'pipe'], detached: grouped })
+  const closed = new Promise((resolve) => child.once('close', resolve))
+  const stop = (signal) => {
+    if (!child.pid) return
+    try {
+      if (grouped) process.kill(-child.pid, signal)
+      else child.kill(signal)
+    } catch (error) {
+      if (error.code !== 'ESRCH') throw error
+    }
+  }
   const pending = new Map()
   let nextId = 0
   let stderr = ''
@@ -40,7 +54,7 @@ export async function captureProtocol({ command, args = [], cwd, env = {}, timeo
   })
   const timeout = setTimeout(() => {
     fail(new Error(`MCP discovery timed out: ${stderr}`))
-    child.kill('SIGKILL')
+    stop('SIGKILL')
   }, timeoutMs)
   const list = async (method, key) => {
     const entries = []
@@ -72,9 +86,10 @@ export async function captureProtocol({ command, args = [], cwd, env = {}, timeo
     clearTimeout(timeout)
     lines.close()
     child.stdin.end()
-    child.kill('SIGTERM')
-    const force = setTimeout(() => child.kill('SIGKILL'), 1000)
-    force.unref()
-    child.once('exit', () => clearTimeout(force))
+    stop('SIGTERM')
+    const force = setTimeout(() => stop('SIGKILL'), 1000)
+    await closed
+    clearTimeout(force)
+    stop('SIGKILL')
   }
 }

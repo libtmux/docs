@@ -18,7 +18,8 @@ import { rehypeCodeTabs } from './src/plugins/rehype-code-tabs.mjs'
 import { danglingReport } from './src/integrations/dangling-report'
 import { inventory } from './src/integrations/inventory'
 import { rehypeApiLinks } from './src/plugins/rehype-api-links'
-import { PORT_BY_SLUG } from './src/lib/ports.ts'
+import { PORTS } from './src/lib/ports.ts'
+import { workspaceRedirectPath } from './src/lib/docs-paths.ts'
 
 /**
  * Every build targets one version. CI supplies these; a bare `pnpm dev`
@@ -79,10 +80,16 @@ const isPlaceholder = (page: string): boolean => {
   return !translated.has(path)
 }
 
+const workspacePages = new Map(PORTS.map((port) => [port.slug, new Set(
+  readdirSync(join(contentRoot, 'ports', port.slug), { recursive: true })
+    .filter((path): path is string => typeof path === 'string' && /\.mdx?$/.test(path))
+    .map((path) => path.replaceAll('\\', '/').replace(/\.mdx?$/, '').replace(/\/index$/, '')),
+)]))
+
 const isWorkspaceRedirect = (page: string): boolean => {
-  const match = new URL(page).pathname.match(/\/([^/]+)\/[^/]+\/workspace\/(topics|guides|examples|api)(?:\/|$)/)
-  const port = match && PORT_BY_SLUG[match[1]]
-  return Boolean(port && (match![2] === 'api' || !port.workspaceCli))
+  const match = new URL(page).pathname.match(/\/([^/]+)\/[^/]+\/(workspace\/.*)$/)
+  const published = match && workspacePages.get(match[1])
+  return Boolean(published && workspaceRedirectPath(match![2], published))
 }
 
 const isRootBuild = !env.LIBTMUX_DOCS_PORT
