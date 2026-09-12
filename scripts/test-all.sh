@@ -120,6 +120,14 @@ node scripts/gen-shell-ports.negative.mjs
 step 'mcp tool matrix'
 node scripts/gen-mcp-tools.mjs --check
 
+# Every page and agent prompt that shows an install command composes it from
+# this file. A registry that has published since the last regeneration means
+# the site is about to tell readers to install a version that is no longer the
+# newest, and an agent prompt to pin it. Live by design: the point is to catch
+# the outside world moving, which is the one thing a committed file cannot.
+step 'package registry state'
+node scripts/gen-registry.mjs --check
+
 step 'source links'
 node scripts/check-source-links.mjs
 

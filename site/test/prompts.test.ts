@@ -199,6 +199,44 @@ describe('prompt parts', () => {
   })
 })
 
+describe('registry data', () => {
+  /**
+   * The live check lives in scripts/test-all.sh, where contacting eight
+   * registries is appropriate. These are the invariants the committed file has
+   * to satisfy whatever the outside world is doing, so they run everywhere.
+   */
+  it('has an entry for every port', () => {
+    for (const port of PORTS) expect(() => registryFor(port), port.slug).not.toThrow()
+  })
+
+  it('carries what its own status claims', () => {
+    for (const port of PORTS) {
+      const entry = registryFor(port)
+      if (entry.status === 'stable') {
+        expect(entry.stable, `${port.slug} is stable with no stable version`).toBeTruthy()
+        expect(entry.version, `${port.slug} version tracks stable`).toBe(entry.stable)
+      }
+      if (entry.status === 'prerelease') {
+        expect(entry.version, `${port.slug} is prerelease with no version`).toBeTruthy()
+        expect(entry.stable, `${port.slug} is prerelease yet names a stable`).toBeNull()
+      }
+      if (entry.status === 'unpublished') {
+        expect(entry.version, `${port.slug} is unpublished yet names a version`).toBeNull()
+        // The git form is the only one left, and it needs a tag to name.
+        expect(entry.tag, `${port.slug} is unpublished with no tag to install from`).toBeTruthy()
+      }
+    }
+  })
+
+  it('composes an install command for every port without throwing', () => {
+    for (const port of PORTS) {
+      const form = installCommand(port, registryFor(port))
+      expect(form.code.length, port.slug).toBeGreaterThan(0)
+      expect(form.lang.length, port.slug).toBeGreaterThan(0)
+    }
+  })
+})
+
 describe('topic definitions', () => {
   it('has unique ids and URL-safe slugs', () => {
     const ids = TOPICS.map((t) => t.id)
