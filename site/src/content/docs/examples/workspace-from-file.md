@@ -181,9 +181,9 @@ runs against real tmux
 
 **In this page:** prose only
 
-**Checked by:** `examples/workspace/tests/` runs it against real tmux;
-`ctest -R consumer.workspace` selects it. It exercises the example's own
-types, not a published `libtmux` API
+**Checked by:** `examples/workspace/tests/` runs the consumer suite against
+real tmux; `ctest -R consumer.workspace` selects it. It exercises the
+example's own types, not a published `libtmux` API
 
 ### Swift
 

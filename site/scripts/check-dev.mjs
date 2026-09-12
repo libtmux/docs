@@ -5,7 +5,10 @@ import { chromium } from 'playwright'
 import { PORTS, productAvailable } from '../src/lib/ports.ts'
 
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
-const workspaceCliPortCount = PORTS.filter((port) => port.workspaceCli).length
+// `workspaceCli` alone also covers a port's local, unreleased dev CLI
+// (`workspaceCliAvailability: 'local'`), which publishes no top-level
+// `workspace/guides` page. Only a released CLI does.
+const workspaceCliPortCount = PORTS.filter((port) => port.workspaceCliAvailability === 'released').length
 
 Object.assign(process.env, {
   LIBTMUX_DOCS_BASE: '/en/', LIBTMUX_DOCS_ROOT: '/en', LIBTMUX_DOCS_PORT_ROOT: '/en',

@@ -2,7 +2,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
-import { PORTS, productAvailable, productInDevelopment } from '../src/lib/ports'
+import { PORTS, productAvailable, productDescription, productInDevelopment } from '../src/lib/ports'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
 import { SITE_BUILT, SITE_PREFIX, publishedPath, sitePath } from './site-root'
 
@@ -29,7 +29,7 @@ interface DocsManifest {
   pages: { url: string; markdownUrl: string }[]
   ports: {
     slug: string
-    products: { slug: string; availability: string; inDevelopment: boolean; cli?: string | null; reference: string | null; protocol?: string | null }[]
+    products: { slug: string; availability: string; inDevelopment: boolean; cli?: string | null; cliAvailability?: string | null; reference: string | null; protocol?: string | null }[]
     documentation: { id: string; name: string; kind: string; availability: string; url: string; package?: string }[]
   }[]
 }
@@ -39,6 +39,20 @@ const read = (path: string) => readFileSync(sitePath(path), 'utf8')
 const manifest = (): Manifest => JSON.parse(read('versions.json'))
 const urlFor = (path: string) => new URL(`/${SITE_PREFIX}${path}`, 'https://libtmux.org')
 const productUrl = /\/(?:py|ruby|lua|ts|rs|go|java|dotnet|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
+
+it('advertises local native loaders while retaining their development status', () => {
+  // Ruby ships its own released `libtmux-workspace load` and published MCP
+  // gem, and Lua has neither product at all: both fall outside the
+  // py-vs-generic-local-CLI dichotomy this test covers.
+  for (const port of PORTS.filter((p) => p.slug === 'py' || p.workspaceCliAvailability === 'local')) {
+    const native = port.slug !== 'py'
+    expect(port.workspaceCli).toBe(native ? 'tmux-workspace load' : 'tmuxp load')
+    expect(port.workspaceCliAvailability).toBe(native ? 'local' : 'released')
+    expect(productInDevelopment(port, 'workspace')).toBe(native)
+    expect(productInDevelopment(port, 'mcp')).toBe(true)
+    if (native) expect(productDescription(port, 'workspace')).toContain('local workspace-cli worktree')
+  }
+})
 
 function sectionsFor(port: string, product: ProductPage['product']): string[] {
   if (port === 'lua') return ['']
@@ -72,7 +86,7 @@ function resolves(href: string, from = 'https://libtmux.org/'): boolean {
   return [path, join(path, 'index.html')].some((file) => existsSync(file) && statSync(file).isFile())
 }
 
-function inspect<T>(path: string, check: (document: Window['document']) => T): T {
+async function inspect<T>(path: string, check: (document: Window['document']) => T | Promise<T>): Promise<T> {
   const file = sitePath(path, 'index.html')
   expect(existsSync(file), `assembled product page ${path}`).toBe(true)
   const window = new Window({
@@ -81,9 +95,9 @@ function inspect<T>(path: string, check: (document: Window['document']) => T): T
   })
   try {
     window.document.write(readFileSync(file, 'utf8'))
-    return check(window.document)
+    return await check(window.document)
   } finally {
-    window.close()
+    await window.happyDOM.close()
   }
 }
 
@@ -112,8 +126,8 @@ function developmentStatus(document: Window['document'], path: string): void {
   expect(status, `${path} development status`).toBeDefined()
 }
 
-function redirectsTo(path: string, target: string): void {
-  inspect(path, (document) => {
+async function redirectsTo(path: string, target: string): Promise<void> {
+  await inspect(path, (document) => {
     const refresh = document.querySelector('meta[http-equiv="refresh"]')?.getAttribute('content')
     expect(refresh, `${path} redirects`).toBeDefined()
     const destination = refresh!.match(/url=(.+)$/i)?.[1]
@@ -126,20 +140,20 @@ function redirectsTo(path: string, target: string): void {
 }
 
 describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
-  it('publishes source guides only below their port version', () => {
+  it('publishes source guides only below their port version', async () => {
     expect(existsSync(sitePath('_staged'))).toBe(false)
     expect(existsSync(publishedPath('ja/_staged'))).toBe(false)
     expect(existsSync(sitePath('guides/source'))).toBe(false)
     expect(existsSync(sitePath('ruby/latest/guides/core/index.html'))).toBe(true)
     expect(existsSync(sitePath('lua/latest/guides/overview/index.html'))).toBe(true)
-    redirectsTo('ruby/latest/guides/source/core', 'ruby/latest/guides/core/')
-    redirectsTo('ruby/latest/guides/source/async', 'ruby/latest/guides/async/')
-    redirectsTo('lua/latest/guides/source/overview', 'lua/latest/guides/overview/')
-    redirectsTo('lua/latest/guides/source/runtime', 'lua/latest/guides/runtime/')
+    await redirectsTo('ruby/latest/guides/source/core', 'ruby/latest/guides/core/')
+    await redirectsTo('ruby/latest/guides/source/async', 'ruby/latest/guides/async/')
+    await redirectsTo('lua/latest/guides/source/overview', 'lua/latest/guides/overview/')
+    await redirectsTo('lua/latest/guides/source/runtime', 'lua/latest/guides/runtime/')
   })
 
-  it('renders Lua Server in the public Server branch of its API sidebar', () => {
-    inspect('lua/latest/reference/libtmux-server', (document) => {
+  it('renders Lua Server in the public Server branch of its API sidebar', async () => {
+    await inspect('lua/latest/reference/libtmux-server', (document) => {
       const current = document.querySelector('a[aria-current="page"][href$="/lua/latest/reference/libtmux-server/"]')
       expect(current).toBeDefined()
       const ancestors: Array<NonNullable<typeof current>> = []
@@ -157,10 +171,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it.each(PORTS.map((port) => port.slug))('%s exposes products from latest homes and core navigation', (port) => {
+  it.each(PORTS.map((port) => port.slug))('%s exposes products from latest homes and core navigation', async (port) => {
     for (const section of ['', 'guides/', 'topics/']) {
       const path = `${port}/latest/${section}`
-      inspect(path, (document) => {
+      await inspect(path, (document) => {
         const navigation = document.querySelectorAll(section ? 'nav[aria-label="Port documentation"]' : 'main')
         expect(navigation.length, `${path} product entry points`).toBeGreaterThan(0)
         for (const container of navigation) {
@@ -184,19 +198,19 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     }
   })
 
-  it('surfaces Ruby Async and Lua runtime domains without presenting Lua products as available', () => {
+  it('surfaces Ruby Async and Lua runtime domains without presenting Lua products as available', async () => {
     const domains = [
       { port: 'ruby', path: 'ruby/latest/', target: 'ruby/latest/guides/async/', label: 'Async', group: 'Companion packages' },
       { port: 'lua', path: 'lua/latest/', target: 'lua/latest/guides/runtime/', label: 'luv and Neovim', group: 'Runtime adapters' },
     ]
     for (const domain of domains) {
-      inspect(domain.path, (document) => {
+      await inspect(domain.path, (document) => {
         const link = [...document.querySelectorAll('main a[href]')]
           .find((entry) => new URL(entry.getAttribute('href')!, urlFor(domain.path)).pathname === urlFor(domain.target).pathname)
         expect(link, `${domain.path} ${domain.label} card`).toBeDefined()
         expect(link!.textContent, `${domain.path} ${domain.label} card label`).toContain(domain.label)
       })
-      inspect(domain.target, (document) => {
+      await inspect(domain.target, (document) => {
         const navigation = document.querySelector('nav[aria-label="Port documentation"]')
         expect(navigation, `${domain.target} port navigation`).toBeDefined()
         const section = [...navigation!.querySelectorAll('.sidebar-section')]
@@ -204,7 +218,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(section, `${domain.target} ${domain.group} group`).toBeDefined()
       })
     }
-    inspect('lua/latest/', (document) => {
+    await inspect('lua/latest/', (document) => {
       for (const label of ['MCP (not available)', 'Workspace Manager (not available)']) {
         expect(document.querySelector('main')!.textContent, `Lua landing ${label}`).toContain(label)
       }
@@ -242,8 +256,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     }
   })
 
-  it('distinguishes unfinished products and groups workspace implementation docs under Internals', () => {
-    for (const page of pages()) inspect(page.path, (document) => {
+  it('distinguishes unfinished products and groups workspace implementation docs under Internals', async () => {
+    for (const page of pages()) await inspect(page.path, (document) => {
       const port = PORTS.find((entry) => entry.slug === page.port)!
       if (productInDevelopment(port, page.product)) developmentStatus(document, page.path)
       const navigation = document.querySelectorAll('nav[aria-label="Documentation"]')
@@ -273,9 +287,11 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         const status = [...document.querySelectorAll('[role="note"]')]
           .map((note) => note.textContent ?? '')
           .find((text) => /in development/i.test(text))
-        expect(status, `${page.path} unfinished workspace application`).toMatch(/not a finished\s+workspace application/i)
-        expect(status, `${page.path} no user CLI`).toMatch(/no CLI equivalent to\s+tmuxp load/i)
-        expect(document.querySelector('article')!.textContent.match(/is in development/gi), `${page.path} states maturity once`).toHaveLength(1)
+        expect(status, `${page.path} development status`).toBeDefined()
+        const article = document.querySelector('article')!.textContent
+        expect(article, `${page.path} local CLI worktree`).toContain('workspace-cli')
+        expect(article, `${page.path} native CLI`).toContain('tmux-workspace')
+        expect(article.match(/is in development/gi), `${page.path} states maturity once`).toHaveLength(1)
         const upstream = [...document.querySelectorAll('article a[href]')]
           .find((link) => link.getAttribute('href') === 'https://tmuxp.git-pull.com/')
         expect(upstream?.textContent, `${page.path} tmuxp reference`).toBe('tmuxp')
@@ -283,11 +299,11 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it('links generated declarations and schema-bearing tools inside their product', () => {
+  it('links generated declarations and schema-bearing tools inside their product', async () => {
     for (const page of pages().filter((entry) => entry.section === 'reference'
       && productAvailable(PORTS.find((port) => port.slug === entry.port)!, entry.product))) {
       const prefix = `${page.port}/${page.version}/${page.product}/${page.section}/`
-      const declarations = inspect(page.path, (document) =>
+      const declarations = await inspect(page.path, (document) =>
         [...document.querySelectorAll('[aria-labelledby="generated-api"] a[href]')]
           .map((link) => ({ href: link.getAttribute('href')!, title: link.textContent.trim() })))
       expect(declarations.length, `${page.path} generated declarations`).toBeGreaterThan(0)
@@ -297,7 +313,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       }
       const sample = declarations[0]
       const samplePath = new URL(sample.href, urlFor(page.path)).pathname.slice(SITE_PREFIX.length + 1)
-      inspect(samplePath, (document) => {
+      await inspect(samplePath, (document) => {
         expect(document.querySelector('article h1')?.textContent).toBe(sample.title)
         expect(graph(document).some((entry) => entry['@type'] === 'APIReference')).toBe(true)
         if (page.product === 'workspace') {
@@ -312,7 +328,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       })
       if (page.product !== 'mcp') continue
       const toolsPath = `${page.port}/${page.version}/mcp/tools/`
-      const tools = inspect(toolsPath, (document) => {
+      const tools = await inspect(toolsPath, (document) => {
         developmentStatus(document, toolsPath)
         return [...document.querySelectorAll('article dt a[href]')].map((link) => link.getAttribute('href')!)
       })
@@ -322,7 +338,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(resolves(href, urlFor(toolsPath).href), href).toBe(true)
       }
       const toolPath = new URL(tools[0], urlFor(toolsPath)).pathname.slice(SITE_PREFIX.length + 1)
-      inspect(toolPath, (document) => {
+      await inspect(toolPath, (document) => {
         developmentStatus(document, toolPath)
         const input = [...document.querySelectorAll('details')]
           .find((detail) => detail.querySelector('summary')?.textContent === 'Input schema')
@@ -333,9 +349,9 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     }
   })
 
-  it('switches to equivalent sections and matches visible breadcrumbs to structured data', () => {
+  it('switches to equivalent sections and matches visible breadcrumbs to structured data', async () => {
     const defaults = manifest().defaultVersion
-    for (const page of pages()) inspect(page.path, (document) => {
+    for (const page of pages()) await inspect(page.path, (document) => {
       const links = [...document.querySelectorAll('[data-page-port-switcher] a[href]')]
       const available = PORTS.filter((port) => sectionsFor(port.slug, page.product).includes(page.section))
       expect(links.length, `${page.path} port counterparts`).toBe(available.length)
@@ -362,22 +378,22 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it('redirects previous workspace implementation URLs without replacing Python CLI docs', () => {
+  it('redirects previous workspace implementation URLs without replacing Python CLI docs', async () => {
     // The reference is a section of the product now, not a page inside
     // Internals, so it has no lifted twin to redirect. What remains under
     // Internals still does, for a port with no workspace CLI of its own.
     for (const page of pages().filter((entry) => entry.product === 'workspace'
       && entry.port !== 'py' && entry.section.startsWith('internals/'))) {
-      redirectsTo(page.path.replace('/internals/', '/'), page.path)
+      await redirectsTo(page.path.replace('/internals/', '/'), page.path)
     }
     for (const page of pages().filter((entry) => entry.port === 'py' && entry.product === 'workspace'
-      && ['guides', 'examples'].includes(entry.section))) inspect(page.path, (document) => {
+      && ['guides', 'examples'].includes(entry.section))) await inspect(page.path, (document) => {
       expect(document.querySelector('meta[http-equiv="refresh"]'), `${page.path} remains a user guide`).toBeNull()
       expect(document.querySelector('article')!.textContent, `${page.path} CLI usage`).toContain('tmuxp load')
     })
   })
 
-  it('canonicalizes each version and loads nested search from the locale index', () => {
+  it('canonicalizes each version and loads nested search from the locale index', async () => {
     const defaults = manifest().defaultVersion
     for (const page of pages()) {
       const html = pageHtml(page.path)
@@ -437,8 +453,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           if (productAvailable(port, product)) {
             expect(new URL(metadata.reference!, urlFor(root)).pathname).toBe(urlFor(`${port.slug}/${defaults[port.slug]}/${product}/${section}/`).pathname)
           } else expect(metadata.reference).toBeNull()
-          if (product === 'workspace') expect(metadata.cli, `${root}${port.slug} user CLI`).toBe(port.workspaceCli ?? null)
-          else if (productAvailable(port, 'mcp')) expect(resolves(metadata.protocol!, urlFor(root).href), `${root}${port.slug} MCP protocol`).toBe(true)
+          if (product === 'workspace') {
+            expect(metadata.cli, `${root}${port.slug} user CLI`).toBe(port.workspaceCli ?? null)
+            expect(metadata.cliAvailability, `${root}${port.slug} CLI availability`).toBe(port.workspaceCliAvailability ?? null)
+          } else if (productAvailable(port, 'mcp')) expect(resolves(metadata.protocol!, urlFor(root).href), `${root}${port.slug} MCP protocol`).toBe(true)
           else expect(metadata.protocol).toBeNull()
         }
       }
@@ -459,7 +477,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(resolves(entry.url), entry.url).toBe(true)
         expect(resolves(entry.markdownUrl), entry.markdownUrl).toBe(true)
         expect(entry.url, `${root} canonical workspace API exports`).not.toMatch(/\/workspace\/api(?:\/|$)/)
-        expect(entry.url, `${root} canonical workspace prose exports`).not.toMatch(/\/(?:lua|ts|rs|go|java|dotnet|cxx|swift)\/[^/]+\/workspace\/(?:topics|guides|examples)(?:\/|$)/)
+        expect(entry.url, `${root} canonical workspace prose exports`).not.toMatch(/\/(?:lua|ts|rs|go|java|dotnet|cxx|swift)\/[^/]+\/workspace\/(?:topics|guides|examples)\/?$/)
         if (root) expect(new URL(entry.url).pathname).toContain(`/${SITE_PREFIX}${root}`)
       }
     }

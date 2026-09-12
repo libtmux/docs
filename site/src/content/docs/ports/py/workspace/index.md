@@ -37,3 +37,14 @@ The [tmuxp documentation](https://tmuxp.git-pull.com/) provides the complete
 upstream CLI reference, workspace format, and extension documentation.
 
 [Upstream quickstart source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/docs/quickstart.md)
+
+## tmuxp command and configuration reference
+
+The Python command pages document the current tmuxp reference and label proposed native extensions.
+
+- [Installation walkthrough](./guides/installation/) uses the available Python tool.
+- [Command reference](./cli/) lists commands, flags, and observed behavior.
+- [Configuration](./configuration/) covers fields, normalization, and execution.
+- [Example gallery](./examples/gallery/) includes upstream fixtures and prerequisites.
+- [Compatibility status](./reference/compatibility/) records native builder gaps.
+- [JSON, NDJSON, and color](./reference/output/) defines the proposed native output contract.
