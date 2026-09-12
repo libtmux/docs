@@ -130,6 +130,9 @@ Constraints:
 - Keep a task's output attributable to that task. Interleaved output nobody can
   attribute is the failure mode here.`,
     pages: ['guides/sending-keys', 'guides/capturing-output', 'concepts/transports'],
+    portNotes: {
+      py: 'libtmux for Python is synchronous. There is no `async def` in the package, so reach for threads or processes rather than looking for an async API that is not there.',
+    },
   },
   {
     id: 'eval-sweep',
@@ -297,6 +300,9 @@ Constraints:
   pattern does not fail on invisible bytes.
 - Give it a timeout, and make a timeout a result the caller can handle.`,
     pages: ['guides/capturing-output', 'examples/capture-pane-output', 'concepts/transports'],
+    portNotes: {
+      py: 'Python is the one port whose persistent control client is not public: `ControlMode` lives in `libtmux._internal`. Poll captured output behind `retry_until` from `libtmux.test.retry`, which takes a predicate, an interval and a timeout, rather than reaching into the private module or writing a bare sleep.',
+    },
   },
 ]
 
