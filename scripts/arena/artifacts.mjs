@@ -124,6 +124,17 @@ export const ARTIFACTS = [
     run: (build) => ({ cwd: '.', command: [join(build, 'debug', 'examples', 'inspect')] }),
   },
   {
+    slug: 'rs',
+    artifact: 'rust-find',
+    runs: ['rs:crates/libtmux/examples/find.rs'],
+    tools: ['cargo'],
+    prepare: (build) => [{
+      cwd: '.',
+      command: ['cargo', 'build', '--locked', '--quiet', '--manifest-path', 'crates/libtmux/Cargo.toml', '--example', 'find', '--target-dir', build],
+    }],
+    run: (build) => ({ cwd: '.', command: [join(build, 'debug', 'examples', 'find')] }),
+  },
+  {
     slug: 'go',
     artifact: 'go-quickstart',
     runs: ['go:examples/quickstart/main.go'],
