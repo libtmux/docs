@@ -291,6 +291,26 @@
   flex-direction: column;
 }
 
+/*
+ * The reference's left column: the site menu, then the symbol tree.
+ *
+ * It scrolls as one sticky unit rather than letting the tree run past the
+ * viewport — `Pane` alone puts 257 members in it — so the menu above stays
+ * reachable from anywhere on a long page.
+ */
+@media (min-width: 64rem) {
+  .api-sidebar {
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+  }
+}
+
+.api-sidebar__menu {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-background-border, #e2e8f0);
+}
+
 /* The contents disclosure. A plain column at lg and above, where the marker
    and the summary are noise; a disclosure below that, where 98 members ahead
    of the content is two screens of scrolling before anything is read. */

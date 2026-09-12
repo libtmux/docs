@@ -13,6 +13,7 @@ import { symbolSource } from '../../lib/markdown-twins'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
 import ApiDoc from '../../components/api/ApiDoc.astro'
+import Sidebar from '../../components/docs/Sidebar.astro'
 import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
@@ -220,6 +221,29 @@ const currentMembers = currentType
 
 /** This port's package, for the definition block's Package row. */
 const portMeta = model ? PORT_BY_SLUG[model.port] : undefined
+
+/**
+ * The version the site menu in the sidebar links its prose at.
+ *
+ * The reference sits above the version axis — one tree, not one per release —
+ * so it has no version of its own to pass on. `LIBTMUX_DOCS_PORT_DEFAULTS` is
+ * the same per-port map `[port]/index.astro` reads for the same reason, and
+ * for the same reason again the fallback is `latest` rather than `stable`:
+ * every port has a `latest`, and `stable` is the entry that may be absent.
+ *
+ * process.env, not import.meta.env — the latter goes stale across repeated
+ * astro builds in one tree (see BaseLayout.astro).
+ */
+const PORT_DEFAULTS: Record<string, string> = (() => {
+  try {
+    return JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
+  } catch {
+    return {}
+  }
+})()
+const menuVersion = model
+  ? (PORT_DEFAULTS[model.port] ?? process.env.LIBTMUX_DOCS_DEFAULT_VERSION ?? 'latest')
+  : 'latest'
 
 /**
  * The module rows of the definition block.
@@ -497,7 +521,22 @@ const title = owner
          first entry. Open by default so it behaves without JavaScript, and
          closed by the script below when the viewport is too narrow to place
          it beside the content. -->
-    <details class="api-toc-shell lg:sticky lg:top-20 lg:self-start" open>
+    <div class="api-sidebar lg:sticky lg:top-20 lg:self-start">
+    {/*
+      The site's own menu, above the symbol tree.
+      
+      A reference page had no way out of the reference: `/reference/ts/` listed
+      a thousand TypeScript symbols and not one link back to the TypeScript
+      guides, the workspace pages or the MCP pages. `menuOnly` is what keeps
+      that from costing the tree its place — the page list belongs on the pages
+      that have room for it, and the tree is the navigation here.
+    */}
+    {model && (
+      <div class="api-sidebar__menu" data-pagefind-ignore="all">
+        <Sidebar port={model.port} version={menuVersion} currentPath={Astro.url.pathname} menuOnly />
+      </div>
+    )}
+    <details class="api-toc-shell" open>
       <summary class="api-toc-summary">On this page</summary>
       <nav class="api-toc" aria-label="Contents" data-pagefind-ignore="all">
       {/*
@@ -575,6 +614,7 @@ const title = owner
       ))}
       </nav>
     </details>
+    </div>
 
     <div>
       <!-- The id is the anchor every link to this type uses. `hrefFor` sends a
