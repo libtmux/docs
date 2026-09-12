@@ -203,6 +203,36 @@ jobs:
       bucket: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
       distribution: ${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}
 
+  # `check-publish` needs the production build's artifact, which only a push
+  # produces, so a pull request never exercised the publisher at all. A preview
+  # assembly has the same shape one locale down, so the same two scripts run
+  # against it here and a mistake in either surfaces on the pull request rather
+  # than on the deploy that uploads. No credentials: the recording stand-in
+  # prints what would have been called.
+  check-publish-preview:
+    if: github.event_name == 'pull_request'
+    needs: build-preview
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: preview-dist
+          path: _site
+      - name: Exercise the publisher against the preview assembly
+        env:
+          LOCALE: en
+          BUCKET: reproduction
+        run: |
+          set -euo pipefail
+          node scripts/publication-metadata.mjs
+          cp scripts/publish-root.sh publish-root.sh
+          mv "_site/$LOCALE" dist
+          mkdir bin
+          printf '%s\n' '#!/usr/bin/env bash' 'printf "aws"; printf " %q" "$@"; printf "\\n"' > bin/aws
+          chmod +x bin/aws
+          PATH="$PWD/bin:$PATH" bash publish-root.sh
+
   check-publish:
     if: github.event_name != 'pull_request'
     needs: [locales, build]
