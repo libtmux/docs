@@ -6,10 +6,17 @@ import type { Quickstart } from '../../lib/quickstarts'
 
 /**
  * Package-manager picker for the eight libtmux ports' own install commands
- * (`port.install` from ports.ts — see that file for why each string is
- * what it is). Same visual language and copy-to-clipboard behaviour as
- * ./McpInstall.astro, but only one axis (which port), so it carries no
- * separate data module or asset files — everything lives in this component.
+ * (`port.installs` from ports.ts — see that file for why each entry is what
+ * it is). Same visual language and copy-to-clipboard behaviour as
+ * ./McpInstall.astro — everything lives in this component, with no separate
+ * data module or asset files.
+ *
+ * Two axes, not one: which port, and then which of that port's tools. A
+ * Python reader is on pip or uv, a TypeScript reader on one of five, and
+ * Java, C++ and Swift cannot be installed from a command line at all — one
+ * line per language chose for all of them and was wrong for most. The second
+ * strip only renders where there is a choice to make, so Rust and Go still
+ * show their one command with nothing above it.
  *
  * No literal source to port: McpInstall.astro's sibling in
  * ~/work/python/libtmux-mcp/docs only ever installed one package, so there
@@ -62,14 +69,34 @@ const activePortRules = items
   .map((p) => `.lm-pkg-install[data-active-port="${p.slug}"] .lm-pkg-install__panel[data-port="${p.slug}"]{display:block}`)
   .join('')
 
+/*
+ * One rule per manager position, generated the same way and for the same
+ * reason: the widths of these lists differ per port (one command for Rust,
+ * five for TypeScript), so the rules are generated to the longest list
+ * rendered here rather than to a number typed in a stylesheet.
+ */
+const managerRules = Array.from(
+  { length: Math.max(...items.map((p) => p.installs.length)) },
+  (_, i) =>
+    `.lm-pkg-install__panel[data-active-manager="${i}"] .lm-pkg-install__cmd[data-manager="${i}"]{display:block}`,
+).join('')
 
 /*
  * Highlighted once, here rather than in the template: `await` is not allowed
  * inside a map callback in Astro's markup.
+ *
+ * A console command is shown with its prompt and copied without it — the copy
+ * handler below strips `$ ` when `data-language` says console. Everything else
+ * is a file fragment and is shown exactly as it goes into the file.
  */
 const installHtml = new Map(
   await Promise.all(
-    items.map(async (p) => [p.slug, await highlightInline(`$ ${p.install}`, 'console')] as const),
+    items.flatMap((p) =>
+      p.installs.map(async (cmd, i) => [
+        `${p.slug}/${i}`,
+        await highlightInline(cmd.lang === 'console' ? `$ ${cmd.code}` : cmd.code, cmd.lang),
+      ] as const),
+    ),
   ),
 )
 ---
@@ -101,7 +128,28 @@ const installHtml = new Map(
           data-default={p.slug === initialSlug ? true : undefined}
           tabindex="0"
         >
-          <div class="lm-pkg-install__code" data-language="console"><pre><code set:html={installHtml.get(p.slug)} /></pre><button type="button" class="lm-pkg-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
+          {p.installs.length > 1 && (
+            <div class="lm-pkg-install__managers" role="tablist" aria-label={`${p.name} package manager`}>
+              {p.installs.map((cmd, i) => (
+                <button
+                  type="button"
+                  class="lm-pkg-install__manager"
+                  role="tab"
+                  data-manager-value={i}
+                  aria-selected={i === 0 ? 'true' : 'false'}
+                  tabindex={i === 0 ? '0' : '-1'}
+                >
+                  {cmd.label}
+                </button>
+              ))}
+            </div>
+          )}
+          {p.installs.map((cmd, i) => (
+            <div class="lm-pkg-install__cmd" data-manager={i} data-default={i === 0 ? true : undefined}>
+              <div class="lm-pkg-install__code" data-language={cmd.lang}><pre><code set:html={installHtml.get(`${p.slug}/${i}`)} /></pre><button type="button" class="lm-pkg-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
+              {cmd.note && <p class="lm-pkg-install__note">{cmd.note}</p>}
+            </div>
+          ))}
           {snippets?.[p.slug] && (
             <div class="lm-pkg-install__snippet">
               <Code code={snippets[p.slug]!.code} lang={snippets[p.slug]!.lang} />
@@ -224,6 +272,66 @@ const installHtml = new Map(
     border-radius: 0.25rem;
   }
 
+  /* The second strip: which of this port's tools. Underlined rather than
+   * tabbed, so it reads as subordinate to the language strip above the body
+   * instead of competing with it. */
+  .lm-pkg-install__managers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .lm-pkg-install__manager {
+    appearance: none;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    color: var(--lm-pkg-install-fg-muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.8em;
+    line-height: 1.3;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .lm-pkg-install__manager:hover {
+    color: var(--lm-pkg-install-fg);
+    background: var(--lm-pkg-install-hover);
+  }
+
+  .lm-pkg-install__manager[aria-selected='true'] {
+    color: var(--lm-pkg-install-accent);
+    border-color: var(--lm-pkg-install-accent);
+  }
+
+  .lm-pkg-install__manager:focus-visible {
+    outline: 2px solid var(--lm-pkg-install-accent);
+    outline-offset: 1px;
+  }
+
+  /* SSR/no-JS default: the first command of each port, no script required.
+   * Once a manager is chosen the `[data-active-manager="N"]` rules generated
+   * above win by specificity, exactly as the port panels do. */
+  .lm-pkg-install__cmd {
+    display: none;
+  }
+
+  .lm-pkg-install__cmd[data-default] {
+    display: block;
+  }
+
+  .lm-pkg-install__panel[data-active-manager] .lm-pkg-install__cmd {
+    display: none;
+  }
+
+  .lm-pkg-install__note {
+    margin: 0.5rem 0 0;
+    font-size: 0.8em;
+    line-height: 1.5;
+    color: var(--lm-pkg-install-fg-secondary);
+  }
+
   .lm-pkg-install__code {
     position: relative;
   }
@@ -251,6 +359,20 @@ const installHtml = new Map(
     font-family: var(--lm-pkg-install-mono);
     font-size: 0.85em;
     white-space: pre;
+  }
+
+  /* Shiki writes both schemes as custom properties; something has to read
+   * them. Without this a highlighted install command rendered in the
+   * inherited foreground colour — every token one flat grey — which is what
+   * the reference example panels had too. */
+  .lm-pkg-install__code .shiki span,
+  .lm-pkg-install__code span {
+    color: var(--shiki-light);
+  }
+
+  html[data-theme-mode='dark'] .lm-pkg-install__code .shiki span,
+  html[data-theme-mode='dark'] .lm-pkg-install__code span {
+    color: var(--shiki-dark);
   }
 
   .lm-pkg-install__copy {
@@ -297,7 +419,7 @@ const installHtml = new Map(
 </style>
 
 {/* Generated from `items`, not hand-typed — see `activePortRules` above. */}
-<style is:global set:html={activePortRules} />
+<style is:global set:html={activePortRules + managerRules} />
 
 <script>
   // Deferred interactivity: tab switching, cross-instance sync, and
@@ -306,12 +428,54 @@ const installHtml = new Map(
   // (see that file's header) — this site doesn't run ClientRouter yet, but
   // every other interactive component here already defends against it.
   const STORAGE_KEY = 'libtmux-docs.package-install.port'
+  // Per port, because a choice of pnpm says nothing about a choice of uv.
+  const MANAGER_KEY = 'libtmux-docs.package-install.manager'
   const SYNC_EVENT = 'lm-pkg-install:change'
+  const MANAGER_SYNC_EVENT = 'lm-pkg-install:manager'
+
+  function read(key: string): string | null {
+    try {
+      return localStorage.getItem(key)
+    } catch {
+      // Private windows and blocked site data throw here. The widget still
+      // works for this page; only the memory is lost.
+      return null
+    }
+  }
+
+  function write(key: string, value: string) {
+    try {
+      localStorage.setItem(key, value)
+    } catch {
+      // As above.
+    }
+  }
 
   function applySavedState() {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (!saved) return
-    document.querySelectorAll<HTMLElement>('.lm-pkg-install').forEach((widget) => selectPort(widget, saved, false))
+    const saved = read(STORAGE_KEY)
+    if (saved) {
+      document.querySelectorAll<HTMLElement>('.lm-pkg-install').forEach((widget) => selectPort(widget, saved, false))
+    }
+    document.querySelectorAll<HTMLElement>('.lm-pkg-install__panel').forEach((panel) => {
+      const port = panel.dataset.port
+      const savedManager = port && read(`${MANAGER_KEY}.${port}`)
+      if (savedManager) selectManager(panel, savedManager, false)
+    })
+  }
+
+  function selectManager(panel: HTMLElement, index: string, persist: boolean) {
+    const tabs = panel.querySelectorAll<HTMLButtonElement>('.lm-pkg-install__manager')
+    // Decided before anything is written, for the same reason selectPort
+    // does: a saved index outside this port's list would otherwise clear
+    // every tab and show no command at all.
+    if (![...tabs].some((tab) => tab.dataset.managerValue === index)) return
+    tabs.forEach((tab) => {
+      const isMatch = tab.dataset.managerValue === index
+      tab.setAttribute('aria-selected', isMatch ? 'true' : 'false')
+      tab.setAttribute('tabindex', isMatch ? '0' : '-1')
+    })
+    panel.setAttribute('data-active-manager', index)
+    if (persist && panel.dataset.port) write(`${MANAGER_KEY}.${panel.dataset.port}`, index)
   }
 
   function selectPort(widget: HTMLElement, slug: string, persist: boolean) {
@@ -339,7 +503,7 @@ const installHtml = new Map(
     // panel back on the next paint.
     if (persist) {
       document.documentElement.setAttribute('data-pkg-port', slug)
-      localStorage.setItem(STORAGE_KEY, slug)
+      write(STORAGE_KEY, slug)
     }
   }
 
@@ -403,6 +567,17 @@ const installHtml = new Map(
       copyPanelCode(copyButton)
       return
     }
+    const manager = target.closest<HTMLButtonElement>('.lm-pkg-install__manager')
+    const panel = manager?.closest<HTMLElement>('.lm-pkg-install__panel')
+    if (manager && panel && manager.dataset.managerValue !== undefined) {
+      selectManager(panel, manager.dataset.managerValue, true)
+      window.dispatchEvent(
+        new CustomEvent(MANAGER_SYNC_EVENT, {
+          detail: { origin: panel, port: panel.dataset.port, index: manager.dataset.managerValue },
+        }),
+      )
+      return
+    }
     const tab = target.closest<HTMLButtonElement>('.lm-pkg-install__tab')
     const widget = tab?.closest<HTMLElement>('.lm-pkg-install')
     if (!tab || !widget || !tab.dataset.tabValue) return
@@ -414,6 +589,18 @@ const installHtml = new Map(
     document.querySelectorAll<HTMLElement>('.lm-pkg-install').forEach((widget) => {
       if (widget === e.detail.origin) return
       selectPort(widget, e.detail.slug, false)
+    })
+  }) as EventListener)
+
+  // Two widgets on one page — the home page has one and a guide below it may
+  // have another — agree on the manager for a given port, the same way they
+  // already agree on the port.
+  window.addEventListener(MANAGER_SYNC_EVENT, ((
+    e: CustomEvent<{ origin: HTMLElement; port?: string; index: string }>,
+  ) => {
+    document.querySelectorAll<HTMLElement>('.lm-pkg-install__panel').forEach((panel) => {
+      if (panel === e.detail.origin || panel.dataset.port !== e.detail.port) return
+      selectManager(panel, e.detail.index, false)
     })
   }) as EventListener)
 

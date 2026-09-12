@@ -21,7 +21,14 @@ let instance: Promise<Highlighter> | undefined
  * reports 618 Python blocks, 192 TypeScript and 104 Rust, and nothing else.
  * A grammar that is never used is a megabyte of startup for nothing.
  */
-const LANGS = ['python', 'rust', 'ts', 'js', 'bash', 'console', 'json', 'text'] as const
+const LANGS = [
+  'python', 'rust', 'ts', 'js', 'bash', 'console', 'json', 'text',
+  // The install widget's build-file panels: a Gradle script, a Maven POM
+  // fragment, a Package.swift dependency and a CMakeLists block. Three of the
+  // eight ports cannot be installed from a command line at all, so without
+  // these their only install instructions render as flat grey.
+  'kotlin', 'xml', 'swift', 'cmake', 'toml',
+] as const
 
 /**
  * Themes, one per colour scheme.

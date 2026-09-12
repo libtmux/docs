@@ -38,6 +38,35 @@ export interface PackageRegistry {
   icon: 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget'
 }
 
+/**
+ * One way to add a port's package to a project.
+ *
+ * Every port has more than one — a Python reader is on pip or uv, a
+ * TypeScript reader on one of five, and Java, C++ and Swift cannot be
+ * installed from a command line at all — and a single `install` string chose
+ * for all of them. Worse, two of those strings had stopped resolving: npm has
+ * `libtmux`, not `@libtmux/libtmux`, and C++ is served from this project's own
+ * vcpkg git registry rather than the curated one, so `vcpkg install
+ * libtmux-cxx` matched nothing.
+ *
+ * Versions appear only where the tool cannot find a prerelease without one.
+ * `pip install libtmux`, `cargo add libtmux`, `go get …@latest` and
+ * `npm install libtmux` all resolve the current release on their own, so
+ * pinning them here would be a number to keep in step for no gain. Gradle,
+ * Maven, SwiftPM and CMake each need the release named, so those snippets
+ * carry one, and say where it came from.
+ */
+export interface InstallCommand {
+  /** Tab label — the tool, not the language. */
+  label: string
+  /** Language for highlighting. `console` commands are shown with a `$`. */
+  lang: string
+  /** The command or file fragment, without a shell prompt. */
+  code: string
+  /** A caveat shown under the block. */
+  note?: string
+}
+
 export interface EcosystemHost {
   /** Display name, e.g. "docs.rs". */
   name: string
@@ -88,8 +117,8 @@ export interface Port {
    * the build script and the docs. Empty for ecosystem ports.
    */
   generator: string
-  /** Shown on the port landing page. */
-  install: string
+  /** How to add this package to a project, in the tools its readers use. */
+  installs: readonly InstallCommand[]
   /** Where this port's package is published. */
   registry?: PackageRegistry
 }
@@ -109,14 +138,30 @@ export const PORTS: readonly Port[] = [
     renderer: 'sphinx',
     publishesOwnApi: true,
     generator: 'Sphinx + sphinx-gp-theme',
-    install: 'pip install libtmux',
+    installs: [
+      {
+        label: 'pip',
+        lang: 'console',
+        code: 'pip install libtmux',
+      },
+      {
+        label: 'uv',
+        lang: 'console',
+        code: 'uv add libtmux',
+      },
+      {
+        label: 'pipx',
+        lang: 'console',
+        code: 'pipx install libtmux',
+      },
+    ],
     registry: { name: 'PyPI', url: 'https://pypi.org/project/libtmux/', icon: 'pypi' },
   },
   {
     slug: 'ts',
     name: 'TypeScript',
     language: 'TypeScript',
-    packageName: '@libtmux/libtmux',
+    packageName: 'libtmux',
     repo: 'libtmux/libtmux-ts',
     checkout: '~/work/libtmux/libtmux-ts',
     worktree: '~/work/libtmux/libtmux-ts-docs',
@@ -124,7 +169,33 @@ export const PORTS: readonly Port[] = [
     tagGrammar: 'semver',
     renderer: 'astro',
     generator: '@microsoft/api-extractor JSON',
-    install: 'bun add @libtmux/libtmux',
+    installs: [
+      {
+        label: 'npm',
+        lang: 'console',
+        code: 'npm install libtmux',
+      },
+      {
+        label: 'pnpm',
+        lang: 'console',
+        code: 'pnpm add libtmux',
+      },
+      {
+        label: 'yarn',
+        lang: 'console',
+        code: 'yarn add libtmux',
+      },
+      {
+        label: 'bun',
+        lang: 'console',
+        code: 'bun add libtmux',
+      },
+      {
+        label: 'deno',
+        lang: 'console',
+        code: 'deno add npm:libtmux',
+      },
+    ],
     registry: { name: 'npm', url: 'https://www.npmjs.com/package/libtmux', icon: 'npm' },
   },
   {
@@ -145,7 +216,13 @@ export const PORTS: readonly Port[] = [
         'Rust API documentation for published crate versions on docs.rs.',
     },
     generator: '',
-    install: 'cargo add libtmux',
+    installs: [
+      {
+        label: 'cargo',
+        lang: 'console',
+        code: 'cargo add libtmux',
+      },
+    ],
     registry: { name: 'crates.io', url: 'https://crates.io/crates/libtmux', icon: 'crates' },
   },
   {
@@ -166,7 +243,13 @@ export const PORTS: readonly Port[] = [
         'Go API documentation for published module versions on pkg.go.dev.',
     },
     generator: '',
-    install: 'go get github.com/libtmux/libtmux-go',
+    installs: [
+      {
+        label: 'go get',
+        lang: 'console',
+        code: 'go get github.com/libtmux/libtmux-go/tmux@latest',
+      },
+    ],
     registry: { name: 'pkg.go.dev', url: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux', icon: 'go' },
   },
   {
@@ -187,7 +270,39 @@ export const PORTS: readonly Port[] = [
         'Java API documentation from the Javadoc JAR published to Maven Central.',
     },
     generator: '',
-    install: 'implementation("io.github.libtmux:libtmux:VERSION")',
+    installs: [
+      {
+        label: 'Gradle',
+        lang: 'kotlin',
+        code: `dependencies {
+    implementation(platform("io.github.libtmux:libtmux-bom:0.0.1-alpha.10"))
+
+    implementation("io.github.libtmux:libtmux")
+    testImplementation("io.github.libtmux:libtmux-junit5")
+}`,
+        note: 'The platform BOM names the version once and every other coordinate follows it, which is what stops a project mixing two releases of modules built against each other.',
+      },
+      {
+        label: 'Maven',
+        lang: 'xml',
+        code: `<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>io.github.libtmux</groupId>
+      <artifactId>libtmux-bom</artifactId>
+      <version>0.0.1-alpha.10</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+
+<dependency>
+  <groupId>io.github.libtmux</groupId>
+  <artifactId>libtmux</artifactId>
+</dependency>`,
+      },
+    ],
     registry: { name: 'Maven Central', url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux', icon: 'maven' },
   },
   {
@@ -202,7 +317,14 @@ export const PORTS: readonly Port[] = [
     tagGrammar: 'semver',
     renderer: 'astro',
     generator: 'docfx metadata (--outputFormat markdown)',
-    install: 'dotnet add package LibTmux',
+    installs: [
+      {
+        label: 'dotnet',
+        lang: 'console',
+        code: 'dotnet package add LibTmux --prerelease',
+        note: '--prerelease is required: every release so far carries an -alpha tag, and NuGet skips those unless asked.',
+      },
+    ],
     registry: { name: 'NuGet', url: 'https://www.nuget.org/packages/LibTmux', icon: 'nuget' },
   },
   {
@@ -217,7 +339,42 @@ export const PORTS: readonly Port[] = [
     tagGrammar: 'semver',
     renderer: 'sphinx',
     generator: 'Doxygen XML to Breathe to Sphinx',
-    install: 'vcpkg install libtmux-cxx',
+    installs: [
+      {
+        label: 'CMake',
+        lang: 'cmake',
+        code: `include(FetchContent)
+FetchContent_Declare(
+  libtmux
+  GIT_REPOSITORY https://github.com/libtmux/libtmux-cxx.git
+  GIT_TAG        v0.1.0-alpha.7
+)
+FetchContent_MakeAvailable(libtmux)
+target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
+        note: 'Name a tag or a commit, never a moving branch. Built this way the library brings nothing else: its tests, examples and MCP server all default off when it is not the top-level project.',
+      },
+      {
+        label: 'vcpkg',
+        lang: 'json',
+        code: `{
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "https://github.com/libtmux/libtmux-cxx",
+      "baseline": "",
+      "packages": ["libtmux"]
+    }
+  ]
+}`,
+        note: 'This repository is a vcpkg git registry, not a curated-registry port. Put this in vcpkg-configuration.json, add "libtmux" to your manifest, and run vcpkg x-update-baseline to fill the baseline.',
+      },
+      {
+        label: 'Submodule',
+        lang: 'console',
+        code: 'git submodule add https://github.com/libtmux/libtmux-cxx.git third_party/libtmux',
+        note: 'Then add_subdirectory(third_party/libtmux) and link libtmux::libtmux.',
+      },
+    ],
   },
   {
     slug: 'swift',
@@ -231,7 +388,17 @@ export const PORTS: readonly Port[] = [
     tagGrammar: 'semver',
     renderer: 'native-skinned',
     generator: 'DocC (swift-docc-plugin)',
-    install: '.package(url: "https://github.com/libtmux/libtmux-swift", from: "0.1.0")',
+    installs: [
+      {
+        label: 'Package.swift',
+        lang: 'swift',
+        code: `.package(
+    url: "https://github.com/libtmux/libtmux-swift.git",
+    exact: "0.1.0-alpha.4"
+)`,
+        note: 'An exact version, not a range. Every tag before 0.1.0 is a prerelease: SwiftPM keeps prereleases out of a `from: "0.1.0"` range, and `from: "0.1.0-alpha.4"` resolves forward into every prerelease after it.',
+      },
+    ],
   },
 ] as const
 
@@ -254,6 +421,19 @@ export function productDescription(port: Port, product: DocProduct): string {
 /** Language APIs for workspace builders belong to implementation documentation. */
 export function productApiPath(product: DocProduct): string {
   return product === 'workspace' ? 'workspace/internals/api' : 'mcp/api'
+}
+
+/**
+ * The install command a port leads with.
+ *
+ * The first entry, by construction: the lists are written in the order a
+ * reader of that language would try them, so the head of each is the one that
+ * belongs in a card with room for a single line.
+ */
+export function primaryInstall(port: Port): InstallCommand {
+  const first = port.installs[0]
+  if (!first) throw new Error(`ports.ts: ${port.slug} lists no install command`)
+  return first
 }
 
 /** Ports that get a per-version documentation tree. */

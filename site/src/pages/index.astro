@@ -2,7 +2,7 @@
 import { ALL_TRANSLATED, buildLocale } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import DocsLayout from '../layouts/DocsLayout.astro'
-import { DOC_PRODUCTS, PORTS, PORT_BY_SLUG, portPageUrl, productDescription, type DocProduct, referenceUrl } from '../lib/ports'
+import { DOC_PRODUCTS, PORTS, PORT_BY_SLUG, portPageUrl, primaryInstall, productDescription, type DocProduct, referenceUrl } from '../lib/ports'
 import PortHero from '../components/PortHero.astro'
 import DocCard from '../components/DocCard.astro'
 import ApiReferences from '../components/ApiReferences.astro'
@@ -150,6 +150,20 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
         the version control in the header to move between releases, or the
         port dropdown to find a corresponding page in another language.
       </p>
+      {/*
+        The install command, on the page a reader actually lands on.
+        
+        This is where the port switcher, the version switcher and the sidebar
+        all point, and it said what the package was called without saying how
+        to get it — the install lived one level up at /<port>/, which is a URL
+        nothing in the navigation offers.
+      */}
+      <section class="mt-10 max-w-3xl">
+        <h2 class="text-lg font-semibold">Install</h2>
+        <div class="mt-3">
+          <PackageInstall ports={[versionRootPort.slug]} />
+        </div>
+      </section>
       <div class="mt-10 grid gap-4 sm:grid-cols-2">
         {versionSections.map((s) => (
           <DocCard href={s.href} label={s.label} body={s.body} />
@@ -244,7 +258,7 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
                 </a>
               </h3>
               <p class="mt-1 font-mono text-xs opacity-70">{p.packageName}</p>
-              <pre class="mt-3 overflow-x-auto rounded bg-surface px-2 py-1.5 font-mono text-xs"><code>{p.install}</code></pre>
+              <pre class="mt-3 overflow-x-auto rounded bg-surface px-2 py-1.5 font-mono text-xs"><code>{primaryInstall(p).code}</code></pre>
               <p class="mt-3 text-sm">
                 <a class="hover:underline" href={referenceUrl(p)}>API reference</a>
               </p>
