@@ -172,10 +172,21 @@ export interface Port {
    * Which form applies is not a property of the port, it is the current state
    * of its registry, which `site/src/data/registry.json` records and
    * `scripts/gen-registry.mjs` refreshes. Seven of the eight have no stable
-   * release, and three of those spellings fail outright without the pin:
-   * `cargo add libtmux` resolves nothing while crates.io reports
-   * `max_stable_version: null`, and SwiftPM's `from:` skips prereleases by
-   * design, so `exact:` is the only form that resolves an alpha.
+   * release.
+   *
+   * The prerelease forms pin explicitly. Not because the bare command fails:
+   * measured against the live registries, `cargo add libtmux` resolves
+   * 0.1.0-alpha.10 and `go get github.com/libtmux/libtmux-go` resolves
+   * v0.0.1-alpha.6, because both resolvers fall back to a prerelease when a
+   * package has no release at all. The pin is here because a prompt states the
+   * version in prose a line above the command, so the two have to agree, and
+   * because an eval that records what it installed needs the command to say
+   * it. A bare command also changes what it installs the day a stable lands,
+   * silently; the generated pin changes visibly.
+   *
+   * Swift is the one case where the spelling is forced. Its tags are
+   * prereleases, and `0.1.0-alpha.4` sorts below `0.1.0`, so `from: "0.1.0"`
+   * has nothing in range and `exact:` is the only form that resolves.
    *
    * `{version}` is the registry's newest matching release and `{tag}` the
    * git tag. `composePrompt` substitutes both; `prompts.test.ts` fails on any
@@ -234,10 +245,16 @@ export const PORTS: readonly Port[] = [
     registry: { name: 'PyPI', url: 'https://pypi.org/project/libtmux/', icon: 'pypi' },
     initProject: { code: 'uv init', lang: 'console' },
     installForms: {
-      stable: { code: 'pip install libtmux', lang: 'console' },
-      prerelease: { code: "pip install --pre 'libtmux=={version}'", lang: 'console' },
-      git: { code: "pip install 'libtmux @ git+https://github.com/tmux-python/libtmux@{tag}'", lang: 'console' },
+      // `uv add`, not `pip install`, because the init step above is `uv init`.
+      // Pairing the two installed into the ambient environment rather than the
+      // project uv had just created, which an agent following the prompt would
+      // not notice until an import failed somewhere else.
+      stable: { code: 'uv add libtmux', lang: 'console' },
+      prerelease: { code: "uv add --prerelease=allow 'libtmux=={version}'", lang: 'console' },
+      git: { code: 'uv add "libtmux @ git+https://github.com/tmux-python/libtmux@{tag}"', lang: 'console' },
     },
+    installNote:
+      'If this project already uses pip, Poetry or PDM, add the dependency with that tool instead: the package is the same.',
   },
   {
     slug: 'ts',
@@ -316,8 +333,8 @@ export const PORTS: readonly Port[] = [
     initProject: { code: 'cargo init', lang: 'console' },
     installForms: {
       stable: { code: 'cargo add libtmux', lang: 'console' },
-      // Cargo treats a prerelease as out of range for a plain requirement, so
-      // the bare form resolves nothing while crates.io has only alphas.
+      // Pinned so the command matches the version the prompt names. Cargo
+      // resolves the alpha without it, having no release to prefer.
       prerelease: { code: 'cargo add libtmux@{version}', lang: 'console' },
       git: { code: 'cargo add libtmux --git https://github.com/libtmux/libtmux-rs --tag {tag}', lang: 'console' },
     },
@@ -351,8 +368,8 @@ export const PORTS: readonly Port[] = [
     initProject: { code: 'go mod init example.com/tmuxdemo', lang: 'console' },
     installForms: {
       stable: { code: 'go get github.com/libtmux/libtmux-go', lang: 'console' },
-      // `go get` without a version resolves the highest release, and a
-      // prerelease is not one, so it reports "no matching versions".
+      // Pinned for the same reason as Rust. The proxy serves the alpha to a
+      // bare `go get` too, since the module has no release yet.
       prerelease: { code: 'go get github.com/libtmux/libtmux-go@{version}', lang: 'console' },
       git: { code: 'go get github.com/libtmux/libtmux-go@{tag}', lang: 'console' },
     },
@@ -443,9 +460,9 @@ export const PORTS: readonly Port[] = [
     initProject: { code: 'dotnet new console', lang: 'console' },
     installForms: {
       stable: { code: 'dotnet add package LibTmux', lang: 'console' },
-      // NuGet resolves a stable release unless a version is named. `--version`
-      // with a prerelease string is what actually pins it; `--prerelease`
-      // alone takes whatever is newest, which moves under the reader.
+      // `--version` rather than `--prerelease`: the latter takes whatever is
+      // newest, which moves under a reader following a prompt that named a
+      // version.
       prerelease: { code: 'dotnet add package LibTmux --version {version}', lang: 'console' },
       git: { code: 'dotnet add reference ../libtmux-dotnet/src/LibTmux/LibTmux.csproj', lang: 'console' },
     },
@@ -550,9 +567,9 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     initProject: { code: 'swift package init --type executable', lang: 'console' },
     installForms: {
       stable: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", from: "{version}")', lang: 'swift' },
-      // `from:` means "this version up to the next major" and SwiftPM excludes
-      // prereleases from that range, so it resolves nothing while only alphas
-      // are tagged. `exact:` is the only form that takes one.
+      // `from: "0.1.0"` means ">= 0.1.0, < 1.0.0", and `0.1.0-alpha.4` sorts
+      // below `0.1.0`, so nothing in the repository is in range. This is the
+      // one port where the spelling is forced rather than chosen.
       prerelease: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", exact: "{version}")', lang: 'swift' },
       git: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", exact: "{tag}")', lang: 'swift' },
     },

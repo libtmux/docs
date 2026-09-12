@@ -4,15 +4,24 @@
  *
  * The agent prompts name an install command, and an install command that does
  * not resolve is worse than no prompt at all: the reader's agent runs it,
- * fails, and starts inventing. Seven of the eight ports have no stable
- * release, and three of those need the prerelease named explicitly or the
- * resolver silently reports nothing to install:
+ * fails, and starts inventing. Seven of the eight ports have no stable release
+ * and one is not published at all, so the right spelling differs per port and
+ * changes the day any of them ships.
  *
- *   - `cargo add libtmux` -> crates.io answers with `max_stable_version: null`
- *     and Cargo treats every alpha as out of range for a plain requirement.
- *   - `go get <module>` without a version resolves the highest *release*, and
- *     a prerelease is not one.
- *   - SwiftPM's `from:` excludes prereleases from its range by design.
+ * Two spellings are forced rather than chosen, and the rest are pinned so a
+ * prompt's prose and its command agree:
+ *
+ *   - Swift tags only prereleases, and `0.1.0-alpha.4` sorts below `0.1.0`, so
+ *     `from: "0.1.0"` has nothing in range. `exact:` is the only form.
+ *   - C++ has no vcpkg port, so a CMake FetchContent block at a tag is the
+ *     only way in.
+ *
+ * Measured rather than assumed: `cargo add libtmux` and
+ * `go get github.com/libtmux/libtmux-go` both resolve their alphas without a
+ * pin, because a resolver with no release to prefer falls back to a
+ * prerelease. The pins stay because the prompt names a version in prose beside
+ * the command, and because a bare command changes what it installs the day a
+ * stable lands while a generated pin changes visibly.
  *
  * So which of `installForms.{stable,prerelease,git}` applies is a fact about
  * the registry today, not about the port, and it belongs in generated data

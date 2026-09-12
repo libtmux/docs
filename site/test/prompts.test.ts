@@ -46,14 +46,14 @@ function partsFor(port: Port) {
   })
 }
 
-function promptFor(port: Port, topicId: string): string {
+function promptFor(port: Port, topicId: string, version = ctx.version): string {
   const entry = registryFor(port)
   return composePrompt({
     port,
     entry,
     install: installCommand(port, entry),
     wording: releaseWording(port, entry),
-    ctx,
+    ctx: { ...ctx, version },
     topicId,
   })
 }
@@ -339,10 +339,25 @@ describe.skipIf(!SITE_BUILT)(`published prompt routes${SITE_BUILT ? '' : ` (${SK
     }
   })
 
+  /**
+   * Composed at the version the manifest records, not at a version this file
+   * picked. `build-site.sh` gives each port its own default and Python's is
+   * `stable` while the rest are `latest`, so a hard-coded version here tests
+   * the suite's assumption rather than the build's output.
+   */
   it('publishes the same bytes the widget composes', () => {
+    const versions = new Map<string, string>(
+      manifest().prompts.map((p: { port: string; topic: string; version: string }) => [
+        `${p.port}/${p.topic}`,
+        p.version,
+      ]),
+    )
     for (const { port, topic } of PROMPT_PAIRS) {
+      const key = `${port.slug}/${topic.id}`
+      const version = versions.get(key)
+      expect(version, `${key} is absent from prompts.json`).toBeTruthy()
       const file = readFileSync(published(textPath(port.slug, topic.id)), 'utf8')
-      expect(file, `${port.slug}/${topic.id}`).toBe(`${promptFor(port, topic.id)}\n`)
+      expect(file, key).toBe(`${promptFor(port, topic.id, version)}\n`)
     }
   })
 
