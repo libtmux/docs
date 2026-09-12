@@ -2,9 +2,9 @@ packages:
   - packages/*
   - site
 catalog:
-  '@biomejs/biome': 2.5.11
-  happy-dom: ^20.13.2
-  oxlint: ^1.80.0
+  '@biomejs/biome': 2.5.12
+  happy-dom: ^20.14.0
+  oxlint: ^1.82.0
   tree-sitter-wasms: ^0.1.13
   # Pinned exactly, not caret: the prebuilt grammars are ABI 13-14 and runtime
   # 0.26/0.27 reject them — 0.27 by throwing a bare Error from deep inside its
