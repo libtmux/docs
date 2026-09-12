@@ -58,6 +58,12 @@ try {
     }
     for (const width of [1440, 768, 390]) {
       await page.setViewportSize({ width, height: 1000 })
+      if (path.startsWith('reference/')) {
+        await page.waitForFunction((wide) => document.querySelector('.api-toc-shell').open === wide,
+          width >= 1024)
+        assert.equal(await page.locator('.api-sidebar__menu').isVisible(), width >= 1024,
+          `${path} at ${width}px: reference navigation follows its disclosure`)
+      }
       const result = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - innerWidth,
         columns: [...document.querySelectorAll('table')].flatMap((table) => {
