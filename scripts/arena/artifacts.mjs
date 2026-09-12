@@ -131,6 +131,73 @@ export const ARTIFACTS = [
     prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'quickstart.test'), './quickstart'] }],
     run: (build) => ({ cwd: 'examples/quickstart', command: [join(build, 'quickstart.test'), '-test.run=^TestQuickstart$', '-test.count=1'] }),
   },
+  // The other example programs, each proved on its own lent server. They
+  // share the `go` slug, so `--port go` still selects all of them.
+  {
+    slug: 'go',
+    artifact: 'go-environment',
+    runs: ['go:examples/environment/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'environment.test'), './environment'] }],
+    run: (build) => ({ cwd: 'examples/environment', command: [join(build, 'environment.test'), '-test.run=^TestEnvironment$', '-test.count=1'] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-filter-query',
+    runs: ['go:examples/filter-query/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'filter-query.test'), './filter-query'] }],
+    run: (build) => ({ cwd: 'examples/filter-query', command: [join(build, 'filter-query.test'), '-test.run=^TestFilterQuery$', '-test.count=1'] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-control-mode-subscribe',
+    runs: ['go:examples/control-mode-subscribe/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'control-mode-subscribe.test'), './control-mode-subscribe'] }],
+    run: (build) => ({ cwd: 'examples/control-mode-subscribe', command: [join(build, 'control-mode-subscribe.test'), '-test.run=^TestControlModeSubscribe$', '-test.count=1'] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-option-hook-editing',
+    runs: ['go:examples/option-hook-editing/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'option-hook-editing.test'), './option-hook-editing'] }],
+    run: (build) => ({ cwd: 'examples/option-hook-editing', command: [join(build, 'option-hook-editing.test'), '-test.run=^TestOptionHookEditing$', '-test.count=1'] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-planned-build',
+    runs: ['go:examples/planned-build/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'planned-build.test'), './planned-build'] }],
+    run: (build) => ({ cwd: 'examples/planned-build', command: [join(build, 'planned-build.test'), '-test.run=^TestPlannedBuild$', '-test.count=1'] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-snapshot-browser',
+    runs: ['go:examples/snapshot-browser/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'snapshot-browser.test'), './snapshot-browser'] }],
+    run: (build) => ({ cwd: 'examples/snapshot-browser', command: [join(build, 'snapshot-browser.test'), '-test.run=^TestSnapshotBrowser$', '-test.count=1'] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-fast-path',
+    runs: ['go:examples/fast-path/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'fast-path.test'), './fast-path'] }],
+    run: (build) => ({ cwd: 'examples/fast-path', command: [join(build, 'fast-path.test'), '-test.run=^TestFastPath$', '-test.count=1'] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-workspace',
+    runs: ['go:workspace/example_test.go'],
+    tools: ['go'],
+    // This one lives in the workspace module, not the examples module.
+    prepare: (build) => [{ cwd: 'workspace', command: ['go', 'test', '-c', '-o', join(build, 'workspace.test'), '.'] }],
+    run: (build) => ({ cwd: 'workspace', command: [join(build, 'workspace.test'), '-test.run=^TestWorkspaceArenaEndpoint$', '-test.count=1'] }),
+  },
   {
     slug: 'java',
     artifact: 'java-build-a-workspace',
@@ -219,6 +286,64 @@ export const ARTIFACTS = [
     run: () => ({
       cwd: '.',
       command: [`Examples/.build/docs-arena/${swiftTriple()}/debug/ExamplesPackageTests.xctest`, '--testing-library', 'swift-testing', '--filter', 'theThreeListings'],
+    }),
+  },
+  // The other examples the site quotes. Each filters to the one test that
+  // runs its example against the lent server; the build step is shared.
+  {
+    slug: 'swift',
+    artifact: 'swift-changing',
+    runs: ['swift:Examples/Sources/ExampleCode/Changing.swift'],
+    tools: ['swift'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['swift', 'build', '--package-path', 'Examples', '--scratch-path', 'Examples/.build/docs-arena', '--build-tests'],
+    }],
+    run: () => ({
+      cwd: '.',
+      command: [`Examples/.build/docs-arena/${swiftTriple()}/debug/ExamplesPackageTests.xctest`, '--testing-library', 'swift-testing', '--filter', 'theDocumentedSessionIsBuilt']
+    }),
+  },
+  {
+    slug: 'swift',
+    artifact: 'swift-waiting',
+    runs: ['swift:Examples/Sources/ExampleCode/Waiting.swift'],
+    tools: ['swift'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['swift', 'build', '--package-path', 'Examples', '--scratch-path', 'Examples/.build/docs-arena', '--build-tests'],
+    }],
+    run: () => ({
+      cwd: '.',
+      command: [`Examples/.build/docs-arena/${swiftTriple()}/debug/ExamplesPackageTests.xctest`, '--testing-library', 'swift-testing', '--filter', 'documentedWatchSendsTheDifference']
+    }),
+  },
+  {
+    slug: 'swift',
+    artifact: 'swift-workspaces',
+    runs: ['swift:Examples/Sources/ExampleCode/Workspaces.swift'],
+    tools: ['swift'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['swift', 'build', '--package-path', 'Examples', '--scratch-path', 'Examples/.build/docs-arena', '--build-tests'],
+    }],
+    run: () => ({
+      cwd: '.',
+      command: [`Examples/.build/docs-arena/${swiftTriple()}/debug/ExamplesPackageTests.xctest`, '--testing-library', 'swift-testing', '--filter', 'theDocumentedWorkspaceBuilds']
+    }),
+  },
+  {
+    slug: 'swift',
+    artifact: 'swift-mcp-embedding',
+    runs: ['swift:Examples/Sources/ExampleCode/MCPEmbedding.swift'],
+    tools: ['swift'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['swift', 'build', '--package-path', 'Examples', '--scratch-path', 'Examples/.build/docs-arena', '--build-tests'],
+    }],
+    run: () => ({
+      cwd: '.',
+      command: [`Examples/.build/docs-arena/${swiftTriple()}/debug/ExamplesPackageTests.xctest`, '--testing-library', 'swift-testing', '--filter', 'embeddedToolsListPanes']
     }),
   },
 ]
