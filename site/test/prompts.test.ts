@@ -165,6 +165,34 @@ describe('prompt legibility', () => {
     expect(long, `over 80 columns: ${long.join(' | ')}`).toEqual([])
   })
 
+  /**
+   * WRITING.md governs prompt text the same as any other user-facing prose:
+   * omit "easily", "simply", "just" and "please note", replace "robust" with
+   * the failure handled, and avoid em dashes. A prompt is the text most likely
+   * to be written in a hurry and least likely to be reread, so the rule is
+   * enforced rather than remembered.
+   */
+  it.each([
+    /\bsimply\b/i,
+    /\bjust\b/i,
+    /\beasily\b/i,
+    /\bplease note\b/i,
+    /\brobust\b/i,
+    /\bcomprehensive\b/i,
+    /\bseamless/i,
+    /\bleverage\b/i,
+    /\butilize\b/i,
+    /\u2014/,
+  ])('uses no %s anywhere in the corpus', (banned) => {
+    const offenders = MATRIX.flatMap(({ port, topic }) =>
+      promptFor(port, topic.id)
+        .split('\n')
+        .filter((line) => banned.test(line))
+        .map((line) => `${port.slug}/${topic.id}: ${line.trim()}`),
+    )
+    expect([...new Set(offenders)]).toEqual([])
+  })
+
   it('wraps on word boundaries and keeps every word', () => {
     const text = 'one two three four five six seven eight nine ten eleven twelve'
     const out = wrap(text, 20)
