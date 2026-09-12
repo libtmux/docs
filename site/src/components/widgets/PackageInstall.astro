@@ -152,7 +152,13 @@ const installHtml = new Map(
             </div>
           )}
           {p.installs.map((cmd, i) => (
-            <div class="lm-pkg-install__cmd" data-manager={i} data-default={i === 0 ? true : undefined}>
+            <div
+              class="lm-pkg-install__cmd"
+              data-manager={i}
+              data-default={i === 0 ? true : undefined}
+              role={p.installs.length > 1 ? 'tabpanel' : undefined}
+              tabindex={p.installs.length > 1 ? '0' : undefined}
+            >
               <div class="lm-pkg-install__code" data-language={cmd.lang}><pre><code set:html={installHtml.get(`${p.slug}/${i}`)} /></pre><button type="button" class="lm-pkg-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
               {cmd.note && <p class="lm-pkg-install__note">{cmd.note}</p>}
             </div>
@@ -565,6 +571,57 @@ const installHtml = new Map(
       button.classList.remove('lm-pkg-install__copy--done')
     }, 1500)
   }
+
+  /**
+   * Arrow keys along a tab strip.
+   *
+   * `role="tablist"` is a promise that Left and Right move between the tabs;
+   * without it a keyboard reader Tabs through every tab in the strip to reach
+   * the content, which is what the roles exist to avoid. Shared by both strips
+   * because the mechanism is the same either way — only the selector and what
+   * a selection means differ.
+   */
+  function arrowNav(
+    event: KeyboardEvent,
+    tabs: HTMLButtonElement[],
+    current: HTMLButtonElement,
+    select: (tab: HTMLButtonElement) => void,
+  ) {
+    const delta = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
+    if (!delta || tabs.length < 2) return
+    event.preventDefault()
+    const next = tabs[(tabs.indexOf(current) + delta + tabs.length) % tabs.length]!
+    select(next)
+    next.focus()
+  }
+
+  document.addEventListener('keydown', (e) => {
+    const target = e.target as HTMLElement
+    const manager = target.closest<HTMLButtonElement>('.lm-pkg-install__manager')
+    const panel = manager?.closest<HTMLElement>('.lm-pkg-install__panel')
+    if (manager && panel) {
+      const tabs = [...panel.querySelectorAll<HTMLButtonElement>('.lm-pkg-install__manager')]
+      arrowNav(e, tabs, manager, (tab) => {
+        selectManager(panel, tab.dataset.managerValue ?? '0', true)
+        window.dispatchEvent(
+          new CustomEvent(MANAGER_SYNC_EVENT, {
+            detail: { origin: panel, port: panel.dataset.port, index: tab.dataset.managerValue },
+          }),
+        )
+      })
+      return
+    }
+    const tab = target.closest<HTMLButtonElement>('.lm-pkg-install__tab')
+    const widget = tab?.closest<HTMLElement>('.lm-pkg-install')
+    if (!tab || !widget) return
+    const tabs = [...widget.querySelectorAll<HTMLButtonElement>('.lm-pkg-install__tab')]
+    arrowNav(e, tabs, tab, (next) => {
+      const slug = next.dataset.tabValue
+      if (!slug) return
+      selectPort(widget, slug, true)
+      window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: { origin: widget, slug } }))
+    })
+  })
 
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement
