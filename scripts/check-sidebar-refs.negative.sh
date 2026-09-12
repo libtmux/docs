@@ -9,7 +9,7 @@
 # a `<span>`, so `>[^<]*</a>` matches nothing and every case "passed" while
 # changing the page not at all.
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
@@ -27,13 +27,12 @@ site_out="_site/$locale"
 
 page_for() {
   local port="$1" root candidate
-  for root in "$site_out/$port"; do
-    candidate="$root/concepts/index.html"
+  root="$site_out/$port"
+  candidate="$root/concepts/index.html"
+  if [ -f "$candidate" ]; then printf '%s' "$candidate"; return 0; fi
+  for dir in "$root"/*/; do
+    candidate="${dir}concepts/index.html"
     if [ -f "$candidate" ]; then printf '%s' "$candidate"; return 0; fi
-    for dir in "$root"/*/; do
-      candidate="${dir}concepts/index.html"
-      if [ -f "$candidate" ]; then printf '%s' "$candidate"; return 0; fi
-    done
   done
   return 1
 }

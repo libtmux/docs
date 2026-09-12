@@ -17,7 +17,7 @@
 # to sit through a four-minute build to learn it. The build those controls do
 # start goes to a scratch directory.
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT

@@ -654,7 +654,8 @@ reference_source_dir() {
   # chose, with no `-docs` sibling to find. Same variable the prose fences
   # read (site/src/plugins/remark-port-code.mjs), so a job configures a port's
   # location once and both halves of the build agree.
-  local override_var="LIBTMUX_DOCS_CHECKOUT_$(printf '%s' "$slug" | tr '[:lower:]' '[:upper:]')"
+  local override_var
+  override_var="LIBTMUX_DOCS_CHECKOUT_$(printf '%s' "$slug" | tr '[:lower:]' '[:upper:]')"
   local override="${!override_var:-}"
   if [ -n "$override" ]; then
     printf '%s\n' "${override/#\~/$HOME}"

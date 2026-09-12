@@ -110,8 +110,8 @@ $ pnpm test:publication
 
 This audit is not limited to 60 seconds. `scripts/test-all.sh` defines it;
 `.github/workflows/test.yml` runs it in CI. Report skipped checks explicitly.
-Missing port checkouts or a missing local server can leave publication
-checks unexercised. Development loops deliberately exclude assembled-output
+Missing port checkouts, a missing local server, or a missing `shellcheck`
+can leave publication checks unexercised. Development loops deliberately exclude assembled-output
 suites; they do not establish publication readiness.
 
 Add focused regression coverage for behavior changes and confirm that a new

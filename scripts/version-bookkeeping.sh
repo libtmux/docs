@@ -1,3 +1,7 @@
+# shellcheck shell=bash
+# The caller assigns what this reads, so a standalone check cannot see it.
+# shellcheck disable=SC2154
+#
 # Version bookkeeping for scripts/build-site.sh.
 #
 # Sourced rather than run: it writes the manifest this build was trimmed to and
