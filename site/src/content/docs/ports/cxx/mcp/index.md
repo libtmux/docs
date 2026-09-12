@@ -18,6 +18,7 @@ hierarchy discovery only.
 
 ## Start here
 
+- [Install](#install) points an MCP client at this server.
 - [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) build the executable and select an endpoint.
 - [Topics](./topics/) explain platform coverage, identifiers, and failures.

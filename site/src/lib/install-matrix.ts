@@ -57,13 +57,74 @@ export interface Client {
   scopes: readonly Scope[]
 }
 
-export type MethodId = 'uvx' | 'pipx' | 'pip'
-
-/** One install method (uvx / pipx / pip install). */
+/** One way to obtain and run a port's server (uvx, npx, cargo install, ...). */
 export interface Method {
-  id: MethodId
+  id: string
   label: string
   docUrl: string | null
+}
+
+/**
+ * What a client is told to launch, for one (method, cooldown) pair.
+ *
+ * Structured rather than a string, because the same facts are rendered three
+ * ways: a shell command, a JSON `command`/`args`/`env` triple, and Codex's
+ * TOML. Building the shell line first and taking it apart again is what the
+ * Python-only version did, and it is why the Gemini branch below had to split
+ * a command at its first space.
+ */
+export interface ServerCommand {
+  /** The executable a client runs. */
+  command: string
+  /** Its arguments, in order, as a command line spells them. */
+  args: readonly string[]
+  /**
+   * The arguments a config file spells instead, where the two differ.
+   *
+   * They differ exactly once, and for a reason worth keeping: `uvx
+   * --no-config` and `UV_NO_CONFIG=1` are the same instruction, and a shell
+   * line states it as a flag while a JSON or TOML block states it as `env`.
+   * Saying both would say it twice in one snippet.
+   */
+  configArgs?: readonly string[]
+  /**
+   * Environment a config file has to carry.
+   *
+   * Config only. A CLI client is told the same thing by `args` — `uvx
+   * --no-config` is what `UV_NO_CONFIG=1` means to a command line — so
+   * repeating it as an `--env` flag would say it twice and differently.
+   */
+  env?: Readonly<Record<string, string>>
+  /** A build or install step to run before any of this works. */
+  prereq?: string
+  /** A caveat for this cell alone. */
+  note?: string
+}
+
+/**
+ * One port's MCP server, as the install picker needs to know it.
+ *
+ * Eight ports ship a server and no two are obtained the same way: Python has
+ * uvx, pipx and pip; TypeScript runs from npx without installing anything;
+ * Rust, Go and .NET install a binary; Java, C++ and Swift have no published
+ * artifact at all and are built from their own source tree. The client and
+ * scope axes are the same for all of them — `claude mcp add tmux -- <thing>`
+ * does not care what `<thing>` is — which is why this is a per-port spec
+ * rather than a per-port widget.
+ *
+ * `cooldowns` is Python's axis alone. It exists because uv can hold a
+ * resolution back with `--exclude-newer`; npm, cargo and go have no
+ * equivalent, so their specs carry the single `off` entry and the widget
+ * renders no cooldown control at all.
+ */
+export interface ServerSpec {
+  /** Port slug, as in ports.ts. */
+  port: string
+  /** What the server is published or built as, for the prose above the picker. */
+  package: string
+  methods: readonly Method[]
+  cooldowns: readonly Cooldown[]
+  resolve(method: Method, cooldown: Cooldown): ServerCommand
 }
 
 /** Pre-built cell for one (client, method, scope, cooldown) tuple. */
@@ -77,9 +138,9 @@ export interface Panel {
    *  COOLDOWN_DURATION_SENTINEL or COOLDOWN_DATE_SENTINEL — see
    *  bodySegments(). */
   body: string
-  /** Prereq `pip install` line. Only set for the pip method. */
+  /** The build or install step this cell needs first, where it needs one. */
   pipPrereq: string | null
-  /** Cooldown-related caveat, e.g. "pipx bypass is a no-op". */
+  /** A caveat: a cooldown a method cannot honour, a path only you know. */
   note: string | null
   isDefault: boolean
 }
@@ -143,17 +204,14 @@ export const CLIENTS: readonly Client[] = [
   { id: 'opencode', label: 'opencode', kind: 'cli', scopes: OPENCODE_SCOPES },
 ]
 
-export const METHODS: readonly Method[] = [
-  { id: 'uvx', label: 'uvx', docUrl: 'https://docs.astral.sh/uv/' },
-  { id: 'pipx', label: 'pipx', docUrl: 'https://pipx.pypa.io/' },
-  { id: 'pip', label: 'pip install', docUrl: null },
-]
-
 export const COOLDOWNS: readonly Cooldown[] = [
   { id: 'off', label: 'Off' },
   { id: 'days', label: 'Apply a cooldown' },
   { id: 'bypass', label: 'Bypass global cooldown' },
 ]
+
+/** The single-entry axis every port but Python has. */
+const NO_COOLDOWN: readonly Cooldown[] = [COOLDOWNS[0]!]
 
 /** Default scope per client — the first entry of each client's scopes. */
 export const DEFAULT_SCOPES: Readonly<Record<string, string>> = Object.fromEntries(
@@ -183,48 +241,215 @@ export function defaultCooldownDate(days: number): string {
   return new Date(cutoffMs).toISOString().slice(0, 10)
 }
 
-// ---- panel body builders ---------------------------------------------
+// ---- per-port server specs ------------------------------------------------
+
+const PY_METHODS: readonly Method[] = [
+  { id: 'uvx', label: 'uvx', docUrl: 'https://docs.astral.sh/uv/' },
+  { id: 'pipx', label: 'pipx', docUrl: 'https://pipx.pypa.io/' },
+  { id: 'pip', label: 'pip install', docUrl: null },
+]
+
+/** One-line caveat for cells whose snippet does not actually enforce cooldown. */
+function pyCooldownNote(method: Method, cooldown: Cooldown): string | undefined {
+  if ((method.id === 'pipx' || method.id === 'pip') && (cooldown.id === 'days' || cooldown.id === 'bypass')) {
+    return (
+      'pip has no per-package cooldown override, so this snippet runs without cooldown enforcement. ' +
+      'Switch to the uvx tab — it applies the cooldown to transitive deps via `--exclude-newer` while ' +
+      'exempting libtmux-mcp itself via `--exclude-newer-package`.'
+    )
+  }
+  return undefined
+}
 
 /**
- * Build the inner `<tool> [flags] libtmux-mcp` command — the portion of
- * every CLI panel after the `mcp add ... --` separator, and the same
- * string used for the JSON `command` + `args` pair.
+ * A server you build yourself, because nothing publishes a binary.
  *
- * Only uvx's `days` branch ever carries a cooldown flag. pipx's pip
- * backend and pip itself have no per-package cooldown override, so their
- * bodies stay bare in every cooldown mode; `cooldownNote` redirects the
- * reader to uvx instead of pretending a flag exists.
+ * Java, C++ and Swift each ship the server as source in the library's own
+ * repository. There is no one-line install to print, so the honest panel is
+ * the build step as a prerequisite and a path placeholder as the command —
+ * the same shape all three READMEs use, and better than inventing a command
+ * that would fail.
  */
-function toolCommand(method: Method, cooldown: Cooldown): string {
-  if (method.id === 'uvx') {
-    if (cooldown.id === 'days') {
-      // `--exclude-newer-package libtmux-mcp=2099-01-01` exempts
-      // libtmux-mcp itself from the global cutoff so a recently-released
-      // libtmux-mcp stays installable inside the resolver.
-      return (
-        `uvx --exclude-newer ${COOLDOWN_DURATION_SENTINEL}` +
-        ' --exclude-newer-package libtmux-mcp=2099-01-01' +
-        ' libtmux-mcp'
+function builtFromSource(prereq: string, binary: string, note: string): ServerCommand {
+  return { command: binary, args: [], prereq, note }
+}
+
+/**
+ * Every port's server, keyed by slug.
+ *
+ * Commands are taken from each port's own MCP README rather than composed
+ * here; a server this repository cannot run is not a server this repository
+ * should be guessing the invocation of.
+ */
+export const SERVERS: Readonly<Record<string, ServerSpec>> = {
+  py: {
+    port: 'py',
+    package: 'libtmux-mcp',
+    methods: PY_METHODS,
+    cooldowns: COOLDOWNS,
+    resolve(method, cooldown) {
+      if (method.id === 'uvx') {
+        if (cooldown.id === 'days') {
+          // `--exclude-newer-package libtmux-mcp=2099-01-01` exempts
+          // libtmux-mcp itself from the global cutoff so a recently-released
+          // libtmux-mcp stays installable inside the resolver.
+          return {
+            command: 'uvx',
+            args: [
+              '--exclude-newer',
+              COOLDOWN_DURATION_SENTINEL,
+              '--exclude-newer-package',
+              'libtmux-mcp=2099-01-01',
+              'libtmux-mcp',
+            ],
+          }
+        }
+        if (cooldown.id === 'bypass') {
+          return {
+            command: 'uvx',
+            args: ['--no-config', 'libtmux-mcp'],
+            configArgs: ['libtmux-mcp'],
+            env: { UV_NO_CONFIG: '1' },
+          }
+        }
+        return { command: 'uvx', args: ['libtmux-mcp'] }
+      }
+      if (method.id === 'pipx') {
+        return { command: 'pipx', args: ['run', 'libtmux-mcp'], note: pyCooldownNote(method, cooldown) }
+      }
+      return {
+        command: 'libtmux-mcp',
+        args: [],
+        prereq: PIP_PREREQ_OFF,
+        note: pyCooldownNote(method, cooldown),
+      }
+    },
+  },
+  ts: {
+    port: 'ts',
+    package: '@libtmux/mcp',
+    methods: [
+      { id: 'npx', label: 'npx', docUrl: null },
+      { id: 'global', label: 'Global install', docUrl: null },
+    ],
+    cooldowns: NO_COOLDOWN,
+    resolve(method) {
+      if (method.id === 'npx') return { command: 'npx', args: ['-y', '@libtmux/mcp'] }
+      return {
+        command: 'libtmux-mcp',
+        args: [],
+        prereq: 'npm install --global @libtmux/mcp',
+        note: 'The package installs a `libtmux-mcp` binary. Requires Node 22 or newer, or Bun 1.3.14 or newer.',
+      }
+    },
+  },
+  rs: {
+    port: 'rs',
+    package: 'tmux-mcp',
+    methods: [{ id: 'cargo', label: 'cargo install', docUrl: null }],
+    cooldowns: NO_COOLDOWN,
+    resolve() {
+      return {
+        command: 'tmux-mcp',
+        args: [],
+        prereq: 'cargo install tmux-mcp',
+        note: 'That puts a `tmux-mcp` binary on your path; it speaks MCP on stdin and stdout.',
+      }
+    },
+  },
+  go: {
+    port: 'go',
+    package: 'github.com/libtmux/libtmux-go/mcp',
+    methods: [{ id: 'goinstall', label: 'go install', docUrl: null }],
+    cooldowns: NO_COOLDOWN,
+    resolve() {
+      return {
+        command: 'libtmux-mcp',
+        args: [],
+        prereq: 'go install github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@latest',
+        note: 'That puts `libtmux-mcp` in $(go env GOPATH)/bin, which has to be on your PATH for the command below to resolve.',
+      }
+    },
+  },
+  java: {
+    port: 'java',
+    package: 'libtmux-mcp',
+    methods: [{ id: 'gradle', label: 'Gradle', docUrl: null }],
+    cooldowns: NO_COOLDOWN,
+    resolve() {
+      return builtFromSource(
+        './gradlew :libtmux-mcp:installDist',
+        '/absolute/path/to/libtmux-mcp',
+        'Nothing publishes this server as a binary yet. The build writes a launcher at libtmux-mcp/build/install/libtmux-mcp/bin/libtmux-mcp; use its absolute path.',
       )
-    }
-    if (cooldown.id === 'bypass') return 'uvx --no-config libtmux-mcp'
-    return 'uvx libtmux-mcp'
-  }
-  if (method.id === 'pipx') return 'pipx run libtmux-mcp'
-  // pip: register step only, no args.
-  return 'libtmux-mcp'
+    },
+  },
+  dotnet: {
+    port: 'dotnet',
+    package: 'LibTmux.Mcp',
+    methods: [{ id: 'tool', label: '.NET tool', docUrl: null }],
+    cooldowns: NO_COOLDOWN,
+    resolve() {
+      return {
+        command: 'libtmux-mcp',
+        args: [],
+        prereq: 'dotnet tool install --global LibTmux.Mcp --prerelease',
+        note: '--prerelease is required: every release so far carries an -alpha tag, and NuGet skips those unless asked.',
+      }
+    },
+  },
+  cxx: {
+    port: 'cxx',
+    package: 'libtmux-mcp-server',
+    methods: [{ id: 'cmake', label: 'CMake', docUrl: null }],
+    cooldowns: NO_COOLDOWN,
+    resolve() {
+      return builtFromSource(
+        'cmake -S . -B build/mcp -DLIBTMUX_BUILD_MCP_SERVER=ON -DLIBTMUX_FETCH_DEPS=ON && cmake --build build/mcp && cmake --install build/mcp --prefix ~/.local',
+        // Not `~/.local/bin/…`: a shell expands the tilde and a JSON config
+        // does not, so the same string would work in one panel and fail in
+        // the other.
+        '/absolute/path/to/libtmux-mcp-server',
+        'The MCP server is a build option rather than a second package, off by default because it is the only component that needs the JSON dependency. The install above puts libtmux-mcp-server in ~/.local/bin; use its full path.',
+      )
+    },
+  },
+  swift: {
+    port: 'swift',
+    package: 'LibTmuxMCP',
+    methods: [{ id: 'swiftbuild', label: 'swift build', docUrl: null }],
+    cooldowns: NO_COOLDOWN,
+    resolve() {
+      return builtFromSource(
+        'swift build --product libtmux-mcp',
+        '/absolute/path/to/.build/debug/libtmux-mcp',
+        'Nothing publishes this server as a binary yet. The server takes no flags — which tmux it talks to is environment, so the client config is where you say so.',
+      )
+    },
+  },
+}
+
+/** The spec for one port, or Python's, which is what `/mcp/` documents. */
+export function serverSpec(port = 'py'): ServerSpec {
+  const spec = SERVERS[port]
+  if (!spec) throw new Error(`install-matrix.ts: no MCP server spec for port "${port}"`)
+  return spec
+}
+
+// ---- panel body builders ---------------------------------------------
+
+/** `command` and its arguments as one shell line. */
+function shellCommand(server: ServerCommand): string {
+  return [server.command, ...server.args].join(' ')
 }
 
 /** Build the full shell command for a CLI-kind client. */
-function cliBody(client: Client, scope: Scope, method: Method, cooldown: Cooldown): string {
-  const toolCmd = toolCommand(method, cooldown)
+function cliBody(client: Client, scope: Scope, server: ServerCommand): string {
+  const toolCmd = shellCommand(server)
   if (client.id === 'gemini') {
     // gemini's `--` separator lands after the tool token, not before.
-    const spaceIndex = toolCmd.indexOf(' ')
-    if (spaceIndex !== -1) {
-      const head = toolCmd.slice(0, spaceIndex)
-      const tail = toolCmd.slice(spaceIndex + 1)
-      return `gemini mcp add --scope ${scope.id} tmux ${head} -- ${tail}`
+    if (server.args.length > 0) {
+      return `gemini mcp add --scope ${scope.id} tmux ${server.command} -- ${server.args.join(' ')}`
     }
     return `gemini mcp add --scope ${scope.id} tmux ${toolCmd}`
   }
@@ -254,31 +479,26 @@ function cliBody(client: Client, scope: Scope, method: Method, cooldown: Cooldow
 const JSON_INDENT = '    '
 
 /** Build the JSON config snippet shared by Claude Desktop and Cursor. */
-function jsonBody(method: Method, cooldown: Cooldown): string {
-  let command: string
-  let args: string | null
-  if (method.id === 'uvx') {
-    command = 'uvx'
-    args =
-      cooldown.id === 'days'
-        ? `"--exclude-newer", "${COOLDOWN_DURATION_SENTINEL}", "--exclude-newer-package", "libtmux-mcp=2099-01-01", "libtmux-mcp"`
-        : '"libtmux-mcp"'
-  } else if (method.id === 'pipx') {
-    command = 'pipx'
-    args = '"run", "libtmux-mcp"'
-  } else {
-    command = 'libtmux-mcp'
-    args = null
-  }
+/** What a config file lists, which is `args` unless the spec overrides it. */
+function configArgs(server: ServerCommand): readonly string[] {
+  return server.configArgs ?? server.args
+}
 
+function jsonBody(server: ServerCommand): string {
   // Explicit per-line indents rather than a dedent-after-interpolation
   // pattern: substituting `args` at a smaller indent than the surrounding
   // template breaks a post-hoc dedent for every member after the first.
   const serverIndent = JSON_INDENT.repeat(3)
-  const serverLines = [`${serverIndent}"command": "${command}"`]
-  if (args !== null) serverLines.push(`${serverIndent}"args": [${args}]`)
-  if (cooldown.id === 'bypass' && method.id === 'uvx') {
-    serverLines.push(`${serverIndent}"env": { "UV_NO_CONFIG": "1" }`)
+  const serverLines = [`${serverIndent}"command": "${server.command}"`]
+  const args = configArgs(server)
+  if (args.length > 0) {
+    serverLines.push(`${serverIndent}"args": [${args.map((a) => `"${a}"`).join(', ')}]`)
+  }
+  const env = Object.entries(server.env ?? {})
+  if (env.length > 0) {
+    serverLines.push(
+      `${serverIndent}"env": { ${env.map(([k, v]) => `"${k}": "${v}"`).join(', ')} }`,
+    )
   }
   const serverBlock = serverLines.join(',\n')
   return (
@@ -293,38 +513,15 @@ function jsonBody(method: Method, cooldown: Cooldown): string {
 }
 
 /** Build the TOML snippet for Codex's project scope (manual paste). */
-function tomlBody(method: Method, cooldown: Cooldown): string {
-  let command: string
-  let argsInner: string | null
-  if (method.id === 'uvx') {
-    command = 'uvx'
-    argsInner =
-      cooldown.id === 'days'
-        ? `"--exclude-newer", "${COOLDOWN_DURATION_SENTINEL}", "--exclude-newer-package", "libtmux-mcp=2099-01-01", "libtmux-mcp"`
-        : '"libtmux-mcp"'
-  } else if (method.id === 'pipx') {
-    command = 'pipx'
-    argsInner = '"run", "libtmux-mcp"'
-  } else {
-    command = 'libtmux-mcp'
-    argsInner = null
+function tomlBody(server: ServerCommand): string {
+  const lines = ['[mcp_servers.tmux]', `command = "${server.command}"`]
+  const args = configArgs(server)
+  if (args.length > 0) lines.push(`args = [${args.map((a) => `"${a}"`).join(', ')}]`)
+  const env = Object.entries(server.env ?? {})
+  if (env.length > 0) {
+    lines.push(`env = { ${env.map(([k, v]) => `${k} = "${v}"`).join(', ')} }`)
   }
-  const lines = ['[mcp_servers.tmux]', `command = "${command}"`]
-  if (argsInner !== null) lines.push(`args = [${argsInner}]`)
-  if (cooldown.id === 'bypass' && method.id === 'uvx') lines.push('env = { UV_NO_CONFIG = "1" }')
   return lines.join('\n')
-}
-
-/** One-line caveat for cells whose snippet doesn't actually enforce cooldown. */
-function cooldownNote(method: Method, cooldown: Cooldown): string | null {
-  if ((method.id === 'pipx' || method.id === 'pip') && (cooldown.id === 'days' || cooldown.id === 'bypass')) {
-    return (
-      'pip has no per-package cooldown override, so this snippet runs without cooldown enforcement. ' +
-      'Switch to the uvx tab — it applies the cooldown to transitive deps via `--exclude-newer` while ' +
-      'exempting libtmux-mcp itself via `--exclude-newer-package`.'
-    )
-  }
-  return null
 }
 
 interface RawBody {
@@ -337,25 +534,26 @@ interface RawBody {
  * Codex's `project` scope is the one cell that escapes its client's normal
  * kind — it emits TOML because the Codex CLI doesn't write `project` scope.
  */
-function bodyFor(client: Client, method: Method, scope: Scope, cooldown: Cooldown): RawBody {
-  const note = cooldownNote(method, cooldown)
+function bodyFor(client: Client, scope: Scope, server: ServerCommand): RawBody {
+  const note = server.note ?? null
   if (client.id === 'codex' && scope.id === 'project') {
-    return { body: tomlBody(method, cooldown), language: 'toml', note }
+    return { body: tomlBody(server), language: 'toml', note }
   }
   if (client.kind === 'json') {
-    return { body: jsonBody(method, cooldown), language: 'json', note }
+    return { body: jsonBody(server), language: 'json', note }
   }
-  return { body: cliBody(client, scope, method, cooldown), language: 'console', note }
+  return { body: cliBody(client, scope, server), language: 'console', note }
 }
 
-/** Pre-compute every legal (client, method, scope, cooldown) panel. */
-export function buildPanels(): Panel[] {
+/** Pre-compute every legal (client, method, scope, cooldown) panel for one port. */
+export function buildPanels(spec: ServerSpec): Panel[] {
   const panels: Panel[] = []
   CLIENTS.forEach((client, clientIndex) => {
-    METHODS.forEach((method, methodIndex) => {
+    spec.methods.forEach((method, methodIndex) => {
       client.scopes.forEach((scope, scopeIndex) => {
-        COOLDOWNS.forEach((cooldown, cooldownIndex) => {
-          const raw = bodyFor(client, method, scope, cooldown)
+        spec.cooldowns.forEach((cooldown, cooldownIndex) => {
+          const server = spec.resolve(method, cooldown)
+          const raw = bodyFor(client, scope, server)
           const body = raw.language === 'console' ? `$ ${raw.body}` : raw.body
           panels.push({
             client,
@@ -364,7 +562,7 @@ export function buildPanels(): Panel[] {
             cooldown,
             language: raw.language,
             body,
-            pipPrereq: method.id === 'pip' ? PIP_PREREQ_OFF : null,
+            pipPrereq: server.prereq ?? null,
             note: raw.note,
             isDefault: clientIndex === 0 && methodIndex === 0 && scopeIndex === 0 && cooldownIndex === 0,
           })
@@ -468,12 +666,22 @@ function scopeGroupVisibleSelectors(): string {
  * One selector per legal (client, method, scope, cooldown-state) tuple.
  * Cooldown state is the (enabled, type) pair: enabled=0 shows the "off"
  * panel regardless of saved type; enabled=1 shows "days" or "bypass"
- * depending on type. 14 scopes * 3 methods * 3 states = 126 selectors.
+ * depending on type. For Python that is 14 scopes * 3 methods * 3 states =
+ * 126 selectors.
+ *
+ * A port with no cooldown axis leaves the cooldown attributes out of its
+ * selectors entirely, rather than pinning them to "off". The attribute on
+ * `<html>` is written from one shared key, so a reader who turned a cooldown
+ * on over on `/mcp/` would otherwise arrive at a TypeScript page whose every
+ * panel selector failed to match — and `PANEL_DEFAULT_OVERRIDE_RULE` has
+ * already hidden the server-rendered default by then, leaving a widget with
+ * no panel at all.
  */
-function panelActiveSelectors(): string {
+function panelActiveSelectors(spec: ServerSpec): string {
   const selectors: string[] = []
+  const hasCooldowns = spec.cooldowns.length > 1
   for (const client of CLIENTS) {
-    for (const method of METHODS) {
+    for (const method of spec.methods) {
       for (const scope of client.scopes) {
         const htmlAttrs =
           `[data-mcp-install-client="${client.id}"]` +
@@ -481,6 +689,10 @@ function panelActiveSelectors(): string {
           `[data-mcp-install-scope="${scope.id}"]`
         const panel =
           ` .lm-mcp-install__panel[data-client="${client.id}"][data-method="${method.id}"][data-scope="${scope.id}"]`
+        if (!hasCooldowns) {
+          selectors.push(`html${htmlAttrs}${panel}[data-cooldown="off"]`)
+          continue
+        }
         selectors.push(`html[data-mcp-install-cooldown-enabled="0"]${htmlAttrs}${panel}[data-cooldown="off"]`)
         selectors.push(
           `html[data-mcp-install-cooldown-enabled="1"][data-mcp-install-cooldown-type="days"]${htmlAttrs}${panel}[data-cooldown="days"]`,
@@ -531,9 +743,9 @@ const COOLDOWN_TOGGLE_CHECKED_RULES =
   '{content:"\\2713";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;' +
   'color:#fff;font-size:0.85em;font-weight:700;line-height:1}'
 
-function buildPrehydrateStyle(): string {
+function buildPrehydrateStyle(spec: ServerSpec): string {
   const clientIds = CLIENTS.map((c) => c.id)
-  const methodIds = METHODS.map((m) => m.id)
+  const methodIds = spec.methods.map((m) => m.id)
   const rules = [
     TAB_DEACTIVATE_RULE,
     tabActiveSelectors('client', clientIds) + TAB_ACTIVE_DECL,
@@ -541,7 +753,7 @@ function buildPrehydrateStyle(): string {
     scopeTabActiveSelectors() + TAB_ACTIVE_DECL,
     scopeGroupVisibleSelectors() + SCOPE_GROUP_ACTIVE_DECL,
     PANEL_DEFAULT_OVERRIDE_RULE,
-    panelActiveSelectors() + PANEL_ACTIVE_DECL,
+    panelActiveSelectors(spec) + PANEL_ACTIVE_DECL,
     COOLDOWN_TOGGLE_CHECKED_RULES,
   ]
   return `<style>${rules.join('')}</style>`
@@ -553,7 +765,20 @@ function buildPrehydrateStyle(): string {
 // origin-scoped regardless, so this is a naming choice, not a fix.
 export const STORAGE_PREFIX = 'libtmux-docs.mcp-install'
 
-function buildPrehydrateScript(): string {
+/**
+ * The method key is per port; the client and scope keys are not.
+ *
+ * A client is a fact about the reader — whoever uses Cursor for Python uses
+ * it for TypeScript — so that choice is worth carrying between pages. A
+ * method is a fact about the port: `uvx` means nothing on the TypeScript
+ * page, and restoring it there left `<html data-mcp-install-method="uvx">`
+ * matching no panel selector and no panel on screen.
+ */
+export function methodStorageKey(port: string): string {
+  return `${STORAGE_PREFIX}.method.${port}`
+}
+
+function buildPrehydrateScript(spec: ServerSpec): string {
   const defaults = JSON.stringify(DEFAULT_SCOPES)
   const enabledDefault = DEFAULT_COOLDOWN_ENABLED ? '1' : '0'
   return (
@@ -562,7 +787,7 @@ function buildPrehydrateScript(): string {
     'var h=document.documentElement;' +
     `var d=${defaults};` +
     `var c=localStorage.getItem("${STORAGE_PREFIX}.client")||"${CLIENTS[0]!.id}";` +
-    `var m=localStorage.getItem("${STORAGE_PREFIX}.method")||"${METHODS[0]!.id}";` +
+    `var m=localStorage.getItem("${methodStorageKey(spec.port)}")||"${spec.methods[0]!.id}";` +
     `var s=localStorage.getItem("${STORAGE_PREFIX}.scope."+c)||d[c];` +
     `var ce=localStorage.getItem("${STORAGE_PREFIX}.cooldown.enabled")||"${enabledDefault}";` +
     `var ct=localStorage.getItem("${STORAGE_PREFIX}.cooldown.type")||"${DEFAULT_COOLDOWN_TYPE}";` +
@@ -579,6 +804,6 @@ function buildPrehydrateScript(): string {
 }
 
 /** Full prehydrate `<style>` + `<script>`, for McpInstall.astro to inject with `set:html`. */
-export function buildMcpInstallPrehydrateSnippet(): string {
-  return buildPrehydrateStyle() + buildPrehydrateScript()
+export function buildMcpInstallPrehydrateSnippet(spec: ServerSpec): string {
+  return buildPrehydrateStyle(spec) + buildPrehydrateScript(spec)
 }

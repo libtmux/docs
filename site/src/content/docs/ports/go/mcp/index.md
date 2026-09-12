@@ -20,6 +20,7 @@ capabilities.
 
 ## Start here
 
+- [Install](#install) points an MCP client at this server.
 - [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) install the command and diagnose its connection.
 - [Topics](./topics/) explain capabilities, operation ceilings, and jobs.
