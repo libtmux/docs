@@ -126,6 +126,16 @@ node scripts/docs-arena.ev.negative.mjs
 step 'quote drift (negative)'
 node scripts/arena/check-quote-drift.negative.mjs
 
+# The other direction, and the one a new page gets wrong: fencing a program no
+# arena artifact runs. It needs only the two data files, so unlike the drift
+# comparison it belongs here rather than in the port lane — a page is written in
+# a checkout that has no ports, which is exactly where it must fail.
+step 'quote coverage'
+node scripts/arena/check-quote-coverage.mjs
+
+step 'quote coverage (negative)'
+node scripts/arena/check-quote-coverage.negative.mjs
+
 if [[ "${LIBTMUX_DOCS_ARENA:-}" == 1 ]]; then
   step 'quote drift'
   node scripts/arena/check-quote-drift.mjs

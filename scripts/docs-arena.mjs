@@ -6,8 +6,9 @@
  *
  * A port runs when its `tmux-arena` worktree and toolchain are present. One
  * without them is reported as not run, never as passed; `--require` turns
- * that into a failure. It starts with the quote coverage: which quoted
- * sources an arena artifact executes, and which have no adapter yet.
+ * that into a failure. It starts with the quote coverage, which is a rule
+ * rather than a report: a page quoting a program no artifact runs fails here
+ * unless check-quote-coverage.mjs excuses it with a reason code.
  *
  * Usage: node scripts/docs-arena.mjs [--port <slug>]... [--require] [--no-prepare]
  */
@@ -17,6 +18,7 @@ import { tmpdir } from 'node:os'
 import { delimiter, join, resolve } from 'node:path'
 import sources from '../site/src/data/example-sources.json' with { type: 'json' }
 import { ARTIFACTS, arenaWorktree } from './arena/artifacts.mjs'
+import { runCheck as checkQuoteCoverage } from './arena/check-quote-coverage.mjs'
 import { ArenaFailure, resolveTmux, runFailClosed, runInArena, runInArenaMulti } from './arena/supervisor.mjs'
 
 const argv = process.argv.slice(2)
@@ -53,12 +55,18 @@ const isPage = (key) => key.split(':')[1] === 'page'
 const executed = new Set(ARTIFACTS.flatMap((entry) => entry.runs))
 const executedFiles = [...executed].filter((key) => !isPage(key))
 const executedPages = [...executed].filter(isPage).sort()
-const runFiles = new Set(executedFiles)
-const quoted = Object.keys(sources).sort()
-console.log(`quoted and run in the arena: ${quoted.filter((key) => runFiles.has(key)).join(', ') || 'none'}`)
-console.log(`quoted with no arena adapter yet: ${quoted.filter((key) => !runFiles.has(key)).join(', ') || 'none'}`)
+// The quoted direction is a rule, not a report, and it lives in one place so
+// that the every-run gate and this port lane cannot disagree about it: a page
+// quoting a program the arena never runs fails here too.
+const coverage = checkQuoteCoverage()
+const covered = (status) => coverage.filter((result) => result.status === status).map((result) => result.key)
+console.log(`quoted and run in the arena: ${covered('run').join(', ') || 'none'}`)
+console.log(`quoted, not run here, exempt with a reason: ${covered('exempt').join(', ') || 'none'}`)
 console.log(`run in the arena but quoted by no page: ${executedFiles.filter((key) => !Object.hasOwn(sources, key)).sort().join(', ') || 'none'}`)
 console.log(`pages run in the arena: ${executedPages.join(', ') || 'none'}`)
+for (const result of coverage.filter((entry) => entry.status === 'fail')) {
+  console.error(`quote coverage: ${result.key} — ${result.reason}`)
+}
 
 let tmuxBin
 let tmuxProblem
@@ -118,4 +126,6 @@ for (const { slug, status, detail } of results) console.log(`${status.padEnd(7)}
 const count = (status) => results.filter((result) => result.status === status).map((result) => result.slug)
 const notRun = count('not run')
 console.log(`docs arena: passed ${count('pass').join(', ') || 'none'}; failed ${count('fail').join(', ') || 'none'}; not run: ${notRun.join(', ') || 'none'}`)
-if (count('fail').length || (requireAll && notRun.length)) process.exitCode = 1
+const unaccounted = coverage.filter((result) => result.status === 'fail')
+if (unaccounted.length) console.log(`docs arena: ${unaccounted.length} quoted source(s) unaccounted for, listed above`)
+if (count('fail').length || unaccounted.length || (requireAll && notRun.length)) process.exitCode = 1

@@ -5,8 +5,8 @@
  * Each entry names the artifact its adapter accepts and the sources that
  * artifact executes, in `site/src/data/example-sources.json` key form
  * (`<slug>:<path>`), or `<slug>:page:<path>` for a port documentation page.
- * A quoted source that no entry runs is reported as not yet arena-capable
- * instead of passing silently.
+ * A quoted source that no entry runs fails check-quote-coverage.mjs unless it
+ * is listed there with a reason code and the gate that does run it.
  *
  * `LIBTMUX_DOCS_ARENA_<SLUG>` overrides one port's worktree, which otherwise
  * sits beside its checkout as `<checkout>-tmux-arena`.
