@@ -203,9 +203,10 @@ export interface Port {
   /**
    * One caveat a reader cannot infer from the install command alone.
    *
-   * Swift is the case that earned it: the repository is `libtmux-swift`, the
-   * SwiftPM package is `libtmux`, and the library product is `LibTmux`, so a
-   * target that names the repository fails to resolve.
+   * Swift is the case that earned it: a target has to name the product
+   * `LibTmux` and the package `libtmux-swift`, and neither is the `name:` its
+   * package manifest declares. Getting it wrong fails at build time with
+   * "unknown package", which is the error that corrected this line.
    */
   installNote?: string
 }
@@ -578,7 +579,7 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
       git: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", exact: "{tag}")', lang: 'swift' },
     },
     installNote:
-      'Depend on the product, not the repository name: the package is `libtmux` and the library is `LibTmux`, so a target writes .product(name: "LibTmux", package: "libtmux").',
+      'A target depends on the product, not the package: write .product(name: "LibTmux", package: "libtmux-swift"). The library is `LibTmux` while the package identity SwiftPM derives from the URL is `libtmux-swift`, which is neither the product name nor the `name:` in the package manifest.',
   },
 ] as const
 
