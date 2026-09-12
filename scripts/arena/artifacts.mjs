@@ -310,7 +310,56 @@ export const ARTIFACTS = [
       cwd: '.',
       command: ['dotnet', 'build', 'examples/LibTmux.Examples/LibTmux.Examples.csproj', '--configuration', 'Release', '--framework', 'net10.0', '--nologo', '--verbosity', 'quiet'],
     }],
-    run: () => ({ cwd: '.', command: ['dotnet', 'examples/LibTmux.Examples/bin/Release/net10.0/LibTmux.Examples.dll', '--arena-one-shot'] }),
+    run: () => ({ cwd: '.', command: ['dotnet', 'examples/LibTmux.Examples/bin/Release/net10.0/LibTmux.Examples.dll', '--arena', 'csharp-one-shot'] }),
+  },
+  // One artifact per documented snippet file. Every example case can take a
+  // lent server now, and the flag names any of them; these are the files the
+  // documentation quotes. `Mcp.ConnectToSelectedSurface` is deliberately not
+  // here: it starts a separate MCP process that resolves its own socket, so
+  // it would report evidence for a server it never used.
+  {
+    slug: 'dotnet',
+    artifact: 'csharp-many-commands-one-process',
+    runs: ['dotnet:examples/LibTmux.Examples/Snippets/Chaining.cs'],
+    tools: ['dotnet'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['dotnet', 'build', 'examples/LibTmux.Examples/LibTmux.Examples.csproj', '--configuration', 'Release', '--framework', 'net10.0', '--nologo', '--verbosity', 'quiet'],
+    }],
+    run: () => ({ cwd: '.', command: ['dotnet', 'examples/LibTmux.Examples/bin/Release/net10.0/LibTmux.Examples.dll', '--arena', 'csharp-many-commands-one-process'] }),
+  },
+  {
+    slug: 'dotnet',
+    artifact: 'csharp-watch-for-window-add',
+    runs: ['dotnet:examples/LibTmux.Examples/Snippets/ControlMode.cs'],
+    tools: ['dotnet'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['dotnet', 'build', 'examples/LibTmux.Examples/LibTmux.Examples.csproj', '--configuration', 'Release', '--framework', 'net10.0', '--nologo', '--verbosity', 'quiet'],
+    }],
+    run: () => ({ cwd: '.', command: ['dotnet', 'examples/LibTmux.Examples/bin/Release/net10.0/LibTmux.Examples.dll', '--arena', 'csharp-watch-for-window-add'] }),
+  },
+  {
+    slug: 'dotnet',
+    artifact: 'csharp-host-the-tools-yourself',
+    runs: ['dotnet:examples/LibTmux.Examples/Snippets/Mcp.cs'],
+    tools: ['dotnet'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['dotnet', 'build', 'examples/LibTmux.Examples/LibTmux.Examples.csproj', '--configuration', 'Release', '--framework', 'net10.0', '--nologo', '--verbosity', 'quiet'],
+    }],
+    run: () => ({ cwd: '.', command: ['dotnet', 'examples/LibTmux.Examples/bin/Release/net10.0/LibTmux.Examples.dll', '--arena', 'csharp-host-the-tools-yourself'] }),
+  },
+  {
+    slug: 'dotnet',
+    artifact: 'csharp-show-hierarchy',
+    runs: ['dotnet:examples/LibTmux.Examples/Snippets/Tour.cs'],
+    tools: ['dotnet'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['dotnet', 'build', 'examples/LibTmux.Examples/LibTmux.Examples.csproj', '--configuration', 'Release', '--framework', 'net10.0', '--nologo', '--verbosity', 'quiet'],
+    }],
+    run: () => ({ cwd: '.', command: ['dotnet', 'examples/LibTmux.Examples/bin/Release/net10.0/LibTmux.Examples.dll', '--arena', 'csharp-show-hierarchy'] }),
   },
   {
     slug: 'cxx',
