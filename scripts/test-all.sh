@@ -114,6 +114,12 @@ node scripts/gen-example-sources.negative.mjs
 step 'docs arena (negative)'
 node scripts/docs-arena.negative.mjs
 
+# One lend can serve several documented sources, which is what makes a doctest
+# page affordable. This proves the supervisor still knows which source produced
+# which record, and still notices a server replaced partway through.
+step 'docs arena evidence (negative)'
+node scripts/docs-arena.ev.negative.mjs
+
 # Running a source and quoting it are two different files until something
 # compares them. This is that comparison; its negative needs no worktree and
 # proves the comparison can fail, so it runs everywhere.

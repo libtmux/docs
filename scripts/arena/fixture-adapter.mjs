@@ -30,16 +30,41 @@ if (mode === 'extra') spawnSync(bin, ['-L', 'extra', 'new-session', '-d'], { std
 
 const [pid, reported] = tmux('display-message', '-p', '#{pid}\t#{socket_path}').split('\t')
 const challenge = tmux('display-message', '-p', '#{@libtmux_arena_challenge}')
+const base = { schema: 1, artifact, server_pid: Number(pid), socket_path: reported }
 const record = JSON.stringify({
-  schema: 1,
+  ...base,
   artifact: mode === 'artifact' ? 'another-artifact' : artifact,
   challenge: mode === 'challenge' ? '0'.repeat(64) : challenge,
-  server_pid: Number(pid),
   socket_path: mode === 'socket' ? `${reported}.elsewhere` : reported,
 })
 
-if (mode === 'hang') setInterval(() => {}, 1000)
-else {
+// N-records-per-run modes: one evidence line per declared source, reached
+// only when the harness sets DOCS_ARENA_FIXTURE_SOURCES. Every mode above
+// stays the single-record adapter docs-arena.negative.mjs exercises.
+const sources = (env.DOCS_ARENA_FIXTURE_SOURCES ?? '').split(',').filter(Boolean)
+if (sources.length) {
+  const print = (source) => console.log(`LIBTMUX_ARENA_EVIDENCE=${JSON.stringify({ ...base, challenge, source })}`)
+  const emit = mode === 'multi-missing' ? sources.slice(0, -1) : sources
+  for (const source of emit) {
+    if (mode === 'multi-replaced' && source === sources[1]) {
+      // What a documented block did to python's gate: stop the lent server,
+      // and let the next call quietly start another on the same socket. The
+      // records go on naming the pid and challenge the first server had.
+      tmux('kill-server')
+      spawnSync(bin, ['-S', socket, 'new-session', '-d'], { stdio: 'ignore' })
+    }
+    if (mode === 'multi-bad-challenge' && source === sources[sources.length - 1]) {
+      console.log(`LIBTMUX_ARENA_EVIDENCE=${JSON.stringify({ ...base, challenge: '0'.repeat(64), source })}`)
+    } else {
+      print(source)
+    }
+  }
+  if (mode === 'multi-duplicate') print(sources[0])
+  if (mode === 'multi-no-source') console.log(`LIBTMUX_ARENA_EVIDENCE=${JSON.stringify({ ...base, challenge })}`)
+  if (mode === 'multi-undeclared') print('an-undeclared-source')
+} else if (mode === 'hang') {
+  setInterval(() => {}, 1000)
+} else {
   if (mode !== 'silent') console.log(`LIBTMUX_ARENA_EVIDENCE=${record}`)
   if (mode === 'twice') console.log(`LIBTMUX_ARENA_EVIDENCE=${record}`)
   if (mode === 'kill') tmux('kill-server')

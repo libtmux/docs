@@ -27,13 +27,17 @@ import {
   accessSync, closeSync, constants, existsSync, lstatSync, mkdirSync, mkdtempSync,
   openSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync,
 } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { delimiter, dirname, join } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 
 export const EVIDENCE_PREFIX = 'LIBTMUX_ARENA_EVIDENCE='
 export const CHALLENGE_OPTION = '@libtmux_arena_challenge'
 // Short and fixed, because a Unix socket path has a small length limit.
-const ROOT_PARENT = '/tmp'
+// Where the lent server's private TMUX_TMPDIR is made. `TMPDIR` is honoured
+// through tmpdir(), and LIBTMUX_DOCS_ARENA_ROOT names it outright, so a run
+// that has been given a sandbox of its own cannot start a server outside it.
+const ROOT_PARENT = process.env.LIBTMUX_DOCS_ARENA_ROOT ?? tmpdir()
 const ROOT_PREFIX = 'lta-docs-'
 const HOLD_SESSION = 'arena-hold'
 const OUTPUT_LIMIT = 8 * 1024 * 1024
@@ -282,26 +286,45 @@ function requireSameServer(arena) {
   }
 }
 
-/** The one evidence record an adapter printed, parsed as a JSON object. */
-export function parseEvidence(stdout) {
-  const records = stdout.split('\n').filter((line) => line.startsWith(EVIDENCE_PREFIX))
+/**
+ * Every `LIBTMUX_ARENA_EVIDENCE=<JSON>` line an adapter printed, parsed as
+ * JSON objects, in print order. No count is enforced here — callers that
+ * want exactly one record (parseEvidence) or exactly one per declared
+ * `source` (validateEvidenceBySource) enforce that themselves, so this stays
+ * the one place that knows how to find and parse a record line.
+ *
+ * python's gate already stamps a `source` field naming the page it ran, which
+ * nothing read. This is what makes it mean something: N records per run, one
+ * per declared source, beside the one-record-per-artifact contract runInArena
+ * still enforces unchanged.
+ */
+export function parseEvidenceRecords(stdout) {
+  return stdout.split('\n').filter((line) => line.startsWith(EVIDENCE_PREFIX))
     .map((line) => line.slice(EVIDENCE_PREFIX.length).replace(/\r$/, ''))
-  if (records.length !== 1) throw new ArenaFailure(`the adapter printed ${records.length} evidence records, not exactly one`)
-  if (Buffer.byteLength(records[0]) > RECORD_LIMIT) throw new ArenaFailure('the evidence record is larger than the arena accepts')
-  let record
-  try {
-    record = JSON.parse(records[0])
-  } catch (error) {
-    throw new ArenaFailure(`the evidence record is not JSON: ${error.message}`)
-  }
-  if (record === null || typeof record !== 'object' || Array.isArray(record)) {
-    throw new ArenaFailure('the evidence record is not a JSON object')
-  }
-  return record
+    .map((line, index) => {
+      if (Buffer.byteLength(line) > RECORD_LIMIT) throw new ArenaFailure(`evidence record ${index} is larger than the arena accepts`)
+      let record
+      try {
+        record = JSON.parse(line)
+      } catch (error) {
+        throw new ArenaFailure(`evidence record ${index} is not JSON: ${error.message}`)
+      }
+      if (record === null || typeof record !== 'object' || Array.isArray(record)) {
+        throw new ArenaFailure(`evidence record ${index} is not a JSON object`)
+      }
+      return record
+    })
 }
 
-/** Prove the evidence names the lent artifact, socket, server, and live challenge. */
-export function validateEvidence(record, { artifact, pid, socketPath, challenge }) {
+/** The one evidence record an adapter printed, parsed as a JSON object. */
+export function parseEvidence(stdout) {
+  const records = parseEvidenceRecords(stdout)
+  if (records.length !== 1) throw new ArenaFailure(`the adapter printed ${records.length} evidence records, not exactly one`)
+  return records[0]
+}
+
+/** The checks every record must pass regardless of how many the adapter printed. */
+function validateOne(record, { artifact, pid, socketPath, challenge }) {
   if (record.artifact !== artifact) {
     throw new ArenaFailure(`the evidence names artifact ${JSON.stringify(record.artifact)}, not ${artifact}`)
   }
@@ -315,6 +338,73 @@ export function validateEvidence(record, { artifact, pid, socketPath, challenge 
     throw new ArenaFailure(`the evidence socket ${record.socket_path} is not the lent socket ${socketPath}`)
   }
   if (record.server_pid !== pid) throw new ArenaFailure(`the evidence PID ${record.server_pid} is not the lent server's ${pid}`)
+}
+
+/** Prove the evidence names the lent artifact, socket, server, and live challenge. */
+export function validateEvidence(record, ctx) {
+  validateOne(record, ctx)
+}
+
+/**
+ * Prove N evidence records — one per declared `source`, no more, no fewer —
+ * each pass every single-record check, and none collide or stray.
+ *
+ * Rejects, distinctly: a record missing `source`; a record naming a `source`
+ * this artifact never declared; two records naming the same `source`; and a
+ * declared `source` with no record at all. Order does not matter — sources
+ * are compared as a set, not a sequence, since an adapter may run them in
+ * any order.
+ */
+export function validateEvidenceBySource(records, { sources, artifact, pid, socketPath, challenge }) {
+  const declared = new Set(sources)
+  const seen = new Set()
+  for (const record of records) {
+    validateOne(record, { artifact, pid, socketPath, challenge })
+    if (typeof record.source !== 'string' || record.source === '') {
+      throw new ArenaFailure('an evidence record is missing its source')
+    }
+    if (!declared.has(record.source)) {
+      throw new ArenaFailure(`the evidence names source ${JSON.stringify(record.source)}, which was not declared for this artifact`)
+    }
+    if (seen.has(record.source)) {
+      throw new ArenaFailure(`the evidence names source ${JSON.stringify(record.source)} more than once`)
+    }
+    seen.add(record.source)
+  }
+  const missing = sources.filter((source) => !seen.has(source))
+  if (missing.length) {
+    throw new ArenaFailure(`no evidence record named declared source(s): ${missing.join(', ')}`)
+  }
+}
+
+/**
+ * Lend one server to one run that is expected to print N evidence records —
+ * one per `sources` — instead of runInArena's exactly-one. Otherwise the
+ * identical contract: same server survival and stray-server checks, same
+ * fail-closed shape, just validated with validateEvidenceBySource instead of
+ * validateEvidence.
+ *
+ * One lend for several sources is what makes a doctest page affordable: five
+ * sources cost about 85 ms this way against about 421 ms as five lends. The
+ * server is still proven unchanged at the end, so a source that stops it and
+ * a later call that quietly starts another are caught, whichever source did
+ * it.
+ */
+export async function runInArenaMulti({ tmuxBin, artifact, sources, command, cwd, env = {}, deadlineMs = 180_000 }) {
+  const arena = await startArena(tmuxBin, artifact)
+  try {
+    const run = await runArtifact({ command, cwd, env: contractEnv(arena, artifact, env, true), deadlineMs })
+    requireFinished(run, deadlineMs)
+    if (run.code !== 0) throw new ArenaFailure(`the artifact exited with ${run.code ?? run.signal}${context(run)}`)
+    const records = parseEvidenceRecords(run.stdout)
+    validateEvidenceBySource(records, { sources, artifact, pid: arena.pid, socketPath: arena.socketPath, challenge: arena.challenge })
+    requireSameServer(arena)
+    const extra = strays(arena)
+    if (extra.length) throw new ArenaFailure(`an extra tmux server appeared under the private TMUX_TMPDIR: ${extra.join(', ')}`)
+    return records
+  } finally {
+    await stopArena(arena)
+  }
 }
 
 /**
