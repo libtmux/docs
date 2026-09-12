@@ -61,6 +61,11 @@ export const ARTIFACTS = [
       ],
     }),
   },
+  // One entry per site-quoted ts example. They share the port slug, so
+  // `--port ts` and LIBTMUX_DOCS_ARENA_TS still select all four, and each
+  // names its own artifact, test file and `runs` key. Install and build steps
+  // repeat here because every entry declares what it needs; docs-arena runs a
+  // given command once per worktree, so they are not paid for four times.
   {
     slug: 'ts',
     artifact: 'typescript-quickstart',
@@ -71,6 +76,41 @@ export const ARTIFACTS = [
       { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'run', '--cwd', 'packages/libtmux', 'build'] },
     ],
     run: () => ({ cwd: 'examples', command: ['mise', 'exec', '--', 'bun', 'test', '--no-orphans', 'quickstart/quickstart.test.ts'] }),
+  },
+  {
+    slug: 'ts',
+    artifact: 'typescript-capture',
+    runs: ['ts:examples/capture/capture.ts'],
+    tools: ['mise'],
+    prepare: () => [
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'install', '--frozen-lockfile'] },
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'run', '--cwd', 'packages/libtmux', 'build'] },
+    ],
+    run: () => ({ cwd: 'examples', command: ['mise', 'exec', '--', 'bun', 'test', '--no-orphans', 'capture/capture.test.ts'] }),
+  },
+  {
+    slug: 'ts',
+    artifact: 'typescript-agent',
+    runs: ['ts:examples/agent/agent.ts'],
+    tools: ['mise'],
+    prepare: () => [
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'install', '--frozen-lockfile'] },
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'run', '--cwd', 'packages/libtmux', 'build'] },
+    ],
+    run: () => ({ cwd: 'examples', command: ['mise', 'exec', '--', 'bun', 'test', '--no-orphans', 'agent/agent.test.ts'] }),
+  },
+  {
+    slug: 'ts',
+    artifact: 'typescript-workspace',
+    runs: ['ts:examples/workspace/workspace.ts'],
+    tools: ['mise'],
+    prepare: () => [
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'install', '--frozen-lockfile'] },
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'run', '--cwd', 'packages/libtmux', 'build'] },
+      // This example imports the published package, not its source.
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'run', '--cwd', 'packages/workspace', 'build'] },
+    ],
+    run: () => ({ cwd: 'examples', command: ['mise', 'exec', '--', 'bun', 'test', '--no-orphans', 'workspace/workspace.test.ts'] }),
   },
   {
     slug: 'rs',

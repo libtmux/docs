@@ -69,6 +69,7 @@ try {
 }
 
 const results = []
+const prepared = new Set()
 for (const entry of ARTIFACTS) {
   if (only.size && !only.has(entry.slug)) continue
   const worktree = arenaWorktree(entry.slug)
@@ -81,16 +82,29 @@ for (const entry of ARTIFACTS) {
   }
   const build = join(tmpdir(), 'libtmux-docs-arena', entry.slug)
   mkdirSync(build, { recursive: true })
+  const startedAt = Date.now()
   try {
-    if (prepare) for (const buildStep of entry.prepare(build)) step(worktree, buildStep)
+    if (prepare) {
+      for (const buildStep of entry.prepare(build)) {
+        // Artifacts of one port share install and build commands. Each
+        // distinct command runs once per worktree, so four ts examples do not
+        // pay for the same install and build four times.
+        const key = [worktree, buildStep.cwd, ...buildStep.command].join('\u0000')
+        if (prepared.has(key)) continue
+        step(worktree, buildStep)
+        prepared.add(key)
+      }
+    }
     const { cwd, command } = entry.run(build)
     const target = { tmuxBin, artifact: entry.artifact, command, cwd: resolve(worktree, cwd) }
     const evidence = await runInArena(target)
     await runFailClosed(target)
-    results.push({ slug: entry.slug, status: 'pass', detail: `${entry.artifact} reached server ${evidence.server_pid}; failed closed without its socket` })
+    const ms = Date.now() - startedAt
+    results.push({ slug: entry.slug, status: 'pass', detail: `${entry.artifact} reached server ${evidence.server_pid}; failed closed without its socket (${ms}ms)` })
   } catch (error) {
     if (!(error instanceof ArenaFailure)) throw error
-    results.push({ slug: entry.slug, status: 'fail', detail: `${entry.artifact}: ${error.message}` })
+    const ms = Date.now() - startedAt
+    results.push({ slug: entry.slug, status: 'fail', detail: `${entry.artifact}: ${error.message} (${ms}ms)` })
   }
 }
 
