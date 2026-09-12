@@ -1,7 +1,9 @@
 ---
+import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
 import { Code } from 'astro-expressive-code/components'
 import { codeLang } from '../../lib/highlight'
 import { PORT_NAME } from '../../lib/api-models'
+import ApiDoc from './ApiDoc.astro'
 
 /**
  * The same example, in each language that has one.
@@ -27,10 +29,26 @@ import { PORT_NAME } from '../../lib/api-models'
  * stylesheet of their own, which is why an example here had a different
  * typeface, a different size and no copy button — a second code system on a
  * page that already had one.
+ *
+ * The intro above each block goes through `ApiDoc`, so a cross-reference in it
+ * links, the way it does in every other piece of doc-comment prose on the
+ * page. It used to render as raw text, backticks and all.
  */
 interface Props {
-  /** Panels in display order; the first is the page's own language. */
-  groups: { port: string; examples: { lang: string; code: string; intro?: string }[] }[]
+  /**
+   * Panels in display order; the first is the page's own language.
+   *
+   * Each carries the symbol index its intros resolve against, because a
+   * counterpart's prose is written in another port's dialect and names that
+   * port's symbols: resolving `` `Server.sessions` `` on a Rust panel against
+   * the Python index would link the wrong page or, more often, nothing.
+   */
+  groups: {
+    port: string
+    examples: { lang: string; code: string; intro?: string }[]
+    index: SymbolIndex
+    context?: ApiSymbol
+  }[]
   /** Distinguishes this instance's radio group from any other on the page. */
   name: string
 }
@@ -79,7 +97,11 @@ const panelRules = groups
         <div class="api-example-panel" data-port={g.port}>
           {g.examples.map((ex) => (
             <>
-              {ex.intro && <p class="api-example-intro">{ex.intro}</p>}
+              {ex.intro && (
+                <p class="api-example-intro">
+                  <ApiDoc text={ex.intro} index={g.index} context={g.context} citations={false} />
+                </p>
+              )}
               <Code code={ex.code} lang={codeLang(ex.lang)} />
             </>
           ))}

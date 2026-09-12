@@ -306,13 +306,23 @@ const counterparts = model
  */
 const ownExamples = owner?.doc?.examples ?? []
 const exampleGroups = ownExamples.length === 0 ? [] : [
-  { port: model?.port ?? '', examples: ownExamples },
+  { port: model?.port ?? '', examples: ownExamples, index, context: owner },
   ...counterparts.flatMap((c) => {
     const id = conceptEntries.map((x) => x.symbols[c.port]).find((v) => typeof v === 'string')
-    const other = id
-      ? API_MODELS[c.port]?.symbols.find((sym) => (sym.publicId ?? sym.id) === id)
+    const otherModel = API_MODELS[c.port]
+    const other = id && otherModel
+      ? otherModel.symbols.find((sym) => (sym.publicId ?? sym.id) === id)
       : undefined
-    return other?.doc?.examples?.length ? [{ port: c.port, examples: other.doc.examples }] : []
+    if (!other?.doc?.examples?.length || !otherModel) return []
+    // That port's own index, not this page's: the intro is written in the
+    // counterpart's doc dialect and names the counterpart's symbols, so
+    // resolving it here would link the wrong page or, more often, nothing.
+    return [{
+      port: c.port,
+      examples: other.doc.examples,
+      index: indexFor(otherModel, (sym) => referenceHref(c.port, sym.publicId ?? sym.id) ?? withRoot('/reference/')),
+      context: other,
+    }]
   }),
 ]
 
