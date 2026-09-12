@@ -1,6 +1,7 @@
 ---
 import { ALL_TRANSLATED, buildLocale } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
+import DocsLayout from '../layouts/DocsLayout.astro'
 import { DOC_PRODUCTS, PORTS, PORT_BY_SLUG, portPageUrl, productDescription, type DocProduct, referenceUrl } from '../lib/ports'
 import PortHero from '../components/PortHero.astro'
 import DocCard from '../components/DocCard.astro'
@@ -124,31 +125,43 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
 
 {
   versionRootPort ? (
-    <BaseLayout
+    /*
+     * The documentation shell, not the bare one.
+     *
+     * This is the root of a port's version tree, and every page below it —
+     * `/ts/latest/examples/`, `/ts/latest/guides/panes/` — carries the
+     * sidebar. Landing on the root was the one place the nav disappeared,
+     * which read as leaving the documentation rather than arriving at it.
+     *
+     * `bare` because the page brings its own hero and card grid: the reading
+     * column's prose styles would treat the cards as a document, and its
+     * heading would be a second one under `PortHero`'s.
+     */
+    <DocsLayout
       title={`${versionRootPort.name} ${buildVersion}`}
       description={`libtmux for ${versionRootPort.language}, version ${buildVersion}.`}
-      portSlug={versionRootPort.slug}
+      port={versionRootPort.slug}
+      version={buildVersion}
+      bare
     >
-      <main class="mx-auto max-w-7xl px-4 py-12">
-        <PortHero port={versionRootPort} defaultVersion={buildVersion} />
-        <p class="mt-4 text-sm text-muted">
-          You are reading the <strong>{buildVersion}</strong> documentation. Use
-          the version control in the header to move between releases, or the
-          port dropdown to find a corresponding page in another language.
-        </p>
-        <div class="mt-10 grid gap-4 sm:grid-cols-2">
-          {versionSections.map((s) => (
-            <DocCard href={s.href} label={s.label} body={s.body} />
-          ))}
-        </div>
-        <ApiReferences port={versionRootPort} version={buildVersion} />
-        <p class="mt-8 text-sm">
-          <a class="hover:underline" href={withPortRoot(`/${versionRootPort.slug}/`)}>
-            All {versionRootPort.name} versions and install instructions
-          </a>
-        </p>
-      </main>
-    </BaseLayout>
+      <PortHero port={versionRootPort} defaultVersion={buildVersion} />
+      <p class="mt-4 text-sm text-muted">
+        You are reading the <strong>{buildVersion}</strong> documentation. Use
+        the version control in the header to move between releases, or the
+        port dropdown to find a corresponding page in another language.
+      </p>
+      <div class="mt-10 grid gap-4 sm:grid-cols-2">
+        {versionSections.map((s) => (
+          <DocCard href={s.href} label={s.label} body={s.body} />
+        ))}
+      </div>
+      <ApiReferences port={versionRootPort} version={buildVersion} />
+      <p class="mt-8 text-sm">
+        <a class="hover:underline" href={withPortRoot(`/${versionRootPort.slug}/`)}>
+          All {versionRootPort.name} versions and install instructions
+        </a>
+      </p>
+    </DocsLayout>
   ) : (
 
 <BaseLayout
