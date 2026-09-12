@@ -1,0 +1,703 @@
+---
+import { PORTS } from '../../lib/ports'
+import { promptInputs } from '../../lib/registry'
+import { highlightPrompt } from '../../lib/prompt-highlight'
+import { composeFromParts, portParts, sharedParts, TOPICS, VERSION_SENTINEL } from '../../lib/prompts'
+import { DEFAULT_LOCALE } from '../../i18n/locales'
+import { SITE_ROOT } from '../../lib/site-root'
+
+/**
+ * The prompt a reader copies into a coding agent, with a picker for which
+ * language, which task, and which version of the docs it should cite.
+ *
+ * A sibling of ./PackageInstall.astro and ./McpInstall.astro rather than a
+ * mode on either, following the convention those two already state: each
+ * widget stands on its own, and the copy button is duplicated on purpose so no
+ * widget depends on another's script.
+ *
+ * Three axes, handled three different ways, and the differences are the design:
+ *
+ * - Port is server-rendered as one panel each, switched by CSS. That is what
+ *   makes the widget work with JavaScript off, and what lets `picker-paint.ts`
+ *   repaint a returning reader's saved language in <head> before first paint.
+ *   It shares PackageInstall's storage key, so choosing Swift once follows the
+ *   reader across both widgets.
+ * - Topic is composed in the browser from the parts below. Eight ports times
+ *   nine topics is seventy-two prompts and about 100 KB of prose; the parts
+ *   are eight port blocks plus nine topic blocks, and `composeFromParts` is
+ *   the same function the `.txt` routes and the tests use, so the copied text
+ *   cannot drift from the published one.
+ * - Version is a token inside the composed text, rewritten in place. Same
+ *   technique as McpInstall's cooldown slots, and for the same reason
+ *   VersionSwitcher fetches `/versions.json` at runtime: a version published
+ *   after this build still has to appear.
+ *
+ * Without JavaScript the reader gets the default combination, complete and
+ * copyable, and the topic and version controls do nothing. Every other
+ * combination has its own page and its own `.txt` URL, so nothing here is the
+ * only way to reach a prompt.
+ */
+interface Props {
+  /** Port slugs to offer. Omit for all eight; pass one to lock the widget. */
+  ports?: readonly string[]
+  /** Active port when nothing is saved. Defaults to the first shown. */
+  defaultPort?: string
+  /** Active topic on load. */
+  defaultTopic?: string
+  variant?: 'full' | 'compact'
+}
+
+const { ports, defaultPort, defaultTopic = 'setup', variant = 'full' } = Astro.props as Props
+
+const items = ports && ports.length > 0 ? PORTS.filter((p) => ports.includes(p.slug)) : PORTS
+if (items.length === 0) {
+  throw new Error('AgentPrompt: `ports` matched none of the eight port slugs in ports.ts')
+}
+if (!TOPICS.some((t) => t.id === defaultTopic)) {
+  throw new Error(`AgentPrompt: unknown defaultTopic "${defaultTopic}"`)
+}
+const initialSlug = defaultPort && items.some((p) => p.slug === defaultPort) ? defaultPort : items[0]!.slug
+
+/*
+ * Absolute, and always the default locale.
+ *
+ * A prompt is pasted somewhere else, so `withRoot` output would be a path with
+ * no host. libtmux.org publishes every page under a locale prefix and answers
+ * the unprefixed path with 403 rather than a redirect, so the prefix is not
+ * optional. Prompts are English because the port trees are.
+ */
+const origin = (Astro.site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
+const docsBase = `${origin}/${DEFAULT_LOCALE}`
+
+// process.env, not import.meta.env: build-site.sh runs astro build many times
+// in one tree and import.meta.env goes stale across them (see BaseLayout).
+const PORT_DEFAULTS: Record<string, string> = (() => {
+  try {
+    return JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
+  } catch {
+    return {}
+  }
+})()
+const versionFor = (slug: string) =>
+  PORT_DEFAULTS[slug] ?? process.env.LIBTMUX_DOCS_DEFAULT_VERSION ?? 'latest'
+
+/*
+ * Two renders of the same parts.
+ *
+ * `served` carries the real version, because that is what a reader without
+ * JavaScript copies and it has to be a working URL. `parts` carries the
+ * sentinel, because that is what the browser rewrites when the version changes.
+ * Composing the sentinel parts at the served version reproduces `served`
+ * exactly, which is what makes hydration invisible.
+ */
+const sentinelCtx = { docsBase, version: VERSION_SENTINEL }
+/*
+ * One copy for all eight. Topic sections name no API and anchor on shared
+ * pages, which sit above the version axis, so they do not vary by port or by
+ * version. Building them per port shipped 97 KB of identical prose.
+ */
+const shared = sharedParts(sentinelCtx)
+
+const built = items.map((port) => {
+  const version = versionFor(port.slug)
+  return {
+    port,
+    version,
+    served: composeFromParts(
+      sharedParts({ docsBase, version }),
+      portParts(promptInputs(port, { docsBase, version })),
+      defaultTopic,
+    ),
+    parts: portParts(promptInputs(port, sentinelCtx)),
+  }
+})
+
+/**
+ * The parts, for the browser.
+ *
+ * A JSON island rather than a prop on the script tag: it is several kilobytes
+ * of prose per port, and a data attribute would be HTML-escaped character by
+ * character. `<` is escaped so the payload cannot terminate its own script
+ * element, which is the one thing that turns a data island into markup.
+ */
+const island = JSON.stringify({
+  sentinel: VERSION_SENTINEL,
+  defaultTopic,
+  shared,
+  ports: Object.fromEntries(built.map((b) => [b.port.slug, { version: b.version, parts: b.parts }])),
+}).replaceAll('<', '\\u003c')
+
+const activePortRules = items
+  .map(
+    (p) =>
+      `.lm-agent-prompt[data-active-port="${p.slug}"] .lm-agent-prompt__panel[data-port="${p.slug}"]{display:block}`,
+  )
+  .join('')
+---
+
+<div
+  class={`lm-agent-prompt lm-agent-prompt--${variant}`}
+  data-ports={items.map((p) => p.slug).join(' ')}
+  data-default-topic={defaultTopic}
+  data-root={SITE_ROOT || '/'}
+>
+  {
+    items.length > 1 && (
+      <div class="lm-agent-prompt__tabs" role="tablist" aria-label="Language">
+        {items.map((p) => (
+          <button
+            type="button"
+            class="lm-agent-prompt__tab"
+            role="tab"
+            data-tab-value={p.slug}
+            aria-selected={p.slug === initialSlug ? 'true' : 'false'}
+            tabindex={p.slug === initialSlug ? '0' : '-1'}
+          >
+            {p.name}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  <div class="lm-agent-prompt__controls">
+    <label class="lm-agent-prompt__control">
+      <span class="lm-agent-prompt__label">Task</span>
+      <select class="lm-agent-prompt__select" data-select="topic">
+        {
+          TOPICS.map((topic) => (
+            <option value={topic.id} selected={topic.id === defaultTopic}>
+              {topic.label}
+            </option>
+          ))
+        }
+      </select>
+    </label>
+    <label class="lm-agent-prompt__control" data-version-control hidden>
+      <span class="lm-agent-prompt__label">Version</span>
+      <select class="lm-agent-prompt__select" data-select="version" />
+    </label>
+    <p class="lm-agent-prompt__summary" data-summary>
+      {TOPICS.find((t) => t.id === defaultTopic)!.summary}
+    </p>
+  </div>
+
+  <div class="lm-agent-prompt__body">
+    {
+      built.map((b) => (
+        <div
+          class="lm-agent-prompt__panel"
+          data-port={b.port.slug}
+          data-version={b.version}
+          data-default={b.port.slug === initialSlug ? true : undefined}
+        >
+          <div class="lm-agent-prompt__code">
+            <pre><code data-prompt-text set:html={highlightPrompt(b.served)} /></pre>
+            <button type="button" class="lm-agent-prompt__copy" data-action="copy" aria-label="Copy the prompt">
+              Copy
+            </button>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<script type="application/json" data-agent-prompt-parts set:html={island} />
+
+<style is:global>
+  /* Unlayered, matching the other two widgets. See mcp-install.css's header
+   * for why that matters against Tailwind v4's preflight. */
+  .lm-agent-prompt {
+    --lm-agent-prompt-bg: var(--background-color);
+    --lm-agent-prompt-bg-tabs: #f1f5f9; /* slate-100 */
+    --lm-agent-prompt-border: #e2e8f0; /* slate-200 */
+    --lm-agent-prompt-fg: var(--text-color);
+    --lm-agent-prompt-fg-muted: #64748b; /* slate-500 */
+    --lm-agent-prompt-accent: var(--theme-primary);
+    --lm-agent-prompt-hover: rgb(0 0 0 / 4%);
+    --lm-agent-prompt-code-bg: #f8fafc; /* slate-50 */
+    --lm-agent-prompt-mono: var(--font-ibm-plex-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    /* slate-300 / slate-600, matching Sidebar.astro and TableOfContents so
+     * the site has one scrollbar rather than three. */
+    --lm-agent-prompt-scroll: rgb(203 213 225);
+    --lm-agent-prompt-scroll-hover: rgb(148 163 184);
+    --lm-agent-prompt-url: #1d4ed8; /* blue-700 */
+    --lm-agent-prompt-cmd: #047857; /* emerald-700 */
+    --lm-agent-prompt-key: #7c3aed; /* violet-600 */
+
+    border: 1px solid var(--lm-agent-prompt-border);
+    border-radius: 0.375rem;
+    background: var(--lm-agent-prompt-bg);
+    color: var(--lm-agent-prompt-fg);
+    overflow: hidden;
+    margin: 1rem 0;
+  }
+
+  html[data-theme-mode='dark'] .lm-agent-prompt {
+    --lm-agent-prompt-bg-tabs: #1e293b; /* slate-800 */
+    --lm-agent-prompt-border: #1e293b;
+    --lm-agent-prompt-fg-muted: #94a3b8; /* slate-400 */
+    --lm-agent-prompt-hover: rgb(255 255 255 / 6%);
+    --lm-agent-prompt-code-bg: #0f172a; /* slate-900 */
+    --lm-agent-prompt-scroll: rgb(71 85 105);
+    --lm-agent-prompt-scroll-hover: rgb(100 116 139);
+    --lm-agent-prompt-url: #7dd3fc; /* sky-300 */
+    --lm-agent-prompt-cmd: #6ee7b7; /* emerald-300 */
+    --lm-agent-prompt-key: #c4b5fd; /* violet-300 */
+  }
+
+  .lm-agent-prompt__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    background: var(--lm-agent-prompt-bg-tabs);
+    border-bottom: 1px solid var(--lm-agent-prompt-border);
+  }
+
+  .lm-agent-prompt__tab {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    color: var(--lm-agent-prompt-fg-muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 0.45rem 0.9rem;
+    white-space: nowrap;
+  }
+
+  .lm-agent-prompt__tab:hover {
+    color: var(--lm-agent-prompt-fg);
+    background: var(--lm-agent-prompt-hover);
+  }
+
+  .lm-agent-prompt__tab:focus-visible {
+    outline: 2px solid var(--lm-agent-prompt-accent);
+    outline-offset: -2px;
+  }
+
+  .lm-agent-prompt__tab[aria-selected='true'] {
+    color: var(--lm-agent-prompt-accent);
+    border-bottom-color: var(--lm-agent-prompt-accent);
+    background: var(--lm-agent-prompt-bg);
+  }
+
+  .lm-agent-prompt__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--lm-agent-prompt-border);
+  }
+
+  .lm-agent-prompt__control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .lm-agent-prompt__label {
+    font-size: 0.8rem;
+    color: var(--lm-agent-prompt-fg-muted);
+  }
+
+  .lm-agent-prompt__select {
+    appearance: auto;
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 0.2rem 0.4rem;
+    color: var(--lm-agent-prompt-fg);
+    background: var(--lm-agent-prompt-bg);
+    border: 1px solid var(--lm-agent-prompt-border);
+    border-radius: 0.25rem;
+  }
+
+  .lm-agent-prompt__select:focus-visible {
+    outline: 2px solid var(--lm-agent-prompt-accent);
+    outline-offset: 1px;
+  }
+
+  .lm-agent-prompt__summary {
+    flex: 1 1 14rem;
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--lm-agent-prompt-fg-muted);
+  }
+
+  .lm-agent-prompt__body {
+    padding: 0;
+  }
+
+  /* SSR/no-JS default: exactly one panel, no script needed. The
+   * html[data-pkg-port] rules from picker-paint.ts override this by
+   * specificity before first paint. */
+  .lm-agent-prompt__panel {
+    display: none;
+  }
+
+  .lm-agent-prompt__panel[data-default] {
+    display: block;
+  }
+
+  .lm-agent-prompt[data-active-port] .lm-agent-prompt__panel {
+    display: none;
+  }
+
+  .lm-agent-prompt__code {
+    position: relative;
+  }
+
+  .lm-agent-prompt__code pre {
+    margin: 0;
+    /* The default scrollbar is a light chunk against a dark panel. `thin`
+     * plus explicit colours is the standard property; the WebKit rules below
+     * say the same thing for browsers that ignore it. */
+    scrollbar-width: thin;
+    scrollbar-color: var(--lm-agent-prompt-scroll) transparent;
+    /* The prompt is pre-wrapped to 76 columns, so it needs no horizontal
+     * scrolling at desktop width; the cap keeps a long one from taking over
+     * the page, and it stays selectable in one gesture. */
+    max-height: 26rem;
+    overflow: auto;
+    background: var(--lm-agent-prompt-code-bg);
+    /* The right padding clears the copy button, the same way
+     * PackageInstall.astro's does, so a long line runs out of room before it
+     * runs under the button rather than passing behind it. */
+    padding: 0.9rem 3.25rem 0.9rem 1rem;
+  }
+
+  .lm-agent-prompt__code code {
+    font-family: var(--lm-agent-prompt-mono);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    white-space: pre;
+    color: var(--lm-agent-prompt-fg);
+  }
+
+  .lm-agent-prompt__code pre::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .lm-agent-prompt__code pre::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .lm-agent-prompt__code pre::-webkit-scrollbar-thumb {
+    background: var(--lm-agent-prompt-scroll);
+    border-radius: 2px;
+  }
+
+  .lm-agent-prompt__code pre::-webkit-scrollbar-thumb:hover {
+    background: var(--lm-agent-prompt-scroll-hover);
+  }
+
+  /* Tokens. A prompt has no grammar to highlight, so these mark the things a
+   * reader looks for: what to run, what to read, and what the facts are. */
+  .lm-agent-prompt__code .lm-ph-url { color: var(--lm-agent-prompt-url); }
+  .lm-agent-prompt__code .lm-ph-cmd { color: var(--lm-agent-prompt-cmd); }
+  .lm-agent-prompt__code .lm-ph-code { color: var(--lm-agent-prompt-cmd); }
+  .lm-agent-prompt__code .lm-ph-key { color: var(--lm-agent-prompt-key); }
+  .lm-agent-prompt__code .lm-ph-heading { color: var(--lm-agent-prompt-fg); font-weight: 600; }
+  .lm-agent-prompt__code .lm-ph-marker { color: var(--lm-agent-prompt-fg-muted); }
+
+  .lm-agent-prompt__copy {
+    position: absolute;
+    /* Clear of the scrollbar, which takes the first 4px of this edge. At
+     * 0.6rem the button sat about five pixels off it and read as flush. */
+    top: 0.6rem;
+    right: 0.85rem;
+    appearance: none;
+    border: 1px solid var(--lm-agent-prompt-border);
+    border-radius: 0.25rem;
+    background: var(--lm-agent-prompt-bg);
+    color: var(--lm-agent-prompt-fg-muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.75rem;
+    line-height: 1;
+    padding: 0.35rem 0.55rem;
+  }
+
+  .lm-agent-prompt__copy:hover {
+    color: var(--lm-agent-prompt-fg);
+    border-color: var(--lm-agent-prompt-fg-muted);
+  }
+
+  .lm-agent-prompt__copy:focus-visible {
+    outline: 2px solid var(--lm-agent-prompt-accent);
+    outline-offset: 2px;
+  }
+
+  .lm-agent-prompt__copy--done {
+    color: var(--lm-agent-prompt-accent);
+    border-color: var(--lm-agent-prompt-accent);
+  }
+
+  .lm-agent-prompt--compact .lm-agent-prompt__code pre {
+    max-height: 18rem;
+    padding: 0.7rem 3.25rem 0.7rem 0.8rem;
+  }
+
+  @media (max-width: 40rem) {
+    .lm-agent-prompt__code code {
+      font-size: 0.72rem;
+    }
+  }
+</style>
+
+{/* Generated from the ports actually rendered here, not hand-typed. */}
+<style is:global set:html={activePortRules} />
+
+<script>
+  // The browser composes with the same function the routes and the tests use.
+  // prompts.ts has no value imports precisely so this line is safe: pulling in
+  // ports.ts would drag site-root.ts, which reads process.env at module scope,
+  // into a bundle where `process` does not exist.
+  import { composeFromParts, TOPIC_BY_ID, type PortParts, type SharedParts } from '../../lib/prompts'
+  import { highlightPrompt } from '../../lib/prompt-highlight'
+
+  interface Island {
+    sentinel: string
+    defaultTopic: string
+    shared: SharedParts
+    ports: Record<string, { version: string; parts: PortParts }>
+  }
+
+  interface VersionEntry {
+    slug: string
+    label: string
+    supported: boolean
+  }
+
+  const STORAGE_KEY = 'libtmux-docs.package-install.port'
+  const SYNC_EVENT = 'lm-pkg-install:change'
+
+  function islandFor(widget: HTMLElement): Island | undefined {
+    const root = widget.parentElement ?? document
+    const node = root.querySelector<HTMLScriptElement>('[data-agent-prompt-parts]')
+      ?? document.querySelector<HTMLScriptElement>('[data-agent-prompt-parts]')
+    if (!node?.textContent) return undefined
+    try {
+      return JSON.parse(node.textContent) as Island
+    } catch {
+      return undefined
+    }
+  }
+
+  /** Which port, task and version this widget is currently showing. */
+  function stateOf(widget: HTMLElement) {
+    const topic = widget.querySelector<HTMLSelectElement>('[data-select="topic"]')
+    const version = widget.querySelector<HTMLSelectElement>('[data-select="version"]')
+    const active = widget.getAttribute('data-active-port')
+      ?? widget.querySelector<HTMLElement>('.lm-agent-prompt__panel[data-default]')?.dataset.port
+    return {
+      port: active ?? '',
+      topic: topic?.value ?? widget.dataset.defaultTopic ?? 'setup',
+      version: version?.value || undefined,
+    }
+  }
+
+  /**
+   * Rewrite the visible panel from the parts.
+   *
+   * Only the active panel. Recomposing all eight on every keystroke of a
+   * select would be wasted work, and a panel the reader has not looked at is
+   * repainted the moment they switch to it.
+   */
+  function render(widget: HTMLElement) {
+    const island = islandFor(widget)
+    if (!island) return
+    const { port, topic, version } = stateOf(widget)
+    const entry = island.ports[port]
+    const panel = widget.querySelector<HTMLElement>(`.lm-agent-prompt__panel[data-port="${port}"]`)
+    const target = panel?.querySelector<HTMLElement>('[data-prompt-text]')
+    if (!entry || !target) return
+    let text: string
+    try {
+      text = composeFromParts(island.shared, entry.parts, topic)
+    } catch {
+      // A topic the island does not carry: leave what is on screen rather than
+      // blanking the prompt.
+      return
+    }
+    // innerHTML, not textContent: the same highlighter the server used, so a
+    // recomposed prompt is coloured identically to the one that shipped.
+    // highlightPrompt escapes before it adds a tag.
+    target.innerHTML = highlightPrompt(text.replaceAll(island.sentinel, version ?? entry.version))
+    const summary = widget.querySelector<HTMLElement>('[data-summary]')
+    const known = TOPIC_BY_ID[topic]
+    if (summary && known) summary.textContent = known.summary
+  }
+
+  function selectPort(widget: HTMLElement, slug: string, persist: boolean) {
+    const tabs = widget.querySelectorAll<HTMLButtonElement>('.lm-agent-prompt__tab')
+    // A widget locked to one port ignores a shared choice it cannot show, the
+    // same rule PackageInstall follows, rather than rendering nothing.
+    if (!widget.dataset.ports?.split(' ').includes(slug)) return
+    tabs.forEach((tab) => {
+      const match = tab.dataset.tabValue === slug
+      tab.setAttribute('aria-selected', match ? 'true' : 'false')
+      tab.setAttribute('tabindex', match ? '0' : '-1')
+    })
+    widget.setAttribute('data-active-port', slug)
+    if (persist) {
+      // The document attribute is what <head> reads before first paint, so
+      // leaving it behind would mean the next load contradicts this click.
+      document.documentElement.setAttribute('data-pkg-port', slug)
+      try {
+        localStorage.setItem(STORAGE_KEY, slug)
+      } catch {
+        // Storage blocked: the choice holds for this page and no longer.
+      }
+    }
+    populateVersions(widget, slug)
+    render(widget)
+  }
+
+  /**
+   * Offer the versions this port actually publishes.
+   *
+   * Fetched rather than baked, for the reason VersionSwitcher gives: a version
+   * published after this build still has to appear. Until it arrives the
+   * control stays hidden, so a reader never sees a version picker with one
+   * entry in it.
+   */
+  let manifest: Promise<Record<string, VersionEntry[]> | undefined> | undefined
+
+  function versionManifest() {
+    if (!manifest) {
+      // Baked in at build time, for the reason VersionSwitcher states: a PR
+      // preview serves the whole site under /pr-42/, where a hardcoded
+      // '/versions.json' reads production's manifest instead of its own.
+      const root = (document.querySelector<HTMLElement>('.lm-agent-prompt')?.dataset.root || '/').replace(/\/+$/, '')
+      manifest = fetch(`${root}/versions.json`, { cache: 'no-cache' })
+        .then((res) => (res.ok ? res.json() : undefined))
+        .then((body) => (body?.schema === 1 ? (body.ports as Record<string, VersionEntry[]>) : undefined))
+        .catch(() => undefined)
+    }
+    return manifest
+  }
+
+  function populateVersions(widget: HTMLElement, slug: string) {
+    const control = widget.querySelector<HTMLElement>('[data-version-control]')
+    const select = widget.querySelector<HTMLSelectElement>('[data-select="version"]')
+    if (!control || !select) return
+    void versionManifest().then((ports) => {
+      const entries = (ports?.[slug] ?? []).filter((e) => e.supported)
+      if (entries.length < 2) {
+        control.hidden = true
+        return
+      }
+      const current = widget.querySelector<HTMLElement>(`.lm-agent-prompt__panel[data-port="${slug}"]`)?.dataset.version
+      select.replaceChildren(
+        ...entries.map((entry) => {
+          const option = document.createElement('option')
+          option.value = entry.slug
+          option.textContent = entry.label
+          option.selected = entry.slug === current
+          return option
+        }),
+      )
+      control.hidden = false
+      render(widget)
+    })
+  }
+
+  function copyPrompt(button: HTMLElement) {
+    // textContent, so the spans the highlighter added never reach the
+    // clipboard. What is copied is the prompt, byte for byte.
+    const text = button.closest('.lm-agent-prompt__code')?.querySelector('[data-prompt-text]')?.textContent
+    if (!text) return
+    const done = () => {
+      const original = button.getAttribute('data-copy-label') ?? button.textContent ?? 'Copy'
+      button.setAttribute('data-copy-label', original)
+      button.textContent = 'Copied'
+      button.classList.add('lm-agent-prompt__copy--done')
+      const holder = button as HTMLElement & { _lmResetTimer?: number }
+      window.clearTimeout(holder._lmResetTimer)
+      holder._lmResetTimer = window.setTimeout(() => {
+        button.textContent = original
+        button.classList.remove('lm-agent-prompt__copy--done')
+      }, 1500)
+    }
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done))
+    } else {
+      fallbackCopy(text, done)
+    }
+  }
+
+  function fallbackCopy(text: string, done: () => void) {
+    const area = document.createElement('textarea')
+    area.value = text
+    area.style.position = 'fixed'
+    area.style.opacity = '0'
+    document.body.appendChild(area)
+    area.focus()
+    area.select()
+    try {
+      document.execCommand('copy')
+    } catch {
+      // Nothing more to do; the button simply will not confirm.
+    }
+    document.body.removeChild(area)
+    done()
+  }
+
+  function widgets() {
+    return document.querySelectorAll<HTMLElement>('.lm-agent-prompt')
+  }
+
+  function hydrate() {
+    let saved: string | null = null
+    try {
+      saved = localStorage.getItem(STORAGE_KEY)
+    } catch {
+      saved = null
+    }
+    widgets().forEach((widget) => {
+      const start = saved ?? stateOf(widget).port
+      if (start) selectPort(widget, start, false)
+      else render(widget)
+    })
+  }
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement
+    const copy = target.closest<HTMLElement>('[data-action="copy"]')
+    if (copy?.closest('.lm-agent-prompt')) {
+      event.preventDefault()
+      copyPrompt(copy)
+      return
+    }
+    const tab = target.closest<HTMLButtonElement>('.lm-agent-prompt__tab')
+    const widget = tab?.closest<HTMLElement>('.lm-agent-prompt')
+    if (!tab || !widget || !tab.dataset.tabValue) return
+    selectPort(widget, tab.dataset.tabValue, true)
+    window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: { origin: widget, slug: tab.dataset.tabValue } }))
+  })
+
+  document.addEventListener('change', (event) => {
+    const select = (event.target as HTMLElement).closest<HTMLSelectElement>('.lm-agent-prompt__select')
+    const widget = select?.closest<HTMLElement>('.lm-agent-prompt')
+    if (widget) render(widget)
+  })
+
+  // The package picker and this one share a language, in both directions.
+  window.addEventListener(SYNC_EVENT, ((event: CustomEvent<{ origin: HTMLElement; slug: string }>) => {
+    widgets().forEach((widget) => {
+      if (widget === event.detail.origin) return
+      selectPort(widget, event.detail.slug, false)
+    })
+  }) as EventListener)
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hydrate)
+  } else {
+    hydrate()
+  }
+  document.addEventListener('astro:after-swap', hydrate)
+</script>

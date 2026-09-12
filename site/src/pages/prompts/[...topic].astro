@@ -1,0 +1,141 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AgentPrompt from '../../components/widgets/AgentPrompt.astro'
+import { TOPICS, type PromptTopic } from '../../lib/prompts'
+import { PORTS } from '../../lib/ports'
+import { buildsPrompts, textPath, topicPath } from '../../lib/prompt-routes'
+import { withRoot } from '../../lib/site-root'
+
+/**
+ * `/prompts/` and `/prompts/<topic>/` — the index, and one task in every
+ * language.
+ *
+ * One rest route rather than an index page beside a dynamic one, the shape
+ * `reference/[...slug].astro` already uses. A plain `index.astro` is static, so
+ * Astro emits it in all fourteen builds with no way to opt out, and every
+ * port+version tree would carry a `/py/latest/prompts/` index linking topic
+ * pages that only the root build writes.
+ *
+ * Each page opens on the widget with its own topic selected, so a reader lands
+ * on something copyable rather than on a description of something copyable.
+ */
+export function getStaticPaths() {
+  if (!buildsPrompts()) return []
+  return [
+    { params: { topic: undefined }, props: { topic: undefined } },
+    ...TOPICS.map((topic) => ({ params: { topic: topic.id }, props: { topic } })),
+  ]
+}
+
+const { topic } = Astro.props as { topic: PromptTopic | undefined }
+const count = PORTS.length * TOPICS.length
+---
+
+{
+  topic === undefined ? (
+    <BaseLayout
+      title="Agent prompts"
+      description="Copy-pasteable prompts that set up libtmux in a repository and build something with it, for any coding agent."
+    >
+      <main class="mx-auto max-w-5xl px-4 py-12">
+        <h1 class="text-3xl font-semibold tracking-tight">Agent prompts</h1>
+        <p class="mt-4 max-w-3xl text-base leading-relaxed opacity-80">
+          Each prompt installs libtmux in the repository you are in, checks the
+          install against a real tmux server, and points your agent at this
+          site's machine-readable index so it reads the API rather than guessing
+          it. They are plain text with no tool-specific syntax, so they work in
+          any agent.
+        </p>
+
+        <div class="mt-8">
+          <AgentPrompt />
+        </div>
+
+        <section class="mt-12">
+          <h2 class="text-xl font-semibold">Every task</h2>
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            {TOPICS.map((item) => (
+              <a
+                href={withRoot(`/${topicPath(item.id)}/`)}
+                class="block rounded border border-edge p-4 hover:bg-surface-hover"
+              >
+                <h3 class="font-semibold">{item.label}</h3>
+                <p class="mt-1 text-sm opacity-80">{item.summary}</p>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section class="mt-12">
+          <h2 class="text-xl font-semibold">For programs</h2>
+          <p class="mt-2 max-w-3xl text-sm opacity-80">
+            Every prompt is published as a plain-text file as well as on a page,
+            so an eval runner or a script can fetch one without parsing HTML.
+            <a class="underline" href={withRoot('/prompts.json')}>
+              prompts.json
+            </a>{' '}
+            lists all {count} of them with their URLs, the registry state each
+            install line was composed from, and a SHA-256 of the published
+            bytes, so a stored result can say which prompt produced it.
+          </p>
+          <pre class="mt-4 overflow-x-auto rounded bg-surface px-3 py-2 font-mono text-xs"><code>curl https://libtmux.org/en/prompts/py/session-switcher.txt</code></pre>
+        </section>
+      </main>
+    </BaseLayout>
+  ) : (
+
+<BaseLayout title={`${topic.label} prompt`} description={topic.summary}>
+  <main class="mx-auto max-w-5xl px-4 py-12">
+    <p class="text-sm">
+      <a class="hover:underline underline opacity-70" href={withRoot('/prompts/')}>Agent prompts</a>
+    </p>
+    <h1 class="mt-2 text-3xl font-semibold tracking-tight">{topic.label}</h1>
+    <p class="mt-4 max-w-3xl text-base leading-relaxed opacity-80">{topic.summary}</p>
+
+    <div class="mt-8">
+      <AgentPrompt defaultTopic={topic.id} />
+    </div>
+
+    <section class="mt-12">
+      <h2 class="text-xl font-semibold">As plain text</h2>
+      <p class="mt-2 max-w-3xl text-sm opacity-80">
+        The same prompt per language, as a file rather than a page.
+      </p>
+      <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+        {
+          PORTS.map((port) => (
+            <li>
+              <a
+                class="font-mono text-sm hover:underline underline"
+                href={withRoot(`/${textPath(port.slug, topic.id)}`)}
+              >
+                {port.name}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="mt-12">
+      <h2 class="text-xl font-semibold">What it reads</h2>
+      <p class="mt-2 max-w-3xl text-sm opacity-80">
+        This prompt anchors the work in these pages, and tells the agent to use
+        them rather than guess API names.
+      </p>
+      <ul class="mt-3 list-disc pl-5 text-sm">
+        {
+          topic.pages.map((page) => (
+            <li>
+              <a class="underline" href={withRoot(`/${page}/`)}>
+                {page}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </main>
+</BaseLayout>
+  )
+}

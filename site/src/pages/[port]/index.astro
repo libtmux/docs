@@ -6,6 +6,7 @@ import DocCard from '../../components/DocCard.astro'
 import ApiReferences from '../../components/ApiReferences.astro'
 import ProseText from '../../components/ProseText.astro'
 import PackageInstall from '../../components/widgets/PackageInstall.astro'
+import AgentPrompt from '../../components/widgets/AgentPrompt.astro'
 import { DOC_PRODUCTS, PORTS, portPageUrl, productDescription, type DocProduct, type Port } from '../../lib/ports'
 import { IS_ROOT_BUILD } from '../../lib/site-root'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
@@ -140,6 +141,17 @@ const cards = [
           </p>
         )
       }
+    </section>
+
+    <section class="mt-10 max-w-4xl">
+      <h2 class="text-lg font-semibold">Start with an agent</h2>
+      <p class="mt-2 text-sm opacity-80">
+        Copy this into any coding agent to set up {port.name} in the repository
+        you are in, then pick a task to build on top of it.
+      </p>
+      <div class="mt-3">
+        <AgentPrompt ports={[port.slug]} />
+      </div>
     </section>
 
     <ApiReferences port={port} version={defaultVersion} />

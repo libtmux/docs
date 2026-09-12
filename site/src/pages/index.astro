@@ -8,6 +8,7 @@ import DocCard from '../components/DocCard.astro'
 import ApiReferences from '../components/ApiReferences.astro'
 import { buildTarget } from '../lib/versions'
 import PackageInstall from '../components/widgets/PackageInstall.astro'
+import AgentPrompt from '../components/widgets/AgentPrompt.astro'
 import { QUICKSTARTS } from '../lib/quickstarts'
 import { withPortRoot, withRoot } from '../lib/site-root'
 import { localesFor } from '../i18n/resolve'
@@ -239,6 +240,26 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
       <div class="mt-4 max-w-2xl">
         <PackageInstall snippets={QUICKSTARTS} />
       </div>
+    </section>
+
+    <!-- Agent prompt -->
+    <section class="mt-16">
+      <h2 class="text-xl font-semibold">Start with an agent</h2>
+      <p class="mt-2 max-w-2xl text-sm opacity-80">
+        Copy this into any coding agent. It installs libtmux in the repository
+        you are in, checks the install against a real tmux server, and points
+        the agent at this site's
+        <a class="underline" href={withRoot('/llms.txt')}>llms.txt</a> and
+        <a class="underline" href={withRoot('/docs.json')}>docs.json</a> so it
+        reads the API rather than guessing it. Pick a language and a task.
+      </p>
+      <div class="mt-4 max-w-4xl">
+        <AgentPrompt />
+      </div>
+      <p class="mt-3 text-sm">
+        <a class="hover:underline underline" href={withRoot('/prompts/')}>All prompts</a>,
+        including a plain-text URL per language and task that an agent can fetch.
+      </p>
     </section>
 
     <!-- Ports -->

@@ -141,6 +141,35 @@ reproduces libtmux-mcp's own documented tool set name for name, every port
 declaring a wire prefix carries it on every tool, and all eight checkouts are
 present — a partial matrix looks exactly like a finding.
 
+```console
+$ node scripts/gen-registry.mjs
+```
+
+Regenerates `site/src/data/registry.json`, which records what each port's
+package registry carries right now: a stable release, a prerelease only, or
+nothing at all. `installCommand` in
+[ports.ts](../site/src/lib/ports.ts) composes that with the install spellings
+to produce the command a page or an agent prompt shows, so the command cannot
+name a version the registry does not have.
+
+It matters because seven of the eight ports have no stable release, and three
+resolve nothing unless the prerelease is named: Cargo treats an alpha as out of
+range for a plain requirement, `go get` without a version resolves the highest
+release and a prerelease is not one, and SwiftPM's `from:` excludes prereleases
+from its range.
+
+Pass `--check` to fail instead of writing when the checked-in file is stale.
+Pass `--offline` to re-emit the committed file without contacting any registry,
+for a job that must not depend on eight third-party services. A probe that
+fails for one port keeps that port's committed entry rather than reporting it
+unpublished, the same way `gen-versions.mjs` falls back to its seed.
+
+Release tags are read per port. Rust is a Cargo workspace and tags each crate
+(`libtmux@v0.1.0-alpha.10`); Go is multi-module and tags submodules under a
+path (`mcp/v0.0.1-alpha.9`) while the library tags bare. `tagPrefix` in
+ports.ts declares the first case, and its absence rejects any tag carrying `/`
+or `@`, so a submodule's release is never read as the library's.
+
 Assemble a complete preview:
 
 ```console

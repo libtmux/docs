@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "ports": {
+    "py": {
+      "status": "stable",
+      "version": "0.62.0",
+      "stable": "0.62.0",
+      "tag": "v0.62.0"
+    },
+    "ts": {
+      "status": "prerelease",
+      "version": "0.1.0-alpha.9",
+      "stable": null,
+      "tag": "v0.1.0-alpha.9"
+    },
+    "rs": {
+      "status": "prerelease",
+      "version": "0.1.0-alpha.11",
+      "stable": null,
+      "tag": "libtmux@v0.1.0-alpha.11"
+    },
+    "go": {
+      "status": "prerelease",
+      "version": "v0.0.1-alpha.7",
+      "stable": null,
+      "tag": "v0.0.1-alpha.7"
+    },
+    "java": {
+      "status": "prerelease",
+      "version": "0.0.1-alpha.10",
+      "stable": null,
+      "tag": "v0.0.1-alpha.10"
+    },
+    "dotnet": {
+      "status": "prerelease",
+      "version": "0.0.0-alpha.10",
+      "stable": null,
+      "tag": "v0.0.0-alpha.12"
+    },
+    "cxx": {
+      "status": "unpublished",
+      "version": null,
+      "stable": null,
+      "tag": "v0.1.0-alpha.7"
+    },
+    "swift": {
+      "status": "prerelease",
+      "version": "0.1.0-alpha.4",
+      "stable": null,
+      "tag": "0.1.0-alpha.4"
+    }
+  }
+}

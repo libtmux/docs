@@ -7,6 +7,8 @@
  */
 import type { APIRoute } from 'astro'
 import { llmsHeader, llmsPages, referenceLine } from '../lib/llms.ts'
+import { TOPICS } from '../lib/prompts.ts'
+import { buildsPrompts, topicPath } from '../lib/prompt-routes.ts'
 
 export const GET: APIRoute = async ({ site }) => {
   const origin = (site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
@@ -27,6 +29,26 @@ export const GET: APIRoute = async ({ site }) => {
 
   const reference = referenceLine(origin)
   if (reference) out.push('## Reference', '', reference, '')
+
+  /*
+   * Prompts are for the reader on the other side of this file.
+   *
+   * An agent that fetches llms.txt is exactly who a prompt is written for, so
+   * leaving them out would hide the one section addressed to it. Root build
+   * only, which is where the routes exist.
+   */
+  if (buildsPrompts()) {
+    out.push('## Prompts', '')
+    out.push(
+      `- [All prompts](${origin}${base}prompts/): copy-pasteable prompts that install libtmux ` +
+        'in a repository and build something with it. One per language and task, also published ' +
+        `as plain text at ${origin}${base}prompts/<language>/<task>.txt.`,
+    )
+    for (const topic of TOPICS) {
+      out.push(`- [${topic.label}](${origin}${base}${topicPath(topic.id)}/): ${topic.summary}`)
+    }
+    out.push('')
+  }
 
   out.push('## Optional', '')
   out.push(
