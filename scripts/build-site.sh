@@ -350,11 +350,20 @@ node --input-type=module -e '
   writeFileSync(file, JSON.stringify(selectBuildVersions(candidate, selected), null, 2) + "\n")
 '
 
+# The manifest is the one this build trimmed, so a missing default means the
+# selection kept none of that port's versions. Naming a slug this build never
+# produced would mislabel which page is canonical, so it fails instead.
 default_version_for() {
   LIBTMUX_DOCS_MANIFEST="$manifest" LIBTMUX_DOCS_PORT="$1" node -e '
     const fs = require("node:fs")
     const m = JSON.parse(fs.readFileSync(process.env.LIBTMUX_DOCS_MANIFEST, "utf8"))
-    process.stdout.write(m.defaultVersion[process.env.LIBTMUX_DOCS_PORT] ?? "stable")
+    const port = process.env.LIBTMUX_DOCS_PORT
+    const slug = m.defaultVersion[port]
+    if (!slug) {
+      process.stderr.write(`no default version for ${port}: this build kept none of its versions\n`)
+      process.exit(1)
+    }
+    process.stdout.write(slug)
   '
 }
 
