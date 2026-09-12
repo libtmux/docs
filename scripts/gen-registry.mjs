@@ -124,6 +124,23 @@ async function getJson(url, headers = {}) {
   return { missing: false, body: await res.json() }
 }
 
+/**
+ * GitHub's tag API, authenticated when a token is around.
+ *
+ * Unauthenticated calls are rate limited to 60 an hour per IP, which a shared
+ * CI runner exhausts long before this script runs. Distinguishing "no tags"
+ * from "could not ask" is what the caller needs, so this returns null for the
+ * second rather than folding it into an empty list.
+ */
+async function githubTags(repo) {
+  const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN
+  const { body } = await getJson(`https://api.github.com/repos/${repo}/tags?per_page=100`, {
+    accept: 'application/vnd.github+json',
+    ...(token ? { authorization: `Bearer ${token}` } : {}),
+  })
+  return Array.isArray(body) ? body.map((t) => t.name) : null
+}
+
 async function getText(url) {
   const res = await fetch(url, {
     headers: { 'user-agent': 'libtmux-docs gen-registry.mjs' },
@@ -228,8 +245,7 @@ async function allTags(port) {
       // Fall through to the API.
     }
   }
-  const { body } = await getJson(`https://api.github.com/repos/${port.repo}/tags?per_page=100`)
-  return Array.isArray(body) ? body.map((t) => t.name) : []
+  return githubTags(port.repo)
 }
 
 /** The newest tag naming a release of this library, full name included. */
@@ -284,11 +300,28 @@ for (const port of PORTS) {
     ports[port.slug] = previous
     continue
   }
-  let tags = []
+  let tags = null
   try {
     tags = await allTags(port)
   } catch {
-    tags = []
+    tags = null
+  }
+  /*
+   * Not knowing is not the same as knowing there is nothing.
+   *
+   * Swift's registry is its own repository, so its status is read from tags.
+   * With no checkout and no GitHub token the tag read fails, and folding that
+   * into an empty list classified Swift `unpublished` in CI while a machine
+   * with the checkout wrote `prerelease`: the generated file depended on where
+   * it ran, which `--check` then reported as staleness on every CI run.
+   */
+  if (tags === null) {
+    if (!previous) {
+      throw new Error(`${port.slug}: could not read tags and nothing committed to fall back to`)
+    }
+    notes.push(`${port.slug}: could not read release tags, kept the committed entry`)
+    ports[port.slug] = previous
+    continue
   }
   let versions
   try {
