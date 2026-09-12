@@ -73,6 +73,11 @@ try {
     }
     for (const width of [1440, 768, 390]) {
       await page.setViewportSize({ width, height: 1000 })
+      if (path.startsWith('reference/')) {
+        await page.waitForFunction((narrow) => document.querySelector('#api-nav').inert === narrow,
+          width < 1024)
+        await page.locator('#api-nav').waitFor({ state: width < 1024 ? 'hidden' : 'visible' })
+      }
       const result = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - innerWidth,
         columns: [...document.querySelectorAll('table')].flatMap((table) => {
