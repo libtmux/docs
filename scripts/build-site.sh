@@ -326,7 +326,7 @@ list_ports() {
 const repoRoot = process.env.LIBTMUX_DOCS_REPO_ROOT
 const { PORTS } = await import(new URL('site/src/lib/ports.ts', `file://${repoRoot}/`).href)
 for (const p of PORTS) {
-  const fields = [p.slug, p.name, p.versionedDocs ? 'versioned' : 'unversioned', p.renderer, p.generator, p.checkout, p.ecosystemHost?.name ?? '']
+  const fields = [p.slug, p.name, p.versionedDocs ? 'versioned' : 'unversioned', p.renderer, p.generator, p.checkout, p.ecosystemHost?.name ?? '', p.publishesOwnApi ? 'own-api' : '-']
   process.stdout.write(fields.map((f) => (String(f).trim() || '-').replaceAll('|', ' ')).join('|') + '\n')
 }
 NODE
@@ -1004,7 +1004,7 @@ done
 # homepage. Restored after that pass; see below.
 port_home_snapshots="$scratch/port-homes"
 mkdir -p "$port_home_snapshots"
-while IFS='|' read -r slug _name _versioned _renderer _generator _checkout _ecosystem_host; do
+while IFS='|' read -r slug _name _versioned _renderer _generator _checkout _ecosystem_host _own_api; do
   [ -f "$site_out/$slug/index.html" ] && cp "$site_out/$slug/index.html" "$port_home_snapshots/$slug.html"
 done < <(list_ports)
 
@@ -1027,7 +1027,7 @@ cp "$manifest" "$site_out/versions.json"
 
 summary_rows=()
 
-while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_host; do
+while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_host own_api; do
   contains "$ports_filter" "$slug" || continue
 
   if [ "$versioned" != "versioned" ]; then
@@ -1086,12 +1086,14 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     # arriving at /cxx/stable/api/ met a page with no cards, no badges, no
     # source links and no prose, while /reference/cxx/ had all four.
     #
-    # Python is the exception and stays generated. /py/stable/api/ is
-    # gp-sphinx rendering upstream's own documentation — it is the thing this
-    # reference is built to match, and the oracle
-    # `site/scripts/check-style-parity.mjs` compares against. Deleting it
-    # would delete the measurement.
-    if [ "$slug" != "py" ]; then
+    # A port that publishes its own API tree is the exception and stays
+    # generated: /py/stable/api/ is gp-sphinx rendering upstream's own
+    # documentation — the thing this reference is built to match, and the
+    # oracle `site/scripts/check-style-parity.mjs` compares against. Deleting
+    # it would delete the measurement. `publishesOwnApi` in ports.ts carries
+    # that fact to the publisher too, which must not overwrite the tree that
+    # port's own pipeline uploads.
+    if [ "$own_api" != "own-api" ]; then
       mkdir -p "$port_out/api"
       write_reference_redirect "$slug" "$port_out/api/index.html"
       summary_rows+=("$slug|$version|redirect|redirected|to $LIBTMUX_DOCS_PORT_ROOT/reference/$slug/")

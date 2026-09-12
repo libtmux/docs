@@ -35,6 +35,13 @@ fi
 port_locale=$(jq -r '.locale' shell-paths.json)
 mapfile -t shell_dirs < <(jq -r '.directories[]' shell-paths.json)
 mapfile -t shell_files < <(jq -r '.files[]' shell-paths.json)
+# Ports that publish their own `api/`. Absent rather than empty means an
+# artifact older than this check, which must not pass as "none of them".
+if ! jq -e 'has("nativeApi")' shell-paths.json > /dev/null; then
+  echo "::error::shell-paths.json does not declare nativeApi" >&2
+  exit 1
+fi
+mapfile -t native_api < <(jq -r '.nativeApi[]' shell-paths.json)
 for name in "${reserved[@]}" "${products[@]}" "$port_locale"; do
   if [[ ! "$name" =~ ^[a-z][a-z0-9-]*$ ]]; then
     echo "::error::invalid ownership name '$name'" >&2
@@ -62,9 +69,19 @@ for path in "${shell_dirs[@]}" "${shell_files[@]}"; do
   for candidate in "${reserved[@]}"; do
     [[ "$port" == "$candidate" ]] && known=true && break
   done
-  if [[ "$known" == false || "$port" == manifest || "$child" == api ]]; then
+  if [[ "$known" == false || "$port" == manifest ]]; then
     echo "::error::$path is outside shell-owned paths" >&2
     exit 1
+  fi
+  # `api` under a port that publishes its own belongs to that port whatever
+  # the artifact declares. Under every other port it is this site's redirect
+  # to the reference it renders, and refusing it left those URLs at 403.
+  if [[ "$child" == api ]]; then
+    for candidate in "${native_api[@]}"; do
+      [[ "$port" == "$candidate" ]] || continue
+      echo "::error::$path is published by the $port port itself" >&2
+      exit 1
+    done
   fi
 done
 if [[ "$locale" == "$port_locale" ]]; then
@@ -85,8 +102,15 @@ dirs=()
 reserved_index_dirs=()
 version_files=()
 for entry in dist/*; do
-  [[ -d "$entry" ]] || continue
   name=${entry##*/}
+  # `dotglob` is on so that nothing hides from these checks. A dot-entry at the
+  # root is not something the assembly writes, and adopting one would sync it
+  # to a prefix of its own, so it fails the run instead.
+  if [[ "$name" == .* ]]; then
+    echo "::error::$entry is a hidden entry at the artifact root" >&2
+    exit 1
+  fi
+  [[ -d "$entry" ]] || continue
   is_reserved=false
   for port in "${reserved[@]}"; do
     [[ "$name" == "$port" ]] && is_reserved=true && break

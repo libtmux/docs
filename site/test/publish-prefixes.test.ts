@@ -11,6 +11,12 @@ import { DEFAULT_LOCALE } from '../src/i18n/locales'
 // `check-publish` invoke this same file.
 const script = fileURLToPath(new URL('../../scripts/publish-root.sh', import.meta.url))
 const metadataScript = fileURLToPath(new URL('../../scripts/publication-metadata.mjs', import.meta.url))
+// `api/` is the port's own tree where it publishes one, and this site's
+// redirect to the reference it renders everywhere else.
+const NATIVE_API = PORTS.filter((port) => port.publishesOwnApi).map((port) => port.slug)
+const sectionsFor = (slug: string): string[] =>
+  [...Object.keys(DOC_PRODUCTS), 'guides', 'topics', '_astro', ...(NATIVE_API.includes(slug) ? [] : ['api'])]
+
 const scratch: string[] = []
 afterEach(() => scratch.splice(0).forEach((path) => rmSync(path, { recursive: true, force: true })))
 
@@ -38,14 +44,14 @@ function fixture(products = true): string {
         files.push(path)
         write(join(directory, 'dist', path))
       }
-      for (const name of [...Object.keys(DOC_PRODUCTS), 'guides', 'topics', '_astro']) {
+      for (const name of sectionsFor(port.slug)) {
         const path = `${port.slug}/latest/${name}`
         directories.push(path)
         write(join(directory, 'dist', path, name === '_astro' ? 'shell.js' : 'index.html'))
       }
     }
   }
-  write(join(directory, 'shell-paths.json'), JSON.stringify({ schema: 1, locale: 'en', directories, files }))
+  write(join(directory, 'shell-paths.json'), JSON.stringify({ schema: 1, locale: 'en', directories, files, nativeApi: NATIVE_API }))
   const recorder = join(directory, 'record-aws.mjs')
   write(recorder, "import { appendFileSync } from 'node:fs'; appendFileSync(process.env.AWS_RECORD, JSON.stringify(process.argv.slice(2)) + '\\n');\n")
   const executable = join(directory, 'bin/aws')
@@ -75,7 +81,7 @@ function assemblyFixture(): string {
   renameSync(join(directory, 'dist'), join(directory, '_site', DEFAULT_LOCALE))
   for (const port of PORTS) write(join(directory, '_site', DEFAULT_LOCALE, port.slug, 'latest/api/index.html'))
   write(join(directory, 'site/src/lib/ports.ts'),
-    `export const PORTS = ${JSON.stringify(PORTS.map(({ slug }) => ({ slug })))}; export const DOC_PRODUCTS = ${JSON.stringify(DOC_PRODUCTS)};\n`)
+    `export const PORTS = ${JSON.stringify(PORTS.map(({ slug, publishesOwnApi }) => ({ slug, publishesOwnApi })))}; export const DOC_PRODUCTS = ${JSON.stringify(DOC_PRODUCTS)};\n`)
   write(join(directory, 'site/src/i18n/locales.ts'), `export const DEFAULT_LOCALE = ${JSON.stringify(DEFAULT_LOCALE)};\n`)
   return directory
 }
@@ -96,7 +102,11 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     expect(paths.locale).toBe(DEFAULT_LOCALE)
     expect(paths.directories.sort()).toEqual(expected.directories.sort())
     expect(paths.files.sort()).toEqual(expected.files.sort())
-    for (const port of PORTS) expect(existsSync(join(directory, '_site', DEFAULT_LOCALE, port.slug, 'latest/api'))).toBe(false)
+    expect(paths.nativeApi).toEqual(NATIVE_API)
+    for (const port of PORTS) {
+      expect(existsSync(join(directory, '_site', DEFAULT_LOCALE, port.slug, 'latest/api')), port.slug)
+        .toBe(!NATIVE_API.includes(port.slug))
+    }
     for (const [path, content] of preserved) expect(readFileSync(join(directory, '_site', DEFAULT_LOCALE, path), 'utf8')).toBe(content)
     expect(readFileSync(join(directory, 'reserved-prefixes.txt'), 'utf8')).toBe(PORTS.map(({ slug }) => slug).join('\n') + '\n')
     expect(readFileSync(join(directory, 'reserved-products.txt'), 'utf8')).toBe(Object.keys(DOC_PRODUCTS).join('\n') + '\n')
@@ -122,19 +132,22 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     const syncs = result.commands.filter((args) => args[0] === 's3' && args[1] === 'sync')
     const destinations = syncs.map((args) => args[3])
     expect(destinations).toContain(`s3://docs-test/${locale}/_astro/`)
-    const sections = [...Object.keys(DOC_PRODUCTS), 'guides', 'topics', '_astro']
-    for (const port of PORTS) for (const section of sections) {
+    for (const port of PORTS) for (const section of sectionsFor(port.slug)) {
       expect(destinations).toContain(`s3://docs-test/${locale}/${port.slug}/latest/${section}/`)
     }
-    const productPrefixes = new Set(PORTS.flatMap((port) => sections
+    const productPrefixes = new Set(PORTS.flatMap((port) => sectionsFor(port.slug)
       .map((section) => `s3://docs-test/${locale}/${port.slug}/latest/${section}/`)))
     for (const args of syncs) {
       const destination = args[3]
       if (destination.endsWith('/_astro/')) expect(args, destination).not.toContain('--delete')
       else expect(args, destination).toContain('--delete')
       expect(destination === `s3://docs-test/${locale}/_astro/` || productPrefixes.has(destination), destination).toBe(true)
-      for (const port of PORTS) for (const preserved of ['latest/api/index.html', 'stable/api/index.html', 'v0.1.0/mcp/index.html']) {
-        expect(`s3://docs-test/${locale}/${port.slug}/${preserved}`.startsWith(destination), `${destination} preserves ${preserved}`).toBe(false)
+      for (const port of PORTS) {
+        const preserved = ['stable/api/index.html', 'v0.1.0/mcp/index.html',
+          ...(NATIVE_API.includes(port.slug) ? ['latest/api/index.html'] : [])]
+        for (const path of preserved) {
+          expect(`s3://docs-test/${locale}/${port.slug}/${path}`.startsWith(destination), `${destination} preserves ${path}`).toBe(false)
+        }
       }
     }
     const copies = result.commands.filter((args) => args[1] === 'cp')
@@ -144,6 +157,49 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
       ...PORTS.flatMap((port) => ['index.html', 'docs.json'].map((file) => `s3://docs-test/${locale}/${port.slug}/latest/${file}`)),
       `s3://docs-test/${locale}/index.html`, `s3://docs-test/${locale}/robots.txt`, 's3://docs-test/robots.txt',
     ].sort())
+  })
+
+  it.each(['.hidden/index.html', '.hidden-file'])('rejects %s at the artifact root before any AWS operation', (path) => {
+    const directory = fixture()
+    write(join(directory, 'dist', path))
+    const result = publish(directory)
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('hidden entry')
+    expect(result.commands).toEqual([])
+  })
+
+  it('publishes the reference redirect for every port that does not publish its own API', () => {
+    const result = publish(fixture(true))
+    expect(result.status, result.stderr).toBe(0)
+    const destinations = result.commands.filter((args) => args[0] === 's3' && args[1] === 'sync').map((args) => args[3])
+    for (const port of PORTS) {
+      const redirect = `s3://docs-test/en/${port.slug}/latest/api/`
+      expect(destinations.includes(redirect), port.slug).toBe(!NATIVE_API.includes(port.slug))
+    }
+  })
+
+  it.each(NATIVE_API)('refuses to publish %s/latest/api however the artifact declares it', (slug) => {
+    const directory = fixture()
+    const metadata = join(directory, 'shell-paths.json')
+    const paths = JSON.parse(readFileSync(metadata, 'utf8'))
+    paths.directories.push(`${slug}/latest/api`)
+    writeFileSync(metadata, JSON.stringify(paths))
+    write(join(directory, 'dist', slug, 'latest/api/index.html'))
+    const result = publish(directory)
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain(`${slug}/latest/api`)
+    expect(result.commands).toEqual([])
+  })
+
+  it('refuses an artifact that does not declare which ports publish their own API', () => {
+    const directory = fixture()
+    const metadata = join(directory, 'shell-paths.json')
+    const { nativeApi: _dropped, ...paths } = JSON.parse(readFileSync(metadata, 'utf8'))
+    writeFileSync(metadata, JSON.stringify(paths))
+    const result = publish(directory)
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('nativeApi')
+    expect(result.commands).toEqual([])
   })
 
   it('rejects a product-only build missing a version homepage before any AWS operation', () => {
@@ -173,7 +229,7 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     expect(result.commands).toEqual([])
   })
 
-  it.each(['go/latest/api', 'go/stable/guides', 'unknown/latest/guides', 'go/latest/../api'])(
+  it.each(['go/stable/guides', 'unknown/latest/guides', 'go/latest/../api'])(
     'rejects declared path %s outside latest shell ownership', (path) => {
       const directory = fixture()
       const metadata = join(directory, 'shell-paths.json')
