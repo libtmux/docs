@@ -55,7 +55,7 @@ export const GET: APIRoute = ({ site }) => {
         status: entry.status,
         version: entry.version,
         tag: entry.tag,
-        registry: port.registryName,
+        registry: (port.registry?.name ?? 'its repository'),
       },
     }
   })

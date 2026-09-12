@@ -379,8 +379,8 @@ function installStep(port: Port, entry: RegistryEntry, install: InstallForm, wor
   lines.push(install.code.split('\n').map((line) => `       ${line}`).join('\n'))
   const check =
     entry.status === 'stable'
-      ? `Check ${port.registryUrl} if you need a different version.`
-      : `Check ${port.registryUrl} for a newer version, and prefer a stable release over this one if there now is any.`
+      ? `Check ${(port.registry?.url ?? `https://github.com/${port.repo}`)} if you need a different version.`
+      : `Check ${(port.registry?.url ?? `https://github.com/${port.repo}`)} for a newer version, and prefer a stable release over this one if there now is any.`
   lines.push(wrap(check, 76, '   '))
   if (port.installNote) lines.push(wrap(port.installNote, 76, '   '))
   return lines.join('\n')
@@ -447,7 +447,7 @@ export function portParts(args: {
     `is at ${ctx.docsBase}/.`,
     '',
     `Language:   ${port.language}`,
-    `Package:    ${port.packageName} (${port.registryName})`,
+    `Package:    ${port.packageName} (${(port.registry?.name ?? 'its repository')})`,
     `Repository: https://github.com/${port.repo}`,
     '',
     'Read these before writing code:',

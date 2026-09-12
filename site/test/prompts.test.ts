@@ -95,7 +95,7 @@ describe('prompt composition', () => {
     expect(text, 'docs.json').toContain(`${DOCS_BASE}/${port.slug}/latest/docs.json`)
     expect(text, 'reference').toContain(`${DOCS_BASE}/reference/${port.slug}/`)
     expect(text, 'repository').toContain(`https://github.com/${port.repo}`)
-    expect(text, 'registry page').toContain(port.registryUrl)
+    expect(text, 'registry page').toContain((port.registry?.url ?? `https://github.com/${port.repo}`))
   })
 
   it.each(PORTS.filter((p) => p.ecosystemHost))('$slug cites its ecosystem host', (port) => {
