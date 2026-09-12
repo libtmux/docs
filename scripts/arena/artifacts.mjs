@@ -216,6 +216,80 @@ export const ARTIFACTS = [
       command: ['java', '-cp', readFileSync(join(build, 'classpath.txt'), 'utf8').trim(), 'io.github.libtmux.examples.BuildAWorkspace'],
     }),
   },
+  // The other example programs. The classpath step is identical in each and
+  // runs once per worktree.
+  {
+    slug: 'java',
+    artifact: 'java-find-panes-running',
+    runs: ['java:examples/src/main/java/io/github/libtmux/examples/FindPanesRunning.java'],
+    tools: ['java'],
+    prepare: (build) => {
+      const init = join(build, 'classpath.gradle')
+      writeFileSync(init, gradleClasspath(join(build, 'classpath.txt')))
+      return [{
+        cwd: '.',
+        command: ['./gradlew', '--no-daemon', '--quiet', '--no-configuration-cache', '--init-script', init, ':examples:docsArenaClasspath'],
+      }]
+    },
+    run: (build) => ({
+      cwd: '.',
+      command: ['java', '-cp', readFileSync(join(build, 'classpath.txt'), 'utf8').trim(), 'io.github.libtmux.examples.FindPanesRunning'],
+    }),
+  },
+  {
+    slug: 'java',
+    artifact: 'java-serve-tmux-over-mcp',
+    runs: ['java:examples/src/main/java/io/github/libtmux/examples/ServeTmuxOverMcp.java'],
+    tools: ['java'],
+    prepare: (build) => {
+      const init = join(build, 'classpath.gradle')
+      writeFileSync(init, gradleClasspath(join(build, 'classpath.txt')))
+      return [{
+        cwd: '.',
+        command: ['./gradlew', '--no-daemon', '--quiet', '--no-configuration-cache', '--init-script', init, ':examples:docsArenaClasspath'],
+      }]
+    },
+    run: (build) => ({
+      cwd: '.',
+      command: ['java', '-cp', readFileSync(join(build, 'classpath.txt'), 'utf8').trim(), 'io.github.libtmux.examples.ServeTmuxOverMcp'],
+    }),
+  },
+  {
+    slug: 'java',
+    artifact: 'java-watch-pane-output',
+    runs: ['java:examples/src/main/java/io/github/libtmux/examples/WatchPaneOutput.java'],
+    tools: ['java'],
+    prepare: (build) => {
+      const init = join(build, 'classpath.gradle')
+      writeFileSync(init, gradleClasspath(join(build, 'classpath.txt')))
+      return [{
+        cwd: '.',
+        command: ['./gradlew', '--no-daemon', '--quiet', '--no-configuration-cache', '--init-script', init, ':examples:docsArenaClasspath'],
+      }]
+    },
+    run: (build) => ({
+      cwd: '.',
+      command: ['java', '-cp', readFileSync(join(build, 'classpath.txt'), 'utf8').trim(), 'io.github.libtmux.examples.WatchPaneOutput'],
+    }),
+  },
+  {
+    slug: 'java',
+    artifact: 'java-watch-what-changes',
+    runs: ['java:examples/src/main/java/io/github/libtmux/examples/WatchWhatChanges.java'],
+    tools: ['java'],
+    prepare: (build) => {
+      const init = join(build, 'classpath.gradle')
+      writeFileSync(init, gradleClasspath(join(build, 'classpath.txt')))
+      return [{
+        cwd: '.',
+        command: ['./gradlew', '--no-daemon', '--quiet', '--no-configuration-cache', '--init-script', init, ':examples:docsArenaClasspath'],
+      }]
+    },
+    run: (build) => ({
+      cwd: '.',
+      command: ['java', '-cp', readFileSync(join(build, 'classpath.txt'), 'utf8').trim(), 'io.github.libtmux.examples.WatchWhatChanges'],
+    }),
+  },
   {
     slug: 'dotnet',
     artifact: 'csharp-one-shot',
