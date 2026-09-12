@@ -46,9 +46,22 @@ function partsFor(port: Port) {
   })
 }
 
+/**
+ * Composed prompts, memoised.
+ *
+ * Six `it.each(MATRIX)` blocks over seventy-two pairs recompose each prompt six
+ * times, and every call rebuilds both halves from scratch. It is 0.2s today and
+ * grows with each assertion added, which is the shape of a suite that gets
+ * quietly slower until someone raises a budget.
+ */
+const COMPOSED = new Map<string, string>()
+
 function promptFor(port: Port, topicId: string, version = ctx.version): string {
+  const key = `${port.slug}/${topicId}/${version}`
+  const hit = COMPOSED.get(key)
+  if (hit !== undefined) return hit
   const entry = registryFor(port)
-  return composePrompt({
+  const text = composePrompt({
     port,
     entry,
     install: installCommand(port, entry),
@@ -56,6 +69,8 @@ function promptFor(port: Port, topicId: string, version = ctx.version): string {
     ctx: { ...ctx, version },
     topicId,
   })
+  COMPOSED.set(key, text)
+  return text
 }
 
 /** Every (port, topic) pair, as vitest table rows. */
