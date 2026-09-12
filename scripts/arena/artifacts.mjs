@@ -111,7 +111,7 @@ export const ARTIFACTS = [
   },
   {
     slug: 'dotnet',
-    artifact: 'OneShot.ConnectAndBuild',
+    artifact: 'csharp-one-shot',
     runs: ['dotnet:examples/LibTmux.Examples/Snippets/OneShot.cs'],
     tools: ['dotnet'],
     prepare: () => [{
@@ -122,7 +122,7 @@ export const ARTIFACTS = [
   },
   {
     slug: 'cxx',
-    artifact: 'libtmux_example_01_tour',
+    artifact: 'cpp-tour',
     runs: ['cxx:examples/01-tour.cpp'],
     tools: ['cmake'],
     prepare: () => [
