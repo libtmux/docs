@@ -102,7 +102,14 @@ const installHtml = new Map(
 ---
 
 <div class={`lm-pkg-install lm-pkg-install--${variant}`} data-ports={items.map((p) => p.slug).join(' ')}>
-  <div class="lm-pkg-install__tabs" role="tablist" aria-label="Package manager">
+  {/*
+    One language is not a choice of language.
+
+    A port page renders this restricted to its own port, where the strip was a
+    single tab that could not be switched away from — a control that answers
+    nothing, above the control that answers something.
+  */}
+  {items.length > 1 && <div class="lm-pkg-install__tabs" role="tablist" aria-label="Package manager">
     {
       items.map((p) => (
         <button
@@ -117,7 +124,7 @@ const installHtml = new Map(
         </button>
       ))
     }
-  </div>
+  </div>}
   <div class="lm-pkg-install__body">
     {
       items.map((p) => (
