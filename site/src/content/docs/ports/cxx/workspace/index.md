@@ -53,7 +53,12 @@ Human load has terminal progress with presets, templates and bounded script
 output. Native Bash, Zsh and Fish completion covers commands, flags, choices
 and paths. Dynamic session/configuration-name suggestions remain unavailable.
 
-Python shell/plugin/custom-builder execution, full importer/configuration
+Human `ls --tree` groups workspaces by directory; `--full` includes parsed
+configuration. The optional [shell](./cli/shell/#native-execution) uses an
+installed tmuxp 1.74.0 executable, with streaming and terminal restoration.
+Native loading remains independent of Python.
+
+Plugin/custom-builder execution, full importer/configuration
 coverage and portable packaging remain unfinished. Capture preserves local
 session/window options but omits inherited/global options and environment.
 It cannot recover original command arguments or history.
