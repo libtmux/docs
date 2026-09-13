@@ -202,44 +202,6 @@
 .api-source { font-size: 0.72rem; opacity: 0.55; }
 .api-source:hover { opacity: 0.9; }
 
-/* --- Member index (right rail and per-page) ----------------------------- */
-
-.api-toc { font-size: 0.82rem; }
-
-/*
- * Names wrap rather than escape the column, and only where a reader would
- * break them.
- *
- * The break points are `<wbr>` elements the markup carries — see
- * `lib/word-break.ts`, whose rule is Apple's from swift-docc-render: after a
- * colon, between case changes, before a dot or an underscore. So Swift's
- * `init(id:index:width:…)` breaks after `id:` rather than in the middle of
- * `currentCommand`.
- *
- * `break-word` is the fallback for a name with no safe point in it at all. It
- * was `anywhere`, which overrode the hints and broke at the column edge
- * regardless — the exact behaviour the `<wbr>`s exist to replace.
- */
-.api-toc a {
-  display: block;
-  padding: 0.1rem 0;
-  text-decoration: none;
-  overflow-wrap: break-word;
-}
-.api-toc a:hover { text-decoration: underline; }
-
-/*
- * The module that tells two same-named entries apart.
- *
- * Muted and smaller than the name: it is there to be read only when the name
- * alone is ambiguous, and it must not compete with the name when scanning.
- */
-.api-toc-qualifier {
-  margin-left: 0.35em;
-  font-size: 0.85em;
-  opacity: 0.55;
-}
-
 /* The cross-language block: collapsed by default, because a reader on a
    Python page is usually reading Python. It is an answer waiting for the
    question "what is this called in Go", not something to read past. */
@@ -280,56 +242,6 @@
  */
 .api-elsewhere-absent {
   opacity: 0.6;
-}
-
-/* The member list on a type page. Capped and scrollable: Pane declares 257
-   members, and a sidebar taller than the document it indexes is not one. */
-.api-toc-members {
-  max-height: 40vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-/*
- * The reference's left column: the site menu, then the symbol tree.
- *
- * It scrolls as one sticky unit rather than letting the tree run past the
- * viewport — `Pane` alone puts 257 members in it — so the menu above stays
- * reachable from anywhere on a long page.
- */
-@media (min-width: 64rem) {
-  .api-sidebar {
-    max-height: calc(100vh - 6rem);
-    overflow-y: auto;
-  }
-}
-
-.api-sidebar__menu {
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--color-background-border, #e2e8f0);
-}
-
-/* The contents disclosure. A plain column at lg and above, where the marker
-   and the summary are noise; a disclosure below that, where 98 members ahead
-   of the content is two screens of scrolling before anything is read. */
-.api-toc-summary {
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  opacity: 0.6;
-  padding: 0.5rem 0;
-}
-.api-toc-summary:hover {
-  opacity: 1;
-}
-@media (min-width: 64rem) {
-  .api-toc-shell > summary {
-    display: none;
-  }
 }
 
 /*
@@ -446,73 +358,6 @@
   color: var(--theme-primary);
   cursor: pointer;
   text-decoration: underline;
-}
-
-/*
- * The reference navigation tree.
- *
- * `<details>` rather than a scripted disclosure: the branch being read is
- * server-rendered open, every other module is a link, and a reader without
- * JavaScript gets the same tree. The marker is the only thing styled away —
- * the summary already carries a link, and two affordances on one row read as
- * two different controls.
- */
-.api-tree-module > summary,
-.api-tree-type > summary {
-  cursor: pointer;
-  list-style: none;
-}
-
-.api-tree-module > summary::-webkit-details-marker,
-.api-tree-type > summary::-webkit-details-marker {
-  display: none;
-}
-
-.api-tree-module > summary {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  opacity: 0.6;
-  margin-bottom: 0.35rem;
-}
-
-.api-tree-module-link {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-/*
- * One indent, and only for members.
- *
- * A type sits flush whether it is open or closed, so `SessionID` and an
- * expanded `Session` start at the same place and read as the siblings they
- * are. Only the members step in, and only once.
- *
- * Getting here took three tries because there were two indents stacked: one
- * on the type's row and another on the `<details>` wrapping it, so opening a
- * type moved the type, its members, and the rule beside them all to the
- * right — three levels of offset for one level of nesting.
- */
-.api-tree-type,
-.api-tree-type > summary,
-.api-tree-type-link {
-  display: block;
-  padding-left: 0;
-}
-
-.api-tree-members {
-  display: flex;
-  flex-direction: column;
-  margin-left: 0.15rem;
-  padding-left: 0.6rem;
-  border-left: 1px solid var(--color-background-border, #e2e8f0);
-}
-
-.api-toc .is-current {
-  font-weight: 600;
-  color: var(--theme-accent);
 }
 
 /*
@@ -704,31 +549,6 @@
   outline: 2px solid var(--focus-ring-color);
   outline-offset: 2px;
   border-radius: 2px;
-}
-
-/*
- * A bucket that splits: a level between the bucket and its types, so it is
- * indented like one and its own types step in again.
- */
-.api-tree-child > summary,
-.api-tree-child-link {
-  display: block;
-  padding: 0.15rem 0 0.15rem 0.6rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--color-foreground-muted);
-  cursor: pointer;
-  overflow-wrap: anywhere;
-}
-
-.api-tree-child > summary:hover,
-.api-tree-child-link:hover {
-  color: var(--color-link);
-}
-
-.api-tree-child .api-tree-type-link,
-.api-tree-child .api-tree-type > summary {
-  padding-left: 1.2rem;
 }
 
 /*
