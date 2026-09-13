@@ -6,7 +6,7 @@
  * the configuration. The sidecar is what a page renders, so linting the
  * artifact is the only way lint and render cannot disagree.
  *
- * Four failures, each naming what it found:
+ * Seven failures, each naming what it found:
  *
  *   unmatched  a symbol no bucket claims. Curation rotting as a port grows.
  *   dead       a bucket that claims nothing in ANY port. A rule that has
@@ -20,6 +20,14 @@
  *              into children put 83 of Rust's symbols in exactly this state:
  *              every page still built, every link still resolved, and the
  *              sidebar simply stopped listing them.
+ *   sidecar    a sidecar that no longer matches nav-config.ts and the model
+ *              beside it. Every check above reads the sidecar, so an edit to
+ *              the config that nobody recompiled passed all of them while
+ *              pages rendered the old curation.
+ *   unreachable  a symbol the tree has no row for at all. The tree lists every
+ *              top-level symbol in a bucket or in Other, and the members of
+ *              any type beneath it; a symbol nested in something that is not
+ *              a type is neither.
  *
  * A bucket empty in SOME ports is not a failure and is reported separately:
  * the buckets are shared vocabulary across eight ports, and Python having no
@@ -28,6 +36,8 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { navSidecar } from '../packages/api-model/src/nav-sidecar.ts'
+import { OWNER_KINDS } from '../packages/api-model/src/prose.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const json = process.argv.includes('--json')
@@ -55,14 +65,18 @@ const PORTS =
         .map((f) => f.replace('.nav.json', ''))
 
 const navs = []
+/** Each port's model, beside its sidecar. A fixture may leave it out. */
+const models = new Map()
 const missing = []
 for (const port of PORTS) {
   const file = join(dir, `${port}.nav.json`)
-  if (!existsSync(file)) missing.push(port)
+  const model = join(dir, `${port}.json`)
+  if (!existsSync(file) || (dirArg === -1 && !existsSync(model))) missing.push(port)
   else navs.push(JSON.parse(readFileSync(file, 'utf8')))
+  if (existsSync(model)) models.set(port, JSON.parse(readFileSync(model, 'utf8')))
 }
 if (missing.length) {
-  console.error(`check-nav: no sidecar for ${missing.join(', ')} — run scripts/gen-api-model.mjs`)
+  console.error(`check-nav: no model or sidecar for ${missing.join(', ')} — run scripts/gen-api-model.mjs`)
   process.exit(1)
 }
 
@@ -110,6 +124,26 @@ for (const nav of navs) {
       detail: `${orphaned.length} buckets hold symbols the tree never renders`,
       names: orphaned.map(([b, m]) => `${b} (${m.length} symbols)`),
     })
+  const model = models.get(nav.port)
+  if (model) {
+    const text = readFileSync(join(dir, `${nav.port}.nav.json`), 'utf8')
+    if (text !== `${JSON.stringify(navSidecar(nav.port, model))}\n`)
+      failures.push({
+        check: 'sidecar',
+        port: nav.port,
+        detail: `${nav.port}.nav.json does not match nav-config.ts and ${nav.port}.json`,
+        names: ['node scripts/gen-api-model.mjs --nav'],
+      })
+    const kindOf = new Map(model.symbols.map((s) => [s.id, s.kind]))
+    const unreachable = model.symbols.filter((s) => s.parent && !OWNER_KINDS.has(kindOf.get(s.parent)))
+    if (unreachable.length)
+      failures.push({
+        check: 'unreachable',
+        port: nav.port,
+        detail: `${unreachable.length} symbols nested in something the tree does not open`,
+        names: unreachable.map((s) => `${s.id} (in ${kindOf.get(s.parent) ?? 'a missing parent'})`),
+      })
+  }
   if (d.staleUnsettled.length)
     failures.push({
       check: 'stale',

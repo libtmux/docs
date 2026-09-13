@@ -89,10 +89,16 @@ function graph(document: Window['document']): StructuredEntry[] {
     })
 }
 
+/**
+ * The notice is an `Aside`, the same one the reference and the guides use,
+ * so it is a `role=note` rather than a landmark with a name of its own. What
+ * matters to a reader is that the page says so before its prose, in a block
+ * set apart from it.
+ */
 function developmentStatus(document: Window['document'], path: string): void {
-  const status = document.querySelector('[aria-label="Development status"]')
-  expect(status, `${path} development status`).not.toBeNull()
-  expect(status!.textContent, `${path} development status`).toMatch(/in development/i)
+  const notes = [...document.querySelectorAll('[role="note"]')]
+  const status = notes.find((note) => /in development/i.test(note.textContent ?? ''))
+  expect(status, `${path} development status`).toBeDefined()
 }
 
 function redirectsTo(path: string, target: string): void {
@@ -184,7 +190,9 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         }
       }
       if (page.product === 'workspace' && page.port !== 'py' && !page.section) {
-        const status = document.querySelector('[aria-label="Development status"]')!.textContent
+        const status = [...document.querySelectorAll('[role="note"]')]
+          .map((note) => note.textContent ?? '')
+          .find((text) => /in development/i.test(text))
         expect(status, `${page.path} unfinished workspace application`).toMatch(/not a finished\s+workspace application/i)
         expect(status, `${page.path} no user CLI`).toMatch(/no CLI equivalent to\s+tmuxp load/i)
         expect(document.querySelector('article')!.textContent.match(/is in development/gi), `${page.path} states maturity once`).toHaveLength(1)

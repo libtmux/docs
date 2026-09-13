@@ -1,4 +1,8 @@
 import type { ApiSymbol, SymbolKind } from './model.ts'
+import { OWNER_KINDS } from './prose.ts'
+
+/** Kinds that are a value of some type, and so can follow it into its bucket. */
+const VALUE_KINDS = new Set(['constant', 'attribute', 'property'])
 
 /**
  * What belongs where in a port's reference sidebar.
@@ -29,6 +33,18 @@ export type Match =
   | { kind: 'module'; is?: string | string[]; re?: string }
   /** Its own name, by prefix, suffix, or pattern. */
   | { kind: 'name'; prefix?: string; suffix?: string; re?: string }
+  /**
+   * A whole word of its name, in any case convention.
+   *
+   * The `name` patterns were written for type names, which are PascalCase, so
+   * a substring of one is a word of it. A free symbol is `has_version`,
+   * `paneStartDirectory` or `TMUX_MIN_VERSION`: a pattern for `Version` misses
+   * all three, and a case-blind substring finds `test` in `latest`.
+   *
+   * The weakest clause: `compileNav` lets a word decide only where no other
+   * clause of any rule claims the symbol.
+   */
+  | { kind: 'word'; is: string | string[] }
   /** What sort of declaration it is. */
   | { kind: 'symbol'; kinds: SymbolKind[] }
   /**
@@ -125,7 +141,21 @@ const pathOf = (s: ApiSymbol): string => s.source?.file ?? ''
 
 const asArray = <T>(v: T | T[]): T[] => (Array.isArray(v) ? v : [v])
 
-export function compileMatch(match: Match): Predicate {
+/**
+ * A name's words, lowercase: `paneStartDirectory`, `TMUX_MIN_VERSION`,
+ * `NewServer` and `has_version` alike. A Swift name's parameter labels are
+ * dropped, since `withTmuxServer(socketFileName:_:)` is not about files.
+ */
+export const wordsOf = (name: string): string[] =>
+  name
+    .replace(/\(.*$/, '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+
+export function compileMatch(match: Match, words = true): Predicate {
   switch (match.kind) {
     case 'id': {
       const ids = new Set(asArray(match.is))
@@ -150,6 +180,12 @@ export function compileMatch(match: Match): Predicate {
         (re === undefined || re.test(s.name)) &&
         (match.prefix !== undefined || match.suffix !== undefined || re !== undefined)
     }
+    case 'word': {
+      // Off for the first of `compileNav`'s two passes.
+      if (!words) return () => false
+      const wanted = new Set(asArray(match.is).map((w) => w.toLowerCase()))
+      return (s) => wordsOf(s.name).some((w) => wanted.has(w))
+    }
     case 'symbol': {
       const kinds = new Set<string>(match.kinds)
       return (s) => kinds.has(s.kind)
@@ -171,15 +207,15 @@ export function compileMatch(match: Match): Predicate {
       return (s, ctx) => wanted.some((c) => ctx.conceptIds[c] === (s.publicId ?? s.id))
     }
     case 'anyOf': {
-      const ps = match.of.map(compileMatch)
+      const ps = match.of.map((m) => compileMatch(m, words))
       return (s, ctx) => ps.some((p) => p(s, ctx))
     }
     case 'allOf': {
-      const ps = match.of.map(compileMatch)
+      const ps = match.of.map((m) => compileMatch(m, words))
       return (s, ctx) => ps.every((p) => p(s, ctx))
     }
     case 'not': {
-      const p = compileMatch(match.of)
+      const p = compileMatch(match.of, words)
       return (s, ctx) => !p(s, ctx)
     }
   }
@@ -201,18 +237,54 @@ function flatten(buckets: Bucket[], prefix: string[] = []): { bucket: Bucket; pa
  * overlap rather than letting declaration order decide in silence.
  */
 export function compileNav(nav: PortNav, symbols: ApiSymbol[], ctx: MatchContext): CompiledNav {
-  const nodes = flatten(nav.buckets).map((n) => ({ ...n, test: compileMatch(n.bucket.match) }))
+  const nodes = flatten(nav.buckets).map((n) => ({
+    ...n,
+    test: compileMatch(n.bucket.match, false),
+    withWords: compileMatch(n.bucket.match),
+  }))
   const assignments: Record<string, string[]> = Object.fromEntries(nodes.map((n) => [n.bucket.id, []]))
   const unplaced: string[] = []
   const diagnostics: NavDiagnostics = { unmatched: [], deadBuckets: [], ambiguous: [], staleUnsettled: [] }
   const unsettled = nav.unsettled ?? {}
 
+  /*
+   * A typed value, or a constructor, follows its type.
+   *
+   * Go declares an enum's values at the top level beside it, and
+   * `PaneDirectionBelow` is a `PaneDirection`. Placed by its own name it went
+   * under Pane while its type sat in Layout; placed by its type, an enum and
+   * its values share a bucket, and a value of an unsettled type is unsettled
+   * with it rather than needing an exemption of its own. Go's constructors
+   * are the same case by convention: `NewSparseArray` makes a `SparseArray`.
+   * Only a type of that exact name in the same module counts, so `&str`,
+   * `StringFieldHandle< Pane >` and `NewServerFromEnv` still go by the rules.
+   */
+  const typeKey = (s: ApiSymbol, name: string) => `${ctx.moduleOf(s)} ${name}`
+  const types = new Map(
+    symbols.filter((s) => OWNER_KINDS.has(s.kind) || s.kind === 'typealias').map((s) => [typeKey(s, s.name), s]),
+  )
+  const typeOf = (s: ApiSymbol) =>
+    VALUE_KINDS.has(s.kind) && s.type
+      ? types.get(typeKey(s, s.type))
+      : s.kind === 'function' && /^New[A-Z]/.test(s.name)
+        ? types.get(typeKey(s, s.name.slice(3)))
+        : undefined
+  /** Where each symbol the rules decided went: a bucket id, or undefined for unplaced. */
+  const placedIn = new Map<string, string | undefined>()
+
   for (const symbol of symbols) {
+    if (typeOf(symbol)) continue
     const id = symbol.publicId ?? symbol.id
-    const claimed = nodes.filter((n) => n.test(symbol, ctx))
+    // Two passes, because a word of a name is the weakest signal there is.
+    // Every rule is tried without its words first, and only a symbol nothing
+    // claims that way is placed by one: Rust's `SESSION_CREATED` is declared
+    // in `options/generated.rs` and belongs in Options, not under Session.
+    const strong = nodes.filter((n) => n.test(symbol, ctx))
+    const claimed = strong.length > 0 ? strong : nodes.filter((n) => n.withWords(symbol, ctx))
 
     if (claimed.length === 0) {
       unplaced.push(id)
+      placedIn.set(id, undefined)
       if (!(id in unsettled)) diagnostics.unmatched.push(id)
       continue
     }
@@ -226,6 +298,16 @@ export function compileNav(nav: PortNav, symbols: ApiSymbol[], ctx: MatchContext
     // Deepest match wins: a child rule is more specific than its parent's.
     const winner = claimed.reduce((a, b) => (b.path.length > a.path.length ? b : a))
     assignments[winner.bucket.id]!.push(id)
+    placedIn.set(id, winner.bucket.id)
+  }
+
+  for (const symbol of symbols) {
+    const type = typeOf(symbol)
+    if (!type) continue
+    const id = symbol.publicId ?? symbol.id
+    const bucket = placedIn.get(type.publicId ?? type.id)
+    if (bucket) assignments[bucket]!.push(id)
+    else unplaced.push(id)
   }
 
   for (const n of nodes) {

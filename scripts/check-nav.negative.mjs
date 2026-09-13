@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * Proof that each of check-nav's four checks can fail.
+ * Proof that each of check-nav's checks can fail.
  *
  * A check that cannot fail is worse than no check: it reports green forever
  * and the reader stops looking. Five have been found in this repository, so
@@ -83,7 +83,11 @@ const CASES = {
     },
   },
   orphaned: {
-    trips: 'orphaned',
+    // Three from one run, since each reads the model beside the fixture and a
+    // second fixture would cost a second process for the same proof: `sidecar`
+    // compiles it with the real nav-config.ts, which this fixture was not
+    // written from, and `unreachable` finds the function nested in a module.
+    trips: ['orphaned', 'sidecar', 'unreachable'],
     ports: {
       // A child bucket that holds symbols and is missing from the tree the
       // sidecar writes. This is what splitting a bucket into children does if
@@ -94,6 +98,11 @@ const CASES = {
         buckets: [bucket('server', { kind: 'name', re: 'Server' })],
         hideChildren: true,
         extraChild: { id: 'server-options', match: { kind: 'name', suffix: 'Options' } },
+        // A function inside a module symbol: under no type and not top-level.
+        model: [
+          { id: 'mod', name: 'mod', kind: 'module' },
+          { id: 'mod.helper', name: 'helper', kind: 'function', parent: 'mod' },
+        ],
       },
     },
   },
@@ -118,9 +127,10 @@ let failures = 0
 for (const [name, spec] of Object.entries(CASES)) {
   const dir = mkdtempSync(join(tmpdir(), `check-nav-${name}-`))
   try {
-    for (const [port, { symbols, buckets, unsettled, hideChildren, extraChild }] of Object.entries(
+    for (const [port, { symbols, buckets, unsettled, hideChildren, extraChild, model }] of Object.entries(
       spec.ports,
     )) {
+      if (model) writeFileSync(join(dir, `${port}.json`), JSON.stringify({ port, symbols: model }))
       // The compiled nav knows about the child; the written tree will not.
       const withChild = extraChild
         ? buckets.map((b, i) =>
@@ -176,18 +186,20 @@ for (const [name, spec] of Object.entries(CASES)) {
       if (exit !== 0) {
         console.error(`FAIL clean — a fixture with nothing wrong exited ${exit}:\n${out}`)
         failures++
-      } else console.log(`ok   clean      exits 0, so the four below mean something`)
+      } else console.log(`ok   clean      exits 0, so the cases above mean something`)
       continue
     }
 
+    const trips = [spec.trips].flat()
+    const unnamed = trips.filter((t) => !out.includes(`check-nav: ${t}`))
     if (exit === 0) {
-      console.error(`FAIL ${name} — check-nav passed input that should trip '${spec.trips}'`)
+      console.error(`FAIL ${name} — check-nav passed input that should trip '${trips.join("', '")}'`)
       failures++
-    } else if (!out.includes(`check-nav: ${spec.trips}`)) {
-      console.error(`FAIL ${name} — exited ${exit} but never named '${spec.trips}':\n${out}`)
+    } else if (unnamed.length) {
+      console.error(`FAIL ${name} — exited ${exit} but never named '${unnamed.join("', '")}':\n${out}`)
       failures++
     } else {
-      console.log(`ok   ${name.padEnd(10)} exits ${exit} naming '${spec.trips}'`)
+      console.log(`ok   ${name.padEnd(10)} exits ${exit} naming '${trips.join("', '")}'`)
     }
   } finally {
     rmSync(dir, { recursive: true, force: true })
@@ -198,5 +210,5 @@ if (failures) {
   console.error(`\n${failures} of check-nav's checks cannot fail on input that should fail them.`)
   process.exit(1)
 }
-const proven = Object.values(CASES).filter((c) => c.trips).length
+const proven = Object.values(CASES).flatMap((c) => [c.trips ?? []].flat()).length
 console.log(`\ncheck-nav.negative: ${proven} checks fail on input that should fail them`)

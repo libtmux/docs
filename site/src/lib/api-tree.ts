@@ -22,6 +22,19 @@ export interface TreeMember {
 }
 
 /**
+ * A bucket's rows, with a name that repeats among them shown as its id.
+ *
+ * Python's Internal holds ten module loggers and its MCP bucket eleven
+ * functions called `register`, and ten rows reading `logger` ask a reader to
+ * pick one by guessing.
+ */
+const distinct = (entries: NavEntry[]): NavEntry[] => {
+  const count = new Map<string, number>()
+  for (const e of entries) count.set(e.name, (count.get(e.name) ?? 0) + 1)
+  return entries.map((e) => ((count.get(e.name) ?? 0) > 1 ? { ...e, name: e.id } : e))
+}
+
+/**
  * A port's buckets, each with the types it holds and the children it splits
  * into.
  *
@@ -41,14 +54,14 @@ export function navTree(port: string): TreeBucket[] {
         id: b.id,
         label: b.label,
         collapsed: b.collapsed,
-        entries: nav.assignments[b.id] ?? [],
+        entries: distinct(nav.assignments[b.id] ?? []),
         children: (b.children ?? [])
-          .map((c) => ({ id: c.id, label: c.label, collapsed: c.collapsed, entries: nav.assignments[c.id] ?? [], children: [] }))
+          .map((c) => ({ id: c.id, label: c.label, collapsed: c.collapsed, entries: distinct(nav.assignments[c.id] ?? []), children: [] }))
           .filter((c) => c.entries.length > 0),
       }))
       .filter((b) => b.entries.length > 0 || b.children.length > 0),
     ...(nav.unplaced.length > 0
-      ? [{ id: '__unplaced', label: 'Other', collapsed: true, entries: nav.unplaced, children: [] }]
+      ? [{ id: '__unplaced', label: 'Other', collapsed: true, entries: distinct(nav.unplaced), children: [] }]
       : []),
   ]
 }
@@ -60,14 +73,23 @@ export const bucketTotal = (b: TreeBucket): number =>
 /**
  * The entry a bucket's own link lands on: the type the bucket is named for
  * when there is one, so Window opens `libtmux.Window` rather than whichever of
- * `WindowDirection` and `WindowOptions` sorted first.
+ * `WindowDirection` and `WindowOptions` sorted first. A row shown by its id
+ * still counts, so Go's Window opens `tmux.Window` before `workspace.Window`.
  */
 export const bucketTarget = (label: string, entries: { name: string; slug: string }[]) =>
-  entries.find((e) => e.name.toLowerCase() === label.toLowerCase()) ?? entries[0]
+  entries.find((e) => e.name.split(/[.:/]+/).pop()?.toLowerCase() === label.toLowerCase()) ?? entries[0]
 
-/** The first entry anywhere under a bucket, for a bucket that only splits. */
-export const firstEntry = (b: TreeBucket) =>
-  bucketTarget(b.label, b.entries.length > 0 ? b.entries : (b.children[0]?.entries ?? []))
+/**
+ * The entry a bucket's link lands on: a type, from the bucket itself or else
+ * its first child that holds one, and a function or constant only where no
+ * type is under it. TypeScript's Workspaces holds two type aliases of its own
+ * beside Plan's types, and still opens on `PanePlans`.
+ */
+export const firstEntry = (b: TreeBucket) => {
+  const isType = (e: NavEntry) => OWNER_KINDS.has(e.kind)
+  const types = [b.entries, ...b.children.map((c) => c.entries)].map((list) => list.filter(isType)).find((list) => list.length > 0)
+  return bucketTarget(b.label, types ?? (b.entries.length > 0 ? b.entries : (b.children[0]?.entries ?? [])))
+}
 
 const membersCache = new Map<string, Map<string, TreeMember[]>>()
 

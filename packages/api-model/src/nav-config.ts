@@ -20,6 +20,36 @@ import type { Bucket, Match, PortNav } from './nav.ts'
 const nameRe = (re: string): Match => ({ kind: 'name', re })
 
 /**
+ * A symbol that owns no members: a function, a value or a type alias.
+ *
+ * The `name` patterns below were written for the types that do. A free
+ * symbol is `has_version`, `paneStartDirectory` or `TMUX_MIN_VERSION`, so each
+ * rule also matches the words of its name, or the last segment of its module,
+ * for these kinds only: no type with members can move because of a word. A
+ * word is the weakest clause and decides only where no other clause of any
+ * rule claims the symbol; see `compileNav`.
+ */
+const FREE: Match = {
+  kind: 'symbol',
+  kinds: ['function', 'method', 'constant', 'attribute', 'property', 'typealias'],
+}
+
+/** Declared in one of these files, for a free symbol only. */
+const freePath = (re: string): Match => ({ kind: 'allOf', of: [FREE, { kind: 'path', re }] })
+
+const words = (...is: string[]): Match => ({
+  kind: 'allOf',
+  of: [
+    FREE,
+    {
+      kind: 'anyOf',
+      // `libtmux::pane::id` is a pane field whose own name says nothing.
+      of: [{ kind: 'word', is }, { kind: 'module', re: `(^|[.:/])(${is.join('|')})$` }],
+    },
+  ],
+})
+
+/**
  * Matched by name or by where it is declared.
  *
  * The path is the tiebreaker where the name lies, and it lies often. Swift's
@@ -32,9 +62,9 @@ const nameRe = (re: string): Match => ({ kind: 'name', re })
  * sidebar out of a directory tree. Our routes are flat by design, so the
  * directory that means something is the source one.
  */
-const nameOrPath = (re: string, pathRe: string): Match => ({
+const nameOrPath = (re: string, pathRe: string, ...vocabulary: string[]): Match => ({
   kind: 'anyOf',
-  of: [nameRe(re), { kind: 'path', re: pathRe }],
+  of: [nameRe(re), { kind: 'path', re: pathRe }, ...(vocabulary.length ? [words(...vocabulary)] : [])],
 })
 
 /**
@@ -57,6 +87,10 @@ const ERRORS: Match = {
     // Java declares it as a plain class in a file of its own, so neither the
     // path nor the kind sees it.
     nameRe('DoesNotExist|MultipleObjectsReturned'),
+    // Go's sentinel values, `ErrNoServer` and `ErrUnknownOption`: an error
+    // whatever it is about and wherever it is declared, as an error type is.
+    { kind: 'allOf', of: [FREE, nameRe('^Err[A-Z]')] },
+    words('error', 'errors', 'exception', 'raise'),
   ],
 }
 
@@ -85,11 +119,19 @@ const ERRORS: Match = {
 const CHAIN: { id: string; label: string; match: Match }[] = [
   // The auxiliary trees outrank everything: `TestServer` is a fixture before
   // it is a Server, and `TmuxTestOptions` is one before it is a constant.
-  { id: 'mcp', label: 'MCP', match: nameOrPath('Mcp|MCP', 'mcp') },
+  { id: 'mcp', label: 'MCP', match: nameOrPath('Mcp|MCP', 'mcp', 'mcp') },
   {
     id: 'testing',
     label: 'Testing utilities',
-    match: nameOrPath('Test|Fixture|Mock|Fake', 'test|fixture|mock|junit'),
+    // Less the module logger, which goes to Internal with the others even when
+    // its module is `pytest_plugin.py`.
+    match: {
+      kind: 'allOf',
+      of: [
+        nameOrPath('Test|Fixture|Mock|Fake', 'test|fixture|mock|junit', 'test', 'tests', 'testing', 'fixture', 'mock', 'fake'),
+        { kind: 'not', of: { kind: 'allOf', of: [FREE, nameRe('^logger$')] } },
+      ],
+    },
   },
   {
     id: 'internal',
@@ -102,6 +144,15 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
         // .NET says so in the namespace and nowhere else: `Materializer` sits
         // in `Materialization/` and is declared in `LibTmux.Internal`.
         { kind: 'module', re: '(^|\\.)_?[Ii]nternal(\\.|$)' },
+        // A module's logger, in whichever module: plumbing, not Server's API
+        // because `server.py` declares one.
+        { kind: 'allOf', of: [FREE, nameRe('^logger$')] },
+        // C++'s `detail` namespace and ABI macros, and its `expected` polyfill.
+        words('internal', 'detail', 'abi', 'namespace'),
+        freePath('(^|/)expected\\.hpp$'),
+        // Package metadata: `__author__` and `__license__` are not versions,
+        // though `__version__` beside them is, and goes to Versions.
+        { kind: 'allOf', of: [freePath('(^|/)__about__\\.'), { kind: 'not', of: nameRe('^__version__$') }] },
       ],
     },
   },
@@ -114,58 +165,143 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
     id: 'constants',
     label: 'Constants and enums',
     match: {
-      kind: 'anyOf',
-      of: ['Kind', 'Mode', 'Style', 'Action', 'Options', 'Result', 'Event'].map(
-        (suffix): Match => ({ kind: 'name', suffix }),
-      ),
+      kind: 'allOf',
+      of: [
+        {
+          kind: 'anyOf',
+          of: ['Kind', 'Mode', 'Style', 'Action', 'Options', 'Result', 'Event'].map(
+            (suffix): Match => ({ kind: 'name', suffix }),
+          ),
+        },
+        // Suffixes that name a type. `normalizePlanWorkspaceOptions` is a
+        // function that takes one.
+        { kind: 'not', of: { kind: 'symbol', kinds: ['function', 'method'] } },
+      ],
     },
   },
   // Cross-cutting subsystems: these words appear inside domain type names.
-  { id: 'hooks', label: 'Hooks', match: nameOrPath('Hook', '(^|/)hooks?[./]') },
+  { id: 'hooks', label: 'Hooks', match: nameOrPath('Hook', '(^|/)hooks?[./]', 'hook', 'hooks') },
   {
     id: 'control',
     label: 'Control mode',
-    match: nameOrPath('Control|Notification|Subscribe', '(^|/)control'),
+    match: {
+      kind: 'anyOf',
+      of: [
+        nameOrPath(
+          'Control|Notification|Subscribe',
+          '(^|/)control',
+          'control', 'notification', 'notifications', 'subscribe', 'subscription',
+        ),
+        freePath('(^|/)notification\\.hpp$'),
+      ],
+    },
   },
-  { id: 'formats', label: 'Formats', match: nameOrPath('Format', '(^|/)formats?[./]') },
+  {
+    id: 'formats',
+    label: 'Formats',
+    match: {
+      kind: 'anyOf',
+      of: [
+        nameOrPath('Format', '(^|/)formats?[./]', 'format', 'formats'),
+        // Python's `neo` builds a format string per object and parses the
+        // rows it asks for; `libtmux.neo.Obj` itself stays unsettled.
+        freePath('(^|/)neo\\.py$'),
+      ],
+    },
+  },
   {
     id: 'queries',
     label: 'Queries',
-    match: nameOrPath(
-      'Query|Filter|Predicate|Matcher|Criteria|Operator|Quantifier|Expr|Node$|Field$',
-      '(^|/)quer(y|ies)[./]|(^|/)matching|(^|/)filter',
-    ),
+    match: {
+      kind: 'anyOf',
+      of: [
+        nameOrPath(
+          'Query|Filter|Predicate|Matcher|Criteria|Operator|Quantifier|Expr|Node$|Field$',
+          '(^|/)quer(y|ies)[./]|(^|/)matching|(^|/)filter',
+          'query', 'queries', 'filter', 'predicate', 'matcher', 'criteria', 'where', 'relation', 'field', 'fields',
+        ),
+        // The query language's own files, whose helpers are `any_of`,
+        // `children_of` and `WhereOf`.
+        freePath('(^|/)(selection\\.ts|relations\\.hpp|cardinality\\.hpp|lowering\\.hpp|legacy_lookup\\.hpp)$'),
+      ],
+    },
   },
-  { id: 'snapshots', label: 'Snapshots', match: nameOrPath('Snapshot|Capture', '(^|/)snapshots?[./]') },
-  { id: 'workspace', label: 'Workspaces', match: nameOrPath('Workspace|Plan', '(^|/)plan[./]|(^|/)tmuxp/') },
+  {
+    id: 'snapshots',
+    label: 'Snapshots',
+    match: {
+      kind: 'anyOf',
+      of: [
+        nameOrPath('Snapshot|Capture', '(^|/)snapshots?[./]', 'snapshot', 'capture'),
+        freePath('(^|/)capture\\.hpp$'),
+      ],
+    },
+  },
+  {
+    id: 'workspace',
+    label: 'Workspaces',
+    match: {
+      kind: 'anyOf',
+      of: [
+        nameOrPath('Workspace|Plan', '(^|/)plan[./]|(^|/)tmuxp/', 'workspace', 'plan'),
+        // A workspace package's own functions, whatever they are named:
+        // TypeScript's `paneStartDirectory` reads a workspace file's pane.
+        {
+          kind: 'allOf',
+          of: [FREE, { kind: 'path', re: '(^|/)(packages/|crates/tmux-)?workspace/|libtmux_consumers/' }],
+        },
+      ],
+    },
+  },
   // tmux's own object hierarchy, in tmux's order.
-  { id: 'server', label: 'Server', match: nameOrPath('^Server|Server$', '(^|/)server[./]') },
-  { id: 'session', label: 'Session', match: nameOrPath('Session', '(^|/)session[./]') },
-  { id: 'window', label: 'Window', match: nameOrPath('Window', '(^|/)window[./]') },
-  { id: 'pane', label: 'Pane', match: nameOrPath('Pane', '(^|/)pane[./]') },
-  { id: 'client', label: 'Client', match: nameOrPath('Client', '(^|/)client[./]') },
+  {
+    id: 'server',
+    label: 'Server',
+    match: nameOrPath('^Server|Server$', '(^|/)server[./]', 'server', 'socket', 'daemon'),
+  },
+  { id: 'session', label: 'Session', match: nameOrPath('Session', '(^|/)session[./]', 'session', 'sessions') },
+  { id: 'window', label: 'Window', match: nameOrPath('Window', '(^|/)window[./]', 'window', 'windows') },
+  { id: 'pane', label: 'Pane', match: nameOrPath('Pane', '(^|/)pane[./]', 'pane', 'panes') },
+  { id: 'client', label: 'Client', match: nameOrPath('Client', '(^|/)client[./]', 'client', 'clients') },
   // What hangs off the hierarchy.
-  { id: 'options', label: 'Options', match: nameOrPath('^Option|Option$', '(^|/)options?') },
-  { id: 'keys', label: 'Keys and bindings', match: nameOrPath('Key|Binding', '(^|/)(keys?|binding)') },
-  { id: 'buffers', label: 'Buffers', match: nameOrPath('Buffer', '(^|/)buffers?[./]') },
+  { id: 'options', label: 'Options', match: nameOrPath('^Option|Option$', '(^|/)options?', 'option', 'options') },
+  {
+    id: 'keys',
+    label: 'Keys and bindings',
+    match: nameOrPath('Key|Binding', '(^|/)(keys?|binding)', 'key', 'keys', 'binding'),
+  },
+  { id: 'buffers', label: 'Buffers', match: nameOrPath('Buffer', '(^|/)buffers?[./]', 'buffer', 'buffers') },
   {
     id: 'layout',
     label: 'Layout and geometry',
-    match: nameOrPath('Layout|Split|Resize|Direction|Dimension|Rotation', '(^|/)layouts?[./]'),
+    match: nameOrPath(
+      'Layout|Split|Resize|Direction|Dimension|Rotation',
+      '(^|/)layouts?[./]',
+      'layout', 'split', 'resize', 'direction', 'dimension', 'rotation',
+    ),
   },
-  { id: 'environment', label: 'Environment', match: nameOrPath('Environment', '(^|/)environment') },
+  {
+    id: 'environment',
+    label: 'Environment',
+    match: nameOrPath('Environment', '(^|/)environment', 'environment', 'env'),
+  },
   {
     id: 'capabilities',
     label: 'Terminal capabilities',
-    match: nameOrPath('Capabilit|Terminal', '(^|/)capabilit'),
+    match: nameOrPath('Capabilit|Terminal', '(^|/)capabilit', 'capability', 'capabilities', 'terminal'),
   },
-  { id: 'version', label: 'Versions', match: nameOrPath('Version|Release', '(^|/)versions?[./]') },
+  {
+    id: 'version',
+    label: 'Versions',
+    match: nameOrPath('Version|Release', '(^|/)versions?[./]|(^|/)__about__\\.|(^|/)build_info\\.go$', 'version', 'release'),
+  },
   {
     id: 'commands',
     label: 'Commands',
     match: nameOrPath(
       'Command|Cmd|cmd|Dispatch|Transport|Connection',
       '(^|/)(commands?|dispatch|transport|connection)',
+      'command', 'commands', 'cmd', 'dispatch', 'transport', 'connection', 'engine',
     ),
   },
 ]
@@ -255,7 +391,30 @@ const BY_OBJECT = [
   { id: 'client', label: 'Client', re: 'Client' },
 ]
 
-const SPLITS: Record<string, { id: string; label: string; re: string }[]> = {
+/**
+ * A split by what a symbol is rather than by its name.
+ *
+ * For the buckets that free symbols made long: Rust's Options holds 218
+ * generated constants beside its 3 types, Python's Workspaces 120 tmuxp
+ * functions, and its MCP bucket 94. Types never match either child, so a
+ * bucket still opens on its types.
+ */
+const BY_KIND: Split[] = [
+  { id: 'functions', label: 'Functions', match: { kind: 'symbol', kinds: ['function', 'method'] } },
+  {
+    id: 'constants',
+    label: 'Constants and variables',
+    match: { kind: 'symbol', kinds: ['constant', 'attribute', 'property'] },
+  },
+]
+
+/** A child of a split bucket: a name pattern, or any rule. */
+type Split = { id: string; label: string; re?: string; match?: Match }
+const splitMatch = (c: Split): Match => c.match ?? nameRe(c.re ?? '')
+
+const SPLITS: Record<string, Split[]> = {
+  options: BY_KIND,
+  mcp: BY_KIND,
   requests: BY_OBJECT,
   // No Client entry: not one of the eight ports declares a client-related
   // error, and the dead-rule check said so the first time this ran.
@@ -284,6 +443,7 @@ const SPLITS: Record<string, { id: string; label: string; re: string }[]> = {
     // A workspace plan addresses sessions, windows and panes; it never names
     // a server or a client, and the dead-rule check said so.
     ...BY_OBJECT.filter((c) => c.id !== 'server' && c.id !== 'client'),
+    ...BY_KIND,
   ],
 }
 
@@ -308,8 +468,8 @@ const SHARED: Bucket[] = ORDER.map((id) => {
               kind: 'allOf',
               of: [
                 match,
-                nameRe(c.re),
-                ...splits.slice(0, i).map((prev): Match => ({ kind: 'not', of: nameRe(prev.re) })),
+                splitMatch(c),
+                ...splits.slice(0, i).map((prev): Match => ({ kind: 'not', of: splitMatch(prev) })),
               ],
             },
           })),
@@ -338,6 +498,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
         'vendored from packaging; version comparison, not tmux',
       'libtmux.constants._DefaultOptionScope': 'private sentinel for an option scope left unset',
       'libtmux.neo.Obj': 'base of the neo object layer; the tmux entity is the subclass',
+      'libtmux.__all__': 'the package export list, not an API of its own',
     },
   },
   ts: {
@@ -350,6 +511,21 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'types.AbortLike': 'structural type for a host-provided abort signal',
       'types.TmuxEventStream': 'structural type for a host-provided stream',
       'types.MenuEntry': 'display-menu entry; see the Menus note below',
+      'types.MenuItem': 'display-menu entry; see the Menus note below',
+      'common.TmuxId': 'tmux object ids; used by every entity, owned by none',
+      'common.TmuxIdInput': 'tmux object ids; used by every entity, owned by none',
+      'common.LogicalRef': 'union of the entity reference types; the tmux entity is the member',
+      'common.SafeInteger': 'integer validation for numbers tmux reports; plumbing',
+      'common.isSafeInteger': 'integer validation for numbers tmux reports; plumbing',
+      'common.safeInteger': 'integer validation for numbers tmux reports; plumbing',
+      'common.DeliveryStatus': 'notification delivery status; plumbing',
+      'common.OperationStatus': 'operation outcome status; no tmux object of its own',
+      'common.TmuxLogContext': 'diagnostics plumbing; no tmux object of its own',
+      'field_types.RowWithIdentities': 'row typing shared by every entity, owned by none',
+      'types.Digit': 'numeric literal types for tmux indices',
+      'types.NonZeroDigit': 'numeric literal types for tmux indices',
+      'types.ZeroToNinetyNine': 'numeric literal types for tmux indices',
+      'types.isTmuxName': 'tmux name validation; used by every entity, owned by none',
     },
   },
   rs: {
@@ -378,6 +554,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'tmux.PromptType': 'command-prompt UI; see the Menus note below',
       'tmux.TreeSortOrder': 'choose-tree UI; see the Menus note below',
       'workspace.Bool': 'extractor leak: a generic helper surfaced as a struct',
+      'tmux.Poll': 'wait and watch plumbing',
     },
   },
   java: {
@@ -408,6 +585,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'libtmux::DeliveryStatus': 'notification delivery status; plumbing',
       'libtmux::NodeCollector': 'query lowering helper; below Queries rather than inside it',
       'libtmux::detail::Row': 'extractor leak: a detail:: implementation type',
+      'libtmux::path_component': 'target addressing; used by every entity, owned by none',
     },
   },
   swift: {

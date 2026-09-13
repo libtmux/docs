@@ -115,6 +115,12 @@ export interface LanguageSpec {
    * every method is a free function and no type has members.
    */
   receiverType?: (node: Node) => string | undefined
+  /**
+   * The type a declaration has without spelling it, where the language
+   * repeats one: in Go's `const` block a spec with no value takes the type of
+   * the spec above it.
+   */
+  implicitType?: (node: Node) => string | undefined
 }
 
 const DEFAULT_FIELDS = { name: 'name', params: 'parameters', returns: 'return_type', body: 'body' }
@@ -338,7 +344,9 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       modifiers,
       parent: owner,
       signatures: memberSignatures,
-      type: hasParams ? undefined : child.childForFieldName('type')?.text.replace(/\s+/g, ' '),
+      type: hasParams
+        ? undefined
+        : (child.childForFieldName('type')?.text ?? spec.implicitType?.(child))?.replace(/\s+/g, ' '),
       value: hasParams
         ? undefined
         : child.childForFieldName('declarator')?.childForFieldName('value')?.text.replace(/\s+/g, ' '),

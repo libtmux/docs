@@ -187,6 +187,16 @@ export const GO: LanguageSpec = {
     const type = decl?.childForFieldName('type')?.text
     return type?.replace(/^[*&]+/, '').replace(/\[.*$/, '').trim() || undefined
   },
+  // `TreeSortIndex` under `TreeSortDefault TreeSortOrder = iota` repeats the
+  // spec above it, type included. Without this only the first value of each
+  // Go enum knew its type.
+  implicitType: (node) => {
+    if (node.type !== 'const_spec' || node.childForFieldName('value')) return undefined
+    for (let prev = node.previousNamedSibling; prev; prev = prev.previousNamedSibling) {
+      if (prev.type === 'const_spec' && prev.childForFieldName('value')) return prev.childForFieldName('type')?.text
+    }
+    return undefined
+  },
   // Go's export rule is capitalisation, which is a property of the name rather
   // than a keyword — the one language here where visibility is spelling.
   isExported: (node) => {
@@ -241,6 +251,10 @@ export const CSHARP: LanguageSpec = {
     struct_declaration: 'struct',
     enum_declaration: 'enum',
     record_declaration: 'struct',
+    // `readonly record struct PaneId` is a node of its own. Missing here, its
+    // constructor surfaced as a free function named `PaneId` and its members
+    // as free symbols, and `PaneId`, `TmuxVersion` and eight more had no page.
+    record_struct_declaration: 'struct',
   },
   members: {
     method_declaration: 'method',

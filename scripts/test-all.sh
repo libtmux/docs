@@ -59,7 +59,7 @@ node scripts/gen-mentions.mjs --check
 step 'reference sidebar curation'
 node scripts/check-nav.mjs
 
-# And the proof that those four can fail. Five checks in this repository could
+# And the proof that each of those checks can fail. Five checks in this repository could
 # not, so a check now ships with the input that breaks it.
 step 'reference sidebar curation (negative)'
 node scripts/check-nav.negative.mjs

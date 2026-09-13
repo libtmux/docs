@@ -317,13 +317,19 @@ jobs:
           # this matrix leg, so the Japanese publish refreshes /ja/ rather than
           # a tree it did not write.
           #
+          # `/<locale>/index.html`, not `/<locale>/`. The edge function rewrites a
+          # directory URL to its index.html before CloudFront looks the request
+          # up, so the landing page is cached under that key, and `/<locale>/`
+          # and `/<locale>/index.html` answer with the same age. An invalidation
+          # of `/<locale>/` matched nothing: a home page cached a second before
+          # its upload outlived it and served stale for the full five minutes.
+          #
           # `/` is deliberately absent. The edge function answers it directly,
           # so CloudFront never caches it — a request returns
           # `x-cache: FunctionGeneratedResponse from cloudfront` every time,
           # and Cloudflare reports it `DYNAMIC`. Invalidating a URL that is
           # generated per request spends a path to clear an entry that does not
-          # exist. `/<locale>/` by contrast is a real object: it answers
-          # `Hit from cloudfront` with an age.
+          # exist.
           aws cloudfront create-invalidation \
             --distribution-id "${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}" \
-            --paths "/$locale/"
+            --paths "/$locale/index.html"

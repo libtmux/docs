@@ -71,6 +71,48 @@ const BLOCK_TAG = /^\s*@(param|arg|argument|returns?|throws|exception|deprecated
  */
 const LINK_DEFINITION = /^\s*\[[^\]]+\]:\s+\S+\s*$/
 
+/**
+ * A callout: DocC's `> Warning: …` and GitHub's `> [!WARNING]`.
+ *
+ * Both are a blockquote whose first line names the kind, and both are meant
+ * to be set apart rather than quoted. Without this, Swift's two `> Warning:`
+ * blocks reached the page as a paragraph with a literal `>` before every
+ * line, which is the one shape a reader reads as a rendering fault. An
+ * ordinary blockquote — one that opens with prose — stays a blockquote.
+ */
+const CALLOUT_KINDS = new Set([
+  'note',
+  'tip',
+  'important',
+  'warning',
+  'caution',
+  'attention',
+  'danger',
+  'error',
+  'bug',
+  'experiment',
+  'remark',
+  'todo',
+])
+const QUOTE = /^\s*>\s?(.*)$/
+const CALLOUT_LABEL = /^([A-Za-z]+):\s*(.*)$/
+const CALLOUT_ALERT = /^\[!([A-Za-z]+)\]\s*$/
+
+/** The admonition a blockquote's lines carry, or nothing if it is a quote. */
+function callout(quoted: string[]): { kind: string; text: string } | undefined {
+  const [first, ...rest] = quoted
+  const alert = CALLOUT_ALERT.exec(first ?? '')
+  if (alert && CALLOUT_KINDS.has(alert[1].toLowerCase())) {
+    return { kind: alert[1].toLowerCase(), text: rest.join(' ').replace(/\s+/g, ' ').trim() }
+  }
+  const label = CALLOUT_LABEL.exec(first ?? '')
+  if (!label || !CALLOUT_KINDS.has(label[1].toLowerCase())) return undefined
+  return {
+    kind: label[1].toLowerCase(),
+    text: [label[2], ...rest].join(' ').replace(/\s+/g, ' ').trim(),
+  }
+}
+
 export interface ParsedMarkdownDoc {
   doc: DocBlock
   params: Map<string, string>
@@ -108,9 +150,21 @@ export function parseMarkdownDocFull(raw: string, defaultLang = 'text'): ParsedM
 
   const params = new Map<string, string>()
   const raises: { type: string; doc?: string }[] = []
+  const admonitions: { kind: string; text: string }[] = []
+  /** The blockquote currently collecting lines, callout or not. */
+  let quote: string[] | undefined
   let returnsDoc: string | undefined
   /** The block tag currently collecting continuation lines. */
   let tag: { kind: string; name?: string; text: string[] } | undefined
+
+  /** A blockquote ends: an admonition if it named a kind, prose if not. */
+  const closeQuote = () => {
+    if (!quote) return
+    const found = callout(quote)
+    if (found) admonitions.push(found)
+    else for (const l of quote) prose.push(`> ${l}`)
+    quote = undefined
+  }
 
   const closeTag = () => {
     if (!tag) return
@@ -146,9 +200,17 @@ export function parseMarkdownDocFull(raw: string, defaultLang = 'text'): ParsedM
       continue
     }
     if (fenced) {
+      closeQuote()
       fence = { lang: fenced[1], code: [], indent: line.length - line.trimStart().length }
       continue
     }
+    const quoted = !inExamples && QUOTE.exec(line)
+    if (quoted) {
+      quote = quote ?? []
+      quote.push(quoted[1])
+      continue
+    }
+    closeQuote()
     const block = BLOCK_TAG.exec(line)
     if (block) {
       closeTag()
@@ -194,6 +256,7 @@ export function parseMarkdownDocFull(raw: string, defaultLang = 'text'): ParsedM
     prose.push(line)
   }
 
+  closeQuote()
   closeTag()
 
   const text = prose.join('\n').trim()
@@ -204,6 +267,7 @@ export function parseMarkdownDocFull(raw: string, defaultLang = 'text'): ParsedM
       summary: (summary ?? '').replace(/\s+/g, ' ').trim(),
       body: rest.join('\n\n').trim() || undefined,
       examples: examples.length ? dropAdjacentRepeats(examples) : undefined,
+      admonitions: admonitions.length ? admonitions : undefined,
     },
     params,
     returnsDoc,
