@@ -18,7 +18,7 @@ fences and runs them against real tmux.
 
 Within an application that already has a `Server`, import `Workspace` and
 `WorkspaceBuilder` from [`io.github.libtmux.workspace`](https://github.com/libtmux/libtmux-java/tree/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/src/main/java/io/github/libtmux/workspace), and `Session` from
-[`io.github.libtmux`](/reference/java/). This excerpt uses the same configuration as the module's
+[`io.github.libtmux`](/java/latest/reference/). This excerpt uses the same configuration as the module's
 result example:
 
 ```java

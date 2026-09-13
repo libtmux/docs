@@ -1,6 +1,7 @@
 # Where the reference differs from gp-sphinx, and why
 
-The eight-port reference at `/reference/` is meant to be visually
+The reference each port publishes at `/<slug>/<version>/reference/` is meant
+to be visually
 indistinguishable from gp-sphinx's rendering. It is not identical *code*, and
 this is the list of every place it deliberately diverges. An unrecorded
 difference is a defect; this file is what makes that statement checkable.
@@ -25,17 +26,20 @@ That choice is why entries are `dl.py` / `dt.sig` / `dd`. The brief left the
 structure open, and this is the structure those rules match — also the one
 docutils chose, because a reference entry *is* a definition list.
 
-## One reference per port
+## One reference per package, under the version it documents
 
-Every port's `/<slug>/<version>/api/` redirects to `/reference/<slug>/`, and
-Python is the only exception.
+Every port's `/<slug>/<version>/api/` redirects to
+`/<slug>/<version>/reference/`, and Python is the only exception. The
+Workspace Manager and the MCP server are separately versioned packages and
+answer beside it, at `/<slug>/<version>/workspace/reference/` and
+`/<slug>/<version>/mcp/reference/`.
 
 Five ports used to answer "the API" twice, in three different visual systems:
 Sphinx+Breathe for C++, DocC for Swift, staged Markdown for TypeScript and
-.NET, and this site's own components at `/reference/`. A reader arriving at
-`/cxx/stable/api/` met a page with no cards, no badges, no source links and no
-prose at all, while `/reference/cxx/` had all four. Whatever else parity means,
-it cannot mean two answers.
+.NET, and this site's own components. A reader arriving at `/cxx/stable/api/`
+met a page with no cards, no badges, no source links and no prose at all,
+while this site's reference had all four. Whatever else parity means, it
+cannot mean two answers.
 
 Python keeps its generated tree because `/py/stable/api/` is not a duplicate:
 it is gp-sphinx rendering upstream's own documentation, which is a different

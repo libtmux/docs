@@ -10,12 +10,12 @@ sidebar:
 tableOfContents: true
 ---
 
-Import `TmuxWorkspace` for the configuration and builder, and [`LibTmux`](/reference/swift/) for
+Import `TmuxWorkspace` for the configuration and builder, and [`LibTmux`](/swift/latest/reference/) for
 the server and returned session value.
 
 ## Configuration values
 
-[`Workspace`](/reference/swift/workspace/) contains the session name, optional
+[`Workspace`](/swift/latest/workspace/reference/workspace/) contains the session name, optional
 working directory, and ordered windows. `WindowPlan` contains its name,
 directory, layout, and panes. `PanePlan` contains its directory and commands.
 The values conform to `Sendable`, `Hashable`, and `Codable`.
@@ -26,14 +26,14 @@ existing description; it does not query tmux for a live export.
 
 ## Builder
 
-[`WorkspaceBuilder`](/reference/swift/workspacebuilder/) exposes the async
+[`WorkspaceBuilder`](/swift/latest/workspace/reference/workspacebuilder/) exposes the async
 `build(_:on:)` operation. It creates a new session on the supplied server and
 returns a `Session`. Keep using the server for live observation; session
 properties do not refresh themselves.
 
 ## Typed errors
 
-[`WorkspaceBuilderError`](/reference/swift/workspacebuildererror/) distinguishes
+[`WorkspaceBuilderError`](/swift/latest/workspace/reference/workspacebuildererror/) distinguishes
 an empty window list, an existing session name, a vanished session, underlying
 tmux errors, and failure of rollback.
 

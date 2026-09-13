@@ -28,4 +28,4 @@ attachment or client switching.
 
 The upstream [Internals documentation](https://tmuxp.git-pull.com/internals/)
 contains the full architecture and module reference. Use the
-[libtmux Python API](/reference/py/) for general tmux programming.
+[libtmux Python API](/py/stable/reference/) for general tmux programming.

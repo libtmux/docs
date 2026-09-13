@@ -16,23 +16,23 @@ and cancellation.
 
 ## Parse configuration
 
-[`Parse`](/reference/go/workspace-parse/) reads YAML into a
-[`Workspace`](/reference/go/workspace-workspace/). Its errors match
+[`Parse`](/go/latest/workspace/reference/workspace-parse/) reads YAML into a
+[`Workspace`](/go/latest/workspace/reference/workspace-workspace/). Its errors match
 `ErrInvalidWorkspace`. Inspect the individual diagnostics to locate unknown
 keys or invalid values.
 
-[`Window`](/reference/go/workspace-window/),
-[`Pane`](/reference/go/workspace-pane/), and
-[`Command`](/reference/go/workspace-command/) let applications construct the
+[`Window`](/go/latest/workspace/reference/workspace-window/),
+[`Pane`](/go/latest/workspace/reference/workspace-pane/), and
+[`Command`](/go/latest/workspace/reference/workspace-command/) let applications construct the
 same data in Go. `Bool` preserves tmuxp's supported boolean spellings.
 
 ## Build a session
 
-[`Build`](/reference/go/workspace-build/) creates the initial session and owns
+[`Build`](/go/latest/workspace/reference/workspace-build/) creates the initial session and owns
 a temporary control connection for the duration of construction. It returns
 a session and an error; a non-nil error can accompany a partial session.
 
-[`BuildInto`](/reference/go/workspace-buildinto/) populates a supplied session
+[`BuildInto`](/go/latest/workspace/reference/workspace-buildinto/) populates a supplied session
 and preserves the caller's connection ownership.
 `Workspace.InitialSessionRequest`
 produces the initial request for that workflow.

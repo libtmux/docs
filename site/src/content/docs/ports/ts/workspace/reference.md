@@ -17,26 +17,26 @@ not choose a workspace or apply one automatically.
 
 ## Parse and validate
 
-[`parseWorkspace`](/reference/ts/config-parseworkspace/) validates data already
+[`parseWorkspace`](/ts/latest/workspace/reference/config-parseworkspace/) validates data already
 read by your application.
-[`parseWorkspaceYaml`](/reference/ts/config-parseworkspaceyaml/)
+[`parseWorkspaceYaml`](/ts/latest/workspace/reference/config-parseworkspaceyaml/)
 adds Bun's YAML parsing. Both produce the workspace configuration consumed by
 the builder.
 
 ## Plan and apply
 
-[`planWorkspace`](/reference/ts/builder-planworkspace/) returns a description
-of membership changes. [`WorkspacePlan`](/reference/ts/planning-workspaceplan/)
+[`planWorkspace`](/ts/latest/workspace/reference/builder-planworkspace/) returns a description
+of membership changes. [`WorkspacePlan`](/ts/latest/workspace/reference/planning-workspaceplan/)
 records creations, removals, renames, and retained surplus.
 
-[`applyWorkspace`](/reference/ts/builder-applyworkspace/) performs the work and
+[`applyWorkspace`](/ts/latest/workspace/reference/builder-applyworkspace/) performs the work and
 resolves to the resulting `Session`. Its options control pruning and whether
 commands run in existing panes. Planning accepts pruning policy; command
 policy belongs to application.
 
 ## Handle failure
 
-[`WorkspaceApplyError`](/reference/ts/builder-workspaceapplyerror/) preserves
+[`WorkspaceApplyError`](/ts/latest/workspace/reference/builder-workspaceapplyerror/) preserves
 the cause and completed milestones. Reinspect tmux before retrying; the error
 is not a transaction log of every effect or a receipt for shell commands.
 

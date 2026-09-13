@@ -179,7 +179,7 @@ them and trusts the KeyValueStore lookup to miss for anything that is not one.
 | `/en/py/latest` | 3 | 301 to `/en/py/latest/`, never the KVS default — `parts[3]` is truthy |
 | `/en/py/v0.46.2` | 3 (`2` is not an asset extension) | 301 to `/en/py/v0.46.2/` |
 | `/en/dotnet/stable/api/libtmux.client` | 3 (`client` is not an asset extension) | 301 with a trailing slash |
-| `/en/reference/py/objects.inv` | none (`inv` is an asset extension) | passes through — this is how an external Sphinx project resolves intersphinx into this site |
+| `/en/py/stable/reference/objects.inv` | none (`inv` is an asset extension) | passes through — this is how an external Sphinx project resolves intersphinx into this site |
 | `/en/py/stable/api/.buildinfo` | none (`buildinfo` is an asset extension) | passes through; a leading dot is a separator like any other |
 | `/en/pagefind/pagefind.js` | none (`js` is an asset extension) | passes through |
 | `/en/versions.json` | none (dot excludes rule 1, `json` is an asset extension) | passes through |
