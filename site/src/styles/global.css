@@ -328,6 +328,29 @@ html[data-theme-mode="dark"] {
   -webkit-user-select: none;
 }
 
+/*
+ * A block highlighted by `highlightInline` outside the widgets, which carry
+ * their own copy of this. Shiki writes each token's light and dark colours as
+ * custom properties, and this reads the one in use; the scrollbar is the thin
+ * slate one the widgets use.
+ */
+.lm-highlighted span {
+  color: var(--shiki-light);
+}
+
+html[data-theme-mode="dark"] .lm-highlighted span {
+  color: var(--shiki-dark);
+}
+
+pre.lm-highlighted {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(203 213 225) transparent;
+}
+
+html[data-theme-mode="dark"] pre.lm-highlighted {
+  scrollbar-color: rgb(71 85 105) transparent;
+}
+
 /* Emerald Theme */
 html[data-theme="emerald"] {
   --theme-primary: var(--color-emerald-primary);

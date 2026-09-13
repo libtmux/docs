@@ -15,6 +15,18 @@ import { localesFor } from '../i18n/resolve'
 import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE } from '../i18n/locales'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath } from '../i18n/contribute'
+import { highlightInline } from '../lib/highlight'
+
+// Each library card's install block, highlighted the way the Quickstart
+// highlights the same command, prompt included.
+const libraryInstalls = new Map(
+  await Promise.all(
+    PORTS.map(async (p) => {
+      const cmd = primaryInstall(p)
+      return [p.slug, await highlightInline(cmd.lang === 'console' ? `$ ${cmd.code}` : cmd.code, cmd.lang)] as const
+    }),
+  ),
+)
 
 const explore = [
   {
@@ -279,7 +291,7 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
                 </a>
               </h3>
               <p class="mt-1 font-mono text-xs opacity-70">{p.packageName}</p>
-              <pre class="mt-3 overflow-x-auto rounded bg-surface px-2 py-1.5 font-mono text-xs"><code>{primaryInstall(p).code}</code></pre>
+              <pre class="lm-highlighted mt-3 overflow-x-auto rounded bg-surface px-2 py-1.5 font-mono text-xs"><code set:html={libraryInstalls.get(p.slug)} /></pre>
               <p class="mt-3 text-sm">
                 <a class="hover:underline" href={referenceUrl(p)}>API reference</a>
               </p>
