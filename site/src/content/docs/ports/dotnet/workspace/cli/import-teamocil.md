@@ -36,6 +36,24 @@ An extensionless name searches the configured source directory. A filename
 with an extension is resolved relative to the current directory unless you
 provide an explicit path.
 
+## Native .NET translation
+
+`tmux-workspace import teamocil` accepts a session mapping, including the
+`session` wrapper. It preserves names, roots, layouts, window options and
+the first true window/pane focus flag in each scope.
+
+Each `panes` item creates one pane. A pane command string or `commands` list
+becomes one shell input; list entries join with `; ` to retain their command
+group. The aliases `tabs`, `splits` and `cmd` are accepted for `windows`,
+`panes` and `commands`. Null aliases fall back to the other spelling;
+conflicting non-null values fail validation.
+
+Window options apply before command delivery, including `synchronize-panes`.
+Synchronized commands can therefore also reach panes created earlier in the
+same window. Filters, `clear` and unsupported pane-width fields are refused
+instead of being discarded. See [native import saving](../import/#native-net-imports)
+for roots, output and validation behavior.
+
 ## Arguments and flags
 
 | Argument or flags | Arity / default | Choices or meaning |

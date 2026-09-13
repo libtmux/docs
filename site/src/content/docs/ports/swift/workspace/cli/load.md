@@ -36,9 +36,9 @@ dedicated socket:
 
 ```console
 $ tmuxp load \
-    -L workspace-guide \
+    -S "$WORKSPACE_TMP/tmux.sock" \
     -d \
-    workspace.yaml
+    "$WORKSPACE_TMP/workspace.yaml"
 ```
 
 `-d` avoids attachment. Inside an existing tmux client, the normal interactive
@@ -64,11 +64,19 @@ or a custom format. Available tokens include `{session}`, `{window}`,
 `{session_pane_progress}`, `{overall_percent}`, `{bar}`, `{pane_bar}`,
 `{window_bar}`, and `{status_icon}`.
 
-The output panel defaults to three lines. `--progress-lines 0` hides the panel
-and sends script output to stdout; `-1` permits all available lines up to
+The Python reference panel defaults to three lines. `--progress-lines 0` hides
+the panel and sends script output to stdout; `-1` permits all available lines up to
 terminal height. `--no-progress` disables animation. See [environment
 settings](../../configuration/environment/) for environment bindings and
 [command ordering](../../configuration/commands/) for what is executed.
+
+Native Swift also defaults to three panel lines. Hiding its panel preserves
+each bootstrap stream's original destination. The panel updates while the
+script runs, retains at most 65,536 UTF-8 bytes and uses the initial terminal
+size without tracking resize events. JSON and NDJSON disable the panel and send
+live bootstrap chunks as structured stderr warnings. Cancellation clears the
+panel and attempts bounded final output; see the
+[child output contract](../../reference/output/#native-swift-child-output).
 
 ## Arguments and flags
 

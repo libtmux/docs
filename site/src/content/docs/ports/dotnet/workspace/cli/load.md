@@ -23,6 +23,11 @@ reject a replacement daemon, including global options after a startup script.
 Append with Python plugins or custom builders fails before building any input
 or starting Python. Use `-d` to load those extensions into a separate session.
 
+Native load creates panes in configuration order, including windows with
+three or more panes. `pane-base-index` changes the first index, and explicit
+focus selects the configured pane without reordering it. See
+[pane configuration](../../configuration/panes/).
+
 ## Loading and attachment
 
 Create [`workspace.yaml`](../../guides/installation/#create-the-input) using the [installation
@@ -31,9 +36,9 @@ dedicated socket:
 
 ```console
 $ tmuxp load \
-    -L workspace-guide \
+    -S "$WORKSPACE_TMP/tmux.sock" \
     -d \
-    workspace.yaml
+    "$WORKSPACE_TMP/workspace.yaml"
 ```
 
 `-d` avoids attachment. Inside an existing tmux client, the normal interactive
@@ -54,6 +59,24 @@ files or running tmux or Python. On Linux x64, `load --log-file PATH` appends
 structured logs. Select `--log-level info` for lifecycle records or `debug` to
 include script output. The [output reference](../../reference/output/)
 describes destination validation and failure handling.
+
+## Native .NET attachment
+
+Human load requires a foreground controlling terminal on Linux x64 for
+attachment. Inside tmux, choose `y` to switch a client, `n` to load detached,
+or `a` to append. `-y` refuses an ambiguous client choice. A client using
+independent `active-pane` focus on the invoking window prevents handoff;
+detached and append modes remain available.
+
+The CLI authenticates the invoking pane and daemon before building, flushes
+output, and checks the selected client again before handoff. Late failures
+print recorded load results on stderr. SIGINT and SIGTERM report cancellation;
+a completed load can remain present after interruption during attachment.
+A client name can still be reused after the final client observation.
+
+Attached Python extension handoff remains unavailable. Use `-d` or choose `n`
+to run those extensions detached. See the
+[native handoff source](https://github.com/libtmux/libtmux-dotnet/blob/4ac82a5b82fd8cf68d31c70a2a3eb43c587cd7c0/src/LibTmux.Workspace.Cli/LoadHandoff.cs).
 
 ## Progress and script output
 

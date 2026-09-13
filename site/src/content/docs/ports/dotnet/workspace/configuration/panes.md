@@ -16,6 +16,12 @@ A pane can be a command string, a list of commands, or a mapping of settings.
 Each item in the window's `"panes"` list creates one pane; a command list inside
 that item describes several commands in that same pane.
 
+The native .NET CLI creates panes in configuration order. This also holds for
+windows with three or more panes: each new split follows the preceding pane.
+`pane-base-index` changes their starting index; `focus: true` selects a
+configured pane without changing creation order. Layouts determine the final
+geometry. See the [native load source](https://github.com/libtmux/libtmux-dotnet/blob/4ac82a5b82fd8cf68d31c70a2a3eb43c587cd7c0/src/LibTmux.Workspace.Cli/ExecutionCommands.cs).
+
 ```yaml
 session_name: pane-example
 start_directory: ./
