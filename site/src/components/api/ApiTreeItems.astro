@@ -1,0 +1,95 @@
+---
+/**
+ * One level of the reference tree, and every level under it.
+ *
+ * Microsoft Learn's shape: a leaf is the link itself (`li role=none > a
+ * role=treeitem`), and a branch is an `li role=treeitem` whose row holds a
+ * link to its own page, a count and a chevron, with its children in a
+ * `role=group`. The link is not the treeitem on a branch, so clicking it
+ * navigates and clicking the rest of the row toggles, and one row is never
+ * two controls at once.
+ */
+import SymbolName from './SymbolName.astro'
+
+export interface TreeNode {
+  id: string
+  label: string
+  href?: string
+  count?: number
+  level: number
+  current?: boolean
+  /** Holds the tree's one Tab stop. */
+  tab?: boolean
+  /** Undefined for a leaf. */
+  expanded?: boolean
+  /** `bucket:<id>` or `type:<id>`: children arrive from tree.json on first open. */
+  lazy?: string
+  children?: TreeNode[]
+}
+
+interface Props {
+  nodes: TreeNode[]
+}
+
+const { nodes } = Astro.props as Props
+---
+
+{
+  nodes.map((node, i) =>
+    node.expanded !== undefined ? (
+      <li
+        role="treeitem"
+        class="api-nav__item"
+        aria-level={node.level}
+        aria-setsize={nodes.length}
+        aria-posinset={i + 1}
+        aria-expanded={node.expanded ? 'true' : 'false'}
+        aria-labelledby={node.count !== undefined ? `${node.id} ${node.id}-count` : node.id}
+        tabindex={node.tab ? '0' : '-1'}
+        data-lazy={node.lazy}
+      >
+        <div class="api-nav__row" style={`--level:${node.level}`}>
+          <span class="api-nav__chevron" aria-hidden="true" />
+          {node.href ? (
+            <a class="api-nav__label" id={node.id} href={node.href} tabindex="-1" aria-current={node.current ? 'page' : undefined}>
+              <SymbolName name={node.label} />
+            </a>
+          ) : (
+            <span class="api-nav__label" id={node.id}>
+              <SymbolName name={node.label} />
+            </span>
+          )}
+          {node.count !== undefined && (
+            <span class="api-nav__count" id={`${node.id}-count`}>
+              {node.count}
+            </span>
+          )}
+        </div>
+        {node.children && (
+          <ul role="group" class="api-nav__group">
+            <Astro.self nodes={node.children} />
+          </ul>
+        )}
+      </li>
+    ) : (
+      <li role="none">
+        <a
+          role="treeitem"
+          class="api-nav__row api-nav__leaf"
+          aria-level={node.level}
+          aria-setsize={nodes.length}
+          aria-posinset={i + 1}
+          href={node.href}
+          tabindex={node.tab ? '0' : '-1'}
+          aria-current={node.current ? 'page' : undefined}
+          style={`--level:${node.level}`}
+        >
+          <span class="api-nav__label">
+            <SymbolName name={node.label} />
+          </span>
+          {node.count !== undefined && <span class="api-nav__count">{node.count}</span>}
+        </a>
+      </li>
+    ),
+  )
+}

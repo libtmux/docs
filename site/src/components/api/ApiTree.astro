@@ -1,0 +1,139 @@
+---
+/**
+ * The reference's left column: the port's documentation menu, folded, and the
+ * symbol tree as its own scroll area.
+ *
+ * The page renders its own branch open, every other bucket closed, and the
+ * types with members closed over nothing: their children arrive from
+ * `tree.json` the first time a reader opens one. So the markup a page carries
+ * stays its own branch rather than twelve thousand symbols, and every bucket
+ * still opens in place.
+ *
+ * Desktop: a sticky column whose tree scrolls on its own, opened at the page
+ * being read before first paint. Phone: the same markup as a drawer docked on
+ * the left, as Microsoft Learn's table of contents is, rather than two screens
+ * of links above the title. Without JavaScript it stays an inline column, and
+ * every closed row is still a link.
+ */
+import Sidebar from '../docs/Sidebar.astro'
+import ApiTreeItems, { type TreeNode } from './ApiTreeItems.astro'
+import type { NavEntry } from '../../lib/api-models'
+import { bucketTotal, firstEntry, type TreeBucket } from '../../lib/api-tree'
+import { withRoot } from '../../lib/site-root'
+import '../../styles/api-tree.css'
+
+interface Props {
+  port: string
+  portName: string
+  tree: TreeBucket[]
+  /** Top-level bucket holding the page. */
+  currentRoot?: string
+  /** Bucket holding the page's type, which may be a child of `currentRoot`. */
+  currentBucket?: string
+  /** Nav id of the type the page is about or is a member of. */
+  currentTypeId?: string
+  /** Nav id of the page's own symbol, when it is a type. */
+  ownerNavId?: string
+  /** Declaration id of the page's own symbol, when it is a member. */
+  ownerId?: string
+  members: { id: string; name: string; href: string }[]
+  /** Nav ids of the types that have members, which open into them. */
+  withMembers: Set<string>
+  menuVersion: string
+  currentPath: string
+}
+
+const {
+  port, portName, tree, currentRoot, currentBucket, currentTypeId, ownerNavId, ownerId,
+  members, withMembers, menuVersion, currentPath,
+} = Astro.props as Props
+const base = withRoot(`/reference/${port}/`)
+const href = (slug: string) => `${base}${slug}/`
+
+let seq = 0
+const nextId = () => `api-nav-${++seq}`
+
+const typeNode = (t: NavEntry, level: number): TreeNode => {
+  const current = t.id === ownerNavId
+  if (t.id === currentTypeId && members.length > 0) {
+    return {
+      id: nextId(), label: t.name, href: href(t.slug), level, current, expanded: true,
+      children: members.map((m) => ({ id: nextId(), label: m.name, href: m.href, level: level + 1, current: m.id === ownerId })),
+    }
+  }
+  return {
+    id: nextId(), label: t.name, href: href(t.slug), level, current,
+    ...(withMembers.has(t.id) ? { expanded: false, lazy: `type:${t.id}` } : {}),
+  }
+}
+
+const bucketNode = (b: TreeBucket, level: number, child: boolean): TreeNode => {
+  const target = firstEntry(b)
+  const head = { id: nextId(), label: b.label, href: target ? href(target.slug) : undefined, count: child ? b.entries.length : bucketTotal(b), level }
+  const open = child ? b.id === currentBucket : b.id === currentRoot
+  if (!open) return { ...head, expanded: false, lazy: `bucket:${b.id}` }
+  return {
+    ...head,
+    expanded: true,
+    children: [...b.entries.map((t) => typeNode(t, level + 1)), ...b.children.map((c) => bucketNode(c, level + 1, true))],
+  }
+}
+
+const nodes = tree.map((b) => bucketNode(b, 1, false))
+
+/** The one Tab stop: the page's own row, or the first row on a page with none. */
+const mark = (list: TreeNode[]): boolean =>
+  list.some((n) => (n.current ? ((n.tab = true), true) : n.children ? mark(n.children) : false))
+if (!mark(nodes) && nodes[0]) nodes[0].tab = true
+---
+
+<script is:inline>
+  // Before the column is parsed, so the drawer's rules apply at first paint.
+  // Without JavaScript the column stays inline and closed rows stay links.
+  document.documentElement.setAttribute('data-api-nav', '')
+</script>
+<div class="api-nav-overlay" data-api-nav-overlay></div>
+<div id="api-nav" class="api-nav lg:self-start" data-src={`${base}tree.json`} data-base={base} aria-labelledby="api-nav-title">
+  <div class="api-nav__head">
+    <p class="api-nav__title" id="api-nav-title">{portName} API</p>
+    <button type="button" class="api-nav__close" data-api-nav-close aria-label="Close API contents">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+  <details class="api-nav__menu" data-pagefind-ignore="all">
+    <summary class="api-nav__menu-summary">{portName} documentation</summary>
+    <div class="api-nav__menu-body">
+      <Sidebar port={port} version={menuVersion} currentPath={currentPath} menuOnly />
+    </div>
+  </details>
+  <nav class="api-nav__nav" aria-label="API reference" data-pagefind-ignore="all">
+    <ul class="api-nav__tree" role="tree" aria-label={`${portName} API`}>
+      <ApiTreeItems nodes={nodes} />
+    </ul>
+  </nav>
+</div>
+<script is:inline>
+  // Open the tree at the page being read before it paints, as Learn's does:
+  // the tree scrolls on its own, so this moves the tree, never the page.
+  ;(() => {
+    const tree = document.querySelector('#api-nav [role="tree"]')
+    const current = tree && tree.querySelector('[aria-current="page"]')
+    if (!current) return
+    const row = current.closest('.api-nav__row') || current
+    const place = () => {
+      tree.scrollTop = Math.max(0, row.offsetTop - tree.clientHeight / 4)
+    }
+    place()
+    const placed = tree.scrollTop
+    // Web fonts change row heights; follow them unless the reader has scrolled.
+    if (document.fonts) document.fonts.ready.then(() => tree.scrollTop === placed && place())
+  })()
+</script>
+<script>
+  import { initApiTree } from './api-tree'
+
+  initApiTree()
+  document.addEventListener('astro:after-swap', initApiTree)
+</script>
