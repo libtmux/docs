@@ -552,12 +552,21 @@ const installHtml = new Map(
    * measure zero, so they get no offset either.
    */
   function measureScrollbars() {
-    document.querySelectorAll<HTMLElement>('.lm-pkg-install__code, .lm-pkg-install__snippet .frame').forEach((holder) => {
+    // Every width is read before any is written: a write between two reads
+    // makes the second read lay out the whole page again.
+    const holders = [...document.querySelectorAll<HTMLElement>('.lm-pkg-install__code, .lm-pkg-install__snippet .frame')]
+    const widths = holders.map((holder) => {
       const pre = holder.querySelector('pre')
-      if (!pre) return
+      if (!pre) return undefined
       const style = getComputedStyle(pre)
       const width = pre.offsetWidth - pre.clientWidth - parseFloat(style.borderLeftWidth) - parseFloat(style.borderRightWidth)
-      holder.style.setProperty('--lm-pkg-install-scrollbar', `${Math.max(0, width)}px`)
+      return `${Math.max(0, width)}px`
+    })
+    holders.forEach((holder, index) => {
+      const width = widths[index]
+      if (width !== undefined && holder.style.getPropertyValue('--lm-pkg-install-scrollbar') !== width) {
+        holder.style.setProperty('--lm-pkg-install-scrollbar', width)
+      }
     })
   }
 
