@@ -87,12 +87,14 @@ const mark = (list: TreeNode[]): boolean =>
 if (!mark(nodes) && nodes[0]) nodes[0].tab = true
 ---
 
-<script is:inline>
-  // Before the column is parsed, so the drawer's rules apply at first paint.
-  // Without JavaScript the column stays inline and closed rows stay links.
-  document.documentElement.setAttribute('data-api-nav', '')
-</script>
+<!-- One element: the scripts sit inside the column, so the page's grid has the
+     column and the text column as its only children. -->
 <div class="api-nav-column">
+  <script is:inline>
+    // Before the tree is parsed, so the drawer's rules apply at first paint.
+    // Without JavaScript the column stays inline and closed rows stay links.
+    document.documentElement.setAttribute('data-api-nav', '')
+  </script>
   <div class="api-nav-overlay" data-api-nav-overlay></div>
   <div id="api-nav" class="api-nav" data-src={`${base}tree.json`} data-base={base} aria-labelledby="api-nav-title">
     <div class="api-nav__head">
@@ -115,27 +117,27 @@ if (!mark(nodes) && nodes[0]) nodes[0].tab = true
       </ul>
     </nav>
   </div>
-</div>
-<script is:inline>
-  // Open the tree at the page being read before it paints, as Learn's does:
-  // the tree scrolls on its own, so this moves the tree, never the page.
-  ;(() => {
-    const tree = document.querySelector('#api-nav [role="tree"]')
-    const current = tree && tree.querySelector('[aria-current="page"]')
-    if (!current) return
-    const row = current.closest('.api-nav__row') || current
-    const place = () => {
-      tree.scrollTop = Math.max(0, row.offsetTop - tree.clientHeight / 4)
-    }
-    place()
-    const placed = tree.scrollTop
-    // Web fonts change row heights; follow them unless the reader has scrolled.
-    if (document.fonts) document.fonts.ready.then(() => tree.scrollTop === placed && place())
-  })()
-</script>
-<script>
-  import { initApiTree } from './api-tree'
+  <script is:inline>
+    // Open the tree at the page being read before it paints, as Learn's does:
+    // the tree scrolls on its own, so this moves the tree, never the page.
+    ;(() => {
+      const tree = document.querySelector('#api-nav [role="tree"]')
+      const current = tree && tree.querySelector('[aria-current="page"]')
+      if (!current) return
+      const row = current.closest('.api-nav__row') || current
+      const place = () => {
+        tree.scrollTop = Math.max(0, row.offsetTop - tree.clientHeight / 4)
+      }
+      place()
+      const placed = tree.scrollTop
+      // Web fonts change row heights; follow them unless the reader has scrolled.
+      if (document.fonts) document.fonts.ready.then(() => tree.scrollTop === placed && place())
+    })()
+  </script>
+  <script>
+    import { initApiTree } from './api-tree'
 
-  initApiTree()
-  document.addEventListener('astro:after-swap', initApiTree)
-</script>
+    initApiTree()
+    document.addEventListener('astro:after-swap', initApiTree)
+  </script>
+</div>
