@@ -38,6 +38,12 @@ syntax. Conversion preserves extension fields. Capture recovers topology,
 directories, focus and configured options, but cannot recover command history,
 bootstrap scripts or plugin intent. Search uses native Java regular expressions.
 
+Loading checks layouts across all inputs before setup scripts or topology
+changes. Named layouts accept unique abbreviations supported by the running
+daemon; only a cold endpoint falls back to the selected client's version.
+Serialized layouts have bounded checksum, tree and pane-count validation.
+Tmux remains responsible for geometry correction and pruning.
+
 Every command accepts `--json` and `--ndjson`, with NDJSON taking precedence.
 Load and child output stream as escaped events. Human output has semantic
 colors; log levels and load log files keep diagnostics separate from results.

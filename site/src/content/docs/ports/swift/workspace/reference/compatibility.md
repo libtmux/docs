@@ -38,6 +38,12 @@ NUL rejection. Unsupported execution keys fail explicitly. Outside tmux, load
 currently requires an explicit `-S` or `-L` endpoint. Append uses new slots and
 ignores configured indexes.
 
+Loading checks layouts across all inputs before setup scripts or topology
+changes. Named layouts accept unique abbreviations supported by the running
+daemon; only a cold endpoint falls back to the selected client's version.
+Serialized layouts have bounded checksum, tree and pane-count validation.
+Tmux remains responsible for geometry correction and pruning.
+
 Human load with a foreground terminal attaches to the final workspace. Inside
 tmux, a prompt offers switching, detached loading, appending or cancellation.
 `-y` skips that mode prompt but refuses an ambiguous client selection. All
