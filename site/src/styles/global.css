@@ -8,6 +8,8 @@
 @import "./gp-sphinx-tokens.css";
 @import "./flags.css" layer(components);
 @import "./image-loading.css" layer(components);
+/* Unlayered, like the widgets, so prose margins cannot outrank it. */
+@import "./aside.css";
 @plugin "@tailwindcss/typography";
 @plugin "@libtmux/theme";
 
