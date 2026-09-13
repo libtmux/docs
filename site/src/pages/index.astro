@@ -281,10 +281,13 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
         Choose a library for installation instructions and API documentation.
         Each reference includes links to related APIs in other languages.
       </p>
-      <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* At least 26rem a card: an install block is often a build-file
+          fragment, and four cards across this page cut every one of them
+          off. */}
+      <div class="mt-4 grid grid-cols-[repeat(auto-fill,minmax(min(100%,26rem),1fr))] gap-4">
         {
           PORTS.map((p) => (
-            <article class="flex flex-col rounded border border-edge p-4">
+            <article class="flex min-w-0 flex-col rounded border border-edge p-4">
               <h3 class="font-semibold">
                 <a class="hover:underline" href={withPortRoot(`/${p.slug}/`)}>
                   {p.name}
