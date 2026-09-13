@@ -538,7 +538,7 @@ render_staged_reference() {
 # The status line is cached alongside the tree. It is what the summary prints,
 # and a hit that reported "built" for a generator that had been skipped would
 # be a lie that survives until someone reads the site.
-# write_reference_redirect SLUG DEST
+# write_reference_redirect SLUG VERSION DEST
 #
 # A static site has no server to answer 301 with, so the redirect is a page:
 # a meta refresh for the browser, a canonical link so a crawler follows the
@@ -546,9 +546,9 @@ render_staged_reference() {
 # `noindex` keeps the placeholder out of search results while the canonical
 # still points at the real page.
 write_reference_redirect() {
-  local slug="$1" dest="$2"
+  local slug="$1" version="$2" dest="$3"
   # Through the site root, like every other link the assembly emits.
-  local path="${LIBTMUX_DOCS_ROOT%/}/reference/$slug/"
+  local path="${LIBTMUX_DOCS_ROOT%/}/$slug/$version/reference/"
   local target="${site_origin%/}$path"
   cat >"$dest" <<HTML
 <!doctype html>
@@ -984,7 +984,8 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
       continue
     fi
 
-    # One reference per port, at /reference/<slug>/.
+    # One reference per port and version, at /<slug>/<version>/reference/,
+    # rendered by that port's own shell build above.
     #
     # Five ports used to answer "the API" twice, in three different visual
     # systems: Breathe for C++, DocC for Swift, staged Markdown for TypeScript
@@ -1001,8 +1002,8 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     # port's own pipeline uploads.
     if [ "$own_api" != "own-api" ]; then
       mkdir -p "$port_out/api"
-      write_reference_redirect "$slug" "$port_out/api/index.html"
-      summary_rows+=("$slug|$version|redirect|redirected|to $LIBTMUX_DOCS_PORT_ROOT/reference/$slug/")
+      write_reference_redirect "$slug" "$version" "$port_out/api/index.html"
+      summary_rows+=("$slug|$version|redirect|redirected|to $LIBTMUX_DOCS_PORT_ROOT/$slug/$version/reference/")
       continue
     fi
 
@@ -1017,7 +1018,7 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
       node "$script_dir/normalize-native-shell.mjs" "$port_out/api" "$LIBTMUX_DOCS_PORT_ROOT"
     elif [ "$ref_status" = "skipped" ]; then
       mkdir -p "$port_out/api"
-      write_reference_redirect "$slug" "$port_out/api/index.html"
+      write_reference_redirect "$slug" "$version" "$port_out/api/index.html"
     fi
 
     summary_rows+=("$slug|$version|$renderer|$ref_status|[$generator] $ref_reason")

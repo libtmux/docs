@@ -26,12 +26,56 @@ import { API_MODELS, PORT_NAME, ownersOf, pageSlug } from '../lib/api-models'
  * reader, so a wrong one breaks their links, not ours, and nothing here
  * would have reported it.
  */
+/**
+ * A URI as intersphinx reads it: relative to the directory holding the
+ * inventory, never to the site root.
+ *
+ * `rooted` is what tells the two apart. The combined inventory sits at
+ * `/objects.inv` and needs the `reference/<port>/` prefix; a per-port one
+ * sits beside the pages it names and must not carry it, because intersphinx
+ * joins the URI onto the base URL it was configured with. With the prefix in
+ * both, a resolved C++ class came out as
+ * `libtmux.org/reference/cxx/reference/cxx/libtmux::pane/` — a link that
+ * Sphinx reported as resolved and that goes nowhere.
+ */
+function uriForModel(model: ApiModel, rooted = true) {
+  const paged = new Set(ownersOf(model).map((s) => s.id))
+  return (symbol: { id: string; publicId?: string; parent?: string }) => {
+    const anchor = symbol.publicId ?? symbol.id
+    const owner = paged.has(symbol.id)
+      ? anchor
+      : symbol.parent && paged.has(symbol.parent)
+        ? (model.symbols.find((s) => s.id === symbol.parent)?.publicId ?? symbol.parent)
+        : undefined
+    const page = owner ? `${pageSlug(owner)}/` : ''
+    const prefix = rooted ? `reference/${model.port}/` : ''
+    return `${prefix}${page}#${anchor}`
+  }
+}
+
 export function inventory(): AstroIntegration {
   return {
     name: 'libtmux:inventory',
     hooks: {
       'astro:build:done': ({ dir, logger }) => {
-        if (process.env.LIBTMUX_DOCS_PORT) return
+        // A port shell writes one inventory, beside the reference it just
+        // built: `/<port>/<version>/reference/objects.inv`, which is where
+        // that port's pages live now.
+        const buildPort = process.env.LIBTMUX_DOCS_PORT
+        if (buildPort) {
+          const model = API_MODELS[buildPort]
+          if (!model) return
+          const uri = uriForModel(model, false)
+          const path = join(dir.pathname, 'reference', 'objects.inv')
+          mkdirSync(dirname(path), { recursive: true })
+          writeFileSync(path, writeInventory(model, {
+            project: `libtmux for ${PORT_NAME[buildPort] ?? buildPort}`,
+            version: model.revision?.slice(0, 7) ?? 'latest',
+            uriFor: uri,
+          }))
+          logger.info(`objects.inv written for ${buildPort} (${model.symbols.length} symbols)`)
+          return
+        }
         // The env var, not `buildLocale()` from i18n/resolve: this runs as an
         // Astro integration, in the config context, where `astro:content` —
         // which that module imports — does not exist.
@@ -39,33 +83,7 @@ export function inventory(): AstroIntegration {
         const out = dir.pathname
         let total = 0
 
-        /**
-         * A URI as intersphinx reads it: relative to the directory holding
-         * the inventory, never to the site root.
-         *
-         * `rooted` is what tells the two apart. The combined inventory sits
-         * at `/objects.inv` and needs the `reference/<port>/` prefix; a
-         * per-port one sits at `/reference/<port>/objects.inv` and must not
-         * carry it, because intersphinx joins the URI onto the base URL it
-         * was configured with. With the prefix in both, a resolved C++ class
-         * came out as
-         * `libtmux.org/reference/cxx/reference/cxx/libtmux::pane/` — a link
-         * that Sphinx reported as resolved and that goes nowhere.
-         */
-        const uriFor = (model: ApiModel, rooted = true) => {
-          const paged = new Set(ownersOf(model).map((s) => s.id))
-          return (symbol: { id: string; publicId?: string; parent?: string }) => {
-            const anchor = symbol.publicId ?? symbol.id
-            const owner = paged.has(symbol.id)
-              ? anchor
-              : symbol.parent && paged.has(symbol.parent)
-                ? (model.symbols.find((s) => s.id === symbol.parent)?.publicId ?? symbol.parent)
-                : undefined
-            const page = owner ? `${pageSlug(owner)}/` : ''
-            const prefix = rooted ? `reference/${model.port}/` : ''
-            return `${prefix}${page}#${anchor}`
-          }
-        }
+        const uriFor = uriForModel
 
         for (const [port, model] of Object.entries(API_MODELS)) {
           const bytes = writeInventory(model, {
