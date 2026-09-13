@@ -38,6 +38,24 @@ An extensionless name searches the configured source directory. A filename
 with an extension is resolved relative to the current directory unless you
 provide an explicit path.
 
+## Native C++ translation
+
+`tmux-workspace import tmuxinator` translates session names, project roots,
+named windows, layouts and pane commands. A command array used as a window
+body remains one pane with ordered commands; explicit panes may each contain
+a command array.
+
+`pre_window` arrays join with `; `, while window `pre` arrays join with ` && `.
+A nonempty window `pre` requires explicit nonempty panes. Synchronization is
+supported only with `synchronize: after`. Host lifecycle hooks, ERB templates,
+named pane titles, startup selectors and endpoint/attachment settings are
+refused before saving.
+
+Relative project roots resolve where import runs; relative window roots
+resolve against the project root. Saved paths are absolute. `project_name`,
+`project_root` and `tabs` aliases use non-null fallback and refuse conflicts.
+See [native import saving](../import/#native-c-imports).
+
 ## Arguments and flags
 
 | Argument or flags | Arity / default | Choices or meaning |

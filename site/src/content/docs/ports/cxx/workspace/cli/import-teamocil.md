@@ -36,6 +36,24 @@ An extensionless name searches the configured source directory. A filename
 with an extension is resolved relative to the current directory unless you
 provide an explicit path.
 
+## Native C++ translation
+
+`tmux-workspace import teamocil` preserves names, roots, layouts, window
+options and pane/window focus. It accepts pane command strings and `commands`
+mappings. Command arrays join into one semicolon-separated shell input; the
+first true focus flag wins in each scope.
+
+The legacy `session` wrapper and `project_name`, `project_root`, `tabs`,
+`splits` and `cmd` aliases are accepted. Null aliases fall back to the other
+spelling; conflicting non-null values are refused. An omitted session name
+uses the source filename stem.
+
+Relative roots resolve against the directory where import runs and are saved
+as absolute paths. Dollar expansion and `~user` paths are unsupported.
+Enabled `synchronize-panes` is refused because the native builder creates all
+panes before sending commands, changing which panes would receive input.
+See [native import saving](../import/#native-c-imports).
+
 ## Arguments and flags
 
 | Argument or flags | Arity / default | Choices or meaning |
