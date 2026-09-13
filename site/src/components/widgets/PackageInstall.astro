@@ -66,7 +66,7 @@ const initialSlug = defaultPort && items.some((p) => p.slug === defaultPort) ? d
 // ports.ts stays the only place a port's slug is spelled out. See the
 // is:global block below for the static rules this pairs with.
 const activePortRules = items
-  .map((p) => `.lm-pkg-install[data-active-port="${p.slug}"] .lm-pkg-install__panel[data-port="${p.slug}"]{display:block}`)
+  .map((p) => `.lm-pkg-install[data-active-port="${p.slug}"] .lm-pkg-install__panel[data-port="${p.slug}"]{visibility:visible}`)
   .join('')
 
 /*
@@ -253,7 +253,15 @@ const installHtml = new Map(
     background: var(--lm-pkg-install-bg);
   }
 
+  /* Every panel shares one grid cell, so the body is as tall as the tallest
+   * panel and a language change never changes the page height. On the home
+   * page the prompt below follows this picker's language, and a Quickstart
+   * that resized would move the page under a reader clicking the prompt.
+   * `minmax(0, 1fr)` keeps a long install line scrolling inside its `pre`
+   * instead of widening the grid. */
   .lm-pkg-install__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     padding: 0.9rem 1rem;
   }
 
@@ -261,13 +269,15 @@ const installHtml = new Map(
    * `html[data-pkg-port]` rules (set in <head> before any of this markup is
    * parsed, when a saved choice exists and this instance carries that port)
    * override it by specificity, so they need no `!important` or source-order
-   * care. */
+   * care. Panels hide with `visibility`, not `display`, so a hidden panel
+   * still holds its height in the grid. */
   .lm-pkg-install__panel {
-    display: none;
+    grid-area: 1 / 1;
+    visibility: hidden;
   }
 
   .lm-pkg-install__panel[data-default] {
-    display: block;
+    visibility: visible;
   }
 
   /* Once JS has picked an active port (a click, or a restored session),
@@ -276,7 +286,7 @@ const installHtml = new Map(
    * [data-active-port] here) and wins regardless of source order — same
    * reasoning as mcp-install.css's default-override rule. */
   .lm-pkg-install[data-active-port] .lm-pkg-install__panel {
-    display: none;
+    visibility: hidden;
   }
 
   .lm-pkg-install__panel:focus-visible {
@@ -357,6 +367,14 @@ const installHtml = new Map(
 
   .lm-pkg-install__snippet :global(.expressive-code) {
     margin: 0;
+  }
+
+  /* Capped so the longest example does not set the height every panel
+   * reserves. Expressive Code positions its copy button on `.frame`, so the
+   * button stays put while the code scrolls. */
+  .lm-pkg-install__snippet .expressive-code .frame pre {
+    max-height: 15rem;
+    overflow: auto;
   }
 
   .lm-pkg-install__code pre {

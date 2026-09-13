@@ -37,9 +37,14 @@ export function pickerPaintRules(): string {
  */
 function paintPort(slug: string, family: string): string {
   const scope = `html[data-pkg-port="${slug}"] .${family}[data-ports~="${slug}"]`
+  // The package picker keeps hidden panels in its grid so its height holds;
+  // see PackageInstall.astro.
+  const [hide, show] = family === 'lm-pkg-install'
+    ? ['visibility:hidden', 'visibility:visible']
+    : ['display:none', 'display:block']
   return (
-    `${scope} .${family}__panel{display:none}` +
-    `${scope} .${family}__panel[data-port="${slug}"]{display:block}` +
+    `${scope} .${family}__panel{${hide}}` +
+    `${scope} .${family}__panel[data-port="${slug}"]{${show}}` +
     `${scope} .${family}__tab[aria-selected="true"]` +
     `{color:var(--${family}-fg-muted);border-bottom-color:transparent;background:transparent}` +
     `${scope} .${family}__tab[data-tab-value="${slug}"]` +
