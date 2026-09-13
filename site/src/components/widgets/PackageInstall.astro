@@ -101,7 +101,7 @@ const installHtml = new Map(
 )
 ---
 
-<div class={`lm-pkg-install lm-pkg-install--${variant}`} data-ports={items.map((p) => p.slug).join(' ')}>
+<div class={`lm-pkg-install lm-pkg-install--${variant}${snippets ? ' lm-pkg-install--examples' : ''}`} data-ports={items.map((p) => p.slug).join(' ')}>
   {/*
     One language is not a choice of language.
 
@@ -372,7 +372,7 @@ const installHtml = new Map(
   }
 
   /* The example fills whatever height its panel has left. Its `pre` starts
-   * from 15rem, so the longest example reserves no more than that, and grows
+   * from 11rem, so the longest example reserves no more than that, and grows
    * into the space a shorter panel leaves. Expressive Code positions its copy
    * button on `.frame`, so the button stays put while the code scrolls. */
   .lm-pkg-install__snippet,
@@ -384,8 +384,16 @@ const installHtml = new Map(
   }
 
   .lm-pkg-install__snippet .expressive-code .frame pre {
-    flex: 1 1 15rem;
+    flex: 1 1 11rem;
     min-height: 0;
+    overflow: auto;
+  }
+
+  /* Beside an example, a long install block such as Gradle's or CMake's would
+   * set the height every panel reserves, so it scrolls past 7rem. Copy still
+   * takes the whole block. */
+  .lm-pkg-install--examples .lm-pkg-install__code pre {
+    max-height: 7rem;
     overflow: auto;
   }
 
