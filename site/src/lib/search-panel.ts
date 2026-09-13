@@ -8,14 +8,14 @@
  * (`data-pagefind-meta`), so this renders them under each result.
  */
 
-interface PagefindResultData {
+export interface PagefindResultData {
   url: string
   excerpt: string
   meta: Record<string, string | undefined>
   sub_results?: { title: string; url: string; excerpt: string }[]
 }
 
-interface PagefindApi {
+export interface PagefindApi {
   init?: () => Promise<void>
   options?: (o: Record<string, unknown>) => Promise<void>
   search: (
@@ -29,17 +29,46 @@ interface PagefindApi {
   filters: () => Promise<Record<string, Record<string, number>>>
 }
 
+/**
+ * How a page's matching sections show under it, after social-embed's search.
+ *
+ * `inline` lists the first three under an arrow, `toggle` folds them behind a
+ * count, and `breadcrumbs` shows the page's path above its title instead of
+ * any sections.
+ */
+export type SubResultsDisplay = 'inline' | 'toggle' | 'breadcrumbs'
+
+export interface SearchPanelOptions {
+  /** Omitted, results show no sections, as the search page always has. */
+  subResults?: SubResultsDisplay
+  /** A query to run as soon as the panel mounts. */
+  initialQuery?: string
+  /** An index to search instead of Pagefind's. */
+  mock?: PagefindApi
+  /** Names for path segments in a breadcrumb, such as `py` for Python. */
+  segmentNames?: Record<string, string>
+}
+
+type Section = NonNullable<PagefindResultData['sub_results']>[number]
+
 const PAGE_SIZE = 8
+
+/** Sections `inline` lists under a result before it counts the rest. */
+const INLINE_SECTIONS = 3
+
+const SEGMENT_NAMES: Record<string, string> = { api: 'API', mcp: 'MCP' }
 
 /** Strips the site base so a result reads as a path rather than a URL. */
 const displayUrl = (url: string) => url.replace(/index\.html$/, '').replace(/\.html$/, '')
+
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 
 export interface SearchPanelHandle {
   focus: () => void
   clear: () => void
 }
 
-export function mountSearchPanel(root: HTMLElement, bundlePath: string): SearchPanelHandle {
+export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings: SearchPanelOptions = {}): SearchPanelHandle {
   const input = root.querySelector<HTMLInputElement>('.search-panel__input')!
   const results = root.querySelector<HTMLElement>('.search-panel__results')!
   const filtersBox = root.querySelector<HTMLElement>('.search-panel__filters')!
@@ -61,6 +90,7 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string): SearchP
   }
 
   async function pagefind(): Promise<PagefindApi | null> {
+    if (settings.mock) return settings.mock
     if (api) return api
     if (!loading) {
       loading = (async () => {
@@ -128,6 +158,104 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string): SearchP
     return bits
   }
 
+  /** A page's path under the site root, such as `Python › Stable › Workspace`. */
+  function breadcrumb(url: string): string {
+    const siteRoot = bundlePath.replace(/pagefind\/$/, '')
+    const path = new URL(url, window.location.href).pathname
+    const segments = (path.startsWith(siteRoot) ? path.slice(siteRoot.length) : path)
+      .replace(/(index)?\.html$/, '')
+      .split('/')
+      .filter(Boolean)
+    if (segments.length === 0) return 'Home'
+    return segments
+      .map(
+        (segment) =>
+          settings.segmentNames?.[segment] ??
+          SEGMENT_NAMES[segment] ??
+          segment
+            .split('-')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' '),
+      )
+      .join(' › ')
+  }
+
+  function sectionLink(section: Section, arrow: boolean): HTMLAnchorElement {
+    const a = document.createElement('a')
+    a.className = 'search-panel__sub'
+    a.href = section.url
+    a.setAttribute('role', 'option')
+    a.setAttribute('aria-selected', 'false')
+    if (arrow) {
+      const mark = document.createElement('span')
+      mark.className = 'search-panel__sub-arrow'
+      mark.setAttribute('aria-hidden', 'true')
+      mark.textContent = '⤷'
+      a.append(mark)
+    }
+    const body = document.createElement('span')
+    body.className = 'search-panel__sub-body'
+    const title = document.createElement('span')
+    title.className = 'search-panel__sub-title'
+    title.textContent = section.title
+    const excerpt = document.createElement('span')
+    excerpt.className = 'search-panel__sub-excerpt'
+    excerpt.innerHTML = section.excerpt
+    body.append(title, excerpt)
+    a.append(body)
+    return a
+  }
+
+  /** What goes under a result for its sections, in the panel's mode. */
+  function sectionsFor(data: PagefindResultData): HTMLElement[] {
+    const mode = settings.subResults
+    // Pagefind lists the page itself among its sections; the result already is.
+    const sections = (data.sub_results ?? []).filter((section) => section.url !== data.url)
+    if ((mode !== 'inline' && mode !== 'toggle') || sections.length === 0) return []
+
+    const list = document.createElement('ul')
+    list.className = 'search-panel__subs'
+    for (const section of mode === 'inline' ? sections.slice(0, INLINE_SECTIONS) : sections) {
+      const item = document.createElement('li')
+      item.append(sectionLink(section, mode === 'inline'))
+      list.append(item)
+    }
+
+    if (mode === 'inline') {
+      if (sections.length > INLINE_SECTIONS) {
+        const more = document.createElement('li')
+        more.className = 'search-panel__more-subs'
+        more.textContent = `+${plural(sections.length - INLINE_SECTIONS, 'more section')}`
+        list.append(more)
+      }
+      return [list]
+    }
+
+    list.hidden = true
+    const toggle = document.createElement('button')
+    toggle.type = 'button'
+    toggle.className = 'search-panel__toggle'
+    toggle.setAttribute('aria-expanded', 'false')
+    toggle.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
+    toggle.append(plural(sections.length, 'section'))
+    toggle.addEventListener('click', () => {
+      list.hidden = !list.hidden
+      toggle.setAttribute('aria-expanded', String(!list.hidden))
+      selected = -1
+      highlight()
+    })
+    return [toggle, list]
+  }
+
+  /** Results and the sections a reader can see, in the order arrow keys visit them. */
+  const choices = () =>
+    [...results.querySelectorAll<HTMLAnchorElement>('.search-panel__result, .search-panel__subs:not([hidden]) .search-panel__sub')]
+
+  function highlight() {
+    choices().forEach((choice, i) => choice.setAttribute('aria-selected', String(i === selected)))
+  }
+
   async function paint() {
     const slice = all.slice(0, shown)
     const rendered = await Promise.all(slice.map((r) => r.data()))
@@ -138,12 +266,21 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string): SearchP
     count.textContent = `${all.length} result${all.length === 1 ? '' : 's'}`
     results.append(count)
 
-    rendered.forEach((data, i) => {
+    rendered.forEach((data) => {
+      const item = document.createElement('div')
+      item.className = 'search-panel__item'
+
       const a = document.createElement('a')
       a.className = 'search-panel__result'
       a.href = data.url
       a.setAttribute('role', 'option')
-      a.setAttribute('aria-selected', String(i === selected))
+
+      if (settings.subResults === 'breadcrumbs') {
+        const crumb = document.createElement('div')
+        crumb.className = 'search-panel__breadcrumb'
+        crumb.textContent = breadcrumb(data.url)
+        a.append(crumb)
+      }
 
       const title = document.createElement('div')
       title.className = 'search-panel__result-title'
@@ -162,8 +299,10 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string): SearchP
       }
 
       a.append(title, excerpt, meta)
-      results.append(a)
+      item.append(a, ...sectionsFor(data))
+      results.append(item)
     })
+    highlight()
 
     if (all.length > shown) {
       const more = document.createElement('button')
@@ -216,20 +355,31 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string): SearchP
   })
 
   root.addEventListener('keydown', (e) => {
-    const options = [...results.querySelectorAll<HTMLAnchorElement>('.search-panel__result')]
-    if (options.length === 0) return
+    const list = choices()
+    if (list.length === 0) return
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault()
-      selected = (selected + (e.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length
-      options.forEach((o, i) => o.setAttribute('aria-selected', String(i === selected)))
-      options[selected]?.scrollIntoView({ block: 'nearest' })
+      selected = (selected + (e.key === 'ArrowDown' ? 1 : -1) + list.length) % list.length
+    } else if ((e.ctrlKey || e.metaKey) && (e.key === 'Home' || e.key === 'End')) {
+      e.preventDefault()
+      selected = e.key === 'Home' ? 0 : list.length - 1
     } else if (e.key === 'Enter' && selected >= 0) {
       e.preventDefault()
-      options[selected]?.click()
+      list[selected]?.click()
+      return
+    } else {
+      return
     }
+    highlight()
+    list[selected]?.scrollIntoView({ block: 'nearest' })
   })
 
-  void run('')
+  if (settings.initialQuery) {
+    input.value = settings.initialQuery
+    void run(settings.initialQuery)
+  } else {
+    void run('')
+  }
 
   return {
     focus: () => input.focus(),
