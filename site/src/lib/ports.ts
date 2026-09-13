@@ -516,7 +516,7 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
       {
         label: 'Submodule',
         lang: 'console',
-        code: 'git submodule add https://github.com/libtmux/libtmux-cxx.git third_party/libtmux',
+        code: 'git submodule add \\\n  https://github.com/libtmux/libtmux-cxx.git \\\n  third_party/libtmux',
         note: 'Then add_subdirectory(third_party/libtmux) and link libtmux::libtmux.',
       },
     ],

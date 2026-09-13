@@ -22,12 +22,9 @@ import { hasReference, type Port } from '../lib/ports'
  */
 interface Props {
   port: Port
-  /** Site default version, for `referenceUrl` on self-hosted ports —
-   *  ecosystem ports ignore it (their host carries its own version axis). */
-  defaultVersion: string
 }
 
-const { port, defaultVersion } = Astro.props as Props
+const { port } = Astro.props as Props
 ---
 
 <section class="max-w-4xl">

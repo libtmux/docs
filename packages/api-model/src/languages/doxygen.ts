@@ -73,6 +73,25 @@ function normalizeCppName(name: string): string {
     .replace(/\s+/g, '')
 }
 
+/**
+ * The last segment of a qualified C++ name, not counting `::` inside template
+ * arguments.
+ *
+ * `std::hash<libtmux::Client>` names `hash<libtmux::Client>` in `std`.
+ * Splitting at every `::` named it `Client>`, and the module the reference
+ * derives from what is left became `std::hash<libtmux`.
+ */
+export function cppUnqualifiedName(qualified: string): string {
+  let depth = 0
+  for (let i = qualified.length - 1; i > 0; i--) {
+    const c = qualified[i]
+    if (c === '>') depth++
+    else if (c === '<') depth--
+    else if (depth === 0 && c === ':' && qualified[i - 1] === ':') return qualified.slice(i + 1)
+  }
+  return qualified
+}
+
 const tag = (xml: string, name: string): string | undefined => {
   const m = new RegExp(`<${name}(?:\\s[^>]*)?>([\\s\\S]*?)</${name}>`).exec(xml)
   return m ? m[1] : undefined
@@ -197,7 +216,7 @@ export function extractDoxygen(xmlDir: string, sourceRoot = ''): ApiSymbol[] {
         const sym: ApiSymbol = {
           id: owner,
           publicId: owner,
-          name: owner.split('::').pop() ?? owner,
+          name: cppUnqualifiedName(owner),
           kind,
           modifiers: [],
           signatures: [],

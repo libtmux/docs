@@ -19,6 +19,20 @@ const terminate = async () => {
 }
 process.on('SIGTERM', terminate)
 process.on('SIGINT', terminate)
+
+// Vite reloads a page when it finishes re-optimizing dependencies, which it
+// does after `astro check` has written the cache with a different config.
+// Waiting for `load` rather than network idle can land a check inside that
+// reload, so a page gets one more attempt for that reason and no other.
+async function retryReload(check) {
+  try {
+    await check()
+  } catch (error) {
+    if (!/Execution context was destroyed/.test(String(error))) throw error
+    await check()
+  }
+}
+
 try {
   browser = await chromium.launch({ channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL })
   const page = await browser.newPage()
@@ -29,8 +43,9 @@ try {
   const paths = ['concepts/server-session-window-pane', 'mcp/tools', 'reference/ts/session-session-panes',
     'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
     'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/tmux_capture_pane']
-  for (const path of paths) {
-    const response = await page.goto(`${base}/${path}/`, { waitUntil: 'networkidle' })
+  for (const path of paths) await retryReload(async () => {
+    await page.setViewportSize({ width: 1440, height: 1000 })
+    const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
     assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
     await page.evaluate(() => document.fonts.ready)
     assert.equal(await page.locator('nav[aria-label="Language"] a').first().getAttribute('href'), '/en/py/stable/')
@@ -76,12 +91,12 @@ try {
       const menu = await switcher.locator('ul').boundingBox()
       assert(menu && menu.x >= 0 && menu.x + menu.width <= 390, `${path}: dropdown leaves phone viewport`)
     }
-  }
+  })
   for (const path of [
     'py/stable/workspace/internals/api/tmuxp-workspace-builder-classicworkspacebuilder',
     'java/latest/workspace/internals/api/io-github-libtmux-workspace-workspacebuilder-workspacebuilder',
-  ]) {
-    const response = await page.goto(`${base}/${path}/`, { waitUntil: 'networkidle' })
+  ]) await retryReload(async () => {
+    const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
     assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
     await page.evaluate(() => document.fonts.ready)
     for (const width of [1440, 768, 390]) {
@@ -89,7 +104,7 @@ try {
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
       assert(overflow <= 1, `${path} at ${width}px: declaration page overflow ${overflow}px`)
     }
-  }
+  })
   console.log('Fresh Astro + browser: prose, workspace, MCP tools and API equivalent; 1440/768/390px PASS')
 } finally {
   await browser?.close()

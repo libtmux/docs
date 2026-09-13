@@ -68,6 +68,8 @@ interface Props {
   markdown?: 'source' | 'rendered' | { href: string }
   /** The repository behind the footer's GitHub icon, when it is not the page's source or port. */
   repository?: string
+  /** No gap above the footer, for a layout whose columns run down to it. */
+  flush?: boolean
 }
 
 const {
@@ -90,6 +92,7 @@ const {
   markdownIndex,
   markdown = 'rendered',
   repository,
+  flush = false,
 } = Astro.props as Props
 
 
@@ -259,7 +262,7 @@ const githubRepo = repository
       <div data-pagefind-filter={`section:${section}`} data-pagefind-ignore="all" hidden></div>
       <slot />
     </div>
-    {!bare && <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} githubRepo={githubRepo} />}
+    {!bare && <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} githubRepo={githubRepo} flush={flush} />}
     <BackToTop />
     <SearchModal />
   </body>

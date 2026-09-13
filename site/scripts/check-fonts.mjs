@@ -24,7 +24,7 @@
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { globSync } from 'node:fs'
-import { dirname, join, relative, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const HERE = dirname(fileURLToPath(import.meta.url))

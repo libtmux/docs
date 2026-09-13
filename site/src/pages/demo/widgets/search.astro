@@ -1,0 +1,111 @@
+---
+/**
+ * The search panel's three ways to show a page's matching sections.
+ *
+ * Ported from social-embed's search demo. Each panel searches a small
+ * built-in index, `lib/search-mock.ts`, because Pagefind's index exists only
+ * after a full build, and each opens on a query with sections to show.
+ */
+import SearchPanel from '../../../components/SearchPanel.astro'
+import DemoLayout from '../../../components/demo/DemoLayout.astro'
+
+const MODES = [
+  {
+    mode: 'inline',
+    label: 'Pagefind-style',
+    badge: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
+    description: 'The first three matching sections, always open, under an arrow. Arrow keys move into them.',
+  },
+  {
+    mode: 'toggle',
+    label: 'Collapsible',
+    badge: 'bg-sky-500/15 text-sky-700 dark:text-sky-300',
+    description: 'A count of the matching sections that opens and closes the list.',
+  },
+  {
+    mode: 'breadcrumbs',
+    label: 'Algolia-style',
+    badge: 'bg-violet-500/15 text-violet-700 dark:text-violet-300',
+    description: "The page's path above its title, and no sections.",
+  },
+] as const
+
+const KEYS = [
+  [['↑', '↓'], 'Move between results, and into sections that are showing'],
+  [['Enter'], 'Open the selected result or section'],
+  [['Ctrl', 'Home'], 'Select the first result'],
+  [['Ctrl', 'End'], 'Select the last result or section'],
+] as const
+
+const QUERIES = [
+  ['pane', 'Several pages with sections; MCP tools has more than three'],
+  ['session', 'Matches in titles and in sections'],
+  ['control mode', 'Every word has to match'],
+  ['send keys', 'Two words, each marked'],
+  ['xyz123nonexistent', 'No results'],
+] as const
+
+const heading = 'text-xl font-semibold'
+const muted = 'text-sm text-muted'
+const kbd =
+  'inline-flex h-6 min-w-6 items-center justify-center rounded border border-edge bg-surface px-1.5 font-mono text-xs'
+---
+
+<DemoLayout title="Search demo" description="Search panel section display modes." current="/demo/widgets/search/">
+  <h1 class="text-3xl font-semibold tracking-tight">Search</h1>
+  <p class={`mt-2 ${muted}`}>
+    The search panel renders Pagefind's results itself. Its <code>subResults</code> option shows the sections of
+    a page that matched. These panels search a small built-in index, since Pagefind's exists only after a full build.
+  </p>
+
+  <section class="mt-10">
+    <h2 class={heading}>Section display modes</h2>
+    <div class="mt-4 grid gap-6 xl:grid-cols-3">
+      {
+        MODES.map(({ mode, label, badge, description }) => (
+          <div class="flex min-w-0 flex-col">
+            <h3 class="flex items-center gap-2 font-medium">
+              <span class={`rounded-full px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide ${badge}`}>
+                {mode}
+              </span>
+              {label}
+            </h3>
+            <p class={`mb-3 mt-1 ${muted}`}>{description}</p>
+            <div class="max-h-[28rem] overflow-y-auto rounded-lg border border-edge p-3">
+              <SearchPanel mock subResults={mode} initialQuery="pane" />
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="mt-10">
+    <h2 class={heading}>Keyboard</h2>
+    <ul class="mt-4 grid list-none gap-3 p-0 sm:grid-cols-2">
+      {
+        KEYS.map(([keys, action]) => (
+          <li class="flex items-center gap-2">
+            {keys.map((key) => (
+              <kbd class={kbd}>{key}</kbd>
+            ))}
+            <span class={muted}>{action}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="mt-10">
+    <h2 class={heading}>Queries to try</h2>
+    <ul class="mt-4 list-none space-y-2 p-0">
+      {
+        QUERIES.map(([query, note]) => (
+          <li class={muted}>
+            <code>{query}</code> — {note}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</DemoLayout>

@@ -163,17 +163,37 @@ html[data-theme-mode='dark'] .lm-mcp-install {
  * `<Code>` usable outside markdown here (see src/pages/[port]/index.astro's
  * own comment on the same limitation), so panels render plain <pre><code> —
  * no per-language syntax color, same as that page's install command. */
+/* Where each block's copy button sits, set per block from the `copyButton`
+ * prop. `gutter` gives it a column beside the code, so a one-line command
+ * cannot scroll under it. `overlay` floats it over the block's corner and
+ * pads the code's end to clear it, for a config of several lines that a whole
+ * column would only narrow. `auto`, the default, gives one-line blocks the
+ * first and longer ones the second. The background is on the holder, so a
+ * gutter reads as part of the block. */
 .lm-mcp-install__code {
+  border-radius: 0.25rem;
+  background: var(--lm-mcp-install-code-bg);
+}
+
+.lm-mcp-install__code--gutter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.lm-mcp-install__code--overlay {
   position: relative;
 }
 
 .lm-mcp-install__code pre {
   margin: 0;
   overflow-x: auto;
-  border-radius: 0.25rem;
-  background: var(--lm-mcp-install-code-bg);
   color: var(--lm-mcp-install-code-fg);
-  padding: 0.75rem 3.25rem 0.75rem 0.9rem;
+  padding: 0.75rem 0.5rem 0.75rem 0.9rem;
+}
+
+.lm-mcp-install__code--overlay pre {
+  padding-right: 3.25rem;
 }
 
 .lm-mcp-install__code code {
@@ -182,10 +202,19 @@ html[data-theme-mode='dark'] .lm-mcp-install {
   white-space: pre;
 }
 
-.lm-mcp-install__copy {
+/* In a gutter, level with the first line, with space on both sides so a
+ * line cut off at the gutter's edge does not touch the button. */
+.lm-mcp-install__code--gutter .lm-mcp-install__copy {
+  margin: 0.45rem 0.45rem 0;
+}
+
+.lm-mcp-install__code--overlay .lm-mcp-install__copy {
   position: absolute;
   top: 0.45rem;
   right: 0.45rem;
+}
+
+.lm-mcp-install__copy {
   appearance: none;
   border: 1px solid var(--lm-mcp-install-border);
   border-radius: 0.25rem;
@@ -216,12 +245,9 @@ html[data-theme-mode='dark'] .lm-mcp-install {
 /* Prereq accent: blue left-border on the `pip install` prerequisite block. */
 .lm-mcp-install__code--prereq {
   border-left: 3px solid var(--lm-mcp-install-accent);
-  margin: 0 0 0.6rem 0;
-}
-
-.lm-mcp-install__code--prereq pre {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+  margin: 0 0 0.6rem 0;
 }
 
 .lm-mcp-install__config-file {

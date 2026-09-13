@@ -1,0 +1,349 @@
+/*
+ * The reference's navigation tree.
+ *
+ * Fluent UI's Tree for its rows and Nav for its layout and selection: 32px
+ * rows with 24px of indent per level, the expand chevron at the row's end
+ * where NavCategoryItem draws it, the page's row in semibold, and the count
+ * as a small CounterBadge. Markup in `components/api/ApiTreeItems.astro`, the
+ * keyboard model in `components/api/api-tree.ts`.
+ */
+
+.api-nav {
+  --api-nav-indent: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.api-nav li {
+  margin: 0;
+  list-style: none;
+}
+
+.api-nav__head {
+  display: none;
+}
+
+.api-nav__title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.api-nav__close {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.25rem;
+  color: inherit;
+  cursor: pointer;
+}
+
+.api-nav__close:hover {
+  background: var(--color-surface-hover);
+}
+
+/* The port's documentation, folded: a way out of the reference that does not
+ * take the tree's height. */
+.api-nav__menu {
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-edge);
+}
+
+.api-nav__menu-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.25rem;
+  color: var(--color-muted);
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.api-nav__menu-summary::-webkit-details-marker {
+  display: none;
+}
+
+.api-nav__menu-summary::before {
+  content: '';
+  width: 0.35rem;
+  height: 0.35rem;
+  margin-inline: 0.2rem 0.3rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+}
+
+.api-nav__menu[open] > .api-nav__menu-summary::before {
+  transform: rotate(45deg);
+}
+
+.api-nav__menu-summary:hover {
+  background: var(--color-surface-hover);
+}
+
+.api-nav__menu-body {
+  padding: 0.25rem 0.5rem 0.5rem;
+}
+
+.api-nav__tree,
+.api-nav__group {
+  display: flex;
+  flex-direction: column;
+  row-gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.api-nav__group {
+  padding-top: 2px;
+}
+
+/* Positioned, so a row's offsetTop is measured from the tree it scrolls in. */
+.api-nav__tree {
+  position: relative;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+/* A leaf and a branch at one level start together, since the chevron is at
+ * the other end. */
+.api-nav__row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+  min-height: 2rem;
+  padding-block: 0.3rem;
+  padding-inline: calc(0.75rem + (var(--level) - 1) * var(--api-nav-indent)) 0.25rem;
+  border-radius: 0.25rem;
+  color: inherit;
+  line-height: 1.25rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.1s linear;
+}
+
+.api-nav__row:hover {
+  background: var(--color-surface-hover);
+}
+
+.api-nav__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: break-word;
+  color: inherit;
+  text-decoration: none;
+}
+
+.api-nav__count {
+  flex: none;
+  min-width: 1rem;
+  height: 1rem;
+  margin-inline-start: auto;
+  padding: 0 0.3rem;
+  border-radius: 9999px;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1rem;
+  text-align: center;
+}
+
+/* After the name and the count: `order` moves it without moving it in the
+ * markup, where it would come between a keyboard reader and the name. */
+.api-nav__chevron {
+  display: inline-grid;
+  flex: none;
+  order: 2;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--color-muted);
+}
+
+/* NavCategoryItem's ChevronDown: down while closed, turned to up when open. */
+.api-nav__chevron::before {
+  content: '';
+  width: 0.35rem;
+  height: 0.35rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-0.1rem) rotate(45deg);
+  transition: transform 0.15s cubic-bezier(0.33, 0, 0.67, 1);
+}
+
+.api-nav__item[aria-expanded='true'] > .api-nav__row > .api-nav__chevron::before {
+  transform: translateY(0.1rem) rotate(225deg);
+}
+
+.api-nav__item[aria-busy='true'] > .api-nav__row > .api-nav__chevron {
+  opacity: 0.35;
+}
+
+/* Closed branches hide only once the script can open them again. */
+html[data-api-nav] .api-nav__item[aria-expanded='false'] > [role='group']:not([data-closing]) {
+  display: none;
+}
+
+/*
+ * The page's row is semibold, as Nav marks a selected sub-item.
+ *
+ * Only a top-level bucket takes Nav's selection pill, and only while it is
+ * closed over the page, as NavCategoryItem marks a collapsed category holding
+ * the selection. Open, it hands the mark to the row inside it.
+ */
+.api-nav__leaf[aria-current='page'],
+.api-nav__row:has(> [aria-current='page']),
+.api-nav__tree > .api-nav__item[aria-expanded='false']:has([aria-current='page']) > .api-nav__row {
+  font-weight: 600;
+}
+
+.api-nav__tree > .api-nav__item[aria-expanded='false']:has([aria-current='page']) > .api-nav__row::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  width: 4px;
+  height: 1.25rem;
+  border-radius: 9999px;
+  background: var(--theme-accent);
+  translate: 0 -50%;
+}
+
+.api-nav__item:focus {
+  outline: none;
+}
+
+.api-nav__item:focus-visible > .api-nav__row,
+.api-nav a[role='treeitem']:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: -2px;
+}
+
+.api-nav-overlay,
+.api-nav-toggle {
+  display: none;
+}
+
+/* Only a wrapper on phones, where the tree is a fixed drawer. */
+.api-nav-column {
+  display: contents;
+}
+
+@media (width >= 64rem) {
+  /* The column spans the whole row, so its rule runs from the header to the
+   * footer against the viewport's edge; the tree sticks inside it, under the
+   * header, a viewport tall, as Learn's does. */
+  .api-nav-column {
+    display: block;
+    border-inline-end: 1px solid var(--color-edge);
+  }
+
+  .api-nav {
+    position: sticky;
+    top: var(--topnav-height, 3rem);
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--topnav-height, 3rem));
+    padding: 0.75rem 0.5rem 0.75rem 0.75rem;
+  }
+
+  .api-nav__nav {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .api-nav__tree {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
+
+/* The phone drawer, docked left like Learn's table of contents. */
+@media (width < 64rem) {
+  html[data-api-nav] .api-nav {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    width: min(20rem, 88vw);
+    padding: 0 0.75rem 0.75rem;
+    background: var(--background-color);
+    color: var(--text-color);
+    box-shadow: 0 0 2rem rgb(0 0 0 / 0.25);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.2s ease, visibility 0s linear 0.2s;
+  }
+
+  html[data-api-nav] .api-nav[data-open] {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.2s ease;
+  }
+
+  html[data-api-nav] .api-nav__head {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    padding: 0.6rem 0 0.6rem 0.5rem;
+    border-bottom: 1px solid var(--color-edge);
+  }
+
+  html[data-api-nav] .api-nav__nav {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  html[data-api-nav] .api-nav__tree {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  html[data-api-nav] .api-nav-overlay[data-open] {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgb(0 0 0 / 0.5);
+  }
+
+  html[data-api-nav] .api-nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--color-edge);
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+
+  html[data-api-nav] .api-nav-toggle:hover {
+    background: var(--color-surface-hover);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .api-nav__row,
+  .api-nav__chevron::before,
+  html[data-api-nav] .api-nav,
+  html[data-api-nav] .api-nav[data-open] {
+    transition: none;
+  }
+}

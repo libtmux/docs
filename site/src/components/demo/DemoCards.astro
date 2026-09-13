@@ -1,0 +1,27 @@
+---
+/** A grid of links to demos, for the overview and section pages. */
+import type { Demo } from '../../lib/demos'
+import { withRoot } from '../../lib/site-root'
+
+interface Props {
+  demos: Demo[]
+}
+
+const { demos } = Astro.props as Props
+---
+
+<ul class="grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+  {
+    demos.map((demo) => (
+      <li>
+        <a
+          href={withRoot(demo.href)}
+          class="block h-full rounded-lg border border-edge p-4 no-underline transition hover:bg-surface-hover"
+        >
+          <span class="block font-medium">{demo.title}</span>
+          <span class="mt-1 block text-sm text-muted">{demo.description}</span>
+        </a>
+      </li>
+    ))
+  }
+</ul>

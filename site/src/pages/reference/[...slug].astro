@@ -13,7 +13,8 @@ import { symbolSource } from '../../lib/markdown-twins'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
 import ApiDoc from '../../components/api/ApiDoc.astro'
-import Sidebar from '../../components/docs/Sidebar.astro'
+import ApiTree from '../../components/api/ApiTree.astro'
+import { navTree } from '../../lib/api-tree'
 import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
@@ -97,7 +98,8 @@ const { slug } = Astro.params
  * them C++ namespace functions.
  */
 /** Ids of the types that have a page of their own. */
-const paged = new Set((model ? ownersOf(model) : []).map((s) => s.id))
+const pageOwners = model ? ownersOf(model) : []
+const paged = new Set(pageOwners.map((s) => s.id))
 
 /**
  * Where a symbol's entry is rendered.
@@ -145,50 +147,10 @@ const index = indexFor(model ?? { port: 'py', extractor: '', symbols: [] }, href
  * which branch to open.
  */
 const nav = model ? API_NAV[model.port] : undefined
-const navHref = (slug: string): string => withRoot(`/reference/${model?.port}/${slug}/`)
-/** The entry a bucket's own link should land on: the type the bucket is named
- *  for when there is one, so Window opens `libtmux.Window` rather than
- *  whichever of `WindowDirection` and `WindowOptions` sorted first. */
-const bucketTarget = (label: string, entries: { name: string; slug: string }[]) =>
-  entries.find((e) => e.name.toLowerCase() === label.toLowerCase()) ?? entries[0]
+const tree = model ? navTree(model.port) : []
 
-/**
- * The tree the sidebar renders: buckets, each with the types it holds and the
- * children it splits into.
- *
- * A bucket of 55 is a list rather than a grouping, so the ones that grow are
- * divided — Requests by the tmux object each acts on, Queries and Internal by
- * their own vocabulary. Children carry symbols of their own, so a sidebar
- * that rendered only the top level would drop 83 of Rust's.
- */
-const tree = nav
-  ? [
-      ...nav.buckets
-        .map((b) => ({
-          ...b,
-          entries: nav.assignments[b.id] ?? [],
-          children: (b.children ?? [])
-            .map((c) => ({ ...c, entries: nav.assignments[c.id] ?? [] }))
-            .filter((c) => c.entries.length > 0),
-        }))
-        .filter((b) => b.entries.length > 0 || b.children.length > 0),
-      // Named "Other" rather than hidden. Every one of these is listed in
-      // `unsettled` in nav-config.ts with the reason it is unplaced, and a
-      // symbol with a page and no way to reach it is worse than an honest
-      // bucket at the bottom.
-      ...(nav.unplaced.length > 0
-        ? [{ id: '__unplaced', label: 'Other', collapsed: true, entries: nav.unplaced, children: [] }]
-        : []),
-    ]
-  : []
-
-/** Everything a bucket holds, its children included, for the count on its link. */
-const bucketTotal = (b: (typeof tree)[number]) =>
-  b.entries.length + b.children.reduce((n, c) => n + c.entries.length, 0)
-
-/** The first entry anywhere under a bucket, for a bucket that only splits. */
-const firstEntry = (b: (typeof tree)[number]) =>
-  bucketTarget(b.label, b.entries.length > 0 ? b.entries : (b.children[0]?.entries ?? []))
+/** Nav ids of the types that own members, which open into them in the tree. */
+const withMembers = new Set(pageOwners.map((s) => s.publicId ?? s.id))
 
 /** The type this page is about, or the one it is a member of. */
 const currentType =
@@ -197,7 +159,6 @@ const currentType =
     : owner?.parent
       ? model?.symbols.find((sym) => sym.id === owner.parent)
       : undefined
-const currentModule = currentType ? moduleOf(currentType) : owner ? moduleOf(owner) : undefined
 
 /**
  * Which branch this page sits in — one lookup, not a scan.
@@ -518,115 +479,34 @@ const title = owner
   pageSource={owner && model ? symbolSource(model, owner) : undefined}
   markdown={owner ? 'source' : 'rendered'}
   markdownIndex={!owner}
+  flush
 >
   <!-- The content column is capped at 47rem, which is 752px — gp-sphinx
        renders 754 from Furo's `46em` against a 16.4px root. Uncapped it ran
        to 960px, a third wider than this site's own prose pages at 704 and a
        measure no one reads comfortably. The cap is the design decision; the
        exact figure is gp-sphinx's, since matching it is the point. -->
-  <main class="mx-auto grid max-w-[100rem] gap-8 px-6 py-10 lg:grid-cols-[16rem_minmax(0,1fr)]">
-    <!-- A disclosure, not a column, until there is room for a column.
-         `Server` lists 98 members and 60 types; as a block above the content
-         that is two full screens of links before a phone reader reaches the
-         first entry. Open by default so it behaves without JavaScript, and
-         closed by the script below when the viewport is too narrow to place
-         it beside the content. -->
-    <div class="api-sidebar lg:sticky lg:top-20 lg:self-start">
-    {/*
-      The site's own menu, above the symbol tree.
+  <!-- Flush: the tree's column runs from the header to the footer against the
+       viewport's edge, as Learn's does, and only the text column is padded. -->
+  <main class="grid lg:grid-cols-[18rem_minmax(0,1fr)]">
+    {model ? (
+      <ApiTree
+        port={model.port}
+        portName={PORT_NAME[model.port] ?? model.port}
+        tree={tree}
+        currentRoot={currentRoot}
+        currentBucket={currentBucket}
+        currentTypeId={currentType ? (currentType.publicId ?? currentType.id) : undefined}
+        ownerNavId={owner ? (owner.publicId ?? owner.id) : undefined}
+        ownerId={owner?.id}
+        members={currentMembers.map((m) => ({ id: m.id, name: m.name, href: hrefFor(m) }))}
+        withMembers={withMembers}
+        menuVersion={menuVersion}
+        currentPath={Astro.url.pathname}
+      />
+    ) : <div />}
 
-      A reference page had no way out of the reference: `/reference/ts/` listed
-      a thousand TypeScript symbols and not one link back to the TypeScript
-      guides, the workspace pages or the MCP pages. `menuOnly` is what keeps
-      that from costing the tree its place — the page list belongs on the pages
-      that have room for it, and the tree is the navigation here.
-    */}
-    {model && (
-      <div class="api-sidebar__menu" data-pagefind-ignore="all">
-        <Sidebar port={model.port} version={menuVersion} currentPath={Astro.url.pathname} menuOnly />
-      </div>
-    )}
-    <details class="api-toc-shell" open>
-      <summary class="api-toc-summary">On this page</summary>
-      <nav class="api-toc" aria-label="Contents" data-pagefind-ignore="all">
-      {/*
-        Bucket, type, member — expanded along the path to this page.
-
-        A flat list of every type was navigable when the reference was a
-        thousand pages. It is not at twelve thousand, it could never show a
-        member at all, and on Go it was one alphabetical run of 221 entries
-        with the domain buried in it.
-
-        Only the branch being read is expanded, so the markup a page carries
-        is its own bucket's types and its own type's members rather than the
-        whole tree. That is what keeps this from becoming the largest part of
-        every page.
-      */}
-      {tree.map((b) => (
-        b.id === currentRoot ? (
-          <details class="api-tree-module" open>
-            <summary>{b.label}</summary>
-            {b.entries.map((t) => (
-              t.id === (currentType?.publicId ?? currentType?.id) && currentMembers.length > 0 ? (
-                <details class="api-tree-type" open>
-                  <summary>
-                    <a href={navHref(t.slug)} class:list={[t.id === (owner?.publicId ?? owner?.id) && 'is-current']}><SymbolName name={t.name} /></a>
-                  </summary>
-                  <div class="api-tree-members">
-                    {currentMembers.map((m) => (
-                      <a href={hrefFor(m)} class:list={[m.id === owner?.id && 'is-current']}><SymbolName name={m.name} /></a>
-                    ))}
-                  </div>
-                </details>
-              ) : (
-                <a class="api-tree-type-link" href={navHref(t.slug)} class:list={[t.id === (owner?.publicId ?? owner?.id) && 'is-current']}>
-                  <SymbolName name={t.name} />
-                </a>
-              )
-            ))}
-            {b.children.map((c) => (
-              c.id === currentBucket ? (
-                <details class="api-tree-child" open>
-                  <summary>{c.label}</summary>
-                  {c.entries.map((t) => (
-                    t.id === (currentType?.publicId ?? currentType?.id) && currentMembers.length > 0 ? (
-                      <details class="api-tree-type" open>
-                        <summary>
-                          <a href={navHref(t.slug)} class:list={[t.id === (owner?.publicId ?? owner?.id) && 'is-current']}><SymbolName name={t.name} /></a>
-                        </summary>
-                        <div class="api-tree-members">
-                          {currentMembers.map((m) => (
-                            <a href={hrefFor(m)} class:list={[m.id === owner?.id && 'is-current']}><SymbolName name={m.name} /></a>
-                          ))}
-                        </div>
-                      </details>
-                    ) : (
-                      <a class="api-tree-type-link" href={navHref(t.slug)} class:list={[t.id === (owner?.publicId ?? owner?.id) && 'is-current']}>
-                        <SymbolName name={t.name} />
-                      </a>
-                    )
-                  ))}
-                </details>
-              ) : (
-                <a class="api-tree-child-link" href={navHref(bucketTarget(c.label, c.entries).slug)}>
-                  {c.label}
-                  <span class="api-toc-qualifier">{c.entries.length}</span>
-                </a>
-              )
-            ))}
-          </details>
-        ) : (
-          <a class="api-tree-module-link" href={navHref(firstEntry(b).slug)}>
-            {b.label}
-            <span class="api-toc-qualifier">{bucketTotal(b)}</span>
-          </a>
-        )
-      ))}
-      </nav>
-    </details>
-    </div>
-
-    <div>
+    <div class="min-w-0 px-6 py-8 lg:px-10">
       <!-- The id is the anchor every link to this type uses. `hrefFor` sends a
            type to `<page>/#<publicId>` whether the link comes from a
            signature, a doc comment or prose, and without this the fragment
@@ -637,6 +517,14 @@ const title = owner
         its own: it is a fact about this page, and a whole band above the
         heading spent a section's worth of space saying it.
       */}
+      {model && (
+        <button type="button" class="api-nav-toggle" data-api-nav-toggle data-pagefind-ignore="all" aria-controls="api-nav" aria-expanded="false">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <path stroke-linecap="round" d="M2 4h12M2 8h12M2 12h8" />
+          </svg>
+          {PORT_NAME[model.port] ?? model.port} API contents
+        </button>
+      )}
       <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
         <h1
           id={owner ? (owner.publicId ?? owner.id) : undefined}
@@ -1048,16 +936,6 @@ const title = owner
       window.addEventListener('hashchange', reveal)
     })()
 
-    // Collapse the contents disclosure where it would otherwise push the page
-    // below the fold. Re-runs after a client-side navigation.
-    ;(() => {
-      const sync = () => {
-        const el = document.querySelector('.api-toc-shell')
-        if (el) el.open = window.matchMedia('(min-width: 64rem)').matches
-      }
-      sync()
-      document.addEventListener('astro:after-swap', sync)
-    })()
   </script>
 </BaseLayout>
 

@@ -1,0 +1,21 @@
+---
+import DemoCards from '../../components/demo/DemoCards.astro'
+import DemoLayout from '../../components/demo/DemoLayout.astro'
+import { DEMO_OVERVIEW, DEMO_SECTIONS } from '../../lib/demos'
+---
+
+<DemoLayout title="Demos" description="Component demos for the libtmux documentation site." current={DEMO_OVERVIEW}>
+  <h1 class="text-3xl font-semibold tracking-tight">Demos</h1>
+  <p class="mt-2 text-muted">
+    Every variant of the components this site uses, for comparing and choosing between them.
+  </p>
+  {
+    DEMO_SECTIONS.map((section) => (
+      <section class="mt-10">
+        <h2 class="text-xl font-semibold">{section.title}</h2>
+        <p class="mb-4 mt-1 text-sm text-muted">{section.description}</p>
+        <DemoCards demos={section.demos} />
+      </section>
+    ))
+  }
+</DemoLayout>

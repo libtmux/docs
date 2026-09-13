@@ -1,7 +1,6 @@
 ---
 import './mcp-install.css'
 import {
-  bodySegments,
   buildMcpInstallPrehydrateSnippet,
   buildPanels,
   CLIENTS,
@@ -37,6 +36,14 @@ import { highlightInline } from '../../lib/highlight'
 interface Props {
   variant?: 'full' | 'compact'
   /**
+   * Where each block's copy button sits. `gutter` gives it a column beside the
+   * code, so a long command cannot scroll under it; `overlay` floats it over
+   * the block's corner. `auto`, the default, chooses per block: a one-line
+   * command gets a gutter, and a config of several lines, which a whole
+   * column beside it would only narrow, gets the overlay.
+   */
+  copyButton?: 'auto' | 'gutter' | 'overlay'
+  /**
    * Which port's server to install. Defaults to Python, which is what
    * `/mcp/` documents and what this widget was ported from.
    *
@@ -47,7 +54,8 @@ interface Props {
    */
   port?: string
 }
-const { variant = 'full', port = 'py' } = Astro.props as Props
+const { variant = 'full', port = 'py', copyButton = 'auto' } = Astro.props as Props
+const copyLayout = (code: string) => (copyButton === 'auto' ? (code.includes('\n') ? 'overlay' : 'gutter') : copyButton)
 
 const spec = serverSpec(port)
 const panels = buildPanels(spec)
@@ -234,14 +242,14 @@ const hasCooldowns = spec.cooldowns.length > 1
           ) : panel.pipPrereq ? (
             <>
               <p class="lm-mcp-install__preamble">{panel.method.id === 'pip' ? 'Install the packages first:' : 'Build or install the server first:'}</p>
-              <div class="lm-mcp-install__code lm-mcp-install__code--prereq" data-language="console"><pre><code set:html={prereqHtml.get(panelKey(panel))} /></pre><button type="button" class="lm-mcp-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
+              <div class={`lm-mcp-install__code lm-mcp-install__code--prereq lm-mcp-install__code--${copyLayout(panel.pipPrereq ?? '')}`} data-language="console"><pre><code set:html={prereqHtml.get(panelKey(panel))} /></pre><button type="button" class="lm-mcp-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
               <p class="lm-mcp-install__preamble">Then {panel.client.kind === 'cli' ? 'register' : 'use this config'}:</p>
             </>
           ) : null}
 
           {panel.scope.note && <p class="lm-mcp-install__preamble lm-mcp-install__preamble--manual">{panel.scope.note}</p>}
 
-          <div class="lm-mcp-install__code" data-language={panel.language}><pre><code set:html={bodyHtml.get(panelKey(panel))} /></pre><button type="button" class="lm-mcp-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
+          <div class={`lm-mcp-install__code lm-mcp-install__code--${copyLayout(panel.body)}`} data-language={panel.language}><pre><code set:html={bodyHtml.get(panelKey(panel))} /></pre><button type="button" class="lm-mcp-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
 
           {panel.note && <p class="lm-mcp-install__cooldown-note">{panel.note}</p>}
 

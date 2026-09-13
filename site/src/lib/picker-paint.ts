@@ -21,7 +21,34 @@ import { PORTS } from './ports'
  * than rendering an empty body.
  */
 export function pickerPaintRules(): string {
-  return PORTS.map((p) => paintPort(p.slug, 'lm-pkg-install') + paintPort(p.slug, 'lm-agent-prompt')).join('')
+  return PORTS.map((p) => paintPort(p.slug, 'lm-pkg-install') + paintPort(p.slug, 'lm-agent-prompt') + paintManagers(p)).join('')
+}
+
+/**
+ * The rules that paint one port's saved package manager.
+ *
+ * The same correction as the language, one level down. `ThemeScript` puts
+ * each port's saved manager on `<html data-pkg-manager-<port>>`, and without
+ * these rules the panel painted its first manager (npm) and then switched to
+ * the saved one (bun) when the widget's script ran. Generated per index the
+ * port actually has, so a value left over from a longer list matches nothing
+ * and the server-rendered default stays, rather than hiding every command.
+ */
+function paintManagers(port: (typeof PORTS)[number]): string {
+  if (port.installs.length < 2) return ''
+  return port.installs
+    .map((_, i) => {
+      const scope = `html[data-pkg-manager-${port.slug}="${i}"] .lm-pkg-install__panel[data-port="${port.slug}"]`
+      return (
+        `${scope} .lm-pkg-install__cmd{display:none}` +
+        `${scope} .lm-pkg-install__cmd[data-manager="${i}"]{display:block}` +
+        `${scope} .lm-pkg-install__manager[aria-selected="true"]` +
+        `{color:var(--lm-pkg-install-fg-muted);border-color:transparent}` +
+        `${scope} .lm-pkg-install__manager[data-manager-value="${i}"]` +
+        `{color:var(--lm-pkg-install-accent);border-color:var(--lm-pkg-install-accent)}`
+      )
+    })
+    .join('')
 }
 
 /**
@@ -37,9 +64,16 @@ export function pickerPaintRules(): string {
  */
 function paintPort(slug: string, family: string): string {
   const scope = `html[data-pkg-port="${slug}"] .${family}[data-ports~="${slug}"]`
+  // The package picker keeps hidden panels in its grid so its height holds;
+  // see PackageInstall.astro. It shows one with `inherit`, not `visible`: a
+  // visible child paints through a hidden ancestor, so during the fonts gate
+  // the saved panel painted alone before the rest of the page.
+  const [hide, show] = family === 'lm-pkg-install'
+    ? ['visibility:hidden', 'visibility:inherit']
+    : ['display:none', 'display:block']
   return (
-    `${scope} .${family}__panel{display:none}` +
-    `${scope} .${family}__panel[data-port="${slug}"]{display:block}` +
+    `${scope} .${family}__panel{${hide}}` +
+    `${scope} .${family}__panel[data-port="${slug}"]{${show}}` +
     `${scope} .${family}__tab[aria-selected="true"]` +
     `{color:var(--${family}-fg-muted);border-bottom-color:transparent;background:transparent}` +
     `${scope} .${family}__tab[data-tab-value="${slug}"]` +

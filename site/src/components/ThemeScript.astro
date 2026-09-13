@@ -63,6 +63,20 @@
     if (port && /^[a-z]+$/.test(port)) {
       document.documentElement.setAttribute('data-pkg-port', port);
     }
+    // And each port's package manager, one level down. Without this a panel
+    // painted its first manager, npm, and the widget's script switched it to
+    // the saved one, bun, a frame later. `picker-paint.ts` keys its rules on
+    // these attributes.
+    const prefix = 'libtmux-docs.package-install.manager.';
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(prefix)) continue;
+      const slug = key.slice(prefix.length);
+      const index = localStorage.getItem(key);
+      if (/^[a-z]+$/.test(slug) && index && /^\d+$/.test(index)) {
+        document.documentElement.setAttribute(`data-pkg-manager-${slug}`, index);
+      }
+    }
   }
 
   /**
