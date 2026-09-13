@@ -139,9 +139,12 @@ for (const path of ['/reference/go/', '/reference/py/libtmux-server/']) {
   await contents.waitFor({ state: 'visible' })
   note(await menu.isVisible(), `${path}: widening restores the product menu`)
   note(!(await contents.evaluate((el) => el.inert)), `${path}: widening restores the symbol tree`)
+  await menu.locator('a').first().focus()
   await p.setViewportSize({ width: 390, height: 800 })
   await contents.waitFor({ state: 'hidden' })
   note(!(await menu.isVisible()), `${path}: narrowing collapses the product menu`)
+  note(await p.locator('[data-api-nav-toggle]').evaluate((element) => document.activeElement === element),
+    `${path}: narrowing focused navigation returns focus to its toggle`)
   await p.close()
 }
 for (const width of [390, 1440]) {
