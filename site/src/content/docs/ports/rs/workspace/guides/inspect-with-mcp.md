@@ -1,0 +1,109 @@
+---
+title: "Inspect a workspace through MCP"
+description: "Connect the development Rust MCP server to a session loaded by its native workspace CLI."
+port: rs
+product: workspace
+sidebar:
+  label: "Inspect through MCP"
+  group: "Guides"
+  order: 28
+tableOfContents: true
+---
+
+Inspect the session you loaded with the Rust workspace CLI by pointing its MCP
+server at the same tmux socket. The loaded windows and panes are ordinary tmux
+objects; discovery returns their existing IDs.
+
+**This guide uses development `workspace-cli` source.** Continue the
+[installation walkthrough](../installation/#load-and-inspect) through its
+detached load, keeping that shell and `WORKSPACE_TMP` available. Leave the
+`workspace-guide` session running. Build both executables from the same native
+repository checkout; released package instructions may describe different MCP
+contracts.
+
+## Build the MCP server
+
+Run from the native repository root with the installation walkthrough's
+toolchain and dependencies.
+
+```console
+$ cargo build \
+    --locked \
+    --package tmux-mcp \
+    --release \
+    --jobs 2
+```
+
+## Select the same socket
+
+Configure an MCP client to launch the following command with the shown
+environment. The client owns the process's standard input and output for
+JSON-RPC messages.
+
+```console
+$ LIBTMUX_TOOLSETS=inspect target/release/tmux-mcp \
+    -S "$WORKSPACE_TMP/tmux.sock"
+```
+
+In a client's configuration file, use absolute executable or script paths and
+expand `WORKSPACE_TMP` to its actual value. Configuration files do not perform
+shell variable expansion. Retain the environment used to build and run the
+native executable.
+
+For a workspace loaded with `-L NAME`, pass the same `-L NAME` to MCP. The MCP
+server also accepts `LIBTMUX_SOCKET` for a name or `LIBTMUX_SOCKET_PATH` for a
+path. Keep the same tmux executable on `PATH` for both processes.
+
+## Inspect and wait
+
+1. Discover tools with `tools/list` and read the `tmux://capabilities` resource.
+   Confirm that its resolved endpoint matches the loaded socket.
+2. Call [list_sessions][mcp-source], [list_windows][mcp-source] and
+   [list_panes][mcp-source] without arguments. Select `workspace-guide` from the
+   results and retain its session, window and pane IDs.
+3. Select one returned pane ID for capture or a bounded text wait. Use the
+   argument names below; discover the full schema before adding options.
+
+| Tool | Arguments |
+| --- | --- |
+| [capture_pane][mcp-source] | `"pane"` |
+| [wait_for_text][mcp-source] | `"pane"`, `"patterns"`, `"seconds"` in seconds |
+
+Set `"seconds"` to `10` for a ten-second wait. A pending wait permits other
+inspection calls on the same connection. To check that behavior, start a wait
+for text absent from the pane, then request [list_panes][mcp-source] before its
+deadline. Client cancellation uses `notifications/cancelled` with the
+outstanding request ID; the connection remains usable for inspection.
+
+[capture_pane][mcp-source] selects a pane through `"pane"`. Use
+[snapshot_pane][mcp-source] when you need structured state and its optional
+`"max_lines"` budget. These spellings differ from ports that use `"paneId"` or
+`"pane_id"`.
+
+If discovery does not show `workspace-guide`, compare the resolved socket in
+capabilities with the CLI's `-S` path. A different socket selects a different
+daemon even when session names match.
+
+## Close the connection
+
+Close the MCP connection's standard input to stop the server and release pending
+work. This separately loaded workspace remains running. When you finish the
+walkthrough, remove only its session on the same socket:
+
+```console
+$ tmux \
+    -S "$WORKSPACE_TMP/tmux.sock" \
+    kill-session \
+    -t '=workspace-guide'
+```
+
+The configuration remains in the temporary directory until you remove it.
+
+See the verified [native workspace workflow][workspace-source] and [development
+MCP reference][mcp-source] for this source contract. The [released MCP
+guide](../../../mcp/guides/) documents its pinned source, including `--safety`
+and `tmux://server`. This development workflow uses `LIBTMUX_TOOLSETS` and
+`tmux://capabilities`; use the tool schema from the executable you launch.
+
+[workspace-source]: https://github.com/libtmux/libtmux-rs/blob/1ef17b9c1b3a1a8e54a4cf306bd91799beee1338/crates/tmux-workspace/README.md
+[mcp-source]: https://github.com/libtmux/libtmux-rs/blob/1ef17b9c1b3a1a8e54a4cf306bd91799beee1338/crates/tmux-mcp/README.md

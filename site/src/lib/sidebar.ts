@@ -263,6 +263,11 @@ export async function getSidebar(
     if (product === 'mcp') ungrouped.splice(1, 0, {
       type: 'link', label: 'Tools', href: portPageUrl(PORT_BY_SLUG[port], version, 'mcp/tools'),
     })
+    if (product === 'workspace') return [
+      ...ungrouped,
+      ...groups.filter((group) => group.label !== 'Internals'),
+      ...groups.filter((group) => group.label === 'Internals'),
+    ]
     return [...ungrouped, ...groups]
   }
   return [...referenceEntries(port, version), ...groups, ...ungrouped]

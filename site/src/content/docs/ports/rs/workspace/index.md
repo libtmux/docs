@@ -1,6 +1,6 @@
 ---
 title: "Workspace Manager for Rust (in development)"
-description: "The Rust workspace manager is unfinished; builder APIs are available, but there is no workspace loader CLI."
+description: "Build the local Rust tmux-workspace CLI; implementation coverage remains partial and unreleased."
 port: rs
 product: workspace
 sidebar:
@@ -9,22 +9,69 @@ sidebar:
 tableOfContents: true
 ---
 
-The current implementation is `tmux-workspace`, a library crate for building workspace descriptions and freezing sessions.
-Using it requires application code. Installing or building it does not provide
-a command that accepts a workspace file and loads your session.
+Native services load and capture sessions, discover and search documents,
+convert formats, import tmuxinator/teamocil files, and run editors. Python
+shells and workspace extensions use an explicit version-checked bridge.
+Append validates the current daemon and retains the borrowed session across
+inputs.
 
 ## Load a workspace from the terminal
 
-Use [tmuxp](https://tmuxp.git-pull.com/) for the existing workspace CLI. Its
-[Python workspace guide](/py/latest/workspace/guides/) covers installation and
-`tmuxp load` with YAML or JSON configuration. tmuxp is a separate Python
-application, not a Rust command.
+Follow the [local installation walkthrough](./guides/installation/) from a
+`workspace-cli` checkout of the
+[Rust repository](https://github.com/libtmux/libtmux-rs). It builds
+the native command and loads a small workspace on a private socket. After
+building, inspect the command without starting tmux:
+
+```console
+$ target/release/tmux-workspace --help
+```
+
+Use detached load for the walkthrough. JSON and NDJSON output are available;
+choose the mode explicitly when scripting. The command/configuration reference
+below also documents tmuxp behavior and compatibility targets, so it is not a
+claim that every referenced feature works in this local implementation.
+
+## Current coverage
+
+Native load supports [filtered file logging](./reference/output/#native-rust-logging).
+
+Human load supports progress templates and bounded script lines. Attachment
+checks the terminal and invoking client before mutation. SIGINT and SIGTERM
+report completed inputs and acknowledged effects; interruption does not roll
+them back. Human bootstrap scripts retain terminal stdin with foreground and
+terminal-setting restoration on supported targets.
+
+Human listing supports tree and full views with escaped labels. Native
+generation exports command metadata, manuals and completion scripts without
+starting tmux or Python. Discovery/search edge cases, complete configuration
+coverage and broader platform lifecycle validation remain open. See the
+[compatibility reference](./reference/compatibility/) for cancellation and
+platform limits.
+
+For the released Python workflow, use [tmuxp](https://tmuxp.git-pull.com/)
+and its [Python workspace guide](/py/latest/workspace/guides/). It is a separate
+application and remains useful when a required native feature is incomplete.
 
 ## Start here
 
-The [Internals](./internals/) section documents the current builder:
+The `tmux-workspace` library crate remains available for applications that
+build sessions through code. [Internals](./internals/) documents that API:
 
 - [Guides](./internals/guides/) show application setup and builder calls.
 - [Topics](./internals/topics/) explain supported configuration and behavior.
 - [Examples](./internals/examples/) exercise the library or source consumer.
 - [API](./internals/api/) covers the builder and configuration interfaces.
+
+## tmuxp command and configuration reference
+
+Use the local CLI's help and the limits above when applying these compatibility
+references to native execution.
+
+- [Installation walkthrough](./guides/installation/) builds and runs the local native CLI.
+- [Inspect through MCP](./guides/inspect-with-mcp/) connects to the loaded session.
+- [Command reference](./cli/) lists tmuxp commands, flags and compatibility targets.
+- [Configuration](./configuration/) covers fields, normalization and execution.
+- [Example gallery](./examples/gallery/) includes upstream fixtures and prerequisites.
+- [Compatibility status](./reference/compatibility/) records builder/reference gaps.
+- [JSON, NDJSON, and color](./reference/output/) describes the shared output design.
