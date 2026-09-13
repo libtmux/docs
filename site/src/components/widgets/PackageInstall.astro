@@ -1,8 +1,9 @@
 ---
 import { Code } from 'astro-expressive-code/components'
 import { highlightInline } from '../../lib/highlight'
-import { PORTS } from '../../lib/ports'
+import { PORTS, referenceUrl } from '../../lib/ports'
 import type { Quickstart } from '../../lib/quickstarts'
+import { withPortRoot } from '../../lib/site-root'
 
 /**
  * Package-manager picker for the eight libtmux ports' own install commands
@@ -170,6 +171,12 @@ const installHtml = new Map(
               {cmd.note && <p class="lm-pkg-install__note">{cmd.note}</p>}
             </div>
           ))}
+          {snippets && (
+            <p class="lm-pkg-install__links">
+              <a href={withPortRoot(`/${p.slug}/`)}>{p.name} documentation</a>
+              <a href={referenceUrl(p)}>{p.name} API reference</a>
+            </p>
+          )}
           {snippets?.[p.slug] && (
             <div class="lm-pkg-install__snippet">
               <Code code={snippets[p.slug]!.code} lang={snippets[p.slug]!.lang} />
@@ -369,6 +376,23 @@ const installHtml = new Map(
     color: var(--lm-pkg-install-fg-secondary);
   }
 
+  /* Where to go after installing: the port's own documentation and its API
+   * reference. Only the Quickstart renders these; a port's page already is
+   * the first, and links the second. */
+  .lm-pkg-install__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    margin: 0.6rem 0 0;
+    font-size: 0.85em;
+  }
+
+  .lm-pkg-install__links a {
+    color: var(--lm-pkg-install-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
   /* Where the copy button sits, set by the `copyButton` prop. `gutter`, the
    * default, gives it a column beside the code, so a long command cannot
    * scroll under it however far it scrolls. `overlay` floats it over the
@@ -401,7 +425,7 @@ const installHtml = new Map(
   }
 
   /* The example fills whatever height its panel has left. Its `pre` starts
-   * from 14rem stacked, or 22rem side by side, so the longest example
+   * from 14rem stacked, or 23rem side by side, so the longest example
    * reserves no more than that, and grows into the space a shorter panel
    * leaves. Expressive Code positions its copy button on `.frame`, so the
    * button stays put while the code scrolls. */
@@ -439,11 +463,12 @@ const installHtml = new Map(
    * the right with the larger share of the width. Narrower, they stack.
    *
    * A container query, so the switch follows the widget's own width rather
-   * than the window's. Side by side, the example starts from 22rem and an
-   * install block scrolls past 15rem, so the example sets the height every
+   * than the window's. Side by side, the example starts from 23rem and an
+   * install block scrolls past 14rem, so the example sets the height every
    * panel reserves, a long POM scrolls inside its column, and switching
-   * package manager leaves the page where it was: at 18rem, vcpkg's block,
-   * note and manager row stood 6px taller than the example.
+   * package manager leaves the page where it was. vcpkg's column is the
+   * tallest: its manager row, block, note and the documentation links came
+   * to 365px against a 352px example at 15rem and 22rem.
    */
   .lm-pkg-install--examples {
     container-type: inline-size;
@@ -453,7 +478,7 @@ const installHtml = new Map(
     .lm-pkg-install__panel:has(> .lm-pkg-install__snippet) {
       display: grid;
       grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto auto 1fr;
       column-gap: 1rem;
     }
 
@@ -468,18 +493,26 @@ const installHtml = new Map(
       align-self: start;
     }
 
+    /* Straight under the install; the last row takes whatever height the
+     * example leaves. */
+    .lm-pkg-install__panel:has(> .lm-pkg-install__snippet) > .lm-pkg-install__links {
+      grid-column: 1;
+      grid-row: 3;
+      align-self: start;
+    }
+
     .lm-pkg-install__panel > .lm-pkg-install__snippet {
       grid-column: 2;
-      grid-row: 1 / span 2;
+      grid-row: 1 / span 3;
       margin-top: 0;
     }
 
     .lm-pkg-install--examples .lm-pkg-install__code pre {
-      max-height: 15rem;
+      max-height: 14rem;
     }
 
     .lm-pkg-install__snippet .expressive-code .frame pre {
-      flex-basis: 22rem;
+      flex-basis: 23rem;
     }
   }
 
