@@ -197,7 +197,6 @@ const currentType =
     : owner?.parent
       ? model?.symbols.find((sym) => sym.id === owner.parent)
       : undefined
-const currentModule = currentType ? moduleOf(currentType) : owner ? moduleOf(owner) : undefined
 
 /**
  * Which branch this page sits in — one lookup, not a scan.
