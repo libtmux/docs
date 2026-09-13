@@ -5,6 +5,7 @@ import { highlightPrompt } from '../../lib/prompt-highlight'
 import { composeFromParts, portParts, sharedParts, TOPICS, VERSION_SENTINEL } from '../../lib/prompts'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { SITE_ROOT } from '../../lib/site-root'
+import RerollButton from '../RerollButton.astro'
 
 /**
  * The prompt a reader copies into a coding agent, with a picker for which
@@ -165,18 +166,22 @@ const activePortRules = items
   }
 
   <div class="lm-agent-prompt__controls">
-    <label class="lm-agent-prompt__control">
-      <span class="lm-agent-prompt__label">Task</span>
-      <select class="lm-agent-prompt__select" data-select="topic">
-        {
-          TOPICS.map((topic) => (
-            <option value={topic.id} selected={topic.id === defaultTopic}>
-              {topic.label}
-            </option>
-          ))
-        }
-      </select>
-    </label>
+    <div class="lm-agent-prompt__task">
+      <label class="lm-agent-prompt__control">
+        <span class="lm-agent-prompt__label">Task</span>
+        <select class="lm-agent-prompt__select" data-select="topic">
+          {
+            TOPICS.map((topic) => (
+              <option value={topic.id} selected={topic.id === defaultTopic}>
+                {topic.label}
+              </option>
+            ))
+          }
+        </select>
+      </label>
+      {/* Beside the label, not in it: a button inside a label passes its click to the select. */}
+      <RerollButton size="sm" title="Pick another task" data-action="reroll" />
+    </div>
     <label class="lm-agent-prompt__control" data-version-control hidden>
       <span class="lm-agent-prompt__label">Version</span>
       <select class="lm-agent-prompt__select" data-select="version" />
@@ -297,6 +302,14 @@ const activePortRules = items
   }
 
   .lm-agent-prompt__control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  /* The task control and its reroll button, at the control's own spacing
+     rather than the wider gap between controls. */
+  .lm-agent-prompt__task {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
@@ -687,6 +700,15 @@ const activePortRules = items
     render(widget)
   }
 
+  /** Choose another task at random, from the ones this picker offers. */
+  function rerollTopic(widget: HTMLElement) {
+    const select = widget.querySelector<HTMLSelectElement>('[data-select="topic"]')
+    if (!select) return
+    const others = [...select.options].map((option) => option.value).filter((topic) => topic !== select.value)
+    const next = others[Math.floor(Math.random() * others.length)]
+    if (next) chooseTopic(widget, next)
+  }
+
   function widgets() {
     return document.querySelectorAll<HTMLElement>('.lm-agent-prompt')
   }
@@ -714,6 +736,12 @@ const activePortRules = items
     if (copy?.closest('.lm-agent-prompt')) {
       event.preventDefault()
       copyPrompt(copy)
+      return
+    }
+    // RerollButton animates the die; which task comes up is decided here.
+    const rerolled = target.closest<HTMLElement>('[data-action="reroll"]')?.closest<HTMLElement>('.lm-agent-prompt')
+    if (rerolled) {
+      rerollTopic(rerolled)
       return
     }
     const tab = target.closest<HTMLButtonElement>('.lm-agent-prompt__tab')
