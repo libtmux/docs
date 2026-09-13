@@ -36,10 +36,18 @@ claim that every referenced feature works in this local implementation.
 
 Native load supports [filtered file logging](./reference/output/#native-rust-logging).
 
-Progress controls, complete terminal attachment and interruption behavior,
-discovery/search edge cases, and the full configuration and platform corpus
-remain unfinished. Some accepted flags are compatibility targets rather
-than implemented behavior.
+Human load supports progress templates and bounded script lines. Attachment
+checks the terminal and invoking client before mutation. SIGINT and SIGTERM
+report completed inputs and acknowledged effects; interruption does not roll
+them back. Human bootstrap scripts retain terminal stdin with foreground and
+terminal-setting restoration on supported targets.
+
+Human listing supports tree and full views with escaped labels. Native
+generation exports command metadata, manuals and completion scripts without
+starting tmux or Python. Discovery/search edge cases, complete configuration
+coverage and broader platform lifecycle validation remain open. See the
+[compatibility reference](./reference/compatibility/) for cancellation and
+platform limits.
 
 For the released Python workflow, use [tmuxp](https://tmuxp.git-pull.com/)
 and its [Python workspace guide](/py/latest/workspace/guides/). It is a separate
@@ -61,6 +69,7 @@ Use the local CLI's help and the limits above when applying these compatibility
 references to native execution.
 
 - [Installation walkthrough](./guides/installation/) builds and runs the local native CLI.
+- [Inspect through MCP](./guides/inspect-with-mcp/) connects to the loaded session.
 - [Command reference](./cli/) lists tmuxp commands, flags and compatibility targets.
 - [Configuration](./configuration/) covers fields, normalization and execution.
 - [Example gallery](./examples/gallery/) includes upstream fixtures and prerequisites.

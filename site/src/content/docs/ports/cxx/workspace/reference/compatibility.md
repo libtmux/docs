@@ -123,8 +123,7 @@ executable's `--help` for the options implemented in that checkout.
 - Python shell/plugin/custom-builder services are unavailable.
 - Windows created by arbitrary scripts are outside the builder's retained-window
   records, including when a borrowed append session survives script failure.
-- Shell completion remains unfinished; command metadata does not provide
-  an executable completion service.
+- Dynamic session/configuration-name completion remains unavailable.
 - Additional importer fields, full configuration/capture coverage and
   supported-platform packaging remain open. Append's first explicit window
   index must name a free slot in the existing session.

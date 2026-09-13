@@ -55,7 +55,8 @@ and refuses an ambiguous client selection. Redirected and machine calls require
 
 Plugins/custom builders, further pane/window execution
 settings, fuller capture, generated manuals and portable distribution remain
-unfinished. The complete tmuxp flag surface is not available.
+unfinished. Parser coverage does not establish support for every configuration
+field or execution path.
 
 For the released Python workflow, use [tmuxp](https://tmuxp.git-pull.com/)
 and its [Python workspace guide](/py/latest/workspace/guides/). It is a separate
@@ -77,6 +78,7 @@ Use the local CLI's help and the limits above when applying these compatibility
 references to native execution.
 
 - [Installation walkthrough](./guides/installation/) builds and runs the local native CLI.
+- [Inspect through MCP](./guides/inspect-with-mcp/) connects to the loaded session.
 - [Command reference](./cli/) lists tmuxp commands, flags and compatibility targets.
 - [Configuration](./configuration/) covers fields, normalization and execution.
 - [Example gallery](./examples/gallery/) includes upstream fixtures and prerequisites.

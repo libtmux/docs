@@ -72,6 +72,10 @@ manuals and shell completion can be generated from the command graph.
 their YAML configurations. Human names and paths escape terminal controls;
 machine records preserve the underlying values and ignore tree presentation.
 
+SIGINT and SIGTERM cancel active scripts through normal cleanup and return
+status 130. Unix confirmation and destination prompts also cancel while stdin
+remains open, preserving terminal settings. Progress follows terminal resizing.
+
 Native Go logging supports `--log-level` and structured `--log-file` output
 on Unix. Optional diagnostics follow the selected level; mandatory command
 errors and machine results remain visible. A later log write or close failure
@@ -105,8 +109,7 @@ The local source reference is workspace/CLI.md. Use the native executable's
   supported.
 - Script lifecycle failures and effects before an input returns from building
   need additional coverage.
-- Complete human catalog rendering remains unfinished.
-- SIGTERM, descendant cleanup across platforms, optional Python terminals,
+- Descendant cleanup across platforms, optional Python terminals,
   complete configuration/importer coverage and installed completion execution
   remain acceptance gaps.
 
