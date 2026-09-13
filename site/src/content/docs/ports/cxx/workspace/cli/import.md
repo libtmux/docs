@@ -25,6 +25,26 @@ own. Each child requires a source at the parser boundary, despite
 optional-looking help. Conversion is schema translation; it does not make
 tmuxinator Ruby or ERB evaluation available in a native YAML reader.
 
+## Native C++ imports
+
+The local `tmux-workspace` command previews with `--json` and saves with an
+explicit destination. Both source and translated workspace are validated
+before a destination is replaced:
+
+```console
+$ tmux-workspace import teamocil \
+    --save-to team.json \
+    team.yml
+```
+
+Use `--force` to replace an existing destination. A refused import leaves it
+intact. Unknown fields, ERB templates, host lifecycle hooks, pane titles and
+unsupported synchronization timing are reported explicitly. Imports do not
+execute Ruby.
+
+See each importer for supported translations. Command text and paths should
+be reviewed before loading the result.
+
 ## Arguments and flags
 
 The parent accepts `-h` / `--help` and selects a child command.

@@ -125,8 +125,10 @@ Every tmux command above addresses that private socket.
 
 ## Current limits
 
-Python shell/plugin/custom-builder execution, animated progress, completion,
-full importer/configuration coverage and portable packaging remain unfinished.
+Python shell/plugin/custom-builder execution, full importer/configuration
+coverage and portable packaging remain unfinished. Native progress and
+[shell completion](../../cli/completion/#native-completion) are implemented;
+dynamic session/configuration-name suggestions remain unavailable.
 Native before scripts, terminal handoff and file logging are implemented; see
 [current coverage](../../reference/compatibility/) for their limits. Capture
 omits environment/options and cannot recover original command arguments or
