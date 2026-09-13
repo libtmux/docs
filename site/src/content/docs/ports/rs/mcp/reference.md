@@ -38,7 +38,7 @@ for individual objects and pane content. Prompts depend on the selected
 tier.
 
 MCP `run_plan` uses the core operation-plan model.
-[Workspace builder API](../../workspace/internals/api/) describes the separate
+[Workspace builder API](../../workspace/reference/) describes the separate
 workspace parser, builder, and live-session export.
 
 [Crate source and examples](https://github.com/libtmux/libtmux-rs/tree/9331cdf556ea7a1f2589e9c3e6cece6ccdc7765c/crates/tmux-mcp).

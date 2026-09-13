@@ -25,7 +25,7 @@ capabilities.
 - [Guides](./guides/) install the command and diagnose its connection.
 - [Topics](./topics/) explain capabilities, operation ceilings, and jobs.
 - [Examples](./examples/) call a tool, then explore server internals.
-- [Language API](./api/) documents embedding and implementation types.
+- [Language API](./reference/) documents embedding and implementation types.
 
 The server includes resources, subscriptions, prompts, and a
 `build_workspace` tool backed by the

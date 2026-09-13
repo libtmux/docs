@@ -23,7 +23,7 @@ Its registered operations use the `tmux_` prefix, including
 - [Guides](./guides/) install the tool and choose a socket.
 - [Topics](./topics/) explain tiers, result limits, jobs, and subscriptions.
 - [Examples](./examples/) call a tool, then explore server internals.
-- [Language API](./api/) documents embedding and implementation types.
+- [Language API](./reference/) documents embedding and implementation types.
 
 The default surface tier is `mutating`. Dedicated removal requires
 `destructive`; `readonly` omits writing tools.

@@ -23,7 +23,7 @@ macOS artifact checks do not establish runtime support.
 - [Guides](./guides/) install and connect a client.
 - [Topics](./topics/) explain toolsets, socket provenance, and waiting.
 - [Examples](./examples/) call a tool, then explore server internals.
-- [Language API](./api/) documents embedding and implementation types.
+- [Language API](./reference/) documents embedding and implementation types.
 
 The server exposes a static `tmux://capabilities` resource. It does not
 register workflow prompts or dynamic hierarchy resources.

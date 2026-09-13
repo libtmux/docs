@@ -24,7 +24,7 @@ toolsets at startup. It serves MCP over stdin and stdout.
 - [Guides](./guides/) build the launcher and connect a client.
 - [Topics](./topics/) explain toolsets, input preflight, and wait semantics.
 - [Examples](./examples/) call a tool, then explore server internals.
-- [Language API](./api/) documents embedding and implementation types.
+- [Language API](./reference/) documents embedding and implementation types.
 
 The only MCP resource is the static `tmux://capabilities` report.
 The server does not register workflow prompts or dynamic resource

@@ -25,7 +25,7 @@ tmux is required at runtime.
 - [Guides](./guides/) build the executable and configure its environment.
 - [Topics](./topics/) explain tiers, exact tool selection, and opaque targets.
 - [Examples](./examples/) call a tool, then explore server internals.
-- [Language API](./api/) documents embedding and implementation types.
+- [Language API](./reference/) documents embedding and implementation types.
 
 The default tier is readonly. Writing tools need explicit opt-in.
 Resources expose snapshots, sessions, filter vocabulary, and pane content;

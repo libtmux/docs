@@ -27,4 +27,4 @@ The [Internals](./internals/) section documents the current builder:
 - [Guides](./internals/guides/) show application setup and builder calls.
 - [Topics](./internals/topics/) explain supported configuration and behavior.
 - [Examples](./internals/examples/) exercise the library or source consumer.
-- [API](./internals/api/) covers the builder and configuration interfaces.
+- [API](./reference/) covers the builder and configuration interfaces.

@@ -41,6 +41,6 @@ It reports tool selection, connection provenance, and capability
 declarations. The server does not register prompts or dynamic hierarchy
 subscriptions.
 
-Use the [Workspace builder API](../../workspace/internals/api/) for declarative
+Use the [Workspace builder API](../../workspace/reference/) for declarative
 configuration. It is a separate Java library and has no corresponding
 workspace-file MCP route.

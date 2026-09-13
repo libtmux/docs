@@ -255,8 +255,10 @@ export function rehypeApiLinks() {
       // Every reference link goes through productApiHref: it knows which of
       // the three trees a symbol belongs to and which version of the target
       // port publishes it. `d.href` survives only for what is not a symbol
-      // page — a federated inventory hit, or a module index.
-      let href = withPortRoot(d.href)
+      // page — a federated inventory hit, or a module index — and the
+      // builders this plugin supplies already carry the site root, so only a
+      // bare path from the package's own default needs one.
+      let href = d.href.startsWith('/reference/') ? withPortRoot(d.href) : d.href
       if (!d.external) {
         const res = r.resolve(d.port, text, ctx.product)
         if ('symbol' in res) href = productApiHref(API_MODELS[d.port], res.symbol, versionOf(d.port))

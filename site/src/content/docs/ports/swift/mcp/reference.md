@@ -45,5 +45,5 @@ Prompts include `run_and_wait`, `watch_until_ready`,
 [Resource source](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/LibTmuxMCP/Resources.swift)
 and [prompt source](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/LibTmuxMCP/Prompts.swift).
 
-The [Workspace builder API](../../workspace/internals/api/) owns workspace decoding
+The [Workspace builder API](../../workspace/reference/) owns workspace decoding
 and construction. `apply_workspace` exposes that behavior over MCP.
