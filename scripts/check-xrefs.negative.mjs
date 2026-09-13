@@ -22,7 +22,7 @@ const PORTS = PORT_DEFS.map((p) => p.slug)
 function site(n) {
   const dir = mkdtempSync(join(tmpdir(), 'check-xrefs-'))
   for (const p of PORTS) {
-    const d = join(dir, 'reference', p, 'thing')
+    const d = join(dir, p, 'latest', 'reference', 'thing')
     mkdirSync(d, { recursive: true })
     const anchors = Array.from({ length: n }, () => '<a class="api-xref" href="/x/">x</a>').join('')
     writeFileSync(join(d, 'index.html'), `<html><body>${anchors}</body></html>`)

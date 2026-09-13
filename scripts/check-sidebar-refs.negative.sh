@@ -69,7 +69,7 @@ fails=0
 rs=$(page_for rs) || { echo 'no rs shell page under _site — run ./scripts/build-site.sh' >&2; exit 1; }
 py=$(page_for py) || { echo 'no py shell page under _site — run ./scripts/build-site.sh' >&2; exit 1; }
 
-drop 'our reference removed'   "$rs" '/reference/rs/' 'rs: sidebar does not link /reference/rs/' || fails=1
+drop 'our reference removed'   "$rs" '/rs/latest/reference/' 'rs: sidebar does not link /rs/<version>/reference/' || fails=1
 drop 'ecosystem link removed'  "$rs" 'docs.rs'        'rs: sidebar does not link docs.rs' || fails=1
 drop 'upstream reference gone' "$py" '/api/'          'py: sidebar does not link the upstream gp-sphinx reference' || fails=1
 

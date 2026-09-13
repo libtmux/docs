@@ -1142,7 +1142,10 @@ while IFS='|' read -r slug _name _versioned renderer _rest; do
     *) continue ;;
   esac
   for version in "${versions[@]}"; do
-    vendored_args+=(--vendored "${LIBTMUX_DOCS_LOCALES_ROOT#/}/$locale/$slug/$version")
+    # The native tree alone, not the whole port: this repo's own reference
+    # now lives under `$slug/$version/reference/`, and excusing the port
+    # would excuse the one class of link worth failing on.
+    vendored_args+=(--vendored "${LIBTMUX_DOCS_LOCALES_ROOT#/}/$locale/$slug/$version/api")
   done
 done < <(list_ports)
 

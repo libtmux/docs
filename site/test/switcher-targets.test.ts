@@ -16,8 +16,9 @@ function samplePages(): string[] {
     'index.html', 'concepts/index.html', 'mcp/tools/index.html',
     'topics/architecture/index.html', 'py/index.html',
     'py/latest/topics/architecture/index.html', 'ts/latest/topics/architecture/index.html',
-    'rs/index.html', 'reference/index.html', 'reference/ts/index.html',
-    'reference/ts/session-session-panes/index.html', 'reference/ts/session-session-sessionbrand/index.html',
+    'rs/index.html', 'reference/index.html', 'ts/latest/reference/index.html',
+    'ts/latest/reference/session-session-panes/index.html', 'ts/latest/reference/session-session-sessionbrand/index.html',
+    'ts/latest/mcp/reference/index.html', 'go/latest/workspace/reference/index.html',
   ].map((page) => prefix + page)
   wanted.push('ja/index.html', 'ja/concepts/index.html')
   const present = wanted.filter((page) => existsSync(join(SITE, page)))
@@ -100,17 +101,20 @@ describeIfAssembled('switcher targets', () => {
     expect(hrefs.filter((h) => !resolves(h)), `${page}: alternates with no page`).toEqual([])
   })
 
-  it('never offers a port link that carries a reference path', () => {
-    // Bug 2, stated directly. The reference lives only at the root, so a port
-    // link must never transplant `reference/<port>/…` under `/<port>/<version>/`.
+  it('offers each port its own root, never a transplanted path', () => {
+    // Bug 2, restated for a reference that now lives under a port. The
+    // language switcher answers "the same library, in another language",
+    // which is that port's root — not this page's path wearing another
+    // port's prefix, and least of all a reference path that only the port
+    // being read has.
     for (const page of pages) {
       const html = readFileSync(join(SITE, page), 'utf8')
       const nav = /<nav[^>]*aria-label="Language"[^>]*>([\s\S]*?)<\/nav>/.exec(html)
       if (!nav) continue
       const bad = [...nav[1].matchAll(/href="([^"]+)"/g)]
         .map((m) => m[1])
-        .filter((h) => /\/[a-z]+\/[^/]+\/reference\//.test(h))
-      expect(bad, `${page}: port link carrying a reference path`).toEqual([])
+        .filter((h) => !/\/[a-z]+(?:\/[^/]+)?\/$/.test(h))
+      expect(bad, `${page}: port link deeper than that port's root`).toEqual([])
     }
   })
 })

@@ -255,7 +255,7 @@ node scripts/check-api-fidelity.mjs "$site_out"
 # twin as well — which only a full assembly produces. Both run against a
 # running server; `pnpm test:publication` reports that they were not run rather than
 # implying they passed.
-if curl -sf -o /dev/null "$SERVE_SITE/reference/py/libtmux-server/"; then
+if curl -sf -o /dev/null "$SERVE_SITE/py/stable/reference/libtmux-server/"; then
   # Type is checked here rather than with the static suites because half of
   # it is a rendering question: which faces a page opens with is answered by
   # laying the page out, not by reading its HTML.
