@@ -2,7 +2,7 @@
 /**
  * Extract versioned source provenance and the public API model for each port.
  * Run once before assembly; Astro reads the generated JSON in every build.
- * Usage: node scripts/gen-api-model.mjs [--port py] [--check]
+ * Usage: node scripts/gen-api-model.mjs [--port py] [--check | --nav]
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
@@ -15,11 +15,8 @@ import { mapLine, parseHunks } from '../packages/api-model/src/source-lines.ts'
 import { extractProject } from '../packages/api-model/src/project.ts'
 import { scopeProductSymbols } from '../packages/api-model/src/product-exports.ts'
 import { inheritProductFromOwners } from '../packages/api-model/src/products.ts'
-import { pageSlug, OWNER_KINDS } from '../packages/api-model/src/prose.ts'
-import { moduleOf } from '../packages/api-model/src/modules.ts'
-import { CONCEPTS } from '../packages/api-model/src/concepts.ts'
-import { NAV } from '../packages/api-model/src/nav-config.ts'
-import { compileNav } from '../packages/api-model/src/nav.ts'
+import { pageSlug } from '../packages/api-model/src/prose.ts'
+import { navSidecar } from '../packages/api-model/src/nav-sidecar.ts'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const portBySlug = Object.fromEntries(PORT_DEFS.map((port) => [port.slug, port]))
@@ -260,11 +257,29 @@ const PORTS = {
 const args = process.argv.slice(2)
 const only = args.includes('--port') ? args[args.indexOf('--port') + 1] : undefined
 const check = args.includes('--check')
+/*
+ * `--nav` rewrites only the sidebar sidecars, from the committed models. The
+ * sidebar is a function of the model and nav-config.ts, so an edit to the
+ * config needs no checkout and must not re-extract eight repositories whose
+ * working trees have moved on since their models were committed.
+ */
+const navOnly = args.includes('--nav')
+
+/** Write a port's compiled sidebar beside its model. */
+function writeNav(port, model) {
+  const sidecar = navSidecar(port, model)
+  if (sidecar) writeFileSync(join(repoRoot, 'site/src/data/api', `${port}.nav.json`), `${JSON.stringify(sidecar)}\n`)
+}
 
 let stale = 0
 let skipped = 0
 for (const [port, cfg] of Object.entries(PORTS)) {
   if (only && only !== port) continue
+  if (navOnly) {
+    writeNav(port, JSON.parse(readFileSync(join(repoRoot, 'site/src/data/api', `${port}.json`), 'utf8')))
+    console.log(`gen-api-model: ${port}.nav.json compiled from the committed model`)
+    continue
+  }
   // `build-site.sh` and `remark-port-code.mjs` already read this, and the
   // reason is the same here: doc-comment work happens on a port's `docs-site`
   // worktree, and without an override there is no way to see its effect on
@@ -531,54 +546,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
    * sidecar. The alternative is every page scanning every symbol, which is
    * how the old flat sidebar worked.
    */
-  const navTypes = model.symbols.filter((s) => !s.parent && OWNER_KINDS.has(s.kind))
-  const conceptIds = Object.fromEntries(
-    Object.entries(CONCEPTS)
-      .map(([k, c]) => [k, c.symbols[port]])
-      .filter(([, v]) => typeof v === 'string'),
-  )
-  const nav = NAV[port]
-    ? compileNav(NAV[port], navTypes, { conceptIds, moduleOf })
-    : undefined
-  if (nav) {
-    const byId = new Map(model.symbols.map((s) => [s.publicId ?? s.id, s]))
-    writeFileSync(
-      join(repoRoot, 'site/src/data/api', `${port}.nav.json`),
-      `${JSON.stringify({
-        port,
-        buckets: (function shape(bs) {
-          return bs.map((b) => ({
-            id: b.id,
-            label: b.label,
-            collapsed: b.collapsed ?? false,
-            ...(b.children ? { children: shape(b.children) } : {}),
-          }))
-        })(NAV[port].buckets),
-        assignments: Object.fromEntries(
-          Object.entries(nav.assignments).map(([bucket, ids]) => [
-            bucket,
-            ids
-              .map((id) => byId.get(id))
-              .filter(Boolean)
-              .map((sym) => ({ id: sym.publicId ?? sym.id, name: sym.name, slug: sym.slug, kind: sym.kind })),
-          ]),
-        ),
-        // Every symbol, including the unplaced: a page looks its bucket up
-        // and never scans a list to discover it has none.
-        placement: Object.fromEntries([
-          ...Object.entries(nav.assignments).flatMap(([bucket, ids]) =>
-            ids.map((id) => [id, bucket]),
-          ),
-          ...nav.unplaced.map((id) => [id, '__unplaced']),
-        ]),
-        unplaced: nav.unplaced
-          .map((id) => byId.get(id))
-          .filter(Boolean)
-          .map((sym) => ({ id: sym.publicId ?? sym.id, name: sym.name, slug: sym.slug, kind: sym.kind })),
-        diagnostics: nav.diagnostics,
-      })}\n`,
-    )
-  }
+  writeNav(port, model)
 
   const tree = git(checkout, 'ls-tree', '-r', '--name-only', head ?? 'HEAD')
   if (tree) {
