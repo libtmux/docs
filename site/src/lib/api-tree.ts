@@ -65,9 +65,17 @@ export const bucketTotal = (b: TreeBucket): number =>
 export const bucketTarget = (label: string, entries: { name: string; slug: string }[]) =>
   entries.find((e) => e.name.toLowerCase() === label.toLowerCase()) ?? entries[0]
 
-/** The first entry anywhere under a bucket, for a bucket that only splits. */
-export const firstEntry = (b: TreeBucket) =>
-  bucketTarget(b.label, b.entries.length > 0 ? b.entries : (b.children[0]?.entries ?? []))
+/**
+ * The entry a bucket's link lands on: a type, from the bucket itself or else
+ * its first child that holds one, and a function or constant only where no
+ * type is under it. TypeScript's Workspaces holds two type aliases of its own
+ * beside Plan's types, and still opens on `PanePlans`.
+ */
+export const firstEntry = (b: TreeBucket) => {
+  const isType = (e: NavEntry) => OWNER_KINDS.has(e.kind)
+  const types = [b.entries, ...b.children.map((c) => c.entries)].map((list) => list.filter(isType)).find((list) => list.length > 0)
+  return bucketTarget(b.label, types ?? (b.entries.length > 0 ? b.entries : (b.children[0]?.entries ?? [])))
+}
 
 const membersCache = new Map<string, Map<string, TreeMember[]>>()
 

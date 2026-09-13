@@ -6,7 +6,7 @@
  * the configuration. The sidecar is what a page renders, so linting the
  * artifact is the only way lint and render cannot disagree.
  *
- * Six failures, each naming what it found:
+ * Seven failures, each naming what it found:
  *
  *   unmatched  a symbol no bucket claims. Curation rotting as a port grows.
  *   dead       a bucket that claims nothing in ANY port. A rule that has
@@ -24,6 +24,10 @@
  *              beside it. Every check above reads the sidecar, so an edit to
  *              the config that nobody recompiled passed all of them while
  *              pages rendered the old curation.
+ *   unreachable  a symbol the tree has no row for at all. The tree lists every
+ *              top-level symbol in a bucket or in Other, and the members of
+ *              any type beneath it; a symbol nested in something that is not
+ *              a type is neither.
  *
  * A bucket empty in SOME ports is not a failure and is reported separately:
  * the buckets are shared vocabulary across eight ports, and Python having no
@@ -33,6 +37,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { navSidecar } from '../packages/api-model/src/nav-sidecar.ts'
+import { OWNER_KINDS } from '../packages/api-model/src/prose.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const json = process.argv.includes('--json')
@@ -128,6 +133,15 @@ for (const nav of navs) {
         port: nav.port,
         detail: `${nav.port}.nav.json does not match nav-config.ts and ${nav.port}.json`,
         names: ['node scripts/gen-api-model.mjs --nav'],
+      })
+    const kindOf = new Map(model.symbols.map((s) => [s.id, s.kind]))
+    const unreachable = model.symbols.filter((s) => s.parent && !OWNER_KINDS.has(kindOf.get(s.parent)))
+    if (unreachable.length)
+      failures.push({
+        check: 'unreachable',
+        port: nav.port,
+        detail: `${unreachable.length} symbols nested in something the tree does not open`,
+        names: unreachable.map((s) => `${s.id} (in ${kindOf.get(s.parent) ?? 'a missing parent'})`),
       })
   }
   if (d.staleUnsettled.length)

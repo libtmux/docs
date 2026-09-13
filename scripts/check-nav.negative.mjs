@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * Proof that each of check-nav's four checks can fail.
+ * Proof that each of check-nav's checks can fail.
  *
  * A check that cannot fail is worse than no check: it reports green forever
  * and the reader stops looking. Five have been found in this repository, so
@@ -83,10 +83,11 @@ const CASES = {
     },
   },
   orphaned: {
-    // Both, from one run: `sidecar` compiles the model beside the fixture with
-    // the real nav-config.ts, which this fixture was not written from, and a
-    // second fixture would cost a second process for the same proof.
-    trips: ['orphaned', 'sidecar'],
+    // Three from one run, since each reads the model beside the fixture and a
+    // second fixture would cost a second process for the same proof: `sidecar`
+    // compiles it with the real nav-config.ts, which this fixture was not
+    // written from, and `unreachable` finds the function nested in a module.
+    trips: ['orphaned', 'sidecar', 'unreachable'],
     ports: {
       // A child bucket that holds symbols and is missing from the tree the
       // sidecar writes. This is what splitting a bucket into children does if

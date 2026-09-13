@@ -88,28 +88,10 @@ const { model, owner, searchable = true } = Astro.props as Props
 const { slug } = Astro.params
 
 
-/**
- * Where a symbol's entry is rendered.
- *
- * A member lives on its owner's page; a type lives on its own. Everything
- * else — free functions, namespace-scope constants — lives on the port index,
- * because it has no owner and is not one. Sending those to a page named after
- * themselves produced 114 links to pages that were never generated, all of
- * them C++ namespace functions.
- */
 /** Ids of the types that have a page of their own. */
 const pageOwners = model ? ownersOf(model) : []
 const paged = new Set(pageOwners.map((s) => s.id))
 
-/**
- * Where a symbol's entry is rendered.
- *
- * A type with members has its own page. Everything else has a *home* rather
- * than a page: a member renders on its owner's page, a nested member-less
- * type renders as an entry on its parent's, and a top-level one renders on
- * the port index. Every symbol is therefore linkable without generating a
- * page that says nothing.
- */
 /**
  * Every symbol has a page, so every link is to one.
  *
@@ -164,11 +146,11 @@ const currentType =
  * Which branch this page sits in — one lookup, not a scan.
  *
  * `placement` is symbol id to bucket id, built alongside `assignments` so the
- * page never walks every bucket looking for itself.
+ * page never walks every bucket looking for itself. A member looks up its
+ * type; a free function, constant or type alias is placed itself.
  */
-const currentBucket = currentType
-  ? nav?.placement[currentType.publicId ?? currentType.id]
-  : undefined
+const placed = currentType ?? (owner && !owner.parent ? owner : undefined)
+const currentBucket = placed ? nav?.placement[placed.publicId ?? placed.id] : undefined
 
 /** The top-level bucket that holds the current one, which may be its parent. */
 const currentRoot = tree.find(
@@ -394,54 +376,43 @@ const grouped = namedGroups.length > 0
 /*
  * Every top-level symbol, not just the ones that own a page of members.
  *
- * The nav places a symbol whenever it is top-level and of an owning kind;
- * `topLevelTypesOf` is stricter. Looking a bucket's members up in the
- * stricter list dropped 18 of Go's from the index and 3 of TypeScript's —
- * `tmux.PaneDirection` among them — which `check-xrefs` caught as resolution
- * falling by six, because a symbol that renders nowhere links nowhere.
+ * The nav places every top-level symbol; `topLevelTypesOf` is stricter.
+ * Looking a bucket's members up in the stricter list dropped 18 of Go's from
+ * the index and 3 of TypeScript's — `tmux.PaneDirection` among them — which
+ * `check-xrefs` caught as resolution falling by six, because a symbol that
+ * renders nowhere links nowhere.
  */
 const symbolById = new Map(
   (model?.symbols ?? []).filter((sym) => !sym.parent).map((sym) => [sym.publicId ?? sym.id, sym]),
 )
-const typesOf = (bucketId: string) =>
+
+/**
+ * One bucket's section: its types as cards, and its functions, values and
+ * type aliases in full, in the order the nav lists them.
+ */
+const sectionOf = (id: string, name: string, collapsed: boolean) => {
   // The "Other" bucket's members are in `unplaced`, not `assignments`; reading
   // only the latter rendered none of them on the index, which `check-xrefs`
   // caught as resolution falling on four ports.
-  (bucketId === '__unplaced' ? (nav?.unplaced ?? []) : (nav?.assignments[bucketId] ?? []))
+  const symbols = (id === '__unplaced' ? (nav?.unplaced ?? []) : (nav?.assignments[id] ?? []))
     .map((e) => symbolById.get(e.id))
     .filter((o): o is NonNullable<typeof o> => o !== undefined)
-
-/** Placed somewhere, so the catch-all must not repeat it. */
-const placedIds = new Set([
-  ...Object.values(nav?.assignments ?? {}).flatMap((members) => members.map((m) => m.id)),
-  ...(nav?.unplaced ?? []).map((m) => m.id),
-])
+  return {
+    id,
+    name,
+    collapsed,
+    types: symbols.filter((sym) => OWNER_KINDS.has(sym.kind)),
+    free: symbols.filter((sym) => !OWNER_KINDS.has(sym.kind)),
+  }
+}
 
 const bucketSections = nav
-  ? [
-      ...tree.flatMap((b) => [
-        { id: b.id, name: b.label, collapsed: b.collapsed, types: typesOf(b.id), free: [] },
-        ...b.children.map((c) => ({
-          id: c.id,
-          name: `${b.label} — ${c.label}`,
-          collapsed: b.collapsed,
-          types: typesOf(c.id),
-          free: [],
-        })),
-      ]),
-      // Functions and constants own no members, so no bucket claims them.
-      ...(freeSymbols.length > 0
-        ? [
-            {
-              id: 'free',
-              name: 'Functions and constants',
-              collapsed: true,
-              types: [],
-              free: freeSymbols.filter((sym) => !placedIds.has(sym.publicId ?? sym.id)),
-            },
-          ]
-        : []),
-    ].filter((sec) => sec.types.length > 0 || sec.free.length > 0)
+  ? tree
+      .flatMap((b) => [
+        sectionOf(b.id, b.label, b.collapsed),
+        ...b.children.map((c) => sectionOf(c.id, `${b.label} — ${c.label}`, b.collapsed)),
+      ])
+      .filter((sec) => sec.types.length > 0 || sec.free.length > 0)
   : []
 
 const sections = bucketSections.length
@@ -667,7 +638,13 @@ const title = owner
                 >
                   {mod.name || 'Types'}
                   <span class="ml-2 font-sans text-xs font-normal opacity-60">
-                    {mod.types.length} {mod.types.length === 1 ? 'type' : 'types'}
+                    {[
+                      mod.types.length > 0 && `${mod.types.length} ${mod.types.length === 1 ? 'type' : 'types'}`,
+                      mod.free.length > 0 &&
+                        `${mod.free.length} ${mod.free.length === 1 ? 'function or constant' : 'functions and constants'}`,
+                    ]
+                      .filter(Boolean)
+                      .join(', ')}
                   </span>
                 </summary>
                 <div class="mt-3 grid gap-3 sm:grid-cols-2">
