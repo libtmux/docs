@@ -1,5 +1,5 @@
 import { defineEcConfig } from 'astro-expressive-code'
-import { shellPrompt } from './src/plugins/ec-shell-prompt.mjs'
+import { shellPrompt, shellThemes } from './src/plugins/ec-shell-prompt.mjs'
 
 /**
  * Expressive Code options live here rather than inline in astro.config.ts
@@ -10,7 +10,7 @@ import { shellPrompt } from './src/plugins/ec-shell-prompt.mjs'
  * a config one.
  */
 export default defineEcConfig({
-  themes: ['github-dark', 'github-light'],
+  themes: shellThemes(),
   plugins: [shellPrompt()],
   useDarkModeMediaQuery: false,
   themeCssSelector: (theme) =>

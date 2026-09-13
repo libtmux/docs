@@ -1,5 +1,5 @@
 import { createHighlighter, type Highlighter } from 'shiki'
-import { promptElement, SESSION_LANGS, sessionLines } from '../plugins/ec-shell-prompt.mjs'
+import { promptElement, SESSION_LANGS, sessionLines, shellThemes } from '../plugins/ec-shell-prompt.mjs'
 
 /**
  * Syntax highlighting for the examples in doc comments.
@@ -42,7 +42,8 @@ const THEMES = { light: 'github-light', dark: 'github-dark' }
 
 async function highlighter(): Promise<Highlighter> {
   instance ??= createHighlighter({
-    themes: Object.values(THEMES),
+    // Registered under the names in `THEMES`, with plain Bash arguments.
+    themes: shellThemes(),
     langs: [...LANGS],
   })
   return instance

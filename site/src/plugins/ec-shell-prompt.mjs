@@ -1,4 +1,6 @@
 import { select } from 'astro-expressive-code/hast'
+import githubDark from 'shiki/themes/github-dark.mjs'
+import githubLight from 'shiki/themes/github-light.mjs'
 
 /**
  * Shell session prompts: coloured, unselectable, and left out of copied text.
@@ -61,6 +63,36 @@ export function promptElement() {
     },
     children: [{ type: /** @type {const} */ ('text'), value: PROMPT }],
   }
+}
+
+/**
+ * GitHub's themes, with Bash commands and their bare arguments in plain text.
+ *
+ * GitHub's themes draw a command as a function and every bare argument as a
+ * string, so a whole install line turned purple and blue and its prompt no
+ * longer stood out. Pygments reads those words as plain `Text`, which
+ * gp-sphinx draws in the body colour. Quoted strings, comments and escapes
+ * keep GitHub's colours, and the rules name `source.shell`, so no other
+ * language changes.
+ *
+ * `highlight.ts` and `ec.config.mjs` both use these, dark first. The names
+ * stay `github-dark` and `github-light`, which `themeCssSelector` reads.
+ */
+export function shellThemes() {
+  return [githubDark, githubLight].map((theme) => ({
+    ...theme,
+    tokenColors: [
+      ...theme.tokenColors,
+      {
+        scope: [
+          'source.shell entity.name.command',
+          'source.shell string.unquoted.argument',
+          'source.shell constant.other.option',
+        ],
+        settings: { foreground: theme.colors['editor.foreground'] },
+      },
+    ],
+  }))
 }
 
 /**
