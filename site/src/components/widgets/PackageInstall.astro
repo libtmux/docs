@@ -473,9 +473,11 @@ const installHtml = new Map(
   }
 
   .lm-pkg-install__copy {
-    /* In the gutter, level with the first line. A vertical scrollbar belongs
-     * to the `pre`, so it sits beside the gutter rather than under the button. */
-    margin: 0.45rem 0.45rem 0 0;
+    /* In the gutter, level with the first line, with space on both sides: a
+     * line cut off at the gutter's edge would otherwise touch the button and
+     * read as running under it. A vertical scrollbar belongs to the `pre`, so
+     * it sits beside the gutter rather than under the button. */
+    margin: 0.45rem 0.45rem 0;
     appearance: none;
     border: 1px solid var(--lm-pkg-install-border);
     border-radius: 0.25rem;

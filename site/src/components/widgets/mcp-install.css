@@ -189,8 +189,9 @@ html[data-theme-mode='dark'] .lm-mcp-install {
 }
 
 .lm-mcp-install__copy {
-  /* In the gutter, level with the first line. */
-  margin: 0.45rem 0.45rem 0 0;
+  /* In the gutter, level with the first line, with space on both sides so a
+   * line cut off at the gutter's edge does not touch the button. */
+  margin: 0.45rem 0.45rem 0;
   appearance: none;
   border: 1px solid var(--lm-mcp-install-border);
   border-radius: 0.25rem;
