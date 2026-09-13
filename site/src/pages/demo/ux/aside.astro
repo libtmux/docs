@@ -1,0 +1,198 @@
+---
+/**
+ * Every aside variant with every type, and a playground to try one.
+ *
+ * Ported from social-embed's aside demo. Its playground was a React island;
+ * here it is a form whose script rewrites one preview aside's classes, which
+ * is why the aside's styles are global.
+ */
+import Aside from '../../../components/Aside.astro'
+import DemoLayout from '../../../components/demo/DemoLayout.astro'
+import {
+  ASIDE_ICON_SIZES,
+  ASIDE_ICON_STYLES,
+  ASIDE_ICONS,
+  ASIDE_TYPES,
+  ASIDE_VARIANT_DEFAULTS,
+  ASIDE_VARIANT_DESCRIPTIONS,
+  ASIDE_VARIANTS,
+} from '../../../lib/aside'
+
+const segment =
+  'relative flex h-8 min-w-8 cursor-pointer select-none items-center justify-center gap-1 rounded-md px-2 text-xs transition-colors hover:bg-slate-200 has-[:checked]:bg-white has-[:checked]:shadow-sm dark:hover:bg-slate-700 dark:has-[:checked]:bg-slate-700'
+const group = 'inline-flex flex-wrap gap-0.5 rounded-lg border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-600 dark:bg-slate-800'
+const legend = 'mb-1 text-xs font-medium text-slate-600 dark:text-slate-400'
+const defaults = ASIDE_VARIANT_DEFAULTS.hybrid
+---
+
+<DemoLayout title="Aside demo" description="Aside variants and types." current="/demo/ux/aside/">
+  <h1 class="text-3xl font-semibold tracking-tight">Aside</h1>
+  <p class="mt-2 text-slate-600 dark:text-slate-400">
+    <code>&lt;Aside&gt;</code> sets a note, tip, caution or danger apart from the prose. The type sets the colour
+    and icon; the variant sets the container and the icon's default style and size.
+  </p>
+
+  <section class="mt-8 flex flex-col gap-4 border-b border-slate-200 pb-10 lg:flex-row lg:items-start dark:border-slate-700" data-aside-playground>
+    <form class="shrink-0 rounded-lg border border-slate-200 bg-slate-50 p-3 lg:w-80 dark:border-slate-700 dark:bg-slate-800/50">
+      <div class="flex flex-col gap-3">
+        <label class="flex flex-col">
+          <span class={legend}>Variant</span>
+          <select name="variant" class="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-900">
+            {ASIDE_VARIANTS.map((variant) => <option value={variant} selected={variant === 'hybrid'}>{variant}</option>)}
+          </select>
+          <span class="mt-1 text-xs text-slate-500 dark:text-slate-400" data-variant-description>
+            {ASIDE_VARIANT_DESCRIPTIONS.hybrid}
+          </span>
+        </label>
+        <fieldset>
+          <legend class={legend}>Type</legend>
+          <div class={group}>
+            {
+              ASIDE_TYPES.map((type) => (
+                <label class={segment}>
+                  <input class="sr-only" type="radio" name="type" value={type} checked={type === 'note'} />
+                  <svg aria-hidden="true" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                    <path d={ASIDE_ICONS[type]} />
+                  </svg>
+                  {type}
+                </label>
+              ))
+            }
+          </div>
+        </fieldset>
+        <div class="flex flex-wrap gap-3">
+          <fieldset>
+            <legend class={legend}>Icon style</legend>
+            <div class={group}>
+              {
+                ['auto', ...ASIDE_ICON_STYLES].map((style) => (
+                  <label class={segment} title={style}>
+                    <input class="sr-only" type="radio" name="icon-style" value={style} checked={style === 'auto'} />
+                    {style}
+                    <span
+                      class="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-sky-500"
+                      data-default-marker={style}
+                      hidden={style !== defaults.iconStyle}
+                    />
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend class={legend}>Icon size</legend>
+            <div class={group}>
+              {
+                ['auto', ...ASIDE_ICON_SIZES].map((size) => (
+                  <label class={segment} title={size}>
+                    <input class="sr-only" type="radio" name="icon-size" value={size} checked={size === 'auto'} />
+                    {size}
+                    <span
+                      class="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-sky-500"
+                      data-default-marker={size}
+                      hidden={size !== defaults.iconSize}
+                    />
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400">A dot marks the variant's default.</p>
+      </div>
+    </form>
+
+    <div class="min-w-0 flex-1" data-aside-preview>
+      <code class="rounded bg-slate-200 px-1.5 py-0.5 text-xs dark:bg-slate-700" data-aside-code>
+        &lt;Aside type="note" variant="hybrid"&gt;
+      </code>
+      <Aside>
+        <p>
+          This is a <strong data-aside-type-name>note</strong>. It gives the reader information that sits apart from
+          the text around it.
+        </p>
+      </Aside>
+    </div>
+  </section>
+
+  {
+    ASIDE_VARIANTS.map((variant) => (
+      <section class="border-b border-slate-200 py-10 last:border-b-0 dark:border-slate-700">
+        <h2 class="text-xl font-semibold capitalize">{variant}</h2>
+        <p class="mb-6 mt-1 text-sm text-slate-500 dark:text-slate-400">{ASIDE_VARIANT_DESCRIPTIONS[variant]}</p>
+        <div class="aside-grid grid gap-4 md:grid-cols-2">
+          {ASIDE_TYPES.map((type) => (
+            <Aside variant={variant} type={type}>
+              <p>
+                This is a <strong>{type}</strong>. It gives the reader information that sits apart from the text
+                around it.
+              </p>
+            </Aside>
+          ))}
+        </div>
+      </section>
+    ))
+  }
+</DemoLayout>
+
+<style>
+  /* The grid spaces the asides, so their own margins go. Scoped rather than
+   * a Tailwind utility, which sits in a layer the unlayered aside CSS beats. */
+  .aside-grid :global(.lm-aside) {
+    margin: 0;
+  }
+</style>
+
+<script>
+  import {
+    ASIDE_ICONS,
+    ASIDE_TITLES,
+    ASIDE_VARIANT_DEFAULTS,
+    ASIDE_VARIANT_DESCRIPTIONS,
+    asideClass,
+    asideIconClass,
+    type AsideIconSize,
+    type AsideIconStyle,
+    type AsideType,
+    type AsideVariant,
+  } from '../../../lib/aside'
+
+  function update(root: HTMLElement, form: HTMLFormElement) {
+    const data = new FormData(form)
+    const variant = data.get('variant') as AsideVariant
+    const type = data.get('type') as AsideType
+    const style = data.get('icon-style') as AsideIconStyle | 'auto'
+    const size = data.get('icon-size') as AsideIconSize | 'auto'
+    const defaults = ASIDE_VARIANT_DEFAULTS[variant]
+
+    const aside = root.querySelector<HTMLElement>('[data-aside-preview] .lm-aside')
+    const icon = aside?.querySelector<HTMLElement>('.lm-aside__icon')
+    if (!aside || !icon) return
+    aside.className = asideClass(type, variant)
+    icon.className = asideIconClass(style === 'auto' ? defaults.iconStyle : style, size === 'auto' ? defaults.iconSize : size)
+    icon.querySelector('path')?.setAttribute('d', ASIDE_ICONS[type])
+    const title = aside.querySelector('.lm-aside__title > span:last-child')
+    if (title) title.textContent = ASIDE_TITLES[type]
+
+    const name = root.querySelector('[data-aside-type-name]')
+    if (name) name.textContent = type
+    const description = root.querySelector('[data-variant-description]')
+    if (description) description.textContent = ASIDE_VARIANT_DESCRIPTIONS[variant]
+    root.querySelectorAll<HTMLElement>('[data-default-marker]').forEach((marker) => {
+      marker.hidden = marker.dataset.defaultMarker !== defaults.iconStyle && marker.dataset.defaultMarker !== defaults.iconSize
+    })
+
+    const props = [`type="${type}"`, `variant="${variant}"`]
+    if (style !== 'auto') props.push(`iconStyle="${style}"`)
+    if (size !== 'auto') props.push(`iconSize="${size}"`)
+    const code = root.querySelector('[data-aside-code]')
+    if (code) code.textContent = `<Aside ${props.join(' ')}>`
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-aside-playground]').forEach((root) => {
+    const form = root.querySelector('form')
+    if (!form) return
+    form.addEventListener('change', () => update(root, form))
+    update(root, form)
+  })
+</script>

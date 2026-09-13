@@ -1,0 +1,17 @@
+---
+import DemoCards from '../../../components/demo/DemoCards.astro'
+import DemoLayout from '../../../components/demo/DemoLayout.astro'
+import { DEMO_SECTIONS, type DemoSection } from '../../../lib/demos'
+
+export function getStaticPaths() {
+  return DEMO_SECTIONS.map((section) => ({ params: { section: section.slug }, props: { section } }))
+}
+
+const { section } = Astro.props as { section: DemoSection }
+---
+
+<DemoLayout title={`${section.title} demos`} description={section.description} current={section.href}>
+  <h1 class="text-3xl font-semibold tracking-tight">{section.title}</h1>
+  <p class="mb-6 mt-2 text-slate-600 dark:text-slate-400">{section.description}</p>
+  <DemoCards demos={section.demos} />
+</DemoLayout>

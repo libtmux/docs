@@ -1,0 +1,82 @@
+---
+/**
+ * The frame for a component demo: every demo in a sidebar, the demo beside it.
+ *
+ * Demos are real URLs with no reader-facing content, so they stay out of the
+ * search index and out of search engines; `robots.txt` disallows `demo` too.
+ */
+import { ALL_TRANSLATED } from '../../i18n/resolve'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { DEMO_OVERVIEW, DEMO_SECTIONS } from '../../lib/demos'
+import { withRoot } from '../../lib/site-root'
+
+interface Props {
+  title: string
+  description: string
+  /** The demo's path as `lib/demos.ts` writes it, such as `/demo/ux/aside/`. */
+  current: string
+}
+
+const { title, description, current } = Astro.props as Props
+
+const topLink = (active: boolean) =>
+  `block rounded-md px-3 py-2 text-sm no-underline transition ${
+    active
+      ? 'bg-slate-200 font-medium text-slate-900 dark:bg-slate-800 dark:text-white'
+      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
+  }`
+const subLink = (active: boolean) =>
+  `block rounded-md px-2 py-1.5 text-xs no-underline transition ${
+    active
+      ? 'font-medium text-slate-900 dark:text-white'
+      : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+  }`
+---
+
+<BaseLayout title={title} description={description} noindex searchable={false} localeStatuses={ALL_TRANSLATED}>
+  <div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 md:flex-row md:gap-10">
+    <nav aria-label="Demos" class="shrink-0 md:w-56">
+      <a
+        href={withRoot(DEMO_OVERVIEW)}
+        class={topLink(current === DEMO_OVERVIEW)}
+        aria-current={current === DEMO_OVERVIEW ? 'page' : undefined}
+      >
+        Overview
+      </a>
+      {
+        DEMO_SECTIONS.map((section) => {
+          const open = current.startsWith(section.href)
+          return (
+            <div class="mt-1">
+              <a
+                href={withRoot(section.href)}
+                class={topLink(open)}
+                aria-current={current === section.href ? 'page' : undefined}
+              >
+                {section.title}
+              </a>
+              {open && (
+                <ul class="ml-3 mt-1 list-none space-y-1 border-l border-slate-200 pl-3 dark:border-slate-700">
+                  {section.demos.map((demo) => (
+                    <li>
+                      <a
+                        href={withRoot(demo.href)}
+                        class={subLink(current === demo.href)}
+                        aria-current={current === demo.href ? 'page' : undefined}
+                      >
+                        {demo.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )
+        })
+      }
+    </nav>
+    <main class="min-w-0 flex-1">
+      <slot />
+    </main>
+  </div>
+</BaseLayout>
