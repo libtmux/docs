@@ -189,6 +189,9 @@ const installHtml = new Map(
     --lm-pkg-install-accent: var(--theme-primary);
     --lm-pkg-install-hover: rgb(0 0 0 / 4%);
     --lm-pkg-install-code-bg: #f1f5f9;
+    /* slate-300 / slate-400, the agent prompt's scrollbar, so the site has one. */
+    --lm-pkg-install-scroll: rgb(203 213 225);
+    --lm-pkg-install-scroll-hover: rgb(148 163 184);
     --lm-pkg-install-mono: var(--font-ibm-plex-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
 
     border: 1px solid var(--lm-pkg-install-border);
@@ -207,6 +210,8 @@ const installHtml = new Map(
     --lm-pkg-install-fg-muted: #94a3b8;
     --lm-pkg-install-hover: rgb(255 255 255 / 6%);
     --lm-pkg-install-code-bg: #1e293b;
+    --lm-pkg-install-scroll: rgb(71 85 105);
+    --lm-pkg-install-scroll-hover: rgb(100 116 139);
   }
 
   .lm-pkg-install__tabs {
@@ -389,6 +394,11 @@ const installHtml = new Map(
     overflow: auto;
   }
 
+  /* Expressive Code places its copy button where a scrollbar would sit. */
+  .lm-pkg-install__snippet .expressive-code .frame .copy {
+    inset-inline-end: 1.1rem;
+  }
+
   /* Beside an example, a long install block such as Gradle's or CMake's would
    * set the height every panel reserves, so it scrolls past 7rem. Copy still
    * takes the whole block. */
@@ -403,7 +413,37 @@ const installHtml = new Map(
     border-radius: 0.25rem;
     background: var(--lm-pkg-install-code-bg);
     color: var(--lm-pkg-install-fg);
-    padding: 0.75rem 3.25rem 0.75rem 0.9rem;
+    padding: 0.75rem 4rem 0.75rem 0.9rem;
+  }
+
+  /* The standard properties first; the WebKit rules say the same thing for
+   * browsers that ignore them. */
+  .lm-pkg-install__code pre,
+  .lm-pkg-install__snippet .expressive-code .frame pre {
+    scrollbar-width: thin;
+    scrollbar-color: var(--lm-pkg-install-scroll) transparent;
+  }
+
+  .lm-pkg-install__code pre::-webkit-scrollbar,
+  .lm-pkg-install__snippet .expressive-code .frame pre::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .lm-pkg-install__code pre::-webkit-scrollbar-track,
+  .lm-pkg-install__snippet .expressive-code .frame pre::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .lm-pkg-install__code pre::-webkit-scrollbar-thumb,
+  .lm-pkg-install__snippet .expressive-code .frame pre::-webkit-scrollbar-thumb {
+    background: var(--lm-pkg-install-scroll);
+    border-radius: 2px;
+  }
+
+  .lm-pkg-install__code pre::-webkit-scrollbar-thumb:hover,
+  .lm-pkg-install__snippet .expressive-code .frame pre::-webkit-scrollbar-thumb:hover {
+    background: var(--lm-pkg-install-scroll-hover);
   }
 
   .lm-pkg-install__code code {
@@ -429,7 +469,8 @@ const installHtml = new Map(
   .lm-pkg-install__copy {
     position: absolute;
     top: 0.45rem;
-    right: 0.45rem;
+    /* Clear of a vertical scrollbar by about its distance from the top. */
+    right: 1.1rem;
     appearance: none;
     border: 1px solid var(--lm-pkg-install-border);
     border-radius: 0.25rem;
