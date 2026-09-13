@@ -399,11 +399,11 @@ const installHtml = new Map(
     inset-inline-end: calc(var(--ec-brdWd) + var(--ec-uiPadInl) / 2 + var(--lm-pkg-install-scrollbar, 0px));
   }
 
-  /* Beside an example, a long install block such as Gradle's or CMake's would
-   * set the height every panel reserves, so it scrolls past 7rem. Copy still
-   * takes the whole block. */
+  /* Beside an example, a long install block such as Maven's POM would set the
+   * height every panel reserves, so it scrolls past 13rem. That still shows
+   * the default Gradle and CMake blocks whole. Copy takes the whole block. */
   .lm-pkg-install--examples .lm-pkg-install__code pre {
-    max-height: 7rem;
+    max-height: 13rem;
     overflow: auto;
   }
 
