@@ -1,7 +1,6 @@
 ---
 import './mcp-install.css'
 import {
-  bodySegments,
   buildMcpInstallPrehydrateSnippet,
   buildPanels,
   CLIENTS,
@@ -321,6 +320,7 @@ const hasCooldowns = spec.cooldowns.length > 1
       </p>
     </details>
   </div>}
+  <span class="sr-only" data-copy-status role="status" aria-live="polite" aria-atomic="true" />
 </div>
 
 <script>

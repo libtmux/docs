@@ -201,9 +201,10 @@ const activePortRules = items
       ))
     }
   </div>
+  <span class="sr-only" data-copy-status role="status" aria-live="polite" aria-atomic="true" />
 </div>
 
-<script type="application/json" data-agent-prompt-parts set:html={island} />
+<script is:inline type="application/json" data-agent-prompt-parts set:html={island} />
 
 <style is:global>
   /* Unlayered, matching the other two widgets. See mcp-install.css's header
@@ -611,11 +612,13 @@ const activePortRules = items
     // clipboard. What is copied is the prompt, byte for byte.
     const text = button.closest('.lm-agent-prompt__code')?.querySelector('[data-prompt-text]')?.textContent
     if (!text) return
-    const done = () => {
+    const done = (copied: boolean) => {
+      const status = button.closest('.lm-agent-prompt')?.querySelector('[data-copy-status]')
+      status?.replaceChildren(document.createTextNode(copied ? 'Copied to clipboard.' : 'Copy failed. Select and copy the text manually.'))
       const original = button.getAttribute('data-copy-label') ?? button.textContent ?? 'Copy'
       button.setAttribute('data-copy-label', original)
-      button.textContent = 'Copied'
-      button.classList.add('lm-agent-prompt__copy--done')
+      button.textContent = copied ? 'Copied' : 'Copy failed'
+      button.classList.toggle('lm-agent-prompt__copy--done', copied)
       const holder = button as HTMLElement & { _lmResetTimer?: number }
       window.clearTimeout(holder._lmResetTimer)
       holder._lmResetTimer = window.setTimeout(() => {
@@ -624,13 +627,14 @@ const activePortRules = items
       }, 1500)
     }
     if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done))
+      navigator.clipboard.writeText(text).then(() => done(true), () => fallbackCopy(text, done))
     } else {
       fallbackCopy(text, done)
     }
   }
 
-  function fallbackCopy(text: string, done: () => void) {
+  function fallbackCopy(text: string, done: (copied: boolean) => void) {
+    const focused = document.activeElement
     const area = document.createElement('textarea')
     area.value = text
     area.style.position = 'fixed'
@@ -638,13 +642,16 @@ const activePortRules = items
     document.body.appendChild(area)
     area.focus()
     area.select()
+    let copied = false
     try {
-      document.execCommand('copy')
+      copied = document.execCommand('copy')
     } catch {
-      // Nothing more to do; the button simply will not confirm.
+      copied = false
+    } finally {
+      area.remove()
+      if (focused instanceof HTMLElement) focused.focus({ preventScroll: true })
     }
-    document.body.removeChild(area)
-    done()
+    done(copied)
   }
 
   function widgets() {

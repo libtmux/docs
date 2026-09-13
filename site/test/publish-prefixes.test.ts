@@ -52,26 +52,30 @@ function fixture(products = true): string {
     }
   }
   write(join(directory, 'shell-paths.json'), JSON.stringify({ schema: 1, locale: 'en', directories, files, nativeApi: NATIVE_API }))
-  const recorder = join(directory, 'record-aws.mjs')
-  write(recorder, "import { appendFileSync } from 'node:fs'; appendFileSync(process.env.AWS_RECORD, JSON.stringify(process.argv.slice(2)) + '\\n');\n")
   const executable = join(directory, 'bin/aws')
   mkdirSync(dirname(executable), { recursive: true })
-  writeFileSync(executable, '#!/bin/bash\nexec "$PUBLISH_TEST_NODE" "$PUBLISH_TEST_RECORDER" "$@"\n', { mode: 0o755 })
+  writeFileSync(executable, '#!/bin/bash\nprintf "%s\\0" "$#" "$@" >> "$AWS_RECORD"\n', { mode: 0o755 })
   return directory
 }
 
 function publish(directory: string, locale = 'en') {
-  const record = join(directory, 'aws.jsonl')
+  const record = join(directory, 'aws.args')
   const result = spawnSync('bash', [script], {
     cwd: directory, encoding: 'utf8', timeout: 10000,
     env: {
       ...process.env, PATH: `${join(directory, 'bin')}:${process.env.PATH}`, BUCKET: 'docs-test',
       LOCALE: locale, RUNNER_TEMP: directory, AWS_RECORD: record,
-      PUBLISH_TEST_NODE: process.execPath, PUBLISH_TEST_RECORDER: join(directory, 'record-aws.mjs'),
     },
   })
   expect(result.error, result.stderr).toBeUndefined()
-  const commands = existsSync(record) ? readFileSync(record, 'utf8').trim().split('\n').map((line) => JSON.parse(line) as string[]) : []
+  const fields = existsSync(record) ? readFileSync(record, 'utf8').split('\0').slice(0, -1) : []
+  const commands: string[][] = []
+  for (let index = 0; index < fields.length;) {
+    const count = Number(fields[index++])
+    expect(Number.isSafeInteger(count) && count >= 0 && index + count <= fields.length).toBe(true)
+    commands.push(fields.slice(index, index + count))
+    index += count
+  }
   return { ...result, commands }
 }
 

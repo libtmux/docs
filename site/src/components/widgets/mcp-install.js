@@ -419,7 +419,7 @@
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(
         function () {
-          announceCopied(button)
+          announceCopyResult(button, true)
         },
         function () {
           fallbackCopy(text, button)
@@ -431,6 +431,7 @@
   }
 
   function fallbackCopy(text, button) {
+    var focused = document.activeElement
     var textarea = document.createElement('textarea')
     textarea.value = text
     textarea.style.position = 'fixed'
@@ -438,20 +439,26 @@
     document.body.appendChild(textarea)
     textarea.focus()
     textarea.select()
+    var copied = false
     try {
-      document.execCommand('copy')
+      copied = document.execCommand('copy')
     } catch {
-      // Nothing more to do — the button simply won't confirm.
+      copied = false
+    } finally {
+      textarea.remove()
+      if (focused instanceof HTMLElement) focused.focus({ preventScroll: true })
     }
-    document.body.removeChild(textarea)
-    announceCopied(button)
+    announceCopyResult(button, copied)
   }
 
-  function announceCopied(button) {
+  function announceCopyResult(button, copied) {
+    var widget = button.closest('.lm-mcp-install')
+    var status = widget && widget.querySelector('[data-copy-status]')
+    if (status) status.replaceChildren(document.createTextNode(copied ? 'Copied to clipboard.' : 'Copy failed. Select and copy the text manually.'))
     var original = button.getAttribute('data-copy-label') || button.textContent
     button.setAttribute('data-copy-label', original)
-    button.textContent = 'Copied'
-    button.classList.add('lm-mcp-install__copy--done')
+    button.textContent = copied ? 'Copied' : 'Copy failed'
+    button.classList.toggle('lm-mcp-install__copy--done', copied)
     window.clearTimeout(button._lmCopyResetTimer)
     button._lmCopyResetTimer = window.setTimeout(function () {
       button.textContent = original

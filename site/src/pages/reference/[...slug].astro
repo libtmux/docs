@@ -197,7 +197,6 @@ const currentType =
     : owner?.parent
       ? model?.symbols.find((sym) => sym.id === owner.parent)
       : undefined
-const currentModule = currentType ? moduleOf(currentType) : owner ? moduleOf(owner) : undefined
 
 /**
  * Which branch this page sits in — one lookup, not a scan.
@@ -532,22 +531,14 @@ const title = owner
          closed by the script below when the viewport is too narrow to place
          it beside the content. -->
     <div class="api-sidebar lg:sticky lg:top-20 lg:self-start">
-    {/*
-      The site's own menu, above the symbol tree.
-
-      A reference page had no way out of the reference: `/reference/ts/` listed
-      a thousand TypeScript symbols and not one link back to the TypeScript
-      guides, the workspace pages or the MCP pages. `menuOnly` is what keeps
-      that from costing the tree its place — the page list belongs on the pages
-      that have room for it, and the tree is the navigation here.
-    */}
+    <details class="api-toc-shell" open>
+      <summary class="api-toc-summary">Navigation and contents</summary>
+    {/* Keep the product menu reachable inside the phone's collapsed navigation. */}
     {model && (
       <div class="api-sidebar__menu" data-pagefind-ignore="all">
         <Sidebar port={model.port} version={menuVersion} currentPath={Astro.url.pathname} menuOnly />
       </div>
     )}
-    <details class="api-toc-shell" open>
-      <summary class="api-toc-summary">On this page</summary>
       <nav class="api-toc" aria-label="Contents" data-pagefind-ignore="all">
       {/*
         Bucket, type, member — expanded along the path to this page.
@@ -1048,15 +1039,19 @@ const title = owner
       window.addEventListener('hashchange', reveal)
     })()
 
-    // Collapse the contents disclosure where it would otherwise push the page
-    // below the fold. Re-runs after a client-side navigation.
+    // Keep the whole navigation beside the content or collapsed above it.
     ;(() => {
+      const media = window.matchMedia('(min-width: 64rem)')
       const sync = () => {
         const el = document.querySelector('.api-toc-shell')
-        if (el) el.open = window.matchMedia('(min-width: 64rem)').matches
+        if (!el) return
+        const returnFocus = !media.matches && el.contains(document.activeElement)
+        el.open = media.matches
+        if (returnFocus) el.querySelector(':scope > summary')?.focus({ preventScroll: true })
       }
       sync()
-      document.addEventListener('astro:after-swap', sync)
+      media.addEventListener('change', sync)
+      document.addEventListener('astro:before-swap', () => media.removeEventListener('change', sync), { once: true })
     })()
   </script>
 </BaseLayout>

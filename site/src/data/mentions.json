@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-11T00:20:56.587Z",
+ "generated": "2026-09-13T00:10:45.416Z",
  "mentions": [
   {
    "port": "cxx",
@@ -216,6 +216,13 @@
    "symbol": "libtmux::Pane::options",
    "page": "/topics/options-and-hooks/",
    "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane::piping",
+   "page": "/topics/format-tokens/",
+   "title": "Format-token fields",
    "section": "topics"
   },
   {
@@ -685,6 +692,13 @@
    "symbol": "libtmux::workspace::Window::options_after",
    "page": "/cxx/latest/workspace/internals/topics/",
    "title": "C++ workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::workspace::Window::options_after",
+   "page": "/cxx/latest/workspace/reference/compatibility/",
+   "title": "tmuxp compatibility and port status",
    "section": "ports"
   },
   {
@@ -1453,6 +1467,13 @@
   {
    "port": "dotnet",
    "symbol": "LibTmux.Workspace.WorkspaceResult.Unsupported",
+   "page": "/dotnet/latest/workspace/configuration/layouts/",
+   "title": "Workspace layouts and focus",
+   "section": "ports"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Workspace.WorkspaceResult.Unsupported",
    "page": "/dotnet/latest/workspace/internals/examples/",
    "title": ".NET workspace builder examples",
    "section": "ports"
@@ -2057,6 +2078,13 @@
    "symbol": "workspace.Workspace.InitialSessionRequest",
    "page": "/go/latest/workspace/internals/topics/",
    "title": "Go workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "go",
+   "symbol": "workspace.Workspace.MissingDirectories",
+   "page": "/go/latest/workspace/configuration/directories/",
+   "title": "Workspace files and directories",
    "section": "ports"
   },
   {
@@ -3293,10 +3321,59 @@
   },
   {
    "port": "py",
+   "symbol": "tmuxp.cli.create_parser",
+   "page": "/py/latest/workspace/cli/completion/",
+   "title": "Shell completion",
+   "section": "ports"
+  },
+  {
+   "port": "py",
    "symbol": "tmuxp.cli.search.SearchPattern.regex",
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.cli.search.WorkspaceFields.windows",
+   "page": "/ts/latest/workspace/configuration/session/",
+   "title": "Session configuration",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
+   "page": "/ts/latest/workspace/reference/compatibility/",
+   "title": "tmuxp compatibility and port status",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.plugin.TmuxpPlugin.after_window_finished",
+   "page": "/py/latest/workspace/configuration/hooks/",
+   "title": "Workspace hooks and builders",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
+   "page": "/go/latest/workspace/",
+   "title": "Workspace Manager for Go (in development)",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
+   "page": "/go/latest/workspace/cli/load/",
+   "title": "tmuxp load",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
+   "page": "/go/latest/workspace/guides/installation/",
+   "title": "Install and load a workspace",
+   "section": "ports"
   },
   {
    "port": "py",
@@ -3310,6 +3387,41 @@
    "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
    "page": "/go/latest/workspace/internals/topics/",
    "title": "Go workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
+   "page": "/ts/latest/workspace/configuration/hooks/",
+   "title": "Workspace hooks and builders",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
+   "page": "/ts/latest/workspace/reference/compatibility/",
+   "title": "tmuxp compatibility and port status",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.plugin.TmuxpPlugin.before_workspace_builder",
+   "page": "/py/latest/workspace/configuration/hooks/",
+   "title": "Workspace hooks and builders",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.plugin.TmuxpPlugin.on_window_create",
+   "page": "/py/latest/workspace/configuration/hooks/",
+   "title": "Workspace hooks and builders",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.plugin.TmuxpPlugin.reattach",
+   "page": "/py/latest/workspace/configuration/hooks/",
+   "title": "Workspace hooks and builders",
    "section": "ports"
   },
   {
@@ -3385,6 +3497,13 @@
   {
    "port": "py",
    "symbol": "tmuxp.workspace.validation.validate_schema",
+   "page": "/py/latest/workspace/configuration/",
+   "title": "Workspace configuration",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.workspace.validation.validate_schema",
    "page": "/py/latest/workspace/internals/api/",
    "title": "Python workspace internal API",
    "section": "ports"
@@ -3408,6 +3527,13 @@
    "symbol": "config.WindowConfig",
    "page": "/rs/latest/workspace/internals/api/",
    "title": "Rust workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "config.WindowConfig.window_shell",
+   "page": "/rs/latest/workspace/reference/compatibility/",
+   "title": "tmuxp compatibility and port status",
    "section": "ports"
   },
   {
@@ -3559,13 +3685,6 @@
   },
   {
    "port": "rs",
-   "symbol": "mcp.policy.Safety",
-   "page": "/rs/latest/mcp/api/",
-   "title": "Rust MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
    "symbol": "mcp.src.TmuxTools.builder",
    "page": "/rs/latest/mcp/api/",
    "title": "Rust MCP API",
@@ -3574,34 +3693,6 @@
   {
    "port": "rs",
    "symbol": "mcp.src.TmuxTools.capture_since",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.diagnose_pane",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.forget_job",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.interrupt_gracefully",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.job_status",
    "page": "/rs/latest/mcp/topics/",
    "title": "Rust MCP topics",
    "section": "ports"
@@ -3622,13 +3713,6 @@
   },
   {
    "port": "rs",
-   "symbol": "mcp.src.TmuxTools.run_and_wait",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
    "symbol": "mcp.src.TmuxTools.run_command",
    "page": "/rs/latest/mcp/topics/",
    "title": "Rust MCP topics",
@@ -3636,49 +3720,7 @@
   },
   {
    "port": "rs",
-   "symbol": "mcp.src.TmuxTools.run_plan",
-   "page": "/rs/latest/mcp/",
-   "title": "MCP for Rust",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.run_plan",
-   "page": "/rs/latest/mcp/api/",
-   "title": "Rust MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.run_plan",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.start_command",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.wait_for_idle",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
    "symbol": "mcp.src.TmuxTools.wait_for_text",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.watch_pane",
    "page": "/rs/latest/mcp/topics/",
    "title": "Rust MCP topics",
    "section": "ports"
@@ -3870,6 +3912,13 @@
    "symbol": "plan.Plan.preview",
    "page": "/rs/latest/workspace/internals/topics/",
    "title": "Rust workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.Safety",
+   "page": "/rs/latest/mcp/api/",
+   "title": "Rust MCP API",
    "section": "ports"
   },
   {
@@ -4155,6 +4204,13 @@
   {
    "port": "rs",
    "symbol": "src.WorkspaceBuilder.plan",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "src.WorkspaceBuilder.plan",
    "page": "/rs/latest/workspace/internals/api/",
    "title": "Rust workspace builder API",
    "section": "ports"
@@ -4336,6 +4392,13 @@
   },
   {
    "port": "swift",
+   "symbol": "OutputWait.Outcome.timedOut",
+   "page": "/swift/latest/mcp/topics/",
+   "title": "Swift MCP topics",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
    "symbol": "Pane",
    "page": "/topics/architecture/",
    "title": "Architecture",
@@ -4396,13 +4459,6 @@
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
-  },
-  {
-   "port": "swift",
-   "symbol": "SafetyTier",
-   "page": "/swift/latest/mcp/api/",
-   "title": "Swift MCP API",
-   "section": "ports"
   },
   {
    "port": "swift",
@@ -4602,14 +4658,14 @@
   },
   {
    "port": "swift",
-   "symbol": "Server.waitForOutput(in:matching:stoppingAt:requiringFreshOutput:timeout:tailLimit:)",
+   "symbol": "Server.waitForOutput(in:matching:stoppingAt:requiringFreshOutput:startingAt:timeout:tailLimit:)",
    "page": "/examples/capture-pane-output/",
    "title": "Capture pane output",
    "section": "examples"
   },
   {
    "port": "swift",
-   "symbol": "Server.waitForOutput(in:matching:stoppingAt:requiringFreshOutput:timeout:tailLimit:)",
+   "symbol": "Server.waitForOutput(in:matching:stoppingAt:requiringFreshOutput:startingAt:timeout:tailLimit:)",
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
@@ -4619,6 +4675,13 @@
    "symbol": "ServerConfiguration",
    "page": "/swift/latest/mcp/api/",
    "title": "Swift MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "ServerConfiguration.errors",
+   "page": "/swift/latest/workspace/reference/output/",
+   "title": "JSON, NDJSON, and semantic color",
    "section": "ports"
   },
   {
@@ -4735,30 +4798,16 @@
   },
   {
    "port": "swift",
-   "symbol": "ToolError.timedOut(_:seconds:)",
+   "symbol": "ToolOperation",
    "page": "/swift/latest/mcp/topics/",
    "title": "Swift MCP topics",
    "section": "ports"
   },
   {
    "port": "swift",
-   "symbol": "ToolError.workspace(_:)",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
-  },
-  {
-   "port": "swift",
-   "symbol": "ToolOperation",
+   "symbol": "Toolset",
    "page": "/swift/latest/mcp/api/",
    "title": "Swift MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "swift",
-   "symbol": "ToolOperation",
-   "page": "/swift/latest/mcp/topics/",
-   "title": "Swift MCP topics",
    "section": "ports"
   },
   {
@@ -5599,8 +5648,22 @@
   {
    "port": "swift",
    "text": "TmuxWorkspace",
+   "page": "/swift/latest/workspace/configuration/",
+   "line": 104,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "swift",
+   "text": "YAMLWorkspaces",
+   "page": "/swift/latest/workspace/configuration/",
+   "line": 105,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "swift",
+   "text": "TmuxWorkspace",
    "page": "/swift/latest/workspace/",
-   "line": 12,
+   "line": 66,
    "why": "not defined in the stated port"
   },
   {
@@ -5678,6 +5741,27 @@
    "text": "YAMLWorkspaces",
    "page": "/swift/latest/workspace/internals/topics/",
    "line": 19,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "swift",
+   "text": "YAMLWorkspaces",
+   "page": "/swift/latest/workspace/reference/compatibility/",
+   "line": 71,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "swift",
+   "text": "TmuxWorkspace",
+   "page": "/swift/latest/workspace/reference/compatibility/",
+   "line": 144,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "swift",
+   "text": "YAMLWorkspaces",
+   "page": "/swift/latest/workspace/reference/compatibility/",
+   "line": 145,
    "why": "not defined in the stated port"
   },
   {

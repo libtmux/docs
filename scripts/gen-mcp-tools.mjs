@@ -60,8 +60,9 @@ const PORTS = [
     slug: 'rs',
     dir: '~/work/libtmux/libtmux-rs/crates/tmux-mcp/src/tools',
     glob: '*.rs',
-    // rmcp derives the name from the annotated function.
-    pattern: /#\[tool\((?:[^()]|\([^()]*\))*\)\]\s*(?:#\[[^\]]*\]\s*)*pub async fn (\w+)/gs,
+    // rmcp uses an explicit wire name when present, otherwise the function name.
+    pattern: /#\[tool\(((?:[^()]|\([^()]*\))*)\)\]\s*(?:#\[[^\]]*\]\s*)*pub async fn (\w+)/gs,
+    capture: (m) => /\bname\s*=\s*"([a-z_]+)"/.exec(m[1])?.[1] ?? m[2],
   },
   {
     slug: 'go',

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-42/en')
 vi.stubEnv('LIBTMUX_DOCS_LOCALES_ROOT', '/pr-42')
 const { pagePortLinks } = await import('../src/lib/page-port-links')
+const { PORTS } = await import('../src/lib/ports')
 const { localePageHref, localeSourcePath } = await import('../src/i18n/locales')
 
 const docs = [
@@ -50,21 +51,21 @@ describe('matching pages in another port', () => {
     const links = pagePortLinks({ ...options, pagePath: 'mcp/tools/snapshot_pane', portSlug: 'ts' })
     expect(links.find((entry) => entry.port === 'py')?.links[0]?.href).toBe('/pr-42/en/py/stable/mcp/tools/snapshot_pane/')
     expect(links.find((entry) => entry.port === 'cxx')?.links).toEqual([])
-    expect(links.find((entry) => entry.port === 'swift')?.links).toEqual([])
+    expect(links.find((entry) => entry.port === 'swift')?.links[0]?.href).toBe('/pr-42/en/swift/latest/mcp/tools/snapshot_pane/')
     expect(pagePortLinks({ ...options, pagePath: 'mcp/tools/missing', portSlug: 'ts' }).every((entry) => !entry.links.length)).toBe(true)
   })
 
-  it('keeps raw tmux commands separate from pane shell commands', () => {
+  it('rejects retired raw tmux commands and links current pane shell commands', () => {
     const swift = pagePortLinks({ ...options, pagePath: 'mcp/tools/run_command', portSlug: 'swift' })
-    expect(swift.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['swift'])
+    expect(swift.every((entry) => !entry.links.length)).toBe(true)
     const python = pagePortLinks({ ...options, pagePath: 'mcp/tools/run_command', portSlug: 'py' })
-    expect(python.find((entry) => entry.port === 'swift')?.links[0]?.href).toBe('/pr-42/en/swift/latest/mcp/tools/run_shell/')
+    expect(python.find((entry) => entry.port === 'swift')?.links[0]?.href).toBe('/pr-42/en/swift/latest/mcp/tools/run_shell_command/')
     expect(python.find((entry) => entry.port === 'go')?.links[0]?.href).toBe('/pr-42/en/go/latest/mcp/tools/run_command/')
   })
 
   it('keeps scrollback-only clearing separate from clearing the visible screen', () => {
-    const rust = pagePortLinks({ ...options, pagePath: 'mcp/tools/clear_pane', portSlug: 'rs' })
-    expect(rust.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['ts', 'rs', 'java'])
+    const rust = pagePortLinks({ ...options, pagePath: 'mcp/tools/clear_pane_scrollback', portSlug: 'rs' })
+    expect(rust.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['ts', 'rs', 'java', 'swift'])
     const python = pagePortLinks({ ...options, pagePath: 'mcp/tools/clear_pane', portSlug: 'py' })
     expect(python.find((entry) => entry.port === 'rs')?.links).toEqual([])
     expect(python.find((entry) => entry.port === 'dotnet')?.links[0]?.href).toBe('/pr-42/en/dotnet/latest/mcp/tools/tmux_clear_pane/')
@@ -108,6 +109,22 @@ describe('locale switcher targets', () => {
 
 
 describe('workspace documentation compatibility', () => {
+  it.each(['cli/load', 'configuration/commands', 'reference/compatibility', 'guides/automation', 'examples/gallery'])(
+    'switches the nested %s reference across authored ports', (section) => {
+      const pagePath = `workspace/${section}`
+      const entries = PORTS.map((port) => ({
+        id: `ports/${port.slug}/${pagePath}`, data: { port: port.slug, product: 'workspace' },
+      }))
+      const links = pagePortLinks({ ...options, docs: entries, pagePath, portSlug: 'go' })
+      for (const entry of links) {
+        const version = entry.port === 'go' ? 'v1.2.3' : entry.port === 'py' ? 'stable' : 'latest'
+        expect(entry.links).toEqual([{ href: `/pr-42/en/${entry.port}/${version}/${pagePath}/` }])
+      }
+      const missing = pagePortLinks({ ...options, pagePath, docs: entries.filter((entry) => entry.data.port !== 'cxx') })
+      expect(missing.find((entry) => entry.port === 'cxx')?.links).toEqual([])
+    },
+  )
+
   it('keeps CLI guides distinct from builder guides', () => {
     const entries = [...docs, { id: 'ports/py/workspace/guides', data: { port: 'py', product: 'workspace' } }]
     const cli = pagePortLinks({ ...options, docs: entries, pagePath: 'workspace/guides', portSlug: 'py' })

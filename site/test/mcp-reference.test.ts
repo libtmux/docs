@@ -25,11 +25,12 @@ it('keeps the advertised wire name and input schema for every documented tool', 
 
 it('links equivalent operations whose registered names differ', () => {
   const groups = [
-    [['py', 'run_command'], ['ts', 'run_shell_command'], ['rs', 'run_command'], ['go', 'run_command'], ['java', 'run_shell_command'], ['dotnet', 'tmux_run'], ['swift', 'run_shell']],
-    [['py', 'create_session'], ['swift', 'new_session']],
-    [['py', 'create_window'], ['rs', 'new_window'], ['cxx', 'new_window'], ['swift', 'new_window']],
-    [['py', 'split_window'], ['rs', 'split_pane'], ['dotnet', 'tmux_split_pane'], ['swift', 'split_pane']],
-    [['rs', 'clear_pane'], ['ts', 'clear_pane_scrollback'], ['java', 'clear_pane_scrollback']],
+    [['py', 'run_command'], ['ts', 'run_shell_command'], ['rs', 'run_shell_command'], ['go', 'run_command'], ['java', 'run_shell_command'], ['dotnet', 'tmux_run'], ['swift', 'run_shell_command']],
+    [['py', 'create_session'], ['swift', 'create_session']],
+    [['py', 'create_window'], ['rs', 'create_window'], ['cxx', 'new_window'], ['swift', 'create_window']],
+    [['py', 'split_window'], ['rs', 'split_window'], ['dotnet', 'tmux_split_pane'], ['swift', 'split_window']],
+    [['rs', 'clear_pane_scrollback'], ['ts', 'clear_pane_scrollback'], ['java', 'clear_pane_scrollback'], ['swift', 'clear_pane_scrollback']],
+    [['ts', 'snapshot_pane'], ['rs', 'snapshot_pane'], ['swift', 'snapshot_pane']],
   ]
   for (const group of groups) {
     for (const [sourcePort, sourceName] of group) {
@@ -43,9 +44,9 @@ it('links equivalent operations whose registered names differ', () => {
 it('keeps different effects and unavailable tools out of the equivalents', () => {
   expect(equivalentMcpTool('swift', 'run_command', 'py')).toBeUndefined()
   expect(equivalentMcpTool('py', 'clear_pane', 'rs')).toBeUndefined()
-  expect(equivalentMcpTool('rs', 'clear_pane', 'py')).toBeUndefined()
+  expect(equivalentMcpTool('rs', 'clear_pane_scrollback', 'py')).toBeUndefined()
   expect(equivalentMcpTool('py', 'run_command', 'cxx')).toBeUndefined()
-  expect(equivalentMcpTool('ts', 'snapshot_pane', 'swift')).toBeUndefined()
+  expect(equivalentMcpTool('ts', 'snapshot_pane', 'cxx')).toBeUndefined()
   expect(equivalentMcpTool('py', 'missing', 'py')).toBeUndefined()
   expect(equivalentMcpTool('missing', 'list_sessions', 'py')).toBeUndefined()
   expect(equivalentMcpTool('py', 'list_sessions', 'missing')).toBeUndefined()

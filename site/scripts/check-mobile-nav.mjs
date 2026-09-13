@@ -122,6 +122,30 @@ for (const [w, want] of [[360, true], [390, true], [768, true], [1023, true], [1
   note(visible === want, `toolbar ${want ? 'visible' : 'hidden'} at ${w}px`)
   await p.close()
 }
+// Reference navigation shares one disclosure, including the port's product menu.
+for (const path of ['/reference/go/', '/reference/py/libtmux-server/']) {
+  const p = await page(path)
+  const menu = p.locator('.api-sidebar__menu')
+  const contents = p.locator('.api-toc-shell')
+  note(!(await menu.isVisible()), `${path}: phone product menu starts collapsed`)
+  note((await p.locator('h1').boundingBox())?.y < 320, `${path}: phone heading stays above the fold`)
+  await contents.locator(':scope > summary').click()
+  note(await menu.isVisible(), `${path}: opening navigation exposes the product menu`)
+  note(await menu.getByRole('link', { name: 'Workspace Manager', exact: true }).isVisible(),
+    `${path}: workspace remains reachable from reference navigation`)
+  await contents.locator(':scope > summary').click()
+  await p.setViewportSize({ width: 1440, height: 900 })
+  await p.waitForFunction(() => document.querySelector('.api-toc-shell').open, null, { timeout: 1000 }).catch(() => {})
+  note(await menu.isVisible(), `${path}: widening restores the product menu`)
+  note(await contents.getAttribute('open') !== null, `${path}: widening restores the symbol tree`)
+  await menu.locator('a').first().focus()
+  await p.setViewportSize({ width: 390, height: 800 })
+  await p.waitForFunction(() => !document.querySelector('.api-toc-shell').open, null, { timeout: 1000 }).catch(() => {})
+  note(!(await menu.isVisible()), `${path}: narrowing collapses the product menu`)
+  note(await contents.locator(':scope > summary').evaluate((element) => document.activeElement === element),
+    `${path}: narrowing focused navigation returns focus to its summary`)
+  await p.close()
+}
 for (const width of [390, 1440]) {
   const p = await page(WITH_TOC, width)
   await p.keyboard.press('Control+k')

@@ -59,8 +59,8 @@ const portDefaults: Record<string, string> = (() => {
       <li><a class="hover:underline" href={withRoot('/search/')}>Search the documentation</a></li>
     </ul>
 
-    <script type="application/json" id="port-slugs" set:html={JSON.stringify(portSlugs)} />
-    <script type="application/json" id="port-defaults" set:html={JSON.stringify(portDefaults)} />
+    <script is:inline type="application/json" id="port-slugs" set:html={JSON.stringify(portSlugs)} />
+    <script is:inline type="application/json" id="port-defaults" set:html={JSON.stringify(portDefaults)} />
   </main>
 </BaseLayout>
 

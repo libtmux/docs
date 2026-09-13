@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict'
 import { dev } from 'astro'
 import { chromium } from 'playwright'
+import { checkClipboard } from './check-clipboard.mjs'
 
 Object.assign(process.env, {
   LIBTMUX_DOCS_BASE: '/en/', LIBTMUX_DOCS_ROOT: '/en', LIBTMUX_DOCS_PORT_ROOT: '/en',
@@ -26,6 +27,9 @@ try {
   const manifest = await page.request.get(`${base}/page-links.json`)
   assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
   assert.equal((await manifest.json()).schema, 1)
+  const clipboardPage = await browser.newPage()
+  clipboardPage.setDefaultTimeout(10000)
+  const clipboard = checkClipboard(clipboardPage, base).then(() => null, (error) => error)
   const paths = ['concepts/server-session-window-pane', 'mcp/tools', 'reference/ts/session-session-panes',
     'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
     'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/tmux_capture_pane']
@@ -58,6 +62,12 @@ try {
     }
     for (const width of [1440, 768, 390]) {
       await page.setViewportSize({ width, height: 1000 })
+      if (path.startsWith('reference/')) {
+        await page.waitForFunction((wide) => document.querySelector('.api-toc-shell').open === wide,
+          width >= 1024)
+        assert.equal(await page.locator('.api-sidebar__menu').isVisible(), width >= 1024,
+          `${path} at ${width}px: reference navigation follows its disclosure`)
+      }
       const result = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - innerWidth,
         columns: [...document.querySelectorAll('table')].flatMap((table) => {
@@ -69,6 +79,23 @@ try {
       }))
       assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
       assert(result.columns.every((delta) => delta <= 1), `${path} at ${width}px: table columns misaligned`)
+    }
+    if (path.startsWith('reference/')) {
+      await page.setViewportSize({ width: 1440, height: 1000 })
+      await page.waitForFunction(() => document.querySelector('.api-toc-shell').open)
+      await page.locator('.api-sidebar__menu a').first().focus()
+      await page.setViewportSize({ width: 390, height: 1000 })
+      await page.waitForFunction(() => !document.querySelector('.api-toc-shell').open)
+      assert(await page.locator('.api-toc-summary').evaluate((element) => document.activeElement === element),
+        `${path}: collapsing focused navigation returns focus to its summary`)
+      const heading = page.locator('main h1').first()
+      await heading.evaluate((element) => { element.tabIndex = -1; element.focus() })
+      await page.setViewportSize({ width: 1440, height: 1000 })
+      await page.waitForFunction(() => document.querySelector('.api-toc-shell').open)
+      await page.setViewportSize({ width: 390, height: 1000 })
+      await page.waitForFunction(() => !document.querySelector('.api-toc-shell').open)
+      assert(await heading.evaluate((element) => document.activeElement === element),
+        `${path}: collapsing navigation preserves focus in the content`)
     }
     if (hasSwitcher) {
       assert.equal(await switcher.count(), 1, `${path}: one page port switcher`)
@@ -90,6 +117,8 @@ try {
       assert(overflow <= 1, `${path} at ${width}px: declaration page overflow ${overflow}px`)
     }
   }
+  const clipboardError = await clipboard
+  if (clipboardError) throw clipboardError
   console.log('Fresh Astro + browser: prose, workspace, MCP tools and API equivalent; 1440/768/390px PASS')
 } finally {
   await browser?.close()
