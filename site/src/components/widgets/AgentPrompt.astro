@@ -48,6 +48,9 @@ interface Props {
 }
 
 const { ports, defaultPort, defaultTopic = 'setup', variant = 'full' } = Astro.props as Props
+// A page that names its task, such as /prompts/<topic>/, opens on it. The
+// others open on the task the reader last chose.
+const topicPinned = 'defaultTopic' in Astro.props
 
 const items = ports && ports.length > 0 ? PORTS.filter((p) => ports.includes(p.slug)) : PORTS
 if (items.length === 0) {
@@ -139,6 +142,7 @@ const activePortRules = items
   class={`lm-agent-prompt lm-agent-prompt--${variant}`}
   data-ports={items.map((p) => p.slug).join(' ')}
   data-default-topic={defaultTopic}
+  data-topic-pinned={topicPinned ? '' : undefined}
   data-root={SITE_ROOT || '/'}
 >
   {
@@ -474,6 +478,9 @@ const activePortRules = items
 
   const STORAGE_KEY = 'libtmux-docs.package-install.port'
   const SYNC_EVENT = 'lm-pkg-install:change'
+  const TOPIC_KEY = 'libtmux-docs.agent-prompt.topic'
+  /** `?prompt=<topic>` opens a shared link on that task, whatever was saved. */
+  const TOPIC_PARAM = 'prompt'
 
   function islandFor(widget: HTMLElement): Island | undefined {
     const root = widget.parentElement ?? document
@@ -647,6 +654,39 @@ const activePortRules = items
     done()
   }
 
+  /**
+   * The task to open on: a shared link's, then the reader's last one, unless
+   * the page names its own. Undefined leaves the server's choice in place.
+   */
+  function startingTopic(widget: HTMLElement): string | undefined {
+    const shared = new URL(window.location.href).searchParams.get(TOPIC_PARAM)
+    if (shared && TOPIC_BY_ID[shared]) return shared
+    if (widget.hasAttribute('data-topic-pinned')) return undefined
+    let saved: string | null = null
+    try {
+      saved = localStorage.getItem(TOPIC_KEY)
+    } catch {
+      saved = null
+    }
+    return saved && TOPIC_BY_ID[saved] ? saved : undefined
+  }
+
+  /** Show a task, remember it, and put it in the address so the link shares it. */
+  function chooseTopic(widget: HTMLElement, topic: string) {
+    const select = widget.querySelector<HTMLSelectElement>('[data-select="topic"]')
+    if (!select || !TOPIC_BY_ID[topic]) return
+    select.value = topic
+    try {
+      localStorage.setItem(TOPIC_KEY, topic)
+    } catch {
+      // Storage blocked: the address still carries the choice.
+    }
+    const url = new URL(window.location.href)
+    url.searchParams.set(TOPIC_PARAM, topic)
+    history.replaceState(history.state, '', url)
+    render(widget)
+  }
+
   function widgets() {
     return document.querySelectorAll<HTMLElement>('.lm-agent-prompt')
   }
@@ -659,6 +699,9 @@ const activePortRules = items
       saved = null
     }
     widgets().forEach((widget) => {
+      const topic = startingTopic(widget)
+      const select = widget.querySelector<HTMLSelectElement>('[data-select="topic"]')
+      if (topic && select) select.value = topic
       const start = saved ?? stateOf(widget).port
       if (start) selectPort(widget, start, false)
       else render(widget)
@@ -683,7 +726,9 @@ const activePortRules = items
   document.addEventListener('change', (event) => {
     const select = (event.target as HTMLElement).closest<HTMLSelectElement>('.lm-agent-prompt__select')
     const widget = select?.closest<HTMLElement>('.lm-agent-prompt')
-    if (widget) render(widget)
+    if (!select || !widget) return
+    if (select.dataset.select === 'topic') chooseTopic(widget, select.value)
+    else render(widget)
   })
 
   // The package picker and this one share a language, in both directions.
