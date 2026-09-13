@@ -27,13 +27,13 @@
     },
     "java": {
       "status": "prerelease",
-      "version": "0.0.1-alpha.10",
+      "version": "0.0.1-alpha.11",
       "stable": null,
-      "tag": "v0.0.1-alpha.10"
+      "tag": "v0.0.1-alpha.11"
     },
     "dotnet": {
       "status": "prerelease",
-      "version": "0.0.0-alpha.10",
+      "version": "0.0.0-alpha.12",
       "stable": null,
       "tag": "v0.0.0-alpha.12"
     },
@@ -45,9 +45,9 @@
     },
     "swift": {
       "status": "prerelease",
-      "version": "0.1.0-alpha.4",
+      "version": "0.1.0-alpha.5",
       "stable": null,
-      "tag": "0.1.0-alpha.4"
+      "tag": "0.1.0-alpha.5"
     }
   }
 }
