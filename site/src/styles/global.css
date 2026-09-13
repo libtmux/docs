@@ -127,6 +127,9 @@
   --text-color: black;
   --text-color-inverted: white;
 
+  /* Shell prompt, gp-sphinx's Pygments `Generic.Prompt` */
+  --lm-shell-prompt: #a855f7;
+
   /* TopNav variables (light mode) */
   --topnav-background: white;
   --topnav-border-color: color-mix(in oklch, var(--theme-accent), transparent 90%);
@@ -277,6 +280,9 @@ html[data-theme-mode="dark"] {
   --text-color: #cfd0d0; /* gp-sphinx body text, dark */
   --text-color-inverted: black;
 
+  /* Shell prompt, lighter so it holds contrast on the dark ground */
+  --lm-shell-prompt: #c084fc;
+
   /* TopNav variables (dark mode) */
   --topnav-background: #131416;
   --topnav-border-color: color-mix(in oklch, var(--theme-accent), #1e293b 20%);
@@ -303,6 +309,21 @@ html[data-theme-mode="dark"] {
   --input-border: oklch(0.3 0 0);
   --input-bg: color-mix(in oklch, var(--background-color), black 5%);
   --input-text: white;
+}
+
+/*
+ * A `$ ` prompt in a shell session, from `src/plugins/ec-shell-prompt.mjs`.
+ * Not selectable, so a command selected by hand leaves it out, as the copy
+ * buttons do. Inside a frame, Expressive Code's reset,
+ * `.expressive-code :not(:is(svg, svg *)) { all: revert }`, outranks a bare
+ * class, so the second selector is there to outrank it.
+ */
+.lm-shell-prompt,
+.expressive-code .lm-shell-prompt {
+  color: var(--lm-shell-prompt);
+  font-weight: 700;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Emerald Theme */

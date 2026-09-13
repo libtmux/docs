@@ -66,7 +66,7 @@ const initialSlug = defaultPort && items.some((p) => p.slug === defaultPort) ? d
 // ports.ts stays the only place a port's slug is spelled out. See the
 // is:global block below for the static rules this pairs with.
 const activePortRules = items
-  .map((p) => `.lm-pkg-install[data-active-port="${p.slug}"] .lm-pkg-install__panel[data-port="${p.slug}"]{display:block}`)
+  .map((p) => `.lm-pkg-install[data-active-port="${p.slug}"] .lm-pkg-install__panel[data-port="${p.slug}"]{visibility:visible}`)
   .join('')
 
 /*
@@ -101,7 +101,7 @@ const installHtml = new Map(
 )
 ---
 
-<div class={`lm-pkg-install lm-pkg-install--${variant}`} data-ports={items.map((p) => p.slug).join(' ')}>
+<div class={`lm-pkg-install lm-pkg-install--${variant}${snippets ? ' lm-pkg-install--examples' : ''}`} data-ports={items.map((p) => p.slug).join(' ')}>
   {/*
     One language is not a choice of language.
 
@@ -189,6 +189,9 @@ const installHtml = new Map(
     --lm-pkg-install-accent: var(--theme-primary);
     --lm-pkg-install-hover: rgb(0 0 0 / 4%);
     --lm-pkg-install-code-bg: #f1f5f9;
+    /* slate-300 / slate-400, the agent prompt's scrollbar, so the site has one. */
+    --lm-pkg-install-scroll: rgb(203 213 225);
+    --lm-pkg-install-scroll-hover: rgb(148 163 184);
     --lm-pkg-install-mono: var(--font-ibm-plex-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
 
     border: 1px solid var(--lm-pkg-install-border);
@@ -207,6 +210,8 @@ const installHtml = new Map(
     --lm-pkg-install-fg-muted: #94a3b8;
     --lm-pkg-install-hover: rgb(255 255 255 / 6%);
     --lm-pkg-install-code-bg: #1e293b;
+    --lm-pkg-install-scroll: rgb(71 85 105);
+    --lm-pkg-install-scroll-hover: rgb(100 116 139);
   }
 
   .lm-pkg-install__tabs {
@@ -253,7 +258,15 @@ const installHtml = new Map(
     background: var(--lm-pkg-install-bg);
   }
 
+  /* Every panel shares one grid cell, so the body is as tall as the tallest
+   * panel and a language change never changes the page height. On the home
+   * page the prompt below follows this picker's language, and a Quickstart
+   * that resized would move the page under a reader clicking the prompt.
+   * `minmax(0, 1fr)` keeps a long install line scrolling inside its `pre`
+   * instead of widening the grid. */
   .lm-pkg-install__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     padding: 0.9rem 1rem;
   }
 
@@ -261,13 +274,17 @@ const installHtml = new Map(
    * `html[data-pkg-port]` rules (set in <head> before any of this markup is
    * parsed, when a saved choice exists and this instance carries that port)
    * override it by specificity, so they need no `!important` or source-order
-   * care. */
+   * care. Panels hide with `visibility`, not `display`, so a hidden panel
+   * still holds its height in the grid. */
   .lm-pkg-install__panel {
-    display: none;
+    display: flex;
+    flex-direction: column;
+    grid-area: 1 / 1;
+    visibility: hidden;
   }
 
   .lm-pkg-install__panel[data-default] {
-    display: block;
+    visibility: visible;
   }
 
   /* Once JS has picked an active port (a click, or a restored session),
@@ -276,7 +293,7 @@ const installHtml = new Map(
    * [data-active-port] here) and wins regardless of source order — same
    * reasoning as mcp-install.css's default-override rule. */
   .lm-pkg-install[data-active-port] .lm-pkg-install__panel {
-    display: none;
+    visibility: hidden;
   }
 
   .lm-pkg-install__panel:focus-visible {
@@ -359,6 +376,37 @@ const installHtml = new Map(
     margin: 0;
   }
 
+  /* The example fills whatever height its panel has left. Its `pre` starts
+   * from 11rem, so the longest example reserves no more than that, and grows
+   * into the space a shorter panel leaves. Expressive Code positions its copy
+   * button on `.frame`, so the button stays put while the code scrolls. */
+  .lm-pkg-install__snippet,
+  .lm-pkg-install__snippet .expressive-code,
+  .lm-pkg-install__snippet .expressive-code .frame {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+  }
+
+  .lm-pkg-install__snippet .expressive-code .frame pre {
+    flex: 1 1 11rem;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  /* Expressive Code's own offset, moved clear of a measured scrollbar. */
+  .lm-pkg-install__snippet .expressive-code .frame .copy {
+    inset-inline-end: calc(var(--ec-brdWd) + var(--ec-uiPadInl) / 2 + var(--lm-pkg-install-scrollbar, 0px));
+  }
+
+  /* Beside an example, a long install block such as Maven's POM would set the
+   * height every panel reserves, so it scrolls past 13rem. That still shows
+   * the default Gradle and CMake blocks whole. Copy takes the whole block. */
+  .lm-pkg-install--examples .lm-pkg-install__code pre {
+    max-height: 13rem;
+    overflow: auto;
+  }
+
   .lm-pkg-install__code pre {
     margin: 0;
     overflow-x: auto;
@@ -366,6 +414,36 @@ const installHtml = new Map(
     background: var(--lm-pkg-install-code-bg);
     color: var(--lm-pkg-install-fg);
     padding: 0.75rem 3.25rem 0.75rem 0.9rem;
+  }
+
+  /* The standard properties first; the WebKit rules say the same thing for
+   * browsers that ignore them. */
+  .lm-pkg-install__code pre,
+  .lm-pkg-install__snippet .expressive-code .frame pre {
+    scrollbar-width: thin;
+    scrollbar-color: var(--lm-pkg-install-scroll) transparent;
+  }
+
+  .lm-pkg-install__code pre::-webkit-scrollbar,
+  .lm-pkg-install__snippet .expressive-code .frame pre::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .lm-pkg-install__code pre::-webkit-scrollbar-track,
+  .lm-pkg-install__snippet .expressive-code .frame pre::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .lm-pkg-install__code pre::-webkit-scrollbar-thumb,
+  .lm-pkg-install__snippet .expressive-code .frame pre::-webkit-scrollbar-thumb {
+    background: var(--lm-pkg-install-scroll);
+    border-radius: 2px;
+  }
+
+  .lm-pkg-install__code pre::-webkit-scrollbar-thumb:hover,
+  .lm-pkg-install__snippet .expressive-code .frame pre::-webkit-scrollbar-thumb:hover {
+    background: var(--lm-pkg-install-scroll-hover);
   }
 
   .lm-pkg-install__code code {
@@ -391,7 +469,9 @@ const installHtml = new Map(
   .lm-pkg-install__copy {
     position: absolute;
     top: 0.45rem;
-    right: 0.45rem;
+    /* `--lm-pkg-install-scrollbar` is the width the script below measures, so
+     * the button clears a scrollbar only when the block has one. */
+    right: calc(0.45rem + var(--lm-pkg-install-scrollbar, 0px));
     appearance: none;
     border: 1px solid var(--lm-pkg-install-border);
     border-radius: 0.25rem;
@@ -464,6 +544,32 @@ const installHtml = new Map(
     }
   }
 
+  /**
+   * Give each block's copy button the width of the block's vertical scrollbar.
+   *
+   * CSS cannot tell whether a block overflows, and a fixed offset leaves a
+   * scrollbar-sized gap beside blocks that have none. Overlay scrollbars
+   * measure zero, so they get no offset either.
+   */
+  function measureScrollbars() {
+    // Every width is read before any is written: a write between two reads
+    // makes the second read lay out the whole page again.
+    const holders = [...document.querySelectorAll<HTMLElement>('.lm-pkg-install__code, .lm-pkg-install__snippet .frame')]
+    const widths = holders.map((holder) => {
+      const pre = holder.querySelector('pre')
+      if (!pre) return undefined
+      const style = getComputedStyle(pre)
+      const width = pre.offsetWidth - pre.clientWidth - parseFloat(style.borderLeftWidth) - parseFloat(style.borderRightWidth)
+      return `${Math.max(0, width)}px`
+    })
+    holders.forEach((holder, index) => {
+      const width = widths[index]
+      if (width !== undefined && holder.style.getPropertyValue('--lm-pkg-install-scrollbar') !== width) {
+        holder.style.setProperty('--lm-pkg-install-scrollbar', width)
+      }
+    })
+  }
+
   function applySavedState() {
     const saved = read(STORAGE_KEY)
     if (saved) {
@@ -474,6 +580,7 @@ const installHtml = new Map(
       const savedManager = port && read(`${MANAGER_KEY}.${port}`)
       if (savedManager) selectManager(panel, savedManager, false)
     })
+    measureScrollbars()
   }
 
   function selectManager(panel: HTMLElement, index: string, persist: boolean) {
@@ -489,6 +596,7 @@ const installHtml = new Map(
     })
     panel.setAttribute('data-active-manager', index)
     if (persist && panel.dataset.port) write(`${MANAGER_KEY}.${panel.dataset.port}`, index)
+    measureScrollbars()
   }
 
   function selectPort(widget: HTMLElement, slug: string, persist: boolean) {
@@ -518,6 +626,7 @@ const installHtml = new Map(
       document.documentElement.setAttribute('data-pkg-port', slug)
       write(STORAGE_KEY, slug)
     }
+    measureScrollbars()
   }
 
   function copyPanelCode(button: HTMLElement) {
@@ -674,4 +783,7 @@ const installHtml = new Map(
     applySavedState()
   }
   document.addEventListener('astro:after-swap', applySavedState)
+  // Width and web fonts both change whether a block overflows.
+  window.addEventListener('resize', measureScrollbars)
+  void document.fonts.ready.then(measureScrollbars)
 </script>

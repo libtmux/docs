@@ -1,4 +1,5 @@
 import { createHighlighter, type Highlighter } from 'shiki'
+import { promptElement, SESSION_LANGS, sessionLines, shellThemes } from '../plugins/ec-shell-prompt.mjs'
 
 /**
  * Syntax highlighting for the examples in doc comments.
@@ -41,7 +42,8 @@ const THEMES = { light: 'github-light', dark: 'github-dark' }
 
 async function highlighter(): Promise<Highlighter> {
   instance ??= createHighlighter({
-    themes: Object.values(THEMES),
+    // Registered under the names in `THEMES`, with plain Bash arguments.
+    themes: shellThemes(),
     langs: [...LANGS],
   })
   return instance
@@ -63,11 +65,23 @@ function known(lang: string): string {
 export async function highlight(code: string, lang: string): Promise<string | undefined> {
   try {
     const hl = await highlighter()
-    return hl.codeToHtml(code, {
-      lang: known(lang),
+    // A session highlights as Bash with its prompts drawn back in, the same
+    // way the Expressive Code plugin in `ec-shell-prompt.mjs` renders one.
+    const session = SESSION_LANGS.has(lang) ? sessionLines(code.split('\n')) : undefined
+    // Output reaches the grammar as a blank line, so the apostrophe in `can't`
+    // cannot open a string that runs on into the next command.
+    return hl.codeToHtml(session ? session.map(({ kind, text }) => (kind === 'output' ? '' : text)).join('\n') : code, {
+      lang: session ? 'bash' : known(lang),
       themes: THEMES,
       defaultColor: false,
       cssVariablePrefix: '--shiki-',
+      transformers: session ? [{
+        line(node, line) {
+          const { kind, text } = session[line - 1] ?? {}
+          if (kind === 'prompt') node.children.unshift(promptElement())
+          else if (kind === 'output') node.children = [{ type: 'text', value: text ?? '' }]
+        },
+      }] : [],
     })
   } catch {
     return undefined
