@@ -241,6 +241,10 @@ export const CSHARP: LanguageSpec = {
     struct_declaration: 'struct',
     enum_declaration: 'enum',
     record_declaration: 'struct',
+    // `readonly record struct PaneId` is a node of its own. Missing here, its
+    // constructor surfaced as a free function named `PaneId` and its members
+    // as free symbols, and `PaneId`, `TmuxVersion` and eight more had no page.
+    record_struct_declaration: 'struct',
   },
   members: {
     method_declaration: 'method',
