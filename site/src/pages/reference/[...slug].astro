@@ -479,13 +479,16 @@ const title = owner
   pageSource={owner && model ? symbolSource(model, owner) : undefined}
   markdown={owner ? 'source' : 'rendered'}
   markdownIndex={!owner}
+  flush
 >
   <!-- The content column is capped at 47rem, which is 752px — gp-sphinx
        renders 754 from Furo's `46em` against a 16.4px root. Uncapped it ran
        to 960px, a third wider than this site's own prose pages at 704 and a
        measure no one reads comfortably. The cap is the design decision; the
        exact figure is gp-sphinx's, since matching it is the point. -->
-  <main class="mx-auto grid max-w-[100rem] gap-8 px-6 py-10 lg:grid-cols-[18rem_minmax(0,1fr)]">
+  <!-- Flush: the tree's column runs from the header to the footer against the
+       viewport's edge, as Learn's does, and only the text column is padded. -->
+  <main class="grid lg:grid-cols-[18rem_minmax(0,1fr)]">
     {model ? (
       <ApiTree
         port={model.port}
@@ -503,7 +506,7 @@ const title = owner
       />
     ) : <div />}
 
-    <div>
+    <div class="min-w-0 px-6 py-8 lg:px-10">
       <!-- The id is the anchor every link to this type uses. `hrefFor` sends a
            type to `<page>/#<publicId>` whether the link comes from a
            signature, a doc comment or prose, and without this the fragment

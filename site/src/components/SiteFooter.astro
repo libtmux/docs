@@ -18,12 +18,14 @@ interface Props {
   llmsRoot: string
   /** The repository behind the GitHub icon: this page's port, else this site. */
   githubRepo: string
+  /** No gap above: the page's columns run down to the footer's rule. */
+  flush?: boolean
 }
 
-const { locale, source, markdownHref, llmsRoot, githubRepo } = Astro.props
+const { locale, source, markdownHref, llmsRoot, githubRepo, flush = false } = Astro.props
 ---
 
-<footer class="mt-16 border-t border-edge">
+<footer class:list={[!flush && 'mt-16', 'border-t border-edge']}>
   <div class="mx-auto max-w-7xl px-4 py-8 text-sm">
     <p class="mb-4">
       libtmux provides libraries for controlling tmux.

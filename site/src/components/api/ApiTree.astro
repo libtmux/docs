@@ -92,27 +92,29 @@ if (!mark(nodes) && nodes[0]) nodes[0].tab = true
   // Without JavaScript the column stays inline and closed rows stay links.
   document.documentElement.setAttribute('data-api-nav', '')
 </script>
-<div class="api-nav-overlay" data-api-nav-overlay></div>
-<div id="api-nav" class="api-nav lg:self-start" data-src={`${base}tree.json`} data-base={base} aria-labelledby="api-nav-title">
-  <div class="api-nav__head">
-    <p class="api-nav__title" id="api-nav-title">{portName} API</p>
-    <button type="button" class="api-nav__close" data-api-nav-close aria-label="Close API contents">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    </button>
-  </div>
-  <details class="api-nav__menu" data-pagefind-ignore="all">
-    <summary class="api-nav__menu-summary">{portName} documentation</summary>
-    <div class="api-nav__menu-body">
-      <Sidebar port={port} version={menuVersion} currentPath={currentPath} menuOnly />
+<div class="api-nav-column">
+  <div class="api-nav-overlay" data-api-nav-overlay></div>
+  <div id="api-nav" class="api-nav" data-src={`${base}tree.json`} data-base={base} aria-labelledby="api-nav-title">
+    <div class="api-nav__head">
+      <p class="api-nav__title" id="api-nav-title">{portName} API</p>
+      <button type="button" class="api-nav__close" data-api-nav-close aria-label="Close API contents">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
-  </details>
-  <nav class="api-nav__nav" aria-label="API reference" data-pagefind-ignore="all">
-    <ul class="api-nav__tree" role="tree" aria-label={`${portName} API`}>
-      <ApiTreeItems nodes={nodes} />
-    </ul>
-  </nav>
+    <details class="api-nav__menu" data-pagefind-ignore="all">
+      <summary class="api-nav__menu-summary">{portName} documentation</summary>
+      <div class="api-nav__menu-body">
+        <Sidebar port={port} version={menuVersion} currentPath={currentPath} menuOnly />
+      </div>
+    </details>
+    <nav class="api-nav__nav" aria-label="API reference" data-pagefind-ignore="all">
+      <ul class="api-nav__tree" role="tree" aria-label={`${portName} API`}>
+        <ApiTreeItems nodes={nodes} />
+      </ul>
+    </nav>
+  </div>
 </div>
 <script is:inline>
   // Open the tree at the page being read before it paints, as Learn's does:

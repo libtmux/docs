@@ -232,13 +232,27 @@ html[data-api-nav] .api-nav__item[aria-expanded='false'] > [role='group']:not([d
   display: none;
 }
 
+/* Only a wrapper on phones, where the tree is a fixed drawer. */
+.api-nav-column {
+  display: contents;
+}
+
 @media (width >= 64rem) {
+  /* The column spans the whole row, so its rule runs from the header to the
+   * footer against the viewport's edge; the tree sticks inside it, under the
+   * header, a viewport tall, as Learn's does. */
+  .api-nav-column {
+    display: block;
+    border-inline-end: 1px solid var(--color-edge);
+  }
+
   .api-nav {
     position: sticky;
-    top: 5rem;
+    top: var(--topnav-height, 3rem);
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - 6rem);
+    height: calc(100vh - var(--topnav-height, 3rem));
+    padding: 0.75rem 0.5rem 0.75rem 0.75rem;
   }
 
   .api-nav__nav {
