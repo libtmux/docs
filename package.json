@@ -14,7 +14,8 @@
     "test:inner": "node scripts/test-loop.mjs inner",
     "test:medium": "node scripts/test-loop.mjs medium",
     "test:fast": "node scripts/test-loop.mjs medium",
-    "test:publication": "./scripts/test-all.sh"
+    "test:publication": "./scripts/test-all.sh",
+    "test:arena": "node scripts/docs-arena.mjs"
   },
   "engines": {
     "node": ">=24"
