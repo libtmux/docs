@@ -4,10 +4,12 @@ import { mentionsOf, referenceAlternatives } from '../../lib/api-models'
 import { withRoot } from '../../lib/site-root'
 import { Code } from 'astro-expressive-code/components'
 import { codeLang } from '../../lib/highlight'
+import Aside from '../Aside.astro'
 import ApiBadge from './ApiBadge.astro'
 import ApiDoc from './ApiDoc.astro'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
+import type { AsideType } from '../../lib/aside'
 
 /**
  * One documented symbol, in the shape gp-sphinx's stylesheet expects.
@@ -209,6 +211,31 @@ const hasFields = params.length > 0 || Boolean(returnsDoc) || raises.length > 0
  * term and no description is valid and reads correctly; a blank one is a gap
  * the reader has to interpret.
  */
+/**
+ * A docstring admonition as an `<Aside>`.
+ *
+ * Sphinx and rustdoc name a dozen kinds; the aside has four types, so each
+ * kind maps to the one whose colour and icon carry the same weight, and the
+ * title keeps the word the author wrote. An unknown kind is a note rather
+ * than nothing: the text is still worth setting apart.
+ */
+const ASIDE_KINDS: Record<string, { type: AsideType; title: string }> = {
+  note: { type: 'note', title: 'Note' },
+  seealso: { type: 'note', title: 'See also' },
+  important: { type: 'note', title: 'Important' },
+  versionchanged: { type: 'note', title: 'Changed' },
+  hint: { type: 'tip', title: 'Hint' },
+  tip: { type: 'tip', title: 'Tip' },
+  warning: { type: 'caution', title: 'Warning' },
+  attention: { type: 'caution', title: 'Attention' },
+  caution: { type: 'caution', title: 'Caution' },
+  deprecated: { type: 'caution', title: 'Deprecated' },
+  danger: { type: 'danger', title: 'Danger' },
+  error: { type: 'danger', title: 'Error' },
+}
+const asideFor = (kind: string) =>
+  ASIDE_KINDS[kind.toLowerCase()] ?? { type: 'note' as AsideType, title: kind.charAt(0).toUpperCase() + kind.slice(1) }
+
 const hasBody =
   mentions.length > 0 ||
   (symbol.doc?.admonitions?.length ?? 0) > 0 ||
@@ -494,34 +521,31 @@ const hasBody =
 
     {
       symbol.doc?.deprecated && (
-        <div class="admonition deprecated">
-          <p class="admonition-title">Deprecated</p>
+        <Aside type="caution" title="Deprecated">
           <p>
             <ApiDoc text={symbol.doc.deprecated} index={index} context={symbol} />
           </p>
-        </div>
+        </Aside>
       )
     }
 
     {
       symbol.doc?.changed && (
-        <div class="admonition versionchanged">
-          <p class="admonition-title">Changed</p>
+        <Aside type="note" title="Changed">
           <p>
             <ApiDoc text={symbol.doc.changed} index={index} context={symbol} />
           </p>
-        </div>
+        </Aside>
       )
     }
 
     {
       (symbol.doc?.admonitions ?? []).map((a) => (
-        <div class:list={['admonition', a.kind]}>
-          <p class="admonition-title">{a.kind}</p>
+        <Aside type={asideFor(a.kind).type} title={asideFor(a.kind).title}>
           <p>
             <ApiDoc text={a.text} index={index} context={symbol} />
           </p>
-        </div>
+        </Aside>
       ))
     }
 

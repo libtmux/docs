@@ -11,6 +11,7 @@ import { generateToC } from '../utils/generateToC'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import PagePortSwitcher from '../components/PagePortSwitcher.astro'
 import { pagePortsFor } from '../lib/page-ports-for'
+import Aside from '../components/Aside.astro'
 import BaseLayout from './BaseLayout.astro'
 import type { PageSource } from '../lib/markdown-twins'
 import { API_MODELS } from '../lib/api-models'
@@ -234,12 +235,16 @@ const breadcrumbs = product && port ? [
             )
           }
         </div>
-        {development && <aside aria-label="Development status" class="my-5 rounded border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-950">
-          <strong>{DOC_PRODUCTS[product!].label} is in development.</strong>
-          <p class="mb-0 mt-1">{product === 'workspace'
+        {/*
+          The same caution the reference and the prose use, rather than a box
+          of its own: a reader who has seen one development warning should
+          recognise the next without reading it twice.
+        */}
+        {development && <Aside type="caution" title={`${DOC_PRODUCTS[product!].label} is in development`}>
+          <p class="mb-0">{product === 'workspace'
             ? <>This port is not a finished workspace application. It has no CLI equivalent to <code>tmuxp load</code>; these pages document builder internals.</>
             : 'Server behavior and tool contracts may change. Tool availability depends on the server configuration.'}</p>
-        </aside>}
+        </Aside>}
         <slot />
       </article>
       )}

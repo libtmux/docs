@@ -1,5 +1,6 @@
 ---
 import { ALL_TRANSLATED } from '../../i18n/resolve'
+import Aside from '../Aside.astro'
 import McpInstall from '../../components/widgets/McpInstall.astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { PORTS, portPageUrl } from '../../lib/ports'
@@ -48,10 +49,12 @@ try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } ca
       Context Protocol, so an agent can create sessions, send keys and read
       pane output without shelling out.
     </p>
-    <p class="mt-3">
-      These servers are in development. Python is pre-alpha; the other ports
-      are alpha. Tool names, arguments, and behavior can change between releases.
-    </p>
+    <Aside type="caution" title="These servers are in development">
+      <p class="mb-0">
+        Python is pre-alpha; the other ports are alpha. Tool names, arguments,
+        and behavior can change between releases.
+      </p>
+    </Aside>
 
     <h2 class="mt-10 text-xl font-semibold">Install the Python server</h2>
     <p class="mt-2 text-sm text-muted">
