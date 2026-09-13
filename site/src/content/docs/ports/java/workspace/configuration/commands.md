@@ -87,14 +87,20 @@ checks its exit status. Use it for bootstrap work that must succeed before
 configured windows are built, rather than treating pane command delivery as a
 checked process result.
 
-## Current Java builder
+## Native Java CLI
 
-The parser supports command strings and string lists. Enter suppression, delays,
-history policy, and inherited before commands are not accepted command metadata.
+The local CLI supports command strings, lists and `{cmd, enter, sleep_before,
+sleep_after}` objects. Enter and delay defaults carry forward until an explicit
+override. Before commands accumulate in session/window/pane order, and history
+suppression prefixes delivered commands with a space. Command variables remain
+for the pane shell to expand; this differs from tmuxp's invoking-process
+expansion. [Readiness policy](../../reference/compatibility/) is separate from
+command completion.
 
-See the [native builder behavior](../../internals/topics/) and [configuration
-source](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceParser.java)
-before using these fields through application code.
+See the [CLI configuration parser](https://github.com/libtmux/libtmux-java/blob/2d7e8028986b99c8e9496dc40b5d1e90fb2368c9/workspace-cli/src/main/java/io/github/libtmux/workspace/cli/WorkspacePlan.java).
+Application code using the lower-level workspace library has a separate
+[builder API](../../internals/topics/). Its schema is not the CLI configuration
+contract.
 
 ## Reference source
 

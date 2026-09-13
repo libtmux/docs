@@ -84,14 +84,18 @@ environments. Read [directories](../directories/), [commands](../commands/), and
 Python scripts, plugins, and custom builder references execute code. Their exact
 timing and runtime requirements are in [hooks and builders](../hooks/).
 
-## Current Java builder
+## Native Java CLI
 
-Root fields are session_name and windows. Session directories, environment,
-options, before_script, plugins, and custom builder selection are rejected.
+The local CLI accepts session identity, directories, environment, session and
+global options, `before_script`, inherited before commands and history policy.
+Python plugins and custom builders use an explicit, version-checked runtime;
+they do not run through the native builder. Existing-session reuse and append
+follow the [load contract](../../cli/load/), including retained partial effects.
 
-See the [native builder behavior](../../internals/topics/) and [configuration
-source](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceParser.java)
-before using these fields through application code.
+See the [CLI configuration parser](https://github.com/libtmux/libtmux-java/blob/2d7e8028986b99c8e9496dc40b5d1e90fb2368c9/workspace-cli/src/main/java/io/github/libtmux/workspace/cli/WorkspacePlan.java).
+Application code using the lower-level workspace library has a separate
+[builder API](../../internals/topics/). Its schema is not the CLI configuration
+contract.
 
 ## Reference source
 

@@ -86,15 +86,19 @@ See [directories](../directories/) for existing-directory precedence,
 [layouts](../layouts/) for size resolution, and [shell](../../cli/shell/) for
 Python-specific environment effects.
 
-## Current Java builder
+## Native Java CLI
 
-The focused Java schema rejects environment maps and has no tmuxp expansion
-pipeline. Session/window/pane environment behavior in these examples is Python
-reference behavior.
+The local CLI accepts session environment and window/pane launch maps. Window
+environment applies when a pane has no map; a pane map replaces it. Names,
+directories, environment values and option strings expand tilde and defined
+invoking-process variables. Shell command text retains variables for the pane
+shell. Session-local environment is currently omitted by native capture; a
+whole-session environment round trip is not claimed.
 
-See the [native builder behavior](../../internals/topics/) and [configuration
-source](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceParser.java)
-before using these fields through application code.
+See the [CLI configuration parser](https://github.com/libtmux/libtmux-java/blob/2d7e8028986b99c8e9496dc40b5d1e90fb2368c9/workspace-cli/src/main/java/io/github/libtmux/workspace/cli/WorkspacePlan.java).
+Application code using the lower-level workspace library has a separate
+[builder API](../../internals/topics/). Its schema is not the CLI configuration
+contract.
 
 ## Reference source
 

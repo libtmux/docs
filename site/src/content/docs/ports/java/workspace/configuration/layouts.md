@@ -83,15 +83,18 @@ layout-example socket. Use [load](../../cli/load/) to select that socket, then
 inspect panes as needed. A successful load does not prove every native port
 honors the same focus/index/options policy.
 
-## Current Java builder
+## Native Java CLI
 
-The parser checks known layout descriptions, and the builder checks named-layout
-support against tmux before creation. All topology is built and layouts applied
-before pane commands are sent.
+The local CLI validates layout syntax, checksum, structure and pane capacity
+before scripts or session mutation. Version-sensitive named layouts use the
+selected daemon. tmux owns geometry correction and pruning. All panes in a
+window are created and its layout is applied before commands are sent; focus
+and `options_after` follow command delivery.
 
-See the [native builder behavior](../../internals/topics/) and [configuration
-source](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceParser.java)
-before using these fields through application code.
+See the [CLI configuration parser](https://github.com/libtmux/libtmux-java/blob/2d7e8028986b99c8e9496dc40b5d1e90fb2368c9/workspace-cli/src/main/java/io/github/libtmux/workspace/cli/WorkspacePlan.java).
+Application code using the lower-level workspace library has a separate
+[builder API](../../internals/topics/). Its schema is not the CLI configuration
+contract.
 
 ## Reference source
 
