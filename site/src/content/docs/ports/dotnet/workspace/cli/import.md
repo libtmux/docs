@@ -25,6 +25,35 @@ own. Each child requires a source at the parser boundary, despite
 optional-looking help. Conversion is schema translation; it does not make
 tmuxinator Ruby or ERB evaluation available in a native YAML reader.
 
+## Native .NET imports
+
+The local `tmux-workspace import` commands translate YAML or JSON and validate
+the result with the native workspace loader before printing or saving it.
+Invalid shapes, conflicting non-null aliases and unsupported non-null fields
+fail before a destination is written, including when `--force` is present.
+Successful translation does not run pane commands or establish that their
+applications and directories are available.
+
+Without `--save-to`, `--json` returns the document and `--ndjson` returns a
+result record containing it; neither mode guesses an output filename.
+`--save-to` selects a destination, `--workspace-format` selects YAML or JSON,
+and `--force` permits replacement. Saving publishes through a temporary file
+in the destination directory. See [output](../../reference/output/).
+
+A missing session name uses the source filename stem. Relative project roots
+use the directory where import runs. Teamocil window roots use that same
+directory; tmuxinator window roots use the resolved project root.
+
+The [Teamocil](../import-teamocil/#native-net-translation) and
+[tmuxinator](../import-tmuxinator/#native-net-translation) sections describe
+command grouping, focus, synchronization and unsupported fields. Launcher
+lifecycle hooks require an explicit supported workflow; importing them as
+pane commands would change where and when they run. The importer does not
+evaluate Ruby or ERB.
+
+[Native translation source](https://github.com/libtmux/libtmux-dotnet/blob/4ac82a5b82fd8cf68d31c70a2a3eb43c587cd7c0/src/LibTmux.Workspace.Cli/ImportCommands.cs);
+[validation and saving source](https://github.com/libtmux/libtmux-dotnet/blob/4ac82a5b82fd8cf68d31c70a2a3eb43c587cd7c0/src/LibTmux.Workspace.Cli/ReadCommands.cs).
+
 ## Arguments and flags
 
 The parent accepts `-h` / `--help` and selects a child command.

@@ -88,7 +88,10 @@ Every command accepts `--json` and `--ndjson`; NDJSON takes precedence. Listing
 and search decode documents on demand; load emits sequenced events and one
 terminal result while its output stream remains writable. Human listing uses
 semantic colors and escapes terminal controls. Editor argv is passed directly;
-machine child output is bounded and captured separately from results.
+machine editor calls return bounded captures in their result. Bootstrap
+and captured shell calls also stream decoded text as structured stderr warnings.
+The [child output contract](../output/#native-swift-child-output) describes
+stream limits, filtering and cancellation.
 
 `--log-level` filters advisory diagnostics at debug, info, warning, error or
 critical severity. Fatal operation errors remain visible. `load --log-file`
@@ -103,8 +106,8 @@ Human load displays event-driven progress on terminal stderr.
 bootstrap-output panel: 3 rows by default, 0 hides it and -1 uses the initial
 terminal height. `TMUXP_PROGRESS_LINES` supplies its default. The panel retains
 at most 65,536 UTF-8 bytes and clips Unicode conservatively. It samples terminal
-size once and does not track resizing. Bootstrap output is collected before
-display, while preserving its original stdout or stderr destination.
+size once and does not track resizing. Bootstrap output streams while the script
+runs, preserving its original stdout or stderr destination.
 
 `--no-progress`, `TMUXP_PROGRESS=0`, `TERM=dumb`, redirected stderr and machine
 output disable the display. NDJSON receives discrete window/pane events.
@@ -116,15 +119,16 @@ defaulting to `python3`. Machine shell calls require `-c`; interactive backends
 require a terminal. Shell completion can be generated from ArgumentParser. The
 locally installed Linux executable still requires Swift runtime libraries.
 
-The local source reference is Sources/TmuxWorkspaceCLI/README.md. Use the
-native executable's `--help` for the options implemented in that checkout.
+The [native source reference](https://github.com/libtmux/libtmux-swift/blob/528c5a8f5a4a699b7742a0c38e5075f386e11138/Sources/TmuxWorkspaceCLI/README.md)
+describes this implementation. Use the native executable's `--help` for the
+options implemented in that checkout.
 
 ### Remaining gaps
 
 - Window/pane environment, shell overrides, command timing/readiness, plugins
   and custom builders are not implemented in native loading.
-- Incremental NDJSON child records, optional interactive Python backends,
-  editor job control and broader descendant cleanup need completion or testing.
+- Optional interactive Python backends, editor job control and broader
+  descendant cleanup need further testing.
 - Full capture/configuration coverage, generated manuals, Darwin validation
   and portable distribution remain open. Building without the YAML trait does
   not provide YAML commands.

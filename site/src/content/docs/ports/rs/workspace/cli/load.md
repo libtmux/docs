@@ -36,9 +36,9 @@ dedicated socket:
 
 ```console
 $ tmuxp load \
-    -L workspace-guide \
+    -S "$WORKSPACE_TMP/tmux.sock" \
     -d \
-    workspace.yaml
+    "$WORKSPACE_TMP/workspace.yaml"
 ```
 
 `-d` avoids attachment. Inside an existing tmux client, the normal interactive
