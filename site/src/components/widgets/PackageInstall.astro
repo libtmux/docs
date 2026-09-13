@@ -272,6 +272,8 @@ const installHtml = new Map(
    * care. Panels hide with `visibility`, not `display`, so a hidden panel
    * still holds its height in the grid. */
   .lm-pkg-install__panel {
+    display: flex;
+    flex-direction: column;
     grid-area: 1 / 1;
     visibility: hidden;
   }
@@ -369,11 +371,21 @@ const installHtml = new Map(
     margin: 0;
   }
 
-  /* Capped so the longest example does not set the height every panel
-   * reserves. Expressive Code positions its copy button on `.frame`, so the
-   * button stays put while the code scrolls. */
+  /* The example fills whatever height its panel has left. Its `pre` starts
+   * from 15rem, so the longest example reserves no more than that, and grows
+   * into the space a shorter panel leaves. Expressive Code positions its copy
+   * button on `.frame`, so the button stays put while the code scrolls. */
+  .lm-pkg-install__snippet,
+  .lm-pkg-install__snippet .expressive-code,
+  .lm-pkg-install__snippet .expressive-code .frame {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+  }
+
   .lm-pkg-install__snippet .expressive-code .frame pre {
-    max-height: 15rem;
+    flex: 1 1 15rem;
+    min-height: 0;
     overflow: auto;
   }
 
