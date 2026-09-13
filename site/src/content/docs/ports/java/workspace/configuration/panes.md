@@ -77,15 +77,18 @@ A successful build confirms command delivery, not application readiness or
 command exit status. See [commands](../commands/) for Enter, timing, and
 history, and [environment](../environment/) for launch-map selection.
 
-## Current Java builder
+## Native Java CLI
 
-A pane can be a command string, a list of strings, or a mapping with
-shell_command. Tmuxp null/sentinel behavior and additional pane fields are not
-implied by those forms.
+The local CLI accepts null and `blank`/`pane`/`empty` shorthand, command strings,
+command lists and pane mappings. Mappings support directories, launch
+environments, focus, before commands, history policy, Enter and delays. `shell:`
+and `pane_shell:` are aliases and cannot both be set. A successful load confirms
+command delivery, not a shell command's completion or exit status.
 
-See the [native builder behavior](../../internals/topics/) and [configuration
-source](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceParser.java)
-before using these fields through application code.
+See the [CLI configuration parser](https://github.com/libtmux/libtmux-java/blob/2d7e8028986b99c8e9496dc40b5d1e90fb2368c9/workspace-cli/src/main/java/io/github/libtmux/workspace/cli/WorkspacePlan.java).
+Application code using the lower-level workspace library has a separate
+[builder API](../../internals/topics/). Its schema is not the CLI configuration
+contract.
 
 ## Reference source
 

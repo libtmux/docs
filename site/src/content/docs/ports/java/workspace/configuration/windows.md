@@ -80,15 +80,18 @@ such as synchronize-panes that should take effect after individual setup
 commands. [Layouts](../layouts/) explains named layouts, dimensions, and focus;
 [panes](../panes/) describes the pane forms accepted inside a window.
 
-## Current Java builder
+## Native Java CLI
 
-Window name, layout, and panes are accepted. Directories, explicit indexes,
-focus, environment, options, and shell selection are not part of the native
-schema.
+The local CLI accepts window names, explicit indexes, layouts, focus,
+directories, launch environments, options, `options_after` and `window_shell`.
+Window environment supplies the launch map when a pane has no environment map.
+A pane override replaces that map. Native layout preflight precedes scripts;
+`options_after` runs after pane command delivery.
 
-See the [native builder behavior](../../internals/topics/) and [configuration
-source](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceParser.java)
-before using these fields through application code.
+See the [CLI configuration parser](https://github.com/libtmux/libtmux-java/blob/2d7e8028986b99c8e9496dc40b5d1e90fb2368c9/workspace-cli/src/main/java/io/github/libtmux/workspace/cli/WorkspacePlan.java).
+Application code using the lower-level workspace library has a separate
+[builder API](../../internals/topics/). Its schema is not the CLI configuration
+contract.
 
 ## Reference source
 
