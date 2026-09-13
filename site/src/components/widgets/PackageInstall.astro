@@ -54,14 +54,16 @@ interface Props {
   defaultPort?: string
   variant?: 'full' | 'compact'
   /**
-   * Where each block's copy button sits. `gutter`, the default, gives it a
-   * column beside the code, so a long command cannot scroll under it;
-   * `overlay` floats it over the block's corner, for a block too large to
-   * spare that width.
+   * Where each block's copy button sits. `gutter` gives it a column beside the
+   * code, so a long command cannot scroll under it; `overlay` floats it over
+   * the block's corner. `auto`, the default, chooses per block: a one-line
+   * command gets a gutter, and a fragment of several lines, which a whole
+   * column beside it would only narrow, gets the overlay.
    */
-  copyButton?: 'gutter' | 'overlay'
+  copyButton?: 'auto' | 'gutter' | 'overlay'
 }
-const { ports, defaultPort, snippets, variant = 'full', copyButton = 'gutter' } = Astro.props as Props
+const { ports, defaultPort, snippets, variant = 'full', copyButton = 'auto' } = Astro.props as Props
+const copyLayout = (code: string) => (copyButton === 'auto' ? (code.includes('\n') ? 'overlay' : 'gutter') : copyButton)
 
 const items = ports && ports.length > 0 ? PORTS.filter((p) => ports.includes(p.slug)) : PORTS
 if (items.length === 0) {
@@ -109,7 +111,7 @@ const installHtml = new Map(
 )
 ---
 
-<div class={`lm-pkg-install lm-pkg-install--${variant} lm-pkg-install--copy-${copyButton}${snippets ? ' lm-pkg-install--examples' : ''}`} data-ports={items.map((p) => p.slug).join(' ')}>
+<div class={`lm-pkg-install lm-pkg-install--${variant}${snippets ? ' lm-pkg-install--examples' : ''}`} data-ports={items.map((p) => p.slug).join(' ')}>
   {/*
     One language is not a choice of language.
 
@@ -167,7 +169,7 @@ const installHtml = new Map(
               role={p.installs.length > 1 ? 'tabpanel' : undefined}
               tabindex={p.installs.length > 1 ? '0' : undefined}
             >
-              <div class="lm-pkg-install__code" data-language={cmd.lang}><pre><code set:html={installHtml.get(`${p.slug}/${i}`)} /></pre><button type="button" class="lm-pkg-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
+              <div class={`lm-pkg-install__code lm-pkg-install__code--${copyLayout(cmd.code)}`} data-language={cmd.lang}><pre><code set:html={installHtml.get(`${p.slug}/${i}`)} /></pre><button type="button" class="lm-pkg-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
               {cmd.note && <p class="lm-pkg-install__note">{cmd.note}</p>}
             </div>
           ))}
@@ -393,24 +395,25 @@ const installHtml = new Map(
     text-underline-offset: 2px;
   }
 
-  /* Where the copy button sits, set by the `copyButton` prop. `gutter`, the
-   * default, gives it a column beside the code, so a long command cannot
-   * scroll under it however far it scrolls. `overlay` floats it over the
-   * block's corner and pads the code's end to clear it, for a block too large
-   * to spare a column. The background is on the holder, so a gutter reads as
-   * part of the block. */
+  /* Where each block's copy button sits, set per block from the `copyButton`
+   * prop. `gutter` gives it a column beside the code, so a one-line command
+   * cannot scroll under it however far it scrolls. `overlay` floats it over
+   * the block's corner and pads the code's end to clear it, for a fragment of
+   * several lines that a whole column would only narrow. `auto`, the default,
+   * gives one-line blocks the first and longer ones the second. The background
+   * is on the holder, so a gutter reads as part of the block. */
   .lm-pkg-install__code {
     border-radius: 0.25rem;
     background: var(--lm-pkg-install-code-bg);
   }
 
-  .lm-pkg-install--copy-gutter .lm-pkg-install__code {
+  .lm-pkg-install__code--gutter {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: start;
   }
 
-  .lm-pkg-install--copy-overlay .lm-pkg-install__code {
+  .lm-pkg-install__code--overlay {
     position: relative;
   }
 
@@ -523,7 +526,7 @@ const installHtml = new Map(
     padding: 0.75rem 0.5rem 0.75rem 0.9rem;
   }
 
-  .lm-pkg-install--copy-overlay .lm-pkg-install__code pre {
+  .lm-pkg-install__code--overlay pre {
     padding-right: 3.25rem;
   }
 
@@ -581,13 +584,13 @@ const installHtml = new Map(
    * cut off at the gutter's edge would otherwise touch the button and read as
    * running under it. A vertical scrollbar belongs to the `pre`, so it sits
    * beside the gutter rather than under the button. */
-  .lm-pkg-install--copy-gutter .lm-pkg-install__copy {
+  .lm-pkg-install__code--gutter .lm-pkg-install__copy {
     margin: 0.45rem 0.45rem 0;
   }
 
   /* Over the corner, clear of a vertical scrollbar whose width the script
    * below measures. */
-  .lm-pkg-install--copy-overlay .lm-pkg-install__copy {
+  .lm-pkg-install__code--overlay .lm-pkg-install__copy {
     position: absolute;
     top: 0.45rem;
     right: calc(0.45rem + var(--lm-pkg-install-scrollbar, 0px));
@@ -679,7 +682,7 @@ const installHtml = new Map(
     // Every width is read before any is written: a write between two reads
     // makes the second read lay out the whole page again.
     const holders = [
-      ...document.querySelectorAll<HTMLElement>('.lm-pkg-install--copy-overlay .lm-pkg-install__code, .lm-pkg-install__snippet .frame'),
+      ...document.querySelectorAll<HTMLElement>('.lm-pkg-install__code--overlay, .lm-pkg-install__snippet .frame'),
     ]
     const widths = holders.map((holder) => {
       const pre = holder.querySelector('pre')

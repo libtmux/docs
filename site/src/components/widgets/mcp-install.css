@@ -163,23 +163,25 @@ html[data-theme-mode='dark'] .lm-mcp-install {
  * `<Code>` usable outside markdown here (see src/pages/[port]/index.astro's
  * own comment on the same limitation), so panels render plain <pre><code> —
  * no per-language syntax color, same as that page's install command. */
-/* Where the copy button sits, set by the `copyButton` prop. `gutter`, the
- * default, gives it a column beside the code, so a long command cannot scroll
- * under it. `overlay` floats it over the block's corner and pads the code's
- * end to clear it, for a block too large to spare a column. The background is
- * on the holder, so a gutter reads as part of the block. */
+/* Where each block's copy button sits, set per block from the `copyButton`
+ * prop. `gutter` gives it a column beside the code, so a one-line command
+ * cannot scroll under it. `overlay` floats it over the block's corner and
+ * pads the code's end to clear it, for a config of several lines that a whole
+ * column would only narrow. `auto`, the default, gives one-line blocks the
+ * first and longer ones the second. The background is on the holder, so a
+ * gutter reads as part of the block. */
 .lm-mcp-install__code {
   border-radius: 0.25rem;
   background: var(--lm-mcp-install-code-bg);
 }
 
-.lm-mcp-install--copy-gutter .lm-mcp-install__code {
+.lm-mcp-install__code--gutter {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
 }
 
-.lm-mcp-install--copy-overlay .lm-mcp-install__code {
+.lm-mcp-install__code--overlay {
   position: relative;
 }
 
@@ -190,7 +192,7 @@ html[data-theme-mode='dark'] .lm-mcp-install {
   padding: 0.75rem 0.5rem 0.75rem 0.9rem;
 }
 
-.lm-mcp-install--copy-overlay .lm-mcp-install__code pre {
+.lm-mcp-install__code--overlay pre {
   padding-right: 3.25rem;
 }
 
@@ -202,11 +204,11 @@ html[data-theme-mode='dark'] .lm-mcp-install {
 
 /* In a gutter, level with the first line, with space on both sides so a
  * line cut off at the gutter's edge does not touch the button. */
-.lm-mcp-install--copy-gutter .lm-mcp-install__copy {
+.lm-mcp-install__code--gutter .lm-mcp-install__copy {
   margin: 0.45rem 0.45rem 0;
 }
 
-.lm-mcp-install--copy-overlay .lm-mcp-install__copy {
+.lm-mcp-install__code--overlay .lm-mcp-install__copy {
   position: absolute;
   top: 0.45rem;
   right: 0.45rem;
