@@ -9,6 +9,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import { withRoot } from '../../lib/site-root'
 import { API_MODELS, API_NAV, OWNER_KINDS, PORT_NAME, indexFor, ownersOf, pageSlug, referenceHref, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
+import { productApiHref } from '../../lib/product-api'
 import { symbolSource } from '../../lib/markdown-twins'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
@@ -122,7 +123,10 @@ const paged = new Set(pageOwners.map((s) => s.id))
  */
 const hrefFor = (s: ApiSymbol): string =>
   model
-    ? `${refBase}${s.slug ?? pageSlug(s.publicId ?? s.id)}/`
+    // productApiHref, not refBase: a signature on a core page can name a
+    // Workspace Manager or MCP type, and that type's page is in its own
+    // package's reference rather than this one.
+    ? productApiHref(model, s, buildTarget(process.env).version)
     : withRoot('/reference/')
 /*
  * The stub is what the index route has instead of a model.
