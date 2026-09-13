@@ -109,6 +109,23 @@ try {
       assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
       assert(result.columns.every((delta) => delta <= 1), `${path} at ${width}px: table columns misaligned`)
     }
+    if (path.startsWith('reference/')) {
+      await page.setViewportSize({ width: 1440, height: 1000 })
+      await page.waitForFunction(() => !document.querySelector('#api-nav').inert)
+      await page.locator('#api-nav [role=treeitem][tabindex="0"]').focus()
+      await page.setViewportSize({ width: 390, height: 1000 })
+      await page.waitForFunction(() => document.querySelector('#api-nav').inert)
+      assert(await page.locator('[data-api-nav-toggle]').evaluate((element) => document.activeElement === element),
+        `${path}: collapsing focused navigation returns focus to its toggle`)
+      const heading = page.locator('main h1').first()
+      await heading.evaluate((element) => { element.tabIndex = -1; element.focus() })
+      await page.setViewportSize({ width: 1440, height: 1000 })
+      await page.waitForFunction(() => !document.querySelector('#api-nav').inert)
+      await page.setViewportSize({ width: 390, height: 1000 })
+      await page.waitForFunction(() => document.querySelector('#api-nav').inert)
+      assert(await heading.evaluate((element) => document.activeElement === element),
+        `${path}: collapsing navigation preserves focus in the content`)
+    }
     if (hasSwitcher) {
       assert.equal(await switcher.count(), 1, `${path}: one page port switcher`)
       await switcher.locator('summary').click()
