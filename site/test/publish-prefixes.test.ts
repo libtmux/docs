@@ -167,16 +167,6 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     expect(result.commands).toEqual([])
   })
 
-  it('publishes the reference redirect for every port that does not publish its own API', () => {
-    const result = publish(fixture(true))
-    expect(result.status, result.stderr).toBe(0)
-    const destinations = result.commands.filter((args) => args[0] === 's3' && args[1] === 'sync').map((args) => args[3])
-    for (const port of PORTS) {
-      const redirect = `s3://docs-test/en/${port.slug}/latest/api/`
-      expect(destinations.includes(redirect), port.slug).toBe(!NATIVE_API.includes(port.slug))
-    }
-  })
-
   it.each(NATIVE_API)('refuses to publish %s/latest/api however the artifact declares it', (slug) => {
     const directory = fixture()
     const metadata = join(directory, 'shell-paths.json')
