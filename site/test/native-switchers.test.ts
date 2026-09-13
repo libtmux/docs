@@ -12,11 +12,11 @@ const manifest = {
 }
 const pageLinks = {
   schema: 1,
-  indexes: { py: `${base}/reference/py/`, ts: `${base}/reference/ts/` },
+  indexes: { py: `${base}/py/stable/reference/`, ts: `${base}/ts/latest/reference/` },
   symbols: {
     py: {
-      'libtmux.Session': [{ port: 'ts', href: `${base}/reference/ts/session-session/`, label: 'Session' }],
-      'libtmux.Session.windows': [{ port: 'ts', href: `${base}/reference/ts/session-session-windows/`, label: 'Session windows' }],
+      'libtmux.Session': [{ port: 'ts', href: `${base}/ts/latest/reference/session-session/`, label: 'Session' }],
+      'libtmux.Session.windows': [{ port: 'ts', href: `${base}/ts/latest/reference/session-session-windows/`, label: 'Session windows' }],
     },
   },
 }

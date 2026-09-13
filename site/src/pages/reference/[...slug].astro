@@ -12,7 +12,7 @@ import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { symbolSource } from '../../lib/markdown-twins'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
-import { defaultVersionFor } from '../../lib/versions'
+import { buildTarget, defaultVersionFor } from '../../lib/versions'
 import ApiDoc from '../../components/api/ApiDoc.astro'
 import ApiTree from '../../components/api/ApiTree.astro'
 import { navTree } from '../../lib/api-tree'
@@ -90,6 +90,11 @@ interface Props {
 }
 const { model, owner, searchable = true } = Astro.props as Props
 
+/** This port and version's reference root, which every link below hangs off. */
+const refBase = model && PORT_BY_SLUG[model.port]
+  ? referenceUrl(PORT_BY_SLUG[model.port], buildTarget(process.env).version)
+  : withRoot('/reference/')
+
 /** What the hub counts per port: the core library, without its products. */
 const coreCount = (m: ApiModel) =>
   m.symbols.length - new Set([...symbolsForProduct(m, 'mcp'), ...symbolsForProduct(m, 'workspace')].map((s) => s.id)).size
@@ -117,7 +122,7 @@ const paged = new Set(pageOwners.map((s) => s.id))
  */
 const hrefFor = (s: ApiSymbol): string =>
   model
-    ? withRoot(`/reference/${s.slug ?? pageSlug(s.publicId ?? s.id)}/`)
+    ? `${refBase}${s.slug ?? pageSlug(s.publicId ?? s.id)}/`
     : withRoot('/reference/')
 /*
  * The stub is what the index route has instead of a model.
@@ -727,10 +732,10 @@ const title = owner
               is a URL, and that is the whole feature.
             */}
             <p class="api-page-actions" data-pagefind-ignore="all">
-              <a href={withRoot(`/reference/${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}.md`)}>
+              <a href={`${refBase}${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}.md`}>
                 View as Markdown
               </a>
-              <button type="button" class="api-copy-md" data-md={withRoot(`/reference/${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}.md`)}>
+              <button type="button" class="api-copy-md" data-md={`${refBase}${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}.md`}>
                 Copy Markdown
               </button>
             </p>
@@ -755,7 +760,7 @@ const title = owner
                   <dt>Module</dt>
                   <dd>
                     {moduleAnchors.has(ownerModule) ? (
-                      <a href={withRoot(`/reference/#${ownerModule}`)}>{ownerModule}</a>
+                      <a href={`${refBase}#${ownerModule}`}>{ownerModule}</a>
                     ) : (
                       ownerModule
                     )}

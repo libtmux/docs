@@ -31,7 +31,7 @@ const SPHINX = `${base}/py/stable/api/api/libtmux.server/`
  * shows them did, and pointing at the old one reported all seven treatments
  * as "not found on this site" rather than as different.
  */
-const OURS = `${base}/reference/py/libtmux-server-new_session/`
+const OURS = `${base}/py/stable/reference/libtmux-server-new_session/`
 
 /*
  * A second page, because a page is now one symbol.
@@ -41,7 +41,7 @@ const OURS = `${base}/reference/py/libtmux-server-new_session/`
  * it — and now each symbol has its own, so no single URL carries both. A case
  * names the page it needs; the default is the method page.
  */
-const OURS_ATTRIBUTE = `${base}/reference/py/libtmux-_internal-constants-hooks-after_capture_pane/`
+const OURS_ATTRIBUTE = `${base}/py/stable/reference/libtmux-_internal-constants-hooks-after_capture_pane/`
 
 /**
  * Equivalent elements, and the properties that carry the look.

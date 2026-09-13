@@ -40,7 +40,7 @@ try {
   const manifest = await page.request.get(`${base}/page-links.json`)
   assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
   assert.equal((await manifest.json()).schema, 1)
-  const paths = ['concepts/server-session-window-pane', 'mcp/tools', 'reference/ts/session-session-panes',
+  const paths = ['concepts/server-session-window-pane', 'mcp/tools', 'ts/latest/reference/session-session-panes',
     'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
     'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/tmux_capture_pane']
   for (const path of paths) await retryReload(async () => {
@@ -51,9 +51,10 @@ try {
     assert.equal(await page.locator('nav[aria-label="Language"] a').first().getAttribute('href'), '/en/py/stable/')
     const switcher = page.locator('[data-page-port-switcher]')
     const hasSwitcher = path !== 'mcp/tools'
+    const isReference = path.includes('/reference/')
     const expected = path.includes('workspace/') ? `/en/${path}/`
-      : path === 'dotnet/latest/mcp/tools/tmux_capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : path.startsWith('reference/')
-      ? '/en/reference/py/libtmux-session-panes/' : `/en/py/stable/${path.replace(/^ts\/latest\//, '')}/`
+      : path === 'dotnet/latest/mcp/tools/tmux_capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : isReference
+      ? '/en/py/stable/reference/libtmux-session-panes/' : `/en/py/stable/${path.replace(/^ts\/latest\//, '')}/`
     if (hasSwitcher) assert.equal(await switcher.locator('a').first().getAttribute('href'), expected)
     if (path === 'py/stable/workspace/guides') {
       assert.equal(await switcher.locator('a').count(), 1, 'Only Python has a workspace CLI guide')
@@ -66,7 +67,7 @@ try {
       assert.equal(await switcher.locator('a').count(), 8)
       assert.equal(await switcher.locator('a[aria-current="page"]').getAttribute('href'), `/en/${path}/`)
     }
-    if (path.startsWith('reference/')) {
+    if (isReference) {
       assert.match(await switcher.locator('[aria-disabled="true"]').textContent(), /Java/)
       const target = await page.request.get(base.replace(/\/en$/, '') + expected)
       assert(target.ok(), `Equivalent target: HTTP ${target.status()}`)

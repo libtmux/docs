@@ -19,7 +19,8 @@ import Sidebar from '../docs/Sidebar.astro'
 import ApiTreeItems, { type TreeNode } from './ApiTreeItems.astro'
 import type { NavEntry } from '../../lib/api-models'
 import { bucketTotal, firstEntry, type TreeBucket } from '../../lib/api-tree'
-import { withRoot } from '../../lib/site-root'
+import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
+import { buildTarget } from '../../lib/versions'
 import '../../styles/api-tree.css'
 
 interface Props {
@@ -47,7 +48,9 @@ const {
   port, portName, tree, currentRoot, currentBucket, currentTypeId, ownerNavId, ownerId,
   members, withMembers, menuVersion, currentPath,
 } = Astro.props as Props
-const base = withRoot('/reference/')
+// The port's own reference root. `withRoot` would give the locale root:
+// Astro's `base` prefixes routes, not strings a component builds.
+const base = referenceUrl(PORT_BY_SLUG[port]!, buildTarget(process.env).version)
 const href = (slug: string) => `${base}${slug}/`
 
 let seq = 0

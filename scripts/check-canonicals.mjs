@@ -21,6 +21,10 @@ import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { referenceDirs } from './reference-trees.mjs'
+
+const { PORTS: PORT_DEFS } = await import(`file://${join(dirname(fileURLToPath(import.meta.url)), '../site/src/lib/ports.ts')}`)
+const PORTS = PORT_DEFS.map((p) => p.slug)
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const defaultSite = join(repoRoot, '_site')
@@ -49,8 +53,8 @@ if (siteDir === defaultSite && existsSync(lock)) {
   }
 }
 
-const root = join(siteDir, 'reference')
-if (!existsSync(root)) {
+const roots = PORTS.flatMap((port) => referenceDirs(siteDir, port, { products: true }))
+if (!roots.length) {
   console.error(`check-canonicals: no reference tree under ${siteDir}`)
   process.exit(1)
 }
@@ -63,7 +67,7 @@ const walk = (dir) => {
     else if (entry === 'index.html') pages.push(full)
   }
 }
-walk(root)
+for (const root of roots) walk(root)
 
 const CANONICAL = /<link\s+rel="canonical"\s+href="([^"]+)"/i
 const wrong = []

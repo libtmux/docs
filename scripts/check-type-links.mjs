@@ -22,6 +22,7 @@
 import { readFileSync, writeFileSync, readdirSync, existsSync, statSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { referenceDirs } from './reference-trees.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 /* `--ceiling` points at a different record so the negative test can drive this
@@ -96,7 +97,7 @@ function measure(port) {
   let resolved = 0
   const unresolved = new Map()
   const mangled = []
-  for (const file of htmlFiles(join(site, 'reference', port))) {
+  for (const file of referenceDirs(site, port, { products: true }).flatMap((dir) => [...htmlFiles(dir)])) {
     const html = readFileSync(file, 'utf8')
     resolved += (html.match(TYPE_LINK) ?? []).length
     for (const block of typeBlocks(html)) {
