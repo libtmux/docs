@@ -99,15 +99,18 @@ Configuration conversion should preserve the source mapping, including extension
 keys; loading that mapping requires separate support for every execution
 feature.
 
-## Current Java builder
+## Native Java CLI
 
-The Java workspace parser accepts only session name/windows, window
-name/layout/panes, and pane commands. It rejects unknown keys. The builder uses
-a staging session and attempts cleanup on failure.
+The local `tmux-workspace` CLI validates its native configuration before scripts
+run or tmux state changes. It supports the session, window, pane and command
+fields described in the sections below. Unsupported native keys fail explicitly;
+Python plugin/custom-builder inputs use the separately selected extension path.
+Generic conversion preserves document fields without proving native execution.
 
-See the [native builder behavior](../internals/topics/) and [configuration
-source](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceParser.java)
-before using these fields through application code.
+See the [CLI configuration parser](https://github.com/libtmux/libtmux-java/blob/2d7e8028986b99c8e9496dc40b5d1e90fb2368c9/workspace-cli/src/main/java/io/github/libtmux/workspace/cli/WorkspacePlan.java).
+Application code using the lower-level workspace library has a separate
+[builder API](../internals/topics/). Its schema is not the CLI configuration
+contract.
 
 ## Reference source
 

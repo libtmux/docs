@@ -103,15 +103,19 @@ a shell prompt, not the eventual application's health, and do not acknowledge
 that every later command was consumed. Use [commands](../commands/) for explicit
 delays and Enter behavior.
 
-## Current Java builder
+## Native Java CLI
 
-The Java workspace parser rejects plugin, script, and custom builder keys.
-Cleanup attempts remove the staging session; suppressed exceptions report
-cleanup failure and shell effects cannot be reversed.
+The local CLI runs `before_script` through native child-process services and
+supports inherited pane before commands. Python plugins and custom builders use
+the explicit tmuxp bridge with version and import-path checks before mutation.
+Their arbitrary effects remain outside native rollback guarantees. Native load
+reports owned cleanup and retained borrowed-state changes; it cannot reverse
+shell side effects.
 
-See the [native builder behavior](../../internals/topics/) and [configuration
-source](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceParser.java)
-before using these fields through application code.
+See the [CLI configuration parser](https://github.com/libtmux/libtmux-java/blob/2d7e8028986b99c8e9496dc40b5d1e90fb2368c9/workspace-cli/src/main/java/io/github/libtmux/workspace/cli/WorkspacePlan.java).
+Application code using the lower-level workspace library has a separate
+[builder API](../../internals/topics/). Its schema is not the CLI configuration
+contract.
 
 ## Reference source
 

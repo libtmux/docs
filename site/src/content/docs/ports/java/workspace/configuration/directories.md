@@ -107,15 +107,19 @@ process can create required project files, but it runs after the initial tmux
 session exists. See [hooks](../hooks/) for failure handling and
 [environment](../environment/) for variable expansion.
 
-## Current Java builder
+## Native Java CLI
 
-The Java schema has no start_directory field at session, window, or pane scope.
-Native application code needs to choose any working-directory behavior
-separately.
+The local CLI supports `start_directory` at session, window and pane scope.
+Relative paths resolve from the source document's directory, then inherit
+through the session/window/pane hierarchy. Tilde and defined invoking-process
+variables expand before existing-directory checks. `before_script` uses the
+invocation directory unless the workspace sets `start_directory` explicitly.
+Imports instead record absolute invocation-based roots before saving.
 
-See the [native builder behavior](../../internals/topics/) and [configuration
-source](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/src/main/java/io/github/libtmux/workspace/WorkspaceParser.java)
-before using these fields through application code.
+See the [CLI configuration parser](https://github.com/libtmux/libtmux-java/blob/2d7e8028986b99c8e9496dc40b5d1e90fb2368c9/workspace-cli/src/main/java/io/github/libtmux/workspace/cli/WorkspacePlan.java).
+Application code using the lower-level workspace library has a separate
+[builder API](../../internals/topics/). Its schema is not the CLI configuration
+contract.
 
 ## Reference source
 
