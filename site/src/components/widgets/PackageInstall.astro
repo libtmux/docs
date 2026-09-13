@@ -534,7 +534,7 @@ const installHtml = new Map(
   function writeClipboardText(text: string, button: HTMLElement) {
     if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(text).then(
-        () => announceCopied(button),
+        () => announceCopyResult(button, true),
         () => fallbackCopy(text, button),
       )
     } else {
@@ -543,6 +543,7 @@ const installHtml = new Map(
   }
 
   function fallbackCopy(text: string, button: HTMLElement) {
+    const focused = document.activeElement
     const textarea = document.createElement('textarea')
     textarea.value = text
     textarea.style.position = 'fixed'
@@ -550,20 +551,23 @@ const installHtml = new Map(
     document.body.appendChild(textarea)
     textarea.focus()
     textarea.select()
+    let copied = false
     try {
-      document.execCommand('copy')
+      copied = document.execCommand('copy')
     } catch {
-      // Nothing more to do — the button simply won't confirm.
+      copied = false
+    } finally {
+      textarea.remove()
+      if (focused instanceof HTMLElement) focused.focus({ preventScroll: true })
     }
-    document.body.removeChild(textarea)
-    announceCopied(button)
+    announceCopyResult(button, copied)
   }
 
-  function announceCopied(button: HTMLElement) {
+  function announceCopyResult(button: HTMLElement, copied: boolean) {
     const original = button.getAttribute('data-copy-label') ?? button.textContent ?? 'Copy'
     button.setAttribute('data-copy-label', original)
-    button.textContent = 'Copied'
-    button.classList.add('lm-pkg-install__copy--done')
+    button.textContent = copied ? 'Copied' : 'Copy failed'
+    button.classList.toggle('lm-pkg-install__copy--done', copied)
     const win = button as HTMLElement & { _lmCopyResetTimer?: number }
     window.clearTimeout(win._lmCopyResetTimer)
     win._lmCopyResetTimer = window.setTimeout(() => {
