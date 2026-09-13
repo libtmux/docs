@@ -46,9 +46,15 @@ interface Props {
   /** Active topic on load. */
   defaultTopic?: string
   variant?: 'full' | 'compact'
+  /**
+   * Where the copy button sits. `overlay`, the default, floats it over the
+   * prompt's corner, which a prompt wrapped to 76 columns does not reach at
+   * desktop width; `gutter` gives it a column beside the prompt instead.
+   */
+  copyButton?: 'gutter' | 'overlay'
 }
 
-const { ports, defaultPort, defaultTopic = 'setup', variant = 'full' } = Astro.props as Props
+const { ports, defaultPort, defaultTopic = 'setup', variant = 'full', copyButton = 'overlay' } = Astro.props as Props
 // A page that names its task, such as /prompts/<topic>/, opens on it. The
 // others open on the task the reader last chose.
 const topicPinned = 'defaultTopic' in Astro.props
@@ -140,7 +146,7 @@ const activePortRules = items
 ---
 
 <div
-  class={`lm-agent-prompt lm-agent-prompt--${variant}`}
+  class={`lm-agent-prompt lm-agent-prompt--${variant} lm-agent-prompt--copy-${copyButton}`}
   data-ports={items.map((p) => p.slug).join(' ')}
   data-default-topic={defaultTopic}
   data-topic-pinned={topicPinned ? '' : undefined}
@@ -362,15 +368,24 @@ const activePortRules = items
     display: none;
   }
 
-  /* A gutter for the copy button, as in PackageInstall.astro: the prompt
-   * scrolls in the first column and the button sits in the second, so no line
-   * runs under it. The background is on the holder, so the gutter reads as
-   * part of the block. */
+  /* Where the copy button sits, set by the `copyButton` prop, as in
+   * PackageInstall.astro. `overlay`, the default here, floats it over the
+   * prompt's corner: the prompt is wrapped to 76 columns, so at desktop width
+   * no line reaches it, and a whole column for it would waste width beside a
+   * long prompt. `gutter` gives it a column the prompt cannot scroll under.
+   * The background is on the holder, so a gutter reads as part of the block. */
   .lm-agent-prompt__code {
+    background: var(--lm-agent-prompt-code-bg);
+  }
+
+  .lm-agent-prompt--copy-overlay .lm-agent-prompt__code {
+    position: relative;
+  }
+
+  .lm-agent-prompt--copy-gutter .lm-agent-prompt__code {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: start;
-    background: var(--lm-agent-prompt-code-bg);
   }
 
   .lm-agent-prompt__code pre {
@@ -423,10 +438,21 @@ const activePortRules = items
   .lm-agent-prompt__code .lm-ph-heading { color: var(--lm-agent-prompt-fg); font-weight: 600; }
   .lm-agent-prompt__code .lm-ph-marker { color: var(--lm-agent-prompt-fg-muted); }
 
-  .lm-agent-prompt__copy {
-    /* In the gutter, level with the first line, with space on both sides so a
-     * line cut off at the gutter's edge does not touch the button. */
+  /* In a gutter, level with the first line, with space on both sides so a
+   * line cut off at the gutter's edge does not touch the button. */
+  .lm-agent-prompt--copy-gutter .lm-agent-prompt__copy {
     margin: 0.6rem 0.6rem 0;
+  }
+
+  /* Over the corner, clear of the vertical scrollbar, which takes the first
+   * 4px of this edge. */
+  .lm-agent-prompt--copy-overlay .lm-agent-prompt__copy {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.85rem;
+  }
+
+  .lm-agent-prompt__copy {
     appearance: none;
     border: 1px solid var(--lm-agent-prompt-border);
     border-radius: 0.25rem;
@@ -457,6 +483,12 @@ const activePortRules = items
   .lm-agent-prompt--compact .lm-agent-prompt__code pre {
     max-height: 18rem;
     padding: 0.7rem 0.5rem 0.7rem 0.8rem;
+  }
+
+  /* An overlay button needs the code's end padded clear of it. After the
+   * compact rule, which sets all four sides at the same specificity. */
+  .lm-agent-prompt--copy-overlay .lm-agent-prompt__code pre {
+    padding-right: 3.25rem;
   }
 
   @media (max-width: 40rem) {

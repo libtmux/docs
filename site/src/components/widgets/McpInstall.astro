@@ -37,6 +37,13 @@ import { highlightInline } from '../../lib/highlight'
 interface Props {
   variant?: 'full' | 'compact'
   /**
+   * Where each block's copy button sits. `gutter`, the default, gives it a
+   * column beside the code, so a long command cannot scroll under it;
+   * `overlay` floats it over the block's corner, for a block too large to
+   * spare that width.
+   */
+  copyButton?: 'gutter' | 'overlay'
+  /**
    * Which port's server to install. Defaults to Python, which is what
    * `/mcp/` documents and what this widget was ported from.
    *
@@ -47,7 +54,7 @@ interface Props {
    */
   port?: string
 }
-const { variant = 'full', port = 'py' } = Astro.props as Props
+const { variant = 'full', port = 'py', copyButton = 'gutter' } = Astro.props as Props
 
 const spec = serverSpec(port)
 const panels = buildPanels(spec)
@@ -113,7 +120,7 @@ const hasCooldowns = spec.cooldowns.length > 1
 
 <Fragment set:html={prehydrateSnippet} />
 <div
-  class={`lm-mcp-install lm-mcp-install--${variant}`}
+  class={`lm-mcp-install lm-mcp-install--${variant} lm-mcp-install--copy-${copyButton}`}
   data-port={spec.port}
   data-default-scopes={JSON.stringify(DEFAULT_SCOPES)}
   data-default-cooldown-enabled={DEFAULT_COOLDOWN_ENABLED ? '1' : '0'}

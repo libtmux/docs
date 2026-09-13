@@ -52,8 +52,15 @@ interface Props {
   /** Active tab when nothing is saved yet; defaults to the first shown port. */
   defaultPort?: string
   variant?: 'full' | 'compact'
+  /**
+   * Where each block's copy button sits. `gutter`, the default, gives it a
+   * column beside the code, so a long command cannot scroll under it;
+   * `overlay` floats it over the block's corner, for a block too large to
+   * spare that width.
+   */
+  copyButton?: 'gutter' | 'overlay'
 }
-const { ports, defaultPort, snippets, variant = 'full' } = Astro.props as Props
+const { ports, defaultPort, snippets, variant = 'full', copyButton = 'gutter' } = Astro.props as Props
 
 const items = ports && ports.length > 0 ? PORTS.filter((p) => ports.includes(p.slug)) : PORTS
 if (items.length === 0) {
@@ -101,7 +108,7 @@ const installHtml = new Map(
 )
 ---
 
-<div class={`lm-pkg-install lm-pkg-install--${variant}${snippets ? ' lm-pkg-install--examples' : ''}`} data-ports={items.map((p) => p.slug).join(' ')}>
+<div class={`lm-pkg-install lm-pkg-install--${variant} lm-pkg-install--copy-${copyButton}${snippets ? ' lm-pkg-install--examples' : ''}`} data-ports={items.map((p) => p.slug).join(' ')}>
   {/*
     One language is not a choice of language.
 
@@ -362,16 +369,25 @@ const installHtml = new Map(
     color: var(--lm-pkg-install-fg-secondary);
   }
 
-  /* A gutter for the copy button. The command scrolls in the first column and
-   * the button sits in the second, so no line runs under it however far it
-   * scrolls. The background is on the holder, so the gutter reads as part of
-   * the block. */
+  /* Where the copy button sits, set by the `copyButton` prop. `gutter`, the
+   * default, gives it a column beside the code, so a long command cannot
+   * scroll under it however far it scrolls. `overlay` floats it over the
+   * block's corner and pads the code's end to clear it, for a block too large
+   * to spare a column. The background is on the holder, so a gutter reads as
+   * part of the block. */
   .lm-pkg-install__code {
+    border-radius: 0.25rem;
+    background: var(--lm-pkg-install-code-bg);
+  }
+
+  .lm-pkg-install--copy-gutter .lm-pkg-install__code {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: start;
-    border-radius: 0.25rem;
-    background: var(--lm-pkg-install-code-bg);
+  }
+
+  .lm-pkg-install--copy-overlay .lm-pkg-install__code {
+    position: relative;
   }
 
   /* The example under the install line. Expressive Code brings its own
@@ -420,6 +436,10 @@ const installHtml = new Map(
     overflow-x: auto;
     color: var(--lm-pkg-install-fg);
     padding: 0.75rem 0.5rem 0.75rem 0.9rem;
+  }
+
+  .lm-pkg-install--copy-overlay .lm-pkg-install__code pre {
+    padding-right: 3.25rem;
   }
 
   /* The standard properties first; the WebKit rules say the same thing for
@@ -472,12 +492,23 @@ const installHtml = new Map(
     color: var(--shiki-dark);
   }
 
-  .lm-pkg-install__copy {
-    /* In the gutter, level with the first line, with space on both sides: a
-     * line cut off at the gutter's edge would otherwise touch the button and
-     * read as running under it. A vertical scrollbar belongs to the `pre`, so
-     * it sits beside the gutter rather than under the button. */
+  /* In a gutter, level with the first line, with space on both sides: a line
+   * cut off at the gutter's edge would otherwise touch the button and read as
+   * running under it. A vertical scrollbar belongs to the `pre`, so it sits
+   * beside the gutter rather than under the button. */
+  .lm-pkg-install--copy-gutter .lm-pkg-install__copy {
     margin: 0.45rem 0.45rem 0;
+  }
+
+  /* Over the corner, clear of a vertical scrollbar whose width the script
+   * below measures. */
+  .lm-pkg-install--copy-overlay .lm-pkg-install__copy {
+    position: absolute;
+    top: 0.45rem;
+    right: calc(0.45rem + var(--lm-pkg-install-scrollbar, 0px));
+  }
+
+  .lm-pkg-install__copy {
     appearance: none;
     border: 1px solid var(--lm-pkg-install-border);
     border-radius: 0.25rem;
@@ -551,17 +582,20 @@ const installHtml = new Map(
   }
 
   /**
-   * Give the example's copy button the width of the example's vertical scrollbar.
+   * Give each copy button that sits over code the width of that code's
+   * vertical scrollbar.
    *
-   * Expressive Code shows that button over the code on hover, and CSS cannot
-   * tell whether the code overflows. Install blocks need none of this: their
-   * button has a gutter of its own. Overlay scrollbars measure zero, so they
-   * get no offset either.
+   * That is the example's button, which Expressive Code shows on hover, and
+   * an install block's in `overlay` mode. CSS cannot tell whether the code
+   * overflows. A button in a gutter needs none of this. Overlay scrollbars
+   * measure zero, so they get no offset either.
    */
   function measureScrollbars() {
     // Every width is read before any is written: a write between two reads
     // makes the second read lay out the whole page again.
-    const holders = [...document.querySelectorAll<HTMLElement>('.lm-pkg-install__snippet .frame')]
+    const holders = [
+      ...document.querySelectorAll<HTMLElement>('.lm-pkg-install--copy-overlay .lm-pkg-install__code, .lm-pkg-install__snippet .frame'),
+    ]
     const widths = holders.map((holder) => {
       const pre = holder.querySelector('pre')
       if (!pre) return undefined
