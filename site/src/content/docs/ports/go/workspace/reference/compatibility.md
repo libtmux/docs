@@ -68,6 +68,10 @@ and terminal progress with presets, custom tokens and bounded script lines.
 Machine output disables terminal rendering. Documentation, command metadata,
 manuals and shell completion can be generated from the command graph.
 
+`ls --tree` groups workspaces by directory in discovery order. `--full` includes
+their YAML configurations. Human names and paths escape terminal controls;
+machine records preserve the underlying values and ignore tree presentation.
+
 Native Go logging supports `--log-level` and structured `--log-file` output
 on Unix. Optional diagnostics follow the selected level; mandatory command
 errors and machine results remain visible. A later log write or close failure
