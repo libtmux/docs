@@ -131,8 +131,8 @@ coverage and portable packaging remain unfinished. Native progress and
 dynamic session/configuration-name suggestions remain unavailable.
 Native before scripts, terminal handoff and file logging are implemented; see
 [current coverage](../../reference/compatibility/) for their limits. Capture
-omits environment/options and cannot recover original command arguments or
-history.
+preserves local session/window options but omits inherited/global options and
+environment. It cannot recover original command arguments or history.
 
 ## Python alternative
 

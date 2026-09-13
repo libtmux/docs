@@ -68,15 +68,19 @@ Conversion preserves extension fields. Imports validate source shapes and
 translate supported command grouping, roots, layouts, focus and options.
 Unsupported lifecycle, title and synchronization behavior is refused before
 saving. See [native imports](../../cli/import/#native-c-imports).
-Capture records current commands, directories,
-window names, indexes, focus and layouts; it omits environment and options and
-warns about unrecoverable original arguments, history and scripts. Search uses
-native C++ ECMAScript regular expressions.
+Capture records current commands, directories, window names, indexes, focus,
+layouts and local session/window options. Indexed options and escaped values
+survive reload; `synchronize-panes` is restored after pane creation. Inherited
+and global options and environment are omitted. Capture warns about
+unrecoverable original arguments, history and scripts. Search uses native C++
+ECMAScript regular expressions.
 
 Layout syntax is checked across all inputs before scripts or session creation.
-Named-layout availability follows the running daemon's version, or the selected
-client when starting a new server. Custom layout checks validate syntax and pane
-capacity; tmux owns geometry and pruning to the requested pane count.
+Named-layout and JSON-format availability follow the running daemon's version,
+or the selected client when starting a new server. Saved layouts accept legacy
+checksum strings and JSON v2 from tmux next-3.9, including floating-pane metadata.
+Custom layout checks validate syntax and pane capacity; tmux owns geometry and
+pruning to the requested pane count.
 
 Every command accepts `--json` and `--ndjson`; NDJSON takes precedence. Load
 flushes events and a terminal result. Diagnostics use stderr and control bytes
