@@ -49,10 +49,14 @@ or `--append`, including linked windows.
 records without hiding required errors or changing machine results. See
 [logging](./reference/output/#native-c-logging) for file and failure behavior.
 
-Python shell/plugin/custom-builder execution, progress, completion,
-full importer/configuration coverage and
-portable packaging remain unfinished. Capture omits environment/options and
-cannot recover original command arguments or history.
+Human load has terminal progress with presets, templates and bounded script
+output. Native Bash, Zsh and Fish completion covers commands, flags, choices
+and paths. Dynamic session/configuration-name suggestions remain unavailable.
+
+Python shell/plugin/custom-builder execution, full importer/configuration
+coverage and portable packaging remain unfinished. Capture preserves local
+session/window options but omits inherited/global options and environment.
+It cannot recover original command arguments or history.
 
 For the released Python workflow, use [tmuxp](https://tmuxp.git-pull.com/)
 and its [Python workspace guide](/py/latest/workspace/guides/). It is a separate
@@ -74,6 +78,7 @@ Use the local CLI's help and the limits above when applying these compatibility
 references to native execution.
 
 - [Installation walkthrough](./guides/installation/) builds and runs the local native CLI.
+- [Inspect through MCP](./guides/inspect-with-mcp/) connects to the loaded session.
 - [Command reference](./cli/) lists tmuxp commands, flags and compatibility targets.
 - [Configuration](./configuration/) covers fields, normalization and execution.
 - [Example gallery](./examples/gallery/) includes upstream fixtures and prerequisites.
