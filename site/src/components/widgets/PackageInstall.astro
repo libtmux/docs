@@ -446,9 +446,9 @@ const installHtml = new Map(
     overflow: auto;
   }
 
-  /* Expressive Code's own offset, moved clear of a measured scrollbar. */
+  /* Expressive Code's own offset, moved clear of the example's 4px scrollbar. */
   .lm-pkg-install__snippet .expressive-code .frame .copy {
-    inset-inline-end: calc(var(--ec-brdWd) + var(--ec-uiPadInl) / 2 + var(--lm-pkg-install-scrollbar, 0px));
+    inset-inline-end: calc(var(--ec-brdWd) + var(--ec-uiPadInl) / 2 + 4px);
   }
 
   /* Beside an example, a long install block such as Maven's POM would set the
@@ -530,12 +530,17 @@ const installHtml = new Map(
     padding-right: 3.25rem;
   }
 
-  /* The standard properties first; the WebKit rules say the same thing for
-   * browsers that ignore them. */
-  .lm-pkg-install__code pre,
-  .lm-pkg-install__snippet .expressive-code .frame pre {
-    scrollbar-width: thin;
-    scrollbar-color: var(--lm-pkg-install-scroll) transparent;
+  /* Chrome ignores the WebKit rules below on an element that sets the
+   * standard properties, and draws a 10px scrollbar instead, which the copy
+   * buttons could only be measured clear of after load. So the standard
+   * properties apply only where the WebKit ones do not, and a 4px scrollbar
+   * leaves room for a button at a fixed inset from the first paint. */
+  @supports not selector(::-webkit-scrollbar) {
+    .lm-pkg-install__code pre,
+    .lm-pkg-install__snippet .expressive-code .frame pre {
+      scrollbar-width: thin;
+      scrollbar-color: var(--lm-pkg-install-scroll) transparent;
+    }
   }
 
   .lm-pkg-install__code pre::-webkit-scrollbar,
@@ -588,12 +593,13 @@ const installHtml = new Map(
     margin: 0.45rem 0.45rem 0;
   }
 
-  /* Over the corner, clear of a vertical scrollbar whose width the script
-   * below measures. */
+  /* Over the corner, clear of the 4px vertical scrollbar a scrolling block
+   * draws. Fixed rather than measured, so the button is where it stays from
+   * the first paint. */
   .lm-pkg-install__code--overlay .lm-pkg-install__copy {
     position: absolute;
     top: 0.45rem;
-    right: calc(0.45rem + var(--lm-pkg-install-scrollbar, 0px));
+    right: calc(0.45rem + 4px);
   }
 
   .lm-pkg-install__copy {
@@ -669,36 +675,6 @@ const installHtml = new Map(
     }
   }
 
-  /**
-   * Give each copy button that sits over code the width of that code's
-   * vertical scrollbar.
-   *
-   * That is the example's button, which Expressive Code shows on hover, and
-   * an install block's in `overlay` mode. CSS cannot tell whether the code
-   * overflows. A button in a gutter needs none of this. Overlay scrollbars
-   * measure zero, so they get no offset either.
-   */
-  function measureScrollbars() {
-    // Every width is read before any is written: a write between two reads
-    // makes the second read lay out the whole page again.
-    const holders = [
-      ...document.querySelectorAll<HTMLElement>('.lm-pkg-install__code--overlay, .lm-pkg-install__snippet .frame'),
-    ]
-    const widths = holders.map((holder) => {
-      const pre = holder.querySelector('pre')
-      if (!pre) return undefined
-      const style = getComputedStyle(pre)
-      const width = pre.offsetWidth - pre.clientWidth - parseFloat(style.borderLeftWidth) - parseFloat(style.borderRightWidth)
-      return `${Math.max(0, width)}px`
-    })
-    holders.forEach((holder, index) => {
-      const width = widths[index]
-      if (width !== undefined && holder.style.getPropertyValue('--lm-pkg-install-scrollbar') !== width) {
-        holder.style.setProperty('--lm-pkg-install-scrollbar', width)
-      }
-    })
-  }
-
   function applySavedState() {
     const saved = read(STORAGE_KEY)
     if (saved) {
@@ -709,7 +685,6 @@ const installHtml = new Map(
       const savedManager = port && read(`${MANAGER_KEY}.${port}`)
       if (savedManager) selectManager(panel, savedManager, false)
     })
-    measureScrollbars()
   }
 
   function selectManager(panel: HTMLElement, index: string, persist: boolean) {
@@ -731,7 +706,6 @@ const installHtml = new Map(
       document.documentElement.setAttribute(`data-pkg-manager-${panel.dataset.port}`, index)
       write(`${MANAGER_KEY}.${panel.dataset.port}`, index)
     }
-    measureScrollbars()
   }
 
   function selectPort(widget: HTMLElement, slug: string, persist: boolean) {
@@ -761,7 +735,6 @@ const installHtml = new Map(
       document.documentElement.setAttribute('data-pkg-port', slug)
       write(STORAGE_KEY, slug)
     }
-    measureScrollbars()
   }
 
   function copyPanelCode(button: HTMLElement) {
@@ -918,7 +891,4 @@ const installHtml = new Map(
     applySavedState()
   }
   document.addEventListener('astro:after-swap', applySavedState)
-  // Width and web fonts both change whether a block overflows.
-  window.addEventListener('resize', measureScrollbars)
-  void document.fonts.ready.then(measureScrollbars)
 </script>
