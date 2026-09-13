@@ -706,7 +706,7 @@ const activePortRules = items
    */
   function startingTopic(widget: HTMLElement): string | undefined {
     const shared = new URL(window.location.href).searchParams.get(TOPIC_PARAM)
-    if (shared && TOPIC_BY_ID[shared]) return shared
+    if (isTopic(shared)) return shared
     if (widget.hasAttribute('data-topic-pinned')) return undefined
     let saved: string | null = null
     try {
@@ -714,13 +714,21 @@ const activePortRules = items
     } catch {
       saved = null
     }
-    return saved && TOPIC_BY_ID[saved] ? saved : undefined
+    return isTopic(saved) ? saved : undefined
+  }
+
+  /**
+   * Whether an id from the address or storage names a task. An own-property
+   * check, since `?prompt=constructor` would otherwise find Object's.
+   */
+  function isTopic(id: string | null): id is string {
+    return id !== null && Object.hasOwn(TOPIC_BY_ID, id)
   }
 
   /** Show a task, remember it, and put it in the address so the link shares it. */
   function chooseTopic(widget: HTMLElement, topic: string) {
     const select = widget.querySelector<HTMLSelectElement>('[data-select="topic"]')
-    if (!select || !TOPIC_BY_ID[topic]) return
+    if (!select || !isTopic(topic)) return
     select.value = topic
     try {
       localStorage.setItem(TOPIC_KEY, topic)
