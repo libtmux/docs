@@ -724,7 +724,13 @@ const installHtml = new Map(
       tab.setAttribute('tabindex', isMatch ? '0' : '-1')
     })
     panel.setAttribute('data-active-manager', index)
-    if (persist && panel.dataset.port) write(`${MANAGER_KEY}.${panel.dataset.port}`, index)
+    if (persist && panel.dataset.port) {
+      // As selectPort does for the language: <head> puts the saved manager on
+      // the document before first paint, and the rules keyed on it outrank
+      // this panel's, so a click has to move the document attribute too.
+      document.documentElement.setAttribute(`data-pkg-manager-${panel.dataset.port}`, index)
+      write(`${MANAGER_KEY}.${panel.dataset.port}`, index)
+    }
     measureScrollbars()
   }
 
