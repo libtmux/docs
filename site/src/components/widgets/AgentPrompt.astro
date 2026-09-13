@@ -765,7 +765,10 @@ const activePortRules = items
       const topic = startingTopic(widget)
       const select = widget.querySelector<HTMLSelectElement>('[data-select="topic"]')
       if (topic && select) select.value = topic
-      const start = saved ?? stateOf(widget).port
+      // A saved language this widget does not offer falls back to its own
+      // port; selectPort would ignore it and leave the restored task unrendered.
+      const offered = widget.dataset.ports?.split(' ') ?? []
+      const start = saved && offered.includes(saved) ? saved : stateOf(widget).port
       if (start) selectPort(widget, start, false)
       else render(widget)
     })
