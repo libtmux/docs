@@ -28,7 +28,7 @@ export function docsRoutePath(
 export function workspaceRedirects(paths: string[]): { path: string; target: string }[] {
   const published = new Set(paths)
   return paths.flatMap((target) => {
-    const path = target.replace(/(^|\/)workspace\/internals\/(topics|guides|examples|api)(\/|$)/, '$1workspace/$2$3')
+    const path = target.replace(/(^|\/)workspace\/internals\/(topics|guides|examples)(\/|$)/, '$1workspace/$2$3')
     return path !== target && !published.has(path) ? [{ path, target }] : []
   })
 }

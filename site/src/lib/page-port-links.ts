@@ -5,9 +5,16 @@ import { docsPath, type DocsPage } from './docs-paths'
 import { productApiHref } from './product-api'
 import { MCP_REFERENCE, equivalentMcpTool } from './mcp-reference'
 
+/**
+ * Every symbol by the route it answers on, keyed by port.
+ *
+ * A reference page's path no longer carries its port — it sits under one —
+ * so the port comes from the build rather than from the path's second
+ * segment.
+ */
 const symbolsByRoute = new Map<string, ApiSymbol>(Object.entries(API_MODELS).flatMap(([port, model]) =>
   model.symbols.map((symbol) => [
-    `reference/${port}/${symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)}`,
+    `${port}/${symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)}`,
     symbol,
   ] as const),
 ))
@@ -41,11 +48,13 @@ export function pagePortLinks({
   docs: DocsPage[]
 }): PagePortLink[] {
   const path = pagePath.replace(/^\/+|\/+$/g, '')
-  const [, referencePort, symbolSlug] = path.split('/')
   const isReference = path === 'reference' || path.startsWith('reference/')
-  const productReference = /^(mcp|workspace)\/(?:internals\/)?api\/(.+)$/.exec(path)
-  const symbol = symbolsByRoute.get(productReference ? `reference/${portSlug}/${productReference[2]}` : path)
-  const symbolPort = productReference ? portSlug : referencePort
+  const symbolSlug = isReference ? path.slice('reference/'.length) || undefined : undefined
+  const productReference = /^(mcp|workspace)\/reference\/(.+)$/.exec(path)
+  const symbol = portSlug
+    ? symbolsByRoute.get(`${portSlug}/${productReference ? productReference[2] : (symbolSlug ?? '')}`)
+    : undefined
+  const symbolPort = portSlug
   const alternatives = symbol ? referenceAlternatives(symbolPort!, symbol.publicId ?? symbol.id) : []
   const entries = docs.filter((entry) => docsPath(entry) === path)
   const tool = path.startsWith('mcp/tools/') && portSlug
@@ -57,11 +66,14 @@ export function pagePortLinks({
     if (!path) {
       links = [{ href: portHomeUrl(port, targetVersion) }]
     } else if ((isReference && !symbolSlug) || path === 'api') {
-      if (API_MODELS[port.slug]) links = [{ href: referenceUrl(port) }]
+      if (API_MODELS[port.slug]) links = [{ href: referenceUrl(port, targetVersion) }]
     } else if (symbol) {
       for (const alternative of alternatives) {
         const match = alternative.ports.find((p) => p.port === port.slug)
-        const targetSymbol = productReference && match?.publicId
+        // Resolved here rather than taken from `match.href`, because the
+        // equivalent lives under the *target* port's version, which this
+        // caller knows and `referenceAlternatives` does not.
+        const targetSymbol = match?.publicId
           ? API_MODELS[port.slug]?.symbols.find((entry) => (entry.publicId ?? entry.id) === match.publicId) : undefined
         const href = targetSymbol ? productApiHref(API_MODELS[port.slug], targetSymbol, targetVersion) : match?.href
         if (href && !links.some((link) => link.href === href)) {
@@ -69,7 +81,9 @@ export function pagePortLinks({
         }
       }
       if (port.slug === symbolPort) {
-        const href = productReference ? portPageUrl(port, targetVersion, path) : referenceHref(symbolPort, symbol.publicId ?? symbol.id)
+        const href = productReference
+          ? portPageUrl(port, targetVersion, path)
+          : referenceHref(symbolPort, symbol.publicId ?? symbol.id, targetVersion)
         if (href) links = [{ href }]
       }
     } else if (tool) {

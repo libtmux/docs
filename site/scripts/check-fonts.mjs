@@ -50,8 +50,8 @@ const FAMILIES = ['IBM Plex Sans', 'IBM Plex Mono']
 const ARCHETYPES = [
   ['home', '/', true],
   ['port page', '/py/', true],
-  ['reference entry', '/reference/py/libtmux-server/', true],
-  ['reference index', '/reference/go/', true],
+  ['reference entry', '/py/stable/reference/libtmux-server/', true],
+  ['reference index', '/go/latest/reference/', true],
   ['symbol index', '/reference/symbols/p/', true],
   ['topic', '/topics/traversal/', true],
   ['example', '/examples/attach-and-send-keys/', true],
@@ -66,20 +66,20 @@ const ARCHETYPES = [
   // `libtmux.Server`, not a `_compat` shim: the reference stopped publishing
   // the vendored and compatibility modules, and a sample page has to be one
   // the port actually exports if it is to keep being built.
-  ['ref py', '/reference/py/libtmux-server/', true],
-  ['ref ts', '/reference/ts/builder-applywindowcontext/', true],
-  ['ref rs', '/reference/rs/blocking-runtime/', true],
-  ['ref go', '/reference/go/tmux-activityaction/', true],
-  ['ref java', '/reference/java/io-github-libtmux-batch-batch-batch/', true],
-  ['ref dotnet', '/reference/dotnet/libtmux-attachsessionrequest/', true],
-  ['ref cxx', '/reference/cxx/libtmux-argumentsensitivity/', true],
-  ['ref swift', '/reference/swift/calleridentity/', true],
+  ['ref py', '/py/stable/reference/libtmux-server/', true],
+  ['ref ts', '/ts/latest/reference/builder-applywindowcontext/', true],
+  ['ref rs', '/rs/latest/reference/blocking-runtime/', true],
+  ['ref go', '/go/latest/reference/tmux-activityaction/', true],
+  ['ref java', '/java/latest/reference/io-github-libtmux-batch-batch-batch/', true],
+  ['ref dotnet', '/dotnet/latest/reference/libtmux-attachsessionrequest/', true],
+  ['ref cxx', '/cxx/latest/reference/libtmux-argumentsensitivity/', true],
+  ['ref swift', '/swift/latest/reference/calleridentity/', true],
   // A member's own page, which is a different shape from its type's: the type
   // lists its members, the member carries the signature. The italic type
   // annotations in a signature live only here, so an archetype list without
   // one reports Mono 400 italic as preloaded and unused.
-  ['member py', '/reference/py/libtmux-server-wait_for/', true],
-  ['member dotnet', '/reference/dotnet/libtmux-pane-clearhistoryasync/', true],
+  ['member py', '/py/stable/reference/libtmux-server-wait_for/', true],
+  ['member dotnet', '/dotnet/latest/reference/libtmux-pane-clearhistoryasync/', true],
 ]
 
 /**

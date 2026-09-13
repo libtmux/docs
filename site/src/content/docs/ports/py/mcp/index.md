@@ -23,7 +23,7 @@ and `execute`; deletion tools require an explicit selection.
 - [Guides](./guides/) connect a client and select a tmux socket.
 - [Topics](./topics/) explain toolsets, trust, waiting, and caller context.
 - [Examples](./examples/) call a tool, then explore server internals.
-- [Language API](./api/) documents embedding and implementation types.
+- [Language API](./reference/) documents embedding and implementation types.
 
 For declarative session configuration, use the
 [Workspace Manager](../workspace/), provided by the separate `tmuxp`

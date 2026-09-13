@@ -30,7 +30,7 @@ const usr = () =>
 function site({ n = 0, mangled = false } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'check-type-links-'))
   for (const p of PORTS) {
-    const d = join(dir, 'reference', p, 'thing')
+    const d = join(dir, p, 'latest', 'reference', 'thing')
     mkdirSync(d, { recursive: true })
     const body =
       linked('Server') +

@@ -22,7 +22,7 @@ function audit(html: string) {
 
 describe('font audit redirect exemptions', () => {
   it('recognizes an Astro redirect with long paths in its title and code labels', () => {
-    const target = '/en/dotnet/latest/workspace/internals/api/libtmux-workspace-workspacebuilder-buildsessionasync/'
+    const target = '/en/dotnet/latest/workspace/reference/libtmux-workspace-workspacebuilder-buildsessionasync/'
     const source = target.replace('/internals/', '/')
     const result = audit(`<!doctype html>
 <title>Redirecting to: ${target}</title>

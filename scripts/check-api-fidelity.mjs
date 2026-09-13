@@ -20,6 +20,7 @@ import { readFileSync, globSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { sourceUrl } from '../packages/api-model/src/products.ts'
+import { referenceDirs } from './reference-trees.mjs'
 
 const root = process.argv[2]
 // `root` above is the assembled site this run measures; the port list comes
@@ -88,7 +89,8 @@ for (const port of PORTS) {
   const symbols = new Map(model.symbols.flatMap((symbol) => [
     [symbol.id, symbol], [symbol.publicId ?? symbol.id, symbol],
   ]))
-  const pages = globSync(`reference/${port}/**/index.html`, { cwd: root })
+  const pages = referenceDirs(root, port, { products: true })
+    .flatMap((dir) => globSync('**/index.html', { cwd: dir }).map((page) => join(dir.slice(root.length + 1), page)))
   if (!pages.length) {
     failures.push(`${port}: no reference pages built`)
     continue

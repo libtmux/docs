@@ -5,17 +5,18 @@
  * when a reader first opens another bucket or type. Buckets carry their
  * types, and members are keyed by type so a type opens without a second
  * request. Slugs rather than URLs: the page knows its own root.
+ *
+ * One file per port shell, beside that port's reference, so the tree a page
+ * loads is the tree of the port it belongs to. The root build has no port and
+ * writes nothing.
  */
 import type { APIRoute } from 'astro'
-import { API_MODELS } from '../../../lib/api-models'
-import { bucketTotal, firstEntry, membersByType, navTree, type TreeBucket } from '../../../lib/api-tree'
+import { API_MODELS } from '../../lib/api-models'
+import { bucketTotal, firstEntry, membersByType, navTree, type TreeBucket } from '../../lib/api-tree'
 
-export function getStaticPaths() {
-  return Object.keys(API_MODELS).map((port) => ({ params: { port } }))
-}
-
-export const GET: APIRoute = ({ params }) => {
-  const port = String(params.port)
+export const GET: APIRoute = () => {
+  const port = process.env.LIBTMUX_DOCS_PORT ?? ''
+  if (!API_MODELS[port]) return new Response('Not found', { status: 404 })
   const members = membersByType(port)
   const bucket = (b: TreeBucket): unknown => ({
     id: b.id,

@@ -2,11 +2,12 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { visit } from 'unist-util-visit'
-import { decideFilePath, decideMention, isLikelyReference, notASymbol, notApiReason, type ApiProduct, type MentionContext, type Resolver } from '@libtmux/api-model'
+import { decideFilePath, decideMention, isLikelyReference, notASymbol, notApiReason, type ApiProduct, type ApiSymbol, type MentionContext, type Resolver } from '@libtmux/api-model'
 import { getResolver } from '../lib/prose-resolver'
 import { API_MODELS, PORT_NAME } from '../lib/api-models'
 import { withPortRoot } from '../lib/site-root'
 import { productApiHref } from '../lib/product-api'
+import { PORT_BY_SLUG, referenceUrl } from '../lib/ports'
 import { buildTarget } from '../lib/versions'
 
 /**
@@ -143,6 +144,10 @@ export function rehypeApiLinks() {
     const product = file?.data?.astro?.frontmatter?.product
     let defaults: Record<string, string> = {}
     try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
+
+    /** The version a port publishes: this build's, when it is that port. */
+    const versionOf = (port: string) =>
+      port === process.env.LIBTMUX_DOCS_PORT ? buildTarget(process.env).version : (defaults[port] ?? 'latest')
     const sections: { depth: number; port?: string }[] = []
 
     const walk = (node: El, inLink: boolean, rowPort: string | undefined, fence: { lang?: string }, before: { text: string }) => {
@@ -189,7 +194,16 @@ export function rehypeApiLinks() {
         }
         if (child.tagName === 'code' && !inLink) {
           const text = textOf(child).trim()
-          const ctx = { pagePort: rowPort ?? fence.lang ?? sections.at(-1)?.port ?? buildPort, product, before: scope.text }
+          const ctx = {
+            pagePort: rowPort ?? fence.lang ?? sections.at(-1)?.port ?? buildPort,
+            product,
+            before: scope.text,
+            symbolHref: (port: string, symbol: ApiSymbol) => productApiHref(API_MODELS[port], symbol, versionOf(port)),
+            moduleHref: (port: string, module: string) => {
+              const target = PORT_BY_SLUG[port]
+              return target ? `${referenceUrl(target, versionOf(port))}#${module}` : `#${module}`
+            },
+          }
           const wrapped = linkFor(text, ctx, r)
           if (wrapped) {
             kids[i] = { type: 'element', tagName: 'a', properties: wrapped.properties, children: [child] } as El
@@ -238,15 +252,16 @@ export function rehypeApiLinks() {
         return undefined
       }
       if (d.kind !== 'link') return undefined
-      let href = withPortRoot(d.href)
-      if (ctx.product && !d.external) {
+      // Every reference link goes through productApiHref: it knows which of
+      // the three trees a symbol belongs to and which version of the target
+      // port publishes it. `d.href` survives only for what is not a symbol
+      // page — a federated inventory hit, or a module index — and the
+      // builders this plugin supplies already carry the site root, so only a
+      // bare path from the package's own default needs one.
+      let href = d.href.startsWith('/reference/') ? withPortRoot(d.href) : d.href
+      if (!d.external) {
         const res = r.resolve(d.port, text, ctx.product)
-        if ('symbol' in res) {
-          const version = d.port === process.env.LIBTMUX_DOCS_PORT
-            ? buildTarget(process.env).version
-            : (defaults[d.port] ?? 'latest')
-          href = productApiHref(API_MODELS[d.port], res.symbol, version)
-        }
+        if ('symbol' in res) href = productApiHref(API_MODELS[d.port], res.symbol, versionOf(d.port))
       }
       return {
         properties: {

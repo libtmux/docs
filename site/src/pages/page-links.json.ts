@@ -4,6 +4,7 @@ import { referenceAlternatives } from '../lib/api-models'
 import { PORTS, referenceUrl } from '../lib/ports'
 import { buildLocale } from '../i18n/resolve'
 import { DEFAULT_LOCALE } from '../i18n/locales'
+import { defaultVersionFor } from '../lib/versions'
 
 /** Verified reference targets for the shell injected into native API pages. */
 export const GET: APIRoute = () => {
@@ -23,7 +24,7 @@ export const GET: APIRoute = () => {
   }
   return new Response(JSON.stringify({
     schema: 1,
-    indexes: Object.fromEntries(PORTS.map((port) => [port.slug, referenceUrl(port)])),
+    indexes: Object.fromEntries(PORTS.map((port) => [port.slug, referenceUrl(port, defaultVersionFor(port.slug))])),
     symbols,
   }), { headers: { 'Content-Type': 'application/json' } })
 }

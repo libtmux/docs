@@ -23,7 +23,7 @@ hierarchy discovery only.
 - [Guides](./guides/) build the executable and select an endpoint.
 - [Topics](./topics/) explain platform coverage, identifiers, and failures.
 - [Examples](./examples/) call a tool, then explore server internals.
-- [Language API](./api/) documents embedding and implementation types.
+- [Language API](./reference/) documents embedding and implementation types.
 
 The server offers tools only. It does not offer resources, prompts,
 subscriptions, or configurable toolsets.

@@ -21,6 +21,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
+import { referenceDirs } from './reference-trees.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 /* `--floor` points at a different record so `check-xrefs.negative.mjs` can
@@ -52,7 +53,7 @@ function countIn(dir) {
 }
 
 const counts = Object.fromEntries(
-  PORTS.map((p) => [p, countIn(join(site, 'reference', p))]),
+  PORTS.map((p) => [p, referenceDirs(site, p, { products: true }).reduce((n, dir) => n + countIn(dir), 0)]),
 )
 
 if (args.includes('--update')) {

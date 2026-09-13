@@ -73,6 +73,10 @@ export function pageSlug(id: string): string {
  * a member-less type and a free function all resolve the same way, where
  * before each was a separate branch and two of them were wrong often enough
  * to produce 114 links to pages that were never generated.
+ *
+ * Unversioned, and so not what the site renders: a reference page lives under
+ * its port's version and its package's section, which this package cannot
+ * know. `MentionContext.symbolHref` is how the site supplies the real one.
  */
 export function hrefFor(port: string, _model: ApiModel, symbol: ApiSymbol): string {
   return `/reference/${port}/${symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)}/`
@@ -187,6 +191,16 @@ export interface MentionContext {
   pagePort?: string
   product?: ApiProduct
   before?: string
+  /**
+   * Where this site puts a symbol and a module index.
+   *
+   * A reference URL carries a port, a version and a product, and only the
+   * site knows which version a port is publishing. Tooling that asks whether
+   * a span resolves at all — `check-api-links` — leaves these unset and takes
+   * the unversioned default below.
+   */
+  symbolHref?: (port: string, symbol: ApiSymbol) => string
+  moduleHref?: (port: string, module: string) => string
 }
 
 /**
@@ -209,7 +223,8 @@ export function decideMention(
       return { kind: 'link', port, href: res.href, title: `${text}: ${res.project}`, external: true }
     }
     if (res.how === 'module-index') {
-      return { kind: 'link', port, href: `/reference/${port}/#${res.module}`, title: `${res.module}: module`, external: false }
+      const href = ctx.moduleHref?.(port, res.module) ?? `/reference/${port}/#${res.module}`
+      return { kind: 'link', port, href, title: `${res.module}: module`, external: false }
     }
     // Every outcome that carries a symbol, not just the two most common.
     // `module` and `chained` resolve to a real symbol too — dropping them
@@ -220,7 +235,7 @@ export function decideMention(
       return {
         kind: 'link',
         port,
-        href: hrefFor(port, model, res.symbol),
+        href: ctx.symbolHref?.(port, res.symbol) ?? hrefFor(port, model, res.symbol),
         title: `${res.symbol.publicId ?? res.symbol.id}: ${PORT_NAME[port] ?? port}`,
         external: false,
       }

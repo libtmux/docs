@@ -24,8 +24,8 @@ attachment or client switching.
 
 - [Topics](./topics/) explain the loader pipeline and builder extension points.
 - [Examples](./examples/) show expansion and building on an isolated server.
-- [API](./api/) links the internal loading, building, and freezing interfaces.
+- [API](../reference/) links the internal loading, building, and freezing interfaces.
 
 The upstream [Internals documentation](https://tmuxp.git-pull.com/internals/)
 contains the full architecture and module reference. Use the
-[libtmux Python API](/reference/py/) for general tmux programming.
+[libtmux Python API](../../reference/) for general tmux programming.

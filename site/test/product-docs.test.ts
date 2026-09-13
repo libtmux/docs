@@ -40,10 +40,13 @@ const urlFor = (path: string) => new URL(`/${SITE_PREFIX}${path}`, 'https://libt
 const productUrl = /\/(?:py|ts|rs|go|java|dotnet|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
 
 function sectionsFor(port: string, product: ProductPage['product']): string[] {
-  if (product === 'mcp') return ['', 'topics', 'guides', 'examples', 'api']
+  // `reference` is a section of the product now, not a page inside Internals:
+  // the Workspace Manager and the MCP server are packages with APIs of their
+  // own, and Internals keeps the notes about building one.
+  if (product === 'mcp') return ['', 'topics', 'guides', 'examples', 'reference']
   return port === 'py'
-    ? ['', 'topics', 'guides', 'examples', 'internals', 'internals/topics', 'internals/examples', 'internals/api']
-    : ['', 'internals', 'internals/topics', 'internals/guides', 'internals/examples', 'internals/api']
+    ? ['', 'topics', 'guides', 'examples', 'reference', 'internals', 'internals/topics', 'internals/examples']
+    : ['', 'reference', 'internals', 'internals/topics', 'internals/guides', 'internals/examples']
 }
 
 function pages(): ProductPage[] {
@@ -204,7 +207,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   })
 
   it('links generated declarations and schema-bearing tools inside their product', () => {
-    for (const page of pages().filter((entry) => entry.section === 'api' || entry.section === 'internals/api')) {
+    for (const page of pages().filter((entry) => entry.section === 'reference')) {
       const prefix = `${page.port}/${page.version}/${page.product}/${page.section}/`
       const declarations = inspect(page.path, (document) =>
         [...document.querySelectorAll('[aria-labelledby="generated-api"] a[href]')]
@@ -222,11 +225,13 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         if (page.product === 'workspace') {
           const labels = [...document.querySelectorAll('nav[aria-label="Breadcrumb"] a, nav[aria-label="Breadcrumb"] [aria-current="page"]')]
             .map((item) => item.textContent.trim())
-          expect(labels.slice(0, 3)).toEqual([page.name, 'Workspace Manager', 'Internals'])
+          // The reference is a section of the product, so its pages hang
+          // directly off it: no Internals level in between any more.
+          expect(labels.slice(0, 2)).toEqual([page.name, 'Workspace Manager'])
+          expect(labels.at(-1)).toBe(sample.title)
           expect(graph(document).find((entry) => entry['@type'] === 'BreadcrumbList')?.itemListElement?.map((item) => item.name)).toEqual(labels)
         } else developmentStatus(document, samplePath)
       })
-      if (page.product === 'workspace') redirectsTo(samplePath.replace('/internals/api/', '/api/'), samplePath)
       if (page.product !== 'mcp') continue
       const toolsPath = `${page.port}/${page.version}/mcp/tools/`
       const tools = inspect(toolsPath, (document) => {
@@ -280,8 +285,11 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   })
 
   it('redirects previous workspace implementation URLs without replacing Python CLI docs', () => {
+    // The reference is a section of the product now, not a page inside
+    // Internals, so it has no lifted twin to redirect. What remains under
+    // Internals still does, for a port with no workspace CLI of its own.
     for (const page of pages().filter((entry) => entry.product === 'workspace'
-      && (entry.section === 'internals/api' || (entry.port !== 'py' && entry.section.startsWith('internals/'))))) {
+      && entry.port !== 'py' && entry.section.startsWith('internals/'))) {
       redirectsTo(page.path.replace('/internals/', '/'), page.path)
     }
     for (const page of pages().filter((entry) => entry.port === 'py' && entry.product === 'workspace'
@@ -328,8 +336,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(index.pages.some((entry) => entry.url === url), `${url} in docs.json`).toBe(true)
       expect(llms, `${url} in llms.txt`).toContain(`](${url})`)
       expect(sitemap, `${url} in sitemap`).toContain(`<loc>${url}</loc>`)
-      if (page.product === 'workspace' && (page.section === 'internals/api'
-        || (page.port !== 'py' && page.section.startsWith('internals/')))) {
+      if (page.product === 'workspace' && page.port !== 'py' && page.section.startsWith('internals/')) {
         const legacy = url.replace('/workspace/internals/', '/workspace/')
         expect(sitemap, `${legacy} redirect is not canonical`).not.toContain(`<loc>${legacy}</loc>`)
       }
@@ -344,7 +351,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         for (const product of products) {
           const metadata = advertised.products.find((entry) => entry.slug === product)!
           expect(metadata.inDevelopment, `${root}${port.slug} ${product} development status`).toBe(product === 'mcp' || port.slug !== 'py')
-          const section = product === 'workspace' ? 'internals/api' : 'api'
+          const section = 'reference'
           expect(new URL(metadata.reference, urlFor(root)).pathname).toBe(urlFor(`${port.slug}/${defaults[port.slug]}/${product}/${section}/`).pathname)
           if (product === 'workspace') expect(metadata.cli, `${root}${port.slug} user CLI`).toBe(port.slug === 'py' ? 'tmuxp load' : null)
           else expect(resolves(metadata.protocol!, urlFor(root).href), `${root}${port.slug} MCP protocol`).toBe(true)

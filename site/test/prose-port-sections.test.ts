@@ -13,7 +13,7 @@ describe('API links in port sections', () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"go":"stable"}')
     const paragraph = element('p', element('code', text('workspace.Parse')))
     rehypeApiLinks()({ type: 'root', children: [paragraph] }, { data: { astro: { frontmatter: { port: 'go', product: 'workspace' } } } })
-    expect(paragraph.children?.[0].properties?.href).toBe('/go/stable/workspace/internals/api/workspace-parse/')
+    expect(paragraph.children?.[0].properties?.href).toBe('/go/stable/workspace/reference/workspace-parse/')
   })
 
   it('keeps the current product version while preserving core reference URLs', () => {
@@ -22,8 +22,8 @@ describe('API links in port sections', () => {
     const product = element('p', element('code', text('workspace.Parse')))
     const core = element('p', element('code', text('tmux.Server')))
     rehypeApiLinks()({ type: 'root', children: [product, core] }, { data: { astro: { frontmatter: { port: 'go', product: 'workspace' } } } })
-    expect(product.children?.[0].properties?.href).toBe('/go/v0.1/workspace/internals/api/workspace-parse/')
-    expect(core.children?.[0].properties?.href).toBe('/reference/go/tmux-server/')
+    expect(product.children?.[0].properties?.href).toBe('/go/v0.1/workspace/reference/workspace-parse/')
+    expect(core.children?.[0].properties?.href).toBe('/go/v0.1/reference/tmux-server/')
   })
 
   it('links symbols and source paths under port headings, including nested sections', () => {
@@ -41,9 +41,9 @@ describe('API links in port sections', () => {
       ],
     }
     rehypeApiLinks()(tree)
-    expect(first.children?.[0].properties?.href).toBe('/reference/py/libtmux-session-panes/')
+    expect(first.children?.[0].properties?.href).toBe('/py/latest/reference/libtmux-session-panes/')
     expect(nested.children?.[0].properties?.href).toMatch(/github.com\/.*\/src\/libtmux\/pane.py$/)
-    expect(other.children?.[0].properties?.href).toBe('/reference/go/tmux-session-panes/')
+    expect(other.children?.[0].properties?.href).toBe('/go/latest/reference/tmux-session-panes/')
     expect(shared.children?.[0].tagName).toBe('code')
   })
 })

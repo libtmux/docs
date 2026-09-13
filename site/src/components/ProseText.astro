@@ -1,5 +1,8 @@
 ---
 import { decideMention, notASymbol } from '@libtmux/api-model'
+import { productApiHref } from '../lib/product-api'
+import { PORT_BY_SLUG, referenceUrl } from '../lib/ports'
+import { defaultVersionFor } from '../lib/versions'
 import { getResolver } from '../lib/prose-resolver'
 import { API_MODELS } from '../lib/api-models'
 import { withPortRoot } from '../lib/site-root'
@@ -41,13 +44,22 @@ const segments = text.split(/`([^`]+)`/).map((value, i) => ({
 
 const resolved = segments.map((seg) => {
   if (!seg.code || notASymbol(seg.value)) return { ...seg, href: undefined, title: undefined }
-  const d = decideMention(seg.value, { pagePort: port }, resolver, API_MODELS)
+  const d = decideMention(seg.value, {
+    pagePort: port,
+    // The same builders the rehype plugin injects: a reference URL carries a
+    // port, a version and a package, none of which api-model can know.
+    symbolHref: (target, symbol) => productApiHref(API_MODELS[target], symbol, defaultVersionFor(target)),
+    moduleHref: (target, module) => {
+      const meta = PORT_BY_SLUG[target]
+      return meta ? `${referenceUrl(meta, defaultVersionFor(target))}#${module}` : `#${module}`
+    },
+  }, resolver, API_MODELS)
   if (d.kind !== 'link') return { ...seg, href: undefined, title: undefined }
   return {
     ...seg,
     // withPortRoot, as in rehype-api-links: an internal mention resolves
     // into the reference, which is not built per locale.
-    href: d.external ? d.href : withPortRoot(d.href),
+    href: d.external || !d.href.startsWith('/reference/') ? d.href : withPortRoot(d.href),
     title: d.title,
     external: d.external,
   }

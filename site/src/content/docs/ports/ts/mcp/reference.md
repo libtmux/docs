@@ -45,4 +45,4 @@ hierarchy-resource subscriptions.
 [Resource registration](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/packages/mcp/src/resources.ts).
 
 Workspace parsing and application belong to
-[`@libtmux/workspace`](../../workspace/internals/api/), not to a workspace MCP tool.
+[`@libtmux/workspace`](../../workspace/reference/), not to a workspace MCP tool.

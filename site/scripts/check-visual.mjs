@@ -32,13 +32,13 @@ const base = process.argv.find((a) => a.startsWith('http')) ?? 'http://localhost
 
 /** One page per rendering path, not one per port: the component is shared. */
 const PAGES = [
-  ['py-class', '/reference/py/libtmux-server/'],
+  ['py-class', '/py/stable/reference/libtmux-server/'],
   // Rust carries the other prose path: fenced examples and `# Errors`
   // rubrics, which no Python docstring in this estate uses.
-  ['rs-class', '/reference/rs/server-server/'],
-  ['cxx-class', '/reference/cxx/libtmux-pane/'],
-  ['swift-class', '/reference/swift/server/'],
-  ['port-index', '/reference/go/'],
+  ['rs-class', '/rs/latest/reference/server-server/'],
+  ['cxx-class', '/cxx/latest/reference/libtmux-pane/'],
+  ['swift-class', '/swift/latest/reference/server/'],
+  ['port-index', '/go/latest/reference/'],
   ['symbol-index', '/reference/symbols/p/'],
 ]
 

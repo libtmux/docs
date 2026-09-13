@@ -41,5 +41,5 @@ JSON text. Strict argument validation precedes tmux execution.
 [Protocol tests](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/apps/mcp/tests/protocol_test.cpp)
 cover supported lifecycle revisions and result shapes.
 
-[Workspace builder API](../../workspace/internals/api/) documents a separate source
+[Workspace builder API](../../workspace/reference/) documents a separate source
 consumer; it is not a workspace operation in this MCP catalog.

@@ -71,26 +71,27 @@ describe('matching pages in another port', () => {
   })
 
   it('offers reference indexes rather than transplanting the current reference path', () => {
-    expect(pagePortLinks({ ...options, pagePath: 'reference/ts' }).find((p) => p.port === 'py')?.links[0].href).toBe('/pr-42/en/reference/py/')
+    expect(pagePortLinks({ ...options, pagePath: 'reference', portSlug: 'ts' }).find((p) => p.port === 'py')?.links[0].href).toBe('/pr-42/en/py/stable/reference/')
   })
 
   it('links session pane equivalents and disables Java without a direct accessor', () => {
-    const links = pagePortLinks({ ...options, pagePath: 'reference/ts/session-session-panes' })
-    expect(links.find((p) => p.port === 'py')?.links[0].href).toBe('/pr-42/en/reference/py/libtmux-session-panes/')
-    expect(links.find((p) => p.port === 'ts')?.links[0].href).toBe('/pr-42/en/reference/ts/session-session-panes/')
+    const links = pagePortLinks({ ...options, pagePath: 'reference/session-session-panes', portSlug: 'ts' })
+    expect(links.find((p) => p.port === 'py')?.links[0].href).toBe('/pr-42/en/py/stable/reference/libtmux-session-panes/')
+    // The page's own port keeps the version being built, not the default.
+    expect(links.find((p) => p.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/v1.2.3/reference/session-session-panes/')
     expect(links.find((p) => p.port === 'java')?.links).toEqual([])
   })
 
   it('keeps both scopes when a Swift page documents session and window overloads', () => {
-    const links = pagePortLinks({ ...options, pagePath: 'reference/swift/snapshot-panes(of-)' })
+    const links = pagePortLinks({ ...options, pagePath: 'reference/snapshot-panes(of-)', portSlug: 'swift' })
     expect(links.find((p) => p.port === 'py')?.links.map((link) => link.href).sort()).toEqual([
-      '/pr-42/en/reference/py/libtmux-session-panes/',
-      '/pr-42/en/reference/py/libtmux-window-panes/',
+      '/pr-42/en/py/stable/reference/libtmux-session-panes/',
+      '/pr-42/en/py/stable/reference/libtmux-window-panes/',
     ])
   })
 
   it('leaves only the current page enabled for an unmapped symbol', () => {
-    const links = pagePortLinks({ ...options, pagePath: 'reference/ts/session-session-sessionbrand' })
+    const links = pagePortLinks({ ...options, pagePath: 'reference/session-session-sessionbrand', portSlug: 'ts' })
     expect(links.filter((p) => p.links.length).map((p) => p.port)).toEqual(['ts'])
   })
 })
@@ -116,18 +117,17 @@ describe('workspace documentation compatibility', () => {
     expect(internals.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['ts', 'rs'])
   })
 
-  it('redirects old builder paths while retaining real Python user pages', async () => {
+  it('lifts a port without a workspace CLI out of Internals, and leaves Python alone', async () => {
     const { workspaceRedirects } = await import('../src/lib/docs-paths')
     expect(workspaceRedirects([
       'py/stable/workspace/examples', 'py/stable/workspace/internals/examples',
-      'go/latest/workspace/internals/examples', 'go/latest/workspace/internals/api/builder',
+      'go/latest/workspace/internals/examples', 'go/latest/workspace/reference/builder',
       'go/latest/workspace/internals', 'go/latest/guides',
     ])).toEqual([
       { path: 'go/latest/workspace/examples', target: 'go/latest/workspace/internals/examples' },
-      { path: 'go/latest/workspace/api/builder', target: 'go/latest/workspace/internals/api/builder' },
     ])
-    expect(workspaceRedirects(['workspace/internals/api/builder'])).toEqual([
-      { path: 'workspace/api/builder', target: 'workspace/internals/api/builder' },
-    ])
+    // The reference is its own section now, so there is nothing under
+    // Internals for it to be lifted out of.
+    expect(workspaceRedirects(['workspace/reference/builder'])).toEqual([])
   })
 })

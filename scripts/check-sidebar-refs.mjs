@@ -123,9 +123,10 @@ for (const port of PORTS) {
    * prefixed build, and asserting the prefixed form would fail on an
    * unprefixed one.
    */
-  const ours = sidebar.findIndex((l) => pathOf(l.href) === `/reference/${port}/`)
-  if (ours === -1) failures.push(`${port}: sidebar does not link /reference/${port}/`)
-  else if (ours !== 0) failures.push(`${port}: /reference/${port}/ is entry ${ours}, not first`)
+  const REFERENCE = new RegExp(`/${port}/[^/]+/reference/$`)
+  const ours = sidebar.findIndex((l) => REFERENCE.test(pathOf(l.href)))
+  if (ours === -1) failures.push(`${port}: sidebar does not link /${port}/<version>/reference/`)
+  else if (ours !== 0) failures.push(`${port}: /${port}/<version>/reference/ is entry ${ours}, not first`)
 
   const host = ECOSYSTEM[port]
   if (host) {

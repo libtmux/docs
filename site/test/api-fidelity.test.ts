@@ -25,7 +25,7 @@ function entry(model: ApiModel, symbol: ApiSymbol, linked = true): string {
 }
 
 function page(path: string, port: string, entries: string[]): void {
-  const directory = join(path, 'reference', port, 'sample')
+  const directory = join(path, port, 'latest', 'reference', 'sample')
   mkdirSync(directory, { recursive: true })
   writeFileSync(join(directory, 'index.html'), entries.join('\n'))
 }

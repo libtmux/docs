@@ -1,10 +1,11 @@
 import type { APIRoute } from 'astro'
 import { API_MODELS } from '../../lib/api-models'
-import { pageSlug } from '@libtmux/api-model'
+import { pageSlug, symbolsForProduct } from '@libtmux/api-model'
 import { symbolMarkdown } from '../../lib/symbol-markdown'
-import { PORT_BY_SLUG } from '../../lib/ports'
+import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
+import { buildTarget } from '../../lib/versions'
 
 /**
  * `/reference/<port>/<symbol>.md` — the page, as its source.
@@ -18,19 +19,25 @@ import { buildLocale } from '../../i18n/resolve'
  * the reference is not rendered inside the fourteen shell builds.
  */
 export async function getStaticPaths() {
-  // The root build of the default locale only, matching the HTML route: the
-  // reference is not translated, so a twin under another locale would be the
-  // English body wearing that locale's prefix.
-  if (process.env.LIBTMUX_DOCS_PORT) return []
+  // This port's shell, in the default locale only, matching the HTML route:
+  // the reference is not translated, so a twin under another locale would be
+  // the English body wearing that locale's prefix.
+  const port = process.env.LIBTMUX_DOCS_PORT
+  if (!port) return []
   if (buildLocale() !== DEFAULT_LOCALE) return []
+  const model = API_MODELS[port]
+  if (!model) return []
+  const productIds = new Set([
+    ...symbolsForProduct(model, 'mcp'),
+    ...symbolsForProduct(model, 'workspace'),
+  ].map((symbol) => symbol.id))
   const paths: { params: { slug: string }; props: { port: string; id: string } }[] = []
-  for (const [port, model] of Object.entries(API_MODELS)) {
-    for (const symbol of model.symbols) {
-      paths.push({
-        params: { slug: `${port}/${symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)}` },
-        props: { port, id: symbol.id },
-      })
-    }
+  for (const symbol of model.symbols) {
+    if (productIds.has(symbol.id)) continue
+    paths.push({
+      params: { slug: symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id) },
+      props: { port, id: symbol.id },
+    })
   }
   return paths
 }
@@ -51,7 +58,7 @@ export const GET: APIRoute = ({ props, site }) => {
     symbolMarkdown({
       model,
       symbol,
-      canonical: `${origin}/reference/${port}/${slug}/`,
+      canonical: `${origin}${referenceUrl(PORT_BY_SLUG[port]!, buildTarget(process.env).version)}${slug}/`,
       source: repo && rev && file
         ? `https://github.com/${repo}/blob/${rev}/${file}${symbol.source?.line ? `#L${symbol.source.line}` : ''}`
         : undefined,

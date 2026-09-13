@@ -93,7 +93,7 @@ describe('prompt composition', () => {
     // beats "go read the docs": an agent fetches these two first.
     expect(text, 'llms.txt').toContain(`${DOCS_BASE}/${port.slug}/latest/llms.txt`)
     expect(text, 'docs.json').toContain(`${DOCS_BASE}/${port.slug}/latest/docs.json`)
-    expect(text, 'reference').toContain(`${DOCS_BASE}/reference/${port.slug}/`)
+    expect(text, 'reference').toContain(`${DOCS_BASE}/${port.slug}/latest/reference/`)
     expect(text, 'repository').toContain(`https://github.com/${port.repo}`)
     expect(text, 'registry page').toContain((port.registry?.url ?? `https://github.com/${port.repo}`))
   })

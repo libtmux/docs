@@ -26,7 +26,7 @@ builder tests; they do not load workspace files as a user application.
 - [Guides](./guides/) show builder setup and application code.
 - [Topics](./topics/) explain configuration, behavior, and failures.
 - [Examples](./examples/) exercise the builder through the language API.
-- [API](./api/) links the configuration and construction interfaces.
+- [API](../reference/) links the configuration and construction interfaces.
 
 ## Implementation scope
 

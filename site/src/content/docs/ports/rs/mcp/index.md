@@ -23,7 +23,7 @@ includes shell commands and terminal input.
 - [Guides](./guides/) install the executable and choose a socket.
 - [Topics](./topics/) explain tiers, live-stream effects, and job lifetimes.
 - [Examples](./examples/) call a tool, then explore server internals.
-- [Language API](./api/) documents embedding and implementation types.
+- [Language API](./reference/) documents embedding and implementation types.
 
 The Rust [Workspace Manager](../workspace/) is a separate crate. MCP's
 `run_plan` executes typed operations; it is not the workspace crate's

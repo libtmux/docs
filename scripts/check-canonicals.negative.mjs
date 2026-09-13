@@ -21,7 +21,7 @@ const ORIGIN = 'https://libtmux.org'
 /** A reference tree whose canonical for each page is `canonicalFor(path)`. */
 function site(canonicalFor) {
   const dir = mkdtempSync(join(tmpdir(), 'check-canonicals-'))
-  const pages = ['reference', 'reference/py', 'reference/ts', 'reference/py/pane', 'reference/ts/pane']
+  const pages = ['reference', 'py/latest/reference', 'ts/latest/reference', 'py/latest/reference/pane', 'ts/latest/reference/pane']
   for (const page of pages) {
     mkdirSync(join(dir, page), { recursive: true })
     const href = `${ORIGIN}${canonicalFor(`/${page}/`)}`
@@ -55,10 +55,10 @@ const check = (name, ok, detail) => {
 }
 
 {
-  // The real defect: the port segment dropped, so /reference/py/pane/ claims
-  // /reference/pane/ — which does not exist, and which /reference/ts/pane/
-  // claims too.
-  const dir = site((p) => p.replace(/^\/reference\/(py|ts)\//, '/reference/'))
+  // The real defect: the version segment dropped, so /py/latest/reference/pane/
+  // claims /py/reference/pane/ — which does not exist, and which every other
+  // version of that page would claim too.
+  const dir = site((p) => p.replace(/^\/(py|ts)\/latest\//, '/$1/'))
   const { code, out } = run(dir)
   check(
     'a dropped port segment fails',
@@ -77,8 +77,8 @@ const check = (name, ok, detail) => {
 
 {
   const dir = mkdtempSync(join(tmpdir(), 'check-canonicals-bare-'))
-  mkdirSync(join(dir, 'reference'), { recursive: true })
-  writeFileSync(join(dir, 'reference', 'index.html'), '<html><head></head></html>')
+  mkdirSync(join(dir, 'py', 'latest', 'reference'), { recursive: true })
+  writeFileSync(join(dir, 'py', 'latest', 'reference', 'index.html'), '<html><head></head></html>')
   const { code, out } = run(dir)
   check('a page with no canonical at all fails', code !== 0 && out.includes('none'), `exited ${code}:\n${out}`)
   rmSync(dir, { recursive: true, force: true })

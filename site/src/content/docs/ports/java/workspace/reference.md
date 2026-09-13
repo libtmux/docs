@@ -16,7 +16,7 @@ before building through a core `Server`.
 
 ## Builder facade
 
-[`WorkspaceBuilder`](/reference/java/io-github-libtmux-workspace-workspacebuilder-workspacebuilder/)
+[`WorkspaceBuilder`](./io-github-libtmux-workspace-workspacebuilder-workspacebuilder/)
 provides three static entry points:
 
 - `read(Path)` reads a YAML file and wraps I/O errors in `UncheckedIOException`.
@@ -28,11 +28,11 @@ server's support for the requested layout.
 
 ## Configuration records
 
-[`Workspace`](/reference/java/io-github-libtmux-workspace-workspace-workspace/)
+[`Workspace`](./io-github-libtmux-workspace-workspace-workspace/)
 holds the session name and ordered windows.
-[`WindowSpec`](/reference/java/io-github-libtmux-workspace-windowspec-windowspec/)
+[`WindowSpec`](./io-github-libtmux-workspace-windowspec-windowspec/)
 holds the name, optional layout, and panes.
-[`PaneSpec`](/reference/java/io-github-libtmux-workspace-panespec-panespec/)
+[`PaneSpec`](./io-github-libtmux-workspace-panespec-panespec/)
 holds the ordered shell commands.
 
 These records copy their lists so later changes to an input list do not alter

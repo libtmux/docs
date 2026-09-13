@@ -5,6 +5,7 @@
  * Buckets and their contents are decided once per port in
  * `scripts/gen-api-model.mjs`; this only shapes them for a tree.
  */
+import { symbolsForProduct } from '@libtmux/api-model'
 import { API_MODELS, API_NAV, OWNER_KINDS, pageSlug, type NavEntry } from './api-models'
 
 export interface TreeBucket {
@@ -48,20 +49,29 @@ const distinct = (entries: NavEntry[]): NavEntry[] => {
 export function navTree(port: string): TreeBucket[] {
   const nav = API_NAV[port]
   if (!nav) return []
+  // The core library's tree lists the core library. A Workspace Manager or
+  // MCP declaration has a page in its own package's reference, so a row for
+  // it here would point out of this tree — and did, at a URL that no longer
+  // exists.
+  const model = API_MODELS[port]
+  const products = new Set(model
+    ? [...symbolsForProduct(model, 'mcp'), ...symbolsForProduct(model, 'workspace')].map((s) => s.publicId ?? s.id)
+    : [])
+  const core = (entries: NavEntry[]) => entries.filter((e) => !products.has(e.id))
   return [
     ...nav.buckets
       .map((b) => ({
         id: b.id,
         label: b.label,
         collapsed: b.collapsed,
-        entries: distinct(nav.assignments[b.id] ?? []),
+        entries: distinct(core(nav.assignments[b.id] ?? [])),
         children: (b.children ?? [])
-          .map((c) => ({ id: c.id, label: c.label, collapsed: c.collapsed, entries: distinct(nav.assignments[c.id] ?? []), children: [] }))
+          .map((c) => ({ id: c.id, label: c.label, collapsed: c.collapsed, entries: distinct(core(nav.assignments[c.id] ?? [])), children: [] }))
           .filter((c) => c.entries.length > 0),
       }))
       .filter((b) => b.entries.length > 0 || b.children.length > 0),
     ...(nav.unplaced.length > 0
-      ? [{ id: '__unplaced', label: 'Other', collapsed: true, entries: distinct(nav.unplaced), children: [] }]
+      ? [{ id: '__unplaced', label: 'Other', collapsed: true, entries: distinct(core(nav.unplaced)), children: [] }]
       : []),
   ]
 }

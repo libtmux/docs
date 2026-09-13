@@ -42,5 +42,5 @@ their existence does not make them separate MCP tools.
 - [Registration source](https://github.com/tmux-python/libtmux-mcp/blob/v0.1.0a22/src/libtmux_mcp/server.py)
 
 Use [Examples](../examples/) to inspect the protocol with an in-process
-client. Use the [Workspace builder API](../../workspace/internals/api/) for tmuxp
+client. Use the [Workspace builder API](../../workspace/reference/) for tmuxp
 configuration and builders.

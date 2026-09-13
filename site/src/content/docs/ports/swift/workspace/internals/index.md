@@ -26,13 +26,13 @@ handling, and attachment.
 - [Guides](./guides/) show builder setup and application code.
 - [Topics](./topics/) explain configuration, behavior, and failures.
 - [Examples](./examples/) exercise the builder through the language API.
-- [API](./api/) links the configuration and construction interfaces.
+- [API](../reference/) links the configuration and construction interfaces.
 
 ## Implementation scope
 
 `TmuxWorkspace` builds a tmux session from Swift values or a
 [tmuxp](https://tmuxp.git-pull.com)-style configuration. It is a SwiftPM
-library product beside the core [`LibTmux`](/reference/swift/) product.
+library product beside the core [`LibTmux`](../../reference/) product.
 
 Swift and JSON descriptions work without a YAML dependency. Enable the
 `YAMLWorkspaces` package trait to add YAML decoding. Building uses the same
