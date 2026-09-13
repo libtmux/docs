@@ -81,6 +81,17 @@ remain escaped in machine strings. Explicit saves publish an owned temporary
 file and require `--force` for replacement. `load -2` selects 256-color mode;
 `-8` fails before document lookup or tmux access.
 
+Human load progress uses terminal stderr, five presets or a custom template.
+Counters track delivered pane commands and configured delays, not program exits.
+`--progress-lines` bounds the script panel; failure retains its final bounded
+tail. Redirected stdout receives script output once. Without the panel, both
+script streams flush to their original destinations as data arrives.
+
+Machine output, redirected stderr, `TERM=dumb` and explicit progress disabling
+suppress the panel. Resize clears it and restores ordinary stream delivery.
+Progress preserves cursor visibility and terminal modes. Interruptions cancel
+configured delays and check between topology, command, option and focus steps.
+
 `load --log-file PATH` appends JSON diagnostics. `--log-level` defaults to
 `warning`; `info` includes load lifecycle records and `debug` adds script-output
 chunks. Required errors and machine results remain visible at every level.
@@ -101,8 +112,8 @@ executable's `--help` for the options implemented in that checkout.
 - Python shell/plugin/custom-builder services are unavailable.
 - Windows created by arbitrary scripts are outside the builder's retained-window
   records, including when a borrowed append session survives script failure.
-- Progress and shell completion remain unfinished. Their appearance
-  in help or command metadata does not establish executable behavior.
+- Shell completion remains unfinished; command metadata does not provide
+  an executable completion service.
 - Additional importer fields, full configuration/capture coverage and
   supported-platform packaging remain open. Append's first explicit window
   index must name a free slot in the existing session.
