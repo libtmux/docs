@@ -34,6 +34,6 @@ build does not have universal transactional rollback. The CLI owns its
 existing-session prompts and the attachment or client-switching workflow.
 
 See the upstream [custom builder guide](https://tmuxp.git-pull.com/topics/custom-workspace-builders/)
-for extension configuration and the [API](../reference/) for interface contracts.
+for extension configuration and the [API](../../reference/) for interface contracts.
 
 [Configuration loader](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/workspace/loader.py); [Classic builder](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/workspace/builder/classic.py).

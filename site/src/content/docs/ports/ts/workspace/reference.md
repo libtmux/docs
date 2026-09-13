@@ -42,6 +42,6 @@ is not a transaction log of every effect or a receipt for shell commands.
 
 The language API builds workspaces directly. Availability through an MCP
 server is a separate protocol capability; consult this port's
-[MCP section](../../../mcp/) for its advertised tools.
+[MCP section](../../mcp/) for its advertised tools.
 
 [Public exports](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/packages/workspace/package.json)
