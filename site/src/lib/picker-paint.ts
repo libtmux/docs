@@ -65,9 +65,11 @@ function paintManagers(port: (typeof PORTS)[number]): string {
 function paintPort(slug: string, family: string): string {
   const scope = `html[data-pkg-port="${slug}"] .${family}[data-ports~="${slug}"]`
   // The package picker keeps hidden panels in its grid so its height holds;
-  // see PackageInstall.astro.
+  // see PackageInstall.astro. It shows one with `inherit`, not `visible`: a
+  // visible child paints through a hidden ancestor, so during the fonts gate
+  // the saved panel painted alone before the rest of the page.
   const [hide, show] = family === 'lm-pkg-install'
-    ? ['visibility:hidden', 'visibility:visible']
+    ? ['visibility:hidden', 'visibility:inherit']
     : ['display:none', 'display:block']
   return (
     `${scope} .${family}__panel{${hide}}` +

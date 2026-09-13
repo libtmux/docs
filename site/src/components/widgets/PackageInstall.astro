@@ -76,7 +76,7 @@ const initialSlug = defaultPort && items.some((p) => p.slug === defaultPort) ? d
 // ports.ts stays the only place a port's slug is spelled out. See the
 // is:global block below for the static rules this pairs with.
 const activePortRules = items
-  .map((p) => `.lm-pkg-install[data-active-port="${p.slug}"] .lm-pkg-install__panel[data-port="${p.slug}"]{visibility:visible}`)
+  .map((p) => `.lm-pkg-install[data-active-port="${p.slug}"] .lm-pkg-install__panel[data-port="${p.slug}"]{visibility:inherit}`)
   .join('')
 
 /*
@@ -299,8 +299,11 @@ const installHtml = new Map(
     visibility: hidden;
   }
 
+  /* `inherit`, not `visible`: a visible child paints through a hidden
+   * ancestor, and the fonts gate hides <body> while web fonts load, so a shown
+   * panel painted alone before the rest of the page. */
   .lm-pkg-install__panel[data-default] {
-    visibility: visible;
+    visibility: inherit;
   }
 
   /* Once JS has picked an active port (a click, or a restored session),
