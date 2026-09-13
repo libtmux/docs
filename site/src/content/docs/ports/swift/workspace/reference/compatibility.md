@@ -70,7 +70,9 @@ error. Without `-2`, tmux detects color support.
 
 YAML requires the `YAMLWorkspaces` build trait. Conversion preserves extension
 fields, and both importers require an explicit source. Import warns about
-untranslated fields and rejects ERB. Optional saves publish files atomically;
+untranslated fields, and rejects unexpanded ERB in a Tmuxinator source, which
+Ruby would have expanded before parsing. Teamocil evaluates no templates, so
+the same text in a Teamocil source is preserved literally. Optional saves publish files atomically;
 `--force` permits replacement. Capture records current commands, directories,
 window names, indexes, focus, layouts, local session/window options and session
 environment values. It cannot recover original arguments, scripts or plugin
