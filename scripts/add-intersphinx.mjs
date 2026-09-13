@@ -18,6 +18,7 @@
 import { appendFileSync, existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { referenceDirs } from './reference-trees.mjs'
 
 const [confDir, siteDir, baseUrl, skipPort] = process.argv.slice(2)
 if (!confDir || !siteDir || !baseUrl) {
@@ -43,9 +44,15 @@ const PORTS = PORT_DEFS.map((p) => p.slug)
 const entries = []
 for (const port of PORTS) {
   if (port === skipPort) continue
-  const inv = join(siteDir, 'reference', port, 'objects.inv')
-  if (!existsSync(inv)) continue
-  entries.push([`libtmux-${port}`, `${baseUrl.replace(/\/*$/, '')}/reference/${port}/`, inv])
+  // A port's inventory sits beside the reference it describes, under the
+  // version that published it. The root build's copy at `reference/<port>/`
+  // stays for consumers configured before the move.
+  for (const dir of referenceDirs(siteDir, port)) {
+    const inv = join(dir, 'objects.inv')
+    if (!existsSync(inv)) continue
+    entries.push([`libtmux-${port}`, `${baseUrl.replace(/\/*$/, '')}/${dir.slice(siteDir.length).replace(/^\/+/, '')}/`, inv])
+    break
+  }
 }
 
 if (!entries.length) {

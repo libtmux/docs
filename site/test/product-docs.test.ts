@@ -283,7 +283,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
 
   it('redirects previous workspace implementation URLs without replacing Python CLI docs', () => {
     for (const page of pages().filter((entry) => entry.product === 'workspace'
-      && (entry.section === 'internals/api' || (entry.port !== 'py' && entry.section.startsWith('internals/'))))) {
+      && (entry.section === 'reference' || (entry.port !== 'py' && entry.section.startsWith('internals/'))))) {
       redirectsTo(page.path.replace('/internals/', '/'), page.path)
     }
     for (const page of pages().filter((entry) => entry.port === 'py' && entry.product === 'workspace'
@@ -330,7 +330,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(index.pages.some((entry) => entry.url === url), `${url} in docs.json`).toBe(true)
       expect(llms, `${url} in llms.txt`).toContain(`](${url})`)
       expect(sitemap, `${url} in sitemap`).toContain(`<loc>${url}</loc>`)
-      if (page.product === 'workspace' && (page.section === 'internals/api'
+      if (page.product === 'workspace' && (page.section === 'reference'
         || (page.port !== 'py' && page.section.startsWith('internals/')))) {
         const legacy = url.replace('/workspace/internals/', '/workspace/')
         expect(sitemap, `${legacy} redirect is not canonical`).not.toContain(`<loc>${legacy}</loc>`)

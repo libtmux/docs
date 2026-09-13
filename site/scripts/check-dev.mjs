@@ -94,8 +94,8 @@ try {
     }
   })
   for (const path of [
-    'py/stable/workspace/internals/api/tmuxp-workspace-builder-classicworkspacebuilder',
-    'java/latest/workspace/internals/api/io-github-libtmux-workspace-workspacebuilder-workspacebuilder',
+    'py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder',
+    'java/latest/workspace/reference/io-github-libtmux-workspace-workspacebuilder-workspacebuilder',
   ]) await retryReload(async () => {
     const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
     assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
