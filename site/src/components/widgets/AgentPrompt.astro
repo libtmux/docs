@@ -362,8 +362,15 @@ const activePortRules = items
     display: none;
   }
 
+  /* A gutter for the copy button, as in PackageInstall.astro: the prompt
+   * scrolls in the first column and the button sits in the second, so no line
+   * runs under it. The background is on the holder, so the gutter reads as
+   * part of the block. */
   .lm-agent-prompt__code {
-    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    background: var(--lm-agent-prompt-code-bg);
   }
 
   .lm-agent-prompt__code pre {
@@ -378,11 +385,7 @@ const activePortRules = items
      * the page, and it stays selectable in one gesture. */
     max-height: 26rem;
     overflow: auto;
-    background: var(--lm-agent-prompt-code-bg);
-    /* The right padding clears the copy button, the same way
-     * PackageInstall.astro's does, so a long line runs out of room before it
-     * runs under the button rather than passing behind it. */
-    padding: 0.9rem 3.25rem 0.9rem 1rem;
+    padding: 0.9rem 0.5rem 0.9rem 1rem;
   }
 
   .lm-agent-prompt__code code {
@@ -421,11 +424,8 @@ const activePortRules = items
   .lm-agent-prompt__code .lm-ph-marker { color: var(--lm-agent-prompt-fg-muted); }
 
   .lm-agent-prompt__copy {
-    position: absolute;
-    /* Clear of the scrollbar, which takes the first 4px of this edge. At
-     * 0.6rem the button sat about five pixels off it and read as flush. */
-    top: 0.6rem;
-    right: 0.85rem;
+    /* In the gutter, level with the first line. */
+    margin: 0.6rem 0.6rem 0 0;
     appearance: none;
     border: 1px solid var(--lm-agent-prompt-border);
     border-radius: 0.25rem;
@@ -455,7 +455,7 @@ const activePortRules = items
 
   .lm-agent-prompt--compact .lm-agent-prompt__code pre {
     max-height: 18rem;
-    padding: 0.7rem 3.25rem 0.7rem 0.8rem;
+    padding: 0.7rem 0.5rem 0.7rem 0.8rem;
   }
 
   @media (max-width: 40rem) {

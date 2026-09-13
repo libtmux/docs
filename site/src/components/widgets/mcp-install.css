@@ -163,17 +163,23 @@ html[data-theme-mode='dark'] .lm-mcp-install {
  * `<Code>` usable outside markdown here (see src/pages/[port]/index.astro's
  * own comment on the same limitation), so panels render plain <pre><code> —
  * no per-language syntax color, same as that page's install command. */
+/* A gutter for the copy button: the code scrolls in the first column and the
+ * button sits in the second, so no line runs under it however far it
+ * scrolls. The background is on the holder, so the gutter reads as part of
+ * the block. */
 .lm-mcp-install__code {
-  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  border-radius: 0.25rem;
+  background: var(--lm-mcp-install-code-bg);
 }
 
 .lm-mcp-install__code pre {
   margin: 0;
   overflow-x: auto;
-  border-radius: 0.25rem;
-  background: var(--lm-mcp-install-code-bg);
   color: var(--lm-mcp-install-code-fg);
-  padding: 0.75rem 3.25rem 0.75rem 0.9rem;
+  padding: 0.75rem 0.5rem 0.75rem 0.9rem;
 }
 
 .lm-mcp-install__code code {
@@ -183,9 +189,8 @@ html[data-theme-mode='dark'] .lm-mcp-install {
 }
 
 .lm-mcp-install__copy {
-  position: absolute;
-  top: 0.45rem;
-  right: 0.45rem;
+  /* In the gutter, level with the first line. */
+  margin: 0.45rem 0.45rem 0 0;
   appearance: none;
   border: 1px solid var(--lm-mcp-install-border);
   border-radius: 0.25rem;
@@ -216,12 +221,9 @@ html[data-theme-mode='dark'] .lm-mcp-install {
 /* Prereq accent: blue left-border on the `pip install` prerequisite block. */
 .lm-mcp-install__code--prereq {
   border-left: 3px solid var(--lm-mcp-install-accent);
-  margin: 0 0 0.6rem 0;
-}
-
-.lm-mcp-install__code--prereq pre {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+  margin: 0 0 0.6rem 0;
 }
 
 .lm-mcp-install__config-file {

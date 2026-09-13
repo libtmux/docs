@@ -362,8 +362,16 @@ const installHtml = new Map(
     color: var(--lm-pkg-install-fg-secondary);
   }
 
+  /* A gutter for the copy button. The command scrolls in the first column and
+   * the button sits in the second, so no line runs under it however far it
+   * scrolls. The background is on the holder, so the gutter reads as part of
+   * the block. */
   .lm-pkg-install__code {
-    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    border-radius: 0.25rem;
+    background: var(--lm-pkg-install-code-bg);
   }
 
   /* The example under the install line. Expressive Code brings its own
@@ -410,10 +418,8 @@ const installHtml = new Map(
   .lm-pkg-install__code pre {
     margin: 0;
     overflow-x: auto;
-    border-radius: 0.25rem;
-    background: var(--lm-pkg-install-code-bg);
     color: var(--lm-pkg-install-fg);
-    padding: 0.75rem 3.25rem 0.75rem 0.9rem;
+    padding: 0.75rem 0.5rem 0.75rem 0.9rem;
   }
 
   /* The standard properties first; the WebKit rules say the same thing for
@@ -467,11 +473,9 @@ const installHtml = new Map(
   }
 
   .lm-pkg-install__copy {
-    position: absolute;
-    top: 0.45rem;
-    /* `--lm-pkg-install-scrollbar` is the width the script below measures, so
-     * the button clears a scrollbar only when the block has one. */
-    right: calc(0.45rem + var(--lm-pkg-install-scrollbar, 0px));
+    /* In the gutter, level with the first line. A vertical scrollbar belongs
+     * to the `pre`, so it sits beside the gutter rather than under the button. */
+    margin: 0.45rem 0.45rem 0 0;
     appearance: none;
     border: 1px solid var(--lm-pkg-install-border);
     border-radius: 0.25rem;
@@ -545,16 +549,17 @@ const installHtml = new Map(
   }
 
   /**
-   * Give each block's copy button the width of the block's vertical scrollbar.
+   * Give the example's copy button the width of the example's vertical scrollbar.
    *
-   * CSS cannot tell whether a block overflows, and a fixed offset leaves a
-   * scrollbar-sized gap beside blocks that have none. Overlay scrollbars
-   * measure zero, so they get no offset either.
+   * Expressive Code shows that button over the code on hover, and CSS cannot
+   * tell whether the code overflows. Install blocks need none of this: their
+   * button has a gutter of its own. Overlay scrollbars measure zero, so they
+   * get no offset either.
    */
   function measureScrollbars() {
     // Every width is read before any is written: a write between two reads
     // makes the second read lay out the whole page again.
-    const holders = [...document.querySelectorAll<HTMLElement>('.lm-pkg-install__code, .lm-pkg-install__snippet .frame')]
+    const holders = [...document.querySelectorAll<HTMLElement>('.lm-pkg-install__snippet .frame')]
     const widths = holders.map((holder) => {
       const pre = holder.querySelector('pre')
       if (!pre) return undefined
