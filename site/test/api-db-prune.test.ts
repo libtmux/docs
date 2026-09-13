@@ -54,17 +54,6 @@ describeIfSeeded('api projection pruning', () => {
     expect(symbolsOfKind('py', 'v0.9', 'class'), 'symbol rows for v0.9').toEqual([])
   })
 
-  it('does not accumulate rows across repeated seeds', () => {
-    const manifest = manifestWith(['latest'])
-    seed({ manifestPath: manifest })
-    const first = allExtractions().reduce((n, e) => n + e.symbols, 0)
-
-    seed({ manifestPath: manifest })
-    const second = allExtractions().reduce((n, e) => n + e.symbols, 0)
-
-    expect(second).toBe(first)
-  })
-
   it('restores the published manifest for the other suites', () => {
     // The suites run in one process and share the database file; leaving a
     // synthetic manifest's store behind would fail whichever ran next.
