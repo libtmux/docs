@@ -143,7 +143,7 @@ describeIfAssembled('published exports', () => {
       expect(manifest.schema).toBe(1)
       expect(Object.keys(manifest.indexes).sort()).toEqual(PORTS.map((port) => port.slug).sort())
       expect(manifest.symbols.py['libtmux.Session.windows']).toEqual(expect.arrayContaining([
-        expect.objectContaining({ port: 'ts', href: expect.stringMatching(/\/reference\/ts\/session-session-windows\/$/) }),
+        expect.objectContaining({ port: 'ts', href: expect.stringMatching(/\/ts\/[^/]+\/reference\/session-session-windows\/$/) }),
       ]))
       const targets = new Set([
         ...Object.values(manifest.indexes as Record<string, string>),

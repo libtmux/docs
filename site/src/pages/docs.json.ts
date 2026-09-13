@@ -79,10 +79,10 @@ export const GET: APIRoute = async ({ site }) => {
       description: `${model.symbols.length} symbols extracted from source, ${types.length} with their own page.`,
       section: 'API reference',
       // refBase, not base: the reference is generated in the default locale
-      // only, so a Japanese manifest advertising /ja/reference/… names pages
-      // nothing builds. Nothing parses this file, so nothing reported it.
-      url: `${origin}${refBase}reference/${port}/`,
-      markdownUrl: `${origin}${refBase}reference/${port}/index.md`,
+      // only, so a Japanese manifest advertising a locale-prefixed reference
+      // names pages nothing builds.
+      url: `${origin}${refBase}${port}/${defaults[port] ?? 'latest'}/reference/`,
+      markdownUrl: `${origin}${refBase}${port}/${defaults[port] ?? 'latest'}/reference/index.md`,
       headings: types.slice(0, 200).map((t) => ({
         id: t.publicId ?? t.id,
         level: 2,
@@ -111,7 +111,7 @@ export const GET: APIRoute = async ({ site }) => {
       name: p.name,
       language: p.language,
       package: p.packageName,
-      reference: hasReference(p) ? referenceUrl(p, 'stable') : null,
+      reference: hasReference(p) ? referenceUrl(p, defaults[p.slug] ?? 'latest') : null,
       products: Object.entries(DOC_PRODUCTS).map(([slug, product]) => ({
         slug, name: product.label,
         inDevelopment: productInDevelopment(p, slug as DocProduct),
@@ -125,7 +125,7 @@ export const GET: APIRoute = async ({ site }) => {
         ? {
             symbols: API_MODELS[p.slug].symbols.length,
             extractor: API_MODELS[p.slug].extractor,
-            inventory: `${refBase}reference/${p.slug}/objects.inv`,
+            inventory: `${refBase}${p.slug}/${defaults[p.slug] ?? 'latest'}/reference/objects.inv`,
           }
         : null,
     })),
