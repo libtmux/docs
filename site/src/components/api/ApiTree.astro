@@ -79,7 +79,23 @@ const bucketNode = (b: TreeBucket, level: number, child: boolean): TreeNode => {
   }
 }
 
-const nodes = tree.map((b) => bucketNode(b, 1, false))
+/**
+ * The port index, as the tree's first row and a sibling of the buckets.
+ *
+ * Every other row is a bucket or a symbol, so the page that lists them all —
+ * the one a reader lands on from the port picker — had no row of its own. A
+ * leaf: the buckets below it are its contents, and no count, because the
+ * page's own first line is the symbol total.
+ */
+const indexNode: TreeNode = {
+  id: nextId(),
+  label: 'API reference',
+  href: base,
+  level: 1,
+  current: currentPath.replace(/\/?$/, '/') === base,
+}
+
+const nodes = [indexNode, ...tree.map((b) => bucketNode(b, 1, false))]
 
 /** The one Tab stop: the page's own row, or the first row on a page with none. */
 const mark = (list: TreeNode[]): boolean =>
