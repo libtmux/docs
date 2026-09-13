@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 /*
- * Every reference page's canonical URL is its own URL.
+ * Every reference page canonicalises to itself under the port's default
+ * version.
  *
- * The reference tree carries no version and no locale, so unlike the port
- * prose there is no legitimate reason for one of its pages to canonicalise
- * anywhere but itself. That makes the invariant exact, and exactness is what
- * this tree needed: `pagePath` was composed from the symbol rather than from
- * the route, so every page in all eight ports declared a canonical without
- * the port segment — a URL that does not exist, and the same one for any two
- * ports sharing a symbol slug.
+ * A reference lives under the version it documents, so its canonical follows
+ * the rule the rest of a port's pages follow: the default version is the one
+ * URL, and another version of the same page points at it. What is never
+ * legitimate is pointing outside the port, or at a version that was not
+ * built — `pagePath` was once composed from the symbol rather than from the
+ * route, so every page in all eight ports declared a canonical without the
+ * port segment, the same URL for any two ports sharing a symbol slug.
  *
  * Nothing caught it. The pages are noindex today, so no ranking moved; the
  * links in them all resolve, so check-links passed; and no test asserts a
@@ -25,6 +26,16 @@ import { referenceDirs } from './reference-trees.mjs'
 
 const { PORTS: PORT_DEFS } = await import(`file://${join(dirname(fileURLToPath(import.meta.url)), '../site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
+
+/**
+ * Each port's default version, read from the tree that was built: a port
+ * publishing one prefix is its own default, and Python's two make `stable`
+ * the canonical one.
+ */
+const DEFAULTS = Object.fromEntries(PORTS.map((port) => {
+  const built = referenceDirs(siteDir, port).map((dir) => dir.split('/').at(-2))
+  return [port, built.includes('stable') ? 'stable' : built[0]]
+}).filter(([, version]) => version))
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const defaultSite = join(repoRoot, '_site')
@@ -87,8 +98,13 @@ for (const file of pages) {
   const declared = new URL(found[1]).pathname.replace(new RegExp(`^/${LOCALE}/`), '/')
   // The page's own path, as served: the directory holding its index.html.
   const own = `${file.slice(siteDir.length, -'index.html'.length)}`
+  // Its canonical twin: the same page under this port's default version.
+  const [, port, version] = own.split('/')
+  const want = DEFAULTS[port] && DEFAULTS[port] !== version
+    ? own.replace(`/${port}/${version}/`, `/${port}/${DEFAULTS[port]}/`)
+    : own
   checked += 1
-  if (declared !== own) wrong.push({ file, want: own, got: declared })
+  if (declared !== want) wrong.push({ file, want, got: declared })
 }
 
 if (wrong.length) {

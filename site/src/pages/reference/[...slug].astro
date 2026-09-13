@@ -469,6 +469,8 @@ const title = owner
         : 'Types, methods, and functions in the libtmux language libraries.'
   }
   pagePath={slug ? `reference/${slug}` : 'reference'}
+  portSlug={model?.port}
+  version={buildTarget(process.env).version}
   noindex={true}
   searchable={searchable}
   pageSource={owner && model ? symbolSource(model, owner) : undefined}
