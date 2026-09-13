@@ -73,6 +73,7 @@ Use the local CLI's help and the limits above when applying these compatibility
 references to native execution.
 
 - [Installation walkthrough](./guides/installation/) builds and runs the local native CLI.
+- [Inspect through MCP](./guides/inspect-with-mcp/) connects to the loaded session.
 - [Command reference](./cli/) lists tmuxp commands, flags and compatibility targets.
 - [Configuration](./configuration/) covers fields, normalization and execution.
 - [Example gallery](./examples/gallery/) includes upstream fixtures and prerequisites.

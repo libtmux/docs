@@ -45,6 +45,24 @@ fields that native execution does not use. Capture records live workspace shape
 and warns about information it cannot reconstruct. Search uses Rust's native
 `fancy_regex` engine, not Python `re`.
 
+Human load validates terminal access and the invoking tmux client before
+mutation. Progress supports templates and bounded script lines; machine output
+disables its terminal display. Human tree/full listing escapes control bytes
+in labels and paths. Output failures preserve acknowledged load results when
+the remaining diagnostic stream is writable.
+
+SIGINT and SIGTERM return status 130 with completed inputs and acknowledged
+effects. Cancellation does not roll those changes back. After mutation begins,
+`outcome_unknown` discloses possible effects without receipts. Before-script
+output enters retained state only when the script finishes, so interruption
+can omit unfinished capture.
+
+On supported targets, human bootstrap scripts temporarily own the foreground
+terminal while retaining stdin. Exit, failure and cancellation restore the
+original foreground group and terminal settings. Captured child groups stop
+on cancellation; descendants that leave the owned group are outside cleanup.
+See the [native lifecycle contract](https://github.com/libtmux/libtmux-rs/blob/d746b9a5506bb3a9f42cb1401f4568a5d08e77b7/crates/tmux-workspace/README.md#cli-cancellation).
+
 Native load supports [filtered file logging](../output/#native-rust-logging).
 Invalid log destinations are refused before tmux or Python runs.
 
@@ -66,16 +84,15 @@ executable's `--help` for the options implemented in that checkout.
 
 ### Remaining gaps
 
-- Attached load still checks terminal stdin and selects attach/switch from the
-  presence of `TMUX`. It needs terminal refusal before mutation, authenticated
-  invoking-client selection and real cancellation/redirected-terminal coverage.
-- Progress format/line controls are parsed but their service is incomplete.
-  Human control-byte rendering, tree output and output backpressure/early-close
-  handling also need completion.
+- Broader platform lifecycle and output-backpressure coverage remains open.
+  Unix targets whose current bindings lack the safe non-reaping child observer
+  reject scripted and Python-extension loads before target lookup or mutation.
+  This includes Cygwin, NetBSD and OpenBSD; nonscripted operations retain their
+  existing support.
 - Discovery precedence, individual pane-command search, YAML merges, extension
   fields and command/directory expansion need broader corpus checks.
-- Final installation documentation, packaged generated references, supported
-  feature/MSRV/platform gates and interruption accounting remain open.
+- Packaged generated references and broader feature/MSRV/platform coverage
+  remain open.
 
 ## Historical builder audit
 
