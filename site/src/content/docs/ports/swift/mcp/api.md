@@ -18,11 +18,12 @@ MCP wire operations have separate names and responsibilities.
 
 ## Swift embedding API
 
-`TmuxTools(server:)` constructs a readonly tool surface.
-`ToolAuthority` selects a `SafetyTier` and optionally an exact set
-of `ToolOperation` values. `visibleDefinitions` reports the selection;
-`call(ToolCall)` invokes an operation and returns structured data or
-throws `ToolError`.
+`TmuxTools(server:)` constructs a readonly tool surface: its authority
+defaults to the `inspect` toolset alone. `ToolAuthority` selects
+`Toolset` values — `inspect`, `manage`, `execute`, `teardown` — and may
+name individual tools to include or exclude. `visibleDefinitions`
+reports the selection; `call(ToolCall)` invokes an operation and returns
+structured data or throws `ToolError`.
 
 `MCPRequestHandler` and `MCPService` provide protocol composition.
 `ServerConfiguration` parses the executable's environment and builds

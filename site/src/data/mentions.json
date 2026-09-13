@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-11T00:20:56.587Z",
+ "generated": "2026-09-13T19:38:39.127Z",
  "mentions": [
   {
    "port": "cxx",
@@ -216,6 +216,13 @@
    "symbol": "libtmux::Pane::options",
    "page": "/topics/options-and-hooks/",
    "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane::piping",
+   "page": "/topics/format-tokens/",
+   "title": "Format-token fields",
    "section": "topics"
   },
   {
@@ -3559,13 +3566,6 @@
   },
   {
    "port": "rs",
-   "symbol": "mcp.policy.Safety",
-   "page": "/rs/latest/mcp/api/",
-   "title": "Rust MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
    "symbol": "mcp.src.TmuxTools.builder",
    "page": "/rs/latest/mcp/api/",
    "title": "Rust MCP API",
@@ -3574,34 +3574,6 @@
   {
    "port": "rs",
    "symbol": "mcp.src.TmuxTools.capture_since",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.diagnose_pane",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.forget_job",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.interrupt_gracefully",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.job_status",
    "page": "/rs/latest/mcp/topics/",
    "title": "Rust MCP topics",
    "section": "ports"
@@ -3622,13 +3594,6 @@
   },
   {
    "port": "rs",
-   "symbol": "mcp.src.TmuxTools.run_and_wait",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
    "symbol": "mcp.src.TmuxTools.run_command",
    "page": "/rs/latest/mcp/topics/",
    "title": "Rust MCP topics",
@@ -3636,49 +3601,7 @@
   },
   {
    "port": "rs",
-   "symbol": "mcp.src.TmuxTools.run_plan",
-   "page": "/rs/latest/mcp/",
-   "title": "MCP for Rust",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.run_plan",
-   "page": "/rs/latest/mcp/api/",
-   "title": "Rust MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.run_plan",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.start_command",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.wait_for_idle",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
    "symbol": "mcp.src.TmuxTools.wait_for_text",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.src.TmuxTools.watch_pane",
    "page": "/rs/latest/mcp/topics/",
    "title": "Rust MCP topics",
    "section": "ports"
@@ -3870,6 +3793,13 @@
    "symbol": "plan.Plan.preview",
    "page": "/rs/latest/workspace/internals/topics/",
    "title": "Rust workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.Safety",
+   "page": "/rs/latest/mcp/api/",
+   "title": "Rust MCP API",
    "section": "ports"
   },
   {
@@ -4155,6 +4085,13 @@
   {
    "port": "rs",
    "symbol": "src.WorkspaceBuilder.plan",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "src.WorkspaceBuilder.plan",
    "page": "/rs/latest/workspace/internals/api/",
    "title": "Rust workspace builder API",
    "section": "ports"
@@ -4336,6 +4273,13 @@
   },
   {
    "port": "swift",
+   "symbol": "OutputWait.Outcome.timedOut",
+   "page": "/swift/latest/mcp/topics/",
+   "title": "Swift MCP topics",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
    "symbol": "Pane",
    "page": "/topics/architecture/",
    "title": "Architecture",
@@ -4396,13 +4340,6 @@
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
-  },
-  {
-   "port": "swift",
-   "symbol": "SafetyTier",
-   "page": "/swift/latest/mcp/api/",
-   "title": "Swift MCP API",
-   "section": "ports"
   },
   {
    "port": "swift",
@@ -4602,14 +4539,14 @@
   },
   {
    "port": "swift",
-   "symbol": "Server.waitForOutput(in:matching:stoppingAt:requiringFreshOutput:timeout:tailLimit:)",
+   "symbol": "Server.waitForOutput(in:matching:stoppingAt:requiringFreshOutput:startingAt:timeout:tailLimit:)",
    "page": "/examples/capture-pane-output/",
    "title": "Capture pane output",
    "section": "examples"
   },
   {
    "port": "swift",
-   "symbol": "Server.waitForOutput(in:matching:stoppingAt:requiringFreshOutput:timeout:tailLimit:)",
+   "symbol": "Server.waitForOutput(in:matching:stoppingAt:requiringFreshOutput:startingAt:timeout:tailLimit:)",
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
@@ -4735,30 +4672,44 @@
   },
   {
    "port": "swift",
-   "symbol": "ToolError.timedOut(_:seconds:)",
+   "symbol": "ToolOperation",
    "page": "/swift/latest/mcp/topics/",
    "title": "Swift MCP topics",
    "section": "ports"
   },
   {
    "port": "swift",
-   "symbol": "ToolError.workspace(_:)",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
-  },
-  {
-   "port": "swift",
-   "symbol": "ToolOperation",
+   "symbol": "Toolset",
    "page": "/swift/latest/mcp/api/",
    "title": "Swift MCP API",
    "section": "ports"
   },
   {
    "port": "swift",
-   "symbol": "ToolOperation",
-   "page": "/swift/latest/mcp/topics/",
-   "title": "Swift MCP topics",
+   "symbol": "Toolset.execute",
+   "page": "/swift/latest/mcp/api/",
+   "title": "Swift MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "Toolset.inspect",
+   "page": "/swift/latest/mcp/api/",
+   "title": "Swift MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "Toolset.manage",
+   "page": "/swift/latest/mcp/api/",
+   "title": "Swift MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "Toolset.teardown",
+   "page": "/swift/latest/mcp/api/",
+   "title": "Swift MCP API",
    "section": "ports"
   },
   {
