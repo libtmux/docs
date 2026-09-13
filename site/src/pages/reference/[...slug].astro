@@ -1044,7 +1044,10 @@ const title = owner
       const media = window.matchMedia('(min-width: 64rem)')
       const sync = () => {
         const el = document.querySelector('.api-toc-shell')
-        if (el) el.open = media.matches
+        if (!el) return
+        const returnFocus = !media.matches && el.contains(document.activeElement)
+        el.open = media.matches
+        if (returnFocus) el.querySelector(':scope > summary')?.focus({ preventScroll: true })
       }
       sync()
       media.addEventListener('change', sync)

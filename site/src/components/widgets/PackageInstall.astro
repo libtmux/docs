@@ -172,6 +172,7 @@ const installHtml = new Map(
       ))
     }
   </div>
+  <span class="sr-only" data-copy-status role="status" aria-live="polite" aria-atomic="true" />
 </div>
 
 <style is:global>
@@ -564,6 +565,8 @@ const installHtml = new Map(
   }
 
   function announceCopyResult(button: HTMLElement, copied: boolean) {
+    const status = button.closest('.lm-pkg-install')?.querySelector('[data-copy-status]')
+    status?.replaceChildren(document.createTextNode(copied ? 'Copied to clipboard.' : 'Copy failed. Select and copy the text manually.'))
     const original = button.getAttribute('data-copy-label') ?? button.textContent ?? 'Copy'
     button.setAttribute('data-copy-label', original)
     button.textContent = copied ? 'Copied' : 'Copy failed'

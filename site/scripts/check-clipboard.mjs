@@ -13,7 +13,14 @@ export async function checkClipboard(page, base) {
   for (const [path, selector, textSelector] of widgets) {
     const response = await page.goto(`${base}/${path}`, { waitUntil: 'networkidle' })
     assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
-    const button = page.locator(`${selector}:visible`).first()
+    const widget = page.locator(`${selector.split('__')[0]}:visible`).first()
+    const button = widget.locator(`${selector}:visible`).first()
+    const status = widget.locator('[data-copy-status]')
+    assert.equal(await status.count(), 1, `${path}: persistent copy status`)
+    assert.equal(await status.getAttribute('role'), 'status', `${path}: copy result is announced`)
+    assert.equal(await status.getAttribute('aria-live'), 'polite', `${path}: polite copy announcement`)
+    assert.equal(await status.getAttribute('aria-atomic'), 'true', `${path}: complete copy announcement`)
+    const buttonLabel = await button.getAttribute('aria-label')
     const text = await button.evaluate((element, selector) => {
       const container = element.parentElement
       const text = container.querySelector(selector).textContent
@@ -43,6 +50,10 @@ export async function checkClipboard(page, base) {
       await page.waitForFunction(([selector, label]) => [...document.querySelectorAll(selector)]
         .some((element) => element.textContent === label), [selector, copied ? 'Copied' : 'Copy failed'])
       assert.equal(await button.textContent(), copied ? 'Copied' : 'Copy failed', `${path}: ${mode}`)
+      const announcement = copied ? 'Copied to clipboard.' : 'Copy failed. Select and copy the text manually.'
+      assert.equal(await status.textContent(), announcement, `${path}: ${mode} accessible result`)
+      assert.match(await status.ariaSnapshot(), /status/, `${path}: ${mode} status remains accessible`)
+      assert.equal(await button.getAttribute('aria-label'), buttonLabel, `${path}: ${mode} keeps the copy action label`)
       assert(await button.evaluate((element) => document.activeElement === element), `${path}: ${mode} preserves focus`)
       assert.equal(await page.locator('textarea').count(), textareas, `${path}: ${mode} removes temporary textareas`)
       const calls = await page.evaluate(() => window.__clipboardProbe)

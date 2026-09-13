@@ -138,9 +138,12 @@ for (const path of ['/reference/go/', '/reference/py/libtmux-server/']) {
   await p.waitForFunction(() => document.querySelector('.api-toc-shell').open, null, { timeout: 1000 }).catch(() => {})
   note(await menu.isVisible(), `${path}: widening restores the product menu`)
   note(await contents.getAttribute('open') !== null, `${path}: widening restores the symbol tree`)
+  await menu.locator('a').first().focus()
   await p.setViewportSize({ width: 390, height: 800 })
   await p.waitForFunction(() => !document.querySelector('.api-toc-shell').open, null, { timeout: 1000 }).catch(() => {})
   note(!(await menu.isVisible()), `${path}: narrowing collapses the product menu`)
+  note(await contents.locator(':scope > summary').evaluate((element) => document.activeElement === element),
+    `${path}: narrowing focused navigation returns focus to its summary`)
   await p.close()
 }
 for (const width of [390, 1440]) {

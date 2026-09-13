@@ -201,6 +201,7 @@ const activePortRules = items
       ))
     }
   </div>
+  <span class="sr-only" data-copy-status role="status" aria-live="polite" aria-atomic="true" />
 </div>
 
 <script is:inline type="application/json" data-agent-prompt-parts set:html={island} />
@@ -612,6 +613,8 @@ const activePortRules = items
     const text = button.closest('.lm-agent-prompt__code')?.querySelector('[data-prompt-text]')?.textContent
     if (!text) return
     const done = (copied: boolean) => {
+      const status = button.closest('.lm-agent-prompt')?.querySelector('[data-copy-status]')
+      status?.replaceChildren(document.createTextNode(copied ? 'Copied to clipboard.' : 'Copy failed. Select and copy the text manually.'))
       const original = button.getAttribute('data-copy-label') ?? button.textContent ?? 'Copy'
       button.setAttribute('data-copy-label', original)
       button.textContent = copied ? 'Copied' : 'Copy failed'
