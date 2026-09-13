@@ -18,13 +18,14 @@ command.
 
 ## Evaluate with a selected server
 
-After the [installation walkthrough](../../guides/installation/) starts its
-dedicated server:
+Continue the [installation walkthrough](../../guides/installation/) through
+its detached load, leaving `workspace-guide` running in the same shell:
 
 ```console
 $ tmuxp shell \
-    -L workspace-guide \
-    -c 'print(server.sessions)'
+    -S "$WORKSPACE_TMP/tmux.sock" \
+    -c 'print(server.sessions)' \
+    workspace-guide editor
 ```
 
 Use `-c`; the reference does not define `--command`. Optional session and window
@@ -46,6 +47,21 @@ machine output needs a separate terminal; an interactive transcript cannot share
 JSON stdout.
 
 Backend selectors are mutually exclusive.
+
+## Native Swift shell
+
+The Swift command uses `TMUX_WORKSPACE_PYTHON` (default `python3`) and checks
+for tmuxp 1.74.0 plus libtmux `Server` support for selecting `tmux_bin` before
+evaluation. It passes the selected native tmux executable and socket to that
+runtime. Run the example above with `tmux-workspace` after installing this
+compatible Python environment.
+
+Captured `-c` calls stream output while Python runs. Machine calls require
+`-c`; live chunks use structured stderr warnings and the final stdout result
+contains both captured streams and the child exit status. See the
+[child output contract](../../reference/output/#native-swift-child-output)
+for filtering, UTF-8 handling and the one MiB limit per stream. Interactive
+backends require a terminal; optional backend packages need broader verification.
 
 ## Arguments and flags
 

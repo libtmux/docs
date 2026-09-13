@@ -32,6 +32,12 @@ claim that every referenced feature works in this local implementation.
 
 ## Current coverage
 
+Native [imports](./cli/import/#native-net-imports) preserve supported command
+groups, directories, Teamocil options/focus and synchronization timing. They
+validate the translated workspace before printing or saving it and refuse
+unsupported lifecycle fields. Load creates panes in configuration order;
+[pane configuration](./configuration/panes/) explains indexes and focus.
+
 Native `--log-level` filters optional diagnostics. On Linux x64,
 `load --log-file` appends structured logs; see the
 [output reference](./reference/output/) for destination and failure handling.
@@ -46,9 +52,15 @@ even if a script moves the pane. Later commands reject a replacement daemon.
 Append with Python plugins or custom builders is unavailable and fails before
 building any input or starting Python; use `-d` for those extensions.
 
-Human prompts and terminal attachment workflows, plugin and custom-builder
-validation, contextual completion, and the full configuration and platform
-corpus remain unfinished.
+Human load supports attachment and client-selection prompts from a foreground
+controlling terminal on Linux x64. It authenticates the invoking pane and
+selected daemon before building, then checks the client again before handoff.
+See [native attachment](./cli/load/#native-net-attachment) for choices and
+interruption behavior.
+
+Attached Python extension handoff, broader extension lifecycle validation,
+contextual completion, and the full configuration and platform corpus remain
+unfinished.
 
 For the released Python workflow, use [tmuxp](https://tmuxp.git-pull.com/)
 and its [Python workspace guide](/py/latest/workspace/guides/). It is a separate

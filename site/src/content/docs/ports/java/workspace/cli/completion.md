@@ -20,6 +20,13 @@ Picocli defines the native command graph. `--generate schema` exports metadata
 and `--generate bash` emits completion through its code generator. Other manual
 and completion formats are not exposed by the workspace executable.
 
+Normal Bash generation writes the script directly. Add `--json` for a versioned
+artifact with `"command": "generate"`, `"format": "bash"`, the exact text in
+`"script"`, and `"status": "ok"`. `--ndjson` emits that artifact as one
+`completed` event with `"sequence": 1` and takes precedence over `--json`.
+Schema generation retains its metadata document in every output mode. See the
+[native generation contract](https://github.com/libtmux/libtmux-java/blob/887a5e079d38898bdffaad19a7961936eabe1ce0/workspace-cli/README.md#generated-reference-and-development).
+
 Completion is derived from actual command metadata. It must include nested
 import commands, local short flags, positional arity, mutually exclusive
 choices, and all-command machine options. Verify generated scripts with the installed

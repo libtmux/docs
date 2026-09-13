@@ -32,6 +32,18 @@ including global options after a script, reject a replacement daemon. Failure
 preserves the borrowed session. A session-name override applies to the final
 input. Partial results identify completed inputs and retained changes.
 
+Panes retain configuration order, including windows with three or more panes.
+`pane-base-index` changes their starting index; explicit focus selects the
+configured pane without changing that order.
+
+Native imports validate the translated workspace before printing or saving.
+Teamocil command groups, window options and first-requested focus are preserved;
+tmuxinator shorthand command lists stay in one pane, while explicit pane lists
+create separate panes. Synchronization preserves before/after command timing.
+Unsupported launcher hooks, project `pre`, Teamocil filters or `clear`, and
+named tmuxinator pane titles are refused before writing a destination. See
+[imports](../../cli/import/#native-net-imports) for supported shapes and roots.
+
 The normalizer supports command shorthand, inherited commands, enter/delay
 settings, history suppression, directories, environment, shells, layouts,
 indexes, focus and options. Before-scripts run direct argv after session
@@ -68,6 +80,13 @@ finished. Script panels retain a bounded tail; disabling the panel preserves
 the original stdout/stderr destinations. Resizing stops drawing and leaves the
 old frame in place. See [load](../../cli/load/#progress-and-script-output).
 
+Human load supports attachment and client-selection prompts on a foreground
+controlling terminal on Linux x64. It authenticates the invoking pane and
+daemon before building and rechecks the selected client before handoff.
+SIGINT and SIGTERM report cancellation. See
+[native attachment](../../cli/load/#native-net-attachment) for prompt choices
+and late failures.
+
 Python shell and workspace extensions use a checked tmuxp 1.74.0 runtime
 selected by `TMUX_WORKSPACE_PYTHON`. Append with Python plugins or custom
 builders fails before building any input or starting Python; use `-d` to load
@@ -76,18 +95,20 @@ those extensions into a separate session. Empty `plugins: []` and a null
 separately with bounds and explicit truncation. The parser generates Markdown,
 command metadata, a manual and static Bash/Zsh/Fish completion definitions.
 
-The local source reference is src/LibTmux.Workspace.Cli/README.md. Use the
-native executable's `--help` for the options implemented in that checkout.
+The [native CLI source reference](https://github.com/libtmux/libtmux-dotnet/blob/4ac82a5b82fd8cf68d31c70a2a3eb43c587cd7c0/src/LibTmux.Workspace.Cli/README.md)
+describes this development implementation. Use the native executable's `--help`
+for the options implemented in that checkout.
 
 ### Remaining gaps
 
-- Interactive confirmation policies remain incomplete. Progress drawing is
-  limited to Linux x64 and does not redraw after a terminal resize.
+- Progress drawing is limited to Linux x64 and does not redraw after a
+  terminal resize.
 - .NET Console initialization can emit keypad controls when stdout is a
   terminal. Console writes do not have a hard cancellation deadline; see
   [output](../output/).
-- Attached load, client switching and controlling-terminal editor/shell
-  behavior need the remaining real terminal and interruption gates.
+- Attached Python extension handoff remains unavailable; use `-d` for those
+  extensions. Controlling-terminal editor/shell behavior and other platforms
+  still need their remaining terminal and interruption gates.
 - Python plugin loading delegates the whole load rather than preserving native
   per-input accounting. Optional backends and extension lifecycle coverage
   remain incomplete.

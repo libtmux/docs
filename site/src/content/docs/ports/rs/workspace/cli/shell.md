@@ -18,13 +18,14 @@ command.
 
 ## Evaluate with a selected server
 
-After the [installation walkthrough](../../guides/installation/) starts its
-dedicated server:
+Continue the [installation walkthrough](../../guides/installation/) through
+its detached load, leaving `workspace-guide` running in the same shell:
 
 ```console
 $ tmuxp shell \
-    -L workspace-guide \
-    -c 'print(server.sessions)'
+    -S "$WORKSPACE_TMP/tmux.sock" \
+    -c 'print(server.sessions)' \
+    workspace-guide editor
 ```
 
 Use `-c`; the reference does not define `--command`. Optional session and window

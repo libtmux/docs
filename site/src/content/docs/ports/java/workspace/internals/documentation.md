@@ -19,6 +19,10 @@ Picocli defines the native command graph. `--generate schema` exports metadata
 and `--generate bash` emits completion through its code generator. Other manual
 and completion formats are not exposed by the workspace executable.
 
+Bash generation also supports a JSON artifact or one completed NDJSON event;
+the script remains a string inside the machine result. Schema generation keeps
+its metadata document. See [machine completion output](../../cli/completion/).
+
 The [command reference](../../cli/) covers the Python grammar. Native metadata
 exports need to record command paths, aliases, positional arity, option spellings,
 types, defaults, choices, required and exclusive groups, store-constant values,

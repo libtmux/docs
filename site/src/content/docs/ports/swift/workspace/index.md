@@ -43,10 +43,11 @@ file. A write failure reports a secondary diagnostic and preserves the load resu
 
 Human load displays progress on terminal stderr, with presets, custom counters
 and a bounded recent-output panel. It uses the initial terminal size and
-conservative Unicode clipping. Bootstrap output keeps its original stdout or
-stderr destination, but is collected before display. Machine output disables
-the panel and emits structured window/pane events. Interruption clears the
-panel; SIGINT and SIGTERM return status 130 and stop captured children.
+conservative Unicode clipping. Bootstrap output streams to its original stdout
+or stderr destination and updates the panel while the script runs. Machine
+output disables the panel and sends child text as structured stderr warnings;
+load events remain on stdout. See the [child output contract](./reference/output/#native-swift-child-output)
+for limits and cancellation behavior.
 
 Human load with a foreground terminal attaches to the final workspace. Inside
 tmux, choose switch, detached load, append or cancel. `-y` skips the mode prompt

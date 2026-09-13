@@ -22,6 +22,31 @@ NDJSON wins when both are present. A saved workspace's encoding is separate:
 stream. Machine output has no ANSI styling, prompts, spinner frames, or raw
 child output.
 
+## Native Swift child output
+
+The native Swift command streams `before_script` and captured `shell -c`
+output while the child runs. Human bootstrap output keeps its original stdout
+or stderr destination. Human shell output also preserves line breaks and tabs,
+escaping other terminal controls.
+
+In JSON and NDJSON modes, child chunks are warning records on **stderr** with
+codes `bootstrap_stdout`, `bootstrap_stderr`, `shell_stdout` or `shell_stderr`.
+`--log-level error` and `critical` hide those warnings. Load events and results
+stay on stdout; the final shell result retains complete captured stdout/stderr
+and the child exit status even when warnings are hidden.
+
+Each child stream is limited to one MiB. UTF-8 characters split across reads
+are retained until complete; invalid bytes use replacement characters. Output
+follows sink backpressure without replaying previous chunks. Overflow, failed
+writes and cancellation terminate the captured process group; a closed reader
+is detected on the next pending write.
+
+On cancellation, load attempts one terminal failure result and fatal diagnostic
+with bounded writes. Writable stdout receives the terminal result; blocked or
+closed output cannot guarantee delivery. A diagnostic interrupted on blocked
+stderr may end mid-record. SIGINT and SIGTERM return status 130, and append
+failures preserve the borrowed session.
+
 ## Machine output
 
 The document-to-stdout behaviors below are new machine-mode extensions. In the
@@ -39,7 +64,7 @@ output. Never append a status line to raw YAML or JSON document output.
 | `tmuxp freeze` | The workspace document as a JSON object when writing stdout; if saving to a file, a versioned save result containing destination, format and recoverability warnings. | One versioned capture/save result per line, with a `"workspace"` object when returning the document. |
 | `convert` and importer leaves | The converted document as JSON when writing stdout; a versioned save result when an explicit destination is supplied. | One versioned conversion/save result with a nested document when returning it. |
 | `edit` | One versioned result after the editor exits, including selected file and child status. | One terminal edit result; interactive editor display uses the terminal rather than machine stdout. |
-| `"shell"` | For `-c`, one result containing captured Python stdout/stderr and child status. Interactive REPL requires a separate terminal; otherwise reject before execution. | For `-c`, stream captured Python output events and one terminal result. Interactive behavior has the same terminal requirement. |
+| `"shell"` | For `-c`, one result containing captured Python stdout/stderr and child status. Native Swift machine calls require `-c`. | Native Swift writes one terminal result to stdout; live child warnings use stderr as described above. |
 
 Keep the established read-command JSON shapes rather than forcing a new
 universal envelope around existing pipelines. New operation envelopes use
