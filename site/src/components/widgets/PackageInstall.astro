@@ -4,6 +4,7 @@ import { highlightInline } from '../../lib/highlight'
 import { PORTS, referenceUrl } from '../../lib/ports'
 import type { Quickstart } from '../../lib/quickstarts'
 import { withPortRoot } from '../../lib/site-root'
+import { defaultVersionFor } from '../../lib/versions'
 
 /**
  * Package-manager picker for the eight libtmux ports' own install commands
@@ -176,7 +177,7 @@ const installHtml = new Map(
           {snippets && (
             <p class="lm-pkg-install__links">
               <a href={withPortRoot(`/${p.slug}/`)}>{p.name} documentation</a>
-              <a href={referenceUrl(p)}>{p.name} API reference</a>
+              <a href={referenceUrl(p, defaultVersionFor(p.slug))}>{p.name} API reference</a>
             </p>
           )}
           {snippets?.[p.slug] && (

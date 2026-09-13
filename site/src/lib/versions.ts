@@ -206,3 +206,25 @@ export function buildTarget(env: Record<string, string | undefined>) {
   const isDefault = env.LIBTMUX_DOCS_IS_DEFAULT === 'true'
   return { version, kind, isDefault }
 }
+
+/**
+ * The version prefix another port's page lives under.
+ *
+ * A link that crosses ports — the concept map's equivalents, the prose
+ * linker, a symbol index spanning all eight — names a port this build is not
+ * rendering, so it cannot take the version from `buildTarget`. The assembly
+ * passes every port's default in `LIBTMUX_DOCS_PORT_DEFAULTS`; a build
+ * without it (`pnpm dev`, a bare `astro build`) targets each port's trunk.
+ */
+let portDefaults: Record<string, string> | undefined
+
+export function defaultVersionFor(port: string): string {
+  if (!portDefaults) {
+    try {
+      portDefaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') as Record<string, string>
+    } catch {
+      portDefaults = {}
+    }
+  }
+  return portDefaults[port] ?? 'latest'
+}

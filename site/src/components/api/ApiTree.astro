@@ -47,7 +47,7 @@ const {
   port, portName, tree, currentRoot, currentBucket, currentTypeId, ownerNavId, ownerId,
   members, withMembers, menuVersion, currentPath,
 } = Astro.props as Props
-const base = withRoot(`/reference/${port}/`)
+const base = withRoot('/reference/')
 const href = (slug: string) => `${base}${slug}/`
 
 let seq = 0

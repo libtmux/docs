@@ -5,6 +5,8 @@ import jdkInv from '../data/inventories/jdk.entries.json'
 import pythonInv from '../data/inventories/python.entries.json'
 import dependencyInv from '../data/inventories/dependencies.entries.json'
 import { withPortRoot } from './site-root'
+import { PORT_BY_SLUG, referenceUrl, type DocProduct } from './ports'
+import { defaultVersionFor } from './versions'
 import cxxNav from '../data/api/cxx.nav.json'
 import dotnetNav from '../data/api/dotnet.nav.json'
 import goNav from '../data/api/go.nav.json'
@@ -297,17 +299,20 @@ export function indexFor(model: ApiModel, hrefFor: (s: ApiSymbol) => string): Sy
  * Returns undefined when the port or the symbol is unknown, so a stale entry
  * renders as text instead of a link to nothing.
  */
-export function referenceHref(port: string, publicId: string): string | undefined {
+export function referenceHref(port: string, publicId: string, version?: string): string | undefined {
   const model = API_MODELS[port]
   if (!model) return undefined
   // Existence is still checked: a stale entry should render as text rather
   // than link to a page that was never generated.
   const symbol = model.symbols.find((s) => (s.publicId ?? s.id) === publicId)
   if (!symbol) return undefined
-  // withPortRoot: this is called from ApiEntry, which renders inside shared
-  // prose, so it runs in every locale's build — while the reference itself is
-  // generated only in the default locale's tree.
-  return withPortRoot(`/reference/${port}/${symbol.slug ?? pageSlug(publicId)}/`)
+  const target = PORT_BY_SLUG[port]
+  if (!target) return undefined
+  // The version is the target port's own default unless a caller is rendering
+  // that port and knows better: this is called from ApiEntry, which renders
+  // inside shared prose and so runs in builds of every port and locale.
+  const product = (symbol.product ?? 'core') === 'core' || symbol.apiScope === 'internal' ? 'core' : symbol.product
+  return `${referenceUrl(target, version ?? defaultVersionFor(port), product as DocProduct | 'core')}${symbol.slug ?? pageSlug(publicId)}/`
 }
 
 /** Source-verified equivalents, shared by reference entries and page navigation. */

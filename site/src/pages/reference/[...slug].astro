@@ -8,10 +8,11 @@ import { pagePortsFor } from '../../lib/page-ports-for'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { withRoot } from '../../lib/site-root'
 import { API_MODELS, API_NAV, OWNER_KINDS, PORT_NAME, indexFor, ownersOf, pageSlug, referenceHref, topLevelTypesOf } from '../../lib/api-models'
-import { PORT_BY_SLUG } from '../../lib/ports'
+import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { symbolSource } from '../../lib/markdown-twins'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
+import { defaultVersionFor } from '../../lib/versions'
 import ApiDoc from '../../components/api/ApiDoc.astro'
 import ApiTree from '../../components/api/ApiTree.astro'
 import { navTree } from '../../lib/api-tree'
@@ -34,12 +35,9 @@ import '../../styles/vendor/gp-sphinx-api.css'
  */
 
 export async function getStaticPaths() {
-  // Only the root build. This route would otherwise render inside all
-  // fourteen shell builds, the way `[port]/index.astro` used to.
-  // The root build of the default locale only. The reference is not
-  // translated — a `/ja/reference/` tree would be the English body under
-  // another locale's prefix, which is what placeholders exist to avoid.
-  if (process.env.LIBTMUX_DOCS_PORT) return []
+  // The default locale only. The reference is not translated — a
+  // `/ja/…/reference/` tree would be the English body under another locale's
+  // prefix, which is what placeholders exist to avoid.
   if (buildLocale() !== DEFAULT_LOCALE) return []
 
   // Typed explicitly: inferring from the first element gives every field the
@@ -47,27 +45,40 @@ export async function getStaticPaths() {
   const paths: {
     params: { slug: string | undefined }
     props: { model: ApiModel | undefined; owner: ApiSymbol | undefined; searchable?: boolean }
-  }[] = [{ params: { slug: undefined }, props: { model: undefined, owner: undefined } }]
+  }[] = []
 
-  for (const [port, model] of Object.entries(API_MODELS)) {
-    const productIds = new Set([
-      ...symbolsForProduct(model, 'mcp'),
-      ...symbolsForProduct(model, 'workspace'),
-    ].map((symbol) => symbol.id))
-    paths.push({ params: { slug: port }, props: { model, owner: undefined } })
-    // Every symbol, not only the types with members. A method that lives as
-    // an anchor on someone else's page cannot be listed in a sidebar, cannot
-    // carry its own examples, and cannot be linked to as a page — which was
-    // true of all but the owning types.
-    //
-    // `slug` comes from the model rather than from `pageSlug` because it has
-    // to be injective; see its comment in model.ts.
-    for (const owner of model.symbols) {
-      paths.push({
-        params: { slug: `${port}/${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}` },
-        props: { model, owner, searchable: !productIds.has(owner.id) },
-      })
-    }
+  // The root build carries the hub alone: one page listing every port's
+  // reference. Each port's own tree is built inside that port's shell, where
+  // `base` is already `/<port>/<version>/`, so these routes need no port
+  // segment of their own.
+  const buildPort = process.env.LIBTMUX_DOCS_PORT
+  if (!buildPort) return [{ params: { slug: undefined }, props: { model: undefined, owner: undefined } }]
+
+  const model = API_MODELS[buildPort]
+  if (!model) return []
+  paths.push({ params: { slug: undefined }, props: { model, owner: undefined } })
+
+  // Core only. The Workspace Manager and the MCP server are separately
+  // versioned packages with references of their own, under their own section
+  // of this port — `productApiRoutes` builds those. A declaration scoped
+  // `internal` stays here, because no product page lists it.
+  //
+  // Every symbol, not only the types with members. A method that lives as an
+  // anchor on someone else's page cannot be listed in a sidebar, cannot carry
+  // its own examples, and cannot be linked to as a page.
+  //
+  // `slug` comes from the model rather than from `pageSlug` because it has to
+  // be injective; see its comment in model.ts.
+  const productIds = new Set([
+    ...symbolsForProduct(model, 'mcp'),
+    ...symbolsForProduct(model, 'workspace'),
+  ].map((symbol) => symbol.id))
+  for (const owner of model.symbols) {
+    if (productIds.has(owner.id)) continue
+    paths.push({
+      params: { slug: owner.slug ?? pageSlug(owner.publicId ?? owner.id) },
+      props: { model, owner },
+    })
   }
   return paths
 }
@@ -78,6 +89,10 @@ interface Props {
   searchable?: boolean
 }
 const { model, owner, searchable = true } = Astro.props as Props
+
+/** What the hub counts per port: the core library, without its products. */
+const coreCount = (m: ApiModel) =>
+  m.symbols.length - new Set([...symbolsForProduct(m, 'mcp'), ...symbolsForProduct(m, 'workspace')].map((s) => s.id)).size
 /*
  * The route param is the page's own path below `/reference/`, so composing
  * `pagePath` from it cannot disagree with the URL. Deriving it from `owner`
@@ -102,7 +117,7 @@ const paged = new Set(pageOwners.map((s) => s.id))
  */
 const hrefFor = (s: ApiSymbol): string =>
   model
-    ? withRoot(`/reference/${model.port}/${s.slug ?? pageSlug(s.publicId ?? s.id)}/`)
+    ? withRoot(`/reference/${s.slug ?? pageSlug(s.publicId ?? s.id)}/`)
     : withRoot('/reference/')
 /*
  * The stub is what the index route has instead of a model.
@@ -532,10 +547,10 @@ const title = owner
               {Object.entries(API_MODELS).map(([port, m]) => (
                 <a
                   class="block rounded border border-slate-200 p-4 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800"
-                  href={withRoot(`/reference/${port}/`)}
+                  href={PORT_BY_SLUG[port] ? referenceUrl(PORT_BY_SLUG[port], defaultVersionFor(port)) : withRoot('/reference/')}
                 >
                   <span class="text-lg font-semibold">{PORT_NAME[port] ?? port}</span>
-                  <span class="ml-2 text-sm opacity-60">{m.symbols.length} symbols</span>
+                  <span class="ml-2 text-sm opacity-60">{coreCount(m)} symbols</span>
                   <p class="mt-1 text-sm opacity-75">
                     {m.symbols.filter((s) => s.doc?.summary).length} documented,
                     {' '}{topLevelTypesOf(m).length} types
@@ -712,10 +727,10 @@ const title = owner
               is a URL, and that is the whole feature.
             */}
             <p class="api-page-actions" data-pagefind-ignore="all">
-              <a href={withRoot(`/reference/${model?.port}/${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}.md`)}>
+              <a href={withRoot(`/reference/${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}.md`)}>
                 View as Markdown
               </a>
-              <button type="button" class="api-copy-md" data-md={withRoot(`/reference/${model?.port}/${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}.md`)}>
+              <button type="button" class="api-copy-md" data-md={withRoot(`/reference/${owner.slug ?? pageSlug(owner.publicId ?? owner.id)}.md`)}>
                 Copy Markdown
               </button>
             </p>
@@ -740,7 +755,7 @@ const title = owner
                   <dt>Module</dt>
                   <dd>
                     {moduleAnchors.has(ownerModule) ? (
-                      <a href={withRoot(`/reference/${model?.port}/#${ownerModule}`)}>{ownerModule}</a>
+                      <a href={withRoot(`/reference/#${ownerModule}`)}>{ownerModule}</a>
                     ) : (
                       ownerModule
                     )}

@@ -57,7 +57,7 @@ export function pagePortLinks({
     if (!path) {
       links = [{ href: portHomeUrl(port, targetVersion) }]
     } else if ((isReference && !symbolSlug) || path === 'api') {
-      if (API_MODELS[port.slug]) links = [{ href: referenceUrl(port) }]
+      if (API_MODELS[port.slug]) links = [{ href: referenceUrl(port, targetVersion) }]
     } else if (symbol) {
       for (const alternative of alternatives) {
         const match = alternative.ports.find((p) => p.port === port.slug)

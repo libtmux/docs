@@ -435,7 +435,7 @@ export function portParts(args: {
   const reading: (readonly [string, string])[] = [
     [portUrl(ctx, port, 'llms.txt'), `every page for ${port.name}, as a list`],
     [portUrl(ctx, port, 'docs.json'), 'the same list with headings, as JSON'],
-    [`${ctx.docsBase}/reference/${port.slug}/`, `the ${port.name} API reference`],
+    [portUrl(ctx, port, 'reference/'), `the ${port.name} API reference`],
   ]
   if (port.ecosystemHost) {
     reading.push([port.ecosystemHost.url, `${port.name} reference on ${port.ecosystemHost.name}`])

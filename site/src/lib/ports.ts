@@ -599,9 +599,22 @@ export function productDescription(port: Port, product: DocProduct): string {
   return `In development. ${DOC_PRODUCTS.mcp.description}`
 }
 
+/**
+ * Where a reference tree sits under a port and version.
+ *
+ * Three packages, three trees. The core library answers at `reference/`, and
+ * the Workspace Manager and the MCP server — separately versioned packages
+ * that happen to be documented beside it — answer under their own section.
+ * One spelling for all three, because a reader who has found one should be
+ * able to guess the others.
+ */
+export function referenceSegment(product: DocProduct | 'core'): string {
+  return product === 'core' ? 'reference' : `${product}/reference`
+}
+
 /** Language APIs for workspace builders belong to implementation documentation. */
 export function productApiPath(product: DocProduct): string {
-  return product === 'workspace' ? 'workspace/internals/api' : 'mcp/api'
+  return referenceSegment(product)
 }
 
 /**
@@ -623,16 +636,23 @@ export const VERSIONED_PORTS = PORTS.filter((p) => p.versionedDocs)
 /** Ports whose language has a canonical reference of its own, too. */
 export const ECOSYSTEM_PORTS = PORTS.filter((p) => p.ecosystemHost)
 
-/** URL of the reference extracted and rendered by this site. */
-export function referenceUrl(port: Port, _version?: string): string {
-  return withPortRoot(`/reference/${port.slug}/`)
+/**
+ * URL of the reference extracted and rendered by this site.
+ *
+ * Versioned like every other page under a port, because it documents one
+ * release of one package: `/go/latest/reference/` is the Go core library's
+ * API, and its Workspace Manager and MCP server answer beside it rather than
+ * inside it.
+ */
+export function referenceUrl(port: Port, version: string, product: DocProduct | 'core' = 'core'): string {
+  return portPageUrl(port, version, referenceSegment(product))
 }
 
 /** URL of a prose page within a port and version; callers check availability. */
 export function portPageUrl(port: Port, version: string, pagePath = ''): string {
   const rest = pagePath.replace(/^\/+|\/+$/g, '')
 
-  // Native API paths have no shared spelling; use the unified reference index.
+  // A port's own `api` page is the reference it now sits beside.
   if (rest === 'api' || rest.startsWith('api/')) return referenceUrl(port, version)
 
   const tail = rest ? `${rest}/` : ''

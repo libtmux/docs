@@ -18,7 +18,7 @@
  */
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
-import { PORT_BY_SLUG, portPageUrl, type DocProduct } from './ports'
+import { PORT_BY_SLUG, portPageUrl, referenceUrl, type DocProduct } from './ports'
 import { withPortRoot } from './site-root'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { localeOf, sourceIdOf } from '../i18n/resolve'
@@ -107,10 +107,9 @@ export function referenceEntries(port: string, version: string): SidebarLinkItem
   if (!p) throw new Error(`sidebar.ts: unknown port slug "${port}"`)
 
   const entries: SidebarLinkItem[] = [
-    // withPortRoot, not withRoot: the reference is built in the default
-    // locale only, so a Japanese page reaches across to it rather than
-    // expecting a copy under its own prefix.
-    { type: 'link', label: 'API reference', href: withPortRoot(`/reference/${port}/`), external: false },
+    // The core library's reference, under this port and version — the
+    // Workspace Manager and MCP entries below carry their own.
+    { type: 'link', label: 'API reference', href: referenceUrl(p, version), external: false },
   ]
 
   if (p.ecosystemHost) {
