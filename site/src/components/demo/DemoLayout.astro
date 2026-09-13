@@ -22,14 +22,14 @@ const { title, description, current } = Astro.props as Props
 const topLink = (active: boolean) =>
   `block rounded-md px-3 py-2 text-sm no-underline transition ${
     active
-      ? 'bg-slate-200 font-medium text-slate-900 dark:bg-slate-800 dark:text-white'
-      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
+      ? 'bg-surface-hover font-medium'
+      : 'text-muted hover:bg-surface-hover'
   }`
 const subLink = (active: boolean) =>
   `block rounded-md px-2 py-1.5 text-xs no-underline transition ${
     active
-      ? 'font-medium text-slate-900 dark:text-white'
-      : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+      ? 'font-medium'
+      : 'text-muted hover:underline'
   }`
 ---
 
@@ -56,7 +56,7 @@ const subLink = (active: boolean) =>
                 {section.title}
               </a>
               {open && (
-                <ul class="ml-3 mt-1 list-none space-y-1 border-l border-slate-200 pl-3 dark:border-slate-700">
+                <ul class="ml-3 mt-1 list-none space-y-1 border-l border-edge pl-3">
                   {section.demos.map((demo) => (
                     <li>
                       <a

@@ -16,10 +16,10 @@ const { demos } = Astro.props as Props
       <li>
         <a
           href={withRoot(demo.href)}
-          class="block h-full rounded-lg border border-slate-200 p-4 no-underline transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800/50"
+          class="block h-full rounded-lg border border-edge p-4 no-underline transition hover:bg-surface-hover"
         >
-          <span class="block font-medium text-slate-900 dark:text-slate-100">{demo.title}</span>
-          <span class="mt-1 block text-sm text-slate-600 dark:text-slate-400">{demo.description}</span>
+          <span class="block font-medium">{demo.title}</span>
+          <span class="mt-1 block text-sm text-muted">{demo.description}</span>
         </a>
       </li>
     ))

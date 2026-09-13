@@ -19,28 +19,28 @@ import {
 } from '../../../lib/aside'
 
 const segment =
-  'relative flex h-8 min-w-8 cursor-pointer select-none items-center justify-center gap-1 rounded-md px-2 text-xs transition-colors hover:bg-slate-200 has-[:checked]:bg-white has-[:checked]:shadow-sm dark:hover:bg-slate-700 dark:has-[:checked]:bg-slate-700'
-const group = 'inline-flex flex-wrap gap-0.5 rounded-lg border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-600 dark:bg-slate-800'
-const legend = 'mb-1 text-xs font-medium text-slate-600 dark:text-slate-400'
+  'relative flex h-8 min-w-8 cursor-pointer select-none items-center justify-center gap-1 rounded-md px-2 text-xs transition-colors hover:bg-surface-hover has-[:checked]:bg-[var(--background-color)] has-[:checked]:shadow-sm'
+const group = 'inline-flex flex-wrap gap-0.5 rounded-lg border border-edge bg-surface p-0.5'
+const legend = 'mb-1 text-xs font-medium text-muted'
 const defaults = ASIDE_VARIANT_DEFAULTS.hybrid
 ---
 
 <DemoLayout title="Aside demo" description="Aside variants and types." current="/demo/ux/aside/">
   <h1 class="text-3xl font-semibold tracking-tight">Aside</h1>
-  <p class="mt-2 text-slate-600 dark:text-slate-400">
+  <p class="mt-2 text-muted">
     <code>&lt;Aside&gt;</code> sets a note, tip, caution or danger apart from the prose. The type sets the colour
     and icon; the variant sets the container and the icon's default style and size.
   </p>
 
-  <section class="mt-8 flex flex-col gap-4 border-b border-slate-200 pb-10 lg:flex-row lg:items-start dark:border-slate-700" data-aside-playground>
-    <form class="shrink-0 rounded-lg border border-slate-200 bg-slate-50 p-3 lg:w-80 dark:border-slate-700 dark:bg-slate-800/50">
+  <section class="mt-8 flex flex-col gap-4 border-b border-edge pb-10 lg:flex-row lg:items-start" data-aside-playground>
+    <form class="shrink-0 rounded-lg border border-edge bg-surface p-3 lg:w-80">
       <div class="flex flex-col gap-3">
         <label class="flex flex-col">
           <span class={legend}>Variant</span>
-          <select name="variant" class="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-900">
+          <select name="variant" class="rounded-md border border-edge bg-[var(--background-color)] px-2 py-1 text-sm">
             {ASIDE_VARIANTS.map((variant) => <option value={variant} selected={variant === 'hybrid'}>{variant}</option>)}
           </select>
-          <span class="mt-1 text-xs text-slate-500 dark:text-slate-400" data-variant-description>
+          <span class="mt-1 text-xs text-muted" data-variant-description>
             {ASIDE_VARIANT_DESCRIPTIONS.hybrid}
           </span>
         </label>
@@ -98,12 +98,12 @@ const defaults = ASIDE_VARIANT_DEFAULTS.hybrid
             </div>
           </fieldset>
         </div>
-        <p class="text-xs text-slate-500 dark:text-slate-400">A dot marks the variant's default.</p>
+        <p class="text-xs text-muted">A dot marks the variant's default.</p>
       </div>
     </form>
 
     <div class="min-w-0 flex-1" data-aside-preview>
-      <code class="rounded bg-slate-200 px-1.5 py-0.5 text-xs dark:bg-slate-700" data-aside-code>
+      <code class="rounded bg-surface-hover px-1.5 py-0.5 text-xs" data-aside-code>
         &lt;Aside type="note" variant="hybrid"&gt;
       </code>
       <Aside>
@@ -117,9 +117,9 @@ const defaults = ASIDE_VARIANT_DEFAULTS.hybrid
 
   {
     ASIDE_VARIANTS.map((variant) => (
-      <section class="border-b border-slate-200 py-10 last:border-b-0 dark:border-slate-700">
+      <section class="border-b border-edge py-10 last:border-b-0">
         <h2 class="text-xl font-semibold capitalize">{variant}</h2>
-        <p class="mb-6 mt-1 text-sm text-slate-500 dark:text-slate-400">{ASIDE_VARIANT_DESCRIPTIONS[variant]}</p>
+        <p class="mb-6 mt-1 text-sm text-muted">{ASIDE_VARIANT_DESCRIPTIONS[variant]}</p>
         <div class="aside-grid grid gap-4 md:grid-cols-2">
           {ASIDE_TYPES.map((type) => (
             <Aside variant={variant} type={type}>

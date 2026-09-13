@@ -34,17 +34,17 @@ const ANIMATION_CSS = `@keyframes lm-reroll-spin {
 .lm-reroll--rolling .lm-reroll__die { animation: lm-reroll-spin 0.3s ease-out; }`
 
 const heading = 'text-xl font-semibold'
-const subheading = 'mb-3 mt-6 text-sm font-medium text-slate-600 dark:text-slate-400'
+const subheading = 'mb-3 mt-6 text-sm font-medium text-muted'
 ---
 
 <DemoLayout title="Button demo" description="Reroll button sizes and animation." current="/demo/ux/button/">
   <h1 class="text-3xl font-semibold tracking-tight">Button</h1>
-  <p class="mt-2 text-slate-600 dark:text-slate-400">
+  <p class="mt-2 text-muted">
     <code>&lt;RerollButton&gt;</code> picks something at random. Its die spins each time it is clicked, unless the
     reader has asked for reduced motion. The prompt picker on the home page uses it to choose another task.
   </p>
 
-  <section class="mt-10 border-b border-slate-200 pb-10 dark:border-slate-700">
+  <section class="mt-10 border-b border-edge pb-10">
     <h2 class={heading}>Reroll button</h2>
     <h3 class={subheading}>Die only</h3>
     <div class="flex flex-wrap items-end gap-6">
@@ -52,7 +52,7 @@ const subheading = 'mb-3 mt-6 text-sm font-medium text-slate-600 dark:text-slate
         SIZES.map(([size, px]) => (
           <div class="flex flex-col items-center gap-2">
             <RerollButton size={size} />
-            <span class="text-xs text-slate-500 dark:text-slate-400">
+            <span class="text-xs text-muted">
               {size} · {px}px
             </span>
           </div>
@@ -65,7 +65,7 @@ const subheading = 'mb-3 mt-6 text-sm font-medium text-slate-600 dark:text-slate
         SIZES.map(([size, px]) => (
           <div class="flex flex-col items-center gap-2">
             <RerollButton size={size} label="Reroll" />
-            <span class="text-xs text-slate-500 dark:text-slate-400">
+            <span class="text-xs text-muted">
               {size} · {px}px
             </span>
           </div>
@@ -74,9 +74,9 @@ const subheading = 'mb-3 mt-6 text-sm font-medium text-slate-600 dark:text-slate
     </div>
   </section>
 
-  <section class="border-b border-slate-200 py-10 dark:border-slate-700">
+  <section class="border-b border-edge py-10">
     <h2 class={heading}>Roll on load</h2>
-    <p class="mb-4 mt-1 text-sm text-slate-500 dark:text-slate-400">
+    <p class="mb-4 mt-1 text-sm text-muted">
       With <code>animateOnMount</code>, the second button rolls once when the page loads.
     </p>
     <div class="flex items-center gap-4">
@@ -87,6 +87,6 @@ const subheading = 'mb-3 mt-6 text-sm font-medium text-slate-600 dark:text-slate
 
   <section class="py-10">
     <h2 class={heading}>Animation CSS</h2>
-    <pre class="mt-4 overflow-x-auto rounded-lg bg-slate-100 p-4 text-xs dark:bg-slate-800"><code>{ANIMATION_CSS}</code></pre>
+    <pre class="mt-4 overflow-x-auto rounded-lg bg-surface p-4 text-xs"><code>{ANIMATION_CSS}</code></pre>
   </section>
 </DemoLayout>

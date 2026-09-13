@@ -46,9 +46,9 @@ const QUERIES = [
 ] as const
 
 const heading = 'text-xl font-semibold'
-const muted = 'text-sm text-slate-600 dark:text-slate-400'
+const muted = 'text-sm text-muted'
 const kbd =
-  'inline-flex h-6 min-w-6 items-center justify-center rounded border border-slate-300 bg-slate-100 px-1.5 font-mono text-xs dark:border-slate-600 dark:bg-slate-800'
+  'inline-flex h-6 min-w-6 items-center justify-center rounded border border-edge bg-surface px-1.5 font-mono text-xs'
 ---
 
 <DemoLayout title="Search demo" description="Search panel section display modes." current="/demo/widgets/search/">
@@ -71,7 +71,7 @@ const kbd =
               {label}
             </h3>
             <p class={`mb-3 mt-1 ${muted}`}>{description}</p>
-            <div class="max-h-[28rem] overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+            <div class="max-h-[28rem] overflow-y-auto rounded-lg border border-edge p-3">
               <SearchPanel mock subResults={mode} initialQuery="pane" />
             </div>
           </div>
