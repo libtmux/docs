@@ -138,6 +138,7 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment: ${{ inputs.environment }}
     steps:
       # All eight port slugs plus the bucket-root reservations, even though
