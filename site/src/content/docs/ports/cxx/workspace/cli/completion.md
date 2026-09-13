@@ -16,14 +16,36 @@ tmuxp uses the separately installed `shtab` package for experimental completion.
 
 ## Native completion
 
-CLI11 defines the native command graph. Its filtered `get_subcommands` overload
-enumerates command definitions; the unfiltered overload describes parsed commands.
-A site exporter and shell completion remain unimplemented.
+The local C++ CLI generates Bash, Zsh and Fish completion. Build it through
+[installation](../../guides/installation/) and make the resulting
+`tmux-workspace` executable available on `PATH`.
 
-Completion is derived from actual command metadata. It must include nested
-import commands, local short flags, positional arity, mutually exclusive
-choices, and all-command machine options. Verify generated scripts with the installed
-executable and target shell.
+Enable Bash completion in the current shell:
+
+```console
+$ source <(tmux-workspace --generate-completion bash)
+```
+
+For Zsh, initialise its completion system and load the generated script:
+
+```console
+$ autoload -Uz compinit && compinit && source <(tmux-workspace --generate-completion zsh)
+```
+
+For Fish:
+
+```console
+$ tmux-workspace --generate-completion fish | source
+```
+
+Completion includes nested import commands, command-specific flags, enumerated
+values and file paths, including names containing spaces. It does not start
+tmux or read workspace files. Dynamic session names and configuration aliases
+are not suggested. Add the matching setup command to your shell configuration
+to enable completion in later sessions.
+
+This is part of the unreleased native CLI. The documentation exporter remains
+separate from shell completion.
 
 See the [command tree](../) and [compatibility
 reference](../../reference/compatibility/).
