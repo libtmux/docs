@@ -64,8 +64,11 @@ and reports partial effects. Interruption joins the child group, and remaining
 group processes are terminated when the script exits. No fixed script deadline
 is imposed.
 
-Conversion preserves extension fields. Imports translate names, directories,
-panes, pre-commands and layouts. Capture records current commands, directories,
+Conversion preserves extension fields. Imports validate source shapes and
+translate supported command grouping, roots, layouts, focus and options.
+Unsupported lifecycle, title and synchronization behavior is refused before
+saving. See [native imports](../../cli/import/#native-c-imports).
+Capture records current commands, directories,
 window names, indexes, focus and layouts; it omits environment and options and
 warns about unrecoverable original arguments, history and scripts. Search uses
 native C++ ECMAScript regular expressions.
@@ -97,6 +100,10 @@ configured delays and check between topology, command, option and focus steps.
 chunks. Required errors and machine results remain visible at every level.
 Invalid file destinations fail before mutation; later file errors preserve
 command status, cleanup and handoff. See [logging](../output/#native-c-logging).
+
+Native Bash, Zsh and Fish completion covers nested commands, flags, enumerated
+values and file paths. Dynamic session/configuration-name discovery remains
+unavailable. See [completion](../../cli/completion/#native-completion).
 
 The editor receives parsed argv directly, using `VISUAL`, then `EDITOR`, then
 `vi`. It can take the controlling terminal while machine stdout stays separate.
