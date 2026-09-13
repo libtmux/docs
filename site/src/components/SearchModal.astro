@@ -41,7 +41,7 @@ const searchHref = withRoot('/search/')
   }
 </style>
 
-<script define:vars={{ searchHref }}>
+<script is:inline define:vars={{ searchHref }}>
   const dialog = document.getElementById('search-modal')
   if (dialog) {
     const open = (event) => {

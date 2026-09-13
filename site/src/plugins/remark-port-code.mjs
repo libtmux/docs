@@ -140,7 +140,7 @@ export function remarkPortCode() {
   return (tree, file) => {
     const removals = []
 
-    visit(tree, 'code', (node, index, parent) => {
+    visit(tree, 'code', (node, _index, parent) => {
       const lang = (node.lang || '').toLowerCase()
       const owner = LANG_TO_PORT[lang]
       const meta = parseMeta(node.meta)
