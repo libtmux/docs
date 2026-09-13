@@ -225,7 +225,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         if (page.product === 'workspace') {
           const labels = [...document.querySelectorAll('nav[aria-label="Breadcrumb"] a, nav[aria-label="Breadcrumb"] [aria-current="page"]')]
             .map((item) => item.textContent.trim())
-          expect(labels.slice(0, 3)).toEqual([page.name, 'Workspace Manager', 'Reference'])
+          // The reference is a section of the product, so its pages hang
+          // directly off it: no Internals level in between any more.
+          expect(labels.slice(0, 2)).toEqual([page.name, 'Workspace Manager'])
+          expect(labels.at(-1)).toBe(sample.title)
           expect(graph(document).find((entry) => entry['@type'] === 'BreadcrumbList')?.itemListElement?.map((item) => item.name)).toEqual(labels)
         } else developmentStatus(document, samplePath)
       })
