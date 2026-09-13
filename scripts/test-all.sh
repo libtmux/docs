@@ -284,6 +284,9 @@ if curl -sf -o /dev/null "$SERVE_SITE/py/stable/reference/libtmux-server/"; then
   step 'mobile navigation'
   (cd site && node scripts/check-mobile-nav.mjs "$SERVE_SITE")
 
+  step 'clipboard widgets'
+  (cd site && node scripts/check-clipboard.mjs "$SERVE_SITE")
+
   step 'table layout'
   (cd site && node scripts/check-tables.mjs "$SERVE_SITE")
 
@@ -309,6 +312,7 @@ else
   printf '\nvisual checks skipped: nothing serving at %s\n' "$SERVE_URL"
   note_skip 'fonts'
   note_skip 'mobile navigation'
+  note_skip 'clipboard widgets'
   note_skip 'table layout'
   note_skip 'visual regression'
   note_skip 'style parity'

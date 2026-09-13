@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { dev } from 'astro'
 import { chromium } from 'playwright'
 import { PORTS, productAvailable } from '../src/lib/ports.ts'
+import { checkClipboard } from './check-clipboard.mjs'
 
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 // `workspaceCli` alone also covers a port's local, unreleased dev CLI
@@ -47,6 +48,9 @@ try {
   const manifest = await page.request.get(`${base}/page-links.json`)
   assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
   assert.equal((await manifest.json()).schema, 1)
+  const clipboardPage = await browser.newPage()
+  clipboardPage.setDefaultTimeout(10000)
+  const clipboard = checkClipboard(clipboardPage, base).then(() => null, (error) => error)
   const paths = ['concepts/server-session-window-pane', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
     'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
     'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/capture_pane']
@@ -125,6 +129,8 @@ try {
       assert(overflow <= 1, `${path} at ${width}px: declaration page overflow ${overflow}px`)
     }
   })
+  const clipboardError = await clipboard
+  if (clipboardError) throw clipboardError
   console.log('Fresh Astro + browser: prose, workspace, MCP tools and API equivalent; 1440/768/390px PASS')
 } finally {
   await browser?.close()
