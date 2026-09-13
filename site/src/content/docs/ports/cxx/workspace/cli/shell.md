@@ -16,6 +16,38 @@ Open a Python shell with tmux objects available, or evaluate Python using `-c`.
 This command remains Python-specific even when reached through a native
 command.
 
+## Native execution
+
+The development C++ CLI invokes an installed tmuxp 1.74.0 console executable.
+Put it on `PATH`, or set `TMUX_WORKSPACE_TMUXP` to its executable path. That
+value accepts a single path, including spaces, without interpreter arguments.
+Optional backends belong in the selected executable's Python environment.
+
+Continue the [installation walkthrough](../../guides/installation/) through
+its detached load, leaving `workspace-guide` running in the same shell:
+
+```console
+$ build/cxx-dev/apps/workspace/tmux-workspace shell \
+    -S "$WORKSPACE_TMP/tmux.sock" \
+    -c 'print(pane.pane_id)' \
+    --json \
+    workspace-guide editor
+```
+
+JSON captures runtime stdout, stderr and status under `"script_output"`.
+NDJSON emits flushed `script-output` records with `"stream"` and `"text"`,
+then a completed or failed result. Capture is limited to 1 MiB per stream;
+overflow stops the child group and reports `OUTPUT_LIMIT` with bounded output.
+Human output streams to its original destinations. The runtime's own messages
+remain part of its output.
+
+Machine calls require `-c`, including an empty code string. Interactive human
+calls require a foreground controlling terminal; exit restores its settings
+and foreground group. SIGINT and SIGTERM sent to the workspace process cancel
+its owned child group. `-S` takes precedence over `-L`, and opposing startup
+flags keep their original order. See the
+[native shell contract](https://github.com/libtmux/libtmux-cxx/blob/3963cd7792a72b2b500b8ed4ba08016a791c0d41/apps/workspace/README.md#optional-tmuxp-shell).
+
 ## Evaluate with a selected server
 
 After the [installation walkthrough](../../guides/installation/) starts its
@@ -23,8 +55,9 @@ dedicated server:
 
 ```console
 $ tmuxp shell \
-    -L workspace-guide \
-    -c 'print(server.sessions)'
+    -S "$WORKSPACE_TMP/tmux.sock" \
+    -c 'print(server.sessions)' \
+    workspace-guide editor
 ```
 
 Use `-c`; the reference does not define `--command`. Optional session and window
@@ -41,9 +74,8 @@ settings.
 A native REPL is not an equivalent implementation of Python `-c`, IPython, or
 PTPython. Native ports that support this command use an optional version-checked
 Python bridge and report an unsupported-runtime error if it is absent. Check
-[port coverage](../../reference/compatibility/) before relying on that bridge. Interactive
-machine output needs a separate terminal; an interactive transcript cannot share
-JSON stdout.
+[port coverage](../../reference/compatibility/) before relying on that bridge.
+The C++ command requires `-c` for machine output.
 
 Backend selectors are mutually exclusive.
 

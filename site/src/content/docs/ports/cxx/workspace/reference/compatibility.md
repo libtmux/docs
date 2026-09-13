@@ -23,8 +23,11 @@ not promise identical runtime behavior or Python semantics.
 ## This port
 
 The optional application provides native `ls`, `search`, `edit`, `convert`,
-`import teamocil`, `import tmuxinator`, `debug-info`, `load` and `freeze`. Its parser also contains unfinished process commands;
-`shell` is not an implemented service.
+`import teamocil`, `import tmuxinator`, `debug-info`, `load` and `freeze`.
+The optional [shell](../../cli/shell/#native-execution) invokes an installed
+tmuxp 1.74.0 executable through native process and terminal handling. Select
+the executable with `PATH` or `TMUX_WORKSPACE_TMUXP`; native loading does not
+require Python. Machine shells require `-c` and retain structured output.
 
 Loading starts tmux when needed, creates sessions or reuses exact names. It
 retains created object identities and supports command settings, directories,
@@ -120,7 +123,7 @@ executable's `--help` for the options implemented in that checkout.
 
 ### Remaining gaps
 
-- Python shell/plugin/custom-builder services are unavailable.
+- Python plugins and custom builders are unavailable.
 - Windows created by arbitrary scripts are outside the builder's retained-window
   records, including when a borrowed append session survives script failure.
 - Dynamic session/configuration-name completion remains unavailable.
