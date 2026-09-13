@@ -401,9 +401,10 @@ const installHtml = new Map(
   }
 
   /* The example fills whatever height its panel has left. Its `pre` starts
-   * from 11rem, so the longest example reserves no more than that, and grows
-   * into the space a shorter panel leaves. Expressive Code positions its copy
-   * button on `.frame`, so the button stays put while the code scrolls. */
+   * from 14rem stacked, or 22rem side by side, so the longest example
+   * reserves no more than that, and grows into the space a shorter panel
+   * leaves. Expressive Code positions its copy button on `.frame`, so the
+   * button stays put while the code scrolls. */
   .lm-pkg-install__snippet,
   .lm-pkg-install__snippet .expressive-code,
   .lm-pkg-install__snippet .expressive-code .frame {
@@ -413,7 +414,7 @@ const installHtml = new Map(
   }
 
   .lm-pkg-install__snippet .expressive-code .frame pre {
-    flex: 1 1 11rem;
+    flex: 1 1 14rem;
     min-height: 0;
     overflow: auto;
   }
@@ -424,11 +425,62 @@ const installHtml = new Map(
   }
 
   /* Beside an example, a long install block such as Maven's POM would set the
-   * height every panel reserves, so it scrolls past 13rem. That still shows
-   * the default Gradle and CMake blocks whole. Copy takes the whole block. */
+   * height every panel reserves, so it scrolls. Stacked, it scrolls past 10rem,
+   * under the example's 14rem, so the dependency never takes more room than
+   * the code it is for. Copy takes the whole block. */
   .lm-pkg-install--examples .lm-pkg-install__code pre {
-    max-height: 13rem;
+    max-height: 10rem;
     overflow: auto;
+  }
+
+  /*
+   * Side by side once the widget is wide enough, as social-embed's playground
+   * sets its preview beside its code: the install on the left, the example on
+   * the right with the larger share of the width. Narrower, they stack.
+   *
+   * A container query, so the switch follows the widget's own width rather
+   * than the window's. Side by side, the example starts from 22rem and an
+   * install block scrolls past 15rem, so the example sets the height every
+   * panel reserves, a long POM scrolls inside its column, and switching
+   * package manager leaves the page where it was: at 18rem, vcpkg's block,
+   * note and manager row stood 6px taller than the example.
+   */
+  .lm-pkg-install--examples {
+    container-type: inline-size;
+  }
+
+  @container (min-width: 48rem) {
+    .lm-pkg-install__panel:has(> .lm-pkg-install__snippet) {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      grid-template-rows: auto 1fr;
+      column-gap: 1rem;
+    }
+
+    .lm-pkg-install__panel:has(> .lm-pkg-install__snippet) > .lm-pkg-install__managers {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .lm-pkg-install__panel:has(> .lm-pkg-install__snippet) > .lm-pkg-install__cmd {
+      grid-column: 1;
+      grid-row: 2;
+      align-self: start;
+    }
+
+    .lm-pkg-install__panel > .lm-pkg-install__snippet {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      margin-top: 0;
+    }
+
+    .lm-pkg-install--examples .lm-pkg-install__code pre {
+      max-height: 15rem;
+    }
+
+    .lm-pkg-install__snippet .expressive-code .frame pre {
+      flex-basis: 22rem;
+    }
   }
 
   .lm-pkg-install__code pre {
