@@ -27,15 +27,6 @@ import { referenceDirs } from './reference-trees.mjs'
 const { PORTS: PORT_DEFS } = await import(`file://${join(dirname(fileURLToPath(import.meta.url)), '../site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
 
-/**
- * Each port's default version, read from the tree that was built: a port
- * publishing one prefix is its own default, and Python's two make `stable`
- * the canonical one.
- */
-const DEFAULTS = Object.fromEntries(PORTS.map((port) => {
-  const built = referenceDirs(siteDir, port).map((dir) => dir.split('/').at(-2))
-  return [port, built.includes('stable') ? 'stable' : built[0]]
-}).filter(([, version]) => version))
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const defaultSite = join(repoRoot, '_site')
@@ -63,6 +54,16 @@ if (siteDir === defaultSite && existsSync(lock)) {
     process.exit(1)
   }
 }
+
+/**
+ * Each port's default version, read from the tree that was built: a port
+ * publishing one prefix is its own default, and Python's two make `stable`
+ * the canonical one.
+ */
+const DEFAULTS = Object.fromEntries(PORTS.map((port) => {
+  const built = referenceDirs(siteDir, port).map((dir) => dir.split('/').at(-2))
+  return [port, built.includes('stable') ? 'stable' : built[0]]
+}).filter(([, version]) => version))
 
 const roots = PORTS.flatMap((port) => referenceDirs(siteDir, port, { products: true }))
 if (!roots.length) {
