@@ -37,4 +37,17 @@ export const DEMO_SECTIONS: DemoSection[] = [
       },
     ],
   },
+  {
+    slug: 'widgets',
+    href: '/demo/widgets/',
+    title: 'Widgets',
+    description: 'Interactive widgets, run against stand-in data.',
+    demos: [
+      {
+        href: '/demo/widgets/search/',
+        title: 'Search',
+        description: "The search panel's three ways to show the sections of a page that matched.",
+      },
+    ],
+  },
 ]
