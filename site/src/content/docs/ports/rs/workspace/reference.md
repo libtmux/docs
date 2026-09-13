@@ -16,14 +16,14 @@ for actual tmux operations.
 
 ## Configuration
 
-[`Workspace`](/rs/latest/workspace/reference/config-workspace/) holds the session description.
+[`Workspace`](./config-workspace/) holds the session description.
 `Workspace::from_yaml` parses it, and `to_yaml` emits its YAML representation.
 `WindowConfig` and `PaneConfig` describe the nested objects; `ConfigError`
 identifies invalid configuration.
 
 ## Builder
 
-[`WorkspaceBuilder`](/rs/latest/workspace/reference/src-workspacebuilder/) borrows a `Server`.
+[`WorkspaceBuilder`](./src-workspacebuilder/) borrows a `Server`.
 `new` selects that server, `plan` returns the inert construction plan, and
 `build` asynchronously creates the requested session. Keep the server alive
 for the builder's lifetime.

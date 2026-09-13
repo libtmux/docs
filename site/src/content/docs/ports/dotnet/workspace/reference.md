@@ -15,16 +15,16 @@ that uses a caller-supplied LibTmux `Server`.
 
 ## Configuration
 
-[`WorkspaceFile`](/dotnet/latest/workspace/reference/libtmux-workspace-workspacefile/) parses
+[`WorkspaceFile`](./libtmux-workspace-workspacefile/) parses
 YAML and holds the session description. `WorkspaceWindow` and `WorkspacePane`
 hold nested configuration. `WorkspaceFormatException` identifies unsupported
 or invalid configuration.
 
 ## Builder options
 
-[`WorkspaceBuilder`](/dotnet/latest/workspace/reference/libtmux-workspace-workspacebuilder/)
+[`WorkspaceBuilder`](./libtmux-workspace-workspacebuilder/)
 accepts a server, an optional positive readiness timeout, and a
-[`PaneReadiness`](/dotnet/latest/workspace/reference/libtmux-workspace-panereadiness/) policy.
+[`PaneReadiness`](./libtmux-workspace-panereadiness/) policy.
 Its `BuildAsync` accepts the configuration and an optional cancellation token.
 
 The default timeout is ten seconds. `Auto`, `Always`, and `Never` select which
@@ -33,11 +33,11 @@ heuristic and its limitations.
 
 ## Results and failures
 
-[`WorkspaceResult`](/dotnet/latest/workspace/reference/libtmux-workspace-workspaceresult/)
+[`WorkspaceResult`](./libtmux-workspace-workspaceresult/)
 contains the created session, windows, and rejected layouts. A rejected layout
 does not discard its window.
 
-[`WorkspaceBuildException`](/dotnet/latest/workspace/reference/libtmux-workspace-workspacebuildexception/)
+[`WorkspaceBuildException`](./libtmux-workspace-workspacebuildexception/)
 keeps a `PartialResult` when state could be materialized before failure. It
 can be null when no such result could be read. Inspect live tmux state before
 retrying; a missing result does not prove that no command reached tmux.

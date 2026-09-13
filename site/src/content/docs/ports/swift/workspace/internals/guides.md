@@ -10,7 +10,7 @@ sidebar:
 tableOfContents: true
 ---
 
-Add `TmuxWorkspace` and [`LibTmux`](/swift/latest/reference/) to a SwiftPM target. This isolated example
+Add `TmuxWorkspace` and [`LibTmux`](../../../reference/) to a SwiftPM target. This isolated example
 also uses the public `TmuxFixture` product for server startup and cleanup. The
 following dependency selects the source revision used by these examples:
 
