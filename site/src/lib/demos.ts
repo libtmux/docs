@@ -26,6 +26,11 @@ export const DEMO_SECTIONS: DemoSection[] = [
     description: 'Components that pages and widgets are built from.',
     demos: [
       {
+        href: '/demo/ux/button/',
+        title: 'Button',
+        description: 'The reroll button in eight sizes, with and without a label.',
+      },
+      {
         href: '/demo/ux/aside/',
         title: 'Aside',
         description: 'Notes, tips, cautions and dangers in five container variants.',

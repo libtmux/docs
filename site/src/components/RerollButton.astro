@@ -1,0 +1,176 @@
+---
+/**
+ * A button that picks something at random, with a die that spins on click.
+ *
+ * Ported from social-embed's RerollButton, a React component that replayed its
+ * animation by remounting. Here a class comes off and goes back on, and a
+ * reader who asks for reduced motion gets no animation. The caller handles
+ * what a click does; this only draws and animates the button.
+ */
+type Size = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl'
+
+interface Props {
+  size?: Size
+  /** Visible text beside the die. Without it the button shows the die alone. */
+  label?: string
+  /** The tooltip, and the accessible name when there is no label. */
+  title?: string
+  /** Roll once when the page loads. */
+  animateOnMount?: boolean
+  class?: string
+  [attribute: `data-${string}`]: string | undefined
+}
+
+const { size = 'md', label, title = 'Reroll', animateOnMount = false, class: className, ...attributes } = Astro.props as Props
+---
+
+<button
+  type="button"
+  class:list={[
+    'lm-reroll',
+    `lm-reroll--${size}`,
+    label ? 'lm-reroll--label' : 'lm-reroll--icon',
+    animateOnMount && 'lm-reroll--rolling',
+    className,
+  ]}
+  title={title}
+  aria-label={label ? undefined : title}
+  {...attributes}
+>
+  <span class="lm-reroll__die" aria-hidden="true">🎲</span>
+  {label}
+</button>
+
+<script>
+  // Every click rolls again: the class comes off, reading the width restarts
+  // the animation, and the class goes back on.
+  document.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLElement>('.lm-reroll')
+    if (!button) return
+    button.classList.remove('lm-reroll--rolling')
+    void button.offsetWidth
+    button.classList.add('lm-reroll--rolling')
+  })
+</script>
+
+<style is:global>
+  @keyframes lm-reroll-spin {
+    from {
+      transform: rotate(0deg) scale(1);
+    }
+    50% {
+      transform: rotate(180deg) scale(1.2);
+    }
+    to {
+      transform: rotate(360deg) scale(1);
+    }
+  }
+
+  @keyframes lm-reroll-pop {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.08);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .lm-reroll {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    color: white;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    background-image: linear-gradient(to right, #6366f1, #a855f7); /* indigo-500, purple-500 */
+    transition: transform 150ms;
+  }
+
+  .lm-reroll:hover {
+    background-image: linear-gradient(to right, #4f46e5, #9333ea); /* indigo-600, purple-600 */
+  }
+
+  html[data-theme-mode="dark"] .lm-reroll {
+    background-image: linear-gradient(to right, #818cf8, #c084fc); /* indigo-400, purple-400 */
+  }
+
+  .lm-reroll:active {
+    transform: scale(0.95);
+  }
+
+  .lm-reroll:focus-visible {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+  }
+
+  .lm-reroll__die {
+    display: inline-block;
+  }
+
+  .lm-reroll--rolling {
+    animation: lm-reroll-pop 0.3s ease-out;
+  }
+
+  .lm-reroll--rolling .lm-reroll__die {
+    animation: lm-reroll-spin 0.3s ease-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lm-reroll--rolling,
+    .lm-reroll--rolling .lm-reroll__die {
+      animation: none;
+    }
+  }
+
+  /* Heights and type, 20px to 48px. */
+  .lm-reroll--xxs { height: 20px; font-size: 11px; }
+  .lm-reroll--xs { height: 22px; font-size: 11px; }
+  .lm-reroll--sm { height: 24px; font-size: 12px; }
+  .lm-reroll--md { height: 32px; font-size: 14px; }
+  .lm-reroll--lg { height: 36px; font-size: 14px; }
+  .lm-reroll--xl { height: 40px; font-size: 16px; }
+  .lm-reroll--xxl { height: 44px; font-size: 18px; }
+  .lm-reroll--xxxl { height: 48px; font-size: 20px; }
+
+  .lm-reroll--xxs,
+  .lm-reroll--xs,
+  .lm-reroll--sm,
+  .lm-reroll--md {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  }
+
+  .lm-reroll--lg,
+  .lm-reroll--xl,
+  .lm-reroll--xxl {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+
+  .lm-reroll--xxxl {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+
+  /* The die alone: a square. */
+  .lm-reroll--icon { aspect-ratio: 1; border-radius: 0.5rem; }
+  .lm-reroll--icon.lm-reroll--xxs,
+  .lm-reroll--icon.lm-reroll--xs { border-radius: 0.25rem; }
+  .lm-reroll--icon.lm-reroll--sm,
+  .lm-reroll--icon.lm-reroll--xxl,
+  .lm-reroll--icon.lm-reroll--xxxl { border-radius: 0.375rem; }
+
+  /* The die and a label. */
+  .lm-reroll--label { gap: 0.5rem; padding: 0 1rem; border-radius: 0.5rem; }
+  .lm-reroll--label.lm-reroll--xxs,
+  .lm-reroll--label.lm-reroll--xs { gap: 0.25rem; padding: 0 0.375rem; border-radius: 0.25rem; }
+  .lm-reroll--label.lm-reroll--sm { gap: 0.25rem; padding: 0 0.5rem; border-radius: 0.375rem; }
+  .lm-reroll--label.lm-reroll--md { gap: 0.375rem; padding: 0 0.75rem; }
+  .lm-reroll--label.lm-reroll--xxl,
+  .lm-reroll--label.lm-reroll--xxxl { padding: 0 1.25rem; }
+</style>
