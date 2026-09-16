@@ -90,6 +90,13 @@ resolve against the invoking process's current directory first. Use an explicit
 Native normalization that resolves every child consistently would correct this
 reference behavior.
 
+When a document names no `start_directory` at any level, panes start in the
+directory the command was run from, not the directory the workspace file lives
+in. That is what tmuxp does, and all eight implementations agree on it. An
+explicit relative value such as `./src` is the other case: it always resolves
+against the workspace file's directory, at every level, so a workspace stays
+portable no matter where it is loaded from.
+
 Absolute and expanded-home paths retain their explicit location. Quote `~` in
 YAML to avoid its null spelling. A pane override also applies to the first pane
 in the Python classic builder. Inspect resolved values and the resulting pane
