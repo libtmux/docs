@@ -46,6 +46,25 @@ workflow](../../guides/export-session/) and the [native machine
 output](../../reference/output/) for the distinction between a saved file's
 format and a CLI result stream.
 
+## What the captured document holds
+
+The seven native ports agree on three things a capture records, and on one it
+does not.
+
+**Window options are written under `options_after`.** tmux applies them after
+the panes exist, and options like `automatic-rename: off` do not hold if they
+are applied before. `load` accepts either spelling.
+
+**A pane sitting at a shell gets no `shell_command`.** Naming the shell would
+start a shell inside a shell when the document is reloaded. The shell is
+recognised by name as well as by the session's `default-shell`, because macOS
+runs bash for `/bin/sh` and the pane reports `bash`.
+
+**Nothing about the machine it was captured on.** No session environment, so a
+document does not carry the capturing host's `SSH_AUTH_SOCK` or `DISPLAY`, and
+no `default-size`, which would otherwise pin a reloaded session to the size of
+the terminal that captured it.
+
 ## Arguments and flags
 
 | Argument or flags | Arity / default | Choices or meaning |
