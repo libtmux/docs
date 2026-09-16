@@ -24,3 +24,4 @@ site/src/content/api/
 # comparison fails, and never removes it. Committed, they outlive the failure
 # they document and read as a difference that is still there.
 site/test/baselines/*.diff.png
+.workspace-cli-docs-audit/
