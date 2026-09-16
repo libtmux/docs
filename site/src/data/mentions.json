@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-20T13:43:35.863Z",
+ "generated": "2026-09-20T13:43:41.038Z",
  "mentions": [
   {
    "port": "cxx",
@@ -720,6 +720,13 @@
    "symbol": "libtmux::workspace::Window",
    "page": "/cxx/latest/workspace/reference/",
    "title": "C++ workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::workspace::Window::options_after",
+   "page": "/cxx/latest/workspace/cli/freeze/",
+   "title": "tmuxp freeze",
    "section": "ports"
   },
   {
@@ -2086,6 +2093,13 @@
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Buffers.Buffers.load",
+   "page": "/java/latest/workspace/cli/freeze/",
+   "title": "tmuxp freeze",
+   "section": "ports"
   },
   {
    "port": "java",
