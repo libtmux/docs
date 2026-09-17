@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-20T13:43:41.038Z",
+ "generated": "2026-09-20T13:43:47.363Z",
  "mentions": [
   {
    "port": "cxx",
@@ -153,6 +153,13 @@
    "symbol": "libtmux::mcp::ToolResult",
    "page": "/cxx/latest/mcp/reference/",
    "title": "C++ MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::mcp::ToolSchema::input",
+   "page": "/cxx/latest/workspace/reference/output/",
+   "title": "JSON, NDJSON, and semantic color",
    "section": "ports"
   },
   {
@@ -755,6 +762,13 @@
    "symbol": "libtmux::workspace::Workspace",
    "page": "/cxx/latest/workspace/reference/",
    "title": "C++ workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::workspace::Workspace::session_name",
+   "page": "/cxx/latest/workspace/reference/output/",
+   "title": "JSON, NDJSON, and semantic color",
    "section": "ports"
   },
   {
@@ -2285,6 +2299,13 @@
   },
   {
    "port": "java",
+   "symbol": "io.github.libtmux.PaneCommand.PaneCommand.status",
+   "page": "/java/latest/workspace/reference/output/",
+   "title": "JSON, NDJSON, and semantic color",
+   "section": "ports"
+  },
+  {
+   "port": "java",
    "symbol": "io.github.libtmux.query.Selections.Selections.exactlyOne",
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
@@ -3588,6 +3609,13 @@
   {
    "port": "rs",
    "symbol": "config.Workspace.session_name",
+   "page": "/rs/latest/workspace/reference/output/",
+   "title": "JSON, NDJSON, and semantic color",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "config.Workspace.session_name",
    "page": "/topics/format-tokens/",
    "title": "Format-token fields",
    "section": "topics"
@@ -4638,6 +4666,13 @@
   {
    "port": "swift",
    "symbol": "ServerConfiguration.errors",
+   "page": "/swift/latest/workspace/reference/exit-codes/",
+   "title": "Exit codes and errors",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "ServerConfiguration.errors",
    "page": "/swift/latest/workspace/reference/output/",
    "title": "JSON, NDJSON, and semantic color",
    "section": "ports"
@@ -5018,6 +5053,13 @@
    "symbol": "builder.WorkspaceApplyError.requiresReplan",
    "page": "/ts/latest/workspace/internals/topics/",
    "title": "TypeScript workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "ts",
+   "symbol": "common.CommandOutcome.status",
+   "page": "/ts/latest/workspace/reference/output/",
+   "title": "JSON, NDJSON, and semantic color",
    "section": "ports"
   },
   {

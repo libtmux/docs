@@ -42,6 +42,30 @@ validation failures before work leave stdout empty. Human errors stay readable
 text. Stable error codes complement readable messages; native exception objects
 and stack traces are not the public JSON schema.
 
+## Machine error codes
+
+In `--json` and `--ndjson` mode an error record on stderr is
+`{"schema_version": 1, "code": ..., "message": ...}`, and every entry of a load
+summary's `errors` array carries the same `code`. The seven native ports report
+the same code for the same condition:
+
+| Condition | Code |
+| --- | --- |
+| Workspace file or name not found | `workspace_not_found` |
+| Malformed document, wrong type, or invalid value | `invalid_workspace` |
+| An unknown or unsupported key refused | `unsupported_key` |
+| tmux missing, or its server unreachable | `tmux_unavailable` |
+| A tmux command failed while building | `tmux_failed` |
+| `before_script` exited nonzero, or could not start | `script_failed` |
+| A target session does not exist | `session_not_found` |
+| A destination exists without `--force` | `destination_exists` |
+| A confirmation is needed but impossible | `confirmation_required` |
+| Interrupted by a signal | `interrupted` |
+| Arguments or mode misused | `usage`, with status 2 |
+
+Other conditions keep port-specific codes, in lower snake_case. Match on the
+code, not the message.
+
 See [output](../output/), [automation](../../guides/automation/), and
 [troubleshooting](../../guides/troubleshooting/).
 
