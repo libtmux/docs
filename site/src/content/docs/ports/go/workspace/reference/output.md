@@ -92,14 +92,25 @@ created/reused session; IDs are strings because tmux uses prefixes such as `$`,
 index and any completed/failed stage. Do not serialize native exception objects,
 language-specific field capitalization or unserializable handles.
 
+Every result names `input`, `input_index`, `session_id`, `session_name` and
+`reused`; ports add their own fields around those. An input that failed keeps
+its result record beside its `errors` entry, so a reader can tell which input
+failed and what became of its session. `status` is `ok` when every input
+completed, `partial` when some input completed or a failed one left effects
+behind, such as a borrowed or appended session, and `error` when nothing
+completed and nothing was retained.
+
 NDJSON operation events have `schema_version`, `"command"`, `event`, a
 monotonically increasing `"sequence"`, and event-specific data. The initial
 vocabulary is `started`, `workspace-started`, `session-created`,
 `window-created`, `pane-created`, `script-output`, `warning`,
 `workspace-completed`, `"failed"`, `"completed"`. Emit `"completed"` or `"failed"` once
 per invocation. Include operation/input identifiers where several files are
-involved. Flush records as events arrive; buffering the whole run and splitting
-a JSON array into lines is not streaming.
+involved. `workspace-started` names the `input` and `input_index` it belongs to,
+and `session-created` follows it directly, before any `window-created`, so a
+reader knows the session a window belongs to as soon as the windows arrive.
+Flush records as events arrive; buffering the whole run and splitting a JSON
+array into lines is not streaming.
 
 Drain child stdout and stderr concurrently to avoid pipe deadlocks. In machine
 mode, script text belongs inside escaped JSON strings; it must never be written

@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-16T03:32:33.716Z",
+ "generated": "2026-09-17T01:24:07.301Z",
  "mentions": [
   {
    "port": "cxx",
@@ -7,6 +7,13 @@
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Command::usage",
+   "page": "/cxx/latest/workspace/reference/exit-codes/",
+   "title": "Exit codes and errors",
+   "section": "ports"
   },
   {
    "port": "cxx",
@@ -720,6 +727,13 @@
    "symbol": "libtmux::workspace::Workspace",
    "page": "/cxx/latest/workspace/reference/",
    "title": "C++ workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::workspace::Workspace::session_name",
+   "page": "/cxx/latest/workspace/reference/output/",
+   "title": "JSON, NDJSON, and semantic color",
    "section": "ports"
   },
   {
@@ -3616,6 +3630,13 @@
   {
    "port": "rs",
    "symbol": "config.Workspace.session_name",
+   "page": "/rs/latest/workspace/reference/output/",
+   "title": "JSON, NDJSON, and semantic color",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "config.Workspace.session_name",
    "page": "/topics/format-tokens/",
    "title": "Format-token fields",
    "section": "topics"
@@ -4708,6 +4729,13 @@
   {
    "port": "swift",
    "symbol": "ServerConfiguration.errors",
+   "page": "/swift/latest/workspace/reference/exit-codes/",
+   "title": "Exit codes and errors",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "ServerConfiguration.errors",
    "page": "/swift/latest/workspace/reference/output/",
    "title": "JSON, NDJSON, and semantic color",
    "section": "ports"
@@ -5057,10 +5085,24 @@
   },
   {
    "port": "ts",
+   "symbol": "common.CommandOutcome.status",
+   "page": "/ts/latest/workspace/reference/output/",
+   "title": "JSON, NDJSON, and semantic color",
+   "section": "ports"
+  },
+  {
+   "port": "ts",
    "symbol": "common.LogicalRefBase.connection",
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "common.TmuxLogger.error",
+   "page": "/ts/latest/workspace/reference/output/",
+   "title": "JSON, NDJSON, and semantic color",
+   "section": "ports"
   },
   {
    "port": "ts",
