@@ -10,6 +10,10 @@ import { captureProtocol } from './lib/mcp-protocol.mjs'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const expand = (path) => path.startsWith('~/') ? join(homedir(), path.slice(2)) : path
 const only = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : undefined
+const checking = process.argv.includes('--check')
+const checkoutFor = (port) => expand(port.slug === 'py'
+  ? process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp'
+  : process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || port.worktree)
 const commands = {
   py: ['.venv/bin/python', '-m', 'libtmux_mcp'],
   ruby: [
@@ -66,12 +70,40 @@ const sourceRevision = (checkout, slug) => {
   return revision
 }
 
+// A missing or dirty checkout used to reach `sourceRevision` and crash (or,
+// for a dirty one, throw by its own design). This classifies every checkout
+// up front, before anything builds or spawns a server, on the same terms as
+// gen-mcp-tools.mjs: --check tolerates either, because CI clones this
+// repository alone and the comparison belongs where the checkouts are —
+// and a checkout this machine's other work left dirty is not evidence of a
+// stale snapshot. Writing a snapshot set tolerates neither, because a
+// partial or unreliable set is worse than none.
+const relevant = PORTS.filter((port) => (!only || only === port.slug) && port.productAvailability?.mcp !== 'unpublished')
+const checkoutStates = new Map(relevant.map((port) => {
+  const checkout = checkoutFor(port)
+  if (!existsSync(checkout)) return [port.slug, 'missing']
+  const status = execFileSync('git', ['-C', checkout, 'status', '--porcelain'], { encoding: 'utf8' }).trim()
+  return [port.slug, status ? 'dirty' : 'ready']
+}))
+const missing = [...checkoutStates].filter(([, state]) => state === 'missing').map(([slug]) => slug)
+const dirty = [...checkoutStates].filter(([, state]) => state === 'dirty').map(([slug]) => slug)
+if (missing.length || dirty.length) {
+  const note = `gen-mcp-protocol: ${[
+    missing.length && `no checkout for ${missing.join(', ')}`,
+    dirty.length && `uncommitted changes in ${dirty.join(', ')}`,
+  ].filter(Boolean).join('; ')}`
+  if (checking) {
+    console.log(`${note} — skipping the comparison`)
+    process.exit(0)
+  }
+  console.error(`${note} — refusing to write a partial snapshot set`)
+  process.exit(1)
+}
+
 for (const port of PORTS) {
   if (only && only !== port.slug) continue
   if (port.productAvailability?.mcp === 'unpublished') continue
-  const checkout = expand(port.slug === 'py'
-    ? process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp'
-    : process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || port.worktree)
+  const checkout = checkoutFor(port)
   const revision = sourceRevision(checkout, port.slug)
   const override = process.env[`LIBTMUX_DOCS_MCP_COMMAND_${port.slug.toUpperCase()}`]
   if (!override) for (const [build, ...buildArgs] of builds[port.slug] ?? []) {
@@ -102,7 +134,7 @@ for (const port of PORTS) {
   }
   const out = join(root, 'site/src/data/mcp-protocol', `${port.slug}.json`)
   const text = `${JSON.stringify(payload, null, 2)}\n`
-  if (process.argv.includes('--check')) {
+  if (checking) {
     if (!existsSync(out) || readFileSync(out, 'utf8') !== text) throw new Error(`${port.slug}: protocol snapshot is stale`)
   } else {
     mkdirSync(dirname(out), { recursive: true })
