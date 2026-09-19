@@ -18,13 +18,13 @@ configuration features; they are not all self-contained runnable projects.
 
 The `minimal` fixture and several other files omit window names despite the
 validator requiring them. Treat these as normalization and compatibility probes,
-not a promise that every fixture passes every load path. The [installation
+not a promise that every fixture passes every load path. Where this port's
+native parser accepts a fixture below, that establishes only that its document
+parses, not that it fully executes. The [installation
 walkthrough](../../guides/installation/) supplies a complete runnable starting
 file.
 
 ## 2-pane-synchronized
-
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
 
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/2-pane-synchronized.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/2-pane-synchronized.json).
 
@@ -41,8 +41,6 @@ windows:
 
 ## 2-pane-vertical
 
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
-
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/2-pane-vertical.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/2-pane-vertical.json).
 
 ```yaml
@@ -55,8 +53,6 @@ windows:
 ```
 
 ## 3-pane
-
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
 
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/3-pane.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/3-pane.json).
 
@@ -77,8 +73,6 @@ windows:
 
 ## 4-pane
 
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
-
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/4-pane.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/4-pane.json).
 
 ```yaml
@@ -98,8 +92,6 @@ windows:
 ```
 
 ## blank-panes
-
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
 
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/blank-panes.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/blank-panes.json).
 
@@ -135,8 +127,6 @@ windows:
 
 ## env-variables
 
-Rejected by the native parser in the 2026-09-09 audit. workspace: invalid workspace: line 3: before_script is not supported: it runs a script through tmuxp's own process handling, which needs a Python runtime; run it yourself before calling Build Full execution of this fixture was not established by the parser result.
-
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/env-variables.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/env-variables.json).
 
 ```yaml
@@ -160,8 +150,6 @@ windows:
 ```
 
 ## focus-window-and-panes
-
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
 
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/focus-window-and-panes.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/focus-window-and-panes.json).
 
@@ -190,8 +178,6 @@ windows:
 
 ## main-pane-height-percentage
 
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
-
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/main-pane-height-percentage.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/main-pane-height-percentage.json).
 
 ```yaml
@@ -213,8 +199,6 @@ windows:
 ```
 
 ## main-pane-height
-
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
 
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/main-pane-height.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/main-pane-height.json).
 
@@ -238,8 +222,6 @@ windows:
 
 ## minimal
 
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
-
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/minimal.yaml).
 
 ```yaml
@@ -250,8 +232,6 @@ windows:
 ```
 
 ## options
-
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
 
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/options.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/options.json).
 
@@ -278,8 +258,6 @@ windows:
 ```
 
 ## pane-shell
-
-Rejected by the native parser in the 2026-09-09 audit. workspace: invalid workspace: line 3: window 0 ("first") sets window_shell and a shell on its first pane, which are the same pane's command Full execution of this fixture was not established by the parser result.
 
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/pane-shell.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/pane-shell.json).
 
@@ -310,8 +288,6 @@ windows:
 
 ## plugin-system
 
-Rejected by the native parser in the 2026-09-09 audit. workspace: invalid workspace: line 2: plugins is not supported: it loads Python classes, which needs a Python runtime Full execution of this fixture was not established by the parser result.
-
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/plugin-system.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/plugin-system.json).
 
 ```yaml
@@ -331,8 +307,6 @@ windows:
 ```
 
 ## session-environment
-
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
 
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/session-environment.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/session-environment.json).
 
@@ -360,8 +334,6 @@ windows:
 
 ## shorthands
 
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
-
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/shorthands.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/shorthands.json).
 
 ```yaml
@@ -377,8 +349,6 @@ windows:
 ```
 
 ## skip-send-pane-level
-
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
 
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/skip-send-pane-level.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/skip-send-pane-level.json).
 
@@ -396,8 +366,6 @@ windows:
 
 ## skip-send
 
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
-
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/skip-send.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/skip-send.json).
 
 ```yaml
@@ -413,8 +381,6 @@ windows:
 ```
 
 ## sleep-pane-level
-
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
 
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/sleep-pane-level.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/sleep-pane-level.json).
 
@@ -434,8 +400,6 @@ windows:
 
 ## sleep-virtualenv
 
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
-
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/sleep-virtualenv.yaml).
 
 ```yaml
@@ -453,8 +417,6 @@ windows:
 ```
 
 ## sleep
-
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
 
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/sleep.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/sleep.json).
 
@@ -478,8 +440,6 @@ windows:
 ```
 
 ## start-directory
-
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
 
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/start-directory.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/start-directory.json).
 
@@ -529,8 +489,6 @@ windows:
 
 ## suppress-history
 
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
-
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/suppress-history.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/suppress-history.json).
 
 ```yaml
@@ -566,8 +524,6 @@ windows:
 ```
 
 ## window-index
-
-Accepted by the native parser in the 2026-09-09 audit.  Full execution of this fixture was not established by the parser result.
 
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/window-index.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/window-index.json).
 
