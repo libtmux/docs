@@ -24,9 +24,12 @@ import { KNOWN_PORTS, resolvePortBody, resolvePortData } from '../lib/workspace-
  * overrides; its body carries shared prose plus `<!-- port:LIST --> ...
  * <!-- /port -->` regions, nestable, that survive only for a port in LIST.
  * The slot/merge logic itself lives in `../lib/workspace-shared-slots.ts`
- * (dependency-free — `scripts/gen-mentions.mjs` imports it too, since it
- * scans the filesystem directly and cannot see synthetic loader entries).
- * See `site/test/workspace-shared.test.ts`.
+ * (dependency-free — `scripts/gen-mentions.mjs` and
+ * `scripts/check-api-links.mjs` import it too, since both scan the
+ * filesystem directly and cannot see synthetic loader entries).
+ * See `site/test/workspace-shared.test.ts` and
+ * `notes/decisions/workspace-shared-pages.md`, which also records which
+ * relative paths stayed as 8 separate files and why.
  */
 
 const DOCS_BASE = './src/content/docs'
