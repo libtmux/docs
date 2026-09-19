@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-17T01:24:07.301Z",
+ "generated": "2026-09-19T20:17:31.897Z",
  "mentions": [
   {
    "port": "cxx",
@@ -5717,27 +5717,6 @@
   },
   {
    "port": "swift",
-   "text": "TmuxWorkspace",
-   "page": "/swift/latest/workspace/configuration/",
-   "line": 104,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "swift",
-   "text": "YAMLWorkspaces",
-   "page": "/swift/latest/workspace/configuration/",
-   "line": 105,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "swift",
-   "text": "TmuxWorkspace",
-   "page": "/swift/latest/workspace/",
-   "line": 68,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "swift",
    "text": "YAMLWorkspaces",
    "page": "/swift/latest/workspace/internals/examples/",
    "line": 19,
@@ -5903,6 +5882,27 @@
    "page": "/topics/waiting-and-retry/",
    "line": 145,
    "why": "no port defines it"
+  },
+  {
+   "port": "swift",
+   "text": "TmuxWorkspace",
+   "page": "/swift/latest/workspace/configuration/",
+   "line": 97,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "swift",
+   "text": "YAMLWorkspaces",
+   "page": "/swift/latest/workspace/configuration/",
+   "line": 98,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "swift",
+   "text": "TmuxWorkspace",
+   "page": "/swift/latest/workspace/",
+   "line": 79,
+   "why": "not defined in the stated port"
   }
  ]
 }

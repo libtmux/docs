@@ -1,6 +1,7 @@
 import { glob } from 'astro/loaders'
 import { defineCollection } from 'astro:content'
 import { z } from 'astro/zod'
+import { workspaceDocsLoader } from './loaders/workspace-shared.ts'
 
 /**
  * Shell prose. One collection for everything hand-written: the landing page,
@@ -10,9 +11,15 @@ import { z } from 'astro/zod'
  * reference through this Astro app from a generated model (TypeScript,
  * .NET, Go); the rest are produced by Sphinx or their own generator and are
  * merged into the output tree by scripts/build-site.sh.
+ *
+ * `workspaceDocsLoader()` wraps `glob()` over this same tree and adds
+ * synthetic per-port entries for the shared sources under
+ * `src/content/_workspace-shared/` — see that loader's module doc. Every
+ * other page in this collection is unaffected: it delegates straight to
+ * `glob()` for anything under `src/content/docs`.
  */
 const docs = defineCollection({
-  loader: glob({ base: './src/content/docs', pattern: '**/*.{md,mdx}' }),
+  loader: workspaceDocsLoader(),
   schema: z.looseObject({
     title: z.string(),
     description: z.string().optional(),
