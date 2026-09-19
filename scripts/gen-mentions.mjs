@@ -1,18 +1,20 @@
 #!/usr/bin/env node
 /** Build "Discussed in" backlinks from source, including when rendering is cached. */
-import { existsSync, globSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, globSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Resolver, decideMention, isLikelyReference, notASymbol, notApiReason, proseMentions } from '../packages/api-model/src/index.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const contentDir = join(root, 'site/src/content/docs')
+const sharedDir = join(root, 'site/src/content/_workspace-shared')
 const modelDir = join(root, 'site/src/data/api')
 const out = join(root, 'site/src/data/mentions.json')
 const check = process.argv.includes('--check')
 
 const { PORTS: PORT_DEFS } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
+const { KNOWN_PORTS, resolvePortBody } = await import(`file://${resolve(root, 'site/src/lib/workspace-shared-slots.ts')}`)
 
 /** The first column's label, as the prose writes it. */
 const PORT_BY_LABEL = {
@@ -81,17 +83,72 @@ function titleOf(source, file) {
   return heading ? heading[1].trim() : basename(file, '.md')
 }
 
+/**
+ * `workspaceDocsLoader()` (site/src/loaders/workspace-shared.ts) synthesizes
+ * 8 per-port `docs` collection entries from each file under
+ * `_workspace-shared/`, at Astro build time. This script walks the
+ * filesystem directly rather than the built collection (see the file
+ * header), so it cannot see those synthetic entries — reconstruct them here
+ * the same way, so a symbol mentioned in a shared workspace page still gets
+ * a "Discussed in" backlink.
+ *
+ * SPIKE: the reconstructed frontmatter's line count does not match the
+ * shared source's real frontmatter block, so a dangling-mention diagnostic's
+ * `line` is offset from the file a contributor would open. The mention
+ * itself, its `page`, and its resolved title are exact.
+ */
+function sharedWorkspaceEntries(realFiles) {
+  const entries = []
+  const walk = (dir) => {
+    if (!existsSync(dir)) return
+    for (const name of readdirSync(dir)) {
+      const full = join(dir, name)
+      if (statSync(full).isDirectory()) {
+        walk(full)
+        continue
+      }
+      if (!/\.mdx?$/.test(name)) continue
+      const relPath = relative(sharedDir, full).split('\\').join('/')
+      const raw = readFileSync(full, 'utf8')
+      const fm = /^---\r?\n([\s\S]*?\r?\n)---\r?\n?/.exec(raw)
+      const body = fm ? raw.slice(fm[0].length) : raw
+      const sharedTitle = (fm && /^title:\s*(.+)$/m.exec(fm[1])?.[1]) || basename(name, '.md')
+      // Ruby ships its own released workspace CLI and Lua has none, so
+      // neither belongs to this generic, unreleased-CLI shared tree at all;
+      // KNOWN_PORTS excludes both. A port whose own hand-authored page
+      // already owns this path keeps that page regardless, matching
+      // site/src/loaders/workspace-shared.ts's realIds exclusion.
+      for (const port of PORTS.filter((slug) => KNOWN_PORTS.has(slug) && !realFiles.has(`ports/${slug}/${relPath}`))) {
+        // A port's own `ports.<slug>.title:` override, indented under the
+        // shared frontmatter's `ports:` map exactly as authored (2, then 4,
+        // spaces — see site/src/lib/workspace-shared-slots.ts's merge).
+        const override = fm && new RegExp(`^  ${port}:\\n(?:.*\\n)*?    title:\\s*(.+)$`, 'm').exec(fm[1])?.[1]
+        const title = override ?? sharedTitle
+        entries.push({
+          file: `ports/${port}/${relPath}`,
+          source: `---\ntitle: ${title}\n---\n\n${resolvePortBody(body, port)}`,
+        })
+      }
+    }
+  }
+  walk(sharedDir)
+  return entries
+}
+
 const seen = new Set()
 const mentions = []
 const dangling = []
 
-for (const file of globSync('**/*.{md,mdx}', { cwd: contentDir }).sort()) {
+const realEntries = globSync('**/*.{md,mdx}', { cwd: contentDir })
+  .sort()
   // Translations describe the same symbols as the page they translate, so a
   // backlink to both is one destination listed twice.
-  if (file.startsWith('ja/')) continue
+  .filter((file) => !file.startsWith('ja/'))
+  .map((file) => ({ file, source: readFileSync(join(contentDir, file), 'utf8') }))
 
+const realFiles = new Set(realEntries.map((entry) => entry.file))
+for (const { file, source } of [...realEntries, ...sharedWorkspaceEntries(realFiles)]) {
   const full = join(contentDir, file)
-  const source = readFileSync(full, 'utf8')
   const page = pageOf(full, source)
   const title = titleOf(source, full)
   const route = frontmatterValue(source, 'route')
