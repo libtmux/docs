@@ -52,16 +52,14 @@ function fixture(products = true): string {
     }
   }
   write(join(directory, 'shell-paths.json'), JSON.stringify({ schema: 1, locale: 'en', directories, files, nativeApi: NATIVE_API }))
-  // Records each call's arguments, tab-separated, in bash: a full publish makes
-  // about ninety AWS calls, and starting Node for each took seconds per case.
   const executable = join(directory, 'bin/aws')
   mkdirSync(dirname(executable), { recursive: true })
-  writeFileSync(executable, '#!/bin/bash\nprintf \'%s\\t\' "$@" >> "$AWS_RECORD"\necho >> "$AWS_RECORD"\n', { mode: 0o755 })
+  writeFileSync(executable, '#!/bin/bash\nprintf "%s\\0" "$#" "$@" >> "$AWS_RECORD"\n', { mode: 0o755 })
   return directory
 }
 
 function publish(directory: string, locale = 'en') {
-  const record = join(directory, 'aws.tsv')
+  const record = join(directory, 'aws.args')
   const result = spawnSync('bash', [script], {
     cwd: directory, encoding: 'utf8', timeout: 10000,
     env: {
@@ -70,7 +68,14 @@ function publish(directory: string, locale = 'en') {
     },
   })
   expect(result.error, result.stderr).toBeUndefined()
-  const commands = existsSync(record) ? readFileSync(record, 'utf8').trim().split('\n').map((line) => line.split('\t').slice(0, -1)) : []
+  const fields = existsSync(record) ? readFileSync(record, 'utf8').split('\0').slice(0, -1) : []
+  const commands: string[][] = []
+  for (let index = 0; index < fields.length;) {
+    const count = Number(fields[index++])
+    expect(Number.isSafeInteger(count) && count >= 0 && index + count <= fields.length).toBe(true)
+    commands.push(fields.slice(index, index + count))
+    index += count
+  }
   return { ...result, commands }
 }
 

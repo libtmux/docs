@@ -3,6 +3,8 @@ import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
+// Reuse child-process compilation without changing per-file test isolation.
+process.env.NODE_COMPILE_CACHE ??= fileURLToPath(new URL('../node_modules/.cache/node-compile', import.meta.url))
 const loop = process.argv[2]
 const budget = { inner: 2, medium: 10, outer: 60 }[loop]
 if (!budget) throw new Error('Usage: test-loop.mjs inner|medium|outer')
@@ -55,6 +57,7 @@ const pnpm = (...args) => {
   return /\.[cm]?js$/.test(entry) ? node(entry, ...args) : run(entry, args)
 }
 const tests = (directory, names = []) => node(vitest, 'run', '--root', directory,
+  '--maxWorkers', '2', '--pool', 'threads', '--fsModuleCache',
   ...names.map((name) => `test/${name}.test.ts`))
 
 try {

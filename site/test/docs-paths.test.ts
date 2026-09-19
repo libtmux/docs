@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { docsPath, docsRoutePath } from '../src/lib/docs-paths'
+import { docsPath, docsRoutePath, workspaceRedirectPath } from '../src/lib/docs-paths'
 
 const pythonGuide = { id: 'ports/py/workspace/guides', data: { port: 'py', product: 'workspace' } }
 
@@ -13,5 +13,16 @@ describe('product document URLs', () => {
   it('keeps shared core routes and rejects malformed product identities', () => {
     expect(docsRoutePath({ id: 'guides/queries', data: {} }, 'ts')).toBe('guides/queries')
     expect(() => docsPath({ ...pythonGuide, id: 'ports/ts/workspace/guides' })).toThrow('Invalid product document id')
+  })
+
+  it('filters legacy aliases according to published pages, independently of CLI availability', () => {
+    const nativePages = new Set(['workspace/guides/installation', 'workspace/examples/gallery'])
+    for (const path of ['workspace/guides/automation/', 'workspace/examples/gallery/', 'workspace/cli/load/']) {
+      expect(workspaceRedirectPath(path, nativePages), path).toBe(false)
+    }
+    expect(workspaceRedirectPath('workspace/guides/', nativePages)).toBe(true)
+    expect(workspaceRedirectPath('workspace/guides/', new Set(['workspace/guides']))).toBe(false)
+    expect(workspaceRedirectPath('workspace/api/builder/', nativePages)).toBe(true)
+    expect(workspaceRedirectPath('workspace/api/builder/', new Set(['workspace/api/builder']))).toBe(false)
   })
 })
