@@ -1,3 +1,4 @@
+// Outer integration: Exercises a real subprocess and its shutdown grace period.
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'

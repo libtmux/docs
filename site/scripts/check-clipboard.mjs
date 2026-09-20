@@ -15,7 +15,7 @@ export async function checkClipboard(page, base) {
     ['prompts/', '.lm-agent-prompt__copy', '[data-prompt-text]'],
   ]
   for (const [path, selector, textSelector] of widgets) {
-    const response = await page.goto(`${base}/${path}`, { waitUntil: 'networkidle' })
+    const response = await page.goto(`${base}/${path}`, { waitUntil: 'domcontentloaded' })
     assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
     const widget = page.locator(`${selector.split('__')[0]}:visible`).first()
     const button = widget.locator(`${selector}:visible`).first()

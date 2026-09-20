@@ -1,16 +1,26 @@
-import { existsSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it, vi } from 'vitest'
 import { mentionedIn, seed } from '../src/db'
-import { MODEL_DIR } from '../src/db/paths'
 import mentionIndex from '../src/data/mentions.json'
+
+vi.mock('../src/db/paths', async (original) => {
+  const { fileURLToPath } = await import('node:url')
+  return {
+    ...await original<typeof import('../src/db/paths')>(),
+    MODEL_DIR: fileURLToPath(new URL('./fixtures/api/', import.meta.url)),
+  }
+})
+
+const temporary: string[] = []
+afterAll(() => { for (const path of temporary) rmSync(path, { recursive: true, force: true }) })
 
 /**
  * The backlink index: which prose mentions a symbol.
  *
  * Driven from a written index rather than the published one, so the rows under
- * test are known. Every seed rebuilds the whole API store, so this keeps to
+ * test are known. A small API fixture keeps the test focused on
  * the two answers a symbol page renders: which pages mention it, and never
  * another port's.
  *
@@ -19,17 +29,15 @@ import mentionIndex from '../src/data/mentions.json'
  * observes nothing on a cached build and reports that as "no mentions", which
  * is indistinguishable from prose that genuinely stopped referring to the API.
  */
-const hasModels = existsSync(join(MODEL_DIR, 'py.json'))
-const describeIfSeeded = hasModels ? describe : describe.skip
-
 function mentionsFile(mentions: unknown[]): string {
   const dir = mkdtempSync(join(tmpdir(), 'libtmux-mentions-'))
+  temporary.push(dir)
   const path = join(dir, 'mentions.json')
   writeFileSync(path, JSON.stringify({ generated: new Date().toISOString(), mentions }))
   return path
 }
 
-describeIfSeeded('prose mention index', () => {
+describe('prose mention index', () => {
   it('does not turn language types into unrelated API backlinks', () => {
     for (const [port, symbol, page] of [
       ['swift', 'JSONValue.bool(_:)', '/topics/socket-and-servers/'],
@@ -79,9 +87,5 @@ describeIfSeeded('prose mention index', () => {
       ]),
     })
     expect(mentionedIn('rs', 'libtmux.Pane.capture_pane')).toEqual([])
-  })
-
-  it('restores the published state for the other suites', () => {
-    seed()
   })
 })

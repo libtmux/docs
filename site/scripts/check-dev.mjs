@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
+import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { dev } from 'astro'
 import { chromium } from 'playwright'
 import { PORTS, productAvailable } from '../src/lib/ports.ts'
@@ -16,22 +20,30 @@ Object.assign(process.env, {
   LIBTMUX_DOCS_LOCALES_ROOT: '', LIBTMUX_DOCS_LOCALE: 'en', LIBTMUX_DOCS_PORT: '',
   LIBTMUX_DOCS_VERSION: 'latest', LIBTMUX_DOCS_PORT_DEFAULTS: '{"py":"stable"}',
 })
-const server = await dev({ root: new URL('../', import.meta.url), logLevel: 'error',
-  server: { host: '127.0.0.1', port: 0 } })
-const base = `http://127.0.0.1:${server.address.port}/en`
-let browser
+// Astro always writes root/.astro, so a separate cacheDir alone cannot isolate it.
+const source = fileURLToPath(new URL('../', import.meta.url))
+const mirror = mkdtempSync(join(tmpdir(), 'libtmux-docs-browser-'))
+process.on('exit', () => rmSync(mirror, { recursive: true, force: true }))
+const root = join(mirror, 'site')
+mkdirSync(root)
+cpSync(join(source, 'src'), join(root, 'src'), { recursive: true })
+for (const file of ['astro.config.ts', 'package.json', 'tsconfig.json']) cpSync(join(source, file), join(root, file))
+for (const file of ['public', 'node_modules']) symlinkSync(join(source, file), join(root, file), 'dir')
+for (const file of ['scripts', 'packages', 'node_modules']) symlinkSync(join(source, '..', file), join(mirror, file), 'dir')
+let server, browser
 const terminate = async () => {
   await browser?.close()
-  await server.stop()
+  await server?.stop()
   process.exit(1)
 }
 process.on('SIGTERM', terminate)
 process.on('SIGINT', terminate)
+server = await dev({ root, cacheDir: join(mirror, 'cache'),
+  vite: { cacheDir: join(mirror, 'vite') }, logLevel: 'error',
+  server: { host: '127.0.0.1', port: 0 } })
+const base = `http://127.0.0.1:${server.address.port}/en`
 
-// Vite reloads a page when it finishes re-optimizing dependencies, which it
-// does after `astro check` has written the cache with a different config.
-// Waiting for `load` rather than network idle can land a check inside that
-// reload, so a page gets one more attempt for that reason and no other.
+// Vite can reload once after its initial dependency optimization.
 async function retryReload(check) {
   try {
     await check()
@@ -92,11 +104,7 @@ try {
     }
     for (const width of [1440, 768, 390]) {
       await page.setViewportSize({ width, height: 1000 })
-      if (path.startsWith('reference/')) {
-        await page.waitForFunction((narrow) => document.querySelector('#api-nav').inert === narrow,
-          width < 1024)
-        await page.locator('#api-nav').waitFor({ state: width < 1024 ? 'hidden' : 'visible' })
-      }
+
       const result = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - innerWidth,
         columns: [...document.querySelectorAll('table')].flatMap((table) => {
@@ -109,23 +117,7 @@ try {
       assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
       assert(result.columns.every((delta) => delta <= 1), `${path} at ${width}px: table columns misaligned`)
     }
-    if (path.startsWith('reference/')) {
-      await page.setViewportSize({ width: 1440, height: 1000 })
-      await page.waitForFunction(() => !document.querySelector('#api-nav').inert)
-      await page.locator('#api-nav [role=treeitem][tabindex="0"]').focus()
-      await page.setViewportSize({ width: 390, height: 1000 })
-      await page.waitForFunction(() => document.querySelector('#api-nav').inert)
-      assert(await page.locator('[data-api-nav-toggle]').evaluate((element) => document.activeElement === element),
-        `${path}: collapsing focused navigation returns focus to its toggle`)
-      const heading = page.locator('main h1').first()
-      await heading.evaluate((element) => { element.tabIndex = -1; element.focus() })
-      await page.setViewportSize({ width: 1440, height: 1000 })
-      await page.waitForFunction(() => !document.querySelector('#api-nav').inert)
-      await page.setViewportSize({ width: 390, height: 1000 })
-      await page.waitForFunction(() => document.querySelector('#api-nav').inert)
-      assert(await heading.evaluate((element) => document.activeElement === element),
-        `${path}: collapsing navigation preserves focus in the content`)
-    }
+
     if (hasSwitcher) {
       assert.equal(await switcher.count(), 1, `${path}: one page port switcher`)
       await switcher.locator('summary').click()

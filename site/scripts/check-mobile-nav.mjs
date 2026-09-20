@@ -123,7 +123,7 @@ for (const [w, want] of [[360, true], [390, true], [768, true], [1023, true], [1
   await p.close()
 }
 // The API drawer keeps the product menu reachable without displacing the heading.
-for (const path of ['/reference/go/', '/reference/py/libtmux-server/']) {
+for (const path of ['/go/latest/reference/', '/py/stable/reference/libtmux-server/']) {
   const p = await page(path)
   const menu = p.locator('.api-nav__menu')
   const contents = p.locator('#api-nav')
@@ -145,6 +145,14 @@ for (const path of ['/reference/go/', '/reference/py/libtmux-server/']) {
   note(!(await menu.isVisible()), `${path}: narrowing collapses the product menu`)
   note(await p.locator('[data-api-nav-toggle]').evaluate((element) => document.activeElement === element),
     `${path}: narrowing focused navigation returns focus to its toggle`)
+  const heading = p.locator('main h1').first()
+  await heading.evaluate((element) => { element.tabIndex = -1; element.focus() })
+  for (const width of [1440, 768, 390]) {
+    await p.setViewportSize({ width, height: 900 })
+    await p.waitForFunction((narrow) => document.querySelector('#api-nav').inert === narrow, width < 1024)
+    note(await heading.evaluate((element) => document.activeElement === element),
+      `${path}: resizing to ${width}px preserves focus in the content`)
+  }
   await p.close()
 }
 for (const width of [390, 1440]) {

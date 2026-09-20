@@ -73,8 +73,8 @@ asset normalization:
 $ pnpm test:inner
 ```
 
-Run every workspace source suite, lint, and generated mention/navigation
-freshness checks in the medium loop:
+Run workspace unit suites, lint, and generated mention/navigation freshness
+checks in the medium loop:
 
 ```console
 $ pnpm test:medium
@@ -86,7 +86,9 @@ Run the outer loop before committing:
 $ pnpm test
 ```
 
-The outer loop adds type checks and starts its own Astro development server
+The outer loop includes the `*.outer.test.ts` integration suites, which seed
+the full API catalog or exercise subprocess shutdown. It also adds type
+checks and starts its own Astro development server
 from current source. Browser checks cover prose, an MCP table, API equivalents,
 and phone dropdown placement at 1440, 768, and 390 pixels. The sampled renderer
 does not reuse `_site`. The runtime budgets are under 2, 10, and 60 seconds for inner,
