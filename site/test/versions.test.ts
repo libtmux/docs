@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { compareTags, parseTag, selectBuildVersions, sortVersions, type VersionEntry, type VersionManifest } from '../src/lib/versions'
+import { compareTags, parseTag, releaseTag, selectBuildVersions, sortVersions, type VersionEntry, type VersionManifest } from '../src/lib/versions'
 
 it('keeps the production fallback manifest in sync with the seed generator', () => {
   const generated = execFileSync(process.execPath, [
@@ -129,6 +129,13 @@ describe('sortVersions', () => {
   const tags = (slugs: string[]): VersionEntry[] =>
     slugs.map((slug) => ({ slug, label: slug, kind: 'tag', supported: true }))
 
+  it('orders crate-prefixed and bare tags without changing their source names', () => {
+    expect(sortVersions(tags(['libtmux@v1.0.0-alpha.10', 'libtmux@v1.0.0']), 'semver', 'libtmux@').map((e) => e.slug))
+      .toEqual(['libtmux@v1.0.0', 'libtmux@v1.0.0-alpha.10'])
+    expect(sortVersions(tags(['0.1.0-alpha.9', '0.1.0-alpha.10'])).map((e) => e.slug))
+      .toEqual(['0.1.0-alpha.10', '0.1.0-alpha.9'])
+  })
+
   it('puts a release above its own prereleases', () => {
     // Numeric collation on the raw slug read `v1.0.0-alpha.3` as later than
     // `v1.0.0`: a longer string sharing a prefix. This function is what the
@@ -157,6 +164,15 @@ describe('sortVersions', () => {
     ]
     expect(sortVersions(entries).map((e) => e.slug)).toEqual(['stable', 'latest', 'v0.1.0'])
   })
+})
+
+it('selects only a port library release and accepts Swift tag spelling', () => {
+  const rust = { tagGrammar: 'semver' as const, tagPrefix: 'libtmux@' }
+  expect(releaseTag('libtmux@v0.1.0-alpha.12', rust)).toBe('v0.1.0-alpha.12')
+  expect(releaseTag('tmux-mcp@v0.1.0-alpha.13', rust)).toBeNull()
+  expect(releaseTag('v0.1.0-alpha.12', rust)).toBeNull()
+  expect(releaseTag('mcp/v0.0.1-alpha.11', { tagGrammar: 'semver' })).toBeNull()
+  expect(releaseTag('0.1.0-alpha.5', { tagGrammar: 'semver' })).toBe('0.1.0-alpha.5')
 })
 
 describe('parseTag', () => {

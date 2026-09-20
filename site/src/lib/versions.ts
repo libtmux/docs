@@ -146,6 +146,14 @@ export function parseTag(name: string, grammar: TagGrammar): ParsedTag | null {
   return { nums: [Number(major), Number(minor), Number(patch)], pre: pre ?? null }
 }
 
+/** The library version in a repository tag, excluding sibling package releases. */
+export function releaseTag(tag: string, port: { tagGrammar: TagGrammar; tagPrefix?: string }): string | null {
+  if (port.tagPrefix && !tag.startsWith(port.tagPrefix)) return null
+  const version = port.tagPrefix ? tag.slice(port.tagPrefix.length) : tag
+  const name = version.startsWith('v') ? version : `v${version}`
+  return parseTag(name, port.tagGrammar) ? version : null
+}
+
 /**
  * Newest-first precedence for two tag slugs.
  *
@@ -185,11 +193,15 @@ export function compareTags(a: string, b: string, grammar: TagGrammar = 'semver'
  * prerelease above the release it precedes. This function is what the
  * switcher renders, so it is the ordering that has to be right.
  */
-export function sortVersions(entries: VersionEntry[], grammar: TagGrammar = 'semver'): VersionEntry[] {
+export function sortVersions(entries: VersionEntry[], grammar: TagGrammar = 'semver', tagPrefix?: string): VersionEntry[] {
   const rank: Record<VersionKind, number> = { alias: 0, trunk: 1, tag: 2, branch: 3, pr: 4 }
+  const tagName = (slug: string) => {
+    const version = releaseTag(slug, { tagGrammar: grammar, tagPrefix }) ?? slug
+    return version.startsWith('v') ? version : `v${version}`
+  }
   return [...entries].sort((a, b) => {
     if (rank[a.kind] !== rank[b.kind]) return rank[a.kind] - rank[b.kind]
-    if (a.kind === 'tag' && b.kind === 'tag') return compareTags(a.slug, b.slug, grammar)
+    if (a.kind === 'tag' && b.kind === 'tag') return compareTags(tagName(a.slug), tagName(b.slug), grammar)
     return b.slug.localeCompare(a.slug, undefined, { numeric: true })
   })
 }

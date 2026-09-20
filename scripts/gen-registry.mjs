@@ -52,7 +52,7 @@ const siteLib = join(repoRoot, 'site', 'src', 'lib')
 const DEFAULT_OUT = join(repoRoot, 'site', 'src', 'data', 'registry.json')
 
 const { PORTS } = await import(`file://${join(siteLib, 'ports.ts')}`)
-const { parseTag, compareTags } = await import(`file://${join(siteLib, 'versions.ts')}`)
+const { parseTag, compareTags, releaseTag } = await import(`file://${join(siteLib, 'versions.ts')}`)
 
 function parseArgs(argv) {
   const opts = { out: DEFAULT_OUT, check: false, offline: false }
@@ -92,28 +92,6 @@ function isPrerelease(version, grammar) {
 /** Newest first, under this port's grammar. */
 const newestFirst = (versions, grammar) =>
   [...versions].sort((a, b) => compareTags(tagged(a), tagged(b), grammar))
-
-/**
- * The version part of a tag that names a release of this port's library, or
- * null for any other tag in the repository.
- *
- * Repositories that ship one library tag bare (`v0.1.0-alpha.7`). Two do not,
- * in opposite ways, and both are handled by `port.tagPrefix`: Rust's Cargo
- * workspace tags per crate (`libtmux@v0.1.0-alpha.10`), and Go's multi-module
- * layout tags submodules under a path (`mcp/v0.0.1-alpha.9`) while the library
- * tags bare. Requiring the declared prefix, and rejecting `/` and `@` when
- * none is declared, keeps a submodule's release from being read as the
- * library's. Swift tags without the leading `v`, which `tagged()` absorbs.
- */
-function releaseTag(tag, port) {
-  if (port.tagPrefix) {
-    if (!tag.startsWith(port.tagPrefix)) return null
-    const rest = tag.slice(port.tagPrefix.length)
-    return parseTag(tagged(rest), port.tagGrammar) ? rest : null
-  }
-  if (tag.includes('/') || tag.includes('@')) return null
-  return parseTag(tagged(tag), port.tagGrammar) ? tag : null
-}
 
 async function getJson(url, headers = {}) {
   const res = await fetch(url, {

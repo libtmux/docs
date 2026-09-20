@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Derive site/public/versions.json's shape (VersionManifest, see
 // site/src/lib/versions.ts) from git refs in each port's checkout, falling
-// back to the two-entry seed for a port whose checkout is not present on
+// back to the latest-only seed for a port whose checkout is not present on
 // this machine. Never invents the manifest shape independently of
 // versions.ts — it imports PORTS, sortVersions and compareTags directly so
 // ordering and the field set cannot drift from what the switcher reads.
@@ -11,7 +11,7 @@
 //
 //   --out <path>        Write the manifest there (default: stdout).
 //   --seed              Skip git derivation entirely; emit only 'latest'
-//                        (trunk) and 'stable' (alias -> latest) per port.
+//                        (trunk) per port.
 //                        This is how site/public/versions.json itself is
 //                        produced — a committed fallback the switcher can
 //                        read before any real deploy has run this script.
@@ -30,7 +30,7 @@ const repoRoot = dirname(here)
 const siteLib = join(repoRoot, 'site', 'src', 'lib')
 
 const { PORTS } = await import(`file://${join(siteLib, 'ports.ts')}`)
-const { sortVersions, compareTags, parseTag } = await import(`file://${join(siteLib, 'versions.ts')}`)
+const { sortVersions, compareTags, parseTag, releaseTag } = await import(`file://${join(siteLib, 'versions.ts')}`)
 
 function parseArgs(argv) {
   const opts = { out: undefined, seed: false, overrides: undefined }
@@ -72,7 +72,8 @@ function seedEntries() {
 
 function deriveEntries(port) {
   const { checkout, tagGrammar } = port
-  const dir = expandHome(checkout)
+  const worktree = expandHome(port.worktree)
+  const dir = existsSync(worktree) ? worktree : expandHome(checkout)
   if (!existsSync(dir)) {
     return { entries: seedEntries(), defaultVersion: 'latest', note: `checkout not found at ${checkout}` }
   }
@@ -92,11 +93,13 @@ function deriveEntries(port) {
   const branches = []
   for (const line of refs.split('\n').filter(Boolean)) {
     const [name, date] = line.split('\t')
-    const parsed = parseTag(name, tagGrammar)
-    if (parsed) tags.push({ name, date, pre: parsed.pre })
+    const version = releaseTag(name, port)
+    const tag = version && (version.startsWith('v') ? version : `v${version}`)
+    const parsed = tag && parseTag(tag, tagGrammar)
+    if (parsed) tags.push({ name, tag, date, pre: parsed.pre })
     else if (BRANCH_RE.test(name)) branches.push({ name, date })
   }
-  tags.sort((a, b) => compareTags(a.name, b.name, tagGrammar))
+  tags.sort((a, b) => compareTags(a.tag, b.tag, tagGrammar))
 
   let headDate
   try {
@@ -155,7 +158,7 @@ function main() {
       ? { entries: seedEntries(), defaultVersion: 'latest' }
       : deriveEntries(port)
     if (derived.note) process.stderr.write(`gen-versions: ${port.slug}: ${derived.note}\n`)
-    manifest.ports[port.slug] = sortVersions(derived.entries, port.tagGrammar)
+    manifest.ports[port.slug] = sortVersions(derived.entries, port.tagGrammar, port.tagPrefix)
     // Not unconditionally 'stable' any more: a port with no release has no
     // stable entry to point at, and naming one anyway is what made seven of
     // eight ports advertise trunk as their released version.
