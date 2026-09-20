@@ -1,6 +1,6 @@
 import type { ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS, pageSlug, referenceAlternatives, referenceHref } from './api-models'
-import { PORTS, portHomeUrl, portPageUrl, referenceUrl } from './ports'
+import { PORTS, portHomeUrl, portPageUrl, productAvailable, referenceUrl } from './ports'
 import { docsPath, type DocsPage } from './docs-paths'
 import { productApiHref } from './product-api'
 import { MCP_REFERENCE, equivalentMcpTool } from './mcp-reference'
@@ -87,8 +87,10 @@ export function pagePortLinks({
         if (href) links = [{ href }]
       }
     } else if (tool) {
-      const target = equivalentMcpTool(portSlug!, tool.wireName, port.slug)
+      const target = productAvailable(port, 'mcp') ? equivalentMcpTool(portSlug!, tool.wireName, port.slug) : undefined
       if (target) links = [{ href: portPageUrl(port, targetVersion, `mcp/tools/${target.wireName}`) }]
+    } else if (path === 'mcp/tools') {
+      if (productAvailable(port, 'mcp')) links = [{ href: portPageUrl(port, targetVersion, path) }]
     } else if ((SHARED_PAGE_PATHS as readonly string[]).includes(path) || entries.some((entry) => docsEntryAvailable(entry, port.slug))) {
       links = [{ href: portPageUrl(port, targetVersion, path) }]
     }

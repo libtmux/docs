@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, rmSync } from 'node:fs
 import { dirname, join } from 'node:path'
 import { CONCEPTS } from '@libtmux/api-model'
 import { DB_PATH, MODEL_DIR, SCHEMA_PATH, SITE_ROOT } from './paths'
+import { PORTS } from '../lib/ports'
 
 /**
  * Build the API projection from the extracted models.
@@ -171,7 +172,7 @@ export function seed(options: SeedOptions = {}): SeedResult {
 
   db.exec('BEGIN')
   try {
-    for (const port of ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']) {
+    for (const { slug: port } of PORTS) {
       const file = join(MODEL_DIR, `${port}.json`)
       if (!existsSync(file)) continue
       const model = JSON.parse(readFileSync(file, 'utf8')) as RawModel

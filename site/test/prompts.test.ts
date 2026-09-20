@@ -87,6 +87,15 @@ describe('prompt composition', () => {
     expect(text.length).toBeGreaterThan(400)
   })
 
+  it.each(['ruby', 'lua'])('%s does not advertise unsupported freeze or reconciliation products', (slug) => {
+    const port = PORTS.find((entry) => entry.slug === slug)!
+    for (const topic of ['session-freezer', 'session-supervisor']) {
+      const text = promptFor(port, topic)
+      expect(text).toContain('Availability')
+      expect(text).not.toContain('What it does:')
+    }
+  })
+
   it.each(MATRIX)('$port.slug/$topic.id cites the site and this port', ({ port, topic }) => {
     const text = promptFor(port, topic.id)
     // The machine-readable entry points, which are the whole reason a prompt

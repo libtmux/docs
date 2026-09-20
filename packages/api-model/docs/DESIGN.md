@@ -1,8 +1,8 @@
-# One API model, eight languages
+# One API model, ten languages
 
 ## Why this exists
 
-libtmux.org renders eight ports of the same library. Each one's reference
+libtmux.org renders ten ports of the same library. Each one's reference
 currently comes from its own native generator — Sphinx+autodoc, api-extractor,
 `docfx --outputFormat markdown`, Doxygen→Breathe→Sphinx — which means four
 visual styles, four sets of anchor conventions, and no way to link
@@ -106,7 +106,7 @@ merging, C# method groups, C++ overload sets), so this is modelled once.
 ## Version pinning, and a failure worth writing down
 
 `web-tree-sitter` must match the era its grammars were built in.
-`tree-sitter-wasms` ships ABI 13-14; runtime **0.25.10 loads all eight**, and
+`tree-sitter-wasms` ships ABI 13-14; runtime **0.25.10 loads the eight source-parser grammars**, and
 0.26 and 0.27 both reject them. 0.27 does so by throwing a bare `Error` with
 no message from inside `getDylinkMetadata`, which reads like a corrupt WASM
 file rather than a version skew — an hour's debugging if you trust the
@@ -120,7 +120,7 @@ Unlicense, which satisfies the project's permissive-licensing constraint.
 
 ## Grammar coverage
 
-All eight target languages have a maintained prebuilt grammar, including the
+All eight source-parser languages have a maintained prebuilt grammar, including the
 two that looked risky:
 
 | Language | Grammar | ABI |
@@ -179,9 +179,9 @@ renderer are not.
 | C++ | Doxygen XML | already generated in this project's build, structured, and a real preprocessor |
 | Swift | `swift build -emit-symbol-graph` | 762 symbols with `preciseIdentifier` cross-references already resolved; parses typed throws by construction |
 
-This costs less than it looks. The pain this project set out to fix was eight
+This costs less than it looks. The pain this project set out to fix was ten
 pipelines producing four *visual styles*; the extractors were never the pain.
-Collapsing eight renderers into one is the win, and that win lives entirely in
+Collapsing ten renderers into one is the win, and that win lives entirely in
 the model and the renderer — which are identical whichever front end feeds
 them. Nothing built so far is invalidated by this: the Python extractor, the
 symbol table, the linker and the components all sit above the line.

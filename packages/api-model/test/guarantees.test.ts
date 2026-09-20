@@ -13,7 +13,7 @@ import type { ApiModel } from '../src/model.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const DATA = join(here, '../../../site/src/data/api')
-const PORTS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'] as const
+const PORTS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'] as const
 
 function load(port: string): ApiModel | undefined {
   const path = join(DATA, `${port}.json`)
@@ -419,7 +419,7 @@ describe('every member has an owner that exists', () => {
    * not public API and is dropped; Swift's extension on `Sequence` is public
    * API on a foreign type and is re-parented to the top level.
    */
-  it.each(['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'])(
+  it.each(['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'])(
     '%s has no member pointing at a missing owner',
     (port) => {
       const model = load(port)

@@ -153,6 +153,7 @@ const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].s
 
 const badges = [
   { label: kind, variant: 'kind' as const, value: kind },
+  ...(symbol.package ? [{ label: symbol.package, variant: 'mod' as const, value: 'package' }] : []),
   ...symbol.modifiers.map((m) => ({ label: m, variant: 'mod' as const, value: m })),
   ...(symbol.signatures.length > 1
     ? [
@@ -244,6 +245,7 @@ const hasBody =
   examples.length > 0 ||
   references.length > 0 ||
   Boolean(symbol.inheritedFrom) ||
+  Boolean(symbol.publicOwner && symbol.publicOwner !== symbol.id) ||
   Boolean(symbol.doc?.summary) ||
   Boolean(symbol.doc?.body) ||
   Boolean(symbol.doc?.deprecated) ||
@@ -449,6 +451,14 @@ const hasBody =
           ) : (
             <code>{symbol.inheritedFrom}</code>
           )}
+        </p>
+      )
+    }
+
+    {
+      symbol.publicOwner && symbol.publicOwner !== symbol.id && (
+        <p class="gp-sphinx-api-facts">
+          Public owner: <code>{symbol.publicOwner}</code>
         </p>
       )
     }

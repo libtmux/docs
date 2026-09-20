@@ -1,7 +1,6 @@
 import { symbolsForProduct, type ApiModel, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
 import { API_MODELS, createApiIndex, referenceAlternatives } from './api-models'
 import { PORT_BY_SLUG, portPageUrl, productApiPath, referenceUrl, type DocProduct } from './ports'
-import { withPortRoot } from './site-root'
 
 /** Keep core references stable while product declarations stay in their section. */
 export function productApiHref(model: ApiModel, symbol: ApiSymbol, version: string): string {

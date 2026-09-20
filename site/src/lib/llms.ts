@@ -23,7 +23,7 @@
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
 import { LANG_TO_PORT, parseMeta, readFence } from '../plugins/remark-port-code.mjs'
-import { PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, referenceUrl } from './ports.ts'
+import { PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, productAvailable, referenceUrl } from './ports.ts'
 import { DEFAULT_LOCALE } from '../i18n/locales.ts'
 import { buildLocale, localeOf, sourceIdOf } from '../i18n/resolve.ts'
 import { buildTarget } from './versions.ts'
@@ -112,6 +112,7 @@ function sectionOf(entry: CollectionEntry<'docs'>): string {
  */
 export async function llmsPages(origin: string, base: string): Promise<LlmsPage[]> {
   const port = process.env.LIBTMUX_DOCS_PORT || undefined
+  const locale = buildLocale()
   // Default locale only. A translation is a different document at a different
   // URL, and listing `ja/concepts` beside `concepts` in one file would hand an
   // agent the same page twice in two languages.
@@ -119,13 +120,13 @@ export async function llmsPages(origin: string, base: string): Promise<LlmsPage[
     'docs',
     (entry) =>
       (!port || entry.data.port === undefined || entry.data.port === port) &&
-      localeOf(entry.id) === DEFAULT_LOCALE,
+      localeOf(entry.id) === DEFAULT_LOCALE &&
+      (locale === DEFAULT_LOCALE || Boolean(port) || entry.data.port === undefined),
   )
   // The same page the routes serve: a translation where this locale has one,
   // so a section and that page's `.md` twin stay one text rather than two.
   let defaults: Record<string, string> = {}
   try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
-  const locale = buildLocale()
   const translations = new Map(locale === DEFAULT_LOCALE ? []
     : localeProse(await getCollection('docs'), locale, port, defaults)
       .map(({ entry, route }) => [route, entry] as const))
@@ -150,7 +151,8 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
   const entryPort = entry.data.port
   const version = port ? buildTarget(process.env).version : (defaults[entryPort ?? ''] ?? 'latest')
   let body = resolvePortCode(entry.body ?? '', entryPort ?? port)
-  if (entryPort && entry.data.product && docsPath(entry) === productApiPath(entry.data.product)) {
+  if (entryPort && entry.data.product && productAvailable(PORT_BY_SLUG[entryPort], entry.data.product)
+    && docsPath(entry) === productApiPath(entry.data.product)) {
     const model = API_MODELS[entryPort]
     const symbols = productApiRoots(model, entry.data.product)
     body += `\n\n## API declarations\n\n${symbols.map((symbol) => `- [${symbol.publicId ?? symbol.name}](${origin}${productApiHref(model, symbol, version)})`).join('\n')}\n`
@@ -197,12 +199,12 @@ export function llmsHeader(): { title: string; blurb: string } {
     return {
       title: 'libtmux',
       blurb:
-        'A typed tmux control library published for eight languages — Python, TypeScript, Rust, Go, Java, .NET, C++ and Swift — from one documentation site. Pages below are language-neutral prose; each carries a code sample per port.',
+        'A typed tmux control library published for ten languages — Python, Ruby, Lua, TypeScript, Rust, Go, Java, .NET, C++ and Swift — from one documentation site. Pages below are language-neutral prose; each carries a code sample per port.',
     }
   }
   return {
     title: `libtmux for ${p.name}`,
-    blurb: `The ${p.name} port of libtmux (${p.packageName}). Every code sample below is ${p.language}; the same pages exist for the other seven ports under their own prefix.`,
+    blurb: `The ${p.name} port of libtmux (${p.packageName}). Every code sample below is ${p.language}; the same pages exist for the other nine ports under their own prefix.`,
   }
 }
 

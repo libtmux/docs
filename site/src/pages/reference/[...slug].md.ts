@@ -62,7 +62,7 @@ export const GET: APIRoute = ({ props, site }) => {
       source: repo && rev && file
         ? `https://github.com/${repo}/blob/${rev}/${file}${symbol.source?.line ? `#L${symbol.source.line}` : ''}`
         : undefined,
-      packageName: PORT_BY_SLUG[port]?.packageName,
+      packageName: symbol.package ?? PORT_BY_SLUG[port]?.packageName,
     }),
     { headers: { 'Content-Type': 'text/markdown; charset=utf-8' } },
   )

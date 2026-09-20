@@ -16,6 +16,19 @@ export interface Quickstart {
   note?: string
 }
 
+function documentedRegion(source: string, name: string): string {
+  const lines = source.split('\n')
+  const start = lines.findIndex((line) => line.includes(`docs:begin ${name}`))
+  const end = lines.findIndex((line, index) => index > start && line.includes(`docs:end ${name}`))
+  if (start < 0 || end < 0) throw new Error(`quickstarts.ts: missing docs region ${name}`)
+  const selected = lines.slice(start + 1, end)
+  const indent = Math.min(...selected.filter((line) => line.trim()).map((line) => /^\s*/.exec(line)![0].length))
+  return selected.map((line) => line.slice(Math.min(indent, line.length))).join('\n')
+}
+
+const rubyQuickstart = documentedRegion(EXAMPLE_SOURCES['ruby:examples/quickstart.rb'], 'main')
+const luaQuickstart = documentedRegion(EXAMPLE_SOURCES['lua:examples/quickstart.lua'], 'main')
+
 /**
  * Excerpts from each port's tested README or examples, at the release the
  * install line pins, with their source and verification notes.
@@ -39,6 +52,17 @@ pane.send_keys('echo "Hello world"', enter=True)
 print(pane.capture_pane())`,
     source:
       "Adapted from the new_session, active_window, split, send_keys and capture_pane docstrings in src/libtmux/server.py, session.py and pane.py. pytest runs them as doctests against a real tmux.",
+  },
+  ruby: {
+    lang: 'ruby',
+    code: rubyQuickstart,
+    source: 'From examples/quickstart.rb at the selected source revision. The installed-package check runs it against an isolated tmux server and verifies cleanup.',
+  },
+  lua: {
+    lang: 'lua',
+    code: luaQuickstart,
+    source: 'From examples/quickstart.lua at the selected source revision. The installed-rock check runs it against an owned socket and verifies that its session is removed.',
+    note: 'Run the complete file inside `libtmux.runtime.luv`; standalone live use also requires the `luv` rock. Requests return `value, err`, and send completion does not claim shell completion, so the example uses a tmux wait-for barrier.',
   },
   ts: {
     lang: 'ts',
@@ -214,3 +238,4 @@ print(lines.suffix(5).joined(separator: "\\n"))`,
       "From the README's opening and \"Change what is there\" examples, without the session option that section also sets. Examples/Sources/ExampleCode/Changing.swift holds the same calls; swift test --package-path Examples compiles and runs them.",
   },
 }
+import EXAMPLE_SOURCES from '../data/example-sources.json'

@@ -26,7 +26,7 @@ function manifestWith(versions: string[]): string {
   const dir = mkdtempSync(join(tmpdir(), 'libtmux-manifest-'))
   const path = join(dir, 'versions.json')
   const ports = Object.fromEntries(
-    ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'].map((p) => [
+    ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'].map((p) => [
       p,
       versions.map((slug) => ({ slug, label: slug, kind: 'tag', supported: true })),
     ]),

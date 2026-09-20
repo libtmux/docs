@@ -1,13 +1,13 @@
 # CI and deployment
 
-Nine repositories exist in this scheme — this shell repo and the eight port
-repos named in `site/src/lib/ports.ts` — but only six ever write into
+Eleven repositories exist in this scheme — this shell repo and the ten port
+repos named in `site/src/lib/ports.ts` — but only eight ever write into
 `s3://libtmux-docs`: three ports (Rust, Go, Java) deep-link to an ecosystem
 host instead and own no prefix here at all (see the table below). Each of
-the six owns and deploys its own prefix, exclusively. No repository shares a
+the seven publishing ports owns and deploys its own prefix exclusively. No repository shares a
 build environment, a build job, or a piece of mutable state with any other —
-the only thing shared is a file, this repo's
-`.github/workflows/reusable-deploy.yml`, pinned by tag like any other
+the only shared executable contract is this repo's
+`.github/workflows/reusable-deploy.yml`, pinned by full commit SHA like any other
 dependency.
 
 ## Why per-repo prefix ownership
@@ -28,16 +28,17 @@ hands this workflow a prefix to write it to. That is the entire contract.
 
 ## Which repos call `reusable-deploy.yml`
 
-Only ports with `referenceMode: 'self-hosted'` in `ports.ts` have anything to
-sync into this bucket at all:
+Ports with a site-hosted version tree have something to sync into this bucket:
 
-| Port | `referenceMode` | Calls `reusable-deploy.yml`? |
+| Port | Reference ownership | Calls `reusable-deploy.yml`? |
 |---|---|---|
-| Python (`py`) | self-hosted | yes |
-| TypeScript (`ts`) | self-hosted | yes |
-| .NET (`dotnet`) | self-hosted | yes |
-| C++ (`cxx`) | self-hosted | yes |
-| Swift (`swift`) | self-hosted | yes |
+| Python (`py`) | port-owned native API | yes |
+| Ruby (`ruby`) | port-owned complete version tree | yes |
+| Lua (`lua`) | port-owned complete version tree | yes |
+| TypeScript (`ts`) | site-rendered | yes |
+| .NET (`dotnet`) | site-rendered | yes |
+| C++ (`cxx`) | port-owned native API | yes |
+| Swift (`swift`) | port-owned native API | yes |
 | Rust (`rs`) | ecosystem (docs.rs) | no — nothing to publish here |
 | Go (`go`) | ecosystem (pkg.go.dev) | no — nothing to publish here |
 | Java (`java`) | ecosystem (javadoc.io) | no — nothing to publish here |
@@ -59,7 +60,7 @@ caller cannot hand an immutable tag a five-minute TTL by copy-paste:
 | `trunk` | `py/latest` | `public, max-age=0, s-maxage=300` |
 | `branch` | `py/v0.x` | `public, max-age=0, s-maxage=300` |
 | `alias` | `py/stable` | `public, max-age=0, s-maxage=300` |
-| `pr` | `pr-42` | `public, max-age=0, s-maxage=300` |
+| `pr` | `ruby/pr-42` | `public, max-age=0, s-maxage=300` |
 
 No column for invalidation, because this workflow issues none. Every mutable
 prefix above carries `s-maxage=300`, so the edge picks up a republish within
@@ -95,13 +96,13 @@ The prefix a caller passes is its own — `py/stable`, `py/v0.46.2` — and the
 workflow prepends the locale before writing, so those objects land at
 `en/py/stable` and `en/py/v0.46.2`. That is applied on this side rather than
 asked of the caller because the caller is each port's own repository, and
-moving a segment would otherwise be a coordinated edit across eight of them. A
+moving a segment would otherwise be a coordinated edit across ten of them. A
 pull-request preview keeps its own shape: it owns its whole prefix and nests
 the site inside it.
 
 `path-prefix` is validated inside the reusable workflow: non-empty, no
 leading or trailing slash, no `..` segment, and never a bare reserved name
-(`py`, `ts`, `rs`, `go`, `java`, `dotnet`, `cxx`, `swift`, `manifest`,
+(`py`, `ruby`, `lua`, `ts`, `rs`, `go`, `java`, `dotnet`, `cxx`, `swift`, `manifest`,
 `_shell`) — a caller cannot `sync --delete` an entire language root even by
 mistake, because that path never validates.
 
@@ -131,9 +132,10 @@ three times before failing loudly. This is a backstop, not the correctness
 mechanism — correctness comes from the manifest key being exclusive to one
 port's role in the first place.
 
-The shell reads all such fragments at request time to build any
-cross-language view (a parity table, a combined sitemap); nothing here
-requires them to converge at write time.
+The next shell publication validates and merges all such fragments into each
+locale's runtime `versions.json`. Both switchers read that file. A port upload
+therefore makes a version eligible for the next shell/search publication; it
+does not claim that shared Pagefind or the sitemap changed in the port job.
 
 ## Opting in a port repo
 
@@ -180,7 +182,7 @@ failure publishes cleanly: the run is green and the URL returns 200, serving
 the wrong site. It happened to Python's first publish, where `/en/py/latest/`
 served Furo and `/en/py/latest/concepts/` 403'd.
 
-`--skip-refs` is a per-port judgement, not a default. For seven ports `api/`
+`--skip-refs` is a per-port judgement, not a default. For nine ports `api/`
 is a redirect to `/reference/<slug>/`, so skipping the reference generators
 costs nothing. Python's `api/` is the real gp-sphinx render that
 `site/scripts/check-style-parity.mjs` measures against, so its build must not
@@ -269,7 +271,7 @@ Triggers and jobs:
 `publish-root` cannot simply call `reusable-deploy.yml`: production output
 spans several top-level directories (the `docs` content collection's own
 routes, and `/ja/` once translated shell prose lands), not one exclusive
-prefix, and the bucket root is shared with all eight language prefixes this
+prefix, and the bucket root is shared with all ten language prefixes this
 repo must never touch. Instead it lists `dist/`'s top-level entries, fails
 the run if any collides with a reserved language/manifest name, `sync
 --delete`s each surviving directory individually, and `cp`s (no `--delete`)
@@ -356,68 +358,24 @@ Per-port roles and bucket policies live wherever that port's own
 infrastructure lives; this repo's own three roles are `infra/`'s concern,
 not encoded here.
 
-## Contradictions and open questions
+## External publication gates
 
-- **Blocking, unresolved as of this writing.** The current site build
-  (another subsystem's work, not this one's) emits `dist/py/`, `dist/ts/`,
-  `dist/rs/`, `dist/go/`, `dist/java/`, `dist/dotnet/`, `dist/cxx/` and
-  `dist/swift/` — one port landing page apiece, from a `[port]` route.
-  `deploy-shell.yml`'s `publish-root` denylist refuses every one of those
-  names on purpose (this document, "This repo's own deploy"), so **the
-  workflow fails outright on every push until this is resolved** — that
-  refusal is deliberate, not a bug to silence, because syncing one of those
-  directories wholesale could `--delete` a version that port's own CI
-  already published under the identical prefix. This is
-  `00-DECISIONS.md` §7.10 item 5, "whether `/py/` becomes canonical or a
-  landing page," still open. Two resolutions, neither implemented here:
-  (a) the landing page wins — `publish-root` `cp`s (never syncs)
-  `dist/<slug>/index.html` as one object, invalidates only
-  `/<slug>/index.html`, and `06-aws-s3-cloudfront.md`'s bare-root 302
-  function is dropped or changed to not preempt it; or (b) the port's own
-  reference build owns the bare prefix entirely and the `[port]` route
-  moves under a different path or is dropped. Whoever owns the `[port]`
-  route and the CloudFront function should pick one; this repo's workflow
-  will need a matching, deliberate edit either way, not a denylist bypass.
-- **`versions.ts` describes a manifest scheme no workflow here writes.**
-  `site/src/components/VersionSwitcher.astro` fetches a single
-  `/versions.json` at runtime (confirmed: `rg -n versions.json site/src`),
-  matching `versions.ts`'s own module comment ("at /versions.json, which CI
-  rewrites on publish"). `reusable-deploy.yml` instead writes
-  `manifest/<port>.json` fragments, per `notes/research/07-ci-topology.md`'s
-  and `00-DECISIONS.md` §6's exclusive-manifest-key rule — a single
-  cross-repo `/versions.json` is exactly the shared mutable state that rule
-  forbids, and `notes/research/04-versioning.md` independently specifies
-  per-language files for the same reason. Nothing in this repo currently
-  writes `/versions.json`, so as shipped here `VersionSwitcher.astro` never
-  learns about a version published by a port's own CI. Closing this needs
-  one of: the switcher reads `manifest/<port>.json` directly instead, or the
-  shell gains the aggregator `07-ci-topology.md` describes (triggered by
-  each port's publish, deriving `/versions.json` from every
-  `manifest/*.json`) — no such aggregator exists yet, and it is not one of
-  this assignment's four files.
-- `notes/research/07-ci-topology.md`'s "nine owners" table lists Rust, Go
-  and Java as self-hosted, each owning a prefix and a manifest key.
-  `ports.ts` — the file this repo treats as authoritative — marks all three
-  `referenceMode: 'ecosystem'` with `renderer: 'none'`: they have no
-  self-hosted build output at all, so nothing to sync or manifest here. Six
-  repositories call `reusable-deploy.yml` (this shell plus five self-hosted
-  ports), not nine. `../README.md`'s port table also lists a renderer for
-  Go ("doc2go `-embed` to Astro") that contradicts `ports.ts` the same way.
-- `notes/research/04-versioning.md` writes the branch-kind slug as `0.x`
-  (no `v` prefix); `versions.ts`'s own doc comment writes `v0.x`. This
-  document follows `versions.ts`.
-- `ports.ts` lists Python's repo as `tmux-python/libtmux` — a different
-  GitHub organization from `libtmux/*`. This is why `libtmux/docs` is a
-  public repository. A reusable workflow in a *private* repo cannot be
-  called by a public repo at all — no Actions access policy lifts that, it
-  is a visibility rule — and private sharing stops at the organization
-  boundary in any case, so a cross-org caller like `tmux-python/libtmux`
-  could never have reached one. The shared publish step has to be reachable
-  from eight public repositories across two organizations, so the repository
-  holding it is public. Nothing in it is a secret: every caller passes its
-  own `role-arn`, `bucket` and `distribution`.
-- `../README.md`'s layout table puts "deploy workflows" under `infra/`; the
-  assignment that produced this document placed them at
-  `.github/workflows/` instead — the only location GitHub Actions itself
-  will discover them from. `infra/` is left for non-workflow deploy
-  infrastructure (bucket policy, the CloudFront function, IAM policy JSON).
+Local workflow checks cannot establish the live GitHub and AWS policy. Before
+the Ruby or Lua caller may publish, a maintainer must verify all of these:
+
+- The selected site commit is public and both the docs checkout and reusable
+  workflow use that identical full SHA.
+- The port has repository- or organization-level bucket, distribution, and
+  role secrets. The `docs` and `docs-preview` environments admit only their
+  intended refs and produce OIDC claims trusted by prefix-scoped roles.
+- The production role owns only `en/<port>/*` and
+  `manifest/<port>.json`; the preview role owns only
+  `en/<port>/pr-*`. The cleanup role can delete only that preview space.
+- The Ruby and Lua default trees publish successfully before the coordinated
+  shell run that merges manifests and refreshes Pagefind, sitemap, shared
+  assets, port landings, and redirects.
+- The real preview is closed and its exact prefix is absent afterward, while
+  trunk, aliases, immutable tags, other ports, and shared search remain.
+
+Until those checks have live evidence, the integration is prepared but not
+production-complete.

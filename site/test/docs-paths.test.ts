@@ -14,4 +14,14 @@ describe('product document URLs', () => {
     expect(docsRoutePath({ id: 'guides/queries', data: {} }, 'ts')).toBe('guides/queries')
     expect(() => docsPath({ ...pythonGuide, id: 'ports/ts/workspace/guides' })).toThrow('Invalid product document id')
   })
+
+  it('uses an explicit staged source-guide route', () => {
+    const staged = {
+      id: '_staged/ruby/ownership/index',
+      data: { port: 'ruby', route: 'guides/source/ownership-errors' },
+    }
+    expect(docsPath(staged)).toBe('guides/source/ownership-errors')
+    expect(docsRoutePath(staged, undefined, { ruby: 'latest' })).toBe('ruby/latest/guides/source/ownership-errors')
+    expect(docsRoutePath(staged, 'ruby', { ruby: 'latest' })).toBe('guides/source/ownership-errors')
+  })
 })

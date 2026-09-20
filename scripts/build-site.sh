@@ -30,6 +30,7 @@ USAGE
 }
 
 versions_arg="latest,stable"
+versions_explicit=0
 ports_filter=""
 skip_refs=0
 skip_pagefind=0
@@ -38,6 +39,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --versions)
       versions_arg="$2"
+      versions_explicit=1
       shift 2
       ;;
     --ports)
@@ -67,6 +69,10 @@ while [ $# -gt 0 ]; do
       ;;
   esac
 done
+
+if [ "$versions_explicit" -eq 0 ] && [ -n "${LIBTMUX_DOCS_VERSION:-}" ]; then
+  versions_arg="$LIBTMUX_DOCS_VERSION"
+fi
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
@@ -268,6 +274,45 @@ if [ ! -d "$site_dir/node_modules" ]; then
   log "site/node_modules missing — running pnpm install"
   (cd "$repo_root" && pnpm install --frozen-lockfile)
 fi
+
+# A port caller must bind the rendered tree to one verified source checkout.
+# These inputs are deliberately redundant: the ref proves human intent, the
+# SHA makes races impossible, and HEAD proves the exporter read that tree.
+if [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ] || [ -n "${LIBTMUX_DOCS_SOURCE_REF:-}" ]; then
+  [ -n "${LIBTMUX_DOCS_PORT:-}" ] || die "source-bound builds require LIBTMUX_DOCS_PORT"
+  [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ] || die "source-bound builds require LIBTMUX_DOCS_SOURCE_SHA"
+  [ -n "${LIBTMUX_DOCS_SOURCE_REF:-}" ] || die "source-bound builds require LIBTMUX_DOCS_SOURCE_REF"
+  [ "$ports_filter" = "$LIBTMUX_DOCS_PORT" ] || die "source-bound builds require --ports $LIBTMUX_DOCS_PORT"
+  [ "$versions_arg" = "${LIBTMUX_DOCS_VERSION:-}" ] || die "source-bound builds require exactly --versions ${LIBTMUX_DOCS_VERSION:-}"
+  checkout_var="LIBTMUX_DOCS_CHECKOUT_$(printf '%s' "$LIBTMUX_DOCS_PORT" | tr '[:lower:]' '[:upper:]')"
+  source_checkout="${!checkout_var:-}"
+  [ -n "$source_checkout" ] || die "source-bound builds require $checkout_var"
+  [ -d "$source_checkout/.git" ] || git -C "$source_checkout" rev-parse --git-dir >/dev/null 2>&1 ||
+    die "$source_checkout is not a git checkout"
+  source_head="$(git -C "$source_checkout" rev-parse HEAD)"
+  source_resolved="$(git -C "$source_checkout" rev-parse "$LIBTMUX_DOCS_SOURCE_REF^{commit}")"
+  [ "$source_head" = "$LIBTMUX_DOCS_SOURCE_SHA" ] || die "checkout HEAD $source_head differs from selected source $LIBTMUX_DOCS_SOURCE_SHA"
+  [ "$source_resolved" = "$LIBTMUX_DOCS_SOURCE_SHA" ] || die "source ref resolves to $source_resolved, expected $LIBTMUX_DOCS_SOURCE_SHA"
+fi
+
+# Source-owned guides are ephemeral build input. Always clear the staging
+# tree first so a guide removed on a branch cannot survive from an earlier
+# build. Exact port callers must have their native artifact; a full local
+# assembly stages both new ports only when both artifacts are present.
+rm -rf "$site_dir/src/content/docs/_staged"
+if [ -n "${LIBTMUX_DOCS_PORT:-}" ] && { [ "$LIBTMUX_DOCS_PORT" = ruby ] || [ "$LIBTMUX_DOCS_PORT" = lua ]; }; then
+  node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"
+  node "$script_dir/stage-port-docs.mjs" --port "$LIBTMUX_DOCS_PORT"
+elif [ -f "${LIBTMUX_DOCS_CHECKOUT_RUBY:-$HOME/work/libtmux/libtmux-ruby-docs}/docs/_build/api.json" ] &&
+     [ -f "${LIBTMUX_DOCS_CHECKOUT_LUA:-$HOME/work/libtmux/libtmux-lua-docs}/docs/_build/api.json" ]; then
+  node "$script_dir/gen-api-model.mjs" --port ruby
+  node "$script_dir/gen-api-model.mjs" --port lua
+  node "$script_dir/stage-port-docs.mjs"
+elif [ -n "${LIBTMUX_DOCS_CHECKOUT_RUBY:-}" ] && [ -n "${LIBTMUX_DOCS_CHECKOUT_LUA:-}" ]; then
+  node "$script_dir/stage-port-docs.mjs" --from-source
+fi
+node "$script_dir/gen-example-sources.mjs"
+node "$script_dir/gen-mentions.mjs"
 
 rm -rf "$out_dir"
 mkdir -p "$out_dir"

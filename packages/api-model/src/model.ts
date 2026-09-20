@@ -1,5 +1,5 @@
 /**
- * One API model, eight languages.
+ * One API model, ten languages.
  *
  * The site renders every port's reference through the same components, so the
  * shape below is the contract those components read. It is deliberately
@@ -8,13 +8,13 @@
  * what the renderer does instead of resolution.
  *
  * Modelled on what `gp-sphinx` produces for libtmux-python, because that is the
- * house style the other seven ports are being brought up to — signature line,
+ * house style the other ports are being brought up to — signature line,
  * kind and modifier badges, parameter/return/raises field lists, and a
  * permalink per symbol.
  */
 
-/** The eight ports, by the slug the site already uses. */
-export type PortSlug = 'py' | 'ts' | 'rs' | 'go' | 'java' | 'dotnet' | 'cxx' | 'swift'
+/** The ten ports, by the slug the site already uses. */
+export type PortSlug = 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'dotnet' | 'cxx' | 'swift'
 
 export type ApiProduct = 'core' | 'workspace' | 'mcp'
 
@@ -102,6 +102,8 @@ export interface Param {
 
 /** One callable signature. A symbol has several only when it is overloaded. */
 export interface Signature {
+  /** Native signature text when its grammar carries more than the shared fields. */
+  raw?: string
   params: Param[]
   returns?: string
   returnsDoc?: string
@@ -156,6 +158,10 @@ export interface DocBlock {
 export interface ApiSymbol {
   /** Product exporting this declaration; absent in older core models. */
   product?: ApiProduct
+  /** Independently installable package that exports this declaration. */
+  package?: string
+  /** Public owner of an inherited or projected declaration, when distinct. */
+  publicOwner?: string
   /** Importable declaration, signature-only contract, or a retained legacy internal entry. */
   apiScope?: 'exported' | 'supporting' | 'internal'
   /**

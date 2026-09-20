@@ -39,7 +39,7 @@ import RerollButton from '../RerollButton.astro'
  * only way to reach a prompt.
  */
 interface Props {
-  /** Port slugs to offer. Omit for all eight; pass one to lock the widget. */
+  /** Port slugs to offer. Omit for all ten; pass one to lock the widget. */
   ports?: readonly string[]
   /** Active port when nothing is saved. Defaults to the first shown. */
   defaultPort?: string
@@ -61,7 +61,7 @@ const topicPinned = 'defaultTopic' in Astro.props
 
 const items = ports && ports.length > 0 ? PORTS.filter((p) => ports.includes(p.slug)) : PORTS
 if (items.length === 0) {
-  throw new Error('AgentPrompt: `ports` matched none of the eight port slugs in ports.ts')
+  throw new Error('AgentPrompt: `ports` matched none of the ten port slugs in ports.ts')
 }
 if (!TOPICS.some((t) => t.id === defaultTopic)) {
   throw new Error(`AgentPrompt: unknown defaultTopic "${defaultTopic}"`)

@@ -4,7 +4,17 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { compareTags, parseTag, releaseTag, selectBuildVersions, sortVersions, type VersionEntry, type VersionManifest } from '../src/lib/versions'
+import {
+  comparePackageVersions,
+  compareTags,
+  packageVersionIsPrerelease,
+  parseTag,
+  releaseTag,
+  selectBuildVersions,
+  sortVersions,
+  type VersionEntry,
+  type VersionManifest,
+} from '../src/lib/versions'
 
 it('keeps the production fallback manifest in sync with the seed generator', () => {
   const generated = execFileSync(process.execPath, [
@@ -12,6 +22,31 @@ it('keeps the production fallback manifest in sync with the seed generator', () 
   ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
   const fallback = readFileSync(new URL('../public/versions.json', import.meta.url), 'utf8')
   expect(JSON.parse(fallback)).toEqual(JSON.parse(generated))
+})
+
+it('derives refs from an explicit source checkout instead of a local docs worktree', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'libtmux-version-source-'))
+  try {
+    execFileSync('git', ['init', '-q', directory])
+    execFileSync('git', ['-C', directory, 'config', 'user.name', 'Version Test'])
+    execFileSync('git', ['-C', directory, 'config', 'user.email', 'version-test@example.invalid'])
+    writeFileSync(join(directory, 'README.md'), 'source-bound fixture\n')
+    execFileSync('git', ['-C', directory, 'add', 'README.md'])
+    execFileSync('git', ['-C', directory, 'commit', '-qm', 'fixture'])
+    execFileSync('git', ['-C', directory, 'tag', 'v9.8.7.rc.1'])
+
+    const generated = execFileSync(process.execPath, [
+      new URL('../../scripts/gen-versions.mjs', import.meta.url).pathname,
+    ], {
+      encoding: 'utf8',
+      env: { ...process.env, LIBTMUX_DOCS_CHECKOUT_RUBY: directory },
+    })
+    const manifest = JSON.parse(generated) as VersionManifest
+    expect(manifest.ports.ruby.map((entry) => entry.slug)).toContain('v9.8.7.rc.1')
+    expect(manifest.defaultVersion.ruby).toBe('latest')
+  } finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
 })
 
 // The bookkeeping the build sources, driven here rather than reassembled from
@@ -86,6 +121,40 @@ describe('assembly version selection', () => {
       })
       expect(result.status).toBe(1)
       expect(result.stderr).toContain('kept none of its versions')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
+  it('binds an alias to the exact source artifact it resolves to', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-build-alias-'))
+    try {
+      writeFileSync(join(directory, 'gen-versions.mjs'),
+        "import { writeFileSync } from 'node:fs'; writeFileSync(process.argv[3], process.env.TEST_VERSION_MANIFEST);\n")
+      execFileSync('bash', ['-euc', `. ${bookkeeping}`], {
+        env: {
+          ...process.env,
+          scratch: directory,
+          script_dir: directory,
+          repo_root: new URL('../../', import.meta.url).pathname,
+          site_dir: new URL('../', import.meta.url).pathname,
+          locale: 'en',
+          versions_arg: 'next',
+          TEST_VERSION_MANIFEST: JSON.stringify(candidate),
+          LIBTMUX_DOCS_PORT: 'ruby',
+          LIBTMUX_DOCS_VERSION: 'next',
+          LIBTMUX_DOCS_VERSION_KIND: 'alias',
+          LIBTMUX_DOCS_SOURCE_SHA: 'a'.repeat(40),
+          LIBTMUX_DOCS_RESOLVES_TO: 'v0.1.0.alpha.1',
+        },
+      })
+      const manifest = JSON.parse(readFileSync(join(directory, 'versions.json'), 'utf8')) as VersionManifest
+      expect(manifest.ports.ruby).toEqual([expect.objectContaining({
+        slug: 'next',
+        kind: 'alias',
+        resolvesTo: 'v0.1.0.alpha.1',
+        source: 'a'.repeat(40),
+      })])
     } finally {
       rmSync(directory, { recursive: true, force: true })
     }
@@ -192,6 +261,15 @@ describe('parseTag', () => {
     // Python has v0.3, v0.4 and v0.5 from before it used three components.
     expect(parseTag('v0.3', 'pep440')).toBeNull()
   })
+
+  it('reads RubyGems and LuaRocks source-tag prereleases', () => {
+    expect(parseTag('v0.1.0.alpha.1', 'rubygems')).toEqual({ nums: [0, 1, 0], pre: 'alpha.1' })
+    expect(parseTag('v0.1.0alpha1', 'luarocks')).toEqual({ nums: [0, 1, 0], pre: 'alpha1' })
+  })
+
+  it('keeps package-manager revisions out of source-tag parsing', () => {
+    expect(parseTag('v0.1.0alpha1-1', 'luarocks')).toBeNull()
+  })
 })
 
 describe('compareTags across grammars', () => {
@@ -205,5 +283,26 @@ describe('compareTags across grammars', () => {
 
   it('orders post-releases numerically among themselves', () => {
     expect(compareTags('v0.23.0post2', 'v0.23.0post1', 'pep440')).toBeLessThan(0)
+  })
+
+  it('orders Ruby and Lua prereleases numerically below their releases', () => {
+    expect(compareTags('v0.1.0.alpha.10', 'v0.1.0.alpha.2', 'rubygems')).toBeLessThan(0)
+    expect(compareTags('v0.1.0', 'v0.1.0.alpha.10', 'rubygems')).toBeLessThan(0)
+    expect(compareTags('v0.1.0alpha10', 'v0.1.0alpha2', 'luarocks')).toBeLessThan(0)
+    expect(compareTags('v0.1.0', 'v0.1.0alpha10', 'luarocks')).toBeLessThan(0)
+  })
+})
+
+describe('package registry versions', () => {
+  it('orders LuaRocks revisions without treating them as source tags', () => {
+    expect(comparePackageVersions('0.1.0alpha1-10', '0.1.0alpha1-2', 'luarocks')).toBeLessThan(0)
+    expect(comparePackageVersions('0.1.0-1', '0.1.0alpha10-4', 'luarocks')).toBeLessThan(0)
+  })
+
+  it('classifies prereleases under each package grammar', () => {
+    expect(packageVersionIsPrerelease('0.1.0.alpha.1', 'rubygems')).toBe(true)
+    expect(packageVersionIsPrerelease('0.1.0', 'rubygems')).toBe(false)
+    expect(packageVersionIsPrerelease('0.1.0alpha1-1', 'luarocks')).toBe(true)
+    expect(packageVersionIsPrerelease('0.1.0-2', 'luarocks')).toBe(false)
   })
 })

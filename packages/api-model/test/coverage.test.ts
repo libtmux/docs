@@ -206,7 +206,7 @@ describe('id uniqueness across every port', () => {
    * one symbol with six signatures now, which is also what the reference
    * should render.
    */
-  const MODELS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'] as const
+  const MODELS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'] as const
 
   it.each(MODELS)('%s has no duplicate ids', async (port) => {
     const path = join(here, `../../site/src/data/api/${port}.json`)
@@ -229,7 +229,7 @@ describe('objects.inv round-trips every port', () => {
    * Found by a second session counting entries against the model rather than
    * trusting the writer.
    */
-  const MODELS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'] as const
+  const MODELS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'] as const
 
   it.each(MODELS)('%s writes and reads back every symbol', async (port) => {
     const path = join(here, `../../site/src/data/api/${port}.json`)
@@ -259,7 +259,7 @@ describe('methods belong to their types', () => {
    * spells both `function_item` and only an enclosing `impl` distinguishes
    * them.
    */
-  const MODELS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'] as const
+  const MODELS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'] as const
 
   it.each(MODELS)('%s parents at least 95%% of its methods', (port) => {
     const path = join(here, `../../site/src/data/api/${port}.json`)

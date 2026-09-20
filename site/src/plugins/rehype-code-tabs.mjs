@@ -36,6 +36,8 @@ function languageOf(node) {
 /** Display name per port, matching the port switcher's labels. */
 const PORT_LABEL = {
   py: 'Python',
+  ruby: 'Ruby',
+  lua: 'Lua',
   ts: 'TypeScript',
   rs: 'Rust',
   go: 'Go',

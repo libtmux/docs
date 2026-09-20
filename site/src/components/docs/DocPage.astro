@@ -2,8 +2,9 @@
 import { getCollection, render, type CollectionEntry } from 'astro:content'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import { docsPath } from '../../lib/docs-paths'
-import { productApiPath } from '../../lib/ports'
+import { PORT_BY_SLUG, hasPackageInstalls, productApiPath, productAvailable } from '../../lib/ports'
 import McpInstall from '../widgets/McpInstall.astro'
+import PackageInstall from '../widgets/PackageInstall.astro'
 import ProductApiIndex from '../api/ProductApiIndex.astro'
 import { buildTarget } from '../../lib/versions'
 import { API_MODELS } from '../../lib/api-models'
@@ -69,7 +70,7 @@ const showToc = placeholderLocale ? false : entry.data.tableOfContents
  * to render a placeholder at all, rather than a second lookup that could
  * disagree with the first.
  */
-const contribute = entry.filePath
+const contribute = entry.filePath && !entry.data.source
   ? contributeLink(entry.filePath, locale, !placeholderLocale, {
       title: entry.data.title,
       description: entry.data.description,
@@ -97,7 +98,14 @@ const isProductApi = entry.data.product && pagePath === productApiPath(entry.dat
  * entry cannot import a component, which is the same reason `/mcp/` is an
  * .astro route.
  */
-const isMcpOverview = entry.data.product === 'mcp' && pagePath === 'mcp'
+const productIsAvailable = port && entry.data.product
+  ? productAvailable(PORT_BY_SLUG[port], entry.data.product)
+  : true
+const isMcpOverview = entry.data.product === 'mcp' && pagePath === 'mcp' && productIsAvailable
+const isWorkspaceOverview = entry.data.product === 'workspace'
+  && pagePath === 'workspace'
+  && productIsAvailable
+  && Boolean(port && hasPackageInstalls(PORT_BY_SLUG[port], 'workspace'))
 
 // `entry.data.port` is undefined for the shared pages (concepts, guides,
 // examples); DocsLayout and lib/sidebar.ts's `getSidebar` treat that as "the
@@ -118,6 +126,7 @@ const isMcpOverview = entry.data.product === 'mcp' && pagePath === 'mcp'
     ...headings,
     ...(isProductApi ? [{ depth: 2, slug: 'generated-api', text: 'API declarations' }] : []),
     ...(isMcpOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
+    ...(isWorkspaceOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
   ]}
   pagePath={pagePath}
   noindex={entry.data.noindex || Boolean(placeholderLocale)}
@@ -125,10 +134,10 @@ const isMcpOverview = entry.data.product === 'mcp' && pagePath === 'mcp'
   updated={entry.data.updated}
   tableOfContents={showToc}
   locale={locale}
-  locales={placeholderLocale || entry.data.product ? [] : locales}
-  sourcePath={entry.data.product ? pagePath : sourceId}
+  locales={placeholderLocale || entry.data.product || entry.data.route ? [] : locales}
+  sourcePath={entry.data.product || entry.data.route ? pagePath : sourceId}
   localeStatuses={localeStatuses}
-  pageSource={entry.filePath ? { repo: CONTRIBUTE_REPO, path: repoPath(entry.filePath), ref: CONTRIBUTE_BRANCH } : undefined}
+  pageSource={entry.data.source ?? (entry.filePath ? { repo: CONTRIBUTE_REPO, path: repoPath(entry.filePath), ref: CONTRIBUTE_BRANCH } : undefined)}
   markdownIndex={isIndexSource(entry.filePath)}
   markdown={placeholderLocale ? { href: markdownPath(englishHref, isIndexSource(entry.filePath)) } : 'source'}
 >
@@ -225,6 +234,15 @@ const isMcpOverview = entry.data.product === 'mcp' && pagePath === 'mcp'
       </div>
     </>
   )}
-  {!placeholderLocale && entry.data.product && isProductApi &&
+  {!placeholderLocale && isWorkspaceOverview && port && (
+    <>
+      <h2 id="install">Install</h2>
+      <p>Install the workspace package separately from the core library.</p>
+      <div class="not-prose">
+        <PackageInstall ports={[port]} packageId="workspace" />
+      </div>
+    </>
+  )}
+  {!placeholderLocale && entry.data.product && productIsAvailable && isProductApi &&
     <ProductApiIndex port={port!} product={entry.data.product} version={version ?? buildTarget(process.env).version} />}
 </DocsLayout>

@@ -71,6 +71,28 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Resolve integrated Ruby and Lua sources
+        if: matrix.locale == 'en'
+        id: integrated-sources
+        run: |
+          echo "ruby=$(jq -r .revision site/src/data/api/ruby.json)" >> "$GITHUB_OUTPUT"
+          echo "lua=$(jq -r .revision site/src/data/api/lua.json)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v7
+        if: matrix.locale == 'en'
+        with:
+          repository: libtmux/libtmux-ruby
+          ref: ${{ steps.integrated-sources.outputs.ruby }}
+          path: .port-sources/ruby
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        if: matrix.locale == 'en'
+        with:
+          repository: libtmux/libtmux-lua
+          ref: ${{ steps.integrated-sources.outputs.lua }}
+          path: .port-sources/lua
+          persist-credentials: false
+
       - name: Install assembly tools
         if: matrix.locale == 'en'
         run: |
@@ -93,6 +115,8 @@ jobs:
           # only, so every locale links across to them.
           LIBTMUX_DOCS_PORT_ROOT: /en
           LIBTMUX_DOCS_SITE: https://libtmux.org
+          LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
+          LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
         run: |
           if [[ '${{ matrix.locale }}' == en ]]; then
             pnpm --workspace-root build:site --versions latest
@@ -113,6 +137,7 @@ jobs:
           # holds it at a path publish-root can name without depending on how
           # upload-artifact roots a multi-path upload.
           cp scripts/publish-root.sh publish-root.sh
+          cp scripts/merge-version-manifests.mjs merge-version-manifests.mjs
           cat reserved-prefixes.txt
 
       - uses: actions/upload-artifact@v7
@@ -131,6 +156,7 @@ jobs:
             reserved-products.txt
             shell-paths.json
             publish-root.sh
+            merge-version-manifests.mjs
           retention-days: 1
 
   build-preview:
@@ -255,6 +281,11 @@ jobs:
           BUCKET: reproduction
         run: |
           set -euo pipefail
+          mkdir published-manifests
+          node merge-version-manifests.mjs \
+            --base dist/versions.json \
+            --fragments published-manifests \
+            --out dist/versions.json
           # A recording stand-in: the run must reach the same decisions it
           # would in production, and upload nothing while doing so.
           mkdir bin
@@ -291,6 +322,23 @@ jobs:
         with:
           role-to-assume: ${{ secrets.LIBTMUX_DOCS_ROLE_ARN }}
           aws-region: us-east-1
+
+      - name: Merge successfully published port versions
+        env:
+          BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
+        run: |
+          set -euo pipefail
+          mkdir published-manifests
+          for port in py ruby lua ts rs go java dotnet cxx swift; do
+            aws s3 cp \
+              "s3://$BUCKET/manifest/$port.json" \
+              "published-manifests/$port.json" \
+              --only-show-errors 2>/dev/null || true
+          done
+          node merge-version-manifests.mjs \
+            --base dist/versions.json \
+            --fragments published-manifests \
+            --out dist/versions.json
 
       - name: Sync top-level directories, denylist-checked
         env:

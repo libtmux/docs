@@ -188,6 +188,9 @@ const currentMembers = currentType
 
 /** This port's package, for the definition block's Package row. */
 const portMeta = model ? PORT_BY_SLUG[model.port] : undefined
+const ownerPackage = owner?.package ?? portMeta?.packageName
+const packageMeta = portMeta?.packages?.find((candidate) => candidate.name === ownerPackage)
+const packageUrl = packageMeta?.registry ?? portMeta?.registry?.url ?? withRoot(`/${model?.port}/`)
 
 /**
  * The version the site menu in the sidebar links its prose at.
@@ -752,8 +755,8 @@ const title = owner
                 fields, so a result can say where a symbol lives instead of
                 making the reader open it to find out.
               */}
-              {portMeta?.packageName && (
-                <span hidden data-pagefind-meta={`package:${portMeta.packageName}`} />
+              {ownerPackage && (
+                <span hidden data-pagefind-meta={`package:${ownerPackage}`} />
               )}
               {ownerModule && <span hidden data-pagefind-meta={`module:${ownerModule}`} />}
               {owner?.source?.file && (
@@ -779,10 +782,10 @@ const title = owner
                   <dd><a href={hrefFor(declaringType)}>{declaringType.name}</a></dd>
                 </>
               )}
-              {portMeta && (
+              {ownerPackage && (
                 <>
                   <dt>Package</dt>
-                  <dd><a href={withRoot(`/${model?.port}/`)}>{portMeta.packageName}</a></dd>
+                  <dd><a href={packageUrl}>{ownerPackage}</a></dd>
                 </>
               )}
               {owner.source?.file && (

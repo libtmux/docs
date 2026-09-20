@@ -25,7 +25,7 @@ export async function getStaticPaths() {
     .filter((entry) => localeOf(entry.id) === locale && docsEntryAvailable(entry, port))
     .map((entry) => ({
       params: { slug: docsRoutePath({ ...entry, id: sourceIdOf(entry.id) }, port, defaults) },
-      props: { entry, version: entry.data.product && !port ? (defaults[entry.data.port!] ?? 'latest') : undefined },
+      props: { entry, version: entry.data.port && !port ? (defaults[entry.data.port] ?? 'latest') : undefined },
     }))
   const global = !port ? [
     { params: { slug: 'mcp' }, props: { globalPage: 'mcp' } },

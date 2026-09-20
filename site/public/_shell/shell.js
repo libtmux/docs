@@ -5,6 +5,8 @@
   // >>> generated from site/src/lib/ports.ts by scripts/gen-shell-ports.mjs
   var PORTS = [
     {"slug":"py","name":"Python","versionedDocs":true},
+    {"slug":"ruby","name":"Ruby","versionedDocs":true},
+    {"slug":"lua","name":"Lua","versionedDocs":true},
     {"slug":"ts","name":"TypeScript","versionedDocs":true},
     {"slug":"rs","name":"Rust","versionedDocs":true},
     {"slug":"go","name":"Go","versionedDocs":true},

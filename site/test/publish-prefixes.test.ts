@@ -14,6 +14,7 @@ const metadataScript = fileURLToPath(new URL('../../scripts/publication-metadata
 // `api/` is the port's own tree where it publishes one, and this site's
 // redirect to the reference it renders everywhere else.
 const NATIVE_API = PORTS.filter((port) => port.publishesOwnApi).map((port) => port.slug)
+const PORT_TREES = PORTS.filter((port) => port.publishesOwnTree).map((port) => port.slug)
 const sectionsFor = (slug: string): string[] =>
   [...Object.keys(DOC_PRODUCTS), 'guides', 'topics', '_astro', ...(NATIVE_API.includes(slug) ? [] : ['api'])]
 
@@ -38,7 +39,7 @@ function fixture(products = true): string {
   for (const port of PORTS) {
     write(join(directory, `dist/${port.slug}/index.html`))
     write(join(directory, `dist/${port.slug}/index.md`), '# Port\n')
-    if (products) {
+    if (products && !PORT_TREES.includes(port.slug)) {
       for (const name of ['index.html', 'docs.json']) {
         const path = `${port.slug}/latest/${name}`
         files.push(path)
@@ -51,7 +52,9 @@ function fixture(products = true): string {
       }
     }
   }
-  write(join(directory, 'shell-paths.json'), JSON.stringify({ schema: 1, locale: 'en', directories, files, nativeApi: NATIVE_API }))
+  write(join(directory, 'shell-paths.json'), JSON.stringify({
+    schema: 1, locale: 'en', directories, files, nativeApi: NATIVE_API, portTrees: PORT_TREES,
+  }))
   // Records each call's arguments, tab-separated, in bash: a full publish makes
   // about ninety AWS calls, and starting Node for each took seconds per case.
   const executable = join(directory, 'bin/aws')
@@ -80,7 +83,7 @@ function assemblyFixture(): string {
   renameSync(join(directory, 'dist'), join(directory, '_site', DEFAULT_LOCALE))
   for (const port of PORTS) write(join(directory, '_site', DEFAULT_LOCALE, port.slug, 'latest/api/index.html'))
   write(join(directory, 'site/src/lib/ports.ts'),
-    `export const PORTS = ${JSON.stringify(PORTS.map(({ slug, publishesOwnApi }) => ({ slug, publishesOwnApi })))}; export const DOC_PRODUCTS = ${JSON.stringify(DOC_PRODUCTS)};\n`)
+    `export const PORTS = ${JSON.stringify(PORTS.map(({ slug, publishesOwnApi, publishesOwnTree }) => ({ slug, publishesOwnApi, publishesOwnTree })))}; export const DOC_PRODUCTS = ${JSON.stringify(DOC_PRODUCTS)};\n`)
   write(join(directory, 'site/src/i18n/locales.ts'), `export const DEFAULT_LOCALE = ${JSON.stringify(DEFAULT_LOCALE)};\n`)
   return directory
 }
@@ -102,9 +105,10 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     expect(paths.directories.sort()).toEqual(expected.directories.sort())
     expect(paths.files.sort()).toEqual(expected.files.sort())
     expect(paths.nativeApi).toEqual(NATIVE_API)
+    expect(paths.portTrees).toEqual(PORT_TREES)
     for (const port of PORTS) {
       expect(existsSync(join(directory, '_site', DEFAULT_LOCALE, port.slug, 'latest/api')), port.slug)
-        .toBe(!NATIVE_API.includes(port.slug))
+        .toBe(!NATIVE_API.includes(port.slug) && !PORT_TREES.includes(port.slug))
     }
     for (const [path, content] of preserved) expect(readFileSync(join(directory, '_site', DEFAULT_LOCALE, path), 'utf8')).toBe(content)
     expect(readFileSync(join(directory, 'reserved-prefixes.txt'), 'utf8')).toBe(PORTS.map(({ slug }) => slug).join('\n') + '\n')
@@ -131,10 +135,13 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     const syncs = result.commands.filter((args) => args[0] === 's3' && args[1] === 'sync')
     const destinations = syncs.map((args) => args[3])
     expect(destinations).toContain(`s3://docs-test/${locale}/_astro/`)
-    for (const port of PORTS) for (const section of sectionsFor(port.slug)) {
-      expect(destinations).toContain(`s3://docs-test/${locale}/${port.slug}/latest/${section}/`)
+    for (const port of PORTS.filter((candidate) => !PORT_TREES.includes(candidate.slug))) {
+      for (const section of sectionsFor(port.slug)) {
+        expect(destinations).toContain(`s3://docs-test/${locale}/${port.slug}/latest/${section}/`)
+      }
     }
     const productPrefixes = new Set(PORTS.flatMap((port) => sectionsFor(port.slug)
+      .filter(() => !PORT_TREES.includes(port.slug))
       .map((section) => `s3://docs-test/${locale}/${port.slug}/latest/${section}/`)))
     for (const args of syncs) {
       const destination = args[3]
@@ -153,7 +160,8 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     expect(copies.some((args) => args.includes('--recursive'))).toBe(false)
     expect(copies.map((args) => args[3]).sort()).toEqual([
       ...PORTS.flatMap((port) => ['index.html', 'index.md'].map((file) => `s3://docs-test/${locale}/${port.slug}/${file}`)),
-      ...PORTS.flatMap((port) => ['index.html', 'docs.json'].map((file) => `s3://docs-test/${locale}/${port.slug}/latest/${file}`)),
+      ...PORTS.filter((port) => !PORT_TREES.includes(port.slug))
+        .flatMap((port) => ['index.html', 'docs.json'].map((file) => `s3://docs-test/${locale}/${port.slug}/latest/${file}`)),
       `s3://docs-test/${locale}/index.html`, `s3://docs-test/${locale}/robots.txt`, 's3://docs-test/robots.txt',
     ].sort())
   })

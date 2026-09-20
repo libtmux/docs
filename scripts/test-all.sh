@@ -274,6 +274,9 @@ if curl -sf -o /dev/null "$SERVE_SITE/py/stable/reference/libtmux-server/"; then
   step 'visual regression'
   (cd site && node scripts/check-visual.mjs "$SERVE_SITE")
 
+  step 'Ruby and Lua browser coverage'
+  (cd site && node scripts/check-ruby-lua.mjs "$SERVE_SITE")
+
   if curl -sf -o /dev/null "$SERVE_SITE/py/stable/api/api/libtmux.server/"; then
     step 'native page navigation'
     (cd site && node scripts/check-native-shell.mjs "$SERVE_SITE")

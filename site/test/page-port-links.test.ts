@@ -38,7 +38,8 @@ describe('matching pages in another port', () => {
 
   it('switches MCP tools using each port’s registered wire name', () => {
     const links = pagePortLinks({ ...options, pagePath: 'mcp/tools/capture_pane', portSlug: 'ts' })
-    expect(links.every((entry) => entry.links.length === 1)).toBe(true)
+    expect(links.find((entry) => entry.port === 'lua')?.links).toEqual([])
+    expect(links.filter((entry) => entry.port !== 'lua' && entry.port !== 'ruby').every((entry) => entry.links.length === 1)).toBe(true)
     expect(links.find((entry) => entry.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/v1.2.3/mcp/tools/capture_pane/')
     expect(links.find((entry) => entry.port === 'py')?.links[0].href).toBe('/pr-42/en/py/stable/mcp/tools/capture_pane/')
     expect(links.find((entry) => entry.port === 'dotnet')?.links[0].href).toBe('/pr-42/en/dotnet/latest/mcp/tools/capture_pane/')

@@ -52,7 +52,9 @@ const siteLib = join(repoRoot, 'site', 'src', 'lib')
 const DEFAULT_OUT = join(repoRoot, 'site', 'src', 'data', 'registry.json')
 
 const { PORTS } = await import(`file://${join(siteLib, 'ports.ts')}`)
-const { parseTag, compareTags, releaseTag } = await import(`file://${join(siteLib, 'versions.ts')}`)
+const { comparePackageVersions, packageVersionIsPrerelease, releaseTag } = await import(
+  `file://${join(siteLib, 'versions.ts')}`
+)
 
 function parseArgs(argv) {
   const opts = { out: DEFAULT_OUT, check: false, offline: false }
@@ -79,19 +81,14 @@ const expand = (p) => (p.startsWith('~/') ? join(homedir(), p.slice(2)) : p)
  * number with those regexes returns null, which would classify every stable
  * release as unpublished. Normalise first, once, here.
  */
-const tagged = (version) => (version.startsWith('v') ? version : `v${version}`)
-
 /** Whether a version string is a prerelease under this port's grammar. */
 function isPrerelease(version, grammar) {
-  const parsed = parseTag(tagged(version), grammar)
-  if (!parsed || parsed.pre === null) return false
-  // PEP 440 post-releases carry a suffix and are not prereleases.
-  return !parsed.pre.startsWith('post')
+  return packageVersionIsPrerelease(version, grammar)
 }
 
 /** Newest first, under this port's grammar. */
 const newestFirst = (versions, grammar) =>
-  [...versions].sort((a, b) => compareTags(tagged(a), tagged(b), grammar))
+  [...versions].sort((a, b) => comparePackageVersions(a, b, grammar))
 
 async function getJson(url, headers = {}) {
   const res = await fetch(url, {
@@ -142,6 +139,30 @@ const PROBES = {
     const { missing, body } = await getJson('https://pypi.org/pypi/libtmux/json')
     if (missing || !body) return null
     return Object.keys(body.releases ?? {}).filter((v) => (body.releases[v] ?? []).length > 0)
+  },
+  async ruby() {
+    const names = ['libtmux', 'libtmux-async', 'libtmux-mcp', 'libtmux-workspace']
+    const packages = {}
+    for (const name of names) {
+      const { missing, body } = await getJson(`https://rubygems.org/api/v1/versions/${name}.json`)
+      packages[name] = missing || !Array.isArray(body)
+        ? null
+        : body
+            .filter((release) => release.yanked_at === null || release.yanked_at === undefined)
+            .map((release) => release.number)
+    }
+    return { versions: packages.libtmux, packages }
+  },
+  async lua() {
+    const { missing, body } = await getText('https://luarocks.org/manifests/tony')
+    if (missing || !body) return null
+    const start = body.search(/^\s{3}libtmux\s*=\s*{/m)
+    if (start < 0) return null
+    const rest = body.slice(start)
+    const next = rest.slice(rest.indexOf('\n') + 1).search(/^\s{3}[\w.-]+\s*=\s*{/m)
+    const section = next < 0 ? rest : rest.slice(0, rest.indexOf('\n') + 1 + next)
+    const versions = [...section.matchAll(/^\s{6}\["([^"]+)"\]\s*=\s*{/gm)].map((match) => match[1])
+    return versions.length > 0 ? versions : null
   },
   async ts() {
     // `libtmux`, not the scoped `@libtmux/libtmux` this probe used to ask for.
@@ -304,9 +325,9 @@ for (const port of PORTS) {
     ports[port.slug] = previous
     continue
   }
-  let versions
+  let probe
   try {
-    versions = await PROBES[port.slug](port, tags)
+    probe = await PROBES[port.slug](port, tags)
   } catch (error) {
     if (!previous) throw new Error(`${port.slug}: probe failed and nothing committed: ${error}`)
     notes.push(`${port.slug}: probe failed (${error.message}), kept committed value`)
@@ -318,7 +339,17 @@ for (const port of PORTS) {
     tag = previous?.tag ?? null
     if (!tag) notes.push(`${port.slug}: no git tag found`)
   }
-  ports[port.slug] = classify(port, versions, tag)
+  const versions = Array.isArray(probe) || probe === null ? probe : probe.versions
+  const entry = classify(port, versions, tag)
+  if (probe && !Array.isArray(probe) && probe.packages) {
+    entry.packages = Object.fromEntries(
+      Object.entries(probe.packages).map(([name, packageVersions]) => [
+        name,
+        classify(port, packageVersions, tag),
+      ]),
+    )
+  }
+  ports[port.slug] = entry
 }
 
 const payload = {

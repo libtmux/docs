@@ -1,10 +1,10 @@
 import type { Bucket, Match, PortNav } from './nav.ts'
 
 /**
- * The reference sidebar, curated once for all eight ports.
+ * The reference sidebar, curated once for all ten ports.
  *
  * THE BUCKETS ARE SHARED, and that is a finding rather than a convenience:
- * every one of the eight ports declares Server, Session, Window, Pane and
+ * every port declares Server, Session, Window, Pane and
  * Client. The domain is tmux's, so the vocabulary is tmux's, and a reader
  * moving between languages meets the same shape. Only the *rules* differ,
  * because the ports name their supporting types differently and four of them
@@ -120,6 +120,7 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
   // The auxiliary trees outrank everything: `TestServer` is a fixture before
   // it is a Server, and `TmuxTestOptions` is one before it is a constant.
   { id: 'mcp', label: 'MCP', match: nameOrPath('Mcp|MCP', 'mcp', 'mcp') },
+  { id: 'async', label: 'Async', match: nameOrPath('Async', '(^|/)libtmux-async/', 'async') },
   {
     id: 'testing',
     label: 'Testing utilities',
@@ -340,6 +341,7 @@ const ORDER = [
   'requests',
   'errors',
   'constants',
+  'async',
   'mcp',
   'testing',
   'internal',
@@ -621,7 +623,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
  */
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
-  ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'].map((port) => [
+  ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'].map((port) => [
     port,
     {
       port,

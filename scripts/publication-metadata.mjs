@@ -30,9 +30,16 @@ const paths = {
   // Ports whose own pipeline publishes `<slug>/<version>/api/`. The publisher
   // refuses to touch that path for them however the artifact is declared.
   nativeApi: PORTS.filter((port) => port.publishesOwnApi).map((port) => port.slug),
+  // These ports publish their complete version subtree. The shell still
+  // assembles it before this step so Pagefind and the sitemap can include it.
+  portTrees: PORTS.filter((port) => port.publishesOwnTree).map((port) => port.slug),
 }
 for (const port of PORTS) {
   const prefix = `${port.slug}/latest`
+  if (port.publishesOwnTree) {
+    rmSync(`_site/${DEFAULT_LOCALE}/${prefix}`, { recursive: true })
+    continue
+  }
   for (const entry of readdirSync(`_site/${DEFAULT_LOCALE}/${prefix}`, { withFileTypes: true })) {
     if (entry.isSymbolicLink()) throw new Error(`Unexpected symlink in shell assembly: ${prefix}/${entry.name}`)
     // The assembly builds the native tree to measure parity against; the port

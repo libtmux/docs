@@ -26,7 +26,7 @@ import { moduleOf, modulesIn } from '../src/modules.ts'
  */
 const here = dirname(fileURLToPath(import.meta.url))
 const PY_INV = join(here, '../../../site/src/data/inventories/python.inv')
-const OTHER_PORTS = ['ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
+const OTHER_PORTS = ['ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
 
 /** Names that are Python's and also perfectly ordinary in other languages. */
 const POACHED = [

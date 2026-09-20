@@ -39,7 +39,7 @@ describe('product reference provenance', () => {
 })
 
 describe('generated product coverage', () => {
-  for (const port of ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']) {
+  for (const port of ['py', 'ruby', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']) {
     it(`${port} has source-proven workspace and MCP declarations`, () => {
       const generated = JSON.parse(readFileSync(new URL(`../../../site/src/data/api/${port}.json`, import.meta.url), 'utf8')) as ApiModel
       for (const product of ['workspace', 'mcp'] as const) {
@@ -53,4 +53,11 @@ describe('generated product coverage', () => {
       }
     })
   }
+
+  it('keeps Lua MCP and workspace absent until those products are published', () => {
+    const generated = JSON.parse(readFileSync(new URL('../../../site/src/data/api/lua.json', import.meta.url), 'utf8')) as ApiModel
+    expect(symbolsForProduct(generated, 'mcp')).toEqual([])
+    expect(symbolsForProduct(generated, 'workspace')).toEqual([])
+    expect(generated.sources?.map((source) => source.product)).toEqual(['core'])
+  })
 })

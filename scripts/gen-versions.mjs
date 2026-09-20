@@ -73,7 +73,8 @@ function seedEntries() {
 function deriveEntries(port) {
   const { checkout, tagGrammar } = port
   const worktree = expandHome(port.worktree)
-  const dir = existsSync(worktree) ? worktree : expandHome(checkout)
+  const override = process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`]
+  const dir = override ? expandHome(override) : existsSync(worktree) ? worktree : expandHome(checkout)
   if (!existsSync(dir)) {
     return { entries: seedEntries(), defaultVersion: 'latest', note: `checkout not found at ${checkout}` }
   }

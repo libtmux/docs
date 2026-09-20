@@ -35,8 +35,22 @@ export interface PackageRegistry {
   /** This package's page on that registry. */
   url: string
   /** Which mark `components/icons/RegistryIcon.astro` draws. */
-  icon: 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget' | 'swift'
+  icon: 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget' | 'swift' | 'rubygems' | 'luarocks'
 }
+
+export type PortPackageId = 'core' | 'async' | DocProduct
+
+/** A separately published package documented inside one language port. */
+export interface PortPackage {
+  id: PortPackageId
+  name: string
+  registry: string
+  require: string
+  executable?: string
+  installs?: readonly InstallCommand[]
+}
+
+export type ProductAvailability = 'available' | 'unpublished'
 
 /**
  * One way to add a port's package to a project.
@@ -111,6 +125,10 @@ export interface Port {
   versionedDocs: boolean
   /** Installed command that loads a workspace file, when this port has one. */
   workspaceCli?: string
+  /** Whether companion products exist for this language port. */
+  productAvailability?: Partial<Record<DocProduct, ProductAvailability>>
+  /** Separately published packages whose APIs belong in this port's docs. */
+  packages?: readonly PortPackage[]
   /**
    * How this port writes its version tags. Python follows PEP 440, which
    * attaches a suffix with no separator and has post-releases; the rest
@@ -141,6 +159,8 @@ export interface Port {
    * renders, which it does publish.
    */
   publishesOwnApi?: boolean
+  /** Whether the port publisher owns the complete version subtree. */
+  publishesOwnTree?: boolean
   /** An ecosystem-hosted reference offered alongside the reference on this site. */
   ecosystemHost?: EcosystemHost
   /**
@@ -256,6 +276,100 @@ export const PORTS: readonly Port[] = [
     },
     installNote:
       'If this project already uses pip, Poetry or PDM, add the dependency with that tool instead: the package is the same.',
+  },
+  {
+    slug: 'ruby',
+    name: 'Ruby',
+    language: 'Ruby',
+    packageName: 'libtmux',
+    workspaceCli: 'libtmux-workspace load',
+    productAvailability: { workspace: 'available', mcp: 'available' },
+    packages: [
+      { id: 'core', name: 'libtmux', registry: 'https://rubygems.org/gems/libtmux', require: 'libtmux' },
+      {
+        id: 'async', name: 'libtmux-async', registry: 'https://rubygems.org/gems/libtmux-async', require: 'libtmux/async',
+        installs: [
+          { label: 'gem', lang: 'console', code: 'gem install --version 0.1.0.alpha.1 libtmux-async' },
+          { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux-async", "0.1.0.alpha.1"' },
+        ],
+      },
+      {
+        id: 'mcp',
+        name: 'libtmux-mcp',
+        registry: 'https://rubygems.org/gems/libtmux-mcp',
+        require: 'libtmux/mcp',
+        executable: 'libtmux-mcp',
+        installs: [
+          { label: 'gem', lang: 'console', code: 'gem install --version 0.1.0.alpha.1 libtmux-mcp' },
+          { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux-mcp", "0.1.0.alpha.1"' },
+        ],
+      },
+      {
+        id: 'workspace',
+        name: 'libtmux-workspace',
+        registry: 'https://rubygems.org/gems/libtmux-workspace',
+        require: 'libtmux/workspace',
+        executable: 'libtmux-workspace',
+        installs: [
+          { label: 'gem', lang: 'console', code: 'gem install --version 0.1.0.alpha.1 libtmux-workspace' },
+          { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux-workspace", "0.1.0.alpha.1"' },
+        ],
+      },
+    ],
+    repo: 'libtmux/libtmux-ruby',
+    checkout: '~/work/libtmux/libtmux-ruby',
+    worktree: '~/work/libtmux/libtmux-ruby-docs',
+    versionedDocs: true,
+    tagGrammar: 'rubygems',
+    renderer: 'astro',
+    publishesOwnTree: true,
+    generator: 'public inventory + YARD JSON + RBS',
+    installs: [
+      { label: 'gem', lang: 'console', code: 'gem install --version 0.1.0.alpha.1 libtmux' },
+      { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux", "0.1.0.alpha.1"' },
+    ],
+    registry: { name: 'RubyGems', url: 'https://rubygems.org/gems/libtmux', icon: 'rubygems' },
+    initProject: { code: 'bundle init', lang: 'console' },
+    installForms: {
+      stable: { code: 'bundle add libtmux', lang: 'console' },
+      prerelease: { code: 'bundle add libtmux --version {version}', lang: 'console' },
+      git: {
+        code: 'bundle add libtmux --git https://github.com/libtmux/libtmux-ruby.git --ref {tag}',
+        lang: 'console',
+      },
+    },
+  },
+  {
+    slug: 'lua',
+    name: 'Lua',
+    language: 'Lua',
+    packageName: 'libtmux',
+    productAvailability: { workspace: 'unpublished', mcp: 'unpublished' },
+    repo: 'libtmux/libtmux-lua',
+    checkout: '~/work/libtmux/libtmux-lua',
+    worktree: '~/work/libtmux/libtmux-lua-docs',
+    versionedDocs: true,
+    tagGrammar: 'luarocks',
+    renderer: 'astro',
+    publishesOwnTree: true,
+    generator: 'LuaLS JSON',
+    installs: [
+      {
+        label: 'LuaRocks',
+        lang: 'console',
+        code: 'luarocks --local install libtmux 0.1.0alpha1-1',
+      },
+    ],
+    registry: { name: 'LuaRocks', url: 'https://luarocks.org/modules/tony/libtmux', icon: 'luarocks' },
+    initProject: { code: 'luarocks init', lang: 'console' },
+    installForms: {
+      stable: { code: 'luarocks --local install libtmux', lang: 'console' },
+      prerelease: { code: 'luarocks --local install libtmux {version}', lang: 'console' },
+      git: {
+        code: 'git clone --branch {tag} --depth 1 https://github.com/libtmux/libtmux-lua.git vendor/libtmux && ./luarocks make vendor/libtmux/rockspecs/libtmux-scm-1.rockspec',
+        lang: 'console',
+      },
+    },
   },
   {
     slug: 'ts',
@@ -587,12 +701,25 @@ export const PORT_BY_SLUG: Readonly<Record<string, Port>> = Object.fromEntries(
   PORTS.map((p) => [p.slug, p]),
 )
 
+/** Whether a companion product has a published implementation for a port. */
+export function productAvailable(port: Port, product: DocProduct): boolean {
+  return port.productAvailability?.[product] !== 'unpublished'
+}
+
+/** Whether the package picker has a concrete install form for this package. */
+export function hasPackageInstalls(port: Port, packageId: PortPackageId): boolean {
+  if (packageId === 'core') return port.installs.length > 0
+  return Boolean(port.packages?.find((entry) => entry.id === packageId)?.installs?.length)
+}
+
 /** User-facing workspace loaders are distinct from unfinished builder libraries. */
 export function productInDevelopment(port: Port, product: DocProduct): boolean {
+  if (!productAvailable(port, product)) return false
   return product === 'mcp' || !port.workspaceCli
 }
 
 export function productDescription(port: Port, product: DocProduct): string {
+  if (!productAvailable(port, product)) return 'Not available for this language port.'
   if (product === 'workspace') return port.workspaceCli
     ? `Load workspace configuration files with ${port.workspaceCli}.`
     : 'In development. Workspace builder internals; no workspace loader CLI.'
@@ -688,6 +815,8 @@ export interface RegistryEntry {
   stable: string | null
   /** Newest release tag in the repository, prefix included where one is used. */
   tag: string | null
+  /** Independently published packages documented under this port. */
+  packages?: Record<string, RegistryEntry>
 }
 
 export interface RegistryData {

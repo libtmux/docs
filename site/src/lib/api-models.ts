@@ -4,7 +4,6 @@ import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
 import pythonInv from '../data/inventories/python.entries.json'
 import dependencyInv from '../data/inventories/dependencies.entries.json'
-import { withPortRoot } from './site-root'
 import { PORT_BY_SLUG, referenceUrl, type DocProduct } from './ports'
 import { defaultVersionFor } from './versions'
 import cxxNav from '../data/api/cxx.nav.json'
@@ -12,6 +11,8 @@ import dotnetNav from '../data/api/dotnet.nav.json'
 import goNav from '../data/api/go.nav.json'
 import javaNav from '../data/api/java.nav.json'
 import pyNav from '../data/api/py.nav.json'
+import rubyNav from '../data/api/ruby.nav.json'
+import luaNav from '../data/api/lua.nav.json'
 import rsNav from '../data/api/rs.nav.json'
 import swiftNav from '../data/api/swift.nav.json'
 import tsNav from '../data/api/ts.nav.json'
@@ -20,6 +21,8 @@ import dotnetModel from '../data/api/dotnet.json'
 import goModel from '../data/api/go.json'
 import javaModel from '../data/api/java.json'
 import pyModel from '../data/api/py.json'
+import rubyModel from '../data/api/ruby.json'
+import luaModel from '../data/api/lua.json'
 import rsModel from '../data/api/rs.json'
 import swiftModel from '../data/api/swift.json'
 import tsModel from '../data/api/ts.json'
@@ -35,6 +38,8 @@ import tsModel from '../data/api/ts.json'
  */
 export const API_MODELS: Record<string, ApiModel> = {
   py: pyModel as unknown as ApiModel,
+  ruby: rubyModel as unknown as ApiModel,
+  lua: luaModel as unknown as ApiModel,
   ts: tsModel as unknown as ApiModel,
   rs: rsModel as unknown as ApiModel,
   go: goModel as unknown as ApiModel,
@@ -86,6 +91,8 @@ export interface PortNavData {
  */
 export const API_NAV: Record<string, PortNavData> = {
   py: pyNav as unknown as PortNavData,
+  ruby: rubyNav as unknown as PortNavData,
+  lua: luaNav as unknown as PortNavData,
   ts: tsNav as unknown as PortNavData,
   rs: rsNav as unknown as PortNavData,
   go: goNav as unknown as PortNavData,
@@ -112,6 +119,8 @@ export const OWNER_KINDS = new Set([
 
 export const PORT_NAME: Record<string, string> = {
   py: 'Python',
+  ruby: 'Ruby',
+  lua: 'Lua',
   ts: 'TypeScript',
   rs: 'Rust',
   go: 'Go',

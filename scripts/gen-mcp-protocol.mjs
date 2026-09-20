@@ -12,6 +12,17 @@ const expand = (path) => path.startsWith('~/') ? join(homedir(), path.slice(2)) 
 const only = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : undefined
 const commands = {
   py: ['.venv/bin/python', '-m', 'libtmux_mcp'],
+  ruby: [
+    'mise', 'exec', '--', 'bundle', 'exec', 'libtmux-mcp',
+    '--socket-name', 'libtmux-docs-protocol',
+    '--endpoint', 'docs',
+    '--enable-tool', 'tmux_capture',
+    '--enable-tool', 'tmux_wait',
+    '--enable-tool', 'tmux_create',
+    '--enable-tool', 'tmux_send',
+    '--enable-tool', 'tmux_close',
+    '--enable-tool', 'tmux_run',
+  ],
   ts: ['bun', 'packages/mcp/src/server.ts'],
   rs: ['target/debug/tmux-mcp'],
   go: ['go', 'run', './cmd/libtmux-mcp'],
@@ -22,6 +33,10 @@ const commands = {
 }
 const selections = {
   py: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
+  ruby: {
+    mode: 'explicit CLI options',
+    tools: 'tmux_capabilities,tmux_snapshot,tmux_capture,tmux_wait,tmux_create,tmux_send,tmux_close,tmux_run',
+  },
   ts: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
   java: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
   rs: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
@@ -34,17 +49,26 @@ const selectionVariables = [...new Set(Object.values(selections).flatMap(Object.
 
 for (const port of PORTS) {
   if (only && only !== port.slug) continue
+  if (port.productAvailability?.mcp === 'unpublished') continue
   const checkout = expand(port.slug === 'py'
     ? process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp'
     : process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || port.worktree)
   const revision = execFileSync('git', ['-C', checkout, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
-  const dirty = execFileSync('git', ['-C', checkout, 'diff', 'HEAD', '--name-only'], { encoding: 'utf8' }).trim()
+  const dirtyArgs = port.slug === 'ruby'
+    ? ['-C', checkout, 'diff', 'HEAD', '--name-only', '--', 'gems/libtmux-mcp/lib']
+    : ['-C', checkout, 'diff', 'HEAD', '--name-only']
+  const dirty = execFileSync('git', dirtyArgs, { encoding: 'utf8' }).trim()
   if (dirty) throw new Error(`${port.slug}: commit source changes before recording a protocol snapshot`)
   const override = process.env[`LIBTMUX_DOCS_MCP_COMMAND_${port.slug.toUpperCase()}`]
   const [command, ...args] = override ? JSON.parse(override) : commands[port.slug]
   const cwd = port.slug === 'go' ? join(checkout, 'mcp') : checkout
   const selection = selections[port.slug]
-  const environment = { ...Object.fromEntries(selectionVariables.map((key) => [key, undefined])), ...selection, TMUX: undefined, TMUX_PANE: undefined }
+  const environment = {
+    ...Object.fromEntries(selectionVariables.map((key) => [key, undefined])),
+    ...(port.slug === 'ruby' ? {} : selection),
+    TMUX: undefined,
+    TMUX_PANE: undefined,
+  }
   const protocol = await captureProtocol({ command, args, cwd, env: environment })
   const payload = {
     generated: 'scripts/gen-mcp-protocol.mjs',

@@ -1,11 +1,17 @@
 /** Collection identity stays distinct from a product page's public path. */
 export interface DocsPage {
   id: string
-  data: { port?: string; product?: string }
+  data: { port?: string; product?: string; route?: string }
 }
 
 /** Path below a port/version root, or the unchanged shared document id. */
 export function docsPath(entry: DocsPage): string {
+  if (entry.data.route) {
+    if (entry.data.route.startsWith('/') || entry.data.route.includes('..')) {
+      throw new Error(`Invalid staged document route: ${entry.data.route}`)
+    }
+    return entry.data.route.replace(/^\/+|\/+$/g, '')
+  }
   if (!entry.data.product) return entry.id
   const prefix = `ports/${entry.data.port}/`
   if (!entry.id.startsWith(prefix)) throw new Error(`Invalid product document id: ${entry.id}`)
@@ -19,7 +25,7 @@ export function docsRoutePath(
   defaults: Record<string, string> = {},
 ): string {
   const path = docsPath(entry)
-  if (!entry.data.product || buildPort) return path
+  if (!entry.data.port || buildPort) return path
   const port = entry.data.port!
   return `${port}/${defaults[port] ?? 'latest'}/${path}`
 }

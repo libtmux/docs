@@ -56,6 +56,6 @@ export const GET: APIRoute = ({ props, site }) => {
     model, symbol,
     canonical: new URL(productApiHref(model, symbol, route.version), site ?? 'https://libtmux.org').href,
     source: sourceUrl(model, symbol),
-    packageName: model.sources?.find((source) => source.product === symbol.product)?.package,
+    packageName: symbol.package ?? model.sources?.find((source) => source.product === symbol.product)?.package,
   }), { headers })
 }

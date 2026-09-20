@@ -36,6 +36,9 @@ import { visit } from 'unist-util-visit'
 export const LANG_TO_PORT = {
   python: 'py',
   py: 'py',
+  ruby: 'ruby',
+  rb: 'ruby',
+  lua: 'lua',
   typescript: 'ts',
   ts: 'ts',
   javascript: 'ts',
@@ -77,6 +80,8 @@ export const LANG_TO_PORT = {
  */
 export const CHECKOUTS = {
   py: '~/work/python/libtmux',
+  ruby: '~/work/libtmux/libtmux-ruby-docs',
+  lua: '~/work/libtmux/libtmux-lua-docs',
   ts: '~/work/libtmux/libtmux-ts-docs',
   rs: '~/work/libtmux/libtmux-rs-docs',
   go: '~/work/libtmux/libtmux-go-docs',

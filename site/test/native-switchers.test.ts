@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it } from 'vitest'
+import { PORTS } from '../src/lib/ports'
 
 const source = readFileSync(new URL('../public/_shell/shell.js', import.meta.url), 'utf8')
 const windows: Window[] = []
@@ -63,7 +64,7 @@ describe('native API page switchers', () => {
     window.dispatchEvent(new window.Event('hashchange'))
     const menu = document.querySelector('[data-page-port-switcher]')!
     expect(menu.querySelector('a[href$="session-session/"]')).toBeNull()
-    expect(menu.querySelectorAll('[aria-disabled="true"]').length).toBe(7)
+    expect(menu.querySelectorAll('[aria-disabled="true"]').length).toBe(PORTS.length - 1)
   })
 
   it('updates semantic equivalents when the reader follows a member anchor', async () => {
