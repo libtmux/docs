@@ -512,7 +512,7 @@ contracts and source identity that existing suites cannot express.
 - [ ] Hand stale repository descriptions and missing docs homepages to the
   maintainer for a metadata update once the canonical URLs work. Do not use
   the old scaffold descriptions to infer current package capabilities.
-- [ ] Prepare three PR descriptions with resulting behavior, package/source
+- [x] Prepare three PR descriptions with resulting behavior, package/source
   versions, checks and skips, and exact deployment prerequisites. Port PRs
   target their public repositories from `docs-site`; hand them to the
   maintainer under the current repository publication rule.
@@ -544,17 +544,21 @@ $ pnpm test:publication
 
 - Site integration commit `d28aa869613f41506c2c8bc6feea789247436fc5`
   introduced the Ruby/Lua models, content, widgets, source-bound build path,
-  publication guards, and caller workflow contract. The current follow-up
-  closes module navigation and browser-audit gaps.
+  publication guards, and caller workflow contract. Follow-up commit
+  `4a13b5714224125636b027d23991117c3c56a81f` closes module navigation and
+  browser-audit gaps and is the revision both port callers pin.
 - Ruby model source is the public `v0.1.0.alpha.1` commit
   `e3815d2b35a6c663f20769231e1d22b565f87038`. The native exporter commits are
   `c498e4140b3e71fed28415a176d3c91479d62ba5` and
-  `6bf300b` on the local `docs-site` worktree.
+  `6bf300b` on the local `docs-site` worktree. The prepared caller head is
+  `4847ad3e42968ac8ff6a6bd0b0a93e4b30eeff47`.
 - Lua model source is the public `v0.1.0alpha1` commit
   `ec6994889860b99731fc95a70d602381f6af4aee`. The native exporter commits are
   `9fe976d`, `1cbfdc12b0126006c90b7cb36c027f8f098ad461`, and `e0211f0` on the
-  local `docs-site` worktree. The exporter injects LuaLS module annotations
-  into an isolated source copy; the tagged source rock remains unchanged.
+  local `docs-site` worktree. The prepared caller head is
+  `d6cff23e2f68f22df937f333074cd68dfe4038f8`. The exporter injects LuaLS
+  module annotations into an isolated source copy; the tagged source rock
+  remains unchanged.
 
 ### Native verification
 
@@ -604,8 +608,10 @@ $ pnpm test:publication
   aggregation, real production navigation/search/default routing, and actual
   PR-preview publication and cleanup remain unverified. These require
   repository or infrastructure access and keep first-class support open.
-- Repository descriptions and registry homepages remain a maintainer metadata
-  handoff after the canonical production URLs work.
+- The exact revisions, publication prerequisites, current stale repository
+  metadata, and three PR descriptions are recorded in
+  `docs/superpowers/handoffs/`. Applying repository and registry metadata
+  remains a maintainer action after the canonical production URLs work.
 
 ## Completion criteria
 
