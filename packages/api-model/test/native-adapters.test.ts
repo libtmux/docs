@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { extractLua } from '../src/languages/lua.ts'
 import { extractRuby } from '../src/languages/ruby.ts'
+import { ownersOf } from '../src/prose.ts'
 
 const REVISION = 'a'.repeat(40)
 
@@ -136,6 +137,7 @@ describe('Lua native documentation adapter', () => {
       returns: 'T?, libtmux.Error?',
     })
     expect(receiver.source).toMatchObject({ file: 'lua/libtmux/_internal/runtime.lua', line: 120 })
+    expect(ownersOf(model).map((symbol) => symbol.id)).toContain('libtmux.query')
   })
 
   it('rejects an artifact from a different source revision', () => {

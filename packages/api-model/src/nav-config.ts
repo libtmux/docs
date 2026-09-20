@@ -122,6 +122,17 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
   { id: 'mcp', label: 'MCP', match: nameOrPath('Mcp|MCP', 'mcp', 'mcp') },
   { id: 'async', label: 'Async', match: nameOrPath('Async', '(^|/)libtmux-async/', 'async') },
   {
+    id: 'runtime',
+    label: 'Runtime adapters',
+    match: {
+      kind: 'allOf',
+      of: [
+        { kind: 'symbol', kinds: ['module'] },
+        { kind: 'path', re: '(^|/)runtime/' },
+      ],
+    },
+  },
+  {
     id: 'testing',
     label: 'Testing utilities',
     // Less the module logger, which goes to Internal with the others even when
@@ -234,6 +245,7 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
       kind: 'anyOf',
       of: [
         nameOrPath('Snapshot|Capture|^TextOutcome$|^TypedText$', '(^|/)snapshots?[./]', 'snapshot', 'capture'),
+        { kind: 'path', re: '(^|/)libtmux/selection\\.rb$' },
         freePath('(^|/)capture\\.hpp$'),
       ],
     },
@@ -300,9 +312,9 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
     id: 'commands',
     label: 'Commands',
     match: nameOrPath(
-      'Command|Cmd|cmd|Dispatch|Transport|Connection|^Running$|^TmuxArg$|^TmuxWait$|^ReadyStatus$|^WaitPath$',
-      '(^|/)(commands?|dispatch|transport|connection)',
-      'command', 'commands', 'cmd', 'dispatch', 'transport', 'connection', 'engine',
+      'Command|Cmd|cmd|Dispatch|Transport|Connection|Process|Receipt|^Running$|^TmuxArg$|^TmuxWait$|^ReadyStatus$|^WaitPath$',
+      '(^|/)(commands?|dispatch|transport|connection|process)|(^|/)libtmux/endpoint\\.rb$',
+      'command', 'commands', 'cmd', 'dispatch', 'transport', 'connection', 'process', 'engine',
     ),
   },
 ]
@@ -341,6 +353,7 @@ const ORDER = [
   'requests',
   'errors',
   'constants',
+  'runtime',
   'async',
   'mcp',
   'testing',
@@ -493,6 +506,12 @@ if (SHARED.length !== CHAIN.length) {
  * the promise that the same shape appears in every language.
  */
 const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
+  ruby: {
+    unsettled: {
+      'LibTmux::Entity': 'base of the tmux entity hierarchy; the concrete entity is the subclass',
+      'LibTmux::EntityRef': 'target identity shared by every entity, owned by none',
+    },
+  },
   py: {
     unsettled: {
       'libtmux._vendor._structures.InfinityType': 'vendored from packaging; version comparison, not tmux',

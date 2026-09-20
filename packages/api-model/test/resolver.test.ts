@@ -35,6 +35,11 @@ d('resolver', () => {
     }
   })
 
+  it('recognises Ruby and Lua when prose selects a port', () => {
+    expect(portFromSentence("Ruby's checked wait is `wait_for`")).toBe('ruby')
+    expect(portFromSentence("Lua's checked wait is `await`")).toBe('lua')
+  })
+
   it('rejects things that are not references', () => {
     expect(notASymbol('sync_snippets.py --check')).toBeTruthy()
     expect(notASymbol('pane.pane_id == other.pane_id')).toBeTruthy()

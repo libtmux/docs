@@ -95,7 +95,9 @@ export function extractLua(input: unknown, expectedRevision?: string): ApiModel 
     for (const field of declaration.fields) {
       if (!field.name) continue
       const callable = Boolean(field.extends?.args || field.extends?.returns || field.view?.startsWith('fun(') || field.view === 'function')
-      const receiver = !module && (field.extends?.args?.[0]?.name === 'self' || field.view?.includes('self:'))
+      const receiver = Boolean(
+        !module && (field.extends?.args?.[0]?.name === 'self' || field.view?.includes('self:')),
+      )
       const separator = receiver ? ':' : '.'
       symbols.push({
         id: `${declaration.name}${separator}${field.name}`,
