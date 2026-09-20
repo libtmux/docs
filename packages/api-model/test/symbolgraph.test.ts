@@ -76,7 +76,7 @@ describe('symbol graph conformances', () => {
           ['s:SQ', 'Swift.Equatable'],
         ]),
       ),
-    ).toEqual(['Hashable', 'Equatable'])
+    ).toEqual(['Equatable', 'Hashable'])
   })
 
   it('drops the module so the name matches a local symbol’s', () => {
@@ -90,17 +90,17 @@ describe('symbol graph conformances', () => {
     expect(basesOf(graph([['s:5Thing8LocalOneP', undefined]]))).toEqual(['LocalOne'])
   })
 
-  it('lists a repeated conformance once, in the order the graph gave it', () => {
+  it('lists repeated conformances once in stable name order', () => {
     // The real graph emits Sendable and SendableMetatype twice on every type.
-    expect(
-      basesOf(
-        graph([
-          ['s:s8SendableP', 'Swift.Sendable'],
-          ['s:SH', 'Swift.Hashable'],
-          ['s:s8SendableP', 'Swift.Sendable'],
-        ]),
-      ),
-    ).toEqual(['Sendable', 'Hashable'])
+    const conformances: [string, string][] = [
+      ['s:s8SendableP', 'Swift.Sendable'],
+      ['s:SH', 'Swift.Hashable'],
+      ['s:s8SendableP', 'Swift.Sendable'],
+      ['s:SQ', 'Swift.Equatable'],
+    ]
+    const expected = ['Equatable', 'Hashable', 'Sendable']
+    expect(basesOf(graph(conformances))).toEqual(expected)
+    expect(basesOf(graph(conformances.toReversed()))).toEqual(expected)
   })
 
   it('keeps a conformance that every type carries', () => {
@@ -117,7 +117,7 @@ describe('symbol graph conformances', () => {
           ['s:SH', 'Swift.Hashable'],
         ]),
       ),
-    ).toEqual(['Copyable', 'SendableMetatype', 'Sendable', 'Hashable'])
+    ).toEqual(['Copyable', 'Hashable', 'Sendable', 'SendableMetatype'])
   })
 
   it('keeps the USR when the graph offers nothing better', () => {
