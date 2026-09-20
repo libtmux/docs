@@ -17,7 +17,7 @@
     "web-tree-sitter": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^26.5.0",
+    "@types/node": "^26.6.1",
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "typescript": "catalog:",

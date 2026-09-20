@@ -29,16 +29,16 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@types/chroma-js": "^3.1.2",
-    "memfs": "^4.71.0",
+    "memfs": "^4.78.0",
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "vitest": "catalog:"
   },
   "dependencies": {
     "chroma-js": "^3.2.0",
-    "zod": "^4.5.4"
+    "zod": "^4.6.5"
   }
 }
