@@ -34,10 +34,8 @@ const expand = (p) => (p.startsWith('~/') ? join(homedir(), p.slice(2)) : p)
 /**
  * How each port names a tool, and where it says so.
  *
- * `wirePrefix` is not cosmetic. .NET puts every tool behind `tmux_`, so an
- * agent configured for it and pointed at any other port finds no tool by the
- * name it expects. It is stripped here so the comparison is about capability
- * rather than spelling, and reported separately.
+ * `wirePrefix`, when declared, is stripped for capability comparisons and
+ * retained separately for callers using the wire name.
  */
 const PORTS = [
   {
@@ -60,22 +58,15 @@ const PORTS = [
     slug: 'rs',
     dir: '~/work/libtmux/libtmux-rs/crates/tmux-mcp/src/tools',
     glob: '*.rs',
-    // rmcp derives the name from the annotated function.
-    pattern: /#\[tool\((?:[^()]|\([^()]*\))*\)\]\s*(?:#\[[^\]]*\]\s*)*pub async fn (\w+)/gs,
+    // An explicit rmcp name overrides the annotated function's name.
+    pattern: /#\[tool\(((?:[^()]|\([^()]*\))*)\)\]\s*(?:#\[[^\]]*\]\s*)*pub async fn (\w+)/gs,
+    capture: (m) => /\bname\s*=\s*"([a-z_]+)"/.exec(m[1])?.[1] ?? m[2],
   },
   {
     slug: 'go',
     dir: '~/work/libtmux/libtmux-go/mcp',
-    glob: '*.go',
-    // Tests build their own tool descriptors with the same field, so the
-    // unfiltered scan finds nine names no server ever registers ("fish",
-    // "errexit", "before"). Excluding them is not tidiness; it is the
-    // difference between 60 tools and 69.
-    exclude: ['*_test.go', 'examples', 'cmd'],
-    // Anchored on the Tool literal, not the bare `Name:` field: the Go SDK
-    // uses the same field for `mcp.Implementation`, so the unanchored scan
-    // counted the *server's* own name ("libtmux") as a tool.
-    pattern: /&mcp\.Tool\{\s*Name:\s+"([a-z_]+)"/gs,
+    glob: 'manifest_catalog.go',
+    pattern: /(?:\bname:|(?:manage|teardown)\()\s*"([a-z_]+)"/g,
   },
   {
     slug: 'java',
@@ -88,18 +79,15 @@ const PORTS = [
   },
   {
     slug: 'dotnet',
-    dir: '~/work/libtmux/libtmux-dotnet/src/LibTmux.Mcp',
-    glob: '**/*.cs',
-    pattern: /\[McpServerTool\(\s*Name\s*=\s*"(tmux_[a-z][a-z0-9_]*)"/g,
-    wirePrefix: 'tmux_',
-
+    dir: '~/work/libtmux/libtmux-dotnet/src/LibTmux.Mcp/Policy',
+    glob: 'CapabilityModel.cs',
+    pattern: /(?:Inspect|ManageTool|Execute|TeardownTool)\(\s*"([a-z][a-z0-9_]*)"/g,
   },
   {
     slug: 'cxx',
     dir: '~/work/libtmux/libtmux-cxx/apps/mcp/src',
     glob: 'tool_catalog.cpp',
-    // Parameters use the same `.name =` field, so anchor on the Tool literal.
-    pattern: /Tool\{\s*\.name = "([a-z_]+)"/g,
+    pattern: /(?:make_tool|inspect_metadata|inspect_terminal|manage|teardown)\(\s*"([a-z_]+)"/g,
   },
   {
     slug: 'swift',

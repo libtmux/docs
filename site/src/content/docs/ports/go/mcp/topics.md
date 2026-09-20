@@ -1,6 +1,6 @@
 ---
 title: Go MCP topics
-description: Understand capability profiles, operation ceilings, caller confirmation, and managed jobs.
+description: Select toolsets, inspect the pinned endpoint, and observe bounded commands.
 port: go
 product: mcp
 sidebar:
@@ -8,52 +8,41 @@ sidebar:
   order: 1
 ---
 
-The Go server applies independent access capabilities and an operation
-ceiling. A tool must satisfy both to appear in the catalog or run.
+The server selects one tmux endpoint and freezes its offered tools at startup.
+Read `tmux://capabilities` to inspect that endpoint's provenance and the
+effective tool selection.
 
-## Capabilities and ceiling
+## Select tools
 
-`LIBTMUX_MCP_CAPABILITIES` defaults to `metadata-read`. It permits
-topology and process metadata without pane content or configuration values.
+`LIBTMUX_TOOLSETS` selects any combination of `inspect`, `manage`,
+`execute`, and `teardown`. `LIBTMUX_TOOLS` adds exact names;
+`LIBTMUX_EXCLUDE_TOOLS` removes names last. Unknown names and malformed
+lists fail startup.
 
-The `inspect` profile adds `content-read`. `operate` also adds
-`pane-control`, `workspace-create`, `tmux-layout`, and
-`tmux-settings`. `all` additionally includes `tmux-destroy`.
+Use `inspect` for discovery and terminal reads. Add `manage` for topology
+changes and `execute` for input and process creation. Select `teardown`
+explicitly when removal is needed on an existing or explicitly selected
+server. A default dedicated daemon can receive teardown tools when the
+launcher verifies its own minimal-configuration provenance.
 
-`LIBTMUX_SAFETY` independently selects `readonly`, `mutating`, or
-`destructive`; the default is `mutating`. Dedicated destruction needs
-both the destructive ceiling and `tmux-destroy`. Unrecognized
-capabilities grant nothing, with a metadata-only fallback if none are
-recognized. An invalid nonempty safety value selects readonly.
+Tool selection shapes the callable interface. Execute tools act with the
+tmux user's authority; selecting a socket does not confine shell effects.
 
-Batch calls cannot bypass either gate. Content resources and subscriptions
-require content-read; hierarchy metadata requires metadata-read.
+## Observe a command
 
-## Caller context and endpoint lifetime
+Use [`run_shell_command`](../tools/run_shell_command/) for a bounded command
+and its exit status. A deadline ends the wait; the pane command may still
+be running. Inspect it before submitting another command.
 
-Flags and environment choose one endpoint before the transport starts.
-A client cannot supply a different socket per tool call.
+Use [`capture_since`](../tools/capture_since/) to collect subsequent output
+and [`wait_for_text`](../tools/wait_for_text/) for an expected terminal
+condition. Their schemas and result limits are in the [tool reference](../tools/).
+The current catalog has no detached job-handle API.
 
-Pane rows report `isCaller`. The server checks inherited tmux context
-and can also identify its ancestor pane when the client strips that
-environment. Writes to the caller's pane require client elicitation.
-A client without that capability is refused.
+## Resources and prompts
 
-These checks do not confine effects from shell input on another pane.
-Socket permissions and the process identity determine who can access the
-underlying tmux server.
+The server exposes the static `tmux://capabilities` resource. Read live
+hierarchy and terminal state through tools. The current surface has no
+workflow prompts or dynamic resource templates.
 
-## Background work and output
-
-`run_command` with `detach` returns a `jobId` immediately.
-`get_job` collects its result later. A scoped `list_panes` with
-`detail: full` reads process state without capturing terminal content.
-
-Waits default to a maximum of 300 seconds. Larger requested waits are
-clamped and report `effectiveTimeoutSeconds` and `timeoutClamped`.
-
-Resources can notify clients of changes. Recipes are also exposed through
-`get_recipe` when `LIBTMUX_MCP_PROMPTS_AS_TOOLS=1`; this optional tool
-changes the registered catalog.
-
-[Configuration and lifecycle contract](https://github.com/libtmux/libtmux-go/blob/5f808882015a975a65acc7f9da5b3ff0d5cbdc91/mcp/README.md).
+[Configuration and lifecycle contract](https://github.com/libtmux/libtmux-go/blob/52968a3181c1c9e6d1b26c565d4b170968ae61c0/mcp/README.md).

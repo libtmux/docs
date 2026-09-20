@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-13T21:36:55.929Z",
+ "generated": "2026-09-20T12:18:54.884Z",
  "mentions": [
   {
    "port": "cxx",
@@ -7,6 +7,13 @@
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::CommandOperation::wait_until",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
   },
   {
    "port": "cxx",
@@ -101,7 +108,7 @@
   },
   {
    "port": "cxx",
-   "symbol": "libtmux::mcp::Tool",
+   "symbol": "libtmux::mcp::ToolDefinition",
    "page": "/cxx/latest/mcp/reference/",
    "title": "C++ MCP API",
    "section": "ports"
@@ -115,6 +122,34 @@
   },
   {
    "port": "cxx",
+   "symbol": "libtmux::mcp::ToolRegistry",
+   "page": "/cxx/latest/mcp/reference/",
+   "title": "C++ MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::mcp::ToolRegistry::call",
+   "page": "/cxx/latest/mcp/reference/",
+   "title": "C++ MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::mcp::ToolRegistry::find",
+   "page": "/cxx/latest/mcp/reference/",
+   "title": "C++ MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::mcp::ToolRegistry::tools",
+   "page": "/cxx/latest/mcp/reference/",
+   "title": "C++ MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
    "symbol": "libtmux::mcp::ToolResult",
    "page": "/cxx/latest/mcp/reference/",
    "title": "C++ MCP API",
@@ -122,30 +157,30 @@
   },
   {
    "port": "cxx",
-   "symbol": "libtmux::mcp::ToolSet",
-   "page": "/cxx/latest/mcp/reference/",
-   "title": "C++ MCP API",
+   "symbol": "libtmux::mcp::Toolset::execute",
+   "page": "/cxx/latest/mcp/topics/",
+   "title": "C++ MCP topics",
    "section": "ports"
   },
   {
    "port": "cxx",
-   "symbol": "libtmux::mcp::ToolSet::call",
-   "page": "/cxx/latest/mcp/reference/",
-   "title": "C++ MCP API",
+   "symbol": "libtmux::mcp::Toolset::inspect",
+   "page": "/cxx/latest/mcp/topics/",
+   "title": "C++ MCP topics",
    "section": "ports"
   },
   {
    "port": "cxx",
-   "symbol": "libtmux::mcp::ToolSet::find",
-   "page": "/cxx/latest/mcp/reference/",
-   "title": "C++ MCP API",
+   "symbol": "libtmux::mcp::Toolset::manage",
+   "page": "/cxx/latest/mcp/topics/",
+   "title": "C++ MCP topics",
    "section": "ports"
   },
   {
    "port": "cxx",
-   "symbol": "libtmux::mcp::ToolSet::tools",
-   "page": "/cxx/latest/mcp/reference/",
-   "title": "C++ MCP API",
+   "symbol": "libtmux::mcp::Toolset::teardown",
+   "page": "/cxx/latest/mcp/topics/",
+   "title": "C++ MCP topics",
    "section": "ports"
   },
   {
@@ -216,13 +251,6 @@
    "symbol": "libtmux::Pane::options",
    "page": "/topics/options-and-hooks/",
    "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "cxx",
-   "symbol": "libtmux::Pane::piping",
-   "page": "/topics/format-tokens/",
-   "title": "Format-token fields",
    "section": "topics"
   },
   {
@@ -367,6 +395,13 @@
   },
   {
    "port": "cxx",
+   "symbol": "libtmux::Server::remove_environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
    "symbol": "libtmux::Server::sessions",
    "page": "/topics/traversal/",
    "title": "Traversal",
@@ -377,6 +412,13 @@
    "symbol": "libtmux::Server::signal",
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server::unset_environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
    "section": "topics"
   },
   {
@@ -489,13 +531,6 @@
    "symbol": "libtmux::test::ScopedTmuxServer",
    "page": "/topics/context-managers/",
    "title": "Context managers",
-   "section": "topics"
-  },
-  {
-   "port": "cxx",
-   "symbol": "libtmux::test::set_environment",
-   "page": "/topics/environment/",
-   "title": "Environment",
    "section": "topics"
   },
   {
@@ -745,42 +780,7 @@
   },
   {
    "port": "dotnet",
-   "symbol": "LibTmux.Mcp.JobStore",
-   "page": "/dotnet/latest/mcp/examples/",
-   "title": ".NET MCP examples",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
    "symbol": "LibTmux.Mcp.McpServerComposition.Add",
-   "page": "/dotnet/latest/mcp/reference/",
-   "title": ".NET MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Mcp.McpTools.Reading",
-   "page": "/dotnet/latest/mcp/reference/",
-   "title": ".NET MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Mcp.McpTools.Writing",
-   "page": "/dotnet/latest/mcp/examples/",
-   "title": ".NET MCP examples",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Mcp.McpTools.Writing",
-   "page": "/dotnet/latest/mcp/reference/",
-   "title": ".NET MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Mcp.ReadTools",
    "page": "/dotnet/latest/mcp/reference/",
    "title": ".NET MCP API",
    "section": "ports"
@@ -790,20 +790,6 @@
    "symbol": "LibTmux.Mcp.ServerPolicy",
    "page": "/dotnet/latest/mcp/reference/",
    "title": ".NET MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Mcp.WriteTools",
-   "page": "/dotnet/latest/mcp/reference/",
-   "title": ".NET MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Mcp.WriteTools.RunAsync",
-   "page": "/dotnet/latest/mcp/examples/",
-   "title": ".NET MCP examples",
    "section": "ports"
   },
   {
@@ -896,13 +882,6 @@
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server",
-   "page": "/dotnet/latest/mcp/examples/",
-   "title": ".NET MCP examples",
-   "section": "ports"
   },
   {
    "port": "dotnet",
@@ -1046,27 +1025,6 @@
   },
   {
    "port": "dotnet",
-   "symbol": "LibTmux.Testing.TmuxWait.UntilAsync",
-   "page": "/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Testing.TmuxWait.UntilAsync",
-   "page": "/guides/testing-with-libtmux/",
-   "title": "Testing with libtmux",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Testing.TmuxWait.UntilAsync",
-   "page": "/topics/waiting-and-retry/",
-   "title": "Waiting and retrying",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
    "symbol": "LibTmux.TmuxCommandException",
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
@@ -1203,6 +1161,27 @@
    "symbol": "LibTmux.TmuxTransportException",
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxWait.UntilAsync",
+   "page": "/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxWait.UntilAsync",
+   "page": "/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.TmuxWait.UntilAsync",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
    "section": "topics"
   },
   {
@@ -2131,24 +2110,10 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.FindSpec.FindSpec.Builder.matching",
-   "page": "/guides/querying-and-filtering/",
-   "title": "Filtering and querying, in practice",
-   "section": "guides"
-  },
-  {
-   "port": "java",
    "symbol": "io.github.libtmux.Hooks.Hooks",
    "page": "/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.jackson.FilterJson.FilterJson.read",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
   },
   {
    "port": "java",
@@ -2187,16 +2152,16 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.Options.Options.get",
-   "page": "/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "java",
    "symbol": "io.github.libtmux.Pane_.Pane_",
    "page": "/topics/architecture/",
    "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane_.Pane_.height",
+   "page": "/topics/format-tokens/",
+   "title": "Format-token fields",
    "section": "topics"
   },
   {
@@ -2205,6 +2170,13 @@
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane_.Pane_.width",
+   "page": "/topics/format-tokens/",
+   "title": "Format-token fields",
+   "section": "topics"
   },
   {
    "port": "java",
@@ -3566,6 +3538,20 @@
   },
   {
    "port": "rs",
+   "symbol": "mcp.policy.Builder.selection",
+   "page": "/rs/latest/mcp/reference/",
+   "title": "Rust MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.policy.Selection",
+   "page": "/rs/latest/mcp/reference/",
+   "title": "Rust MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
    "symbol": "mcp.src.TmuxTools.builder",
    "page": "/rs/latest/mcp/reference/",
    "title": "Rust MCP API",
@@ -3594,21 +3580,7 @@
   },
   {
    "port": "rs",
-   "symbol": "mcp.src.TmuxTools.run_command",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
    "symbol": "mcp.src.TmuxTools.wait_for_text",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "mcp.views.Since.missed",
    "page": "/rs/latest/mcp/topics/",
    "title": "Rust MCP topics",
    "section": "ports"
@@ -3769,20 +3741,6 @@
   },
   {
    "port": "rs",
-   "symbol": "plan.Effects.destructive",
-   "page": "/rs/latest/mcp/guides/",
-   "title": "Connect a Rust MCP client",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.Effects.destructive",
-   "page": "/rs/latest/mcp/topics/",
-   "title": "Rust MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
    "symbol": "plan.Plan.preview",
    "page": "/rs/latest/workspace/internals/guides/",
    "title": "Use the Rust workspace builder",
@@ -3793,13 +3751,6 @@
    "symbol": "plan.Plan.preview",
    "page": "/rs/latest/workspace/internals/topics/",
    "title": "Rust workspace builder behavior",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "plan.Safety",
-   "page": "/rs/latest/mcp/reference/",
-   "title": "Rust MCP API",
    "section": "ports"
   },
   {
@@ -3979,13 +3930,6 @@
   },
   {
    "port": "rs",
-   "symbol": "session.Session.path",
-   "page": "/topics/format-tokens/",
-   "title": "Format-token fields",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
    "symbol": "session.Session.search_windows",
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
@@ -4073,13 +4017,6 @@
    "symbol": "src.WorkspaceBuilder.new",
    "page": "/rs/latest/workspace/internals/guides/",
    "title": "Use the Rust workspace builder",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "src.WorkspaceBuilder.new",
-   "page": "/rs/latest/workspace/reference/",
-   "title": "Rust workspace builder API",
    "section": "ports"
   },
   {
@@ -4273,13 +4210,6 @@
   },
   {
    "port": "swift",
-   "symbol": "OutputWait.Outcome.timedOut",
-   "page": "/swift/latest/mcp/topics/",
-   "title": "Swift MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "swift",
    "symbol": "Pane",
    "page": "/topics/architecture/",
    "title": "Architecture",
@@ -4434,6 +4364,13 @@
   },
   {
    "port": "swift",
+   "symbol": "Server.refresh(_:)",
+   "page": "/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "swift",
    "symbol": "Server.removeEnvironment(_:in:)",
    "page": "/topics/environment/",
    "title": "Environment",
@@ -4451,13 +4388,6 @@
    "symbol": "Server.sendKeys(_:to:literally:)",
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
-   "section": "topics"
-  },
-  {
-   "port": "swift",
-   "symbol": "Server.sessions()",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
    "section": "topics"
   },
   {
@@ -4658,23 +4588,9 @@
   },
   {
    "port": "swift",
-   "symbol": "ToolAuthority",
-   "page": "/swift/latest/mcp/topics/",
-   "title": "Swift MCP topics",
-   "section": "ports"
-  },
-  {
-   "port": "swift",
    "symbol": "ToolError",
    "page": "/swift/latest/mcp/reference/",
    "title": "Swift MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "swift",
-   "symbol": "ToolOperation",
-   "page": "/swift/latest/mcp/topics/",
-   "title": "Swift MCP topics",
    "section": "ports"
   },
   {
@@ -4693,9 +4609,23 @@
   },
   {
    "port": "swift",
+   "symbol": "Toolset.execute",
+   "page": "/swift/latest/mcp/topics/",
+   "title": "Swift MCP topics",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
    "symbol": "Toolset.inspect",
    "page": "/swift/latest/mcp/reference/",
    "title": "Swift MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "Toolset.inspect",
+   "page": "/swift/latest/mcp/topics/",
+   "title": "Swift MCP topics",
    "section": "ports"
   },
   {
@@ -4707,9 +4637,23 @@
   },
   {
    "port": "swift",
+   "symbol": "Toolset.manage",
+   "page": "/swift/latest/mcp/topics/",
+   "title": "Swift MCP topics",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
    "symbol": "Toolset.teardown",
    "page": "/swift/latest/mcp/reference/",
    "title": "Swift MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "Toolset.teardown",
+   "page": "/swift/latest/mcp/topics/",
+   "title": "Swift MCP topics",
    "section": "ports"
   },
   {
@@ -4792,6 +4736,27 @@
   {
    "port": "swift",
    "symbol": "Workspace.decode(json:)",
+   "page": "/swift/latest/workspace/reference/",
+   "title": "Swift workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "Workspace.decode(yaml:)",
+   "page": "/examples/workspace-from-file/",
+   "title": "Build a workspace from a file",
+   "section": "examples"
+  },
+  {
+   "port": "swift",
+   "symbol": "Workspace.decode(yaml:)",
+   "page": "/swift/latest/workspace/internals/guides/",
+   "title": "Use the Swift workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "Workspace.decode(yaml:)",
    "page": "/swift/latest/workspace/reference/",
    "title": "Swift workspace builder API",
    "section": "ports"
@@ -4973,49 +4938,49 @@
   },
   {
    "port": "ts",
-   "symbol": "exc.MultipleMatchesError",
+   "symbol": "errors.MultipleMatchesError",
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
   {
    "port": "ts",
-   "symbol": "exc.NoMatchError",
+   "symbol": "errors.NoMatchError",
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
   {
    "port": "ts",
-   "symbol": "exc.TmuxCommandError",
+   "symbol": "errors.TmuxCommandError",
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "ts",
-   "symbol": "exc.TmuxServerRestarted",
+   "symbol": "errors.TmuxServerRestartedError",
    "page": "/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
   },
   {
    "port": "ts",
-   "symbol": "exc.TmuxTransportError",
+   "symbol": "errors.TmuxTransportError",
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "ts",
-   "symbol": "exc.TmuxTransportError.delivery",
+   "symbol": "errors.TmuxTransportError.delivery",
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
   },
   {
    "port": "ts",
-   "symbol": "exc.VersionTooLow.since",
+   "symbol": "errors.VersionTooLowError.since",
    "page": "/topics/format-tokens/",
    "title": "Format-token fields",
    "section": "topics"
@@ -5531,6 +5496,13 @@
    "text": "IEnumerable<T>.Matching<T>(expression)",
    "page": "/guides/querying-and-filtering/",
    "line": 56,
+   "why": "no port defines it"
+  },
+  {
+   "port": "dotnet",
+   "text": "src/LibTmux.Testing/",
+   "page": "/guides/testing-with-libtmux/",
+   "line": 95,
    "why": "no port defines it"
   },
   {

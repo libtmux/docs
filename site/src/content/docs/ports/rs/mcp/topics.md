@@ -1,6 +1,6 @@
 ---
 title: Rust MCP topics
-description: Understand surface tiers, confirmation, streaming effects, and background command handles.
+description: Select toolsets, inspect the pinned endpoint, and observe bounded commands.
 port: rs
 product: mcp
 sidebar:
@@ -8,53 +8,41 @@ sidebar:
   order: 1
 ---
 
-Rust's MCP server uses an ordered surface tier chosen once at launch.
-The tier limits available operations, while the target tmux server and
-pane programs still run with the user's authority.
+The server selects one tmux endpoint and freezes its offered tools at startup.
+Read `tmux://capabilities` to inspect that endpoint's provenance and the
+effective tool selection.
 
-## Surface tiers and confirmation
+## Select tools
 
-`readonly` offers read operations. `mutating` is the default and adds
-input, creation, and configuration. `destructive` adds dedicated kill
-tools and destructive plan operations.
+`LIBTMUX_TOOLSETS` selects any combination of `inspect`, `manage`,
+`execute`, and `teardown`. `LIBTMUX_TOOLS` adds exact names;
+`LIBTMUX_EXCLUDE_TOOLS` removes names last. Unknown names and malformed
+lists fail startup.
 
-`run_plan` keeps the same name at each tier and validates every operation
-before running any. `--confirm` adds client elicitation before dedicated
-kill tools and destructive plan operations; these fail closed when the
-client cannot ask. It does not inspect shell commands for equivalent
-effects.
+Use `inspect` for discovery and terminal reads. Add `manage` for topology
+changes and `execute` for input and process creation. Select `teardown`
+explicitly when removal is needed on an existing or explicitly selected
+server. A default dedicated daemon can receive teardown tools when the
+launcher verifies its own minimal-configuration provenance.
 
-Invalid safety values select `readonly`. Invalid confirmation values
-enable confirmation. The flags override their environment counterparts,
-`TMUX_MCP_SAFETY` and `TMUX_MCP_CONFIRM`.
+Tool selection shapes the callable interface. Execute tools act with the
+tmux user's authority; selecting a socket does not confine shell effects.
 
-## Live reads change attachment state
+## Observe a command
 
-`watch_pane`, `wait_for_text`, `wait_for_idle`, and `capture_since`
-attach control clients without updating the session environment. Attachment
-is still observable and can invoke configured hooks. The `readonly`
-tier withholds these tools.
+Use [`run_shell_command`](../tools/run_shell_command/) for a bounded command
+and its exit status. A deadline ends the wait; the pane command may still
+be running. Inspect it before submitting another command.
 
-`capture_since` retains its client between reads. Reuse its cursor and
-check `missed` for dropped output. An ordinary capture and a persistent
-live observation have different lifetimes.
-
-## Command deadlines and jobs
-
-`run_command` returns command output and exit status. At its deadline it
-returns a job handle rather than stopping the shell command.
-`start_command` returns a handle immediately. Follow either with
-`job_status`.
-
-`forget_job` stops collection and discards retained output. It leaves pane
-activity running. A stale target requires a fresh listing; a
-`partial_effect` error requires inspection before another action.
+Use [`capture_since`](../tools/capture_since/) to collect subsequent output
+and [`wait_for_text`](../tools/wait_for_text/) for an expected terminal
+condition. Their schemas and result limits are in the [tool reference](../tools/).
+The current catalog has no detached job-handle API.
 
 ## Resources and prompts
 
-Hierarchy resources expose the selected server, sessions, windows, panes,
-and pane content. The mutating and destructive tiers offer
-`run_and_wait`, `interrupt_gracefully`, and `diagnose_pane`; readonly
-offers `diagnose_pane` alone.
+The server exposes the static `tmux://capabilities` resource. Read live
+hierarchy and terminal state through tools. The current surface has no
+workflow prompts or dynamic resource templates.
 
-[Source contract](https://github.com/libtmux/libtmux-rs/blob/9331cdf556ea7a1f2589e9c3e6cece6ccdc7765c/crates/tmux-mcp/README.md).
+[Configuration and lifecycle contract](https://github.com/libtmux/libtmux-rs/blob/f0e37052c232636b61d095817046e6bfc8f2ca40/crates/tmux-mcp/README.md).

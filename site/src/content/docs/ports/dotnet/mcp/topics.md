@@ -1,6 +1,6 @@
 ---
 title: .NET MCP topics
-description: Understand surface tiers, cursor and job lifetimes, bounded output, and resource subscriptions.
+description: Select toolsets, inspect the pinned endpoint, and observe bounded commands.
 port: dotnet
 product: mcp
 sidebar:
@@ -8,50 +8,41 @@ sidebar:
   order: 1
 ---
 
-The .NET MCP server registers tools according to a startup tier and
-bounds the size and duration of responses.
+The server selects one tmux endpoint and freezes its offered tools at startup.
+Read `tmux://capabilities` to inspect that endpoint's provenance and the
+effective tool selection.
 
-## Surface and endpoint
+## Select tools
 
-`LIBTMUX_SAFETY` chooses `readonly`, `mutating`, or `destructive`.
-The default is mutating. Unknown values fall back to readonly. A tool above
-the tier is not registered and cannot be called.
+`LIBTMUX_TOOLSETS` selects any combination of `inspect`, `manage`,
+`execute`, and `teardown`. `LIBTMUX_TOOLS` adds exact names;
+`LIBTMUX_EXCLUDE_TOOLS` removes names last. Unknown names and malformed
+lists fail startup.
 
-A positional launcher argument selects the default socket, otherwise
-`LIBTMUX_SOCKET` supplies it. Tool calls that accept a socket argument
-can choose another endpoint. The default socket is not a confinement
-boundary.
+Use `inspect` for discovery and terminal reads. Add `manage` for topology
+changes and `execute` for input and process creation. Select `teardown`
+explicitly when removal is needed on an existing or explicitly selected
+server. A default dedicated daemon can receive teardown tools when the
+launcher verifies its own minimal-configuration provenance.
 
-Removing dedicated kill tools does not stop `tmux_send_keys` or
-`tmux_run` from submitting equivalent shell commands.
+Tool selection shapes the callable interface. Execute tools act with the
+tmux user's authority; selecting a socket does not confine shell effects.
 
-## Commands and retained handles
+## Observe a command
 
-`tmux_run` waits for a command's real exit status. A timed-out command
-may still be running; repeating the call submits another command.
-Use `tmux_start_job` and `tmux_job` for work that needs a durable handle
-between calls.
+Use [`run_shell_command`](../tools/run_shell_command/) for a bounded command
+and its exit status. A deadline ends the wait; the pane command may still
+be running. Inspect it before submitting another command.
 
-Job handles bind to the exact socket, tmux process, and pane.
-Collection advances only after the complete result fits the response
-budget. `tmux_tail_pane` cursors also bind to the daemon and pane and
-expire when the MCP server restarts. Omit an expired cursor to establish
-a fresh position.
+Use [`capture_since`](../tools/capture_since/) to collect subsequent output
+and [`wait_for_text`](../tools/wait_for_text/) for an expected terminal
+condition. Their schemas and result limits are in the [tool reference](../tools/).
+The current catalog has no detached job-handle API.
 
-## Results and subscriptions
+## Resources and prompts
 
-Terminal results retain the newest lines and report discarded content.
-The default limits are 500 lines and 128000 bytes per serialized result.
-A result that still cannot fit becomes a small error explaining how to
-narrow the call or raise the limit.
+The server exposes the static `tmux://capabilities` resource. Read live
+hierarchy and terminal state through tools. The current surface has no
+workflow prompts or dynamic resource templates.
 
-Waits use control-mode output as a wake-up signal when available and
-capture rendered text for the answer. They fall back to bounded polling
-if control mode cannot start.
-
-Hierarchy subscriptions start a separate control client on the first
-subscription and release it after the last. Optional MCP tasks let clients
-collect certain long waits later; `tmux_start_job` supplies the durable
-command handle when that is the needed lifecycle.
-
-[Behavior and lifetime contract](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/docs/mcp/README.md).
+[Configuration and lifecycle contract](https://github.com/libtmux/libtmux-dotnet/blob/320dc64f4b8b7815842471327a5e6b84a1499bf8/src/LibTmux.Mcp/README.md).

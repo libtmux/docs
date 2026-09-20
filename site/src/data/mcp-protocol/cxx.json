@@ -1,42 +1,607 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-cxx",
-  "revision": "3770a3f83d73aeb4af01c25c3d817733fa558c99",
-  "selection": {},
+  "revision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+  "selection": {
+    "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
+  },
   "protocol": {
     "capabilities": {
+      "resources": {
+        "listChanged": false,
+        "subscribe": false
+      },
       "tools": {}
     },
     "prompts": [],
     "protocolVersion": "2025-11-25",
-    "resources": [],
+    "resources": [
+      {
+        "description": "The startup-frozen effective tool capability manifest.",
+        "mimeType": "application/json",
+        "name": "tmux-capabilities",
+        "title": "Effective tmux capabilities",
+        "uri": "tmux://capabilities"
+      }
+    ],
     "resourceTemplates": [],
     "serverInfo": {
       "name": "libtmux-cxx",
       "title": "libtmux C++ tmux server",
-      "version": "0.1.0-alpha.6"
+      "version": "0.1.0-alpha.10"
     },
     "tools": [
       {
-        "annotations": {
-          "destructiveHint": false,
-          "idempotentHint": true,
-          "openWorldHint": false,
-          "readOnlyHint": true,
-          "title": "Capture a tmux pane"
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": true,
+            "mayReturnUntrustedContent": true,
+            "nestedAuthority": [
+              "capture_pane",
+              "capture_since",
+              "find_pane_by_position",
+              "get_pane_info",
+              "get_server_info",
+              "get_session_info",
+              "get_tmux_variables",
+              "get_window_info",
+              "list_panes",
+              "list_sessions",
+              "list_windows",
+              "search_panes",
+              "show_environment",
+              "show_hooks",
+              "show_option",
+              "snapshot_pane"
+            ],
+            "outputClasses": [
+              "tmux-metadata",
+              "terminal-content",
+              "process-environment",
+              "configured-command"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
         },
-        "description": "Return the visible rendered text of one pane. Use wait_for_text when waiting for future output.",
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Call read tools as a batch"
+        },
+        "description": "Run up to sixteen declared inspect operations serially under this one call; inner operations receive no separate approval. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
-            "target": {
-              "description": "Pane ID such as `%1`, or a tmux pane target.",
+            "onError": {
+              "description": "Stop after the first failed operation or continue.",
+              "enum": [
+                "continue",
+                "stop"
+              ],
+              "type": "string"
+            },
+            "operations": {
+              "description": "One to sixteen typed inspect-tool operations.",
+              "items": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "history": {
+                            "description": "Capture retained history as well as the visible pane.",
+                            "type": "boolean"
+                          },
+                          "paneId": {
+                            "description": "Stable pane ID.",
+                            "maxLength": 512,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "paneId"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "capture_pane",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "cursor": {
+                            "description": "Previously returned byte cursor.",
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "paneId": {
+                            "description": "Stable pane ID.",
+                            "maxLength": 512,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "paneId"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "capture_since",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "column": {
+                            "description": "Zero-based terminal column.",
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "row": {
+                            "description": "Zero-based terminal row.",
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "windowId": {
+                            "description": "Optional stable window ID.",
+                            "maxLength": 512,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "row",
+                          "column"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "find_pane_by_position",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "paneId": {
+                            "description": "Stable pane ID.",
+                            "maxLength": 512,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "paneId"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "get_pane_info",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {},
+                        "required": [],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "get_server_info",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "session": {
+                            "description": "Stable session ID or name.",
+                            "maxLength": 512,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "session"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "get_session_info",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "names": {
+                            "description": "One to thirty-two validated tmux variable names.",
+                            "items": {
+                              "maxLength": 128,
+                              "type": "string"
+                            },
+                            "maxItems": 32,
+                            "minItems": 1,
+                            "type": "array"
+                          },
+                          "paneId": {
+                            "description": "Optional pane context.",
+                            "maxLength": 512,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "names"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "get_tmux_variables",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "windowId": {
+                            "description": "Stable window ID.",
+                            "maxLength": 512,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "windowId"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "get_window_info",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {},
+                        "required": [],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "list_panes",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {},
+                        "required": [],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "list_sessions",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "session": {
+                            "description": "Stable session ID or name.",
+                            "maxLength": 512,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "session"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "list_windows",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "pattern": {
+                            "description": "Bounded regular expression.",
+                            "maxLength": 256,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "pattern"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "search_panes",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "name": {
+                            "description": "Optional exact environment name.",
+                            "maxLength": 256,
+                            "type": "string"
+                          },
+                          "session": {
+                            "description": "Optional session target.",
+                            "maxLength": 512,
+                            "type": "string"
+                          }
+                        },
+                        "required": [],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "show_environment",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "name": {
+                            "description": "Optional exact hook name.",
+                            "maxLength": 256,
+                            "type": "string"
+                          },
+                          "target": {
+                            "description": "Optional tmux target.",
+                            "maxLength": 512,
+                            "type": "string"
+                          }
+                        },
+                        "required": [],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "show_hooks",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "name": {
+                            "description": "Exact option name.",
+                            "maxLength": 256,
+                            "type": "string"
+                          },
+                          "target": {
+                            "description": "Optional session, window, or pane target.",
+                            "maxLength": 512,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "show_option",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "paneId": {
+                            "description": "Stable pane ID.",
+                            "maxLength": 512,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "paneId"
+                        ],
+                        "type": "object"
+                      },
+                      "tool": {
+                        "const": "snapshot_pane",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "tool"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "maxItems": 16,
+              "minItems": 1,
+              "type": "array"
+            }
+          },
+          "required": [
+            "operations"
+          ],
+          "type": "object"
+        },
+        "name": "call_read_tools_batch",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Call read tools as a batch"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": true,
+            "mayReturnUntrustedContent": true,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata",
+              "terminal-content"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Capture a tmux pane"
+        },
+        "description": "Return visible text, or retained history when requested. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "history": {
+              "description": "Capture retained history as well as the visible pane.",
+              "type": "boolean"
+            },
+            "paneId": {
+              "description": "Stable pane ID.",
               "maxLength": 512,
               "type": "string"
             }
           },
           "required": [
-            "target"
+            "paneId"
           ],
           "type": "object"
         },
@@ -61,26 +626,168 @@
         "title": "Capture a tmux pane"
       },
       {
-        "annotations": {
-          "destructiveHint": false,
-          "idempotentHint": false,
-          "openWorldHint": false,
-          "readOnlyHint": false,
-          "title": "Create a tmux session"
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": true,
+            "mayReturnUntrustedContent": true,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata",
+              "terminal-content"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
         },
-        "description": "Create a detached session and return its stable ID and name.",
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Capture new pane output"
+        },
+        "description": "Return bytes after a bounded client cursor and a replacement cursor. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
-            "name": {
-              "description": "Unique session name.",
+            "cursor": {
+              "description": "Previously returned byte cursor.",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "paneId": {
+              "description": "Stable pane ID.",
               "maxLength": 512,
               "type": "string"
             }
           },
           "required": [
-            "name"
+            "paneId"
           ],
+          "type": "object"
+        },
+        "name": "capture_since",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Capture new pane output"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "delete"
+            ],
+            "toolset": "teardown"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Clear tmux pane scrollback"
+        },
+        "description": "Irreversibly discard retained scrollback for one pane. Delete tmux state; accepts no command payload.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "description": "Stable pane ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId"
+          ],
+          "type": "object"
+        },
+        "name": "clear_pane_scrollback",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Clear tmux pane scrollback"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {
+              "name": "double-hash-once",
+              "startDirectory": "double-hash-once",
+              "windowName": "double-hash-once"
+            },
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "configured-process",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Create a tmux session"
+        },
+        "description": "Create a detached session; names and path data are literalized before tmux expansion. Start a pane's configured process; accepts no command payload.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "height": {
+              "description": "Optional detached height.",
+              "maximum": 100000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "name": {
+              "description": "Optional literal unique session name.",
+              "maxLength": 512,
+              "type": "string"
+            },
+            "startDirectory": {
+              "description": "Literal pane start directory.",
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "width": {
+              "description": "Optional detached width.",
+              "maximum": 100000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "windowName": {
+              "description": "Optional literal first window name.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [],
           "type": "object"
         },
         "name": "create_session",
@@ -104,414 +811,60 @@
         "title": "Create a tmux session"
       },
       {
-        "annotations": {
-          "destructiveHint": false,
-          "idempotentHint": true,
-          "openWorldHint": false,
-          "readOnlyHint": true,
-          "title": "Inspect tmux"
-        },
-        "description": "Inspect sessions, their windows, and their panes in one typed result. Start here and retain every owning session ID.",
-        "inputSchema": {
-          "additionalProperties": false,
-          "properties": {},
-          "required": [],
-          "type": "object"
-        },
-        "name": "inspect_tmux",
-        "outputSchema": {
-          "additionalProperties": false,
-          "properties": {
-            "panes": {
-              "items": {
-                "additionalProperties": false,
-                "properties": {
-                  "active": {
-                    "type": "boolean"
-                  },
-                  "command": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "pattern": "^%[0-9]+$",
-                    "type": "string"
-                  },
-                  "session_id": {
-                    "pattern": "^\\$[0-9]+$",
-                    "type": "string"
-                  },
-                  "window_id": {
-                    "pattern": "^@[0-9]+$",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "active",
-                  "command",
-                  "id",
-                  "session_id",
-                  "window_id"
-                ],
-                "type": "object"
-              },
-              "type": "array"
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {
+              "name": "double-hash-once",
+              "startDirectory": "double-hash-once"
             },
-            "sessions": {
-              "items": {
-                "additionalProperties": false,
-                "properties": {
-                  "attached": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "pattern": "^\\$[0-9]+$",
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "window_count": {
-                    "minimum": 0,
-                    "type": "integer"
-                  }
-                },
-                "required": [
-                  "attached",
-                  "id",
-                  "name",
-                  "window_count"
-                ],
-                "type": "object"
-              },
-              "type": "array"
-            },
-            "windows": {
-              "items": {
-                "additionalProperties": false,
-                "properties": {
-                  "active": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "pattern": "^@[0-9]+$",
-                    "type": "string"
-                  },
-                  "index": {
-                    "type": "integer"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "session_id": {
-                    "pattern": "^\\$[0-9]+$",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "active",
-                  "id",
-                  "index",
-                  "name",
-                  "session_id"
-                ],
-                "type": "object"
-              },
-              "type": "array"
-            }
-          },
-          "required": [
-            "panes",
-            "sessions",
-            "windows"
-          ],
-          "type": "object"
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "configured-process",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
         },
-        "title": "Inspect tmux"
-      },
-      {
         "annotations": {
-          "destructiveHint": false,
-          "idempotentHint": true,
-          "openWorldHint": false,
-          "readOnlyHint": true,
-          "title": "List all tmux panes"
-        },
-        "description": "List every pane with stable pane, window, and session IDs plus the running command. Prefer pane IDs as targets.",
-        "inputSchema": {
-          "additionalProperties": false,
-          "properties": {},
-          "required": [],
-          "type": "object"
-        },
-        "name": "list_panes",
-        "outputSchema": {
-          "additionalProperties": false,
-          "properties": {
-            "panes": {
-              "items": {
-                "additionalProperties": false,
-                "properties": {
-                  "active": {
-                    "type": "boolean"
-                  },
-                  "command": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "pattern": "^%[0-9]+$",
-                    "type": "string"
-                  },
-                  "session_id": {
-                    "pattern": "^\\$[0-9]+$",
-                    "type": "string"
-                  },
-                  "window_id": {
-                    "pattern": "^@[0-9]+$",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "active",
-                  "command",
-                  "id",
-                  "session_id",
-                  "window_id"
-                ],
-                "type": "object"
-              },
-              "type": "array"
-            }
-          },
-          "required": [
-            "panes"
-          ],
-          "type": "object"
-        },
-        "title": "List all tmux panes"
-      },
-      {
-        "annotations": {
-          "destructiveHint": false,
-          "idempotentHint": true,
-          "openWorldHint": false,
-          "readOnlyHint": true,
-          "title": "List panes in a session"
-        },
-        "description": "List panes through an exact owning session. Pane IDs repeat between psmux sessions, so keep the returned session ID.",
-        "inputSchema": {
-          "additionalProperties": false,
-          "properties": {
-            "session": {
-              "description": "Stable session ID such as `$0`, or its name.",
-              "maxLength": 512,
-              "type": "string"
-            }
-          },
-          "required": [
-            "session"
-          ],
-          "type": "object"
-        },
-        "name": "list_session_panes",
-        "outputSchema": {
-          "additionalProperties": false,
-          "properties": {
-            "panes": {
-              "items": {
-                "additionalProperties": false,
-                "properties": {
-                  "active": {
-                    "type": "boolean"
-                  },
-                  "command": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "pattern": "^%[0-9]+$",
-                    "type": "string"
-                  },
-                  "session_id": {
-                    "pattern": "^\\$[0-9]+$",
-                    "type": "string"
-                  },
-                  "window_id": {
-                    "pattern": "^@[0-9]+$",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "active",
-                  "command",
-                  "id",
-                  "session_id",
-                  "window_id"
-                ],
-                "type": "object"
-              },
-              "type": "array"
-            }
-          },
-          "required": [
-            "panes"
-          ],
-          "type": "object"
-        },
-        "title": "List panes in a session"
-      },
-      {
-        "annotations": {
-          "destructiveHint": false,
-          "idempotentHint": true,
-          "openWorldHint": false,
-          "readOnlyHint": true,
-          "title": "List tmux sessions"
-        },
-        "description": "List each session as stable id and name. Prefer the id in later calls because names can change.",
-        "inputSchema": {
-          "additionalProperties": false,
-          "properties": {},
-          "required": [],
-          "type": "object"
-        },
-        "name": "list_sessions",
-        "outputSchema": {
-          "additionalProperties": false,
-          "properties": {
-            "sessions": {
-              "items": {
-                "additionalProperties": false,
-                "properties": {
-                  "attached": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "pattern": "^\\$[0-9]+$",
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "window_count": {
-                    "minimum": 0,
-                    "type": "integer"
-                  }
-                },
-                "required": [
-                  "attached",
-                  "id",
-                  "name",
-                  "window_count"
-                ],
-                "type": "object"
-              },
-              "type": "array"
-            }
-          },
-          "required": [
-            "sessions"
-          ],
-          "type": "object"
-        },
-        "title": "List tmux sessions"
-      },
-      {
-        "annotations": {
-          "destructiveHint": false,
-          "idempotentHint": true,
-          "openWorldHint": false,
-          "readOnlyHint": true,
-          "title": "List windows in a session"
-        },
-        "description": "List windows through an exact owning session. This is the safe window discovery path on psmux.",
-        "inputSchema": {
-          "additionalProperties": false,
-          "properties": {
-            "session": {
-              "description": "Stable session ID such as `$0`, or its name.",
-              "maxLength": 512,
-              "type": "string"
-            }
-          },
-          "required": [
-            "session"
-          ],
-          "type": "object"
-        },
-        "name": "list_windows",
-        "outputSchema": {
-          "additionalProperties": false,
-          "properties": {
-            "windows": {
-              "items": {
-                "additionalProperties": false,
-                "properties": {
-                  "active": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "pattern": "^@[0-9]+$",
-                    "type": "string"
-                  },
-                  "index": {
-                    "type": "integer"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "session_id": {
-                    "pattern": "^\\$[0-9]+$",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "active",
-                  "id",
-                  "index",
-                  "name",
-                  "session_id"
-                ],
-                "type": "object"
-              },
-              "type": "array"
-            }
-          },
-          "required": [
-            "windows"
-          ],
-          "type": "object"
-        },
-        "title": "List windows in a session"
-      },
-      {
-        "annotations": {
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false,
+          "openWorldHint": true,
           "readOnlyHint": false,
           "title": "Create a tmux window"
         },
-        "description": "Create a detached window through an exact owning session and return stable window and session IDs.",
+        "description": "Create a detached window; name and path data are literalized before tmux expansion. Start a pane's configured process; accepts no command payload.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
             "name": {
-              "description": "Name for the new window.",
+              "description": "Optional literal window name.",
               "maxLength": 512,
               "type": "string"
             },
             "session": {
-              "description": "Stable session ID such as `$0`, or its name.",
+              "description": "Stable owning session ID or name.",
               "maxLength": 512,
+              "type": "string"
+            },
+            "startDirectory": {
+              "description": "Literal pane start directory.",
+              "maxLength": 4096,
               "type": "string"
             }
           },
           "required": [
-            "session",
-            "name"
+            "session"
           ],
           "type": "object"
         },
-        "name": "new_window",
+        "name": "create_window",
         "outputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -533,25 +886,1277 @@
         "title": "Create a tmux window"
       },
       {
-        "annotations": {
-          "destructiveHint": false,
-          "idempotentHint": true,
-          "openWorldHint": false,
-          "readOnlyHint": true,
-          "title": "Search visible pane text"
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
         },
-        "description": "Find panes whose visible rendered text contains a substring. Returns stable pane IDs and the matching line.",
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Find a pane by position"
+        },
+        "description": "Resolve coordinates using fixed tmux layout fields. Inspect tmux metadata; accepts no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
+            "column": {
+              "description": "Zero-based terminal column.",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "row": {
+              "description": "Zero-based terminal row.",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "windowId": {
+              "description": "Optional stable window ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "row",
+            "column"
+          ],
+          "type": "object"
+        },
+        "name": "find_pane_by_position",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Find a pane by position"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Get tmux pane information"
+        },
+        "description": "Return one pane by stable ID. Inspect tmux metadata; accepts no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "description": "Stable pane ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId"
+          ],
+          "type": "object"
+        },
+        "name": "get_pane_info",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Get tmux pane information"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Get tmux server information"
+        },
+        "description": "Report liveness, tmux version, and the resolved socket when running. Inspect tmux metadata; accepts no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {},
+          "required": [],
+          "type": "object"
+        },
+        "name": "get_server_info",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Get tmux server information"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Get tmux session information"
+        },
+        "description": "Return one session by stable ID or name. Inspect tmux metadata; accepts no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "session": {
+              "description": "Stable session ID or name.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "session"
+          ],
+          "type": "object"
+        },
+        "name": "get_session_info",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Get tmux session information"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {
+              "names": "validated-variable-name"
+            },
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": true,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata",
+              "configured-command"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Get tmux variables"
+        },
+        "description": "Expand only validated variable identifiers, never a caller format. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "names": {
+              "description": "One to thirty-two validated tmux variable names.",
+              "items": {
+                "maxLength": 128,
+                "type": "string"
+              },
+              "maxItems": 32,
+              "minItems": 1,
+              "type": "array"
+            },
+            "paneId": {
+              "description": "Optional pane context.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "names"
+          ],
+          "type": "object"
+        },
+        "name": "get_tmux_variables",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Get tmux variables"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Get tmux window information"
+        },
+        "description": "Return one window by stable ID. Inspect tmux metadata; accepts no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "windowId": {
+              "description": "Stable window ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId"
+          ],
+          "type": "object"
+        },
+        "name": "get_window_info",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Get tmux window information"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "delete"
+            ],
+            "toolset": "teardown"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Kill a tmux pane"
+        },
+        "description": "Delete one pane and its running process. Delete tmux state; accepts no command payload.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "description": "Stable pane ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId"
+          ],
+          "type": "object"
+        },
+        "name": "kill_pane",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Kill a tmux pane"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "delete"
+            ],
+            "toolset": "teardown"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Kill a tmux session"
+        },
+        "description": "Delete one session and every window it owns. Delete tmux state; accepts no command payload.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "session": {
+              "description": "Stable session ID or name.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "session"
+          ],
+          "type": "object"
+        },
+        "name": "kill_session",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Kill a tmux session"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "delete"
+            ],
+            "toolset": "teardown"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Kill a tmux window"
+        },
+        "description": "Delete one window and every pane it owns. Delete tmux state; accepts no command payload.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "windowId": {
+              "description": "Stable window ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId"
+          ],
+          "type": "object"
+        },
+        "name": "kill_window",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Kill a tmux window"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "List tmux panes"
+        },
+        "description": "List every pane with stable pane, window, and session IDs. Inspect tmux metadata; accepts no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {},
+          "required": [],
+          "type": "object"
+        },
+        "name": "list_panes",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "panes": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "command": {
+                    "type": "string"
+                  },
+                  "dead": {
+                    "type": "boolean"
+                  },
+                  "height": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "id": {
+                    "pattern": "^%[0-9]+$",
+                    "type": "string"
+                  },
+                  "index": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "pid": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "session_id": {
+                    "pattern": "^\\$[0-9]+$",
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "width": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "window_id": {
+                    "pattern": "^@[0-9]+$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "active",
+                  "command",
+                  "dead",
+                  "height",
+                  "id",
+                  "index",
+                  "path",
+                  "pid",
+                  "session_id",
+                  "title",
+                  "width",
+                  "window_id"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "panes"
+          ],
+          "type": "object"
+        },
+        "title": "List tmux panes"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "List tmux sessions"
+        },
+        "description": "List stable session IDs, names, paths, and client counts. Inspect tmux metadata; accepts no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {},
+          "required": [],
+          "type": "object"
+        },
+        "name": "list_sessions",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "sessions": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "attached": {
+                    "type": "boolean"
+                  },
+                  "client_count": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "id": {
+                    "pattern": "^\\$[0-9]+$",
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "window_count": {
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "attached",
+                  "client_count",
+                  "id",
+                  "name",
+                  "path",
+                  "window_count"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "sessions"
+          ],
+          "type": "object"
+        },
+        "title": "List tmux sessions"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "List tmux windows"
+        },
+        "description": "List windows through an exact owning session. Inspect tmux metadata; accepts no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "session": {
+              "description": "Stable session ID or name.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "session"
+          ],
+          "type": "object"
+        },
+        "name": "list_windows",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "windows": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "height": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "id": {
+                    "pattern": "^@[0-9]+$",
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer"
+                  },
+                  "layout": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "pane_count": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "session_id": {
+                    "pattern": "^\\$[0-9]+$",
+                    "type": "string"
+                  },
+                  "width": {
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "active",
+                  "height",
+                  "id",
+                  "index",
+                  "layout",
+                  "name",
+                  "pane_count",
+                  "session_id",
+                  "width"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "windows"
+          ],
+          "type": "object"
+        },
+        "title": "List tmux windows"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Move a tmux window"
+        },
+        "description": "Move a window to an exact index in its owning session. Change tmux state; no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "index": {
+              "description": "Non-negative destination index.",
+              "maximum": 100000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "windowId": {
+              "description": "Stable window ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId",
+            "index"
+          ],
+          "type": "object"
+        },
+        "name": "move_window",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Move a tmux window"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": true,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "pane-input",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Paste text into a tmux pane"
+        },
+        "description": "Require the target pane to be live and outside human-owned mode, then stage a private target-only buffer, optionally append Enter, paste it once, and verify cleanup. Empty text without Enter is a guarded buffer-free no-op. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "enter": {
+              "description": "Append Enter to the same private paste buffer.",
+              "type": "boolean"
+            },
+            "paneId": {
+              "description": "Stable pane ID.",
+              "maxLength": 512,
+              "type": "string"
+            },
             "text": {
-              "description": "Non-empty substring to search for.",
+              "description": "Literal text to paste.",
+              "maxLength": 1048576,
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId",
+            "text"
+          ],
+          "type": "object"
+        },
+        "name": "paste_text",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "changed": {
+              "type": "boolean"
+            },
+            "pane_id": {
+              "pattern": "^%[0-9]+$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "pane_id"
+          ],
+          "type": "object"
+        },
+        "title": "Paste text into a tmux pane"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {
+              "name": "double-hash-once"
+            },
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Rename a tmux session"
+        },
+        "description": "Replace one session name. Change tmux state; no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "Literal replacement session name.",
+              "maxLength": 512,
+              "type": "string"
+            },
+            "session": {
+              "description": "Stable session ID or name.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "session",
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "rename_session",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Rename a tmux session"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {
+              "name": "double-hash-once"
+            },
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Rename a tmux window"
+        },
+        "description": "Replace one window name. Change tmux state; no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "Literal replacement window name.",
+              "maxLength": 512,
+              "type": "string"
+            },
+            "windowId": {
+              "description": "Stable window ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId",
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "rename_window",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Rename a tmux window"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Resize a tmux pane"
+        },
+        "description": "Replace one or both pane dimensions. Change tmux state; no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "height": {
+              "description": "Optional positive pane height.",
+              "maximum": 100000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "paneId": {
+              "description": "Stable pane ID.",
+              "maxLength": 512,
+              "type": "string"
+            },
+            "width": {
+              "description": "Optional positive pane width.",
+              "maximum": 100000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "paneId"
+          ],
+          "type": "object"
+        },
+        "name": "resize_pane",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Resize a tmux pane"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Resize a tmux window"
+        },
+        "description": "Replace one window's dimensions. Change tmux state; no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "height": {
+              "description": "Positive window height.",
+              "maximum": 100000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "width": {
+              "description": "Positive window width.",
+              "maximum": 100000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "windowId": {
+              "description": "Stable window ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId",
+            "width",
+            "height"
+          ],
+          "type": "object"
+        },
+        "name": "resize_window",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Resize a tmux window"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {
+              "startDirectory": "double-hash-once"
+            },
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "configured-process",
+            "tmuxEffects": [
+              "observe",
+              "change",
+              "delete"
+            ],
+            "toolset": "execute"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Respawn a tmux pane"
+        },
+        "description": "Restart only the pane's configured process; no caller command is accepted. Start a pane's configured process; accepts no command payload.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "force": {
+              "description": "Permit replacing a running pane process.",
+              "type": "boolean"
+            },
+            "killFirst": {
+              "description": "Kill a running pane process before respawn.",
+              "type": "boolean"
+            },
+            "paneId": {
+              "description": "Stable pane ID.",
+              "maxLength": 512,
+              "type": "string"
+            },
+            "startDirectory": {
+              "description": "Literal replacement start directory.",
               "maxLength": 4096,
               "type": "string"
             }
           },
           "required": [
-            "text"
+            "paneId"
+          ],
+          "type": "object"
+        },
+        "name": "respawn_pane",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "changed": {
+              "type": "boolean"
+            },
+            "pane_id": {
+              "pattern": "^%[0-9]+$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "pane_id"
+          ],
+          "type": "object"
+        },
+        "title": "Respawn a tmux pane"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": true,
+            "mayReturnUntrustedContent": true,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata",
+              "terminal-content"
+            ],
+            "processReach": "pane-command",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Run a shell command in a tmux pane"
+        },
+        "description": "Require one live configured pane, outside human-owned mode and running a supported POSIX foreground shell, then send one command and return output after its private completion boundary. Run a shell command in a pane with your user's permissions.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "command": {
+              "description": "Shell command sent to the pane.",
+              "maxLength": 1048576,
+              "type": "string"
+            },
+            "paneId": {
+              "description": "Stable pane ID.",
+              "maxLength": 512,
+              "type": "string"
+            },
+            "timeoutMs": {
+              "description": "Completion timeout in milliseconds.",
+              "maximum": 60000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "paneId",
+            "command"
+          ],
+          "type": "object"
+        },
+        "name": "run_shell_command",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Run a shell command in a tmux pane"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": true,
+            "mayReturnUntrustedContent": true,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata",
+              "terminal-content"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Search tmux panes"
+        },
+        "description": "Search captured lines using a length-limited expression. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "pattern": {
+              "description": "Bounded regular expression.",
+              "maxLength": 256,
+              "type": "string"
+            }
+          },
+          "required": [
+            "pattern"
           ],
           "type": "object"
         },
@@ -585,33 +2190,201 @@
           ],
           "type": "object"
         },
-        "title": "Search visible pane text"
+        "title": "Search tmux panes"
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true,
           "readOnlyHint": false,
-          "title": "Press named tmux keys"
+          "title": "Select a tmux layout"
         },
-        "description": "Press validated tmux key names such as `Enter` or `C-c`. Use send_text for literal characters.",
+        "description": "Replace the pane layout of one window. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
-            "keys": {
-              "description": "Space-separated tmux key names. Every key is validated before any is sent.",
+            "layout": {
+              "description": "Named or saved tmux layout.",
               "maxLength": 4096,
               "type": "string"
             },
-            "target": {
-              "description": "Pane ID such as `%1`, or a tmux pane target.",
+            "windowId": {
+              "description": "Stable window ID.",
               "maxLength": 512,
               "type": "string"
             }
           },
           "required": [
-            "target",
+            "windowId",
+            "layout"
+          ],
+          "type": "object"
+        },
+        "name": "select_layout",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Select a tmux layout"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Select a tmux pane"
+        },
+        "description": "Make one pane active. Change tmux state; no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "description": "Stable pane ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId"
+          ],
+          "type": "object"
+        },
+        "name": "select_pane",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Select a tmux pane"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Select a tmux window"
+        },
+        "description": "Make one window active. Change tmux state; no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "windowId": {
+              "description": "Stable window ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId"
+          ],
+          "type": "object"
+        },
+        "name": "select_window",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Select a tmux window"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": true,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "pane-input",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Send keys to a tmux pane"
+        },
+        "description": "Require every configured synchronized pane to be live and outside human-owned mode, then send one validated tmux key name. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "keys": {
+              "description": "One tmux key name.",
+              "maxLength": 256,
+              "type": "string"
+            },
+            "paneId": {
+              "description": "Stable pane ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId",
             "keys"
           ],
           "type": "object"
@@ -623,48 +2396,620 @@
             "pane_id": {
               "pattern": "^%[0-9]+$",
               "type": "string"
+            },
+            "target_pane_ids": {
+              "items": {
+                "pattern": "^%[0-9]+$",
+                "type": "string"
+              },
+              "type": "array"
             }
           },
           "required": [
-            "pane_id"
+            "pane_id",
+            "target_pane_ids"
           ],
           "type": "object"
         },
-        "title": "Press named tmux keys"
+        "title": "Send keys to a tmux pane"
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": true,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "pane-input",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true,
           "readOnlyHint": false,
-          "title": "Type literal pane text"
+          "title": "Send a key sequence to a tmux pane"
         },
-        "description": "Type literal characters into one pane. Key names are not interpreted; include a newline to submit a shell line.",
+        "description": "Preflight each row's configured synchronized pane cohort independently, requiring every pane to be live and outside human-owned mode before its text or key and optional Enter. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
-            "target": {
-              "description": "Pane ID such as `%1`, or a tmux pane target.",
-              "maxLength": 512,
+            "onError": {
+              "description": "Stop after the first failed operation or continue.",
+              "enum": [
+                "continue",
+                "stop"
+              ],
               "type": "string"
             },
-            "text": {
-              "description": "Literal text to type, including any newline.",
-              "maxLength": 1048576,
+            "operations": {
+              "description": "One to sixty-four ordered pane-input operations.",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "enter": {
+                    "type": "boolean"
+                  },
+                  "keys": {
+                    "maxLength": 4096,
+                    "type": "string"
+                  },
+                  "literal": {
+                    "type": "boolean"
+                  },
+                  "paneId": {
+                    "maxLength": 512,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "paneId",
+                  "keys"
+                ],
+                "type": "object"
+              },
+              "maxItems": 64,
+              "minItems": 1,
+              "type": "array"
+            }
+          },
+          "required": [
+            "operations"
+          ],
+          "type": "object"
+        },
+        "name": "send_keys_batch",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Send a key sequence to a tmux pane"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Set tmux history limit"
+        },
+        "description": "Replace retained-history bounds with a non-negative integer. Change tmux state; no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "limit": {
+              "description": "Retained history line limit.",
+              "maximum": 10000000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "session": {
+              "description": "Stable session ID or name.",
+              "maxLength": 512,
               "type": "string"
             }
           },
           "required": [
-            "target",
-            "text"
+            "session",
+            "limit"
           ],
           "type": "object"
         },
-        "name": "send_text",
+        "name": "set_history_limit",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Set tmux history limit"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Set tmux mouse handling"
+        },
+        "description": "Replace the global mouse option with a typed boolean. Change tmux state; no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "description": "Whether mouse handling is enabled.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled"
+          ],
+          "type": "object"
+        },
+        "name": "set_mouse_enabled",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Set tmux mouse handling"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {
+              "title": "double-hash-once"
+            },
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Set a tmux pane title"
+        },
+        "description": "Replace one pane title. Change tmux state; no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "description": "Stable pane ID.",
+              "maxLength": 512,
+              "type": "string"
+            },
+            "title": {
+              "description": "Literal replacement pane title.",
+              "maxLength": 4096,
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId",
+            "title"
+          ],
+          "type": "object"
+        },
+        "name": "set_pane_title",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Set a tmux pane title"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": true,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Set synchronized pane input"
+        },
+        "description": "Set the inherited window synchronize-panes default; pane-level overrides determine effective synchronized input membership. Change tmux state; no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "description": "Whether later pane input is duplicated.",
+              "type": "boolean"
+            },
+            "windowId": {
+              "description": "Stable window ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "windowId",
+            "enabled"
+          ],
+          "type": "object"
+        },
+        "name": "set_synchronize_panes",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Set synchronized pane input"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": true,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "process-environment"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Show the tmux environment"
+        },
+        "description": "Read global or session environment values. Read the tmux environment; accepts no client-supplied executable input. Returned values may contain secrets.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "Optional exact environment name.",
+              "maxLength": 256,
+              "type": "string"
+            },
+            "session": {
+              "description": "Optional session target.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "name": "show_environment",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Show the tmux environment"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": true,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "configured-command"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Show tmux hooks"
+        },
+        "description": "Read configured hooks, optionally filtered by exact name. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "Optional exact hook name.",
+              "maxLength": 256,
+              "type": "string"
+            },
+            "target": {
+              "description": "Optional tmux target.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "name": "show_hooks",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Show tmux hooks"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": true,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata",
+              "configured-command"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Show a tmux option"
+        },
+        "description": "Read one exact option without accepting an option value. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "Exact option name.",
+              "maxLength": 256,
+              "type": "string"
+            },
+            "target": {
+              "description": "Optional session, window, or pane target.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": "show_option",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Show a tmux option"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Signal a tmux channel"
+        },
+        "description": "Release or latch one named server-side channel. Change tmux state; no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "channel": {
+              "description": "Bounded channel name.",
+              "maxLength": 256,
+              "type": "string"
+            }
+          },
+          "required": [
+            "channel"
+          ],
+          "type": "object"
+        },
+        "name": "signal_channel",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Signal a tmux channel"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": true,
+            "mayReturnUntrustedContent": true,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata",
+              "terminal-content"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Snapshot a tmux pane"
+        },
+        "description": "Return pane metadata and visible terminal content from one call. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "paneId": {
+              "description": "Stable pane ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId"
+          ],
+          "type": "object"
+        },
+        "name": "snapshot_pane",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Snapshot a tmux pane"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {
+              "startDirectory": "double-hash-once"
+            },
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "configured-process",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Split a tmux window"
+        },
+        "description": "Create a configured-process pane; path data is literalized before tmux expansion. Start a pane's configured process; accepts no command payload.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "direction": {
+              "description": "vertical or horizontal.",
+              "maxLength": 16,
+              "type": "string"
+            },
+            "paneId": {
+              "description": "Stable pane to split.",
+              "maxLength": 512,
+              "type": "string"
+            },
+            "startDirectory": {
+              "description": "Literal pane start directory.",
+              "maxLength": 4096,
+              "type": "string"
+            }
+          },
+          "required": [
+            "paneId"
+          ],
+          "type": "object"
+        },
+        "name": "split_window",
         "outputSchema": {
           "additionalProperties": false,
           "properties": {
+            "changed": {
+              "type": "boolean"
+            },
             "pane_id": {
               "pattern": "^%[0-9]+$",
               "type": "string"
@@ -675,32 +3020,157 @@
           ],
           "type": "object"
         },
-        "title": "Type literal pane text"
+        "title": "Split a tmux window"
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
         "annotations": {
-          "destructiveHint": false,
-          "idempotentHint": true,
-          "openWorldHint": false,
-          "readOnlyHint": true,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Swap two tmux panes"
+        },
+        "description": "Exchange two pane positions without changing their IDs. Change tmux state; no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "sourcePaneId": {
+              "description": "Stable source pane ID.",
+              "maxLength": 512,
+              "type": "string"
+            },
+            "targetPaneId": {
+              "description": "Stable target pane ID.",
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          "required": [
+            "sourcePaneId",
+            "targetPaneId"
+          ],
+          "type": "object"
+        },
+        "name": "swap_pane",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Swap two tmux panes"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": false,
+            "mayReturnUntrustedContent": false,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Wait for a tmux channel"
+        },
+        "description": "Wait for a named server-side channel with an optional deadline. Change tmux state; no client-supplied executable input.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "channel": {
+              "description": "Bounded channel name.",
+              "maxLength": 256,
+              "type": "string"
+            },
+            "timeoutMs": {
+              "description": "Optional bounded wait in milliseconds.",
+              "maximum": 60000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "channel"
+          ],
+          "type": "object"
+        },
+        "name": "wait_for_channel",
+        "outputSchema": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Wait for a tmux channel"
+      },
+      {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "amplifiesFutureInput": false,
+            "inputLiteralization": {},
+            "mayExposeSecrets": true,
+            "mayReturnUntrustedContent": true,
+            "nestedAuthority": [],
+            "outputClasses": [
+              "tmux-metadata",
+              "terminal-content"
+            ],
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
           "title": "Wait for pane text"
         },
-        "description": "Wait for text without blocking other MCP requests. Uses tmux control-output events when available and bounded capture polling otherwise.",
+        "description": "Discount this server's pending input and recent submitted echoes; unmodelled keys stop tracking the current line. Wait for a new shell's prompt before typing. `matched_at_entry` reports visible text at entry; a mode ending in -unconfirmed identifies input that was still unconfirmed at the deadline. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
             "target": {
-              "description": "Pane ID such as `%1`, or a tmux pane target.",
+              "description": "Pane ID or pane target.",
               "maxLength": 512,
               "type": "string"
             },
             "text": {
-              "description": "Non-empty substring to wait for.",
+              "description": "Literal text to wait for.",
               "maxLength": 4096,
               "type": "string"
             },
             "timeout_ms": {
-              "description": "Timeout in milliseconds, from 1 through 60000. Defaults to 10000.",
+              "description": "Bounded wait in milliseconds.",
               "maximum": 60000,
               "minimum": 1,
               "type": "integer"
@@ -723,6 +3193,9 @@
             "matched": {
               "type": "boolean"
             },
+            "matched_at_entry": {
+              "type": "boolean"
+            },
             "mode": {
               "type": "string"
             },
@@ -740,6 +3213,7 @@
           "required": [
             "elapsed_ms",
             "matched",
+            "matched_at_entry",
             "mode",
             "text",
             "timed_out"

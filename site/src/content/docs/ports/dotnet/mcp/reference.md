@@ -1,6 +1,6 @@
 ---
 title: .NET MCP API
-description: Distinguish the .NET tool package, source embedding APIs, and tmux-prefixed protocol operations.
+description: Find the .NET server composition API and current MCP protocol catalog.
 port: dotnet
 product: mcp
 sidebar:
@@ -11,36 +11,25 @@ sidebar:
 For MCP client requests, use the [tool reference](../tools/). This page
 covers language APIs for embedding or extending the server.
 
-`LibTmux.Mcp` is distributed as a .NET tool package. Its source has public
-classes, but installing the executable does not provide an ordinary
-NuGet library reference for embedding.
+`LibTmux.Mcp` is distributed as a .NET tool package. Installing its
+executable does not provide a NuGet library reference for embedding.
 
 ## Source API
 
-`McpTools.Reading` constructs `ReadTools`;
-`McpTools.Writing` constructs `WriteTools`.
-The writing factory owns newly created connection, activity, and job
-resources. Dispose its result asynchronously; supplied server and job
-objects remain caller-owned.
+`McpServerComposition.Add` registers the server in a service collection
+and returns the MCP builder for transport composition. It accepts the
+connection options, caller pane ID, and a `ServerPolicy` containing wait
+and output limits. The public overload selects tools without teardown.
+Tool handlers are internal implementation details.
 
-`McpServerComposition.Add` registers tools, resources, and prompts in a
-service collection and returns the MCP builder for transport composition.
-`ServerPolicy` holds the tier and response limits.
-
-[Factory source](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Mcp/McpTools.cs)
-and [composition source](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Mcp/McpServerComposition.cs).
+[Composition source](https://github.com/libtmux/libtmux-dotnet/blob/320dc64f4b8b7815842471327a5e6b84a1499bf8/src/LibTmux.Mcp/McpServerComposition.cs).
 
 ## Protocol API
 
-The [tool reference](../tools/) uses the registered `tmux_` names.
-Typed results are serialized as structured content with bounded text.
+The [tool reference](../tools/) uses names such as `capture_pane` and
+`run_shell_command`. Results provide structured content and bounded text.
+Read `tmux://capabilities` for the startup-frozen selection. The current
+surface has no workflow prompts or dynamic resource templates.
 
-Fixed resources include `tmux://hierarchy`, `tmux://sessions`,
-`tmux://self`, and `tmux://servers`. Templates address session panes
-and pane content. Prompts include `tmux_run_and_report`,
-`tmux_diagnose_pane`, `tmux_build_workspace`, and
-`tmux_interrupt_pane`.
-
-[Protocol behavior](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/docs/mcp/README.md).
-For a published configuration library, use
+For the separately published configuration library, see
 [Workspace builder API](../../workspace/reference/).

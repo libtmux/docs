@@ -1,6 +1,6 @@
 ---
 title: Swift MCP topics
-description: Understand readonly defaults, exact tool selections, daemon-bound references, and waits.
+description: Select toolsets, inspect the pinned endpoint, and observe bounded commands.
 port: swift
 product: mcp
 sidebar:
@@ -8,53 +8,41 @@ sidebar:
   order: 1
 ---
 
-Swift's MCP server defaults to readonly tools on the `default` socket.
-The executable reads environment variables and accepts no flags.
+The server selects one tmux endpoint and freezes its offered tools at startup.
+Read `tmux://capabilities` to inspect that endpoint's provenance and the
+effective tool selection.
 
-## Tier and exact selection
+## Select tools
 
-`LIBTMUX_SAFETY` chooses readonly, mutating, or destructive.
-An invalid value falls back to readonly with a diagnostic.
-`LIBTMUX_MCP_TOOLS` is an exact comma-separated allowlist intersected
-with the tier. An unknown or malformed tool name selects no tools.
+`LIBTMUX_TOOLSETS` selects any combination of `inspect`, `manage`,
+`execute`, and `teardown`. `LIBTMUX_TOOLS` adds exact names;
+`LIBTMUX_EXCLUDE_TOOLS` removes names last. Unknown names and malformed
+lists fail startup.
 
-Embedding code can use `ToolAuthority` with typed `ToolOperation`
-values. An exact selection does not automatically include newly added
-operations.
+Use `inspect` for discovery and terminal reads. Add `manage` for topology
+changes and `execute` for input and process creation. Select `teardown`
+explicitly when removal is needed on an existing or explicitly selected
+server. A default dedicated daemon can receive teardown tools when the
+launcher verifies its own minimal-configuration provenance.
 
-A mutating selection includes `run_shell` and `send_keys`.
-The tier classifies tool intent; it does not confine a pane's shell or
-the host user.
+Tool selection shapes the callable interface. Execute tools act with the
+tmux user's authority; selecting a socket does not confine shell effects.
 
-## Preserve opaque references
+## Observe a command
 
-Hierarchy rows carry opaque references bound to the current tmux daemon.
-They expire when the MCP process restarts. Re-list to obtain fresh
-references; do not substitute raw pane IDs.
+Use [`run_shell_command`](../tools/run_shell_command/) for a bounded command
+and its exit status. A deadline ends the wait; the pane command may still
+be running. Inspect it before submitting another command.
 
-A window can have multiple session-local occurrences. `windowRef`
-identifies the global window, while `linkRef` identifies a particular
-session link. Preserve the reference appropriate to the operation.
+Use [`capture_since`](../tools/capture_since/) to collect subsequent output
+and [`wait_for_text`](../tools/wait_for_text/) for an expected terminal
+condition. Their schemas and result limits are in the [tool reference](../tools/).
+The current catalog has no detached job-handle API.
 
-## Wait without resubmitting work
+## Resources and prompts
 
-`run_shell` waits for deterministic command completion.
-If it reports `timedOut`, the command may still be running.
-Inspect the pane before deciding whether another command is needed.
+The server exposes the static `tmux://capabilities` resource. Read live
+hierarchy and terminal state through tools. The current surface has no
+workflow prompts or dynamic resource templates.
 
-`wait_for_output` handles output produced elsewhere and accepts success
-and stop patterns. `watch_format` observes a state field when terminal
-text is not the condition you need.
-
-The default wait ceiling is 120 seconds. Configuration is clamped between
-1 and 300 seconds.
-
-## Workspace application
-
-`apply_workspace` accepts structured workspace data and refuses an
-existing session. Failed builds attempt cleanup of the exact new session;
-cleanup failure is reported with the original error.
-
-[Executable configuration](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/libtmux-mcp/README.md),
-[reference semantics](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/LibTmuxMCP/README.md),
-and [workspace behavior](../../workspace/internals/topics/).
+[Configuration and lifecycle contract](https://github.com/libtmux/libtmux-swift/blob/254f8b2be7eb60cacc3ffcb3ea8e456784f582df/Sources/libtmux-mcp/README.md).

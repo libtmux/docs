@@ -36,4 +36,23 @@ describe('MCP protocol discovery', () => {
     await expect(captureProtocol({ command: process.execPath, args: ['-e', 'setInterval(() => {}, 1000)'], timeoutMs: 50 }))
       .rejects.toThrow('MCP discovery timed out')
   })
+
+  it.each([-32601, -32603])('handles resource template discovery error %i', async (code) => {
+    const resources = server
+      .replace('tools: {}', 'resources: {}')
+      .replace("} else if (message.method === 'tools/list') {", `} else if (message.method === 'resources/list') {
+        result = { resources: [{ name: 'capabilities', uri: 'tmux://capabilities' }] };
+      } else if (message.method === 'resources/templates/list') {
+        process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: message.id, error: { code: ${code}, message: 'template discovery failed' } }) + '\\n');
+        return;
+      } else if (message.method === 'tools/list') {`)
+    const discovery = captureProtocol({ command: process.execPath, args: ['-e', resources] })
+    if (code === -32601) {
+      const protocol = await discovery
+      expect(protocol.resources.map((resource) => resource.uri)).toEqual(['tmux://capabilities'])
+      expect(protocol.resourceTemplates).toEqual([])
+    } else {
+      await expect(discovery).rejects.toThrow('template discovery failed')
+    }
+  })
 })

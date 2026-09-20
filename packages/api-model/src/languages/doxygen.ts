@@ -239,7 +239,7 @@ export function extractDoxygen(xmlDir: string, sourceRoot = ''): ApiSymbol[] {
       if (attr(block, 'prot') !== 'public') continue
       const memberKind = MEMBER_KIND[attr(block, 'kind') ?? '']
       if (!memberKind) continue
-      const name = textOf(tag(block, 'name') ?? '')
+      const name = normalizeCppName(textOf(tag(block, 'name') ?? ''))
       if (!name || name.startsWith('operator')) continue
 
       const parent = kind && compound[1] !== 'namespace' ? owner : undefined

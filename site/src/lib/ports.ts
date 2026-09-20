@@ -185,7 +185,7 @@ export interface Port {
    * silently; the generated pin changes visibly.
    *
    * Swift is the one case where the spelling is forced. Its tags are
-   * prereleases, and `0.1.0-alpha.4` sorts below `0.1.0`, so `from: "0.1.0"`
+   * prereleases, and `0.1.0-alpha.5` sorts below `0.1.0`, so `from: "0.1.0"`
    * has nothing in range and `exact:` is the only form that resolves.
    *
    * `{version}` is the registry's newest matching release and `{tag}` the
@@ -402,7 +402,7 @@ export const PORTS: readonly Port[] = [
         label: 'Gradle',
         lang: 'kotlin',
         code: `dependencies {
-    implementation(platform("io.github.libtmux:libtmux-bom:0.0.1-alpha.10"))
+    implementation(platform("io.github.libtmux:libtmux-bom:0.0.1-alpha.12"))
 
     implementation("io.github.libtmux:libtmux")
     testImplementation("io.github.libtmux:libtmux-junit5")
@@ -417,7 +417,7 @@ export const PORTS: readonly Port[] = [
     <dependency>
       <groupId>io.github.libtmux</groupId>
       <artifactId>libtmux-bom</artifactId>
-      <version>0.0.1-alpha.10</version>
+      <version>0.0.1-alpha.12</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -492,7 +492,7 @@ export const PORTS: readonly Port[] = [
 FetchContent_Declare(
   libtmux
   GIT_REPOSITORY https://github.com/libtmux/libtmux-cxx.git
-  GIT_TAG        v0.1.0-alpha.7
+  GIT_TAG        v0.1.0-alpha.10
 )
 FetchContent_MakeAvailable(libtmux)
 target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
@@ -562,9 +562,9 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
         lang: 'swift',
         code: `.package(
     url: "https://github.com/libtmux/libtmux-swift.git",
-    exact: "0.1.0-alpha.4"
+    exact: "0.1.0-alpha.5"
 )`,
-        note: 'An exact version, not a range. Every tag before 0.1.0 is a prerelease: SwiftPM keeps prereleases out of a `from: "0.1.0"` range, and `from: "0.1.0-alpha.4"` resolves forward into every prerelease after it.',
+        note: 'An exact version, not a range. Every tag before 0.1.0 is a prerelease: SwiftPM keeps prereleases out of a `from: "0.1.0"` range, and `from: "0.1.0-alpha.5"` resolves forward into every prerelease after it.',
       },
     ],
     // SwiftPM resolves from the repository itself, so the repository is the
@@ -572,7 +572,7 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     initProject: { code: 'swift package init --type executable', lang: 'console' },
     installForms: {
       stable: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", from: "{version}")', lang: 'swift' },
-      // `from: "0.1.0"` means ">= 0.1.0, < 1.0.0", and `0.1.0-alpha.4` sorts
+      // `from: "0.1.0"` means ">= 0.1.0, < 1.0.0", and `0.1.0-alpha.5` sorts
       // below `0.1.0`, so nothing in the repository is in range. This is the
       // one port where the spelling is forced rather than chosen.
       prerelease: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", exact: "{version}")', lang: 'swift' },

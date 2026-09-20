@@ -11,7 +11,7 @@ sidebar:
 For MCP client requests, use the [tool reference](../tools/). This page
 covers language APIs for embedding or extending the server.
 
-[`LibTmuxMCP`](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Package.swift)
+[`LibTmuxMCP`](https://github.com/libtmux/libtmux-swift/blob/254f8b2be7eb60cacc3ffcb3ea8e456784f582df/Package.swift)
 is a SwiftPM library product.
 `libtmux-mcp` wraps it in a stdio executable. Public Swift types and
 MCP wire operations have separate names and responsibilities.
@@ -29,21 +29,17 @@ structured data or throws `ToolError`.
 `ServerConfiguration` parses the executable's environment and builds
 its libtmux endpoint.
 
-[Embedding contract](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/LibTmuxMCP/README.md)
-and [configuration source](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/LibTmuxMCP/Configuration.swift).
+[Embedding contract](https://github.com/libtmux/libtmux-swift/blob/254f8b2be7eb60cacc3ffcb3ea8e456784f582df/Sources/LibTmuxMCP/README.md)
+and [configuration source](https://github.com/libtmux/libtmux-swift/blob/254f8b2be7eb60cacc3ffcb3ea8e456784f582df/Sources/LibTmuxMCP/Configuration.swift).
 
 ## MCP contract
 
 The [tool reference](../tools/) describes the wire catalog and schemas.
 Follow-up calls use opaque references returned by hierarchy discovery.
 
-Fixed resources include `tmux://snapshot`, `tmux://sessions`, and
-`tmux://filters`. Templates address session windows and pane data.
-Prompts include `run_and_wait`, `watch_until_ready`,
-`build_workspace`, and `find_my_pane`.
-
-[Resource source](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/LibTmuxMCP/Resources.swift)
-and [prompt source](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/LibTmuxMCP/Prompts.swift).
+The static `tmux://capabilities` resource reports the startup-frozen
+surface. Live state comes from inspect tools. The current surface has no
+workflow prompts or dynamic resource templates.
 
 The [Workspace builder API](../../workspace/reference/) owns workspace decoding
-and construction. `apply_workspace` exposes that behavior over MCP.
+and construction; those operations are separate from the MCP catalog.

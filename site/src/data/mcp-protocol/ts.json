@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-ts",
-  "revision": "1ecdab14e15764bfdc5e23c5060f45512a0991f2",
+  "revision": "ecc3eaca0b4e05a77360da9d56790b409282c63b",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -29,7 +29,7 @@
     "serverInfo": {
       "name": "libtmux",
       "title": "tmux",
-      "version": "0.1.0-alpha.8"
+      "version": "0.1.0-alpha.10"
     },
     "tools": [
       {
@@ -48,6 +48,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "onError": {
+                  "description": "Whether a failed operation ends the batch. Defaults to stop.",
                   "enum": [
                     "stop",
                     "continue"
@@ -55,6 +56,7 @@
                   "type": "string"
                 },
                 "operations": {
+                  "description": "The read-only tool calls to run, in order, in one approval.",
                   "items": {
                     "anyOf": [
                       {
@@ -62,11 +64,13 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `list_sessions`, exactly the shape it takes when called on its own.",
                             "properties": {},
                             "type": "object"
                           },
                           "tool": {
                             "const": "list_sessions",
+                            "description": "Run `list_sessions` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -80,6 +84,7 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `list_windows`, exactly the shape it takes when called on its own.",
                             "properties": {
                               "session": {
                                 "description": "Session id ($1) or name. Omit for all sessions.",
@@ -90,6 +95,7 @@
                           },
                           "tool": {
                             "const": "list_windows",
+                            "description": "Run `list_windows` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -103,6 +109,7 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `list_panes`, exactly the shape it takes when called on its own.",
                             "properties": {
                               "session": {
                                 "description": "Session id ($1) or name.",
@@ -118,6 +125,7 @@
                           },
                           "tool": {
                             "const": "list_panes",
+                            "description": "Run `list_panes` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -131,6 +139,7 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `get_pane_info`, exactly the shape it takes when called on its own.",
                             "properties": {
                               "paneId": {
                                 "description": "Stable pane id, e.g. %1.",
@@ -145,6 +154,7 @@
                           },
                           "tool": {
                             "const": "get_pane_info",
+                            "description": "Run `get_pane_info` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -158,11 +168,13 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `get_server_info`, exactly the shape it takes when called on its own.",
                             "properties": {},
                             "type": "object"
                           },
                           "tool": {
                             "const": "get_server_info",
+                            "description": "Run `get_server_info` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -176,6 +188,7 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `capture_pane`, exactly the shape it takes when called on its own.",
                             "properties": {
                               "end": {
                                 "description": "Last line, on the same scale as start: 0 is the top of the visible screen and negative reaches back into history. It does not count back from the bottom, so end:-1 is one line above the screen top, not the last line of output.",
@@ -212,6 +225,7 @@
                           },
                           "tool": {
                             "const": "capture_pane",
+                            "description": "Run `capture_pane` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -225,6 +239,7 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `capture_since`, exactly the shape it takes when called on its own.",
                             "properties": {
                               "cursor": {
                                 "description": "The cursor from your previous capture_since. Omit on the first call.",
@@ -232,6 +247,7 @@
                                 "type": "string"
                               },
                               "maxLines": {
+                                "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
                                 "exclusiveMinimum": 0,
                                 "maximum": 9007199254740991,
                                 "type": "integer"
@@ -255,6 +271,7 @@
                           },
                           "tool": {
                             "const": "capture_since",
+                            "description": "Run `capture_since` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -268,8 +285,10 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `search_panes`, exactly the shape it takes when called on its own.",
                             "properties": {
                               "maxMatchesPerPane": {
+                                "description": "Stop after this many matches in each pane. Defaults to the server limit.",
                                 "exclusiveMinimum": 0,
                                 "maximum": 9007199254740991,
                                 "type": "integer"
@@ -301,6 +320,7 @@
                           },
                           "tool": {
                             "const": "search_panes",
+                            "description": "Run `search_panes` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -314,8 +334,10 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `show_option`, exactly the shape it takes when called on its own.",
                             "properties": {
                               "name": {
+                                "description": "The tmux option to read, such as \"status-left\".",
                                 "type": "string"
                               },
                               "scope": {
@@ -342,6 +364,7 @@
                           },
                           "tool": {
                             "const": "show_option",
+                            "description": "Run `show_option` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -355,6 +378,7 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `show_hooks`, exactly the shape it takes when called on its own.",
                             "properties": {
                               "session": {
                                 "description": "Session scope; omit for server scope.",
@@ -365,6 +389,7 @@
                           },
                           "tool": {
                             "const": "show_hooks",
+                            "description": "Run `show_hooks` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -378,8 +403,10 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `show_environment`, exactly the shape it takes when called on its own.",
                             "properties": {
                               "session": {
+                                "description": "Session id ($1) or name. Omit for the server environment.",
                                 "type": "string"
                               }
                             },
@@ -387,6 +414,7 @@
                           },
                           "tool": {
                             "const": "show_environment",
+                            "description": "Run `show_environment` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -400,8 +428,10 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `get_session_info`, exactly the shape it takes when called on its own.",
                             "properties": {
                               "session": {
+                                "description": "Session id ($1) or name.",
                                 "type": "string"
                               }
                             },
@@ -412,6 +442,7 @@
                           },
                           "tool": {
                             "const": "get_session_info",
+                            "description": "Run `get_session_info` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -425,6 +456,7 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `get_window_info`, exactly the shape it takes when called on its own.",
                             "properties": {
                               "windowId": {
                                 "description": "Stable window id, e.g. @1.",
@@ -439,6 +471,7 @@
                           },
                           "tool": {
                             "const": "get_window_info",
+                            "description": "Run `get_window_info` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -452,8 +485,10 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `find_pane_by_position`, exactly the shape it takes when called on its own.",
                             "properties": {
                               "corner": {
+                                "description": "Which corner of the window's layout to resolve.",
                                 "enum": [
                                   "top-left",
                                   "top-right",
@@ -476,6 +511,7 @@
                           },
                           "tool": {
                             "const": "find_pane_by_position",
+                            "description": "Run `find_pane_by_position` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -489,8 +525,10 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `get_tmux_variables`, exactly the shape it takes when called on its own.",
                             "properties": {
                               "names": {
+                                "description": "Variable names to resolve, such as \"pane_current_command\" — bare names, not `#{…}` format syntax.",
                                 "items": {
                                   "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
                                   "type": "string"
@@ -513,6 +551,7 @@
                           },
                           "tool": {
                             "const": "get_tmux_variables",
+                            "description": "Run `get_tmux_variables` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -526,8 +565,10 @@
                         "properties": {
                           "arguments": {
                             "additionalProperties": false,
+                            "description": "Arguments for `snapshot_pane`, exactly the shape it takes when called on its own.",
                             "properties": {
                               "maxLines": {
+                                "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
                                 "exclusiveMinimum": 0,
                                 "maximum": 9007199254740991,
                                 "type": "integer"
@@ -545,6 +586,7 @@
                           },
                           "tool": {
                             "const": "snapshot_pane",
+                            "description": "Run `snapshot_pane` as this step of the batch.",
                             "type": "string"
                           }
                         },
@@ -732,6 +774,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "onError": {
+              "description": "Whether a failed operation ends the batch. Defaults to stop.",
               "enum": [
                 "stop",
                 "continue"
@@ -739,6 +782,7 @@
               "type": "string"
             },
             "operations": {
+              "description": "The read-only tool calls to run, in order, in one approval.",
               "items": {
                 "anyOf": [
                   {
@@ -746,11 +790,13 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `list_sessions`, exactly the shape it takes when called on its own.",
                         "properties": {},
                         "type": "object"
                       },
                       "tool": {
                         "const": "list_sessions",
+                        "description": "Run `list_sessions` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -764,6 +810,7 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `list_windows`, exactly the shape it takes when called on its own.",
                         "properties": {
                           "session": {
                             "description": "Session id ($1) or name. Omit for all sessions.",
@@ -774,6 +821,7 @@
                       },
                       "tool": {
                         "const": "list_windows",
+                        "description": "Run `list_windows` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -787,6 +835,7 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `list_panes`, exactly the shape it takes when called on its own.",
                         "properties": {
                           "session": {
                             "description": "Session id ($1) or name.",
@@ -802,6 +851,7 @@
                       },
                       "tool": {
                         "const": "list_panes",
+                        "description": "Run `list_panes` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -815,6 +865,7 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `get_pane_info`, exactly the shape it takes when called on its own.",
                         "properties": {
                           "paneId": {
                             "description": "Stable pane id, e.g. %1.",
@@ -829,6 +880,7 @@
                       },
                       "tool": {
                         "const": "get_pane_info",
+                        "description": "Run `get_pane_info` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -842,11 +894,13 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `get_server_info`, exactly the shape it takes when called on its own.",
                         "properties": {},
                         "type": "object"
                       },
                       "tool": {
                         "const": "get_server_info",
+                        "description": "Run `get_server_info` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -860,6 +914,7 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `capture_pane`, exactly the shape it takes when called on its own.",
                         "properties": {
                           "end": {
                             "description": "Last line, on the same scale as start: 0 is the top of the visible screen and negative reaches back into history. It does not count back from the bottom, so end:-1 is one line above the screen top, not the last line of output.",
@@ -896,6 +951,7 @@
                       },
                       "tool": {
                         "const": "capture_pane",
+                        "description": "Run `capture_pane` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -909,6 +965,7 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `capture_since`, exactly the shape it takes when called on its own.",
                         "properties": {
                           "cursor": {
                             "description": "The cursor from your previous capture_since. Omit on the first call.",
@@ -916,6 +973,7 @@
                             "type": "string"
                           },
                           "maxLines": {
+                            "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
                             "exclusiveMinimum": 0,
                             "maximum": 9007199254740991,
                             "type": "integer"
@@ -939,6 +997,7 @@
                       },
                       "tool": {
                         "const": "capture_since",
+                        "description": "Run `capture_since` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -952,8 +1011,10 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `search_panes`, exactly the shape it takes when called on its own.",
                         "properties": {
                           "maxMatchesPerPane": {
+                            "description": "Stop after this many matches in each pane. Defaults to the server limit.",
                             "exclusiveMinimum": 0,
                             "maximum": 9007199254740991,
                             "type": "integer"
@@ -985,6 +1046,7 @@
                       },
                       "tool": {
                         "const": "search_panes",
+                        "description": "Run `search_panes` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -998,8 +1060,10 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `show_option`, exactly the shape it takes when called on its own.",
                         "properties": {
                           "name": {
+                            "description": "The tmux option to read, such as \"status-left\".",
                             "type": "string"
                           },
                           "scope": {
@@ -1026,6 +1090,7 @@
                       },
                       "tool": {
                         "const": "show_option",
+                        "description": "Run `show_option` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -1039,6 +1104,7 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `show_hooks`, exactly the shape it takes when called on its own.",
                         "properties": {
                           "session": {
                             "description": "Session scope; omit for server scope.",
@@ -1049,6 +1115,7 @@
                       },
                       "tool": {
                         "const": "show_hooks",
+                        "description": "Run `show_hooks` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -1062,8 +1129,10 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `show_environment`, exactly the shape it takes when called on its own.",
                         "properties": {
                           "session": {
+                            "description": "Session id ($1) or name. Omit for the server environment.",
                             "type": "string"
                           }
                         },
@@ -1071,6 +1140,7 @@
                       },
                       "tool": {
                         "const": "show_environment",
+                        "description": "Run `show_environment` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -1084,8 +1154,10 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `get_session_info`, exactly the shape it takes when called on its own.",
                         "properties": {
                           "session": {
+                            "description": "Session id ($1) or name.",
                             "type": "string"
                           }
                         },
@@ -1096,6 +1168,7 @@
                       },
                       "tool": {
                         "const": "get_session_info",
+                        "description": "Run `get_session_info` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -1109,6 +1182,7 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `get_window_info`, exactly the shape it takes when called on its own.",
                         "properties": {
                           "windowId": {
                             "description": "Stable window id, e.g. @1.",
@@ -1123,6 +1197,7 @@
                       },
                       "tool": {
                         "const": "get_window_info",
+                        "description": "Run `get_window_info` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -1136,8 +1211,10 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `find_pane_by_position`, exactly the shape it takes when called on its own.",
                         "properties": {
                           "corner": {
+                            "description": "Which corner of the window's layout to resolve.",
                             "enum": [
                               "top-left",
                               "top-right",
@@ -1160,6 +1237,7 @@
                       },
                       "tool": {
                         "const": "find_pane_by_position",
+                        "description": "Run `find_pane_by_position` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -1173,8 +1251,10 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `get_tmux_variables`, exactly the shape it takes when called on its own.",
                         "properties": {
                           "names": {
+                            "description": "Variable names to resolve, such as \"pane_current_command\" — bare names, not `#{…}` format syntax.",
                             "items": {
                               "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
                               "type": "string"
@@ -1197,6 +1277,7 @@
                       },
                       "tool": {
                         "const": "get_tmux_variables",
+                        "description": "Run `get_tmux_variables` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -1210,8 +1291,10 @@
                     "properties": {
                       "arguments": {
                         "additionalProperties": false,
+                        "description": "Arguments for `snapshot_pane`, exactly the shape it takes when called on its own.",
                         "properties": {
                           "maxLines": {
+                            "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
                             "exclusiveMinimum": 0,
                             "maximum": 9007199254740991,
                             "type": "integer"
@@ -1229,6 +1312,7 @@
                       },
                       "tool": {
                         "const": "snapshot_pane",
+                        "description": "Run `snapshot_pane` as this step of the batch.",
                         "type": "string"
                       }
                     },
@@ -1667,6 +1751,7 @@
                   "type": "string"
                 },
                 "maxLines": {
+                  "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
                   "exclusiveMinimum": 0,
                   "maximum": 9007199254740991,
                   "type": "integer"
@@ -1807,6 +1892,7 @@
               "type": "string"
             },
             "maxLines": {
+              "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
               "exclusiveMinimum": 0,
               "maximum": 9007199254740991,
               "type": "integer"
@@ -2044,6 +2130,7 @@
                   "x-libtmux-tmux-format": "literalized-once"
                 },
                 "startDirectory": {
+                  "description": "Working directory for the first pane. Defaults to the server's.",
                   "type": "string",
                   "x-libtmux-tmux-format": "literalized-once"
                 },
@@ -2054,6 +2141,7 @@
                   "type": "integer"
                 },
                 "windowName": {
+                  "description": "Name for the first window, so the session does not open with a stray shell.",
                   "type": "string",
                   "x-libtmux-tmux-format": "literalized-once"
                 }
@@ -2078,7 +2166,13 @@
                 "session": {
                   "properties": {
                     "attachedClients": {
-                      "description": "How many clients are attached; 0 means detached.",
+                      "description": "Raw client count from tmux; 0 means detached. Includes control-mode clients - this server's own wait_for_text or other live read holds one open while it runs, and another program on this socket may hold others. See humanAttachedClients for a person-only count.",
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "humanAttachedClients": {
+                      "description": "attachedClients minus every control-mode client, this server's own included.",
                       "maximum": 9007199254740991,
                       "minimum": -9007199254740991,
                       "type": "integer"
@@ -2110,6 +2204,7 @@
                   },
                   "required": [
                     "attachedClients",
+                    "humanAttachedClients",
                     "id",
                     "metadataComplete",
                     "name",
@@ -2165,6 +2260,7 @@
               "x-libtmux-tmux-format": "literalized-once"
             },
             "startDirectory": {
+              "description": "Working directory for the first pane. Defaults to the server's.",
               "type": "string",
               "x-libtmux-tmux-format": "literalized-once"
             },
@@ -2175,6 +2271,7 @@
               "type": "integer"
             },
             "windowName": {
+              "description": "Name for the first window, so the session does not open with a stray shell.",
               "type": "string",
               "x-libtmux-tmux-format": "literalized-once"
             }
@@ -2195,7 +2292,13 @@
               "additionalProperties": false,
               "properties": {
                 "attachedClients": {
-                  "description": "How many clients are attached; 0 means detached.",
+                  "description": "Raw client count from tmux; 0 means detached. Includes control-mode clients - this server's own wait_for_text or other live read holds one open while it runs, and another program on this socket may hold others. See humanAttachedClients for a person-only count.",
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "humanAttachedClients": {
+                  "description": "attachedClients minus every control-mode client, this server's own included.",
                   "maximum": 9007199254740991,
                   "minimum": -9007199254740991,
                   "type": "integer"
@@ -2227,6 +2330,7 @@
               },
               "required": [
                 "attachedClients",
+                "humanAttachedClients",
                 "id",
                 "metadataComplete",
                 "name",
@@ -2269,6 +2373,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "name": {
+                  "description": "Name for the new window.",
                   "type": "string",
                   "x-libtmux-tmux-format": "literalized-once"
                 },
@@ -2277,6 +2382,7 @@
                   "type": "string"
                 },
                 "startDirectory": {
+                  "description": "Working directory for the new pane. Defaults to the session's.",
                   "type": "string",
                   "x-libtmux-tmux-format": "literalized-once"
                 }
@@ -2421,6 +2527,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "name": {
+              "description": "Name for the new window.",
               "type": "string",
               "x-libtmux-tmux-format": "literalized-once"
             },
@@ -2429,6 +2536,7 @@
               "type": "string"
             },
             "startDirectory": {
+              "description": "Working directory for the new pane. Defaults to the session's.",
               "type": "string",
               "x-libtmux-tmux-format": "literalized-once"
             }
@@ -2565,6 +2673,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "corner": {
+                  "description": "Which corner of the window's layout to resolve.",
                   "enum": [
                     "top-left",
                     "top-right",
@@ -2751,6 +2860,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "corner": {
+              "description": "Which corner of the window's layout to resolve.",
               "enum": [
                 "top-left",
                 "top-right",
@@ -3413,6 +3523,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "session": {
+                  "description": "Session id ($1) or name.",
                   "type": "string"
                 }
               },
@@ -3434,7 +3545,13 @@
                 "session": {
                   "properties": {
                     "attachedClients": {
-                      "description": "How many clients are attached; 0 means detached.",
+                      "description": "Raw client count from tmux; 0 means detached. Includes control-mode clients - this server's own wait_for_text or other live read holds one open while it runs, and another program on this socket may hold others. See humanAttachedClients for a person-only count.",
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "humanAttachedClients": {
+                      "description": "attachedClients minus every control-mode client, this server's own included.",
                       "maximum": 9007199254740991,
                       "minimum": -9007199254740991,
                       "type": "integer"
@@ -3466,6 +3583,7 @@
                   },
                   "required": [
                     "attachedClients",
+                    "humanAttachedClients",
                     "id",
                     "metadataComplete",
                     "name",
@@ -3502,6 +3620,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "session": {
+              "description": "Session id ($1) or name.",
               "type": "string"
             }
           },
@@ -3519,7 +3638,13 @@
               "additionalProperties": false,
               "properties": {
                 "attachedClients": {
-                  "description": "How many clients are attached; 0 means detached.",
+                  "description": "Raw client count from tmux; 0 means detached. Includes control-mode clients - this server's own wait_for_text or other live read holds one open while it runs, and another program on this socket may hold others. See humanAttachedClients for a person-only count.",
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "humanAttachedClients": {
+                  "description": "attachedClients minus every control-mode client, this server's own included.",
                   "maximum": 9007199254740991,
                   "minimum": -9007199254740991,
                   "type": "integer"
@@ -3551,6 +3676,7 @@
               },
               "required": [
                 "attachedClients",
+                "humanAttachedClients",
                 "id",
                 "metadataComplete",
                 "name",
@@ -3585,6 +3711,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "names": {
+                  "description": "Variable names to resolve, such as \"pane_current_command\" — bare names, not `#{…}` format syntax.",
                   "items": {
                     "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
                     "type": "string"
@@ -3653,6 +3780,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "names": {
+              "description": "Variable names to resolve, such as \"pane_current_command\" — bare names, not `#{…}` format syntax.",
               "items": {
                 "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
                 "type": "string"
@@ -3980,6 +4108,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "force": {
+                  "description": "Allow this to target the pane this server itself was called from, which is otherwise refused. It does not override the refusal to touch a pane a person is watching.",
                   "type": "boolean"
                 },
                 "paneId": {
@@ -4037,6 +4166,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "force": {
+              "description": "Allow this to target the pane this server itself was called from, which is otherwise refused. It does not override the refusal to touch a pane a person is watching.",
               "type": "boolean"
             },
             "paneId": {
@@ -4084,9 +4214,11 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "force": {
+                  "description": "Allow this to target the pane this server itself was called from, which is otherwise refused. It does not override the refusal to touch a pane a person is watching.",
                   "type": "boolean"
                 },
                 "session": {
+                  "description": "Session id ($1) or name.",
                   "type": "string"
                 }
               },
@@ -4139,9 +4271,11 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "force": {
+              "description": "Allow this to target the pane this server itself was called from, which is otherwise refused. It does not override the refusal to touch a pane a person is watching.",
               "type": "boolean"
             },
             "session": {
+              "description": "Session id ($1) or name.",
               "type": "string"
             }
           },
@@ -4184,6 +4318,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "force": {
+                  "description": "Allow this to target the pane this server itself was called from, which is otherwise refused. It does not override the refusal to touch a pane a person is watching.",
                   "type": "boolean"
                 },
                 "windowId": {
@@ -4241,6 +4376,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "force": {
+              "description": "Allow this to target the pane this server itself was called from, which is otherwise refused. It does not override the refusal to touch a pane a person is watching.",
               "type": "boolean"
             },
             "windowId": {
@@ -4683,7 +4819,13 @@
                   "items": {
                     "properties": {
                       "attachedClients": {
-                        "description": "How many clients are attached; 0 means detached.",
+                        "description": "Raw client count from tmux; 0 means detached. Includes control-mode clients - this server's own wait_for_text or other live read holds one open while it runs, and another program on this socket may hold others. See humanAttachedClients for a person-only count.",
+                        "maximum": 9007199254740991,
+                        "minimum": -9007199254740991,
+                        "type": "integer"
+                      },
+                      "humanAttachedClients": {
+                        "description": "attachedClients minus every control-mode client, this server's own included.",
                         "maximum": 9007199254740991,
                         "minimum": -9007199254740991,
                         "type": "integer"
@@ -4715,6 +4857,7 @@
                     },
                     "required": [
                       "attachedClients",
+                      "humanAttachedClients",
                       "id",
                       "metadataComplete",
                       "name",
@@ -4774,7 +4917,13 @@
                 "additionalProperties": false,
                 "properties": {
                   "attachedClients": {
-                    "description": "How many clients are attached; 0 means detached.",
+                    "description": "Raw client count from tmux; 0 means detached. Includes control-mode clients - this server's own wait_for_text or other live read holds one open while it runs, and another program on this socket may hold others. See humanAttachedClients for a person-only count.",
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  "humanAttachedClients": {
+                    "description": "attachedClients minus every control-mode client, this server's own included.",
                     "maximum": 9007199254740991,
                     "minimum": -9007199254740991,
                     "type": "integer"
@@ -4806,6 +4955,7 @@
                 },
                 "required": [
                   "attachedClients",
+                  "humanAttachedClients",
                   "id",
                   "metadataComplete",
                   "name",
@@ -5129,6 +5279,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "index": {
+                  "description": "Destination index. Defaults to the next free one.",
                   "maximum": 9007199254740991,
                   "minimum": 0,
                   "type": "integer"
@@ -5287,6 +5438,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "index": {
+              "description": "Destination index. Defaults to the next free one.",
               "maximum": 9007199254740991,
               "minimum": 0,
               "type": "integer"
@@ -5441,7 +5593,7 @@
                   "type": "boolean"
                 },
                 "force": {
-                  "description": "Write to this server's exact caller pane. Never overrides attention.",
+                  "description": "Allow writing to the pane this server itself was called from, which is otherwise refused. It does not override the refusal to write to a pane a person is watching — a pane an attached client has on screen is still refused with force.",
                   "type": "boolean"
                 },
                 "paneId": {
@@ -5450,6 +5602,7 @@
                   "type": "string"
                 },
                 "text": {
+                  "description": "Text to paste. Sent through a tmux buffer, so a shell's line editor does not redraw on every character.",
                   "type": "string"
                 }
               },
@@ -5513,7 +5666,7 @@
               "type": "boolean"
             },
             "force": {
-              "description": "Write to this server's exact caller pane. Never overrides attention.",
+              "description": "Allow writing to the pane this server itself was called from, which is otherwise refused. It does not override the refusal to write to a pane a person is watching — a pane an attached client has on screen is still refused with force.",
               "type": "boolean"
             },
             "paneId": {
@@ -5522,6 +5675,7 @@
               "type": "string"
             },
             "text": {
+              "description": "Text to paste. Sent through a tmux buffer, so a shell's line editor does not redraw on every character.",
               "type": "string"
             }
           },
@@ -5573,10 +5727,12 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "name": {
+                  "description": "The session's new name.",
                   "type": "string",
                   "x-libtmux-tmux-format": "literalized-once"
                 },
                 "session": {
+                  "description": "Session id ($1) or name.",
                   "type": "string"
                 }
               },
@@ -5599,7 +5755,13 @@
                 "session": {
                   "properties": {
                     "attachedClients": {
-                      "description": "How many clients are attached; 0 means detached.",
+                      "description": "Raw client count from tmux; 0 means detached. Includes control-mode clients - this server's own wait_for_text or other live read holds one open while it runs, and another program on this socket may hold others. See humanAttachedClients for a person-only count.",
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "humanAttachedClients": {
+                      "description": "attachedClients minus every control-mode client, this server's own included.",
                       "maximum": 9007199254740991,
                       "minimum": -9007199254740991,
                       "type": "integer"
@@ -5631,6 +5793,7 @@
                   },
                   "required": [
                     "attachedClients",
+                    "humanAttachedClients",
                     "id",
                     "metadataComplete",
                     "name",
@@ -5668,10 +5831,12 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "name": {
+              "description": "The session's new name.",
               "type": "string",
               "x-libtmux-tmux-format": "literalized-once"
             },
             "session": {
+              "description": "Session id ($1) or name.",
               "type": "string"
             }
           },
@@ -5690,7 +5855,13 @@
               "additionalProperties": false,
               "properties": {
                 "attachedClients": {
-                  "description": "How many clients are attached; 0 means detached.",
+                  "description": "Raw client count from tmux; 0 means detached. Includes control-mode clients - this server's own wait_for_text or other live read holds one open while it runs, and another program on this socket may hold others. See humanAttachedClients for a person-only count.",
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "humanAttachedClients": {
+                  "description": "attachedClients minus every control-mode client, this server's own included.",
                   "maximum": 9007199254740991,
                   "minimum": -9007199254740991,
                   "type": "integer"
@@ -5722,6 +5893,7 @@
               },
               "required": [
                 "attachedClients",
+                "humanAttachedClients",
                 "id",
                 "metadataComplete",
                 "name",
@@ -5756,6 +5928,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "name": {
+                  "description": "The window's new name.",
                   "type": "string",
                   "x-libtmux-tmux-format": "literalized-once"
                 },
@@ -5900,6 +6073,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "name": {
+              "description": "The window's new name.",
               "type": "string",
               "x-libtmux-tmux-format": "literalized-once"
             },
@@ -6042,6 +6216,7 @@
                   "type": "integer"
                 },
                 "direction": {
+                  "description": "Adjust by an amount in this direction instead of setting a size.",
                   "enum": [
                     "up",
                     "down",
@@ -6051,6 +6226,7 @@
                   "type": "string"
                 },
                 "height": {
+                  "description": "Set the pane height, in rows.",
                   "exclusiveMinimum": 0,
                   "maximum": 9007199254740991,
                   "type": "integer"
@@ -6061,12 +6237,13 @@
                   "type": "string"
                 },
                 "width": {
+                  "description": "Set the width, in columns.",
                   "exclusiveMinimum": 0,
                   "maximum": 9007199254740991,
                   "type": "integer"
                 },
                 "zoom": {
-                  "description": "Toggle this pane filling its window.",
+                  "description": "true makes this pane fill its window, false restores the layout. A state, not a toggle: sending the same value twice is a no-op.",
                   "type": "boolean"
                 }
               },
@@ -6248,6 +6425,7 @@
               "type": "integer"
             },
             "direction": {
+              "description": "Adjust by an amount in this direction instead of setting a size.",
               "enum": [
                 "up",
                 "down",
@@ -6257,6 +6435,7 @@
               "type": "string"
             },
             "height": {
+              "description": "Set the pane height, in rows.",
               "exclusiveMinimum": 0,
               "maximum": 9007199254740991,
               "type": "integer"
@@ -6267,12 +6446,13 @@
               "type": "string"
             },
             "width": {
+              "description": "Set the width, in columns.",
               "exclusiveMinimum": 0,
               "maximum": 9007199254740991,
               "type": "integer"
             },
             "zoom": {
-              "description": "Toggle this pane filling its window.",
+              "description": "true makes this pane fill its window, false restores the layout. A state, not a toggle: sending the same value twice is a no-op.",
               "type": "boolean"
             }
           },
@@ -6440,11 +6620,13 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "height": {
+                  "description": "Set the height, in rows.",
                   "exclusiveMinimum": 0,
                   "maximum": 9007199254740991,
                   "type": "integer"
                 },
                 "width": {
+                  "description": "Set the width, in columns.",
                   "exclusiveMinimum": 0,
                   "maximum": 9007199254740991,
                   "type": "integer"
@@ -6589,11 +6771,13 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "height": {
+              "description": "Set the height, in rows.",
               "exclusiveMinimum": 0,
               "maximum": 9007199254740991,
               "type": "integer"
             },
             "width": {
+              "description": "Set the width, in columns.",
               "exclusiveMinimum": 0,
               "maximum": 9007199254740991,
               "type": "integer"
@@ -6732,7 +6916,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "force": {
-                  "description": "Restart this server's exact caller pane. Never overrides attention.",
+                  "description": "Allow this to target the pane this server itself was called from, which is otherwise refused. It does not override the refusal to touch a pane a person is watching.",
                   "type": "boolean"
                 },
                 "killFirst": {
@@ -6745,6 +6929,7 @@
                   "type": "string"
                 },
                 "startDirectory": {
+                  "description": "Working directory for the restarted command. Defaults to the pane's.",
                   "type": "string",
                   "x-libtmux-tmux-format": "literalized-once"
                 }
@@ -6922,7 +7107,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "force": {
-              "description": "Restart this server's exact caller pane. Never overrides attention.",
+              "description": "Allow this to target the pane this server itself was called from, which is otherwise refused. It does not override the refusal to touch a pane a person is watching.",
               "type": "boolean"
             },
             "killFirst": {
@@ -6935,6 +7120,7 @@
               "type": "string"
             },
             "startDirectory": {
+              "description": "Working directory for the restarted command. Defaults to the pane's.",
               "type": "string",
               "x-libtmux-tmux-format": "literalized-once"
             }
@@ -7107,10 +7293,11 @@
                   "type": "string"
                 },
                 "force": {
-                  "description": "Write to this server's exact caller pane. Never overrides attention.",
+                  "description": "Allow writing to the pane this server itself was called from, which is otherwise refused. It does not override the refusal to write to a pane a person is watching — a pane an attached client has on screen is still refused with force.",
                   "type": "boolean"
                 },
                 "maxLines": {
+                  "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
                   "exclusiveMinimum": 0,
                   "maximum": 9007199254740991,
                   "type": "integer"
@@ -7262,10 +7449,11 @@
               "type": "string"
             },
             "force": {
-              "description": "Write to this server's exact caller pane. Never overrides attention.",
+              "description": "Allow writing to the pane this server itself was called from, which is otherwise refused. It does not override the refusal to write to a pane a person is watching — a pane an attached client has on screen is still refused with force.",
               "type": "boolean"
             },
             "maxLines": {
+              "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
               "exclusiveMinimum": 0,
               "maximum": 9007199254740991,
               "type": "integer"
@@ -7402,6 +7590,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "maxMatchesPerPane": {
+                  "description": "Stop after this many matches in each pane. Defaults to the server limit.",
                   "exclusiveMinimum": 0,
                   "maximum": 9007199254740991,
                   "type": "integer"
@@ -7574,6 +7763,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "maxMatchesPerPane": {
+              "description": "Stop after this many matches in each pane. Defaults to the server limit.",
               "exclusiveMinimum": 0,
               "maximum": 9007199254740991,
               "type": "integer"
@@ -8658,7 +8848,7 @@
                   "type": "boolean"
                 },
                 "force": {
-                  "description": "Write to this server's exact caller pane. Never overrides attention.",
+                  "description": "Allow writing to the pane this server itself was called from, which is otherwise refused. It does not override the refusal to write to a pane a person is watching — a pane an attached client has on screen is still refused with force.",
                   "type": "boolean"
                 },
                 "keys": {
@@ -8748,7 +8938,7 @@
               "type": "boolean"
             },
             "force": {
-              "description": "Write to this server's exact caller pane. Never overrides attention.",
+              "description": "Allow writing to the pane this server itself was called from, which is otherwise refused. It does not override the refusal to write to a pane a person is watching — a pane an attached client has on screen is still refused with force.",
               "type": "boolean"
             },
             "keys": {
@@ -8824,6 +9014,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "onError": {
+                  "description": "Whether a failed operation ends the batch. Defaults to stop.",
                   "enum": [
                     "stop",
                     "continue"
@@ -8831,18 +9022,23 @@
                   "type": "string"
                 },
                 "operations": {
+                  "description": "The key sends to run, in order, one pane each.",
                   "items": {
                     "properties": {
                       "enter": {
+                        "description": "Press Enter afterwards. Default true.",
                         "type": "boolean"
                       },
                       "force": {
+                        "description": "Allow this server's own caller pane, as on `send_keys`.",
                         "type": "boolean"
                       },
                       "keys": {
+                        "description": "Keys for this pane, as on `send_keys`.",
                         "type": "string"
                       },
                       "literal": {
+                        "description": "Send the text literally rather than resolving key names.",
                         "type": "boolean"
                       },
                       "paneId": {
@@ -8958,6 +9154,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "onError": {
+              "description": "Whether a failed operation ends the batch. Defaults to stop.",
               "enum": [
                 "stop",
                 "continue"
@@ -8965,18 +9162,23 @@
               "type": "string"
             },
             "operations": {
+              "description": "The key sends to run, in order, one pane each.",
               "items": {
                 "properties": {
                   "enter": {
+                    "description": "Press Enter afterwards. Default true.",
                     "type": "boolean"
                   },
                   "force": {
+                    "description": "Allow this server's own caller pane, as on `send_keys`.",
                     "type": "boolean"
                   },
                   "keys": {
+                    "description": "Keys for this pane, as on `send_keys`.",
                     "type": "string"
                   },
                   "literal": {
+                    "description": "Send the text literally rather than resolving key names.",
                     "type": "boolean"
                   },
                   "paneId": {
@@ -9084,6 +9286,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "lines": {
+                  "description": "Scrollback lines each new pane keeps. Applies to panes made after this.",
                   "maximum": 2000000,
                   "minimum": 0,
                   "type": "integer"
@@ -9137,6 +9340,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "lines": {
+              "description": "Scrollback lines each new pane keeps. Applies to panes made after this.",
               "maximum": 2000000,
               "minimum": 0,
               "type": "integer"
@@ -9181,6 +9385,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "enabled": {
+                  "description": "Whether tmux should report mouse events.",
                   "type": "boolean"
                 }
               },
@@ -9230,6 +9435,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "enabled": {
+              "description": "Whether tmux should report mouse events.",
               "type": "boolean"
             }
           },
@@ -9277,6 +9483,7 @@
                   "type": "string"
                 },
                 "title": {
+                  "description": "The pane's new title.",
                   "type": "string",
                   "x-libtmux-tmux-format": "literalized-once"
                 }
@@ -9459,6 +9666,7 @@
               "type": "string"
             },
             "title": {
+              "description": "The pane's new title.",
               "type": "string",
               "x-libtmux-tmux-format": "literalized-once"
             }
@@ -9628,6 +9836,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "enabled": {
+                  "description": "Whether typing into one pane of this window types into all of them.",
                   "type": "boolean"
                 },
                 "windowId": {
@@ -9689,6 +9898,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "enabled": {
+              "description": "Whether typing into one pane of this window types into all of them.",
               "type": "boolean"
             },
             "windowId": {
@@ -9741,6 +9951,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "session": {
+                  "description": "Session id ($1) or name. Omit for the server environment.",
                   "type": "string"
                 }
               },
@@ -9806,6 +10017,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "session": {
+              "description": "Session id ($1) or name. Omit for the server environment.",
               "type": "string"
             }
           },
@@ -9993,6 +10205,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "name": {
+                  "description": "The tmux option to read, such as \"status-left\".",
                   "type": "string"
                 },
                 "scope": {
@@ -10070,6 +10283,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "name": {
+              "description": "The tmux option to read, such as \"status-left\".",
               "type": "string"
             },
             "scope": {
@@ -10137,6 +10351,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "channel": {
+                  "description": "The tmux wait-for channel to signal.",
                   "type": "string"
                 }
               },
@@ -10190,6 +10405,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "channel": {
+              "description": "The tmux wait-for channel to signal.",
               "type": "string"
             }
           },
@@ -10234,6 +10450,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "maxLines": {
+                  "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
                   "exclusiveMinimum": 0,
                   "maximum": 9007199254740991,
                   "type": "integer"
@@ -10450,6 +10667,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "maxLines": {
+              "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
               "exclusiveMinimum": 0,
               "maximum": 9007199254740991,
               "type": "integer"
@@ -11420,9 +11638,11 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "properties": {
                 "channel": {
+                  "description": "The tmux wait-for channel name.",
                   "type": "string"
                 },
                 "timeoutMs": {
+                  "description": "Give up after this long. Defaults to the server's wait ceiling.",
                   "exclusiveMinimum": 0,
                   "maximum": 9007199254740991,
                   "type": "integer"
@@ -11478,9 +11698,11 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "channel": {
+              "description": "The tmux wait-for channel name.",
               "type": "string"
             },
             "timeoutMs": {
+              "description": "Give up after this long. Defaults to the server's wait ceiling.",
               "exclusiveMinimum": 0,
               "maximum": 9007199254740991,
               "type": "integer"
@@ -11521,7 +11743,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait until a pane prints something, streaming tmux's notifications rather than polling. Use for output you did NOT author — another process, a person, a background job. For a command you wrote, use run_shell_command: it knows when the command ended and reports exit status, which no text match can. A pane echoes what is typed into it, so waiting for text that also appears in a command you just sent matches the echo. Whatever happens you get back what the pane printed and why the wait ended — a timeout is never an empty answer.",
+            "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait until a pane prints something, streaming tmux's notifications rather than polling. Use for output you did NOT author — another process, a person, a background job. For a command you wrote, use run_shell_command: it knows when the command ended and reports exit status, which no text match can. This discounts text this server itself typed into the pane, for as long as it is unsubmitted or was submitted within the last ten seconds, so a command you just sent cannot match its own echo — but a pane not yet reading input can still echo type-ahead back once it starts, so wait for a prompt before typing into a cold shell. Whatever happens you get back what the pane printed and why the wait ended — a timeout is never an empty answer.",
             "inputLiteralization": {},
             "inputSchema": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -11532,6 +11754,7 @@
                   "type": "string"
                 },
                 "maxLines": {
+                  "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
                   "exclusiveMinimum": 0,
                   "maximum": 9007199254740991,
                   "type": "integer"
@@ -11711,7 +11934,7 @@
           "openWorldHint": true,
           "readOnlyHint": false
         },
-        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait until a pane prints something, streaming tmux's notifications rather than polling. Use for output you did NOT author — another process, a person, a background job. For a command you wrote, use run_shell_command: it knows when the command ended and reports exit status, which no text match can. A pane echoes what is typed into it, so waiting for text that also appears in a command you just sent matches the echo. Whatever happens you get back what the pane printed and why the wait ended — a timeout is never an empty answer.",
+        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait until a pane prints something, streaming tmux's notifications rather than polling. Use for output you did NOT author — another process, a person, a background job. For a command you wrote, use run_shell_command: it knows when the command ended and reports exit status, which no text match can. This discounts text this server itself typed into the pane, for as long as it is unsubmitted or was submitted within the last ten seconds, so a command you just sent cannot match its own echo — but a pane not yet reading input can still echo type-ahead back once it starts, so wait for a prompt before typing into a cold shell. Whatever happens you get back what the pane printed and why the wait ended — a timeout is never an empty answer.",
         "execution": {
           "taskSupport": "forbidden"
         },
@@ -11724,6 +11947,7 @@
               "type": "string"
             },
             "maxLines": {
+              "description": "Keep at most this many lines, from the end. Defaults to the server limit.",
               "exclusiveMinimum": 0,
               "maximum": 9007199254740991,
               "type": "integer"

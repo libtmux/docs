@@ -32,7 +32,7 @@ and optional arguments.
 The following examples are for applications that embed or extend the server.
 Installing and connecting an MCP client does not require this code.
 
-The crate includes a complete stdio server with its tier chosen in Rust
+The crate includes a complete stdio server with its tool selection chosen in Rust
 code. Use it when the offered surface is part of the embedding
 application's policy.
 
@@ -58,7 +58,7 @@ $ cargo run \
 The process speaks MCP on stdin and stdout. It writes the selected tool
 count to stderr.
 
-To inspect the default mutating tier's tools and output schemas without
+To inspect the configured tools and output schemas without
 starting a tmux server:
 
 ```console
@@ -67,9 +67,9 @@ $ cargo run \
     --example surface
 ```
 
-The [readonly source](https://github.com/libtmux/libtmux-rs/blob/9331cdf556ea7a1f2589e9c3e6cece6ccdc7765c/crates/tmux-mcp/examples/readonly.rs)
-and [surface source](https://github.com/libtmux/libtmux-rs/blob/9331cdf556ea7a1f2589e9c3e6cece6ccdc7765c/crates/tmux-mcp/examples/surface.rs)
+The [readonly source](https://github.com/libtmux/libtmux-rs/blob/f0e37052c232636b61d095817046e6bfc8f2ca40/crates/tmux-mcp/examples/readonly.rs)
+and [surface source](https://github.com/libtmux/libtmux-rs/blob/f0e37052c232636b61d095817046e6bfc8f2ca40/crates/tmux-mcp/examples/surface.rs)
 are shipped crate examples. The crate's test suite also drives an isolated
 real tmux server. Rendering this source is not an execution of the example.
 
-See [Topics](../topics/) before using background jobs or destructive plans.
+See [Topics](../topics/) for command deadlines and tool selection.

@@ -86,7 +86,7 @@ describe('indexFor attaches the inventories', () => {
     const cases = [
       ['rs', 'ErrorData', 'docs.rs/rmcp/3.1.2'],
       ['java', 'McpSyncServer', 'mcp-core/2.0.1'],
-      ['dotnet', 'ProgressNotificationValue', 'csharp.sdk.modelcontextprotocol.io'],
+      ['dotnet', 'IMcpServerBuilder', 'csharp.sdk.modelcontextprotocol.io'],
       ['py', 'FastMCP', 'gofastmcp.com'],
       ['ts', 'McpServer', 'typescript-sdk/blob/1.30.0'],
       ['go', 'sdk.Tool', 'go-sdk@v1.6.1'],

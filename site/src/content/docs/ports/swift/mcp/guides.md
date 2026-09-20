@@ -24,7 +24,7 @@ The debug executable is written under `.build/debug`.
 Run an inspection surface on a named socket:
 
 ```console
-$ LIBTMUX_SOCKET=docs-agent LIBTMUX_SAFETY=readonly \
+$ LIBTMUX_SOCKET=docs-agent LIBTMUX_TOOLSETS=inspect \
     .build/debug/libtmux-mcp
 ```
 
@@ -43,27 +43,26 @@ If the executable is on the client's `PATH`, use this
       "command": "libtmux-mcp",
       "env": {
         "LIBTMUX_SOCKET": "docs-agent",
-        "LIBTMUX_SAFETY": "readonly"
+        "LIBTMUX_TOOLSETS": "inspect"
       }
     }
   }
 }
 ```
 
-`LIBTMUX_SOCKET_PATH` takes precedence over the socket name.
+`LIBTMUX_SOCKET_PATH` and `LIBTMUX_SOCKET` are mutually exclusive.
 `LIBTMUX_TMUX_BIN` selects the tmux executable.
 
 ## Verify and narrow the surface
 
-Ask the client to list sessions and read `tmux://filters`.
+Ask the client to list sessions and read `tmux://capabilities`.
 Retain opaque references from listings for follow-up calls.
 
-To allow only listing and window creation, select mutating and set
-`LIBTMUX_MCP_TOOLS=list_sessions,new_window`. The tier remains an upper
-bound. Reconnect after changing environment variables.
+To allow only listing and window creation, set `LIBTMUX_TOOLSETS` to
+an empty string and `LIBTMUX_TOOLS=list_sessions,create_window`.
+Reconnect after changing environment variables.
 
-Missing tools can be caused by a malformed exact selection; inspect
-stderr diagnostics. A stale pane reference needs a fresh listing,
+Invalid tool selections fail startup; inspect stderr diagnostics. A stale pane reference needs a fresh listing,
 not another spelling of the same raw ID.
 
-[Executable contract](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/libtmux-mcp/README.md).
+[Executable contract](https://github.com/libtmux/libtmux-swift/blob/254f8b2be7eb60cacc3ffcb3ea8e456784f582df/Sources/libtmux-mcp/README.md).

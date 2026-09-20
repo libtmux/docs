@@ -37,12 +37,7 @@ export const MCP_REFERENCE = data.ports as unknown as Record<string, McpReferenc
 // These registrations perform the same operation with different argument/result shapes.
 // Swift's raw tmux command and scrollback-only clearing must keep distinct identities.
 const TOOL_OPERATIONS: Record<string, Record<string, string>> = {
-  ts: { run_shell_command: 'run_command' },
-  java: { run_shell_command: 'run_command' },
-  rs: { new_window: 'create_window', split_pane: 'split_window', clear_pane: 'clear_pane_scrollback' },
-  dotnet: { run: 'run_command', split_pane: 'split_window' },
-  cxx: { new_window: 'create_window' },
-  swift: { new_session: 'create_session', new_window: 'create_window', split_pane: 'split_window', run_shell: 'run_command', run_command: 'raw_tmux_command' },
+  py: { run_command: 'run_shell_command' },
 }
 
 /** Resolve an equivalent operation to the target port's actual wire registration. */

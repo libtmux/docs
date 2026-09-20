@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-java",
-  "revision": "320c9dcbdb10a0df02b778f09f79a8abc9942745",
+  "revision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -29,7 +29,7 @@
     "resourceTemplates": [],
     "serverInfo": {
       "name": "libtmux",
-      "version": "0.0.1-alpha.10-SNAPSHOT"
+      "version": "0.0.1-alpha.12-SNAPSHOT"
     },
     "tools": [
       {
@@ -42,7 +42,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Calls up to sixteen eligible inspect tools serially; inner tools receive no separate approval, and its nested authority is disclosed. The complete JSON-RPC response is capped at 1,000,000 bytes; a removed nested envelope is marked on its row and counted in truncatedBytes.",
+            "description": "Calls up to sixteen eligible inspect tools serially; inner tools receive no separate approval, and its nested authority is disclosed. The complete JSON-RPC response is capped at 1,000,000 bytes; a removed nested envelope is marked on its row and counted in truncatedBytes. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -696,7 +696,7 @@
           "readOnlyHint": false,
           "title": "Call read tools in a batch"
         },
-        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Calls up to sixteen eligible inspect tools serially; inner tools receive no separate approval, and its nested authority is disclosed. The complete JSON-RPC response is capped at 1,000,000 bytes; a removed nested envelope is marked on its row and counted in truncatedBytes.",
+        "description": "Calls up to sixteen eligible inspect tools serially; inner tools receive no separate approval, and its nested authority is disclosed. The complete JSON-RPC response is capped at 1,000,000 bytes; a removed nested envelope is marked on its row and counted in truncatedBytes. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -1319,7 +1319,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Returns bounded pane content and a cursor.",
+            "description": "Returns bounded pane content and a cursor. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -1405,7 +1405,7 @@
           "readOnlyHint": false,
           "title": "Capture a pane"
         },
-        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Returns bounded pane content and a cursor.",
+        "description": "Returns bounded pane content and a cursor. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -1479,7 +1479,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Returns pane output produced after a cursor.",
+            "description": "Returns pane output produced after a cursor. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -1568,7 +1568,7 @@
           "readOnlyHint": false,
           "title": "Capture new pane output"
         },
-        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Returns pane output produced after a cursor.",
+        "description": "Returns pane output produced after a cursor. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -1645,7 +1645,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Delete tmux state; accepts no command payload. Deletes retained scrollback from one pane.",
+            "description": "Deletes retained scrollback from one pane. Delete tmux state; accepts no command payload.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -1698,7 +1698,7 @@
           "readOnlyHint": false,
           "title": "Clear pane scrollback"
         },
-        "description": "Delete tmux state; accepts no command payload. Deletes retained scrollback from one pane.",
+        "description": "Deletes retained scrollback from one pane. Delete tmux state; accepts no command payload.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -1740,7 +1740,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Start a pane's configured process; accepts no command payload. Creates a detached session whose first pane runs the configured process.",
+            "description": "Creates a detached session whose first pane runs the configured process. Start a pane's configured process; accepts no command payload.",
             "inputLiteralization": {
               "session_name": "double-hash-once",
               "start_directory": "double-hash-once",
@@ -1822,7 +1822,7 @@
           "readOnlyHint": false,
           "title": "Create a session"
         },
-        "description": "Start a pane's configured process; accepts no command payload. Creates a detached session whose first pane runs the configured process.",
+        "description": "Creates a detached session whose first pane runs the configured process. Start a pane's configured process; accepts no command payload.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -1888,7 +1888,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Start a pane's configured process; accepts no command payload. Creates a window whose first pane runs the configured process.",
+            "description": "Creates a window whose first pane runs the configured process. Start a pane's configured process; accepts no command payload.",
             "inputLiteralization": {
               "start_directory": "double-hash-once",
               "window_name": "double-hash-once"
@@ -1982,7 +1982,7 @@
           "readOnlyHint": false,
           "title": "Create a window"
         },
-        "description": "Start a pane's configured process; accepts no command payload. Creates a window whose first pane runs the configured process.",
+        "description": "Creates a window whose first pane runs the configured process. Start a pane's configured process; accepts no command payload.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -2061,7 +2061,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Inspect tmux metadata; accepts no client-supplied executable input. Finds a pane at one of a window's four corners.",
+            "description": "Finds a pane at one of a window's four corners. Inspect tmux metadata; accepts no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -2147,7 +2147,7 @@
           "readOnlyHint": false,
           "title": "Find pane by position"
         },
-        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Finds a pane at one of a window's four corners.",
+        "description": "Finds a pane at one of a window's four corners. Inspect tmux metadata; accepts no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -2222,7 +2222,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Inspect tmux metadata; accepts no client-supplied executable input. Returns metadata for one pane.",
+            "description": "Returns metadata for one pane. Inspect tmux metadata; accepts no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -2303,7 +2303,7 @@
           "readOnlyHint": false,
           "title": "Get pane info"
         },
-        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Returns metadata for one pane.",
+        "description": "Returns metadata for one pane. Inspect tmux metadata; accepts no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -2373,7 +2373,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Inspect tmux metadata; accepts no client-supplied executable input. Reports whether the pinned server exists and its version.",
+            "description": "Reports whether the pinned server exists and its version. Inspect tmux metadata; accepts no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -2427,7 +2427,7 @@
           "readOnlyHint": false,
           "title": "Get server info"
         },
-        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Reports whether the pinned server exists and its version.",
+        "description": "Reports whether the pinned server exists and its version. Inspect tmux metadata; accepts no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {},
@@ -2470,7 +2470,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Inspect tmux metadata; accepts no client-supplied executable input. Returns metadata for one session.",
+            "description": "Returns metadata for one session. Inspect tmux metadata; accepts no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -2531,7 +2531,7 @@
           "readOnlyHint": false,
           "title": "Get session info"
         },
-        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Returns metadata for one session.",
+        "description": "Returns metadata for one session. Inspect tmux metadata; accepts no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -2581,7 +2581,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration. Reads a capped list of validated tmux variable names, not free-form formats.",
+            "description": "Reads a capped list of validated tmux variable names, not free-form formats. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
             "inputLiteralization": {
               "names": "validated-variable-name"
             },
@@ -2645,7 +2645,7 @@
           "readOnlyHint": false,
           "title": "Get tmux variables"
         },
-        "description": "Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration. Reads a capped list of validated tmux variable names, not free-form formats.",
+        "description": "Reads a capped list of validated tmux variable names, not free-form formats. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -2695,7 +2695,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Inspect tmux metadata; accepts no client-supplied executable input. Returns metadata for one window.",
+            "description": "Returns metadata for one window. Inspect tmux metadata; accepts no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -2768,7 +2768,7 @@
           "readOnlyHint": false,
           "title": "Get window info"
         },
-        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Returns metadata for one window.",
+        "description": "Returns metadata for one window. Inspect tmux metadata; accepts no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -2830,7 +2830,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Delete tmux state; accepts no command payload. Deletes one pane and ends its process.",
+            "description": "Deletes one pane and ends its process. Delete tmux state; accepts no command payload.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -2892,7 +2892,7 @@
           "readOnlyHint": false,
           "title": "Kill a pane"
         },
-        "description": "Delete tmux state; accepts no command payload. Deletes one pane and ends its process.",
+        "description": "Deletes one pane and ends its process. Delete tmux state; accepts no command payload.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -2942,7 +2942,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Delete tmux state; accepts no command payload. Deletes one session and every window and pane in it.",
+            "description": "Deletes one session and every window and pane in it. Delete tmux state; accepts no command payload.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -3004,7 +3004,7 @@
           "readOnlyHint": false,
           "title": "Kill a session"
         },
-        "description": "Delete tmux state; accepts no command payload. Deletes one session and every window and pane in it.",
+        "description": "Deletes one session and every window and pane in it. Delete tmux state; accepts no command payload.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -3054,7 +3054,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Delete tmux state; accepts no command payload. Deletes one window and every pane in it.",
+            "description": "Deletes one window and every pane in it. Delete tmux state; accepts no command payload.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -3116,7 +3116,7 @@
           "readOnlyHint": false,
           "title": "Kill a window"
         },
-        "description": "Delete tmux state; accepts no command payload. Deletes one window and every pane in it.",
+        "description": "Deletes one window and every pane in it. Delete tmux state; accepts no command payload.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -3166,7 +3166,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Inspect tmux metadata; accepts no client-supplied executable input. Lists pane metadata and stable pane IDs.",
+            "description": "Lists pane metadata and stable pane IDs. Inspect tmux metadata; accepts no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -3258,7 +3258,7 @@
           "readOnlyHint": false,
           "title": "List panes"
         },
-        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Lists pane metadata and stable pane IDs.",
+        "description": "Lists pane metadata and stable pane IDs. Inspect tmux metadata; accepts no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {},
@@ -3339,7 +3339,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Inspect tmux metadata; accepts no client-supplied executable input. Lists sessions on the pinned tmux server.",
+            "description": "Lists sessions on the pinned tmux server. Inspect tmux metadata; accepts no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -3419,7 +3419,7 @@
           "readOnlyHint": false,
           "title": "List sessions"
         },
-        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Lists sessions on the pinned tmux server.",
+        "description": "Lists sessions on the pinned tmux server. Inspect tmux metadata; accepts no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {},
@@ -3488,7 +3488,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Inspect tmux metadata; accepts no client-supplied executable input. Lists windows, optionally only those in one named session.",
+            "description": "Lists windows, optionally only those in one named session. Inspect tmux metadata; accepts no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -3574,7 +3574,7 @@
           "readOnlyHint": false,
           "title": "List windows"
         },
-        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Lists windows, optionally only those in one named session.",
+        "description": "Lists windows, optionally only those in one named session. Inspect tmux metadata; accepts no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -3649,7 +3649,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Moves a window to another session, optionally at an index.",
+            "description": "Moves a window to another session, optionally at an index. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -3717,7 +3717,7 @@
           "readOnlyHint": false,
           "title": "Move a window"
         },
-        "description": "Change tmux state; no client-supplied executable input. Moves a window to another session, optionally at an index.",
+        "description": "Moves a window to another session, optionally at an index. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -3773,7 +3773,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Pastes one literal text block into one target pane through an ephemeral buffer; paste-buffer input does not fan out to synchronized peers. The target cannot be caller or attended.",
+            "description": "Pastes one literal text block into one target pane through an ephemeral buffer; paste-buffer input does not fan out to synchronized peers. The target cannot be caller or attended. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -3844,7 +3844,7 @@
           "readOnlyHint": false,
           "title": "Paste text"
         },
-        "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Pastes one literal text block into one target pane through an ephemeral buffer; paste-buffer input does not fan out to synchronized peers. The target cannot be caller or attended.",
+        "description": "Pastes one literal text block into one target pane through an ephemeral buffer; paste-buffer input does not fan out to synchronized peers. The target cannot be caller or attended. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -3903,7 +3903,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Replaces a session's name.",
+            "description": "Replaces a session's name. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {
               "new_name": "double-hash-once"
             },
@@ -3972,7 +3972,7 @@
           "readOnlyHint": false,
           "title": "Rename a session"
         },
-        "description": "Change tmux state; no client-supplied executable input. Replaces a session's name.",
+        "description": "Replaces a session's name. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -4027,7 +4027,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Replaces a window's name.",
+            "description": "Replaces a window's name. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {
               "new_name": "double-hash-once"
             },
@@ -4108,7 +4108,7 @@
           "readOnlyHint": false,
           "title": "Rename a window"
         },
-        "description": "Change tmux state; no client-supplied executable input. Replaces a window's name.",
+        "description": "Replaces a window's name. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -4175,7 +4175,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Sets a pane's width, height or both.",
+            "description": "Sets a pane's width, height or both. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -4246,7 +4246,7 @@
           "readOnlyHint": false,
           "title": "Resize a pane"
         },
-        "description": "Change tmux state; no client-supplied executable input. Sets a pane's width, height or both.",
+        "description": "Sets a pane's width, height or both. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -4305,7 +4305,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Sets a window's width, height or both.",
+            "description": "Sets a window's width, height or both. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -4389,7 +4389,7 @@
           "readOnlyHint": false,
           "title": "Resize a window"
         },
-        "description": "Change tmux state; no client-supplied executable input. Sets a window's width, height or both.",
+        "description": "Sets a window's width, height or both. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -4461,7 +4461,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Start a pane's configured process; accepts no command payload. Kills the pane's current process and starts its configured process again.",
+            "description": "Kills the pane's current process and starts its configured process again. Start a pane's configured process; accepts no command payload.",
             "inputLiteralization": {
               "start_directory": "double-hash-once"
             },
@@ -4522,7 +4522,7 @@
           "readOnlyHint": false,
           "title": "Respawn a pane"
         },
-        "description": "Start a pane's configured process; accepts no command payload. Kills the pane's current process and starts its configured process again.",
+        "description": "Kills the pane's current process and starts its configured process again. Start a pane's configured process; accepts no command payload.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -4568,7 +4568,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Run a shell command in a pane with your user's permissions. Runs one authored command in a trusted pane shell and waits for singular framed output and completion. Its two preflights refuse caller or attended panes and an effective cohort larger than one. Pre-existing exact-client-path, trap, eval, or exit functions are outside the supported boundary; marker display-message commands honor the trusted server's command aliases and hooks.",
+            "description": "Runs one authored command in a trusted pane shell and waits for singular framed output and completion. Its two preflights refuse caller or attended panes and an effective cohort larger than one. Pre-existing exact-client-path, trap, eval, or exit functions are outside the supported boundary; marker display-message commands honor the trusted server's command aliases and hooks. Run a shell command in a pane with your user's permissions.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -4676,7 +4676,7 @@
           "readOnlyHint": false,
           "title": "Run a shell command"
         },
-        "description": "Run a shell command in a pane with your user's permissions. Runs one authored command in a trusted pane shell and waits for singular framed output and completion. Its two preflights refuse caller or attended panes and an effective cohort larger than one. Pre-existing exact-client-path, trap, eval, or exit functions are outside the supported boundary; marker display-message commands honor the trusted server's command aliases and hooks.",
+        "description": "Runs one authored command in a trusted pane shell and waits for singular framed output and completion. Its two preflights refuse caller or attended panes and an effective cohort larger than one. Pre-existing exact-client-path, trap, eval, or exit functions are outside the supported boundary; marker display-message commands honor the trusted server's command aliases and hooks. Run a shell command in a pane with your user's permissions.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -4771,7 +4771,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Searches the visible output of every pane.",
+            "description": "Searches the visible output of every pane. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -4888,7 +4888,7 @@
           "readOnlyHint": false,
           "title": "Search panes"
         },
-        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Searches the visible output of every pane.",
+        "description": "Searches the visible output of every pane. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -4993,7 +4993,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Applies one built-in tmux layout.",
+            "description": "Applies one built-in tmux layout. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -5059,7 +5059,7 @@
           "readOnlyHint": false,
           "title": "Select a layout"
         },
-        "description": "Change tmux state; no client-supplied executable input. Applies one built-in tmux layout.",
+        "description": "Applies one built-in tmux layout. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -5113,7 +5113,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Makes one pane active.",
+            "description": "Makes one pane active. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -5195,7 +5195,7 @@
           "readOnlyHint": false,
           "title": "Select a pane"
         },
-        "description": "Change tmux state; no client-supplied executable input. Makes one pane active.",
+        "description": "Makes one pane active. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -5265,7 +5265,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Makes one window active.",
+            "description": "Makes one window active. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -5339,7 +5339,7 @@
           "readOnlyHint": false,
           "title": "Select a window"
         },
-        "description": "Change tmux state; no client-supplied executable input. Makes one window active.",
+        "description": "Makes one window active. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -5401,11 +5401,16 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Sends input to the target's configured effective synchronized cohort without waiting for output. Every configured member must be live, nonmodal, and neither caller nor attended. Reports configured pane ids observed before dispatch, not delivery receipts.",
+            "description": "Sends input to the target's configured effective synchronized cohort without waiting for output. Every configured member must be live, nonmodal, and neither caller nor attended. Reports configured pane ids observed before dispatch, not delivery receipts. wait_for_text discounts recognized input; wait for the prompt before typing into a cold shell. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
               "properties": {
+                "enter": {
+                  "default": false,
+                  "description": "Press Enter afterward, as a real keypress. Unlike a key named \"Enter\" sent under literal:true, which types the four letters, this always submits. Defaults to false.",
+                  "type": "boolean"
+                },
                 "keys": {
                   "description": "The key names or literal strings to send. One value may be sent on its own, without a list.",
                   "items": {
@@ -5484,10 +5489,15 @@
           "readOnlyHint": false,
           "title": "Send keys"
         },
-        "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Sends input to the target's configured effective synchronized cohort without waiting for output. Every configured member must be live, nonmodal, and neither caller nor attended. Reports configured pane ids observed before dispatch, not delivery receipts.",
+        "description": "Sends input to the target's configured effective synchronized cohort without waiting for output. Every configured member must be live, nonmodal, and neither caller nor attended. Reports configured pane ids observed before dispatch, not delivery receipts. wait_for_text discounts recognized input; wait for the prompt before typing into a cold shell. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
+            "enter": {
+              "default": false,
+              "description": "Press Enter afterward, as a real keypress. Unlike a key named \"Enter\" sent under literal:true, which types the four letters, this always submits. Defaults to false.",
+              "type": "boolean"
+            },
             "keys": {
               "description": "The key names or literal strings to send. One value may be sent on its own, without a list.",
               "items": {
@@ -5555,7 +5565,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Sends up to sixty-four ordered pane-input operations, resolving and guarding the configured effective cohort separately for each ordered operation. A later policy or dispatch failure retains observed membership.",
+            "description": "Sends up to sixty-four ordered pane-input operations, resolving and guarding the configured effective cohort separately for each ordered operation. A later policy or dispatch failure retains observed membership. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -5565,7 +5575,7 @@
                   "type": "string"
                 },
                 "operations": {
-                  "description": "Objects with pane_id, keys and optional literal fields.",
+                  "description": "Objects with pane_id, keys and optional literal and enter fields.",
                   "items": {
                     "type": "object"
                   },
@@ -5647,7 +5657,7 @@
           "readOnlyHint": false,
           "title": "Send keys in a batch"
         },
-        "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Sends up to sixty-four ordered pane-input operations, resolving and guarding the configured effective cohort separately for each ordered operation. A later policy or dispatch failure retains observed membership.",
+        "description": "Sends up to sixty-four ordered pane-input operations, resolving and guarding the configured effective cohort separately for each ordered operation. A later policy or dispatch failure retains observed membership. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -5656,7 +5666,7 @@
               "type": "string"
             },
             "operations": {
-              "description": "Objects with pane_id, keys and optional literal fields.",
+              "description": "Objects with pane_id, keys and optional literal and enter fields.",
               "items": {
                 "type": "object"
               },
@@ -5727,7 +5737,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Sets a bounded integer scrollback limit for future panes in a session.",
+            "description": "Sets a bounded integer scrollback limit for future panes in a session. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -5785,7 +5795,7 @@
           "readOnlyHint": false,
           "title": "Set history limit"
         },
-        "description": "Change tmux state; no client-supplied executable input. Sets a bounded integer scrollback limit for future panes in a session.",
+        "description": "Sets a bounded integer scrollback limit for future panes in a session. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -5832,7 +5842,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Enables or disables tmux mouse handling.",
+            "description": "Enables or disables tmux mouse handling. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -5880,7 +5890,7 @@
           "readOnlyHint": false,
           "title": "Set mouse handling"
         },
-        "description": "Change tmux state; no client-supplied executable input. Enables or disables tmux mouse handling.",
+        "description": "Enables or disables tmux mouse handling. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -5917,7 +5927,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Replaces a pane's literal title.",
+            "description": "Replaces a pane's literal title. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {
               "title": "double-hash-once"
             },
@@ -6006,7 +6016,7 @@
           "readOnlyHint": false,
           "title": "Set pane title"
         },
-        "description": "Change tmux state; no client-supplied executable input. Replaces a pane's literal title.",
+        "description": "Replaces a pane's literal title. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -6081,7 +6091,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. When enabled, sets the inherited window default; pane-level overrides determine each pane's effective synchronized value.",
+            "description": "When enabled, sets the inherited window default; pane-level overrides determine each pane's effective synchronized value. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -6139,7 +6149,7 @@
           "readOnlyHint": false,
           "title": "Set synchronized panes"
         },
-        "description": "Change tmux state; no client-supplied executable input. When enabled, sets the inherited window default; pane-level overrides determine each pane's effective synchronized value.",
+        "description": "When enabled, sets the inherited window default; pane-level overrides determine each pane's effective synchronized value. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -6186,7 +6196,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Read the tmux environment; accepts no client-supplied executable input. Returned values may contain secrets. Reads the environment tmux passes to processes.",
+            "description": "Reads the environment tmux passes to processes. Read the tmux environment; accepts no client-supplied executable input. Returned values may contain secrets.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -6215,6 +6225,12 @@
                 "session": {
                   "type": "string"
                 },
+                "unset": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
                 "variables": {
                   "additionalProperties": {
                     "type": "string"
@@ -6225,7 +6241,8 @@
               "required": [
                 "session",
                 "count",
-                "variables"
+                "variables",
+                "unset"
               ],
               "type": "object"
             },
@@ -6244,7 +6261,7 @@
           "readOnlyHint": false,
           "title": "Show tmux environment"
         },
-        "description": "Read the tmux environment; accepts no client-supplied executable input. Returned values may contain secrets. Reads the environment tmux passes to processes.",
+        "description": "Reads the environment tmux passes to processes. Read the tmux environment; accepts no client-supplied executable input. Returned values may contain secrets.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -6266,6 +6283,12 @@
             "session": {
               "type": "string"
             },
+            "unset": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
             "variables": {
               "additionalProperties": {
                 "type": "string"
@@ -6276,7 +6299,8 @@
           "required": [
             "session",
             "count",
-            "variables"
+            "variables",
+            "unset"
           ],
           "type": "object"
         }
@@ -6291,7 +6315,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration. Reads configured tmux hooks.",
+            "description": "Reads configured tmux hooks. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -6358,7 +6382,7 @@
           "readOnlyHint": false,
           "title": "Show hooks"
         },
-        "description": "Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration. Reads configured tmux hooks.",
+        "description": "Reads configured tmux hooks. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -6414,7 +6438,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration. Reads one named tmux option.",
+            "description": "Reads one named tmux option. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -6489,7 +6513,7 @@
           "readOnlyHint": false,
           "title": "Show one option"
         },
-        "description": "Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration. Reads one named tmux option.",
+        "description": "Reads one named tmux option. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -6552,7 +6576,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Signals one server-wide tmux channel.",
+            "description": "Signals one server-wide tmux channel. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -6605,7 +6629,7 @@
           "readOnlyHint": false,
           "title": "Signal a channel"
         },
-        "description": "Change tmux state; no client-supplied executable input. Signals one server-wide tmux channel.",
+        "description": "Signals one server-wide tmux channel. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -6647,7 +6671,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Returns pane metadata and bounded terminal content together.",
+            "description": "Returns pane metadata and bounded terminal content together. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -6726,7 +6750,7 @@
           "readOnlyHint": false,
           "title": "Snapshot a pane"
         },
-        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Returns pane metadata and bounded terminal content together.",
+        "description": "Returns pane metadata and bounded terminal content together. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -6793,7 +6817,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Start a pane's configured process; accepts no command payload. Creates a pane whose configured process starts after the split.",
+            "description": "Creates a pane whose configured process starts after the split. Start a pane's configured process; accepts no command payload.",
             "inputLiteralization": {
               "start_directory": "double-hash-once"
             },
@@ -6890,7 +6914,7 @@
           "readOnlyHint": false,
           "title": "Split a window"
         },
-        "description": "Start a pane's configured process; accepts no command payload. Creates a pane whose configured process starts after the split.",
+        "description": "Creates a pane whose configured process starts after the split. Start a pane's configured process; accepts no command payload.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -6973,7 +6997,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Swaps the positions of two panes.",
+            "description": "Swaps the positions of two panes. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -7032,7 +7056,7 @@
           "readOnlyHint": false,
           "title": "Swap panes"
         },
-        "description": "Change tmux state; no client-supplied executable input. Swaps the positions of two panes.",
+        "description": "Swaps the positions of two panes. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -7079,7 +7103,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Waits on tmux's channel state with a bounded timeout.",
+            "description": "Waits on tmux's channel state with a bounded timeout. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -7153,7 +7177,7 @@
           "readOnlyHint": false,
           "title": "Wait for a channel"
         },
-        "description": "Change tmux state; no client-supplied executable input. Waits on tmux's channel state with a bounded timeout.",
+        "description": "Waits on tmux's channel state with a bounded timeout. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -7216,7 +7240,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Waits for new pane output without accepting executable input.",
+            "description": "Waits for new pane output without accepting executable input. Discounts recognized input from this server while pending and for ten seconds after submission. Output identical to that input and partially redrawn echoes are ambiguous; use run_shell_command for commands you start. Wait for the prompt before typing into a cold shell. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -7349,7 +7373,7 @@
           "readOnlyHint": false,
           "title": "Wait for pane text"
         },
-        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Waits for new pane output without accepting executable input.",
+        "description": "Waits for new pane output without accepting executable input. Discounts recognized input from this server while pending and for ten seconds after submission. Output identical to that input and partially redrawn echoes are ambiguous; use run_shell_command for commands you start. Wait for the prompt before typing into a cold shell. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {

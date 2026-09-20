@@ -1,6 +1,6 @@
 ---
 title: MCP for .NET
-description: Run LibTmux.Mcp as a .NET tool with bounded results, jobs, resources, and prompts.
+description: Run LibTmux.Mcp as a .NET tool with bounded results and a selectable tool catalog.
 port: dotnet
 product: mcp
 sidebar:
@@ -9,27 +9,26 @@ sidebar:
 ---
 
 `LibTmux.Mcp` is a .NET tool package whose executable is
-`libtmux-mcp`. It serves tmux tools, hierarchy resources, subscriptions,
-and workflow prompts over standard input and output.
+`libtmux-mcp`. It serves tmux tools and a static capability resource over standard
+input and output.
 
 The tool targets .NET 8 and .NET 10 and requires a POSIX host with tmux.
-Its registered operations use the `tmux_` prefix, including
-`tmux_capture_pane`, `tmux_run`, and `tmux_start_job`.
+Its registered operations include `capture_pane`, `run_shell_command`,
+and `capture_since`.
 
 ## Start here
 
 - [Install](#install) points an MCP client at this server.
 - [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) install the tool and choose a socket.
-- [Topics](./topics/) explain tiers, result limits, jobs, and subscriptions.
-- [Examples](./examples/) call a tool, then explore server internals.
+- [Topics](./topics/) explain toolsets, command waits, and capability discovery.
+- [Examples](./examples/) list sessions and run a bounded command.
 - [Language API](./reference/) documents embedding and implementation types.
 
-The default surface tier is `mutating`. Dedicated removal requires
-`destructive`; `readonly` omits writing tools.
+Use `LIBTMUX_TOOLSETS=inspect` for discovery and terminal reads.
+Additional toolsets enable changes, execution, and teardown.
 
 [Workspace Manager](../workspace/) is the separately packaged
-`LibTmux.Workspace` library. A workflow prompt about building a workspace
-is not a configuration-file API.
+`LibTmux.Workspace` library. The MCP catalog does not include a workspace-file operation.
 
-[Package contract](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Mcp/README.md).
+[Package contract](https://github.com/libtmux/libtmux-dotnet/blob/320dc64f4b8b7815842471327a5e6b84a1499bf8/src/LibTmux.Mcp/README.md).

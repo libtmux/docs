@@ -32,7 +32,7 @@ connections. Some ports also batch commands into one invocation:
 |------|----------|--------------------|-----------------------------|
 | Python | every call | - | test-only (`ControlMode`, `libtmux._internal`) |
 | TypeScript | default | `pipeline()`, `batch()` | `connect()` / `watch()`: notifications only, commands stay per-process |
-| Go | `process` path | `plan` / `Run` | `connection` (`Session.OpenControl`), `streaming` (`OpenNotifications`) |
+| Go | `process` path | `Plan.Run` | `connection` (`Session.OpenControl`), `streaming` (`OpenNotifications`) |
 | Rust | `plan` feature, sequential | `plan`, folded | `control-mode` feature |
 | C# | "One-shot" mode | "Chained" mode (`server.Chain()`) | "Control" mode (`EnterControlModeAsync`) |
 | C++ | bounded subprocess (default) | `Chain` | `Server::control()` → `Connection` |

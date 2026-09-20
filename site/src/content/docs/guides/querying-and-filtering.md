@@ -19,7 +19,7 @@ examples for common queries.
 |------|--------------------|--------------|-------|---------|
 | Go | `tmuxq.Where(values, predicate)` | `tmuxq.ExactlyOne(values, predicate)` | `tmuxq.ErrNoMatch` | `tmuxq.ErrMultipleMatches` |
 | Rust | `.iter().matching(&expr)` | `.exactly_one()` | prints via the error's `Display` | same, one error type covers both |
-| C++ | `range \| libtmux::matching(expr)` | `libtmux::exactly_one(range)` | `.error()` says which way it went wrong | same call, same error type |
+| C++ | pipe a range into [`libtmux::matching(expr)`](/cxx/latest/reference/libtmux-matching/) | `libtmux::exactly_one(range)` | `.error()` says which way it went wrong | same call, same error type |
 
 Go's `ExampleExactlyOne` in `tmuxq/example_test.go` checks the result with `go
 test` and `// Output:` assertions:

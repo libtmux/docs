@@ -40,9 +40,9 @@ try {
   const manifest = await page.request.get(`${base}/page-links.json`)
   assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
   assert.equal((await manifest.json()).schema, 1)
-  const paths = ['concepts/server-session-window-pane', 'mcp/tools', 'ts/latest/reference/session-session-panes',
+  const paths = ['concepts/server-session-window-pane', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
     'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
-    'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/tmux_capture_pane']
+    'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/capture_pane']
   for (const path of paths) await retryReload(async () => {
     await page.setViewportSize({ width: 1440, height: 1000 })
     const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
@@ -52,9 +52,8 @@ try {
     const switcher = page.locator('[data-page-port-switcher]')
     const hasSwitcher = path !== 'mcp/tools'
     const isReference = path.includes('/reference/')
-    const expected = path.includes('workspace/') ? `/en/${path}/`
-      : path === 'dotnet/latest/mcp/tools/tmux_capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : isReference
-      ? '/en/py/stable/reference/libtmux-session-panes/' : `/en/py/stable/${path.replace(/^ts\/latest\//, '')}/`
+    const expected = isReference ? '/en/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/' : path.includes('workspace/') ? `/en/${path}/`
+      : path === 'dotnet/latest/mcp/tools/capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : `/en/py/stable/${path.replace(/^ts\/latest\//, '')}/`
     if (hasSwitcher) assert.equal(await switcher.locator('a').first().getAttribute('href'), expected)
     if (path === 'py/stable/workspace/guides') {
       assert.equal(await switcher.locator('a').count(), 1, 'Only Python has a workspace CLI guide')
@@ -63,12 +62,12 @@ try {
     if (path === 'ts/latest/workspace/internals/guides') {
       assert.match(await switcher.locator('[aria-disabled="true"]').textContent(), /Python/)
     }
-    if (path === 'dotnet/latest/mcp/tools/tmux_capture_pane') {
+    if (path === 'dotnet/latest/mcp/tools/capture_pane') {
       assert.equal(await switcher.locator('a').count(), 8)
       assert.equal(await switcher.locator('a[aria-current="page"]').getAttribute('href'), `/en/${path}/`)
     }
     if (isReference) {
-      assert.match(await switcher.locator('[aria-disabled="true"]').textContent(), /Java/)
+      assert.equal(await switcher.locator('a').count(), 8, 'Workspace construction has an equivalent in every port')
       const target = await page.request.get(base.replace(/\/en$/, '') + expected)
       assert(target.ok(), `Equivalent target: HTTP ${target.status()}`)
     }

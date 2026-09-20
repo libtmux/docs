@@ -33,12 +33,11 @@ describes lifecycle, capacity, and transport ownership.
 ## MCP operations
 
 The [tool reference](../tools/) covers registered names and schemas.
-The optional recipe tool depends on startup configuration. Capabilities
-and the operation ceiling filter both listing and invocation.
+Toolsets and exact names filter both listing and invocation.
 
-Resources expose metadata and content with their corresponding capability
-gates. Prompts provide workflow recipes. `build_workspace` uses the
-separate [workspace module](../../workspace/reference/).
+The static `tmux://capabilities` resource reports the startup-frozen
+surface. Live reads use inspect tools. Workspace construction belongs
+to the separate [workspace module](../../workspace/reference/).
 
-[Server registration](https://github.com/libtmux/libtmux-go/blob/5f808882015a975a65acc7f9da5b3ff0d5cbdc91/mcp/server.go)
+[Server registration](https://github.com/libtmux/libtmux-go/blob/52968a3181c1c9e6d1b26c565d4b170968ae61c0/mcp/server.go)
 and [agent example](../examples/) connect the language and protocol APIs.

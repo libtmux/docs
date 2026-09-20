@@ -381,7 +381,8 @@ describe('doc comments give up their parameters', () => {
    * and none of them reached a field list.
    */
   it.each([
-    ['dotnet', 900],
+    // Request options moved from constructor parameters to properties.
+    ['dotnet', 600],
     ['java', 40],
     ['py', 500],
   ])('%s documents at least %i parameters', (port, floor) => {

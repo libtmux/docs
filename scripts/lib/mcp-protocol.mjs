@@ -29,13 +29,14 @@ export async function captureProtocol({ command, args = [], cwd, env = {}, timeo
     const request = pending.get(message.id)
     if (!request) return
     pending.delete(message.id)
-    if (message.error) request.reject(new Error(JSON.stringify(message.error)))
+    if (message.error?.code === -32601 && request.method === 'resources/templates/list') request.resolve({ resourceTemplates: [] })
+    else if (message.error) request.reject(new Error(JSON.stringify(message.error)))
     else request.resolve(message.result)
   })
   const send = (message) => child.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`)
   const request = (method, params) => new Promise((resolve, reject) => {
     const id = ++nextId
-    pending.set(id, { resolve, reject })
+    pending.set(id, { resolve, reject, method })
     send({ id, method, ...(params ? { params } : {}) })
   })
   const timeout = setTimeout(() => {

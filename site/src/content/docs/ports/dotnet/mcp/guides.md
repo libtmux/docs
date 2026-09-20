@@ -1,6 +1,6 @@
 ---
 title: Connect a .NET MCP client
-description: Install the .NET tool, configure a socket and tier, and diagnose launcher environments.
+description: Install the .NET tool, configure a socket and toolsets, and diagnose launcher environments.
 port: dotnet
 product: mcp
 sidebar:
@@ -28,7 +28,7 @@ library dependency.
 
 ## Connect a client
 
-The first positional argument is the default socket name. This
+Choose the socket through the startup environment. This
 `mcpServers` configuration starts an inspection surface:
 
 ```json
@@ -36,21 +36,21 @@ The first positional argument is the default socket name. This
   "mcpServers": {
     "tmux-dotnet": {
       "command": "libtmux-mcp",
-      "args": ["docs-agent"],
       "env": {
-        "LIBTMUX_SAFETY": "readonly"
+        "LIBTMUX_SOCKET": "docs-agent",
+        "LIBTMUX_TOOLSETS": "inspect"
       }
     }
   }
 }
 ```
 
-Ask the client to list its tools and read `tmux://sessions`.
-Use `tmux_whoami` to inspect caller context before changing panes.
+Ask the client to list its tools and read `tmux://capabilities`.
+Use `get_server_info` to inspect caller context before changing panes.
 
-Choose `mutating` for command execution and topology creation.
+Add the `execute` toolset for command execution and topology creation.
 Reconnect after changing the startup environment. Use the
-[tool reference](../tools/) for the `tmux_` names served by this port.
+[tool reference](../tools/) for the names served by this port.
 
 ## Diagnose startup
 
@@ -63,4 +63,4 @@ installation through `DOTNET_ROOT` in the server's client configuration.
 `LIBTMUX_MCP_MAX_BYTES` set response limits. Diagnostics belong on
 stderr; stdout must contain only MCP messages.
 
-[Installation and environment contract](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Mcp/README.md).
+[Installation and environment contract](https://github.com/libtmux/libtmux-dotnet/blob/320dc64f4b8b7815842471327a5e6b84a1499bf8/src/LibTmux.Mcp/README.md).

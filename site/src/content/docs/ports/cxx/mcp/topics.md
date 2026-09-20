@@ -1,6 +1,6 @@
 ---
 title: C++ MCP topics
-description: Understand the native tool catalog, Windows preview, strict arguments, and wait behavior.
+description: Select toolsets, inspect the pinned endpoint, and observe bounded commands.
 port: cxx
 product: mcp
 sidebar:
@@ -8,54 +8,41 @@ sidebar:
   order: 1
 ---
 
-The C++ MCP catalog follows platform support. It does not expose a runtime
-toolset or tier setting.
+The server selects one tmux endpoint and freezes its offered tools at startup.
+Read `tmux://capabilities` to inspect that endpoint's provenance and the
+effective tool selection.
 
-## Platform and target identity
+## Select tools
 
-POSIX offers the complete catalog. Native Windows advertises
-`inspect_tmux`, `list_sessions`, `list_windows`, and
-`list_session_panes`. It refuses unsupported capture, input, creation,
-search, waits, global pane discovery, and socket-path operations.
+`LIBTMUX_TOOLSETS` selects any combination of `inspect`, `manage`,
+`execute`, and `teardown`. `LIBTMUX_TOOLS` adds exact names;
+`LIBTMUX_EXCLUDE_TOOLS` removes names last. Unknown names and malformed
+lists fail startup.
 
-Retain owning session IDs from discovery. In psmux, window and pane IDs
-can repeat between sessions; a bare object ID does not preserve enough
-context.
+Use `inspect` for discovery and terminal reads. Add `manage` for topology
+changes and `execute` for input and process creation. Select `teardown`
+explicitly when removal is needed on an existing or explicitly selected
+server. A default dedicated daemon can receive teardown tools when the
+launcher verifies its own minimal-configuration provenance.
 
-The Windows preview has additional upstream limits: psmux can perform
-global registry maintenance before processing a command. A socket name
-does not isolate that maintenance. Follow the
-[Windows contract](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/README.md#windows-through-psmux)
-before using that preview.
+Tool selection shapes the callable interface. Execute tools act with the
+tmux user's authority; selecting a socket does not confine shell effects.
 
-## Arguments and input
+## Observe a command
 
-Tools publish closed JSON Schemas. Unknown arguments, incorrect types,
-out-of-range integers, and oversized strings fail before reaching tmux.
-String bounds count validated Unicode code points.
+Use [`run_shell_command`](../tools/run_shell_command/) for a bounded command
+and its exit status. A deadline ends the wait; the pane command may still
+be running. Inspect it before submitting another command.
 
-`send_text` sends literal text. `send_keys` validates the entire
-space-separated key list before sending a key. Neither operation confines
-what the receiving pane program can do.
+Use [`capture_since`](../tools/capture_since/) to collect subsequent output
+and [`wait_for_text`](../tools/wait_for_text/) for an expected terminal
+condition. Their schemas and result limits are in the [tool reference](../tools/).
+The current catalog has no detached job-handle API.
 
-Tool annotations describe requested effects. Server aliases or hooks can
-add other effects, so an inspection annotation is not proof that an
-untrusted tmux configuration is harmless.
+## Resources and prompts
 
-## Waits and failures
+The server exposes the static `tmux://capabilities` resource. Read live
+hierarchy and terminal state through tools. The current surface has no
+workflow prompts or dynamic resource templates.
 
-`wait_for_text` defaults to 10000 milliseconds and accepts values from
-1 through 60000. It uses control-output events when available, otherwise
-bounded capture polling. One deadline includes target resolution and
-connection setup, and the result identifies its transport mode.
-
-Cancellation is checked between library operations. A tmux subprocess
-already running remains bounded by the library's execution policy.
-A returned tool error can describe a well-formed request that tmux refused;
-malformed protocol envelopes fail at the JSON-RPC layer.
-
-Successful calls carry schema-described structured content and matching
-JSON text. Search reports a failed pane capture instead of treating it
-as no match.
-
-[Tool and failure contract](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/apps/mcp/README.md).
+[Configuration and lifecycle contract](https://github.com/libtmux/libtmux-cxx/blob/393d4b0ad666f18a6581f1eb281741a75a7503f0/apps/mcp/README.md).

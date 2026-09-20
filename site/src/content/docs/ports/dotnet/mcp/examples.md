@@ -9,7 +9,7 @@ sidebar:
 ---
 
 Connect the server using the [setup guide](../guides/), then call
-[`tmux_list_sessions`](../tools/tmux_list_sessions/) from your MCP client.
+[`list_sessions`](../tools/list_sessions/) from your MCP client.
 
 ## List sessions
 
@@ -18,61 +18,35 @@ through the connected client:
 
 ```json
 {
-  "name": "tmux_list_sessions",
+  "name": "list_sessions",
   "arguments": {}
 }
 ```
 
 Use the returned session IDs when choosing a window or pane. The
-[tool reference](../tools/tmux_list_sessions/) describes this port's result
+[tool reference](../tools/list_sessions/) describes this port's result
 and optional arguments.
 
-## Internals
+## Run a command
 
-The following examples are for applications that embed or extend the server.
-Installing and connecting an MCP client does not require this code.
+Call `run_shell_command` with a pane ID returned by discovery. This is the
+`params` object for `tools/call`:
 
-The .NET implementation exposes tool classes within its source project.
-They support direct calls without a protocol transport, but the published
-`LibTmux.Mcp` distribution is a tool package. Use this pattern inside a
-source application that references the MCP project.
-
-### Run and read an exit status
-
-This excerpt uses the same `McpTools.Writing` and `RunAsync` calls as
-the port's collected
-[command example](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/docs/mcp/README.md).
-It assumes an existing `server`, `pane`, and cancellation token
-`ct`.
-
-```csharp
-using LibTmux;
-using LibTmux.Mcp;
-
-await using WriteTools tools = McpTools.Writing(server);
-
-RunResult result = await tools.RunAsync(
-    "test -f /etc/hostname && echo present",
-    pane.Id.ToString(),
-    timeoutSeconds: 20,
-    cancellationToken: ct);
-
-Console.WriteLine($"exit {result.ExitStatus}, timed out: {result.TimedOut}");
+```json
+{
+  "name": "run_shell_command",
+  "arguments": {
+    "paneId": "%3",
+    "command": "test -f /etc/hostname && echo present",
+    "timeoutSeconds": 20
+  }
+}
 ```
 
-The command's exit status comes from the shell. If it times out, inspect
-the pane before deciding what to do next; the shell command may still be
-running.
+Read `exitStatus`, `timedOut`, and `output`. A timed-out command may still
+be running; inspect the pane with `capture_since` before deciding to
+submit more input. The current catalog has no detached job handles.
 
-The returned writing tools own the resources created by the factory and
-must be disposed asynchronously. A supplied `Server` or `JobStore`
-remains caller-owned.
-
-### Use a protocol client
-
-A stdio client performs the corresponding task with `tmux_run`.
-For commands that outlast one call, use `tmux_start_job` and collect
-with `tmux_job`.
-
-The [factory source](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Mcp/McpTools.cs)
-defines ownership.
+The [protocol example](https://github.com/libtmux/libtmux-dotnet/blob/320dc64f4b8b7815842471327a5e6b84a1499bf8/docs/mcp/README.md)
+describes this workflow. Use the [language API](../reference/) for source
+embedding.

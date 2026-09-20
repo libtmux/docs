@@ -91,8 +91,8 @@ await using TemporaryHierarchyScope scope = await factory.CreateHierarchyAsync()
 await scope.Pane.SendTextAsync("echo hello");
 ```
 
-`LibTmux.Testing` ships inside the `LibTmux` package, under
-`src/LibTmux/Testing/`. `await using` disposes the scope and kills its server
+`LibTmux.Testing` ships as a separate package, under
+`src/LibTmux.Testing/`. `await using` disposes the scope and kills its server
 when the block exits. Use `TmuxWait.UntilAsync` to wait for expected state; see
 [Capturing output](../capturing-output/). Source: `README.md`, "Testing your own
 code," exercised by `ReadmeExampleTests`.

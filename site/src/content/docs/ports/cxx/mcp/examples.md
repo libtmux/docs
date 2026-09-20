@@ -39,7 +39,7 @@ server.
 ### Inspect the consumer catalog
 
 This program uses the declarations in the
-[consumer header](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/apps/mcp/include/libtmux_consumers/mcp.hpp):
+[consumer header](https://github.com/libtmux/libtmux-cxx/blob/393d4b0ad666f18a6581f1eb281741a75a7503f0/apps/mcp/include/libtmux_consumers/mcp.hpp):
 
 ```cpp
 #include <iostream>
@@ -48,7 +48,11 @@ This program uses the declarations in the
 
 int main() {
   const auto catalog = libtmux::mcp::default_tools();
-  for (const auto& tool : catalog.tools()) {
+  if (!catalog) {
+    std::cerr << catalog.error() << '\n';
+    return 1;
+  }
+  for (const auto& tool : catalog->tools()) {
     std::cout << tool.name << '\n';
   }
 }
@@ -58,20 +62,21 @@ Build this within an application that includes the repository's
 `mcp_tools` CMake target. The header and target belong to the source
 consumer; the installed core package does not export them.
 
-The [consumer tests](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/apps/mcp/tests/mcp_test.cpp)
+The [consumer tests](https://github.com/libtmux/libtmux-cxx/blob/393d4b0ad666f18a6581f1eb281741a75a7503f0/apps/mcp/tests/mcp_test.cpp)
 exercise the same catalog and direct calls. This small listing program
 is a source-derived example, not one of those collected tests.
 
 ### Drive the executable
 
 After connecting an MCP client using the [guide](../guides/), start with
-`inspect_tmux`. Select one returned session and call `list_windows`
-or `list_session_panes` with its exact identity.
+`list_sessions`, then `list_windows` and `list_panes`. Preserve returned
+object identities for subsequent calls.
 
 On POSIX, use `capture_pane` to inspect a discovered pane, then
 `wait_for_text` for a bounded wait. Read its match/timeout result and
 final capture before choosing another operation.
 
-The [protocol tests](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/apps/mcp/tests/protocol_test.cpp)
+The [protocol tests](https://github.com/libtmux/libtmux-cxx/blob/393d4b0ad666f18a6581f1eb281741a75a7503f0/apps/mcp/tests/protocol_test.cpp)
 cover client lifecycle, validation, concurrency, and cancellation.
-Native Windows supports only the discovery part of this workflow.
+Native Windows advertises the same catalog; unsupported psmux operations
+fail explicitly when called.

@@ -157,5 +157,5 @@ paths and environment-dependent socket names against each handle's captured
 binding.
 
 A restarted server can reuse a socket path while having different state.
-TypeScript's `TmuxServerRestarted` and Go's `ErrDaemonReplaced` detect a handle
+TypeScript's `TmuxServerRestartedError` and Go's `ErrDaemonReplaced` detect a handle
 encountering a replacement daemon.

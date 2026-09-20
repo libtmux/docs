@@ -9,10 +9,10 @@ sidebar:
 ---
 
 `libtmux-mcp` is the Swift stdio executable.
-[`LibTmuxMCP`](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Package.swift)
+[`LibTmuxMCP`](https://github.com/libtmux/libtmux-swift/blob/254f8b2be7eb60cacc3ffcb3ea8e456784f582df/Package.swift)
 is the SwiftPM library product for embedding the same
 tools. They expose tmux discovery, captures, waits, input, configuration,
-and workspace application.
+and process control.
 
 The package requires Swift 6.2 or newer and supports Linux and macOS.
 The documented Darwin dependency build uses Xcode's Swift 6.3 toolchain.
@@ -23,17 +23,17 @@ tmux is required at runtime.
 - [Install](#install) points an MCP client at this server.
 - [Tools](./tools/) lists the MCP operations, arguments, and results.
 - [Guides](./guides/) build the executable and configure its environment.
-- [Topics](./topics/) explain tiers, exact tool selection, and opaque targets.
+- [Topics](./topics/) explain toolsets, command waits, and capability discovery.
 - [Examples](./examples/) call a tool, then explore server internals.
 - [Language API](./reference/) documents embedding and implementation types.
 
-The default tier is readonly. Writing tools need explicit opt-in.
-Resources expose snapshots, sessions, filter vocabulary, and pane content;
-prompts package command, waiting, and workspace workflows.
+The executable defaults to inspection, management, and execution; a
+verified dedicated daemon can also receive teardown tools. The embedding
+initializer defaults to inspection alone. Read `tmux://capabilities`
+for the startup selection.
 
-The `apply_workspace` tool uses
-[Workspace Manager](../workspace/). Its name does not imply convergence:
-an existing session with the requested name is refused.
+[Workspace Manager](../workspace/) is a separate library product. The
+current MCP catalog does not include a workspace-file operation.
 
-[Library contract](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/LibTmuxMCP/README.md)
-and [platform requirements](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/README.md#requirements).
+[Library contract](https://github.com/libtmux/libtmux-swift/blob/254f8b2be7eb60cacc3ffcb3ea8e456784f582df/Sources/LibTmuxMCP/README.md)
+and [platform requirements](https://github.com/libtmux/libtmux-swift/blob/254f8b2be7eb60cacc3ffcb3ea8e456784f582df/README.md#requirements).

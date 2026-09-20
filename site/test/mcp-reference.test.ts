@@ -20,16 +20,16 @@ it('keeps the advertised wire name and input schema for every documented tool', 
       expect(tool.inputSchema?.type).toBe('object')
     }
   }
-  expect(MCP_REFERENCE.dotnet.registrations.some((tool) => tool.wireName === 'tmux_list_sessions')).toBe(true)
+  expect(MCP_REFERENCE.dotnet.registrations.some((tool) => tool.wireName === 'list_sessions')).toBe(true)
 })
 
 it('links equivalent operations whose registered names differ', () => {
+  const ports = ['ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
   const groups = [
-    [['py', 'run_command'], ['ts', 'run_shell_command'], ['rs', 'run_command'], ['go', 'run_command'], ['java', 'run_shell_command'], ['dotnet', 'tmux_run'], ['swift', 'run_shell']],
-    [['py', 'create_session'], ['swift', 'new_session']],
-    [['py', 'create_window'], ['rs', 'new_window'], ['cxx', 'new_window'], ['swift', 'new_window']],
-    [['py', 'split_window'], ['rs', 'split_pane'], ['dotnet', 'tmux_split_pane'], ['swift', 'split_pane']],
-    [['rs', 'clear_pane'], ['ts', 'clear_pane_scrollback'], ['java', 'clear_pane_scrollback']],
+    [['py', 'run_command'], ...ports.map((port) => [port, 'run_shell_command'])],
+    ...['create_session', 'create_window', 'split_window', 'snapshot_pane']
+      .map((name) => ['py', ...ports].map((port) => [port, name])),
+    ports.map((port) => [port, 'clear_pane_scrollback']),
   ]
   for (const group of groups) {
     for (const [sourcePort, sourceName] of group) {
@@ -44,12 +44,10 @@ it('keeps different effects and unavailable tools out of the equivalents', () =>
   expect(equivalentMcpTool('swift', 'run_command', 'py')).toBeUndefined()
   expect(equivalentMcpTool('py', 'clear_pane', 'rs')).toBeUndefined()
   expect(equivalentMcpTool('rs', 'clear_pane', 'py')).toBeUndefined()
-  expect(equivalentMcpTool('py', 'run_command', 'cxx')).toBeUndefined()
-  expect(equivalentMcpTool('ts', 'snapshot_pane', 'swift')).toBeUndefined()
   expect(equivalentMcpTool('py', 'missing', 'py')).toBeUndefined()
   expect(equivalentMcpTool('missing', 'list_sessions', 'py')).toBeUndefined()
   expect(equivalentMcpTool('py', 'list_sessions', 'missing')).toBeUndefined()
-  expect(equivalentMcpTool('py', 'capture_pane', 'dotnet')?.wireName).toBe('tmux_capture_pane')
+  expect(equivalentMcpTool('py', 'capture_pane', 'dotnet')?.wireName).toBe('capture_pane')
 })
 
 it('links only registered tool mentions in description prose', async () => {
@@ -60,7 +58,7 @@ it('links only registered tool mentions in description prose', async () => {
   expect(html).not.toContain('/mcp/tools/missing_tool/')
   expect(html).not.toContain('/mcp/tools/send_keys/')
   expect(html.match(/\/py\/stable\/mcp\/tools\/capture_pane\/"/g)).toHaveLength(1)
-  const dotnet = await renderToolDescription('Use tmux_capture_pane or `tmux_run`.', { port: 'dotnet', version: 'latest' })
-  expect(dotnet).toContain('/dotnet/latest/mcp/tools/tmux_capture_pane/')
-  expect(dotnet).toContain('/dotnet/latest/mcp/tools/tmux_run/')
+  const dotnet = await renderToolDescription('Use capture_pane or `run_shell_command`.', { port: 'dotnet', version: 'latest' })
+  expect(dotnet).toContain('/dotnet/latest/mcp/tools/capture_pane/')
+  expect(dotnet).toContain('/dotnet/latest/mcp/tools/run_shell_command/')
 })

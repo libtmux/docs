@@ -12,9 +12,9 @@ sidebar:
 MCP over standard input and output. It is an optional consumer of the C++
 library, enabled separately in the CMake build.
 
-POSIX builds expose discovery, creation, capture, input, search, and
-bounded text waits. Native Windows provides a smaller psmux preview with
-hierarchy discovery only.
+The catalog exposes discovery, creation, capture, input, search, and
+bounded text waits. Native Windows advertises the same catalog, with
+unsupported psmux operations failing explicitly at dispatch.
 
 ## Start here
 
@@ -25,11 +25,12 @@ hierarchy discovery only.
 - [Examples](./examples/) call a tool, then explore server internals.
 - [Language API](./reference/) documents embedding and implementation types.
 
-The server offers tools only. It does not offer resources, prompts,
-subscriptions, or configurable toolsets.
+Toolsets and exact tool names select the startup surface. The static
+`tmux://capabilities` resource reports it; workflow prompts and dynamic
+resource templates are absent.
 
 The [Workspace Manager](../workspace/) is another source consumer. Its
 configuration types are not part of the installed core API, and the MCP
 server does not include a workspace-file operation.
 
-[Executable and platform contract](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/apps/mcp/README.md).
+[Executable and platform contract](https://github.com/libtmux/libtmux-cxx/blob/393d4b0ad666f18a6581f1eb281741a75a7503f0/apps/mcp/README.md).

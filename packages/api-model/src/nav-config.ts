@@ -232,7 +232,7 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
     match: {
       kind: 'anyOf',
       of: [
-        nameOrPath('Snapshot|Capture', '(^|/)snapshots?[./]', 'snapshot', 'capture'),
+        nameOrPath('Snapshot|Capture|^TextOutcome$|^TypedText$', '(^|/)snapshots?[./]', 'snapshot', 'capture'),
         freePath('(^|/)capture\\.hpp$'),
       ],
     },
@@ -299,7 +299,7 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
     id: 'commands',
     label: 'Commands',
     match: nameOrPath(
-      'Command|Cmd|cmd|Dispatch|Transport|Connection',
+      'Command|Cmd|cmd|Dispatch|Transport|Connection|^Running$|^TmuxArg$|^TmuxWait$|^ReadyStatus$|^WaitPath$',
       '(^|/)(commands?|dispatch|transport|connection)',
       'command', 'commands', 'cmd', 'dispatch', 'transport', 'connection', 'engine',
     ),
@@ -521,6 +521,8 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'common.DeliveryStatus': 'notification delivery status; plumbing',
       'common.OperationStatus': 'operation outcome status; no tmux object of its own',
       'common.TmuxLogContext': 'diagnostics plumbing; no tmux object of its own',
+      'common.TmuxInvocationReport': 'invocation diagnostics shared by every entity',
+      'common.TmuxInvocationObserver': 'invocation diagnostics shared by every entity',
       'field_types.RowWithIdentities': 'row typing shared by every entity, owned by none',
       'types.Digit': 'numeric literal types for tmux indices',
       'types.NonZeroDigit': 'numeric literal types for tmux indices',
@@ -540,6 +542,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'target.OsString': 'extractor leak: std::ffi::OsString is not declared by this crate',
       'src.DesignNotes': 'extractor leak: a doc-only module surfaced as a struct',
       'src.MacrosReadme': 'extractor leak: a doc-only module surfaced as a struct',
+      'src.MigrationGuide': 'extractor leak: a doc-only module surfaced as a struct',
     },
   },
   go: {
@@ -573,6 +576,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
   dotnet: {
     unsettled: {
       'LibTmux.LibTmuxInfo': 'assembly metadata',
+      'LibTmux.TmuxDiagnostics': 'diagnostic source names shared by every entity',
       'LibTmux.TmuxChain': 'command chaining builder; sits beside Commands rather than inside it',
       'LibTmux.TmuxChaining': 'command chaining builder; sits beside Commands rather than inside it',
       'LibTmux.TmuxWaitChannel': 'wait-for channel plumbing',
@@ -586,6 +590,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'libtmux::NodeCollector': 'query lowering helper; below Queries rather than inside it',
       'libtmux::detail::Row': 'extractor leak: a detail:: implementation type',
       'libtmux::path_component': 'target addressing; used by every entity, owned by none',
+      'libtmux::EntityId': 'tmux object ids; used by every entity, owned by none',
     },
   },
   swift: {

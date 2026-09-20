@@ -352,8 +352,8 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
       return {
         command: 'tmux-mcp',
         args: [],
-        prereq: 'cargo install tmux-mcp',
-        note: 'That puts a `tmux-mcp` binary on your path; it speaks MCP on stdin and stdout.',
+        prereq: 'cargo install tmux-mcp --version 0.1.0-alpha.13',
+        note: 'Cargo requires an explicit prerelease version. The installed `tmux-mcp` binary speaks MCP on stdin and stdout.',
       }
     },
   },

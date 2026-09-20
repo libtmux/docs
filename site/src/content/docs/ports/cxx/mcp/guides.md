@@ -10,8 +10,7 @@ sidebar:
 
 Build the optional MCP executable from the C++ repository, then configure
 the client to launch it. This guide targets POSIX tmux. Native Windows
-has separate prerequisites and a reduced catalog described in
-[Topics](../topics/).
+has separate psmux prerequisites and command-dependent support.
 
 ## Build the executable
 
@@ -58,16 +57,17 @@ For clients using `mcpServers`:
 ```
 
 Use `--socket-path` for an explicit POSIX socket path. Without a selector,
-the executable requires an inherited `TMUX` route and refuses startup
-if it cannot determine one.
+the executable uses the dedicated `libtmux-mcp` socket and minimal
+configuration. Use `--socket inherit` to select an inherited `TMUX` route.
 
 ## Verify the catalog
 
-Have the client list tools, then call `inspect_tmux`. Retain the returned
+Have the client list tools, then call `list_sessions`. Retain the returned
 session, window, and pane identities for later calls.
 
-The server advertises only tools. A client should not expect resources
-or prompts, and there is no safety-tier flag to narrow the POSIX catalog.
+Use `LIBTMUX_TOOLSETS=inspect` for discovery and reads. Read
+`tmux://capabilities` to inspect the startup selection; see [Topics](../topics/)
+for exact tool inclusions and exclusions.
 
-[Build instructions](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/apps/mcp/README.md)
-and [selector implementation](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/apps/mcp/src/cli.cpp).
+[Build instructions](https://github.com/libtmux/libtmux-cxx/blob/393d4b0ad666f18a6581f1eb281741a75a7503f0/apps/mcp/README.md)
+and [selector implementation](https://github.com/libtmux/libtmux-cxx/blob/393d4b0ad666f18a6581f1eb281741a75a7503f0/apps/mcp/src/cli.cpp).

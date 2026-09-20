@@ -24,13 +24,13 @@ const selections = {
   py: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
   ts: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
   java: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
-  rs: { TMUX_MCP_SAFETY: 'destructive' },
-  go: { LIBTMUX_SAFETY: 'destructive', LIBTMUX_MCP_CAPABILITIES: 'all', LIBTMUX_MCP_PROMPTS_AS_TOOLS: '1' },
-  dotnet: { LIBTMUX_SAFETY: 'destructive' },
-  swift: { LIBTMUX_SAFETY: 'destructive' },
-  cxx: {},
+  rs: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
+  go: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
+  dotnet: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
+  swift: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
+  cxx: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
 }
-const selectionVariables = [...new Set(Object.values(selections).flatMap(Object.keys)), 'LIBTMUX_TOOLS', 'LIBTMUX_EXCLUDE_TOOLS', 'LIBTMUX_MCP_TOOLS']
+const selectionVariables = [...new Set(Object.values(selections).flatMap(Object.keys)), 'LIBTMUX_TOOLS', 'LIBTMUX_EXCLUDE_TOOLS', 'LIBTMUX_MCP_TOOLS', 'LIBTMUX_SAFETY', 'TMUX_MCP_SAFETY', 'LIBTMUX_MCP_CAPABILITIES', 'LIBTMUX_MCP_PROMPTS_AS_TOOLS']
 
 for (const port of PORTS) {
   if (only && only !== port.slug) continue
