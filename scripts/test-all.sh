@@ -106,6 +106,45 @@ node scripts/gen-example-sources.mjs --check
 step 'example sources (negative)'
 node scripts/gen-example-sources.negative.mjs
 
+# The sources above are quoted; the docs arena runs them, each against a tmux
+# server it owns and lends through that port's arena adapter. Its negative
+# needs only tmux and proves the supervisor rejects every way an adapter can
+# fake contact. The port lane needs each sibling tmux-arena worktree and its
+# toolchain, so it runs only when asked for.
+step 'docs arena (negative)'
+node scripts/docs-arena.negative.mjs
+
+# One lend can serve several documented sources, which is what makes a doctest
+# page affordable. This proves the supervisor still knows which source produced
+# which record, and still notices a server replaced partway through.
+step 'docs arena evidence (negative)'
+node scripts/docs-arena.ev.negative.mjs
+
+# Running a source and quoting it are two different files until something
+# compares them. This is that comparison; its negative needs no worktree and
+# proves the comparison can fail, so it runs everywhere.
+step 'quote drift (negative)'
+node scripts/arena/check-quote-drift.negative.mjs
+
+# The other direction, and the one a new page gets wrong: fencing a program no
+# arena artifact runs. It needs only the two data files, so unlike the drift
+# comparison it belongs here rather than in the port lane — a page is written in
+# a checkout that has no ports, which is exactly where it must fail.
+step 'quote coverage'
+node scripts/arena/check-quote-coverage.mjs
+
+step 'quote coverage (negative)'
+node scripts/arena/check-quote-coverage.negative.mjs
+
+if [[ "${LIBTMUX_DOCS_ARENA:-}" == 1 ]]; then
+  step 'quote drift'
+  node scripts/arena/check-quote-drift.mjs
+  step 'docs arena'
+  node scripts/docs-arena.mjs --require
+else
+  note_skip 'docs arena ports'
+fi
+
 step 'shell port table'
 node scripts/gen-shell-ports.mjs --check
 

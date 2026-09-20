@@ -125,8 +125,12 @@ export function parseMeta(meta) {
  * Slice a file between `# region: name` / `# endregion` style markers, so a
  * page can quote one function out of a longer tested example. The comment
  * leader varies by language, so match the marker text rather than the syntax.
+ *
+ * Exported so the arena's quote-drift check slices the region out of the file
+ * it runs with the same matcher this plugin slices the page with. One
+ * implementation, so a region cannot mean two things depending on the caller.
  */
-function sliceRegion(source, region) {
+export function sliceRegion(source, region) {
   const lines = source.split('\n')
   const start = lines.findIndex((l) => new RegExp(`region:\\s*${region}\\b`).test(l))
   if (start === -1) return null

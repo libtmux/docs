@@ -1,0 +1,515 @@
+/*
+ * Which port examples the docs arena runs, and how to build and run each one
+ * from its port's `tmux-arena` worktree.
+ *
+ * Each entry names the artifact its adapter accepts and the sources that
+ * artifact executes, in `site/src/data/example-sources.json` key form
+ * (`<slug>:<path>`), or `<slug>:page:<path>` for a port documentation page.
+ * A quoted source that no entry runs fails check-quote-coverage.mjs unless it
+ * is listed there with a reason code and the gate that does run it.
+ *
+ * `LIBTMUX_DOCS_ARENA_<SLUG>` overrides one port's worktree, which otherwise
+ * sits beside its checkout as `<checkout>-tmux-arena`.
+ */
+import { readFileSync, writeFileSync } from 'node:fs'
+import { arch } from 'node:os'
+import { join } from 'node:path'
+import { PORTS } from '../../site/src/lib/ports.ts'
+import { expand } from '../../site/src/plugins/remark-port-code.mjs'
+
+export function arenaWorktree(slug) {
+  const override = process.env[`LIBTMUX_DOCS_ARENA_${slug.toUpperCase()}`]
+  if (override) return expand(override)
+  const port = PORTS.find((candidate) => candidate.slug === slug)
+  return port ? `${expand(port.checkout)}-tmux-arena` : ''
+}
+
+// Prints the examples module's runtime classpath, so the example runs as a plain JVM program.
+const gradleClasspath = (out) => `gradle.allprojects { p ->
+  if (p.path == ':examples') {
+    p.plugins.withId('java') {
+      def classpath = p.sourceSets.main.runtimeClasspath
+      def out = new File(${JSON.stringify(out)})
+      p.tasks.register('docsArenaClasspath') {
+        dependsOn p.tasks.named('classes')
+        doLast { out.text = classpath.asPath }
+      }
+    }
+  }
+}
+`
+
+const swiftTriple = () => `${arch() === 'arm64' ? 'aarch64' : 'x86_64'}-unknown-linux-gnu`
+
+/**
+ * `prepare(build)` returns build steps; `run(build)` returns the one command
+ * the arena lends its server to. `build` is a scratch directory for outputs
+ * that must not land in the worktree. Every `cwd` is relative to the worktree.
+ */
+export const ARTIFACTS = [
+  {
+    slug: 'py',
+    artifact: 'python-workspace-setup',
+    runs: ['py:page:docs/topics/workspace_setup.md'],
+    tools: ['uv'],
+    prepare: () => [],
+    run: () => ({
+      cwd: '.',
+      command: [
+        'uv', 'run', '--frozen', 'python', '-B', '-m', 'pytest', '--reruns=0', '-p', 'no:cacheprovider', '-q',
+        '--libtmux-arena-target', 'docs/topics/workspace_setup.md', 'docs/topics/workspace_setup.md',
+      ],
+    }),
+  },
+  // Two pages on one lend, which is what the per-source evidence is for: the
+  // supervisor asks for a record per declared page, so a page that collected
+  // nothing is a failure rather than a quiet pass.
+  {
+    slug: 'py',
+    artifact: 'python-workspace-and-location',
+    sources: ['docs/topics/workspace_setup.md', 'docs/topics/self_location.md'],
+    runs: ['py:page:docs/topics/workspace_setup.md', 'py:page:docs/topics/self_location.md'],
+    tools: ['uv'],
+    prepare: () => [],
+    run: () => ({
+      cwd: '.',
+      command: [
+        'uv', 'run', '--frozen', 'python', '-B', '-m', 'pytest', '--reruns=0', '-p', 'no:cacheprovider', '-q',
+        '--libtmux-arena-target', 'docs/topics/workspace_setup.md',
+        '--libtmux-arena-target', 'docs/topics/self_location.md',
+        'docs/topics/workspace_setup.md', 'docs/topics/self_location.md',
+      ],
+    }),
+  },
+  // One entry per site-quoted ts example. They share the port slug, so
+  // `--port ts` and LIBTMUX_DOCS_ARENA_TS still select all four, and each
+  // names its own artifact, test file and `runs` key. Install and build steps
+  // repeat here because every entry declares what it needs; docs-arena runs a
+  // given command once per worktree, so they are not paid for four times.
+  {
+    slug: 'ts',
+    artifact: 'typescript-quickstart',
+    runs: ['ts:examples/quickstart/quickstart.ts'],
+    tools: ['mise'],
+    prepare: () => [
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'install', '--frozen-lockfile'] },
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'run', '--cwd', 'packages/libtmux', 'build'] },
+    ],
+    run: () => ({ cwd: 'examples', command: ['mise', 'exec', '--', 'bun', 'test', '--no-orphans', 'quickstart/quickstart.test.ts'] }),
+  },
+  {
+    slug: 'ts',
+    artifact: 'typescript-capture',
+    runs: ['ts:examples/capture/capture.ts'],
+    tools: ['mise'],
+    prepare: () => [
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'install', '--frozen-lockfile'] },
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'run', '--cwd', 'packages/libtmux', 'build'] },
+    ],
+    run: () => ({ cwd: 'examples', command: ['mise', 'exec', '--', 'bun', 'test', '--no-orphans', 'capture/capture.test.ts'] }),
+  },
+  {
+    slug: 'ts',
+    artifact: 'typescript-agent',
+    runs: ['ts:examples/agent/agent.ts'],
+    tools: ['mise'],
+    prepare: () => [
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'install', '--frozen-lockfile'] },
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'run', '--cwd', 'packages/libtmux', 'build'] },
+    ],
+    run: () => ({ cwd: 'examples', command: ['mise', 'exec', '--', 'bun', 'test', '--no-orphans', 'agent/agent.test.ts'] }),
+  },
+  {
+    slug: 'ts',
+    artifact: 'typescript-workspace',
+    runs: ['ts:examples/workspace/workspace.ts'],
+    tools: ['mise'],
+    prepare: () => [
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'install', '--frozen-lockfile'] },
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'run', '--cwd', 'packages/libtmux', 'build'] },
+      // This example imports the published package, not its source.
+      { cwd: '.', command: ['mise', 'exec', '--', 'bun', 'run', '--cwd', 'packages/workspace', 'build'] },
+    ],
+    run: () => ({ cwd: 'examples', command: ['mise', 'exec', '--', 'bun', 'test', '--no-orphans', 'workspace/workspace.test.ts'] }),
+  },
+  {
+    slug: 'rs',
+    artifact: 'rust-inspect',
+    runs: ['rs:crates/libtmux/examples/inspect.rs'],
+    tools: ['cargo'],
+    prepare: (build) => [{
+      cwd: '.',
+      command: ['cargo', 'build', '--locked', '--quiet', '--manifest-path', 'crates/libtmux/Cargo.toml', '--example', 'inspect', '--target-dir', build],
+    }],
+    run: (build) => ({ cwd: '.', command: [join(build, 'debug', 'examples', 'inspect')] }),
+  },
+  {
+    slug: 'rs',
+    artifact: 'rust-find',
+    runs: ['rs:crates/libtmux/examples/find.rs'],
+    tools: ['cargo'],
+    prepare: (build) => [{
+      cwd: '.',
+      command: ['cargo', 'build', '--locked', '--quiet', '--manifest-path', 'crates/libtmux/Cargo.toml', '--example', 'find', '--target-dir', build],
+    }],
+    run: (build) => ({ cwd: '.', command: [join(build, 'debug', 'examples', 'find')] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-quickstart',
+    runs: ['go:examples/quickstart/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'quickstart.test'), './quickstart'] }],
+    run: (build) => ({ cwd: 'examples/quickstart', command: [join(build, 'quickstart.test'), '-test.run=^TestQuickstart$', '-test.count=1'] }),
+  },
+  // The library's own documented Example functions, which the API reference
+  // shows. They share one lend: the run refuses to stop it and removes only
+  // what it created, and the evidence comes from TestMain, because `go test`
+  // diffs an Example's stdout against its `// Output:` comment verbatim.
+  {
+    slug: 'go',
+    artifact: 'go-tmux-examples',
+    runs: ['go:tmux/example_test.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: '.', command: ['go', 'test', '-c', '-o', join(build, 'tmux.test'), './tmux'] }],
+    run: (build) => ({ cwd: 'tmux', command: [join(build, 'tmux.test'), '-test.run=^Example', '-test.count=1'] }),
+  },
+  // The other example programs, each proved on its own lent server. They
+  // share the `go` slug, so `--port go` still selects all of them.
+  {
+    slug: 'go',
+    artifact: 'go-environment',
+    runs: ['go:examples/environment/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'environment.test'), './environment'] }],
+    run: (build) => ({ cwd: 'examples/environment', command: [join(build, 'environment.test'), '-test.run=^TestEnvironment$', '-test.count=1'] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-filter-query',
+    runs: ['go:examples/filter-query/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'filter-query.test'), './filter-query'] }],
+    run: (build) => ({ cwd: 'examples/filter-query', command: [join(build, 'filter-query.test'), '-test.run=^TestFilterQuery$', '-test.count=1'] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-control-mode-subscribe',
+    runs: ['go:examples/control-mode-subscribe/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'control-mode-subscribe.test'), './control-mode-subscribe'] }],
+    run: (build) => ({ cwd: 'examples/control-mode-subscribe', command: [join(build, 'control-mode-subscribe.test'), '-test.run=^TestControlModeSubscribe$', '-test.count=1'] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-option-hook-editing',
+    runs: ['go:examples/option-hook-editing/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'option-hook-editing.test'), './option-hook-editing'] }],
+    run: (build) => ({ cwd: 'examples/option-hook-editing', command: [join(build, 'option-hook-editing.test'), '-test.run=^TestOptionHookEditing$', '-test.count=1'] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-planned-build',
+    runs: ['go:examples/planned-build/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'planned-build.test'), './planned-build'] }],
+    run: (build) => ({ cwd: 'examples/planned-build', command: [join(build, 'planned-build.test'), '-test.run=^TestPlannedBuild$', '-test.count=1'] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-snapshot-browser',
+    runs: ['go:examples/snapshot-browser/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'snapshot-browser.test'), './snapshot-browser'] }],
+    run: (build) => ({ cwd: 'examples/snapshot-browser', command: [join(build, 'snapshot-browser.test'), '-test.run=^TestSnapshotBrowser$', '-test.count=1'] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-fast-path',
+    runs: ['go:examples/fast-path/main.go'],
+    tools: ['go'],
+    prepare: (build) => [{ cwd: 'examples', command: ['go', 'test', '-c', '-o', join(build, 'fast-path.test'), './fast-path'] }],
+    run: (build) => ({ cwd: 'examples/fast-path', command: [join(build, 'fast-path.test'), '-test.run=^TestFastPath$', '-test.count=1'] }),
+  },
+  {
+    slug: 'go',
+    artifact: 'go-workspace',
+    runs: ['go:workspace/example_test.go'],
+    tools: ['go'],
+    // This one lives in the workspace module, not the examples module.
+    prepare: (build) => [{ cwd: 'workspace', command: ['go', 'test', '-c', '-o', join(build, 'workspace.test'), '.'] }],
+    run: (build) => ({ cwd: 'workspace', command: [join(build, 'workspace.test'), '-test.run=^TestWorkspaceArenaEndpoint$', '-test.count=1'] }),
+  },
+  {
+    slug: 'java',
+    artifact: 'java-build-a-workspace',
+    runs: ['java:examples/src/main/java/io/github/libtmux/examples/BuildAWorkspace.java'],
+    tools: ['java'],
+    prepare: (build) => {
+      const init = join(build, 'classpath.gradle')
+      writeFileSync(init, gradleClasspath(join(build, 'classpath.txt')))
+      return [{
+        cwd: '.',
+        command: ['./gradlew', '--no-daemon', '--quiet', '--no-configuration-cache', '--init-script', init, ':examples:docsArenaClasspath'],
+      }]
+    },
+    run: (build) => ({
+      cwd: '.',
+      command: ['java', '-cp', readFileSync(join(build, 'classpath.txt'), 'utf8').trim(), 'io.github.libtmux.examples.BuildAWorkspace'],
+    }),
+  },
+  // The other example programs. The classpath step is identical in each and
+  // runs once per worktree.
+  {
+    slug: 'java',
+    artifact: 'java-find-panes-running',
+    runs: ['java:examples/src/main/java/io/github/libtmux/examples/FindPanesRunning.java'],
+    tools: ['java'],
+    prepare: (build) => {
+      const init = join(build, 'classpath.gradle')
+      writeFileSync(init, gradleClasspath(join(build, 'classpath.txt')))
+      return [{
+        cwd: '.',
+        command: ['./gradlew', '--no-daemon', '--quiet', '--no-configuration-cache', '--init-script', init, ':examples:docsArenaClasspath'],
+      }]
+    },
+    run: (build) => ({
+      cwd: '.',
+      command: ['java', '-cp', readFileSync(join(build, 'classpath.txt'), 'utf8').trim(), 'io.github.libtmux.examples.FindPanesRunning'],
+    }),
+  },
+  {
+    slug: 'java',
+    artifact: 'java-serve-tmux-over-mcp',
+    runs: ['java:examples/src/main/java/io/github/libtmux/examples/ServeTmuxOverMcp.java'],
+    tools: ['java'],
+    prepare: (build) => {
+      const init = join(build, 'classpath.gradle')
+      writeFileSync(init, gradleClasspath(join(build, 'classpath.txt')))
+      return [{
+        cwd: '.',
+        command: ['./gradlew', '--no-daemon', '--quiet', '--no-configuration-cache', '--init-script', init, ':examples:docsArenaClasspath'],
+      }]
+    },
+    run: (build) => ({
+      cwd: '.',
+      command: ['java', '-cp', readFileSync(join(build, 'classpath.txt'), 'utf8').trim(), 'io.github.libtmux.examples.ServeTmuxOverMcp'],
+    }),
+  },
+  {
+    slug: 'java',
+    artifact: 'java-watch-pane-output',
+    runs: ['java:examples/src/main/java/io/github/libtmux/examples/WatchPaneOutput.java'],
+    tools: ['java'],
+    prepare: (build) => {
+      const init = join(build, 'classpath.gradle')
+      writeFileSync(init, gradleClasspath(join(build, 'classpath.txt')))
+      return [{
+        cwd: '.',
+        command: ['./gradlew', '--no-daemon', '--quiet', '--no-configuration-cache', '--init-script', init, ':examples:docsArenaClasspath'],
+      }]
+    },
+    run: (build) => ({
+      cwd: '.',
+      command: ['java', '-cp', readFileSync(join(build, 'classpath.txt'), 'utf8').trim(), 'io.github.libtmux.examples.WatchPaneOutput'],
+    }),
+  },
+  {
+    slug: 'java',
+    artifact: 'java-watch-what-changes',
+    runs: ['java:examples/src/main/java/io/github/libtmux/examples/WatchWhatChanges.java'],
+    tools: ['java'],
+    prepare: (build) => {
+      const init = join(build, 'classpath.gradle')
+      writeFileSync(init, gradleClasspath(join(build, 'classpath.txt')))
+      return [{
+        cwd: '.',
+        command: ['./gradlew', '--no-daemon', '--quiet', '--no-configuration-cache', '--init-script', init, ':examples:docsArenaClasspath'],
+      }]
+    },
+    run: (build) => ({
+      cwd: '.',
+      command: ['java', '-cp', readFileSync(join(build, 'classpath.txt'), 'utf8').trim(), 'io.github.libtmux.examples.WatchWhatChanges'],
+    }),
+  },
+  {
+    slug: 'dotnet',
+    artifact: 'csharp-one-shot',
+    runs: ['dotnet:examples/LibTmux.Examples/Snippets/OneShot.cs'],
+    tools: ['dotnet'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['dotnet', 'build', 'examples/LibTmux.Examples/LibTmux.Examples.csproj', '--configuration', 'Release', '--framework', 'net10.0', '--nologo', '--verbosity', 'quiet'],
+    }],
+    run: () => ({ cwd: '.', command: ['dotnet', 'examples/LibTmux.Examples/bin/Release/net10.0/LibTmux.Examples.dll', '--arena', 'csharp-one-shot'] }),
+  },
+  // One artifact per documented snippet file. Every example case can take a
+  // lent server now, and the flag names any of them; these are the files the
+  // documentation quotes. `Mcp.ConnectToSelectedSurface` is deliberately not
+  // here: it starts a separate MCP process that resolves its own socket, so
+  // it would report evidence for a server it never used.
+  {
+    slug: 'dotnet',
+    artifact: 'csharp-many-commands-one-process',
+    runs: ['dotnet:examples/LibTmux.Examples/Snippets/Chaining.cs'],
+    tools: ['dotnet'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['dotnet', 'build', 'examples/LibTmux.Examples/LibTmux.Examples.csproj', '--configuration', 'Release', '--framework', 'net10.0', '--nologo', '--verbosity', 'quiet'],
+    }],
+    run: () => ({ cwd: '.', command: ['dotnet', 'examples/LibTmux.Examples/bin/Release/net10.0/LibTmux.Examples.dll', '--arena', 'csharp-many-commands-one-process'] }),
+  },
+  {
+    slug: 'dotnet',
+    artifact: 'csharp-watch-for-window-add',
+    runs: ['dotnet:examples/LibTmux.Examples/Snippets/ControlMode.cs'],
+    tools: ['dotnet'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['dotnet', 'build', 'examples/LibTmux.Examples/LibTmux.Examples.csproj', '--configuration', 'Release', '--framework', 'net10.0', '--nologo', '--verbosity', 'quiet'],
+    }],
+    run: () => ({ cwd: '.', command: ['dotnet', 'examples/LibTmux.Examples/bin/Release/net10.0/LibTmux.Examples.dll', '--arena', 'csharp-watch-for-window-add'] }),
+  },
+  {
+    slug: 'dotnet',
+    artifact: 'csharp-host-the-tools-yourself',
+    runs: ['dotnet:examples/LibTmux.Examples/Snippets/Mcp.cs'],
+    tools: ['dotnet'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['dotnet', 'build', 'examples/LibTmux.Examples/LibTmux.Examples.csproj', '--configuration', 'Release', '--framework', 'net10.0', '--nologo', '--verbosity', 'quiet'],
+    }],
+    run: () => ({ cwd: '.', command: ['dotnet', 'examples/LibTmux.Examples/bin/Release/net10.0/LibTmux.Examples.dll', '--arena', 'csharp-host-the-tools-yourself'] }),
+  },
+  {
+    slug: 'dotnet',
+    artifact: 'csharp-show-hierarchy',
+    runs: ['dotnet:examples/LibTmux.Examples/Snippets/Tour.cs'],
+    tools: ['dotnet'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['dotnet', 'build', 'examples/LibTmux.Examples/LibTmux.Examples.csproj', '--configuration', 'Release', '--framework', 'net10.0', '--nologo', '--verbosity', 'quiet'],
+    }],
+    run: () => ({ cwd: '.', command: ['dotnet', 'examples/LibTmux.Examples/bin/Release/net10.0/LibTmux.Examples.dll', '--arena', 'csharp-show-hierarchy'] }),
+  },
+  {
+    slug: 'cxx',
+    artifact: 'cpp-tour',
+    runs: ['cxx:examples/01-tour.cpp'],
+    tools: ['cmake'],
+    prepare: () => [
+      { cwd: '.', command: ['cmake', '--preset', 'cxx-dev'] },
+      { cwd: '.', command: ['cmake', '--build', '--preset', 'cxx-dev', '--target', 'libtmux_example_01_tour'] },
+    ],
+    run: () => ({ cwd: '.', command: ['build/cxx-dev/examples/libtmux_example_01_tour'] }),
+  },
+  // The other examples that can borrow. Each names its own artifact and
+  // builds its own target; the configure step is shared, and docs-arena
+  // runs a given command once per worktree.
+  {
+    slug: 'cxx',
+    artifact: 'cpp-workspace',
+    runs: ['cxx:examples/02-workspace.cpp'],
+    tools: ['cmake'],
+    prepare: () => [
+      { cwd: '.', command: ['cmake', '--preset', 'cxx-dev'] },
+      { cwd: '.', command: ['cmake', '--build', '--preset', 'cxx-dev', '--target', 'libtmux_example_02_workspace'] },
+    ],
+    run: () => ({ cwd: '.', command: ['build/cxx-dev/examples/libtmux_example_02_workspace'] }),
+  },
+  {
+    slug: 'cxx',
+    artifact: 'cpp-readme',
+    runs: ['cxx:examples/05-readme.cpp'],
+    tools: ['cmake'],
+    prepare: () => [
+      { cwd: '.', command: ['cmake', '--preset', 'cxx-dev'] },
+      { cwd: '.', command: ['cmake', '--build', '--preset', 'cxx-dev', '--target', 'libtmux_example_05_readme'] },
+    ],
+    run: () => ({ cwd: '.', command: ['build/cxx-dev/examples/libtmux_example_05_readme'] }),
+  },
+  {
+    slug: 'cxx',
+    artifact: 'cpp-streaming',
+    runs: ['cxx:examples/06-streaming.cpp'],
+    tools: ['cmake'],
+    prepare: () => [
+      { cwd: '.', command: ['cmake', '--preset', 'cxx-dev'] },
+      { cwd: '.', command: ['cmake', '--build', '--preset', 'cxx-dev', '--target', 'libtmux_example_06_streaming'] },
+    ],
+    run: () => ({ cwd: '.', command: ['build/cxx-dev/examples/libtmux_example_06_streaming'] }),
+  },
+  {
+    slug: 'swift',
+    artifact: 'swift-querying',
+    runs: ['swift:Examples/Sources/ExampleCode/Querying.swift'],
+    tools: ['swift'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['swift', 'build', '--package-path', 'Examples', '--scratch-path', 'Examples/.build/docs-arena', '--build-tests'],
+    }],
+    run: () => ({
+      cwd: '.',
+      command: [`Examples/.build/docs-arena/${swiftTriple()}/debug/ExamplesPackageTests.xctest`, '--testing-library', 'swift-testing', '--filter', 'theThreeListings'],
+    }),
+  },
+  // The other examples the site quotes. Each filters to the one test that
+  // runs its example against the lent server; the build step is shared.
+  {
+    slug: 'swift',
+    artifact: 'swift-changing',
+    runs: ['swift:Examples/Sources/ExampleCode/Changing.swift'],
+    tools: ['swift'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['swift', 'build', '--package-path', 'Examples', '--scratch-path', 'Examples/.build/docs-arena', '--build-tests'],
+    }],
+    run: () => ({
+      cwd: '.',
+      command: [`Examples/.build/docs-arena/${swiftTriple()}/debug/ExamplesPackageTests.xctest`, '--testing-library', 'swift-testing', '--filter', 'theDocumentedSessionIsBuilt']
+    }),
+  },
+  {
+    slug: 'swift',
+    artifact: 'swift-waiting',
+    runs: ['swift:Examples/Sources/ExampleCode/Waiting.swift'],
+    tools: ['swift'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['swift', 'build', '--package-path', 'Examples', '--scratch-path', 'Examples/.build/docs-arena', '--build-tests'],
+    }],
+    run: () => ({
+      cwd: '.',
+      command: [`Examples/.build/docs-arena/${swiftTriple()}/debug/ExamplesPackageTests.xctest`, '--testing-library', 'swift-testing', '--filter', 'documentedWatchSendsTheDifference']
+    }),
+  },
+  {
+    slug: 'swift',
+    artifact: 'swift-workspaces',
+    runs: ['swift:Examples/Sources/ExampleCode/Workspaces.swift'],
+    tools: ['swift'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['swift', 'build', '--package-path', 'Examples', '--scratch-path', 'Examples/.build/docs-arena', '--build-tests'],
+    }],
+    run: () => ({
+      cwd: '.',
+      command: [`Examples/.build/docs-arena/${swiftTriple()}/debug/ExamplesPackageTests.xctest`, '--testing-library', 'swift-testing', '--filter', 'theDocumentedWorkspaceBuilds']
+    }),
+  },
+  {
+    slug: 'swift',
+    artifact: 'swift-mcp-embedding',
+    runs: ['swift:Examples/Sources/ExampleCode/MCPEmbedding.swift'],
+    tools: ['swift'],
+    prepare: () => [{
+      cwd: '.',
+      command: ['swift', 'build', '--package-path', 'Examples', '--scratch-path', 'Examples/.build/docs-arena', '--build-tests'],
+    }],
+    run: () => ({
+      cwd: '.',
+      command: [`Examples/.build/docs-arena/${swiftTriple()}/debug/ExamplesPackageTests.xctest`, '--testing-library', 'swift-testing', '--filter', 'embeddedToolsListPanes']
+    }),
+  },
+]
