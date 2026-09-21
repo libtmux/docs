@@ -30,6 +30,7 @@ interface DocsManifest {
   ports: {
     slug: string
     products: { slug: string; availability: string; inDevelopment: boolean; cli?: string | null; reference: string | null; protocol?: string | null }[]
+    documentation: { id: string; name: string; kind: string; availability: string; url: string; package?: string }[]
   }[]
 }
 
@@ -129,15 +130,35 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     expect(existsSync(sitePath('_staged'))).toBe(false)
     expect(existsSync(publishedPath('ja/_staged'))).toBe(false)
     expect(existsSync(sitePath('guides/source'))).toBe(false)
-    expect(existsSync(sitePath('ruby/latest/guides/source/core/index.html'))).toBe(true)
-    expect(existsSync(sitePath('lua/latest/guides/source/overview/index.html'))).toBe(true)
+    expect(existsSync(sitePath('ruby/latest/guides/core/index.html'))).toBe(true)
+    expect(existsSync(sitePath('lua/latest/guides/overview/index.html'))).toBe(true)
+    redirectsTo('ruby/latest/guides/source/core', 'ruby/latest/guides/core/')
+    redirectsTo('ruby/latest/guides/source/async', 'ruby/latest/guides/async/')
+    redirectsTo('lua/latest/guides/source/overview', 'lua/latest/guides/overview/')
+    redirectsTo('lua/latest/guides/source/runtime', 'lua/latest/guides/runtime/')
+  })
+
+  it('renders Lua Server in the public Server branch of its API sidebar', () => {
+    inspect('lua/latest/reference/libtmux-server', (document) => {
+      const current = document.querySelector('a[aria-current="page"][href$="/lua/latest/reference/libtmux-server/"]')
+      expect(current).toBeDefined()
+      const ancestors = [] as Element[]
+      let node = current?.closest('[role="treeitem"]')
+      while (node) {
+        ancestors.push(node)
+        node = node.parentElement?.closest('[role="treeitem"]') ?? null
+      }
+      const top = ancestors.at(-1)
+      expect(top?.querySelector(':scope > .api-nav__row > a')?.textContent?.trim()).toBe('Server')
+      expect(top?.querySelector(':scope > [role="group"] > li:first-child a')?.textContent?.trim()).toBe('libtmux.Server')
+    })
   })
 
   it.each(PORTS.map((port) => port.slug))('%s exposes products from latest homes and core navigation', (port) => {
     for (const section of ['', 'guides/', 'topics/']) {
       const path = `${port}/latest/${section}`
       inspect(path, (document) => {
-        const navigation = document.querySelectorAll(section ? 'nav[aria-label="Products"]' : 'main')
+        const navigation = document.querySelectorAll(section ? 'nav[aria-label="Port documentation"]' : 'main')
         expect(navigation.length, `${path} product entry points`).toBeGreaterThan(0)
         for (const container of navigation) {
           for (const product of products) {
@@ -146,6 +167,9 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
               .find((entry) => new URL(entry.getAttribute('href')!, urlFor(path)).pathname === expected)
             expect(link, `${path} links to ${expected}`).toBeDefined()
             expect(link!.textContent, `${path} product label`).toContain(product === 'workspace' ? 'Workspace Manager' : 'MCP')
+            if (!productAvailable(PORTS.find((entry) => entry.slug === port)!, product)) {
+              expect(link!.textContent, `${path} unavailable product label`).toContain('not available')
+            }
             expect(resolves(link!.getAttribute('href')!, urlFor(path).href), `${path} resolves ${expected}`).toBe(true)
           }
         }
@@ -155,6 +179,33 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect([...new Set(assets)].filter((href) => !resolves(href, urlFor(path).href)), `${path} missing assets`).toEqual([])
       })
     }
+  })
+
+  it('surfaces Ruby Async and Lua runtime domains without presenting Lua products as available', () => {
+    const domains = [
+      { port: 'ruby', path: 'ruby/latest/', target: 'ruby/latest/guides/async/', label: 'Async', group: 'Companion packages' },
+      { port: 'lua', path: 'lua/latest/', target: 'lua/latest/guides/runtime/', label: 'luv and Neovim', group: 'Runtime adapters' },
+    ]
+    for (const domain of domains) {
+      inspect(domain.path, (document) => {
+        const link = [...document.querySelectorAll('main a[href]')]
+          .find((entry) => new URL(entry.getAttribute('href')!, urlFor(domain.path)).pathname === urlFor(domain.target).pathname)
+        expect(link, `${domain.path} ${domain.label} card`).toBeDefined()
+        expect(link!.textContent, `${domain.path} ${domain.label} card label`).toContain(domain.label)
+      })
+      inspect(domain.target, (document) => {
+        const navigation = document.querySelector('nav[aria-label="Port documentation"]')
+        expect(navigation, `${domain.target} port navigation`).toBeDefined()
+        const section = [...navigation!.querySelectorAll('.sidebar-section')]
+          .find((entry) => entry.querySelector('.section-label')?.textContent.trim() === domain.group)
+        expect(section, `${domain.target} ${domain.group} group`).toBeDefined()
+      })
+    }
+    inspect('lua/latest/', (document) => {
+      for (const label of ['MCP (not available)', 'Workspace Manager (not available)']) {
+        expect(document.querySelector('main')!.textContent, `Lua landing ${label}`).toContain(label)
+      }
+    })
   })
 
   it('serves both products and every section with the chosen port content', () => {
@@ -387,6 +438,19 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           else if (productAvailable(port, 'mcp')) expect(resolves(metadata.protocol!, urlFor(root).href), `${root}${port.slug} MCP protocol`).toBe(true)
           else expect(metadata.protocol).toBeNull()
         }
+      }
+      const ruby = exported.ports.find((entry) => entry.slug === 'ruby')!
+      expect(ruby.documentation).toEqual(expect.arrayContaining([
+        expect.objectContaining({ id: 'async', kind: 'companion-package', availability: 'available', package: 'libtmux-async' }),
+      ]))
+      const lua = exported.ports.find((entry) => entry.slug === 'lua')!
+      expect(lua.documentation).toEqual(expect.arrayContaining([
+        expect.objectContaining({ id: 'runtime', kind: 'runtime', availability: 'available' }),
+        expect.objectContaining({ id: 'mcp', kind: 'unavailable', availability: 'unpublished' }),
+        expect.objectContaining({ id: 'workspace', kind: 'unavailable', availability: 'unpublished' }),
+      ]))
+      for (const area of [...ruby.documentation, ...lua.documentation]) {
+        expect(resolves(area.url, urlFor(root).href), `${root}${area.url} documentation area`).toBe(true)
       }
       for (const entry of exported.pages.filter((entry) => productUrl.test(entry.url))) {
         expect(resolves(entry.url), entry.url).toBe(true)

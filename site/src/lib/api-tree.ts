@@ -35,6 +35,32 @@ const distinct = (entries: NavEntry[]): NavEntry[] => {
   return entries.map((e) => ((count.get(e.name) ?? 0) > 1 ? { ...e, name: e.id } : e))
 }
 
+/** tmux's five primary objects lead their own reader-facing domains. */
+const PRIMARY_OBJECT_BUCKETS = new Set(['server', 'session', 'window', 'pane', 'client'])
+
+const identitySegments = (id: string) => id.split(/::|[.:/]/).filter(Boolean)
+
+/**
+ * Put a domain's actual tmux object before its helpers.
+ *
+ * The nav sidecar preserves source order, which is useful curation data, but
+ * that can put `CommandOutcome` or `Fields.Server` ahead of `libtmux.Server`.
+ * In the reader tree, an exact object identity wins; equal names choose the
+ * shallowest public identity, so `libtmux.Server` precedes
+ * `libtmux.Fields.Server`. All other entries retain their curated order.
+ */
+const primaryObjectFirst = (bucket: { id: string; label: string }, entries: NavEntry[]): NavEntry[] => {
+  if (!PRIMARY_OBJECT_BUCKETS.has(bucket.id)) return entries
+  const rank = (entry: NavEntry) =>
+    OWNER_KINDS.has(entry.kind) && identitySegments(entry.id).at(-1)?.toLowerCase() === bucket.label.toLowerCase()
+      ? 0
+      : 1
+  return entries.toSorted((left, right) => {
+    const order = rank(left) - rank(right)
+    return order || (rank(left) === 0 ? identitySegments(left.id).length - identitySegments(right.id).length : 0)
+  })
+}
+
 /**
  * A port's buckets, each with the types it holds and the children it splits
  * into.
@@ -58,20 +84,22 @@ export function navTree(port: string): TreeBucket[] {
     ? [...symbolsForProduct(model, 'mcp'), ...symbolsForProduct(model, 'workspace')].map((s) => s.publicId ?? s.id)
     : [])
   const core = (entries: NavEntry[]) => entries.filter((e) => !products.has(e.id))
+  const displayEntries = (bucket: { id: string; label: string }, entries: NavEntry[]) =>
+    primaryObjectFirst(bucket, distinct(core(entries)))
   return [
     ...nav.buckets
       .map((b) => ({
         id: b.id,
         label: b.label,
         collapsed: b.collapsed,
-        entries: distinct(core(nav.assignments[b.id] ?? [])),
+        entries: displayEntries(b, nav.assignments[b.id] ?? []),
         children: (b.children ?? [])
-          .map((c) => ({ id: c.id, label: c.label, collapsed: c.collapsed, entries: distinct(core(nav.assignments[c.id] ?? [])), children: [] }))
+          .map((c) => ({ id: c.id, label: c.label, collapsed: c.collapsed, entries: displayEntries(c, nav.assignments[c.id] ?? []), children: [] }))
           .filter((c) => c.entries.length > 0),
       }))
       .filter((b) => b.entries.length > 0 || b.children.length > 0),
     ...(nav.unplaced.length > 0
-      ? [{ id: '__unplaced', label: 'Other', collapsed: true, entries: distinct(core(nav.unplaced)), children: [] }]
+      ? [{ id: '__unplaced', label: 'Other', collapsed: true, entries: displayEntries({ id: '__unplaced', label: 'Other' }, nav.unplaced), children: [] }]
       : []),
   ]
 }

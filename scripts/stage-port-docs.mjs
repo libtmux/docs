@@ -6,6 +6,7 @@ import { homedir } from 'node:os'
 import { dirname, join, posix, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
+import { sourceGuidesFor } from '../site/src/lib/port-documentation.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const output = join(root, 'site/src/content/docs/_staged')
@@ -13,35 +14,14 @@ const selectedPort = process.argv.includes('--port') ? process.argv[process.argv
 const check = process.argv.includes('--check')
 const fromSource = process.argv.includes('--from-source')
 
+/** Source-path lookup used for staging and source-relative link rewriting. */
+export function stagedRoutesFor(port) {
+  return Object.fromEntries(sourceGuidesFor(port).map((entry) => [entry.sourcePath, entry]))
+}
+
 const ROUTES = {
-  ruby: {
-    'README.md': ['guides/source/overview'],
-    'docs/modes.md': ['guides/source/execution-modes'],
-    'docs/ownership-errors.md': ['guides/source/ownership-errors'],
-    'docs/recipes.md': ['examples/source-recipes'],
-    'gems/libtmux/README.md': ['guides/source/core'],
-    'gems/libtmux-async/README.md': ['guides/source/async'],
-    'gems/libtmux-mcp/README.md': ['mcp/source-guide', 'mcp'],
-    'gems/libtmux-workspace/README.md': ['workspace/source-guide', 'workspace'],
-  },
-  lua: {
-    'README.md': ['guides/source/overview'],
-    'docs/runtime.md': ['guides/source/runtime'],
-    'docs/query.md': ['guides/source/query'],
-    'docs/snapshots.md': ['guides/source/snapshots'],
-    'docs/creation.md': ['guides/source/creation'],
-    'docs/topology.md': ['guides/source/topology'],
-    'docs/panes.md': ['guides/source/panes'],
-    'docs/control.md': ['guides/source/control'],
-    'docs/commands.md': ['guides/source/commands'],
-    'docs/buffers.md': ['guides/source/buffers'],
-    'docs/clients.md': ['guides/source/clients'],
-    'docs/environment.md': ['guides/source/environment'],
-    'docs/settings.md': ['guides/source/settings'],
-    'docs/fields.md': ['guides/source/fields'],
-    'docs/options-reference.md': ['guides/source/options'],
-    'docs/compatibility.md': ['guides/source/compatibility'],
-  },
+  ruby: stagedRoutesFor('ruby'),
+  lua: stagedRoutesFor('lua'),
 }
 
 const expand = (value) => value.startsWith('~/') ? join(homedir(), value.slice(2)) : value
@@ -77,23 +57,28 @@ export function rewriteLinks(content, sourcePath, route, routes, repo, revision)
   })
 }
 
-function stagedFiles(port, artifact) {
+export function stagedPortGuides(port, artifact) {
   const routes = ROUTES[port]
+  const linkRoutes = Object.fromEntries(Object.entries(routes).map(([sourcePath, guide]) => [sourcePath, [guide.route]]))
   const guides = new Map((artifact.guides ?? []).map((guide) => [guide.path, guide.content]))
   const files = new Map()
-  for (const [sourcePath, [route, product]] of Object.entries(routes)) {
+  for (const [sourcePath, guide] of Object.entries(routes)) {
+    const { route, product, package: packageId, domain, aliases, sidebar } = guide
     const content = guides.get(sourcePath)
     if (typeof content !== 'string') throw new Error(`${port}: native artifact is missing guide ${sourcePath}`)
     const { title, body } = titleAndBody(content, sourcePath)
-    const rewritten = rewriteLinks(body, sourcePath, route, routes, artifact.source.repository, artifact.source.revision)
+    const rewritten = rewriteLinks(body, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision)
     const data = {
       title,
       description: `Source-owned ${port === 'ruby' ? 'Ruby' : 'Lua'} guide at ${artifact.source.revision.slice(0, 12)}.`,
       port,
       ...(product ? { product } : {}),
+      ...(packageId ? { package: packageId } : {}),
+      ...(domain ? { domain } : {}),
+      ...(aliases.length ? { aliases } : {}),
       route,
       source: { repo: artifact.source.repository, path: sourcePath, ref: artifact.source.revision },
-      sidebar: { group: product ? (product === 'mcp' ? 'MCP' : 'Workspace Manager') : 'Guides' },
+      sidebar: sidebar ?? { group: product ? (product === 'mcp' ? 'MCP' : 'Workspace Manager') : 'Guides' },
     }
     const frontmatter = Object.entries(data).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
     files.set(`${port}/${route}/index.md`, `---\n${frontmatter}\n---\n\n${rewritten.trim()}\n`)
@@ -131,7 +116,7 @@ export function run() {
     if (selectedPort && expected && artifact.source?.revision !== expected) {
       throw new Error(`${port.slug}: expected source ${expected}, artifact records ${artifact.source?.revision}`)
     }
-    for (const [file, content] of stagedFiles(port.slug, artifact)) generated.set(file, content)
+    for (const [file, content] of stagedPortGuides(port.slug, artifact)) generated.set(file, content)
   }
 
   if (check) {

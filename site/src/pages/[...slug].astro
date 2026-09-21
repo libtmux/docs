@@ -11,7 +11,7 @@ import { buildTarget } from '../lib/versions'
 import ToolReference from '../components/mcp/ToolReference.astro'
 import { mcpReferenceRoutes } from '../lib/mcp-reference'
 import { docsEntryAvailable } from '../lib/page-port-links'
-import { docsRoutePath, workspaceRedirects } from '../lib/docs-paths'
+import { docsRedirects, docsRoutePath, workspaceRedirects } from '../lib/docs-paths'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { buildLocale, localeOf, placeholderPairs, sourceIdOf } from '../i18n/resolve'
 
@@ -21,8 +21,9 @@ export async function getStaticPaths() {
   const port = process.env.LIBTMUX_DOCS_PORT
   let defaults: Record<string, string> = {}
   try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
-  const real = entries
+  const prose = entries
     .filter((entry) => localeOf(entry.id) === locale && docsEntryAvailable(entry, port))
+  const real = prose
     .map((entry) => ({
       params: { slug: docsRoutePath({ ...entry, id: sourceIdOf(entry.id) }, port, defaults) },
       props: { entry, version: entry.data.port && !port ? (defaults[entry.data.port] ?? 'latest') : undefined },
@@ -36,9 +37,16 @@ export async function getStaticPaths() {
   const protocol = locale === DEFAULT_LOCALE ? mcpReferenceRoutes(port, defaults, buildTarget(process.env).version)
     .map(({ path, port: mcpPort, ...props }) => ({ params: { slug: path }, props: { ...props, mcpPort } })) : []
   if (locale === DEFAULT_LOCALE) {
-    const redirects = workspaceRedirects([...real, ...reference].map((route) => route.params.slug))
+    const reserved = [...global, ...reference, ...protocol].map((route) => route.params.slug)
+    const redirects = [
+      ...docsRedirects(prose.map((entry) => ({ ...entry, id: sourceIdOf(entry.id) })), port, defaults, reserved),
+      ...workspaceRedirects([...real, ...reference].map((route) => route.params.slug)),
+    ]
       .map(({ path, target }) => ({ params: { slug: path }, props: { redirect: target } }))
-    return [...real, ...global, ...reference, ...protocol, ...redirects]
+    const routes = [...real, ...global, ...reference, ...protocol, ...redirects]
+    const paths = routes.map((route) => route.params.slug)
+    if (new Set(paths).size !== paths.length) throw new Error('Duplicate generated documentation route')
+    return routes
   }
   const placeholders = (await placeholderPairs())
     .filter((pair) => pair.locale === locale)

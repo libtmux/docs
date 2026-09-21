@@ -152,7 +152,17 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
       kind: 'anyOf',
       of: [
         nameRe('Internal|Generated'),
-        { kind: 'path', re: '(^|/)_?internal' },
+        // A public API can live in a private implementation directory. Lua
+        // exposes Server, Session, Window, Pane and Client from `_internal/`;
+        // their public contract outranks that layout detail while retained
+        // internal declarations still stay here.
+        {
+          kind: 'allOf',
+          of: [
+            { kind: 'not', of: { kind: 'apiScope', is: 'exported' } },
+            { kind: 'path', re: '(^|/)_?internal' },
+          ],
+        },
         // .NET says so in the namespace and nowhere else: `Materializer` sits
         // in `Materialization/` and is declared in `LibTmux.Internal`.
         { kind: 'module', re: '(^|\\.)_?[Ii]nternal(\\.|$)' },
@@ -506,6 +516,18 @@ if (SHARED.length !== CHAIN.length) {
  * the promise that the same shape appears in every language.
  */
 const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
+  lua: {
+    unsettled: {
+      'libtmux.Creation': 'creation receipt shared by several tmux objects',
+      'libtmux.Entity': 'base of the tmux entity hierarchy; the concrete entity is the subclass',
+      'libtmux.LinkDestination': 'window-link target shared by sessions and windows',
+      'libtmux.Observation': 'observation record shared by several tmux objects',
+      'libtmux.ObservationCoverage': 'observation coverage metadata shared by several tmux objects',
+      'libtmux.Reference': 'target reference shared by every tmux entity',
+      'libtmux.Runtime': 'runtime protocol shared by host integrations',
+      'libtmux.Watch': 'watch handle shared by several tmux objects',
+    },
+  },
   ruby: {
     unsettled: {
       'LibTmux::Entity': 'base of the tmux entity hierarchy; the concrete entity is the subclass',

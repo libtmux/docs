@@ -8,6 +8,7 @@ import { PORT_ROOT } from '../lib/site-root.ts'
 import { docsRoutePath } from '../lib/docs-paths.ts'
 import { isIndexSource, markdownPath } from '../lib/markdown-twins.ts'
 import { localeProse } from '../lib/llms.ts'
+import { documentationAreas } from '../lib/port-documentation.ts'
 
 /**
  * `/docs.json` — the agent manifest.
@@ -133,6 +134,16 @@ export const GET: APIRoute = async ({ site }) => {
             inventory: `${refBase}${p.slug}/${defaults[p.slug] ?? 'latest'}/reference/objects.inv`,
           }
         : null,
+      documentation: documentationAreas(p.slug).map((area) => ({
+        id: area.id,
+        name: area.label,
+        kind: area.kind,
+        availability: area.kind === 'unavailable' ? 'unpublished' : 'available',
+        url: portPageUrl(p, defaults[p.slug] ?? 'latest', area.route),
+        ...(area.kind === 'companion-package' ? {
+          package: p.packages?.find((entry) => entry.id === area.package)?.name,
+        } : {}),
+      })),
     })),
     pages,
   }

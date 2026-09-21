@@ -377,6 +377,12 @@ Paths below are relative to `/en/<port>/<version>/`.
   guide cannot survive from the previous build. Check source-guide headings
   and every rewritten destination. Historical builds must not silently use
   a newer guide from a different revision.
+- [x] Model reader-facing Ruby and Lua documentation areas separately from
+  source-import paths. Use canonical core, Async, and runtime routes with
+  legacy source-path aliases; keep unavailable Lua MCP/workspace areas as
+  status pages rather than products. Evidence: catalog, staging, route, and
+  rendered-output tests; complete assembly on 2026-09-20 checked 17,810 pages
+  and 2,974,667 links with zero broken targets.
 - [x] Have `gen-mentions.mjs` consume the staged route/provenance metadata and
   selected version. Its current port-guide URL rewrite hardcodes `latest`;
   branch and release backlinks must stay in the version being rendered.
@@ -404,6 +410,12 @@ Paths below are relative to `/en/<port>/<version>/`.
   Keep useful MCP/workspace landing pages; omit runnable instructions and
   links to nonexistent product APIs. Remove "all ports ship a server" and
   literal eight-port denominator assumptions.
+- [x] Keep public API placement independent from implementation layout, and
+  make Server, Session, Window, Pane, and Client lead their own API domains.
+  A shallow public identity wins when names repeat (for example,
+  `libtmux.Server` before `libtmux.Fields.Server`). Evidence:
+  `nav-config.test.ts`, `api-tree.test.ts`, `check-nav.mjs`, rendered-output
+  tests, and the 456/456 Ruby/Lua browser matrix.
 - [x] Check icons, desktop/mobile tabs, keyboard controls, clipboard text,
   persisted selection, no-JavaScript fallback, and dark mode. Use existing
   widgets and focused tests rather than introducing another picker.
@@ -503,6 +515,8 @@ contracts and source identity that existing suites cannot express.
 - [x] Browser-check home/install tabs, one core guide, API pages, Ruby Async,
   Ruby MCP configuration/tools, Ruby workspace instructions, and both Lua
   product status pages at 1440, 768, and 390 pixels in light/dark modes.
+  Evidence (2026-09-20): `site/scripts/check-ruby-lua.mjs` passed 456/456
+  checks against the complete assembled localhost output.
 - [x] Verify Pagefind results, Markdown twins, docs/API indexes, inventories,
   prompt exports, version/page switchers, source permalinks, breadcrumbs,
   canonical URLs, robots, sitemap inclusion, and preview prefix isolation.
