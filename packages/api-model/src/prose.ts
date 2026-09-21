@@ -22,6 +22,8 @@ export const PORT_NAME: Record<string, string> = {
   dotnet: '.NET',
   cxx: 'C++',
   swift: 'Swift',
+  ruby: 'Ruby',
+  lua: 'Lua',
 }
 
 /** Declarations that own a page of members. */
@@ -32,6 +34,7 @@ export const OWNER_KINDS: ReadonlySet<string> = new Set([
   'struct',
   'trait',
   'enum',
+  'module',
 ])
 
 /** The types that get their own page: the ones with members to put on it. */

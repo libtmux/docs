@@ -29,6 +29,8 @@ const VALUE_KINDS = new Set(['constant', 'attribute', 'property'])
 export type Match =
   /** Exactly this public id. The escape hatch for a single stubborn symbol. */
   | { kind: 'id'; is: string | string[] }
+  /** Whether the extractor publishes this declaration as public API. */
+  | { kind: 'apiScope'; is: NonNullable<ApiSymbol['apiScope']> | NonNullable<ApiSymbol['apiScope']>[] }
   /** The module or namespace it is declared in. */
   | { kind: 'module'; is?: string | string[]; re?: string }
   /** Its own name, by prefix, suffix, or pattern. */
@@ -160,6 +162,10 @@ export function compileMatch(match: Match, words = true): Predicate {
     case 'id': {
       const ids = new Set(asArray(match.is))
       return (s) => ids.has(s.publicId ?? s.id)
+    }
+    case 'apiScope': {
+      const scopes = new Set(asArray(match.is))
+      return (s) => s.apiScope !== undefined && scopes.has(s.apiScope)
     }
     case 'module': {
       // Symmetric with `name`: an exact set, a regex, or both. .NET declares

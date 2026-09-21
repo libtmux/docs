@@ -2,7 +2,7 @@
 import { ALL_TRANSLATED, buildLocale } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import DocsLayout from '../layouts/DocsLayout.astro'
-import { DOC_PRODUCTS, PORTS, PORT_BY_SLUG, portPageUrl, primaryInstall, productDescription, type DocProduct, referenceUrl } from '../lib/ports'
+import { PORTS, PORT_BY_SLUG, portPageUrl, primaryInstall, referenceUrl } from '../lib/ports'
 import PortHero from '../components/PortHero.astro'
 import DocCard from '../components/DocCard.astro'
 import ApiReferences from '../components/ApiReferences.astro'
@@ -16,6 +16,7 @@ import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE } from '../i18n/locales'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath } from '../i18n/contribute'
 import { highlightInline } from '../lib/highlight'
+import { documentationCards } from '../lib/port-documentation'
 
 // Each library card's install block, highlighted the way the Quickstart
 // highlights the same command, prompt included.
@@ -77,9 +78,9 @@ const versionSections = versionRootPort
       { href: portPageUrl(versionRootPort, buildVersion, 'guides'), label: 'Guides', body: `Task guides for ${versionRootPort.name}.` },
       { href: portPageUrl(versionRootPort, buildVersion, 'examples'), label: 'Examples', body: 'Complete programs, sourced from the code each port tests.' },
       { href: portPageUrl(versionRootPort, buildVersion, 'concepts'), label: 'Concepts', body: 'The domain model every port shares.' },
-      ...Object.entries(DOC_PRODUCTS).map(([slug, info]) => ({ href: portPageUrl(versionRootPort, buildVersion, slug), label: info.label, body: productDescription(versionRootPort, slug as DocProduct) })),
     ]
   : []
+const versionDomains = versionRootPort ? documentationCards(versionRootPort.slug, buildVersion) : []
 
 /**
  * Locales this landing page genuinely exists in.
@@ -182,6 +183,12 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
           <DocCard href={s.href} label={s.label} body={s.body} />
         ))}
       </div>
+      {versionDomains.length > 0 && <section class="mt-10">
+        <h2 class="text-lg font-semibold">Packages and integrations</h2>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          {versionDomains.map((domain) => <DocCard href={domain.href} label={domain.label} body={domain.body} />)}
+        </div>
+      </section>}
       <ApiReferences port={versionRootPort} version={buildVersion} />
       <p class="mt-8 text-sm">
         <a class="hover:underline" href={withPortRoot(`/${versionRootPort.slug}/`)}>

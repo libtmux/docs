@@ -12,13 +12,14 @@ import {
   symbolsOfKind,
 } from '../src/db'
 import { MODEL_DIR } from '../src/db/paths'
+import { PORTS } from '../src/lib/ports'
 
 /**
  * The API projection, against the real extracted models.
  *
  * These are not fixtures: the point of the store is that it answers questions
- * over all eight ports at once, and a fixture with two invented symbols would
- * not exercise the thing that matters — that ids from eight different
+ * over all ten ports at once, and a fixture with two invented symbols would
+ * not exercise the thing that matters — that ids from ten different
  * extractors, with three incompatible naming grammars, coexist in one table.
  */
 
@@ -32,7 +33,9 @@ describeIfSeeded('api projection', () => {
 
   it('holds every port that has an extracted model', () => {
     const ports = new Set(allExtractions().map((e) => e.port))
-    expect(ports.size).toBeGreaterThanOrEqual(8)
+    const expected = PORTS.filter((port) => existsSync(join(MODEL_DIR, `${port.slug}.json`)))
+      .map((port) => port.slug)
+    expect([...ports].sort()).toEqual(expected.sort())
   })
 
   it('records provenance per port and version, not per symbol', () => {

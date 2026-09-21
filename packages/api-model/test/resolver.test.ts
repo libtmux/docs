@@ -19,7 +19,7 @@ import { portFromSentence } from '../src/prose.ts'
  */
 const here = dirname(fileURLToPath(import.meta.url))
 const DATA = join(here, '../../../site/src/data/api')
-const PORTS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'] as const
+const PORTS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'] as const
 const available = existsSync(join(DATA, 'py.json'))
 const d = available ? describe : describe.skip
 
@@ -33,6 +33,11 @@ d('resolver', () => {
     if (existsSync(inv)) {
       r.addInventory('Python', 'https://docs.python.org/3/', readInventory(readFileSync(inv)).entries)
     }
+  })
+
+  it('recognises Ruby and Lua when prose selects a port', () => {
+    expect(portFromSentence("Ruby's checked wait is `wait_for`")).toBe('ruby')
+    expect(portFromSentence("Lua's checked wait is `await`")).toBe('lua')
   })
 
   it('rejects things that are not references', () => {
@@ -110,7 +115,7 @@ d('resolver', () => {
 
   it('resolves most of the real corpus', () => {
     const LABEL: Record<string, string> = {
-      Python: 'py', TypeScript: 'ts', Rust: 'rs', Go: 'go',
+      Python: 'py', Ruby: 'ruby', Lua: 'lua', TypeScript: 'ts', Rust: 'rs', Go: 'go',
       Java: 'java', '.NET': 'dotnet', 'C++': 'cxx', Swift: 'swift',
     }
     const docs = join(here, '../../../site/src/content/docs')

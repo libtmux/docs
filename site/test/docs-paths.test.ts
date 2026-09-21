@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { docsPath, docsRoutePath } from '../src/lib/docs-paths'
+import { docsPath, docsRedirects, docsRoutePath } from '../src/lib/docs-paths'
 
 const pythonGuide = { id: 'ports/py/workspace/guides', data: { port: 'py', product: 'workspace' } }
 
@@ -13,5 +13,33 @@ describe('product document URLs', () => {
   it('keeps shared core routes and rejects malformed product identities', () => {
     expect(docsRoutePath({ id: 'guides/queries', data: {} }, 'ts')).toBe('guides/queries')
     expect(() => docsPath({ ...pythonGuide, id: 'ports/ts/workspace/guides' })).toThrow('Invalid product document id')
+  })
+
+  it('uses an explicit staged source-guide route and projects its aliases through versions', () => {
+    const staged = {
+      id: '_staged/ruby/ownership/index',
+      data: {
+        port: 'ruby',
+        route: 'guides/ownership-errors',
+        aliases: ['guides/source/ownership-errors'],
+      },
+    }
+    expect(docsPath(staged)).toBe('guides/ownership-errors')
+    expect(docsRoutePath(staged, undefined, { ruby: 'latest' })).toBe('ruby/latest/guides/ownership-errors')
+    expect(docsRoutePath(staged, 'ruby', { ruby: 'latest' })).toBe('guides/ownership-errors')
+    expect(docsRedirects([staged], undefined, { ruby: 'latest' })).toEqual([
+      {
+        path: 'ruby/latest/guides/source/ownership-errors',
+        target: 'ruby/latest/guides/ownership-errors',
+      },
+    ])
+  })
+
+  it('rejects aliases that collide with a canonical route or a reserved route', () => {
+    const canonical = { id: 'guides/core', data: { port: 'ruby', route: 'guides/core' } }
+    const staged = { id: '_staged/ruby/core/index', data: { port: 'ruby', route: 'guides/overview', aliases: ['guides/core'] } }
+    expect(() => docsRedirects([canonical, staged], undefined, { ruby: 'latest' })).toThrow('alias collides')
+    expect(() => docsRedirects([staged], undefined, { ruby: 'latest' }, ['ruby/latest/mcp'])).not.toThrow()
+    expect(() => docsRedirects([staged], undefined, { ruby: 'latest' }, ['ruby/latest/guides/core'])).toThrow('reserved route')
   })
 })

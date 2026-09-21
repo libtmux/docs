@@ -15,7 +15,7 @@ import type { ApiModel } from '../src/model.ts'
  */
 const here = dirname(fileURLToPath(import.meta.url))
 const DATA = join(here, '../../../site/src/data/api')
-const PORTS = ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
+const PORTS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
 
 const models = new Map<string, ApiModel>()
 for (const port of PORTS) {
@@ -56,6 +56,13 @@ describe('concept map', () => {
 
   it('links visible capture to the visible capture overload', () => {
     expect(CONCEPTS['capture-pane'].symbols.swift).toBe('Server.capture(_:includingHistory:)')
+    expect(CONCEPTS['capture-pane'].symbols.ruby).toBe('LibTmux::Pane#capture')
+    expect(CONCEPTS['capture-pane'].symbols.lua).toBe('libtmux.Entity:capture')
+  })
+
+  it('keeps Lua request completion distinct from snapshot capture', () => {
+    expect(CONCEPTS.snapshot.symbols.lua).toBe('libtmux.Server:snapshot')
+    expect(CONCEPTS.snapshot.symbols.lua).not.toContain('Request')
   })
 
   it('does not substitute a window target for a pane target', () => {

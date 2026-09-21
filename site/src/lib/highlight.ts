@@ -23,7 +23,7 @@ let instance: Promise<Highlighter> | undefined
  * A grammar that is never used is a megabyte of startup for nothing.
  */
 const LANGS = [
-  'python', 'rust', 'ts', 'js', 'bash', 'console', 'json', 'text',
+  'python', 'ruby', 'lua', 'rust', 'ts', 'js', 'bash', 'console', 'json', 'yaml', 'text',
   // The install widget's build-file panels: a Gradle script, a Maven POM
   // fragment, a Package.swift dependency and a CMakeLists block. Three of the
   // eight ports cannot be installed from a command line at all, so without
@@ -106,7 +106,7 @@ export async function highlight(code: string, lang: string): Promise<string | un
  * there.
  */
 const EC_LANGS = new Set([
-  'python', 'rust', 'ts', 'tsx', 'js', 'jsx', 'java', 'kotlin', 'swift',
+  'python', 'ruby', 'lua', 'rust', 'ts', 'tsx', 'js', 'jsx', 'java', 'kotlin', 'swift',
   'csharp', 'cpp', 'c', 'go', 'bash', 'shell', 'console', 'json', 'yaml',
   'toml', 'xml', 'diff', 'text',
 ])

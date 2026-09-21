@@ -58,6 +58,13 @@ function markdownFiles(dir) {
  * file are one entry.
  */
 const wanted = new Map()
+for (const [owner, file] of [
+  ['ruby', 'examples/quickstart.rb'],
+  ['ruby', 'examples/async_cancel.rb'],
+  ['lua', 'examples/quickstart.lua'],
+  ['lua', 'examples/native_query.lua'],
+  ['lua', 'examples/snapshot.lua'],
+]) wanted.set(`${owner}:${file}`, { owner, file })
 for (const md of markdownFiles(CONTENT)) {
   const text = readFileSync(md, 'utf8')
   for (const m of text.matchAll(/^```(\w+)([^\n]*)$/gm)) {

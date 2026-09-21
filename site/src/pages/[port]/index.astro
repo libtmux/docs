@@ -7,11 +7,12 @@ import ApiReferences from '../../components/ApiReferences.astro'
 import ProseText from '../../components/ProseText.astro'
 import PackageInstall from '../../components/widgets/PackageInstall.astro'
 import AgentPrompt from '../../components/widgets/AgentPrompt.astro'
-import { DOC_PRODUCTS, PORTS, portPageUrl, productDescription, type DocProduct, type Port } from '../../lib/ports'
+import { PORTS, portPageUrl, type Port } from '../../lib/ports'
 import { IS_ROOT_BUILD } from '../../lib/site-root'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
 import { QUICKSTARTS } from '../../lib/quickstarts'
+import { documentationCards } from '../../lib/port-documentation'
 
 /**
  * Per-port home page: playwright.dev/python/'s shape, ported to the eight
@@ -77,7 +78,6 @@ const quickstart = QUICKSTARTS[port.slug]
  * which also makes this grid match the one on `/<port>/<version>/`.
  */
 const cards = [
-  ...Object.entries(DOC_PRODUCTS).map(([slug, info]) => ({ href: portPageUrl(port, defaultVersion, slug), label: info.label, body: productDescription(port, slug as DocProduct) })),
   {
     label: 'Topics',
     body: `Architecture, traversal, options and hooks in ${port.name}.`,
@@ -99,6 +99,7 @@ const cards = [
     href: portPageUrl(port, defaultVersion, 'concepts'),
   },
 ] as const
+const domainCards = documentationCards(port.slug, defaultVersion)
 ---
 
 <BaseLayout
@@ -166,5 +167,12 @@ const cards = [
         }
       </div>
     </section>
+
+    {domainCards.length > 0 && <section class="mt-10">
+      <h2 class="text-lg font-semibold">Packages and integrations</h2>
+      <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        {domainCards.map((card) => <DocCard label={card.label} body={card.body} href={card.href} />)}
+      </div>
+    </section>}
   </main>
 </BaseLayout>

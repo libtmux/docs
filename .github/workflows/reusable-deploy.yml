@@ -17,7 +17,7 @@ name: reusable-deploy
 # Not the tag. This workflow is not an inert dependency: `uses:` executes it
 # inside the caller's repository with `id-token: write` and a role that can
 # PutObject and DeleteObject on the live bucket. A tag can be repointed, so
-# pinning one means this repository can change what runs in eight other
+# pinning one means this repository can change what runs in ten other
 # repositories with no diff and no review in any of them — which is the same
 # objection that rules out `@main`, only slower. A SHA cannot be repointed.
 # GitHub's own hardening guidance says the same, and its Actions policy can now
@@ -25,8 +25,8 @@ name: reusable-deploy
 #
 # Expect to bump the SHA by hand. Dependabot and Renovate can read the trailing
 # comment and offer the bump, but only where the caller has enabled the
-# `github-actions` ecosystem — and as of 2026-09-06 none of the eight port
-# repositories has: seven carry a dependabot.yml for their own language
+# `github-actions` ecosystem — and as of 2026-09-06 none of the ten port
+# repositories has: most carry a dependabot.yml for their own language
 # ecosystem (cargo, nuget, npm and so on) and none lists github-actions, and
 # the Python repository has no dependabot.yml at all. So the comment is
 # documentation here, not automation, and a release of this workflow reaches a
@@ -140,20 +140,22 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
-      # All eight port slugs plus the bucket-root reservations, even though
-      # only five (py, ts, dotnet, cxx, swift — ports.ts referenceMode
-      # 'self-hosted') ever legitimately call this workflow: rs/go/java
+      # All ten port slugs plus the bucket-root reservations, even though
+      # only seven currently call this workflow: rs/go/java
       # deep-link to an ecosystem host and should never reach here at all,
       # so blocking their slugs too is defense in depth, not dead weight.
       # This is a literal copy of ports.ts, not a checkout of this repo — a
       # cross-repo checkout of a private repo would need a shared credential
       # handed to every caller, exactly the shared-execution risk per-repo
       # prefix ownership exists to avoid. Keep it in sync by hand if PORTS
-      # ever gains a ninth entry.
+      # ever gains another entry.
       - name: Validate path-prefix
         env:
           PREFIX_IN: ${{ inputs.path-prefix }}
           PORT_IN: ${{ inputs.port }}
+          VERSION_IN: ${{ inputs.version }}
+          KIND_IN: ${{ inputs.version-kind }}
+          DEFAULT_IN: ${{ inputs.is-default }}
         run: |
           set -euo pipefail
           p="$PREFIX_IN"
@@ -161,17 +163,34 @@ jobs:
             echo "::error::path-prefix '$p' must be non-empty, unrooted, and contain no '..' segment" >&2
             exit 1
           fi
-          reserved=(py ts rs go java dotnet cxx swift manifest _shell)
+          reserved=(py ruby lua ts rs go java dotnet cxx swift manifest _shell)
           for r in "${reserved[@]}"; do
             if [[ "$p" == "$r" ]]; then
               echo "::error::path-prefix '$p' is a bare reserved top-level name — qualify it, e.g. '$r/stable'" >&2
               exit 1
             fi
           done
+          if [[ -n "${PORT_IN:-}" ]]; then
+            case "$PORT_IN" in
+              py|ruby|lua|ts|rs|go|java|dotnet|cxx|swift) ;;
+              *) echo "::error::unknown port '$PORT_IN'" >&2; exit 1 ;;
+            esac
+            if [[ -z "$VERSION_IN" || "$VERSION_IN" == */* || "$p" != "$PORT_IN/$VERSION_IN" ]]; then
+              echo "::error::port publication prefix must be exactly '$PORT_IN/$VERSION_IN'" >&2
+              exit 1
+            fi
+            if [[ "$KIND_IN" == pr ]]; then
+              [[ "$VERSION_IN" =~ ^pr-[0-9]+$ ]] || { echo "::error::PR version must be pr-N" >&2; exit 1; }
+              [[ "$DEFAULT_IN" == false ]] || { echo "::error::PR previews cannot be defaults" >&2; exit 1; }
+            fi
+          elif [[ "$KIND_IN" == pr && ! "$p" =~ ^pr-[0-9]+$ ]]; then
+            echo "::error::site preview prefix must be pr-N" >&2
+            exit 1
+          fi
           # A port's objects live under the locale, like everything else the
           # site serves. Applied here rather than asked of the caller: this
           # workflow is invoked from each port's own repository, and moving
-          # the segment would otherwise mean a coordinated edit across eight
+          # the segment would otherwise mean a coordinated edit across ten
           # of them. Validation runs on the caller's own prefix above, so a
           # bare reserved name is still refused before the locale is added.
           #
@@ -204,7 +223,7 @@ jobs:
               ;;
           esac
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: ${{ inputs.artifact }}
           path: dist
@@ -228,12 +247,36 @@ jobs:
                       path.write_text(normalized)
           PY
 
-      - uses: aws-actions/configure-aws-credentials@v6
+      - uses: aws-actions/configure-aws-credentials@4a1596c86fd706dc0521e32f0121ad1a6d1adb74 # v6.0.0
         with:
           role-to-assume: ${{ secrets.role-arn }}
           aws-region: ${{ inputs.aws-region }}
 
+      - name: Protect immutable tag contents
+        if: inputs.version-kind == 'tag'
+        env:
+          BUCKET: ${{ secrets.bucket }}
+        run: |
+          set -euo pipefail
+          count=$(aws s3api list-objects-v2 \
+            --bucket "$BUCKET" \
+            --prefix "$PREFIX/" \
+            --max-items 1 \
+            --query 'length(Contents)' \
+            --output text)
+          if [[ "$count" != 0 && "$count" != None ]]; then
+            remote="$RUNNER_TEMP/immutable-existing"
+            mkdir -p "$remote"
+            aws s3 sync "s3://$BUCKET/$PREFIX/" "$remote/" --only-show-errors
+            if ! diff -qr dist "$remote"; then
+              echo "::error::immutable tag '$PREFIX' already exists with different bytes" >&2
+              exit 1
+            fi
+            echo "SKIP_SYNC=true" >> "$GITHUB_ENV"
+          fi
+
       - name: Sync to this call's own prefix
+        if: env.SKIP_SYNC != 'true'
         env:
           BUCKET: ${{ secrets.bucket }}
         run: |
@@ -247,7 +290,7 @@ jobs:
             --cache-control "$CACHE_CONTROL"
 
       - name: Upsert manifest/<port>.json
-        if: inputs.port != ''
+        if: inputs.port != '' && inputs.version-kind != 'pr'
         env:
           BUCKET: ${{ secrets.bucket }}
           PORT: ${{ inputs.port }}

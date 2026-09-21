@@ -11,8 +11,8 @@
  * Callers read `PORTS` and `registryFor` themselves and pass the results in.
  *
  * Prompts are composed from parts rather than written out per combination.
- * Eight ports times nine topics is seventy-two finished prompts; the parts are
- * eight port blocks plus nine topic blocks, and every language-specific fact
+ * Ten ports times nine topics is ninety finished prompts; the parts are
+ * ten port blocks plus nine topic blocks, and every language-specific fact
  * lives in the port block so a topic is written once. That is what makes the
  * widget cheap enough to put a whole matrix on the landing page, and it is
  * also the only way the topics stay consistent with each other.
@@ -87,6 +87,8 @@ export interface PortParts {
   setup: string
   /** Topic id to this port's extra line, only where the topic writes one. */
   notes: Readonly<Record<string, string>>
+  /** Topic ids this port cannot implement without inventing a product. */
+  unavailable: Readonly<Record<string, string>>
 }
 
 const SETUP_ID = 'setup'
@@ -132,6 +134,8 @@ Constraints:
     pages: ['guides/sending-keys', 'guides/capturing-output', 'concepts/transports'],
     portNotes: {
       py: 'libtmux for Python is synchronous. There is no `async def` in the package, so reach for threads or processes rather than looking for an async API that is not there.',
+      ruby: 'Use `libtmux-async` inside an application-owned Async task. For output completion, use bounded control subscriptions and operation-specific evidence rather than a timer.',
+      lua: 'Choose the luv adapter for standalone Lua or the Neovim adapter in an editor host. Await Requests and retain `value, err`; do not block the host loop.',
     },
   },
   {
@@ -277,6 +281,8 @@ Constraints:
       cxx: 'Use `libtmux::testing::ScopedTmuxServer` from `<libtmux/testing/scoped_server.hpp>`, whose destructor reports teardown.',
       swift: 'Use `withTmuxServer { }` from the `TmuxFixture` library product, which scopes the server to the closure.',
       ts: 'This port does not export a test fixture yet; its launcher is internal. Build the fixture on the public API and say what you needed that was missing, so it can be vended properly.',
+      ruby: 'This port does not export its test fixture. Scope each test with `LibTmux::Server.start`, which owns a private socket and cleans it up on block exit; do not copy `test/support/tmux_fixture.rb` into application code.',
+      lua: 'This port does not export a test fixture. Start an explicit private tmux socket in the test harness, connect through the selected runtime adapter, and close both on every exit path.',
     },
   },
   {
@@ -387,7 +393,7 @@ function installStep(port: Port, entry: RegistryEntry, install: InstallForm, wor
 }
 
 /**
- * Every topic's section, built once and shared by all eight ports.
+ * Every topic's section, built once and shared by all ten ports.
  *
  * Takes only the context, which is the proof that a topic body is
  * language-independent: there is no `Port` in scope to leak one in.
@@ -420,7 +426,7 @@ export function sharedParts(ctx: PromptContext): SharedParts {
  *
  * Everything here is a fact about the port or the registry. Nothing about what
  * the reader is building appears, which is what lets one topic body serve all
- * eight languages.
+ * ten languages.
  */
 export function portParts(args: {
   port: Port
@@ -473,7 +479,7 @@ export function portParts(args: {
     '   output and the files you added.',
     '',
     'Rules for everything below:',
-    '- Use the reference above rather than guessing names. The eight libtmux',
+    '- Use the reference above rather than guessing names. The ten libtmux',
     '  ports do not share spellings, and a name from another language will look',
     '  plausible and not exist.',
     '- If the reference does not have something you expected, say so instead of',
@@ -487,7 +493,17 @@ export function portParts(args: {
     if (note) notes[topic.id] = wrap(`For ${port.name}: ${note}`)
   }
 
-  return { setup, notes }
+  const unavailable: Record<string, string> = {}
+  if (port.slug === 'ruby') {
+    unavailable['session-freezer'] = 'Ruby workspace support loads and applies creation plans. It does not freeze a live session, preserve program state, or reconcile an existing topology. Report that boundary and do not invent a freeze API.'
+    unavailable['session-supervisor'] = 'Ruby workspace support is creation-only. It can validate, plan, and load a new workspace, but it does not reconcile or delete drift. Report that boundary and do not present creation as convergence.'
+  }
+  if (port.slug === 'lua') {
+    unavailable['session-freezer'] = 'Lua has no published workspace package or loader. Document the missing product and stop; do not call the scaffold or invent freeze and restore APIs.'
+    unavailable['session-supervisor'] = 'Lua has no published workspace product or reconciliation API. Document the missing product and stop; do not advertise scaffold modules as usable.'
+  }
+
+  return { setup, notes, unavailable }
 }
 
 /** A readable label for a doc path, for the right-hand column of a link list. */
@@ -509,11 +525,12 @@ export function composeFromParts(shared: SharedParts, port: PortParts, topicId: 
   if (!opening) throw new Error(`composeFromParts: no topic "${topicId}"`)
   const section = shared.sections[topicId]
   const note = port.notes[topicId]
+  const unavailable = port.unavailable[topicId]
   return [
     wrap(opening),
     '',
     port.setup,
-    ...(section ? ['', section] : []),
+    ...(unavailable ? ['', 'Availability', '', wrap(unavailable)] : section ? ['', section] : []),
     ...(note ? ['', note] : []),
   ].join('\n')
 }

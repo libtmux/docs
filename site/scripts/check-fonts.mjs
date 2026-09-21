@@ -73,7 +73,7 @@ const ARCHETYPES = [
   ['ref java', '/java/latest/reference/io-github-libtmux-batch-batch-batch/', true],
   ['ref dotnet', '/dotnet/latest/reference/libtmux-attachsessionrequest/', true],
   ['ref cxx', '/cxx/latest/reference/libtmux-argumentsensitivity/', true],
-  ['ref swift', '/swift/latest/reference/calleridentity/', true],
+  ['ref swift', '/swift/latest/reference/server/', true],
   // A member's own page, which is a different shape from its type's: the type
   // lists its members, the member carries the signature. The italic type
   // annotations in a signature live only here, so an archetype list without

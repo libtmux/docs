@@ -6,7 +6,8 @@
  * across ports" with nothing behind it. They are not, and no single port's
  * documentation can show that — which is exactly why the claim survived.
  *
- * There is no shared manifest to read, so this encodes eight registration
+ * There is no shared manifest to read, so this encodes each published
+ * server's registration
  * idioms. That is the whole difficulty and the reason this is a script rather
  * than a hand-maintained table: each port declares tools in the way its
  * framework wants, and a grep for a plausible-looking string literal picks up
@@ -29,6 +30,9 @@ import { fileURLToPath } from 'node:url'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const checking = process.argv.includes('--check')
+const only = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : undefined
+const outFlag = process.argv.indexOf('--out')
+const out = outFlag === -1 ? join(repoRoot, 'site/src/data/mcp-tools.json') : process.argv[outFlag + 1]
 const expand = (p) => (p.startsWith('~/') ? join(homedir(), p.slice(2)) : p)
 
 /**
@@ -47,6 +51,17 @@ const PORTS = [
     // FastMCP: mcp.tool(<annotations>)(function) — the function name is the
     // wire name. The decorator form is not used here.
     pattern: /mcp\.tool\((?:[^()]|\([^()]*\))*\)\(\s*(\w+)\s*\)/gs,
+  },
+  {
+    slug: 'ruby',
+    dir: '~/work/libtmux/libtmux-ruby/gems/libtmux-mcp/lib/libtmux/mcp',
+    glob: 'catalog.rb',
+    // Catalog's three frozen lists are the registration authority. The same
+    // names recur in schema branches later in the file; Map keeps the first
+    // declaration and therefore the source link on the catalog itself.
+    pattern: /\b(tmux_(?:capabilities|snapshot|capture|wait|create|send|close|run))\b/g,
+    wirePrefix: 'tmux_',
+    prefixProbe: /\b(tmux_[a-z_]+)\b/g,
   },
   {
     slug: 'ts',
@@ -122,7 +137,9 @@ for (const port of PORTS) {
   port.repo = port.slug === 'py' ? 'tmux-python/libtmux-mcp' : definition.repo
   if (port.serverDir) port.serverDir = join(port.checkout, 'src/libtmux_mcp')
 }
-const declaredSlugs = new Set(PORT_DEFS.map((port) => port.slug))
+const declaredSlugs = new Set(PORT_DEFS
+  .filter((port) => port.productAvailability?.mcp !== 'unpublished')
+  .map((port) => port.slug))
 const coveredSlugs = new Set(PORTS.map((port) => port.slug))
 const absentHere = [...declaredSlugs].filter((slug) => !coveredSlugs.has(slug))
 const absentThere = [...coveredSlugs].filter((slug) => !declaredSlugs.has(slug))
@@ -171,9 +188,11 @@ function selectsToolsets(dir) {
 }
 
 const git = (checkout, ...args) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8' }).trim()
-const results = {}
+const previous = only && existsSync(out) ? JSON.parse(readFileSync(out, 'utf8')) : undefined
+const results = previous ? { ...previous.ports } : {}
 const missing = []
 for (const port of PORTS) {
+  if (only && port.slug !== only) continue
   const dir = expand(port.dir)
   if (!existsSync(dir)) {
     missing.push(port.slug)
@@ -203,6 +222,7 @@ for (const port of PORTS) {
     return {
       name, ...registration, description: tool?.description ?? '',
       schemaStatus: tool ? 'runtime' : 'unavailable',
+      ...(port.slug === 'ruby' ? { enabledByDefault: ['capabilities', 'snapshot'].includes(name) } : {}),
       ...(tool ? { inputSchema: tool.inputSchema, outputSchema: tool.outputSchema, annotations: tool.annotations, meta: tool._meta } : {}),
     }
   })
@@ -299,8 +319,6 @@ const payload = {
   referenceDocumented: documented?.length ?? null,
 }
 
-const outFlag = process.argv.indexOf('--out')
-const out = outFlag === -1 ? join(repoRoot, 'site/src/data/mcp-tools.json') : process.argv[outFlag + 1]
 const text = JSON.stringify(payload, null, 2) + '\n'
 
 if (checking) {

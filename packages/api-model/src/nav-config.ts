@@ -1,10 +1,10 @@
 import type { Bucket, Match, PortNav } from './nav.ts'
 
 /**
- * The reference sidebar, curated once for all eight ports.
+ * The reference sidebar, curated once for all ten ports.
  *
  * THE BUCKETS ARE SHARED, and that is a finding rather than a convenience:
- * every one of the eight ports declares Server, Session, Window, Pane and
+ * every port declares Server, Session, Window, Pane and
  * Client. The domain is tmux's, so the vocabulary is tmux's, and a reader
  * moving between languages meets the same shape. Only the *rules* differ,
  * because the ports name their supporting types differently and four of them
@@ -120,6 +120,18 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
   // The auxiliary trees outrank everything: `TestServer` is a fixture before
   // it is a Server, and `TmuxTestOptions` is one before it is a constant.
   { id: 'mcp', label: 'MCP', match: nameOrPath('Mcp|MCP', 'mcp', 'mcp') },
+  { id: 'async', label: 'Async', match: nameOrPath('Async', '(^|/)libtmux-async/', 'async') },
+  {
+    id: 'runtime',
+    label: 'Runtime adapters',
+    match: {
+      kind: 'allOf',
+      of: [
+        { kind: 'symbol', kinds: ['module'] },
+        { kind: 'path', re: '(^|/)runtime/' },
+      ],
+    },
+  },
   {
     id: 'testing',
     label: 'Testing utilities',
@@ -140,7 +152,17 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
       kind: 'anyOf',
       of: [
         nameRe('Internal|Generated'),
-        { kind: 'path', re: '(^|/)_?internal' },
+        // A public API can live in a private implementation directory. Lua
+        // exposes Server, Session, Window, Pane and Client from `_internal/`;
+        // their public contract outranks that layout detail while retained
+        // internal declarations still stay here.
+        {
+          kind: 'allOf',
+          of: [
+            { kind: 'not', of: { kind: 'apiScope', is: 'exported' } },
+            { kind: 'path', re: '(^|/)_?internal' },
+          ],
+        },
         // .NET says so in the namespace and nowhere else: `Materializer` sits
         // in `Materialization/` and is declared in `LibTmux.Internal`.
         { kind: 'module', re: '(^|\\.)_?[Ii]nternal(\\.|$)' },
@@ -233,6 +255,7 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
       kind: 'anyOf',
       of: [
         nameOrPath('Snapshot|Capture|^TextOutcome$|^TypedText$', '(^|/)snapshots?[./]', 'snapshot', 'capture'),
+        { kind: 'path', re: '(^|/)libtmux/selection\\.rb$' },
         freePath('(^|/)capture\\.hpp$'),
       ],
     },
@@ -299,9 +322,9 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
     id: 'commands',
     label: 'Commands',
     match: nameOrPath(
-      'Command|Cmd|cmd|Dispatch|Transport|Connection|^Running$|^TmuxArg$|^TmuxWait$|^ReadyStatus$|^WaitPath$',
-      '(^|/)(commands?|dispatch|transport|connection)',
-      'command', 'commands', 'cmd', 'dispatch', 'transport', 'connection', 'engine',
+      'Command|Cmd|cmd|Dispatch|Transport|Connection|Process|Receipt|^Running$|^TmuxArg$|^TmuxWait$|^ReadyStatus$|^WaitPath$',
+      '(^|/)(commands?|dispatch|transport|connection|process)|(^|/)libtmux/endpoint\\.rb$',
+      'command', 'commands', 'cmd', 'dispatch', 'transport', 'connection', 'process', 'engine',
     ),
   },
 ]
@@ -340,6 +363,8 @@ const ORDER = [
   'requests',
   'errors',
   'constants',
+  'runtime',
+  'async',
   'mcp',
   'testing',
   'internal',
@@ -491,6 +516,24 @@ if (SHARED.length !== CHAIN.length) {
  * the promise that the same shape appears in every language.
  */
 const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
+  lua: {
+    unsettled: {
+      'libtmux.Creation': 'creation receipt shared by several tmux objects',
+      'libtmux.Entity': 'base of the tmux entity hierarchy; the concrete entity is the subclass',
+      'libtmux.LinkDestination': 'window-link target shared by sessions and windows',
+      'libtmux.Observation': 'observation record shared by several tmux objects',
+      'libtmux.ObservationCoverage': 'observation coverage metadata shared by several tmux objects',
+      'libtmux.Reference': 'target reference shared by every tmux entity',
+      'libtmux.Runtime': 'runtime protocol shared by host integrations',
+      'libtmux.Watch': 'watch handle shared by several tmux objects',
+    },
+  },
+  ruby: {
+    unsettled: {
+      'LibTmux::Entity': 'base of the tmux entity hierarchy; the concrete entity is the subclass',
+      'LibTmux::EntityRef': 'target identity shared by every entity, owned by none',
+    },
+  },
   py: {
     unsettled: {
       'libtmux._vendor._structures.InfinityType': 'vendored from packaging; version comparison, not tmux',
@@ -621,7 +664,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
  */
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
-  ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'].map((port) => [
+  ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'].map((port) => [
     port,
     {
       port,

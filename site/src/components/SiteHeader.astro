@@ -41,7 +41,7 @@ const {
     <a href={withRoot('/')} class="site-header__mark font-mono text-lg font-semibold tracking-tight">libtmux</a>
 
     {/*
-      The eight languages are the primary navigation and stay in the bar for as
+      The ten languages are the primary navigation and stay in the bar for as
       long as they fit on one line. Below that they move into the menu rather
       than wrapping: wrapped, they were three rows of chips and a 207px header
       on a 320px phone, which is a third of the viewport spent before the page
@@ -59,7 +59,7 @@ const {
     */}
     <div class="site-header__always">
       {/*
-        In the bar from 64rem up, and in the panel below it. Rendered in both
+        In the bar from 80rem up, and in the panel below it. Rendered in both
         places and shown in one: which of the two is right depends on the
         width, and a link has no state to keep in step.
       */}
@@ -99,7 +99,7 @@ const {
       </summary>
 
       <div class="site-header__panel">
-        {/* Hidden from 64rem up, where the same eight are already in the bar. */}
+        {/* Hidden from 80rem up, where the same ten are already in the bar. */}
         <div class="site-header__panel-ports">
           <PortSwitcher portSlug={portSlug} version={version} />
         </div>

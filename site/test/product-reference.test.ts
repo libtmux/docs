@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { API_MODELS, referenceAlternatives } from '../src/lib/api-models'
 import { productApiAlternatives, productApiRoutes } from '../src/lib/product-api'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
+import { PORT_BY_SLUG, productAvailable } from '../src/lib/ports'
 
 describe('product reference equivalents', () => {
   it('keeps body links in the product with the correct target version', () => {
@@ -19,7 +20,11 @@ describe('product reference equivalents', () => {
       const routes = productApiRoutes({ [port]: model }, port, {}, 'stable')
       for (const product of ['workspace', 'mcp']) {
         const declarations = routes.filter((route) => route.symbol.product === product)
-        expect(declarations.length, `${port} ${product} declarations`).toBeGreaterThan(0)
+        if (productAvailable(PORT_BY_SLUG[port], product as 'workspace' | 'mcp')) {
+          expect(declarations.length, `${port} ${product} declarations`).toBeGreaterThan(0)
+        } else {
+          expect(declarations, `${port} ${product} declarations`).toEqual([])
+        }
         for (const route of declarations) {
           const section = `${product}/reference`
           expect(route.path).toBe(`${section}/${route.symbol.slug}`)

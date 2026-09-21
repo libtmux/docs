@@ -19,8 +19,9 @@ const paths = [
       const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(raw)?.[1] ?? ''
       const port = /^port:\s*['"]?([a-z]+)['"]?\s*$/m.exec(frontmatter)?.[1]
       const product = /^product:\s*['"]?(core|workspace|mcp)['"]?\s*$/m.exec(frontmatter)?.[1]
+      const route = /^route:\s*['"]?([^'"\r\n]+)['"]?\s*$/m.exec(frontmatter)?.[1]
       const id = path.replace(/\.(md|mdx)$/, '').replace(/\/index$/, '')
-      return `/${docsRoutePath({ id, data: { port, product } }, undefined, defaultVersion)}/`
+      return `/${docsRoutePath({ id, data: { port, product, route } }, undefined, defaultVersion)}/`
     }),
   '/mcp/tools/',
   '/parity/',

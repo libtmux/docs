@@ -3,11 +3,12 @@ import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales.ts'
 import { buildLocale, localeOf } from '../i18n/resolve.ts'
 import { API_MODELS, PORT_NAME, ownersOf } from '../lib/api-models.ts'
-import { DOC_PRODUCTS, hasReference, PORTS, portPageUrl, productApiPath, productInDevelopment, referenceUrl, type DocProduct } from '../lib/ports.ts'
+import { DOC_PRODUCTS, hasReference, PORTS, portPageUrl, productApiPath, productAvailable, productInDevelopment, referenceUrl, type DocProduct } from '../lib/ports.ts'
 import { PORT_ROOT } from '../lib/site-root.ts'
 import { docsRoutePath } from '../lib/docs-paths.ts'
 import { isIndexSource, markdownPath } from '../lib/markdown-twins.ts'
 import { localeProse } from '../lib/llms.ts'
+import { documentationAreas } from '../lib/port-documentation.ts'
 
 /**
  * `/docs.json` — the agent manifest.
@@ -37,16 +38,18 @@ export const GET: APIRoute = async ({ site }) => {
   // trailing slash; every use below joins a path that has no leading one.
   const refBase = `${PORT_ROOT}/`
   const port = process.env.LIBTMUX_DOCS_PORT
+  const locale = buildLocale()
   let defaults: Record<string, string> = {}
   try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
 
   const entries = await getCollection(
     'docs',
-    (entry) => (!port || !entry.data.port || entry.data.port === port) && localeOf(entry.id) === DEFAULT_LOCALE,
+    (entry) => (!port || !entry.data.port || entry.data.port === port)
+      && localeOf(entry.id) === DEFAULT_LOCALE
+      && (locale === DEFAULT_LOCALE || Boolean(port) || !entry.data.port),
   )
   // What this build serves at each route: a translation where it has one, and
   // the default locale's page where a placeholder stands in for it.
-  const locale = buildLocale()
   const translations = new Map(locale === DEFAULT_LOCALE ? []
     : localeProse(await getCollection('docs'), locale, port, defaults)
       .map(({ entry, route }) => [route, entry] as const))
@@ -95,7 +98,7 @@ export const GET: APIRoute = async ({ site }) => {
     name: 'libtmux',
     url: `${origin}${base}`,
     description:
-      'A typed tmux control library for eight languages — Python, TypeScript, Rust, Go, Java, .NET, C++ and Swift — documented as one site.',
+      'A typed tmux control library for ten languages — Python, Ruby, Lua, TypeScript, Rust, Go, Java, .NET, C++ and Swift — documented as one site.',
     sourceRepository: 'https://github.com/tmux-python/libtmux',
     agentEntrypoints: {
       manifest: `${base}docs.json`,
@@ -114,11 +117,14 @@ export const GET: APIRoute = async ({ site }) => {
       reference: hasReference(p) ? referenceUrl(p, defaults[p.slug] ?? 'latest') : null,
       products: Object.entries(DOC_PRODUCTS).map(([slug, product]) => ({
         slug, name: product.label,
+        availability: productAvailable(p, slug as DocProduct) ? 'available' : 'unpublished',
         inDevelopment: productInDevelopment(p, slug as DocProduct),
         ...(slug === 'workspace' ? { cli: p.workspaceCli ?? null } : {}),
         url: portPageUrl(p, defaults[p.slug] ?? 'latest', slug),
-        reference: portPageUrl(p, defaults[p.slug] ?? 'latest', productApiPath(slug as DocProduct)),
-        ...(slug === 'mcp' ? { protocol: portPageUrl(p, defaults[p.slug] ?? 'latest', 'mcp/tools').replace(/\/$/, '.json') } : {}),
+        reference: productAvailable(p, slug as DocProduct)
+          ? portPageUrl(p, defaults[p.slug] ?? 'latest', productApiPath(slug as DocProduct)) : null,
+        ...(slug === 'mcp' ? { protocol: productAvailable(p, 'mcp')
+          ? portPageUrl(p, defaults[p.slug] ?? 'latest', 'mcp/tools').replace(/\/$/, '.json') : null } : {}),
         source: API_MODELS[p.slug]?.sources?.find((source) => source.product === slug),
       })),
       extracted: API_MODELS[p.slug]
@@ -128,6 +134,16 @@ export const GET: APIRoute = async ({ site }) => {
             inventory: `${refBase}${p.slug}/${defaults[p.slug] ?? 'latest'}/reference/objects.inv`,
           }
         : null,
+      documentation: documentationAreas(p.slug).map((area) => ({
+        id: area.id,
+        name: area.label,
+        kind: area.kind,
+        availability: area.kind === 'unavailable' ? 'unpublished' : 'available',
+        url: portPageUrl(p, defaults[p.slug] ?? 'latest', area.route),
+        ...(area.kind === 'companion-package' ? {
+          package: p.packages?.find((entry) => entry.id === area.package)?.name,
+        } : {}),
+      })),
     })),
     pages,
   }

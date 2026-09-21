@@ -27,12 +27,14 @@ import type { ApiModel, ApiSymbol, PortSlug, SymbolKind } from './model.ts'
  *
  * Sphinx has real domains for Python, C++ and JavaScript, and those are used
  * so an external consumer's `:py:class:` resolves the way it expects. The
- * other five languages have no domain, and inventing `rs:struct` would produce
+ * other seven languages have no domain, and inventing `rs:struct` would produce
  * a role no reader has ever heard of — those go to `std:label`, which every
  * Sphinx understands and which `:ref:` resolves.
  */
 const DOMAIN: Record<PortSlug, string> = {
   py: 'py',
+  ruby: 'std',
+  lua: 'std',
   cxx: 'cpp',
   ts: 'js',
   rs: 'std',

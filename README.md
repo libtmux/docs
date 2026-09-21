@@ -1,7 +1,7 @@
 # libtmux.org
 
-Documentation for the libtmux libraries in Python, TypeScript, Rust, Go,
-Java/Kotlin, .NET, C++, and Swift. [libtmux.org](https://libtmux.org) provides
+Documentation for the libtmux libraries in Python, Ruby, Lua, TypeScript,
+Rust, Go, Java/Kotlin, .NET, C++, and Swift. [libtmux.org](https://libtmux.org) provides
 installation instructions, task guides, examples, and API references with
 links between corresponding APIs in different languages.
 

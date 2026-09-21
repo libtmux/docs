@@ -27,7 +27,7 @@ permissions:
 
 concurrency:
   group: deploy-shell-pr-${{ github.event.pull_request.number }}
-  queue: max
+  cancel-in-progress: false
 
 jobs:
   cleanup:

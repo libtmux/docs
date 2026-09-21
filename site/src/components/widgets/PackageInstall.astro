@@ -1,13 +1,13 @@
 ---
 import { Code } from 'astro-expressive-code/components'
 import { highlightInline } from '../../lib/highlight'
-import { PORTS, referenceUrl } from '../../lib/ports'
+import { PORTS, referenceUrl, type PortPackageId } from '../../lib/ports'
 import type { Quickstart } from '../../lib/quickstarts'
 import { withPortRoot } from '../../lib/site-root'
 import { defaultVersionFor } from '../../lib/versions'
 
 /**
- * Package-manager picker for the eight libtmux ports' own install commands
+ * Package-manager picker for the ten libtmux ports' own install commands
  * (`port.installs` from ports.ts — see that file for why each entry is what
  * it is). Same visual language and copy-to-clipboard behaviour as
  * ./McpInstall.astro — everything lives in this component, with no separate
@@ -35,7 +35,7 @@ import { defaultVersionFor } from '../../lib/versions'
  * back to its own default, rather than rendering blank.
  */
 interface Props {
-  /** Port slugs to show; omit for all eight. */
+  /** Port slugs to show; omit for all ten. */
   ports?: readonly string[]
   /**
    * A code example to show under each port's install line, keyed by slug.
@@ -62,13 +62,21 @@ interface Props {
    * column beside it would only narrow, gets the overlay.
    */
   copyButton?: 'auto' | 'gutter' | 'overlay'
+  /** Install a companion package instead of the core library. */
+  packageId?: PortPackageId
 }
-const { ports, defaultPort, snippets, variant = 'full', copyButton = 'auto' } = Astro.props as Props
+const { ports, defaultPort, snippets, variant = 'full', copyButton = 'auto', packageId = 'core' } = Astro.props as Props
 const copyLayout = (code: string) => (copyButton === 'auto' ? (code.includes('\n') ? 'overlay' : 'gutter') : copyButton)
 
-const items = ports && ports.length > 0 ? PORTS.filter((p) => ports.includes(p.slug)) : PORTS
+const selected = ports && ports.length > 0 ? PORTS.filter((p) => ports.includes(p.slug)) : PORTS
+const items = selected.map((port) => {
+  if (packageId === 'core') return port
+  const companion = port.packages?.find((entry) => entry.id === packageId)
+  if (!companion?.installs) throw new Error(`PackageInstall: ${port.slug} has no install forms for ${packageId}`)
+  return { ...port, packageName: companion.name, installs: companion.installs }
+})
 if (items.length === 0) {
-  throw new Error('PackageInstall: `ports` matched none of the eight port slugs in ports.ts')
+  throw new Error('PackageInstall: `ports` matched none of the ten port slugs in ports.ts')
 }
 const initialSlug = defaultPort && items.some((p) => p.slug === defaultPort) ? defaultPort : items[0]!.slug
 
@@ -427,7 +435,7 @@ const installHtml = new Map(
     margin-top: 0.75rem;
   }
 
-  .lm-pkg-install__snippet :global(.expressive-code) {
+  .lm-pkg-install__snippet .expressive-code {
     margin: 0;
   }
 

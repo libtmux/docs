@@ -18,7 +18,7 @@
  */
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
-import { PORT_BY_SLUG, portPageUrl, referenceUrl, type DocProduct } from './ports'
+import { PORT_BY_SLUG, portPageUrl, productAvailable, referenceUrl, type DocProduct } from './ports'
 import { withPortRoot } from './site-root'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { localeOf, sourceIdOf } from '../i18n/resolve'
@@ -259,7 +259,7 @@ export async function getSidebar(
    */
   if (port === undefined) return [...groups, ...ungrouped]
   if (product) {
-    if (product === 'mcp') ungrouped.splice(1, 0, {
+    if (product === 'mcp' && productAvailable(PORT_BY_SLUG[port], 'mcp')) ungrouped.splice(1, 0, {
       type: 'link', label: 'Tools', href: portPageUrl(PORT_BY_SLUG[port], version, 'mcp/tools'),
     })
     return [...ungrouped, ...groups]

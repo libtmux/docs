@@ -31,7 +31,7 @@ const locale = buildLocale()
 // original is not a thing the content collection can hold.
 const entries = await getCollection('docs')
 const sources = entries
-  .filter((e) => localeOf(e.id) === DEFAULT_LOCALE && !e.data.product)
+  .filter((e) => localeOf(e.id) === DEFAULT_LOCALE && !e.data.product && !e.data.port)
   .map((e) => ({
     sourceId: e.id,
     title: e.data.title,

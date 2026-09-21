@@ -18,7 +18,7 @@ describe('standard types in product signatures', () => {
   })
 
   it('does not classify placeholders, return labels, or dependency types as builtins', () => {
-    for (const port of ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']) {
+    for (const port of ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']) {
       for (const name of ['T', 'Self', 'Integer', 'tools', 'err', 'ILogger', 'IServiceCollection', 'McpServer']) {
         expect(builtinHref(port, name), `${port}:${name}`).toBeUndefined()
       }

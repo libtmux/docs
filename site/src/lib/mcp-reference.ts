@@ -9,6 +9,7 @@ export interface McpRegistration {
   inputSchema?: Record<string, unknown>
   outputSchema?: Record<string, unknown>
   annotations?: Record<string, unknown>
+  enabledByDefault?: boolean
   schemaStatus: string
   source: { repo: string; revision: string; file: string; line?: number }
 }

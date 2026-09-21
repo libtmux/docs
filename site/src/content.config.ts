@@ -20,6 +20,16 @@ const docs = defineCollection({
     port: z.string().optional(),
     /** Product pages are authored separately for each port. */
     product: z.enum(['mcp', 'workspace']).optional(),
+    /** Published package a staged source guide documents. */
+    package: z.enum(['core', 'async', 'mcp', 'workspace']).optional(),
+    /** Reader-facing domain for a staged source guide. */
+    domain: z.string().optional(),
+    /** Public route for a source-owned guide staged from a port checkout. */
+    route: z.string().optional(),
+    /** Legacy paths that redirect to a staged guide's canonical route. */
+    aliases: z.array(z.string()).optional(),
+    /** Exact port source backing a staged guide. */
+    source: z.object({ repo: z.string(), path: z.string(), ref: z.string() }).optional(),
     /** Sidebar placement. */
     sidebar: z
       .object({

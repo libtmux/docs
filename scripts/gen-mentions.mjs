@@ -17,6 +17,8 @@ const PORTS = PORT_DEFS.map((p) => p.slug)
 /** The first column's label, as the prose writes it. */
 const PORT_BY_LABEL = {
   Python: 'py',
+  Ruby: 'ruby',
+  Lua: 'lua',
   TypeScript: 'ts',
   Rust: 'rs',
   Go: 'go',
@@ -48,11 +50,26 @@ for (const [file, project, baseUrl, langs] of [
   })), langs)
 }
 
+function frontmatterValue(source, key) {
+  const front = /^---\n([\s\S]*?)\n---/.exec(source)?.[1]
+  const value = front && new RegExp(`^${key}:\\s*(.+)$`, 'm').exec(front)?.[1]
+  if (!value) return undefined
+  try { return JSON.parse(value) } catch { return value.replace(/^['"]|['"]$/g, '') }
+}
+
+function versionOf(port) {
+  if (port === process.env.LIBTMUX_DOCS_PORT) return process.env.LIBTMUX_DOCS_VERSION || 'latest'
+  try { return JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')[port] ?? 'latest' } catch { return 'latest' }
+}
+
 /** `site/src/content/docs/topics/traversal.md` becomes `/topics/traversal/`. */
-function pageOf(file) {
+function pageOf(file, source) {
   const rel = relative(contentDir, file).replace(/\.mdx?$/, '')
   const path = rel.endsWith('/index') ? rel.slice(0, -'/index'.length) : rel
-  return `/${path.replace(/^ports\/([^/]+)\//, '$1/latest/')}/`
+  const route = frontmatterValue(source, 'route')
+  const port = frontmatterValue(source, 'port')
+  if (route && port) return `/${port}/${versionOf(port)}/${route}/`
+  return `/${path.replace(/^ports\/([^/]+)\//, (_, slug) => `${slug}/${versionOf(slug)}/`)}/`
 }
 
 /** The heading a page carries, so a backlink can be labelled. */
@@ -75,11 +92,12 @@ for (const file of globSync('**/*.{md,mdx}', { cwd: contentDir }).sort()) {
 
   const full = join(contentDir, file)
   const source = readFileSync(full, 'utf8')
-  const page = pageOf(full)
+  const page = pageOf(full, source)
   const title = titleOf(source, full)
-  const section = file.split('/')[0]
-  const authoredPort = /^ports\/([^/]+)\//.exec(file)?.[1]
-  const product = /^ports\/[^/]+\/(workspace|mcp)\//.exec(file)?.[1]
+  const route = frontmatterValue(source, 'route')
+  const section = route?.split('/')[0] ?? file.split('/')[0]
+  const authoredPort = frontmatterValue(source, 'port') ?? /^ports\/([^/]+)\//.exec(file)?.[1]
+  const product = frontmatterValue(source, 'product') ?? /^ports\/[^/]+\/(workspace|mcp)\//.exec(file)?.[1]
 
   for (const { port: contextPort, text, line, before, linked } of proseMentions(source, PORT_BY_LABEL)) {
     const pagePort = contextPort ?? authoredPort

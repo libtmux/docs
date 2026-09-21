@@ -9,6 +9,22 @@
         "supported": true
       }
     ],
+    "ruby": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "lua": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
     "ts": [
       {
         "slug": "latest",
@@ -68,6 +84,8 @@
   },
   "defaultVersion": {
     "py": "latest",
+    "ruby": "latest",
+    "lua": "latest",
     "ts": "latest",
     "rs": "latest",
     "go": "latest",

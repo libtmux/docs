@@ -601,6 +601,12 @@ html[data-theme="purple"][data-theme-mode="dark"] {
 
 /* Inline code (not in pre blocks) */
 @layer components {
+  /* Source-owned guides can contain path-like prose tokens that are wider
+     than a phone. Break only when the token would otherwise overflow. */
+  .prose :where(p, li) {
+    overflow-wrap: anywhere;
+  }
+
   .prose code:not(pre code) {
     overflow-wrap: anywhere;
     @apply bg-gray-100 dark:bg-gray-800 text-[var(--theme-primary)] dark:text-[var(--theme-accent)];
@@ -882,7 +888,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 /*
  * The top bar, and what it does when there is not enough room.
  *
- * It used to wrap. Eight language chips, four controls and three links on one
+ * It used to wrap. Ten language chips, four controls and three links on one
  * flex line became three rows and a 207px header on a 320px phone — a third
  * of the viewport, above the docs shell's own mobile toolbar. Wrapping is what
  * a bar does when nobody has decided what to drop.
@@ -916,7 +922,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 }
 
 /* The languages hold the middle of the bar and never wrap; below the width
-   where all eight fit they are not shown here at all. */
+   where all ten fit they are not shown here at all. */
 .site-header__ports {
   min-width: 0;
   display: none;
@@ -967,7 +973,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
    way the locale panel's `left-0` did — that was the horizontal scrollbar on
    every phone width. Capped against the viewport rather than the header, and
    scrollable, because a landscape phone is 320px tall and this panel holds
-   eight languages and six controls. */
+   ten languages and six controls. */
 .site-header__panel {
   position: absolute;
   right: 0;
@@ -996,7 +1002,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   gap: 0.75rem;
 }
 
-/* Two columns of languages rather than eight chips in a column: the panel
+/* Two columns of languages rather than ten chips in a column: the panel
    stays under a phone's fold in landscape, where there are 320px of height. */
 .site-header__panel-ports > nav {
   display: grid;
@@ -1020,7 +1026,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 
 /* ── Where the pieces move ──────────────────────────────
  *
- * 64rem is where all eight languages, the controls and the links fit on one
+ * 80rem is where all ten languages, the controls and the links fit on one
  * line with room to spare. Below it the languages go to the panel; the bar
  * keeps the wordmark, the colour scheme, search and the menu.
  */
@@ -1031,7 +1037,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   line-height: 1;
 }
 
-@media (min-width: 64rem) {
+@media (min-width: 80rem) {
   .site-header__ports {
     display: block;
   }
@@ -1041,7 +1047,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   }
 
   /* Reference and MCP sit beside search, and the panel stops repeating what
-     the bar already shows: the eight languages are in the bar at this width,
+     the bar already shows: the ten languages are in the bar at this width,
      and a menu that lists them again is a second answer to a settled
      question. What is left in the panel is the three controls that were never
      in the bar. */

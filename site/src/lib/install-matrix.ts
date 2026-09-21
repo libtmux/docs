@@ -325,6 +325,28 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
       }
     },
   },
+  ruby: {
+    port: 'ruby',
+    package: 'libtmux-mcp',
+    methods: [
+      { id: 'gem', label: 'RubyGems', docUrl: 'https://rubygems.org/gems/libtmux-mcp' },
+      { id: 'bundler', label: 'Bundler', docUrl: 'https://bundler.io/guides/creating_gem.html' },
+    ],
+    cooldowns: NO_COOLDOWN,
+    resolve(method) {
+      const command = {
+        command: method.id === 'bundler' ? 'bundle' : 'libtmux-mcp',
+        args: method.id === 'bundler'
+          ? ['exec', 'libtmux-mcp', '--socket-name', 'libtmux-docs', '--endpoint', 'local']
+          : ['--socket-name', 'libtmux-docs', '--endpoint', 'local'],
+        prereq: method.id === 'bundler'
+          ? 'bundle add libtmux-mcp --version 0.1.0.alpha.1'
+          : 'gem install --version 0.1.0.alpha.1 libtmux-mcp',
+        note: 'The server borrows an existing named socket. Start it first with `tmux -L libtmux-docs new-session -d`; `--endpoint` is only its public alias.',
+      }
+      return command
+    },
+  },
   ts: {
     port: 'ts',
     package: '@libtmux/mcp',

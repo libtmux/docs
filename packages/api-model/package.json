@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "One normalized API model for eight languages, extracted with web-tree-sitter.",
+  "description": "One normalized API model for ten languages, extracted from native documentation artifacts and source.",
   "exports": {
     ".": "./src/index.ts"
   },

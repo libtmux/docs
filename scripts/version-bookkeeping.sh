@@ -15,6 +15,31 @@
 manifest="$scratch/versions.json"
 node "$script_dir/gen-versions.mjs" --out "$manifest"
 
+# PRs and standalone branches do not exist in a release manifest yet. Add
+# exactly the source-bound tree this caller is about to build; publication
+# still decides whether it becomes a production manifest fragment.
+if [ -n "${LIBTMUX_DOCS_PORT:-}" ] && [ -n "${LIBTMUX_DOCS_VERSION:-}" ] && [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
+  LIBTMUX_DOCS_MANIFEST="$manifest" node --input-type=module -e '
+    import { readFileSync, writeFileSync } from "node:fs"
+    const file = process.env.LIBTMUX_DOCS_MANIFEST
+    const manifest = JSON.parse(readFileSync(file, "utf8"))
+    const port = process.env.LIBTMUX_DOCS_PORT
+    const slug = process.env.LIBTMUX_DOCS_VERSION
+    const kind = process.env.LIBTMUX_DOCS_VERSION_KIND || "branch"
+    const resolvesTo = process.env.LIBTMUX_DOCS_RESOLVES_TO
+    if (kind === "alias" && !resolvesTo) throw new Error("source-bound aliases require LIBTMUX_DOCS_RESOLVES_TO")
+    if (kind !== "alias" && resolvesTo) throw new Error("LIBTMUX_DOCS_RESOLVES_TO applies only to aliases")
+    const entry = {
+      slug, label: slug, kind, supported: true,
+      source: process.env.LIBTMUX_DOCS_SOURCE_SHA,
+      ...(resolvesTo ? { resolvesTo } : {}),
+    }
+    manifest.ports[port] = [...(manifest.ports[port] || []).filter((item) => item.slug !== slug), entry]
+    if (process.env.LIBTMUX_DOCS_IS_DEFAULT === "true") manifest.defaultVersion[port] = slug
+    writeFileSync(file, JSON.stringify(manifest, null, 2) + "\n")
+  '
+fi
+
 # Defaults must describe this build before any links or canonicals are rendered.
 LIBTMUX_DOCS_MANIFEST="$manifest" LIBTMUX_DOCS_BUILD_VERSIONS="$versions_arg" LIBTMUX_DOCS_SITE_DIR="$site_dir" \
 node --input-type=module -e '
@@ -69,6 +94,10 @@ port_defaults_json() {
 }
 
 kind_for_version() {
+  if [ "$1" = "${LIBTMUX_DOCS_VERSION:-}" ] && [ -n "${LIBTMUX_DOCS_VERSION_KIND:-}" ]; then
+    echo "$LIBTMUX_DOCS_VERSION_KIND"
+    return
+  fi
   case "$1" in
     latest) echo trunk ;;
     stable) echo alias ;;
@@ -92,26 +121,18 @@ export LIBTMUX_DOCS_PORT_ROOT
 
 IFS=',' read -r -a versions <<<"$versions_arg"
 
-# A slug that names a source other than HEAD would be a lie.
-#
-# `$version` reaches the URL, the cache key and the version switcher. It never
-# reaches git: `build_reference_cached` fingerprints `rev-parse HEAD`, and no
-# path here checks anything out. So every version this script builds renders
-# the checkout as it currently stands.
-#
-# `latest` says exactly that, and `stable` is an alias, so both are honest.
-# A tag, a maintenance branch or a PR slug all name a source this script cannot
-# fetch, and building one publishes today's tree at /py/v0.62.0/ or /py/v0.6.x/
-# as though it were that release — indistinguishable from a real archive.
-#
-# docs.rs and javadoc archive every release because they build each from its own
-# source at publish time. Doing that here means a checkout per version, and old
-# sources building under current tooling. Until that exists, refuse the slug
-# rather than fabricate the page.
+# Non-trunk slugs are accepted only when a port caller supplies the exact
+# source ref, commit and checkout that build-site.sh verified above. A local
+# multi-port build still refuses them because its worktrees are not historical
+# archives.
 for version in "${versions[@]}"; do
   case "$(kind_for_version "$version")" in
     trunk | alias) ;;
     *)
+      if [ -n "${LIBTMUX_DOCS_PORT:-}" ] && [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ] &&
+         [ "$version" = "${LIBTMUX_DOCS_VERSION:-}" ]; then
+        continue
+      fi
       die "cannot build '$version': this script renders the checkout at HEAD and
   never checks anything out, so this slug would publish current content at
   /<port>/$version/ as though it came from that source. Use latest or stable."

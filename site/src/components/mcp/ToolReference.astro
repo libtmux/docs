@@ -35,6 +35,8 @@ const headings = tool ? [
     : { repo: CONTRIBUTE_REPO, path: 'site/src/components/mcp/ToolReference.astro', ref: CONTRIBUTE_BRANCH }}>
   {tool ? <>
     <Fragment set:html={descriptionHtml} />
+    {tool.enabledByDefault !== undefined && <p><strong>Policy:</strong>{' '}
+      {tool.enabledByDefault ? 'enabled by default' : `opt in with --enable-tool ${tool.wireName}`}.</p>}
     <p><a href="../">All {info.name} tools</a> · <a href={`../${tool.wireName}.json`}>JSON</a> · <a href={`https://github.com/${tool.source.repo}/blob/${tool.source.revision}/${tool.source.file}${tool.source.line ? `#L${tool.source.line}` : ''}`}>Source</a></p>
     <h2 id="arguments">Arguments</h2>
     {Object.keys(properties).length ? <dl>
@@ -73,7 +75,8 @@ const headings = tool ? [
     <h2 id="tools">Tools</h2>
     <dl>{reference.registrations.map((entry) => <>
       <dt><a href={portPageUrl(info, version, `mcp/tools/${entry.wireName}`)}><code>{entry.wireName}</code></a></dt>
-      <dd>{toolSummary(entry.description)}</dd>
+      <dd>{toolSummary(entry.description)}{entry.enabledByDefault !== undefined &&
+        <span class="ml-2 text-sm opacity-75">{entry.enabledByDefault ? 'Default' : 'Opt-in'}</span>}</dd>
     </>)}</dl>
     {protocolSections.map((section) => <section>
       <h2 id={section.id}>{section.title}</h2>

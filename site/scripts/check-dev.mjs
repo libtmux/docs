@@ -2,6 +2,10 @@
 import assert from 'node:assert/strict'
 import { dev } from 'astro'
 import { chromium } from 'playwright'
+import { PORTS, productAvailable } from '../src/lib/ports.ts'
+
+const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
+const workspaceCliPortCount = PORTS.filter((port) => port.workspaceCli).length
 
 Object.assign(process.env, {
   LIBTMUX_DOCS_BASE: '/en/', LIBTMUX_DOCS_ROOT: '/en', LIBTMUX_DOCS_PORT_ROOT: '/en',
@@ -56,18 +60,26 @@ try {
       : path === 'dotnet/latest/mcp/tools/capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : `/en/py/stable/${path.replace(/^ts\/latest\//, '')}/`
     if (hasSwitcher) assert.equal(await switcher.locator('a').first().getAttribute('href'), expected)
     if (path === 'py/stable/workspace/guides') {
-      assert.equal(await switcher.locator('a').count(), 1, 'Only Python has a workspace CLI guide')
-      assert.equal(await switcher.locator('[aria-disabled="true"]').count(), 7)
+      assert.equal(await switcher.locator('a').count(), workspaceCliPortCount)
+      assert.equal(
+        await switcher.locator('[aria-disabled="true"]').count(),
+        PORTS.length - workspaceCliPortCount,
+      )
     }
     if (path === 'ts/latest/workspace/internals/guides') {
-      assert.match(await switcher.locator('[aria-disabled="true"]').textContent(), /Python/)
+      const unavailable = await switcher.locator('[aria-disabled="true"]').allTextContents()
+      assert(unavailable.some((label) => /Python/.test(label)), 'Python internals guide stays unavailable')
     }
     if (path === 'dotnet/latest/mcp/tools/capture_pane') {
       assert.equal(await switcher.locator('a').count(), 8)
       assert.equal(await switcher.locator('a[aria-current="page"]').getAttribute('href'), `/en/${path}/`)
     }
     if (isReference) {
-      assert.equal(await switcher.locator('a').count(), 8, 'Workspace construction has an equivalent in every port')
+      assert.equal(
+        await switcher.locator('a').count(),
+        workspacePortCount,
+        'Workspace construction has an equivalent in every published workspace product',
+      )
       const target = await page.request.get(base.replace(/\/en$/, '') + expected)
       assert(target.ok(), `Equivalent target: HTTP ${target.status()}`)
     }

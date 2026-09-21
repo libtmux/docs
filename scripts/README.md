@@ -113,6 +113,29 @@ generation pass (comma-separated slugs from `site/src/lib/ports.ts`).
 only the shell and search index. `--skip-pagefind` skips the final
 indexing pass, useful while iterating on everything before it.
 
+Port CI binds any named tree to one source checkout. All identity inputs are
+required together; branches, PRs, tags, and aliases are refused without them:
+
+```console
+$ LIBTMUX_DOCS_PORT=ruby \
+    LIBTMUX_DOCS_VERSION=pr-42 \
+    LIBTMUX_DOCS_VERSION_KIND=pr \
+    LIBTMUX_DOCS_SOURCE_REF=0123456789abcdef0123456789abcdef01234567 \
+    LIBTMUX_DOCS_SOURCE_SHA=0123456789abcdef0123456789abcdef01234567 \
+    LIBTMUX_DOCS_IS_DEFAULT=false \
+    LIBTMUX_DOCS_CHECKOUT_RUBY=/workspace/source \
+    ./scripts/build-site.sh \
+    --ports ruby \
+    --versions pr-42 \
+    --skip-refs \
+    --skip-pagefind
+```
+
+An alias also sets `LIBTMUX_DOCS_RESOLVES_TO` to the immutable tag it names.
+The preflight verifies the ref, SHA, checkout HEAD, native export, API model,
+staged guides, examples, manifest identity, canonical URLs, and robots policy
+before producing the version subtree.
+
 ## Checks
 
 Four scripts assert things the build itself cannot notice. None of them needs
@@ -138,8 +161,9 @@ Regenerates `site/src/data/mcp-tools.json`, the cross-port MCP tool matrix
 `/mcp/tools/` renders. Pass `--check` to fail instead of writing when the
 checked-in file is stale. It refuses to write a matrix unless its Python rule
 reproduces libtmux-mcp's own documented tool set name for name, every port
-declaring a wire prefix carries it on every tool, and all eight checkouts are
-present — a partial matrix looks exactly like a finding.
+declaring a wire prefix carries it on every tool, and every configured MCP
+checkout is present — a partial matrix looks exactly like a finding. Ports
+whose product status is unpublished, such as Lua, are excluded explicitly.
 
 ```console
 $ node scripts/gen-registry.mjs
@@ -152,7 +176,7 @@ nothing at all. `installCommand` in
 to produce the command a page or an agent prompt shows, so the command cannot
 name a version the registry does not have.
 
-It matters because seven of the eight ports have no stable release, and three
+It matters because most ports have no stable release, and several
 resolve nothing unless the prerelease is named: Cargo treats an alpha as out of
 range for a plain requirement, `go get` without a version resolves the highest
 release and a prerelease is not one, and SwiftPM's `from:` excludes prereleases
@@ -160,7 +184,7 @@ from its range.
 
 Pass `--check` to fail instead of writing when the checked-in file is stale.
 Pass `--offline` to re-emit the committed file without contacting any registry,
-for a job that must not depend on eight third-party services. A probe that
+for a job that must not depend on ten third-party services. A probe that
 fails for one port keeps that port's committed entry rather than reporting it
 unpublished, the same way `gen-versions.mjs` falls back to its seed.
 
@@ -176,7 +200,7 @@ Assemble a complete preview:
 $ LIBTMUX_DOCS_LOCALES_ROOT=/pr-42 \
     LIBTMUX_DOCS_VERSION=pr-42 \
     LIBTMUX_DOCS_VERSION_KIND=pr \
-    pnpm build:site
+    pnpm build:site --versions latest
 ```
 
 Audit the assembled preview before publishing:
@@ -198,8 +222,8 @@ admonition-rendering pages, the second follows every internal link from `/`.
 
 ## Version manifest
 
-`site/public/versions.json` is a committed seed: two entries per port
-(`latest`, `stable`), so the version switcher (see
+`site/public/versions.json` is a committed seed with a `latest` trunk entry
+per port, so the version switcher (see
 `site/src/components/VersionSwitcher.astro`) has something to render
 before any real deploy has produced a richer manifest. `build-site.sh`
 regenerates a fuller one from the checkouts it finds and writes it over the
@@ -221,12 +245,14 @@ $ node scripts/gen-versions.mjs --out site/public/versions.json
 
 Entries are derived per port from each checkout named in
 `site/src/lib/ports.ts` (`~/work/python/libtmux`, and so on): git tags
-matching `vX.Y.Z` become `tag` entries, local branches matching `vX.x`
+matching that port's grammar become `tag` entries, local branches matching `vX.x`
 become `branch` entries, the checkout's current `HEAD` is always `latest`
 (kind `trunk`), and `stable` is an `alias` resolving to the newest
-non-prerelease tag (or to `latest`, if the checkout has no tags yet). A
-port whose checkout isn't present on this machine falls back to the same
-two-entry seed `--seed` mode produces, with a note on stderr.
+non-prerelease tag. A prerelease-only port gets `next`; it does not get a
+fabricated `stable`. RubyGems and LuaRocks release spellings keep their native
+forms. A port whose checkout is absent falls back to the same latest-only seed
+that `--seed` produces, with a note on stderr. Set
+`LIBTMUX_DOCS_CHECKOUT_<PORT>` to derive refs from an exact CI checkout.
 
 To regenerate the committed seed itself (only needed if the manifest shape
 in `site/src/lib/versions.ts` changes):

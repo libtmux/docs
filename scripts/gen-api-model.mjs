@@ -3,6 +3,7 @@
  * Extract versioned source provenance and the public API model for each port.
  * Run once before assembly; Astro reads the generated JSON in every build.
  * Usage: node scripts/gen-api-model.mjs [--port py] [--check | --nav]
+ *        [--skip-native-model-ports ruby,lua]
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
@@ -11,6 +12,8 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS as PORT_DEFS } from '../site/src/lib/ports.ts'
 import { extractDoxygen } from '../packages/api-model/src/languages/doxygen.ts'
+import { extractLua } from '../packages/api-model/src/languages/lua.ts'
+import { extractRuby } from '../packages/api-model/src/languages/ruby.ts'
 import { mapLine, parseHunks } from '../packages/api-model/src/source-lines.ts'
 import { extractProject } from '../packages/api-model/src/project.ts'
 import { scopeProductSymbols } from '../packages/api-model/src/product-exports.ts'
@@ -191,6 +194,20 @@ const PORTS = {
       excludePaths: [/(^|\.)_vendor\./, /(^|\.)_compat\./],
     },
   },
+  ruby: {
+    checkout: '~/work/libtmux/libtmux-ruby-docs',
+    root: '.',
+    nativeArtifact: 'docs/_build/api.json',
+    repo: 'libtmux/libtmux-ruby',
+    options: {},
+  },
+  lua: {
+    checkout: '~/work/libtmux/libtmux-lua-docs',
+    root: '.',
+    nativeArtifact: 'docs/_build/api.json',
+    repo: 'libtmux/libtmux-lua',
+    options: {},
+  },
   ts: {
     checkout: '~/work/libtmux/libtmux-ts',
     roots: ['packages/libtmux/src', 'packages/workspace/src'],
@@ -264,6 +281,29 @@ const check = args.includes('--check')
  * working trees have moved on since their models were committed.
  */
 const navOnly = args.includes('--nav')
+const skipNativeModelPortsIndex = args.indexOf('--skip-native-model-ports')
+const skipNativeModelPortsValue = skipNativeModelPortsIndex === -1
+  ? undefined
+  : args[skipNativeModelPortsIndex + 1]
+if (skipNativeModelPortsIndex !== -1 && !check) {
+  console.error('gen-api-model: --skip-native-model-ports requires --check')
+  process.exit(2)
+}
+if (skipNativeModelPortsIndex !== -1 && (!skipNativeModelPortsValue || skipNativeModelPortsValue.startsWith('--'))) {
+  console.error('gen-api-model: --skip-native-model-ports requires a comma-separated port list')
+  process.exit(2)
+}
+const skipNativeModelPorts = new Set((skipNativeModelPortsValue ?? '').split(',').map((port) => port.trim()).filter(Boolean))
+for (const port of skipNativeModelPorts) {
+  if (!(port in PORTS)) {
+    console.error(`gen-api-model: --skip-native-model-ports names unknown port ${port}`)
+    process.exit(2)
+  }
+  if (!PORTS[port].nativeArtifact) {
+    console.error(`gen-api-model: ${port} has no native model to skip`)
+    process.exit(2)
+  }
+}
 
 /** Write a port's compiled sidebar beside its model. */
 function writeNav(port, model) {
@@ -278,6 +318,11 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   if (navOnly) {
     writeNav(port, JSON.parse(readFileSync(join(repoRoot, 'site/src/data/api', `${port}.json`), 'utf8')))
     console.log(`gen-api-model: ${port}.nav.json compiled from the committed model`)
+    continue
+  }
+  if (skipNativeModelPorts.has(port)) {
+    console.log(`gen-api-model: ${port} native model freshness skipped by --skip-native-model-ports`)
+    skipped++
     continue
   }
   // `build-site.sh` and `remark-port-code.mjs` already read this, and the
@@ -302,9 +347,24 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   }
 
   const head = git(checkout, 'rev-parse', 'HEAD')
+  const selectedSource = process.env.LIBTMUX_DOCS_PORT === port
+    ? process.env.LIBTMUX_DOCS_SOURCE_SHA : undefined
+  const selectedRef = process.env.LIBTMUX_DOCS_PORT === port
+    ? process.env.LIBTMUX_DOCS_SOURCE_REF : undefined
+  if (selectedSource) {
+    if (!/^[0-9a-f]{40}$/.test(selectedSource) || head !== selectedSource) {
+      console.error(`gen-api-model: ${port} checkout HEAD ${head} does not match selected source ${selectedSource}`)
+      process.exit(1)
+    }
+    const resolved = selectedRef ? git(checkout, 'rev-parse', `${selectedRef}^{commit}`) : head
+    if (resolved !== selectedSource) {
+      console.error(`gen-api-model: ${port} source ref ${selectedRef} resolves to ${resolved}, expected ${selectedSource}`)
+      process.exit(1)
+    }
+  }
   // The commit a reader can actually open, which is not always the one the
   // model is generated from. See `publicRevision`.
-  const revision = publicRevision(checkout, head, port, cfg.repo)
+  const revision = selectedSource ?? publicRevision(checkout, head, port, cfg.repo)
 
   const roots = (cfg.roots ?? [cfg.root])
     .map((r) => join(checkout, r))
@@ -340,13 +400,24 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     }
   }
 
-  const model = await extractProject({
-    port,
-    root: roots[0],
-    roots,
-    revision,
-    options: cfg.options,
-  })
+  let model
+  if (cfg.nativeArtifact) {
+    const artifactPath = join(checkout, cfg.nativeArtifact)
+    if (!existsSync(artifactPath)) {
+      console.error(`gen-api-model: ${port} has no native artifact at ${cfg.nativeArtifact}`)
+      process.exit(1)
+    }
+    const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'))
+    model = port === 'ruby' ? extractRuby(artifact, head) : extractLua(artifact, head)
+  } else {
+    model = await extractProject({
+      port,
+      root: roots[0],
+      roots,
+      revision,
+      options: cfg.options,
+    })
+  }
 
   const legacyIds = new Set(model.symbols.map((symbol) => symbol.id))
   const sourceUnits = [{ checkout, repo: cfg.repo, revision, head, symbols: model.symbols }]
@@ -354,7 +425,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     ts: 'packages/mcp/src', rs: 'crates/tmux-mcp/src', go: 'mcp',
     java: 'libtmux-mcp/src/main/java', dotnet: 'src/LibTmux.Mcp',
   }
-  const extras = port === 'py'
+  const extras = cfg.nativeArtifact ? [] : port === 'py'
     ? [
       { product: 'workspace', checkout: expand(process.env.LIBTMUX_DOCS_WORKSPACE_PY || '~/work/python/tmuxp'), root: 'src', repo: 'tmux-python/tmuxp', package: 'tmuxp' },
       { product: 'mcp', checkout: expand(process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp'), root: 'src', repo: 'tmux-python/libtmux-mcp', package: 'libtmux-mcp' },
@@ -412,8 +483,8 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     cxx: { workspace: 'workspace consumer', mcp: 'mcp_tools consumer' },
     swift: { workspace: 'TmuxWorkspace', mcp: 'LibTmuxMCP' },
   }
-  model.sources = []
-  for (const unit of sourceUnits) {
+  if (!cfg.nativeArtifact) model.sources = []
+  for (const unit of cfg.nativeArtifact ? [] : sourceUnits) {
     const bases = [unit.checkout, unit.checkout.replace(/-docs$/, '')]
     for (const symbol of unit.symbols) {
       const file = symbol.source.file
@@ -440,6 +511,21 @@ for (const [port, cfg] of Object.entries(PORTS)) {
         repo: unit.repo, revision: unit.revision, extractedRevision: unit.head,
         version: packageVersion(unit.checkout, port, product),
       })
+    }
+  }
+  if (cfg.nativeArtifact) {
+    for (const symbol of model.symbols) {
+      symbol.source = {
+        ...symbol.source,
+        repo: cfg.repo,
+        revision,
+        extractedRevision: head,
+      }
+    }
+    for (const source of model.sources ?? []) {
+      source.repo = cfg.repo
+      source.revision = revision
+      source.extractedRevision = head
     }
   }
 

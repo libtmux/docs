@@ -100,13 +100,14 @@ export function canonicalUrl(
 /**
  * How a port writes its version tags.
  *
- * Python follows PEP 440 and the rest follow SemVer, and the two disagree
- * about more than punctuation: PEP 440 writes a suffix with no separator
+ * Python follows PEP 440, Ruby and Lua use their registries' native tag
+ * forms, and the other ports follow SemVer. These grammars disagree about
+ * more than punctuation: PEP 440 writes a suffix with no separator
  * (`v0.11.0b0`) and has post-releases, which come *after* the release they
  * follow. A single grammar cannot serve both, and reading a PEP 440 tag with
  * the SemVer one yields NaN for the patch number.
  */
-export type TagGrammar = 'semver' | 'pep440'
+export type TagGrammar = 'semver' | 'pep440' | 'rubygems' | 'luarocks'
 
 interface Grammar {
   re: RegExp
@@ -129,6 +130,14 @@ const GRAMMARS: Record<TagGrammar, Grammar> = {
       if (pre.startsWith('dev')) return -2
       return -1
     },
+  },
+  rubygems: {
+    re: /^v(\d+)\.(\d+)\.(\d+)(?:\.((?:alpha|beta|rc)\.\d+))?$/,
+    rank: (pre) => (pre === null ? 0 : -1),
+  },
+  luarocks: {
+    re: /^v(\d+)\.(\d+)\.(\d+)((?:alpha|beta|rc)\d+)?$/,
+    rank: (pre) => (pre === null ? 0 : -1),
   },
 }
 
@@ -181,6 +190,31 @@ export function compareTags(a: string, b: string, grammar: TagGrammar = 'semver'
   if (ra !== rb) return rb - ra
   if (pa.pre === pb.pre) return 0
   return (pb.pre ?? '').localeCompare(pa.pre ?? '', undefined, { numeric: true })
+}
+
+function packageVersion(version: string, grammar: TagGrammar): { tag: string; revision: number } {
+  if (grammar === 'luarocks') {
+    const match = /^(.*)-(\d+)$/.exec(version)
+    if (match) {
+      return { tag: match[1].startsWith('v') ? match[1] : `v${match[1]}`, revision: Number(match[2]) }
+    }
+  }
+  return { tag: version.startsWith('v') ? version : `v${version}`, revision: 0 }
+}
+
+/** Newest-first precedence for versions reported by a package registry. */
+export function comparePackageVersions(a: string, b: string, grammar: TagGrammar): number {
+  const pa = packageVersion(a, grammar)
+  const pb = packageVersion(b, grammar)
+  const base = compareTags(pa.tag, pb.tag, grammar)
+  return base === 0 ? pb.revision - pa.revision : base
+}
+
+/** Whether a package registry version precedes its matching stable release. */
+export function packageVersionIsPrerelease(version: string, grammar: TagGrammar): boolean {
+  const parsed = parseTag(packageVersion(version, grammar).tag, grammar)
+  if (!parsed?.pre) return false
+  return !parsed.pre.startsWith('post')
 }
 
 /**
