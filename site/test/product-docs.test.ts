@@ -142,7 +142,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     inspect('lua/latest/reference/libtmux-server', (document) => {
       const current = document.querySelector('a[aria-current="page"][href$="/lua/latest/reference/libtmux-server/"]')
       expect(current).toBeDefined()
-      const ancestors = [] as Element[]
+      const ancestors: Array<NonNullable<typeof current>> = []
       let node = current?.closest('[role="treeitem"]')
       while (node) {
         ancestors.push(node)

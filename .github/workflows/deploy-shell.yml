@@ -174,6 +174,26 @@ jobs:
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y ripgrep
       - run: pnpm install --frozen-lockfile
+
+      - name: Resolve integrated Ruby and Lua sources
+        id: integrated-sources
+        run: |
+          echo "ruby=$(jq -r .revision site/src/data/api/ruby.json)" >> "$GITHUB_OUTPUT"
+          echo "lua=$(jq -r .revision site/src/data/api/lua.json)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v7
+        with:
+          repository: libtmux/libtmux-ruby
+          ref: ${{ steps.integrated-sources.outputs.ruby }}
+          path: .port-sources/ruby
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: libtmux/libtmux-lua
+          ref: ${{ steps.integrated-sources.outputs.lua }}
+          path: .port-sources/lua
+          persist-credentials: false
+
       - name: Assemble and check preview
         env:
           PREVIEW_PREFIX: pr-${{ github.event.pull_request.number }}
@@ -181,8 +201,10 @@ jobs:
           LIBTMUX_DOCS_VERSION: pr-${{ github.event.pull_request.number }}
           LIBTMUX_DOCS_VERSION_KIND: pr
           LIBTMUX_DOCS_IS_DEFAULT: 'false'
+          LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
+          LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
         run: |
-          pnpm build:site
+          pnpm build:site --versions latest
           bash scripts/check-preview.sh _site "$PREVIEW_PREFIX"
       - uses: actions/upload-artifact@v7
         with:

@@ -200,7 +200,7 @@ Assemble a complete preview:
 $ LIBTMUX_DOCS_LOCALES_ROOT=/pr-42 \
     LIBTMUX_DOCS_VERSION=pr-42 \
     LIBTMUX_DOCS_VERSION_KIND=pr \
-    pnpm build:site
+    pnpm build:site --versions latest
 ```
 
 Audit the assembled preview before publishing:

@@ -89,7 +89,16 @@ step 'version slugs (negative)'
 # checkouts. Committed generated data rots silently unless something compares
 # it against its source, and nothing did.
 step 'api model freshness'
-node scripts/gen-api-model.mjs --check
+# The site CI job stages Ruby/Lua guides from raw model-pinned sources. It
+# deliberately does not build their native exporter artifacts: that remains a
+# port-owned docs-site gate. Keep the omission explicit instead of treating a
+# guide checkout as an exporter checkout.
+native_model_skip_ports="${LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS:-}"
+if [ -n "$native_model_skip_ports" ]; then
+  node scripts/gen-api-model.mjs --check --skip-native-model-ports "$native_model_skip_ports"
+else
+  node scripts/gen-api-model.mjs --check
+fi
 
 # site/public/_shell/shell.js is injected into rustdoc, Dokka, DocC and Sphinx
 # output, so it has no bundler and cannot import ports.ts. Its copy of the port

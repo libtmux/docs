@@ -14,8 +14,9 @@ name: test
 # The port references are deliberately not built. Seven of the eight need
 # their own toolchain — Sphinx, docfx, Doxygen, a Swift compiler — each port
 # already runs its own, and installing all seven to check a Markdown change
-# would trade ten minutes for something no port owner asked for. test-all.sh
-# builds the shell only, which is what this repo controls.
+# would trade ten minutes for something no port owner asked for. The Ruby and
+# Lua source guides are shell input, not native references, so this job reads
+# their model-pinned sources and stages them before the shell audit.
 
 on:
   push:
@@ -48,6 +49,31 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Resolve integrated Ruby and Lua sources
+        id: integrated-sources
+        run: |
+          echo "ruby=$(jq -r .revision site/src/data/api/ruby.json)" >> "$GITHUB_OUTPUT"
+          echo "lua=$(jq -r .revision site/src/data/api/lua.json)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v7
+        with:
+          repository: libtmux/libtmux-ruby
+          ref: ${{ steps.integrated-sources.outputs.ruby }}
+          path: .port-sources/ruby
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: libtmux/libtmux-lua
+          ref: ${{ steps.integrated-sources.outputs.lua }}
+          path: .port-sources/lua
+          persist-credentials: false
+
+      - name: Stage integrated Ruby and Lua guides
+        env:
+          LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
+          LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
+        run: node scripts/stage-port-docs.mjs --from-source
+
       # Unit tests, lint, type-check, a real shell build, then the suites that
       # read built HTML, the link check and the API fidelity check — ordered
       # cheapest-first inside the script so a failure arrives as early as it
@@ -55,6 +81,11 @@ jobs:
       - name: test-all
         run: pnpm test:publication
         env:
+          LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
+          LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
+          # Raw source proves the staged guides match the integrated models.
+          # Native exporter artifacts stay checked by each port's docs-site job.
+          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua
           # scripts/gen-registry.mjs reads each port's release tags. Without a
           # token the GitHub API allows 60 calls an hour per IP, which a shared
           # runner has usually spent, so the check would fall back to the

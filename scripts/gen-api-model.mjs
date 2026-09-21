@@ -3,6 +3,7 @@
  * Extract versioned source provenance and the public API model for each port.
  * Run once before assembly; Astro reads the generated JSON in every build.
  * Usage: node scripts/gen-api-model.mjs [--port py] [--check | --nav]
+ *        [--skip-native-model-ports ruby,lua]
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
@@ -280,6 +281,29 @@ const check = args.includes('--check')
  * working trees have moved on since their models were committed.
  */
 const navOnly = args.includes('--nav')
+const skipNativeModelPortsIndex = args.indexOf('--skip-native-model-ports')
+const skipNativeModelPortsValue = skipNativeModelPortsIndex === -1
+  ? undefined
+  : args[skipNativeModelPortsIndex + 1]
+if (skipNativeModelPortsIndex !== -1 && !check) {
+  console.error('gen-api-model: --skip-native-model-ports requires --check')
+  process.exit(2)
+}
+if (skipNativeModelPortsIndex !== -1 && (!skipNativeModelPortsValue || skipNativeModelPortsValue.startsWith('--'))) {
+  console.error('gen-api-model: --skip-native-model-ports requires a comma-separated port list')
+  process.exit(2)
+}
+const skipNativeModelPorts = new Set((skipNativeModelPortsValue ?? '').split(',').map((port) => port.trim()).filter(Boolean))
+for (const port of skipNativeModelPorts) {
+  if (!(port in PORTS)) {
+    console.error(`gen-api-model: --skip-native-model-ports names unknown port ${port}`)
+    process.exit(2)
+  }
+  if (!PORTS[port].nativeArtifact) {
+    console.error(`gen-api-model: ${port} has no native model to skip`)
+    process.exit(2)
+  }
+}
 
 /** Write a port's compiled sidebar beside its model. */
 function writeNav(port, model) {
@@ -294,6 +318,11 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   if (navOnly) {
     writeNav(port, JSON.parse(readFileSync(join(repoRoot, 'site/src/data/api', `${port}.json`), 'utf8')))
     console.log(`gen-api-model: ${port}.nav.json compiled from the committed model`)
+    continue
+  }
+  if (skipNativeModelPorts.has(port)) {
+    console.log(`gen-api-model: ${port} native model freshness skipped by --skip-native-model-ports`)
+    skipped++
     continue
   }
   // `build-site.sh` and `remark-port-code.mjs` already read this, and the
