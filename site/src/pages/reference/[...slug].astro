@@ -589,55 +589,6 @@ const title = owner
               a signature links to its own entry; every cross-reference in a
               doc comment resolves against the same table.
             </p>
-            {bucketSections.length > 0 && grouped && (
-              <section class="mt-12">
-                <h2 class="border-b border-edge pb-1 font-mono text-sm font-semibold tracking-tight">
-                  By module
-                  <span class="ml-2 font-sans text-xs font-normal opacity-60">
-                    {moduleGroups.length} modules
-                  </span>
-                </h2>
-                {/*
-                  A disclosure per module, because the sections below this one
-                  group by bucket rather than by module: `libtmux.neo` names
-                  nothing a reader can click through to, and this list said so
-                  with a bare name and a count. A module with 65 symbols read
-                  as a dead end.
-
-                  The `id` stays exactly where it was, on the element the count
-                  sits beside. `#<module>` is what the definition block, the
-                  prose linker and the inventories all point at — 9,160 links —
-                  and a fragment that lands on a closed disclosure still lands
-                  on the right row. The script at the foot of this page opens
-                  it; without JavaScript it is one click, which is what a
-                  `<details>` is for.
-                */}
-                <ul class="api-module-index mt-3 grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
-                  {moduleGroups.map((m) => (
-                    <li>
-                      <details id={m.name || undefined} class="api-module scroll-mt-24">
-                        <summary class="api-module__name font-mono text-sm">
-                          {m.name || 'Types'}
-                          <span class="ml-2 font-sans text-xs opacity-60">
-                            {m.types.length + m.free.length}
-                          </span>
-                        </summary>
-                        <ul class="api-module__symbols">
-                          {[...m.types, ...m.free].map((sym) => (
-                            <li>
-                              <a class="api-module__symbol" href={hrefFor(sym)}>
-                                <SymbolName name={sym.name} />
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </details>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
             {sections.map((mod) => (
               /*
                 `collapsed` comes from the compiled nav and is the one thing
@@ -706,6 +657,55 @@ const title = owner
                 )}
               </details>
             ))}
+
+            {bucketSections.length > 0 && grouped && (
+              <section class="mt-12">
+                <h2 class="border-b border-edge pb-1 font-mono text-sm font-semibold tracking-tight">
+                  By module
+                  <span class="ml-2 font-sans text-xs font-normal opacity-60">
+                    {moduleGroups.length} modules
+                  </span>
+                </h2>
+                {/*
+                  A disclosure per module, after the domains, because the sections above
+                  group by bucket rather than by module: `libtmux.neo` names
+                  nothing a reader can click through to, and this list said so
+                  with a bare name and a count. A module with 65 symbols read
+                  as a dead end.
+
+                  The `id` stays exactly where it was, on the element the count
+                  sits beside. `#<module>` is what the definition block, the
+                  prose linker and the inventories all point at — 9,160 links —
+                  and a fragment that lands on a closed disclosure still lands
+                  on the right row. The script at the foot of this page opens
+                  it; without JavaScript it is one click, which is what a
+                  `<details>` is for.
+                */}
+                <ul class="api-module-index mt-3 grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
+                  {moduleGroups.map((m) => (
+                    <li>
+                      <details id={m.name || undefined} class="api-module scroll-mt-24">
+                        <summary class="api-module__name font-mono text-sm">
+                          {m.name || 'Types'}
+                          <span class="ml-2 font-sans text-xs opacity-60">
+                            {m.types.length + m.free.length}
+                          </span>
+                        </summary>
+                        <ul class="api-module__symbols">
+                          {[...m.types, ...m.free].map((sym) => (
+                            <li>
+                              <a class="api-module__symbol" href={hrefFor(sym)}>
+                                <SymbolName name={sym.name} />
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </>
         )
       }
