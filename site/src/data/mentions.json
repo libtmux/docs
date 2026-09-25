@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-25T23:14:47.934Z",
+ "generated": "2026-09-25T23:55:00.273Z",
  "mentions": [
   {
    "port": "cxx",
@@ -2978,7 +2978,7 @@
   },
   {
    "port": "lua",
-   "symbol": "libtmux.EnvironmentOptions.include_hidden",
+   "symbol": "libtmux.EnvironmentListOptions.include_hidden",
    "page": "/lua/latest/guides/environment/",
    "title": "Persistent environment",
    "section": "guides"
