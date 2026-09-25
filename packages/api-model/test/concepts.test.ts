@@ -57,7 +57,7 @@ describe('concept map', () => {
   it('links visible capture to the visible capture overload', () => {
     expect(CONCEPTS['capture-pane'].symbols.swift).toBe('Server.capture(_:includingHistory:)')
     expect(CONCEPTS['capture-pane'].symbols.ruby).toBe('LibTmux::Pane#capture')
-    expect(CONCEPTS['capture-pane'].symbols.lua).toBe('libtmux.Entity:capture')
+    expect(CONCEPTS['capture-pane'].symbols.lua).toBe('libtmux.Pane:capture')
   })
 
   it('keeps Lua request completion distinct from snapshot capture', () => {

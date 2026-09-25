@@ -565,6 +565,7 @@ if (SHARED.length !== CHAIN.length) {
 const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
   lua: {
     unsettled: {
+      'libtmux.Configurable': 'options and hooks shared by sessions, windows and panes; the concrete handle is the subclass',
       'libtmux.Creation': 'creation receipt shared by several tmux objects',
       'libtmux.Entity': 'base of the tmux entity hierarchy; the concrete entity is the subclass',
       'libtmux.LinkDestination': 'window-link target shared by sessions and windows',

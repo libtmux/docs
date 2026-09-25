@@ -25,6 +25,18 @@ describe('Lua API sidebar', () => {
     expect(ids('formats')).toEqual(expect.arrayContaining(['libtmux.Fields.Server', 'libtmux.Fields.Pane']))
     expect(ids('commands')).toContain('libtmux.CommandOutcome')
   })
+
+  it('opens each tmux object domain on its handle class', () => {
+    const tree = navTree('lua')
+    for (const [bucket, id] of [
+      ['session', 'libtmux.Session'],
+      ['window', 'libtmux.Window'],
+      ['pane', 'libtmux.Pane'],
+      ['client', 'libtmux.Client'],
+    ]) {
+      expect(tree.find((b) => b.id === bucket)?.entries[0]?.id, bucket).toBe(id)
+    }
+  })
 })
 
 describe('major tmux object domains', () => {
