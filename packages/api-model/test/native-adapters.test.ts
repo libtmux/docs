@@ -144,6 +144,62 @@ describe('Lua native documentation adapter', () => {
     expect(() => extractLua(artifact, 'b'.repeat(40))).toThrow(/source revision/i)
   })
 
+  it('reads the arguments of a fun-typed field and each overload of a union', () => {
+    const arg = (name: string, view: string) => ({ name: { type: 'doc.type.arg.name', view: name }, view })
+    const fn = (record: string, handle: string) => ({
+      type: 'doc.type.function',
+      args: [arg('self', 'libtmux.Server'), arg('record', record)],
+      returns: [{ view: `(${handle})?` }, { view: '(libtmux.Error)?' }],
+    })
+    const typed = {
+      ...artifact,
+      declarations: [{
+        name: 'libtmux.Server', type: 'type', view: 'libtmux.Server',
+        defines: [definition('lua/libtmux/_internal/server.lua', 600)],
+        fields: [
+          {
+            name: 'new_session', file: 'lua/libtmux/_internal/server.lua', start: [610, 0], type: 'doc.field',
+            view: 'fun(self: libtmux.Server, options?: libtmux.NewSessionOptions):libtmux.Request<libtmux.Creation>',
+            visible: 'public',
+            extends: {
+              type: 'doc.type',
+              view: 'fun(self: libtmux.Server, options?: libtmux.NewSessionOptions):libtmux.Request<libtmux.Creation>',
+              types: [{
+                type: 'doc.type.function',
+                args: [arg('self', 'libtmux.Server'), arg('options', '(libtmux.NewSessionOptions)?')],
+                returns: [{ view: 'libtmux.Request<libtmux.Creation>' }],
+              }],
+            },
+          },
+          {
+            name: 'handle', file: 'lua/libtmux/_internal/server.lua', start: [620, 0], type: 'doc.field',
+            view: 'fun(self: libtmux.Server, record: libtmux.SnapshotSession)|fun(self: libtmux.Server, record: libtmux.SnapshotPane)',
+            visible: 'public',
+            extends: {
+              type: 'doc.type',
+              types: [
+                { type: 'doc.type', types: [fn('libtmux.SnapshotSession', 'libtmux.Session')] },
+                { type: 'doc.type', types: [fn('libtmux.SnapshotPane', 'libtmux.Pane')] },
+              ],
+            },
+          },
+        ],
+      }],
+    }
+    const model = extractLua(typed)
+    const create = model.symbols.find((s) => s.id === 'libtmux.Server:new_session')!
+    expect(create.signatures[0]).toMatchObject({
+      params: [{ name: 'options', type: 'libtmux.NewSessionOptions?', default: 'nil' }],
+      returns: 'libtmux.Request<libtmux.Creation>',
+    })
+    const handle = model.symbols.find((s) => s.id === 'libtmux.Server:handle')!
+    expect(handle.modifiers).toContain('overload')
+    expect(handle.signatures.map((s) => [s.params.map((p) => p.type), s.returns])).toEqual([
+      [['libtmux.SnapshotSession'], 'libtmux.Session?, libtmux.Error?'],
+      [['libtmux.SnapshotPane'], 'libtmux.Pane?, libtmux.Error?'],
+    ])
+  })
+
   it('credits a field LuaLS copied into a subclass to the class that declared it', () => {
     const field = (name: string, line: number) => ({
       name, file: 'lua/libtmux/_internal/entity.lua', start: [line, 0], type: 'doc.field',
