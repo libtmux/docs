@@ -143,4 +143,37 @@ describe('Lua native documentation adapter', () => {
   it('rejects an artifact from a different source revision', () => {
     expect(() => extractLua(artifact, 'b'.repeat(40))).toThrow(/source revision/i)
   })
+
+  it('credits a field LuaLS copied into a subclass to the class that declared it', () => {
+    const field = (name: string, line: number) => ({
+      name, file: 'lua/libtmux/_internal/entity.lua', start: [line, 0], type: 'doc.field',
+      view: `fun(self: libtmux.Entity<T>)`, visible: 'public',
+      extends: { args: [{ name: 'self', view: 'libtmux.Entity<T>' }], returns: [] },
+    })
+    const declare = (name: string, parent: string | undefined, fields: ReturnType<typeof field>[]) => ({
+      name, type: 'type', view: name,
+      defines: [{ ...definition('lua/libtmux/_internal/entity.lua', 1), ...(parent ? { extends: [{ view: parent }] } : {}) }],
+      fields,
+    })
+    const hierarchy = {
+      ...artifact,
+      declarations: [
+        declare('libtmux.Entity', undefined, [field('snapshot', 10)]),
+        declare('libtmux.Configurable', 'libtmux.Entity<T>', [field('snapshot', 10), field('get_option', 20)]),
+        declare('libtmux.Session', 'libtmux.Configurable<libtmux.SnapshotSession>', [
+          field('snapshot', 10), field('get_option', 20), field('new_window', 30),
+        ]),
+      ],
+    }
+    const inherited = (model: ReturnType<typeof extractLua>) =>
+      Object.fromEntries(model.symbols.filter((s) => s.parent === 'libtmux.Session').map((s) => [s.name, s.inheritedFrom]))
+    expect(inherited(extractLua(hierarchy))).toEqual({
+      snapshot: 'libtmux.Entity',
+      get_option: 'libtmux.Configurable',
+      new_window: undefined,
+    })
+    // A cycle in `extends` ends the walk instead of the stack.
+    hierarchy.declarations[0]!.defines[0] = { ...hierarchy.declarations[0]!.defines[0]!, extends: [{ view: 'libtmux.Session' }] }
+    expect(inherited(extractLua(hierarchy)).get_option).toBe('libtmux.Configurable')
+  })
 })

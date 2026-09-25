@@ -15,7 +15,7 @@ interface LuaNode {
 
 interface LuaDeclaration extends LuaNode {
   name: string
-  defines: LuaNode[]
+  defines: (LuaNode & { extends?: LuaNode | LuaNode[] })[]
   fields: LuaNode[]
 }
 
@@ -74,9 +74,43 @@ function signature(field: LuaNode, receiver: boolean): Signature {
   }
 }
 
+/** `libtmux.Configurable<libtmux.SnapshotPane>` names `libtmux.Configurable`. */
+const parentsOf = (declaration: LuaDeclaration): string[] =>
+  declaration.defines
+    .flatMap((d) => (Array.isArray(d.extends) ? d.extends : []))
+    .map((e) => e.view?.replace(/<.*$/, '') ?? '')
+    .filter(Boolean)
+
+/**
+ * The class a field was declared on, when that is not this one.
+ *
+ * LuaLS copies every inherited field into the subclass, with the base's own
+ * file and line and its generic parameters substituted. The location is what
+ * survives the copy, so a field is inherited when a parent carries one at the
+ * same place, and it came from the furthest ancestor that does:
+ * `Session.snapshot` reaches Session through Configurable from Entity.
+ */
+function originOf(
+  declaration: LuaDeclaration,
+  field: LuaNode,
+  byName: Map<string, LuaDeclaration>,
+  seen = new Set<string>([declaration.name]),
+): string | undefined {
+  for (const name of parentsOf(declaration)) {
+    const parent = byName.get(name)
+    if (!parent || seen.has(name)) continue
+    const same = parent.fields.some(
+      (f) => f.name === field.name && f.file === field.file && f.start?.[0] === field.start?.[0],
+    )
+    if (same) return originOf(parent, field, byName, new Set(seen).add(name)) ?? name
+  }
+  return undefined
+}
+
 export function extractLua(input: unknown, expectedRevision?: string): ApiModel {
   const artifact = assertArtifact(input, expectedRevision)
   const symbols: ApiSymbol[] = []
+  const byName = new Map(artifact.declarations.map((d) => [d.name, d]))
   for (const declaration of artifact.declarations) {
     const ownerSource = declaration.defines[0] ?? declaration.fields[0] ?? {}
     const module = MODULES.has(declaration.name)
@@ -99,6 +133,7 @@ export function extractLua(input: unknown, expectedRevision?: string): ApiModel 
         !module && (field.extends?.args?.[0]?.name === 'self' || field.view?.includes('self:')),
       )
       const separator = receiver ? ':' : '.'
+      const inheritedFrom = module ? undefined : originOf(declaration, field, byName)
       symbols.push({
         id: `${declaration.name}${separator}${field.name}`,
         publicId: `${declaration.name}${separator}${field.name}`,
@@ -112,6 +147,7 @@ export function extractLua(input: unknown, expectedRevision?: string): ApiModel 
         apiScope: 'exported',
         type: callable ? undefined : field.view,
         source: source(field, artifact),
+        ...(inheritedFrom ? { inheritedFrom } : {}),
       })
     }
   }
