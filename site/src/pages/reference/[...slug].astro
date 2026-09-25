@@ -1,6 +1,7 @@
 ---
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { conceptsFor, docSummaryText, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
+import { compareMembers, conceptsFor, docSummaryText, memberSignals, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
+import mentionsData from '../../data/mentions.json'
 import ApiEntry from '../../components/api/ApiEntry.astro'
 import ApiExampleTabs from '../../components/api/ApiExampleTabs.astro'
 import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
@@ -180,10 +181,14 @@ const currentBucket = placed ? nav?.placement[placed.publicId ?? placed.id] : un
 const currentRoot = tree.find(
   (b) => b.id === currentBucket || b.children.some((c) => c.id === currentBucket),
 )?.id
+/**
+ * Most useful first, in the sidebar and on the page alike: the accessors that
+ * walk the hierarchy, then the operations every port shares, then the rest,
+ * with private and special members last. See `member-order.ts`.
+ */
+const byUsefulness = model ? compareMembers(memberSignals(model.port, mentionsData.mentions)) : () => 0
 const currentMembers = currentType
-  ? (model?.symbols.filter((sym) => sym.parent === currentType.id) ?? []).sort((a, b) =>
-      a.name.localeCompare(b.name),
-    )
+  ? (model?.symbols.filter((sym) => sym.parent === currentType.id) ?? []).sort(byUsefulness)
   : []
 
 /** This port's package, for the definition block's Package row. */
@@ -298,17 +303,7 @@ const exampleGroups = ownExamples.length === 0 ? [] : [
 
 const sourceUrl = (symbol: ApiSymbol): string | undefined => model ? apiSourceUrl(model, symbol) : undefined
 
-const members = owner && model
-  ? model.symbols
-      .filter((s) => s.parent === owner.id)
-      .sort((a, b) => {
-        // Declared before inherited, then by kind, then alphabetically —
-        // which is how autodoc orders a class page and how a reader looks.
-        const inh = Number(Boolean(a.inheritedFrom)) - Number(Boolean(b.inheritedFrom))
-        if (inh) return inh
-        return a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name)
-      })
-  : []
+const members = owner && model ? model.symbols.filter((s) => s.parent === owner.id).sort(byUsefulness) : []
 
 const owners = (model ? topLevelTypesOf(model) : []).sort((a, b) => a.name.localeCompare(b.name))
 
