@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-21T01:43:14.282Z",
+ "generated": "2026-09-25T23:11:02.169Z",
  "mentions": [
   {
    "port": "cxx",
@@ -2971,9 +2971,30 @@
   },
   {
    "port": "lua",
+   "symbol": "libtmux.Entity:attach",
+   "page": "/lua/latest/guides/clients/",
+   "title": "Switch and detach clients",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Entity:break_out",
+   "page": "/lua/latest/guides/topology/",
+   "title": "Topology operations",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
    "symbol": "libtmux.Entity:capture",
    "page": "/lua/latest/guides/panes/",
    "title": "Pane operations",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Entity:capture_to_buffer",
+   "page": "/lua/latest/guides/buffers/",
+   "title": "Read and paste named buffers",
    "section": "guides"
   },
   {
@@ -2999,6 +3020,48 @@
   },
   {
    "port": "lua",
+   "symbol": "libtmux.Entity:kill",
+   "page": "/lua/latest/guides/topology/",
+   "title": "Topology operations",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Entity:link",
+   "page": "/lua/latest/guides/topology/",
+   "title": "Topology operations",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Entity:move",
+   "page": "/lua/latest/guides/topology/",
+   "title": "Topology operations",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Entity:move_to",
+   "page": "/lua/latest/guides/topology/",
+   "title": "Topology operations",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Entity:navigate_window",
+   "page": "/lua/latest/guides/topology/",
+   "title": "Topology operations",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Entity:new_window",
+   "page": "/lua/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
    "symbol": "libtmux.Entity:paste_buffer",
    "page": "/lua/latest/guides/buffers/",
    "title": "Read and paste named buffers",
@@ -3013,6 +3076,34 @@
   },
   {
    "port": "lua",
+   "symbol": "libtmux.Entity:reference",
+   "page": "/lua/latest/guides/snapshots/",
+   "title": "Capture server state",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Entity:rename",
+   "page": "/lua/latest/guides/topology/",
+   "title": "Topology operations",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Entity:renumber_windows",
+   "page": "/lua/latest/guides/topology/",
+   "title": "Topology operations",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Entity:resize",
+   "page": "/lua/latest/guides/topology/",
+   "title": "Topology operations",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
    "symbol": "libtmux.Entity:respawn",
    "page": "/lua/latest/guides/panes/",
    "title": "Pane operations",
@@ -3023,6 +3114,13 @@
    "symbol": "libtmux.Entity:run_hook",
    "page": "/lua/latest/guides/settings/",
    "title": "Options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Entity:select",
+   "page": "/lua/latest/guides/topology/",
+   "title": "Topology operations",
    "section": "guides"
   },
   {
@@ -3048,9 +3146,30 @@
   },
   {
    "port": "lua",
+   "symbol": "libtmux.Entity:split",
+   "page": "/lua/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
    "symbol": "libtmux.Entity:swap",
    "page": "/lua/latest/guides/panes/",
    "title": "Pane operations",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Entity:swap",
+   "page": "/lua/latest/guides/topology/",
+   "title": "Topology operations",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Entity:unlink",
+   "page": "/lua/latest/guides/topology/",
+   "title": "Topology operations",
    "section": "guides"
   },
   {
@@ -3184,6 +3303,13 @@
    "symbol": "libtmux.Fields.Server.start_time",
    "page": "/lua/latest/guides/fields/",
    "title": "tmux field catalog",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Fields.Window.layout",
+   "page": "/lua/latest/guides/topology/",
+   "title": "Topology operations",
    "section": "guides"
   },
   {
@@ -3419,6 +3545,20 @@
   },
   {
    "port": "lua",
+   "symbol": "libtmux.Request:await",
+   "page": "/lua/latest/guides/runtime/",
+   "title": "Runtime ownership",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Request:cancel",
+   "page": "/lua/latest/guides/runtime/",
+   "title": "Runtime ownership",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
    "symbol": "libtmux.Request:is_retired",
    "page": "/lua/latest/guides/runtime/",
    "title": "Runtime ownership",
@@ -3440,6 +3580,20 @@
   },
   {
    "port": "lua",
+   "symbol": "libtmux.Request:on_complete",
+   "page": "/lua/latest/guides/runtime/",
+   "title": "Runtime ownership",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Request:result",
+   "page": "/lua/latest/guides/runtime/",
+   "title": "Runtime ownership",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
    "symbol": "libtmux.ResizeWindowOptions.largest",
    "page": "/lua/latest/guides/options/",
    "title": "tmux option and hook reference",
@@ -3454,9 +3608,30 @@
   },
   {
    "port": "lua",
+   "symbol": "libtmux.Runtime:close",
+   "page": "/lua/latest/guides/runtime/",
+   "title": "Runtime ownership",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
    "symbol": "libtmux.Runtime:connect",
    "page": "/lua/latest/guides/snapshots/",
    "title": "Capture server state",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Runtime:errors",
+   "page": "/lua/latest/guides/runtime/",
+   "title": "Runtime ownership",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Runtime:spawn",
+   "page": "/lua/latest/guides/runtime/",
+   "title": "Runtime ownership",
    "section": "guides"
   },
   {
@@ -3552,6 +3727,118 @@
   },
   {
    "port": "lua",
+   "symbol": "libtmux.Server:close",
+   "page": "/lua/latest/guides/snapshots/",
+   "title": "Capture server state",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:command",
+   "page": "/lua/latest/guides/commands/",
+   "title": "Execute tmux commands",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:delete_buffer",
+   "page": "/lua/latest/guides/buffers/",
+   "title": "Read and paste named buffers",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:detach_client",
+   "page": "/lua/latest/guides/clients/",
+   "title": "Switch and detach clients",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:explain",
+   "page": "/lua/latest/guides/query/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:explain_panes",
+   "page": "/lua/latest/guides/query/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:group",
+   "page": "/lua/latest/guides/commands/",
+   "title": "Execute tmux commands",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:handle",
+   "page": "/lua/latest/guides/panes/",
+   "title": "Pane operations",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:handle",
+   "page": "/lua/latest/guides/snapshots/",
+   "title": "Capture server state",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:new_session",
+   "page": "/lua/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:observe",
+   "page": "/lua/latest/guides/control/",
+   "title": "Observing a session",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:query",
+   "page": "/lua/latest/guides/query/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:query_panes",
+   "page": "/lua/latest/guides/query/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:set_buffer",
+   "page": "/lua/latest/guides/buffers/",
+   "title": "Read and paste named buffers",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:show_buffer",
+   "page": "/lua/latest/guides/buffers/",
+   "title": "Read and paste named buffers",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:snapshot",
+   "page": "/lua/latest/guides/snapshots/",
+   "title": "Capture server state",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
    "symbol": "libtmux.Server:switch_client",
    "page": "/lua/latest/guides/clients/",
    "title": "Switch and detach clients",
@@ -3625,6 +3912,13 @@
    "symbol": "libtmux.SnapshotOptions.strict",
    "page": "/lua/latest/guides/query/",
    "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Watch:close",
+   "page": "/lua/latest/guides/control/",
+   "title": "Observing a session",
    "section": "guides"
   },
   {
@@ -7110,51 +7404,9 @@
  "dangling": [
   {
    "port": "lua",
-   "text": "Server:new_session",
-   "page": "/lua/latest/guides/creation/",
-   "line": 12,
-   "why": "no port defines it"
-  },
-  {
-   "port": "lua",
-   "text": "Session:new_window",
-   "page": "/lua/latest/guides/creation/",
-   "line": 12,
-   "why": "no port defines it"
-  },
-  {
-   "port": "lua",
-   "text": "Pane:split",
-   "page": "/lua/latest/guides/creation/",
-   "line": 12,
-   "why": "no port defines it"
-  },
-  {
-   "port": "lua",
    "text": "list_environment(options)",
    "page": "/lua/latest/guides/environment/",
    "line": 44,
-   "why": "no port defines it"
-  },
-  {
-   "port": "lua",
-   "text": "options-table.c",
-   "page": "/lua/latest/guides/options/",
-   "line": 76,
-   "why": "no port defines it"
-  },
-  {
-   "port": "lua",
-   "text": "options.c",
-   "page": "/lua/latest/guides/options/",
-   "line": 76,
-   "why": "no port defines it"
-  },
-  {
-   "port": "lua",
-   "text": "tmux.h",
-   "page": "/lua/latest/guides/options/",
-   "line": 77,
    "why": "no port defines it"
   },
   {
