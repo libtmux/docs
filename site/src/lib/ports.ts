@@ -322,10 +322,7 @@ export const PORTS: readonly Port[] = [
     versionedDocs: true,
     tagGrammar: 'rubygems',
     renderer: 'astro',
-    // The shell publishes this tree until libtmux-ruby's own docs workflow has a
-    // role to publish with. Back to true once that workflow has published
-    // `latest`: two publishers of one prefix overwrite each other.
-    publishesOwnTree: false,
+    publishesOwnTree: true,
     generator: 'public inventory + YARD JSON + RBS',
     installs: [
       { label: 'gem', lang: 'console', code: 'gem install --version 0.1.0.alpha.1 libtmux' },
@@ -354,10 +351,7 @@ export const PORTS: readonly Port[] = [
     versionedDocs: true,
     tagGrammar: 'luarocks',
     renderer: 'astro',
-    // The shell publishes this tree until libtmux-lua's own docs workflow has a
-    // role to publish with. Back to true once that workflow has published
-    // `latest`: two publishers of one prefix overwrite each other.
-    publishesOwnTree: false,
+    publishesOwnTree: true,
     generator: 'LuaLS JSON',
     installs: [
       {
