@@ -29,7 +29,7 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@types/chroma-js": "^3.1.2",
-    "memfs": "^4.78.0",
+    "memfs": "^4.79.0",
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "tailwindcss": "catalog:",
