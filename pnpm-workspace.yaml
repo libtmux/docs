@@ -19,5 +19,3 @@ allowBuilds:
   sharp: true
 minimumReleaseAge: 4320
 minimumReleaseAgeStrict: false
-minimumReleaseAgeExclude:
-  - happy-dom@20.13.2
