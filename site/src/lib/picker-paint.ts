@@ -21,24 +21,33 @@ import { PORTS } from './ports'
  * than rendering an empty body.
  */
 export function pickerPaintRules(): string {
-  return PORTS.map((p) => paintPort(p.slug, 'lm-pkg-install') + paintPort(p.slug, 'lm-agent-prompt') + paintManagers(p)).join('')
+  return PORTS.map((p) => paintPort(p.slug, 'lm-pkg-install') + paintPort(p.slug, 'lm-agent-prompt') + paintPortManagers(p)).join('')
+}
+
+/** A port's library and each companion package keep their own saved manager. */
+function paintPortManagers(port: (typeof PORTS)[number]): string {
+  const companions = (port.packages ?? []).filter((entry) => entry.id !== 'core' && entry.installs)
+  return (
+    paintManagers(port.slug, port.installs.length) +
+    companions.map((entry) => paintManagers(`${port.slug}-${entry.id}`, entry.installs!.length)).join('')
+  )
 }
 
 /**
  * The rules that paint one port's saved package manager.
  *
  * The same correction as the language, one level down. `ThemeScript` puts
- * each port's saved manager on `<html data-pkg-manager-<port>>`, and without
+ * each saved manager on `<html data-pkg-manager-<scope>>`, and without
  * these rules the panel painted its first manager (npm) and then switched to
  * the saved one (bun) when the widget's script ran. Generated per index the
  * port actually has, so a value left over from a longer list matches nothing
  * and the server-rendered default stays, rather than hiding every command.
  */
-function paintManagers(port: (typeof PORTS)[number]): string {
-  if (port.installs.length < 2) return ''
-  return port.installs
-    .map((_, i) => {
-      const scope = `html[data-pkg-manager-${port.slug}="${i}"] .lm-pkg-install__panel[data-port="${port.slug}"]`
+function paintManagers(managerScope: string, count: number): string {
+  if (count < 2) return ''
+  return Array.from({ length: count }, (_, i) => i)
+    .map((i) => {
+      const scope = `html[data-pkg-manager-${managerScope}="${i}"] .lm-pkg-install__panel[data-manager-scope="${managerScope}"]`
       return (
         `${scope} .lm-pkg-install__cmd{display:none}` +
         `${scope} .lm-pkg-install__cmd[data-manager="${i}"]{display:block}` +

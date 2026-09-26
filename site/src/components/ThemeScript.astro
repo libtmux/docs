@@ -73,7 +73,7 @@
       if (!key || !key.startsWith(prefix)) continue;
       const slug = key.slice(prefix.length);
       const index = localStorage.getItem(key);
-      if (/^[a-z]+$/.test(slug) && index && /^\d+$/.test(index)) {
+      if (/^[a-z]+(?:-[a-z]+)?$/.test(slug) && index && /^\d+$/.test(index)) {
         document.documentElement.setAttribute(`data-pkg-manager-${slug}`, index);
       }
     }
