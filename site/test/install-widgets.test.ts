@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
+import { pickerPaintRules } from '../src/lib/picker-paint'
 import { SITE_BUILT, SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
 
 /**
@@ -20,6 +21,7 @@ import { SITE_BUILT, SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
  */
 const PORT_HOME = join(SITE_ROOT, 'ts/latest/index.html')
 const TS_MCP = join(SITE_ROOT, 'ts/latest/mcp/index.html')
+const TS_WORKSPACE = join(SITE_ROOT, 'ts/latest/workspace/index.html')
 const PY_MCP = join(SITE_ROOT, 'mcp/index.html')
 
 const isJs = (el: Element) => {
@@ -68,6 +70,24 @@ function visibleCommand(document: Document, panelSelector: string): string {
   return block?.querySelector('code')?.textContent?.trim() ?? ''
 }
 
+/** TypeScript's library panel, and its workspace CLI's, on the same page. */
+const CORE = '.lm-pkg-install__panel[data-manager-scope="ts"]'
+const CLI = '.lm-pkg-install__panel[data-manager-scope="ts-workspace"]'
+
+/** Whether `first` comes before `second` in document order. */
+const precedes = (first: Element, second: Element) =>
+  Boolean(first.compareDocumentPosition(second) & 4 /* DOCUMENT_POSITION_FOLLOWING */)
+
+describe('saved package manager paint', () => {
+  it('keys a companion package apart from its library', () => {
+    const rules = pickerPaintRules()
+    expect(rules).toContain('html[data-pkg-manager-ts-workspace="6"] .lm-pkg-install__panel[data-manager-scope="ts-workspace"]')
+    expect(rules).toContain('html[data-pkg-manager-ts="4"] .lm-pkg-install__panel[data-manager-scope="ts"]')
+    // The library lists five managers; a seventh is the CLI's alone.
+    expect(rules).not.toContain('html[data-pkg-manager-ts="6"]')
+  })
+})
+
 const describeIfBuilt = SITE_BUILT && existsSync(PORT_HOME) ? describe : describe.skip
 
 describeIfBuilt('package install picker', () => {
@@ -75,31 +95,31 @@ describeIfBuilt('package install picker', () => {
 
   it('shows one command per port, and the first by default', () => {
     const { document } = load(PORT_HOME, url)
-    const managers = document.querySelectorAll('.lm-pkg-install__manager')
+    const managers = document.querySelectorAll(`${CORE} .lm-pkg-install__manager`)
     expect(managers.length).toBe(5)
-    expect(visibleCommand(document, '.lm-pkg-install__panel[data-port="ts"]')).toBe(
+    expect(visibleCommand(document, CORE)).toBe(
       '$ npm install libtmux',
     )
   })
 
   it('switches the command when a manager is clicked', () => {
     const { document } = load(PORT_HOME, url)
-    const pnpm = document.querySelector<HTMLElement>('.lm-pkg-install__manager[data-manager-value="1"]')!
+    const pnpm = document.querySelector<HTMLElement>(`${CORE} .lm-pkg-install__manager[data-manager-value="1"]`)!
     pnpm.click()
     expect(pnpm.getAttribute('aria-selected')).toBe('true')
-    expect(visibleCommand(document, '.lm-pkg-install__panel[data-port="ts"]')).toBe(
+    expect(visibleCommand(document, CORE)).toBe(
       '$ pnpm add libtmux',
     )
   })
 
   it('remembers the manager per port, and ignores one the port does not have', () => {
     const { window, document } = load(PORT_HOME, url)
-    document.querySelector<HTMLElement>('.lm-pkg-install__manager[data-manager-value="3"]')!.click()
+    document.querySelector<HTMLElement>(`${CORE} .lm-pkg-install__manager[data-manager-value="3"]`)!.click()
     expect(window.localStorage.getItem('libtmux-docs.package-install.manager.ts')).toBe('3')
 
     // Restored on the next page.
     const next = load(PORT_HOME, url, { 'libtmux-docs.package-install.manager.ts': '3' })
-    expect(visibleCommand(next.document, '.lm-pkg-install__panel[data-port="ts"]')).toBe(
+    expect(visibleCommand(next.document, CORE)).toBe(
       '$ bun add libtmux',
     )
 
@@ -107,7 +127,7 @@ describeIfBuilt('package install picker', () => {
     // per port precisely so this cannot happen, but the guard is what makes a
     // hand-edited or stale value harmless too.
     const stale = load(PORT_HOME, url, { 'libtmux-docs.package-install.manager.ts': '99' })
-    expect(visibleCommand(stale.document, '.lm-pkg-install__panel[data-port="ts"]')).toBe(
+    expect(visibleCommand(stale.document, CORE)).toBe(
       '$ npm install libtmux',
     )
   })
@@ -118,7 +138,7 @@ describeIfBuilt('package install picker', () => {
     // about `isTrusted` and friends. The cast is at the boundary between them.
     const arrow = (loaded: Loaded, key: 'ArrowLeft' | 'ArrowRight') => {
       const first = loaded.document.querySelector<HTMLElement>(
-        '.lm-pkg-install__manager[data-manager-value="0"]',
+        `${CORE} .lm-pkg-install__manager[data-manager-value="0"]`,
       )!
       first.dispatchEvent(
         new loaded.window.KeyboardEvent('keydown', {
@@ -131,7 +151,7 @@ describeIfBuilt('package install picker', () => {
 
     const right = load(PORT_HOME, url)
     arrow(right, 'ArrowRight')
-    expect(visibleCommand(right.document, '.lm-pkg-install__panel[data-port="ts"]')).toBe(
+    expect(visibleCommand(right.document, CORE)).toBe(
       '$ pnpm add libtmux',
     )
 
@@ -139,7 +159,7 @@ describeIfBuilt('package install picker', () => {
     // than a dead end at either edge.
     const left = load(PORT_HOME, url)
     arrow(left, 'ArrowLeft')
-    expect(visibleCommand(left.document, '.lm-pkg-install__panel[data-port="ts"]')).toBe(
+    expect(visibleCommand(left.document, CORE)).toBe(
       '$ deno add npm:libtmux',
     )
   })
@@ -147,6 +167,43 @@ describeIfBuilt('package install picker', () => {
   it('drops the language strip when the page shows one language', () => {
     const { document } = load(PORT_HOME, url)
     expect(document.querySelectorAll('.lm-pkg-install__tab').length).toBe(0)
+  })
+
+  it('installs the workspace CLI and the MCP server beside the library', () => {
+    const { document } = load(PORT_HOME, url)
+    expect(document.querySelectorAll(`${CLI} .lm-pkg-install__manager`).length).toBe(7)
+    expect(visibleCommand(document, CLI)).toBe('$ npx -y @libtmux/workspace-cli --help')
+    expect(document.querySelector('.lm-mcp-install')?.getAttribute('data-port')).toBe('ts')
+  })
+
+  it('keeps the workspace CLI\'s manager apart from the library\'s', () => {
+    // Both panels belong to TypeScript. Keyed by port alone, choosing bunx,
+    // the CLI's second tab, chose pnpm, the library's second.
+    const { window, document } = load(PORT_HOME, url)
+    document.querySelector<HTMLElement>(`${CLI} .lm-pkg-install__manager[data-manager-value="1"]`)!.click()
+    expect(visibleCommand(document, CLI)).toBe('$ bunx --bun @libtmux/workspace-cli --help')
+    expect(visibleCommand(document, CORE)).toBe('$ npm install libtmux')
+    expect(window.localStorage.getItem('libtmux-docs.package-install.manager.ts-workspace')).toBe('1')
+    expect(window.localStorage.getItem('libtmux-docs.package-install.manager.ts')).toBeNull()
+
+    // Restored on the next page, through <head> as well as the widget.
+    const next = load(PORT_HOME, url, { 'libtmux-docs.package-install.manager.ts-workspace': '6' })
+    expect(next.document.documentElement.getAttribute('data-pkg-manager-ts-workspace')).toBe('6')
+    expect(visibleCommand(next.document, CLI)).toBe('$ bun add -g @libtmux/workspace-cli')
+    expect(visibleCommand(next.document, CORE)).toBe('$ npm install libtmux')
+  })
+
+  it('places Install between an overview\'s introduction and its first section', () => {
+    const mcp = load(TS_MCP, `https://libtmux.org/${SITE_PREFIX}ts/latest/mcp/`).document
+    const mcpInstall = mcp.getElementById('install')!
+    const intro = [...mcp.querySelectorAll('p')].find((p) => p.textContent?.includes('exposes tmux through'))!
+    expect(precedes(intro, mcpInstall)).toBe(true)
+    expect(precedes(mcpInstall, mcp.getElementById('start-here')!)).toBe(true)
+
+    const workspace = load(TS_WORKSPACE, `https://libtmux.org/${SITE_PREFIX}ts/latest/workspace/`).document
+    const workspaceInstall = workspace.getElementById('install')!
+    expect(precedes(workspaceInstall, workspace.getElementById('load-a-workspace-from-the-terminal')!)).toBe(true)
+    expect(workspace.querySelector(`${CLI}`)).toBeTruthy()
   })
 })
 
