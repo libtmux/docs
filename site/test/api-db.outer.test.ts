@@ -1,3 +1,4 @@
+// Outer integration: Seeds the full eight-port API catalog to verify database integration.
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { beforeAll, describe, expect, it } from 'vitest'

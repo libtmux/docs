@@ -105,13 +105,13 @@ function signatureOf(raw: RawSymbol): Signature | undefined {
  * and the relationships are used only for what the path cannot express —
  * protocol conformance.
  */
-/** Conformance display names for one symbol, deduped, in the graph's order. */
+/** Conformance display names in stable order across compiler graph emissions. */
 function conformedNames(
   conformances: Map<string, Map<string, string>>,
   usr: string,
 ): string[] | undefined {
   const found = conformances.get(usr)
-  return found?.size ? [...found.values()] : undefined
+  return found?.size ? [...found.values()].sort() : undefined
 }
 
 export function extractSymbolGraph(files: string[]): ApiSymbol[] {
@@ -124,8 +124,7 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
   // produce six entries for what is one method. Merging is what the reference
   // should show, and it is what the other seven ports already do.
   const byId = new Map<string, ApiSymbol>()
-  /* Keyed on the target USR so a repeated conformance collapses; the value
-   * is the display name. Insertion order is the graph's order. */
+  // Key by target USR so repeated conformances collapse to one display name.
   const conformances = new Map<string, Map<string, string>>()
 
   for (const file of files) {

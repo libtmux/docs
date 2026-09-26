@@ -1,9 +1,19 @@
-import { existsSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it, vi } from 'vitest'
 import { allExtractions, seed, symbolsOfKind } from '../src/db'
-import { MODEL_DIR } from '../src/db/paths'
+
+vi.mock('../src/db/paths', async (original) => {
+  const { fileURLToPath } = await import('node:url')
+  return {
+    ...await original<typeof import('../src/db/paths')>(),
+    MODEL_DIR: fileURLToPath(new URL('./fixtures/api/', import.meta.url)),
+  }
+})
+
+const temporary: string[] = []
+afterAll(() => { for (const path of temporary) rmSync(path, { recursive: true, force: true }) })
 
 /**
  * A version that leaves the manifest leaves the store.
@@ -19,11 +29,9 @@ import { MODEL_DIR } from '../src/db/paths'
  * with one, and require the other to be gone.
  */
 
-const hasModels = existsSync(join(MODEL_DIR, 'py.json'))
-const describeIfSeeded = hasModels ? describe : describe.skip
-
 function manifestWith(versions: string[]): string {
   const dir = mkdtempSync(join(tmpdir(), 'libtmux-manifest-'))
+  temporary.push(dir)
   const path = join(dir, 'versions.json')
   const ports = Object.fromEntries(
     ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'].map((p) => [
@@ -35,7 +43,7 @@ function manifestWith(versions: string[]): string {
   return path
 }
 
-describeIfSeeded('api projection pruning', () => {
+describe('api projection pruning', () => {
   it('drops a version once the manifest stops listing it', () => {
     seed({ manifestPath: manifestWith(['latest', 'v0.9']) })
     expect(
@@ -52,12 +60,5 @@ describeIfSeeded('api projection pruning', () => {
     const versions = allExtractions().map((e) => e.version)
     expect(new Set(versions), 'only the surviving version remains').toEqual(new Set(['latest']))
     expect(symbolsOfKind('py', 'v0.9', 'class'), 'symbol rows for v0.9').toEqual([])
-  })
-
-  it('restores the published manifest for the other suites', () => {
-    // The suites run in one process and share the database file; leaving a
-    // synthetic manifest's store behind would fail whichever ran next.
-    seed()
-    expect(allExtractions().length).toBeGreaterThan(0)
   })
 })

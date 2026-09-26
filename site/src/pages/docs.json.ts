@@ -119,7 +119,7 @@ export const GET: APIRoute = async ({ site }) => {
         slug, name: product.label,
         availability: productAvailable(p, slug as DocProduct) ? 'available' : 'unpublished',
         inDevelopment: productInDevelopment(p, slug as DocProduct),
-        ...(slug === 'workspace' ? { cli: p.workspaceCli ?? null } : {}),
+        ...(slug === 'workspace' ? { cli: p.workspaceCli ?? null, cliAvailability: p.workspaceCliAvailability ?? null } : {}),
         url: portPageUrl(p, defaults[p.slug] ?? 'latest', slug),
         reference: productAvailable(p, slug as DocProduct)
           ? portPageUrl(p, defaults[p.slug] ?? 'latest', productApiPath(slug as DocProduct)) : null,

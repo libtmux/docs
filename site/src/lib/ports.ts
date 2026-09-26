@@ -4,7 +4,6 @@
 import { withPortRoot } from './site-root.ts'
 import type { TagGrammar } from './versions.ts'
 
-
 /**
  * Which renderer produces a self-hosted reference.
  * `none` for ports whose reference lives on an ecosystem host.
@@ -123,12 +122,13 @@ export interface Port {
   worktree: string
   /** Whether this port has a documentation tree for each supported version. */
   versionedDocs: boolean
-  /** Installed command that loads a workspace file, when this port has one. */
+  /** Command that loads a workspace file. */
   workspaceCli?: string
   /** Whether companion products exist for this language port. */
   productAvailability?: Partial<Record<DocProduct, ProductAvailability>>
   /** Separately published packages whose APIs belong in this port's docs. */
   packages?: readonly PortPackage[]
+  workspaceCliAvailability?: 'local' | 'released'
   /**
    * How this port writes its version tags. Python follows PEP 440, which
    * attaches a suffix with no separator and has post-releases; the rest
@@ -238,6 +238,7 @@ export const PORTS: readonly Port[] = [
     language: 'Python',
     packageName: 'libtmux',
     workspaceCli: 'tmuxp load',
+    workspaceCliAvailability: 'released',
     repo: 'tmux-python/libtmux',
     checkout: '~/work/python/libtmux',
     worktree: '~/work/python/libtmux-python-docs',
@@ -283,6 +284,7 @@ export const PORTS: readonly Port[] = [
     language: 'Ruby',
     packageName: 'libtmux',
     workspaceCli: 'libtmux-workspace load',
+    workspaceCliAvailability: 'released',
     productAvailability: { workspace: 'available', mcp: 'available' },
     packages: [
       { id: 'core', name: 'libtmux', registry: 'https://rubygems.org/gems/libtmux', require: 'libtmux' },
@@ -373,6 +375,8 @@ export const PORTS: readonly Port[] = [
   },
   {
     slug: 'ts',
+    workspaceCli: 'tmux-workspace load',
+    workspaceCliAvailability: 'local',
     name: 'TypeScript',
     language: 'TypeScript',
 
@@ -424,6 +428,8 @@ export const PORTS: readonly Port[] = [
   },
   {
     slug: 'rs',
+    workspaceCli: 'tmux-workspace load',
+    workspaceCliAvailability: 'local',
     name: 'Rust',
     language: 'Rust',
     packageName: 'libtmux',
@@ -460,6 +466,8 @@ export const PORTS: readonly Port[] = [
   },
   {
     slug: 'go',
+    workspaceCli: 'tmux-workspace load',
+    workspaceCliAvailability: 'local',
     name: 'Go',
     language: 'Go',
     packageName: 'github.com/libtmux/libtmux-go/tmux',
@@ -495,6 +503,8 @@ export const PORTS: readonly Port[] = [
   },
   {
     slug: 'java',
+    workspaceCli: 'tmux-workspace load',
+    workspaceCliAvailability: 'local',
     name: 'Java',
     language: 'Java and Kotlin',
     packageName: 'io.github.libtmux:libtmux',
@@ -557,6 +567,8 @@ export const PORTS: readonly Port[] = [
   },
   {
     slug: 'dotnet',
+    workspaceCli: 'tmux-workspace load',
+    workspaceCliAvailability: 'local',
     name: '.NET',
     language: 'C#',
     packageName: 'LibTmux',
@@ -588,6 +600,8 @@ export const PORTS: readonly Port[] = [
   },
   {
     slug: 'cxx',
+    workspaceCli: 'tmux-workspace load',
+    workspaceCliAvailability: 'local',
     name: 'C++',
     language: 'C++',
     packageName: 'libtmux-cxx',
@@ -650,6 +664,8 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
   },
   {
     slug: 'swift',
+    workspaceCli: 'tmux-workspace load',
+    workspaceCliAvailability: 'local',
     name: 'Swift',
     language: 'Swift',
     packageName: 'libtmux-swift',
@@ -712,17 +728,36 @@ export function hasPackageInstalls(port: Port, packageId: PortPackageId): boolea
   return Boolean(port.packages?.find((entry) => entry.id === packageId)?.installs?.length)
 }
 
-/** User-facing workspace loaders are distinct from unfinished builder libraries. */
+/**
+ * User-facing workspace loaders are distinct from unfinished builder
+ * libraries, and local loader availability does not establish release
+ * readiness.
+ */
 export function productInDevelopment(port: Port, product: DocProduct): boolean {
   if (!productAvailable(port, product)) return false
-  return product === 'mcp' || !port.workspaceCli
+  return product === 'mcp' || port.workspaceCliAvailability !== 'released'
+}
+
+/** Returns the local workspace notice; released or unavailable CLIs have none. */
+export function workspaceOverviewNotice(port: Port): { title: string; body: string } | undefined {
+  if (port.workspaceCliAvailability !== 'local') return undefined
+  return {
+    title: `Workspace Manager for ${port.name} is in development.`,
+    body: 'The local `workspace-cli` checkout contains a `tmux-workspace` CLI with native services. '
+      + 'This implementation is partial and unreleased; published library packages do '
+      + 'not provide this local CLI checkpoint.',
+  }
 }
 
 export function productDescription(port: Port, product: DocProduct): string {
   if (!productAvailable(port, product)) return 'Not available for this language port.'
-  if (product === 'workspace') return port.workspaceCli
-    ? `Load workspace configuration files with ${port.workspaceCli}.`
-    : 'In development. Workspace builder internals; no workspace loader CLI.'
+  if (product === 'workspace') {
+    if (port.workspaceCliAvailability === 'local')
+      return `The local workspace-cli worktree provides ${port.workspaceCli}. Command and configuration coverage is incomplete.`
+    return port.workspaceCli
+      ? `Load workspace configuration files with ${port.workspaceCli}.`
+      : 'In development. Workspace builder internals; no workspace loader CLI.'
+  }
   return `In development. ${DOC_PRODUCTS.mcp.description}`
 }
 

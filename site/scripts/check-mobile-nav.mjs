@@ -122,6 +122,39 @@ for (const [w, want] of [[360, true], [390, true], [768, true], [1023, true], [1
   note(visible === want, `toolbar ${want ? 'visible' : 'hidden'} at ${w}px`)
   await p.close()
 }
+// The API drawer keeps the product menu reachable without displacing the heading.
+for (const path of ['/go/latest/reference/', '/py/stable/reference/libtmux-server/']) {
+  const p = await page(path)
+  const menu = p.locator('.api-nav__menu')
+  const contents = p.locator('#api-nav')
+  note(!(await menu.isVisible()), `${path}: phone product menu starts collapsed`)
+  note((await p.locator('h1').boundingBox())?.y < 320, `${path}: phone heading stays above the fold`)
+  await p.locator('[data-api-nav-toggle]').click()
+  note(await menu.isVisible(), `${path}: opening navigation exposes the product menu`)
+  await menu.locator(':scope > summary').click()
+  note(await menu.getByRole('link', { name: 'Workspace Manager', exact: true }).isVisible(),
+    `${path}: workspace remains reachable from reference navigation`)
+  await contents.locator('[data-api-nav-close]').click()
+  await p.setViewportSize({ width: 1440, height: 900 })
+  await contents.waitFor({ state: 'visible' })
+  note(await menu.isVisible(), `${path}: widening restores the product menu`)
+  note(!(await contents.evaluate((el) => el.inert)), `${path}: widening restores the symbol tree`)
+  await menu.locator('a').first().focus()
+  await p.setViewportSize({ width: 390, height: 800 })
+  await contents.waitFor({ state: 'hidden' })
+  note(!(await menu.isVisible()), `${path}: narrowing collapses the product menu`)
+  note(await p.locator('[data-api-nav-toggle]').evaluate((element) => document.activeElement === element),
+    `${path}: narrowing focused navigation returns focus to its toggle`)
+  const heading = p.locator('main h1').first()
+  await heading.evaluate((element) => { element.tabIndex = -1; element.focus() })
+  for (const width of [1440, 768, 390]) {
+    await p.setViewportSize({ width, height: 900 })
+    await p.waitForFunction((narrow) => document.querySelector('#api-nav').inert === narrow, width < 1024)
+    note(await heading.evaluate((element) => document.activeElement === element),
+      `${path}: resizing to ${width}px preserves focus in the content`)
+  }
+  await p.close()
+}
 for (const width of [390, 1440]) {
   const p = await page(WITH_TOC, width)
   await p.keyboard.press('Control+k')

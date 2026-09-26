@@ -36,7 +36,7 @@ export interface McpReference {
 export const MCP_REFERENCE = data.ports as unknown as Record<string, McpReference>
 
 // These registrations perform the same operation with different argument/result shapes.
-// Swift's raw tmux command and scrollback-only clearing must keep distinct identities.
+// Scrollback-only clearing must remain distinct from clearing the visible pane.
 const TOOL_OPERATIONS: Record<string, Record<string, string>> = {
   py: { run_command: 'run_shell_command' },
 }

@@ -3,6 +3,8 @@ import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
+// Reuse child-process compilation without changing per-file test isolation.
+process.env.NODE_COMPILE_CACHE ??= fileURLToPath(new URL('../node_modules/.cache/node-compile', import.meta.url))
 const loop = process.argv[2]
 const budget = { inner: 2, medium: 10, outer: 60 }[loop]
 if (!budget) throw new Error('Usage: test-loop.mjs inner|medium|outer')
@@ -55,6 +57,8 @@ const pnpm = (...args) => {
   return /\.[cm]?js$/.test(entry) ? node(entry, ...args) : run(entry, args)
 }
 const tests = (directory, names = []) => node(vitest, 'run', '--root', directory,
+  '--maxWorkers', '2', '--pool', 'threads', '--fsModuleCache',
+  ...(loop === 'medium' ? ['--exclude', '**/*.outer.test.ts'] : []),
   ...names.map((name) => `test/${name}.test.ts`))
 
 try {
@@ -68,10 +72,11 @@ try {
     node('scripts/gen-mentions.mjs', '--check'),
     node('scripts/gen-shell-ports.mjs', '--check'),
   )
-  if (loop === 'outer') checks.push(pnpm('run', '--recursive', 'type-check'))
+  if (loop === 'outer') checks.push(
+    pnpm('run', '--recursive', 'type-check'),
+    node('site/scripts/check-dev.mjs'),
+  )
   await Promise.all(checks)
-  // Astro check and dev both write .astro; keep their lifetimes separate.
-  if (loop === 'outer') await node('site/scripts/check-dev.mjs')
   const elapsed = (performance.now() - started) / 1000
   if (cancelled || elapsed >= budget) throw new Error(`${loop} cancelled or exceeded ${budget}s: ${elapsed.toFixed(2)}s`)
   console.log(`${loop}: PASS in ${elapsed.toFixed(2)}s (budget <${budget}s; publication audit excluded)`)

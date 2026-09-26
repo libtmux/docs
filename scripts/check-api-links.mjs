@@ -16,14 +16,16 @@
  *
  * Usage: node scripts/check-api-links.mjs [file...] [--json]
  */
-import { existsSync, globSync, readFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { existsSync, globSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Resolver, decideFilePath, decideMention, isLikelyReference, looksLikeApiMention, notASymbol, notApiReason, proseMentions, readInventory } from '../packages/api-model/src/index.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const { PORTS: PORT_DEFS } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
+const { KNOWN_PORTS, resolvePortBody } = await import(`file://${resolve(root, 'site/src/lib/workspace-shared-slots.ts')}`)
+const SHARED = join(root, 'site/src/content/_workspace-shared')
 const CONTENT = join(root, 'site/src/content/docs')
 const started = Date.now()
 
@@ -92,17 +94,62 @@ const EXCEPTIONS = new Map()
 const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|md|toml|json|ya?ml|sh)$/
 const PORT_BY_LABEL = { Python: 'py', TypeScript: 'ts', Rust: 'rs', Go: 'go', Java: 'java', '.NET': 'dotnet', 'C#': 'dotnet', 'C++': 'cxx', Swift: 'swift' }
 
+/**
+ * `workspaceDocsLoader()` (site/src/loaders/workspace-shared.ts) synthesizes
+ * 8 per-port `docs` collection entries from each file under
+ * `_workspace-shared/` at Astro build time. This script reads Markdown
+ * files directly rather than the built collection (see the file header), so
+ * it cannot see those synthetic entries on its own — reconstruct them here
+ * the same way `gen-mentions.mjs` does, so a shared workspace page's prose
+ * is still checked for every port.
+ */
+function sharedWorkspaceRaw() {
+  const raw = new Map()
+  const walk = (dir) => {
+    if (!existsSync(dir)) return
+    for (const name of readdirSync(dir)) {
+      const full = join(dir, name)
+      if (statSync(full).isDirectory()) {
+        walk(full)
+        continue
+      }
+      if (!/\.mdx?$/.test(name)) continue
+      const relPath = relative(SHARED, full).split('\\').join('/')
+      const source = readFileSync(full, 'utf8')
+      const fm = /^---\r?\n([\s\S]*?\r?\n)---\r?\n?/.exec(source)
+      const body = fm ? source.slice(fm[0].length) : source
+      // Ruby ships its own released workspace CLI and Lua has none, so
+      // neither belongs to this generic, unreleased-CLI shared tree at all;
+      // KNOWN_PORTS excludes both. A port whose own hand-authored page
+      // already owns this path (matches
+      // site/src/loaders/workspace-shared.ts's realIds exclusion) keeps
+      // that page regardless.
+      for (const port of PORTS.filter((slug) => KNOWN_PORTS.has(slug))) {
+        const target = join(CONTENT, 'ports', port, relPath)
+        if (existsSync(target)) continue
+        raw.set(target, `---\nport: ${port}\nproduct: workspace\n---\n${resolvePortBody(body, port)}`)
+      }
+    }
+  }
+  walk(SHARED)
+  return raw
+}
+
 const files = process.argv.slice(2).filter((a) => !a.startsWith('--'))
+const sharedRaw = files.length ? new Map() : sharedWorkspaceRaw()
 const targets = files.length
   ? files.map((f) => resolve(f))
-  : globSync('{topics,guides,concepts,examples,ports}/**/*.{md,mdx}', { cwd: CONTENT }).map((f) => join(CONTENT, f))
+  : [
+      ...globSync('{topics,guides,concepts,examples,ports}/**/*.{md,mdx}', { cwd: CONTENT }).map((f) => join(CONTENT, f)),
+      ...sharedRaw.keys(),
+    ]
 
 const tally = { willLink: 0, file: 0, fileMissing: 0, notASymbol: 0, unresolved: 0, alreadyLinked: 0 }
 const unresolved = []
 const missingFiles = []
 
 for (const file of targets) {
-  const raw = readFileSync(file, 'utf8')
+  const raw = sharedRaw.get(file) ?? readFileSync(file, 'utf8')
   const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(raw)?.[1] ?? ''
   const authoredPort = /^port:\s*['"]?([a-z]+)['"]?\s*$/m.exec(frontmatter)?.[1]
     ?? /^ports\/([^/]+)\//.exec(file.replace(`${CONTENT}/`, ''))?.[1]

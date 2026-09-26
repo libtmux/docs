@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { docsPath, docsRedirects, docsRoutePath } from '../src/lib/docs-paths'
+import { docsPath, docsRedirects, docsRoutePath, workspaceRedirectPath } from '../src/lib/docs-paths'
 
 const pythonGuide = { id: 'ports/py/workspace/guides', data: { port: 'py', product: 'workspace' } }
 
@@ -41,5 +41,16 @@ describe('product document URLs', () => {
     expect(() => docsRedirects([canonical, staged], undefined, { ruby: 'latest' })).toThrow('alias collides')
     expect(() => docsRedirects([staged], undefined, { ruby: 'latest' }, ['ruby/latest/mcp'])).not.toThrow()
     expect(() => docsRedirects([staged], undefined, { ruby: 'latest' }, ['ruby/latest/guides/core'])).toThrow('reserved route')
+  })
+
+  it('filters legacy aliases according to published pages, independently of CLI availability', () => {
+    const nativePages = new Set(['workspace/guides/installation', 'workspace/examples/gallery'])
+    for (const path of ['workspace/guides/automation/', 'workspace/examples/gallery/', 'workspace/cli/load/']) {
+      expect(workspaceRedirectPath(path, nativePages), path).toBe(false)
+    }
+    expect(workspaceRedirectPath('workspace/guides/', nativePages)).toBe(true)
+    expect(workspaceRedirectPath('workspace/guides/', new Set(['workspace/guides']))).toBe(false)
+    expect(workspaceRedirectPath('workspace/api/builder/', nativePages)).toBe(true)
+    expect(workspaceRedirectPath('workspace/api/builder/', new Set(['workspace/api/builder']))).toBe(false)
   })
 })

@@ -1,0 +1,5 @@
+{
+  "port": "py",
+  "extractor": "test fixture",
+  "symbols": [{ "id": "libtmux.Server", "publicId": "libtmux.Server", "name": "Server", "kind": "class" }]
+}
