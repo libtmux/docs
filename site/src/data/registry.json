@@ -59,9 +59,9 @@
     },
     "go": {
       "status": "prerelease",
-      "version": "v0.0.1-alpha.8",
+      "version": "v0.0.1-alpha.9",
       "stable": null,
-      "tag": "v0.0.1-alpha.8"
+      "tag": "v0.0.1-alpha.9"
     },
     "java": {
       "status": "prerelease",
