@@ -44,7 +44,8 @@ export interface PortPackage {
   id: PortPackageId
   name: string
   registry: string
-  require: string
+  /** What a program imports; absent for a package that only ships a command. */
+  require?: string
   executable?: string
   installs?: readonly InstallCommand[]
 }
@@ -381,11 +382,70 @@ export const PORTS: readonly Port[] = [
   {
     slug: 'ts',
     workspaceCli: 'tmux-workspace load',
-    workspaceCliAvailability: 'local',
+    workspaceCliAvailability: 'published',
     name: 'TypeScript',
     language: 'TypeScript',
 
     packageName: 'libtmux',
+    packages: [
+      {
+        id: 'mcp',
+        name: '@libtmux/mcp',
+        registry: 'https://www.npmjs.com/package/@libtmux/mcp',
+        require: '@libtmux/mcp',
+        executable: 'libtmux-mcp',
+      },
+      {
+        id: 'workspace',
+        name: '@libtmux/workspace-cli',
+        registry: 'https://www.npmjs.com/package/@libtmux/workspace-cli',
+        executable: 'tmux-workspace',
+        // Runners lead: like `uvx tmuxp`, the command needs no project to be
+        // added to. `--help` is the argument because it runs without a
+        // workspace file, so every line pastes and runs as shown.
+        installs: [
+          {
+            label: 'npx',
+            lang: 'console',
+            code: 'npx -y @libtmux/workspace-cli --help',
+            note: 'Runs tmux-workspace without installing it. Pass a command such as load ./workspace.yaml in place of --help.',
+          },
+          {
+            label: 'bunx',
+            lang: 'console',
+            code: 'bunx --bun @libtmux/workspace-cli --help',
+            note: '--bun runs the command on Bun. Without it, bunx runs the command on Node when Node is installed, because its shebang names node.',
+          },
+          {
+            label: 'pnpm dlx',
+            lang: 'console',
+            code: 'pnpm dlx @libtmux/workspace-cli --help',
+          },
+          {
+            label: 'yarn dlx',
+            lang: 'console',
+            code: 'yarn dlx -p libtmux -p @libtmux/workspace-cli tmux-workspace --help',
+            note: 'Yarn installs no peer dependencies, and 0.1.0-alpha.11 declares libtmux as one, so the command names it too. Yarn also refuses a release younger than its npmMinimalAgeGate, one day by default.',
+          },
+          {
+            label: 'npm -g',
+            lang: 'console',
+            code: 'npm install -g @libtmux/workspace-cli',
+            note: 'Puts tmux-workspace on PATH, so a workspace loads with tmux-workspace load ./workspace.yaml.',
+          },
+          {
+            label: 'pnpm -g',
+            lang: 'console',
+            code: 'pnpm add -g @libtmux/workspace-cli',
+          },
+          {
+            label: 'bun -g',
+            lang: 'console',
+            code: 'bun add -g @libtmux/workspace-cli',
+          },
+        ],
+      },
+    ],
     repo: 'libtmux/libtmux-ts',
     checkout: '~/work/libtmux/libtmux-ts',
     worktree: '~/work/libtmux/libtmux-ts-docs',
