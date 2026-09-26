@@ -150,7 +150,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       }
       const top = ancestors.at(-1)
       expect(top?.querySelector(':scope > .api-nav__row > a')?.textContent?.trim()).toBe('Server')
-      expect(top?.querySelector(':scope > [role="group"] > li:first-child a')?.textContent?.trim()).toBe('libtmux.Server')
+      // A row shows its id only when a sibling shares its name.
+      const first = top?.querySelector(':scope > [role="group"] > li:first-child a')
+      expect(first?.textContent?.trim()).toBe('Server')
+      expect(first?.getAttribute('href')).toMatch(/\/lua\/latest\/reference\/libtmux-server\/$/)
     })
   })
 

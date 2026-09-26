@@ -222,6 +222,15 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     byte: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.1',
     void: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5',
   },
+  // Lua's eight value types share one section of the manual; `integer` is
+  // the subtype 5.3 added and LuaLS spells separately. `any` and `unknown`
+  // are LuaLS annotation types, with no counterpart in the language.
+  lua: Object.fromEntries([
+    ...['nil', 'boolean', 'number', 'integer', 'string', 'function', 'table', 'thread', 'userdata'].map(
+      (name) => [name, 'https://www.lua.org/manual/5.4/manual.html#2.1'],
+    ),
+    ...['any', 'unknown'].map((name) => [name, 'https://luals.github.io/wiki/annotations/#documenting-types']),
+  ]),
   py: {
     Unpack: 'https://docs.python.org/3/library/typing.html#typing.Unpack',
     TypeGuard: 'https://docs.python.org/3/library/typing.html#typing.TypeGuard',

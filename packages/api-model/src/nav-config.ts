@@ -68,6 +68,41 @@ const nameOrPath = (re: string, pathRe: string, ...vocabulary: string[]): Match 
 })
 
 /**
+ * A tmux object's own bucket: its name, or its file when no later bucket names it.
+ *
+ * A file groups what an object's implementation needs, not only the object.
+ * Lua declares `CommandOutcome` in `server.lua` and TypeScript the same type
+ * in `common.ts`; by path alone the Lua one sat under Server while its twin
+ * sat under Commands. A name says what a type is, so a name rule further down
+ * the chain outranks this path. The name clauses here stay as strong as
+ * before: `PaneCommand` is still a Pane type.
+ */
+const hierarchy = (re: string, pathRe: string, ...vocabulary: string[]): Match => ({
+  kind: 'anyOf',
+  of: [
+    nameRe(re),
+    {
+      kind: 'allOf',
+      of: [{ kind: 'path', re: pathRe }, { kind: 'not', of: nameRe(Object.values(ATTACHED_NAMES).join('|')) }],
+    },
+    words(...vocabulary),
+  ],
+})
+
+/** The name rules of the buckets that hang off the hierarchy, which its paths yield to. */
+const ATTACHED_NAMES = {
+  options: '^Option|Option$',
+  keys: 'Key|Binding',
+  buffers: 'Buffer',
+  layout: 'Layout|Split|Resize|Direction|Dimension|Rotation',
+  environment: 'Environment',
+  capabilities: 'Capabilit|Terminal',
+  version: 'Version|Release',
+  commands:
+    'Command|Cmd|cmd|Dispatch|Transport|Connection|Process|Receipt|^Running$|^TmuxArg$|^TmuxWait$|^ReadyStatus$|^WaitPath$',
+}
+
+/**
  * What counts as an error.
  *
  * The path clause carries this one. Python and TypeScript declare their
@@ -228,6 +263,18 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
         // Python's `neo` builds a format string per object and parses the
         // rows it asks for; `libtmux.neo.Obj` itself stays unsettled.
         freePath('(^|/)neo\\.py$'),
+        // Lua's `libtmux.Fields.Session` and its siblings are the format
+        // fields a record of each kind carries. Named after the object, they
+        // otherwise took its bucket, and Session opened on a field list
+        // instead of the handle that has the methods.
+        // Java's `query.Fields` is the query builder's own class, and stays.
+        {
+          kind: 'allOf',
+          of: [
+            { kind: 'module', re: '(^|[.:])Fields$' },
+            nameRe('^(Server|Session|Window|WindowLink|Pane|Client|Buffer)$'),
+          ],
+        },
       ],
     },
   },
@@ -280,25 +327,25 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
   {
     id: 'server',
     label: 'Server',
-    match: nameOrPath('^Server|Server$', '(^|/)server[./]', 'server', 'socket', 'daemon'),
+    match: hierarchy('^Server|Server$', '(^|/)server[./]', 'server', 'socket', 'daemon'),
   },
-  { id: 'session', label: 'Session', match: nameOrPath('Session', '(^|/)session[./]', 'session', 'sessions') },
-  { id: 'window', label: 'Window', match: nameOrPath('Window', '(^|/)window[./]', 'window', 'windows') },
-  { id: 'pane', label: 'Pane', match: nameOrPath('Pane', '(^|/)pane[./]', 'pane', 'panes') },
-  { id: 'client', label: 'Client', match: nameOrPath('Client', '(^|/)client[./]', 'client', 'clients') },
+  { id: 'session', label: 'Session', match: hierarchy('Session', '(^|/)session[./]', 'session', 'sessions') },
+  { id: 'window', label: 'Window', match: hierarchy('Window', '(^|/)window[./]', 'window', 'windows') },
+  { id: 'pane', label: 'Pane', match: hierarchy('Pane', '(^|/)pane[./]', 'pane', 'panes') },
+  { id: 'client', label: 'Client', match: hierarchy('Client', '(^|/)client[./]', 'client', 'clients') },
   // What hangs off the hierarchy.
-  { id: 'options', label: 'Options', match: nameOrPath('^Option|Option$', '(^|/)options?', 'option', 'options') },
+  { id: 'options', label: 'Options', match: nameOrPath(ATTACHED_NAMES.options, '(^|/)options?', 'option', 'options') },
   {
     id: 'keys',
     label: 'Keys and bindings',
-    match: nameOrPath('Key|Binding', '(^|/)(keys?|binding)', 'key', 'keys', 'binding'),
+    match: nameOrPath(ATTACHED_NAMES.keys, '(^|/)(keys?|binding)', 'key', 'keys', 'binding'),
   },
-  { id: 'buffers', label: 'Buffers', match: nameOrPath('Buffer', '(^|/)buffers?[./]', 'buffer', 'buffers') },
+  { id: 'buffers', label: 'Buffers', match: nameOrPath(ATTACHED_NAMES.buffers, '(^|/)buffers?[./]', 'buffer', 'buffers') },
   {
     id: 'layout',
     label: 'Layout and geometry',
     match: nameOrPath(
-      'Layout|Split|Resize|Direction|Dimension|Rotation',
+      ATTACHED_NAMES.layout,
       '(^|/)layouts?[./]',
       'layout', 'split', 'resize', 'direction', 'dimension', 'rotation',
     ),
@@ -306,23 +353,23 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
   {
     id: 'environment',
     label: 'Environment',
-    match: nameOrPath('Environment', '(^|/)environment', 'environment', 'env'),
+    match: nameOrPath(ATTACHED_NAMES.environment, '(^|/)environment', 'environment', 'env'),
   },
   {
     id: 'capabilities',
     label: 'Terminal capabilities',
-    match: nameOrPath('Capabilit|Terminal', '(^|/)capabilit', 'capability', 'capabilities', 'terminal'),
+    match: nameOrPath(ATTACHED_NAMES.capabilities, '(^|/)capabilit', 'capability', 'capabilities', 'terminal'),
   },
   {
     id: 'version',
     label: 'Versions',
-    match: nameOrPath('Version|Release', '(^|/)versions?[./]|(^|/)__about__\\.|(^|/)build_info\\.go$', 'version', 'release'),
+    match: nameOrPath(ATTACHED_NAMES.version, '(^|/)versions?[./]|(^|/)__about__\\.|(^|/)build_info\\.go$', 'version', 'release'),
   },
   {
     id: 'commands',
     label: 'Commands',
     match: nameOrPath(
-      'Command|Cmd|cmd|Dispatch|Transport|Connection|Process|Receipt|^Running$|^TmuxArg$|^TmuxWait$|^ReadyStatus$|^WaitPath$',
+      ATTACHED_NAMES.commands,
       '(^|/)(commands?|dispatch|transport|connection|process)|(^|/)libtmux/endpoint\\.rb$',
       'command', 'commands', 'cmd', 'dispatch', 'transport', 'connection', 'process', 'engine',
     ),
@@ -518,6 +565,7 @@ if (SHARED.length !== CHAIN.length) {
 const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
   lua: {
     unsettled: {
+      'libtmux.Configurable': 'options and hooks shared by sessions, windows and panes; the concrete handle is the subclass',
       'libtmux.Creation': 'creation receipt shared by several tmux objects',
       'libtmux.Entity': 'base of the tmux entity hierarchy; the concrete entity is the subclass',
       'libtmux.LinkDestination': 'window-link target shared by sessions and windows',

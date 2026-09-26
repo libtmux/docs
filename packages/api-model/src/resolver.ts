@@ -99,7 +99,7 @@ export const DEFAULT_TEMPLATES: UrlTemplate[] = [
  */
 export function notASymbol(text: string): string | undefined {
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) return 'a protocol URI'
-  if (/\.(py|ts|go|rs|java|cs|cpp|hpp|swift|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
+  if (/\.(py|ts|go|rs|java|cs|cpp|hpp|c|h|lua|rb|swift|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
   if (/(^|\s)--?[A-Za-z]/.test(text)) return 'a command-line flag'
   if (/[=<>!]=|\s[=<>]\s/.test(text)) return 'an expression, not a reference'
   if (/^new\s/.test(text)) return 'a constructor call'
@@ -115,6 +115,10 @@ export function toPath(text: string): string[] {
     .replace(/\(.*$/, '')
     .replace(/->/g, '.')
     .replace(/::/g, '.')
+    // Lua's method call, `Session:new_window`. Only between two names, so a
+    // Swift selector's labels (already cut with the argument list) and a
+    // `{ key: value }` literal (refused by `notASymbol`) never reach it.
+    .replace(/(\w):(?=[A-Za-z_])/g, '$1.')
     .replace(/\s+/g, '')
     .split('.')
     .filter(Boolean)

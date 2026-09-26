@@ -53,6 +53,21 @@ d('resolver', () => {
     expect(toPath('await server.sessions()')).toEqual(['server', 'sessions'])
     expect(toPath('server->sessions()')).toEqual(['server', 'sessions'])
     expect(toPath('libtmux::Server::wait_for(ch)')).toEqual(['libtmux', 'Server', 'wait_for'])
+    expect(toPath('Session:new_window(options)')).toEqual(['Session', 'new_window'])
+    // A selector's labels go with its argument list, not into the path.
+    expect(toPath('Snapshot.sessions(of:)')).toEqual(['Snapshot', 'sessions'])
+  })
+
+  it('resolves a Lua method call written with a colon', () => {
+    const res = r.resolve('lua', 'Server:new_session')
+    expect('symbol' in res ? res.symbol.publicId : res.how).toBe('libtmux.Server:new_session')
+  })
+
+  it('treats C, Lua and Ruby source files as filenames', () => {
+    for (const text of ['options-table.c', 'tmux.h', 'lua/libtmux/init.lua', 'lib/libtmux.rb']) {
+      expect(notASymbol(text)).toBe('a filename')
+    }
+    expect(notASymbol('pane.height')).toBeUndefined()
   })
 
   it('preserves an exact Swift selector instead of resolving its same-named property', () => {

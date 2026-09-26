@@ -17,14 +17,25 @@ describe('Lua API sidebar', () => {
     expect(internal?.entries.some((entry) => entry.id === 'libtmux.Server') ?? false).toBe(false)
   })
 
-  it('puts the public Server object before its supporting types', () => {
-    const server = navTree('lua').find((bucket) => bucket.id === 'server')
+  it('keeps field records and command results out of the Server domain', () => {
+    const tree = navTree('lua')
+    const ids = (id: string) => tree.find((bucket) => bucket.id === id)?.entries.map((entry) => entry.id) ?? []
 
-    expect(server?.entries.map((entry) => entry.id)).toEqual([
-      'libtmux.Server',
-      'libtmux.Fields.Server',
-      'libtmux.CommandOutcome',
-    ])
+    expect(ids('server')).toEqual(['libtmux.Server'])
+    expect(ids('formats')).toEqual(expect.arrayContaining(['libtmux.Fields.Server', 'libtmux.Fields.Pane']))
+    expect(ids('commands')).toContain('libtmux.CommandOutcome')
+  })
+
+  it('opens each tmux object domain on its handle class', () => {
+    const tree = navTree('lua')
+    for (const [bucket, id] of [
+      ['session', 'libtmux.Session'],
+      ['window', 'libtmux.Window'],
+      ['pane', 'libtmux.Pane'],
+      ['client', 'libtmux.Client'],
+    ]) {
+      expect(tree.find((b) => b.id === bucket)?.entries[0]?.id, bucket).toBe(id)
+    }
   })
 })
 
