@@ -1,5 +1,15 @@
 # Decision: `/<port>/` keeps its landing page; the deploy denylist gets a hole
 
+**Superseded 2026-09-26.** `/<port>/` is now a `noindex` redirect to the
+port's default version, not a landing page. Both premises below lapsed:
+every port sets `versionedDocs: true`, so none lacks a version tree to
+redirect to, and the edge redirect's KeyValueStore was never written, so
+the landing page served every request rather than an occasional miss. The
+shell's `publish-root` job now writes the rows
+(`scripts/publish-default-versions.sh`), and the page at `/<port>/` only
+answers a lookup that misses. The deploy side of decision B, one
+`index.html` per reserved prefix, still holds.
+
 Closes the open item in `notes/status.md`, "`/py/` should redirect", and the
 `KNOWN OPEN QUESTION` comment on `publish-root` in
 `.github/workflows/deploy-shell.yml` (`00-DECISIONS.md` §7.10 item 5).
