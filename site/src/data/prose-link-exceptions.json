@@ -19,5 +19,9 @@
   "an expression, not a name": {
     "why": "an example of a call, with arguments; there is no single symbol to point at",
     "spans": ["Kill(ctx)", "WaitAsync(budget)", "defer conn.Close()", "fields.pane_active.eq(true)", "force_cleanup()", "send_text(text)", "throws(TmuxError)", "with Server()", "pane.zoomedFlag"]
+  },
+  "package IDs and install paths": {
+    "why": "a registry package or a directory on disk; no reference model documents it",
+    "spans": ["LibTmux.Workspace.Cli", "~/.dotnet/tools"]
   }
 }
