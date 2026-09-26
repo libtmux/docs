@@ -536,6 +536,27 @@ export const PORTS: readonly Port[] = [
     name: 'Go',
     language: 'Go',
     packageName: 'github.com/libtmux/libtmux-go/tmux',
+    packages: [
+      {
+        id: 'workspace',
+        name: 'github.com/libtmux/libtmux-go/workspace',
+        registry: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace',
+        require: 'github.com/libtmux/libtmux-go/workspace',
+        executable: 'tmux-workspace',
+        // From a clone, because nothing else builds yet: no tagged workspace
+        // module contains cmd/tmux-workspace, and master's module needs the
+        // root module from the repository's go.work, so `go install …@latest`
+        // and `@master` both fail to compile.
+        installs: [
+          {
+            label: 'go install',
+            lang: 'console',
+            code: 'git clone https://github.com/libtmux/libtmux-go \\\n    && cd libtmux-go \\\n    && go install ./workspace/cmd/tmux-workspace',
+            note: 'Builds the unreleased command with Go 1.26 or newer and puts tmux-workspace in $(go env GOPATH)/bin, or in GOBIN when that is set. No tagged release contains it yet.',
+          },
+        ],
+      },
+    ],
     repo: 'libtmux/libtmux-go',
     checkout: '~/work/libtmux/libtmux-go',
     worktree: '~/work/libtmux/libtmux-go-docs',

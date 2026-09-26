@@ -22,6 +22,7 @@ import { SITE_BUILT, SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
 const PORT_HOME = join(SITE_ROOT, 'ts/latest/index.html')
 const TS_MCP = join(SITE_ROOT, 'ts/latest/mcp/index.html')
 const TS_WORKSPACE = join(SITE_ROOT, 'ts/latest/workspace/index.html')
+const GO_WORKSPACE = join(SITE_ROOT, 'go/latest/workspace/index.html')
 const PY_MCP = join(SITE_ROOT, 'mcp/index.html')
 
 const isJs = (el: Element) => {
@@ -204,6 +205,19 @@ describeIfBuilt('package install picker', () => {
     const workspaceInstall = workspace.getElementById('install')!
     expect(precedes(workspaceInstall, workspace.getElementById('load-a-workspace-from-the-terminal')!)).toBe(true)
     expect(workspace.querySelector(`${CLI}`)).toBeTruthy()
+  })
+})
+
+const describeIfGo = SITE_BUILT && existsSync(GO_WORKSPACE) ? describe : describe.skip
+
+describeIfGo('workspace install picker, Go', () => {
+  it('builds the unreleased CLI from a clone, above the first section', () => {
+    const { document } = load(GO_WORKSPACE, `https://libtmux.org/${SITE_PREFIX}go/latest/workspace/`)
+    const panel = '.lm-pkg-install__panel[data-manager-scope="go-workspace"]'
+    expect(visibleCommand(document, panel)).toBe(
+      '$ git clone https://github.com/libtmux/libtmux-go \\\n    && cd libtmux-go \\\n    && go install ./workspace/cmd/tmux-workspace',
+    )
+    expect(precedes(document.getElementById('install')!, document.getElementById('load-a-workspace-from-the-terminal')!)).toBe(true)
   })
 })
 
