@@ -47,15 +47,15 @@
     },
     "ts": {
       "status": "prerelease",
-      "version": "0.1.0-alpha.10",
+      "version": "0.1.0-alpha.11",
       "stable": null,
-      "tag": "v0.1.0-alpha.10"
+      "tag": "v0.1.0-alpha.11"
     },
     "rs": {
       "status": "prerelease",
-      "version": "0.1.0-alpha.12",
+      "version": "0.1.0-alpha.13",
       "stable": null,
-      "tag": "libtmux@v0.1.0-alpha.12"
+      "tag": "libtmux@v0.1.0-alpha.13"
     },
     "go": {
       "status": "prerelease",
@@ -65,27 +65,27 @@
     },
     "java": {
       "status": "prerelease",
-      "version": "0.0.1-alpha.14",
+      "version": "0.0.1-alpha.15",
       "stable": null,
-      "tag": "v0.0.1-alpha.14"
+      "tag": "v0.0.1-alpha.15"
     },
     "dotnet": {
       "status": "prerelease",
-      "version": "0.0.0-alpha.15",
+      "version": "0.0.0-alpha.16",
       "stable": null,
-      "tag": "v0.0.0-alpha.15"
+      "tag": "v0.0.0-alpha.16"
     },
     "cxx": {
       "status": "unpublished",
       "version": null,
       "stable": null,
-      "tag": "v0.1.0-alpha.10"
+      "tag": "v0.1.0-alpha.11"
     },
     "swift": {
       "status": "prerelease",
-      "version": "0.1.0-alpha.5",
+      "version": "0.1.0-alpha.6",
       "stable": null,
-      "tag": "0.1.0-alpha.5"
+      "tag": "0.1.0-alpha.6"
     }
   }
 }
