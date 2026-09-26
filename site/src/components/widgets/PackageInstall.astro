@@ -79,6 +79,14 @@ if (items.length === 0) {
 }
 const initialSlug = defaultPort && items.some((p) => p.slug === defaultPort) ? defaultPort : items[0]!.slug
 
+/*
+ * What a saved manager belongs to. A port's library and its companion package
+ * offer different lists — TypeScript's library has five managers and its
+ * workspace CLI seven — so one key per port had a choice in one widget select
+ * an unrelated line in the other. `picker-paint.ts` builds the same scopes.
+ */
+const managerScope = (slug: string) => (packageId === 'core' ? slug : `${slug}-${packageId}`)
+
 // Which panel to show once `data-active-port` is set is data-driven (one
 // rule per port actually rendered in *this* instance), not hand-typed —
 // ports.ts stays the only place a port's slug is spelled out. See the
@@ -150,6 +158,7 @@ const installHtml = new Map(
           class="lm-pkg-install__panel"
           role="tabpanel"
           data-port={p.slug}
+          data-manager-scope={managerScope(p.slug)}
           data-default={p.slug === initialSlug ? true : undefined}
           tabindex="0"
         >
@@ -693,8 +702,8 @@ const installHtml = new Map(
       document.querySelectorAll<HTMLElement>('.lm-pkg-install').forEach((widget) => selectPort(widget, saved, false))
     }
     document.querySelectorAll<HTMLElement>('.lm-pkg-install__panel').forEach((panel) => {
-      const port = panel.dataset.port
-      const savedManager = port && read(`${MANAGER_KEY}.${port}`)
+      const scope = panel.dataset.managerScope
+      const savedManager = scope && read(`${MANAGER_KEY}.${scope}`)
       if (savedManager) selectManager(panel, savedManager, false)
     })
   }
@@ -711,12 +720,12 @@ const installHtml = new Map(
       tab.setAttribute('tabindex', isMatch ? '0' : '-1')
     })
     panel.setAttribute('data-active-manager', index)
-    if (persist && panel.dataset.port) {
+    if (persist && panel.dataset.managerScope) {
       // As selectPort does for the language: <head> puts the saved manager on
       // the document before first paint, and the rules keyed on it outrank
       // this panel's, so a click has to move the document attribute too.
-      document.documentElement.setAttribute(`data-pkg-manager-${panel.dataset.port}`, index)
-      write(`${MANAGER_KEY}.${panel.dataset.port}`, index)
+      document.documentElement.setAttribute(`data-pkg-manager-${panel.dataset.managerScope}`, index)
+      write(`${MANAGER_KEY}.${panel.dataset.managerScope}`, index)
     }
   }
 
@@ -840,7 +849,7 @@ const installHtml = new Map(
         selectManager(panel, tab.dataset.managerValue ?? '0', true)
         window.dispatchEvent(
           new CustomEvent(MANAGER_SYNC_EVENT, {
-            detail: { origin: panel, port: panel.dataset.port, index: tab.dataset.managerValue },
+            detail: { origin: panel, scope: panel.dataset.managerScope, index: tab.dataset.managerValue },
           }),
         )
       })
@@ -872,7 +881,7 @@ const installHtml = new Map(
       selectManager(panel, manager.dataset.managerValue, true)
       window.dispatchEvent(
         new CustomEvent(MANAGER_SYNC_EVENT, {
-          detail: { origin: panel, port: panel.dataset.port, index: manager.dataset.managerValue },
+          detail: { origin: panel, scope: panel.dataset.managerScope, index: manager.dataset.managerValue },
         }),
       )
       return
@@ -895,10 +904,10 @@ const installHtml = new Map(
   // have another — agree on the manager for a given port, the same way they
   // already agree on the port.
   window.addEventListener(MANAGER_SYNC_EVENT, ((
-    e: CustomEvent<{ origin: HTMLElement; port?: string; index: string }>,
+    e: CustomEvent<{ origin: HTMLElement; scope?: string; index: string }>,
   ) => {
     document.querySelectorAll<HTMLElement>('.lm-pkg-install__panel').forEach((panel) => {
-      if (panel === e.detail.origin || panel.dataset.port !== e.detail.port) return
+      if (panel === e.detail.origin || panel.dataset.managerScope !== e.detail.scope) return
       selectManager(panel, e.detail.index, false)
     })
   }) as EventListener)

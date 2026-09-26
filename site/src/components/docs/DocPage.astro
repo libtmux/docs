@@ -107,6 +107,27 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   && productIsAvailable
   && Boolean(port && hasPackageInstalls(PORT_BY_SLUG[port], 'workspace'))
 
+/*
+ * An overview's Install section sits between the page's opening paragraphs
+ * and its first section, where a reader looks for it before scrolling. A
+ * Markdown entry cannot place a component, so the body is split at its first
+ * `<h2`. The split is of the same HTML `<Content />` emits; a body with images
+ * keeps `<Content />`, which resolves them, and takes Install after it.
+ */
+const hasInstall = !placeholderLocale && Boolean(port) && (isMcpOverview || isWorkspaceOverview)
+const renderedHtml = entry.rendered?.html
+const firstSection = hasInstall && renderedHtml && !entry.rendered?.metadata?.imagePaths?.length
+  ? renderedHtml.search(/<h2[\s>]/)
+  : -1
+const body = renderedHtml && firstSection >= 0
+  ? { lead: renderedHtml.slice(0, firstSection), rest: renderedHtml.slice(firstSection) }
+  : undefined
+const installHeading = hasInstall ? [{ depth: 2, slug: 'install', text: 'Install' }] : []
+const firstSectionHeading = body ? headings.findIndex((heading) => heading.depth === 2) : -1
+const pageHeadings = firstSectionHeading >= 0
+  ? [...headings.slice(0, firstSectionHeading), ...installHeading, ...headings.slice(firstSectionHeading)]
+  : [...headings, ...installHeading]
+
 // `entry.data.port` is undefined for the shared pages (concepts, guides,
 // examples); DocsLayout and lib/sidebar.ts's `getSidebar` treat that as "the
 // shell's shared section", not an error.
@@ -123,10 +144,8 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   product={entry.data.product}
   version={version}
   headings={placeholderLocale ? [] : [
-    ...headings,
+    ...pageHeadings,
     ...(isProductApi ? [{ depth: 2, slug: 'generated-api', text: 'API declarations' }] : []),
-    ...(isMcpOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
-    ...(isWorkspaceOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
   ]}
   pagePath={pagePath}
   noindex={entry.data.noindex || Boolean(placeholderLocale)}
@@ -221,7 +240,7 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   {!placeholderLocale && packageSource && <p class="text-sm opacity-75">
     <code>{packageSource.package}</code>{packageSource.version ? ` ${packageSource.version}` : ''} · <a href={`https://github.com/${packageSource.repo}/tree/${packageSource.revision}`}>Source</a>
   </p>}
-  {!placeholderLocale && <Content />}
+  {!placeholderLocale && (body ? <Fragment set:html={body.lead} /> : <Content />)}
   {!placeholderLocale && isMcpOverview && port && (
     <>
       <h2 id="install">Install</h2>
@@ -237,12 +256,13 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   {!placeholderLocale && isWorkspaceOverview && port && (
     <>
       <h2 id="install">Install</h2>
-      <p>Install the workspace package separately from the core library.</p>
+      <p>The workspace package is separate from the core library.</p>
       <div class="not-prose">
         <PackageInstall ports={[port]} packageId="workspace" />
       </div>
     </>
   )}
+  {body && <Fragment set:html={body.rest} />}
   {!placeholderLocale && entry.data.product && productIsAvailable && isProductApi &&
     <ProductApiIndex port={port!} product={entry.data.product} version={version ?? buildTarget(process.env).version} />}
 </DocsLayout>

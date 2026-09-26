@@ -33,7 +33,18 @@ describe('Ruby port metadata', () => {
   })
 
   it('offers the workspace install picker only for a published companion package', () => {
-    expect(PORTS.filter((port) => hasPackageInstalls(port, 'workspace')).map((port) => port.slug)).toEqual(['ruby'])
+    expect(PORTS.filter((port) => hasPackageInstalls(port, 'workspace')).map((port) => port.slug)).toEqual(['ruby', 'ts', 'go'])
+  })
+})
+
+describe('TypeScript port metadata', () => {
+  it('runs or installs the published workspace CLI with each package manager', () => {
+    const ts = PORT_BY_SLUG.ts!
+    expect(ts.workspaceCliAvailability).toBe('published')
+    const cli = ts.packages?.find((entry) => entry.id === 'workspace')
+    expect(cli).toMatchObject({ name: '@libtmux/workspace-cli', executable: 'tmux-workspace' })
+    expect(cli?.installs?.map(({ label }) => label)).toEqual(['npx', 'bunx', 'pnpm dlx', 'yarn dlx', 'npm -g', 'pnpm -g', 'bun -g'])
+    expect(cli?.installs?.every(({ code }) => code.includes('@libtmux/workspace-cli'))).toBe(true)
   })
 })
 
