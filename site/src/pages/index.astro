@@ -2,7 +2,7 @@
 import { ALL_TRANSLATED, buildLocale } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import DocsLayout from '../layouts/DocsLayout.astro'
-import { PORTS, PORT_BY_SLUG, portPageUrl, primaryInstall, referenceUrl } from '../lib/ports'
+import { PORTS, PORT_BY_SLUG, portHomeUrl, portPageUrl, primaryInstall, referenceUrl } from '../lib/ports'
 import PortHero from '../components/PortHero.astro'
 import DocCard from '../components/DocCard.astro'
 import ApiReferences from '../components/ApiReferences.astro'
@@ -296,7 +296,7 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
           PORTS.map((p) => (
             <article class="flex min-w-0 flex-col rounded border border-edge p-4">
               <h3 class="font-semibold">
-                <a class="hover:underline" href={withPortRoot(`/${p.slug}/`)}>
+                <a class="hover:underline" href={portHomeUrl(p, defaultVersionFor(p.slug))}>
                   {p.name}
                 </a>
               </h3>
