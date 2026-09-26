@@ -737,10 +737,10 @@ const TAB_DEACTIVATE_RULE =
   'html[data-mcp-install-client] .lm-mcp-install__tab[data-tab-kind="client"][aria-selected="true"],' +
   'html[data-mcp-install-method] .lm-mcp-install__tab[data-tab-kind="method"][aria-selected="true"],' +
   'html[data-mcp-install-scope] .lm-mcp-install__tab[data-tab-kind="scope"][aria-selected="true"]' +
-  '{color:var(--lm-mcp-install-fg-muted);border-bottom-color:transparent;background:transparent}'
+  '{color:var(--lm-mcp-install-fg-muted);border-color:transparent;background:transparent}'
 
 const TAB_ACTIVE_DECL =
-  '{color:var(--lm-mcp-install-accent);border-bottom-color:var(--lm-mcp-install-accent);background:var(--lm-mcp-install-bg)}'
+  '{color:var(--lm-mcp-install-accent);border-color:var(--lm-mcp-install-accent);background:transparent}'
 
 const SCOPE_GROUP_ACTIVE_DECL = '{display:flex}'
 
