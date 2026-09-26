@@ -536,6 +536,23 @@ export const PORTS: readonly Port[] = [
     name: 'Go',
     language: 'Go',
     packageName: 'github.com/libtmux/libtmux-go/tmux',
+    packages: [
+      {
+        id: 'workspace',
+        name: 'github.com/libtmux/libtmux-go/workspace',
+        registry: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace',
+        require: 'github.com/libtmux/libtmux-go/workspace',
+        executable: 'tmux-workspace',
+        installs: [
+          {
+            label: 'go install',
+            lang: 'console',
+            code: 'go install github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace@latest',
+            note: 'Needs Go 1.26 or newer. Puts tmux-workspace in $(go env GOBIN), or in $(go env GOPATH)/bin when GOBIN is unset; rerunning it upgrades.',
+          },
+        ],
+      },
+    ],
     repo: 'libtmux/libtmux-go',
     checkout: '~/work/libtmux/libtmux-go',
     worktree: '~/work/libtmux/libtmux-go-docs',

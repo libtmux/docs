@@ -198,9 +198,7 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
               <a class="hover:underline" href={portPageUrl(versionRootPort, buildVersion, 'workspace')}>{DOC_PRODUCTS.workspace.label}</a>
               {' '}<code class="text-sm font-normal">{rootWorkspace.name}</code>
             </h3>
-            {rootWorkspace.executable && <p class="mt-1 text-sm text-muted">
-              Run <code>{rootWorkspace.executable}</code> without installing it, or install it to put it on <code>PATH</code>.
-            </p>}
+            <p class="mt-1 text-sm text-muted">The workspace package is separate from the core library.</p>
             <div class="mt-3">
               <PackageInstall ports={[versionRootPort.slug]} packageId="workspace" />
             </div>
