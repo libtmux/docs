@@ -60,6 +60,14 @@ const { label, body, href, external = false } = Astro.props as Props
     background: transparent;
   }
 
+  /* Placed inside an article, `.prose h3` would size and space the title as
+     a section heading. Pin it to what the card shows anywhere else. */
+  .doc-card h3 {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    margin: 0;
+  }
+
   .doc-card__body {
     margin-top: 0.25rem;
     font-size: 0.875rem;

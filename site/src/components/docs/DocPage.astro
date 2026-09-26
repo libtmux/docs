@@ -3,6 +3,7 @@ import { getCollection, render, type CollectionEntry } from 'astro:content'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import { docsPath } from '../../lib/docs-paths'
 import { PORT_BY_SLUG, hasPackageInstalls, productApiPath, productAvailable } from '../../lib/ports'
+import DocCard from '../DocCard.astro'
 import McpInstall from '../widgets/McpInstall.astro'
 import PackageInstall from '../widgets/PackageInstall.astro'
 import ProductApiIndex from '../api/ProductApiIndex.astro'
@@ -123,10 +124,9 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   product={entry.data.product}
   version={version}
   headings={placeholderLocale ? [] : [
+    ...(isMcpOverview || isWorkspaceOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
     ...headings,
     ...(isProductApi ? [{ depth: 2, slug: 'generated-api', text: 'API declarations' }] : []),
-    ...(isMcpOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
-    ...(isWorkspaceOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
   ]}
   pagePath={pagePath}
   noindex={entry.data.noindex || Boolean(placeholderLocale)}
@@ -221,7 +221,11 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   {!placeholderLocale && packageSource && <p class="text-sm opacity-75">
     <code>{packageSource.package}</code>{packageSource.version ? ` ${packageSource.version}` : ''} · <a href={`https://github.com/${packageSource.repo}/tree/${packageSource.revision}`}>Source</a>
   </p>}
-  {!placeholderLocale && <Content />}
+  {/*
+    Install first, then the way in, then the prose: a reader who landed on a
+    product overview came to get the thing, and the boxes are where they go
+    next. Both used to follow the whole page, below the fold.
+  */}
   {!placeholderLocale && isMcpOverview && port && (
     <>
       <h2 id="install">Install</h2>
@@ -243,6 +247,12 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
       </div>
     </>
   )}
+  {!placeholderLocale && entry.data.cards && (
+    <div class="not-prose mt-8 mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {entry.data.cards.map((card) => <DocCard href={card.href} label={card.label} body={card.body} />)}
+    </div>
+  )}
+  {!placeholderLocale && <Content />}
   {!placeholderLocale && entry.data.product && productIsAvailable && isProductApi &&
     <ProductApiIndex port={port!} product={entry.data.product} version={version ?? buildTarget(process.env).version} />}
 </DocsLayout>

@@ -45,6 +45,11 @@ const docs = defineCollection({
         group: z.string().optional(),
       })
       .optional(),
+    /**
+     * Boxes linking a product overview's main sections, shown under its
+     * install picker. `href` is relative to the page, as in its Markdown.
+     */
+    cards: z.array(z.object({ label: z.string(), href: z.string(), body: z.string() })).optional(),
     /** Suppress the on-page table of contents. */
     tableOfContents: z.boolean().default(true),
     /** Explicit canonical override; normally computed. */

@@ -260,6 +260,20 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     }
   })
 
+  it('opens a product overview with its install picker, then its section cards', async () => {
+    let checked = 0
+    for (const page of pages().filter((entry) => entry.section === '')) await inspect(page.path, (document) => {
+      const install = document.querySelector('article h2#install')
+      if (!install) return
+      checked++
+      expect(document.querySelector('article h2')?.id, `${page.path} install is the first section`).toBe('install')
+      for (const card of document.querySelectorAll('article .doc-card')) {
+        expect(install.compareDocumentPosition(card) & 4, `${page.path} cards follow install`).toBeTruthy()
+      }
+    })
+    expect(checked, 'overviews with an install picker').toBeGreaterThan(0)
+  })
+
   it('distinguishes unfinished products and groups workspace implementation docs under Internals', async () => {
     for (const page of pages()) await inspect(page.path, (document) => {
       const port = PORTS.find((entry) => entry.slug === page.port)!

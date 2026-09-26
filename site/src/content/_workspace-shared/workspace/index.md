@@ -6,6 +6,25 @@ sidebar:
   label: Overview
   order: 0
 tableOfContents: true
+cards:
+  - label: Command reference
+    href: ./cli/
+    body: Every command, flag and compatibility target.
+  - label: Configuration
+    href: ./configuration/
+    body: Workspace fields, normalization and execution.
+  - label: Install and load
+    href: ./guides/installation/
+    body: Load a workspace on a private socket, then capture it.
+  - label: Example gallery
+    href: ./examples/gallery/
+    body: Workspace files to start from, with their prerequisites.
+  - label: Compatibility
+    href: ./reference/compatibility/
+    body: What is implemented, and where it differs from tmuxp.
+  - label: Internals
+    href: ./internals/
+    body: The workspace library, for building sessions from code.
 ports:
   py:
     title: "Workspace Manager for Python"

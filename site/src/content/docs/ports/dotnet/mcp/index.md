@@ -6,6 +6,22 @@ product: mcp
 sidebar:
   label: Overview
   order: 0
+cards:
+  - label: Tools
+    href: ./tools/
+    body: Every MCP operation, with its arguments and results.
+  - label: Guides
+    href: ./guides/
+    body: Install the tool and choose a socket.
+  - label: Topics
+    href: ./topics/
+    body: Toolsets, command waits, and capability discovery.
+  - label: Examples
+    href: ./examples/
+    body: List sessions and run a bounded command.
+  - label: Language API
+    href: ./reference/
+    body: Embedding and implementation types.
 ---
 
 `LibTmux.Mcp` is a .NET tool package whose executable is
@@ -16,14 +32,7 @@ The tool targets .NET 8 and .NET 10 and requires a POSIX host with tmux.
 Its registered operations include `capture_pane`, `run_shell_command`,
 and `capture_since`.
 
-## Start here
-
-- [Install](#install) points an MCP client at this server.
-- [Tools](./tools/) lists the MCP operations, arguments, and results.
-- [Guides](./guides/) install the tool and choose a socket.
-- [Topics](./topics/) explain toolsets, command waits, and capability discovery.
-- [Examples](./examples/) list sessions and run a bounded command.
-- [Language API](./reference/) documents embedding and implementation types.
+## Toolsets
 
 Use `LIBTMUX_TOOLSETS=inspect` for discovery and terminal reads.
 Additional toolsets enable changes, execution, and teardown.
