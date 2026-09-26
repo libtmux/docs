@@ -1,9 +1,8 @@
 ---
 import { Code } from 'astro-expressive-code/components'
 import { highlightInline } from '../../lib/highlight'
-import { PORTS, referenceUrl, type PortPackageId } from '../../lib/ports'
+import { PORTS, portHomeUrl, referenceUrl, type PortPackageId } from '../../lib/ports'
 import type { Quickstart } from '../../lib/quickstarts'
-import { withPortRoot } from '../../lib/site-root'
 import { defaultVersionFor } from '../../lib/versions'
 
 /**
@@ -184,7 +183,7 @@ const installHtml = new Map(
           ))}
           {snippets && (
             <p class="lm-pkg-install__links">
-              <a href={withPortRoot(`/${p.slug}/`)}>{p.name} documentation</a>
+              <a href={portHomeUrl(p, defaultVersionFor(p.slug))}>{p.name} documentation</a>
               <a href={referenceUrl(p, defaultVersionFor(p.slug))}>{p.name} API reference</a>
             </p>
           )}

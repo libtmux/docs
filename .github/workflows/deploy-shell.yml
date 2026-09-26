@@ -137,6 +137,7 @@ jobs:
           # holds it at a path publish-root can name without depending on how
           # upload-artifact roots a multi-path upload.
           cp scripts/publish-root.sh publish-root.sh
+          cp scripts/publish-default-versions.sh publish-default-versions.sh
           cp scripts/merge-version-manifests.mjs merge-version-manifests.mjs
           cat reserved-prefixes.txt
 
@@ -156,6 +157,7 @@ jobs:
             reserved-products.txt
             shell-paths.json
             publish-root.sh
+            publish-default-versions.sh
             merge-version-manifests.mjs
           retention-days: 1
 
@@ -275,11 +277,30 @@ jobs:
           set -euo pipefail
           node scripts/publication-metadata.mjs
           cp scripts/publish-root.sh publish-root.sh
+          cp scripts/publish-default-versions.sh publish-default-versions.sh
           mv "_site/$LOCALE" dist
           mkdir bin
-          printf '%s\n' '#!/usr/bin/env bash' 'printf "aws"; printf " %q" "$@"; printf "\\n"' > bin/aws
+          # Prints each call, and answers the two store reads the
+          # default-version publisher parses.
+          cat > bin/aws <<'SH'
+          #!/usr/bin/env bash
+          case "$2" in
+            describe-key-value-store) echo '{"ETag":"dry-run"}' ;;
+            list-keys) echo '{"Items":[]}' ;;
+            *) printf 'aws'; printf ' %q' "$@"; printf '\n' ;;
+          esac
+          SH
           chmod +x bin/aws
           PATH="$PWD/bin:$PATH" bash publish-root.sh
+
+      # Against the build's own versions.json: a preview merges no published
+      # fragments.
+      - name: Exercise the default-version publisher against the preview assembly
+        env:
+          KVS_ARN: reproduction
+        run: |
+          set -euo pipefail
+          PATH="$PWD/bin:$PATH" bash publish-default-versions.sh
 
   check-publish:
     if: github.event_name != 'pull_request'
@@ -311,9 +332,26 @@ jobs:
           # A recording stand-in: the run must reach the same decisions it
           # would in production, and upload nothing while doing so.
           mkdir bin
-          printf '%s\n' '#!/usr/bin/env bash' 'printf "aws"; printf " %q" "$@"; printf "\\n"' > bin/aws
+          # Prints each call, and answers the two store reads the
+          # default-version publisher parses.
+          cat > bin/aws <<'SH'
+          #!/usr/bin/env bash
+          case "$2" in
+            describe-key-value-store) echo '{"ETag":"dry-run"}' ;;
+            list-keys) echo '{"Items":[]}' ;;
+            *) printf 'aws'; printf ' %q' "$@"; printf '\n' ;;
+          esac
+          SH
           chmod +x bin/aws
           PATH="$PWD/bin:$PATH" bash scripts/publish-root.sh
+
+      - name: Exercise the default-version publisher without uploading
+        if: matrix.locale == 'en'
+        env:
+          KVS_ARN: reproduction
+        run: |
+          set -euo pipefail
+          PATH="$PWD/bin:$PATH" bash scripts/publish-default-versions.sh
 
   publish-root:
     needs: [locales, build, check-publish]
@@ -367,6 +405,14 @@ jobs:
           BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
           LOCALE: ${{ matrix.locale }}
         run: bash publish-root.sh
+
+      # One leg: a row is keyed by port, not locale. LIBTMUX_DOCS_KVS_ARN is
+      # the Terraform `key_value_store_arn` output.
+      - name: Publish each port's default-version row
+        if: matrix.locale == 'en'
+        env:
+          KVS_ARN: ${{ secrets.LIBTMUX_DOCS_KVS_ARN }}
+        run: bash publish-default-versions.sh
 
       # Only the two entry points, and only because they are the pages a
       # person checks first after a deploy. Everything else is written with

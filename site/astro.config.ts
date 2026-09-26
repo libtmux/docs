@@ -85,6 +85,12 @@ const isWorkspaceRedirect = (page: string): boolean => {
   return Boolean(port && (match![2] === 'api' || !port.workspaceCli))
 }
 
+/** `/<locale>/<port>/` itself: a `noindex` redirect, not the tree beneath it. */
+const isPortRoot = (page: string): boolean => {
+  const segments = new URL(page).pathname.replace(/^\/+|\/+$/g, '').split('/')
+  return segments.length === 2 && Boolean(PORT_BY_SLUG[segments[1]])
+}
+
 const isRootBuild = !env.LIBTMUX_DOCS_PORT
 const wantSitemap = isDefaultBuild && isRootBuild && versionKind !== 'pr'
 
@@ -109,7 +115,8 @@ export default defineConfig({
       ? [
           sitemap({
             filter: (page) =>
-              !page.includes('/pr-') && !page.includes('/demo') && !isPlaceholder(page) && !isWorkspaceRedirect(page),
+              !page.includes('/pr-') && !page.includes('/demo') && !isPlaceholder(page) &&
+              !isWorkspaceRedirect(page) && !isPortRoot(page),
           }),
         ]
       : []),

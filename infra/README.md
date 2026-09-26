@@ -94,6 +94,8 @@ publishes a version prefix:
 
 ```
 py:default     -> "stable"
+ruby:default   -> "latest"
+lua:default    -> "latest"
 ts:default     -> "stable"
 rs:default     -> "latest"
 go:default     -> "latest"
@@ -103,17 +105,12 @@ cxx:default    -> "stable"
 swift:default  -> "stable"
 ```
 
-All eight. rs, go and java were excluded until 2026-09-06, on the grounds
-that nothing published an `rs/<version>/` prefix for a row to point at — a
-row with no target 302s a reader to a 404, which is worse than the miss it
-replaces. That reasoning was about the *reference*, which for those three
-lives on docs.rs, pkg.go.dev and javadoc.io. Their versioned prose tree is
-built and linked exactly like every other port's, so once they publish it the
-bare port root should reach it.
+Every port gets a row: every port publishes a versioned prose tree, including
+the ports whose reference lives on docs.rs, pkg.go.dev or javadoc.io.
 
-A miss is still handled gracefully: the function falls through to the
-directory-index rule and serves the landing page already at that prefix, so a
-port that has not published yet degrades rather than breaks. The traced table
+A miss falls through to the directory-index rule and serves
+`/en/<port>/index.html`, a `noindex` meta-refresh page the shell builds to
+the same default (`site/src/pages/[port]/index.astro`). The traced table
 below records that path.
 
 The key is the port slug, never the locale: the redirect is only reachable
@@ -124,13 +121,19 @@ port to the same version, so a per-locale key would be the same value written
 This mirrors `versions.ts`'s `VersionManifest.defaultVersion` — a
 `Record<portSlug, versionSlug>` — for the ports it covers; it exists in the KVS at all
 only because a CloudFront Function cannot read `/versions.json` off the
-origin at request time. Whichever pipeline publishes a new default version
-writes the matching key with `cloudfront-keyvaluestore update-keys
---if-match <etag>` (the `--if-match`, from `describe-key-value-store` first,
-guards against two deploys racing the same store). AWS documents no
-propagation-delay SLA between that write and a running function observing
-the new value — nothing in this repo states a number for it, and nothing
-should.
+origin at request time. The shell's `publish-root` job writes the rows
+(`scripts/publish-default-versions.sh`) from `dist/versions.json` after
+merging every port's published fragment, the one place that holds every
+port's default. It diffs the store's `list-keys` against the manifest and
+writes only changed rows with `update-keys --if-match <etag>`, so two
+deploys racing the store fail rather than overwrite each other. AWS
+documents no propagation-delay SLA between that write and a running function
+observing the new value.
+
+The step reads the store's ARN from the `LIBTMUX_DOCS_KVS_ARN` secret, the
+Terraform `key_value_store_arn` output. While the secret is unset it warns
+and skips; once set, a store it cannot read or write fails the deploy, since
+an empty store degrades every port root without any other signal.
 
 The KVS holds **only** these bare-root pointers, never a rewrite target for
 an already-qualified `/<port>/<version>/...` path. DocC bakes an absolute
@@ -145,8 +148,8 @@ then redirect, then bare-root" would suggest.
 
 Limits, all enforced by the service rather than by anything in this repo:
 key ≤ 512 B, value ≤ 1 KB, store ≤ 5 MB, `update-keys` batch ≤ 50 keys / 3 MB,
-one KVS per function. Eight ports at a handful of bytes each is nowhere near
-any of these.
+one KVS per function. A row per port at a handful of bytes each is nowhere
+near any of these.
 
 ## Cloudflare's role
 
@@ -165,7 +168,7 @@ Cache-Control split.
 ## Viewer-request rules
 
 Traced by hand against the rules in `cloudfront-function.js`, in order. "port"
-means any of the eight slugs in `ports.ts`; the function itself has no list of
+means any slug in `ports.ts`; the function itself has no list of
 them and trusts the KeyValueStore lookup to miss for anything that is not one.
 
 | Request URI | Rule that fires | Result |
@@ -174,7 +177,7 @@ them and trusts the KeyValueStore lookup to miss for anything that is not one.
 | `/en/` | 2 (directory index) | rewrite to `/en/index.html` |
 | `/en/py` | 1 (KVS, `parts[3]` undefined) | 302 to `/en/py/stable/`, or whatever `py:default` holds |
 | `/en/py/` | 1 (KVS, `parts[3]` empty) | 302 to `/en/py/stable/` |
-| `/en/rs` | 1 (KVS) | 302 to `/en/rs/latest/`, or whatever `rs:default` holds. Every port has a row since 2026-09-06; before a port's first publish the lookup misses and rule 3 serves `/en/rs/` instead |
+| `/en/rs` | 1 (KVS) | 302 to `/en/rs/latest/`, or whatever `rs:default` holds. When the row is missing, rule 3 301s to `/en/rs/` and rule 2 serves its redirect page |
 | `/en/py/stable` | 3 (extensionless) | 301 to `/en/py/stable/` |
 | `/en/py/latest` | 3 | 301 to `/en/py/latest/`, never the KVS default — `parts[3]` is truthy |
 | `/en/py/v0.46.2` | 3 (`2` is not an asset extension) | 301 to `/en/py/v0.46.2/` |

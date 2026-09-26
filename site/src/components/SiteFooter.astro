@@ -1,9 +1,10 @@
 ---
 import type { Locale } from '../i18n/locales'
 import { t } from '../i18n/ui'
-import { PORTS } from '../lib/ports'
+import { PORTS, portHomeUrl } from '../lib/ports'
 import { rawSourceUrl, type PageSource } from '../lib/markdown-twins'
-import { withPortRoot, withRoot } from '../lib/site-root'
+import { withRoot } from '../lib/site-root'
+import { defaultVersionFor } from '../lib/versions'
 
 /**
  * The shared footer. Its last line is the one gp-sphinx gives every page of
@@ -33,7 +34,7 @@ const { locale, source, markdownHref, llmsRoot, githubRepo, flush = false } = As
     <ul class="flex flex-wrap gap-x-4 gap-y-1">
       {PORTS.map((p) => (
         <li>
-          <a class="hover:underline" href={withPortRoot(`/${p.slug}/`)}>{p.name}</a>
+          <a class="hover:underline" href={portHomeUrl(p, defaultVersionFor(p.slug))}>{p.name}</a>
         </li>
       ))}
       <li><a class="hover:underline" href={withRoot('/third-party-notices/')}>Third-party notices</a></li>
