@@ -409,9 +409,19 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
   dotnet: {
     port: 'dotnet',
     package: 'LibTmux.Mcp',
-    methods: [{ id: 'tool', label: '.NET tool', docUrl: null }],
+    methods: [
+      { id: 'dnx', label: 'dnx', docUrl: null },
+      { id: 'tool', label: '.NET tool', docUrl: null },
+    ],
     cooldowns: NO_COOLDOWN,
-    resolve() {
+    resolve(method) {
+      if (method.id === 'dnx') {
+        return {
+          command: 'dnx',
+          args: ['LibTmux.Mcp', '--prerelease', '--yes'],
+          note: 'Runs the server from NuGet without installing it; needs the .NET 10 SDK. Write LibTmux.Mcp@<version> to pin a version.',
+        }
+      }
       return {
         command: 'libtmux-mcp',
         args: [],

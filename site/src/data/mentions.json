@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-26T18:30:14.813Z",
+ "generated": "2026-09-26T20:00:42.094Z",
  "mentions": [
   {
    "port": "cxx",
@@ -7974,13 +7974,6 @@
    "text": "~/.dotnet/tools",
    "page": "/dotnet/latest/workspace/guides/installation/",
    "line": 28,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "dotnet",
-   "text": "LibTmux.Workspace.Cli",
-   "page": "/dotnet/latest/workspace/",
-   "line": 21,
    "why": "not defined in the stated port"
   },
   {

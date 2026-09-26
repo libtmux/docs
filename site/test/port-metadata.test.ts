@@ -33,7 +33,7 @@ describe('Ruby port metadata', () => {
   })
 
   it('offers the workspace install picker only for a published companion package', () => {
-    expect(PORTS.filter((port) => hasPackageInstalls(port, 'workspace')).map((port) => port.slug)).toEqual(['ruby'])
+    expect(PORTS.filter((port) => hasPackageInstalls(port, 'workspace')).map((port) => port.slug)).toEqual(['ruby', 'dotnet'])
   })
 })
 

@@ -602,6 +602,35 @@ export const PORTS: readonly Port[] = [
       prerelease: { code: 'dotnet add package LibTmux --version {version}', lang: 'console' },
       git: { code: 'dotnet add reference ../libtmux-dotnet/src/LibTmux/LibTmux.csproj', lang: 'console' },
     },
+    packages: [
+      {
+        id: 'workspace',
+        name: 'LibTmux.Workspace.Cli',
+        registry: 'https://www.nuget.org/packages/LibTmux.Workspace.Cli',
+        require: 'LibTmux.Workspace',
+        executable: 'tmux-workspace',
+        installs: [
+          {
+            label: 'dotnet tool',
+            lang: 'console',
+            code: 'dotnet tool install --global LibTmux.Workspace.Cli --prerelease',
+            note: '--prerelease is required: every release so far carries an -alpha tag. Add $HOME/.dotnet/tools to PATH if the shell cannot find tmux-workspace.',
+          },
+          {
+            label: 'dnx',
+            lang: 'console',
+            code: 'dnx LibTmux.Workspace.Cli --prerelease --yes -- --help',
+            note: 'Runs it once from NuGet without installing anything; needs the .NET 10 SDK.',
+          },
+          {
+            label: 'Tool manifest',
+            lang: 'console',
+            code: 'dotnet tool install LibTmux.Workspace.Cli --prerelease',
+            note: 'Run at a repository root: it writes dotnet-tools.json, which pins the version for everyone who clones it. Run it as dotnet tmux-workspace.',
+          },
+        ],
+      },
+    ],
   },
   {
     slug: 'cxx',

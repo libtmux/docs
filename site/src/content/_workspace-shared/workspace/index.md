@@ -136,17 +136,10 @@ do not implement 88-color mode. Without `-2`, tmux detects color support.
 <!-- port:ts -->[TypeScript repository](https://github.com/libtmux/libtmux-ts)<!-- /port --><!-- port:rs -->[Rust repository](https://github.com/libtmux/libtmux-rs)<!-- /port --><!-- port:go -->[Go repository](https://github.com/libtmux/libtmux-go)<!-- /port --><!-- port:java -->[Java repository](https://github.com/libtmux/libtmux-java)<!-- /port --><!-- port:cxx -->[C++ repository](https://github.com/libtmux/libtmux-cxx)<!-- /port --><!-- port:swift -->[Swift repository](https://github.com/libtmux/libtmux-swift)<!-- /port -->. It builds
 the native command and loads a small workspace on a private socket. After
 building, inspect the command without starting tmux:
-<!-- /port --><!-- port:dotnet -->Install the `LibTmux.Workspace.Cli` prerelease from NuGet:
-
-```console
-$ dotnet tool install \
-    --global \
-    --prerelease \
-    LibTmux.Workspace.Cli
-```
-
-The [installation walkthrough](./guides/installation/) loads a small workspace
-on a private socket. Inspect the command without starting tmux:
+<!-- /port --><!-- port:dotnet -->Install `tmux-workspace` from NuGet with any method under
+[Install](#install). The [installation walkthrough](./guides/installation/)
+loads a small workspace on a private socket. Inspect the command without
+starting tmux:
 <!-- /port -->
 ```console
 <!-- port:ts -->$ node packages/workspace-cli/dist/main.js --help<!-- /port --><!-- port:rs -->$ target/release/tmux-workspace --help<!-- /port --><!-- port:go -->$ ./tmux-workspace --help<!-- /port --><!-- port:java -->$ workspace-cli/build/install/tmux-workspace/bin/tmux-workspace --help<!-- /port --><!-- port:dotnet -->$ tmux-workspace --help<!-- /port --><!-- port:cxx -->$ build/cxx-dev/apps/workspace/tmux-workspace --help<!-- /port --><!-- port:swift -->$ .build/debug/tmux-workspace --help<!-- /port -->
