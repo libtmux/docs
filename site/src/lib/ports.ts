@@ -128,7 +128,12 @@ export interface Port {
   productAvailability?: Partial<Record<DocProduct, ProductAvailability>>
   /** Separately published packages whose APIs belong in this port's docs. */
   packages?: readonly PortPackage[]
-  workspaceCliAvailability?: 'local' | 'released'
+  /**
+   * `local` builds from a source checkout; `published` installs a prerelease
+   * from the registry but is still in development on the shared native
+   * pages; `released` is a finished loader with its own authored pages.
+   */
+  workspaceCliAvailability?: 'local' | 'published' | 'released'
   /**
    * How this port writes its version tags. Python follows PEP 440, which
    * attaches a suffix with no separator and has post-releases; the rest
@@ -568,7 +573,7 @@ export const PORTS: readonly Port[] = [
   {
     slug: 'dotnet',
     workspaceCli: 'tmux-workspace load',
-    workspaceCliAvailability: 'local',
+    workspaceCliAvailability: 'published',
     name: '.NET',
     language: 'C#',
     packageName: 'LibTmux',
@@ -738,11 +743,19 @@ export function productInDevelopment(port: Port, product: DocProduct): boolean {
   return product === 'mcp' || port.workspaceCliAvailability !== 'released'
 }
 
-/** Returns the local workspace notice; released or unavailable CLIs have none. */
+/** Returns the in-development workspace notice; released or unavailable CLIs have none. */
 export function workspaceOverviewNotice(port: Port): { title: string; body: string } | undefined {
+  const title = `Workspace Manager for ${port.name} is in development.`
+  if (port.workspaceCliAvailability === 'published') {
+    return {
+      title,
+      body: `The \`tmux-workspace\` CLI is published to ${port.registry?.name ?? 'the package registry'} `
+        + 'as a prerelease. Its command and configuration coverage is partial.',
+    }
+  }
   if (port.workspaceCliAvailability !== 'local') return undefined
   return {
-    title: `Workspace Manager for ${port.name} is in development.`,
+    title,
     body: 'The local `workspace-cli` checkout contains a `tmux-workspace` CLI with native services. '
       + 'This implementation is partial and unreleased; published library packages do '
       + 'not provide this local CLI checkpoint.',
@@ -754,6 +767,8 @@ export function productDescription(port: Port, product: DocProduct): string {
   if (product === 'workspace') {
     if (port.workspaceCliAvailability === 'local')
       return `The local workspace-cli worktree provides ${port.workspaceCli}. Command and configuration coverage is incomplete.`
+    if (port.workspaceCliAvailability === 'published')
+      return `The published prerelease provides ${port.workspaceCli}. Command and configuration coverage is incomplete.`
     return port.workspaceCli
       ? `Load workspace configuration files with ${port.workspaceCli}.`
       : 'In development. Workspace builder internals; no workspace loader CLI.'

@@ -2,7 +2,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
-import { PORTS, productAvailable, productDescription, productInDevelopment } from '../src/lib/ports'
+import { PORTS, productAvailable, productDescription, productInDevelopment, workspaceOverviewNotice, type Port } from '../src/lib/ports'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
 import { SITE_BUILT, SITE_PREFIX, publishedPath, sitePath } from './site-root'
 
@@ -44,13 +44,17 @@ it('advertises local native loaders while retaining their development status', (
   // Ruby ships its own released `libtmux-workspace load` and published MCP
   // gem, and Lua has neither product at all: both fall outside the
   // py-vs-generic-local-CLI dichotomy this test covers.
-  for (const port of PORTS.filter((p) => p.slug === 'py' || p.workspaceCliAvailability === 'local')) {
-    const native = port.slug !== 'py'
-    expect(port.workspaceCli).toBe(native ? 'tmux-workspace load' : 'tmuxp load')
-    expect(port.workspaceCliAvailability).toBe(native ? 'local' : 'released')
-    expect(productInDevelopment(port, 'workspace')).toBe(native)
+  const native = (p: Port) => p.workspaceCliAvailability === 'local' || p.workspaceCliAvailability === 'published'
+  for (const port of PORTS.filter((p) => p.slug === 'py' || native(p))) {
+    expect(port.workspaceCli).toBe(native(port) ? 'tmux-workspace load' : 'tmuxp load')
+    if (!native(port)) expect(port.workspaceCliAvailability).toBe('released')
+    expect(productInDevelopment(port, 'workspace')).toBe(native(port))
     expect(productInDevelopment(port, 'mcp')).toBe(true)
-    if (native) expect(productDescription(port, 'workspace')).toContain('local workspace-cli worktree')
+    if (port.workspaceCliAvailability === 'local') expect(productDescription(port, 'workspace')).toContain('local workspace-cli worktree')
+    if (port.workspaceCliAvailability === 'published') {
+      expect(productDescription(port, 'workspace')).toContain('published prerelease')
+      expect(workspaceOverviewNotice(port)?.body).not.toMatch(/unreleased|local/)
+    }
   }
 })
 
@@ -289,7 +293,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           .find((text) => /in development/i.test(text))
         expect(status, `${page.path} development status`).toBeDefined()
         const article = document.querySelector('article')!.textContent
-        expect(article, `${page.path} local CLI worktree`).toContain('workspace-cli')
+        if (port.workspaceCliAvailability === 'local') expect(article, `${page.path} local CLI worktree`).toContain('workspace-cli')
         expect(article, `${page.path} native CLI`).toContain('tmux-workspace')
         expect(article.match(/is in development/gi), `${page.path} states maturity once`).toHaveLength(1)
         const upstream = [...document.querySelectorAll('article a[href]')]

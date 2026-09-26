@@ -17,7 +17,7 @@ ports:
   java:
     description: Build the local Java workspace CLI and load a session on a private tmux socket.
   dotnet:
-    description: Build the local .NET workspace CLI and load a session on a private tmux socket.
+    description: Install the prerelease .NET workspace CLI from NuGet and load a session on a private tmux socket.
   cxx:
     description: Build the local C++ workspace CLI and load a session on a private tmux socket.
   swift:
@@ -30,20 +30,26 @@ extensions are labeled separately.
 <!-- /port --><!-- port:rs -->Build and run the native Rust `tmux-workspace` command from the local
 <!-- /port --><!-- port:go -->Build and run the native Go `tmux-workspace` command from the local
 <!-- /port --><!-- port:java -->Build and run the native Java `tmux-workspace` command from the local
-<!-- /port --><!-- port:dotnet -->Build and run the native .NET `tmux-workspace` command from the local
+<!-- /port --><!-- port:dotnet -->Install and run the native .NET `tmux-workspace` command from its NuGet
+prerelease, `LibTmux.Workspace.Cli`. **This is a partial, prerelease
+implementation.**
 <!-- /port --><!-- port:cxx -->Build and run the native C++ `tmux-workspace` command from the local
 <!-- /port --><!-- port:swift -->Build and run the native Swift `tmux-workspace` command from the local
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->`workspace-cli` checkout. **This is a partial, unreleased implementation.**
+<!-- /port --><!-- port:ts,rs,go,java,cxx,swift -->`workspace-cli` checkout. **This is a partial, unreleased implementation.**
 These commands require that local source; they are not registry installation
 instructions or a claim that the CLI is available on the published branch.
 <!-- /port -->
 <!-- port:py -->The runnable terminal loader is the separate Python application tmuxp. Its
 documented prerequisites are Python 3.10 or newer and tmux 3.2 or newer. Install
 it in an isolated tool environment with uv:
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->## Build from the local checkout
+<!-- /port --><!-- port:ts,rs,go,java,cxx,swift -->## Build from the local checkout
 
 Run these commands from the native repository root. Use a Unix environment
 with tmux 3.2a or newer on `PATH` for this walkthrough.
+
+<!-- /port --><!-- port:dotnet -->## Install from NuGet
+
+Use a Unix environment with tmux 3.2a or newer on `PATH` for this walkthrough.
 
 <!-- /port --><!-- port:ts -->Use the Bun version in the checkout's `packageManager` field to install dependencies
 and build. Run the result with Node.js 22 or newer, or Bun 1.3.14 or newer. Build the core before the
@@ -58,12 +64,10 @@ Build from the repository root so its Go workspace selects the local modules.
 <!-- /port --><!-- port:java -->Use JDK 21 or newer and the repository's Gradle wrapper. The local
 application distribution includes its Java dependencies and needs Java on
 `PATH`, or `JAVA_HOME` set to a compatible JDK.
-<!-- /port --><!-- port:dotnet -->Use the .NET SDK selected by the checkout's
-[global.json](https://github.com/libtmux/libtmux-dotnet/blob/master/global.json),
-currently SDK 10.0.302. The local tool targets .NET 8 and .NET 10 on Unix.
-The tool installation below needs a compatible .NET runtime.
-For an SDK outside the platform's default installation location, set
-`DOTNET_ROOT` to that installation directory before running the tool.
+<!-- /port --><!-- port:dotnet -->Installing needs the .NET SDK 8 or newer. The tool runs on the .NET 8 or
+.NET 10 runtime on Unix. For an SDK outside the platform's default
+installation location, set `DOTNET_ROOT` to that installation directory
+before running the tool.
 <!-- /port --><!-- port:cxx -->The development preset requires Clang 18.1.3 with libc++ 18.1, CMake 3.25 or
 newer, and Ninja. It builds C++23 and fetches pinned optional CLI dependencies.
 Core libtmux remains independent of CLI11, yaml-cpp and nlohmann JSON.
@@ -87,10 +91,10 @@ builds can omit it.
 <!-- /port --><!-- port:java -->$ ./gradlew :workspace-cli:installDist \
     --max-workers=2 \
     --no-parallel
-<!-- /port --><!-- port:dotnet -->$ dotnet pack src/LibTmux.Workspace.Cli/LibTmux.Workspace.Cli.csproj \
-    --configuration Release \
-    --output artifacts/packages \
-    -m:2
+<!-- /port --><!-- port:dotnet -->$ dotnet tool install \
+    --global \
+    --prerelease \
+    LibTmux.Workspace.Cli
 <!-- /port --><!-- port:cxx -->$ cmake --preset cxx-dev \
     -DLIBTMUX_BUILD_WORKSPACE_CLI=ON
 <!-- /port --><!-- port:swift -->$ swift build \
@@ -100,16 +104,12 @@ builds can omit it.
     --product tmux-workspace
 <!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->```
 
-<!-- /port --><!-- port:ts,dotnet,cxx -->```console
+<!-- /port --><!-- port:ts,cxx -->```console
 <!-- /port --><!-- port:ts -->$ bun run --cwd packages/libtmux build
-<!-- /port --><!-- port:dotnet -->$ dotnet tool install LibTmux.Workspace.Cli \
-    --tool-path artifacts/tools \
-    --add-source artifacts/packages \
-    --prerelease
 <!-- /port --><!-- port:cxx -->$ cmake --build --preset cxx-dev \
     --target tmux-workspace \
     --parallel 2
-<!-- /port --><!-- port:ts,dotnet,cxx -->```
+<!-- /port --><!-- port:ts,cxx -->```
 
 <!-- /port --><!-- port:ts -->```console
 $ bun run --cwd packages/workspace-cli build
@@ -132,10 +132,10 @@ is created or changed.
 <!-- /port --><!-- port:java -->Keep the generated distribution together: its launcher uses libraries
 beside it. This local application distribution is separate from published
 Java library artifacts.
-<!-- /port --><!-- port:dotnet -->The first command creates a local tool package; the second installs from
-that package directory. These instructions do not claim a published CLI
-package. Installed-package acceptance still needs to be repeated after the
-latest lifecycle corrections.
+<!-- /port --><!-- port:dotnet -->`--prerelease` is required: every release so far carries an `-alpha` tag,
+and NuGet skips those unless asked. A global tool installs into
+`~/.dotnet/tools`; add that directory to `PATH` if the SDK reports it
+missing.
 <!-- /port --><!-- port:cxx -->Use `load -d` for the detached workflow below. The CLI rejects unsupported
 legacy `-8` before file or backend access; `-2` selects 256-colour mode.
 Several other planned commands/options appear in help with explicit
@@ -145,14 +145,14 @@ walkthrough supplies one with `-S`. A copied Linux executable still needs the
 Swift runtime libraries supplied by its toolchain; it is not a standalone
 distribution.
 <!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->
-Inspect the built command:
+Inspect the <!-- port:ts,rs,go,java,cxx,swift -->built<!-- /port --><!-- port:dotnet -->installed<!-- /port --> command:
 
 ```console
 <!-- /port --><!-- port:ts -->$ node packages/workspace-cli/dist/main.js --help
 <!-- /port --><!-- port:rs -->$ target/release/tmux-workspace --help
 <!-- /port --><!-- port:go -->$ ./tmux-workspace --help
 <!-- /port --><!-- port:java -->$ workspace-cli/build/install/tmux-workspace/bin/tmux-workspace --help
-<!-- /port --><!-- port:dotnet -->$ artifacts/tools/tmux-workspace --help
+<!-- /port --><!-- port:dotnet -->$ tmux-workspace --help
 <!-- /port --><!-- port:cxx -->$ build/cxx-dev/apps/workspace/tmux-workspace --help
 <!-- /port --><!-- port:swift -->$ .build/debug/tmux-workspace --help
 <!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->```
@@ -189,7 +189,7 @@ Load detached on the temporary socket. The JSON result describes the load;
 <!-- /port --><!-- port:rs -->$ target/release/tmux-workspace load \
 <!-- /port --><!-- port:go -->$ ./tmux-workspace load \
 <!-- /port --><!-- port:java -->$ workspace-cli/build/install/tmux-workspace/bin/tmux-workspace load \
-<!-- /port --><!-- port:dotnet -->$ artifacts/tools/tmux-workspace load \
+<!-- /port --><!-- port:dotnet -->$ tmux-workspace load \
 <!-- /port --><!-- port:cxx -->$ build/cxx-dev/apps/workspace/tmux-workspace load \
 <!-- /port --><!-- port:swift -->$ .build/debug/tmux-workspace load \
 <!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->    -S "$WORKSPACE_TMP/tmux.sock" \
@@ -224,7 +224,7 @@ without choosing a file destination:
 <!-- /port --><!-- port:rs -->$ target/release/tmux-workspace freeze \
 <!-- /port --><!-- port:go -->$ ./tmux-workspace freeze \
 <!-- /port --><!-- port:java -->$ workspace-cli/build/install/tmux-workspace/bin/tmux-workspace freeze \
-<!-- /port --><!-- port:dotnet -->$ artifacts/tools/tmux-workspace freeze \
+<!-- /port --><!-- port:dotnet -->$ tmux-workspace freeze \
 <!-- /port --><!-- port:cxx -->$ build/cxx-dev/apps/workspace/tmux-workspace freeze \
 <!-- /port --><!-- port:swift -->$ .build/debug/tmux-workspace freeze \
 <!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->    -S "$WORKSPACE_TMP/tmux.sock" \

@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-26T10:30:26.319Z",
+ "generated": "2026-09-26T18:30:14.813Z",
  "mentions": [
   {
    "port": "cxx",
@@ -7960,6 +7960,27 @@
    "text": "YAMLWorkspaces",
    "page": "/swift/latest/workspace/configuration/",
    "line": 98,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "dotnet",
+   "text": "LibTmux.Workspace.Cli",
+   "page": "/dotnet/latest/workspace/guides/installation/",
+   "line": 7,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "dotnet",
+   "text": "~/.dotnet/tools",
+   "page": "/dotnet/latest/workspace/guides/installation/",
+   "line": 28,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "dotnet",
+   "text": "LibTmux.Workspace.Cli",
+   "page": "/dotnet/latest/workspace/",
+   "line": 21,
    "why": "not defined in the stated port"
   },
   {
