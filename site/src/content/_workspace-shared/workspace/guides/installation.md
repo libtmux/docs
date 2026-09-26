@@ -9,7 +9,7 @@ tableOfContents: true
 title: Install and load a workspace
 ports:
   ts:
-    description: Build the local TypeScript workspace CLI and load a session on a private tmux socket.
+    description: Install the prerelease TypeScript workspace CLI from npm and load a session on a private tmux socket.
   rs:
     description: Build the local Rust workspace CLI and load a session on a private tmux socket.
   go:
@@ -26,7 +26,9 @@ ports:
 
 <!-- port:py -->This page documents the available Python tmuxp reference. Proposed native
 extensions are labeled separately.
-<!-- /port --><!-- port:ts -->Build and run the native TypeScript `tmux-workspace` command from the local
+<!-- /port --><!-- port:ts -->Install and run the native TypeScript `tmux-workspace` command from its npm
+prerelease, `@libtmux/workspace-cli`. **This is a partial, prerelease
+implementation.**
 <!-- /port --><!-- port:rs -->Build and run the native Rust `tmux-workspace` command from the local
 <!-- /port --><!-- port:go -->Build and run the native Go `tmux-workspace` command from the local
 <!-- /port --><!-- port:java -->Build and run the native Java `tmux-workspace` command from the local
@@ -35,25 +37,26 @@ prerelease, `LibTmux.Workspace.Cli`. **This is a partial, prerelease
 implementation.**
 <!-- /port --><!-- port:cxx -->Build and run the native C++ `tmux-workspace` command from the local
 <!-- /port --><!-- port:swift -->Build and run the native Swift `tmux-workspace` command from the local
-<!-- /port --><!-- port:ts,rs,go,java,cxx,swift -->`workspace-cli` checkout. **This is a partial, unreleased implementation.**
+<!-- /port --><!-- port:rs,go,java,cxx,swift -->`workspace-cli` checkout. **This is a partial, unreleased implementation.**
 These commands require that local source; they are not registry installation
 instructions or a claim that the CLI is available on the published branch.
 <!-- /port -->
 <!-- port:py -->The runnable terminal loader is the separate Python application tmuxp. Its
 documented prerequisites are Python 3.10 or newer and tmux 3.2 or newer. Install
 it in an isolated tool environment with uv:
-<!-- /port --><!-- port:ts,rs,go,java,cxx,swift -->## Build from the local checkout
+<!-- /port --><!-- port:rs,go,java,cxx,swift -->## Build from the local checkout
 
 Run these commands from the native repository root. Use a Unix environment
 with tmux 3.2a or newer on `PATH` for this walkthrough.
 
+<!-- /port --><!-- port:ts -->## Install from npm
+
 <!-- /port --><!-- port:dotnet -->## Install from NuGet
 
-Use a Unix environment with tmux 3.2a or newer on `PATH` for this walkthrough.
+<!-- /port --><!-- port:ts,dotnet -->Use a Unix environment with tmux 3.2a or newer on `PATH` for this walkthrough.
 
-<!-- /port --><!-- port:ts -->Use the Bun version in the checkout's `packageManager` field to install dependencies
-and build. Run the result with Node.js 22 or newer, or Bun 1.3.14 or newer. Build the core before the
-CLI, running the two build commands sequentially.
+<!-- /port --><!-- port:ts -->The command runs on Node.js 22.12 or newer, or Bun 1.3.14 or newer. Install
+it globally with npm:
 <!-- /port --><!-- port:rs -->Use Rust and Cargo through rustup so the checkout's
 [rust-toolchain.toml](https://github.com/libtmux/libtmux-rs/blob/master/rust-toolchain.toml)
 selects its pinned compiler. The full CLI minimum-toolchain and packaging gates
@@ -77,7 +80,7 @@ toolchain; the subprocess dependency requires it. The package targets macOS
 builds can omit it.
 <!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->
 ```console
-<!-- /port --><!-- port:ts -->$ bun install --frozen-lockfile
+<!-- /port --><!-- port:ts -->$ npm install -g @libtmux/workspace-cli
 <!-- /port --><!-- port:rs -->$ cargo build \
     --locked \
     --package tmux-workspace \
@@ -104,22 +107,16 @@ builds can omit it.
     --product tmux-workspace
 <!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->```
 
-<!-- /port --><!-- port:ts,cxx -->```console
-<!-- /port --><!-- port:ts -->$ bun run --cwd packages/libtmux build
-<!-- /port --><!-- port:cxx -->$ cmake --build --preset cxx-dev \
+<!-- /port --><!-- port:cxx -->```console
+$ cmake --build --preset cxx-dev \
     --target tmux-workspace \
     --parallel 2
-<!-- /port --><!-- port:ts,cxx -->```
-
-<!-- /port --><!-- port:ts -->```console
-$ bun run --cwd packages/workspace-cli build
 ```
 
-The local package names its executable `tmux-workspace`; this walkthrough
-runs the built entrypoint through Node. Bun can run the same entrypoint. Keep
-the complete generated output directory, including split chunks, and the
-local core dependency. Installing the published core library alone does not
-install this unreleased CLI.
+<!-- /port --><!-- port:ts -->The package puts `tmux-workspace` on `PATH`. To run it without installing,
+use `npx -y @libtmux/workspace-cli` wherever this walkthrough runs
+`tmux-workspace`. The [overview](../../) lists the Bun, pnpm and Yarn runners
+and global installs.
 <!-- /port --><!-- port:rs -->The CLI feature is enabled by default in the local crate. This command
 builds its executable; installing the published library crate does not establish
 that this local CLI is available in a release.
@@ -145,10 +142,10 @@ walkthrough supplies one with `-S`. A copied Linux executable still needs the
 Swift runtime libraries supplied by its toolchain; it is not a standalone
 distribution.
 <!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->
-Inspect the <!-- port:ts,rs,go,java,cxx,swift -->built<!-- /port --><!-- port:dotnet -->installed<!-- /port --> command:
+Inspect the <!-- port:rs,go,java,cxx,swift -->built<!-- /port --><!-- port:ts,dotnet -->installed<!-- /port --> command:
 
 ```console
-<!-- /port --><!-- port:ts -->$ node packages/workspace-cli/dist/main.js --help
+<!-- /port --><!-- port:ts -->$ tmux-workspace --help
 <!-- /port --><!-- port:rs -->$ target/release/tmux-workspace --help
 <!-- /port --><!-- port:go -->$ ./tmux-workspace --help
 <!-- /port --><!-- port:java -->$ workspace-cli/build/install/tmux-workspace/bin/tmux-workspace --help
@@ -185,7 +182,7 @@ Load detached on the temporary socket. The JSON result describes the load;
 `-d` prevents terminal attachment:
 
 ```console
-<!-- /port --><!-- port:ts -->$ node packages/workspace-cli/dist/main.js load \
+<!-- /port --><!-- port:ts -->$ tmux-workspace load \
 <!-- /port --><!-- port:rs -->$ target/release/tmux-workspace load \
 <!-- /port --><!-- port:go -->$ ./tmux-workspace load \
 <!-- /port --><!-- port:java -->$ workspace-cli/build/install/tmux-workspace/bin/tmux-workspace load \
@@ -220,7 +217,7 @@ Detach with your configured tmux detach binding. Capture the live session
 without choosing a file destination:
 
 ```console
-<!-- /port --><!-- port:ts -->$ node packages/workspace-cli/dist/main.js freeze \
+<!-- /port --><!-- port:ts -->$ tmux-workspace freeze \
 <!-- /port --><!-- port:rs -->$ target/release/tmux-workspace freeze \
 <!-- /port --><!-- port:go -->$ ./tmux-workspace freeze \
 <!-- /port --><!-- port:java -->$ workspace-cli/build/install/tmux-workspace/bin/tmux-workspace freeze \

@@ -12,7 +12,7 @@ ports:
     description: "Create, load, and export tmux workspaces with tmuxp."
   ts:
     title: "Workspace Manager for TypeScript (in development)"
-    description: "Build the local TypeScript tmux-workspace CLI; implementation coverage remains partial and unreleased."
+    description: "Run or install the prerelease TypeScript tmux-workspace CLI from npm; implementation coverage remains partial."
   rs:
     title: "Workspace Manager for Rust (in development)"
     description: "Build the local Rust tmux-workspace CLI; implementation coverage remains partial and unreleased."
@@ -131,11 +131,15 @@ do not implement 88-color mode. Without `-2`, tmux detects color support.
 
 ## Load a workspace from the terminal
 
-<!-- port:ts,rs,go,java,cxx,swift -->Follow the [local installation walkthrough](./guides/installation/) from a
+<!-- port:rs,go,java,cxx,swift -->Follow the [local installation walkthrough](./guides/installation/) from a
 `workspace-cli` checkout of the
-<!-- port:ts -->[TypeScript repository](https://github.com/libtmux/libtmux-ts)<!-- /port --><!-- port:rs -->[Rust repository](https://github.com/libtmux/libtmux-rs)<!-- /port --><!-- port:go -->[Go repository](https://github.com/libtmux/libtmux-go)<!-- /port --><!-- port:java -->[Java repository](https://github.com/libtmux/libtmux-java)<!-- /port --><!-- port:cxx -->[C++ repository](https://github.com/libtmux/libtmux-cxx)<!-- /port --><!-- port:swift -->[Swift repository](https://github.com/libtmux/libtmux-swift)<!-- /port -->. It builds
+<!-- port:rs -->[Rust repository](https://github.com/libtmux/libtmux-rs)<!-- /port --><!-- port:go -->[Go repository](https://github.com/libtmux/libtmux-go)<!-- /port --><!-- port:java -->[Java repository](https://github.com/libtmux/libtmux-java)<!-- /port --><!-- port:cxx -->[C++ repository](https://github.com/libtmux/libtmux-cxx)<!-- /port --><!-- port:swift -->[Swift repository](https://github.com/libtmux/libtmux-swift)<!-- /port -->. It builds
 the native command and loads a small workspace on a private socket. After
 building, inspect the command without starting tmux:
+<!-- /port --><!-- port:ts -->[Install](#install) runs the `@libtmux/workspace-cli` prerelease from npm
+without installing it, or installs it to put `tmux-workspace` on `PATH`. The
+[installation walkthrough](./guides/installation/) loads a small workspace on
+a private socket. Inspect the command without starting tmux:
 <!-- /port --><!-- port:dotnet -->Install the `LibTmux.Workspace.Cli` prerelease from NuGet:
 
 ```console
@@ -149,13 +153,13 @@ The [installation walkthrough](./guides/installation/) loads a small workspace
 on a private socket. Inspect the command without starting tmux:
 <!-- /port -->
 ```console
-<!-- port:ts -->$ node packages/workspace-cli/dist/main.js --help<!-- /port --><!-- port:rs -->$ target/release/tmux-workspace --help<!-- /port --><!-- port:go -->$ ./tmux-workspace --help<!-- /port --><!-- port:java -->$ workspace-cli/build/install/tmux-workspace/bin/tmux-workspace --help<!-- /port --><!-- port:dotnet -->$ tmux-workspace --help<!-- /port --><!-- port:cxx -->$ build/cxx-dev/apps/workspace/tmux-workspace --help<!-- /port --><!-- port:swift -->$ .build/debug/tmux-workspace --help<!-- /port -->
+<!-- port:ts -->$ npx -y @libtmux/workspace-cli --help<!-- /port --><!-- port:rs -->$ target/release/tmux-workspace --help<!-- /port --><!-- port:go -->$ ./tmux-workspace --help<!-- /port --><!-- port:java -->$ workspace-cli/build/install/tmux-workspace/bin/tmux-workspace --help<!-- /port --><!-- port:dotnet -->$ tmux-workspace --help<!-- /port --><!-- port:cxx -->$ build/cxx-dev/apps/workspace/tmux-workspace --help<!-- /port --><!-- port:swift -->$ .build/debug/tmux-workspace --help<!-- /port -->
 ```
 
 Use detached load for the walkthrough. JSON and NDJSON output are available;
 choose the mode explicitly when scripting. The command/configuration reference
 below also documents tmuxp behavior and compatibility targets, so it is not a
-claim that every referenced feature works in this <!-- port:ts,rs,go,java,cxx,swift -->local <!-- /port -->implementation.
+claim that every referenced feature works in this <!-- port:rs,go,java,cxx,swift -->local <!-- /port -->implementation.
 
 ## Current coverage
 <!-- port:ts -->
@@ -317,10 +321,10 @@ build sessions through code. [Internals](./internals/) documents that API:
 
 ## tmuxp command and configuration reference
 
-Use the <!-- port:ts,rs,go,java,cxx,swift -->local <!-- /port -->CLI's help and the limits above when applying these compatibility
+Use the <!-- port:rs,go,java,cxx,swift -->local <!-- /port -->CLI's help and the limits above when applying these compatibility
 references to native execution.
 
-- [Installation walkthrough](./guides/installation/) <!-- port:ts,rs,go,java,cxx,swift -->builds and runs the local native CLI.<!-- /port --><!-- port:dotnet -->installs and runs the published native CLI.<!-- /port -->
+- [Installation walkthrough](./guides/installation/) <!-- port:rs,go,java,cxx,swift -->builds and runs the local native CLI.<!-- /port --><!-- port:ts,dotnet -->installs and runs the published native CLI.<!-- /port -->
 - [Inspect through MCP](./guides/inspect-with-mcp/) connects to the loaded session.
 - [Command reference](./cli/) lists tmuxp commands, flags and compatibility targets.
 - [Configuration](./configuration/) covers fields, normalization and execution.
