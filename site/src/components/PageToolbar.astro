@@ -1,0 +1,31 @@
+---
+import PageActions from './PageActions.astro'
+import PagePortSwitcher from './PagePortSwitcher.astro'
+import type { PagePortLink } from '../lib/page-port-links'
+
+interface Props {
+  breadcrumbs: { name: string; url: string }[]
+  pagePorts?: PagePortLink[]
+  port?: string
+  editHref?: string
+  editLabel?: string
+}
+const { breadcrumbs, pagePorts = [], port, editHref, editLabel } = Astro.props
+---
+
+<div class="not-prose mb-4 flex flex-wrap items-center gap-x-4 gap-y-2" data-page-toolbar data-pagefind-ignore="all">
+  <nav aria-label="Breadcrumb" class="min-w-0 basis-full text-sm text-muted sm:basis-auto sm:flex-1">
+    <ol class="flex flex-wrap gap-x-2 gap-y-1">
+      {breadcrumbs.map((item, i) => <li class="flex min-w-0 gap-2 wrap-anywhere">
+        {i > 0 && <span aria-hidden="true">/</span>}
+        {i === breadcrumbs.length - 1 ? <span aria-current="page">{item.name}</span> : <a class="hover:underline" href={item.url}>{item.name}</a>}
+      </li>)}
+    </ol>
+  </nav>
+  <div class="ml-auto flex shrink-0 items-center gap-2">
+    {pagePorts.length > 0 && <div class="page-ports">
+      <PagePortSwitcher entries={pagePorts} portSlug={port} />
+    </div>}
+    <PageActions editHref={editHref} editLabel={editLabel} />
+  </div>
+</div>

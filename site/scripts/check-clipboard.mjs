@@ -68,6 +68,39 @@ export async function checkClipboard(page, base) {
     }
   }
   console.log('Clipboard: 15 widget cases pass, including refusal, literal text and focus restoration')
+
+  await page.goto(`${base}/examples/attach-and-send-keys/`, { waitUntil: 'load' })
+  const actions = page.locator('[data-page-actions]')
+  await actions.locator('summary').click()
+  const edit = actions.getByRole('link', { name: 'Edit this page on GitHub' })
+  assert.match(await edit.getAttribute('href'), /\/edit\/main\/site\/src\/content\/docs\/examples\/attach-and-send-keys\.md$/)
+  assert.equal(await page.locator('article').getByRole('link', { name: 'Edit this page on GitHub' }).count(), 0)
+  const markdownHref = await page.locator('link[rel="alternate"][type="text/markdown"]').getAttribute('href')
+  const markdown = await (await page.request.get(new URL(markdownHref, page.url()).href)).text()
+  for (const mode of ['accepted', 'refused']) {
+    await page.evaluate((mode) => {
+      window.__markdownCopied = undefined
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+        write: async (items) => {
+          if (mode === 'refused') throw new Error('Clipboard denied')
+          window.__markdownCopied = await (await items[0].getType('text/plain')).text()
+        },
+      } })
+    }, mode)
+    await actions.getByRole('button', { name: 'Copy Markdown' }).click()
+    await page.waitForFunction(() => /Markdown copied|Could not copy/.test(document.querySelector('[data-page-actions] [role="status"]').textContent))
+    if (mode === 'accepted') assert.equal(await page.evaluate(() => window.__markdownCopied), markdown)
+    else assert.equal(await actions.getByRole('link', { name: 'Open Markdown' }).getAttribute('href'), new URL(markdownHref, page.url()).href)
+  }
+  await page.evaluate(() => { window.print = () => { window.__pagePrinted = true } })
+  await actions.getByRole('button', { name: 'Print', exact: true }).click()
+  assert(await page.evaluate(() => window.__pagePrinted), 'Print invokes the browser print dialog')
+  assert.equal(await actions.getAttribute('open'), null)
+  await actions.locator('summary').click()
+  await page.keyboard.press('Escape')
+  assert.equal(await actions.getAttribute('open'), null)
+  assert(await actions.locator('summary').evaluate((element) => document.activeElement === element), 'Escape returns focus to Page actions')
+  console.log('Page actions: Markdown bytes, clipboard refusal, Edit, Print and Escape pass')
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

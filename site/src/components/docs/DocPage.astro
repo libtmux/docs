@@ -140,6 +140,8 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   pageSource={entry.data.source ?? (entry.filePath ? { repo: CONTRIBUTE_REPO, path: repoPath(entry.filePath), ref: CONTRIBUTE_BRANCH } : undefined)}
   markdownIndex={isIndexSource(entry.filePath)}
   markdown={placeholderLocale ? { href: markdownPath(englishHref, isIndexSource(entry.filePath)) } : 'source'}
+  editHref={!placeholderLocale ? contribute?.href : undefined}
+  editLabel={t(locale, 'i18n.editPage')}
 >
   {
     placeholderLocale && (
@@ -195,15 +197,6 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
           </p>
         )}
       </div>
-    )
-  }
-  {
-    !placeholderLocale && locale === DEFAULT_LOCALE && contribute && (
-      <p class="mb-2 text-sm opacity-80">
-        <a class="underline" href={contribute.href} rel="noopener" target="_blank">
-          {t(locale, 'i18n.editPage')}
-        </a>
-      </p>
     )
   }
   {

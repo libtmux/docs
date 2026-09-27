@@ -63,7 +63,7 @@ try {
   const clipboardPage = await browser.newPage()
   clipboardPage.setDefaultTimeout(10000)
   const clipboard = checkClipboard(clipboardPage, base).then(() => null, (error) => error)
-  const paths = ['concepts/server-session-window-pane', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
+  const paths = ['concepts/server-session-window-pane', 'examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
     'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
     'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/capture_pane']
   for (const path of paths) await retryReload(async () => {
@@ -75,6 +75,17 @@ try {
     const switcher = page.locator('[data-page-port-switcher]')
     const hasSwitcher = path !== 'mcp/tools'
     const isReference = path.includes('/reference/')
+    if (hasSwitcher) {
+      assert.equal(await page.locator('[data-page-toolbar] nav[aria-label="Breadcrumb"]').count(), 1, `${path}: breadcrumbs above the heading`)
+      const geometry = await page.evaluate(() => {
+        const toolbar = document.querySelector('[data-page-toolbar]').getBoundingClientRect()
+        const breadcrumb = document.querySelector('[data-page-toolbar] nav').getBoundingClientRect()
+        const picker = document.querySelector('[data-page-port-switcher]').getBoundingClientRect()
+        const title = document.querySelector('h1').getBoundingClientRect()
+        return { above: toolbar.bottom <= title.top, sameRow: picker.top < breadcrumb.bottom && breadcrumb.top < picker.bottom }
+      })
+      assert(geometry.above && geometry.sameRow, `${path}: breadcrumb and port picker share the row above H1`)
+    }
     const expected = isReference ? '/en/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/' : path.includes('workspace/') ? `/en/${path}/`
       : path === 'dotnet/latest/mcp/tools/capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : `/en/py/stable/${path.replace(/^ts\/latest\//, '')}/`
     if (hasSwitcher) assert.equal(await switcher.locator('a').first().getAttribute('href'), expected)

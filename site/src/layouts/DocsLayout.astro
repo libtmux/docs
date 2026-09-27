@@ -9,7 +9,8 @@ import { buildTarget } from '../lib/versions'
 import CodeTabs from '../components/CodeTabs.astro'
 import { generateToC } from '../utils/generateToC'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
-import PagePortSwitcher from '../components/PagePortSwitcher.astro'
+import PageToolbar from '../components/PageToolbar.astro'
+import { pageBreadcrumbs } from '../lib/sidebar'
 import ProseText from '../components/ProseText.astro'
 import { pagePortsFor } from '../lib/page-ports-for'
 import Aside from '../components/Aside.astro'
@@ -64,6 +65,8 @@ interface Props {
   pageSource?: PageSource
   markdownIndex?: boolean
   markdown?: 'source' | 'rendered' | { href: string }
+  editHref?: string
+  editLabel?: string
   /**
    * The page brings its own heading and layout.
    *
@@ -96,6 +99,8 @@ const {
   pageSource,
   markdownIndex,
   markdown,
+  editHref,
+  editLabel,
   bare = false,
 } = Astro.props as Props
 
@@ -124,7 +129,7 @@ const breadcrumbs = product && port ? [
   { name: DOC_PRODUCTS[product].label, url: portPageUrl(PORT_BY_SLUG[port], version, product) },
   ...(workspaceInternals ? [{ name: 'Internals', url: portPageUrl(PORT_BY_SLUG[port], version, 'workspace/internals') }] : []),
   ...(pagePath !== product ? [{ name: title, url: portPageUrl(PORT_BY_SLUG[port], version, pagePath) }] : []),
-] : []
+] : await pageBreadcrumbs(title, pagePath, version, port, locale)
 ---
 
 <BaseLayout
@@ -207,7 +212,7 @@ const breadcrumbs = product && port ? [
     contents floating a long way short of the right edge with nothing beside
     it; the sidebars now sit near the edges and the middle grows.
   */}
-  <div class="mx-auto flex max-w-[100rem] gap-8 px-6 py-8">
+  <div class="mx-auto flex max-w-[100rem] gap-5 px-4 py-6 lg:px-5">
     <aside class="hidden w-64 shrink-0 lg:block">
       <div class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
         <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} />
@@ -215,36 +220,13 @@ const breadcrumbs = product && port ? [
     </aside>
 
     <main class="min-w-0 flex-1">
+      <PageToolbar breadcrumbs={breadcrumbs} pagePorts={pagePorts} port={port} editHref={editHref} editLabel={editLabel} />
       {bare ? <slot /> : (
-      <article class="prose max-w-[80ch] dark:prose-invert">
-        {breadcrumbs.length > 0 && (
-          <nav aria-label="Breadcrumb" class="not-prose mb-4 text-sm opacity-80" data-pagefind-ignore="all">
-            <ol class="flex flex-wrap gap-x-2 gap-y-1">
-              {breadcrumbs.map((item, i) => <li class="flex min-w-0 gap-2 wrap-anywhere">
-                {i > 0 && <span aria-hidden="true">/</span>}
-                {i === breadcrumbs.length - 1 ? <span aria-current="page">{item.name}</span> : <a class="hover:underline" href={item.url}>{item.name}</a>}
-              </li>)}
-            </ol>
-          </nav>
-        )}
+      <article class="prose max-w-none dark:prose-invert">
         {productBrand && (
           <img src={withRoot(productBrand.asset('logo.svg'))} width="88" height="88" alt="" class="not-prose mb-4" />
         )}
-        {/*
-          Beside the title, not above it. The control answers a question about
-          this page, and given a band of its own it pushed the article down a
-          row to show one chip.
-        */}
-        <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-          <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{title}</h1>
-          {
-            pagePorts.length > 0 && (
-              <div class="page-ports not-prose" data-pagefind-ignore="all">
-                <PagePortSwitcher entries={pagePorts} portSlug={port} />
-              </div>
-            )
-          }
-        </div>
+        <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{title}</h1>
         {/*
           The same caution the reference and the prose use, rather than a box
           of its own: a reader who has seen one development warning should
