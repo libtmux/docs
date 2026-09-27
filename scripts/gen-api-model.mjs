@@ -600,12 +600,25 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   const text = `${JSON.stringify(model, null, 0)}\n`
 
   if (check) {
-    const current = existsSync(out) ? readFileSync(out, 'utf8') : ''
-    // The revision moves whenever the port does, which is not staleness of
-    // *this* file's content. Compare everything else.
-    const strip = (t) => t.replace(/"revision":"[0-9a-f]*",?/, '')
-    if (strip(current) !== strip(text)) {
-      console.error(`gen-api-model: ${port}.json is stale — re-run without --check`)
+    // A port moving is not staleness of this file's content: every revision
+    // and extracted revision moves with it, on the model and on each symbol.
+    // Compare everything else, and the two sidecars built from the same pass.
+    const strip = (t) => t.replace(/"(?:revision|extractedRevision)":"[0-9a-f]*",?/g, '')
+    const read = (file) => {
+      const path = join(repoRoot, 'site/src/data/api', file)
+      return existsSync(path) ? readFileSync(path, 'utf8') : ''
+    }
+    const tree = git(checkout, 'ls-tree', '-r', '--name-only', head ?? 'HEAD')
+    const committedPaths = read(`${port}.paths.json`)
+    const nav = navSidecar(port, model)
+    const stalePaths = [
+      strip(read(`${port}.json`)) !== strip(text) && `${port}.json`,
+      tree && JSON.stringify(committedPaths && JSON.parse(committedPaths).paths) !==
+        JSON.stringify(tree.split('\n').filter(Boolean)) && `${port}.paths.json`,
+      nav && read(`${port}.nav.json`) !== `${JSON.stringify(nav)}\n` && `${port}.nav.json`,
+    ].filter(Boolean)
+    if (stalePaths.length) {
+      console.error(`gen-api-model: ${stalePaths.join(', ')} stale — re-run without --check`)
       stale++
     } else {
       console.log(`gen-api-model: ${port}.json current (${model.symbols.length} symbols)`)
