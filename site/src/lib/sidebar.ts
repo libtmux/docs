@@ -151,7 +151,7 @@ export function portAreas(port: string, version: string): SidebarGroupItem {
   return {
     type: 'group',
     label: 'Documentation',
-    items: (['topics', 'guides', 'examples', 'concepts'] as const).map((area) => ({
+    items: (p.parentLibrary ? ['guides', 'examples', 'concepts'] : ['topics', 'guides', 'examples', 'concepts']).map((area) => ({
       type: 'link',
       label: `${area[0]!.toUpperCase()}${area.slice(1)}`,
       href: portPageUrl(p, version, area),

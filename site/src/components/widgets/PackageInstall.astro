@@ -1,4 +1,5 @@
 ---
+import { installsFor } from '../../lib/registry'
 import { Code } from 'astro-expressive-code/components'
 import { highlightInline, highlightWithCooldownSlots } from '../../lib/highlight'
 import { DEFAULT_COOLDOWN_DAYS } from '../../lib/install-matrix'
@@ -70,7 +71,7 @@ const copyLayout = (code: string) => (copyButton === 'auto' ? (code.includes('\n
 
 const selected = ports && ports.length > 0 ? PORTS.filter((p) => ports.includes(p.slug)) : PORTS
 const items = selected.map((port) => {
-  if (packageId === 'core') return port
+  if (packageId === 'core') return { ...port, installs: installsFor(port) }
   const companion = port.packages?.find((entry) => entry.id === packageId)
   if (!companion?.installs) throw new Error(`PackageInstall: ${port.slug} has no install forms for ${packageId}`)
   return { ...port, packageName: companion.name, installs: companion.installs }

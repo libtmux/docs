@@ -6,10 +6,10 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
 import { sourceUrl } from '@libtmux/api-model'
-import { PORTS } from '../src/lib/ports'
+import { API_MODEL_PORTS } from '../src/lib/ports'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))
-const models = Object.fromEntries(PORTS.map((port) => [port.slug,
+const models = Object.fromEntries(API_MODEL_PORTS.map((port) => [port.slug,
   JSON.parse(readFileSync(join(root, `site/src/data/api/${port.slug}.json`), 'utf8')) as ApiModel,
 ]))
 const scratch: string[] = []

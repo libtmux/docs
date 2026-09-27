@@ -1,4 +1,5 @@
 ---
+import { installsFor } from '../lib/registry'
 import { ALL_TRANSLATED, buildLocale } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import DocsLayout from '../layouts/DocsLayout.astro'
@@ -24,7 +25,7 @@ import { documentationCards } from '../lib/port-documentation'
 const libraryInstalls = new Map(
   await Promise.all(
     PORTS.map(async (p) => {
-      const cmd = primaryInstall(p)
+      const cmd = primaryInstall({ ...p, installs: installsFor(p) })
       return [p.slug, await highlightInline(cmd.lang === 'console' ? `$ ${cmd.code}` : cmd.code, cmd.lang)] as const
     }),
   ),
@@ -88,7 +89,7 @@ const rootMcp = versionRootPort && productAvailable(versionRootPort, 'mcp')
 
 const versionSections = versionRootPort
   ? [
-      { href: portPageUrl(versionRootPort, buildVersion, 'topics'), label: 'Topics', body: `Subject-by-subject, with ${versionRootPort.name} in every code block.` },
+      ...(!versionRootPort.parentLibrary ? [{ href: portPageUrl(versionRootPort, buildVersion, 'topics'), label: 'Topics', body: `Subject-by-subject, with ${versionRootPort.name} in every code block.` }] : []),
       { href: portPageUrl(versionRootPort, buildVersion, 'guides'), label: 'Guides', body: `Task guides for ${versionRootPort.name}.` },
       { href: portPageUrl(versionRootPort, buildVersion, 'examples'), label: 'Examples', body: 'Complete programs, sourced from the code each port tests.' },
       { href: portPageUrl(versionRootPort, buildVersion, 'concepts'), label: 'Concepts', body: 'The domain model every port shares.' },

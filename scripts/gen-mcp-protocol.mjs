@@ -78,7 +78,7 @@ const sourceRevision = (checkout, slug) => {
 // and a checkout this machine's other work left dirty is not evidence of a
 // stale snapshot. Writing a snapshot set tolerates neither, because a
 // partial or unreliable set is worse than none.
-const relevant = PORTS.filter((port) => (!only || only === port.slug) && port.productAvailability?.mcp !== 'unpublished')
+const relevant = PORTS.filter((port) => (!only || only === port.slug) && !port.parentLibrary && port.productAvailability?.mcp !== 'unpublished')
 const checkoutStates = new Map(relevant.map((port) => {
   const checkout = checkoutFor(port)
   if (!existsSync(checkout)) return [port.slug, 'missing']

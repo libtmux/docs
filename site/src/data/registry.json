@@ -86,6 +86,24 @@
       "version": "0.1.0-alpha.6",
       "stable": null,
       "tag": "0.1.0-alpha.6"
+    },
+    "kotlin": {
+      "status": "prerelease",
+      "version": "0.0.1-alpha.17",
+      "stable": null,
+      "tag": "v0.0.1-alpha.17"
+    },
+    "scala": {
+      "status": "prerelease",
+      "version": "0.0.1-alpha.17",
+      "stable": null,
+      "tag": "v0.0.1-alpha.17"
+    },
+    "fsharp": {
+      "status": "prerelease",
+      "version": "0.0.0-alpha.17",
+      "stable": null,
+      "tag": "v0.0.0-alpha.17"
     }
   }
 }

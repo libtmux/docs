@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url'
 
 const script = join(dirname(fileURLToPath(import.meta.url)), 'check-type-links.mjs')
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
-const { PORTS: PORT_DEFS } = await import(`file://${join(repoRoot, 'site/src/lib/ports.ts')}`)
+const { API_MODEL_PORTS: PORT_DEFS } = await import(`file://${join(repoRoot, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
 
 const linked = (n) => `<span class="api-type"><a href="/x/" class="api-type-link">${n}</a></span>`

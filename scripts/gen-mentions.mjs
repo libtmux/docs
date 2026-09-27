@@ -154,6 +154,9 @@ for (const { file, source } of [...realEntries, ...sharedWorkspaceEntries(realFi
   const route = frontmatterValue(source, 'route')
   const section = route?.split('/')[0] ?? file.split('/')[0]
   const authoredPort = frontmatterValue(source, 'port') ?? /^ports\/([^/]+)\//.exec(file)?.[1]
+  // These guides link to native wrapper references, outside the shared API
+  // model. Do not infer backlinks to similarly named core-language symbols.
+  if (PORT_DEFS.find((port) => port.slug === authoredPort)?.referenceKind === 'guide') continue
   const product = frontmatterValue(source, 'product') ?? /^ports\/[^/]+\/(workspace|mcp)\//.exec(file)?.[1]
 
   for (const { port: contextPort, text, line, before, linked } of proseMentions(source, PORT_BY_LABEL)) {

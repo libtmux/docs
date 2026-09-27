@@ -39,7 +39,7 @@ if (readFileSync(conf, 'utf8').includes(MARKER)) {
 }
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
-const { PORTS: PORT_DEFS } = await import(`file://${join(repoRoot, 'site/src/lib/ports.ts')}`)
+const { API_MODEL_PORTS: PORT_DEFS } = await import(`file://${join(repoRoot, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
 const entries = []
 for (const port of PORTS) {

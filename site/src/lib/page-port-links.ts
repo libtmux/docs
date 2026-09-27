@@ -1,9 +1,10 @@
 import type { ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS, pageSlug, referenceAlternatives, referenceHref } from './api-models'
-import { PORTS, portHomeUrl, portPageUrl, productAvailable, referenceUrl } from './ports'
+import { PORT_BY_SLUG, PORTS, portHomeUrl, portPageUrl, productAvailable, referenceUrl } from './ports'
 import { docsPath, type DocsPage } from './docs-paths'
 import { productApiHref } from './product-api'
 import { MCP_REFERENCE, equivalentMcpTool } from './mcp-reference'
+import { LOCALES } from '../i18n/locales'
 
 /**
  * Every symbol by the route it answers on, keyed by port.
@@ -30,6 +31,12 @@ export interface PagePortLink {
 
 /** Matches the port restriction used by the prose route. */
 export function docsEntryAvailable(entry: DocsPage, port?: string): boolean {
+  if (port && PORT_BY_SLUG[port]?.parentLibrary) {
+    if (entry.data.product) return false
+    const first = entry.id.split('/')[0]
+    const id = (LOCALES as readonly string[]).includes(first) ? entry.id.slice(first.length + 1) : entry.id
+    return entry.data.port === port || (!entry.data.port && /^(concepts(?:\/|$)|notices$)/.test(id))
+  }
   return !port || !entry.data.port || entry.data.port === port
 }
 
@@ -66,7 +73,7 @@ export function pagePortLinks({
     if (!path) {
       links = [{ href: portHomeUrl(port, targetVersion) }]
     } else if ((isReference && !symbolSlug) || path === 'api') {
-      if (API_MODELS[port.slug]) links = [{ href: referenceUrl(port, targetVersion) }]
+      if (API_MODELS[port.slug] || port.parentLibrary) links = [{ href: referenceUrl(port, targetVersion) }]
     } else if (symbol) {
       for (const alternative of alternatives) {
         const match = alternative.ports.find((p) => p.port === port.slug)
@@ -91,7 +98,7 @@ export function pagePortLinks({
       if (target) links = [{ href: portPageUrl(port, targetVersion, `mcp/tools/${target.wireName}`) }]
     } else if (path === 'mcp/tools') {
       if (productAvailable(port, 'mcp')) links = [{ href: portPageUrl(port, targetVersion, path) }]
-    } else if ((SHARED_PAGE_PATHS as readonly string[]).includes(path) || entries.some((entry) => docsEntryAvailable(entry, port.slug))) {
+    } else if ((!port.parentLibrary && (SHARED_PAGE_PATHS as readonly string[]).includes(path)) || entries.some((entry) => docsEntryAvailable(entry, port.slug))) {
       links = [{ href: portPageUrl(port, targetVersion, path) }]
     }
     return { port: port.slug, name: port.name, links }

@@ -13,7 +13,7 @@
  * assertion and could drift on how it handles a missing port.
  */
 import data from '../data/registry.json'
-import { installCommand, releaseWording, type InstallForm, type Port, type RegistryData, type RegistryEntry } from './ports'
+import { installCommand, releaseWording, type InstallCommand, type InstallForm, type Port, type RegistryData, type RegistryEntry } from './ports'
 import { portParts, type PortParts, type PromptContext } from './prompts'
 
 export const REGISTRY = data as RegistryData
@@ -33,6 +33,14 @@ export function registryFor(port: Port | string): RegistryEntry {
     throw new Error(`registry.json has no entry for port "${slug}"; run node scripts/gen-registry.mjs`)
   }
   return entry
+}
+
+/** Resolve package snippets against the registry snapshot used by this build. */
+export function installsFor(port: Port): readonly InstallCommand[] {
+  if (!port.installs.some((command) => command.code.includes('{version}'))) return port.installs
+  const entry = registryFor(port)
+  if (!entry.version) return [{ label: 'Source', ...installCommand(port, entry) }]
+  return port.installs.map((command) => ({ ...command, code: command.code.replaceAll('{version}', entry.version!) }))
 }
 
 /** The install command that resolves today, for a port. */

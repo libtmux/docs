@@ -191,16 +191,19 @@ const PROBES = {
     const versions = body.split('\n').filter(Boolean)
     return versions.length > 0 ? versions : null
   },
-  async java() {
+  async java(port) {
     const { missing, body } = await getText(
-      'https://repo1.maven.org/maven2/io/github/libtmux/libtmux/maven-metadata.xml',
+      `https://repo.maven.apache.org/maven2/${port.packageName.split(':')[0].replaceAll('.', '/')}/${port.packageName.split(':')[1]}/maven-metadata.xml`,
     )
     if (missing || !body) return null
     return [...body.matchAll(/<version>([^<]+)<\/version>/g)].map((m) => m[1])
   },
-  async dotnet() {
+  async kotlin(port) { return PROBES.java(port) },
+  async scala(port) { return PROBES.java(port) },
+  async fsharp(port) { return PROBES.dotnet(port) },
+  async dotnet(port) {
     const { missing, body } = await getJson(
-      'https://api.nuget.org/v3-flatcontainer/libtmux/index.json',
+      `https://api.nuget.org/v3-flatcontainer/${port.packageName.toLowerCase()}/index.json`,
     )
     if (missing || !body) return null
     return body.versions ?? []

@@ -29,7 +29,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const floorArg = process.argv.indexOf('--floor')
 const FLOOR_FILE =
   floorArg === -1 ? join(root, 'scripts/xref-floor.json') : process.argv[floorArg + 1]
-const { PORTS: PORT_DEFS } = await import(`file://${join(root, 'site/src/lib/ports.ts')}`)
+const { API_MODEL_PORTS: PORT_DEFS } = await import(`file://${join(root, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
 
 const args = process.argv.slice(2)

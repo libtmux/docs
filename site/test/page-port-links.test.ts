@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-42/en')
 vi.stubEnv('LIBTMUX_DOCS_LOCALES_ROOT', '/pr-42')
 const { pagePortLinks } = await import('../src/lib/page-port-links')
-const { PORTS } = await import('../src/lib/ports')
+const { PORTS, PORT_BY_SLUG } = await import('../src/lib/ports')
 const { localePageHref, localeSourcePath } = await import('../src/i18n/locales')
 
 const docs = [
@@ -40,7 +40,7 @@ describe('matching pages in another port', () => {
   it('switches MCP tools using each port’s registered wire name', () => {
     const links = pagePortLinks({ ...options, pagePath: 'mcp/tools/capture_pane', portSlug: 'ts' })
     expect(links.find((entry) => entry.port === 'lua')?.links).toEqual([])
-    expect(links.filter((entry) => entry.port !== 'lua' && entry.port !== 'ruby').every((entry) => entry.links.length === 1)).toBe(true)
+    expect(links.filter((entry) => entry.port !== 'lua' && entry.port !== 'ruby' && !PORT_BY_SLUG[entry.port].parentLibrary).every((entry) => entry.links.length === 1)).toBe(true)
     expect(links.find((entry) => entry.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/v1.2.3/mcp/tools/capture_pane/')
     expect(links.find((entry) => entry.port === 'py')?.links[0].href).toBe('/pr-42/en/py/stable/mcp/tools/capture_pane/')
     expect(links.find((entry) => entry.port === 'dotnet')?.links[0].href).toBe('/pr-42/en/dotnet/latest/mcp/tools/capture_pane/')
@@ -114,13 +114,13 @@ describe('workspace documentation compatibility', () => {
   it.each(['cli/load', 'configuration/commands', 'reference/compatibility', 'guides/automation', 'examples/gallery'])(
     'switches the nested %s reference across authored ports', (section) => {
       const pagePath = `workspace/${section}`
-      const entries = PORTS.map((port) => ({
+      const entries = PORTS.filter((port) => !port.parentLibrary).map((port) => ({
         id: `ports/${port.slug}/${pagePath}`, data: { port: port.slug, product: 'workspace' },
       }))
       const links = pagePortLinks({ ...options, docs: entries, pagePath, portSlug: 'go' })
       for (const entry of links) {
         const version = entry.port === 'go' ? 'v1.2.3' : entry.port === 'py' ? 'stable' : 'latest'
-        expect(entry.links).toEqual([{ href: `/pr-42/en/${entry.port}/${version}/${pagePath}/` }])
+        expect(entry.links).toEqual(PORT_BY_SLUG[entry.port].parentLibrary ? [] : [{ href: `/pr-42/en/${entry.port}/${version}/${pagePath}/` }])
       }
       const missing = pagePortLinks({ ...options, pagePath, docs: entries.filter((entry) => entry.data.port !== 'cxx') })
       expect(missing.find((entry) => entry.port === 'cxx')?.links).toEqual([])

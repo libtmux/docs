@@ -54,7 +54,35 @@ const guide = (
   ...options,
 })
 
+const libraryDomain = (description: string): DocumentationDomain => ({
+  id: 'core', label: 'Library', kind: 'core', navGroup: 'Library', route: '', package: 'core', description,
+})
+
 const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
+  kotlin: {
+    domains: [libraryDomain('Kotlin coroutine handles, builders and flows over the Java/JVM library.')],
+    sourceGuides: [
+      guide('libtmux-kotlin/README.md', 'guides/getting-started', 'core'),
+      guide('docs/guide/kotlin.md', 'guides/coroutines', 'core'),
+    ],
+  },
+  scala: {
+    domains: [libraryDomain('Scala 3 handles, immutable collections and effects over the Java/JVM library.')],
+    sourceGuides: [
+      guide('libtmux-scala/README.md', 'guides/overview', 'core'),
+      ...['getting-started', 'query', 'ownership', 'execution', 'streaming', 'compatibility'].map((name) =>
+        guide(`docs/guide/scala/${name}.md`, `guides/${name}`, 'core')),
+    ],
+  },
+  fsharp: {
+    domains: [libraryDomain('F# sequences, task helpers and typed filters over the C#/.NET library.')],
+    sourceGuides: [
+      guide('src/LibTmux.FSharp/README.md', 'guides/quickstart', 'core'),
+      ...['getting-started', 'queries', 'streams', 'interop', 'modes', 'supported-query-fields'].map((name) =>
+        guide(`docs/fsharp/${name}.md`, `guides/${name}`, 'core')),
+      guide('docs/fsharp/api.md', 'reference', 'core', { aliases: [], sidebar: { group: 'API reference' } }),
+    ],
+  },
   ruby: {
     domains: [
       {
@@ -125,6 +153,8 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
   },
 }
 
+export const SOURCE_GUIDE_PORTS = Object.keys(PORT_DOCUMENTATION)
+
 function documentationFor(portSlug: string): PortDocumentation | undefined {
   const port = PORT_BY_SLUG[portSlug]
   if (!port) throw new Error(`port-documentation: unknown port slug "${portSlug}"`)
@@ -166,7 +196,7 @@ function fallbackAreas(portSlug: string): readonly DocumentationDomain[] {
       id: 'core', label: 'Core library', kind: 'core', navGroup: 'Library', route: '', package: 'core',
       description: `Install ${port.packageName} and use the ${port.name} tmux API.`,
     },
-    ...Object.entries(DOC_PRODUCTS).map(([id, product]) => {
+    ...Object.entries(port.parentLibrary ? {} : DOC_PRODUCTS).map(([id, product]) => {
       const available = productAvailable(port, id as DocProduct)
       return {
         id,

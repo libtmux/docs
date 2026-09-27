@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url'
 import { Resolver, decideFilePath, decideMention, isLikelyReference, looksLikeApiMention, notASymbol, notApiReason, proseMentions, readInventory } from '../packages/api-model/src/index.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const { PORTS: PORT_DEFS } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
+const { API_MODEL_PORTS: PORT_DEFS, PORT_BY_SLUG } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
 const { KNOWN_PORTS, resolvePortBody } = await import(`file://${resolve(root, 'site/src/lib/workspace-shared-slots.ts')}`)
 const SHARED = join(root, 'site/src/content/_workspace-shared')
@@ -153,6 +153,8 @@ for (const file of targets) {
   const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(raw)?.[1] ?? ''
   const authoredPort = /^port:\s*['"]?([a-z]+)['"]?\s*$/m.exec(frontmatter)?.[1]
     ?? /^ports\/([^/]+)\//.exec(file.replace(`${CONTENT}/`, ''))?.[1]
+  // Match rehype-api-links: native wrapper guides have no shared API model.
+  if (PORT_BY_SLUG[authoredPort]?.referenceKind === 'guide') continue
   const product = /^product:\s*['"]?(core|workspace|mcp)['"]?\s*$/m.exec(frontmatter)?.[1]
     ?? /^ports\/[^/]+\/(workspace|mcp)\//.exec(file.replace(`${CONTENT}/`, ''))?.[1]
   for (const { text, port: ctxPort, before, line, linked } of proseMentions(raw, PORT_BY_LABEL)) {

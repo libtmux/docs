@@ -141,6 +141,8 @@ export interface Port {
   /** Artwork palette and compact navigation label. */
   logoLanguage: string
   shortName: string
+  /** Wrapper language sharing its parent's source, release and publisher. */
+  parentLibrary?: { slug: string; runtime: string }
   /** Human name for nav and headings. */
   name: string
   /** Language shown in the port switcher. */
@@ -188,6 +190,8 @@ export interface Port {
    * something else in the same repository and is not a candidate.
    */
   tagPrefix?: string
+  /** A native guide may link to a package-hosted reference without an API model. */
+  referenceKind?: 'model' | 'guide'
   renderer: Renderer
   /**
    * Whether this port's own documentation pipeline publishes
@@ -269,7 +273,7 @@ export interface Port {
   installNote?: string
 }
 
-export const PORTS: readonly Port[] = [
+const CORE_PORTS: readonly Port[] = [
   {
     slug: 'py',
     logoLanguage: 'python',
@@ -685,7 +689,7 @@ export const PORTS: readonly Port[] = [
     workspaceCli: 'tmux-workspace load',
     workspaceCliAvailability: 'local',
     name: 'Java',
-    language: 'Java and Kotlin',
+    language: 'Java',
     packageName: 'io.github.libtmux:libtmux',
     repo: 'libtmux/libtmux-java',
     checkout: '~/work/libtmux/libtmux-java',
@@ -931,13 +935,82 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
   },
 ] as const
 
+type WrapperLibrary = Omit<Port, 'repo' | 'checkout' | 'worktree' | 'tagGrammar' | 'tagPrefix' | 'versionedDocs' | 'renderer' | 'generator'> & {
+  parentLibrary: { slug: string; runtime: string }
+}
+
+const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
+  {
+    slug: 'kotlin', logoLanguage: 'kotlin', shortName: 'Kt', name: 'Kotlin', language: 'Kotlin',
+    parentLibrary: { slug: 'java', runtime: 'JVM' },
+    packageName: 'io.github.libtmux:libtmux-kotlin',
+    registry: { name: 'Maven Central', url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-kotlin', icon: 'maven' },
+    ecosystemHost: { name: 'Dokka', url: 'https://javadoc.io/doc/io.github.libtmux/libtmux-kotlin', rationale: 'Kotlin API documentation from the Dokka archive published with the package.' },
+    installs: [
+      { label: 'Gradle', lang: 'kotlin', code: 'implementation("io.github.libtmux:libtmux-kotlin:{version}")' },
+      { label: 'Maven', lang: 'xml', code: '<dependency>\n  <groupId>io.github.libtmux</groupId>\n  <artifactId>libtmux-kotlin</artifactId>\n  <version>{version}</version>\n</dependency>' },
+    ],
+    initProject: { code: 'gradle init --type kotlin-application --dsl kotlin', lang: 'console' },
+    installForms: {
+      stable: { code: 'implementation("io.github.libtmux:libtmux-kotlin:{version}")', lang: 'kotlin' },
+      prerelease: { code: 'implementation("io.github.libtmux:libtmux-kotlin:{version}")', lang: 'kotlin' },
+      git: { code: 'git clone --branch {tag} https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew :libtmux:publishToMavenLocal :libtmux-kotlin:publishToMavenLocal)', lang: 'console' },
+    },
+  },
+  {
+    slug: 'scala', logoLanguage: 'scala', shortName: 'Sc', name: 'Scala', language: 'Scala',
+    parentLibrary: { slug: 'java', runtime: 'JVM' },
+    packageName: 'io.github.libtmux:libtmux-scala_3',
+    registry: { name: 'Maven Central', url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala_3', icon: 'maven' },
+    ecosystemHost: { name: 'Scaladoc', url: 'https://javadoc.io/doc/io.github.libtmux/libtmux-scala_3', rationale: 'Scala 3 API documentation from the Scaladoc archive published with the package.' },
+    installs: [
+      { label: 'sbt', lang: 'scala', code: 'libraryDependencies += "io.github.libtmux" %% "libtmux-scala" % "{version}"' },
+      { label: 'Gradle', lang: 'kotlin', code: 'implementation("io.github.libtmux:libtmux-scala_3:{version}")' },
+      { label: 'Maven', lang: 'xml', code: '<dependency>\n  <groupId>io.github.libtmux</groupId>\n  <artifactId>libtmux-scala_3</artifactId>\n  <version>{version}</version>\n</dependency>' },
+    ],
+    initProject: { code: 'sbt new scala/scala3.g8', lang: 'console' },
+    installForms: {
+      stable: { code: 'libraryDependencies += "io.github.libtmux" %% "libtmux-scala" % "{version}"', lang: 'scala' },
+      prerelease: { code: 'libraryDependencies += "io.github.libtmux" %% "libtmux-scala" % "{version}"', lang: 'scala' },
+      git: { code: 'git clone --branch {tag} https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew :libtmux:publishToMavenLocal :libtmux-scala:publishToMavenLocal)', lang: 'console' },
+    },
+  },
+  {
+    slug: 'fsharp', logoLanguage: 'fsharp', shortName: 'F#', name: 'F#', language: 'F#',
+    parentLibrary: { slug: 'dotnet', runtime: '.NET' },
+    packageName: 'LibTmux.FSharp',
+    registry: { name: 'NuGet', url: 'https://www.nuget.org/packages/LibTmux.FSharp', icon: 'nuget' },
+    installs: [{ label: 'dotnet', lang: 'console', code: 'dotnet package add LibTmux.FSharp --version {version}' }],
+    initProject: { code: 'dotnet new console --language F#', lang: 'console' },
+    installForms: {
+      stable: { code: 'dotnet package add LibTmux.FSharp', lang: 'console' },
+      prerelease: { code: 'dotnet package add LibTmux.FSharp --version {version}', lang: 'console' },
+      git: { code: 'dotnet add reference ../libtmux-dotnet/src/LibTmux.FSharp/LibTmux.FSharp.fsproj', lang: 'console' },
+    },
+  },
+]
+
+/** Keep a library family adjacent without inheriting its companion products. */
+export const PORTS: readonly Port[] = CORE_PORTS.flatMap((parent) => [
+  parent,
+  ...WRAPPER_LIBRARIES.filter((library) => library.parentLibrary.slug === parent.slug).map((library): Port => ({
+    repo: parent.repo, checkout: parent.checkout, worktree: parent.worktree,
+    tagGrammar: parent.tagGrammar, tagPrefix: parent.tagPrefix,
+    versionedDocs: parent.versionedDocs, renderer: 'none', generator: '', referenceKind: 'guide',
+    publishesOwnTree: true,
+    ...library,
+  })),
+])
+
+export const API_MODEL_PORTS = PORTS.filter((port) => port.referenceKind !== 'guide')
+
 export const PORT_BY_SLUG: Readonly<Record<string, Port>> = Object.fromEntries(
   PORTS.map((p) => [p.slug, p]),
 )
 
 /** Whether a companion product has a published implementation for a port. */
 export function productAvailable(port: Port, product: DocProduct): boolean {
-  return port.productAvailability?.[product] !== 'unpublished'
+  return !port.parentLibrary && port.productAvailability?.[product] !== 'unpublished'
 }
 
 /** Whether the package picker has a concrete install form for this package. */

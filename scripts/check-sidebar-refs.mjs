@@ -24,7 +24,7 @@ const SITE = resolve(process.argv[2] ?? join(root, '_site'))
 
 /** Ports with a canonical reference elsewhere, and the host that serves it. */
 const ECOSYSTEM = { rs: 'docs.rs', go: 'pkg.go.dev', java: 'javadoc.io' }
-const { PORTS: PORT_DEFS } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
+const { API_MODEL_PORTS: PORT_DEFS } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
 
 /** A page under each port that renders the docs shell. */

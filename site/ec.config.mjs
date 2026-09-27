@@ -12,6 +12,7 @@ import { shellPrompt, shellThemes } from './src/plugins/ec-shell-prompt.mjs'
 export default defineEcConfig({
   themes: shellThemes(),
   plugins: [shellPrompt()],
+  shiki: { langAlias: { sbt: 'scala' } },
   useDarkModeMediaQuery: false,
   themeCssSelector: (theme) =>
     theme.name === 'github-light'
