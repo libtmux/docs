@@ -6,6 +6,7 @@
    animations, or smooth scrolling anywhere. */
 @import "tailwindcss";
 @import "./gp-sphinx-tokens.css";
+@import "./brand.css";
 @import "./flags.css" layer(components);
 @import "./image-loading.css" layer(components);
 /* Unlayered, like the widgets, so prose margins cannot outrank it. */
@@ -15,8 +16,17 @@
 
 /* Font-face declarations handled by @fontsource imports */
 
-/* Custom variant for dark mode using data attribute instead of class */
-@custom-variant dark (&:where([data-theme-mode="dark"], [data-theme-mode="dark"] *));
+/* Match brand.css before ThemeScript runs, while preserving explicit choices. */
+@custom-variant dark {
+  &:where([data-theme-mode="dark"], [data-theme-mode="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(html:not([data-theme-mode]):not([data-theme="light"]), html:not([data-theme-mode]):not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
 
 /* Custom variant for touch/coarse pointer devices (phones, tablets) */
 @custom-variant coarse (@media (pointer: coarse));
@@ -134,11 +144,11 @@
 
   /* TopNav variables (light mode) */
   --topnav-background: white;
-  --topnav-border-color: color-mix(in oklch, var(--theme-accent), transparent 90%);
+  --topnav-border-color: color-mix(in oklab, var(--theme-accent), transparent 90%);
   --topnav-border-opacity: 0.1;
   --topnav-text-color: var(--theme-text);
   --topnav-link-color: var(--theme-primary);
-  --topnav-link-hover-color: color-mix(in oklch, var(--theme-primary), black 10%);
+  --topnav-link-hover-color: color-mix(in oklab, var(--theme-primary), black 10%);
 
   /* Common variables */
   --loading-screen-min-height: calc(100vh - var(--top-nav-height));
@@ -181,18 +191,18 @@
   --button-bg-primary: var(--theme-primary);
   --button-text-primary: white;
   --button-border-primary: transparent;
-  --button-bg-primary-hover: color-mix(in oklch, var(--theme-primary), white 10%);
+  --button-bg-primary-hover: color-mix(in oklab, var(--theme-primary), white 10%);
 
   --button-bg-secondary: white;
   --button-text-secondary: var(--theme-primary);
   --button-border-secondary: var(--theme-primary);
-  --button-bg-secondary-hover: color-mix(in oklch, var(--theme-primary), white 90%);
+  --button-bg-secondary-hover: color-mix(in oklab, var(--theme-primary), white 90%);
 
 
   --input-border: oklch(0.8 0 0);
   --input-bg: white;
   --input-text: black;
-  --input-focus-ring: color-mix(in oklch, var(--theme-primary), transparent 70%);
+  --input-focus-ring: color-mix(in oklab, var(--theme-primary), transparent 70%);
   --input-focus-border: var(--theme-primary);
 }
 
@@ -236,13 +246,13 @@ html {
 .topnav-chip {
   border-radius: var(--radius-md, 0.375rem);
   color: var(--topnav-link-color);
-  background: color-mix(in oklch, var(--topnav-background), var(--topnav-text-color) 7%);
+  background: color-mix(in oklab, var(--topnav-background), var(--topnav-text-color) 7%);
   transition: background-color 120ms ease, color 120ms ease;
 }
 
 .topnav-chip:hover {
   color: var(--topnav-link-hover-color);
-  background: color-mix(in oklch, var(--topnav-background), var(--topnav-text-color) 16%);
+  background: color-mix(in oklab, var(--topnav-background), var(--topnav-text-color) 16%);
 }
 
 .topnav-chip:focus-visible {
@@ -255,7 +265,7 @@ html {
    current port was told apart by weight alone. */
 .topnav-chip[aria-current='page'] {
   color: var(--theme-accent);
-  background: color-mix(in oklch, var(--topnav-background), var(--theme-accent) 16%);
+  background: color-mix(in oklab, var(--topnav-background), var(--theme-accent) 16%);
   font-weight: 600;
 }
 
@@ -287,29 +297,29 @@ html[data-theme-mode="dark"] {
 
   /* TopNav variables (dark mode) */
   --topnav-background: #131416;
-  --topnav-border-color: color-mix(in oklch, var(--theme-accent), #1e293b 20%);
+  --topnav-border-color: color-mix(in oklab, var(--theme-accent), #1e293b 20%);
   --topnav-border-opacity: 0.4;
   --topnav-text-color: white;
   --topnav-link-color: white;
   --topnav-link-hover-color: var(--theme-primary);
 
   /* Chart variables (dark mode) */
-  --chart-container-background: color-mix(in oklch, var(--background-color), oklch(100% 0 0) 3%);
+  --chart-container-background: color-mix(in oklab, var(--background-color), oklch(100% 0 0) 3%);
   --chart-background-color: var(--background-color);
   --chart-link-color-hover: white;
   --chart-label-color: white;
-  --line-chart-grid-stroke: color-mix(in oklch, var(--background-color), oklch(100% 0 0) 25%);
-  --line-chart-grid-tick: color-mix(in oklch, var(--background-color), oklch(100% 0 0) 25%);
+  --line-chart-grid-stroke: color-mix(in oklab, var(--background-color), oklch(100% 0 0) 25%);
+  --line-chart-grid-tick: color-mix(in oklab, var(--background-color), oklch(100% 0 0) 25%);
 
   /* Component-specific semantic tokens (dark mode) */
   --button-bg-secondary: white;
   --button-border-secondary: var(--theme-primary);
   --button-text-secondary: var(--theme-primary);
-  --button-bg-secondary-hover: color-mix(in oklch, var(--theme-primary), white 90%);
-  --button-bg-secondary-active: color-mix(in oklch, var(--theme-primary), white 85%);
+  --button-bg-secondary-hover: color-mix(in oklab, var(--theme-primary), white 90%);
+  --button-bg-secondary-active: color-mix(in oklab, var(--theme-primary), white 85%);
 
   --input-border: oklch(0.3 0 0);
-  --input-bg: color-mix(in oklch, var(--background-color), black 5%);
+  --input-bg: color-mix(in oklab, var(--background-color), black 5%);
   --input-text: white;
 }
 
@@ -695,12 +705,7 @@ html[data-prerelease='dismissed'] .prerelease-notice {
 
 .prerelease-notice {
   border-bottom: 1px solid var(--color-background-border);
-  /* Mixed into the surface rather than laid over the page as a translucent
-     tint. `--theme-accent` is a palette value and does not change with the
-     colour scheme, so a transparent wash of it reads differently on white
-     than on #131416; composing it against the surface token, which does
-     change, gives one weight in both. */
-  background: color-mix(in oklch, var(--theme-accent) 12%, var(--color-background-secondary));
+  background: var(--color-background-secondary);
 }
 
 .prerelease-notice__inner {
@@ -722,10 +727,7 @@ html[data-prerelease='dismissed'] .prerelease-notice {
   line-height: 1.4;
 }
 
-/* Carries the weight so the bar reads as a notice at a glance rather than as
-   another row of navigation. Both tokens are palette values, and the accent
-   is light in every palette, so the dark text token contrasts against it in
-   either colour scheme. */
+/* Filled elements use a foreground paired with their own background. */
 .prerelease-notice__badge {
   /* `inline-flex` with `line-height: 1`, not the inherited 1.4. A block-level
      strong inside the flex paragraph centred its *box* against the sentence
@@ -735,8 +737,8 @@ html[data-prerelease='dismissed'] .prerelease-notice {
   display: inline-flex;
   align-items: center;
   border-radius: 0.25rem;
-  background: var(--theme-accent);
-  color: var(--theme-text);
+  background: var(--brand-solid);
+  color: var(--brand-on-solid);
   padding: 0.2rem 0.4rem;
   font-size: 0.6875rem;
   line-height: 1;
@@ -759,9 +761,9 @@ html[data-prerelease='dismissed'] .prerelease-notice {
   display: inline-flex;
   align-items: center;
   flex: none;
-  border: 1px solid color-mix(in oklch, currentColor, transparent 75%);
+  border: 1px solid color-mix(in oklab, currentColor, transparent 75%);
   border-radius: 0.375rem;
-  background: color-mix(in oklch, currentColor, transparent 92%);
+  background: color-mix(in oklab, currentColor, transparent 92%);
   color: inherit;
   padding: 0.3rem 0.6rem;
   font-size: 0.75rem;
@@ -771,8 +773,8 @@ html[data-prerelease='dismissed'] .prerelease-notice {
 }
 
 .prerelease-notice__dismiss:hover {
-  border-color: color-mix(in oklch, currentColor, transparent 55%);
-  background: color-mix(in oklch, currentColor, transparent 84%);
+  border-color: color-mix(in oklab, currentColor, transparent 55%);
+  background: color-mix(in oklab, currentColor, transparent 84%);
 }
 
 .prerelease-notice__dismiss:focus-visible {
@@ -831,7 +833,7 @@ html[data-prerelease='dismissed'] .prerelease-notice {
 }
 
 .scheme-switch__option:hover {
-  background: color-mix(in oklch, var(--topnav-background), var(--topnav-text-color) 10%);
+  background: color-mix(in oklab, var(--topnav-background), var(--topnav-text-color) 10%);
 }
 
 .scheme-switch__icon {
@@ -842,7 +844,7 @@ html[data-prerelease='dismissed'] .prerelease-notice {
 html[data-color-scheme='system'] .scheme-switch__option[data-scheme='system'],
 html[data-color-scheme='light'] .scheme-switch__option[data-scheme='light'],
 html[data-color-scheme='dark'] .scheme-switch__option[data-scheme='dark'] {
-  background: color-mix(in oklch, var(--topnav-background), var(--topnav-text-color) 16%);
+  background: color-mix(in oklab, var(--topnav-background), var(--topnav-text-color) 16%);
   font-weight: 600;
 }
 
@@ -868,9 +870,8 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   outline-offset: 1px;
 }
 
-/* The header is tight before it wraps, and the icons carry the meaning on
-   their own once a reader has used the control twice. */
-@media (max-width: 60rem) {
+/* Keep full language names by hiding the scheme labels first. */
+@media (max-width: 79.999rem) {
   .scheme-switch__label {
     position: absolute;
     width: 1px;
@@ -893,8 +894,8 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
  * of the viewport, above the docs shell's own mobile toolbar. Wrapping is what
  * a bar does when nobody has decided what to drop.
  *
- * So it drops. One row at every width; the languages leave the bar first, then
- * the secondary controls, into a disclosure that is already in the markup.
+ * Scheme labels yield first, then language names shorten. On phones the
+ * languages move into the disclosure already in the markup.
  */
 .site-header__bar {
   margin-inline: auto;
@@ -908,6 +909,9 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 
 .site-header__mark {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .site-header__spacer {
@@ -1026,9 +1030,8 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 
 /* ── Where the pieces move ──────────────────────────────
  *
- * 80rem is where all ten languages, the controls and the links fit on one
- * line with room to spare. Below it the languages go to the panel; the bar
- * keeps the wordmark, the colour scheme, search and the menu.
+ * Wide screens also show the secondary links and color-scheme labels.
+ * The compact language row below keeps those links in the menu.
  */
 .site-header__wide-link {
   display: none;
@@ -1178,4 +1181,30 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 
 [open] > .page-port-switcher__summary .page-port-switcher__caret {
   transform: rotate(180deg);
+}
+
+/* Full names fit from 52rem with compact controls. Abbreviate below it. */
+.port-abbreviation { display: none; }
+@media (min-width: 48rem) and (max-width: 79.999rem) {
+  .site-header__ports { display: block; }
+  .site-header__ports .topnav-chip { padding-inline: 0.3rem; }
+  .site-header__ports > nav { gap: 0.1rem; }
+  .site-header__panel-ports, .site-header__menu-label { display: none; }
+  .site-header__bar { gap: 0.5rem; }
+}
+@media (min-width: 48rem) and (max-width: 51.999rem) {
+  .site-header__ports .port-name { display: none; }
+  .site-header__ports .port-abbreviation { display: inline; }
+}
+@media (max-width: 25rem) {
+  .site-header__menu-label { display: none; }
+}
+
+.brand-action {
+  background: var(--brand-solid);
+  color: var(--brand-on-solid);
+}
+.brand-action:hover {
+  background: color-mix(in srgb, var(--brand-solid), #000 12%);
+  color: var(--brand-on-solid);
 }

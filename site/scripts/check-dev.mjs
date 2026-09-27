@@ -55,7 +55,7 @@ async function retryReload(check) {
 
 try {
   browser = await chromium.launch({ channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL })
-  const page = await browser.newPage()
+  const page = await browser.newPage({ reducedMotion: 'reduce' })
   page.setDefaultTimeout(10000)
   const manifest = await page.request.get(`${base}/page-links.json`)
   assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
@@ -102,11 +102,18 @@ try {
       const target = await page.request.get(base.replace(/\/en$/, '') + expected)
       assert(target.ok(), `Equivalent target: HTTP ${target.status()}`)
     }
-    for (const width of [1440, 768, 390]) {
+    for (const width of [1440, 1024, 832, 768, 390]) {
       await page.setViewportSize({ width, height: 1000 })
 
       const result = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - innerWidth,
+        headerHeight: document.querySelector('.site-header__bar').getBoundingClientRect().height,
+        badgeForeground: getComputedStyle(document.querySelector('.prerelease-notice__badge')).color,
+        portVisibility: getComputedStyle(document.querySelector('.site-header__ports')).display,
+        shortLabel: getComputedStyle(document.querySelector('.site-header__ports .port-abbreviation')).display,
+        languageEnd: document.querySelector('.site-header__ports nav a:last-child').getBoundingClientRect().right,
+        controlsStart: document.querySelector('.site-header__always').getBoundingClientRect().left,
+        schemeLabelWidth: document.querySelector('.scheme-switch__label').getBoundingClientRect().width,
         columns: [...document.querySelectorAll('table')].flatMap((table) => {
           const head = [...(table.tHead?.rows[0]?.cells ?? [])]
           const body = [...(table.tBodies[0]?.rows[0]?.cells ?? [])]
@@ -114,6 +121,15 @@ try {
             ? head.map((cell, i) => Math.abs(cell.getBoundingClientRect().x - body[i].getBoundingClientRect().x)) : []
         }),
       }))
+      assert(result.headerHeight <= 49, `${path} at ${width}px: header grew`)
+      assert.equal(result.badgeForeground, 'rgb(255, 255, 255)', 'Filled badge uses white foreground')
+      if (width === 768) {
+        assert.notEqual(result.portVisibility, 'none', 'Language links remain visible on tablets')
+        assert.notEqual(result.shortLabel, 'none', 'Tablet navigation uses abbreviated language names')
+      }
+      if (width >= 832) assert.equal(result.shortLabel, 'none', 'Full language names fit with compact scheme controls')
+      if (width >= 768) assert(result.languageEnd <= result.controlsStart, 'Language links do not overlap controls')
+      if (width < 1280) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
       assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
       assert(result.columns.every((delta) => delta <= 1), `${path} at ${width}px: table columns misaligned`)
     }
@@ -140,7 +156,59 @@ try {
   })
   const clipboardError = await clipboard
   if (clipboardError) throw clipboardError
-  console.log('Fresh Astro + browser: prose, workspace, MCP tools and API equivalent; 1440/768/390px PASS')
+  await page.goto(`${base}/`, { waitUntil: 'load' })
+  await page.locator('.scheme-switch input[value="dark"]').check({ force: true })
+  const chipPixel = await page.evaluate(() => {
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+    context.fillStyle = getComputedStyle(document.querySelector('.topnav-chip')).backgroundColor
+    context.fillRect(0, 0, 1, 1)
+    return [...context.getImageData(0, 0, 1, 1).data]
+  })
+  assert(chipPixel[2] > chipPixel[1] && chipPixel[1] > chipPixel[0],
+    `Python dark chip must retain its blue-gray hue: ${chipPixel}`)
+  const darkSurface = () => page.evaluate(() => ({
+    background: getComputedStyle(document.body).backgroundColor,
+    foreground: getComputedStyle(document.body).color,
+    navigation: getComputedStyle(document.querySelector('.topnav-chip:not([aria-current])')).color,
+    notice: getComputedStyle(document.querySelector('.prerelease-notice')).backgroundColor,
+  }))
+  const pythonSurface = await darkSurface()
+  await page.goto(`${base}/cxx/latest/mcp/`, { waitUntil: 'load' })
+  assert.deepEqual(await darkSurface(), pythonSurface, 'C++ keeps the shared neutral dark surfaces')
+  for (const colorScheme of ['light', 'dark']) {
+    const context = await browser.newContext({ javaScriptEnabled: false, colorScheme })
+    const noScript = await context.newPage()
+    await noScript.goto(`${base}/concepts/server-session-window-pane/`, { waitUntil: 'load' })
+    const checkContrast = async (scheme) => {
+      const samples = await noScript.evaluate(() => {
+        const context = document.createElement('canvas').getContext('2d')
+        const luminance = (color) => {
+          context.fillStyle = color
+          context.fillRect(0, 0, 1, 1)
+          const channels = [...context.getImageData(0, 0, 1, 1).data].slice(0, 3)
+            .map((v) => v / 255).map((v) => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4)
+          return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722
+        }
+        return ['h1', '.prose h2', '.prose p'].map((selector) => {
+          const element = document.querySelector(selector)
+          let parent = element
+          while (getComputedStyle(parent).backgroundColor === 'rgba(0, 0, 0, 0)') parent = parent.parentElement
+          const values = [getComputedStyle(element).color, getComputedStyle(parent).backgroundColor]
+            .map(luminance).sort((a, b) => b - a)
+          return { selector, contrast: (values[0] + .05) / (values[1] + .05) }
+        })
+      })
+      for (const sample of samples) assert(sample.contrast >= 4.5,
+        `No-JS ${scheme} ${sample.selector} contrast: ${sample.contrast}`)
+    }
+    await checkContrast(colorScheme)
+    const override = colorScheme === 'dark' ? 'light' : 'dark'
+    await noScript.evaluate((mode) => { document.documentElement.dataset.themeMode = mode }, override)
+    await checkContrast(`${colorScheme} with ${override} override`)
+    await context.close()
+  }
+  console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1440px header and dark hue PASS')
 } finally {
   await browser?.close()
   await server.stop()

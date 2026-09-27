@@ -61,12 +61,12 @@ const { href, label, isActive = false, external = false } = Astro.props
 
   .sidebar-link.active {
     color: var(--theme-primary);
-    background: color-mix(in oklch, var(--theme-primary), transparent 90%);
+    background: color-mix(in oklab, var(--theme-primary), transparent 90%);
     font-weight: 500;
   }
 
   :global([data-theme-mode='dark']) .sidebar-link.active {
-    background: color-mix(in oklch, var(--theme-primary), transparent 85%);
+    background: color-mix(in oklab, var(--theme-primary), transparent 85%);
   }
 
   .external-indicator {

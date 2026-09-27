@@ -102,8 +102,10 @@ describe.skipIf(!SITE_BUILT)('machine-readable footer', () => {
     for (const page of htmlFiles()) {
       const html = readFileSync(join(BUCKET_ROOT, page), 'utf8')
       if (/http-equiv=(?:"refresh"|refresh)/.test(html)) continue
-      if (!/\bdata-theme=(?:"purple"|purple\b)/.test(html)) {
-        if (!NATIVE.test(page)) problems.push(`${page}: neither a shell page nor native API output`)
+      if (NATIVE.test(page)) continue
+      const root = /<html\b[^>]*>/.exec(html)?.[0] ?? ''
+      if (!value(root, 'data-brand')) {
+        problems.push(`${page}: neither a shell page nor native API output`)
         continue
       }
       checked++

@@ -9,7 +9,7 @@
 
 .lm-aside {
   --lm-aside-color: oklch(0.65 0.15 250);
-  --lm-aside-bg: color-mix(in oklch, var(--lm-aside-color), white 80%);
+  --lm-aside-bg: color-mix(in oklab, var(--lm-aside-color), white 80%);
 }
 
 .lm-aside--tip {
@@ -34,7 +34,7 @@
 }
 
 html[data-theme-mode="dark"] .lm-aside__title {
-  color: color-mix(in oklch, var(--lm-aside-color), white 30%);
+  color: color-mix(in oklab, var(--lm-aside-color), white 30%);
 }
 
 .lm-aside__content {
@@ -67,19 +67,19 @@ html[data-theme-mode="dark"] .lm-aside__content {
 }
 
 html[data-theme-mode="dark"] .lm-aside__icon--inline {
-  color: color-mix(in oklch, var(--lm-aside-color), white 30%);
+  color: color-mix(in oklab, var(--lm-aside-color), white 30%);
 }
 
 .lm-aside__icon--soft {
   padding: 0.25rem;
-  background: color-mix(in oklch, var(--lm-aside-color), white 70%);
+  background: color-mix(in oklab, var(--lm-aside-color), white 70%);
   border-radius: 0.375rem;
   color: var(--lm-aside-color);
 }
 
 html[data-theme-mode="dark"] .lm-aside__icon--soft {
-  background: color-mix(in oklch, var(--lm-aside-color), transparent 70%);
-  color: color-mix(in oklch, var(--lm-aside-color), white 30%);
+  background: color-mix(in oklab, var(--lm-aside-color), transparent 70%);
+  color: color-mix(in oklab, var(--lm-aside-color), white 30%);
 }
 
 .lm-aside__icon--solid {
@@ -91,7 +91,7 @@ html[data-theme-mode="dark"] .lm-aside__icon--soft {
 }
 
 html[data-theme-mode="dark"] .lm-aside__icon--solid {
-  background: color-mix(in oklch, var(--lm-aside-color), white 10%);
+  background: color-mix(in oklab, var(--lm-aside-color), white 10%);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
@@ -120,7 +120,7 @@ html[data-theme-mode="dark"] .lm-aside__icon--solid {
 }
 
 html[data-theme-mode="dark"] .lm-aside--classic {
-  --lm-aside-bg: color-mix(in oklch, var(--lm-aside-color), transparent 85%);
+  --lm-aside-bg: color-mix(in oklab, var(--lm-aside-color), transparent 85%);
 }
 
 /* Refined and hybrid: left border on a background that fades right. They
@@ -131,36 +131,36 @@ html[data-theme-mode="dark"] .lm-aside--classic {
   padding: 1rem 1.25rem;
   margin: 1.5rem 0;
   border-radius: 0 0.5rem 0.5rem 0;
-  background: linear-gradient(to right, var(--lm-aside-bg), color-mix(in oklch, var(--lm-aside-bg), white 60%) 100%);
+  background: linear-gradient(to right, var(--lm-aside-bg), color-mix(in oklab, var(--lm-aside-bg), white 60%) 100%);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 html[data-theme-mode="dark"] .lm-aside--refined,
 html[data-theme-mode="dark"] .lm-aside--hybrid {
-  --lm-aside-bg: color-mix(in oklch, var(--lm-aside-color), transparent 85%);
-  background: linear-gradient(to right, var(--lm-aside-bg), color-mix(in oklch, var(--lm-aside-bg), transparent 40%) 100%);
-  border-left-color: color-mix(in oklch, var(--lm-aside-color), white 15%);
+  --lm-aside-bg: color-mix(in oklab, var(--lm-aside-color), transparent 85%);
+  background: linear-gradient(to right, var(--lm-aside-bg), color-mix(in oklab, var(--lm-aside-bg), transparent 40%) 100%);
+  border-left-color: color-mix(in oklab, var(--lm-aside-color), white 15%);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 /* Card: a bordered card with no left accent. */
 .lm-aside--card {
-  border: 1px solid color-mix(in oklch, var(--lm-aside-color), white 70%);
+  border: 1px solid color-mix(in oklab, var(--lm-aside-color), white 70%);
   border-radius: 0.75rem;
   padding: 1.25rem;
   margin: 1.5rem 0;
-  background: color-mix(in oklch, var(--lm-aside-color), white 92%);
+  background: color-mix(in oklab, var(--lm-aside-color), white 92%);
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 html[data-theme-mode="dark"] .lm-aside--card {
-  background: color-mix(in oklch, var(--lm-aside-color), transparent 88%);
-  border-color: color-mix(in oklch, var(--lm-aside-color), transparent 65%);
+  background: color-mix(in oklab, var(--lm-aside-color), transparent 88%);
+  border-color: color-mix(in oklab, var(--lm-aside-color), transparent 65%);
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 color-mix(in oklch, var(--lm-aside-color), transparent 80%);
+    inset 0 1px 0 color-mix(in oklab, var(--lm-aside-color), transparent 80%);
 }
 
 /* Minimal: a top border and an uppercase title. */
@@ -169,7 +169,7 @@ html[data-theme-mode="dark"] .lm-aside--card {
   border-radius: 0;
   padding: 1rem 0 1rem 1rem;
   margin: 1.5rem 0;
-  background: color-mix(in oklch, var(--lm-aside-color), white 96%);
+  background: color-mix(in oklab, var(--lm-aside-color), white 96%);
   box-shadow: none;
 }
 
@@ -184,8 +184,8 @@ html[data-theme-mode="dark"] .lm-aside--card {
 }
 
 html[data-theme-mode="dark"] .lm-aside--minimal {
-  background: color-mix(in oklch, var(--lm-aside-color), transparent 94%);
-  border-top-color: color-mix(in oklch, var(--lm-aside-color), white 20%);
+  background: color-mix(in oklab, var(--lm-aside-color), transparent 94%);
+  border-top-color: color-mix(in oklab, var(--lm-aside-color), white 20%);
 }
 
 html[data-theme-mode="dark"] .lm-aside--minimal .lm-aside__content {

@@ -34,6 +34,8 @@ const END = '  // <<< end generated'
 const rows = PORTS.map((p) => ({
   slug: p.slug,
   name: p.name,
+  shortName: p.shortName,
+  logoLanguage: p.logoLanguage,
   versionedDocs: p.versionedDocs,
 }))
 

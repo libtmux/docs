@@ -1,5 +1,6 @@
 ---
 import type { Graph } from 'schema-dts'
+import { branding, jsonLd, PYTHON_DESCRIPTION, PYTHON_SAME_AS } from '../lib/branding'
 import { DOC_PRODUCTS, PORT_BY_SLUG, type DocProduct } from '../lib/ports'
 import { canonicalUrl, robotsFor, type VersionEntry } from '../lib/versions'
 import { IS_ROOT_BUILD, SITE_ROOT } from '../lib/site-root'
@@ -20,6 +21,10 @@ interface Props {
   pagePath: string
   /** Port slug when the page belongs to one; omitted for shared shell pages. */
   portSlug?: string
+  /** Visual identity may name a reference port without changing canonical routing. */
+  brandPort?: string
+  /** Repository of the documented product, including ports with separate repos. */
+  repository?: string
   /** Version slug for this build. */
   version: string
   /** The version this port currently defaults to. */
@@ -62,6 +67,8 @@ const {
   description,
   pagePath,
   portSlug,
+  brandPort,
+  repository,
   version,
   defaultVersion,
   versionEntry,
@@ -76,7 +83,12 @@ const {
 } = Astro.props as Props
 
 const origin = (Astro.site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
-const port = portSlug ? PORT_BY_SLUG[portSlug] : undefined
+const port = PORT_BY_SLUG[brandPort ?? portSlug ?? '']
+const brand = branding(brandPort ?? portSlug, pagePath, SITE_ROOT)
+const imageUrl = new URL(brand.asset('opengraph-light.png'), origin).href
+const logoUrl = new URL(brand.asset('logo-512.png'), origin).href
+const repositoryUrl = port ? `https://github.com/${repository ?? port.repo}` : undefined
+const twitterImage = new URL(brand.asset('twitter-light.png'), origin).href
 
 /*
  * Absolute URLs compose through the build's own site root, not the bare
@@ -128,7 +140,7 @@ const robots = noindex ? 'noindex, nofollow' : robotsFor(versionEntry, indexable
 const fullTitle = title === 'libtmux' ? title : `${title} | libtmux`
 const desc =
   description ??
-  'libtmux is a typed tmux control library, available in Python, TypeScript, Rust, Go, Java, .NET, C++ and Swift.'
+  (port ? `Typed tmux control for ${port.language}.` : PYTHON_DESCRIPTION)
 
 // Structured data. WebSite on the landing page, TechArticle elsewhere —
 // TechArticle is the schema.org type that actually fits API documentation,
@@ -142,8 +154,21 @@ const graph: Graph = {
       '@id': `${origin}/#website`,
       url: `${origin}/`,
       name: 'libtmux',
-      description:
-        'A typed tmux control library for ten languages, with one documentation site.',
+      description: PYTHON_DESCRIPTION,
+      image: new URL(`${SITE_ROOT}/brand/python/library/opengraph-light.png`, origin).href,
+      about: { '@id': `${origin}/#libtmux` },
+    },
+    {
+      '@type': 'SoftwareSourceCode',
+      '@id': `${origin}/#libtmux`,
+      name: 'libtmux',
+      description: PYTHON_DESCRIPTION,
+      url: 'https://libtmux.git-pull.com/',
+      codeRepository: 'https://github.com/tmux-python/libtmux',
+      programmingLanguage: 'Python',
+      sameAs: PYTHON_SAME_AS,
+      image: new URL(`${SITE_ROOT}/brand/python/library/logo-512.png`, origin).href,
+      author: { '@type': 'Person', name: 'Tony Narlock', url: 'https://tony.sh/' },
     },
     ...(pagePath
       ? [
@@ -153,12 +178,13 @@ const graph: Graph = {
             url: canonical,
             headline: title,
             description: desc,
+            image: imageUrl,
             isPartOf: { '@id': `${origin}/#website` },
             inLanguage: locale,
             ...(updated ? { dateModified: updated } : {}),
             ...(port
               ? {
-                  about: { '@type': 'SoftwareSourceCode' as const, name: DOC_PRODUCTS[pagePath.split('/')[0] as DocProduct]?.label ?? port.packageName, programmingLanguage: port.language },
+                  about: { '@type': 'SoftwareSourceCode' as const, name: brand.variant === 'library' ? port.packageName : `${port.packageName} ${DOC_PRODUCTS[brand.variant as DocProduct].label}`, programmingLanguage: brand.palette.name, codeRepository: repositoryUrl, image: logoUrl, sameAs: [repositoryUrl!] },
                 }
               : {}),
           },
@@ -202,6 +228,17 @@ const graph: Graph = {
 <meta property="og:description" content={desc} />
 <meta property="og:url" content={canonical} />
 <meta property="og:site_name" content="libtmux" />
+<meta property="og:image" content={imageUrl} />
+<meta property="og:image:secure_url" content={imageUrl} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={brand.label} />
+<meta property="og:locale" content={locale === 'ja' ? 'ja_JP' : 'en_US'} />
 <meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={desc} />
+<meta name="twitter:image" content={twitterImage} />
+<meta name="twitter:image:alt" content={brand.label} />
 
-<script type="application/ld+json" is:inline set:html={JSON.stringify(graph)} />
+<script type="application/ld+json" is:inline set:html={jsonLd(graph)} />

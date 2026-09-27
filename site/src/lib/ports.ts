@@ -138,6 +138,9 @@ export interface InstallForm {
 export interface Port {
   /** URL segment under the site root, e.g. `py` in /py/stable/. */
   slug: string
+  /** Artwork palette and compact navigation label. */
+  logoLanguage: string
+  shortName: string
   /** Human name for nav and headings. */
   name: string
   /** Language shown in the port switcher. */
@@ -269,6 +272,8 @@ export interface Port {
 export const PORTS: readonly Port[] = [
   {
     slug: 'py',
+    logoLanguage: 'python',
+    shortName: 'Py',
     name: 'Python',
     language: 'Python',
     packageName: 'libtmux',
@@ -321,6 +326,8 @@ export const PORTS: readonly Port[] = [
   },
   {
     slug: 'ruby',
+    logoLanguage: 'ruby',
+    shortName: 'Rb',
     name: 'Ruby',
     language: 'Ruby',
     packageName: 'libtmux',
@@ -384,6 +391,8 @@ export const PORTS: readonly Port[] = [
   },
   {
     slug: 'lua',
+    logoLanguage: 'lua',
+    shortName: 'Lua',
     name: 'Lua',
     language: 'Lua',
     packageName: 'libtmux',
@@ -416,6 +425,8 @@ export const PORTS: readonly Port[] = [
   },
   {
     slug: 'ts',
+    logoLanguage: 'typescript',
+    shortName: 'TS',
     workspaceCli: 'tmux-workspace load',
     workspaceCliAvailability: 'published',
     name: 'TypeScript',
@@ -570,6 +581,8 @@ export const PORTS: readonly Port[] = [
   },
   {
     slug: 'rs',
+    logoLanguage: 'rust',
+    shortName: 'Rs',
     workspaceCli: 'tmux-workspace load',
     workspaceCliAvailability: 'local',
     name: 'Rust',
@@ -608,6 +621,8 @@ export const PORTS: readonly Port[] = [
   },
   {
     slug: 'go',
+    logoLanguage: 'go',
+    shortName: 'Go',
     workspaceCli: 'tmux-workspace load',
     workspaceCliAvailability: 'local',
     name: 'Go',
@@ -662,6 +677,8 @@ export const PORTS: readonly Port[] = [
   },
   {
     slug: 'java',
+    logoLanguage: 'java',
+    shortName: 'Java',
     workspaceCli: 'tmux-workspace load',
     workspaceCliAvailability: 'local',
     name: 'Java',
@@ -726,6 +743,8 @@ export const PORTS: readonly Port[] = [
   },
   {
     slug: 'dotnet',
+    logoLanguage: 'csharp',
+    shortName: '.NET',
     workspaceCli: 'tmux-workspace load',
     workspaceCliAvailability: 'published',
     name: '.NET',
@@ -788,6 +807,8 @@ export const PORTS: readonly Port[] = [
   },
   {
     slug: 'cxx',
+    logoLanguage: 'cpp',
+    shortName: 'C++',
     workspaceCli: 'tmux-workspace load',
     workspaceCliAvailability: 'local',
     name: 'C++',
@@ -852,6 +873,8 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
   },
   {
     slug: 'swift',
+    logoLanguage: 'swift',
+    shortName: 'Sw',
     workspaceCli: 'tmux-workspace load',
     workspaceCliAvailability: 'local',
     name: 'Swift',
@@ -1102,4 +1125,20 @@ export function releaseWording(port: Port, entry: RegistryEntry): string {
     return `${port.packageName} has no stable release. ${entry.version} is the newest prerelease on ${port.registry?.name ?? 'its registry'}, and the command below names it because the resolver skips prereleases otherwise.`
   }
   return `${port.packageName} is not published to ${port.registry?.name ?? 'its registry'} yet, so this installs from the repository at tag ${entry.tag}.`
+}
+
+/** Artwork identity for a port page, reference, or shared product landing. */
+export function pageBrand(portSlug?: string, pagePath = ''): { language: string; variant: 'library' | 'workspace' | 'mcp' } {
+  const segments = pagePath.toLowerCase().split('/').filter(Boolean)
+  const port = PORT_BY_SLUG[portSlug ?? ''] ?? PORT_BY_SLUG[segments[0] === 'reference' ? segments[1] ?? '' : '']
+  let language = port?.logoLanguage ?? 'python'
+  if (port?.slug === 'java') {
+    if (segments.some((segment) => /(^|[-.])kotlin($|[-.])/.test(segment))) language = 'kotlin'
+    else if (segments.some((segment) => /(^|[-.])scala($|[-.])/.test(segment))) language = 'scala'
+  } else if (port?.slug === 'dotnet' && segments.some((segment) => /(^|[-.])fsharp($|[-.])/.test(segment))) {
+    language = 'fsharp'
+  }
+  const variant = segments.some((segment) => /^(?:libtmux[-.]|tmux-)?mcp(?:[.-]|$)/.test(segment)) ? 'mcp'
+    : segments.some((segment) => /^(?:libtmux[-.]|tmux-)?workspace(?:[.-]|$)/.test(segment)) ? 'workspace' : 'library'
+  return { language, variant }
 }

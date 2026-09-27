@@ -1,0 +1,16 @@
+---
+import { branding } from '../lib/branding'
+import { SITE_ROOT } from '../lib/site-root'
+interface Props { portSlug?: string; pagePath?: string }
+const { portSlug, pagePath = '' } = Astro.props
+const brand = branding(portSlug, pagePath, SITE_ROOT)
+---
+<link rel="icon" href={brand.asset('favicon.ico')} sizes="16x16 32x32 48x48 256x256" />
+<link rel="icon" type="image/png" href={brand.asset('logo-32.png')} sizes="32x32" />
+<link rel="icon" type="image/svg+xml" href={brand.asset('logo.svg')} sizes="any" />
+<link rel="apple-touch-icon" href={brand.asset('apple-touch-icon-light.png')} sizes="180x180" />
+<link rel="mask-icon" href={brand.asset('safari-pinned-tab.svg')} color={brand.palette.color} />
+<link rel="manifest" href={brand.asset('site.webmanifest')} />
+<meta name="theme-color" content={brand.palette.light.background} media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content={brand.palette.dark.background} media="(prefers-color-scheme: dark)" />
+<meta name="msapplication-config" content={brand.asset('browserconfig.xml')} />
