@@ -176,6 +176,38 @@ try {
   const pythonSurface = await darkSurface()
   await page.goto(`${base}/cxx/latest/mcp/`, { waitUntil: 'load' })
   assert.deepEqual(await darkSurface(), pythonSurface, 'C++ keeps the shared neutral dark surfaces')
+  for (const colorScheme of ['light', 'dark']) {
+    const context = await browser.newContext({ javaScriptEnabled: false, colorScheme })
+    const noScript = await context.newPage()
+    await noScript.goto(`${base}/concepts/server-session-window-pane/`, { waitUntil: 'load' })
+    const checkContrast = async (scheme) => {
+      const samples = await noScript.evaluate(() => {
+        const context = document.createElement('canvas').getContext('2d')
+        const luminance = (color) => {
+          context.fillStyle = color
+          context.fillRect(0, 0, 1, 1)
+          const channels = [...context.getImageData(0, 0, 1, 1).data].slice(0, 3)
+            .map((v) => v / 255).map((v) => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4)
+          return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722
+        }
+        return ['h1', '.prose h2', '.prose p'].map((selector) => {
+          const element = document.querySelector(selector)
+          let parent = element
+          while (getComputedStyle(parent).backgroundColor === 'rgba(0, 0, 0, 0)') parent = parent.parentElement
+          const values = [getComputedStyle(element).color, getComputedStyle(parent).backgroundColor]
+            .map(luminance).sort((a, b) => b - a)
+          return { selector, contrast: (values[0] + .05) / (values[1] + .05) }
+        })
+      })
+      for (const sample of samples) assert(sample.contrast >= 4.5,
+        `No-JS ${scheme} ${sample.selector} contrast: ${sample.contrast}`)
+    }
+    await checkContrast(colorScheme)
+    const override = colorScheme === 'dark' ? 'light' : 'dark'
+    await noScript.evaluate((mode) => { document.documentElement.dataset.themeMode = mode }, override)
+    await checkContrast(`${colorScheme} with ${override} override`)
+    await context.close()
+  }
   console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1440px header and dark hue PASS')
 } finally {
   await browser?.close()

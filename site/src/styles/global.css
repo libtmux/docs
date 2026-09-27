@@ -16,8 +16,17 @@
 
 /* Font-face declarations handled by @fontsource imports */
 
-/* Custom variant for dark mode using data attribute instead of class */
-@custom-variant dark (&:where([data-theme-mode="dark"], [data-theme-mode="dark"] *));
+/* Match brand.css before ThemeScript runs, while preserving explicit choices. */
+@custom-variant dark {
+  &:where([data-theme-mode="dark"], [data-theme-mode="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(html:not([data-theme-mode]):not([data-theme="light"]), html:not([data-theme-mode]):not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
 
 /* Custom variant for touch/coarse pointer devices (phones, tablets) */
 @custom-variant coarse (@media (pointer: coarse));
