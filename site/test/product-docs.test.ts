@@ -263,7 +263,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     }
   })
 
-  it('places the available product mark above its overview title', () => {
+  it('pairs the available product mark with its overview title', () => {
     for (const page of pages()) {
       const port = PORTS.find((entry) => entry.slug === page.port)!
       const html = pageHtml(page.path)

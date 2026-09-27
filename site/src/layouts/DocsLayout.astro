@@ -223,10 +223,12 @@ const breadcrumbs = product && port ? [
       <PageToolbar breadcrumbs={breadcrumbs} pagePorts={pagePorts} port={port} editHref={editHref} editLabel={editLabel} />
       {bare ? <slot /> : (
       <article class="prose max-w-none dark:prose-invert">
-        {productBrand && (
-          <img src={withRoot(productBrand.asset('logo.svg'))} width="88" height="88" alt="" class="not-prose mb-4" />
-        )}
-        <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{title}</h1>
+        {productBrand ? (
+          <div class="product-hero">
+            <img src={withRoot(productBrand.asset('logo.svg'))} width="88" height="88" alt="" class="not-prose" />
+            <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{title}</h1>
+          </div>
+        ) : <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{title}</h1>}
         {/*
           The same caution the reference and the prose use, rather than a box
           of its own: a reader who has seen one development warning should
@@ -255,6 +257,13 @@ const breadcrumbs = product && port ? [
 </BaseLayout>
 
 <style>
+  .product-hero { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .product-hero img { width: 88px; height: 88px; flex: none; margin: 0; }
+  .product-hero h1 { min-width: 0; margin: 0; }
+  @media (max-width: 479px) {
+    .product-hero { display: block; }
+    .product-hero img { margin-bottom: 1rem; }
+  }
   /*
    * The breakpoint is stated here, not left to `lg:hidden` on the element.
    *

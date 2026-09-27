@@ -228,6 +228,25 @@ try {
   }
   console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
   await checkNavigation(page, base)
+  for (const path of ['ts/latest/workspace/', 'ruby/latest/mcp/']) {
+    await page.goto(`${base}/${path}`, { waitUntil: 'load' })
+    const hero = page.locator('.port-hero, .product-hero').first()
+    for (const width of [1440, 600, 390]) {
+      await page.setViewportSize({ width, height: 1000 })
+      const logo = await hero.locator('img').first().boundingBox()
+      const title = await hero.locator('h1').boundingBox()
+      assert.equal(logo.width, 88, `${path}: ${width}px logo width`)
+      assert.equal(logo.height, 88, `${path}: ${width}px logo height`)
+      if (width >= 480) {
+        assert(logo.x + logo.width <= title.x, `${path}: mark beside title`)
+        assert(title.y < logo.y + logo.height, `${path}: title shares the logo row`)
+      } else {
+        assert(title.y >= logo.y + logo.height, `${path}: phone title follows mark`)
+      }
+      assert(title.x + title.width <= width, `${path}: heading fits the viewport`)
+    }
+  }
+  console.log('Heroes: 88px marks share the title row and stack at phone widths')
 } finally {
   await browser?.close()
   await server.stop()
