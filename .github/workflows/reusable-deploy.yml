@@ -1,11 +1,12 @@
 name: reusable-deploy
 
-# Shared publish step for every self-hosted port (site/src/lib/ports.ts:
-# referenceMode 'self-hosted' — py, ts, dotnet, cxx, swift) plus this
-# repo's own PR previews. A caller builds with its own toolchain and
-# uploads an artifact; this workflow only downloads it, syncs it to its
-# one exclusive prefix, upserts that port's manifest fragment, and
-# invalidates. It never installs a language toolchain, so it can't couple
+# Shared publish step for every port on libtmux.org (all ten, Python from
+# its own docs branch) plus this repo's own PR previews. The port roles
+# trust only this workflow (job_workflow_ref), so it is the one path from a
+# port into the bucket. A caller builds with its own toolchain and uploads
+# an artifact; this workflow only downloads it, syncs it to its one
+# exclusive prefix, and upserts that port's manifest fragment. It never
+# installs a language toolchain, so it can't couple
 # one port's toolchain choice to another's (docs/ci.md, "shared file vs
 # shared execution").
 #
@@ -140,10 +141,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
-      # All ten port slugs plus the bucket-root reservations, even though
-      # only seven currently call this workflow: rs/go/java
-      # deep-link to an ecosystem host and should never reach here at all,
-      # so blocking their slugs too is defense in depth, not dead weight.
+      # All ten port slugs plus the bucket-root reservations. Every port calls
+      # this workflow, so a prefix outside a caller's own slug is refused here
+      # as well as by its IAM grant.
       # This is a literal copy of ports.ts, not a checkout of this repo — a
       # cross-repo checkout of a private repo would need a shared credential
       # handed to every caller, exactly the shared-execution risk per-repo
