@@ -87,6 +87,23 @@
    * here it is an attribute the first paint already carries, and `global.css`
    * keys the bar's `display` off it, so the bar is never drawn at all.
    */
+  /**
+   * The reader's dependency cooldown, resolved before first paint.
+   *
+   * The package pickers show one variant of each command per cooldown mode
+   * and key which on these attributes; set here, a saved cooldown paints the
+   * right command at once rather than swapping when the widget script runs.
+   * The MCP picker's own head snippet sets the same attributes on its pages.
+   */
+  function applyCooldown() {
+    const prefix = 'libtmux-docs.mcp-install.cooldown.';
+    const enabled = localStorage.getItem(prefix + 'enabled');
+    if (enabled !== '1' && enabled !== '0') return;
+    const root = document.documentElement;
+    root.setAttribute('data-mcp-install-cooldown-enabled', enabled);
+    root.setAttribute('data-mcp-install-cooldown-type', localStorage.getItem(prefix + 'type') === 'bypass' ? 'bypass' : 'days');
+  }
+
   function applyPrereleaseNotice() {
     if (localStorage.getItem('libtmux-docs.prerelease-notice') === 'dismissed') {
       document.documentElement.setAttribute('data-prerelease', 'dismissed');
@@ -141,6 +158,7 @@
   // Apply theme immediately on load
   applyTheme();
   applyPackagePort();
+  applyCooldown();
   applyPrereleaseNotice();
   gateOnFonts();
 

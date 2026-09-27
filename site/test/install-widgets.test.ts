@@ -195,6 +195,53 @@ describeIfBuilt('package install picker', () => {
     expect(visibleCommand(next.document, CORE)).toBe('$ npm install libtmux')
   })
 
+  /** The code of one command's cooldown variant, as the page would show it. */
+  const variantCode = (document: Document, panel: string, manager: number, mode: string) =>
+    document.querySelector(`${panel} .lm-pkg-install__cmd[data-manager="${manager}"] [data-cooldown-variant="${mode}"] code`)
+      ?.textContent?.trim() ?? ''
+
+  /** Drive a cooldown control the way a reader's change does. */
+  function change(loaded: Loaded, el: HTMLInputElement, value?: string) {
+    if (value === undefined) el.checked = true
+    else el.value = value
+    el.dispatchEvent(new loaded.window.Event('change', { bubbles: true }) as unknown as Event)
+  }
+
+  it('turns a cooldown on in every picker at once, the MCP picker included', () => {
+    const loaded = load(PORT_HOME, url)
+    const { window, document } = loaded
+    change(loaded, document.querySelector<HTMLInputElement>(`${CORE} [data-pkg-cooldown="toggle"]`)!)
+    expect(document.documentElement.getAttribute('data-mcp-install-cooldown-enabled')).toBe('1')
+    expect(window.localStorage.getItem('libtmux-docs.mcp-install.cooldown.enabled')).toBe('1')
+    expect(document.querySelector<HTMLInputElement>(`${CLI} [data-pkg-cooldown="toggle"]`)!.checked).toBe(true)
+    expect(document.querySelector<HTMLInputElement>('.lm-mcp-install__cooldown-toggle')!.checked).toBe(true)
+    expect(variantCode(document, CORE, 0, 'days')).toBe('$ npm install \\\n    --min-release-age=7 \\\n    --min-release-age-exclude=libtmux \\\n    libtmux')
+  })
+
+  it('writes the day count in each tool\'s unit', () => {
+    const loaded = load(PORT_HOME, url, { 'libtmux-docs.mcp-install.cooldown.enabled': '1' })
+    const { window, document } = loaded
+    change(loaded, document.querySelector<HTMLInputElement>(`${CLI} [data-pkg-cooldown="days"]`)!, '14')
+    expect(window.localStorage.getItem('libtmux-docs.mcp-install.cooldown.days')).toBe('14')
+    expect(variantCode(document, CORE, 0, 'days')).toContain('--min-release-age=14 ')
+    expect(variantCode(document, CORE, 1, 'days')).toContain('pnpm_config_minimum_release_age=20160 ')
+    expect(variantCode(document, CORE, 2, 'days')).toContain('YARN_NPM_MINIMAL_AGE_GATE=14d ')
+    expect(variantCode(document, CLI, 2, 'days')).toContain('pnpm_config_minimum_release_age=20160 ')
+  })
+
+  it('bypasses a global cooldown, and keeps the plain command where a tool cannot exempt the package', () => {
+    const loaded = load(PORT_HOME, url, { 'libtmux-docs.mcp-install.cooldown.enabled': '1' })
+    const { document } = loaded
+    const bypass = document.querySelector<HTMLInputElement>(`${CLI} [data-pkg-cooldown="mode"][value="bypass"]`)!
+    change(loaded, bypass)
+    expect(document.documentElement.getAttribute('data-mcp-install-cooldown-type')).toBe('bypass')
+    expect(variantCode(document, CLI, 0, 'bypass')).toBe('$ npx -y --min-release-age=0 @libtmux/workspace-cli --help')
+    // Bun: the cooldown variant is the plain command, with the reason beside it.
+    expect(variantCode(document, CORE, 3, 'days')).toBe('$ bun add libtmux')
+    expect(document.querySelector(`${CORE} .lm-pkg-install__cmd[data-manager="3"] [data-cooldown-variant="days"] .lm-pkg-install__note--cooldown`)?.textContent)
+      .toContain('cannot exempt libtmux')
+  })
+
   it('offers the workspace CLI picker on the workspace overview', () => {
     const { document } = load(TS_WORKSPACE, `https://libtmux.org/${SITE_PREFIX}ts/latest/workspace/`)
     expect(visibleCommand(document, CLI)).toBe('$ npx -y @libtmux/workspace-cli --help')
