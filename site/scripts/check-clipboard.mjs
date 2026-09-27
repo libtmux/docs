@@ -20,6 +20,8 @@ export async function checkClipboard(page, base) {
     const widget = page.locator(`${selector.split('__')[0]}:visible`).first()
     const button = widget.locator(`${selector}:visible`).first()
     const status = widget.locator('[data-copy-status]')
+    // Vite may reload after the first response while optimizing dependencies.
+    await status.waitFor({ state: 'attached' })
     assert.equal(await status.count(), 1, `${path}: persistent copy status`)
     assert.equal(await status.getAttribute('role'), 'status', `${path}: copy result is announced`)
     assert.equal(await status.getAttribute('aria-live'), 'polite', `${path}: polite copy announcement`)
