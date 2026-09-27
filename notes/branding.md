@@ -65,6 +65,13 @@ gray colors. These are related safeguards; the docs fix changes CSS blends.
 The [CSS color specification](https://www.w3.org/TR/css-color-4/#missing)
 describes missing and powerless components.
 
+A second CV-focused `depth:exhaustive` search completed 13,882 source scans
+and read 861,445 records, with 78 matches and no skipped or failed sources.
+The matching inspector-theme discussions separate surface, text, border,
+and accent roles, including a dedicated white foreground on brand fills.
+The earlier hue corrections above came from CV's Git history; the returned
+conversation matches did not contain that older debugging discussion.
+
 ## Ownership
 
 `ports.ts` owns language abbreviations and page-to-artwork selection.
