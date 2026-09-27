@@ -16,8 +16,9 @@ const metadataScript = fileURLToPath(new URL('../../scripts/publication-metadata
 const NATIVE_API = PORTS.filter((port) => port.publishesOwnApi).map((port) => port.slug)
 const PORT_TREES = PORTS.filter((port) => port.publishesOwnTree).map((port) => port.slug)
 // A port whose version tree the shell itself still publishes, for the cases
-// that need one on disk.
-const SHELL_PORT = PORTS.find((port) => !port.publishesOwnTree && !port.publishesOwnApi)!.slug
+// that need one on disk. A port that publishes only its own `api/` still
+// has the rest of its tree published here.
+const SHELL_PORT = PORTS.find((port) => !port.publishesOwnTree)!.slug
 const sectionsFor = (slug: string): string[] =>
   [...Object.keys(DOC_PRODUCTS), 'guides', 'topics', '_astro', ...(NATIVE_API.includes(slug) ? [] : ['api'])]
 
