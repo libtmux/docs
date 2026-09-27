@@ -53,9 +53,12 @@ if (!root) {
 }
 
 const pages = globSync('**/*.html', { cwd: root })
+// V8 substrings can retain the full HTML behind a cached path or ID.
+const copyText = (value) => value && Buffer.from(value).toString()
 const ids = new Map()
 const idsOf = (page) => {
   if (!ids.has(page)) {
+    page = copyText(page)
     let text
     try {
       text = readFileSync(join(root, page), 'utf8')
@@ -63,7 +66,7 @@ const idsOf = (page) => {
       ids.set(page, undefined)
       return undefined
     }
-    ids.set(page, new Set([...text.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1])))
+    ids.set(page, new Set([...text.matchAll(/\sid="([^"]+)"/g)].map((m) => copyText(m[1]))))
   }
   return ids.get(page)
 }
@@ -105,6 +108,9 @@ function resolveHref(fromPage, href) {
 
 let checked = 0
 const broken = []
+const recordBrokenLink = (page, path, anchor, why) => broken.push({
+  page, path: copyText(path), anchor: copyText(anchor), why,
+})
 for (const page of pages) {
   const html = readFileSync(join(root, page), 'utf8')
   for (const m of html.matchAll(pattern)) {
@@ -113,7 +119,7 @@ for (const page of pages) {
     // A bare fragment points into the page it is written on.
     if (!path) {
       checked++
-      if (anchor && !idsOf(page)?.has(anchor)) broken.push({ page, path: '', anchor, why: 'no anchor' })
+      if (anchor && !idsOf(page)?.has(anchor)) recordBrokenLink(page, '', anchor, 'no anchor')
       continue
     }
     checked++
@@ -126,8 +132,8 @@ for (const page of pages) {
     const resolved = resolveHref(page, clean)
     const target = clean.endsWith('/') || resolved === '' ? `${resolved}/index.html`.replace(/^\//, '') : resolved
     const targetIds = idsOf(target)
-    if (targetIds === undefined) broken.push({ page, path, anchor, why: 'no page' })
-    else if (anchor && !targetIds.has(anchor)) broken.push({ page, path, anchor, why: 'no anchor' })
+    if (targetIds === undefined) recordBrokenLink(page, path, anchor, 'no page')
+    else if (anchor && !targetIds.has(anchor)) recordBrokenLink(page, path, anchor, 'no anchor')
   }
 }
 
