@@ -91,6 +91,15 @@ describe('route branding', () => {
 })
 
 describe('native metadata', () => {
+  it('uses current artwork for both native sidebar schemes without changing content images', () => {
+    const source = '<html><head></head><body><img class="sidebar-logo only-light" src="old-light.svg"><img src="old-dark.svg" class="only-dark sidebar-logo" srcset="old-dark@2x.png 2x"/><img src="guide.png" alt="Example"></body></html>'
+    const options = { port: 'py', pagePath: 'api/server/', root: '/pr-42/en' }
+    const html = nativeBrandHead(source, options)
+    expect(html.match(/src="\/pr-42\/en\/brand\/python\/library\/logo.svg"/g)).toHaveLength(2)
+    expect(html).not.toContain('old-')
+    expect(html).toContain('<img src="guide.png" alt="Example">')
+    expect(nativeBrandHead(html, options)).toBe(html)
+  })
   it('replaces legacy image tags, preserves policy, and is idempotent', () => {
     const source = '<html lang="en"><head><title>Server</title><link rel="canonical" href="https://libtmux.org/en/py/stable/api/server/"><meta name="robots" content="noindex, follow"><link rel="icon" href="old.ico"><meta property="og:image" content="old.png"></head><body>Server API</body></html>'
     const options = { port: 'py', pagePath: 'api/server/', root: '/pr-42/en' }
