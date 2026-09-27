@@ -13,7 +13,7 @@ tableOfContents: true
 Add the workspace module to a Java 21 project. The BOM selects compatible
 libtmux modules:
 
-```kotlin
+```kotlin title="build.gradle.kts"
 dependencies {
     implementation(platform("io.github.libtmux:libtmux-bom:0.0.1-alpha.10"))
     implementation("io.github.libtmux:libtmux-workspace")
