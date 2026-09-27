@@ -10,9 +10,7 @@ import { withRoot } from '../lib/site-root'
  * tag build published months ago still lists versions released after it,
  * because the list is fetched rather than baked.
  *
- * This must also work when injected as plain markup into rustdoc, Dokka,
- * DocC and Sphinx output, so it is a custom element with no framework and no
- * build step — the same file is what the tier-2 generators receive.
+ * Native documentation uses the separate switcher in the injected shell.
  */
 interface Props {
   portSlug?: string
@@ -52,8 +50,13 @@ const port = candidate?.versionedDocs ? candidate : undefined
 }
 
 <script>
+  import { navigate } from 'astro:transitions/client'
   class LibtmuxVersionSwitcher extends HTMLElement {
+    private controller?: AbortController
     async connectedCallback() {
+      this.controller?.abort()
+      this.controller = new AbortController()
+      const { signal } = this.controller
       const select = this.querySelector('select')
       const port = this.dataset.port
       const current = this.dataset.current
@@ -71,7 +74,7 @@ const port = candidate?.versionedDocs ? candidate : undefined
         defaultVersion: Record<string, string>
       }
       try {
-        const res = await fetch(`${root}/versions.json`, { cache: 'no-cache' })
+        const res = await fetch(`${root}/versions.json`, { cache: 'no-cache', signal })
         if (!res.ok) return
         manifest = await res.json()
       } catch {
@@ -79,7 +82,7 @@ const port = candidate?.versionedDocs ? candidate : undefined
         // option stays, which is correct rather than empty.
         return
       }
-      if (manifest.schema !== 1) return
+      if (signal.aborted || manifest.schema !== 1) return
 
       const entries = (manifest.ports[port] ?? []).filter((e) => e.supported)
       if (entries.length === 0) return
@@ -102,9 +105,10 @@ const port = candidate?.versionedDocs ? candidate : undefined
         const path = location.pathname
         const marker = `${root}/${port}/${current}/`
         const rest = path.startsWith(marker) ? path.slice(marker.length) : ''
-        location.href = `${root}/${port}/${next}/${rest}`
-      })
+        void navigate(`${root}/${port}/${next}/${rest}`)
+      }, { signal })
     }
+    disconnectedCallback() { this.controller?.abort() }
   }
   if (!customElements.get('libtmux-version-switcher')) {
     customElements.define('libtmux-version-switcher', LibtmuxVersionSwitcher)

@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
 import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync } from 'node:fs'
-import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { dev } from 'astro'
-import { chromium } from 'playwright'
+import { chromium, firefox, webkit } from 'playwright'
 import { PORTS, productAvailable } from '../src/lib/ports.ts'
 import { checkClipboard } from './check-clipboard.mjs'
+import { checkNavigation } from './check-navigation.mjs'
 
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 // `workspaceCli` alone also covers a port's local, unreleased dev CLI
@@ -22,7 +22,11 @@ Object.assign(process.env, {
 })
 // Astro always writes root/.astro, so a separate cacheDir alone cannot isolate it.
 const source = fileURLToPath(new URL('../', import.meta.url))
-const mirror = mkdtempSync(join(tmpdir(), 'libtmux-docs-browser-'))
+// Astro resolves external component styles against the nearest shared path.
+// Keep the isolated root beside its dependencies, rather than under /tmp.
+const cache = join(source, '../node_modules/.cache')
+mkdirSync(cache, { recursive: true })
+const mirror = mkdtempSync(join(cache, 'libtmux-docs-browser-'))
 process.on('exit', () => rmSync(mirror, { recursive: true, force: true }))
 const root = join(mirror, 'site')
 mkdirSync(root)
@@ -54,7 +58,10 @@ async function retryReload(check) {
 }
 
 try {
-  browser = await chromium.launch({ channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL })
+  const engine = process.env.LIBTMUX_DOCS_BROWSER ?? 'chromium'
+  const driver = { chromium, firefox, webkit }[engine]
+  if (!driver) throw new Error(`Unknown browser: ${engine}`)
+  browser = await driver.launch(engine === 'chromium' ? { channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL } : {})
   const page = await browser.newPage({ reducedMotion: 'reduce' })
   page.setDefaultTimeout(10000)
   const manifest = await page.request.get(`${base}/page-links.json`)
@@ -220,6 +227,7 @@ try {
     await context.close()
   }
   console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
+  await checkNavigation(page, base)
 } finally {
   await browser?.close()
   await server.stop()

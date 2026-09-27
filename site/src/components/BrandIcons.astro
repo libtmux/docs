@@ -5,6 +5,7 @@ interface Props { portSlug?: string; pagePath?: string }
 const { portSlug, pagePath = '' } = Astro.props
 const brand = branding(portSlug, pagePath, SITE_ROOT)
 ---
+<link rel="preload" href={brand.asset('logo.svg')} as="image" />
 <link rel="icon" href={brand.asset('favicon.ico')} sizes="16x16 32x32 48x48 256x256" />
 <link rel="icon" type="image/png" href={brand.asset('logo-32.png')} sizes="32x32" />
 <link rel="icon" type="image/svg+xml" href={brand.asset('logo.svg')} sizes="any" />

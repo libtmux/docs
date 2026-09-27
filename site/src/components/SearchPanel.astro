@@ -339,26 +339,31 @@ const segmentNames =
 <script>
   import { mountSearchPanel, type SubResultsDisplay } from '../lib/search-panel'
 
-  for (const root of document.querySelectorAll<HTMLElement>('.search-panel')) {
-    if (root.dataset.mounted) continue
-    root.dataset.mounted = 'true'
-    const bundle = root.dataset.searchBundle!
-    // Loaded only by a panel that asks for it, so the index never ships with
-    // the search page or the modal.
-    const mock = root.dataset.mock === undefined ? undefined : (await import('../lib/search-mock')).mockPagefind(bundle)
-    const handle = mountSearchPanel(root, bundle, {
-      subResults: root.dataset.subResults as SubResultsDisplay | undefined,
-      initialQuery: root.dataset.initialQuery,
-      mock,
-      segmentNames: root.dataset.segmentNames ? (JSON.parse(root.dataset.segmentNames) as Record<string, string>) : undefined,
-    })
+  async function bindSearchPanels() {
+    for (const root of document.querySelectorAll<HTMLElement>('.search-panel')) {
+      if (root.dataset.mounted) continue
+      root.dataset.mounted = 'true'
+      const bundle = root.dataset.searchBundle!
+      // Loaded only by a panel that asks for it, so the index never ships with
+      // the search page or the modal.
+      const mock = root.dataset.mock === undefined ? undefined : (await import('../lib/search-mock')).mockPagefind(bundle)
+      if (!root.isConnected) continue
+      const handle = mountSearchPanel(root, bundle, {
+        subResults: root.dataset.subResults as SubResultsDisplay | undefined,
+        initialQuery: root.dataset.initialQuery,
+        mock,
+        segmentNames: root.dataset.segmentNames ? (JSON.parse(root.dataset.segmentNames) as Record<string, string>) : undefined,
+      })
 
-    const dialog = root.closest('dialog')
-    if (dialog) {
-      // Focus after the dialog is actually open, or the input is not yet
-      // focusable and the keystroke that opened it is lost.
-      dialog.addEventListener('search-modal:open', () => handle.focus())
-      dialog.addEventListener('close', () => handle.clear())
+      const dialog = root.closest('dialog')
+      if (dialog) {
+        // Focus after the dialog is actually open, or the input is not yet
+        // focusable and the keystroke that opened it is lost.
+        dialog.addEventListener('search-modal:open', () => handle.focus())
+        dialog.addEventListener('close', () => handle.clear())
+      }
     }
   }
+  void bindSearchPanels()
+  document.addEventListener('astro:after-swap', () => void bindSearchPanels())
 </script>

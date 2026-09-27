@@ -13,7 +13,7 @@ import { withRoot } from '../lib/site-root'
 const searchHref = withRoot('/search/')
 ---
 
-<dialog id="search-modal" class="search-modal" aria-label="Search">
+<dialog id="search-modal" class="search-modal" aria-label="Search" data-search-href={searchHref}>
   <SearchPanel modal />
 </dialog>
 
@@ -41,13 +41,19 @@ const searchHref = withRoot('/search/')
   }
 </style>
 
-<script is:inline define:vars={{ searchHref }}>
-  const dialog = document.getElementById('search-modal')
-  if (dialog) {
-    const open = (event) => {
+<script>
+  let controller: AbortController | undefined
+  function bindSearchModal() {
+    controller?.abort()
+    controller = new AbortController()
+    const { signal } = controller
+    const dialog = document.querySelector<HTMLDialogElement>('#search-modal')
+    if (!dialog) return
+    const searchHref = dialog.dataset.searchHref
+    const open = (event?: MouseEvent) => {
       // A modal cannot be opened in a second tab or shared, so a modified
       // click keeps its ordinary meaning and navigates to /search/.
-      if (event && (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0)) return
+      if (event && (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)) return
       event?.preventDefault()
       if (!dialog.open) dialog.showModal()
       dialog.dispatchEvent(new CustomEvent('search-modal:open'))
@@ -62,7 +68,7 @@ const searchHref = withRoot('/search/')
     for (const link of document.querySelectorAll('a')) {
       const target = link.getAttribute('href')
       if (target === searchHref || target === `${searchHref}#`) {
-        link.addEventListener('click', open)
+        link.addEventListener('click', open, { signal })
       }
     }
 
@@ -71,12 +77,14 @@ const searchHref = withRoot('/search/')
         e.preventDefault()
         open()
       }
-    })
+    }, { signal })
 
     // Clicking the backdrop is a click on the dialog itself: anything inside
     // stops at a child.
     dialog.addEventListener('click', (e) => {
       if (e.target === dialog) dialog.close()
-    })
+    }, { signal })
   }
+  bindSearchModal()
+  document.addEventListener('astro:after-swap', bindSearchModal)
 </script>
