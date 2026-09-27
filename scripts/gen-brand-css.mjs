@@ -12,7 +12,7 @@ const variables = (p, color) => ({
   'theme-background': p.background, 'theme-text': p.text,
   'background-color': p.background, 'text-color': p.text,
   'topnav-background': p.background, 'topnav-text-color': p.text,
-  'topnav-link-color': p.link, 'topnav-link-hover-color': p.text,
+  'topnav-link-color': p.muted, 'topnav-link-hover-color': p.text,
   'color-background-primary': p.background, 'color-background-secondary': p.surface,
   'color-background-border': p.border, 'color-api-background-hover': p.hover,
   'color-foreground-primary': p.text, 'color-foreground-secondary': p.muted,

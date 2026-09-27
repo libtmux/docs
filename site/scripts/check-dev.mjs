@@ -167,6 +167,15 @@ try {
   })
   assert(chipPixel[2] > chipPixel[1] && chipPixel[1] > chipPixel[0],
     `Python dark chip must retain its blue-gray hue: ${chipPixel}`)
+  const darkSurface = () => page.evaluate(() => ({
+    background: getComputedStyle(document.body).backgroundColor,
+    foreground: getComputedStyle(document.body).color,
+    navigation: getComputedStyle(document.querySelector('.topnav-chip:not([aria-current])')).color,
+    notice: getComputedStyle(document.querySelector('.prerelease-notice')).backgroundColor,
+  }))
+  const pythonSurface = await darkSurface()
+  await page.goto(`${base}/cxx/latest/mcp/`, { waitUntil: 'load' })
+  assert.deepEqual(await darkSurface(), pythonSurface, 'C++ keeps the shared neutral dark surfaces')
   console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1440px header and dark hue PASS')
 } finally {
   await browser?.close()

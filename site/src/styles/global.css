@@ -696,12 +696,7 @@ html[data-prerelease='dismissed'] .prerelease-notice {
 
 .prerelease-notice {
   border-bottom: 1px solid var(--color-background-border);
-  /* Mixed into the surface rather than laid over the page as a translucent
-     tint. `--theme-accent` is a palette value and does not change with the
-     colour scheme, so a transparent wash of it reads differently on white
-     than on #131416; composing it against the surface token, which does
-     change, gives one weight in both. */
-  background: color-mix(in oklab, var(--theme-accent) 12%, var(--color-background-secondary));
+  background: var(--color-background-secondary);
 }
 
 .prerelease-notice__inner {

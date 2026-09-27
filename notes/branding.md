@@ -101,6 +101,11 @@ covers header height, abbreviated tablet navigation, white badge text, and
 compact color-scheme controls. The full publication audit remains separate
 from these development checks.
 
+Dark mode uses the same slate backgrounds, borders, headings, and body text
+for every language. Language color remains in logos, content links, selected
+navigation, and small filled accents. Inactive navigation and the prerelease
+strip use neutral colors so a port's hue does not tint the whole page.
+
 The Astro header hides color-scheme text below 1280px and keeps full language
 names from 832px. At 768–831px it uses abbreviations; narrower displays put
 the languages in the menu. Browser checks cover overlap at each transition.
