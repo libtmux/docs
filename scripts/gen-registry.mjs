@@ -52,7 +52,7 @@ const siteLib = join(repoRoot, 'site', 'src', 'lib')
 const DEFAULT_OUT = join(repoRoot, 'site', 'src', 'data', 'registry.json')
 
 const { PORTS } = await import(`file://${join(siteLib, 'ports.ts')}`)
-const { comparePackageVersions, packageVersionIsPrerelease, releaseTag } = await import(
+const { comparePackageVersions, newestPublishedTag, packageVersionIsPrerelease, releaseTag } = await import(
   `file://${join(siteLib, 'versions.ts')}`
 )
 
@@ -250,18 +250,6 @@ async function allTags(port) {
   return githubTags(port.repo)
 }
 
-/** The newest tag naming a release of this library, full name included. */
-function newestTagFrom(tags, port) {
-  const releases = tags
-    .map((name) => ({ name, version: releaseTag(name, port) }))
-    .filter((entry) => entry.version !== null)
-  if (releases.length === 0) return null
-  const newest = newestFirst(releases.map((r) => r.version), port.tagGrammar)[0]
-  // The full tag, not the version: `cargo --tag` and `git clone --branch`
-  // need the name that exists in the repository.
-  return releases.find((r) => r.version === newest).name
-}
-
 /** Classify one port from the versions its registry carries. */
 function classify(port, versions, tag) {
   if (versions === null || versions.length === 0) {
@@ -334,12 +322,16 @@ for (const port of PORTS) {
     ports[port.slug] = previous
     continue
   }
-  let tag = newestTagFrom(tags, port)
+  const versions = Array.isArray(probe) || probe === null ? probe : probe.versions
+  // The full tag, not the version: `cargo --tag` and `git clone --branch`
+  // need the name that exists in the repository. Only a published version's
+  // tag counts, so a release caught between its tag and its package is not
+  // recorded until the package lands.
+  let tag = newestPublishedTag(tags, port, versions)
   if (!tag) {
     tag = previous?.tag ?? null
     if (!tag) notes.push(`${port.slug}: no git tag found`)
   }
-  const versions = Array.isArray(probe) || probe === null ? probe : probe.versions
   const entry = classify(port, versions, tag)
   if (probe && !Array.isArray(probe) && probe.packages) {
     entry.packages = Object.fromEntries(

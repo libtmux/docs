@@ -138,12 +138,15 @@ step 'mcp protocol snapshots'
 node scripts/gen-mcp-protocol.mjs --check
 
 # Every page and agent prompt that shows an install command composes it from
-# this file. A registry that has published since the last regeneration means
-# the site is about to tell readers to install a version that is no longer the
-# newest, and an agent prompt to pin it. Live by design: the point is to catch
-# the outside world moving, which is the one thing a committed file cannot.
+# this file, so it must name every port and be exactly what the generator
+# writes. Offline: a port publishing somewhere else is not a defect in the
+# commit under test, and checking the live registries here failed every
+# commit until someone refreshed the file.
 step 'package registry state'
-node scripts/gen-registry.mjs --check
+node scripts/gen-registry.mjs --check --offline
+
+step 'package registry state (negative)'
+node scripts/gen-registry.negative.mjs
 
 step 'source links'
 node scripts/check-source-links.mjs

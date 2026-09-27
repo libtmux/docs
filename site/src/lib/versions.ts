@@ -210,6 +210,41 @@ export function comparePackageVersions(a: string, b: string, grammar: TagGrammar
   return base === 0 ? pb.revision - pa.revision : base
 }
 
+/**
+ * The newest release tag whose version the package registry already carries.
+ *
+ * A port tags first and publishes minutes later, so the newest tag can name a
+ * version no registry serves yet. An install command built from that tag
+ * points at nothing, and a registry refreshed in that window goes stale when
+ * the package lands. Only a published version's tag qualifies; a LuaRocks
+ * revision suffix does not count against the match. With no published versions
+ * (a port installed from git) the newest tag stands.
+ */
+export function newestPublishedTag(
+  tags: readonly string[],
+  port: { tagGrammar: TagGrammar; tagPrefix?: string },
+  published: readonly string[] | null,
+): string | null {
+  const releases = tags
+    .map((name) => ({ name, version: releaseTag(name, port) }))
+    .filter((entry): entry is { name: string; version: string } => entry.version !== null)
+  const candidates = published && published.length > 0
+    ? releases.filter((entry) => {
+        const tag = packageVersion(entry.version, port.tagGrammar).tag
+        return published.some(
+          (version) => compareTags(packageVersion(version, port.tagGrammar).tag, tag, port.tagGrammar) === 0,
+        )
+      })
+    : releases
+  if (candidates.length === 0) return null
+  const newest = [...candidates].sort((a, b) => compareTags(
+    packageVersion(a.version, port.tagGrammar).tag,
+    packageVersion(b.version, port.tagGrammar).tag,
+    port.tagGrammar,
+  ))[0]
+  return newest.name
+}
+
 /** Whether a package registry version precedes its matching stable release. */
 export function packageVersionIsPrerelease(version: string, grammar: TagGrammar): boolean {
   const parsed = parseTag(packageVersion(version, grammar).tag, grammar)

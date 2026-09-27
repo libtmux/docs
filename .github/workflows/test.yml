@@ -86,8 +86,3 @@ jobs:
           # Raw source proves the staged guides match the integrated models.
           # Native exporter artifacts stay checked by each port's docs-site job.
           LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua
-          # scripts/gen-registry.mjs reads each port's release tags. Without a
-          # token the GitHub API allows 60 calls an hour per IP, which a shared
-          # runner has usually spent, so the check would fall back to the
-          # committed entry on every run and never actually verify it.
-          GITHUB_TOKEN: ${{ github.token }}
