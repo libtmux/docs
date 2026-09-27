@@ -102,7 +102,7 @@ describe.skipIf(!SITE_BUILT)('published wrapper pages', () => {
         expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(`https://libtmux.org${prefix}${route ? `${route}/` : ''}`)
         expect(document.querySelector('meta[property="og:image"]')?.getAttribute('content')).toContain(`/brand/${port.logoLanguage}/library/`)
         expect(document.querySelector('link[rel="manifest"]')?.getAttribute('href')).toContain(`/brand/${port.logoLanguage}/library/`)
-        for (const anchor of document.querySelectorAll('main a[href], nav[aria-label="Port documentation"] a[href]')) {
+        for (const anchor of document.querySelectorAll('main a[href], nav[aria-label="Documentation"] a[href], nav[aria-label="Port documentation"] a[href]')) {
           const path = new URL(anchor.getAttribute('href')!, `https://libtmux.org${prefix}${route}/`).pathname
           if (!path.startsWith(prefix)) continue
           expect(path).not.toMatch(/\/(?:mcp|workspace)(?:\/|$)/)

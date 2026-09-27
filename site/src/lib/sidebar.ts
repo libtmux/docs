@@ -23,6 +23,7 @@ import { withPortRoot } from './site-root'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { localeOf, sourceIdOf } from '../i18n/resolve'
 import { docsPath, docsRoutePath } from './docs-paths'
+import { docsEntryAvailable } from './page-port-links'
 
 export interface SidebarLinkItem {
   type: 'link'
@@ -195,6 +196,7 @@ export async function getSidebar(
     'docs',
     (entry) =>
       (entry.data.port === undefined || entry.data.port === port) &&
+      docsEntryAvailable(entry, port) &&
       entry.data.product === product &&
       localeOf(entry.id) === DEFAULT_LOCALE,
   )
