@@ -632,8 +632,10 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
         'socket endpoint resolution; sits below Server rather than inside it',
       'target.OsString': 'extractor leak: std::ffi::OsString is not declared by this crate',
       'src.DesignNotes': 'extractor leak: a doc-only module surfaced as a struct',
+      'src.Findings': 'extractor leak: a doc-only module surfaced as a struct',
       'src.MacrosReadme': 'extractor leak: a doc-only module surfaced as a struct',
       'src.MigrationGuide': 'extractor leak: a doc-only module surfaced as a struct',
+      'src.Readme': 'extractor leak: a doc-only module surfaced as a struct',
     },
   },
   go: {
