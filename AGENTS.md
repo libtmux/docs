@@ -47,8 +47,8 @@ facts come from the code.
 
 ## Repository boundaries
 
-This repository's push remote is `tony`. Never push to a port repository
-from this repository's work. Commit port docs-tooling changes on that port's
+Push this repository's branches and pull requests to `libtmux/docs`.
+Never push to a port repository from this repository's work. Commit port docs-tooling changes on that port's
 `docs-site` worktree branch and hand them to the maintainer for review and
 publication. Keep those worktrees alongside their normal checkouts, using
 `checkout` and `worktree` in `ports.ts`.
