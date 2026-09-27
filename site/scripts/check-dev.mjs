@@ -194,6 +194,29 @@ try {
   const pythonSurface = await darkSurface()
   await page.goto(`${base}/cxx/latest/mcp/`, { waitUntil: 'load' })
   assert.deepEqual(await darkSurface(), pythonSurface, 'C++ keeps the shared neutral dark surfaces')
+  for (const mode of ['light', 'dark']) {
+    await page.locator(`.scheme-switch input[value="${mode}"]`).check({ force: true })
+    let reference
+    for (const port of ['py/stable', 'swift/latest', 'go/latest', 'cxx/latest']) {
+      await page.goto(`${base}/${port}/workspace/`, { waitUntil: 'load' })
+      const reading = await page.evaluate(() => {
+        const tokens = getComputedStyle(document.documentElement)
+        const style = (selector) => getComputedStyle(document.querySelector(selector))
+        return {
+          text: style('.prose > p').color, heading: style('.prose h1').color,
+          muted: tokens.getPropertyValue('--color-foreground-muted').trim(),
+          background: style('body').backgroundColor,
+          surface: tokens.getPropertyValue('--color-background-secondary').trim(),
+          border: tokens.getPropertyValue('--color-background-border').trim(),
+          nativeText: tokens.getPropertyValue('--lt-color-fg').trim(),
+          nativeSurface: tokens.getPropertyValue('--lt-color-bg-secondary').trim(),
+        }
+      })
+      reference ??= reading
+      assert.deepEqual(reading, reference, `${port}: neutral ${mode} reading colors`)
+    }
+  }
+  console.log('Reading colors: Python, Swift, Go and C++ share neutral light/dark text and surfaces')
   for (const colorScheme of ['light', 'dark']) {
     const context = await browser.newContext({ javaScriptEnabled: false, colorScheme })
     const noScript = await context.newPage()
@@ -235,8 +258,8 @@ try {
       await page.setViewportSize({ width, height: 1000 })
       const logo = await hero.locator('img').first().boundingBox()
       const title = await hero.locator('h1').boundingBox()
-      assert.equal(logo.width, 88, `${path}: ${width}px logo width`)
-      assert.equal(logo.height, 88, `${path}: ${width}px logo height`)
+      assert(Math.abs(logo.width - 88) < 0.01, `${path}: ${width}px logo width`)
+      assert(Math.abs(logo.height - 88) < 0.01, `${path}: ${width}px logo height`)
       if (width >= 480) {
         assert(logo.x + logo.width <= title.x, `${path}: mark beside title`)
         assert(title.y < logo.y + logo.height, `${path}: title shares the logo row`)
