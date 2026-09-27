@@ -15,6 +15,9 @@ const metadataScript = fileURLToPath(new URL('../../scripts/publication-metadata
 // redirect to the reference it renders everywhere else.
 const NATIVE_API = PORTS.filter((port) => port.publishesOwnApi).map((port) => port.slug)
 const PORT_TREES = PORTS.filter((port) => port.publishesOwnTree).map((port) => port.slug)
+// A port whose version tree the shell itself still publishes, for the cases
+// that need one on disk.
+const SHELL_PORT = PORTS.find((port) => !port.publishesOwnTree && !port.publishesOwnApi)!.slug
 const sectionsFor = (slug: string): string[] =>
   [...Object.keys(DOC_PRODUCTS), 'guides', 'topics', '_astro', ...(NATIVE_API.includes(slug) ? [] : ['api'])]
 
@@ -206,19 +209,19 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
 
   it('rejects a product-only build missing a version homepage before any AWS operation', () => {
     const directory = fixture()
-    rmSync(join(directory, 'dist/go/latest/index.html'))
+    rmSync(join(directory, `dist/${SHELL_PORT}/latest/index.html`))
     const result = publish(directory)
     expect(result.status).toBe(1)
-    expect(result.stderr).toContain('go/latest/index.html')
+    expect(result.stderr).toContain(`${SHELL_PORT}/latest/index.html`)
     expect(result.commands).toEqual([])
   })
 
   it('rejects incomplete declared shell output before any AWS operation', () => {
     const directory = fixture()
-    rmSync(join(directory, 'dist/go/latest/guides'), { recursive: true })
+    rmSync(join(directory, `dist/${SHELL_PORT}/latest/guides`), { recursive: true })
     const result = publish(directory)
     expect(result.status).toBe(1)
-    expect(result.stderr).toContain('go/latest/guides')
+    expect(result.stderr).toContain(`${SHELL_PORT}/latest/guides`)
     expect(result.commands).toEqual([])
   })
 
@@ -284,7 +287,7 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     expect(result.commands).toEqual([])
   })
 
-  it.each(['.outside', '_astro/outside', 'go/latest/mcp/outside'])('rejects symlink %s before any AWS operation', (path) => {
+  it.each(['.outside', '_astro/outside', `${SHELL_PORT}/latest/mcp/outside`])('rejects symlink %s before any AWS operation', (path) => {
     const directory = fixture(true)
     write(join(directory, 'outside/index.html'))
     symlinkSync(join(directory, 'outside'), join(directory, 'dist', path), 'dir')
