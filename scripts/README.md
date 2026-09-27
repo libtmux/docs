@@ -182,11 +182,25 @@ range for a plain requirement, `go get` without a version resolves the highest
 release and a prerelease is not one, and SwiftPM's `from:` excludes prereleases
 from its range.
 
-Pass `--check` to fail instead of writing when the checked-in file is stale.
-Pass `--offline` to re-emit the committed file without contacting any registry,
-for a job that must not depend on ten third-party services. A probe that
-fails for one port keeps that port's committed entry rather than reporting it
-unpublished, the same way `gen-versions.mjs` falls back to its seed.
+The published site does not read the committed file. `deploy-shell.yml`
+resolves the registry against the live registries on every deploy, including
+an hourly scheduled one, and publishes the result as `/registry.json`; a
+release therefore reaches the site without a commit here. The committed file
+is what pull requests, local builds and tests use, so their results never
+depend on another repository publishing, and nothing requires refreshing it.
+
+Pass `--check` to fail instead of writing when a file differs from what the
+script would write. Pass `--offline` to re-emit the baseline without contacting
+any registry, for a job that must not depend on ten third-party services; the
+test gate runs `--check --offline`. Pass `--baseline <file>` to fall back on a
+file other than the committed one, as the deploy does with the copy it last
+published. A probe that fails for one port keeps that port's baseline entry
+rather than reporting it unpublished, the same way `gen-versions.mjs` falls
+back to its seed.
+
+A tag is recorded only once the registry carries its version. A port tags
+first and publishes minutes later, and a tag with no package behind it would
+send an install command to nothing.
 
 Release tags are read per port. Rust is a Cargo workspace and tags each crate
 (`libtmux@v0.1.0-alpha.10`); Go is multi-module and tags submodules under a

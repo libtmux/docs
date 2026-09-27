@@ -10,12 +10,19 @@ name: deploy-shell
 # are a per-port version concept (versions.ts VersionKind 'branch', e.g.
 # 'v0.x') with no shell equivalent, so there is deliberately no branch
 # trigger here beyond the default branch.
+#
+# A port release changes the install commands without changing this
+# repository, so the deploy also runs hourly and on demand. Those runs resolve
+# the package registry first and rebuild only when it moved.
 
 on:
   push:
     branches: [main]
     tags: ['v*']
   pull_request:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -50,9 +57,60 @@ jobs:
           echo "list=$list" >> "$GITHUB_OUTPUT"
           echo "locales: $list"
 
-  build:
+  # Every install command on the site is composed from this file. A deploy
+  # resolves it against the live registries, falling back to the copy the site
+  # last published, so a release reaches readers without a commit here. A pull
+  # request builds from the committed file instead, and its result never
+  # depends on another repository publishing.
+  registry:
     if: github.event_name != 'pull_request'
-    needs: locales
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.resolve.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+
+      - id: resolve
+        env:
+          # Release tags come from the GitHub API, which allows 60 calls an
+          # hour without a token.
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if ! curl -fsS --retry 3 --max-time 30 \
+              https://libtmux.org/registry.json -o published.json; then
+            echo "::notice::No published registry; falling back to the committed file"
+            cp site/src/data/registry.json published.json
+          fi
+          mkdir resolved
+          node scripts/gen-registry.mjs --baseline published.json --out resolved/registry.json
+          if cmp -s published.json resolved/registry.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            summary='Unchanged since the last publish.'
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            diff -u published.json resolved/registry.json > registry.diff || test $? -eq 1
+            summary=$(tail -n +3 registry.diff | sed 's/^/    /')
+          fi
+          printf '### Package registry\n\n%s\n' "$summary" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: resolved-registry
+          path: resolved/registry.json
+          if-no-files-found: error
+
+  build:
+    # A scheduled run rebuilds only when the registry moved; a push or a
+    # manual run always does.
+    if: |
+      github.event_name != 'pull_request' &&
+      (github.event_name != 'schedule' || needs.registry.outputs.changed == 'true')
+    needs: [locales, registry]
     runs-on: ubuntu-latest
     strategy:
       # One build per locale. Astro's base changes the URLs a build emits, and
@@ -70,6 +128,14 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: resolved-registry
+          path: resolved
+
+      - name: Build from the resolved package registry
+        run: cp resolved/registry.json site/src/data/registry.json
 
       - name: Resolve integrated Ruby and Lua sources
         if: matrix.locale == 'en'
@@ -411,6 +477,23 @@ jobs:
           BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
           LOCALE: ${{ matrix.locale }}
         run: bash publish-root.sh
+
+      - uses: actions/download-artifact@v8
+        if: matrix.locale == 'en'
+        with:
+          name: resolved-registry
+          path: resolved
+
+      # The next deploy's fallback, and the record of what this one resolved.
+      - name: Publish the resolved package registry
+        if: matrix.locale == 'en'
+        env:
+          BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
+        run: |
+          aws s3 cp resolved/registry.json "s3://$BUCKET/registry.json" \
+            --content-type application/json \
+            --cache-control 'public, max-age=60, s-maxage=60' \
+            --only-show-errors
 
       # One leg: a row is keyed by port, not locale. LIBTMUX_DOCS_KVS_ARN is
       # the Terraform `key_value_store_arn` output.
