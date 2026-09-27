@@ -34,12 +34,17 @@
  * of claiming every port is unpublished.
  *
  * Usage:
- *   node scripts/gen-registry.mjs [--out <path>] [--check] [--offline]
+ *   node scripts/gen-registry.mjs [--out <path>] [--baseline <path>] [--check] [--offline]
  *
- *   --out <path>  Write there (default: site/src/data/registry.json).
- *   --check       Write nothing; exit 1 if the committed file is out of date.
- *   --offline     Skip every probe and re-emit the committed file. For CI
- *                 jobs that must not depend on eight third-party services.
+ *   --out <path>       Write there (default: site/src/data/registry.json).
+ *   --baseline <path>  The last known-good answer to fall back on, instead of
+ *                      the committed file. The shell deploy passes the copy it
+ *                      last published, so a registry that cannot be reached
+ *                      keeps what the site already says rather than reverting
+ *                      to whatever was last committed.
+ *   --check            Write nothing; exit 1 if the committed file is out of date.
+ *   --offline          Skip every probe and re-emit the baseline. For CI jobs
+ *                      that must not depend on eight third-party services.
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
@@ -57,10 +62,11 @@ const { comparePackageVersions, newestPublishedTag, packageVersionIsPrerelease, 
 )
 
 function parseArgs(argv) {
-  const opts = { out: DEFAULT_OUT, check: false, offline: false }
+  const opts = { out: DEFAULT_OUT, baseline: null, check: false, offline: false }
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i]
     if (arg === '--out') opts.out = argv[++i]
+    else if (arg === '--baseline') opts.baseline = argv[++i]
     else if (arg === '--check') opts.check = true
     else if (arg === '--offline') opts.offline = true
     else if (arg === '-h' || arg === '--help') opts.help = true
@@ -269,17 +275,19 @@ if (opts.help) {
 }
 
 /**
- * The last known-good answer, always read from the committed file rather than
- * from `--out`. They are the same path by default and are not when a caller
- * writes elsewhere: reading the target meant `--offline --out /tmp/x` had no
- * baseline to re-emit and threw, which is the one mode that exists precisely
- * to avoid needing the network.
+ * The last known-good answer: `--baseline` when given, otherwise the committed
+ * file, and only then `--out`. The committed file and `--out` are the same path
+ * by default and are not when a caller writes elsewhere: reading the target
+ * meant `--offline --out /tmp/x` had no baseline to re-emit and threw, which is
+ * the one mode that exists precisely to avoid needing the network.
  */
-const committed = existsSync(DEFAULT_OUT)
-  ? JSON.parse(readFileSync(DEFAULT_OUT, 'utf8'))
-  : existsSync(opts.out)
-    ? JSON.parse(readFileSync(opts.out, 'utf8'))
-    : { ports: {} }
+const committed = opts.baseline
+  ? JSON.parse(readFileSync(opts.baseline, 'utf8'))
+  : existsSync(DEFAULT_OUT)
+    ? JSON.parse(readFileSync(DEFAULT_OUT, 'utf8'))
+    : existsSync(opts.out)
+      ? JSON.parse(readFileSync(opts.out, 'utf8'))
+      : { ports: {} }
 
 const ports = {}
 const notes = []
