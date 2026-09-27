@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import {
   comparePackageVersions,
   compareTags,
+  newestPublishedTag,
   packageVersionIsPrerelease,
   parseTag,
   releaseTag,
@@ -242,6 +243,33 @@ it('selects only a port library release and accepts Swift tag spelling', () => {
   expect(releaseTag('v0.1.0-alpha.12', rust)).toBeNull()
   expect(releaseTag('mcp/v0.0.1-alpha.11', { tagGrammar: 'semver' })).toBeNull()
   expect(releaseTag('0.1.0-alpha.5', { tagGrammar: 'semver' })).toBe('0.1.0-alpha.5')
+})
+
+describe('newestPublishedTag', () => {
+  const rust = { tagGrammar: 'semver' as const, tagPrefix: 'libtmux@' }
+  const tags = ['libtmux@v0.1.0-alpha.13', 'libtmux@v0.1.0-alpha.14', 'tmux-mcp@v0.1.0-alpha.15']
+
+  it('waits for the package before recording a newer tag', () => {
+    expect(newestPublishedTag(tags, rust, ['0.1.0-alpha.12', '0.1.0-alpha.13'])).toBe('libtmux@v0.1.0-alpha.13')
+  })
+
+  it('takes the newest tag once its package is published', () => {
+    expect(newestPublishedTag(tags, rust, ['0.1.0-alpha.13', '0.1.0-alpha.14'])).toBe('libtmux@v0.1.0-alpha.14')
+  })
+
+  it('keeps the newest tag for a port installed from git', () => {
+    expect(newestPublishedTag(tags, rust, null)).toBe('libtmux@v0.1.0-alpha.14')
+    expect(newestPublishedTag(tags, rust, [])).toBe('libtmux@v0.1.0-alpha.14')
+  })
+
+  it('matches a LuaRocks revision to its tag', () => {
+    const lua = { tagGrammar: 'luarocks' as const }
+    expect(newestPublishedTag(['v0.1.0alpha1', 'v0.1.0alpha2'], lua, ['0.1.0alpha1-1'])).toBe('v0.1.0alpha1')
+  })
+
+  it('returns nothing when no published version has a tag', () => {
+    expect(newestPublishedTag(tags, rust, ['0.0.9'])).toBeNull()
+  })
 })
 
 describe('parseTag', () => {
