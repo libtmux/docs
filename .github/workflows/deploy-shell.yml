@@ -383,22 +383,28 @@ jobs:
           role-to-assume: ${{ secrets.LIBTMUX_DOCS_ROLE_ARN }}
           aws-region: us-east-1
 
+      # Every manifest a port has published, whichever ports those are. A
+      # port that has never published has no file, which is not an error; a
+      # manifest that exists but cannot be read is, and fails the deploy
+      # rather than shipping a versions.json that silently lacks it.
       - name: Merge successfully published port versions
         env:
           BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
         run: |
           set -euo pipefail
           mkdir published-manifests
-          for port in py ruby lua ts rs go java dotnet cxx swift; do
-            aws s3 cp \
-              "s3://$BUCKET/manifest/$port.json" \
-              "published-manifests/$port.json" \
-              --only-show-errors 2>/dev/null || true
-          done
+          aws s3 sync "s3://$BUCKET/manifest/" published-manifests/ \
+            --exclude '*' --include '*.json' --only-show-errors
           node merge-version-manifests.mjs \
             --base dist/versions.json \
             --fragments published-manifests \
             --out dist/versions.json
+          {
+            echo "### Port manifests merged into versions.json"
+            echo
+            find published-manifests -name '*.json' -printf '%f\n' \
+              | sed 's/\.json$//' | sort | sed 's/^/- /'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Sync top-level directories, denylist-checked
         env:
