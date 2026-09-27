@@ -102,7 +102,12 @@ jobs:
           INPUT_DEFAULT: ${{ inputs.is-default }}
           INPUT_RESOLVES_TO: ${{ inputs.resolves-to }}
           INPUT_PUBLISH: ${{ inputs.publish }}
-        run: bash scripts/port-docs-identity.sh
+          REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          set -euo pipefail
+          TAGS=$(git ls-remote --tags --refs "$REPOSITORY_URL" | sed 's#.*refs/tags/##')
+          export TAGS
+          bash scripts/port-docs-identity.sh
 
   build:
     needs: identity

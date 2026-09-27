@@ -6,7 +6,10 @@
 #   publishes nothing. Not the head: the workflow also runs in the default
 #   branch's context, where checking out and running a pull request's head
 #   could poison its caches.
-# - A push to the default branch publishes `latest`, the default version.
+# - A push to the default branch publishes `latest`. It is the default version
+#   only until the port's first stable release: from then on `stable` is, and
+#   a push to trunk must not take the default back. TAGS lists the port's
+#   tags, one per line.
 # - A release tag publishes its version plus an alias: `next` for a
 #   prerelease, `stable` (the default) for a release. TAG_PREFIX is stripped
 #   first, so libtmux-rs's `libtmux@v0.1.0` publishes `v0.1.0`.
@@ -50,7 +53,16 @@ case "$EVENT" in
         entries+=$'\n'$(entry stable alias true "$version" true)
       fi
     elif [[ "$REF_NAME" == "$DEFAULT_BRANCH" ]]; then
-      entries=$(entry latest trunk true '' true)
+      default=true
+      while IFS= read -r name; do
+        [[ "$name" == "$TAG_PREFIX"* ]] || continue
+        version="${name#"$TAG_PREFIX"}"
+        if [[ "$version" =~ ^v?[0-9]+\.[0-9]+ && ! "${version#v}" =~ [A-Za-z] ]]; then
+          default=false
+          break
+        fi
+      done <<< "${TAGS:-}"
+      entries=$(entry latest trunk "$default" '' true)
     else
       echo "unsupported documentation branch: $REF_NAME" >&2
       exit 1

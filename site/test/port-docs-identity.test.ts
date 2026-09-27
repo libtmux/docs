@@ -46,10 +46,16 @@ describe('port docs identity', () => {
     expect(result.outputs.should_publish).toBe('false')
   })
 
-  it('publishes latest as the default from the default branch only', () => {
+  it('publishes latest from the default branch only, as the default until a stable release', () => {
     const trunk = identity({ EVENT: 'push', REF_NAME: 'master' })
     expect(versions(trunk.entries)).toEqual([['latest', 'trunk', true, '']])
     expect(trunk.outputs.should_publish).toBe('true')
+    const prerelease = identity({ EVENT: 'push', REF_NAME: 'master', TAG_PREFIX: 'libtmux@',
+      TAGS: 'libtmux@v0.1.0-alpha.14\ntmux-mcp@v1.0.0\nv2.0.0' })
+    expect(versions(prerelease.entries), 'another package\'s release').toEqual([['latest', 'trunk', true, '']])
+    const released = identity({ EVENT: 'push', REF_NAME: 'master', TAG_PREFIX: 'libtmux@',
+      TAGS: 'libtmux@v0.1.0-alpha.14\nlibtmux@v0.1.0' })
+    expect(versions(released.entries), 'after a stable release').toEqual([['latest', 'trunk', false, '']])
     const other = identity({ EVENT: 'push', REF_NAME: 'docs-site' })
     expect(other.status).toBe(1)
     expect(other.stderr).toContain('unsupported documentation branch')
