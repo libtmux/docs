@@ -36,6 +36,11 @@ Doxygen or any modified version of it.
 
 ## Reference hosting
 
+The [PyPI blocks logo](https://pypi.org/trademarks/) is a trademark of the
+Python Software Foundation and identifies links to the Python Package Index.
+Other package-host icons use [Simple Icons](https://simpleicons.org/)
+(CC0-1.0).
+
 Three ports deep-link to the canonical host their ecosystem already uses,
 rather than duplicating it here:
 
