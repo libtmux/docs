@@ -129,8 +129,10 @@ on:
         required: true
       bucket:
         required: true
+      # Unused: this workflow issues no invalidation. Optional so callers
+      # that still pass it keep working.
       distribution:
-        required: true
+        required: false
 
 permissions:
   contents: read
