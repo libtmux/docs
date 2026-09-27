@@ -4,16 +4,16 @@
 
   // >>> generated from site/src/lib/ports.ts by scripts/gen-shell-ports.mjs
   var PORTS = [
-    {"slug":"py","name":"Python","versionedDocs":true},
-    {"slug":"ruby","name":"Ruby","versionedDocs":true},
-    {"slug":"lua","name":"Lua","versionedDocs":true},
-    {"slug":"ts","name":"TypeScript","versionedDocs":true},
-    {"slug":"rs","name":"Rust","versionedDocs":true},
-    {"slug":"go","name":"Go","versionedDocs":true},
-    {"slug":"java","name":"Java","versionedDocs":true},
-    {"slug":"dotnet","name":".NET","versionedDocs":true},
-    {"slug":"cxx","name":"C++","versionedDocs":true},
-    {"slug":"swift","name":"Swift","versionedDocs":true},
+    {"slug":"py","name":"Python","shortName":"Py","logoLanguage":"python","versionedDocs":true},
+    {"slug":"ruby","name":"Ruby","shortName":"Rb","logoLanguage":"ruby","versionedDocs":true},
+    {"slug":"lua","name":"Lua","shortName":"Lua","logoLanguage":"lua","versionedDocs":true},
+    {"slug":"ts","name":"TypeScript","shortName":"TS","logoLanguage":"typescript","versionedDocs":true},
+    {"slug":"rs","name":"Rust","shortName":"Rs","logoLanguage":"rust","versionedDocs":true},
+    {"slug":"go","name":"Go","shortName":"Go","logoLanguage":"go","versionedDocs":true},
+    {"slug":"java","name":"Java","shortName":"Java","logoLanguage":"java","versionedDocs":true},
+    {"slug":"dotnet","name":".NET","shortName":".NET","logoLanguage":"csharp","versionedDocs":true},
+    {"slug":"cxx","name":"C++","shortName":"C++","logoLanguage":"cpp","versionedDocs":true},
+    {"slug":"swift","name":"Swift","shortName":"Sw","logoLanguage":"swift","versionedDocs":true},
   ]
   // <<< end generated
 
@@ -24,6 +24,8 @@
   var currentVersion = routeMatch ? routeMatch[3] : null
   var pagePath = routeMatch ? routeMatch[4] : ''
   var portMeta = PORTS.find(function (port) { return port.slug === currentPort })
+  var logoLanguage = portMeta ? portMeta.logoLanguage : 'python'
+  document.documentElement.setAttribute('data-brand', logoLanguage)
   var portDefaults = {}
   var pageLinks
   var manifest = fetch(siteRoot + '/versions.json', { cache: 'no-cache' })
@@ -144,7 +146,13 @@
     var brand = document.createElement('a')
     brand.className = 'lt-shell-brand'
     brand.href = siteRoot + '/'
-    brand.textContent = 'libtmux'
+    var logo = document.createElement('img')
+    logo.src = siteRoot + '/brand/' + logoLanguage + '/library/logo.svg'
+    logo.width = 28
+    logo.height = 28
+    logo.alt = ''
+    brand.appendChild(logo)
+    brand.appendChild(document.createTextNode('libtmux'))
     header.appendChild(brand)
     var nav = document.createElement('nav')
     nav.className = 'lt-shell-nav'
@@ -153,7 +161,17 @@
       var link = document.createElement('a')
       link.href = portHome(port)
       link.dataset.portHome = port.slug
-      link.textContent = port.name
+      link.setAttribute('aria-label', port.name)
+      link.title = port.name
+      var fullName = document.createElement('span')
+      fullName.className = 'lt-shell-port-name'
+      fullName.textContent = port.name
+      var abbreviation = document.createElement('span')
+      abbreviation.className = 'lt-shell-port-abbreviation'
+      abbreviation.textContent = port.shortName
+      abbreviation.setAttribute('aria-hidden', 'true')
+      link.appendChild(fullName)
+      link.appendChild(abbreviation)
       link.className = 'lt-shell-nav-link' + (port.slug === currentPort ? ' lt-shell-nav-link--active' : '')
       if (port.slug === currentPort) link.setAttribute('aria-current', 'page')
       nav.appendChild(link)
@@ -218,6 +236,8 @@
   }
 
   var CHROME_STYLE =
+    '.lt-shell-brand{display:inline-flex;align-items:center;gap:.35rem}.lt-shell-port-abbreviation{display:none}' +
+    '@media(max-width:80rem){.lt-shell-port-name{display:none}.lt-shell-port-abbreviation{display:inline}}' +
     '.lt-shell-header,.lt-shell-footer{font-family:var(--lt-font-sans,sans-serif);' +
     'font-size:0.875rem;background:var(--lt-color-bg,#fff);color:var(--lt-color-fg,#000);box-sizing:border-box}' +
     '.lt-shell-header *,.lt-shell-footer *{box-sizing:border-box}' +

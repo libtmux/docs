@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source srcset="site/public/brand/python/library/logo.svg" type="image/svg+xml">
+    <img src="site/public/brand/python/library/logo-512.png" width="128" height="128" alt="libtmux">
+  </picture>
+</p>
+
 # libtmux.org
 
 Documentation for the libtmux libraries in Python, Ruby, Lua, TypeScript,

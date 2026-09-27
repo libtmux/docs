@@ -5,6 +5,8 @@ import { localeSourcePath } from '../i18n/locales'
 import { Font } from 'astro:assets'
 import BackToTop from '../components/BackToTop.astro'
 import Seo from '../components/Seo.astro'
+import BrandIcons from '../components/BrandIcons.astro'
+import { pageBrand } from '../lib/ports'
 import SiteFooter from '../components/SiteFooter.astro'
 import PrereleaseNotice from '../components/PrereleaseNotice.astro'
 import SiteHeader from '../components/SiteHeader.astro'
@@ -123,6 +125,7 @@ const versionEntry: VersionEntry = {
 const section = (pagePath.split('/').filter(Boolean)[0] ?? 'home').toLowerCase()
 
 const navPort = portSlug ?? (process.env.LIBTMUX_DOCS_PORT || undefined) ?? (pagePath.startsWith('reference/') ? pagePath.split('/')[1] : undefined)
+const brand = pageBrand(navPort, pagePath)
 let portDefaults: Record<string, string> = {}
 try {
   portDefaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
@@ -159,11 +162,11 @@ const githubRepo = repository
 ---
 
 <!doctype html>
-<html lang={locale} data-theme="purple">
+<html lang={locale} data-theme={brand.language} data-brand={brand.language} data-brand-variant={brand.variant}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href={withRoot('/favicon.svg')} type="image/svg+xml" />
+    <BrandIcons portSlug={navPort} pagePath={pagePath} />
     {/*
       Preload faces used on initial pages, as measured by check-fonts.mjs.
       ThemeScript waits for document.fonts.ready; preloading starts those
@@ -206,6 +209,8 @@ const githubRepo = repository
       description={description}
       pagePath={pagePath}
       portSlug={portSlug}
+      brandPort={navPort}
+      repository={githubRepo}
       version={target.version}
       defaultVersion={defaultVersion}
       locale={locale}

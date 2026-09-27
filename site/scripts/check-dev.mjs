@@ -107,6 +107,11 @@ try {
 
       const result = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - innerWidth,
+        headerHeight: document.querySelector('.site-header__bar').getBoundingClientRect().height,
+        badgeForeground: getComputedStyle(document.querySelector('.prerelease-notice__badge')).color,
+        portVisibility: getComputedStyle(document.querySelector('.site-header__ports')).display,
+        shortLabel: getComputedStyle(document.querySelector('.site-header__ports .port-abbreviation')).display,
+        schemeLabelWidth: document.querySelector('.scheme-switch__label').getBoundingClientRect().width,
         columns: [...document.querySelectorAll('table')].flatMap((table) => {
           const head = [...(table.tHead?.rows[0]?.cells ?? [])]
           const body = [...(table.tBodies[0]?.rows[0]?.cells ?? [])]
@@ -114,6 +119,13 @@ try {
             ? head.map((cell, i) => Math.abs(cell.getBoundingClientRect().x - body[i].getBoundingClientRect().x)) : []
         }),
       }))
+      assert(result.headerHeight <= 49, `${path} at ${width}px: header grew`)
+      assert.equal(result.badgeForeground, 'rgb(255, 255, 255)', 'Filled badge uses white foreground')
+      if (width === 768) {
+        assert.notEqual(result.portVisibility, 'none', 'Language links remain visible on tablets')
+        assert.notEqual(result.shortLabel, 'none', 'Tablet navigation uses abbreviated language names')
+      }
+      if (width <= 768) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
       assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
       assert(result.columns.every((delta) => delta <= 1), `${path} at ${width}px: table columns misaligned`)
     }

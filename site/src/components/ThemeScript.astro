@@ -6,28 +6,16 @@
   // CRITICAL: This script must be inline and run immediately to prevent FOUC (Flash of Unstyled Content)
   // Using is:inline ensures it's not bundled/deferred and runs before first paint
   
-  // Theme constants — literal copies of src/lib/theme-config.ts (keep in
-  // sync): inline scripts cannot import modules
-  const THEMES = ['emerald', 'amber', 'sky', 'purple'];
   const COLOR_SCHEMES = ['light', 'dark', 'system'];
-  
-  // Function to apply theme - extracted for reuse
+
+  // The route supplies the palette. Only the light/dark preference is saved.
+  function readPreference(key) {
+    try { return localStorage.getItem(key); } catch (_) { return null; }
+  }
   function applyTheme() {
-    // Get stored preferences
-    const storedTheme = localStorage.getItem('theme-name');
-    const storedColorScheme = localStorage.getItem('color-scheme');
-    
-    // Determine initial theme
-    // Null check prevents TypeScript errors and validates stored value is in allowed list
-    const theme = storedTheme && THEMES.includes(storedTheme) ? storedTheme : 'purple';
-    
-    // Determine initial color scheme
-    // Default to 'system' to respect user's OS preference if no stored preference
-    const colorScheme = storedColorScheme && COLOR_SCHEMES.includes(storedColorScheme) ? storedColorScheme : 'system';
-    
-    // Apply theme attribute
-    document.documentElement.setAttribute('data-theme', theme);
-    
+    const stored = readPreference('color-scheme') || document.documentElement.getAttribute('data-color-scheme');
+    const colorScheme = COLOR_SCHEMES.includes(stored) ? stored : 'system';
+
     // Apply color scheme attribute for CSS targeting
     document.documentElement.setAttribute('data-color-scheme', colorScheme);
     
@@ -157,9 +145,7 @@
 
   // Apply theme immediately on load
   applyTheme();
-  applyPackagePort();
-  applyCooldown();
-  applyPrereleaseNotice();
+  try { applyPackagePort(); applyCooldown(); applyPrereleaseNotice(); } catch (_) { /* Storage may be disabled. */ }
   gateOnFonts();
 
   // Expose for the bundled astro:after-swap handler below so the logic isn't
@@ -176,7 +162,7 @@
     // never touched the control — everyone, on a first visit — kept whichever
     // scheme the page opened in when they changed their OS setting, while a
     // reader who had chosen `system` explicitly tracked it correctly.
-    const stored = localStorage.getItem('color-scheme');
+    const stored = document.documentElement.getAttribute('data-color-scheme');
     if (!stored || stored === 'system') {
       document.documentElement.setAttribute('data-theme-mode', e.matches ? 'dark' : 'light');
     }

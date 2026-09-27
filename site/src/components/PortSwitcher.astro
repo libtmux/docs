@@ -28,9 +28,12 @@ const defaultFor = (slug: string) => PORT_DEFAULTS[slug] ?? 'latest'
             'rounded px-2 py-1 text-sm transition-colors',
             'topnav-chip',
           ]}
+          aria-label={p.name}
+          title={p.name}
           aria-current={active ? 'page' : undefined}
         >
-          {p.name}
+          <span class="port-name">{p.name}</span>
+          <span class="port-abbreviation" aria-hidden="true">{p.shortName}</span>
         </a>
       )
     })

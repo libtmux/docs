@@ -6,6 +6,7 @@
    animations, or smooth scrolling anywhere. */
 @import "tailwindcss";
 @import "./gp-sphinx-tokens.css";
+@import "./brand.css";
 @import "./flags.css" layer(components);
 @import "./image-loading.css" layer(components);
 /* Unlayered, like the widgets, so prose margins cannot outrank it. */
@@ -722,10 +723,7 @@ html[data-prerelease='dismissed'] .prerelease-notice {
   line-height: 1.4;
 }
 
-/* Carries the weight so the bar reads as a notice at a glance rather than as
-   another row of navigation. Both tokens are palette values, and the accent
-   is light in every palette, so the dark text token contrasts against it in
-   either colour scheme. */
+/* Filled elements use a foreground paired with their own background. */
 .prerelease-notice__badge {
   /* `inline-flex` with `line-height: 1`, not the inherited 1.4. A block-level
      strong inside the flex paragraph centred its *box* against the sentence
@@ -735,8 +733,8 @@ html[data-prerelease='dismissed'] .prerelease-notice {
   display: inline-flex;
   align-items: center;
   border-radius: 0.25rem;
-  background: var(--theme-accent);
-  color: var(--theme-text);
+  background: var(--brand-solid);
+  color: var(--brand-on-solid);
   padding: 0.2rem 0.4rem;
   font-size: 0.6875rem;
   line-height: 1;
@@ -908,6 +906,9 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 
 .site-header__mark {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .site-header__spacer {
@@ -1178,4 +1179,28 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 
 [open] > .page-port-switcher__summary .page-port-switcher__caret {
   transform: rotate(180deg);
+}
+
+/* Abbreviate before moving the languages into the menu. */
+.port-abbreviation { display: none; }
+@media (min-width: 48rem) and (max-width: 79.999rem) {
+  .site-header__ports { display: block; }
+  .site-header__ports .port-name { display: none; }
+  .site-header__ports .port-abbreviation { display: inline; }
+  .site-header__ports .topnav-chip { padding-inline: 0.3rem; }
+  .site-header__ports > nav { gap: 0.1rem; }
+  .site-header__panel-ports, .site-header__menu-label { display: none; }
+  .site-header__bar { gap: 0.5rem; }
+}
+@media (max-width: 25rem) {
+  .site-header__menu-label { display: none; }
+}
+
+.brand-action {
+  background: var(--brand-solid);
+  color: var(--brand-on-solid);
+}
+.brand-action:hover {
+  background: color-mix(in srgb, var(--brand-solid), #000 12%);
+  color: var(--brand-on-solid);
 }

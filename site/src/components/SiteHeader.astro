@@ -1,4 +1,5 @@
 ---
+import { branding } from '../lib/branding'
 import ColorSchemeSwitcher from './ColorSchemeSwitcher.astro'
 import LocaleSwitcher from './LocaleSwitcher.astro'
 import PortSwitcher from './PortSwitcher.astro'
@@ -31,6 +32,7 @@ const {
   sourcePath,
   localeStatuses,
 } = Astro.props as Props
+const brand = branding(portSlug, pagePath)
 ---
 
 <header
@@ -38,7 +40,7 @@ const {
   style="background: var(--topnav-background); backdrop-filter: blur(var(--topnav-backdrop-blur, 8px));"
 >
   <div class="site-header__bar">
-    <a href={withRoot('/')} class="site-header__mark font-mono text-lg font-semibold tracking-tight">libtmux</a>
+    <a href={withRoot('/')} class="site-header__mark font-mono text-lg font-semibold tracking-tight"><img src={withRoot(brand.asset('logo.svg'))} width="28" height="28" alt="" aria-hidden="true" />libtmux</a>
 
     {/*
       The ten languages are the primary navigation and stay in the bar for as
