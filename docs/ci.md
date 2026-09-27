@@ -263,10 +263,18 @@ Triggers and jobs:
 
 | Trigger | Job | Target |
 |---|---|---|
-| push to `main` | `build` → `publish-root` | bucket root, `docs` environment |
-| push tag `v*` | `build` → `publish-root` | bucket root (same as trunk) |
+| push to `main` | `registry` → `build` → `publish-root` | bucket root, `docs` environment |
+| push tag `v*` | `registry` → `build` → `publish-root` | bucket root (same as trunk) |
+| hourly `schedule`, `workflow_dispatch` | `registry`, then `build` → `publish-root` when the registry moved (dispatch always rebuilds) | bucket root |
 | `pull_request`, same-repo head | `build` → `publish-preview` | `pr-<n>/`, `docs-preview` environment |
 | `pull_request`, fork head | `build` only | no publish — see below |
+
+`registry` resolves `site/src/data/registry.json` against the live package
+registries, falling back to the `/registry.json` the last deploy published,
+and hands the result to every locale's build; `publish-root` then publishes
+it. Install commands therefore follow a port's release within the hour with
+no commit here. A pull request builds from the committed file, so its result
+depends only on the commit.
 
 `publish-root` cannot simply call `reusable-deploy.yml`: production output
 spans several top-level directories (the `docs` content collection's own
