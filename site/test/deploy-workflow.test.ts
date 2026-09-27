@@ -35,6 +35,12 @@ describe('port publisher contract', () => {
   it('protects immutable releases before upload and excludes previews from production manifests', () => {
     expect(reusable).toContain("if: inputs.version-kind == 'tag'")
     expect(reusable).toContain('diff -qr dist "$remote"')
+    // Counted in one server-side request. The CLI-paginated form returned a
+    // null Contents for any prefix and failed every tag publish.
+    const guard = reusable.slice(reusable.indexOf('Protect immutable tag contents'), reusable.indexOf('diff -qr dist'))
+    expect(guard).toContain('--max-keys 1')
+    expect(guard).toContain("--query 'KeyCount'")
+    expect(guard).not.toMatch(/^\s+--max-items/m)
     expect(reusable).toContain('immutable tag \'$PREFIX\' already exists with different bytes')
     expect(reusable).toContain("if: inputs.port != '' && inputs.version-kind != 'pr'")
   })

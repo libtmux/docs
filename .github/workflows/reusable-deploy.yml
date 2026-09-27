@@ -260,13 +260,18 @@ jobs:
           BUCKET: ${{ secrets.bucket }}
         run: |
           set -euo pipefail
+          # One request, capped server-side. `--max-items` paginates in the
+          # CLI instead, and there `Contents` came back null whether or not
+          # the prefix held anything, so `length(Contents)` failed every tag
+          # publish with exit 255 before a byte was written.
           count=$(aws s3api list-objects-v2 \
             --bucket "$BUCKET" \
             --prefix "$PREFIX/" \
-            --max-items 1 \
-            --query 'length(Contents)' \
+            --max-keys 1 \
+            --no-paginate \
+            --query 'KeyCount' \
             --output text)
-          if [[ "$count" != 0 && "$count" != None ]]; then
+          if [[ "$count" != 0 ]]; then
             remote="$RUNNER_TEMP/immutable-existing"
             mkdir -p "$remote"
             aws s3 sync "s3://$BUCKET/$PREFIX/" "$remote/" --only-show-errors
