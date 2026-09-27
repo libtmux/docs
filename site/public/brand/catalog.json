@@ -387,8 +387,8 @@
         },
         {
           "file": "python/library/site.webmanifest",
-          "bytes": 718,
-          "sha256": "24e2cbacbf8c04ba7dd1d1ec825afe40019346ef8ee4c58d09e49e9e7923006e",
+          "bytes": 734,
+          "sha256": "dcf65351f74124a038edb4c158d9635b9afffe207104b26ec69225c769fc1dfb",
           "format": "webmanifest"
         },
         {
@@ -501,8 +501,8 @@
         },
         {
           "file": "python/library/site-dark.webmanifest",
-          "bytes": 716,
-          "sha256": "9dfec86388f9af8756a1534408d9f05a6eabef294669cd67ad78978331369b97",
+          "bytes": 732,
+          "sha256": "272e461ddcaf684bac233cebc74cd13734e965168ee3ea6b2f06f3f7088b734d",
           "format": "webmanifest"
         },
         {
@@ -798,8 +798,8 @@
         },
         {
           "file": "python/workspace/site.webmanifest",
-          "bytes": 734,
-          "sha256": "c552d759c74231f44e2c8e71ce39bb972548c6e3340073a56d15120704ff9cfb",
+          "bytes": 753,
+          "sha256": "889302e7bb5809c9f72c7e9aab055f60fdab073689d7eec437ed44fbc974be43",
           "format": "webmanifest"
         },
         {
@@ -912,8 +912,8 @@
         },
         {
           "file": "python/workspace/site-dark.webmanifest",
-          "bytes": 732,
-          "sha256": "d7f36a450bdaa33b44aef3ad04b9ba7f2a9283820e10a577fc719c88147ae6b1",
+          "bytes": 751,
+          "sha256": "ea0effb2a16c86391e9f1d6437771deb6134e3cd98004511a1b78134bd4371e7",
           "format": "webmanifest"
         },
         {
@@ -1209,8 +1209,8 @@
         },
         {
           "file": "python/mcp/site.webmanifest",
-          "bytes": 726,
-          "sha256": "ed798ff0d3e9dfa76e81fb484970425e05597f1251e6accef931492db92a026e",
+          "bytes": 745,
+          "sha256": "cef3ad0f643c4a10f782102a7000de89c603b0aaa78828df9622b6cb9e900ddc",
           "format": "webmanifest"
         },
         {
@@ -1323,8 +1323,8 @@
         },
         {
           "file": "python/mcp/site-dark.webmanifest",
-          "bytes": 724,
-          "sha256": "96ee66a0c1c6252c17866049e19aafe7cfa27e5cdb862c4c42be8b410a6772d2",
+          "bytes": 743,
+          "sha256": "e11958ca56b5799f5f2bd8c4e036b03a8374a6a8f343c78abf162d2f6d42e99f",
           "format": "webmanifest"
         },
         {
@@ -1620,8 +1620,8 @@
         },
         {
           "file": "typescript/library/site.webmanifest",
-          "bytes": 722,
-          "sha256": "99f77d4f74b71b1381ce1ab80bd5b2c4841e90127a2def1b68b8d2df8c750877",
+          "bytes": 738,
+          "sha256": "fe0941267272a5d29ec8e33a0fd7aaad165ecbd14a3e7247894b4452b79a9ed6",
           "format": "webmanifest"
         },
         {
@@ -1734,8 +1734,8 @@
         },
         {
           "file": "typescript/library/site-dark.webmanifest",
-          "bytes": 720,
-          "sha256": "85bd3ce63e003cb82bf5b5d9286f12292c05c208817b89955a5fca6152107276",
+          "bytes": 736,
+          "sha256": "c5f052ff9440a4a453af2c7ccd6c8756c870c9041329e6e66017ba58e736f3f6",
           "format": "webmanifest"
         },
         {
@@ -2031,8 +2031,8 @@
         },
         {
           "file": "typescript/workspace/site.webmanifest",
-          "bytes": 740,
-          "sha256": "d5276cd602042d37eafaa4b0bd9aa08665732ad874e9e9f6f509f82c7b308516",
+          "bytes": 759,
+          "sha256": "b8c47366391740dfdba3e937791e4d3facfe09e016ea22b0905af26a37c79463",
           "format": "webmanifest"
         },
         {
@@ -2145,8 +2145,8 @@
         },
         {
           "file": "typescript/workspace/site-dark.webmanifest",
-          "bytes": 738,
-          "sha256": "8d587b82431f99111c852902c3007ba2ed3e2b7ca35268fb8bb99e192d8ae610",
+          "bytes": 757,
+          "sha256": "e968f76935ec9d897f8c00448d34cf281b459973603b72b0bd01c5c5ce406460",
           "format": "webmanifest"
         },
         {
@@ -2442,8 +2442,8 @@
         },
         {
           "file": "typescript/mcp/site.webmanifest",
-          "bytes": 730,
-          "sha256": "35b6a0e4720bc666614cad6c6f72824e8d1af7df4970fd119916832106c8431a",
+          "bytes": 749,
+          "sha256": "b97728b117bbf804b59caaa09033d2bb6fdf6daf46777956e5a539b0745b2679",
           "format": "webmanifest"
         },
         {
@@ -2556,8 +2556,8 @@
         },
         {
           "file": "typescript/mcp/site-dark.webmanifest",
-          "bytes": 728,
-          "sha256": "4e28090c5621c8c1947cd66b95101015a5c5b724c805c6173b5d9904ceb6cab4",
+          "bytes": 747,
+          "sha256": "134b90eefc114a941999b860643f8257fbaf293027e173670333efc26dabf2a7",
           "format": "webmanifest"
         },
         {
@@ -2853,8 +2853,8 @@
         },
         {
           "file": "rust/library/site.webmanifest",
-          "bytes": 716,
-          "sha256": "54e5f503a700201112d1a14d97259819515987a49b74bc7d5011f2b088ec1bc6",
+          "bytes": 732,
+          "sha256": "0e533ffeb59744a2928c7845b0d526c3878fc8574bc2c24df8a641c1d692f7e7",
           "format": "webmanifest"
         },
         {
@@ -2967,8 +2967,8 @@
         },
         {
           "file": "rust/library/site-dark.webmanifest",
-          "bytes": 714,
-          "sha256": "bb85974970eb1da068665962a5a391ddee8625706ecfae7b5171afb77ca5c98a",
+          "bytes": 730,
+          "sha256": "2291c619a91419ff6d8fd7301dae55259cd6047a6059e544d2e9d7169fd06f9a",
           "format": "webmanifest"
         },
         {
@@ -3264,8 +3264,8 @@
         },
         {
           "file": "rust/workspace/site.webmanifest",
-          "bytes": 734,
-          "sha256": "fab4fe340da96d18cc0624cd58bb3812cfc3c8098d6e9635a92cbec5734a8d99",
+          "bytes": 753,
+          "sha256": "45675070a69f5955659f83aaa081e4a6d78a6c3c77d43a627f21b0368cf5f59d",
           "format": "webmanifest"
         },
         {
@@ -3378,8 +3378,8 @@
         },
         {
           "file": "rust/workspace/site-dark.webmanifest",
-          "bytes": 732,
-          "sha256": "4ee197c8b785e015b2661058573ecfd412a7666b33565917dde2bc24468bf3be",
+          "bytes": 751,
+          "sha256": "a3407bb48694e991e962c5099a836c85ebad8a3f40dbef271e67318a7a1de8f9",
           "format": "webmanifest"
         },
         {
@@ -3675,8 +3675,8 @@
         },
         {
           "file": "rust/mcp/site.webmanifest",
-          "bytes": 724,
-          "sha256": "a36c6c48e96a2e9523dc858721d2f16134f69d50d8be0e52f7f17249287bbdd6",
+          "bytes": 743,
+          "sha256": "b0dc24a0bd36ba7a7088d0344e37e530e08a6430c96a96552774982b2e80b382",
           "format": "webmanifest"
         },
         {
@@ -3789,8 +3789,8 @@
         },
         {
           "file": "rust/mcp/site-dark.webmanifest",
-          "bytes": 722,
-          "sha256": "718f4bbb03d9132e243878378ca55da869037a4a99ed72b9143c78d038926a24",
+          "bytes": 741,
+          "sha256": "fcc61fb2a224c98ddae8978ceccb8b165f410c8dd8f89171426d6b5359336d02",
           "format": "webmanifest"
         },
         {
@@ -4086,8 +4086,8 @@
         },
         {
           "file": "go/library/site.webmanifest",
-          "bytes": 714,
-          "sha256": "61e556c6ccf6b6eaae8a9e063bfc577ee47b40bee8bbd3ac09f1484016eb8011",
+          "bytes": 730,
+          "sha256": "2d1bee54e64906ddabd67f2ff6fae1725e2c09f187c4e258f9f96d523216ca6a",
           "format": "webmanifest"
         },
         {
@@ -4200,8 +4200,8 @@
         },
         {
           "file": "go/library/site-dark.webmanifest",
-          "bytes": 712,
-          "sha256": "b31e3b9442acbfcb16fc26f2c60db526f84633f5ad1f3427278efb90bcbcb61e",
+          "bytes": 728,
+          "sha256": "867f86b753c860334e54ab15d682dd4abf1360afe9f3c6d882a6f30206ac840b",
           "format": "webmanifest"
         },
         {
@@ -4497,8 +4497,8 @@
         },
         {
           "file": "go/workspace/site.webmanifest",
-          "bytes": 732,
-          "sha256": "c6a9d315de6a53459543cd210fd3f5dbeeb223cb50b5ec902c9ecbe988bd96a3",
+          "bytes": 751,
+          "sha256": "ad26b40180b36fab53025a9c3649f16c0cd770cdfc232bbda54aaba198d660f6",
           "format": "webmanifest"
         },
         {
@@ -4611,8 +4611,8 @@
         },
         {
           "file": "go/workspace/site-dark.webmanifest",
-          "bytes": 730,
-          "sha256": "4c7da8ab104831db37b9fcc03d129a74a572ff078a9bc386b9129a2a78be26ca",
+          "bytes": 749,
+          "sha256": "03a618c9ecd1aa3450c728649c32a6c91df22412c4f31c764aadc4a79829f6a5",
           "format": "webmanifest"
         },
         {
@@ -4908,8 +4908,8 @@
         },
         {
           "file": "go/mcp/site.webmanifest",
-          "bytes": 722,
-          "sha256": "ecccb5931fe40019a44f8d3a2dcb70ccf2a9384adcc6798252333344045667d8",
+          "bytes": 741,
+          "sha256": "9ffc7ad860acff115da22f89925622c29b2a484a547f53211e4521122c2bf2cd",
           "format": "webmanifest"
         },
         {
@@ -5022,8 +5022,8 @@
         },
         {
           "file": "go/mcp/site-dark.webmanifest",
-          "bytes": 720,
-          "sha256": "833b86312235132cf31327b2f39f8ef9b526172359a1af97bed682256f40d6c1",
+          "bytes": 739,
+          "sha256": "8115505e40d40f6e11605624e5f388457b6fa9ea8c7bcbfd154ecd32ad83e5f2",
           "format": "webmanifest"
         },
         {
@@ -5319,8 +5319,8 @@
         },
         {
           "file": "java/library/site.webmanifest",
-          "bytes": 716,
-          "sha256": "ecd3ffc645b3dedc0f644f6fb7fc872c51250ed4086d9a826e404f21df045ae0",
+          "bytes": 734,
+          "sha256": "4912beec7f78936b70aa07b63595729c0166cb63d994707844eb61c531ecb6b9",
           "format": "webmanifest"
         },
         {
@@ -5433,8 +5433,8 @@
         },
         {
           "file": "java/library/site-dark.webmanifest",
-          "bytes": 714,
-          "sha256": "3453b0fe9e7fa538da47b1dc998731b5fc9a7c26250e2b3e3101134b37d8c363",
+          "bytes": 732,
+          "sha256": "0e1c4d46892e34ffe861b611aba530c7e5447b47a5aa292a04b3ed96537b3ae3",
           "format": "webmanifest"
         },
         {
@@ -5730,8 +5730,8 @@
         },
         {
           "file": "java/workspace/site.webmanifest",
-          "bytes": 734,
-          "sha256": "b2da1a0f0691c0f83a6186e149d0500c3e5f74e8a4b183dad482682cf470dc55",
+          "bytes": 755,
+          "sha256": "cbf9c44a7f924f2d91bd0f0d776b1b52c5721f464e7bc3db2e36cc30562ce536",
           "format": "webmanifest"
         },
         {
@@ -5844,8 +5844,8 @@
         },
         {
           "file": "java/workspace/site-dark.webmanifest",
-          "bytes": 732,
-          "sha256": "c19d6fe1d2f4eb1f0149b593a9f979d3d8256906f6909ba7d5661611f11c1284",
+          "bytes": 753,
+          "sha256": "f9fa414c1707e06ccc311093fb2115b16f2a752b191f6930c102a5ce19e46431",
           "format": "webmanifest"
         },
         {
@@ -6141,8 +6141,8 @@
         },
         {
           "file": "java/mcp/site.webmanifest",
-          "bytes": 724,
-          "sha256": "6fca5ec4107ac079ea31a939ed39100bfce0f5f1bc4cbd36791ea387b13e20d5",
+          "bytes": 745,
+          "sha256": "45f18a986c55ee04080f44b010071834eabe94a61aec9827886e25e054b282f2",
           "format": "webmanifest"
         },
         {
@@ -6255,8 +6255,8 @@
         },
         {
           "file": "java/mcp/site-dark.webmanifest",
-          "bytes": 722,
-          "sha256": "51adcf7c2bfae62c4938597f84d90eca2e147cac15cbce3353c8b0df30cf255e",
+          "bytes": 743,
+          "sha256": "412430467bf39e26af40f810582e765831ea455c7329ddfcd3930582dcccab47",
           "format": "webmanifest"
         },
         {
@@ -6552,8 +6552,8 @@
         },
         {
           "file": "csharp/library/site.webmanifest",
-          "bytes": 721,
-          "sha256": "61117b3db0d52f5428b2b1344ab2ca1f0564d42e8e12dff83195dfff142446b0",
+          "bytes": 741,
+          "sha256": "c1b68953793d270e33be6513dfff9fb6f2b264a15fa06c239fe511eb5f3d0f17",
           "format": "webmanifest"
         },
         {
@@ -6666,8 +6666,8 @@
         },
         {
           "file": "csharp/library/site-dark.webmanifest",
-          "bytes": 719,
-          "sha256": "50911c646298b335c4cd6fafcfe2b34d209603358d291a03b87830d0aef3dc97",
+          "bytes": 739,
+          "sha256": "d3f2301fa381caeaf25469c643c4c9cfca9f35556be3f46cfea79eeb300f3251",
           "format": "webmanifest"
         },
         {
@@ -6963,8 +6963,8 @@
         },
         {
           "file": "csharp/workspace/site.webmanifest",
-          "bytes": 739,
-          "sha256": "cf4c848255b87065422522a0b4b6fc62f9b96211e10b9040641f95ca413228c4",
+          "bytes": 762,
+          "sha256": "0d49985804b9b5150e1580581845421404e19d6c7d8523ee80a16ce27b89134c",
           "format": "webmanifest"
         },
         {
@@ -7077,8 +7077,8 @@
         },
         {
           "file": "csharp/workspace/site-dark.webmanifest",
-          "bytes": 737,
-          "sha256": "7f3fe2d7d4608398f5db228898643987be869d81cc755c447bb68a040650ed13",
+          "bytes": 760,
+          "sha256": "b4d077cfd3741b9dc7e1ec45ed5247e50147ed7e8e864c2ff8603208e5ac53ea",
           "format": "webmanifest"
         },
         {
@@ -7374,8 +7374,8 @@
         },
         {
           "file": "csharp/mcp/site.webmanifest",
-          "bytes": 729,
-          "sha256": "816049f679de3794e30417078ac7fd9f97983c4bb63e25ea5374d57f37d07699",
+          "bytes": 752,
+          "sha256": "804288ee67c7f91a5550139d0db02241c83839f3a0c2688d9bbc80db55660cc9",
           "format": "webmanifest"
         },
         {
@@ -7488,8 +7488,8 @@
         },
         {
           "file": "csharp/mcp/site-dark.webmanifest",
-          "bytes": 727,
-          "sha256": "cfcd47b07b277aa7b31523c323579dff4bcbe8b3c0055be496c781df3a48cd8d",
+          "bytes": 750,
+          "sha256": "4bd68717c8d6e2943b6267ba91216dfd98e05c1cfb67b15d5943ad3a718768bb",
           "format": "webmanifest"
         },
         {
@@ -7785,8 +7785,8 @@
         },
         {
           "file": "cpp/library/site.webmanifest",
-          "bytes": 715,
-          "sha256": "a3d77305385dd0cbc67041521a5bfb77b9c8b0ef0fb43a719de2b8184e4e0b3b",
+          "bytes": 732,
+          "sha256": "a4b4adf9e557bb02ae6ca27fcf9a1eff59be2b8d31ad3a2aeee86efafae8b00c",
           "format": "webmanifest"
         },
         {
@@ -7899,8 +7899,8 @@
         },
         {
           "file": "cpp/library/site-dark.webmanifest",
-          "bytes": 713,
-          "sha256": "2ea8defb80d52e4a460bf4ef541cb98359a0ec4301aba5259f78eb9511e8d012",
+          "bytes": 730,
+          "sha256": "4f95702735459737feb0e6e0bea392a966ffc01c9e8a2cf354b0d5d544793179",
           "format": "webmanifest"
         },
         {
@@ -8196,8 +8196,8 @@
         },
         {
           "file": "cpp/workspace/site.webmanifest",
-          "bytes": 733,
-          "sha256": "33e6a878ff27999e2dcb0e3c2f982a4b7aa33338699774175e5fdbf1a89cf6f6",
+          "bytes": 753,
+          "sha256": "78e0d2020cd25824e138ef3b4063889767ab8787accee2253accf00d6c41d02a",
           "format": "webmanifest"
         },
         {
@@ -8310,8 +8310,8 @@
         },
         {
           "file": "cpp/workspace/site-dark.webmanifest",
-          "bytes": 731,
-          "sha256": "f56fc63ebaaca977f6e55e2f54ac1fd98ed222fd092618a28828b6c74ef741ab",
+          "bytes": 751,
+          "sha256": "bcc90a119834160d0b60674c39f5115377ade910ca96583944794687c8a8dc19",
           "format": "webmanifest"
         },
         {
@@ -8607,8 +8607,8 @@
         },
         {
           "file": "cpp/mcp/site.webmanifest",
-          "bytes": 723,
-          "sha256": "62da1796ec79a9dbdf93044d6d577a9f4f20ebb6b6868f9ee0fff23b2e560bc5",
+          "bytes": 743,
+          "sha256": "efdb78fdb7020c20826f2e5b5d30cd3c9205769da461cbb658192ffcd5fbd886",
           "format": "webmanifest"
         },
         {
@@ -8721,8 +8721,8 @@
         },
         {
           "file": "cpp/mcp/site-dark.webmanifest",
-          "bytes": 721,
-          "sha256": "3c2a6fc07369304eebb4d141ed1cb04906a862ead863b534e1b942ca8e5e31b2",
+          "bytes": 741,
+          "sha256": "cba5b3a97cf48ff62d442a79e3624e32adb9c5a7d60aa086b4c716d67a3b0efa",
           "format": "webmanifest"
         },
         {
@@ -9018,8 +9018,8 @@
         },
         {
           "file": "swift/library/site.webmanifest",
-          "bytes": 717,
-          "sha256": "a6a38ae430cd4a30a2735063516170f300fadd62d3a984ca1e6ad8ad6c291ee1",
+          "bytes": 736,
+          "sha256": "e953ce4b60a5efda7a8b99d9a8b4770fc58d0331acd3c5656b8528142a47b473",
           "format": "webmanifest"
         },
         {
@@ -9132,8 +9132,8 @@
         },
         {
           "file": "swift/library/site-dark.webmanifest",
-          "bytes": 715,
-          "sha256": "924b44618ac3ba266536bcd818f28949e20061850fc179db9739fac23b60a954",
+          "bytes": 734,
+          "sha256": "ee5d4d836c3e0c5e369d5f23e7ccb87cdaf8d65e1f86742ef0289ce71272ca5c",
           "format": "webmanifest"
         },
         {
@@ -9429,8 +9429,8 @@
         },
         {
           "file": "swift/workspace/site.webmanifest",
-          "bytes": 735,
-          "sha256": "d3bdf6f06724fee098afa222f07b1f4f6932ce8124bb33b9f3dae96fc02280f3",
+          "bytes": 757,
+          "sha256": "0744ac67d0fc7dabc6876e595254acb667daf6346c1111f56845516318318d2b",
           "format": "webmanifest"
         },
         {
@@ -9543,8 +9543,8 @@
         },
         {
           "file": "swift/workspace/site-dark.webmanifest",
-          "bytes": 733,
-          "sha256": "b387327b031f67946da1dd568d8d269b1f7f7e61a0d23e2f381bebb4bdead9d7",
+          "bytes": 755,
+          "sha256": "92aa81321048a0666a41fc804e266ffeae9b0fea261816a34afa5db73c9bbe67",
           "format": "webmanifest"
         },
         {
@@ -9840,8 +9840,8 @@
         },
         {
           "file": "swift/mcp/site.webmanifest",
-          "bytes": 725,
-          "sha256": "0450820c20db6df10e8bc42c683a8b48147e3be0f54a1b716cad3b647c83b835",
+          "bytes": 747,
+          "sha256": "0e99dd9360bd22278e9e74bc9578b93a2f28f4274b0087a56dbf2b6a11017808",
           "format": "webmanifest"
         },
         {
@@ -9954,8 +9954,8 @@
         },
         {
           "file": "swift/mcp/site-dark.webmanifest",
-          "bytes": 723,
-          "sha256": "28d3ef1a373fd2909b00f293e3623c353041e0fc08efe7b6592fe9cc0a465a8e",
+          "bytes": 745,
+          "sha256": "fca7852c4334ec8c8f630bd9bea694526a44d69b25e193377738adf93a866453",
           "format": "webmanifest"
         },
         {
@@ -10251,8 +10251,8 @@
         },
         {
           "file": "julia/library/site.webmanifest",
-          "bytes": 717,
-          "sha256": "da143f2e8f34c01cf71883fe8343d6e3bf0cb569d9c0f3a22c0ccd841f023eed",
+          "bytes": 730,
+          "sha256": "a69ee5fb27cb9676e9a4f94a622b4a8c604fd8d5c70b23eda9c0b78d59559bc3",
           "format": "webmanifest"
         },
         {
@@ -10365,8 +10365,8 @@
         },
         {
           "file": "julia/library/site-dark.webmanifest",
-          "bytes": 715,
-          "sha256": "05fe84c17dbbe981ddb70dbc0de73cfb3ecf4b1a563c15b395f64ca61d0fea95",
+          "bytes": 728,
+          "sha256": "3fff0cf0ca186fe7db2b1c983583115973f52c8bcf954f1dd934093eb61bfdcc",
           "format": "webmanifest"
         },
         {
@@ -10662,8 +10662,8 @@
         },
         {
           "file": "julia/workspace/site.webmanifest",
-          "bytes": 735,
-          "sha256": "3184316987b3139f253cc18cf0c4912244ff3463c5e7bf466334b4cc42cfd66b",
+          "bytes": 751,
+          "sha256": "ed401d3c867107ff59616b07e74ba9a78082b329f469652600173b03b8fa8ea9",
           "format": "webmanifest"
         },
         {
@@ -10776,8 +10776,8 @@
         },
         {
           "file": "julia/workspace/site-dark.webmanifest",
-          "bytes": 733,
-          "sha256": "bdce0aac7656d6358b91a360390d9154e0c5449e9419ecc26142957171f0e484",
+          "bytes": 749,
+          "sha256": "91fd9f1144a0d3b5a4da15102d6e7987e34f67db35806d2b9ab00d21b5d5c820",
           "format": "webmanifest"
         },
         {
@@ -11073,8 +11073,8 @@
         },
         {
           "file": "julia/mcp/site.webmanifest",
-          "bytes": 725,
-          "sha256": "9cc7be6802e4652e1a85e44582586f68094ffca34434a197877e03d700a0d3b1",
+          "bytes": 741,
+          "sha256": "426b9076d54d233d59f2410bf6fcb0c79c99332be8c38cd5adc1c45f37fa6bf5",
           "format": "webmanifest"
         },
         {
@@ -11187,8 +11187,8 @@
         },
         {
           "file": "julia/mcp/site-dark.webmanifest",
-          "bytes": 723,
-          "sha256": "aa2df9c3cca464d9538663710b1cfb045cefa08fecbbe09b56bc38586490da28",
+          "bytes": 739,
+          "sha256": "cb0093c4e5564e0694328ff059ea34ae0a147bf69b40a403548fb1f84185c30e",
           "format": "webmanifest"
         },
         {
@@ -11484,8 +11484,8 @@
         },
         {
           "file": "ruby/library/site.webmanifest",
-          "bytes": 716,
-          "sha256": "16b93083b2960c7c62dd0830da518a7786656b58cddcc44e5d45baed1709cb59",
+          "bytes": 734,
+          "sha256": "25f7cb0dd19cac37d2bdfac8d206a3db6ff03dee0c71e0a287df3bb98601098a",
           "format": "webmanifest"
         },
         {
@@ -11598,8 +11598,8 @@
         },
         {
           "file": "ruby/library/site-dark.webmanifest",
-          "bytes": 714,
-          "sha256": "b9f674bb6337342660f33885af7acdc3263812157f9b8b6a5f1992a1cd4a2475",
+          "bytes": 732,
+          "sha256": "5adccafec37c566f150ab83cf670e7df1279cb0f6e7ab5ee5ce3f5462cad2135",
           "format": "webmanifest"
         },
         {
@@ -11895,8 +11895,8 @@
         },
         {
           "file": "ruby/workspace/site.webmanifest",
-          "bytes": 734,
-          "sha256": "0bb2e13d63c441069c358d4ebc2ea8ba3ecc25b4a77b19634ae80ca0ea8ae18e",
+          "bytes": 755,
+          "sha256": "961e1e4cc6ffb7f99d84c2045a1ee008faecf5aa3c5700a60fb96b9c561d3b7f",
           "format": "webmanifest"
         },
         {
@@ -12009,8 +12009,8 @@
         },
         {
           "file": "ruby/workspace/site-dark.webmanifest",
-          "bytes": 732,
-          "sha256": "d27b24edde63a7d6a950709c52054f5df90b0c9ad733aa7cc2997ea2fbe7f417",
+          "bytes": 753,
+          "sha256": "93baccdba219e92670a89588cce75d6cdcfb4d8b8a632cb4d283a9f52fa93e96",
           "format": "webmanifest"
         },
         {
@@ -12306,8 +12306,8 @@
         },
         {
           "file": "ruby/mcp/site.webmanifest",
-          "bytes": 724,
-          "sha256": "1fbb7da6a4f6fc0647b976e44537e4e7b0f0f6ab2cbb80069d6bc633be66cc41",
+          "bytes": 745,
+          "sha256": "e8b196ed368091ccbe8297f027a9b438882873a807c16403440e877fb289ec05",
           "format": "webmanifest"
         },
         {
@@ -12420,8 +12420,8 @@
         },
         {
           "file": "ruby/mcp/site-dark.webmanifest",
-          "bytes": 722,
-          "sha256": "7af12ae22772962360ca433ac9e137c23fdbb06c194a4da7981d3e5039f1f254",
+          "bytes": 743,
+          "sha256": "ccff7af6d0654bc619d9c06c64c344ba237da6f2a04b6ab8f5c828144059fd9a",
           "format": "webmanifest"
         },
         {
@@ -12717,8 +12717,8 @@
         },
         {
           "file": "lua/library/site.webmanifest",
-          "bytes": 715,
-          "sha256": "1f7a3f3ca7d7b7f61743a92808ecf158cba5b40d4397f7d80c5b6566cbe284a4",
+          "bytes": 732,
+          "sha256": "0674d2cbcf614709876ffafdc20134922a742a68d980f063e1587a81c4ad0964",
           "format": "webmanifest"
         },
         {
@@ -12831,8 +12831,8 @@
         },
         {
           "file": "lua/library/site-dark.webmanifest",
-          "bytes": 713,
-          "sha256": "239635ddf7704bf724fa56a6cf45849419b1abe4178475fb863f2311a654f1f6",
+          "bytes": 730,
+          "sha256": "8ceea5f356c8d90a61b8fa1664efb68c05ed930561c36de3ee98f3bfca177edb",
           "format": "webmanifest"
         },
         {
@@ -13128,8 +13128,8 @@
         },
         {
           "file": "lua/workspace/site.webmanifest",
-          "bytes": 733,
-          "sha256": "fd1bd875f17bf0719f3824a6de078298a1ae4b7a24c341c7c26e7173461975eb",
+          "bytes": 753,
+          "sha256": "7f3b388a91499cf98e7de03072ec4401f152c2c813822ac37396c1f8b8cfa379",
           "format": "webmanifest"
         },
         {
@@ -13242,8 +13242,8 @@
         },
         {
           "file": "lua/workspace/site-dark.webmanifest",
-          "bytes": 731,
-          "sha256": "14f36160bb9fb87070eefa618aeb9730f3154367ea956ab884a92e3555b81d00",
+          "bytes": 751,
+          "sha256": "8659f97bb6a60a16cbb18f555854bec65a44d6180d6dfe50b571d6d0264a0540",
           "format": "webmanifest"
         },
         {
@@ -13539,8 +13539,8 @@
         },
         {
           "file": "lua/mcp/site.webmanifest",
-          "bytes": 723,
-          "sha256": "85c86c405d0f459eae7503972dbcbfcc188de9ccc672bdcc486537e9f80f057b",
+          "bytes": 743,
+          "sha256": "6a8a82d72ade55202b52643c2bb2c91dfedffb450e74e332670cf3970b522e96",
           "format": "webmanifest"
         },
         {
@@ -13653,8 +13653,8 @@
         },
         {
           "file": "lua/mcp/site-dark.webmanifest",
-          "bytes": 721,
-          "sha256": "846408c820bcf6883828dd9dc70ce365d2b898bea7367166bbae8b964ec37510",
+          "bytes": 741,
+          "sha256": "895e6b86576bdfe83eb98a1492edeea4e16071782d6172d8c941da7635328394",
           "format": "webmanifest"
         },
         {
@@ -13950,8 +13950,8 @@
         },
         {
           "file": "powershell/library/site.webmanifest",
-          "bytes": 722,
-          "sha256": "ae7dc02e8ea2f0d19e81afce4d30c49752e2a88a1c5f80ecc8d12e785431f441",
+          "bytes": 735,
+          "sha256": "ff7cb86848ccabae02feb4ba60b824fd570e81bf80bc3b217f5060bd4379ff98",
           "format": "webmanifest"
         },
         {
@@ -14064,8 +14064,8 @@
         },
         {
           "file": "powershell/library/site-dark.webmanifest",
-          "bytes": 720,
-          "sha256": "4a4552b07eee19719787580f26b5cd74f2ad6410506915cae2ab171e824f31cb",
+          "bytes": 733,
+          "sha256": "68784a472b35be87659f930e922730a0d6ddb01e5f84388277e7a291397d094d",
           "format": "webmanifest"
         },
         {
@@ -14361,8 +14361,8 @@
         },
         {
           "file": "powershell/workspace/site.webmanifest",
-          "bytes": 740,
-          "sha256": "fefb245ce4189ce538a0e9d9144d8c65cbb87a73c30dde09de731b9d86f89cf2",
+          "bytes": 756,
+          "sha256": "31a6778f7a4c4c1f4323cab2b705aa05a0994fa73d731559e8f1d3ec090d63bc",
           "format": "webmanifest"
         },
         {
@@ -14475,8 +14475,8 @@
         },
         {
           "file": "powershell/workspace/site-dark.webmanifest",
-          "bytes": 738,
-          "sha256": "c3a7d41e36ad124a0120832f8f5b552b78661ef32bc4139c2c1fc52144e150a4",
+          "bytes": 754,
+          "sha256": "74af56cbaee38526784ee7179255c88639d03b42c5d85f998c62a27e423a3118",
           "format": "webmanifest"
         },
         {
@@ -14772,8 +14772,8 @@
         },
         {
           "file": "powershell/mcp/site.webmanifest",
-          "bytes": 730,
-          "sha256": "1075d15037c569b3d6a26bdd507e90b5be8a4a0f58b0695a8c362383e80090a9",
+          "bytes": 746,
+          "sha256": "388e2cc1a0d8a3d941b15adebd10f5234d42043659aca5c5166d6833a1eec258",
           "format": "webmanifest"
         },
         {
@@ -14886,8 +14886,8 @@
         },
         {
           "file": "powershell/mcp/site-dark.webmanifest",
-          "bytes": 728,
-          "sha256": "95e1e722e9fa2c595c1f8c56dd04c865b0f814e59be42924421ba8e276963bb8",
+          "bytes": 744,
+          "sha256": "caac90e515f5890156dff9cc3b2aa53a612c25a878b1fcbd80dea2cfd2dee88e",
           "format": "webmanifest"
         },
         {
@@ -15183,8 +15183,8 @@
         },
         {
           "file": "fsharp/library/site.webmanifest",
-          "bytes": 714,
-          "sha256": "6023284d1df1aa3f8b40103c27def2990a681d76347c1a77751a5b3bafaec0e2",
+          "bytes": 727,
+          "sha256": "465ebe4c6b31d52adfc6bd8506102c89d54e0e4bb1b16327af4fe1e9fdc5d87c",
           "format": "webmanifest"
         },
         {
@@ -15297,8 +15297,8 @@
         },
         {
           "file": "fsharp/library/site-dark.webmanifest",
-          "bytes": 712,
-          "sha256": "59e8189239a7d93bccf145b27186b1b3f83f5d49e43b6d03c4b928f51737393e",
+          "bytes": 725,
+          "sha256": "537d1a1667597a35c13d5b03863a1ef105d4ed17eea66840ca2c4bb6618569d6",
           "format": "webmanifest"
         },
         {
@@ -15594,8 +15594,8 @@
         },
         {
           "file": "fsharp/workspace/site.webmanifest",
-          "bytes": 732,
-          "sha256": "854d0009d096c01c18166799ea5fd92b1d133db97ae8ff56ec7f360104614d01",
+          "bytes": 748,
+          "sha256": "4395a77077a0434857656632a1bb3267e1a8dc37b6b2acd53e33eea874c0a907",
           "format": "webmanifest"
         },
         {
@@ -15708,8 +15708,8 @@
         },
         {
           "file": "fsharp/workspace/site-dark.webmanifest",
-          "bytes": 730,
-          "sha256": "97a4355ce81e2c5555192107a727b6e9abca71b3baea1bb6b0f49d5c3f3a83a8",
+          "bytes": 746,
+          "sha256": "376e27b6d7b7eb8a0e43eda98c1c248b979c0f7072b6914daff59d21532e4296",
           "format": "webmanifest"
         },
         {
@@ -16005,8 +16005,8 @@
         },
         {
           "file": "fsharp/mcp/site.webmanifest",
-          "bytes": 722,
-          "sha256": "da7ab6f16b4084c2b2dc057241a8fa77ad7ac1e1b3cb4cb320f07ceb6c8c37e9",
+          "bytes": 738,
+          "sha256": "255c3cde9ae394b39c361f0e9d1e192a8b9858546c0147dddcabfb024291e55b",
           "format": "webmanifest"
         },
         {
@@ -16119,8 +16119,8 @@
         },
         {
           "file": "fsharp/mcp/site-dark.webmanifest",
-          "bytes": 720,
-          "sha256": "d618808312ef4627b8fb18963cdd438df44cbe0d3baa147c75b435b4fc700400",
+          "bytes": 736,
+          "sha256": "cb0dc0cca6b05bc6e736c7ee21a567dbd67abd5903c0cd47a593adb0d71d93fb",
           "format": "webmanifest"
         },
         {
@@ -16416,8 +16416,8 @@
         },
         {
           "file": "scala/library/site.webmanifest",
-          "bytes": 717,
-          "sha256": "d16870d328bd0f1dfa0f56d5df36d38e0522e27f61fbc30eb8f289bb265156b5",
+          "bytes": 730,
+          "sha256": "6f41d27c0ca965d59d7e45a5845d24e7b741f87891b0f9bfd6d393a90ef33363",
           "format": "webmanifest"
         },
         {
@@ -16530,8 +16530,8 @@
         },
         {
           "file": "scala/library/site-dark.webmanifest",
-          "bytes": 715,
-          "sha256": "acaae55df0d071b312ae201ec540ceaf51eec4dbd92aa38fbd325709fbf3d7f0",
+          "bytes": 728,
+          "sha256": "0f610ce979fa35d443f55e12b4af31dfea84f2f733c33e6f43a5bbeba515ef35",
           "format": "webmanifest"
         },
         {
@@ -16827,8 +16827,8 @@
         },
         {
           "file": "scala/workspace/site.webmanifest",
-          "bytes": 735,
-          "sha256": "fb5bb53e687063e6a15f8aa1c55ad730662de57c2053d545ee3afe678624f4e8",
+          "bytes": 751,
+          "sha256": "6d8adecadb11809776bbac142feab80e9a2e57de1829832f991bc7c3593e1480",
           "format": "webmanifest"
         },
         {
@@ -16941,8 +16941,8 @@
         },
         {
           "file": "scala/workspace/site-dark.webmanifest",
-          "bytes": 733,
-          "sha256": "7dca9a8180106c6e9d2dcacd7b87ea3eb34329335ea113add68d715f075859a8",
+          "bytes": 749,
+          "sha256": "f003232bdd324fc64cf81f2cb45c887a5d60a7aa2e81f53563f53d459165a6a4",
           "format": "webmanifest"
         },
         {
@@ -17238,8 +17238,8 @@
         },
         {
           "file": "scala/mcp/site.webmanifest",
-          "bytes": 725,
-          "sha256": "9a22a3fdf6c4300dd09e5c80eb5c02d8227dc33f8a6fea4c82cf871eaa84de51",
+          "bytes": 741,
+          "sha256": "49183e8d380ac2655f7c1d3b90c5116141fb48c8ecb02d12cfbb57d682f9be77",
           "format": "webmanifest"
         },
         {
@@ -17352,8 +17352,8 @@
         },
         {
           "file": "scala/mcp/site-dark.webmanifest",
-          "bytes": 723,
-          "sha256": "d4eabed4f71892e68a8cefbcf410b258ef8255deb7e14a31921b2dbef8058bf9",
+          "bytes": 739,
+          "sha256": "a16a0be3ff3cabb44a46b003dcf8e4e696b15c92dbe1e2c62160c0e76e4621a4",
           "format": "webmanifest"
         },
         {
@@ -17649,8 +17649,8 @@
         },
         {
           "file": "kotlin/library/site.webmanifest",
-          "bytes": 718,
-          "sha256": "d84407d80d5be7fb0199c85c2fcb5df87c29ebcb17a10c03f8942826452bd75d",
+          "bytes": 731,
+          "sha256": "775f3a55a9b19a6901cc06e653248d2b82a95f1d7e6ef9f789ac647a4d623ae6",
           "format": "webmanifest"
         },
         {
@@ -17763,8 +17763,8 @@
         },
         {
           "file": "kotlin/library/site-dark.webmanifest",
-          "bytes": 716,
-          "sha256": "3edf68c1482b3eb4d9d8bae25992aa4c17c60bb3280ab65ee2d95618e9167116",
+          "bytes": 729,
+          "sha256": "be0ee773b14a9ed64811b2f9def6ce9da490c810272fde83d10eecbbc3c0f5e4",
           "format": "webmanifest"
         },
         {
@@ -18060,8 +18060,8 @@
         },
         {
           "file": "kotlin/workspace/site.webmanifest",
-          "bytes": 736,
-          "sha256": "dee5aa069ffdb355511e408e9547b792ed9213a4b0abc378e13994bb2931a154",
+          "bytes": 752,
+          "sha256": "ea2ea94c2c5e6cebaef7c72afd258abf69dfaac08d99dc72ccc96c20ecf86614",
           "format": "webmanifest"
         },
         {
@@ -18174,8 +18174,8 @@
         },
         {
           "file": "kotlin/workspace/site-dark.webmanifest",
-          "bytes": 734,
-          "sha256": "9892ef870b18e10694a631aadf655c55d15ce91f17409767f8da3c13c7264961",
+          "bytes": 750,
+          "sha256": "4be67b7114a42d451d14ce374d413d81f296e3b2fd9be0f8177b16c73ae96621",
           "format": "webmanifest"
         },
         {
@@ -18471,8 +18471,8 @@
         },
         {
           "file": "kotlin/mcp/site.webmanifest",
-          "bytes": 726,
-          "sha256": "5fcd2d90d4b15b25156853b556a1d2e0be0ac4d7dc2d8f5700ee5f84d3accbb4",
+          "bytes": 742,
+          "sha256": "d19a79c43698db1aed57fad86be8b1b6d1391471d622d0a03230a054e5dc497b",
           "format": "webmanifest"
         },
         {
@@ -18585,8 +18585,8 @@
         },
         {
           "file": "kotlin/mcp/site-dark.webmanifest",
-          "bytes": 724,
-          "sha256": "63e3a8f72101132645a8c71d368d7ea8c5d263d4586fdff43ca8d367b9f14116",
+          "bytes": 740,
+          "sha256": "da11ca87727e5be4781d8cdc03fd0eab2d9ae82e58117d2016f0a9f59b6bbb4b",
           "format": "webmanifest"
         },
         {

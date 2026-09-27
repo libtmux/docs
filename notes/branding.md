@@ -83,6 +83,11 @@ $ node scripts/gen-brand-css.mjs
 ```
 
 Both the Astro shell and the native shell consume that generated CSS.
+After copying artwork or editing the site's web manifests, run
+`node scripts/gen-brand-catalog.mjs` to refresh the sizes and SHA-256
+digests in `site/public/brand/catalog.json`. The branding test checks them
+against the distributed files.
+
 `BrandIcons.astro` emits icon and manifest links. `Seo.astro` emits social
 images and JSON-LD while preserving the existing canonical, locale, and
 version indexing rules. JSON-LD escapes `<` before insertion into a script.

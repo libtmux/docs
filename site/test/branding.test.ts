@@ -1,4 +1,5 @@
 import { readFileSync, existsSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { pageBrand, PORTS } from '../src/lib/ports'
@@ -17,6 +18,20 @@ const contrast = (a: string, b: string) => {
 }
 
 describe('route branding', () => {
+  it('publishes the size and digest of every catalogued asset', () => {
+    const catalog = JSON.parse(readFileSync(publicFile('/brand/catalog.json'), 'utf8')) as {
+      fileCount: number
+      assets: { files: { file: string; bytes: number; sha256: string }[] }[]
+    }
+    const files = catalog.assets.flatMap((asset) => asset.files)
+    expect(files.length).toBeGreaterThan(0)
+    expect(files).toHaveLength(catalog.fileCount)
+    for (const file of files) {
+      const bytes = readFileSync(publicFile(`/brand/${file.file}`))
+      expect(bytes.length, file.file).toBe(file.bytes)
+      expect(createHash('sha256').update(bytes).digest('hex'), file.file).toBe(file.sha256)
+    }
+  })
   it('defaults the shared site to the Python cog and follows reference languages', () => {
     expect(pageBrand()).toEqual({ language: 'python', variant: 'library' })
     expect(pageBrand(undefined, 'reference/ts/Server')).toEqual({ language: 'typescript', variant: 'library' })
