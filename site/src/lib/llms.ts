@@ -23,7 +23,7 @@
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
 import { LANG_TO_PORT, parseMeta, readFence } from '../plugins/remark-port-code.mjs'
-import { PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, productAvailable, referenceUrl, workspaceOverviewNotice } from './ports.ts'
+import { PORTS, PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, productAvailable, referenceUrl, workspaceOverviewNotice } from './ports.ts'
 import { DEFAULT_LOCALE } from '../i18n/locales.ts'
 import { buildLocale, localeOf, sourceIdOf } from '../i18n/resolve.ts'
 import { buildTarget } from './versions.ts'
@@ -119,7 +119,7 @@ export async function llmsPages(origin: string, base: string): Promise<LlmsPage[
   const entries = await getCollection(
     'docs',
     (entry) =>
-      (!port || entry.data.port === undefined || entry.data.port === port) &&
+      docsEntryAvailable(entry, port) &&
       localeOf(entry.id) === DEFAULT_LOCALE &&
       (locale === DEFAULT_LOCALE || Boolean(port) || entry.data.port === undefined),
   )
@@ -150,7 +150,7 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
   try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
   const entryPort = entry.data.port
   const version = port ? buildTarget(process.env).version : (defaults[entryPort ?? ''] ?? 'latest')
-  let body = resolvePortCode(entry.body ?? '', entryPort ?? port)
+  let body = resolvePortCode(entry.body ?? '', entryPort ? undefined : port)
   if (entryPort && entry.data.product === 'workspace' && docsPath(entry) === 'workspace') {
     const notice = workspaceOverviewNotice(PORT_BY_SLUG[entryPort])
     if (notice) body = `**${notice.title}** ${notice.body}\n\n${body}`
@@ -202,13 +202,12 @@ export function llmsHeader(): { title: string; blurb: string } {
   if (!p) {
     return {
       title: 'libtmux',
-      blurb:
-        'A typed tmux control library published for ten languages — Python, Ruby, Lua, TypeScript, Rust, Go, Java, .NET, C++ and Swift — from one documentation site. Pages below are language-neutral prose; each carries a code sample per port.',
+      blurb: `Typed tmux control libraries for ${PORTS.map((port) => port.name).join(', ')}. This site includes shared concepts and language-specific guides, examples and API references.`,
     }
   }
   return {
     title: `libtmux for ${p.name}`,
-    blurb: `The ${p.name} port of libtmux (${p.packageName}). Every code sample below is ${p.language}; the same pages exist for the other nine ports under their own prefix.`,
+    blurb: `The ${p.name} library (${p.packageName}). These pages include its guides, tested examples and API documentation.`,
   }
 }
 

@@ -871,7 +871,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 }
 
 /* Keep full language names by hiding the scheme labels first. */
-@media (max-width: 79.999rem) {
+@media (max-width: 95.999rem) {
   .scheme-switch__label {
     position: absolute;
     width: 1px;
@@ -899,7 +899,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
  */
 .site-header__bar {
   margin-inline: auto;
-  max-width: 80rem;
+  max-width: 96rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -1040,7 +1040,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   line-height: 1;
 }
 
-@media (min-width: 80rem) {
+@media (min-width: 96rem) {
   .site-header__ports {
     display: block;
   }
@@ -1183,18 +1183,21 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   transform: rotate(180deg);
 }
 
-/* Full names fit from 52rem with compact controls. Abbreviate below it. */
+/* Thirteen full names fit from 64rem with compact controls. */
 .port-abbreviation { display: none; }
-@media (min-width: 48rem) and (max-width: 79.999rem) {
+@media (min-width: 48rem) and (max-width: 95.999rem) {
   .site-header__ports { display: block; }
   .site-header__ports .topnav-chip { padding-inline: 0.3rem; }
   .site-header__ports > nav { gap: 0.1rem; }
   .site-header__panel-ports, .site-header__menu-label { display: none; }
   .site-header__bar { gap: 0.5rem; }
 }
-@media (min-width: 48rem) and (max-width: 51.999rem) {
+@media (min-width: 48rem) and (max-width: 63.999rem) {
   .site-header__ports .port-name { display: none; }
   .site-header__ports .port-abbreviation { display: inline; }
+}
+@media (min-width: 48rem) and (max-width: 69.999rem) {
+  .site-header__search-label { display: none; }
 }
 @media (max-width: 25rem) {
   .site-header__menu-label { display: none; }

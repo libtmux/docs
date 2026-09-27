@@ -303,6 +303,11 @@ rm -rf "$site_dir/src/content/docs/_staged"
 if [ -n "${LIBTMUX_DOCS_PORT:-}" ] && { [ "$LIBTMUX_DOCS_PORT" = ruby ] || [ "$LIBTMUX_DOCS_PORT" = lua ]; }; then
   node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"
   node "$script_dir/stage-port-docs.mjs" --port "$LIBTMUX_DOCS_PORT"
+elif [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ] && node --input-type=module -e '
+  const { PORT_BY_SLUG } = await import("file://'"$site_dir"'/src/lib/ports.ts");
+  process.exit(PORT_BY_SLUG[process.env.LIBTMUX_DOCS_PORT]?.parentLibrary ? 0 : 1);
+'; then
+  node "$script_dir/stage-port-docs.mjs" --port "$LIBTMUX_DOCS_PORT" --from-source
 elif [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
   # A source-bound build renders the reference from the verified checkout,
   # not from the model committed here, which describes whatever revision was
@@ -317,6 +322,7 @@ elif [ -f "${LIBTMUX_DOCS_CHECKOUT_RUBY:-$HOME/work/libtmux/libtmux-ruby-docs}/d
 elif [ -n "${LIBTMUX_DOCS_CHECKOUT_RUBY:-}" ] && [ -n "${LIBTMUX_DOCS_CHECKOUT_LUA:-}" ]; then
   node "$script_dir/stage-port-docs.mjs" --from-source
 fi
+node "$script_dir/stage-port-docs.mjs" --wrappers
 node "$script_dir/gen-example-sources.mjs"
 node "$script_dir/gen-mentions.mjs"
 

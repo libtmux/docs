@@ -32,7 +32,9 @@ const cards = entries.map((entry) => {
   }
   return {
     label: 'Official reference',
-    body: `${port.name} API signatures and documentation, with links to related guides and APIs in other languages.`,
+    body: port.parentLibrary
+      ? `${port.name} API documentation and links to its package sources.`
+      : `${port.name} API signatures and documentation, with links to related guides and APIs in other languages.`,
     href: entry.href,
     external: false,
   }

@@ -57,7 +57,31 @@
         "supported": true
       }
     ],
+    "kotlin": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "scala": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
     "dotnet": [
+      {
+        "slug": "latest",
+        "label": "latest",
+        "kind": "trunk",
+        "supported": true
+      }
+    ],
+    "fsharp": [
       {
         "slug": "latest",
         "label": "latest",
@@ -90,7 +114,10 @@
     "rs": "latest",
     "go": "latest",
     "java": "latest",
+    "kotlin": "latest",
+    "scala": "latest",
     "dotnet": "latest",
+    "fsharp": "latest",
     "cxx": "latest",
     "swift": "latest"
   }

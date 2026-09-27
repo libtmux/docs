@@ -56,7 +56,7 @@ const dir = dirArg === -1 ? join(root, 'site/src/data/api') : process.argv[dirAr
  * A fixture run still derives its ports from the fixture, since that is the
  * whole point of `--dir`.
  */
-const { PORTS: PORT_DEFS } = await import(`file://${join(root, 'site/src/lib/ports.ts')}`)
+const { API_MODEL_PORTS: PORT_DEFS } = await import(`file://${join(root, 'site/src/lib/ports.ts')}`)
 const PORTS =
   dirArg === -1
     ? PORT_DEFS.map((p) => p.slug)

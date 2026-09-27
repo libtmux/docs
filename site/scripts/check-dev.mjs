@@ -27,7 +27,7 @@ process.on('exit', () => rmSync(mirror, { recursive: true, force: true }))
 const root = join(mirror, 'site')
 mkdirSync(root)
 cpSync(join(source, 'src'), join(root, 'src'), { recursive: true })
-for (const file of ['astro.config.ts', 'package.json', 'tsconfig.json']) cpSync(join(source, file), join(root, file))
+for (const file of ['astro.config.ts', 'ec.config.mjs', 'package.json', 'tsconfig.json']) cpSync(join(source, file), join(root, file))
 for (const file of ['public', 'node_modules']) symlinkSync(join(source, file), join(root, file), 'dir')
 for (const file of ['scripts', 'packages', 'node_modules']) symlinkSync(join(source, '..', file), join(mirror, file), 'dir')
 let server, browser
@@ -102,7 +102,7 @@ try {
       const target = await page.request.get(base.replace(/\/en$/, '') + expected)
       assert(target.ok(), `Equivalent target: HTTP ${target.status()}`)
     }
-    for (const width of [1440, 1024, 832, 768, 390]) {
+    for (const width of [1600, 1440, 1024, 832, 768, 390]) {
       await page.setViewportSize({ width, height: 1000 })
 
       const result = await page.evaluate(() => ({
@@ -127,9 +127,9 @@ try {
         assert.notEqual(result.portVisibility, 'none', 'Language links remain visible on tablets')
         assert.notEqual(result.shortLabel, 'none', 'Tablet navigation uses abbreviated language names')
       }
-      if (width >= 832) assert.equal(result.shortLabel, 'none', 'Full language names fit with compact scheme controls')
+      if (width >= 1024) assert.equal(result.shortLabel, 'none', 'Full language names fit with compact scheme controls')
       if (width >= 768) assert(result.languageEnd <= result.controlsStart, 'Language links do not overlap controls')
-      if (width < 1280) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
+      if (width < 1536) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
       assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
       assert(result.columns.every((delta) => delta <= 1), `${path} at ${width}px: table columns misaligned`)
     }
@@ -208,7 +208,7 @@ try {
     await checkContrast(`${colorScheme} with ${override} override`)
     await context.close()
   }
-  console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1440px header and dark hue PASS')
+  console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
 } finally {
   await browser?.close()
   await server.stop()

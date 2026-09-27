@@ -29,6 +29,15 @@ function documentedRegion(source: string, name: string): string {
 const rubyQuickstart = documentedRegion(EXAMPLE_SOURCES['ruby:examples/quickstart.rb'], 'main')
 const luaQuickstart = documentedRegion(EXAMPLE_SOURCES['lua:examples/quickstart.lua'], 'main')
 
+/** Quote a block checked by the parent repository's documentation tests. */
+function guideExample(artifact: typeof KOTLIN_GUIDES, path: string, heading: string, lang: string): Quickstart {
+  const guide = artifact.guides.find((guide) => guide.path === path)
+  const section = guide?.content.split(`## ${heading}\n`)[1]?.split('\n## ')[0]
+  const code = section?.match(new RegExp('```' + lang + '\\n([\\s\\S]*?)\\n```'))?.[1]
+  if (!code) throw new Error(`quickstarts.ts: missing ${lang} example in ${path} / ${heading}`)
+  return { lang, code, source: `From ${path} at ${artifact.source.revision.slice(0, 12)}. The parent repository compiles and runs this documentation block against tmux.` }
+}
+
 /**
  * Excerpts from each port's tested README or examples, at the release the
  * install line pins, with their source and verification notes.
@@ -40,6 +49,20 @@ const luaQuickstart = documentedRegion(EXAMPLE_SOURCES['lua:examples/quickstart.
  * Backslashes in source code need an extra escape inside template literals.
  */
 export const QUICKSTARTS: Partial<Record<string, Quickstart>> = {
+  kotlin: {
+    ...guideExample(KOTLIN_GUIDES, 'libtmux-kotlin/README.md', 'Send keys, capture output, run a command', 'kotlin'),
+    note: 'Run inside a coroutine, with `config: ServerConfig` selecting your tmux server. The getting-started guide covers imports and the coroutine wrappers.',
+  },
+  scala: {
+    ...guideExample(SCALA_GUIDES, 'libtmux-scala/README.md', 'Inspect captured panes', 'scala'),
+    note: 'Supply `config: ServerConfig` for an existing tmux server. The getting-started guide includes a complete first-client function and socket setup.',
+  },
+  fsharp: {
+    lang: 'fsharp',
+    code: EXAMPLE_SOURCES['fsharp:examples/LibTmux.FSharp.Quickstart/Program.fs']
+      .replace(/^\/\/ fsharp-snippet: Quickstart\n/, '').replace(/\n\/\/ endfsharp-snippet\n?$/, ''),
+    source: 'From examples/LibTmux.FSharp.Quickstart/Program.fs. The package consumer check runs this exact program against the packed LibTmux.FSharp artifact on .NET 8 and 10.',
+  },
   py: {
     lang: 'python',
     code: `import libtmux
@@ -239,3 +262,5 @@ print(lines.suffix(5).joined(separator: "\\n"))`,
   },
 }
 import EXAMPLE_SOURCES from '../data/example-sources.json'
+import KOTLIN_GUIDES from '../data/port-guides/kotlin.json'
+import SCALA_GUIDES from '../data/port-guides/scala.json'

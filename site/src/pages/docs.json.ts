@@ -3,9 +3,10 @@ import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales.ts'
 import { buildLocale, localeOf } from '../i18n/resolve.ts'
 import { API_MODELS, PORT_NAME, ownersOf } from '../lib/api-models.ts'
-import { DOC_PRODUCTS, hasReference, PORTS, portPageUrl, productApiPath, productAvailable, productInDevelopment, referenceUrl, type DocProduct } from '../lib/ports.ts'
+import { DOC_PRODUCTS, hasReference, PORTS, PORT_BY_SLUG, portPageUrl, productApiPath, productAvailable, productInDevelopment, referenceUrl, type DocProduct } from '../lib/ports.ts'
 import { PORT_ROOT } from '../lib/site-root.ts'
 import { docsRoutePath } from '../lib/docs-paths.ts'
+import { docsEntryAvailable } from '../lib/page-port-links.ts'
 import { isIndexSource, markdownPath } from '../lib/markdown-twins.ts'
 import { localeProse } from '../lib/llms.ts'
 import { documentationAreas } from '../lib/port-documentation.ts'
@@ -44,7 +45,7 @@ export const GET: APIRoute = async ({ site }) => {
 
   const entries = await getCollection(
     'docs',
-    (entry) => (!port || !entry.data.port || entry.data.port === port)
+    (entry) => docsEntryAvailable(entry, port)
       && localeOf(entry.id) === DEFAULT_LOCALE
       && (locale === DEFAULT_LOCALE || Boolean(port) || !entry.data.port),
   )
@@ -97,9 +98,8 @@ export const GET: APIRoute = async ({ site }) => {
   const manifest = {
     name: 'libtmux',
     url: `${origin}${base}`,
-    description:
-      'A typed tmux control library for ten languages — Python, Ruby, Lua, TypeScript, Rust, Go, Java, .NET, C++ and Swift — documented as one site.',
-    sourceRepository: 'https://github.com/tmux-python/libtmux',
+    description: `Typed tmux control libraries for ${PORTS.map((port) => port.name).join(', ')}, documented as one site.`,
+    sourceRepository: `https://github.com/${port ? PORT_BY_SLUG[port].repo : 'tmux-python/libtmux'}`,
     agentEntrypoints: {
       manifest: `${base}docs.json`,
       llms: `${base}llms.txt`,
@@ -113,9 +113,11 @@ export const GET: APIRoute = async ({ site }) => {
       slug: p.slug,
       name: p.name,
       language: p.language,
+      referenceKind: p.referenceKind ?? 'model',
       package: p.packageName,
       reference: hasReference(p) ? referenceUrl(p, defaults[p.slug] ?? 'latest') : null,
-      products: Object.entries(DOC_PRODUCTS).map(([slug, product]) => ({
+      ...(p.parentLibrary ? { parentLibrary: p.parentLibrary } : {}),
+      products: Object.entries(p.parentLibrary ? {} : DOC_PRODUCTS).map(([slug, product]) => ({
         slug, name: product.label,
         availability: productAvailable(p, slug as DocProduct) ? 'available' : 'unpublished',
         inDevelopment: productInDevelopment(p, slug as DocProduct),

@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { CHECKOUTS, LANG_TO_PORT, expand } from '../src/plugins/remark-port-code.mjs'
+import { CHECKOUTS, LANG_TO_PORT, checkoutFor } from '../src/plugins/remark-port-code.mjs'
 
 /**
  * Where the documented examples come from, and how many are checked by anyone.
@@ -76,13 +76,13 @@ describe('documented examples', () => {
       // string, so the index needs narrowing as well as a presence check.
       const port = LANG_TO_PORT[fence.lang] as keyof typeof CHECKOUTS | undefined
       expect(port, `a port for ${fence.lang}`).toBeTruthy()
-      const checkout = port ? CHECKOUTS[port] : undefined
+      const checkout = port ? checkoutFor(port) : undefined
       expect(checkout, `a checkout for ${port}`).toBeTruthy()
 
-      const abs = join(expand(checkout), fence.source!)
+      const abs = join(checkout!, fence.source!)
       // A checkout that is not present locally cannot be checked; that is a
       // machine fact, not a docs defect.
-      if (!existsSync(expand(checkout))) return
+      if (!existsSync(checkout!)) return
       expect(existsSync(abs), `${fence.source} in ${checkout}`).toBe(true)
     },
   )

@@ -138,9 +138,12 @@ type El = { type?: string; tagName?: string; value?: string; properties?: Record
  */
 export function rehypeApiLinks() {
   return (tree: unknown, file?: { data?: { astro?: { frontmatter?: { port?: string; product?: ApiProduct } } } }) => {
+    const buildPort = file?.data?.astro?.frontmatter?.port ?? (process.env.LIBTMUX_DOCS_PORT || undefined)
+    // Native wrapper references own their symbols. Resolving the same short
+    // name against another language's model would create a misleading link.
+    if (buildPort && PORT_BY_SLUG[buildPort]?.referenceKind === 'guide') return
     begin()
     const r = getResolver()
-    const buildPort = file?.data?.astro?.frontmatter?.port ?? (process.env.LIBTMUX_DOCS_PORT || undefined)
     const product = file?.data?.astro?.frontmatter?.product
     let defaults: Record<string, string> = {}
     try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
