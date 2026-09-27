@@ -264,7 +264,7 @@ const PORTS = {
       dir: 'symbolgraph',
       from: 'Sources',
       what: 'symbol graph',
-      build: 'swift build -Xswiftc -emit-symbol-graph',
+      build: 'swift build -Xswiftc -emit-symbol-graph -Xswiftc -emit-symbol-graph-dir -Xswiftc "$PWD/symbolgraph"',
     },
     repo: 'libtmux/libtmux-swift',
     options: {},

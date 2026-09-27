@@ -154,6 +154,22 @@ jobs:
           doxygen --version
           OUTPUT_DIRECTORY=. doxygen Doxyfile
 
+      # Swift's reference is read from the symbol graph its compiler emits,
+      # for the same reason and with the same freshness check. The resolved
+      # versions are forced so the build neither re-resolves nor rewrites
+      # Package.resolved.
+      - if: inputs.port == 'swift'
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.2'
+      - name: Emit the Swift symbol graph
+        if: inputs.port == 'swift'
+        working-directory: port
+        run: >-
+          swift build --force-resolved-versions
+          -Xswiftc -emit-symbol-graph
+          -Xswiftc -emit-symbol-graph-dir -Xswiftc "$PWD/symbolgraph"
+
       - uses: actions/checkout@v7
         with:
           repository: ${{ job.workflow_repository }}
