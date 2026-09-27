@@ -150,7 +150,7 @@ const ASSET_EXTENSIONS = {
     woff: 1, woff2: 1, ttf: 1, otf: 1, eot: 1,
     md: 1, pdf: 1, zip: 1, gz: 1, wasm: 1, pf_meta: 1, pf_fragment: 1,
     pf_index: 1, pf_filter: 1, pagefind: 1, log: 1, yml: 1, yaml: 1,
-    doccarchive: 1, inv: 1, buildinfo: 1,
+    doccarchive: 1, inv: 1, buildinfo: 1, webmanifest: 1,
 }
 
 /**
