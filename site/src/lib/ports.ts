@@ -424,8 +424,8 @@ export const PORTS: readonly Port[] = [
           {
             label: 'yarn dlx',
             lang: 'console',
-            code: 'yarn dlx -p libtmux -p @libtmux/workspace-cli tmux-workspace --help',
-            note: 'Yarn installs no peer dependencies, and 0.1.0-alpha.11 declares libtmux as one, so the command names it too. Yarn also refuses a release younger than its npmMinimalAgeGate, one day by default.',
+            code: 'yarn dlx @libtmux/workspace-cli --help',
+            note: 'Yarn refuses a release younger than its npmMinimalAgeGate, one day by default.',
           },
           {
             label: 'npm -g',
