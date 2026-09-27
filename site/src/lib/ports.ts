@@ -595,6 +595,7 @@ export const PORTS: readonly Port[] = [
     tagGrammar: 'semver',
     tagPrefix: 'libtmux@',
     renderer: 'none',
+    publishesOwnTree: true,
     ecosystemHost: {
       name: 'docs.rs',
       url: 'https://docs.rs/libtmux',
