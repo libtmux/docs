@@ -4694,7 +4694,7 @@
    "port": "py",
    "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
    "page": "/go/latest/workspace/",
-   "title": "Workspace Manager for Go (in development)",
+   "title": "Workspace Manager for Go",
    "section": "ports"
   },
   {
