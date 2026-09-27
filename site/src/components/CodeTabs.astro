@@ -24,7 +24,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.125rem;
-    border-bottom: 1px solid color-mix(in oklch, currentColor, transparent 88%);
+    border-bottom: 1px solid color-mix(in oklab, currentColor, transparent 88%);
     margin-bottom: -1px;
   }
 
@@ -37,15 +37,15 @@
     padding: 0.3rem 0.7rem;
     font-size: 0.8rem;
     font-weight: 500;
-    color: color-mix(in oklch, currentColor, transparent 35%);
+    color: color-mix(in oklab, currentColor, transparent 35%);
     cursor: pointer;
     line-height: 1.4;
   }
   .code-tab:hover { color: inherit; }
   .code-tab[aria-selected='true'] {
     color: var(--theme-primary, inherit);
-    border-color: color-mix(in oklch, currentColor, transparent 88%);
-    background: color-mix(in oklch, currentColor, transparent 96%);
+    border-color: color-mix(in oklab, currentColor, transparent 88%);
+    background: color-mix(in oklab, currentColor, transparent 96%);
     font-weight: 600;
   }
   .code-tab:focus-visible {

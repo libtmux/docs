@@ -47,6 +47,24 @@ source rather than treated as implementation instructions:
 Source revisions inspected: tony.sh `9e7604d1`, social-embed `b716ec89`,
 CV `c3c1e31c`, tony.nl `b2b74738`, and Astro `3f3d580b`.
 
+### Dark surface hue
+
+The Python navigation chips exposed a Chromium 153 color-mixing problem: mixing
+`#15191d` with `#ebf1f6` in OKLCH produced a missing hue with nonzero chroma,
+which painted reddish `#292324`. The same mix in OKLab paints `#212529`.
+Interface blends now use OKLab, and the browser gate checks the rendered
+chip's RGB channels after switching to dark mode. Firefox 155 and WebKit 26.6
+already painted the intended color; all three engines agree after this fix.
+
+This follows CV's `packages/colors/src/colors/operations.ts`: its `mix()`
+helper interpolates OKLab components to avoid hue artifacts, introduced in
+[its color operations](https://github.com/tony/cv/commit/cdac38750f93f5de75ff3216b756a052cc75f810). CV's earlier
+[neutral-color correction](https://github.com/tony/cv/commit/3251c59078aa0fbe5a59c2afd749d5f8ea70e338)
+also preserves undefined hue and prevents saturation floors from tinting
+gray colors. These are related safeguards; the docs fix changes CSS blends.
+The [CSS color specification](https://www.w3.org/TR/css-color-4/#missing)
+describes missing and powerless components.
+
 ## Ownership
 
 `ports.ts` owns language abbreviations and page-to-artwork selection.
@@ -82,3 +100,7 @@ contrast on page, panel, hover, and filled surfaces. The regular browser check
 covers header height, abbreviated tablet navigation, white badge text, and
 compact color-scheme controls. The full publication audit remains separate
 from these development checks.
+
+The Astro header hides color-scheme text below 1280px and keeps full language
+names from 832px. At 768–831px it uses abbreviations; narrower displays put
+the languages in the menu. Browser checks cover overlap at each transition.

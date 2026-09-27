@@ -44,9 +44,9 @@
   --api-kind-typealias-fg: #6d28d9;
   --api-kind-typealias-border: #8b5cf6;
 
-  --api-surface: color-mix(in oklch, currentColor, transparent 96%);
-  --api-border: color-mix(in oklch, currentColor, transparent 88%);
-  --api-muted: color-mix(in oklch, currentColor, transparent 35%);
+  --api-surface: color-mix(in oklab, currentColor, transparent 96%);
+  --api-border: color-mix(in oklab, currentColor, transparent 88%);
+  --api-muted: color-mix(in oklab, currentColor, transparent 35%);
 }
 
 @media (prefers-color-scheme: dark) {

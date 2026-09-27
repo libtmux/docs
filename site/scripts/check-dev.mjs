@@ -55,7 +55,7 @@ async function retryReload(check) {
 
 try {
   browser = await chromium.launch({ channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL })
-  const page = await browser.newPage()
+  const page = await browser.newPage({ reducedMotion: 'reduce' })
   page.setDefaultTimeout(10000)
   const manifest = await page.request.get(`${base}/page-links.json`)
   assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
@@ -102,7 +102,7 @@ try {
       const target = await page.request.get(base.replace(/\/en$/, '') + expected)
       assert(target.ok(), `Equivalent target: HTTP ${target.status()}`)
     }
-    for (const width of [1440, 768, 390]) {
+    for (const width of [1440, 1024, 832, 768, 390]) {
       await page.setViewportSize({ width, height: 1000 })
 
       const result = await page.evaluate(() => ({
@@ -111,6 +111,8 @@ try {
         badgeForeground: getComputedStyle(document.querySelector('.prerelease-notice__badge')).color,
         portVisibility: getComputedStyle(document.querySelector('.site-header__ports')).display,
         shortLabel: getComputedStyle(document.querySelector('.site-header__ports .port-abbreviation')).display,
+        languageEnd: document.querySelector('.site-header__ports nav a:last-child').getBoundingClientRect().right,
+        controlsStart: document.querySelector('.site-header__always').getBoundingClientRect().left,
         schemeLabelWidth: document.querySelector('.scheme-switch__label').getBoundingClientRect().width,
         columns: [...document.querySelectorAll('table')].flatMap((table) => {
           const head = [...(table.tHead?.rows[0]?.cells ?? [])]
@@ -125,7 +127,9 @@ try {
         assert.notEqual(result.portVisibility, 'none', 'Language links remain visible on tablets')
         assert.notEqual(result.shortLabel, 'none', 'Tablet navigation uses abbreviated language names')
       }
-      if (width <= 768) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
+      if (width >= 832) assert.equal(result.shortLabel, 'none', 'Full language names fit with compact scheme controls')
+      if (width >= 768) assert(result.languageEnd <= result.controlsStart, 'Language links do not overlap controls')
+      if (width < 1280) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
       assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
       assert(result.columns.every((delta) => delta <= 1), `${path} at ${width}px: table columns misaligned`)
     }
@@ -152,7 +156,18 @@ try {
   })
   const clipboardError = await clipboard
   if (clipboardError) throw clipboardError
-  console.log('Fresh Astro + browser: prose, workspace, MCP tools and API equivalent; 1440/768/390px PASS')
+  await page.goto(`${base}/`, { waitUntil: 'load' })
+  await page.locator('.scheme-switch input[value="dark"]').check({ force: true })
+  const chipPixel = await page.evaluate(() => {
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+    context.fillStyle = getComputedStyle(document.querySelector('.topnav-chip')).backgroundColor
+    context.fillRect(0, 0, 1, 1)
+    return [...context.getImageData(0, 0, 1, 1).data]
+  })
+  assert(chipPixel[2] > chipPixel[1] && chipPixel[1] > chipPixel[0],
+    `Python dark chip must retain its blue-gray hue: ${chipPixel}`)
+  console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1440px header and dark hue PASS')
 } finally {
   await browser?.close()
   await server.stop()
