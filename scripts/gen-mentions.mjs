@@ -195,7 +195,7 @@ if (check) {
   }
 } else {
   mkdirSync(dirname(out), { recursive: true })
-  writeFileSync(out, `${JSON.stringify({ generated: new Date().toISOString(), mentions, dangling }, null, 1)}\n`)
+  writeFileSync(out, `${JSON.stringify({ mentions, dangling }, null, 1)}\n`)
 }
 
 const pages = new Set(mentions.map((m) => m.page)).size
