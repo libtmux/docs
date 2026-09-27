@@ -28,20 +28,20 @@ hands this workflow a prefix to write it to. That is the entire contract.
 
 ## Which repos call `reusable-deploy.yml`
 
-Every port has a version tree to sync into the bucket:
+Every port publishes its own version tree into the bucket:
 
-| Port | Reference ownership | Calls `reusable-deploy.yml`? |
+| Port | Built by | Tree ownership (`ports.ts`) |
 |---|---|---|
-| Python (`py`) | port-owned native API | yes |
-| Ruby (`ruby`) | port-owned complete version tree | yes |
-| Lua (`lua`) | port-owned complete version tree | yes |
-| TypeScript (`ts`) | site-rendered | yes |
-| .NET (`dotnet`) | site-rendered | yes |
-| C++ (`cxx`) | port-owned native API | yes |
-| Swift (`swift`) | port-owned native API | yes |
-| Rust (`rs`) | site-rendered (also docs.rs) | yes |
-| Go (`go`) | site-rendered (also pkg.go.dev) | yes |
-| Java (`java`) | site-rendered (also javadoc.io) | yes |
+| Rust (`rs`) | `port-docs.yml` | `publishesOwnTree` |
+| TypeScript (`ts`) | `port-docs.yml` | `publishesOwnTree` |
+| Go (`go`) | `port-docs.yml` | `publishesOwnTree` |
+| Java (`java`) | `port-docs.yml` | `publishesOwnTree` |
+| .NET (`dotnet`) | `port-docs.yml` | `publishesOwnTree` |
+| C++ (`cxx`) | `port-docs.yml`, with Doxygen XML | `publishesOwnTree` |
+| Swift (`swift`) | `port-docs.yml`, with the symbol graph | `publishesOwnTree` |
+| Ruby (`ruby`) | its own exporter | `publishesOwnTree` |
+| Lua (`lua`) | its own exporter | `publishesOwnTree` |
+| Python (`py`) | its own Sphinx build | `publishesOwnApi`; the shell publishes the rest |
 
 `ports.ts` is the single source of truth for this split (see
 **Contradictions** below — some research notes in `../notes/research/` say
@@ -138,6 +138,78 @@ therefore makes a version eligible for the next shell/search publication; it
 does not claim that shared Pagefind or the sitemap changed in the port job.
 
 ## Opting in a port repo
+
+### With `port-docs.yml`
+
+A port whose reference this repository can build from source calls two
+reusable workflows, pinned to one commit. `port-docs.yml` decides which
+versions the event builds and builds each from the port's source, checking
+out this repository at its own commit (`job.workflow_sha`), so the caller
+never pins it twice. `reusable-deploy.yml` publishes each version:
+
+```yaml
+jobs:
+  build:
+    uses: libtmux/docs/.github/workflows/port-docs.yml@<sha>
+    with:
+      port: rs
+      tag-prefix: libtmux@  # stripped from a release tag; omit when tags are bare
+      source-ref: ${{ inputs.source-ref }}
+      version: ${{ inputs.version }}
+      version-kind: ${{ inputs.version-kind }}
+      is-default: ${{ inputs.is-default == true }}
+      resolves-to: ${{ inputs.resolves-to }}
+      publish: ${{ inputs.publish == true }}
+
+  publish:
+    needs: build
+    if: needs.build.outputs.should-publish == 'true'
+    concurrency: { group: 'docs-deploy-${{ github.repository }}', queue: max }
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.build.outputs.matrix) }}
+    permissions: { contents: read, id-token: write }
+    uses: libtmux/docs/.github/workflows/reusable-deploy.yml@<sha>
+    with:
+      path-prefix: rs/${{ matrix.version }}
+      artifact: docs-rs-${{ matrix.version }}
+      version-kind: ${{ matrix.kind }}
+      port: rs
+      version: ${{ matrix.version }}
+      is-default: ${{ matrix.isDefault }}
+      resolves-to: ${{ matrix.resolvesTo }}
+      environment: docs
+    secrets:
+      role-arn: ${{ secrets.LIBTMUX_DOCS_ROLE_ARN }}
+      bucket: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
+```
+
+The events it answers (`scripts/port-docs-identity.sh`):
+
+- A pull request builds `latest` at its merge commit and publishes nothing.
+- A push to the default branch publishes `latest`. It is the default only
+  until the port's first stable release tag.
+- A release tag publishes its version plus `next` (prerelease) or `stable`
+  (release, the default).
+- A dispatch publishes exactly what it names, at any ref. From the port's
+  checkout:
+
+  ```console
+  $ gh workflow run docs.yml \
+      --ref master \
+      -f source-ref=libtmux@v0.1.0-alpha.14 \
+      -f version=v0.1.0-alpha.14 \
+      -f version-kind=tag \
+      -f publish=true
+  ```
+
+  Dispatch from the default branch: the `docs` environment admits it and the
+  port's release tags, and nothing else.
+
+Set `publishesOwnTree` for the port in `site/src/lib/ports.ts` once it
+publishes this way, or every shell deploy overwrites its `latest` tree.
+
+### With its own toolchain
 
 A self-hosted port's own `docs.yml` builds with its own toolchain, uploads an
 artifact, then calls this repo's reusable workflow:
