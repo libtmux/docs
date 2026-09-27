@@ -23,6 +23,7 @@ const PORT_HOME = join(SITE_ROOT, 'ts/latest/index.html')
 const TS_MCP = join(SITE_ROOT, 'ts/latest/mcp/index.html')
 const TS_WORKSPACE = join(SITE_ROOT, 'ts/latest/workspace/index.html')
 const GO_WORKSPACE = join(SITE_ROOT, 'go/latest/workspace/index.html')
+const GO_MCP = join(SITE_ROOT, 'go/latest/mcp/index.html')
 const PY_MCP = join(SITE_ROOT, 'mcp/index.html')
 
 const isJs = (el: Element) => {
@@ -233,10 +234,15 @@ describeIfMcp('MCP install picker', () => {
     const client = html.getAttribute('data-mcp-install-client')
     const method = html.getAttribute('data-mcp-install-method')
     const scope = html.getAttribute('data-mcp-install-scope')
-    return document.querySelector<HTMLElement>(
+    const cooldown = html.getAttribute('data-mcp-install-cooldown-enabled') === '1'
+      ? (html.getAttribute('data-mcp-install-cooldown-type') ?? 'days')
+      : 'off'
+    const panel = (mode: string) => document.querySelector<HTMLElement>(
       `.lm-mcp-install__panel[data-client="${client}"][data-method="${method}"]` +
-        `[data-scope="${scope}"][data-cooldown="off"]`,
+        `[data-scope="${scope}"][data-cooldown="${mode}"]`,
     )
+    // A port without a cooldown axis renders only its `off` panels.
+    return panel(cooldown) ?? panel('off')
   }
 
   it('installs this port\'s server, not Python\'s', () => {
@@ -245,10 +251,15 @@ describeIfMcp('MCP install picker', () => {
     expect(selectedPanel(document)?.textContent).toContain('npx -y @libtmux/mcp')
   })
 
-  it('renders no cooldown control for a port whose toolchain has none', () => {
+  it('offers npm\'s cooldown and bypass', () => {
     const { document } = load(TS_MCP, url)
-    expect(document.querySelectorAll('.lm-mcp-install__cooldown-control').length).toBe(0)
-    expect(document.querySelectorAll('.lm-mcp-install__body--settings').length).toBe(0)
+    expect(document.querySelectorAll('.lm-mcp-install__cooldown-control').length).toBe(1)
+    const cell = (method: string, cooldown: string) =>
+      document.querySelector(`.lm-mcp-install__panel[data-client="claude-code"][data-method="${method}"][data-scope="local"][data-cooldown="${cooldown}"]`)?.textContent ?? ''
+    expect(cell('npx', 'bypass')).toContain('npx -y --min-release-age=0 @libtmux/mcp')
+    expect(cell('global', 'days')).toContain('--min-release-age=7 \\')
+    expect(cell('global', 'days')).toContain('--min-release-age-exclude=@libtmux/mcp \\')
+    expect(cell('npx', 'days')).toContain('npx ignores')
   })
 
   it('keeps a panel visible when another port saved a method this one lacks', () => {
@@ -290,6 +301,16 @@ describeIfMcp('MCP install picker', () => {
     const { document } = load(TS_MCP, url, { 'libtmux-docs.mcp-install.client': 'cursor' })
     expect(document.documentElement.getAttribute('data-mcp-install-client')).toBe('cursor')
     expect(selectedPanel(document)).toBeTruthy()
+  })
+})
+
+const describeIfGoMcp = SITE_BUILT && existsSync(GO_MCP) ? describe : describe.skip
+
+describeIfGoMcp('MCP install picker, Go', () => {
+  it('renders no cooldown control for a port whose toolchain has none', () => {
+    const { document } = load(GO_MCP, `https://libtmux.org/${SITE_PREFIX}go/latest/mcp/`)
+    expect(document.querySelectorAll('.lm-mcp-install__cooldown-control').length).toBe(0)
+    expect(document.querySelectorAll('.lm-mcp-install__body--settings').length).toBe(0)
   })
 })
 

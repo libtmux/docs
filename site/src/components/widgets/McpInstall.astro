@@ -13,7 +13,7 @@ import {
   COOLDOWN_DURATION_SENTINEL,
   COOLDOWN_DATE_SENTINEL,
 } from '../../lib/install-matrix'
-import { highlightInline } from '../../lib/highlight'
+import { highlightWithCooldownSlots } from '../../lib/highlight'
 
 /**
  * Client x install-method x config-scope x dependency-cooldown picker for
@@ -90,7 +90,7 @@ const bodyHtml = new Map(
       const text = panel.body
         .replaceAll(COOLDOWN_DURATION_SENTINEL, DURATION_VALUE)
         .replaceAll(COOLDOWN_DATE_SENTINEL, DATE_VALUE)
-      let html = await highlightInline(text, panel.language)
+      let html = await highlightWithCooldownSlots(text, panel.language, DEFAULT_COOLDOWN_DAYS)
       if (panel.body.includes(COOLDOWN_DURATION_SENTINEL)) {
         html = html.replace(DURATION_VALUE, slot('data-cooldown-duration-slot', DURATION_VALUE))
       }
@@ -108,14 +108,14 @@ const prereqHtml = new Map(
       .filter((panel) => panel.pipPrereq)
       .map(async (panel) => [
         panelKey(panel),
-        await highlightInline(`$ ${panel.pipPrereq}`, 'console'),
+        await highlightWithCooldownSlots(`$ ${panel.pipPrereq}`, 'console', DEFAULT_COOLDOWN_DAYS),
       ] as const),
   ),
 )
 const prehydrateSnippet = buildMcpInstallPrehydrateSnippet(spec)
 const scopedClients = CLIENTS.filter((c) => c.scopes.length > 1)
-// Python's alone. Every other port's toolchain has no `--exclude-newer`
-// equivalent, so a control that could only ever say "off" is not a control.
+// Python's and TypeScript's. The other ports' toolchains have no release-age
+// gate, so a control that could only ever say "off" is not a control.
 const hasCooldowns = spec.cooldowns.length > 1
 ---
 
@@ -310,7 +310,7 @@ const hasCooldowns = spec.cooldowns.length > 1
           checked={DEFAULT_COOLDOWN_TYPE === 'bypass'}
         />
         <span>
-          Bypass any global cooldown <small>(uv only)</small>
+          Bypass any global cooldown
         </span>
       </label>
     </fieldset>

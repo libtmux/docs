@@ -31,6 +31,8 @@
  *     to uvx. `toolCommand` below matches the code, not the prose.
  */
 
+import { COOLDOWN_SLOTS } from './cooldown.ts'
+
 // ---- types --------------------------------------------------------------
 
 /** One config-scope option for a client (e.g. user / project / global). */
@@ -112,10 +114,10 @@ export interface ServerCommand {
  * does not care what `<thing>` is — which is why this is a per-port spec
  * rather than a per-port widget.
  *
- * `cooldowns` is Python's axis alone. It exists because uv can hold a
- * resolution back with `--exclude-newer`; npm, cargo and go have no
- * equivalent, so their specs carry the single `off` entry and the widget
- * renders no cooldown control at all.
+ * `cooldowns` is Python's and TypeScript's axis: uv holds a resolution back
+ * with `--exclude-newer`, npm with `--min-release-age`. cargo, go, gem and
+ * NuGet have no equivalent, so their specs carry the single `off` entry and
+ * the widget renders no cooldown control at all.
  */
 export interface ServerSpec {
   /** Port slug, as in ports.ts. */
@@ -210,7 +212,7 @@ export const COOLDOWNS: readonly Cooldown[] = [
   { id: 'bypass', label: 'Bypass global cooldown' },
 ]
 
-/** The single-entry axis every port but Python has. */
+/** The single-entry axis of a port whose toolchain has no release-age gate. */
 const NO_COOLDOWN: readonly Cooldown[] = [COOLDOWNS[0]!]
 
 /** Default scope per client — the first entry of each client's scopes. */
@@ -228,7 +230,7 @@ export const PIP_PREREQ_OFF = 'pip install --user --upgrade libtmux libtmux-mcp'
 // time (see bodySegments). Pygments doesn't exist on this side, so unlike
 // _base.py's cooldown_days_slot filter (which swaps post-escape text), the
 // swap here happens on the plain-text body before it ever reaches markup.
-export const COOLDOWN_DURATION_SENTINEL = '<COOLDOWN_DURATION>'
+export const COOLDOWN_DURATION_SENTINEL = COOLDOWN_SLOTS.duration
 export const COOLDOWN_DATE_SENTINEL = '<COOLDOWN_DATE>'
 
 /**
@@ -354,15 +356,37 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
       { id: 'npx', label: 'npx', docUrl: null },
       { id: 'global', label: 'Global install', docUrl: null },
     ],
-    cooldowns: NO_COOLDOWN,
-    resolve(method) {
-      if (method.id === 'npx') return { command: 'npx', args: ['-y', '@libtmux/mcp'] }
-      return {
-        command: 'libtmux-mcp',
-        args: [],
-        prereq: 'npm install --global @libtmux/mcp',
-        note: 'The package installs a `libtmux-mcp` binary. Requires Node 22 or newer, or Bun 1.3.14 or newer.',
+    cooldowns: COOLDOWNS,
+    resolve(method, cooldown) {
+      if (method.id === 'npx') {
+        if (cooldown.id === 'bypass') return { command: 'npx', args: ['-y', '--min-release-age=0', '@libtmux/mcp'] }
+        return {
+          command: 'npx',
+          args: ['-y', '@libtmux/mcp'],
+          // npx resolves the package before it reads the exclusion, so a
+          // cooldown would hold back @libtmux/mcp itself.
+          note: cooldown.id === 'days'
+            ? 'npx ignores --min-release-age-exclude, so a cooldown here would also hold back the release it runs; this runs without one. The Global install tab applies a cooldown to the server\'s dependencies.'
+            : undefined,
+        }
       }
+      const note = 'The package installs a `libtmux-mcp` binary. Requires Node 22 or newer, or Bun 1.3.14 or newer.'
+      if (cooldown.id === 'days') {
+        return {
+          command: 'libtmux-mcp',
+          args: [],
+          // @libtmux/mcp pins libtmux exactly, and both publish together, so
+          // both are exempt; the SDK and zod wait out the window.
+          prereq:
+            `npm install --global \\\n    --min-release-age=${COOLDOWN_SLOTS.days} \\\n` +
+            '    --min-release-age-exclude=@libtmux/mcp \\\n    --min-release-age-exclude=libtmux \\\n    @libtmux/mcp',
+          note,
+        }
+      }
+      if (cooldown.id === 'bypass') {
+        return { command: 'libtmux-mcp', args: [], prereq: 'npm install --global --min-release-age=0 @libtmux/mcp', note }
+      }
+      return { command: 'libtmux-mcp', args: [], prereq: 'npm install --global @libtmux/mcp', note }
     },
   },
   rs: {
