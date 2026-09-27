@@ -524,6 +524,7 @@ export const PORTS: readonly Port[] = [
     checkout: '~/work/libtmux/libtmux-ts',
     worktree: '~/work/libtmux/libtmux-ts-docs',
     versionedDocs: true,
+    publishesOwnTree: true,
     tagGrammar: 'semver',
     renderer: 'astro',
     generator: '@microsoft/api-extractor JSON',
@@ -595,6 +596,7 @@ export const PORTS: readonly Port[] = [
     tagGrammar: 'semver',
     tagPrefix: 'libtmux@',
     renderer: 'none',
+    publishesOwnTree: true,
     ecosystemHost: {
       name: 'docs.rs',
       url: 'https://docs.rs/libtmux',
@@ -649,6 +651,7 @@ export const PORTS: readonly Port[] = [
     checkout: '~/work/libtmux/libtmux-go',
     worktree: '~/work/libtmux/libtmux-go-docs',
     versionedDocs: true,
+    publishesOwnTree: true,
     tagGrammar: 'semver',
     renderer: 'none',
     ecosystemHost: {
@@ -688,6 +691,7 @@ export const PORTS: readonly Port[] = [
     checkout: '~/work/libtmux/libtmux-java',
     worktree: '~/work/libtmux/libtmux-java-docs',
     versionedDocs: true,
+    publishesOwnTree: true,
     tagGrammar: 'semver',
     renderer: 'none',
     ecosystemHost: {
@@ -754,6 +758,7 @@ export const PORTS: readonly Port[] = [
     checkout: '~/work/libtmux/libtmux-dotnet',
     worktree: '~/work/libtmux/libtmux-dotnet-docs',
     versionedDocs: true,
+    publishesOwnTree: true,
     tagGrammar: 'semver',
     renderer: 'astro',
     generator: 'docfx metadata (--outputFormat markdown)',
@@ -818,6 +823,7 @@ export const PORTS: readonly Port[] = [
     checkout: '~/work/libtmux/libtmux-cxx',
     worktree: '~/work/libtmux/libtmux-cxx-docs',
     versionedDocs: true,
+    publishesOwnTree: true,
     tagGrammar: 'semver',
     renderer: 'sphinx',
     generator: 'Doxygen XML to Breathe to Sphinx',
