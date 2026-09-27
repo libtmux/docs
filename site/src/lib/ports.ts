@@ -2,6 +2,7 @@
 
 // build-site.sh imports this module with bare Node; local imports need `.ts`.
 import { withPortRoot } from './site-root.ts'
+import { COOLDOWN_SLOTS } from './cooldown.ts'
 import type { TagGrammar } from './versions.ts'
 
 /**
@@ -79,7 +80,35 @@ export interface InstallCommand {
   code: string
   /** A caveat shown under the block. */
   note?: string
+  /** How this command changes when the reader turns on a dependency cooldown. */
+  cooldown?: InstallCooldown
 }
+
+/**
+ * One command's dependency-cooldown forms.
+ *
+ * A cooldown applies to what the command pulls in, not to the package the
+ * reader asked for: `code` exempts that package, and the `libtmux` it pins, so
+ * a release published this morning still installs while its dependencies wait
+ * out the window. A tool that cannot exempt one package from its own cutoff —
+ * pip, Bun, Deno, and npx, which ignores `--min-release-age-exclude` — has no
+ * `code`; the widget keeps the plain command and shows `note` instead. Each
+ * form was run against the live registries before it was written here.
+ */
+export interface InstallCooldown {
+  /** The command with a cooldown; placeholders from `COOLDOWN_SLOTS` carry the day count. */
+  code?: string
+  /** The command ignoring a cooldown the reader's own configuration sets. */
+  bypass?: string
+  /** Why a mode this command cannot express runs without one. */
+  note?: string
+}
+
+const { days: DAYS, minutes: MINUTES, duration: DURATION } = COOLDOWN_SLOTS
+
+/** For a tool with a cutoff but no way to exempt the package it installs. */
+const noExemption = (tool: string, pkg: string) =>
+  `${tool} cannot exempt ${pkg} from its own cooldown, so a cooldown here would also hold back the release this installs. This command runs without one.`
 
 export interface EcosystemHost {
   /** Display name, e.g. "docs.rs". */
@@ -258,16 +287,22 @@ export const PORTS: readonly Port[] = [
         label: 'pip',
         lang: 'console',
         code: 'pip install libtmux',
+        cooldown: { note: noExemption('pip', 'libtmux') },
       },
       {
         label: 'uv',
         lang: 'console',
         code: 'uv add libtmux',
+        cooldown: {
+          code: `uv add \\\n    --exclude-newer ${DURATION} \\\n    --exclude-newer-package libtmux=2099-01-01 \\\n    libtmux`,
+          bypass: 'uv add --no-config libtmux',
+        },
       },
       {
         label: 'pipx',
         lang: 'console',
         code: 'pipx install libtmux',
+        cooldown: { note: noExemption('pipx', 'libtmux') },
       },
     ],
     registry: { name: 'PyPI', url: 'https://pypi.org/project/libtmux/', icon: 'pypi' },
@@ -409,39 +444,67 @@ export const PORTS: readonly Port[] = [
             lang: 'console',
             code: 'npx -y @libtmux/workspace-cli --help',
             note: 'Runs tmux-workspace without installing it. Pass a command such as load ./workspace.yaml in place of --help.',
+            cooldown: {
+              bypass: 'npx -y --min-release-age=0 @libtmux/workspace-cli --help',
+              note: 'npx ignores --min-release-age-exclude, so a cooldown here would also hold back the release this runs. This command runs without one.',
+            },
           },
           {
             label: 'bunx',
             lang: 'console',
             code: 'bunx --bun @libtmux/workspace-cli --help',
             note: '--bun runs the command on Bun. Without it, bunx runs the command on Node when Node is installed, because its shebang names node.',
+            cooldown: {
+              bypass: 'bunx --bun --minimum-release-age=0 @libtmux/workspace-cli --help',
+              note: noExemption('Bun', '@libtmux/workspace-cli'),
+            },
           },
           {
             label: 'pnpm dlx',
             lang: 'console',
             code: 'pnpm dlx @libtmux/workspace-cli --help',
+            cooldown: {
+              code: `pnpm_config_minimum_release_age=${MINUTES} \\\n    pnpm_config_minimum_release_age_exclude='["@libtmux/workspace-cli","libtmux"]' \\\n    pnpm dlx @libtmux/workspace-cli --help`,
+              bypass: 'pnpm_config_minimum_release_age=0 pnpm dlx @libtmux/workspace-cli --help',
+            },
           },
           {
             label: 'yarn dlx',
             lang: 'console',
             code: 'yarn dlx @libtmux/workspace-cli --help',
             note: 'Yarn refuses a release younger than its npmMinimalAgeGate, one day by default.',
+            cooldown: {
+              code: `YARN_NPM_MINIMAL_AGE_GATE=${DAYS}d \\\n    YARN_NPM_PREAPPROVED_PACKAGES=@libtmux/workspace-cli,libtmux \\\n    yarn dlx @libtmux/workspace-cli --help`,
+              bypass: 'YARN_NPM_MINIMAL_AGE_GATE=0 yarn dlx @libtmux/workspace-cli --help',
+            },
           },
           {
             label: 'npm -g',
             lang: 'console',
             code: 'npm install -g @libtmux/workspace-cli',
             note: 'Puts tmux-workspace on PATH, so a workspace loads with tmux-workspace load ./workspace.yaml.',
+            cooldown: {
+              code: `npm install -g \\\n    --min-release-age=${DAYS} \\\n    --min-release-age-exclude=@libtmux/workspace-cli \\\n    --min-release-age-exclude=libtmux \\\n    @libtmux/workspace-cli`,
+              bypass: 'npm install -g --min-release-age=0 @libtmux/workspace-cli',
+            },
           },
           {
             label: 'pnpm -g',
             lang: 'console',
             code: 'pnpm add -g @libtmux/workspace-cli',
+            cooldown: {
+              code: `pnpm_config_minimum_release_age=${MINUTES} \\\n    pnpm_config_minimum_release_age_exclude='["@libtmux/workspace-cli","libtmux"]' \\\n    pnpm add -g @libtmux/workspace-cli`,
+              bypass: 'pnpm_config_minimum_release_age=0 pnpm add -g @libtmux/workspace-cli',
+            },
           },
           {
             label: 'bun -g',
             lang: 'console',
             code: 'bun add -g @libtmux/workspace-cli',
+            cooldown: {
+              bypass: 'bun add -g --minimum-release-age=0 @libtmux/workspace-cli',
+              note: noExemption('Bun', '@libtmux/workspace-cli'),
+            },
           },
         ],
       },
@@ -458,26 +521,40 @@ export const PORTS: readonly Port[] = [
         label: 'npm',
         lang: 'console',
         code: 'npm install libtmux',
+        cooldown: {
+          code: `npm install \\\n    --min-release-age=${DAYS} \\\n    --min-release-age-exclude=libtmux \\\n    libtmux`,
+          bypass: 'npm install --min-release-age=0 libtmux',
+        },
       },
       {
         label: 'pnpm',
         lang: 'console',
         code: 'pnpm add libtmux',
+        cooldown: {
+          code: `pnpm_config_minimum_release_age=${MINUTES} \\\n    pnpm_config_minimum_release_age_exclude='["libtmux"]' \\\n    pnpm add libtmux`,
+          bypass: 'pnpm_config_minimum_release_age=0 pnpm add libtmux',
+        },
       },
       {
         label: 'yarn',
         lang: 'console',
         code: 'yarn add libtmux',
+        cooldown: {
+          code: `YARN_NPM_MINIMAL_AGE_GATE=${DAYS}d \\\n    YARN_NPM_PREAPPROVED_PACKAGES=libtmux \\\n    yarn add libtmux`,
+          bypass: 'YARN_NPM_MINIMAL_AGE_GATE=0 yarn add libtmux',
+        },
       },
       {
         label: 'bun',
         lang: 'console',
         code: 'bun add libtmux',
+        cooldown: { bypass: 'bun add --minimum-release-age=0 libtmux', note: noExemption('Bun', 'libtmux') },
       },
       {
         label: 'deno',
         lang: 'console',
         code: 'deno add npm:libtmux',
+        cooldown: { bypass: 'deno add --min-dep-age=0 npm:libtmux', note: noExemption('Deno', 'libtmux') },
       },
     ],
     registry: { name: 'npm', url: 'https://www.npmjs.com/package/libtmux', icon: 'npm' },

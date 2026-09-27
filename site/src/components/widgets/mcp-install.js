@@ -554,7 +554,19 @@
     return 'P' + n + 'D'
   }
 
+  // A package picker's slot, or an MCP body's npm slot: it says how to spell
+  // the day count (see COOLDOWN_FORMATS in lib/cooldown.ts), so no unit table
+  // lives here.
+  function writeUnitSlots(root, n) {
+    root.querySelectorAll('[data-cooldown-scale]').forEach(function (slot) {
+      var scale = parseInt(slot.getAttribute('data-cooldown-scale'), 10) || 1
+      var template = slot.getAttribute('data-cooldown-template') || '{}'
+      slot.textContent = template.replace('{}', String(n * scale))
+    })
+  }
+
   function updateAllCooldownSlots(n) {
+    writeUnitSlots(document, n)
     var duration = daysToIsoDuration(n)
     var date = daysToIsoDate(n)
     document.querySelectorAll('[data-cooldown-duration-slot]').forEach(function (slot) {
@@ -581,6 +593,7 @@
     // Slot contents for this widget's panels (other widgets get updated by
     // their own applyCooldownToWidget call). Both duration and date slots
     // are refreshed — only one kind is visible per panel.
+    writeUnitSlots(widget, days)
     var duration = daysToIsoDuration(days)
     var date = daysToIsoDate(days)
     widget.querySelectorAll('[data-cooldown-duration-slot]').forEach(function (slot) {

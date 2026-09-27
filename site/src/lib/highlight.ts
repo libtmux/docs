@@ -1,4 +1,5 @@
 import { createHighlighter, type Highlighter } from 'shiki'
+import { COOLDOWN_FORMATS, COOLDOWN_MARKERS, COOLDOWN_SLOTS, formatCooldown, type CooldownUnit } from './cooldown.ts'
 import { promptElement, SESSION_LANGS, sessionLines, shellThemes } from '../plugins/ec-shell-prompt.mjs'
 
 /**
@@ -151,4 +152,24 @@ export async function highlightInline(code: string, lang: string): Promise<strin
     return code.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] ?? c)
   }
   return html.replace(/^[\s\S]*?<code[^>]*>/, '').replace(/<\/code>[\s\S]*$/, '')
+}
+
+/**
+ * `highlightInline`, with each cooldown placeholder left as an element the
+ * widget scripts rewrite when the reader changes the day count:
+ * `<span data-cooldown-scale="1440" data-cooldown-template="{}">10080</span>`.
+ */
+export async function highlightWithCooldownSlots(code: string, lang: string, days: number): Promise<string> {
+  const units = Object.keys(COOLDOWN_SLOTS) as CooldownUnit[]
+  let text = code
+  for (const unit of units) text = text.replaceAll(COOLDOWN_SLOTS[unit], COOLDOWN_MARKERS[unit])
+  let html = await highlightInline(text, lang)
+  for (const unit of units) {
+    html = html.replaceAll(
+      COOLDOWN_MARKERS[unit],
+      `<span class="lm-cooldown-slot" data-cooldown-unit="${unit}" data-cooldown-scale="${COOLDOWN_FORMATS[unit].scale}" ` +
+        `data-cooldown-template="${COOLDOWN_FORMATS[unit].template}">${formatCooldown(unit, days)}</span>`,
+    )
+  }
+  return html
 }

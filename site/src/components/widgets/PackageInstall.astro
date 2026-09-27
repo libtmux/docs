@@ -1,6 +1,7 @@
 ---
 import { Code } from 'astro-expressive-code/components'
-import { highlightInline } from '../../lib/highlight'
+import { highlightInline, highlightWithCooldownSlots } from '../../lib/highlight'
+import { DEFAULT_COOLDOWN_DAYS } from '../../lib/install-matrix'
 import { PORTS, portHomeUrl, referenceUrl, type PortPackageId } from '../../lib/ports'
 import type { Quickstart } from '../../lib/quickstarts'
 import { defaultVersionFor } from '../../lib/versions'
@@ -125,6 +126,30 @@ const installHtml = new Map(
     ),
   ),
 )
+
+/*
+ * A command's cooldown and bypass forms, with the day count in slots the
+ * script below rewrites. A form the tool cannot express is absent, and its
+ * variant keeps the plain command with the tool's note beside it.
+ */
+const cooldownHtml = new Map(
+  await Promise.all(
+    items.flatMap((p) =>
+      p.installs.flatMap((cmd, i) =>
+        (['code', 'bypass'] as const)
+          .filter((form) => cmd.cooldown?.[form])
+          .map(async (form) => [
+            `${p.slug}/${i}/${form}`,
+            await highlightWithCooldownSlots(`$ ${cmd.cooldown![form]!}`, cmd.lang, DEFAULT_COOLDOWN_DAYS),
+          ] as const),
+      ),
+    ),
+  ),
+)
+const hasCooldown = (p: (typeof items)[number]) => p.installs.some((cmd) => cmd.cooldown)
+// One radio group per picker and port, so a group never spans two pickers;
+// the shared state keeps every group showing the same choice.
+const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
 ---
 
 <div class={`lm-pkg-install lm-pkg-install--${variant}${snippets ? ' lm-pkg-install--examples' : ''}`} data-ports={items.map((p) => p.slug).join(' ')}>
@@ -162,6 +187,7 @@ const installHtml = new Map(
           data-default={p.slug === initialSlug ? true : undefined}
           tabindex="0"
         >
+          {(p.installs.length > 1 || hasCooldown(p)) && <div class="lm-pkg-install__bar">
           {p.installs.length > 1 && (
             <div class="lm-pkg-install__managers" role="tablist" aria-label={`${p.name} package manager`}>
               {p.installs.map((cmd, i) => (
@@ -178,6 +204,52 @@ const installHtml = new Map(
               ))}
             </div>
           )}
+          {hasCooldown(p) && (
+            <div class="lm-pkg-install__cooldown">
+              <input type="checkbox" class="lm-pkg-install__cooldown-toggle" data-pkg-cooldown="toggle" aria-label="Apply a dependency cooldown" />
+              <button type="button" class="lm-pkg-install__cooldown-configure" data-pkg-cooldown="configure" aria-expanded="false">
+                Configure cooldowns
+              </button>
+              <button type="button" class="lm-pkg-install__cooldown-help" data-pkg-cooldown="help" aria-label="What are cooldowns?" title="What are cooldowns?">?</button>
+            </div>
+          )}
+          </div>}
+          {hasCooldown(p) && (
+            <div class="lm-pkg-install__cooldown-settings" role="group" aria-label="Cooldown settings" data-open="false">
+              <p class="lm-pkg-install__cooldown-title">Dependency cooldowns</p>
+              <p class="lm-pkg-install__cooldown-help-text">
+                The checkbox turns a cooldown on and off for every picker on the site. It applies to what an install pulls
+                in; the package itself, and the libtmux it pins, stay current.
+              </p>
+              <fieldset class="lm-pkg-install__cooldown-modes">
+                <legend class="sr-only">Cooldown type</legend>
+                <label>
+                  <input type="radio" name={cooldownGroup(p.slug)} value="days" data-pkg-cooldown="mode" checked />
+                  <span>
+                    Apply a cooldown of
+                    <input type="number" min="1" max="365" value={DEFAULT_COOLDOWN_DAYS} class="lm-pkg-install__cooldown-days" data-pkg-cooldown="days" aria-label="Cooldown in days" />
+                    days
+                  </span>
+                </label>
+                <label>
+                  <input type="radio" name={cooldownGroup(p.slug)} value="bypass" data-pkg-cooldown="mode" />
+                  <span>Bypass any global cooldown</span>
+                </label>
+              </fieldset>
+              <details class="lm-pkg-install__cooldown-explainer">
+                <summary>What are cooldowns?</summary>
+                <p>
+                  Cooldowns delay picking up newly uploaded packages so the community has time to spot supply-chain
+                  attacks before you install. Most package managers don't apply one by default; you opt in through a
+                  global setting in your tool's configuration.
+                </p>
+                <p>
+                  Learn more at <a href="https://cooldowns.dev/" target="_blank" rel="noopener">cooldowns.dev</a> &middot;{' '}
+                  <a href="https://securitylabs.datadoghq.com/articles/dependency-cooldowns/" target="_blank" rel="noopener">Datadog Security Labs writeup</a>.
+                </p>
+              </details>
+            </div>
+          )}
           {p.installs.map((cmd, i) => (
             <div
               class="lm-pkg-install__cmd"
@@ -186,7 +258,18 @@ const installHtml = new Map(
               role={p.installs.length > 1 ? 'tabpanel' : undefined}
               tabindex={p.installs.length > 1 ? '0' : undefined}
             >
-              <div class={`lm-pkg-install__code lm-pkg-install__code--${copyLayout(cmd.code)}`} data-language={cmd.lang}><pre><code set:html={installHtml.get(`${p.slug}/${i}`)} /></pre><button type="button" class="lm-pkg-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
+              {!cmd.cooldown && <div class={`lm-pkg-install__code lm-pkg-install__code--${copyLayout(cmd.code)}`} data-language={cmd.lang}><pre><code set:html={installHtml.get(`${p.slug}/${i}`)} /></pre><button type="button" class="lm-pkg-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>}
+              {cmd.cooldown && (['off', 'days', 'bypass'] as const).map((mode) => {
+                const form = mode === 'days' ? 'code' : mode === 'bypass' ? 'bypass' : undefined
+                const code = form ? cmd.cooldown![form] : undefined
+                const html = form && code ? cooldownHtml.get(`${p.slug}/${i}/${form}`) : installHtml.get(`${p.slug}/${i}`)
+                return (
+                  <div class="lm-pkg-install__variant" data-cooldown-variant={mode}>
+                    <div class={`lm-pkg-install__code lm-pkg-install__code--${copyLayout(code ?? cmd.code)}`} data-language={cmd.lang}><pre><code set:html={html} /></pre><button type="button" class="lm-pkg-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
+                    {mode !== 'off' && !code && cmd.cooldown!.note && <p class="lm-pkg-install__note lm-pkg-install__note--cooldown">{cmd.cooldown!.note}</p>}
+                  </div>
+                )
+              })}
               {cmd.note && <p class="lm-pkg-install__note">{cmd.note}</p>}
             </div>
           ))}
@@ -661,6 +744,148 @@ const installHtml = new Map(
   .lm-pkg-install--compact .lm-pkg-install__body {
     padding: 0.7rem 0.8rem;
   }
+
+  /* Cooldowns. The toolbar holds the manager tabs and, at its right edge, the
+   * same checkbox / "Configure cooldowns" / "?" trio as the MCP picker. */
+  .lm-pkg-install__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .lm-pkg-install__bar .lm-pkg-install__managers {
+    margin-bottom: 0;
+  }
+
+  .lm-pkg-install__cooldown {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-inline-start: auto;
+    color: var(--lm-pkg-install-fg-secondary);
+    font-size: 0.8em;
+  }
+
+  .lm-pkg-install__cooldown-toggle {
+    margin: 0;
+    accent-color: var(--lm-pkg-install-accent);
+    cursor: pointer;
+  }
+
+  .lm-pkg-install__cooldown-configure,
+  .lm-pkg-install__cooldown-help {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+  }
+
+  .lm-pkg-install__cooldown-configure:hover {
+    color: var(--lm-pkg-install-fg);
+    text-decoration: underline;
+  }
+
+  .lm-pkg-install__cooldown-help {
+    width: 1.2em;
+    height: 1.2em;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: 0.85em;
+    line-height: 1;
+  }
+
+  .lm-pkg-install__cooldown-configure:focus-visible,
+  .lm-pkg-install__cooldown-help:focus-visible,
+  .lm-pkg-install__cooldown-toggle:focus-visible {
+    outline: 2px solid var(--lm-pkg-install-accent);
+    outline-offset: 1px;
+  }
+
+  .lm-pkg-install__cooldown-settings {
+    display: none;
+    margin-bottom: 0.6rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--lm-pkg-install-border);
+    border-radius: 0.375rem;
+    font-size: 0.85em;
+  }
+
+  .lm-pkg-install__cooldown-settings[data-open='true'] {
+    display: block;
+  }
+
+  .lm-pkg-install__cooldown-title {
+    margin: 0 0 0.25rem;
+    font-weight: 600;
+  }
+
+  .lm-pkg-install__cooldown-help-text {
+    margin: 0 0 0.5rem;
+    color: var(--lm-pkg-install-fg-secondary);
+  }
+
+  .lm-pkg-install__cooldown-modes {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0 0 0.5rem;
+    padding: 0;
+    border: 0;
+  }
+
+  .lm-pkg-install__cooldown-modes label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+  }
+
+  .lm-pkg-install__cooldown-days {
+    width: 3.5em;
+    padding: 0.05rem 0.25rem;
+    border: 1px solid var(--lm-pkg-install-border);
+    border-radius: 0.25rem;
+    background: var(--lm-pkg-install-bg);
+    color: inherit;
+    font: inherit;
+  }
+
+  .lm-pkg-install__cooldown-explainer summary {
+    cursor: pointer;
+    color: var(--lm-pkg-install-fg-secondary);
+  }
+
+  .lm-pkg-install__cooldown-explainer p {
+    margin: 0.4rem 0 0;
+  }
+
+  .lm-pkg-install__note--cooldown {
+    font-style: italic;
+  }
+
+  /* One variant of a cooldown-aware command shows at a time, chosen by the
+   * site-wide state on <html> — which ThemeScript sets before first paint, so
+   * a saved cooldown paints the right command from the start. A missing type
+   * means "days", the default. */
+  .lm-pkg-install__variant[data-cooldown-variant='days'],
+  .lm-pkg-install__variant[data-cooldown-variant='bypass'] {
+    display: none;
+  }
+
+  html[data-mcp-install-cooldown-enabled='1'] .lm-pkg-install__variant[data-cooldown-variant='off'] {
+    display: none;
+  }
+
+  html[data-mcp-install-cooldown-enabled='1']:not([data-mcp-install-cooldown-type='bypass'])
+    .lm-pkg-install__variant[data-cooldown-variant='days'],
+  html[data-mcp-install-cooldown-enabled='1'][data-mcp-install-cooldown-type='bypass']
+    .lm-pkg-install__variant[data-cooldown-variant='bypass'] {
+    display: block;
+  }
 </style>
 
 {/* Generated from `items`, not hand-typed — see `activePortRules` above. */}
@@ -697,6 +922,7 @@ const installHtml = new Map(
   }
 
   function applySavedState() {
+    if (document.querySelector('[data-pkg-cooldown]')) paintCooldown()
     const saved = read(STORAGE_KEY)
     if (saved) {
       document.querySelectorAll<HTMLElement>('.lm-pkg-install').forEach((widget) => selectPort(widget, saved, false))
@@ -910,6 +1136,109 @@ const installHtml = new Map(
       if (panel === e.detail.origin || panel.dataset.managerScope !== e.detail.scope) return
       selectManager(panel, e.detail.index, false)
     })
+  }) as EventListener)
+
+  // Dependency cooldowns. One setting for the whole site, kept under the MCP
+  // picker's keys and mirrored onto the same <html> attributes, so turning a
+  // cooldown on here turns it on in the MCP picker too and the reverse. Both
+  // scripts announce a change on the MCP picker's event and repaint from the
+  // saved state when they hear one.
+  const COOLDOWN = {
+    enabled: 'libtmux-docs.mcp-install.cooldown.enabled',
+    type: 'libtmux-docs.mcp-install.cooldown.type',
+    days: 'libtmux-docs.mcp-install.cooldown.days',
+  }
+  const COOLDOWN_EVENT = 'lm-mcp-install:change'
+  const DEFAULT_DAYS = 7
+
+  function clampDays(value: number): number {
+    return Number.isFinite(value) ? Math.min(365, Math.max(1, Math.round(value))) : DEFAULT_DAYS
+  }
+
+  function cooldownState() {
+    return {
+      enabled: read(COOLDOWN.enabled) === '1',
+      type: read(COOLDOWN.type) === 'bypass' ? 'bypass' : 'days',
+      days: clampDays(parseInt(read(COOLDOWN.days) ?? '', 10)),
+    }
+  }
+
+  // Every slot says how to spell the day count; see COOLDOWN_FORMATS in
+  // lib/cooldown.ts. The MCP picker's ISO duration slots are its own.
+  function writeCooldownSlots(days: number) {
+    document.querySelectorAll<HTMLElement>('[data-cooldown-scale]').forEach((slot) => {
+      const scale = parseInt(slot.dataset.cooldownScale ?? '1', 10) || 1
+      slot.textContent = (slot.dataset.cooldownTemplate ?? '{}').replace('{}', String(days * scale))
+    })
+    document.querySelectorAll<HTMLElement>('[data-cooldown-duration-slot]').forEach((slot) => {
+      slot.textContent = `P${days}D`
+    })
+  }
+
+  function paintCooldown() {
+    const { enabled, type, days } = cooldownState()
+    const root = document.documentElement
+    root.setAttribute('data-mcp-install-cooldown-enabled', enabled ? '1' : '0')
+    root.setAttribute('data-mcp-install-cooldown-type', type)
+    root.setAttribute('data-mcp-install-cooldown-days', String(days))
+    document.querySelectorAll<HTMLInputElement>('[data-pkg-cooldown="toggle"]').forEach((box) => {
+      box.checked = enabled
+    })
+    document.querySelectorAll<HTMLInputElement>('[data-pkg-cooldown="mode"]').forEach((radio) => {
+      radio.checked = radio.value === type
+    })
+    document.querySelectorAll<HTMLInputElement>('[data-pkg-cooldown="days"]').forEach((input) => {
+      if (document.activeElement !== input) input.value = String(days)
+    })
+    writeCooldownSlots(days)
+  }
+
+  function setCooldown(change: Partial<{ enabled: boolean; type: string; days: number }>) {
+    if (change.enabled !== undefined) write(COOLDOWN.enabled, change.enabled ? '1' : '0')
+    if (change.type !== undefined) write(COOLDOWN.type, change.type)
+    if (change.days !== undefined) write(COOLDOWN.days, String(clampDays(change.days)))
+    paintCooldown()
+    for (const kind of ['enabled', 'type', 'days'] as const) {
+      if (change[kind] === undefined) continue
+      window.dispatchEvent(
+        new CustomEvent(COOLDOWN_EVENT, { detail: { origin: null, kind: `cooldown-${kind}`, value: change[kind] } }),
+      )
+    }
+  }
+
+  document.addEventListener('change', (e) => {
+    const el = (e.target as HTMLElement).closest<HTMLInputElement>('[data-pkg-cooldown]')
+    if (!el) return
+    const action = el.dataset.pkgCooldown
+    if (action === 'toggle') setCooldown({ enabled: el.checked })
+    // Choosing how a cooldown behaves implies wanting one.
+    if (action === 'mode') setCooldown({ type: el.value, enabled: true })
+    if (action === 'days') setCooldown({ days: parseInt(el.value, 10), type: 'days', enabled: true })
+  })
+
+  // Typing a day count rewrites every command at once; it is saved on change.
+  document.addEventListener('input', (e) => {
+    const el = (e.target as HTMLElement).closest<HTMLInputElement>('[data-pkg-cooldown="days"]')
+    if (!el) return
+    const days = parseInt(el.value, 10)
+    if (Number.isFinite(days)) writeCooldownSlots(clampDays(days))
+  })
+
+  document.addEventListener('click', (e) => {
+    const el = (e.target as HTMLElement).closest<HTMLElement>('[data-pkg-cooldown="configure"], [data-pkg-cooldown="help"]')
+    const panel = el?.closest<HTMLElement>('.lm-pkg-install__panel')
+    const settings = panel?.querySelector<HTMLElement>('.lm-pkg-install__cooldown-settings')
+    if (!el || !settings) return
+    const open = el.dataset.pkgCooldown === 'help' || settings.dataset.open !== 'true'
+    settings.dataset.open = String(open)
+    panel!.querySelector('[data-pkg-cooldown="configure"]')?.setAttribute('aria-expanded', String(open))
+    if (el.dataset.pkgCooldown === 'help') {
+      settings.querySelector('details')?.setAttribute('open', '')
+    }
+  })
+
+  window.addEventListener(COOLDOWN_EVENT, ((e: CustomEvent<{ kind?: string }>) => {
+    if (e.detail?.kind?.startsWith('cooldown-')) paintCooldown()
   }) as EventListener)
 
   if (document.readyState === 'loading') {
