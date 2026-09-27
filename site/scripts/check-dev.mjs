@@ -150,6 +150,15 @@ try {
       if (width < 1536) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
       assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
       assert(result.columns.every((delta) => delta <= 1), `${path} at ${width}px: table columns misaligned`)
+      if (hasSwitcher) {
+        const selector = await switcher.locator('summary').boundingBox()
+        const action = await page.locator('[data-page-actions] > summary').boundingBox()
+        const icon = await page.locator('[data-page-actions] > summary > svg').boundingBox()
+        assert(Math.abs(action.height - selector.height) < 0.1, `${path}: page controls have equal height at ${width}px`)
+        assert(Math.abs(action.y - selector.y) < 0.1, `${path}: page controls align at ${width}px`)
+        assert(Math.abs(icon.x + icon.width / 2 - action.x - action.width / 2) < 0.1, `${path}: action icon centered horizontally`)
+        assert(Math.abs(icon.y + icon.height / 2 - action.y - action.height / 2) < 0.1, `${path}: action icon centered vertically`)
+      }
     }
 
     if (hasSwitcher) {

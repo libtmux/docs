@@ -7,8 +7,8 @@ const { editHref, editLabel = 'Edit this page on GitHub' } = Astro.props
 ---
 
 <details class="page-actions" data-page-actions>
-  <summary class="topnav-chip" aria-label="Page actions">
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+  <summary class="topnav-chip page-control" aria-label="Page actions">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
       <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
     </svg>
   </summary>
@@ -22,7 +22,7 @@ const { editHref, editLabel = 'Edit this page on GitHub' } = Astro.props
 
 <style>
   .page-actions { position: relative; flex: none; }
-  summary { cursor: pointer; list-style: none; min-height: 2rem; min-width: 2rem; justify-content: center; }
+  summary { cursor: pointer; list-style: none; min-width: 1.5rem; padding-inline: .25rem; }
   summary::-webkit-details-marker { display: none; }
   .page-actions__panel {
     position: absolute;

@@ -1149,13 +1149,17 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   left: auto;
 }
 
-.page-port-switcher__summary {
-  display: inline-flex;
+.page-control {
+  display: flex;
   align-items: center;
-  gap: 0.35rem;
+  justify-content: center;
+  min-height: 1.5rem;
   padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
   line-height: 1;
 }
+
+.page-port-switcher__summary { gap: 0.35rem; }
 
 /* Points down when the list is closed and up when it is open, so the control
    says which way it is going rather than only that it opens. */
