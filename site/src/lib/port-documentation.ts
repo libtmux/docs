@@ -94,11 +94,11 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
         description: 'Use the libtmux-async companion package for asynchronous tmux work.',
       },
       {
-        id: 'mcp', label: 'MCP', kind: 'product', navGroup: 'Products', route: 'mcp', package: 'mcp', product: 'mcp',
+        id: 'mcp', label: 'MCP', kind: 'product', navGroup: 'Apps', route: 'mcp', package: 'mcp', product: 'mcp',
         description: 'Configure libtmux-mcp and inspect its tmux tool protocol.',
       },
       {
-        id: 'workspace', label: 'Workspace Manager', kind: 'product', navGroup: 'Products', route: 'workspace', package: 'workspace', product: 'workspace',
+        id: 'workspace', label: 'Workspace Manager', kind: 'product', navGroup: 'Apps', route: 'workspace', package: 'workspace', product: 'workspace',
         description: 'Validate, plan, and load workspace configuration with libtmux-workspace.',
       },
     ],
@@ -203,7 +203,7 @@ function fallbackAreas(portSlug: string): readonly DocumentationDomain[] {
         label: product.label,
         description: productDescription(port, id as DocProduct),
         kind: available ? 'product' as const : 'unavailable' as const,
-        navGroup: available ? 'Products' : 'Availability',
+        navGroup: available ? 'Apps' : 'Availability',
         route: id,
         product: id as DocProduct,
       }
