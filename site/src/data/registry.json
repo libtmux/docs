@@ -53,9 +53,9 @@
     },
     "rs": {
       "status": "prerelease",
-      "version": "0.1.0-alpha.13",
+      "version": "0.1.0-alpha.14",
       "stable": null,
-      "tag": "libtmux@v0.1.0-alpha.13"
+      "tag": "libtmux@v0.1.0-alpha.14"
     },
     "go": {
       "status": "prerelease",
@@ -71,9 +71,9 @@
     },
     "dotnet": {
       "status": "prerelease",
-      "version": "0.0.0-alpha.16",
+      "version": "0.0.0-alpha.17",
       "stable": null,
-      "tag": "v0.0.0-alpha.16"
+      "tag": "v0.0.0-alpha.17"
     },
     "cxx": {
       "status": "unpublished",
