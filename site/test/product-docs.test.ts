@@ -260,6 +260,26 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     }
   })
 
+  it('places the available product mark above its overview title', () => {
+    for (const page of pages()) {
+      const port = PORTS.find((entry) => entry.slug === page.port)!
+      const html = pageHtml(page.path)
+      const article = html.match(/<article\b[^>]*>([\s\S]*?)<\/article>/i)?.[1]
+      expect(article, page.path).toBeDefined()
+      const expected = urlFor(`brand/${port.logoLanguage}/${page.product}/logo.svg`).pathname
+      const logos = tags(article!, 'img').filter((tag) => attribute(tag, 'src') === expected)
+      const overview = page.section === '' && productAvailable(port, page.product)
+      expect(logos, `${page.path} overview mark`).toHaveLength(overview ? 1 : 0)
+      if (!overview) continue
+      const logo = logos[0]!
+      expect(attribute(logo, 'width'), page.path).toBe('88')
+      expect(attribute(logo, 'height'), page.path).toBe('88')
+      expect(attribute(logo, 'alt'), page.path).toBe('')
+      expect(article!.indexOf(logo), `${page.path} logo precedes title`).toBeLessThan(article!.indexOf('<h1'))
+      expect(resolves(expected, urlFor(page.path).href), `${page.path} logo resolves`).toBe(true)
+    }
+  })
+
   it('opens a product overview with its install picker, then its section cards', async () => {
     let checked = 0
     for (const page of pages().filter((entry) => entry.section === '')) await inspect(page.path, (document) => {
