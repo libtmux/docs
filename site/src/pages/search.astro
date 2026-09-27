@@ -2,6 +2,10 @@
 import { ALL_TRANSLATED } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import SearchPanel from '../components/SearchPanel.astro'
+import PageToolbar from '../components/PageToolbar.astro'
+import { withRoot } from '../lib/site-root'
+
+const breadcrumbs = [{ name: 'libtmux', url: withRoot('/') }, { name: 'Search', url: withRoot('/search/') }]
 
 /**
  * The search page: the same panel the Cmd-K modal uses.
@@ -20,9 +24,11 @@ import SearchPanel from '../components/SearchPanel.astro'
 ---
 
 <BaseLayout title="Search" description="Search the libtmux documentation."
+  breadcrumbs={breadcrumbs}
   localeStatuses={ALL_TRANSLATED}
 >
   <main class="mx-auto max-w-7xl px-4 py-12">
+    <PageToolbar breadcrumbs={breadcrumbs} />
     <h1 class="text-3xl font-semibold tracking-tight">Search</h1>
     <div class="mt-8">
       <SearchPanel />

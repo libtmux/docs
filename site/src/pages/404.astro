@@ -1,6 +1,7 @@
 ---
 import { ALL_TRANSLATED } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
+import PageToolbar from '../components/PageToolbar.astro'
 import { PORTS } from '../lib/ports'
 import { withRoot } from '../lib/site-root'
 
@@ -39,6 +40,7 @@ const portDefaults: Record<string, string> = (() => {
   localeStatuses={ALL_TRANSLATED}
 >
   <main class="mx-auto max-w-2xl px-4 py-16">
+    <PageToolbar breadcrumbs={[{ name: 'libtmux', url: withRoot('/') }, { name: 'Page not found', url: Astro.url.pathname }]} />
     <h1 class="text-3xl font-semibold tracking-tight">Page not found</h1>
     <p class="mt-3">
       This URL has no page. Try the search or choose another documentation version.
