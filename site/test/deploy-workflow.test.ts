@@ -9,6 +9,7 @@ const reusable = readFileSync(new URL('../../.github/workflows/reusable-deploy.y
 const shell = readFileSync(new URL('../../.github/workflows/deploy-shell.yml', import.meta.url), 'utf8')
 const testWorkflow = readFileSync(new URL('../../.github/workflows/test.yml', import.meta.url), 'utf8')
 const publicationAudit = readFileSync(new URL('../../scripts/test-all.sh', import.meta.url), 'utf8')
+const publishRoot = readFileSync(new URL('../../scripts/publish-root.sh', import.meta.url), 'utf8')
 
 function sourceCheckoutContract(workflow: string): void {
   expect(workflow).toContain('echo "ruby=$(jq -r .revision site/src/data/api/ruby.json)" >> "$GITHUB_OUTPUT"')
@@ -87,5 +88,26 @@ describe('port publisher contract', () => {
     expect(preview).toContain('pnpm build:site --versions latest')
     expect(preview).toContain('LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby')
     expect(preview).toContain('LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua')
+  })
+})
+
+describe('shell publish', () => {
+  // The headers publish-root.sh sets, and the date they last changed. A file
+  // skip-unchanged proves unchanged is not uploaded, so a new header reaches
+  // it only because an object older than that date is always re-uploaded.
+  // Change a header and this fails until the date moves with it.
+  const policy = { since: '2026-09-27', cacheControl: ['public, max-age=0, s-maxage=300'] }
+
+  it('re-uploads every object written before the current header policy', () => {
+    const headers = [...new Set([...publishRoot.matchAll(/--cache-control "([^"]+)"/g)].map((match) => match[1]))]
+    expect(headers, 'publish-root.sh changed a header: move policy.since and PUBLISH_POLICY_SINCE to today').toEqual(policy.cacheControl)
+    expect(shell).toContain(`PUBLISH_POLICY_SINCE: '${policy.since}'`)
+  })
+
+  it('skips unchanged files before the syncs that would upload them', () => {
+    const skip = shell.indexOf('node skip-unchanged.mjs --dir dist')
+    expect(skip).toBeGreaterThan(-1)
+    expect(skip).toBeLessThan(shell.indexOf('run: bash publish-root.sh'))
+    expect(shell).toContain('cp scripts/skip-unchanged.mjs skip-unchanged.mjs')
   })
 })
