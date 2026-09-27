@@ -1,10 +1,10 @@
 # CI and deployment
 
 Eleven repositories exist in this scheme — this shell repo and the ten port
-repos named in `site/src/lib/ports.ts` — but only eight ever write into
-`s3://libtmux-docs`: three ports (Rust, Go, Java) deep-link to an ecosystem
-host instead and own no prefix here at all (see the table below). Each of
-the seven publishing ports owns and deploys its own prefix exclusively. No repository shares a
+repos named in `site/src/lib/ports.ts` — and all eleven write into the
+site's bucket. Each port owns and deploys its own prefix exclusively (see
+the table below); Rust, Go and Java also link out to an ecosystem host for
+their API reference. No repository shares a
 build environment, a build job, or a piece of mutable state with any other —
 the only shared executable contract is this repo's
 `.github/workflows/reusable-deploy.yml`, pinned by full commit SHA like any other
@@ -28,7 +28,7 @@ hands this workflow a prefix to write it to. That is the entire contract.
 
 ## Which repos call `reusable-deploy.yml`
 
-Ports with a site-hosted version tree have something to sync into this bucket:
+Every port has a version tree to sync into the bucket:
 
 | Port | Reference ownership | Calls `reusable-deploy.yml`? |
 |---|---|---|
@@ -39,9 +39,9 @@ Ports with a site-hosted version tree have something to sync into this bucket:
 | .NET (`dotnet`) | site-rendered | yes |
 | C++ (`cxx`) | port-owned native API | yes |
 | Swift (`swift`) | port-owned native API | yes |
-| Rust (`rs`) | ecosystem (docs.rs) | no — nothing to publish here |
-| Go (`go`) | ecosystem (pkg.go.dev) | no — nothing to publish here |
-| Java (`java`) | ecosystem (javadoc.io) | no — nothing to publish here |
+| Rust (`rs`) | site-rendered (also docs.rs) | yes |
+| Go (`go`) | site-rendered (also pkg.go.dev) | yes |
+| Java (`java`) | site-rendered (also javadoc.io) | yes |
 
 `ports.ts` is the single source of truth for this split (see
 **Contradictions** below — some research notes in `../notes/research/` say
