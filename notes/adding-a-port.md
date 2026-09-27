@@ -96,6 +96,13 @@ Use `LIBTMUX_DOCS_CHECKOUT_KOTLIN` to select a checkout other than the configure
 worktree. Scala and F# have corresponding checkout overrides. Keep the source
 examples and the guide cache on the same reviewed revision.
 
+Parent callers opt into `include-wrappers: true` in `port-docs.yml`. Use
+`matrix.port` in the publish job's port, path prefix, artifact name and
+concurrency group; each matrix entry carries its own version identity. A
+dispatch can select a wrapper directly to rebuild only that language. The
+workflow checks that the calling repository owns the selected library.
+Its publisher role must grant that family's prefixes and manifest fragments.
+
 ## 4. Add `versions.json` entries
 
 `versions.json` is one runtime file at each locale root — see

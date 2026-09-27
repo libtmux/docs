@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { publicationMatrix } from '../../scripts/port-docs-matrix.mjs'
 
 const script = fileURLToPath(new URL('../../scripts/port-docs-identity.sh', import.meta.url))
 const workflow = readFileSync(new URL('../../.github/workflows/port-docs.yml', import.meta.url), 'utf8')
@@ -104,6 +105,20 @@ describe('port docs identity', () => {
 })
 
 describe('port docs workflow', () => {
+  it('builds wrapper versions under their parent repository ownership', () => {
+    const entries = tag('v0.0.1-alpha.17').entries
+    const matrix = publicationMatrix({ include: entries }, 'java', 'libtmux/libtmux-java', true)
+    expect(matrix.include.map(({ port, version }) => `${port}/${version}`)).toEqual([
+      'java/v0.0.1-alpha.17', 'kotlin/v0.0.1-alpha.17', 'scala/v0.0.1-alpha.17',
+      'java/next', 'kotlin/next', 'scala/next',
+    ])
+    expect(publicationMatrix({ include: entries }, 'java', 'libtmux/libtmux-java').include).toHaveLength(2)
+    expect(publicationMatrix({ include: entries }, 'fsharp', 'libtmux/libtmux-dotnet').include.every((entry) => entry.port === 'fsharp')).toBe(true)
+    expect(() => publicationMatrix({ include: entries }, 'java', 'libtmux/libtmux-dotnet', true)).toThrow('cannot build java')
+    expect(() => publicationMatrix({ include: entries }, 'scala', 'libtmux/libtmux-ts')).toThrow('cannot build scala')
+    expect(() => publicationMatrix({ include: entries }, 'unknown', 'libtmux/docs')).toThrow('unknown documentation port')
+  })
+
   it('builds with the scripts of its own commit, not a second pin', () => {
     const docsCheckouts = workflow.match(/repository: \$\{\{ job\.workflow_repository \}\}\n\s+ref: \$\{\{ job\.workflow_sha \}\}/g)
     expect(docsCheckouts).toHaveLength(2)
