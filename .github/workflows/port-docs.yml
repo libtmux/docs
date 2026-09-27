@@ -139,6 +139,21 @@ jobs:
           }
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
 
+      # C++'s reference is read from the Doxygen XML its own build produces
+      # (scripts/gen-api-model.mjs), which must be newer than the headers it
+      # describes, so it is generated here, after the checkout. The same
+      # doxygen serves gen-api-model's own run over the workspace and MCP
+      # headers.
+      - name: Generate the Doxygen XML
+        if: inputs.port == 'cxx'
+        working-directory: port
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq doxygen
+          doxygen --version
+          OUTPUT_DIRECTORY=. doxygen Doxyfile
+
       - uses: actions/checkout@v7
         with:
           repository: ${{ job.workflow_repository }}
