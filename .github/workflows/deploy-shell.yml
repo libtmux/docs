@@ -205,6 +205,7 @@ jobs:
           cp scripts/publish-root.sh publish-root.sh
           cp scripts/publish-default-versions.sh publish-default-versions.sh
           cp scripts/merge-version-manifests.mjs merge-version-manifests.mjs
+          cp scripts/skip-unchanged.mjs skip-unchanged.mjs
           cat reserved-prefixes.txt
 
       - uses: actions/upload-artifact@v7
@@ -225,6 +226,7 @@ jobs:
             publish-root.sh
             publish-default-versions.sh
             merge-version-manifests.mjs
+            skip-unchanged.mjs
           retention-days: 1
 
   build-preview:
@@ -471,6 +473,19 @@ jobs:
             find published-manifests -name '*.json' -printf '%f\n' \
               | sed 's/\.json$//' | sort | sed 's/^/- /'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # Without this every deploy re-uploads the whole locale, unchanged or
+      # not. PUBLISH_POLICY_SINCE is the date publish-root.sh last changed a
+      # header it sets: an object written before it is re-uploaded whatever
+      # its content, so the new header reaches it.
+      - name: Skip files the bucket already holds
+        env:
+          BUCKET: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
+          LOCALE: ${{ matrix.locale }}
+          PUBLISH_POLICY_SINCE: '2026-09-27'
+        run: |
+          node skip-unchanged.mjs --dir dist --bucket "$BUCKET" \
+            --prefix "$LOCALE/" --policy-since "$PUBLISH_POLICY_SINCE"
 
       - name: Sync top-level directories, denylist-checked
         env:
