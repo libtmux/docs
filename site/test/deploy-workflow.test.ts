@@ -41,7 +41,14 @@ describe('port publisher contract', () => {
   it('merges successful per-port fragments into both runtime switchers on the next shell publish', () => {
     expect(shell).toContain('Merge successfully published port versions')
     expect(shell).toContain('merge-version-manifests.mjs')
-    expect(shell).toContain('manifest/$port.json')
+    expect(shell).toContain('aws s3 sync "s3://$BUCKET/manifest/" published-manifests/')
+    // A manifest the shell cannot read fails the deploy. Silencing that copy
+    // is how every deploy merged nothing while logging success.
+    const merge = shell.slice(
+      shell.indexOf('Merge successfully published port versions'),
+      shell.indexOf('Sync top-level directories'),
+    )
+    expect(merge).not.toMatch(/\|\| true|2>\/dev\/null/)
   })
 
   it('stages source-bound Ruby and Lua guides before the publication audit checks backlinks', () => {
