@@ -1,0 +1,204 @@
+name: port-docs
+
+# Builds a port's documentation tree from the port's own source, one version
+# per matrix leg, and uploads each as an artifact for reusable-deploy.yml to
+# publish. A port calls both, pinned to the same commit:
+#
+#   build:
+#     uses: libtmux/docs/.github/workflows/port-docs.yml@<sha>  # <release>
+#     with: { port: rs, tag-prefix: libtmux@ }
+#   publish:
+#     needs: build
+#     if: needs.build.outputs.should-publish == 'true'
+#     strategy: { matrix: '${{ fromJSON(needs.build.outputs.matrix) }}' }
+#     uses: libtmux/docs/.github/workflows/reusable-deploy.yml@<sha>  # <release>
+#
+# The build script comes from this workflow's own commit (job.workflow_sha),
+# not from a second pin in the caller, so the script and the publish contract
+# cannot drift apart, and one version bump moves both.
+#
+# Source-bound: the assembly verifies the commit it was given and regenerates
+# the port's API reference from it, rather than rendering the copy committed
+# in this repository.
+
+on:
+  workflow_call:
+    inputs:
+      port:
+        description: Port slug from site/src/lib/ports.ts, e.g. 'rs'.
+        required: true
+        type: string
+      tag-prefix:
+        description: >
+          Stripped from a release tag to give its version slug, e.g.
+          'libtmux@' for libtmux-rs. Empty for a port whose tags are the
+          version itself.
+        required: false
+        type: string
+        default: ''
+      # A dispatch's own inputs, passed through by the caller. Read only
+      # when the caller's event is workflow_dispatch.
+      source-ref:
+        required: false
+        type: string
+        default: ''
+      version:
+        required: false
+        type: string
+        default: ''
+      version-kind:
+        required: false
+        type: string
+        default: ''
+      is-default:
+        required: false
+        type: boolean
+        default: false
+      resolves-to:
+        required: false
+        type: string
+        default: ''
+      publish:
+        required: false
+        type: boolean
+        default: false
+    outputs:
+      matrix:
+        description: The versions built, as a strategy matrix for reusable-deploy.yml.
+        value: ${{ jobs.identity.outputs.matrix }}
+      should-publish:
+        description: "'true' when any built version is to be published."
+        value: ${{ jobs.identity.outputs.should-publish }}
+
+permissions:
+  contents: read
+
+jobs:
+  identity:
+    runs-on: ubuntu-latest
+    outputs:
+      source-ref: ${{ steps.identity.outputs.source_ref }}
+      matrix: ${{ steps.identity.outputs.matrix }}
+      should-publish: ${{ steps.identity.outputs.should_publish }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          sparse-checkout: scripts/port-docs-identity.sh
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - id: identity
+        env:
+          EVENT: ${{ github.event_name }}
+          SHA: ${{ github.sha }}
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          TAG_PREFIX: ${{ inputs.tag-prefix }}
+          INPUT_SOURCE_REF: ${{ inputs.source-ref }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_KIND: ${{ inputs.version-kind }}
+          INPUT_DEFAULT: ${{ inputs.is-default }}
+          INPUT_RESOLVES_TO: ${{ inputs.resolves-to }}
+          INPUT_PUBLISH: ${{ inputs.publish }}
+          REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          set -euo pipefail
+          TAGS=$(git ls-remote --tags --refs "$REPOSITORY_URL" | sed 's#.*refs/tags/##')
+          export TAGS
+          bash scripts/port-docs-identity.sh
+
+  build:
+    needs: identity
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.identity.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.identity.outputs.source-ref }}
+          fetch-depth: 0
+          path: port
+          persist-credentials: false
+
+      # The selected ref must be the commit that was checked out; the
+      # assembly checks the same thing again before it reads a file.
+      - id: source
+        working-directory: port
+        env:
+          SELECTED_REF: ${{ needs.identity.outputs.source-ref }}
+        run: |
+          set -euo pipefail
+          sha=$(git rev-parse HEAD)
+          selected=$(git rev-parse "$SELECTED_REF^{commit}")
+          [[ "$sha" == "$selected" ]] || {
+            echo "selected source resolved to $selected, checkout is $sha" >&2
+            exit 1
+          }
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      # C++'s reference is read from the Doxygen XML its own build produces
+      # (scripts/gen-api-model.mjs), which must be newer than the headers it
+      # describes, so it is generated here, after the checkout. The same
+      # doxygen serves gen-api-model's own run over the workspace and MCP
+      # headers.
+      - name: Generate the Doxygen XML
+        if: inputs.port == 'cxx'
+        working-directory: port
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq doxygen
+          doxygen --version
+          OUTPUT_DIRECTORY=. doxygen Doxyfile
+
+      - uses: actions/checkout@v7
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: docs
+          persist-credentials: false
+
+      # No dependency cache: this job checks out whichever ref it was asked
+      # to publish, and a cache it saved could be restored by a later
+      # default-branch run.
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: docs/package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+      - run: pnpm install --frozen-lockfile
+        working-directory: docs
+
+      - name: Build this port's tree
+        working-directory: docs
+        env:
+          LIBTMUX_DOCS_PORT: ${{ inputs.port }}
+          LIBTMUX_DOCS_VERSION: ${{ matrix.version }}
+          LIBTMUX_DOCS_VERSION_KIND: ${{ matrix.kind }}
+          LIBTMUX_DOCS_IS_DEFAULT: ${{ matrix.isDefault }}
+          LIBTMUX_DOCS_RESOLVES_TO: ${{ matrix.resolvesTo }}
+          LIBTMUX_DOCS_SOURCE_REF: ${{ needs.identity.outputs.source-ref }}
+          LIBTMUX_DOCS_SOURCE_SHA: ${{ steps.source.outputs.sha }}
+          PORT_CHECKOUT: ${{ github.workspace }}/port
+        run: |
+          set -euo pipefail
+          [[ "$LIBTMUX_DOCS_PORT" =~ ^[a-z]+$ ]] || {
+            echo "invalid port slug: $LIBTMUX_DOCS_PORT" >&2
+            exit 1
+          }
+          export "LIBTMUX_DOCS_CHECKOUT_${LIBTMUX_DOCS_PORT^^}=$PORT_CHECKOUT"
+          ./scripts/build-site.sh --ports "$LIBTMUX_DOCS_PORT" \
+            --versions "$LIBTMUX_DOCS_VERSION" --skip-refs --skip-pagefind
+
+      # The version directory itself: its contents become
+      # <locale>/<port>/<version>.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: docs-${{ inputs.port }}-${{ matrix.version }}
+          path: docs/_site/en/${{ inputs.port }}/${{ matrix.version }}
+          if-no-files-found: error
+          retention-days: 1
