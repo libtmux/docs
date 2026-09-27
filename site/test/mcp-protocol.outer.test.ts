@@ -1,9 +1,16 @@
 // Outer integration: Exercises a real subprocess and its shutdown grace period.
+import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { expect, it } from 'vitest'
 import { captureProtocol } from '../../scripts/lib/mcp-protocol.mjs'
+
+it.each(['kotlin', 'scala', 'fsharp'])('does not discover MCP tools for the %s library', (port) => {
+  expect(execFileSync(process.execPath, [
+    new URL('../../scripts/gen-mcp-protocol.mjs', import.meta.url).pathname, '--port', port,
+  ], { encoding: 'utf8' })).toBe('')
+})
 
 it('retains startup diagnostics when the server closes stdin immediately', async () => {
   await expect(captureProtocol({
