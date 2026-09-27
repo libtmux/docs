@@ -339,7 +339,6 @@ export function referenceAlternatives(port: string, publicId: string) {
 }
 
 interface MentionIndex {
-  generated: string
   mentions: { port: string; symbol: string; page: string; title?: string; section?: string }[]
 }
 

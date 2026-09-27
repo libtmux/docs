@@ -33,7 +33,7 @@ function mentionsFile(mentions: unknown[]): string {
   const dir = mkdtempSync(join(tmpdir(), 'libtmux-mentions-'))
   temporary.push(dir)
   const path = join(dir, 'mentions.json')
-  writeFileSync(path, JSON.stringify({ generated: new Date().toISOString(), mentions }))
+  writeFileSync(path, JSON.stringify({ mentions }))
   return path
 }
 
