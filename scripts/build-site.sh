@@ -303,6 +303,12 @@ rm -rf "$site_dir/src/content/docs/_staged"
 if [ -n "${LIBTMUX_DOCS_PORT:-}" ] && { [ "$LIBTMUX_DOCS_PORT" = ruby ] || [ "$LIBTMUX_DOCS_PORT" = lua ]; }; then
   node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"
   node "$script_dir/stage-port-docs.mjs" --port "$LIBTMUX_DOCS_PORT"
+elif [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
+  # A source-bound build renders the reference from the verified checkout,
+  # not from the model committed here, which describes whatever revision was
+  # last refreshed. The generator re-checks the SHA and records it.
+  node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"
+  node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT" --nav
 elif [ -f "${LIBTMUX_DOCS_CHECKOUT_RUBY:-$HOME/work/libtmux/libtmux-ruby-docs}/docs/_build/api.json" ] &&
      [ -f "${LIBTMUX_DOCS_CHECKOUT_LUA:-$HOME/work/libtmux/libtmux-lua-docs}/docs/_build/api.json" ]; then
   node "$script_dir/gen-api-model.mjs" --port ruby
