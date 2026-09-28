@@ -1,0 +1,150 @@
+name: publish
+
+# One dispatch publishes any set of ports at a ref (scripts/publish-plan.mjs):
+#
+#   ports: all                  ref: latest    every default branch as latest
+#   ports: all                  ref: release   every newest release, + alias
+#   ports: rs                   ref: <ref>     one exact ref, as the inputs name
+#
+# The plan runs everywhere and needs no credentials, so a dry run (the
+# default) shows exactly what would be published. A real run dispatches each
+# port's own docs.yml, which builds and publishes through the reviewed
+# reusable workflows under that port's own role; this workflow never touches
+# the bucket. GITHUB_TOKEN cannot dispatch another repository's workflow, so
+# a real run needs the LIBTMUX_DOCS_DISPATCH_TOKEN secret (or the optional
+# libtmux-docs-publisher App).
+
+on:
+  workflow_dispatch:
+    inputs:
+      ports:
+        description: "'all', or port slugs separated by commas"
+        required: true
+        default: all
+      ref:
+        description: "'latest', 'release', or one port's exact source ref"
+        required: true
+        default: latest
+      version:
+        description: Version slug, for an exact ref only
+        required: false
+        default: ''
+      version-kind:
+        description: Version policy, for an exact ref only
+        required: true
+        type: choice
+        options: [auto, trunk, tag, alias]
+        default: auto
+      is-default:
+        description: Make the version canonical, for an exact ref only
+        required: true
+        type: boolean
+        default: false
+      resolves-to:
+        description: The version an alias points at, for an exact ref only
+        required: false
+        default: ''
+      dry-run:
+        description: Plan only
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      count: ${{ steps.plan.outputs.count }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+      - id: plan
+        env:
+          INPUT_PORTS: ${{ inputs.ports }}
+          INPUT_REF: ${{ inputs.ref }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_KIND: ${{ inputs.version-kind }}
+          INPUT_DEFAULT: ${{ inputs.is-default }}
+          INPUT_RESOLVES_TO: ${{ inputs.resolves-to }}
+          INPUT_DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          set -euo pipefail
+          matrix=$(node scripts/publish-plan.mjs 2>> "$GITHUB_STEP_SUMMARY")
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "count=$(jq '.include | length' <<< "$matrix")" >> "$GITHUB_OUTPUT"
+          jq . <<< "$matrix"
+
+  dispatch:
+    needs: plan
+    if: ${{ !inputs.dry-run && needs.plan.outputs.count != '0' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      # A fine-grained token with Actions: read and write on the port
+      # repositories, or the libtmux-docs-publisher App when it is set up.
+      - id: app
+        if: vars.LIBTMUX_DOCS_APP_ID != ''
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.LIBTMUX_DOCS_APP_ID }}
+          private-key: ${{ secrets.LIBTMUX_DOCS_APP_KEY }}
+          owner: libtmux
+          repositories: ${{ matrix.repoName }}
+      # Dispatch from the default branch, the one ref besides release tags
+      # that the port's `docs` environment admits, then wait for the port's
+      # run so a failed publish fails this job too.
+      - name: Publish ${{ matrix.port }} ${{ matrix.version }}
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token || secrets.LIBTMUX_DOCS_DISPATCH_TOKEN }}
+          REPO: ${{ matrix.repo }}
+          DISPATCH_REF: ${{ matrix.dispatchRef }}
+          SOURCE_REF: ${{ matrix.sourceRef }}
+          VERSION: ${{ matrix.version }}
+          KIND: ${{ matrix.kind }}
+          IS_DEFAULT: ${{ matrix.isDefault }}
+          RESOLVES_TO: ${{ matrix.resolvesTo }}
+        run: |
+          set -euo pipefail
+          [[ -n "$GH_TOKEN" ]] || {
+            echo "::error::No dispatch credential: set the LIBTMUX_DOCS_DISPATCH_TOKEN secret on this repository, a fine-grained token with Actions: read and write on the port repositories (docs/ci.md)." >&2
+            exit 1
+          }
+          url=$(gh workflow run docs.yml --repo "$REPO" --ref "$DISPATCH_REF" \
+            -f source-ref="$SOURCE_REF" -f version="$VERSION" -f version-kind="$KIND" \
+            -f is-default="$IS_DEFAULT" -f resolves-to="$RESOLVES_TO" -f publish=true)
+          run_id=${url##*/}
+          [[ "$run_id" =~ ^[0-9]+$ ]] || { echo "::error::no run id in: $url" >&2; exit 1; }
+          echo "- [$REPO $VERSION]($url)" >> "$GITHUB_STEP_SUMMARY"
+          gh run watch "$run_id" --repo "$REPO" --exit-status --interval 30 > /dev/null
+
+  # The shell merges every port's manifest into versions.json, so it
+  # redeploys once the ports have published. GITHUB_TOKEN may dispatch a
+  # workflow in its own repository.
+  shell:
+    needs: dispatch
+    # After a partial failure too, so the ports that did publish reach
+    # versions.json; the failed legs still fail the run.
+    if: ${{ !cancelled() && needs.dispatch.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          REF: ${{ github.event.repository.default_branch }}
+        run: gh workflow run deploy-shell.yml --repo "$REPO" --ref "$REF"

@@ -209,6 +209,35 @@ The events it answers (`scripts/port-docs-identity.sh`):
 Set `publishesOwnTree` for the port in `site/src/lib/ports.ts` once it
 publishes this way, or every shell deploy overwrites its `latest` tree.
 
+### Publishing several ports at once
+
+`publish.yml` in this repository dispatches each selected port's `docs.yml`
+and waits for it. It always plans first, and by default stops there, so a
+dry run shows exactly what a real run would publish:
+
+| `ports` | `ref` | Publishes |
+|---|---|---|
+| `all` or a list | `latest` | each default branch as `latest` |
+| `all` or a list | `release` | each newest release tag, plus `next` or `stable` |
+| one port | an exact ref | that ref, as `version` and `version-kind` name it |
+
+```console
+$ gh workflow run publish.yml \
+    --repo libtmux/docs \
+    -f ports=all \
+    -f ref=release \
+    -f dry-run=false
+```
+
+A real run needs a credential that can dispatch a workflow in another
+repository, which `GITHUB_TOKEN` cannot: the `LIBTMUX_DOCS_DISPATCH_TOKEN`
+secret on this repository, a fine-grained token with Actions: read and
+write on the port repositories. A `libtmux-docs-publisher` GitHub App works
+instead, with its ID in the `LIBTMUX_DOCS_APP_ID` variable and its key in
+the `LIBTMUX_DOCS_APP_KEY` secret. After the ports publish, it redeploys the
+shell so `versions.json` lists what they published. py is not dispatchable:
+its workflow lives in tmux-python/libtmux and takes no inputs.
+
 ### With its own toolchain
 
 A self-hosted port's own `docs.yml` builds with its own toolchain, uploads an
