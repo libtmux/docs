@@ -57,6 +57,30 @@ describe('staged port guide links', () => {
     expect(result).toContain('[external]: https://example.org/')
   })
 
+  it('extracts centered README titles without losing links or examples', () => {
+    const header = [
+      '<!-- libtmux-logo -->', '<p>artwork</p>', '<!-- /libtmux-logo -->', '',
+      '<div align="center">', '', '# libtmux for Ruby', '',
+      'Create tmux sessions from Ruby. [Guide](docs/modes.md)', '', '</div>', '',
+      '## Example', '', '```ruby', 'puts "hello"', '```', '',
+      '<div align="center">', '', 'A later centered block.', '', '</div>', '',
+    ].join('\n')
+    const guides = Object.keys(stagedRoutesFor('ruby')).map((path) => ({
+      path, content: path === 'README.md' ? header : '# Guide\n\nbody\n',
+    }))
+    const files = stagedPortGuides('ruby', {
+      source: { repository: 'libtmux/libtmux-ruby', revision: '0123456789abcdef' },
+      guides,
+    })
+    const overview = files.get('ruby/guides/overview/index.md')!
+    expect(overview).toContain('title: "libtmux for Ruby"')
+    expect(overview).not.toContain('# libtmux for Ruby')
+    expect(overview).not.toContain('artwork')
+    expect(overview).toContain('Create tmux sessions from Ruby. [Guide](../execution-modes/)')
+    expect(overview).toContain('```ruby\nputs "hello"\n```')
+    expect(overview).toContain('<div align="center">\n\nA later centered block.\n\n</div>')
+  })
+
   it('stages canonical routes with aliases and reader domain metadata', () => {
     const guides = Object.keys(stagedRoutesFor('ruby')).map((path) => ({ path, content: '# Guide\n\nbody\n' }))
     const files = stagedPortGuides('ruby', {
