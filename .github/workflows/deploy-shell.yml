@@ -12,7 +12,7 @@ name: deploy-shell
 # trigger here beyond the default branch.
 #
 # A port release changes the install commands without changing this
-# repository, so the deploy also runs hourly and on demand. Those runs resolve
+# repository, so the deploy also runs on a schedule and on demand. Those runs resolve
 # the package registry first and rebuild only when it moved.
 
 on:
@@ -20,8 +20,12 @@ on:
     branches: [main]
     tags: ['v*']
   pull_request:
+  # Four chances an hour, off the busy top of the hour. GitHub runs a
+  # schedule best-effort and drops slots under load: at one an hour, three
+  # of five slots in a row never ran while a new release waited. A run whose
+  # registry has not moved skips the build in about a minute.
   schedule:
-    - cron: '23 * * * *'
+    - cron: '8,23,38,53 * * * *'
   workflow_dispatch:
 
 permissions:

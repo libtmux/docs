@@ -184,7 +184,7 @@ from its range.
 
 The published site does not read the committed file. `deploy-shell.yml`
 resolves the registry against the live registries on every deploy, including
-an hourly scheduled one, and publishes the result as `/registry.json`; a
+a scheduled one four times an hour, and publishes the result as `/registry.json`; a
 release therefore reaches the site without a commit here. The committed file
 is what pull requests, local builds and tests use, so their results never
 depend on another repository publishing, and nothing requires refreshing it.

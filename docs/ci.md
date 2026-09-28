@@ -371,7 +371,7 @@ Triggers and jobs:
 |---|---|---|
 | push to `main` | `registry` → `build` → `publish-root` | bucket root, `docs` environment |
 | push tag `v*` | `registry` → `build` → `publish-root` | bucket root (same as trunk) |
-| hourly `schedule`, `workflow_dispatch` | `registry`, then `build` → `publish-root` when the registry moved (dispatch always rebuilds) | bucket root |
+| `schedule` (four times an hour), `workflow_dispatch` | `registry`, then `build` → `publish-root` when the registry moved (dispatch always rebuilds) | bucket root |
 | `pull_request`, same-repo head | `build` → `publish-preview` | `pr-<n>/`, `docs-preview` environment |
 | `pull_request`, fork head | `build` only | no publish — see below |
 
