@@ -1,5 +1,5 @@
 ---
-title: Workspace Manager for Ruby
+title: tmux workspace manager for Ruby
 description: Validate, plan, and load bounded YAML or JSON workspaces with libtmux-workspace.
 port: ruby
 product: workspace

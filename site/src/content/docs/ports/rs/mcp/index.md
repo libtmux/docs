@@ -1,5 +1,5 @@
 ---
-title: MCP for Rust
+title: tmux MCP for Rust
 description: Run tmux-mcp or embed its typed tool surface in a Rust application.
 port: rs
 product: mcp

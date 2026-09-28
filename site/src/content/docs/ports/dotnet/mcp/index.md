@@ -1,5 +1,5 @@
 ---
-title: MCP for .NET
+title: tmux MCP for .NET
 description: Run LibTmux.Mcp as a .NET tool with bounded results and a selectable tool catalog.
 port: dotnet
 product: mcp

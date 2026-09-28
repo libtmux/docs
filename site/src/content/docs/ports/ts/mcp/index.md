@@ -1,5 +1,5 @@
 ---
-title: MCP for TypeScript
+title: tmux MCP for TypeScript
 description: Run or embed @libtmux/mcp to inspect tmux, drive panes, and wait for commands.
 port: ts
 product: mcp

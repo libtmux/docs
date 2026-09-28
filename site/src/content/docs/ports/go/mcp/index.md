@@ -1,5 +1,5 @@
 ---
-title: MCP for Go
+title: tmux MCP for Go
 description: Run the Go MCP server or embed its managed instance over a selected tmux server.
 port: go
 product: mcp

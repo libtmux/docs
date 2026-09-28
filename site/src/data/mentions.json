@@ -3210,7 +3210,7 @@
    "port": "lua",
    "symbol": "libtmux.LiveQueryResult.plan",
    "page": "/lua/latest/workspace/",
-   "title": "Workspace Manager for Lua is not published",
+   "title": "tmux workspace manager for Lua is not published",
    "section": "ports"
   },
   {
@@ -4694,7 +4694,7 @@
    "port": "py",
    "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
    "page": "/go/latest/workspace/",
-   "title": "Workspace Manager for Go",
+   "title": "tmux workspace manager for Go",
    "section": "ports"
   },
   {
@@ -6157,7 +6157,7 @@
    "port": "ruby",
    "symbol": "LibTmux::Workspace.load",
    "page": "/ruby/latest/workspace/",
-   "title": "Workspace Manager for Ruby",
+   "title": "tmux workspace manager for Ruby",
    "section": "ports"
   },
   {
@@ -6185,7 +6185,7 @@
    "port": "ruby",
    "symbol": "LibTmux::Workspace#plan",
    "page": "/ruby/latest/workspace/",
-   "title": "Workspace Manager for Ruby",
+   "title": "tmux workspace manager for Ruby",
    "section": "ports"
   },
   {
