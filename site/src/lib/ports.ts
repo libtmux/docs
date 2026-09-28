@@ -40,11 +40,13 @@ export interface PackageRegistry {
 
 export type PortPackageId = 'core' | 'async' | DocProduct
 
-/** A separately published package documented inside one language port. */
+/** A companion package or application documented inside one language port. */
 export interface PortPackage {
   id: PortPackageId
   name: string
-  registry: string
+  registry?: string
+  /** Package or CLI directory, with its default branch for latest pages. */
+  source?: { path: string; ref: string; repo?: string }
   /** What a program imports; absent for a package that only ships a command. */
   require?: string
   executable?: string
@@ -281,6 +283,12 @@ const CORE_PORTS: readonly Port[] = [
     name: 'Python',
     language: 'Python',
     packageName: 'libtmux',
+    packages: [
+      { id: 'workspace', name: 'tmuxp', registry: 'https://pypi.org/project/tmuxp/',
+        source: { repo: 'tmux-python/tmuxp', path: 'src/tmuxp', ref: 'master' } },
+      { id: 'mcp', name: 'libtmux-mcp', registry: 'https://pypi.org/project/libtmux-mcp/',
+        source: { repo: 'tmux-python/libtmux-mcp', path: 'src/libtmux_mcp', ref: 'main' } },
+    ],
     workspaceCli: 'tmuxp load',
     workspaceCliAvailability: 'released',
     repo: 'tmux-python/libtmux',
@@ -351,6 +359,7 @@ const CORE_PORTS: readonly Port[] = [
         id: 'mcp',
         name: 'libtmux-mcp',
         registry: 'https://rubygems.org/gems/libtmux-mcp',
+        source: { path: 'gems/libtmux-mcp', ref: 'master' },
         require: 'libtmux/mcp',
         executable: 'libtmux-mcp',
         installs: [
@@ -362,6 +371,7 @@ const CORE_PORTS: readonly Port[] = [
         id: 'workspace',
         name: 'libtmux-workspace',
         registry: 'https://rubygems.org/gems/libtmux-workspace',
+        source: { path: 'gems/libtmux-workspace', ref: 'master' },
         require: 'libtmux/workspace',
         executable: 'libtmux-workspace',
         installs: [
@@ -442,6 +452,7 @@ const CORE_PORTS: readonly Port[] = [
         id: 'mcp',
         name: '@libtmux/mcp',
         registry: 'https://www.npmjs.com/package/@libtmux/mcp',
+        source: { path: 'packages/mcp', ref: 'master' },
         require: '@libtmux/mcp',
         executable: 'libtmux-mcp',
       },
@@ -449,6 +460,7 @@ const CORE_PORTS: readonly Port[] = [
         id: 'workspace',
         name: '@libtmux/workspace-cli',
         registry: 'https://www.npmjs.com/package/@libtmux/workspace-cli',
+        source: { path: 'packages/workspace-cli', ref: 'master' },
         executable: 'tmux-workspace',
         // Runners lead: like `uvx tmuxp`, the command needs no project to be
         // added to. `--help` is the argument because it runs without a
@@ -586,6 +598,12 @@ const CORE_PORTS: readonly Port[] = [
   },
   {
     slug: 'rs',
+    packages: [
+      { id: 'workspace', name: 'tmux-workspace', registry: 'https://crates.io/crates/tmux-workspace',
+        source: { path: 'crates/tmux-workspace', ref: 'master' } },
+      { id: 'mcp', name: 'tmux-mcp', registry: 'https://crates.io/crates/tmux-mcp',
+        source: { path: 'crates/tmux-mcp', ref: 'master' } },
+    ],
     logoLanguage: 'rust',
     shortName: 'Rs',
     workspaceCli: 'tmux-workspace load',
@@ -635,10 +653,13 @@ const CORE_PORTS: readonly Port[] = [
     language: 'Go',
     packageName: 'github.com/libtmux/libtmux-go/tmux',
     packages: [
+      { id: 'mcp', name: 'github.com/libtmux/libtmux-go/mcp', registry: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp',
+        source: { path: 'mcp/cmd/libtmux-mcp', ref: 'master' } },
       {
         id: 'workspace',
         name: 'github.com/libtmux/libtmux-go/workspace',
         registry: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/workspace',
+        source: { path: 'workspace/cmd/tmux-workspace', ref: 'master' },
         require: 'github.com/libtmux/libtmux-go/workspace',
         executable: 'tmux-workspace',
         installs: [
@@ -684,6 +705,12 @@ const CORE_PORTS: readonly Port[] = [
   },
   {
     slug: 'java',
+    packages: [
+      { id: 'workspace', name: 'libtmux-workspace-cli', registry: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-workspace-cli',
+        source: { path: 'libtmux-workspace-cli', ref: 'master' } },
+      { id: 'mcp', name: 'libtmux-mcp', registry: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-mcp',
+        source: { path: 'libtmux-mcp', ref: 'master' } },
+    ],
     logoLanguage: 'java',
     shortName: 'Java',
     workspaceCli: 'tmux-workspace load',
@@ -785,10 +812,13 @@ const CORE_PORTS: readonly Port[] = [
       git: { code: 'dotnet add reference ../libtmux-dotnet/src/LibTmux/LibTmux.csproj', lang: 'console' },
     },
     packages: [
+      { id: 'mcp', name: 'LibTmux.Mcp', registry: 'https://www.nuget.org/packages/LibTmux.Mcp',
+        source: { path: 'src/LibTmux.Mcp', ref: 'master' } },
       {
         id: 'workspace',
         name: 'LibTmux.Workspace.Cli',
         registry: 'https://www.nuget.org/packages/LibTmux.Workspace.Cli',
+        source: { path: 'src/LibTmux.Workspace.Cli', ref: 'master' },
         require: 'LibTmux.Workspace',
         executable: 'tmux-workspace',
         installs: [
@@ -816,6 +846,10 @@ const CORE_PORTS: readonly Port[] = [
   },
   {
     slug: 'cxx',
+    packages: [
+      { id: 'workspace', name: 'tmux-workspace', source: { path: 'apps/workspace', ref: 'master' } },
+      { id: 'mcp', name: 'libtmux-mcp-server', source: { path: 'apps/mcp', ref: 'master' } },
+    ],
     logoLanguage: 'cpp',
     shortName: 'C++',
     workspaceCli: 'tmux-workspace load',
@@ -883,6 +917,12 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
   },
   {
     slug: 'swift',
+    packages: [
+      { id: 'workspace', name: 'tmux-workspace', registry: 'https://swiftpackageindex.com/libtmux/libtmux-swift',
+        source: { path: 'Sources/TmuxWorkspaceCLI', ref: 'master' } },
+      { id: 'mcp', name: 'libtmux-mcp', registry: 'https://swiftpackageindex.com/libtmux/libtmux-swift',
+        source: { path: 'Sources/LibTmuxMCP', ref: 'master' } },
+    ],
     logoLanguage: 'swift',
     shortName: 'Sw',
     workspaceCli: 'tmux-workspace load',

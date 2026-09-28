@@ -22,7 +22,7 @@ describe('Ruby port metadata', () => {
       { id: 'mcp', name: 'libtmux-mcp' },
       { id: 'workspace', name: 'libtmux-workspace' },
     ])
-    expect(ruby.packages?.every(({ registry }) => registry.startsWith('https://rubygems.org/gems/'))).toBe(true)
+    expect(ruby.packages?.every(({ registry }) => registry?.startsWith('https://rubygems.org/gems/'))).toBe(true)
     expect(Object.keys(registry.ports.ruby.packages)).toEqual([
       'libtmux',
       'libtmux-async',

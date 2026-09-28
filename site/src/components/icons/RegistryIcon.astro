@@ -19,6 +19,7 @@ import { withRoot } from '../../lib/site-root'
 
 interface Props {
   icon: IconName
+  decorative?: boolean
   class?: string
 }
 
@@ -63,19 +64,20 @@ const ICONS: Record<Exclude<IconName, 'pypi'>, { label: string; path: string }> 
   },
 }
 
-const { icon, class: className = '' } = Astro.props as Props
+const { icon, decorative = false, class: className = '' } = Astro.props as Props
 const { label, path } = icon === 'pypi' ? { label: 'PyPI', path: '' } : ICONS[icon]
 ---
 
 {icon === 'pypi' ? (
-  <img class:list={['registry-icon registry-icon--pypi', className]} data-icon="pypi" src={withRoot('/icons/pypi.svg')} width="24" height="22" alt="PyPI" />
+  <img class:list={['registry-icon registry-icon--pypi', className]} data-icon="pypi" src={withRoot('/icons/pypi.svg')} width="24" height="22" alt={decorative ? '' : label} />
 ) : <svg
   class:list={['registry-icon', className]}
   data-icon={icon}
   viewBox="0 0 24 24"
   fill="currentColor"
-  role="img"
-  aria-label={label}
+  role={decorative ? undefined : 'img'}
+  aria-label={decorative ? undefined : label}
+  aria-hidden={decorative ? 'true' : undefined}
   focusable="false"
 ><path d={path} /></svg>}
 

@@ -260,9 +260,19 @@ try {
   }
   console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
   await checkNavigation(page, base)
-  for (const path of ['ts/latest/workspace/', 'ruby/latest/mcp/']) {
+  for (const path of ['ts/latest/workspace/', 'ruby/latest/mcp/', 'cxx/latest/workspace/', 'cxx/latest/mcp/']) {
     await page.goto(`${base}/${path}`, { waitUntil: 'load' })
     const hero = page.locator('.port-hero, .product-hero').first()
+    assert(!(await hero.locator('h1').textContent()).includes('(in development)'), `${path}: development stays in the callout`)
+    const source = hero.getByRole('link', { name: 'GitHub', exact: true })
+    assert.equal(await source.count(), 1, `${path}: source button belongs to the heading`)
+    if (path.startsWith('cxx/')) {
+      const product = path.includes('/mcp/') ? 'mcp' : 'workspace'
+      assert.equal(await source.getAttribute('href'), `https://github.com/libtmux/libtmux-cxx/tree/master/apps/${product}`)
+      assert.equal(await hero.locator('.port-link').count(), 1, 'C++ source applications do not advertise a registry package')
+    } else {
+      assert.equal(await hero.locator('.port-link').count(), 2, `${path}: source and registry buttons`)
+    }
     for (const width of [1440, 600, 390]) {
       await page.setViewportSize({ width, height: 1000 })
       const logo = await hero.locator('img').first().boundingBox()

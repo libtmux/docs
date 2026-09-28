@@ -226,7 +226,10 @@ const breadcrumbs = product && port ? [
         {productBrand ? (
           <div class="product-hero">
             <img src={withRoot(productBrand.asset('logo.svg'))} width="88" height="88" alt="" class="not-prose" />
-            <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{title}</h1>
+            <div class="min-w-0">
+              <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{title}</h1>
+              <slot name="hero-links" />
+            </div>
           </div>
         ) : <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{title}</h1>}
         {/*
