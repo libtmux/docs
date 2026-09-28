@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { homedir, tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { PORTS } from '../site/src/lib/ports.ts'
+import { PORTS, productAvailable } from '../site/src/lib/ports.ts'
 import { captureProtocol } from './lib/mcp-protocol.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -78,7 +78,7 @@ const sourceRevision = (checkout, slug) => {
 // and a checkout this machine's other work left dirty is not evidence of a
 // stale snapshot. Writing a snapshot set tolerates neither, because a
 // partial or unreliable set is worse than none.
-const relevant = PORTS.filter((port) => (!only || only === port.slug) && port.productAvailability?.mcp !== 'unpublished')
+const relevant = PORTS.filter((port) => (!only || only === port.slug) && productAvailable(port, 'mcp'))
 const checkoutStates = new Map(relevant.map((port) => {
   const checkout = checkoutFor(port)
   if (!existsSync(checkout)) return [port.slug, 'missing']
@@ -100,9 +100,7 @@ if (missing.length || dirty.length) {
   process.exit(1)
 }
 
-for (const port of PORTS) {
-  if (only && only !== port.slug) continue
-  if (port.productAvailability?.mcp === 'unpublished') continue
+for (const port of relevant) {
   const checkout = checkoutFor(port)
   const revision = sourceRevision(checkout, port.slug)
   const override = process.env[`LIBTMUX_DOCS_MCP_COMMAND_${port.slug.toUpperCase()}`]

@@ -32,7 +32,7 @@ const CEILING_FILE =
   ceilingArg === -1
     ? join(root, 'scripts/type-links-ceiling.json')
     : process.argv[ceilingArg + 1]
-const { PORTS: PORT_DEFS } = await import(`file://${join(root, 'site/src/lib/ports.ts')}`)
+const { API_MODEL_PORTS: PORT_DEFS } = await import(`file://${join(root, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
 
 const args = process.argv.slice(2)

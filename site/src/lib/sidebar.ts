@@ -23,6 +23,7 @@ import { withPortRoot } from './site-root'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { localeOf, sourceIdOf } from '../i18n/resolve'
 import { docsPath, docsRoutePath } from './docs-paths'
+import { docsEntryAvailable } from './page-port-links'
 
 export interface SidebarLinkItem {
   type: 'link'
@@ -151,7 +152,7 @@ export function portAreas(port: string, version: string): SidebarGroupItem {
   return {
     type: 'group',
     label: 'Documentation',
-    items: (['topics', 'guides', 'examples', 'concepts'] as const).map((area) => ({
+    items: (p.parentLibrary ? ['guides', 'examples', 'concepts'] : ['topics', 'guides', 'examples', 'concepts']).map((area) => ({
       type: 'link',
       label: `${area[0]!.toUpperCase()}${area.slice(1)}`,
       href: portPageUrl(p, version, area),
@@ -195,6 +196,7 @@ export async function getSidebar(
     'docs',
     (entry) =>
       (entry.data.port === undefined || entry.data.port === port) &&
+      docsEntryAvailable(entry, port) &&
       entry.data.product === product &&
       localeOf(entry.id) === DEFAULT_LOCALE,
   )

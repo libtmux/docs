@@ -48,7 +48,11 @@ export const LANG_TO_PORT = {
   go: 'go',
   golang: 'go',
   java: 'java',
-  kotlin: 'java',
+  kotlin: 'kotlin',
+  scala: 'scala',
+  fsharp: 'fsharp',
+  fs: 'fsharp',
+  'f#': 'fsharp',
   csharp: 'dotnet',
   cs: 'dotnet',
   'c#': 'dotnet',
@@ -86,6 +90,10 @@ export const CHECKOUTS = {
   rs: '~/work/libtmux/libtmux-rs-docs',
   go: '~/work/libtmux/libtmux-go-docs',
   java: '~/work/libtmux/libtmux-java-docs',
+  // Wrappers quote the parent repository's native, executable examples.
+  kotlin: '~/work/libtmux/libtmux-java',
+  scala: '~/work/libtmux/libtmux-java',
+  fsharp: '~/work/libtmux/libtmux-dotnet',
   dotnet: '~/work/libtmux/libtmux-dotnet-docs',
   cxx: '~/work/libtmux/libtmux-cxx-docs',
   swift: '~/work/libtmux/libtmux-swift-docs',
@@ -144,6 +152,9 @@ export function remarkPortCode() {
 
   return (tree, file) => {
     const removals = []
+    // A language-owned guide may also show its parent's API or build files.
+    // Filter alternate examples only in the shared, cross-language prose.
+    const authoredPort = file?.data?.astro?.frontmatter?.port
 
     visit(tree, 'code', (node, _index, parent) => {
       const lang = (node.lang || '').toLowerCase()
@@ -159,7 +170,7 @@ export function remarkPortCode() {
 
       // Untagged fences and shared languages (console, json, ...) stay in
       // every build. Only a fence that belongs to a *different* port goes.
-      if (port && owner && owner !== port) removals.push([parent, node])
+      if (port && owner && owner !== port && authoredPort !== port) removals.push([parent, node])
     })
 
     for (const [parent, node] of removals) {

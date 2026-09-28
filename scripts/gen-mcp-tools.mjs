@@ -126,7 +126,7 @@ const PORTS = [
  * empty comparison instead of an error.
  */
 const portsModule = resolve(dirname(dirname(fileURLToPath(import.meta.url))), 'site/src/lib/ports.ts')
-const { PORTS: PORT_DEFS } = await import(`file://${portsModule}`)
+const { PORTS: PORT_DEFS, productAvailable } = await import(`file://${portsModule}`)
 const portBySlug = Object.fromEntries(PORT_DEFS.map((port) => [port.slug, port]))
 for (const port of PORTS) {
   const definition = portBySlug[port.slug]
@@ -138,7 +138,7 @@ for (const port of PORTS) {
   if (port.serverDir) port.serverDir = join(port.checkout, 'src/libtmux_mcp')
 }
 const declaredSlugs = new Set(PORT_DEFS
-  .filter((port) => port.productAvailability?.mcp !== 'unpublished')
+  .filter((port) => productAvailable(port, 'mcp'))
   .map((port) => port.slug))
 const coveredSlugs = new Set(PORTS.map((port) => port.slug))
 const absentHere = [...declaredSlugs].filter((slug) => !coveredSlugs.has(slug))

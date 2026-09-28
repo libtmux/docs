@@ -40,12 +40,13 @@ function isPrerelease(version) {
  * The dispatches one publish.yml run makes.
  *
  * @param {{ ports: string, ref: string, version?: string, versionKind?: string, isDefault?: boolean, resolvesTo?: string }} inputs
- * @param {{ slug: string, repo: string, tagPrefix?: string, tagGrammar: string }[]} catalog
+ * @param {{ slug: string, repo: string, tagPrefix?: string, tagGrammar: string, parentLibrary?: { slug: string } }[]} catalog
  * @param {(repo: string) => { defaultBranch: string, tags: string[] }} lookup
  * @param {{ releaseTag: Function, newestPublishedTag: Function }} versions
  */
 export function plan(inputs, catalog, lookup, versions) {
   const dispatchable = catalog.filter((port) => port.repo.startsWith('libtmux/'))
+  const familyParents = new Set(catalog.flatMap((port) => port.parentLibrary ? [port.parentLibrary.slug] : []))
   const wanted = inputs.ports.trim() === 'all'
     ? dispatchable
     : inputs.ports.split(',').map((slug) => slug.trim()).filter(Boolean).map((slug) => {
@@ -64,9 +65,12 @@ export function plan(inputs, catalog, lookup, versions) {
   }
 
   const entries = []
+  const sources = new Map()
   for (const port of wanted) {
-    const { defaultBranch, tags } = lookup(port.repo)
-    const base = { port: port.slug, repo: port.repo, repoName: port.repo.split('/')[1], dispatchRef: defaultBranch }
+    if (!sources.has(port.repo)) sources.set(port.repo, lookup(port.repo))
+    const { defaultBranch, tags } = sources.get(port.repo)
+    const base = { port: port.slug, repo: port.repo, repoName: port.repo.split('/')[1], dispatchRef: defaultBranch,
+      language: port.parentLibrary || familyParents.has(port.slug) ? port.slug : '' }
     const releases = tags.filter((tag) => versions.releaseTag(tag, port) !== null)
     if (ref === 'latest') {
       const stable = releases.some((tag) => !isPrerelease(versionOf(tag, port)))

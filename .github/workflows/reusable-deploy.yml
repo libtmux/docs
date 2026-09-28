@@ -165,7 +165,7 @@ jobs:
             echo "::error::path-prefix '$p' must be non-empty, unrooted, and contain no '..' segment" >&2
             exit 1
           fi
-          reserved=(py ruby lua ts rs go java dotnet cxx swift manifest _shell)
+          reserved=(py ruby lua ts rs go java kotlin scala dotnet fsharp cxx swift manifest _shell)
           for r in "${reserved[@]}"; do
             if [[ "$p" == "$r" ]]; then
               echo "::error::path-prefix '$p' is a bare reserved top-level name — qualify it, e.g. '$r/stable'" >&2
@@ -174,7 +174,7 @@ jobs:
           done
           if [[ -n "${PORT_IN:-}" ]]; then
             case "$PORT_IN" in
-              py|ruby|lua|ts|rs|go|java|dotnet|cxx|swift) ;;
+              py|ruby|lua|ts|rs|go|java|kotlin|scala|dotnet|fsharp|cxx|swift) ;;
               *) echo "::error::unknown port '$PORT_IN'" >&2; exit 1 ;;
             esac
             if [[ -z "$VERSION_IN" || "$VERSION_IN" == */* || "$p" != "$PORT_IN/$VERSION_IN" ]]; then

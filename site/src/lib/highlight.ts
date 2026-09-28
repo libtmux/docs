@@ -29,7 +29,7 @@ const LANGS = [
   // fragment, a Package.swift dependency and a CMakeLists block. Three of the
   // eight ports cannot be installed from a command line at all, so without
   // these their only install instructions render as flat grey.
-  'kotlin', 'xml', 'swift', 'cmake', 'toml',
+  'kotlin', 'scala', 'fsharp', 'xml', 'swift', 'cmake', 'toml',
 ] as const
 
 /**
@@ -107,7 +107,7 @@ export async function highlight(code: string, lang: string): Promise<string | un
  * there.
  */
 const EC_LANGS = new Set([
-  'python', 'ruby', 'lua', 'rust', 'ts', 'tsx', 'js', 'jsx', 'java', 'kotlin', 'swift',
+  'python', 'ruby', 'lua', 'rust', 'ts', 'tsx', 'js', 'jsx', 'java', 'kotlin', 'scala', 'fsharp', 'swift',
   'csharp', 'cpp', 'c', 'go', 'bash', 'shell', 'console', 'json', 'yaml',
   'toml', 'xml', 'diff', 'text',
 ])

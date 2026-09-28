@@ -47,6 +47,16 @@ describe('staged port guide links', () => {
     expect(result).toContain('[query](../query/#filters)')
   })
 
+  it('rewrites Scala reference links across lines without changing external links', () => {
+    const result = rewriteLinks(
+      '[query]: query.md#filters\n[source]:\n  ../src/Server.scala\n[external]: https://example.org/\n',
+      'docs/runtime.md', 'guides/source/runtime', routes, 'libtmux/libtmux-java', 'abc123',
+    )
+    expect(result).toContain('[query]: ../query/#filters')
+    expect(result).toContain('[source]: https://github.com/libtmux/libtmux-java/blob/abc123/src/Server.scala')
+    expect(result).toContain('[external]: https://example.org/')
+  })
+
   it('stages canonical routes with aliases and reader domain metadata', () => {
     const guides = Object.keys(stagedRoutesFor('ruby')).map((path) => ({ path, content: '# Guide\n\nbody\n' }))
     const files = stagedPortGuides('ruby', {

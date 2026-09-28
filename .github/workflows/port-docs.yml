@@ -28,6 +28,11 @@ on:
         description: Port slug from site/src/lib/ports.ts, e.g. 'rs'.
         required: true
         type: string
+      include-wrappers:
+        description: Build this library and its wrapper languages from the same source revision.
+        required: false
+        type: boolean
+        default: false
       tag-prefix:
         description: >
           Stripped from a release tag to give its version slug, e.g.
@@ -64,7 +69,7 @@ on:
         default: false
     outputs:
       matrix:
-        description: The versions built, as a strategy matrix for reusable-deploy.yml.
+        description: The port and version identities built, as a strategy matrix for reusable-deploy.yml.
         value: ${{ jobs.identity.outputs.matrix }}
       should-publish:
         description: "'true' when any built version is to be published."
@@ -78,16 +83,20 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       source-ref: ${{ steps.identity.outputs.source_ref }}
-      matrix: ${{ steps.identity.outputs.matrix }}
+      matrix: ${{ steps.family.outputs.matrix }}
       should-publish: ${{ steps.identity.outputs.should_publish }}
     steps:
       - uses: actions/checkout@v7
         with:
           repository: ${{ job.workflow_repository }}
           ref: ${{ job.workflow_sha }}
-          sparse-checkout: scripts/port-docs-identity.sh
-          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            scripts
+            site/src/lib
           persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
       - id: identity
         env:
           EVENT: ${{ github.event_name }}
@@ -108,6 +117,13 @@ jobs:
           TAGS=$(git ls-remote --tags --refs "$REPOSITORY_URL" | sed 's#.*refs/tags/##')
           export TAGS
           bash scripts/port-docs-identity.sh
+      - id: family
+        env:
+          IDENTITY_MATRIX: ${{ steps.identity.outputs.matrix }}
+          PORT: ${{ inputs.port }}
+          CALLER_REPOSITORY: ${{ github.repository }}
+          INCLUDE_WRAPPERS: ${{ inputs.include-wrappers }}
+        run: node scripts/port-docs-matrix.mjs
 
   build:
     needs: identity
@@ -157,7 +173,7 @@ jobs:
       # doxygen serves gen-api-model's own run over the workspace and MCP
       # headers.
       - name: Generate the Doxygen XML
-        if: inputs.port == 'cxx'
+        if: matrix.port == 'cxx'
         working-directory: port
         run: |
           set -euo pipefail
@@ -170,12 +186,12 @@ jobs:
       # for the same reason and with the same freshness check. The resolved
       # versions are forced so the build neither re-resolves nor rewrites
       # Package.resolved.
-      - if: inputs.port == 'swift'
+      - if: matrix.port == 'swift'
         uses: swift-actions/setup-swift@v2
         with:
           swift-version: '6.2'
       - name: Emit the Swift symbol graph
-        if: inputs.port == 'swift'
+        if: matrix.port == 'swift'
         working-directory: port
         run: >-
           swift build --force-resolved-versions
@@ -229,7 +245,7 @@ jobs:
       - name: Build this port's tree
         working-directory: docs
         env:
-          LIBTMUX_DOCS_PORT: ${{ inputs.port }}
+          LIBTMUX_DOCS_PORT: ${{ matrix.port }}
           LIBTMUX_DOCS_VERSION: ${{ matrix.version }}
           LIBTMUX_DOCS_VERSION_KIND: ${{ matrix.kind }}
           LIBTMUX_DOCS_IS_DEFAULT: ${{ matrix.isDefault }}
@@ -262,7 +278,7 @@ jobs:
       # <locale>/<port>/<version>.
       - uses: actions/upload-artifact@v7
         with:
-          name: docs-${{ inputs.port }}-${{ matrix.version }}
-          path: docs/_site/en/${{ inputs.port }}/${{ matrix.version }}
+          name: docs-${{ matrix.port }}-${{ matrix.version }}
+          path: docs/_site/en/${{ matrix.port }}/${{ matrix.version }}
           if-no-files-found: error
           retention-days: 1

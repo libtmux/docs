@@ -73,6 +73,36 @@ In the new worktree, on `docs-site`:
   notes in `notes/research/04-versioning.md` §5 for the pattern used by each
   existing skinned generator.
 
+### Wrapper libraries
+
+Kotlin and Scala share Java's repository and release version. F# shares
+.NET's. Their `parentLibrary` entries in `ports.ts` keep source and publishing
+ownership together while giving each package its own routes, artwork,
+installation commands, and navigation position. They have no companion
+MCP server or workspace CLI.
+
+For a wrapper with `referenceKind: 'guide'`, keep native API links and authored
+guides in `port-documentation.ts`. Do not add an empty shared API model.
+`stage-port-docs.mjs` stages those guides and records their source revision.
+Ordinary shell builds use the committed guide caches; source-bound builds read
+the selected checkout. Refresh a wrapper's cache after verifying its native
+documentation and examples:
+
+```console
+$ node scripts/stage-port-docs.mjs --port kotlin --refresh-cache
+```
+
+Use `LIBTMUX_DOCS_CHECKOUT_KOTLIN` to select a checkout other than the configured
+worktree. Scala and F# have corresponding checkout overrides. Keep the source
+examples and the guide cache on the same reviewed revision.
+
+Parent callers opt into `include-wrappers: true` in `port-docs.yml`. Use
+`matrix.port` in the publish job's port, path prefix, artifact name and
+concurrency group; each matrix entry carries its own version identity. A
+dispatch can select a wrapper directly to rebuild only that language. The
+workflow checks that the calling repository owns the selected library.
+Its publisher role must grant that family's prefixes and manifest fragments.
+
 ## 4. Add `versions.json` entries
 
 `versions.json` is one runtime file at each locale root — see

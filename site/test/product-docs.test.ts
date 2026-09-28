@@ -72,7 +72,7 @@ function sectionsFor(port: string, product: ProductPage['product']): string[] {
 
 function pages(): ProductPage[] {
   const versions = manifest()
-  return PORTS.flatMap((port) => {
+  return PORTS.filter((port) => !port.parentLibrary).flatMap((port) => {
     const supported = versions.ports[port.slug]?.filter((entry) => entry.supported) ?? []
     expect(supported.length, `${port.slug} has assembled supported versions`).toBeGreaterThan(0)
     return supported.flatMap(({ slug: version }) => products.flatMap((product) =>
@@ -175,7 +175,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it.each(PORTS.map((port) => port.slug))('%s exposes products from latest homes and core navigation', async (port) => {
+  it.each(PORTS.filter((port) => !port.parentLibrary).map((port) => port.slug))('%s exposes products from latest homes and core navigation', async (port) => {
     for (const section of ['', 'guides/', 'topics/']) {
       const path = `${port}/latest/${section}`
       await inspect(path, (document) => {
@@ -238,9 +238,12 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(headings1, page.path).toHaveLength(1)
       expect(text(headings1[0]!), page.path).toContain(page.name)
       expect(tags(article!, 'p').length, `${page.path} substantive prose`).toBeGreaterThan(2)
-      for (const block of tags(article!, 'pre').filter((tag) => attribute(tag, 'data-language'))) {
-        const owner = LANG_TO_PORT[attribute(block, 'data-language')!.toLowerCase()]
-        if (owner) expect(owner, `${page.path} foreign language example`).toBe(page.port)
+      for (const [block] of article!.matchAll(/<figure\b[^>]*>[\s\S]*?<\/figure>|<pre\b[^>]*>[\s\S]*?<\/pre>/gi)) {
+        const language = attribute(tags(block, 'pre')[0] ?? '', 'data-language')?.toLowerCase()
+        const owner = language && LANG_TO_PORT[language]
+        const caption = block.match(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/i)?.[1] ?? ''
+        const buildScript = page.port === 'java' && language === 'kotlin' && text(caption) === 'build.gradle.kts'
+        if (owner && !buildScript) expect(owner, `${page.path} foreign language example`).toBe(page.port)
       }
       const headings = [...article!.matchAll(/<h[23]\b[^>]*>([\s\S]*?)<\/h[23]>/gi)].map((match) => text(match[1]!))
       for (const other of PORTS.filter((port) => port.slug !== page.port)) {
@@ -391,7 +394,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     const defaults = manifest().defaultVersion
     for (const page of pages()) await inspect(page.path, (document) => {
       const links = [...document.querySelectorAll('[data-page-port-switcher] a[href]')]
-      const available = PORTS.filter((port) => sectionsFor(port.slug, page.product).includes(page.section))
+      const available = PORTS.filter((port) => !port.parentLibrary && sectionsFor(port.slug, page.product).includes(page.section))
       expect(links.length, `${page.path} port counterparts`).toBe(available.length)
       for (const port of PORTS) {
         const version = port.slug === page.port ? page.version : defaults[port.slug]
@@ -483,6 +486,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       const exported = JSON.parse(read(`${root}docs.json`)) as DocsManifest
       for (const port of PORTS) {
         const advertised = exported.ports.find((entry) => entry.slug === port.slug)!
+        if (port.parentLibrary) {
+          expect(advertised.products, `${port.slug} is library-only`).toEqual([])
+          continue
+        }
         for (const product of products) {
           const metadata = advertised.products.find((entry) => entry.slug === product)!
           expect(metadata.availability, `${root}${port.slug} ${product} availability`).toBe(productAvailable(port, product) ? 'available' : 'unpublished')
