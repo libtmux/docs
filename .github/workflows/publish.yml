@@ -10,8 +10,9 @@ name: publish
 # default) shows exactly what would be published. A real run dispatches each
 # port's own docs.yml, which builds and publishes through the reviewed
 # reusable workflows under that port's own role; this workflow never touches
-# the bucket. Dispatching another repository's workflow needs a token that
-# can reach it, which only the libtmux-docs-publisher GitHub App provides.
+# the bucket. GITHUB_TOKEN cannot dispatch another repository's workflow, so
+# a real run needs the LIBTMUX_DOCS_DISPATCH_TOKEN secret (or the optional
+# libtmux-docs-publisher App).
 
 on:
   workflow_dispatch:
@@ -93,15 +94,10 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
-      - name: Require the publisher App
-        env:
-          APP_ID: ${{ vars.LIBTMUX_DOCS_APP_ID }}
-        run: |
-          [[ -n "$APP_ID" ]] || {
-            echo "::error::The libtmux-docs-publisher GitHub App is not configured: set the LIBTMUX_DOCS_APP_ID variable and LIBTMUX_DOCS_APP_KEY secret for this repository (docs/ci.md)."
-            exit 1
-          }
-      - id: token
+      # A fine-grained token with Actions: read and write on the port
+      # repositories, or the libtmux-docs-publisher App when it is set up.
+      - id: app
+        if: vars.LIBTMUX_DOCS_APP_ID != ''
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ vars.LIBTMUX_DOCS_APP_ID }}
@@ -113,7 +109,7 @@ jobs:
       # run so a failed publish fails this job too.
       - name: Publish ${{ matrix.port }} ${{ matrix.version }}
         env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
+          GH_TOKEN: ${{ steps.app.outputs.token || secrets.LIBTMUX_DOCS_DISPATCH_TOKEN }}
           REPO: ${{ matrix.repo }}
           DISPATCH_REF: ${{ matrix.dispatchRef }}
           SOURCE_REF: ${{ matrix.sourceRef }}
@@ -123,6 +119,10 @@ jobs:
           RESOLVES_TO: ${{ matrix.resolvesTo }}
         run: |
           set -euo pipefail
+          [[ -n "$GH_TOKEN" ]] || {
+            echo "::error::No dispatch credential: set the LIBTMUX_DOCS_DISPATCH_TOKEN secret on this repository, a fine-grained token with Actions: read and write on the port repositories (docs/ci.md)." >&2
+            exit 1
+          }
           url=$(gh workflow run docs.yml --repo "$REPO" --ref "$DISPATCH_REF" \
             -f source-ref="$SOURCE_REF" -f version="$VERSION" -f version-kind="$KIND" \
             -f is-default="$IS_DEFAULT" -f resolves-to="$RESOLVES_TO" -f publish=true)

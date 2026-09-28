@@ -73,6 +73,6 @@ describe('publish workflow', () => {
 
   it('fails a leg when the port publish it started fails', () => {
     expect(workflow).toContain('gh run watch "$run_id" --repo "$REPO" --exit-status')
-    expect(workflow).toContain('Require the publisher App')
+    expect(workflow).toContain('::error::No dispatch credential')
   })
 })

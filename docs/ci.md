@@ -229,10 +229,12 @@ $ gh workflow run publish.yml \
     -f dry-run=false
 ```
 
-A real run needs the `libtmux-docs-publisher` GitHub App, installed on the
-port repositories, with its ID in the `LIBTMUX_DOCS_APP_ID` variable and its
-key in the `LIBTMUX_DOCS_APP_KEY` secret: `GITHUB_TOKEN` cannot dispatch a
-workflow in another repository. After the ports publish, it redeploys the
+A real run needs a credential that can dispatch a workflow in another
+repository, which `GITHUB_TOKEN` cannot: the `LIBTMUX_DOCS_DISPATCH_TOKEN`
+secret on this repository, a fine-grained token with Actions: read and
+write on the port repositories. A `libtmux-docs-publisher` GitHub App works
+instead, with its ID in the `LIBTMUX_DOCS_APP_ID` variable and its key in
+the `LIBTMUX_DOCS_APP_KEY` secret. After the ports publish, it redeploys the
 shell so `versions.json` lists what they published. py is not dispatchable:
 its workflow lives in tmux-python/libtmux and takes no inputs.
 
