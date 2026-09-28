@@ -229,6 +229,11 @@ $ gh workflow run publish.yml \
     -f dry-run=false
 ```
 
+Kotlin and Scala dispatch through the Java repository; F# dispatches through
+.NET. The dispatcher selects one language per leg, so `ports=kotlin` builds
+only Kotlin and `ports=all` publishes each family member once. Siblings
+share one repository lookup for their default branch and release tags.
+
 A real run needs a credential that can dispatch a workflow in another
 repository, which `GITHUB_TOKEN` cannot: the `LIBTMUX_DOCS_DISPATCH_TOKEN`
 secret on this repository, a fine-grained token with Actions: read and

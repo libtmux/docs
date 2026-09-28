@@ -1,4 +1,7 @@
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { plan } from '../../scripts/publish-plan.mjs'
 import * as versions from '../src/lib/versions'
@@ -48,6 +51,33 @@ describe('publish plan', () => {
       .toEqual([['go', 'v1.9.0', 'stable', 'alias', true, 'v1.9.0']])
   })
 
+  it('selects each parent and wrapper once through its owning repository', () => {
+    const family = [
+      { slug: 'java', repo: 'libtmux/libtmux-java', tagGrammar: 'semver' },
+      { slug: 'kotlin', repo: 'libtmux/libtmux-java', tagGrammar: 'semver', parentLibrary: { slug: 'java' } },
+      { slug: 'scala', repo: 'libtmux/libtmux-java', tagGrammar: 'semver', parentLibrary: { slug: 'java' } },
+      { slug: 'dotnet', repo: 'libtmux/libtmux-dotnet', tagGrammar: 'semver' },
+      { slug: 'fsharp', repo: 'libtmux/libtmux-dotnet', tagGrammar: 'semver', parentLibrary: { slug: 'dotnet' } },
+    ]
+    const lookups: string[] = []
+    const entries = plan({ ports: 'all', ref: 'latest' }, [...catalog, ...family], (repo) => {
+      lookups.push(repo)
+      return lookup(repo)
+    }, versions)
+    expect(lookups).toHaveLength(5)
+    expect(new Set(lookups).size).toBe(5)
+    expect(entries.map((entry) => [entry.port, entry.language])).toEqual([
+      ['rs', ''], ['go', ''], ['swift', ''],
+      ['java', 'java'], ['kotlin', 'kotlin'], ['scala', 'scala'], ['dotnet', 'dotnet'], ['fsharp', 'fsharp'],
+    ])
+    expect(plan({ ports: 'kotlin,fsharp', ref: 'latest' }, family, lookup, versions)).toMatchObject([
+      { port: 'kotlin', repo: 'libtmux/libtmux-java', language: 'kotlin' },
+      { port: 'fsharp', repo: 'libtmux/libtmux-dotnet', language: 'fsharp' },
+    ])
+    expect(plan({ ports: 'scala', ref: 'v0.1.0', version: 'v0.1.0', versionKind: 'tag' }, family, lookup, versions))
+      .toMatchObject([{ language: 'scala', sourceRef: 'v0.1.0' }])
+  })
+
   it('refuses what it cannot dispatch or publish', () => {
     const refusals: [Record<string, unknown>, string][] = [
       [{ ports: 'py' }, 'py has no dispatchable docs workflow'],
@@ -69,6 +99,32 @@ describe('publish workflow', () => {
     expect(planJob).not.toMatch(/secrets\.|vars\./)
     expect(workflow).toContain("if: ${{ !inputs.dry-run && needs.plan.outputs.count != '0' }}")
     expect(workflow).toMatch(/dry-run:[\s\S]*?default: true/)
+  })
+
+  it.each(['', 'java', 'kotlin', 'scala', 'dotnet', 'fsharp'])('dispatches the selected language %j only when supported', (language) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-publish-dispatch-'))
+    try {
+      const calls = join(directory, 'calls')
+      writeFileSync(join(directory, 'gh'), `#!/usr/bin/env bash
+printf '%s\\n' "$@" >> "$CALLS"
+if [[ "$1" == workflow ]]; then printf 'https://github.com/example/actions/runs/123\\n'; fi
+`, { mode: 0o755 })
+      const body = /- name: Publish[^\n]*\n[\s\S]*?        run: \|\n([\s\S]*?)(?=\n  # The shell)/.exec(workflow)![1]
+        .replace(/^ {10}/gm, '')
+      execFileSync('bash', ['-c', body], { env: {
+        ...process.env, PATH: `${directory}:${process.env.PATH}`, CALLS: calls, GH_TOKEN: 'test',
+        GITHUB_STEP_SUMMARY: join(directory, 'summary'), REPO: 'libtmux/libtmux-java',
+        DISPATCH_REF: 'master', SOURCE_REF: 'reviewed-ref', VERSION: 'latest', KIND: 'trunk',
+        IS_DEFAULT: 'true', RESOLVES_TO: '', LANGUAGE: language,
+      } })
+      const args = readFileSync(calls, 'utf8').trim().split('\n')
+      expect(args.filter((arg) => arg.startsWith('language='))).toEqual(language ? [`language=${language}`] : [])
+      expect(args).toContain('source-ref=reviewed-ref')
+      expect(args).toContain('publish=true')
+      expect(args.slice(-8)).toEqual(['run', 'watch', '123', '--repo', 'libtmux/libtmux-java', '--exit-status', '--interval', '30'])
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
   })
 
   it('fails a leg when the port publish it started fails', () => {
