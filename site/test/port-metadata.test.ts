@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import registry from '../src/data/registry.json'
-import { PORT_BY_SLUG, PORTS, hasPackageInstalls } from '../src/lib/ports'
+import { PORT_BY_SLUG, PORTS, hasPackageInstalls, productAvailable } from '../src/lib/ports'
 
 describe('Ruby port metadata', () => {
   it('describes the core and companion packages independently', () => {
@@ -32,8 +32,10 @@ describe('Ruby port metadata', () => {
     expect(Object.values(registry.ports.ruby.packages).every((entry) => entry.version === '0.1.0.alpha.1')).toBe(true)
   })
 
-  it('offers the workspace install picker only for a published companion package', () => {
-    expect(PORTS.filter((port) => hasPackageInstalls(port, 'workspace')).map((port) => port.slug)).toEqual(['ruby', 'ts', 'go', 'dotnet'])
+  it('offers install or build instructions for each available workspace app', () => {
+    for (const port of PORTS) {
+      expect(hasPackageInstalls(port, 'workspace'), port.slug).toBe(productAvailable(port, 'workspace'))
+    }
   })
 })
 
