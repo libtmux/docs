@@ -152,6 +152,7 @@
   // duplicated (inline scripts can't be imported from).
   window.__applyTheme = applyTheme;
   window.__applyPackagePort = applyPackagePort;
+  window.__applyCooldown = applyCooldown;
   window.__applyPrereleaseNotice = applyPrereleaseNotice;
 
   // Listen for system preference changes
@@ -170,15 +171,17 @@
 </script>
 
 <script>
-  // IMPORTANT: ClientRouter (Astro's page transition system) doesn't re-execute inline scripts
-  // after navigation to prevent duplicate execution. We must listen for the astro:after-swap
-  // event to re-apply theme settings when navigating between pages.
-  // This script is NOT inline, so it's bundled and persists across navigations.
-  // The implementation lives in the inline FOUC-prevention script above, which
-  // exposes it as window.__applyTheme; window persists across swaps.
+  // Carry the current choice when storage is blocked, then resolve saved
+  // preferences against the new page's attributes before its first paint.
+  document.addEventListener('astro:before-swap', (event) => {
+    event.newDocument.documentElement.setAttribute('data-color-scheme', document.documentElement.getAttribute('data-color-scheme') ?? 'system')
+  })
   document.addEventListener('astro:after-swap', () => {
     window.__applyTheme?.()
-    window.__applyPackagePort?.()
-    window.__applyPrereleaseNotice?.()
+    try {
+      window.__applyPackagePort?.()
+      window.__applyCooldown?.()
+      window.__applyPrereleaseNotice?.()
+    } catch { /* Storage may be disabled. */ }
   })
 </script>

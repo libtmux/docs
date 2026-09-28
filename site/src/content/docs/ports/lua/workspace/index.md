@@ -1,5 +1,5 @@
 ---
-title: Workspace Manager for Lua is not published
+title: tmux workspace manager for Lua is not published
 description: The Lua repository contains a workspace scaffold, not a loader or supported builder API.
 port: lua
 product: workspace

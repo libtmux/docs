@@ -22,7 +22,7 @@ describe('port documentation domains', () => {
       { label: 'Library', items: [{ type: 'link', label: 'Core library', href: '/ruby/latest/' }] },
       { label: 'Companion packages', items: [{ type: 'link', label: 'Async', href: '/ruby/latest/guides/async/' }] },
       {
-        label: 'Products',
+        label: 'Apps',
         items: [
           { type: 'link', label: 'MCP', href: '/ruby/latest/mcp/' },
           { type: 'link', label: 'Workspace Manager', href: '/ruby/latest/workspace/' },

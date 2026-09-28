@@ -1,5 +1,5 @@
 ---
-title: MCP for Python
+title: tmux MCP for Python
 description: Expose tmux tools, resources, and prompts through Python's libtmux-mcp server.
 port: py
 product: mcp

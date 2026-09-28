@@ -1,5 +1,5 @@
 ---
-title: MCP for C++
+title: tmux MCP for C++
 description: Build the native C++ MCP executable and use its platform-specific tmux tool catalog.
 port: cxx
 product: mcp

@@ -58,9 +58,9 @@ describeIfBuilt('code tabs', () => {
 
     /*
      * `window.eval` runs a classic script, so a bundle using module-only
-     * syntax throws before any of it executes. The search panel's chunk does:
-     * it reads `import.meta.env` and imports Pagefind's bundle dynamically,
-     * because that bundle only exists after the build.
+     * syntax throws before any of it executes. ClientRouter has static imports;
+     * the search panel reads `import.meta.env` and loads Pagefind dynamically.
+     * The browser checks exercise those modules.
      *
      * Skipping those is safe here — this file tests the code-tab component,
      * and the assertions below fail if its own script did not run — and it is
@@ -68,7 +68,8 @@ describeIfBuilt('code tabs', () => {
      * by the script under test.
      */
     const isModuleOnly = (source: string) =>
-      /\bimport\.meta\b/.test(source) || /\bimport\s*\(/.test(source)
+      /\bimport\.meta\b/.test(source) || /\bimport\s*\(/.test(source) ||
+      /\bimport\b\s*(?:[\w*{]|['"])/.test(source) || /\bexport\s/.test(source)
 
     for (const script of [...document.querySelectorAll('script')]) {
       if (!isJs(script)) continue

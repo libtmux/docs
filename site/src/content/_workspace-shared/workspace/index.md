@@ -1,5 +1,5 @@
 ---
-title: "Workspace Manager overview"
+title: "tmux workspace manager overview"
 description: "Workspace manager overview."
 product: workspace
 sidebar:
@@ -27,28 +27,28 @@ cards:
     body: The workspace library, for building sessions from code.
 ports:
   py:
-    title: "Workspace Manager for Python"
+    title: "tmux workspace manager for Python"
     description: "Create, load, and export tmux workspaces with tmuxp."
   ts:
-    title: "Workspace Manager for TypeScript (in development)"
+    title: "tmux workspace manager for TypeScript"
     description: "Run or install the prerelease TypeScript tmux-workspace CLI from npm; implementation coverage remains partial."
   rs:
-    title: "Workspace Manager for Rust (in development)"
+    title: "tmux workspace manager for Rust"
     description: "Build the local Rust tmux-workspace CLI; implementation coverage remains partial and unreleased."
   go:
-    title: "Workspace Manager for Go (in development)"
+    title: "tmux workspace manager for Go"
     description: "Build the local Go tmux-workspace CLI; implementation coverage remains partial and unreleased."
   java:
-    title: "Workspace Manager for Java (in development)"
+    title: "tmux workspace manager for Java"
     description: "Build the local Java tmux-workspace CLI; implementation coverage remains partial and unreleased."
   dotnet:
-    title: "Workspace Manager for .NET (in development)"
+    title: "tmux workspace manager for .NET"
     description: "Install the prerelease .NET tmux-workspace CLI from NuGet; implementation coverage remains partial."
   cxx:
-    title: "Workspace Manager for C++ (in development)"
+    title: "tmux workspace manager for C++"
     description: "Build the local C++ tmux-workspace CLI; implementation coverage remains partial and unreleased."
   swift:
-    title: "Workspace Manager for Swift (in development)"
+    title: "tmux workspace manager for Swift"
     description: "Build the local Swift tmux-workspace CLI; implementation coverage remains partial and unreleased."
 ---
 <!-- port:py -->

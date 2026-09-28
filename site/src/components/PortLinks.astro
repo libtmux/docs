@@ -1,57 +1,45 @@
 ---
 import RegistryIcon from './icons/RegistryIcon.astro'
-import type { Port } from '../lib/ports'
+import type { DocProduct, Port } from '../lib/ports'
 
-/**
- * Where a port's code and its package live.
- *
- * A port page named its package and then offered no way to reach it: the
- * repository was reachable only from the site footer, which points at the
- * `libtmux` organisation rather than at this language's own repository, and
- * the registry was not linked anywhere at all. A reader who wanted to check a
- * version, read the changelog or open an issue had to guess the URL.
- *
- * The repository is always present, because every port has one. The registry
- * is present where there is one to link — C++ resolves from this project's own
- * vcpkg git registry and Swift from the git URL, so for those two the
- * repository link already is the distribution link, and a second chip
- * repeating it would say less than its absence does.
- *
- * The marks are `currentColor` until the link is hovered or focused; see
- * `icons/RegistryIcon.astro` for why the brand colour arrives then rather
- * than always.
- */
 interface Props {
   port: Port
+  product?: DocProduct
+  version?: string
+  revision?: string
   class?: string
 }
 
-const { port, class: className = '' } = Astro.props as Props
+const { port, product, version = 'latest', revision, class: className = '' } = Astro.props as Props
+const pkg = product ? port.packages?.find((entry) => entry.id === product) : undefined
+const source = pkg?.source
+const repo = source?.repo ?? port.repo
+// An app in a separate repository has its own release history.
+const taggedVersion = /^v?\d/.test(version) && repo === port.repo
+  ? `${port.tagPrefix ?? ''}${version}` : undefined
+const ref = version === 'latest' ? source?.ref : taggedVersion ?? revision ?? source?.ref
+const sourceUrl = source ? `https://github.com/${repo}/tree/${ref}/${source.path}` : `https://github.com/${repo}`
+const registry = product
+  ? pkg?.registry && port.registry ? { ...port.registry, url: pkg.registry } : undefined
+  : port.registry
 
-/*
- * The ecosystem host, unless it is already the registry.
- *
- * Go's are the same place: pkg.go.dev is both where the module resolves from
- * and where its documentation lives, so listing both put two identical chips
- * side by side. Compared by URL rather than by name, because that is what a
- * duplicate link actually is.
- */
+// Go's registry and reference host are the same destination.
 const ecosystem =
-  port.ecosystemHost && port.ecosystemHost.url !== port.registry?.url
+  !product && port.ecosystemHost && port.ecosystemHost.url !== registry?.url
     ? port.ecosystemHost
     : undefined
 ---
 
 <nav class:list={['port-links', className]} aria-label={`${port.name} package and source`}>
-  <a class="port-link" href={`https://github.com/${port.repo}`} rel="noopener">
-    <RegistryIcon icon="github" />
-    <span>{port.repo}</span>
+  <a class="port-link" href={sourceUrl} title={source ? `${repo}/${source.path} (${ref})` : undefined} rel="noopener">
+    <RegistryIcon icon="github" decorative />
+    <span>{product ? 'GitHub' : port.repo}</span>
   </a>
   {
-    port.registry && (
-      <a class="port-link" href={port.registry.url} rel="noopener">
-        <RegistryIcon icon={port.registry.icon} />
-        <span>{port.registry.name}</span>
+    registry && (
+      <a class="port-link" href={registry.url} rel="noopener">
+        <RegistryIcon icon={registry.icon} decorative />
+        <span>{registry.name}</span>
       </a>
     )
   }

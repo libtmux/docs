@@ -3,6 +3,7 @@ import '../styles/global.css'
 import { buildLocale } from '../i18n/resolve'
 import { localeSourcePath } from '../i18n/locales'
 import { Font } from 'astro:assets'
+import { ClientRouter } from 'astro:transitions'
 import BackToTop from '../components/BackToTop.astro'
 import Seo from '../components/Seo.astro'
 import BrandIcons from '../components/BrandIcons.astro'
@@ -162,10 +163,11 @@ const githubRepo = repository
 ---
 
 <!doctype html>
-<html lang={locale} data-theme={brand.language} data-brand={brand.language} data-brand-variant={brand.variant}>
+<html lang={locale} data-theme={brand.language} data-brand={brand.language} data-brand-variant={brand.variant} data-shell-base={buildBase}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <ClientRouter fallback="swap" />
     <BrandIcons portSlug={navPort} pagePath={pagePath} />
     {/*
       Preload faces used on initial pages, as measured by check-fonts.mjs.
@@ -272,3 +274,17 @@ const githubRepo = repository
     <SearchModal />
   </body>
 </html>
+
+<script>
+  // Port/version trees have independently built scripts. Loading a second
+  // bundle into the same document would keep both sets of global listeners.
+  document.addEventListener('astro:before-preparation', (event) => {
+    const load = event.loader
+    event.loader = async () => {
+      await load()
+      if (event.newDocument.documentElement.dataset.shellBase !== document.documentElement.dataset.shellBase) {
+        event.preventDefault()
+      }
+    }
+  })
+</script>

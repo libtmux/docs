@@ -1,6 +1,8 @@
 ---
 import { ALL_TRANSLATED } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
+import PageToolbar from '../components/PageToolbar.astro'
+import { withRoot } from '../lib/site-root'
 import { PORTS, portHomeUrl } from '../lib/ports'
 import parityData from '../data/parity.json'
 import { defaultVersionFor } from '../lib/versions'
@@ -121,15 +123,18 @@ function verifiedSummary(label: string, port: PortEntry): string {
   return testVerified === total ? `all ${total} ${label} rows` : `${testVerified} of ${total} ${label} rows`
 }
 const dotnetGoVerifiedSummary = `${verifiedSummary('.NET', parity.ports.dotnet)} and ${verifiedSummary('Go', parity.ports.go)}`
+const breadcrumbs = [{ name: 'libtmux', url: withRoot('/') }, { name: 'Parity', url: withRoot('/parity/') }]
 ---
 
 <BaseLayout
   title="Parity"
+  breadcrumbs={breadcrumbs}
   description="What each libtmux port is built from, and what its own parity ledger actually verifies."
 
   localeStatuses={ALL_TRANSLATED}
 >
   <main class="mx-auto max-w-5xl px-4 py-12">
+    <PageToolbar breadcrumbs={breadcrumbs} />
     <h1 class="text-3xl font-semibold tracking-tight">Parity</h1>
     <p class="mt-3 max-w-2xl">
       Python is the reference implementation; every other port tracks how much of its public

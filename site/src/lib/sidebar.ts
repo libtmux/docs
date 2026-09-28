@@ -19,7 +19,7 @@
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
 import { PORT_BY_SLUG, portPageUrl, productAvailable, referenceUrl, type DocProduct } from './ports'
-import { withPortRoot } from './site-root'
+import { withPortRoot, withRoot } from './site-root'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { localeOf, sourceIdOf } from '../i18n/resolve'
 import { docsPath, docsRoutePath } from './docs-paths'
@@ -40,6 +40,25 @@ export interface SidebarGroupItem {
 }
 
 export type SidebarItem = SidebarLinkItem | SidebarGroupItem
+
+/** Existing ancestor pages, followed by the current page, in reading order. */
+export async function pageBreadcrumbs(title: string, path: string, version: string, port?: string, locale: Locale = DEFAULT_LOCALE) {
+  const language = port ? PORT_BY_SLUG[port] : undefined
+  const url = (route: string) => language ? portPageUrl(language, version, route) : withRoot(`/${route}${route ? '/' : ''}`)
+  const items = [{ name: language?.name ?? 'Documentation', url: url('') }]
+  const entries = await getCollection('docs', (entry) => !entry.data.port || entry.data.port === port)
+  const parts = path.split('/').filter(Boolean)
+  for (let i = 1; i < parts.length; i++) {
+    const route = parts.slice(0, i).join('/')
+    const matching = entries.filter((entry) => docsPath({ ...entry, id: sourceIdOf(entry.id) }) === route)
+    const entry = matching.find((entry) => localeOf(entry.id) === locale)
+      ?? matching.find((entry) => localeOf(entry.id) === DEFAULT_LOCALE)
+    if (entry) items.push({ name: entry.data.title, url: url(route) })
+    else if (route === 'reference') items.push({ name: 'API reference', url: url(route) })
+  }
+  if (path) items.push({ name: title, url: url(path) })
+  return items
+}
 
 interface OrderedLabel {
   order?: number

@@ -62,7 +62,11 @@
   const KEY = 'libtmux-code-tab'
 
   class LibtmuxCodeTabs extends HTMLElement {
+    private controller?: AbortController
     connectedCallback() {
+      this.controller?.abort()
+      this.controller = new AbortController()
+      const { signal } = this.controller
       const tabs = [...this.querySelectorAll<HTMLButtonElement>('.code-tab')]
       const panels = [...this.querySelectorAll<HTMLElement>('.code-tab-panel')]
       if (!tabs.length) return
@@ -90,7 +94,7 @@
       }
 
       for (const tab of tabs) {
-        tab.addEventListener('click', () => show(tab.dataset.port ?? '', true))
+        tab.addEventListener('click', () => show(tab.dataset.port ?? '', true), { signal })
         tab.addEventListener('keydown', (event) => {
           const delta = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
           if (!delta) return
@@ -99,12 +103,12 @@
           const next = tabs[(i + delta + tabs.length) % tabs.length]
           show(next.dataset.port ?? '', true)
           next.focus()
-        })
+        }, { signal })
       }
 
       document.addEventListener('libtmux:code-tab', (event) => {
         show((event as CustomEvent<string>).detail, false)
-      })
+      }, { signal })
 
       let stored: string | null = null
       try {
@@ -114,6 +118,7 @@
       }
       if (stored) show(stored, false)
     }
+    disconnectedCallback() { this.controller?.abort() }
   }
 
   if (!customElements.get('libtmux-code-tabs')) {

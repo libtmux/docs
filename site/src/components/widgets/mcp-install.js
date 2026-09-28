@@ -2,11 +2,7 @@
  * ~/work/python/libtmux-mcp/docs/_widgets/mcp-install/widget.js.
  *
  * Uses document-level event delegation so listeners survive Astro's
- * ClientRouter swapping the page content (this site is not currently
- * running ClientRouter, but several other components already defend
- * against it — see DocsLayout.astro, BackToTop.astro — so this one does
- * too, on `astro:after-swap`, in place of the source's gp-sphinx-specific
- * `gp-sphinx:navigated`). Saved localStorage state is re-applied on
+ * ClientRouter swapping page content. Saved localStorage state is reapplied on
  * DOMContentLoaded and on every swap.
  *
  * Visibility is fully CSS-driven by <html data-mcp-install-*> attrs and

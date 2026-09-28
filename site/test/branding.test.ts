@@ -72,15 +72,15 @@ describe('route branding', () => {
       }
     }
   })
-  it('keeps dark surfaces and body text neutral across languages', () => {
+  it.each(['light', 'dark'] as const)('keeps %s surfaces and body text neutral across languages', (mode) => {
     for (const role of ['background', 'surface', 'hover', 'border', 'text', 'muted'] as const) {
-      const colors = new Set(Object.values(palettes).map((palette) => palette.dark[role]))
+      const colors = new Set(Object.values(palettes).map((palette) => palette[mode][role]))
       expect(colors.size, role).toBe(1)
       const [red, green, blue] = [1, 3, 5].map((i) => Number.parseInt([...colors][0]!.slice(i, i + 2), 16))
       expect(red).toBeLessThanOrEqual(green!)
       expect(green).toBeLessThanOrEqual(blue!)
     }
-    expect(new Set(Object.values(palettes).map((palette) => palette.dark.link)).size).toBeGreaterThan(1)
+    expect(new Set(Object.values(palettes).map((palette) => palette[mode].link)).size).toBeGreaterThan(1)
   })
   it('escapes script delimiters while preserving JSON-LD values', () => {
     const value = { headline: '</script><script>alert(1)</script>' }

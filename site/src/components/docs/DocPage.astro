@@ -4,6 +4,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro'
 import { docsPath } from '../../lib/docs-paths'
 import { PORT_BY_SLUG, hasPackageInstalls, productApiPath, productAvailable } from '../../lib/ports'
 import DocCard from '../DocCard.astro'
+import PortLinks from '../PortLinks.astro'
 import McpInstall from '../widgets/McpInstall.astro'
 import PackageInstall from '../widgets/PackageInstall.astro'
 import ProductApiIndex from '../api/ProductApiIndex.astro'
@@ -103,6 +104,7 @@ const productIsAvailable = port && entry.data.product
   ? productAvailable(PORT_BY_SLUG[port], entry.data.product)
   : true
 const isMcpOverview = entry.data.product === 'mcp' && pagePath === 'mcp' && productIsAvailable
+const isProductOverview = productIsAvailable && pagePath === entry.data.product
 const isWorkspaceOverview = entry.data.product === 'workspace'
   && pagePath === 'workspace'
   && productIsAvailable
@@ -140,7 +142,16 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   pageSource={entry.data.source ?? (entry.filePath ? { repo: CONTRIBUTE_REPO, path: repoPath(entry.filePath), ref: CONTRIBUTE_BRANCH } : undefined)}
   markdownIndex={isIndexSource(entry.filePath)}
   markdown={placeholderLocale ? { href: markdownPath(englishHref, isIndexSource(entry.filePath)) } : 'source'}
+  editHref={!placeholderLocale ? contribute?.href : undefined}
+  editLabel={t(locale, 'i18n.editPage')}
 >
+  <Fragment slot="hero-links">
+    {!placeholderLocale && isProductOverview && port && <PortLinks
+      port={PORT_BY_SLUG[port]} product={entry.data.product}
+      version={version ?? buildTarget(process.env).version} revision={packageSource?.revision}
+      class="not-prose mt-3"
+    />}
+  </Fragment>
   {
     placeholderLocale && (
       /*
@@ -198,15 +209,6 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
     )
   }
   {
-    !placeholderLocale && locale === DEFAULT_LOCALE && contribute && (
-      <p class="mb-2 text-sm opacity-80">
-        <a class="underline" href={contribute.href} rel="noopener" target="_blank">
-          {t(locale, 'i18n.editPage')}
-        </a>
-      </p>
-    )
-  }
-  {
     !placeholderLocale && locale === DEFAULT_LOCALE && translations.length > 0 && (
       <p class="mb-6 text-sm opacity-80">
         {t(locale, 'i18n.available')}:{' '}
@@ -218,7 +220,7 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
       </p>
     )
   }
-  {!placeholderLocale && packageSource && <p class="text-sm opacity-75">
+  {!placeholderLocale && packageSource && !isProductOverview && <p class="text-sm opacity-75">
     <code>{packageSource.package}</code>{packageSource.version ? ` ${packageSource.version}` : ''} · <a href={`https://github.com/${packageSource.repo}/tree/${packageSource.revision}`}>Source</a>
   </p>}
   {/*

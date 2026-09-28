@@ -31,7 +31,8 @@ const isJs = (el: Element) => {
   return !type || type === 'module' || type === 'text/javascript'
 }
 const isModuleOnly = (source: string) =>
-  /\bimport\.meta\b/.test(source) || /\bimport\s*\(/.test(source)
+  /\bimport\.meta\b/.test(source) || /\bimport\s*\(/.test(source) ||
+  /\bimport\b\s*(?:[\w*{]|['"])/.test(source) || /\bexport\s/.test(source)
 
 interface Loaded {
   window: Window

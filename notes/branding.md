@@ -113,8 +113,8 @@ covers header height, abbreviated tablet navigation, white badge text, and
 compact color-scheme controls. The full publication audit remains separate
 from these development checks.
 
-Dark mode uses the same slate backgrounds, borders, headings, and body text
-for every language. Language color remains in logos, content links, selected
+Both color schemes use shared slate backgrounds, borders, headings, and body
+text for every language. Language color remains in logos, content links, selected
 navigation, and small filled accents. Inactive navigation and the prerelease
 strip use neutral colors so a port's hue does not tint the whole page.
 

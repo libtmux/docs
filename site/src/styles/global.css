@@ -1132,23 +1132,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   min-width: 0;
 }
 
-/*
- * The page's own language control, on the page's own title row.
- *
- * No positioning and no width: it is one item in the flex row that holds the
- * heading, so it costs the layout nothing beyond its own size. Given a band
- * of its own above the content it was 1280x40 to show a single chip, and
- * every page started a row lower for it.
- */
-/*
- * Never squeezed, and pushed to the right of whatever line it lands on.
- *
- * The title row wraps, so at 390px the control drops below a long heading
- * rather than being carried 18px past the right edge, which is what it did
- * when the row could not wrap and this could not shrink. `margin-left` keeps
- * it right-aligned on that second line, where `justify-content` no longer
- * has a second item to push it against.
- */
+/* Keep page controls beside the breadcrumbs and out of the heading. */
 .page-ports {
   flex: none;
   margin-left: auto;
@@ -1165,13 +1149,17 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   left: auto;
 }
 
-.page-port-switcher__summary {
-  display: inline-flex;
+.page-control {
+  display: flex;
   align-items: center;
-  gap: 0.35rem;
+  justify-content: center;
+  min-height: 1.5rem;
   padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
   line-height: 1;
 }
+
+.page-port-switcher__summary { gap: 0.35rem; }
 
 /* Points down when the list is closed and up when it is open, so the control
    says which way it is going rather than only that it opens. */

@@ -1,0 +1,104 @@
+---
+interface Props {
+  editHref?: string
+  editLabel?: string
+}
+const { editHref, editLabel = 'Edit this page on GitHub' } = Astro.props
+---
+
+<details class="page-actions" data-page-actions>
+  <summary class="topnav-chip page-control" aria-label="Page actions">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+      <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
+    </svg>
+  </summary>
+  <div class="page-actions__panel">
+    <button type="button" data-page-copy>Copy Markdown</button>
+    <button type="button" data-page-print>Print</button>
+    {editHref && <a href={editHref} rel="noopener" target="_blank">{editLabel}</a>}
+    <p class="page-actions__status" role="status" aria-live="polite"></p>
+  </div>
+</details>
+
+<style>
+  .page-actions { position: relative; flex: none; }
+  summary { cursor: pointer; list-style: none; min-width: 1.5rem; padding-inline: .25rem; }
+  summary::-webkit-details-marker { display: none; }
+  .page-actions__panel {
+    position: absolute;
+    right: 0;
+    z-index: 50;
+    margin-top: .25rem;
+    width: 15rem;
+    max-width: calc(100vw - 2rem);
+    padding: .25rem;
+    border: 1px solid var(--color-background-border);
+    border-radius: .375rem;
+    background: var(--color-background-secondary);
+    box-shadow: 0 4px 12px rgb(0 0 0 / .15);
+  }
+  button, a {
+    display: block;
+    width: 100%;
+    padding: .5rem .75rem;
+    border-radius: .25rem;
+    text-align: left;
+    font-size: .875rem;
+    text-decoration: none;
+    color: var(--color-foreground-primary);
+    cursor: pointer;
+  }
+  button:hover, a:hover { background: var(--color-api-background-hover); }
+  :is(summary, button, a):focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+  .page-actions__status { margin: 0; padding: 0 .75rem; font-size: .8rem; }
+  .page-actions__status:not(:empty) { padding-block: .5rem; }
+  @media print { .page-actions { display: none; } }
+</style>
+
+<script>
+  document.addEventListener('click', async (event) => {
+    const target = event.target instanceof Element ? event.target : undefined
+    const actions = target?.closest<HTMLDetailsElement>('[data-page-actions]')
+    for (const open of document.querySelectorAll<HTMLDetailsElement>('[data-page-actions][open]')) {
+      if (open !== actions) open.open = false
+    }
+    if (!actions) return
+    if (target?.closest('[data-page-print]')) {
+      actions.open = false
+      window.print()
+    }
+    const copy = target?.closest<HTMLButtonElement>('[data-page-copy]')
+    if (!copy) return
+    const status = actions.querySelector<HTMLElement>('[role="status"]')!
+    const href = document.querySelector<HTMLLinkElement>('link[rel="alternate"][type="text/markdown"]')?.href
+    if (!href) { status.textContent = 'Markdown is unavailable for this page.'; return }
+    copy.disabled = true
+    status.textContent = 'Copying…'
+    try {
+      const text = fetch(href).then(async (response) => {
+        if (!response.ok || /text\/html/i.test(response.headers.get('content-type') ?? '')) throw new Error('Markdown unavailable')
+        return response.text()
+      })
+      // WebKit requires clipboard.write during the user gesture, before fetch resolves.
+      if (navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
+        await navigator.clipboard.write([new ClipboardItem({ 'text/plain': text.then((value) => new Blob([value], { type: 'text/plain' })) })])
+      } else {
+        await navigator.clipboard.writeText(await text)
+      }
+      status.textContent = 'Markdown copied.'
+    } catch {
+      status.replaceChildren(document.createTextNode('Could not copy. '))
+      const link = document.createElement('a')
+      link.href = href
+      link.textContent = 'Open Markdown'
+      status.append(link)
+    } finally { copy.disabled = false }
+  })
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return
+    for (const open of document.querySelectorAll<HTMLDetailsElement>('[data-page-actions][open]')) {
+      open.open = false
+      open.querySelector('summary')?.focus()
+    }
+  })
+</script>
