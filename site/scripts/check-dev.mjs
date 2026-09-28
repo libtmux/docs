@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
-import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { dev } from 'astro'
@@ -31,6 +31,13 @@ process.on('exit', () => rmSync(mirror, { recursive: true, force: true }))
 const root = join(mirror, 'site')
 mkdirSync(root)
 cpSync(join(source, 'src'), join(root, 'src'), { recursive: true })
+writeFileSync(join(root, 'src/content/docs/sidebar-free-layout.md'), `---
+title: Empty table of contents
+description: A reading page without section headings.
+---
+
+This article has no sections, so its content should fill the available column.
+`)
 for (const file of ['astro.config.ts', 'ec.config.mjs', 'package.json', 'tsconfig.json']) cpSync(join(source, file), join(root, file))
 for (const file of ['public', 'node_modules']) symlinkSync(join(source, file), join(root, file), 'dir')
 for (const file of ['scripts', 'packages', 'node_modules']) symlinkSync(join(source, '..', file), join(mirror, file), 'dir')
@@ -181,6 +188,30 @@ try {
       assert(overflow <= 1, `${path} at ${width}px: declaration page overflow ${overflow}px`)
     }
   })
+  for (const width of [1440, 1920]) {
+    await page.setViewportSize({ width, height: 1000 })
+    await page.goto(`${base}/sidebar-free-layout/`, { waitUntil: 'load' })
+    const reading = await page.evaluate(() => {
+      const main = document.querySelector('main')
+      const article = main.querySelector('article')
+      return {
+        unused: main.getBoundingClientRect().width - article.getBoundingClientRect().width,
+        rightSidebar: main.nextElementSibling?.tagName === 'ASIDE',
+        toc: document.querySelector('starlight-toc') !== null,
+      }
+    })
+    assert(reading.unused < 1 && !reading.rightSidebar && !reading.toc,
+      `Empty table of contents at ${width}px must leave no unused article column: ${JSON.stringify(reading)}`)
+    await page.goto(`${base}/reference/`, { waitUntil: 'load' })
+    const reference = await page.evaluate(() => {
+      const main = document.querySelector('main')
+      return { children: main.children.length,
+        unused: main.getBoundingClientRect().width - main.lastElementChild.getBoundingClientRect().width }
+    })
+    assert(reference.children === 1 && reference.unused < 1,
+      `Reference index at ${width}px must not reserve an empty navigation column: ${JSON.stringify(reference)}`)
+  }
+  console.log('Empty sidebars: article and reference index use their available width')
   const clipboardError = await clipboard
   if (clipboardError) throw clipboardError
   await page.goto(`${base}/`, { waitUntil: 'load' })

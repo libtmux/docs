@@ -479,15 +479,10 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
   flush
   breadcrumbs={breadcrumbs}
 >
-  <!-- The content column is capped at 47rem, which is 752px — gp-sphinx
-       renders 754 from Furo's `46em` against a 16.4px root. Uncapped it ran
-       to 960px, a third wider than this site's own prose pages at 704 and a
-       measure no one reads comfortably. The cap is the design decision; the
-       exact figure is gp-sphinx's, since matching it is the point. -->
   <!-- Flush: the tree's column runs from the header to the footer against the
        viewport's edge, as Learn's does, and only the text column is padded. -->
-  <main class="grid lg:grid-cols-[18rem_minmax(0,1fr)]">
-    {model ? (
+  <main class:list={["grid", model && "lg:grid-cols-[18rem_minmax(0,1fr)]"]}>
+    {model && (
       <ApiTree
         port={model.port}
         portName={PORT_NAME[model.port] ?? model.port}
@@ -502,7 +497,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
         menuVersion={menuVersion}
         currentPath={Astro.url.pathname}
       />
-    ) : <div />}
+    )}
 
     <div class="min-w-0 px-4 py-6 lg:px-6">
       <!-- The id is the anchor every link to this type uses. `hrefFor` sends a
