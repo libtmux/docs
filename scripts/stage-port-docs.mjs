@@ -28,6 +28,12 @@ const expand = (value) => value.startsWith('~/') ? join(homedir(), value.slice(2
 
 function titleAndBody(content, sourcePath) {
   content = content.replace(/<!-- libtmux-logo -->[\s\S]*?<!-- \/libtmux-logo -->\s*/g, '')
+  // GitHub README headers may center the title and intro in a presentation
+  // wrapper. The site supplies its own heading; later HTML stays intact.
+  const centered = /^<div align=["']center["']>\s*\n([\s\S]*?)\n<\/div>\s*/.exec(content)
+  if (centered && /^#\s/.test(centered[1])) {
+    content = `${centered[1]}\n\n${content.slice(centered[0].length)}`
+  }
   const match = /^#\s+(.+)\n+/.exec(content)
   return {
     title: match?.[1]?.trim() ?? posix.basename(sourcePath, '.md'),
