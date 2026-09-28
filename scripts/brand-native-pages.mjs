@@ -43,7 +43,13 @@ export function nativeBrandHead(html, { port, pagePath, root = '/en' }) {
   ].join('\n')
   const branded = html.replace(/<html\b([^>]*)>/i, (_match, attributes) =>
     `<html${attributes.replace(/\sdata-brand(?:-variant)?=["'][^"']*["']/g, '')} data-brand="${brand.language}" data-brand-variant="${brand.variant}">`)
-  return branded.replace(/(<head\b[^>]*>)([\s\S]*?)(<\/head>)/i, (_match, open, head, close) => {
+  const withLogo = branded.replace(/<img\b[^>]*>/gi, (tag) => {
+    const classes = /\bclass=["']([^"']*)["']/i.exec(tag)?.[1].split(/\s+/) ?? []
+    if (!classes.includes('sidebar-logo')) return tag
+    return tag.replace(/\s(?:src|srcset)=["'][^"']*["']/gi, '')
+      .replace(/\s*\/?>$/, ` src="${attr(brand.asset('logo.svg'))}">`)
+  })
+  return withLogo.replace(/(<head\b[^>]*>)([\s\S]*?)(<\/head>)/i, (_match, open, head, close) => {
     const clean = head
       .replace(/<link\b[^>]*\brel=["'](?:shortcut icon|icon|apple-touch-icon|mask-icon|manifest)["'][^>]*>/gi, '')
       .replace(/<meta\b[^>]*\b(?:name|property)=["'](?:og:image(?::[a-z_]+)?|twitter:image(?::alt)?|twitter:card|theme-color|msapplication-config)["'][^>]*>/gi, '')

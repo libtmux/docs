@@ -139,6 +139,18 @@ jobs:
           }
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
 
+      - if: inputs.port == 'py'
+        uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: false
+          python-version: '3.14'
+      - name: Install Python's native documentation dependencies
+        if: inputs.port == 'py'
+        working-directory: port
+        # Reproduce the selected lock, including resolutions made with
+        # contributor-specific package cooldowns.
+        run: uv sync --frozen --all-extras --dev
+
       # C++'s reference is read from the Doxygen XML its own build produces
       # (scripts/gen-api-model.mjs), which must be newer than the headers it
       # describes, so it is generated here, after the checkout. The same
@@ -177,6 +189,31 @@ jobs:
           path: docs
           persist-credentials: false
 
+      - name: Resolve Python's separate product sources
+        if: inputs.port == 'py'
+        id: python-products
+        working-directory: docs
+        run: |
+          for product in workspace mcp; do
+            ref=$(jq -er --arg product "$product" '.sources[] | select(.product == $product) | .extractedRevision // .revision' site/src/data/api/py.json)
+            [[ "$ref" =~ ^[0-9a-f]{40}$ ]]
+            echo "$product=$ref" >> "$GITHUB_OUTPUT"
+          done
+      - if: inputs.port == 'py'
+        uses: actions/checkout@v7
+        with:
+          repository: tmux-python/tmuxp
+          ref: ${{ steps.python-products.outputs.workspace }}
+          path: python-workspace
+          persist-credentials: false
+      - if: inputs.port == 'py'
+        uses: actions/checkout@v7
+        with:
+          repository: tmux-python/libtmux-mcp
+          ref: ${{ steps.python-products.outputs.mcp }}
+          path: python-mcp
+          persist-credentials: false
+
       # No dependency cache: this job checks out whichever ref it was asked
       # to publish, and a cache it saved could be restored by a later
       # default-branch run.
@@ -200,6 +237,8 @@ jobs:
           LIBTMUX_DOCS_SOURCE_REF: ${{ needs.identity.outputs.source-ref }}
           LIBTMUX_DOCS_SOURCE_SHA: ${{ steps.source.outputs.sha }}
           PORT_CHECKOUT: ${{ github.workspace }}/port
+          LIBTMUX_DOCS_WORKSPACE_PY: ${{ github.workspace }}/python-workspace
+          LIBTMUX_DOCS_MCP_PY: ${{ github.workspace }}/python-mcp
         run: |
           set -euo pipefail
           [[ "$LIBTMUX_DOCS_PORT" =~ ^[a-z]+$ ]] || {
@@ -207,8 +246,17 @@ jobs:
             exit 1
           }
           export "LIBTMUX_DOCS_CHECKOUT_${LIBTMUX_DOCS_PORT^^}=$PORT_CHECKOUT"
+          reference_args=(--skip-refs)
+          if [[ "$LIBTMUX_DOCS_PORT" == py ]]; then
+            reference_args=()
+            export UV_FROZEN=true
+          fi
           ./scripts/build-site.sh --ports "$LIBTMUX_DOCS_PORT" \
-            --versions "$LIBTMUX_DOCS_VERSION" --skip-refs --skip-pagefind
+            --versions "$LIBTMUX_DOCS_VERSION" "${reference_args[@]}" --skip-pagefind
+          if [[ "$LIBTMUX_DOCS_PORT" == py ]]; then
+            test -s "_site/en/py/$LIBTMUX_DOCS_VERSION/api/objects.inv"
+            test -s "_site/en/py/$LIBTMUX_DOCS_VERSION/api/api/index.html"
+          fi
 
       # The version directory itself: its contents become
       # <locale>/<port>/<version>.

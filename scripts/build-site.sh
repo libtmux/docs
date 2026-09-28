@@ -770,8 +770,12 @@ build_reference() {
       if [ -f "$checkout_expanded/docs/conf.py" ]; then
         conf_backup="$scratch/conf-$slug-$version.py"
         cp "$checkout_expanded/docs/conf.py" "$conf_backup"
-        node "$script_dir/add-intersphinx.mjs" \
-          "$checkout_expanded/docs" "$out_dir" "$site_origin" "$slug" >>"$log_file" 2>&1 || true
+        if ! node "$script_dir/add-intersphinx.mjs" \
+          "$checkout_expanded/docs" "$out_dir" "$site_origin" "$slug" >>"$log_file" 2>&1; then
+          cp "$conf_backup" "$checkout_expanded/docs/conf.py"
+          printf 'failed\tadding intersphinx inventories failed, see %s\n' "$log_file"
+          return
+        fi
       fi
       restore_conf() {
         [ -n "$conf_backup" ] && [ -f "$conf_backup" ] &&
