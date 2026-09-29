@@ -1067,7 +1067,9 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     if [ "$ref_status" = "built" ]; then
       mkdir -p "$port_out/api"
       cp -a "$ref_outdir/." "$port_out/api/"
-      node "$script_dir/normalize-native-shell.mjs" "$port_out/api" "$LIBTMUX_DOCS_PORT_ROOT"
+      native_shell_args=()
+      if [ "$renderer" = sphinx ]; then native_shell_args+=("$slug"); fi
+      node "$script_dir/normalize-native-shell.mjs" "$port_out/api" "$LIBTMUX_DOCS_PORT_ROOT" "${native_shell_args[@]}"
       node "$script_dir/brand-native-pages.mjs" "$port_out/api" "$slug" "$LIBTMUX_DOCS_PORT_ROOT"
     elif [ "$ref_status" = "skipped" ]; then
       mkdir -p "$port_out/api"

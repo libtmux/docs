@@ -5,6 +5,47 @@ import { describe, expect, it } from 'vitest'
 import { normalizeNativeShell } from '../../scripts/normalize-native-shell.mjs'
 
 describe('native shell URL normalization', () => {
+  it('adds the Sphinx shell to old sources and preserves nested links and redirects', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'native-sphinx-'))
+    try {
+      mkdirSync(join(directory, 'api/pane'), { recursive: true })
+      const page = join(directory, 'api/pane/index.html')
+      writeFileSync(page, '<html><head><link rel="stylesheet" href="../../_static/theme.css"></head><body><article><a href="#capture">Capture</a><h2 id="capture">Pane</h2></article></body></html>')
+      const redirect = '<html><head><meta http-equiv="refresh" content="0;url=/search/"></head></html>'
+      writeFileSync(join(directory, 'index.html'), redirect)
+      normalizeNativeShell(directory, '/pr-42/en', { sphinxPort: 'py' })
+      const html = readFileSync(page, 'utf8')
+      expect(html).toContain('href="../../_static/libtmux-org.css"')
+      expect(html).toContain('data-pagefind-body data-pagefind-filter="port:Python"')
+      expect(html).toContain('<script defer src="/pr-42/en/_shell/shell.js"></script>')
+      expect(html).toContain('href="../../_static/theme.css"')
+      expect(html).toContain('<a href="#capture">Capture</a>')
+      expect(readFileSync(join(directory, '_static/libtmux-org.css'), 'utf8')).toContain("url('/pr-42/en/_shell/tokens.css')")
+      expect(readFileSync(join(directory, 'index.html'), 'utf8')).toBe(redirect)
+      expect(normalizeNativeShell(directory, '/pr-42/en/', { sphinxPort: 'py' })).toBe(0)
+      expect(readFileSync(page, 'utf8')).toBe(html)
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
+  it('replaces source-owned integration without duplicate scripts or styles', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'native-sphinx-'))
+    try {
+      const page = join(directory, 'index.html')
+      writeFileSync(page, '<html><head><link href="_static/libtmux-org.css?v=old" rel="stylesheet"><script src="/_shell/shell.js" defer="defer"></script></head><body><article>Reference</article></body></html>')
+      normalizeNativeShell(directory, '/en', { sphinxPort: 'py' })
+      const html = readFileSync(page, 'utf8')
+      expect(html.match(/shell\.js/g)).toHaveLength(1)
+      expect(html.match(/libtmux-org\.css/g)).toHaveLength(1)
+      expect(html).not.toContain('?v=old')
+      writeFileSync(page, '<html><body>Truncated source</body></html>')
+      expect(() => normalizeNativeShell(directory, '/en', { sphinxPort: 'py' })).toThrow('no closing head')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
   it('normalizes nested HTML/CSS for previews without changing other URLs', () => {
     const directory = mkdtempSync(join(tmpdir(), 'native-shell-'))
     try {

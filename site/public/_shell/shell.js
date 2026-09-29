@@ -206,7 +206,9 @@
     ;[['Reference', '/reference/'], ['MCP', '/mcp/'], ['Search', '/search/']].forEach(function (entry) {
       var link = document.createElement('a')
       link.className = 'lt-shell-search-link'
-      link.href = siteRoot + entry[1]
+      link.href = entry[0] === 'Search' && currentPort && currentVersion
+        ? siteRoot + '/' + currentPort + '/' + currentVersion + entry[1]
+        : siteRoot + entry[1]
       link.textContent = entry[0]
       controls.appendChild(link)
     })
@@ -244,7 +246,8 @@
     '.lt-shell-header,.lt-shell-footer{font-family:var(--lt-font-sans,sans-serif);' +
     'font-size:0.875rem;background:var(--lt-color-bg,#fff);color:var(--lt-color-fg,#000);box-sizing:border-box}' +
     '.lt-shell-header *,.lt-shell-footer *{box-sizing:border-box}' +
-    '.lt-shell-header{display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;' +
+    // Furo's fixed table of contents uses layer 50.
+    '.lt-shell-header{position:relative;z-index:51;display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;' +
     'padding:0.6rem 1rem;border-bottom:1px solid var(--lt-color-border,#eeebee)}' +
     '.lt-shell-brand{font-family:var(--lt-font-mono,monospace);font-weight:600;' +
     'font-size:1.05rem;color:var(--lt-color-fg,#000);text-decoration:none;letter-spacing:-0.01em}' +
@@ -306,76 +309,68 @@
     window.addEventListener('hashchange', refreshPagePorts)
   }
 
-  // ---------------------------------------------------------------------
-  // Dark-mode shim (design-token-bridge.md §4: shim, don't replace).
-  //
-  // Canonical key: `libtmux-theme`. notes/research/00-DECISIONS.md §7.13
-  // leaves this an open decision ("pick one before shell.js ships"); this
-  // file makes the call and records it here rather than in a separate
-  // document. Furo's own key (`theme`) stays authoritative for Furo's own
-  // toggle and paint logic — this shim only mirrors the *resolved* value
-  // onto html[data-theme], which is the attribute tokens.css reads, and
-  // writes the canonical key through so a future non-Furo generator (or
-  // the Astro shell, if it ever adopts this key — see the open question in
-  // the same section) can agree on "what did the reader last choose"
-  // without re-deriving it from Furo's storage format.
-  // ---------------------------------------------------------------------
-  var CANONICAL_KEY = 'libtmux-theme'
-  var FURO_KEY = 'theme' // gp-furo-theme's furo.ts: localStorage.setItem('theme', mode)
+  // Astro stores `system`; Furo stores the same preference as `auto`.
+  var SITE_THEME_KEY = 'color-scheme'
+  var LEGACY_THEME_KEY = 'libtmux-theme'
+  var FURO_KEY = 'theme'
+  var themePreference
 
   function systemPrefersDark() {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
   }
 
-  function readPreference() {
-    // Furo's own key is authoritative for what actually painted this page
-    // (its inline pre-paint script already ran); fall back to the
-    // canonical key, then "auto".
-    try {
-      var native = localStorage.getItem(FURO_KEY)
-      if (native === 'light' || native === 'dark' || native === 'auto') return native
-    } catch (e) {
-      /* storage disabled */
-    }
-    try {
-      var canonical = localStorage.getItem(CANONICAL_KEY)
-      if (canonical === 'light' || canonical === 'dark' || canonical === 'auto') return canonical
-    } catch (e) {
-      /* storage disabled */
-    }
-    return 'auto'
+  function nativePreference(value) {
+    if (value === 'system') return 'auto'
+    return value === 'light' || value === 'dark' || value === 'auto' ? value : null
   }
 
-  function applyResolvedTheme() {
-    var pref = readPreference()
-    var resolved = pref === 'auto' ? (systemPrefersDark() ? 'dark' : 'light') : pref
-
-    // html[data-theme] is what tokens.css keys off. "auto" is never
-    // written here — the fallback in tokens.css already tracks the media
-    // query on its own, so an explicit attribute would only fight it on
-    // the next OS-level change.
-    if (pref === 'auto') {
-      document.documentElement.removeAttribute('data-theme')
-    } else {
-      document.documentElement.setAttribute('data-theme', resolved)
-    }
-
-    // Write through the canonical key so it never drifts from what Furo's
-    // own toggle just decided.
+  function readPreference() {
     try {
-      localStorage.setItem(CANONICAL_KEY, pref)
+      var stored = nativePreference(localStorage.getItem(SITE_THEME_KEY)) ||
+        nativePreference(localStorage.getItem(FURO_KEY)) ||
+        nativePreference(localStorage.getItem(LEGACY_THEME_KEY))
+      if (stored) return stored
     } catch (e) {
       /* storage disabled */
     }
+    return themePreference || nativePreference(document.body && document.body.getAttribute('data-theme')) || 'auto'
+  }
+
+  function storePreference(key, value) {
+    try {
+      // Avoid storage-event loops between pages mirroring the same choice.
+      if (localStorage.getItem(key) !== value) localStorage.setItem(key, value)
+    } catch (e) {
+      /* The current page still follows the native toggle. */
+    }
+  }
+
+  function applyResolvedTheme(pref) {
+    themePreference = pref || readPreference()
+    var resolved = themePreference === 'auto' ? (systemPrefersDark() ? 'dark' : 'light') : themePreference
+    var sitePreference = themePreference === 'auto' ? 'system' : themePreference
+    var root = document.documentElement
+    root.setAttribute('data-color-scheme', sitePreference)
+    root.setAttribute('data-theme-mode', resolved)
+    root.style.colorScheme = resolved
+    if (themePreference === 'auto') root.removeAttribute('data-theme')
+    else root.setAttribute('data-theme', resolved)
+
+    // Furo paints and cycles from its own body attribute and storage key.
+    if (document.body && document.body.getAttribute('data-theme') !== themePreference) {
+      document.body.setAttribute('data-theme', themePreference)
+    }
+    storePreference(SITE_THEME_KEY, sitePreference)
+    storePreference(FURO_KEY, themePreference)
+    storePreference(LEGACY_THEME_KEY, themePreference)
   }
 
   function watchNativeToggle() {
-    // Furo's toggle button mutates document.body's data-theme attribute
-    // directly with no event of its own — observe that instead of
-    // reimplementing its click handler, which is the fork this bridge is
-    // built to avoid (design-token-bridge.md §4).
     if (!window.MutationObserver || !document.body) return
-    new MutationObserver(applyResolvedTheme).observe(document.body, {
+    new MutationObserver(function () {
+      var pref = nativePreference(document.body.getAttribute('data-theme'))
+      if (pref && pref !== themePreference) applyResolvedTheme(pref)
+    }).observe(document.body, {
       attributes: true,
       attributeFilter: ['data-theme'],
     })
@@ -384,13 +379,15 @@
   function watchSystemPreference() {
     if (!window.matchMedia) return
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
-      if (readPreference() === 'auto') applyResolvedTheme()
+      if (themePreference === 'auto') applyResolvedTheme('auto')
     })
   }
 
   function watchCrossTab() {
     window.addEventListener('storage', function (e) {
-      if (e.key === FURO_KEY || e.key === CANONICAL_KEY) applyResolvedTheme()
+      if (e.key === SITE_THEME_KEY || e.key === FURO_KEY || e.key === LEGACY_THEME_KEY || e.key === null) {
+        applyResolvedTheme()
+      }
     })
   }
 

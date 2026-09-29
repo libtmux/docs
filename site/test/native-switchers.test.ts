@@ -48,6 +48,8 @@ describe('native API page switchers', () => {
     expect(nav.querySelector('[data-port-home="py"]')?.getAttribute('href')).toBe(`${base}/py/latest/`)
     expect(nav.querySelector('[data-port-home="ts"]')?.getAttribute('href')).toBe(`${base}/ts/stable/`)
     expect(nav.querySelector('[data-port-home="rs"]')?.getAttribute('href')).toBe(`${base}/rs/latest/`)
+    expect([...document.querySelectorAll('.lt-shell-search-link')].find((link) => link.textContent === 'Search')?.getAttribute('href'))
+      .toBe(`${base}/py/latest/search/`)
     expect(requests).toEqual([`${base}/versions.json`, `${base}/page-links.json`])
   })
 
