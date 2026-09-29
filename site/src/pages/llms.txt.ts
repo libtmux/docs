@@ -52,7 +52,7 @@ export const GET: APIRoute = async ({ site }) => {
 
   out.push('## Optional', '')
   out.push(
-    `- [Full text of every page above](${origin}${base}llms-full.txt): the same prose concatenated, for a single fetch.`,
+    `- [Full documentation text](${origin}${base}llms-full.txt): guides and MCP contracts in a single fetch.`,
   )
   out.push('')
 

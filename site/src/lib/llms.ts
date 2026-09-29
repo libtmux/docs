@@ -14,7 +14,8 @@
  * which is the whole point of the per-language mechanism applied to the one
  * consumer that cannot see the language switcher.
  *
- * Scope, stated rather than implied: the generated API reference is indexed in
+ * The Markdown-twins integration appends generated MCP contracts after their
+ * HTML and Markdown are available. The language API reference is indexed in
  * `llms.txt` but not inlined into `llms-full.txt`. .NET's reference alone is
  * 1.5 MB of Markdown across 215 files, which would make the full-text file
  * useless for the context windows it exists to fit into. Agents that want it
