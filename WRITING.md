@@ -146,12 +146,14 @@ $ python3 scripts/check-workspace-prose.py \
     --binary /path/to/tmux-workspace
 ```
 
-The runner executes examples from the command overview, conversion, editing,
-capture, listing, diagnostics and search pages. It checks refusal to overwrite,
-editor errors, invalid patterns and invalid documents on a private tmux socket.
-Node, tmux and the selected CLI's runtime must be on `PATH`. Use `--report` to
-save command results and content hashes; record the native build revision with
-that report.
+The runner executes the command, automation, export and troubleshooting examples,
+then loads the configuration and gallery documents. It checks pane counts,
+options, focus, directories, launch environment, overwrite refusal, editor errors,
+invalid patterns and unsupported fields on a private tmux socket.
+Node, tmux and the selected CLI's runtime must be on `PATH`. Set
+`TMUX_WORKSPACE_PYTHON` to a compatible interpreter to include optional shell
+inspection; its absence is reported as a skip. Use `--report` to save command
+results and content hashes, and record the native build revision with that report.
 
 ## Content collections and MDX
 

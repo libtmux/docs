@@ -50,9 +50,10 @@ it('advertises local native loaders while retaining their development status', (
     if (!native(port)) expect(port.workspaceCliAvailability).toBe('released')
     expect(productInDevelopment(port, 'workspace')).toBe(native(port))
     expect(productInDevelopment(port, 'mcp')).toBe(true)
-    if (port.workspaceCliAvailability === 'local') expect(productDescription(port, 'workspace')).toContain('local workspace-cli worktree')
+    expect(productDescription(port, 'workspace')).not.toMatch(/worktree|checkpoint/)
+    if (port.workspaceCliAvailability === 'local') expect(productDescription(port, 'workspace')).toContain('Build the CLI from source')
     if (port.workspaceCliAvailability === 'published') {
-      expect(productDescription(port, 'workspace')).toContain('published prerelease')
+      expect(productDescription(port, 'workspace')).toContain('prerelease')
       expect(workspaceOverviewNotice(port)?.body).not.toMatch(/unreleased|local/)
     }
   }
@@ -330,12 +331,12 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           .find((text) => /in development/i.test(text))
         expect(status, `${page.path} development status`).toBeDefined()
         const article = document.querySelector('article')!.textContent
-        if (port.workspaceCliAvailability === 'local') expect(article, `${page.path} local CLI worktree`).toContain('workspace-cli')
+        if (port.workspaceCliAvailability === 'local') expect(article, `${page.path} source installation`).toContain('from the source revision in the installation guide')
         expect(article, `${page.path} native CLI`).toContain('tmux-workspace')
         expect(article.match(/is in development/gi), `${page.path} states maturity once`).toHaveLength(1)
-        const upstream = [...document.querySelectorAll('article a[href]')]
-          .find((link) => link.getAttribute('href') === 'https://tmuxp.git-pull.com/')
-        expect(upstream?.textContent, `${page.path} tmuxp reference`).toBe('tmuxp')
+        const links = [...document.querySelectorAll('article a[href]')]
+        expect(links.some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === urlFor(`${page.port}/${page.version}/workspace/guides/installation/`).pathname), `${page.path} native installation`).toBe(true)
+        expect(links.some((link) => link.getAttribute('href') === 'https://tmuxp.git-pull.com/'), `${page.path} foreign installation`).toBe(false)
       }
     })
   })

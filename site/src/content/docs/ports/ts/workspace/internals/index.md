@@ -10,9 +10,9 @@ sidebar:
 tableOfContents: true
 ---
 
-These pages document the in-development workspace builder for contributors
-and applications that call its APIs. For workspace loading from a terminal,
-see [tmuxp](https://tmuxp.git-pull.com/).
+Build and inspect tmux sessions from application code with the workspace
+library. To load files from a terminal, start with the
+[native CLI walkthrough](../guides/installation/).
 
 ## Builder pipeline
 
@@ -44,8 +44,8 @@ Node and Bun; its YAML convenience parser requires Bun. You can use validated
 JavaScript objects under either runtime. Real tmux control requires tmux on
 the host. The package documents Linux as its supported runtime platform.
 
-The workspace format uses familiar [tmuxp](https://tmuxp.git-pull.com) field
-names, with its own validation and convergence rules. Python plugins and
-tmuxp's configuration search are not part of this package.
+Read the [configuration and convergence rules](./topics/) before applying a
+description. The caller supplies input data; the library does not discover
+files or load runtime extensions.
 
 [Package documentation](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/packages/workspace/README.md)

@@ -10,9 +10,9 @@ sidebar:
 tableOfContents: true
 ---
 
-These pages document the in-development workspace builder for contributors
-and applications that call its APIs. For workspace loading from a terminal,
-see [tmuxp](https://tmuxp.git-pull.com/).
+Build and inspect tmux sessions from application code with the workspace
+library. To load files from a terminal, start with the
+[native CLI walkthrough](../guides/installation/).
 
 ## Builder pipeline
 
@@ -30,7 +30,7 @@ command-line handling, attachment, and server lifetime.
 
 ## Implementation scope
 
-`LibTmux.Workspace` reads a [tmuxp](https://tmuxp.git-pull.com)-style YAML file
+`LibTmux.Workspace` reads a YAML file
 and builds its session through LibTmux. It returns the session, materialized
 windows, and any layouts that tmux rejected while leaving their windows usable.
 
@@ -43,7 +43,8 @@ The package targets .NET 8 and .NET 10 and uses YamlDotNet. tmux must run on
 the host. Pin the prerelease selected by your package manager because public
 contracts can change between alpha versions.
 
-The accepted format is a closed subset. Unknown keys, Python plugins,
-configuration search paths, and tmuxp hooks are not silently accepted.
+The parser rejects unknown fields. The caller reads the file and selects
+the server; parsing does not search configuration directories or load
+extensions.
 
 [Package documentation](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Workspace/README.md)

@@ -1094,15 +1094,14 @@ export function workspaceOverviewNotice(port: Port): { title: string; body: stri
     return {
       title,
       body: `The \`tmux-workspace\` CLI is published to ${port.registry?.name ?? 'the package registry'} `
-        + 'as a prerelease. Its command and configuration coverage is partial.',
+        + 'as a prerelease. Pin its version when automation depends on its output.',
     }
   }
   if (port.workspaceCliAvailability !== 'local') return undefined
   return {
     title,
-    body: 'The local `workspace-cli` checkout contains a `tmux-workspace` CLI with native services. '
-      + 'This implementation is partial and unreleased; published library packages do '
-      + 'not provide this local CLI checkpoint.',
+    body: 'Build `tmux-workspace` from the source revision in the installation guide. '
+      + 'Its CLI and workspace library have separate installation and configuration contracts.',
   }
 }
 
@@ -1110,9 +1109,9 @@ export function productDescription(port: Port, product: DocProduct): string {
   if (!productAvailable(port, product)) return 'Not available for this language port.'
   if (product === 'workspace') {
     if (port.workspaceCliAvailability === 'local')
-      return `The local workspace-cli worktree provides ${port.workspaceCli}. Command and configuration coverage is incomplete.`
+      return `Build the CLI from source and load workspace files with ${port.workspaceCli}.`
     if (port.workspaceCliAvailability === 'published')
-      return `The published prerelease provides ${port.workspaceCli}. Command and configuration coverage is incomplete.`
+      return `Load workspace files with the ${port.workspaceCli} prerelease.`
     return port.workspaceCli
       ? `Load workspace configuration files with ${port.workspaceCli}.`
       : 'In development. Workspace builder internals; no workspace loader CLI.'

@@ -66,6 +66,13 @@
   {
    "port": "cxx",
    "symbol": "libtmux::detail::Row::server",
+   "page": "/cxx/latest/workspace/cli/shell/",
+   "title": "Evaluate in a workspace",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::detail::Row::server",
    "page": "/cxx/latest/workspace/internals/examples/",
    "title": "C++ workspace builder examples",
    "section": "ports"
@@ -145,13 +152,6 @@
    "symbol": "libtmux::mcp::ToolResult",
    "page": "/cxx/latest/mcp/reference/",
    "title": "C++ MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "cxx",
-   "symbol": "libtmux::mcp::ToolSchema::input",
-   "page": "/cxx/latest/workspace/reference/output/",
-   "title": "JSON, NDJSON, and semantic color",
    "section": "ports"
   },
   {
@@ -583,6 +583,13 @@
   },
   {
    "port": "cxx",
+   "symbol": "libtmux::workspace::BuildError::window_index",
+   "page": "/cxx/latest/workspace/configuration/windows/",
+   "title": "Window configuration",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
    "symbol": "libtmux::workspace::Command",
    "page": "/cxx/latest/workspace/internals/topics/",
    "title": "C++ workspace builder behavior",
@@ -593,6 +600,34 @@
    "symbol": "libtmux::workspace::Command",
    "page": "/cxx/latest/workspace/reference/",
    "title": "C++ workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::workspace::Command::enter",
+   "page": "/cxx/latest/workspace/configuration/commands/",
+   "title": "Workspace commands",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::workspace::Command::enter",
+   "page": "/cxx/latest/workspace/configuration/panes/",
+   "title": "Pane configuration",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::workspace::Command::suppress_history",
+   "page": "/cxx/latest/workspace/configuration/panes/",
+   "title": "Pane configuration",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::workspace::Command::suppress_history",
+   "page": "/cxx/latest/workspace/configuration/session/",
+   "title": "Session configuration",
    "section": "ports"
   },
   {
@@ -661,15 +696,29 @@
   {
    "port": "cxx",
    "symbol": "libtmux::workspace::Window::options_after",
+   "page": "/cxx/latest/workspace/configuration/windows/",
+   "title": "Window configuration",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::workspace::Window::options_after",
    "page": "/cxx/latest/workspace/internals/topics/",
    "title": "C++ workspace builder behavior",
    "section": "ports"
   },
   {
    "port": "cxx",
-   "symbol": "libtmux::workspace::Window::options_after",
-   "page": "/cxx/latest/workspace/reference/compatibility/",
-   "title": "tmuxp compatibility and port status",
+   "symbol": "libtmux::workspace::Window::panes",
+   "page": "/cxx/latest/workspace/cli/import-tmuxinator/",
+   "title": "Import from tmuxinator",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::workspace::Window::panes",
+   "page": "/cxx/latest/workspace/configuration/panes/",
+   "title": "Pane configuration",
    "section": "ports"
   },
   {
@@ -688,9 +737,30 @@
   },
   {
    "port": "cxx",
+   "symbol": "libtmux::workspace::Workspace::global_options",
+   "page": "/cxx/latest/workspace/configuration/session/",
+   "title": "Session configuration",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
    "symbol": "libtmux::workspace::Workspace::session_name",
-   "page": "/cxx/latest/workspace/reference/output/",
-   "title": "JSON, NDJSON, and semantic color",
+   "page": "/cxx/latest/workspace/configuration/session/",
+   "title": "Session configuration",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::workspace::Workspace::windows",
+   "page": "/cxx/latest/workspace/configuration/session/",
+   "title": "Session configuration",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::workspace::Workspace::windows",
+   "page": "/cxx/latest/workspace/configuration/windows/",
+   "title": "Window configuration",
    "section": "ports"
   },
   {
@@ -1412,13 +1482,6 @@
    "symbol": "LibTmux.Workspace.WorkspaceResult",
    "page": "/dotnet/latest/workspace/reference/",
    "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceResult.Unsupported",
-   "page": "/dotnet/latest/workspace/configuration/layouts/",
-   "title": "Workspace layouts and focus",
    "section": "ports"
   },
   {
@@ -2243,13 +2306,6 @@
   {
    "port": "go",
    "symbol": "workspace.Workspace.MissingDirectories",
-   "page": "/go/latest/workspace/configuration/directories/",
-   "title": "Workspace files and directories",
-   "section": "ports"
-  },
-  {
-   "port": "go",
-   "symbol": "workspace.Workspace.MissingDirectories",
    "page": "/go/latest/workspace/internals/topics/",
    "title": "Go workspace builder behavior",
    "section": "ports"
@@ -2431,9 +2487,23 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.PaneCommand.PaneCommand.status",
-   "page": "/java/latest/workspace/reference/output/",
-   "title": "JSON, NDJSON, and semantic color",
+   "symbol": "io.github.libtmux.PaneStart.PaneStart.shell",
+   "page": "/java/latest/workspace/configuration/panes/",
+   "title": "Pane configuration",
+   "section": "ports"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.PaneStart.PaneStart.shell",
+   "page": "/java/latest/workspace/configuration/windows/",
+   "title": "Window configuration",
+   "section": "ports"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.PaneStart.PaneStart.shell",
+   "page": "/java/latest/workspace/reference/compatibility/",
+   "title": "Runtime and configuration support",
    "section": "ports"
   },
   {
@@ -4322,13 +4392,6 @@
   {
    "port": "py",
    "symbol": "libtmux.server.Server",
-   "page": "/swift/latest/workspace/cli/shell/",
-   "title": "tmuxp shell",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.server.Server",
    "page": "/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
@@ -4416,13 +4479,6 @@
    "page": "/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.server.Server.tmux_bin",
-   "page": "/swift/latest/workspace/cli/shell/",
-   "title": "tmuxp shell",
-   "section": "ports"
   },
   {
    "port": "py",
@@ -4636,6 +4692,13 @@
   },
   {
    "port": "py",
+   "symbol": "tmuxp.cli.create_parser",
+   "page": "/py/latest/workspace/internals/documentation/",
+   "title": "Workspace reference generation",
+   "section": "ports"
+  },
+  {
+   "port": "py",
    "symbol": "tmuxp.cli.search.SearchPattern.regex",
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
@@ -4643,93 +4706,79 @@
   },
   {
    "port": "py",
-   "symbol": "tmuxp.cli.search.WorkspaceFields.windows",
-   "page": "/ts/latest/workspace/configuration/session/",
-   "title": "Session configuration",
+   "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
+   "page": "/cxx/latest/workspace/configuration/environment/",
+   "title": "Workspace environment",
    "section": "ports"
   },
   {
    "port": "py",
    "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
-   "page": "/ts/latest/workspace/reference/compatibility/",
-   "title": "tmuxp compatibility and port status",
+   "page": "/dotnet/latest/workspace/configuration/environment/",
+   "title": "Workspace environment",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
+   "page": "/go/latest/workspace/configuration/environment/",
+   "title": "Workspace environment",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
+   "page": "/java/latest/workspace/configuration/environment/",
+   "title": "Workspace environment",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
+   "page": "/rs/latest/workspace/configuration/environment/",
+   "title": "Workspace environment",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
+   "page": "/swift/latest/workspace/configuration/environment/",
+   "title": "Workspace environment",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
+   "page": "/ts/latest/workspace/configuration/environment/",
+   "title": "Workspace environment",
    "section": "ports"
   },
   {
    "port": "py",
    "symbol": "tmuxp.plugin.TmuxpPlugin.after_window_finished",
    "page": "/py/latest/workspace/configuration/hooks/",
-   "title": "Workspace hooks and builders",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
-   "page": "/go/latest/workspace/",
-   "title": "tmux workspace manager for Go",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
-   "page": "/go/latest/workspace/cli/load/",
-   "title": "tmuxp load",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
-   "page": "/go/latest/workspace/guides/installation/",
-   "title": "Install and load a workspace",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
-   "page": "/go/latest/workspace/internals/",
-   "title": "Go workspace internals",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
-   "page": "/go/latest/workspace/internals/topics/",
-   "title": "Go workspace builder behavior",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
-   "page": "/ts/latest/workspace/configuration/hooks/",
-   "title": "Workspace hooks and builders",
-   "section": "ports"
-  },
-  {
-   "port": "py",
-   "symbol": "tmuxp.plugin.TmuxpPlugin.before_script",
-   "page": "/ts/latest/workspace/reference/compatibility/",
-   "title": "tmuxp compatibility and port status",
+   "title": "Bootstrap scripts and extensions",
    "section": "ports"
   },
   {
    "port": "py",
    "symbol": "tmuxp.plugin.TmuxpPlugin.before_workspace_builder",
    "page": "/py/latest/workspace/configuration/hooks/",
-   "title": "Workspace hooks and builders",
+   "title": "Bootstrap scripts and extensions",
    "section": "ports"
   },
   {
    "port": "py",
    "symbol": "tmuxp.plugin.TmuxpPlugin.on_window_create",
    "page": "/py/latest/workspace/configuration/hooks/",
-   "title": "Workspace hooks and builders",
+   "title": "Bootstrap scripts and extensions",
    "section": "ports"
   },
   {
    "port": "py",
    "symbol": "tmuxp.plugin.TmuxpPlugin.reattach",
    "page": "/py/latest/workspace/configuration/hooks/",
-   "title": "Workspace hooks and builders",
+   "title": "Bootstrap scripts and extensions",
    "section": "ports"
   },
   {
@@ -4783,6 +4832,20 @@
   },
   {
    "port": "py",
+   "symbol": "tmuxp.workspace.freezer.freeze",
+   "page": "/py/latest/workspace/reference/exit-codes/",
+   "title": "Exit codes and errors",
+   "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "tmuxp.workspace.freezer.freeze",
+   "page": "/py/latest/workspace/reference/output/",
+   "title": "Output formats",
+   "section": "ports"
+  },
+  {
+   "port": "py",
    "symbol": "tmuxp.workspace.freezer.inline",
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
@@ -4832,6 +4895,27 @@
   },
   {
    "port": "rs",
+   "symbol": "config.PaneConfig.shell",
+   "page": "/rs/latest/workspace/configuration/panes/",
+   "title": "Pane configuration",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "config.PaneConfig.shell",
+   "page": "/rs/latest/workspace/configuration/windows/",
+   "title": "Window configuration",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "config.PaneConfig.shell",
+   "page": "/rs/latest/workspace/reference/compatibility/",
+   "title": "Runtime and configuration support",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
    "symbol": "config.WindowConfig",
    "page": "/rs/latest/workspace/reference/",
    "title": "Rust workspace builder API",
@@ -4839,9 +4923,30 @@
   },
   {
    "port": "rs",
+   "symbol": "config.WindowConfig.panes",
+   "page": "/rs/latest/workspace/cli/import-tmuxinator/",
+   "title": "Import from tmuxinator",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "config.WindowConfig.panes",
+   "page": "/rs/latest/workspace/configuration/panes/",
+   "title": "Pane configuration",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "config.WindowConfig.window_index",
+   "page": "/rs/latest/workspace/configuration/windows/",
+   "title": "Window configuration",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
    "symbol": "config.WindowConfig.window_shell",
-   "page": "/rs/latest/workspace/reference/compatibility/",
-   "title": "tmuxp compatibility and port status",
+   "page": "/rs/latest/workspace/configuration/windows/",
+   "title": "Window configuration",
    "section": "ports"
   },
   {
@@ -4895,9 +5000,16 @@
   },
   {
    "port": "rs",
+   "symbol": "config.Workspace.global_options",
+   "page": "/rs/latest/workspace/configuration/session/",
+   "title": "Session configuration",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
    "symbol": "config.Workspace.session_name",
-   "page": "/rs/latest/workspace/reference/output/",
-   "title": "JSON, NDJSON, and semantic color",
+   "page": "/rs/latest/workspace/configuration/session/",
+   "title": "Session configuration",
    "section": "ports"
   },
   {
@@ -4926,6 +5038,20 @@
    "symbol": "config.Workspace.to_yaml",
    "page": "/rs/latest/workspace/reference/",
    "title": "Rust workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "config.Workspace.windows",
+   "page": "/rs/latest/workspace/configuration/session/",
+   "title": "Session configuration",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "config.Workspace.windows",
+   "page": "/rs/latest/workspace/configuration/windows/",
+   "title": "Window configuration",
    "section": "ports"
   },
   {
@@ -5045,6 +5171,13 @@
    "symbol": "mcp.src.TmuxTools.wait_for_text",
    "page": "/rs/latest/mcp/topics/",
    "title": "Rust MCP topics",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "options.generated.EDITOR",
+   "page": "/rs/latest/workspace/configuration/environment/",
+   "title": "Workspace environment",
    "section": "ports"
   },
   {
@@ -5508,6 +5641,13 @@
    "page": "/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "test.TestServer.server",
+   "page": "/rs/latest/workspace/cli/shell/",
+   "title": "Evaluate in a workspace",
+   "section": "ports"
   },
   {
    "port": "rs",
@@ -6050,6 +6190,13 @@
   },
   {
    "port": "swift",
+   "symbol": "JSONValue.null",
+   "page": "/swift/latest/workspace/configuration/panes/",
+   "title": "Pane configuration",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
    "symbol": "MCPRequestHandler",
    "page": "/swift/latest/mcp/reference/",
    "title": "Swift MCP API",
@@ -6152,6 +6299,34 @@
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.environment(_:)",
+   "page": "/swift/latest/workspace/configuration/environment/",
+   "title": "Workspace environment",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.environment(_:)",
+   "page": "/swift/latest/workspace/configuration/panes/",
+   "title": "Pane configuration",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.environment(_:)",
+   "page": "/swift/latest/workspace/configuration/session/",
+   "title": "Session configuration",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.environment(_:)",
+   "page": "/swift/latest/workspace/configuration/windows/",
+   "title": "Window configuration",
+   "section": "ports"
   },
   {
    "port": "swift",
@@ -6316,20 +6491,6 @@
   },
   {
    "port": "swift",
-   "symbol": "ServerConfiguration.errors",
-   "page": "/swift/latest/workspace/reference/exit-codes/",
-   "title": "Exit codes and errors",
-   "section": "ports"
-  },
-  {
-   "port": "swift",
-   "symbol": "ServerConfiguration.errors",
-   "page": "/swift/latest/workspace/reference/output/",
-   "title": "JSON, NDJSON, and semantic color",
-   "section": "ports"
-  },
-  {
-   "port": "swift",
    "symbol": "Session",
    "page": "/swift/latest/workspace/internals/topics/",
    "title": "Swift workspace builder behavior",
@@ -6379,6 +6540,13 @@
   },
   {
    "port": "swift",
+   "symbol": "TmuxCommandList.commands",
+   "page": "/swift/latest/workspace/cli/import-teamocil/",
+   "title": "Import from Teamocil",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
    "symbol": "TmuxContext",
    "page": "/topics/environment/",
    "title": "Environment",
@@ -6396,6 +6564,20 @@
    "symbol": "TmuxHook.command",
    "page": "/swift/latest/mcp/guides/",
    "title": "Connect a Swift MCP client",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "TmuxShellCommand.enter",
+   "page": "/swift/latest/workspace/configuration/commands/",
+   "title": "Workspace commands",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "TmuxShellCommand.enter",
+   "page": "/swift/latest/workspace/configuration/panes/",
+   "title": "Pane configuration",
    "section": "ports"
   },
   {
@@ -6505,6 +6687,20 @@
   },
   {
    "port": "swift",
+   "symbol": "WindowPlan.panes",
+   "page": "/swift/latest/workspace/cli/import-tmuxinator/",
+   "title": "Import from tmuxinator",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "WindowPlan.panes",
+   "page": "/swift/latest/workspace/configuration/panes/",
+   "title": "Pane configuration",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
    "symbol": "withTmuxServer(socketFileName:_:)",
    "page": "/swift/latest/workspace/internals/guides/",
    "title": "Use the Swift workspace builder",
@@ -6571,6 +6767,20 @@
    "symbol": "Workspace.decode(yaml:)",
    "page": "/swift/latest/workspace/reference/",
    "title": "Swift workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "Workspace.windows",
+   "page": "/swift/latest/workspace/configuration/session/",
+   "title": "Session configuration",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "Workspace.windows",
+   "page": "/swift/latest/workspace/configuration/windows/",
+   "title": "Window configuration",
    "section": "ports"
   },
   {
@@ -6708,13 +6918,6 @@
   },
   {
    "port": "ts",
-   "symbol": "common.CommandOutcome.status",
-   "page": "/ts/latest/workspace/reference/output/",
-   "title": "JSON, NDJSON, and semantic color",
-   "section": "ports"
-  },
-  {
-   "port": "ts",
    "symbol": "config.parseWorkspace",
    "page": "/ts/latest/workspace/internals/",
    "title": "TypeScript workspace internals",
@@ -6809,6 +7012,13 @@
    "symbol": "mcp.server.serverFromEnvironment",
    "page": "/ts/latest/mcp/reference/",
    "title": "TypeScript MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "ts",
+   "symbol": "operation_options.ApplyWorkspaceOptions.commands",
+   "page": "/ts/latest/workspace/cli/import-teamocil/",
+   "title": "Import from Teamocil",
    "section": "ports"
   },
   {
@@ -7156,6 +7366,20 @@
   },
   {
    "port": "ts",
+   "symbol": "types.SendKeysOptions.enter",
+   "page": "/ts/latest/workspace/configuration/commands/",
+   "title": "Workspace commands",
+   "section": "ports"
+  },
+  {
+   "port": "ts",
+   "symbol": "types.SendKeysOptions.enter",
+   "page": "/ts/latest/workspace/configuration/panes/",
+   "title": "Pane configuration",
+   "section": "ports"
+  },
+  {
+   "port": "ts",
    "symbol": "types.ServerSnapshot",
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
@@ -7356,21 +7580,14 @@
    "port": "swift",
    "text": "YAMLWorkspaces",
    "page": "/swift/latest/workspace/reference/compatibility/",
-   "line": 71,
+   "line": 20,
    "why": "not defined in the stated port"
   },
   {
    "port": "swift",
    "text": "TmuxWorkspace",
    "page": "/swift/latest/workspace/reference/compatibility/",
-   "line": 150,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "swift",
-   "text": "YAMLWorkspaces",
-   "page": "/swift/latest/workspace/reference/compatibility/",
-   "line": 151,
+   "line": 33,
    "why": "not defined in the stated port"
   },
   {
@@ -7385,41 +7602,6 @@
    "text": "throws(TmuxError)",
    "page": "/topics/errors-and-exceptions/",
    "line": 31,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "swift",
-   "text": "TmuxWorkspace",
-   "page": "/swift/latest/workspace/configuration/",
-   "line": 96,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "swift",
-   "text": "YAMLWorkspaces",
-   "page": "/swift/latest/workspace/configuration/",
-   "line": 97,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "dotnet",
-   "text": "LibTmux.Workspace.Cli",
-   "page": "/dotnet/latest/workspace/guides/installation/",
-   "line": 7,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "dotnet",
-   "text": "~/.dotnet/tools",
-   "page": "/dotnet/latest/workspace/guides/installation/",
-   "line": 27,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "swift",
-   "text": "TmuxWorkspace",
-   "page": "/swift/latest/workspace/",
-   "line": 60,
    "why": "not defined in the stated port"
   }
  ]

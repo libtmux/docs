@@ -19,7 +19,7 @@ core `Server`.
 Configuration covers session and window names, working directories,
 environment values, options, layouts, focus, window indexes, and pane
 commands. The YAML reader rejects keys outside its supported subset and
-returns a document path and reason. Python runtime features are not loaded.
+returns a document path and reason.
 
 A `Command` holds text, whether to press Enter, pauses before and after
 sending, and history suppression. A command with `enter: false` leaves text

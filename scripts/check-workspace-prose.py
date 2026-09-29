@@ -16,6 +16,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import time
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 parser = argparse.ArgumentParser(description=__doc__)
@@ -30,11 +31,51 @@ args = parser.parse_args()
 BINARY = args.binary.resolve()
 NODE = shutil.which("node") or parser.error("node is required")
 TMUX = shutil.which("tmux") or parser.error("tmux is required")
-PAGES = ["index", "convert", "edit", "freeze", "ls", "debug-info", "search"]
+PAGES = [
+    "cli/" + name
+    for name in [
+        "index",
+        "convert",
+        "edit",
+        "freeze",
+        "ls",
+        "debug-info",
+        "search",
+        "load",
+        "import",
+        "import-teamocil",
+        "import-tmuxinator",
+        "completion",
+    ]
+]
+if os.environ.get("TMUX_WORKSPACE_PYTHON"):
+    PAGES.append("cli/shell")
+CONFIGURATIONS = [
+    "index",
+    "session",
+    "windows",
+    "panes",
+    "commands",
+    "directories",
+    "environment",
+    "layouts",
+    "hooks",
+]
+PAGES.extend("configuration/" + name for name in CONFIGURATIONS)
+PAGES.extend(
+    [
+        "guides/discovery",
+        "guides/automation",
+        "guides/export-session",
+        "guides/troubleshooting",
+        "reference/output",
+        "examples/gallery",
+    ]
+)
 extract = """import {readFileSync} from 'node:fs';
 import {resolvePortBody} from './site/src/lib/workspace-shared-slots.ts';
 const pages=JSON.parse(process.argv[1]);
-console.log(JSON.stringify(Object.fromEntries(pages.map(name=>[name,resolvePortBody(readFileSync('site/src/content/_workspace-shared/workspace/cli/'+name+'.md','utf8'),process.argv[2])]))));
+console.log(JSON.stringify(Object.fromEntries(pages.map(name=>[name,resolvePortBody(readFileSync('site/src/content/_workspace-shared/workspace/'+name+'.md','utf8'),process.argv[2])]))));
 """
 bodies = json.loads(
     subprocess.check_output(
@@ -52,6 +93,9 @@ evidence = {
     },
     "positive": [],
     "negative": [],
+    "skipped": []
+    if "cli/shell" in PAGES
+    else ["shell: set TMUX_WORKSPACE_PYTHON to a compatible runtime"],
 }
 # Unix sockets require the Linux filesystem when running under WSL.
 fixture_root = (
@@ -78,6 +122,11 @@ with tempfile.TemporaryDirectory(
     doc = "session_name: workspace-guide\nwindows:\n  - window_name: editor\n    layout: even-horizontal\n    panes:\n      - printf ready\n      - printf second\n"
     (here / "workspace.yaml").write_text(doc)
     (configs / "workspace.yaml").write_text(doc)
+    for body in bodies.values():
+        for match in re.finditer(
+            r'```(?:yaml|json) title="([\w.-]+)"\n(.*?)\n```', body, re.S
+        ):
+            (here / match[1]).write_text(match[2] + "\n")
     env = dict(
         os.environ,
         PATH=f"{bindir}{os.pathsep}{os.environ.get('PATH', '')}",
@@ -85,10 +134,16 @@ with tempfile.TemporaryDirectory(
         TMUXP_CONFIGDIR=str(configs),
         XDG_CONFIG_HOME=str(configs),
         TMUX_TMPDIR=str(here),
+        SHELL="/bin/sh",
+        ENV="/dev/null",
+        BASH_ENV="/dev/null",
+        ZDOTDIR=str(here),
     )
     env.pop("TMUX", None)
     env.pop("TMUX_PANE", None)
     env.pop("VISUAL", None)
+    for name in ["DOC_SESSION", "DOC_WINDOW", "DOC_PANE"]:
+        env.pop(name, None)
 
     def run(command, success=True):
         result = subprocess.run(
@@ -126,9 +181,132 @@ with tempfile.TemporaryDirectory(
                 result = run(command)
                 if "--json" in command:
                     json.loads(result.stdout)
+                elif "--ndjson" in command:
+                    for line in result.stdout.splitlines():
+                        json.loads(line)
                 evidence["positive"].append(
                     {"page": name, "command": command, "exit": result.returncode}
                 )
+        for name in CONFIGURATIONS:
+            body = bodies["configuration/" + name]
+            document = re.search(r'```yaml title="([\w.-]+)"\n(.*?)\n```', body, re.S)
+            assert document, name
+            result = run(
+                [str(BINARY), "load", "-S", str(socket), "-d", "--json", document[1]]
+            )
+            json.loads(result.stdout)
+            evidence["positive"].append(
+                {
+                    "page": "configuration/" + name,
+                    "document": document[1],
+                    "exit": result.returncode,
+                }
+            )
+
+        for document in ["gallery-blank.yaml", "gallery-commands.yaml"]:
+            result = run(
+                [str(BINARY), "load", "-S", str(socket), "-d", "--json", document]
+            )
+            json.loads(result.stdout)
+            evidence["positive"].append(
+                {
+                    "page": "examples/gallery",
+                    "document": document,
+                    "exit": result.returncode,
+                }
+            )
+
+        def tmux(*command):
+            return run([TMUX, "-S", str(socket), *command]).stdout.strip()
+
+        expected_panes = {
+            "configuration-example": 2,
+            "session-example": 1,
+            "windows-example": 2,
+            "panes-example": 2,
+            "commands-example": 1,
+            "directories-example": 1,
+            "environment-example": 2,
+            "layouts-example": 3,
+            "hooks-example": 1,
+        }
+        for session, count in expected_panes.items():
+            panes = tmux(
+                "list-panes", "-s", "-t", "=" + session, "-F", "#{pane_id}"
+            ).splitlines()
+            assert len(panes) == count, (session, panes)
+        session_ids = dict(
+            line.split("\t")
+            for line in tmux(
+                "list-sessions", "-F", "#{session_name}\t#{session_id}"
+            ).splitlines()
+        )
+        assert (
+            tmux("show-options", "-v", "-t", session_ids["session-example"], "status")
+            == "off"
+        )
+        assert (
+            tmux(
+                "show-window-options",
+                "-v",
+                "-t",
+                tmux(
+                    "list-windows",
+                    "-t",
+                    session_ids["windows-example"],
+                    "-F",
+                    "#{window_id}",
+                ),
+                "synchronize-panes",
+            )
+            == "on"
+        )
+        assert (
+            tmux("list-windows", "-t", "=windows-example", "-F", "#{window_index}")
+            == "2"
+        )
+        assert tmux(
+            "list-panes", "-t", "=panes-example:work", "-F", "#{pane_active}"
+        ).splitlines() == ["0", "1"]
+        assert tmux(
+            "display-message",
+            "-p",
+            "-t",
+            "=directories-example:shell",
+            "#{pane_current_path}",
+        ) == str(here)
+        environment_panes = tmux(
+            "list-panes", "-t", "=environment-example:shell", "-F", "#{pane_id}"
+        ).splitlines()
+
+        def await_text(pane, expected):
+            deadline = time.monotonic() + 3
+            while True:
+                output = tmux("capture-pane", "-p", "-t", pane)
+                if expected in output:
+                    return output
+                if time.monotonic() >= deadline:
+                    raise AssertionError((args.port, pane, expected, output))
+                time.sleep(0.02)
+
+        for pane, expected in zip(
+            environment_panes, ["ENV=session||pane", "ENV=session|window|"], strict=True
+        ):
+            await_text(pane, expected)
+        synchronized = tmux(
+            "list-panes", "-t", "=windows-example:tools", "-F", "#{pane_id}"
+        ).splitlines()
+        assert "right" not in await_text(synchronized[0], "left")
+        assert "left" not in await_text(synchronized[1], "right")
+        evidence["configuration_checks"] = [
+            "pane counts",
+            "session options",
+            "option timing",
+            "window index",
+            "pane focus",
+            "working directory",
+            "launch environment",
+        ]
         assert (here / "workspace.json").is_file()
         assert (here / "captured-workspace.yaml").is_file()
         assert (here / "editor-argument").read_text().endswith("workspace.yaml")
@@ -161,7 +339,7 @@ with tempfile.TemporaryDirectory(
             {"case": "invalid regex fails", "exit": failed.returncode}
         )
         (here / "invalid.yaml").write_text(
-            "session_name: invalid\nbogus: true\nwindows: []\n"
+            "session_name: invalid\nbogus: true\nwindows: [{window_name: shell, panes: [null]}]\n"
         )
         failed = run(
             [str(BINARY), "load", "-S", str(socket), "-d", "--json", "invalid.yaml"],
@@ -182,3 +360,5 @@ if args.report:
 print(
     f"PASS: {len(evidence['positive'])} documented commands, {len(evidence['negative'])} failure checks for {args.port}"
 )
+for skipped in evidence["skipped"]:
+    print(f"SKIPPED: {skipped}")

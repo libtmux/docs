@@ -1,5 +1,5 @@
 ---
-description: Generate completion from command definitions and check native availability.
+description: Generate completion for the installed workspace command.
 product: workspace
 sidebar:
   group: CLI reference
@@ -7,92 +7,121 @@ sidebar:
   order: 22
 tableOfContents: true
 title: Shell completion
-ports:
-  py:
-    description: Generate completion from the Python parser and track native generator requirements.
 ---
 
-<!-- port:py -->This page documents the available Python tmuxp reference. Proposed native
-extensions are labeled separately.
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->**tmuxp compatibility reference.** Examples using `tmuxp` run the Python reference. [Local CLI status](../../reference/compatibility/) describes this port's implemented coverage.
-<!-- /port -->
-tmuxp uses the separately installed `shtab` package for experimental completion. The parser entry point is [`tmuxp.cli.create_parser`](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/__init__.py). Generate a script in an environment that can import both packages, then use the shell-specific installation procedure from the [upstream completion guide](https://tmuxp.git-pull.com/cli/completion/).
+<!-- port:py -->
+tmuxp uses the optional `shtab` package to generate experimental shell completion
+from its argparse definitions. Install it in the same Python environment as
+tmuxp, then follow the [completion setup](https://tmuxp.git-pull.com/cli/completion/)
+for your shell.
 
-<!-- port:py -->There is no native workspace executable to generate completions from in this
-prototype. The proposed parser choices provide different generators: Cobra has
-command-tree completion and documentation export, clap has completion and
-man-page companions, ArgumentParser has completion and documentation tools,
-picocli has code generation, and Commander, System.CommandLine, and CLI11 need
-their documented tooling or an explicit metadata adapter.
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->## Native completion
+Generate the script again after upgrading tmuxp so it matches the installed
+parser. The parser is available through `tmuxp.cli.create_parser`.
 
-<!-- /port --><!-- port:ts -->Commander defines the native command graph. The CLI package generates Markdown,
-a JSON command catalog, and Bash, Zsh, and Fish completion from those definitions.
-`docs:check` compares generated files in CI. Keep option event order when paired
-flags share a destination.
-<!-- /port --><!-- port:rs -->Clap defines the native command graph. `--generate schema` exports metadata;
-`--generate man` renders the root manual. `--generate` also accepts `bash`, `zsh`,
-`fish`, `powershell`, and `elvish` through clap_complete. Separate subcommand
-manuals are not generated.
-<!-- /port --><!-- port:go -->Cobra defines the native command graph. `--command-tree` exports JSON metadata;
-`--generate-docs` accepts `markdown`, `man`, or `yaml`.
-`--generate-completion` accepts `bash`, `zsh`, `fish`, or `powershell`. Exports
-distinguish command-local flags from inherited machine-output options.
-<!-- /port --><!-- port:java -->Picocli defines the native command graph. `--generate schema` exports metadata
-and `--generate bash` emits completion through its code generator. Other manual
-and completion formats are not exposed by the workspace executable.
-<!-- /port --><!-- port:cxx -->The local C++ CLI generates Bash, Zsh and Fish completion. Build it through
-[installation](../../guides/installation/) and make the resulting
-`tmux-workspace` executable available on `PATH`.
-<!-- /port --><!-- port:java,cxx -->
-<!-- /port --><!-- port:java -->Normal Bash generation writes the script directly. Add `--json` for a versioned
-artifact with `"command": "generate"`, `"format": "bash"`, the exact text in
-`"script"`, and `"status": "ok"`. `--ndjson` emits that artifact as one
-`completed` event with `"sequence": 1` and takes precedence over `--json`.
-Schema generation retains its metadata document in every output mode. See the
-[native generation contract](https://github.com/libtmux/libtmux-java/blob/887a5e079d38898bdffaad19a7961936eabe1ce0/workspace-cli/README.md#generated-reference-and-development).
-<!-- /port --><!-- port:dotnet -->System.CommandLine defines the native command graph. `--generate reference`
-exports its metadata; `--generate man`, `bash`, `zsh`, and `fish` render the other
-formats. The completion scripts offer command and option names without full
-argument context. Spectre.Console owns human presentation separately.
-<!-- /port --><!-- port:cxx -->Enable Bash completion in the current shell:
-<!-- /port --><!-- port:swift -->ArgumentParser defines the native command graph and supplies
-`--generate-completion-script` for shell completion. Manual, DocC, and site
-metadata integration remain separate work. Use supported parser APIs for those
-exports; private parser reflection is not a stable contract.
+[Parser source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/__init__.py).
 <!-- /port -->
-<!-- port:py,ts,rs,go,java,dotnet,swift -->Completion is derived from actual command metadata. It must include nested
-import commands, local short flags, positional arity, mutually exclusive
-<!-- /port --><!-- port:py -->choices, and all-command machine options once implemented. Do not ship a static
-completion script for a guessed executable name.
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,swift -->choices, and all-command machine options. Verify generated scripts with the installed
-executable and target shell.
-<!-- /port --><!-- port:cxx -->```console
-$ source <(tmux-workspace --generate-completion bash)
+
+<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+Generate completion using the installed `tmux-workspace` command. The script
+matches that executable's command definitions.
+
+## Enable Bash completion
+
+<!-- port:ts -->
+```console
+$ tmux-workspace completion bash > tmux-workspace.bash
 ```
+<!-- /port -->
+<!-- port:rs -->
+```console
+$ tmux-workspace --generate bash > tmux-workspace.bash
+```
+<!-- /port -->
+<!-- port:go -->
+```console
+$ tmux-workspace --generate-completion bash > tmux-workspace.bash
+```
+<!-- /port -->
+<!-- port:java -->
+```console
+$ tmux-workspace --generate bash > tmux-workspace.bash
+```
+<!-- /port -->
+<!-- port:dotnet -->
+```console
+$ tmux-workspace --generate bash > tmux-workspace.bash
+```
+<!-- /port -->
+<!-- port:cxx -->
+```console
+$ tmux-workspace --generate-completion bash > tmux-workspace.bash
+```
+<!-- /port -->
+<!-- port:swift -->
+```console
+$ tmux-workspace --generate-completion-script bash > tmux-workspace.bash
+```
+<!-- /port -->
 
-For Zsh, initialise its completion system and load the generated script:
+Check the generated script before loading it in your current Bash session:
 
 ```console
-$ autoload -Uz compinit && compinit && source <(tmux-workspace --generate-completion zsh)
+$ bash -n tmux-workspace.bash
 ```
 
-For Fish:
-
-```console
-$ tmux-workspace --generate-completion fish | source
+```bash
+source ./tmux-workspace.bash
 ```
 
-Completion includes nested import commands, command-specific flags, enumerated
-values and file paths, including names containing spaces. It does not start
-tmux or read workspace files. Dynamic session names and configuration aliases
-are not suggested. Add the matching setup command to your shell configuration
-to enable completion in later sessions.
+Keep the script in your shell's completion directory to load it in later
+sessions. Regenerate it after upgrading the CLI.
 
-This is part of the unreleased native CLI. The documentation exporter remains
-separate from shell completion.
+## Other shells
+
+<!-- port:ts -->
+`completion zsh` and `completion fish` generate the other supported shells.
 <!-- /port -->
-See the [command tree](../) and [compatibility
-reference](../../reference/compatibility/).
+<!-- port:rs -->
+`--generate` also accepts `zsh`, `fish`, `powershell` and `elvish`.
+<!-- /port -->
+<!-- port:go -->
+`--generate-completion` also accepts `zsh`, `fish` and `powershell`.
+<!-- /port -->
+<!-- port:java -->
+The CLI provides Bash completion.
+<!-- /port -->
+<!-- port:dotnet -->
+`--generate zsh` and `--generate fish` generate the other supported shells.
+<!-- /port -->
+<!-- port:cxx -->
+`--generate-completion` also accepts `zsh` and `fish`.
+<!-- /port -->
+<!-- port:swift -->
+`--generate-completion-script` also accepts `zsh` and `fish`.
+<!-- /port -->
 
-[tmuxp reference source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/__init__.py).
+Follow the selected shell's completion setup before sourcing its script.
+Generating a script does not start tmux or load workspace files.
+
+<!-- port:ts -->
+[CLI source](https://github.com/libtmux/libtmux-ts/blob/f36d692552bb9a373b45338bb5fece854e57cc3d/packages/workspace-cli/README.md).
+<!-- /port -->
+<!-- port:rs -->
+[CLI source](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/tmux-workspace/docs/cli.md).
+<!-- /port -->
+<!-- port:go -->
+[CLI source](https://github.com/libtmux/libtmux-go/blob/bb06e26e116e941813ca40bf45e7e3a47d38f52a/workspace/CLI.md).
+<!-- /port -->
+<!-- port:java -->
+[CLI source](https://github.com/libtmux/libtmux-java/blob/3e5b20d22af3890ae5f7f52842e4b05d170a983f/libtmux-workspace-cli/README.md).
+<!-- /port -->
+<!-- port:dotnet -->
+[CLI source](https://github.com/libtmux/libtmux-dotnet/blob/f77fe776ba67a04abb20ddbbc26cf4a000d63b74/src/LibTmux.Workspace.Cli/README.md).
+<!-- /port -->
+<!-- port:cxx -->
+[CLI source](https://github.com/libtmux/libtmux-cxx/blob/9c8c6a264114277df84c9f6819855093adae5c6e/apps/workspace/README.md).
+<!-- /port -->
+<!-- port:swift -->
+[CLI source](https://github.com/libtmux/libtmux-swift/blob/53c67947879f4976ddf2c43f3c8df7c7671c5b19/Sources/TmuxWorkspaceCLI/README.md).
+<!-- /port -->
+<!-- /port -->
