@@ -1,4 +1,5 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
 title: Attach and send keys
 description: Get a session handle, send a command to a pane, and capture output.
 sidebar:
@@ -12,9 +13,8 @@ Get a session handle, send a command to a pane, and capture output. These
 examples use libtmux from your program; to attach your terminal interactively,
 see [Attaching to tmux](/guides/attaching-to-tmux/).
 
-Select your port below. The examples retain their source's setup, error
-handling, and cleanup, so the operations shown vary by port. [Where this comes
-from](#where-this-comes-from) identifies each source and its test coverage.
+The examples include setup, error handling, and cleanup. [Source and
+verification](#where-this-comes-from) identifies their files and checks.
 
 ```python
 >>> import libtmux
@@ -94,7 +94,10 @@ practice](/guides/querying-and-filtering/) covers absent and ambiguous matches.
 
 ## Where this comes from
 
+<!-- port:py -->
+<!-- port:root -->
 ### Python
+<!-- /port -->
 
 **Source:** `src/libtmux/server.py`, `session.py`, `pane.py` docstrings
 
@@ -102,8 +105,12 @@ practice](/guides/querying-and-filtering/) covers absent and ambiguous matches.
 
 **Checked by:** `pytest` runs every `>>>` doctest (`testpaths` includes
 `src/libtmux`) against a real, isolated tmux session on every test run
+<!-- /port -->
 
+<!-- port:ts -->
+<!-- port:root -->
 ### TypeScript
+<!-- /port -->
 
 **Source:** `examples/quickstart/quickstart.ts`
 
@@ -112,8 +119,12 @@ practice](/guides/querying-and-filtering/) covers absent and ambiguous matches.
 **Checked by:** run against real tmux by `bun test examples`; its first half is
 also mirrored into README.md under a `<!-- runs: ... -->` marker, checked
 line-for-line by `scripts/check-doc-runnable.ts`
+<!-- /port -->
 
+<!-- port:rs -->
+<!-- port:root -->
 ### Rust
+<!-- /port -->
 
 **Source:** `crates/libtmux/examples/scratch.rs`
 
@@ -122,8 +133,12 @@ line-for-line by `scripts/check-doc-runnable.ts`
 **Checked by:** run to completion against a throwaway tmux by
 `scripts/run-examples.sh` (`just examples`), which CI runs and which also
 asserts the example leaves no session behind
+<!-- /port -->
 
+<!-- port:go -->
+<!-- port:root -->
 ### Go
+<!-- /port -->
 
 **Source:** `examples/quickstart/main.go`
 
@@ -132,8 +147,12 @@ asserts the example leaves no session behind
 **Checked by:** the whole file runs against a real tmux server as
 `TestQuickstart`; the `docs:quickstart` region inside it is additionally
 mirrored into README.md by `go generate ./tmux`, and CI fails if the two drift
+<!-- /port -->
 
+<!-- port:java -->
+<!-- port:root -->
 ### Java
+<!-- /port -->
 
 **Source:**
 `examples/src/main/java/io/github/libtmux/examples/BuildAWorkspace.java`
@@ -142,8 +161,12 @@ mirrored into README.md by `go generate ./tmux`, and CI fails if the two drift
 
 **Checked by:** run against real tmux by the `examples` module's own
 `ExamplesRunTest`
+<!-- /port -->
 
+<!-- port:dotnet -->
+<!-- port:root -->
 ### .NET
+<!-- /port -->
 
 **Source:** `examples/LibTmux.Examples/Snippets/OneShot.cs`
 
@@ -152,8 +175,12 @@ mirrored into README.md by `go generate ./tmux`, and CI fails if the two drift
 **Checked by:** its `ConnectAndBuild` region is mirrored into README.md and
 checked by `sync_snippets.py --check`; the mirrored `csharp run` block is
 additionally compiled and run by `ReadmeExampleTests`
+<!-- /port -->
 
+<!-- port:cxx -->
+<!-- port:root -->
 ### C++
+<!-- /port -->
 
 **Source:** `examples/05-readme.cpp`, the `connect` and `build` regions
 
@@ -161,8 +188,12 @@ additionally compiled and run by `ReadmeExampleTests`
 
 **Checked by:** quoted verbatim into README.md, checked for drift by
 `tools/docs/check_readme.py`, and the whole file is built and run by CTest
+<!-- /port -->
 
+<!-- port:swift -->
+<!-- port:root -->
 ### Swift
+<!-- /port -->
 
 **Source:** `Examples/Sources/ExampleCode/Changing.swift`
 
@@ -171,6 +202,7 @@ additionally compiled and run by `ReadmeExampleTests`
 **Checked by:** matched against the README's "Change what is there" section by
 `Scripts/check_examples.py`; compiled and run through the package's public
 products by `swift test --package-path Examples`
+<!-- /port -->
 
 ### Source inclusion
 

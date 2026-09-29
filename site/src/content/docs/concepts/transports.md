@@ -1,4 +1,5 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
 title: Control mode vs one-shot
 description: How a call in your program actually reaches the tmux server, and why a port might give you a choice.
 sidebar:
@@ -9,13 +10,10 @@ tableOfContents: true
 ---
 
 libtmux sends commands to tmux through subprocesses or persistent control-mode
-connections. Some ports also batch commands into one invocation:
+connections. tmux also accepts several commands in one invocation:
 
 1. **One-shot subprocess.** Each command spawns a fresh `tmux` process,
-   which parses argv, executes the command, prints its output, and exits. This is
-   the default in every port, and the *only* lane in Python: every `.cmd()`
-   call underneath the object API is a `subprocess.Popen` around a `tmux`
-   invocation.
+   which sends the request to the server, prints the result, and exits.
 2. **A persistent control-mode client.** `tmux -C attach-session` starts one
    long-lived tmux process that stays attached and speaks a line-oriented
    protocol over its stdout: commands go in, replies and asynchronous
@@ -26,74 +24,94 @@ connections. Some ports also batch commands into one invocation:
    can fold several logical operations into a single process start without
    opening a control-mode connection at all.
 
-## Where each port draws the line
+<a id="where-each-port-draws-the-line"></a>
+
+## Available transports
 
 | Port | One-shot | Folded invocation | Persistent control client |
 |------|----------|--------------------|-----------------------------|
-| Python | every call | - | test-only (`ControlMode`, `libtmux._internal`) |
-| TypeScript | default | `pipeline()`, `batch()` | `connect()` / `watch()`: notifications only, commands stay per-process |
-| Go | `process` path | `Plan.Run` | `connection` (`Session.OpenControl`), `streaming` (`OpenNotifications`) |
-| Rust | `plan` feature, sequential | `plan`, folded | `control-mode` feature |
-| C# | "One-shot" mode | "Chained" mode (`server.Chain()`) | "Control" mode (`EnterControlModeAsync`) |
-| C++ | bounded subprocess (default) | `Chain` | `Server::control()` → `Connection` |
-| Java | every call | `Batch` | `ControlClient` (`attach`, `send`, `subscribeEvents`) |
-| Swift | default | - | `server.connect()` / `.watch()` (notifications; see below) |
-
+<!-- port:py -->| Python | every call | - | test-only (`ControlMode`, `libtmux._internal`) |
+<!-- /port --><!-- port:ts -->| TypeScript | default | `pipeline()`, `batch()` | `connect()` / `watch()`: notifications only, commands stay per-process |
+<!-- /port --><!-- port:go -->| Go | `process` path | `Plan.Run` | `connection` (`Session.OpenControl`), `streaming` (`Session.OpenNotifications`) |
+<!-- /port --><!-- port:rs -->| Rust | `plan` feature, sequential | `plan`, folded | `control-mode` feature |
+<!-- /port --><!-- port:dotnet -->| C# | "One-shot" mode | "Chained" mode (`server.Chain()`) | "Control" mode (`EnterControlModeAsync`) |
+<!-- /port --><!-- port:cxx -->| C++ | bounded subprocess (default) | `Chain` | `Server::control()` → `Connection` |
+<!-- /port --><!-- port:java -->| Java | every call | `Batch` | `ControlClient` (`attach`, `send`, `subscribeEvents`) |
+<!-- /port --><!-- port:swift -->| Swift | default | - | `Server.connected(attachingTo:_:)` / `ControlConnection.watch(_:)` |
+<!-- /port -->
 Choose based on whether you need command results, notifications, or a batch of
 changes.
 
+<!-- port:ts,go,dotnet,java,rs -->
 ## Notifications and commands are separable
 
+<!-- port:ts -->
 TypeScript's `connect()` adds an event observer while commands such as
 `session.newWindow(...)` and `pane.sendKeys(...)` continue to run as separate
 tmux processes. A dedicated process provides a completion boundary for output
 from alias-expanded or waiting commands.
+<!-- /port -->
 
-Go's `Session.OpenControl`, .NET's `EnterControlModeAsync`, Java's
-`ControlClient.send`, and Rust's `control-mode` feature can send commands
-through the persistent connection.
-Check your port's transport API before assuming that subscribing to events also
-changes how commands run.
+
+
+<!-- port:go -->
+`Session.OpenControl` opens a persistent command connection. `Session.OpenNotifications`
+opens a notification stream. Close each handle when finished. Starting an
+observer does not change the transport used by an existing server handle.
+<!-- /port -->
+<!-- port:dotnet -->
+Use `EnterControlModeAsync` for commands on a persistent connection.
+<!-- /port -->
+<!-- port:java -->
+`ControlClient.send` sends commands through the persistent connection.
+<!-- /port -->
+<!-- port:rs -->
+Enable the `control-mode` feature to send commands through a persistent
+connection.
+<!-- /port -->
+
+<!-- /port -->
 
 ## A control client is a real client
 
 A persistent control connection attaches a tmux client. It appears in
 `list-clients`, increments `session_attached`, and affects `destroy-unattached`,
 client hooks, and idle-client accounting. Each connection counts separately.
+<!-- port:py -->
 Python's internal `ControlMode` test helper uses this behavior for commands that
 require an attached client, such as `display-popup` and `detach-client`.
+<!-- /port -->
+
+
 
 ## Why fold several commands into one invocation
 
 Creating an object can require a second command to read its resulting state.
-Batching reduces those repeated reads and process starts. TypeScript's `batch()`
-resolves planned mutations from one final snapshot. Go's `Plan`, .NET's `Chain`,
-and C++'s `Chain` also group operations without attaching a control client.
+Batching can reduce repeated reads and process starts.
+
+<!-- port:ts -->
+`batch()` resolves planned mutations from one final snapshot.
+<!-- /port -->
+<!-- port:go -->
+A `Plan` groups operations without attaching a control client.
+<!-- /port -->
+<!-- port:dotnet,cxx -->
+A `Chain` groups operations without attaching a control client.
+<!-- /port -->
+
+<a id="choosing-a-lane"></a>
 
 ## What this costs in practice
-
-The Rust `matrix` example and .NET README compare process counts and timings.
-Their results describe specific workloads and environments:
-
-- **Rust's** `matrix` example runs the same create-and-query workload five
-  ways. Blocking sequential and async sequential both cost 6 processes for 6
-  dispatches; folding the same 6 into async batches costs 3 processes;
-  routing them over a control-mode connection costs exactly 1.
-- **C#'s** README reports the *marginal* cost of one more command in each
-  mode, as medians against tmux 3.7b: roughly 2.3 ms for another one-shot
-  process, roughly 0.2 ms for another command over an already-open control
-  client, and roughly 0.02 ms for another command folded into one chained
-  invocation.
 
 A persistent connection avoids starting a client for each command. A chain
 groups a known sequence into one invocation. For occasional commands, use the
 default subprocess transport; measure your workload before changing transports
 for performance. Use a notification stream when your program needs tmux events.
 
-## Choosing a lane
+## Sending a command
 
-These examples use each port's subprocess API. See the port reference for
-batching and control-mode setup.
+The example uses the subprocess API. See the reference for batching and
+control-mode setup.
 
 ```python
 import libtmux
@@ -130,7 +148,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+defer cancel()
 
 // One-shot: every call underneath this handle spawns a `tmux` process.
 server, err := tmux.NewServer(tmux.ServerOptions{})

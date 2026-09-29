@@ -1,6 +1,7 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
 title: Getting started
-description: Install tmux, pick a port, and run the smallest thing that proves your setup works.
+description: Install tmux and the library, then create a session and interact with a pane.
 sidebar:
   label: Getting started
   group: Guides
@@ -21,6 +22,7 @@ $ tmux -V
 If `tmux` is missing or older than 3.2a, install a supported version with your
 platform's package manager. libtmux uses an installed tmux executable.
 
+<!-- port:root -->
 ## Pick a port
 
 Choose the port for your project's language: [Python](/py/), [TypeScript](/ts/),
@@ -30,21 +32,24 @@ pane](/concepts/server-session-window-pane/) explains the shared model, and
 [Control mode vs one-shot](/concepts/transports/) covers transport differences.
 
 For a prerelease package, pin an exact version and check its release notes
-before upgrading. API availability and defaults can differ between ports.
+before upgrading. Check the package version's API reference for supported operations.
+<!-- /port -->
 
 ## Run the smallest thing that proves it works
 
-Start a tmux session to connect to: in one terminal:
+<!-- port:py -->
+Start a tmux session in one terminal:
 
 ```console
 $ tmux new-session -s foo -n bar
 ```
 
-In a second terminal, install your port's package and run its example. The
-Python example uses the `foo` session above; the other examples create their own
-sessions. Installation commands appear in comments at the start of each block.
-[Attach and send keys](/examples/attach-and-send-keys/) provides the full
-examples, their source files, and their validation details.
+Run the example in a second terminal. It uses the session you just created.
+<!-- /port -->
+
+Install the package using the command shown with its example.
+[Attach and send keys](/examples/attach-and-send-keys/) contains the complete
+program, prerequisites, and source details.
 
 ```python
 # pip install libtmux

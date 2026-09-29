@@ -79,9 +79,12 @@ than translating another port's spelling by analogy.
 
 Prefer a tested source example to a manually copied snippet. This site's
 [`remark-port-code.mjs`](site/src/plugins/remark-port-code.mjs) reads fences
-with `file="..."` from its configured port checkout or docs worktree;
+with `file="..."` from the revision-bound example cache;
 `region="..."` selects text between the source's region markers. Read that
-plugin's mapping before editing an example source. Port mutations follow
+plugin's mapping before editing an example source. Regenerate the cache with
+`node scripts/gen-example-sources.mjs`: it reads committed files at the source
+revision recorded by the API model or wrapper guide artifact. Working-tree
+edits and a newer HEAD do not change the documented example. Port mutations follow
 [Repository boundaries](AGENTS.md#repository-boundaries).
 
 Preserve source metadata, region markers, doctest prompts, and expected
@@ -98,14 +101,41 @@ language tag. Preserve collected examples when changing their formatting.
 
 ### Examples across ports
 
+Port pages teach only their selected language. Root pages explain tmux behavior
+and may compare languages or show equivalent examples in tabs.
+
+Keep a language's prose, headings, caveats and examples in an ownership region:
+
+```markdown
+<!-- port:go -->
+Pass a context to each operation and check the returned error.
+<!-- /port -->
+```
+
+Comma-separated port slugs select several languages. Regions can nest;
+`port:root` marks framing that appears only on the shared page. Root builds
+keep every region. The same selection applies to HTML, headings, search,
+Markdown copies and LLM exports. A page's `supportedPorts` array restricts
+shared prose to ports with verified coverage; native source guides supply
+the other ports' documentation and task equivalents.
+
 Keep equivalent examples together under one task heading, using the actual
-language fence tags. The site groups alternative ports into tabs; a build
-for one port filters out the others. Language-specific lead-ins should stay
-with their example. Separate sequential examples and distinct tasks with
-their own explanation rather than forcing them into an alternatives group.
+language fence tags. Separate sequential examples and distinct tasks with
+their own explanation. Check the selected page for empty sections and links
+that accidentally leave its port or version.
 
 `console`, JSON, and other shared fences survive port filtering. Check that
 shared setup still makes sense in every port's rendered page.
+
+Run the Go topic examples against an isolated server when changing their calls:
+
+```console
+$ python3 scripts/check-go-prose.py --checkout /path/to/libtmux-go
+```
+
+This checks seven examples covering input, capture, options, hooks, waiting,
+and cleanup at the integrated Go revision. It requires Go and tmux on `PATH`;
+it is separate from the ordinary docs test loop.
 
 ## Content collections and MDX
 

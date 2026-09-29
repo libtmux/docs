@@ -1,4 +1,5 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
 title: Filtering and querying, in practice
 description: Filter tmux objects, require one match, and choose where a query runs.
 sidebar:
@@ -13,25 +14,36 @@ lookups. [Filtering and queries](/concepts/queries/) explains the result-count
 contracts and the choice between local and tmux-side filtering. This guide adds
 examples for common queries.
 
-## Filling in the rest of the cardinality table
+<a id="filling-in-the-rest-of-the-cardinality-table"></a>
 
+## Require exactly one match
+
+<!-- port:go,rs,cxx -->
 | Port | Collection filter | Exactly-one | Empty | Several |
 |------|--------------------|--------------|-------|---------|
-| Go | `tmuxq.Where(values, predicate)` | `tmuxq.ExactlyOne(values, predicate)` | `tmuxq.ErrNoMatch` | `tmuxq.ErrMultipleMatches` |
-| Rust | `.iter().matching(&expr)` | `.exactly_one()` | prints via the error's `Display` | same, one error type covers both |
-| C++ | pipe a range into [`libtmux::matching(expr)`](/cxx/latest/reference/libtmux-matching/) | `libtmux::exactly_one(range)` | `.error()` says which way it went wrong | same call, same error type |
+<!-- port:go -->| Go | `tmuxq.Where(values, predicate)` | `tmuxq.ExactlyOne(values, predicate)` | `tmuxq.ErrNoMatch` | `tmuxq.ErrMultipleMatches` |
+<!-- /port --><!-- port:rs -->| Rust | `.iter().matching(&expr)` | `.exactly_one()` | prints via the error's `Display` | same, one error type covers both |
+<!-- /port --><!-- port:cxx -->| C++ | pipe a range into [`libtmux::matching(expr)`](/cxx/latest/reference/libtmux-matching/) | `libtmux::exactly_one(range)` | `.error()` says which way it went wrong | same call, same error type |
+<!-- /port -->
+<!-- /port -->
 
-Go's `ExampleExactlyOne` in `tmuxq/example_test.go` checks the result with `go
-test` and `// Output:` assertions:
+<!-- port:go -->
+`tmuxq.ExactlyOne` returns `ErrNoMatch` for no matches and
+`ErrMultipleMatches` for an ambiguous result. Keep the error when wrapping it:
 
 ```go
-_, err := tmuxq.ExactlyOne(noActivePanes, func(pane *pane) bool { return pane.active })
-// errors.Is(err, tmuxq.ErrNoMatch) → true
-
-_, err = tmuxq.ExactlyOne(multipleActivePanes, func(pane *pane) bool { return pane.active })
-// errors.Is(err, tmuxq.ErrMultipleMatches) → true
+pane, err := tmuxq.ExactlyOne(snapshot.Panes(), func(pane *tmux.Pane) bool {
+    name, present := pane.CurrentCommand()
+    return present && name == "nvim"
+})
+if err != nil {
+    return fmt.Errorf("find one editor pane: %w", err)
+}
+fmt.Println("editor pane:", pane.ID())
 ```
+<!-- /port -->
 
+<!-- port:rs -->
 Rust's is `examples/find.rs`, run via `cargo run --example find`:
 
 ```rust
@@ -40,7 +52,9 @@ match panes.iter().matching(&running).exactly_one() {
     Err(error) => println!("not exactly one: {error}"),
 }
 ```
+<!-- /port -->
 
+<!-- port:cxx -->
 C++'s is quoted straight from `examples/05-readme.cpp`'s `cardinality`
 region into `README.md`, and `tools/docs/check_readme.py` fails the build
 if the two ever disagree:
@@ -51,18 +65,29 @@ if (const auto one = libtmux::exactly_one(addressed); one.has_value()) {
     std::printf("exactly one: %s\n", std::string{one->get().id()}.c_str());
 }
 ```
+<!-- /port -->
 
-For .NET and Swift result-count handling, consult the port reference. The
-examples here demonstrate .NET's `IEnumerable<T>.Matching<T>(expression)`
-returning an `IReadOnlyList<Session>` and Swift's `hasSession(_:)` returning a
-`Bool`. The latter checks existence; see [Attaching to
-tmux](../attaching-to-tmux/#finding-a-session-instead-of-always-creating-one).
+<!-- port:dotnet -->
+`IEnumerable<T>.Matching<T>(expression)` returns all matching objects.
+Choose an exactly-one operation only when an absent or ambiguous target should
+stop the task.
+<!-- /port -->
+<!-- port:swift -->
+`hasSession(_:)` checks existence. It does not select a single matching object.
+See [Attaching to tmux](../attaching-to-tmux/).
+<!-- /port -->
+<!-- port:py,ts,java -->
+[Filtering and queries](/concepts/queries/) describes the exactly-one method
+and its missing- or multiple-match errors.
+<!-- /port -->
 
-## Declarative filters that travel, beyond Python and TypeScript
+<!-- port:dotnet,swift -->
+<a id="declarative-filters-that-travel-beyond-python-and-typescript"></a>
 
-[Filtering and queries](/concepts/queries/) covers Python's `.filter()`
-lookups and TypeScript's `.where()` documents. Two more ports build the same
-"a query is data, not code" idea, verified against their own README:
+## Declarative filters
+
+A query document can be stored in configuration and evaluated against captured
+objects. It does not contain an arbitrary callback.
 
 ```csharp
 // Turns a LINQ expression into a portable QueryDocument (or throws),
@@ -79,11 +104,9 @@ IReadOnlyList<Session> building = sessions.Matching<Session>(
 // and it holds no closures, so it encodes for an MCP tool call.
 let expression = FilterExpr<Pane>.where(\.currentCommand, .isIn(["nvim", "vim"]))
 ```
+<!-- /port -->
 
-Sources: .NET's is `src/LibTmux/README.md`, "Filtering." Swift's is
-`Examples/Sources/ExampleCode/Filtering.swift`, matched against the README
-by `Scripts/check_examples.py`.
-
+<!-- port:py,ts,go,swift -->
 ## Case-insensitive matching
 
 ```python
@@ -102,20 +125,26 @@ let editors = try RegexPattern("^(n?vim|hx)$", options: [.caseInsensitive])
 let expression = FilterExpr<Pane>.where(\.currentCommand, .matches(editors))
 ```
 
-For case-insensitive matching in Java, .NET, Go, Rust, and C++, consult the port
-reference. Sources for the examples above: Python's lookup is covered in
-[Filtering and queries](../../concepts/queries/); TypeScript's is in
-`README.md`, "What querying looks like"; Swift's is in
-`Examples/Sources/ExampleCode/Filtering.swift`.
+<!-- port:go -->
+Use a predicate with `strings.EqualFold` for case-insensitive equality:
+
+```go
+matches := tmuxq.Where(snapshot.Sessions(), func(session *tmux.Session) bool {
+    name, present := session.Name()
+    return present && strings.EqualFold(name, "api")
+})
+fmt.Println("matching sessions:", len(matches))
+```
+<!-- /port -->
+
+<!-- /port -->
 
 ## Push the filter into tmux, or read once and filter locally
 
 Use a tmux-side filter to reduce the rows returned, or query a snapshot when you
 need several answers from one read. [Filtering and queries](/concepts/queries/)
-compares Python's `search_sessions()` with `.filter()`, and Go's `SearchPanes`
-with a snapshot plus `tmuxq.Where`. Check the required tmux version. Unknown
-format tokens expand to empty values, so validate an unexpectedly empty search
-before concluding that no objects match.
+explains that choice. Unknown format tokens expand to empty values, so
+validate an unexpectedly empty search before concluding that no objects match.
 
 ## Where to go next
 

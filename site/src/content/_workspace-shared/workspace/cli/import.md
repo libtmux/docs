@@ -44,7 +44,8 @@ result record containing it; neither mode guesses an output filename.
 `--save-to` selects a destination, `--workspace-format` selects YAML or JSON,
 and `--force` permits replacement. Saving publishes through a temporary file
 in the destination directory. See [output](../../reference/output/).
-<!-- /port --><!-- port:cxx -->```console
+<!-- /port --><!-- port:cxx -->
+```console
 $ tmux-workspace import teamocil \
     --save-to team.json \
     team.yml

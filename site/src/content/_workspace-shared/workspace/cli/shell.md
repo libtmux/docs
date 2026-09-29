@@ -32,8 +32,9 @@ Optional backends belong in the selected executable's Python environment.
 Continue the [installation walkthrough](../../guides/installation/) through
 its detached load, leaving `workspace-guide` running in the same shell:
 
+<!-- /port --><!-- port:cxx -->
 ```console
-<!-- /port --><!-- port:cxx -->$ build/cxx-dev/apps/workspace/tmux-workspace shell \
+$ build/cxx-dev/apps/workspace/tmux-workspace shell \
     -S "$WORKSPACE_TMP/tmux.sock" \
     -c 'print(pane.pane_id)' \
     --json \
@@ -60,15 +61,20 @@ flags keep their original order. See the
 dedicated server:
 <!-- /port --><!-- port:ts,rs,go,java,dotnet -->Continue the [installation walkthrough](../../guides/installation/) through
 its detached load, leaving `workspace-guide` running in the same shell:
-<!-- /port --><!-- port:py,ts,rs,go,java,dotnet,cxx -->
+<!-- /port --><!-- port:py -->
 ```console
-<!-- /port -->$ tmuxp shell \
-<!-- port:py -->    -L workspace-guide \
+$ tmuxp shell \
+    -L workspace-guide \
     -c 'print(server.sessions)'
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->    -S "$WORKSPACE_TMP/tmux.sock" \
+```
+<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+```console
+$ tmuxp shell \
+    -S "$WORKSPACE_TMP/tmux.sock" \
     -c 'print(server.sessions)' \
     workspace-guide editor
-<!-- /port -->```
+```
+<!-- /port -->
 
 Use `-c`; the reference does not define `--command`. Optional session and window
 arguments select context. `--best` chooses the best available shell backend; the

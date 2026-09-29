@@ -1,4 +1,5 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
 title: Topics
 description: Object traversal, cleanup, pane I/O, configuration, and failure handling.
 sidebar:
@@ -16,10 +17,10 @@ The concept guides also cover [control mode vs one-shot](/concepts/transports/),
 behavior:
 
 - **[Architecture](architecture/)**: locate operations and field definitions in
-  each port's source.
+  the library source.
 - **[Traversal](traversal/)**: navigate related objects, test membership, and
   compare identity.
-- **[Context managers](context-managers/)**: manage cleanup on block exit and
+- **[Ownership and cleanup](context-managers/)**: manage cleanup on block exit and
   identify objects that need an explicit kill.
 - **[Pane interaction](pane-interaction/)**: choose input modes, capture ranges,
   and completion waits.
@@ -36,5 +37,5 @@ behavior:
 - **[Errors and exceptions](errors-and-exceptions/)**: handle command failures
   and determine whether a mutation can be retried.
 
-Use your port's API reference for signatures and defaults. These pages call out
-differences that affect how you use the APIs.
+Use your port's API reference for signatures and defaults. Each topic explains
+the behavior behind those calls.

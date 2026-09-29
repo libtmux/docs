@@ -73,6 +73,8 @@ describe('staged port guide links', () => {
       guides,
     })
     const overview = files.get('ruby/guides/overview/index.md')!
+    expect(files.get('ruby/examples/index.md')).toContain('../examples/recipes/')
+    expect(files.get('ruby/topics/index.md')).toContain('../guides/execution-modes/')
     expect(overview).toContain('title: "libtmux for Ruby"')
     expect(overview).not.toContain('# libtmux for Ruby')
     expect(overview).not.toContain('artwork')

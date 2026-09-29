@@ -1,4 +1,5 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
 title: Capturing output
 description: Read a pane's screen or scrollback and wait for output or a completion signal.
 sidebar:
@@ -15,8 +16,7 @@ before reading the result.
 ## Visible pane vs. scrollback
 
 `tmux capture-pane` distinguishes the currently visible screen from the
-scrollback history above it, and every port exposes that split rather than
-flattening it:
+scrollback history above it. Choose the range required by your task:
 
 ```python
 # 0 is the first visible line; positive numbers stay in the visible pane;
@@ -34,11 +34,16 @@ const lines = await pane.capture({ start: -100 });
 ```
 
 ```go
-// Same boundary vocabulary as Python's. CaptureBoundary on both ends means
-// "just the visible screen."
+// Include scrollback from its beginning through the bottom of the screen.
 lines, err := pane.Capture(ctx, tmux.CapturePaneRequest{
 	Start: tmux.CaptureBoundary, End: tmux.CaptureBoundary,
 })
+if err != nil {
+    return err
+}
+for _, line := range lines {
+    fmt.Println(line)
+}
 ```
 
 ```rust
@@ -60,16 +65,15 @@ const auto history = pane.capture({.whole_history = true});
 let lines = try await server.capture(pane)
 ```
 
-Java's `pane.capture()` and .NET's `pane.CaptureAsync()` return the visible
-pane as a list of lines; neither's own README shows a scrollback option as
-of this page, so check the port's reference before assuming one exists.
-Sources: TypeScript's is `examples/capture/capture.ts`, run by `bun test
-examples/capture`. Go's is `examples/quickstart/main.go`. Rust's is
-`crates/libtmux/README.md`'s capability table, doctested via `#![doc =
-include_str!("../README.md")]`. C++'s is `README.md`'s "Read a pane"
-section, quoted verbatim from `examples/05-readme.cpp`'s `capture` region
-and checked by `tools/docs/check_readme.py`. Swift's is `README.md`,
-"Change what is there."
+<!-- port:java -->
+`pane.capture()` returns visible pane contents as a list of lines.
+<!-- /port -->
+<!-- port:dotnet -->
+`pane.CaptureAsync()` returns visible pane contents as a list of lines.
+<!-- /port -->
+
+[Capture pane output](/examples/capture-pane-output/) includes complete
+programs and source details.
 
 <a id="dont-poll-wait-for-the-text-instead"></a>
 
@@ -133,24 +137,18 @@ string output = await TmuxWait.UntilAsync(
 try await server.waitForOutput(in: pane, matching: [ready], stoppingAt: [failed])
 ```
 
-Python's pytest plugin supplies isolated test servers; see [Testing with
-libtmux](../testing-with-libtmux/). For Python and C++ signal-based waiting, use
-the `wait-for` APIs below. This page does not include a wait-for-text helper for
-those ports.
+<!-- port:py,cxx -->
+Use a completion channel when the program can announce that its work is done.
+The next section explains that protocol.
+<!-- /port -->
 
-Sources: Go's is `tmux/tmuxtest/screen.go`, quoted in `README.md`'s "Testing
-your own code" section. Rust's is `crates/libtmux/README.md`, doctested.
-TypeScript's is `examples/agent/agent.ts`, run by the integration suite and
-quoted in `packages/libtmux/README.md` (`<!-- runs: examples/agent/agent.ts
--->`). Java's is `examples/.../WatchPaneOutput.java`. .NET's is `README.md`,
-one of the `csharp run` blocks `ReadmeExampleTests` runs. Swift's is
-`Examples/Sources/ExampleCode/Waiting.swift`, matched against
-`<doc:Waiting>` and the README by `Scripts/check_examples.py`; the same
-file's `server.capture(pane, since: mark)`, called in a loop with the cursor
-it returns, is the "watch as it prints" shape for output too large or too
-open-ended to wait on a single pattern.
+[Testing with libtmux](../testing-with-libtmux/) explains isolated servers
+and fixtures. [Capture pane output](/examples/capture-pane-output/) provides
+the full examples.
 
-## When the pane can announce itself: `wait-for`, not scraping
+<a id="when-the-pane-can-announce-itself-wait-for-not-scraping"></a>
+
+## Wait for a completion signal
 
 If you control the command, have it signal completion with `tmux wait-for -S
 done`. Wait on the same channel to avoid matching screen text:
@@ -161,18 +159,27 @@ Session(...)
 >>> server.wait_for('test_channel', set_flag=True)
 ```
 
-The Python example is a doctest in `src/libtmux/server.py`. C++'s
-`Server::wait_for(channel, timeout)`, declared in `include/libtmux/server.hpp`,
-also detects a server that dies during the wait. Swift's `server.wait(for:)`
-example waits for a build to signal completion:
+<!-- port:cxx -->
+`Server::wait_for(channel, timeout)` also detects a server that dies during
+the wait and reports failure.
+<!-- /port -->
 
-```swift file="Examples/Sources/ExampleCode/Waiting.swift" region="guides-capturing-output-176"
+```swift
+import LibTmux
+
+public func waitingOnAChannel(_ server: Server, pane: Pane) async throws {
+    try await server.run(
+        "make; \(server.shellInvocation) wait-for -S built",
+        in: pane
+    )
+    try await server.wait(for: "built")
+}
 ```
 
-Source: `Examples/Sources/ExampleCode/Waiting.swift`. Rust's
-`crates/libtmux/README.md` documents the same pattern under "tmux keeps a
-signal nobody is waiting on, so the job finishing first does not lose the
-race, and nothing polls," runnable as `examples/orchestrate.rs`.
+Use a distinct channel name for each task. tmux remembers a signal sent before
+a waiter starts; reusing a signalled name can therefore finish an unrelated
+later wait. [Waiting and retrying](/topics/waiting-and-retry/) covers channel
+APIs and server-loss handling.
 
 ## Where to go next
 

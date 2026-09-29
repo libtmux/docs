@@ -1,4 +1,5 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
 title: Filtering and queries
 description: How you get from every session on the server to the one pane you mean, and what happens when zero or several match.
 sidebar:
@@ -12,15 +13,17 @@ Use a collection filter to find matching sessions, windows, or panes. Use an
 exactly-one lookup when your next operation requires a single target.
 
 - **Filtering returns a collection; exactly-one lookup checks the result
-  count.** A `.filter()` or `.where()` call returns zero or more matches. Methods
-  such as `.get()`, `.one()`, and `Selections.exactlyOne()` return one object or
-  report a missing or ambiguous match.
+  count.** A filter returns zero or more matches. An exactly-one operation
+  returns one object or reports a missing or ambiguous match.
 
 - **Choose where to filter.** Filter a snapshot in your program when you need
   several queries over the same data. A tmux format filter can reduce the rows
   returned by a live read. The cost depends on the data and queries you need.
 
-## Python: `.filter()` and `.get()`, Django-style
+<!-- port:py -->
+<a id="python-filter-and-get-django-style"></a>
+
+## Filter collections and select one object
 
 `server.sessions`, `session.windows`, and `window.panes` are `QueryList`
 collections. Call `.filter()` with field names and optional lookup suffixes:
@@ -58,8 +61,12 @@ filter grammar requires tmux 3.2 or newer. An unknown format token expands to an
 empty value, so a malformed filter can look like a valid filter with no matches.
 If `search_*()` unexpectedly returns no results, try `#{m:*,#{session_name}}` to
 check that the session data is available.
+<!-- /port -->
 
-## TypeScript: criteria as data
+<!-- port:ts -->
+<a id="typescript-criteria-as-data"></a>
+
+## Criteria as data
 
 TypeScript's `Selection.where()` accepts structured, serializable criteria that
 can be stored in a configuration file or sent through MCP:
@@ -78,27 +85,36 @@ enables case-insensitive comparison. Use `.where()` for criteria that can be
 encoded with `encodeWhereDocument` and decoded with `decodeWhereDocument`; use
 `.filter()` for a predicate function. `.one()` throws `NoMatchError` or
 `MultipleMatchesError`. `.oneOrUndefined()` permits an absent result.
+<!-- /port -->
 
-## Go, Rust, Java, C++: typed fields that fail queries at compile time
+<!-- port:go,rs,java,cxx,dotnet,swift -->
+<a id="go-rust-java-c-typed-fields-that-fail-queries-at-compile-time"></a>
 
-These ports use typed fields to reject invalid comparisons at compile time:
+## Typed and local filters
 
-- **Go** offers both `tmux.PaneFilter{Active: tmux.Ptr(true), ...}` structs
-  that push down into `SearchPanes` (one tmux command, only matches
-  returned), and a `snapshot()` read followed by `tmuxq.Where(panes,
-  predicate)` when you want several answers from one read.
-- **Rust** uses typed fields: `fields.pane_active.eq(true)` is valid, but
-  `.gt(...)` on that boolean field is not. Expressions compose with `.and()`.
-  With the `serde` feature, a query can be encoded as a versioned JSON document
-  for configuration or MCP.
-- **Java** exposes each field as a typed accessor (`Pane_.index()`,
-  `Session_.name()`) that plugs straight into an ordinary `Stream.filter()`;
-  `Pane_.index().startsWith("2")` doesn't compile because the index is a
-  number, not a string. `Selections.exactlyOne(...)` is the `.get()`-shaped
-  call, throwing `NoMatchException` or `MultipleMatchesException`.
-- **C++** composes `FilterExpr` values with `&&`, `||`, and `!`, as in
-  `pane::command.starts_with("nv") && pane::active`. Invalid field operations
-  such as `pane::active.starts_with("x")` fail to compile.
+Typed field operations let the compiler reject incompatible comparisons:
+
+<!-- port:go -->
+`tmux.PaneFilter` describes a typed predicate over captured values. Use
+`tmuxq.Matching` or compile its `PaneFilter.Predicate()` for local queries. To filter a
+live tmux listing, pass a `TmuxFilter` expression to `Server.SearchPanes`.
+<!-- /port -->
+<!-- port:rs -->
+Typed fields reject invalid comparisons: `fields.pane_active.eq(true)` is
+valid, while `.gt(...)` on a boolean field fails to compile. Compose
+expressions with `.and()`. The `serde` feature supports versioned query
+JSON for configuration or MCP.
+<!-- /port -->
+<!-- port:java -->
+`Pane_`, `Window_`, and `Session_` expose typed field accessors for stream
+predicates. A numeric field has no `startsWith` operation. Use
+`Selections.exactlyOne` to reject absent or ambiguous matches.
+<!-- /port -->
+<!-- port:cxx -->
+Compose `FilterExpr` values with `&&`, `||`, and `!`. For example,
+`pane::command.starts_with("nv") && pane::active` is valid, while
+`pane::active.starts_with("x")` fails to compile.
+<!-- /port -->
 
 Examples of typed and local filters:
 
@@ -131,7 +147,7 @@ active := tmuxq.Where(snapshot.Panes(), predicate)
 fmt.Println("active panes:", len(active))
 
 // Or push the filter down: tmux returns only the matches.
-filter := tmux.PaneFilter{Active: tmux.Ptr(true)}
+filter := tmux.TmuxFilter("#{==:#{pane_active},1}")
 panes, err := server.SearchPanes(ctx, &filter)
 if err != nil {
 	return err
@@ -183,14 +199,21 @@ let editors = try await server.panes().filter { $0.currentCommand == "nvim" }
 let expression = try FilterExpr<Pane>.where(\.currentCommand, .isIn(["nvim", "vim"]))
 let matching = try await server.panes().filter(expression)
 ```
+<!-- /port -->
 
-## The cardinality contract, side by side
+<a id="the-cardinality-contract-side-by-side"></a>
 
+## Result counts
+
+<!-- port:py,ts,java -->
 | Port | Collection filter | Exactly-one | Empty | Several |
 |------|--------------------|--------------|-------|---------|
-| Python | `.filter()` | `.get()` | `ObjectDoesNotExist` (or `default=`) | `MultipleObjectsReturned` |
-| TypeScript | `.where()` / `.filter()` | `.one()` | `NoMatchError` (or `.oneOrUndefined()`) | `MultipleMatchesError` |
-| Java | `Stream.filter()` | `Selections.exactlyOne()` | `NoMatchException` | `MultipleMatchesException` |
+<!-- port:py -->| Python | `.filter()` | `.get()` | `ObjectDoesNotExist` (or `default=`) | `MultipleObjectsReturned` |
+<!-- /port --><!-- port:ts -->| TypeScript | `.where()` / `.filter()` | `.one()` | `NoMatchError` (or `.oneOrUndefined()`) | `MultipleMatchesError` |
+<!-- /port --><!-- port:java -->| Java | `Stream.filter()` | `Selections.exactlyOne()` | `NoMatchException` | `MultipleMatchesException` |
+<!-- /port -->
+<!-- /port -->
 
-See the Go, Rust, C++, .NET, and Swift references for their exactly-one result
-types and failure handling.
+[Filtering and querying](/guides/querying-and-filtering/) shows exactly-one
+lookups and their error handling. Do not index the first result until the
+operation has established that a match exists.
