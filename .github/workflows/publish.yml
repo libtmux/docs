@@ -8,7 +8,7 @@ name: publish
 #
 # The plan runs everywhere and needs no credentials, so a dry run (the
 # default) shows exactly what would be published. A real run dispatches each
-# port's own docs.yml, which builds and publishes through the reviewed
+# port's catalogued caller, which builds and publishes through the reviewed
 # reusable workflows under that port's own role; this workflow never touches
 # the bucket. GITHUB_TOKEN cannot dispatch another repository's workflow, so
 # a real run needs the LIBTMUX_DOCS_DISPATCH_TOKEN secret (or the optional
@@ -103,15 +103,16 @@ jobs:
         with:
           app-id: ${{ vars.LIBTMUX_DOCS_APP_ID }}
           private-key: ${{ secrets.LIBTMUX_DOCS_APP_KEY }}
-          owner: libtmux
+          owner: ${{ matrix.repoOwner }}
           repositories: ${{ matrix.repoName }}
-      # Dispatch from the default branch, the one ref besides release tags
-      # that the port's `docs` environment admits, then wait for the port's
-      # run so a failed publish fails this job too.
+          permission-actions: write
+      # The catalog selects a reviewed caller branch independently of source-ref.
+      # Wait for its run so a failed publication fails this job too.
       - name: Publish ${{ matrix.port }} ${{ matrix.version }}
         env:
           GH_TOKEN: ${{ steps.app.outputs.token || secrets.LIBTMUX_DOCS_DISPATCH_TOKEN }}
           REPO: ${{ matrix.repo }}
+          WORKFLOW: ${{ matrix.workflow }}
           DISPATCH_REF: ${{ matrix.dispatchRef }}
           SOURCE_REF: ${{ matrix.sourceRef }}
           VERSION: ${{ matrix.version }}
@@ -122,14 +123,14 @@ jobs:
         run: |
           set -euo pipefail
           [[ -n "$GH_TOKEN" ]] || {
-            echo "::error::No dispatch credential: set the LIBTMUX_DOCS_DISPATCH_TOKEN secret on this repository, a fine-grained token with Actions: read and write on the port repositories (docs/ci.md)." >&2
+            echo "::error::No dispatch credential for $REPO: configure the publisher App or LIBTMUX_DOCS_DISPATCH_TOKEN with Actions: write on that repository (docs/ci.md)." >&2
             exit 1
           }
           # Family callers default to every sibling. Select only this leg's
           # language; other port workflows have no language input.
           language_args=()
           if [[ -n "$LANGUAGE" ]]; then language_args=(-f "language=$LANGUAGE"); fi
-          url=$(gh workflow run docs.yml --repo "$REPO" --ref "$DISPATCH_REF" \
+          url=$(gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$DISPATCH_REF" \
             -f source-ref="$SOURCE_REF" -f version="$VERSION" -f version-kind="$KIND" \
             -f is-default="$IS_DEFAULT" -f resolves-to="$RESOLVES_TO" -f publish=true "${language_args[@]}")
           run_id=${url##*/}

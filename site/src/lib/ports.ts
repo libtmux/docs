@@ -153,6 +153,14 @@ export interface Port {
   packageName: string
   /** Source repository, `owner/name`. */
   repo: string
+  /** Reviewed caller for the central documentation dispatcher. */
+  docsDispatch?: {
+    workflow: string
+    /** Fixed caller branch; absent selects the repository's default branch. */
+    ref?: string
+    /** Language selector accepted by a library family's caller. */
+    language?: string
+  }
   /** Working checkout, for the build script. Tilde-relative. */
   checkout: string
   /** Where the docs-branch worktree lives. Tilde-relative. */
@@ -298,6 +306,7 @@ const CORE_PORTS: readonly Port[] = [
     workspaceCli: 'tmuxp load',
     workspaceCliAvailability: 'released',
     repo: 'tmux-python/libtmux',
+    docsDispatch: { workflow: 'docs.yml', ref: 'docs-site-deploy' },
     checkout: '~/work/python/libtmux',
     worktree: '~/work/python/libtmux-python-docs',
     versionedDocs: true,
@@ -387,6 +396,7 @@ const CORE_PORTS: readonly Port[] = [
       },
     ],
     repo: 'libtmux/libtmux-ruby',
+    docsDispatch: { workflow: 'docs.yml' },
     checkout: '~/work/libtmux/libtmux-ruby',
     worktree: '~/work/libtmux/libtmux-ruby-docs',
     versionedDocs: true,
@@ -418,6 +428,7 @@ const CORE_PORTS: readonly Port[] = [
     packageName: 'libtmux',
     productAvailability: { workspace: 'unpublished', mcp: 'unpublished' },
     repo: 'libtmux/libtmux-lua',
+    docsDispatch: { workflow: 'docs.yml' },
     checkout: '~/work/libtmux/libtmux-lua',
     worktree: '~/work/libtmux/libtmux-lua-docs',
     versionedDocs: true,
@@ -543,6 +554,7 @@ const CORE_PORTS: readonly Port[] = [
       },
     ],
     repo: 'libtmux/libtmux-ts',
+    docsDispatch: { workflow: 'docs.yml' },
     checkout: '~/work/libtmux/libtmux-ts',
     worktree: '~/work/libtmux/libtmux-ts-docs',
     versionedDocs: true,
@@ -621,6 +633,7 @@ const CORE_PORTS: readonly Port[] = [
     language: 'Rust',
     packageName: 'libtmux',
     repo: 'libtmux/libtmux-rs',
+    docsDispatch: { workflow: 'docs.yml' },
     checkout: '~/work/libtmux/libtmux-rs',
     worktree: '~/work/libtmux/libtmux-rs-docs',
     versionedDocs: true,
@@ -682,6 +695,7 @@ const CORE_PORTS: readonly Port[] = [
       },
     ],
     repo: 'libtmux/libtmux-go',
+    docsDispatch: { workflow: 'docs.yml' },
     checkout: '~/work/libtmux/libtmux-go',
     worktree: '~/work/libtmux/libtmux-go-docs',
     versionedDocs: true,
@@ -731,6 +745,7 @@ const CORE_PORTS: readonly Port[] = [
     language: 'Java',
     packageName: 'io.github.libtmux:libtmux',
     repo: 'libtmux/libtmux-java',
+    docsDispatch: { workflow: 'docs.yml', language: 'java' },
     checkout: '~/work/libtmux/libtmux-java',
     worktree: '~/work/libtmux/libtmux-java-docs',
     versionedDocs: true,
@@ -798,6 +813,7 @@ const CORE_PORTS: readonly Port[] = [
     language: 'C#',
     packageName: 'LibTmux',
     repo: 'libtmux/libtmux-dotnet',
+    docsDispatch: { workflow: 'docs.yml', language: 'dotnet' },
     checkout: '~/work/libtmux/libtmux-dotnet',
     worktree: '~/work/libtmux/libtmux-dotnet-docs',
     versionedDocs: true,
@@ -873,6 +889,7 @@ const CORE_PORTS: readonly Port[] = [
     language: 'C++',
     packageName: 'libtmux-cxx',
     repo: 'libtmux/libtmux-cxx',
+    docsDispatch: { workflow: 'docs.yml' },
     checkout: '~/work/libtmux/libtmux-cxx',
     worktree: '~/work/libtmux/libtmux-cxx-docs',
     versionedDocs: true,
@@ -949,6 +966,7 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     language: 'Swift',
     packageName: 'libtmux-swift',
     repo: 'libtmux/libtmux-swift',
+    docsDispatch: { workflow: 'docs.yml' },
     checkout: '~/work/libtmux/libtmux-swift',
     worktree: '~/work/libtmux/libtmux-swift-docs',
     versionedDocs: true,
@@ -1053,6 +1071,7 @@ export const PORTS: readonly Port[] = CORE_PORTS.flatMap((parent) => [
   parent,
   ...WRAPPER_LIBRARIES.filter((library) => library.parentLibrary.slug === parent.slug).map((library): Port => ({
     repo: parent.repo, checkout: parent.checkout, worktree: parent.worktree,
+    docsDispatch: parent.docsDispatch && { ...parent.docsDispatch, language: library.slug },
     tagGrammar: parent.tagGrammar, tagPrefix: parent.tagPrefix,
     versionedDocs: parent.versionedDocs, renderer: 'none', generator: '', referenceKind: 'guide',
     publishesOwnTree: true,
