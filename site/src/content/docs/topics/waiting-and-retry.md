@@ -27,7 +27,7 @@ Set a deadline and choose an interval that limits unnecessary tmux commands.
 
 **Helper:** `libtmux.test.retry_until(fn, seconds=, interval=)`
 
-**Where it lives:** The `libtmux.test` module in the main package; raises
+**Where it lives:** `src/libtmux/test/` in the main package; raises
 `WaitTimeout`.
 <!-- /port -->
 
@@ -59,7 +59,7 @@ Set a deadline and choose an interval that limits unnecessary tmux commands.
 
 **Helper:** `libtmux::test::retry_until(within, condition)`
 
-**Where it lives:** `libtmux::test`, enabled with the `test-support` Cargo
+**Where it lives:** `crates/libtmux/src/test.rs`, enabled with the `test-support` Cargo
 feature.
 <!-- /port -->
 
@@ -82,8 +82,7 @@ downstream code cannot depend on
 
 **Helper:** `LibTmux.Testing.TmuxWait.UntilAsync(probe, timeout, interval)`
 
-**Where it lives:** `LibTmux.Testing`, part of the same shipped `LibTmux`
-package
+**Where it lives:** the separate `LibTmux.Testing` package
 <!-- /port -->
 
 <!-- port:cxx -->

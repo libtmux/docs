@@ -149,7 +149,8 @@ Use these entry points when inspecting the implementation:
 <!-- /port -->
 
 <!-- port:java -->
-- **Java**: `io.github.libtmux` holds `Server`, `Session`, `Window`, and
+- **Java**: `libtmux/src/main/java/io/github/libtmux/` holds `Server`,
+  `Session`, `Window`, and
   `Pane` as `final` classes; each exposes its option and hook tables through
   `.options()` / `.hooks()` accessor methods returning a separate `Options`
   / `Hooks` view scoped to that object, rather than mixing those methods

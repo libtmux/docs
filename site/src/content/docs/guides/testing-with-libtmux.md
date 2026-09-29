@@ -61,7 +61,7 @@ func TestProgram(t *testing.T) {
 
 `tmuxtest.NewServer(ctx, t)` captures the environment and working directory,
 resolves the tmux executable, and creates a server on its own socket.
-Setup failures stop the test with `t.Fatal`. Test cleanup kills the server,
+Setup failures stop the test. Test cleanup kills the server,
 and wait failures include the last captured screen. Call `tmuxtest.Main` once
 from `TestMain` before using these helpers. Run the test with `go test`; tmux
 3.2a or newer must be available on `PATH`.

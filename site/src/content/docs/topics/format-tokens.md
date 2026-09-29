@@ -93,7 +93,7 @@ Field accessors retain the scope and version requirements of tmux tokens.
 <!-- port:rs -->
 - **Rust** uses a macro row in `formats.rs` for each token's wire name, scope,
   tmux version, and type. `pane_dead_signal` has `Pane` scope, requires `V3_3`,
-  and is decoded as `Text`.
+  and preserves arbitrary non-NUL bytes.
 <!-- /port -->
 
 <!-- port:go -->

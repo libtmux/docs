@@ -80,6 +80,16 @@ describe('product context in prose', () => {
       .toMatchObject({ kind: 'link', port: 'rs', href: 'https://doc.rust-lang.org/std/collections/struct.BTreeMap.html', external: true })
   })
 
+  it('uses the enclosing type to distinguish nested builders', () => {
+    const java = { port: 'java', version: '0', symbols: ['SessionSpec', 'WindowSpec'].map((name) => ({
+      id: `io.example.${name}.${name}.Builder.environment`, name: 'environment', kind: 'method', signatures: [],
+    })) } as unknown as ApiModel
+    const r = new Resolver([java])
+    const found = r.resolve('java', 'SessionSpec.Builder.environment(Map)')
+    expect('symbol' in found && found.symbol.id).toBe('io.example.SessionSpec.SessionSpec.Builder.environment')
+    expect(r.resolve('java', 'Builder.environment(Map)').how).toBe('ambiguous')
+  })
+
   it('classifies MCP resource URIs and newly authored filenames explicitly', () => {
     expect(notASymbol('tmux://sessions/{session_id}')).toBe('a protocol URI')
     expect(decideFilePath('dev.yaml', { before: 'Save this description as ' }, {})).toEqual({ kind: 'skip', why: 'file created by the example' })

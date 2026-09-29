@@ -63,7 +63,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     domains: [libraryDomain('Kotlin coroutine handles, builders and flows over the Java/JVM library.')],
     sourceGuides: [
       guide('libtmux-kotlin/README.md', 'guides/getting-started', 'core'),
-      guide('docs/guide/kotlin.md', 'guides/coroutines', 'core'),
+      guide('docs/guide/kotlin.md', 'guides/coroutines', 'core', { aliases: ['guides/source/coroutines', 'concepts/transports'] }),
     ],
   },
   scala: {
@@ -71,7 +71,9 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     sourceGuides: [
       guide('libtmux-scala/README.md', 'guides/overview', 'core'),
       ...['getting-started', 'query', 'ownership', 'execution', 'streaming', 'compatibility'].map((name) =>
-        guide(`docs/guide/scala/${name}.md`, `guides/${name}`, 'core')),
+        guide(`docs/guide/scala/${name}.md`, `guides/${name}`, 'core', {
+          aliases: [`guides/source/${name}`, ...(name === 'execution' ? ['concepts/transports'] : [])],
+        })),
     ],
   },
   fsharp: {
@@ -79,7 +81,9 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     sourceGuides: [
       guide('src/LibTmux.FSharp/README.md', 'guides/quickstart', 'core'),
       ...['getting-started', 'queries', 'streams', 'interop', 'modes', 'supported-query-fields'].map((name) =>
-        guide(`docs/fsharp/${name}.md`, `guides/${name}`, 'core')),
+        guide(`docs/fsharp/${name}.md`, `guides/${name}`, 'core', {
+          aliases: [`guides/source/${name}`, ...(name === 'modes' ? ['concepts/transports'] : [])],
+        })),
       guide('docs/fsharp/api.md', 'reference', 'core', { aliases: [], sidebar: { group: 'API reference' } }),
     ],
   },
@@ -140,7 +144,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('docs/creation.md', 'guides/creation', 'core'),
       guide('docs/topology.md', 'guides/topology', 'core'),
       guide('docs/panes.md', 'guides/panes', 'core', { aliases: ['guides/source/panes', 'topics/pane-interaction', 'guides/capturing-output', 'guides/sending-keys'] }),
-      guide('docs/control.md', 'guides/control', 'core'),
+      guide('docs/control.md', 'guides/control', 'core', { aliases: ['guides/source/control', 'concepts/transports'] }),
       guide('docs/commands.md', 'guides/commands', 'core'),
       guide('docs/buffers.md', 'guides/buffers', 'core'),
       guide('docs/clients.md', 'guides/clients', 'core'),

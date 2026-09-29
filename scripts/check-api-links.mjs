@@ -176,17 +176,14 @@ for (const file of targets) {
     if (notASymbol(text) || !looksLikeApiMention(text)) { tally.notASymbol++; continue }
 
 
-    const linkable = (pagePort ? [pagePort] : PORTS).some((port) => {
-      if (!port) return false
-      const decision = decideMention(text, { pagePort: port, product, before }, resolver, models)
-      return decision.kind === 'link'
-    })
+    const decisions = (pagePort ? [pagePort] : PORTS)
+      .map((port) => decideMention(text, { pagePort: port, product, before }, resolver, models))
     // `notApiReason` gates *reporting*, not linking — exactly as the plugin
     // does. A span it names still gets offered to the resolver, because a
     // `TMUX_TMPDIR` that happens to resolve is a link worth having; it simply
     // is not a dangling reference when it does not.
-    if (linkable) tally.willLink++
-    else if (!isLikelyReference(text) || notApiReason(text) || EXCEPTIONS.has(text)) tally.notASymbol++
+    if (decisions.some((decision) => decision.kind === 'link')) tally.willLink++
+    else if (decisions.some((decision) => decision.kind === 'skip') || !isLikelyReference(text) || notApiReason(text) || EXCEPTIONS.has(text)) tally.notASymbol++
     else { tally.unresolved++; unresolved.push({ file, line, text }) }
   }
 }

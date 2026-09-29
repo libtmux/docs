@@ -2641,6 +2641,20 @@
   },
   {
    "port": "java",
+   "symbol": "io.github.libtmux.SessionSpec.SessionSpec.Builder.environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.SplitSpec.SplitSpec.Builder.environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "java",
    "symbol": "io.github.libtmux.TmuxEnvironment.TmuxEnvironment",
    "page": "/topics/environment/",
    "title": "Environment",
@@ -2714,6 +2728,13 @@
    "symbol": "io.github.libtmux.Window.Window.session",
    "page": "/topics/traversal/",
    "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.WindowSpec.WindowSpec.Builder.environment",
+   "page": "/topics/environment/",
+   "title": "Environment",
    "section": "topics"
   },
   {
@@ -5861,6 +5882,13 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::Server.open",
+   "page": "/ruby/latest/guides/overview/",
+   "title": "libtmux for Ruby",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::Session#new_window",
    "page": "/ruby/latest/guides/core/",
    "title": "libtmux",
@@ -7269,13 +7297,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "go",
-   "text": "t.Fatal",
-   "page": "/guides/testing-with-libtmux/",
-   "line": 61,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "dotnet",
    "text": "src/LibTmux.Testing/",
    "page": "/guides/testing-with-libtmux/",
@@ -7367,13 +7388,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "java",
-   "text": "io.github.libtmux",
-   "page": "/topics/architecture/",
-   "line": 131,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "ts",
    "text": "[Symbol.asyncDispose]",
    "page": "/topics/context-managers/",
@@ -7385,20 +7399,6 @@
    "text": "throws(TmuxError)",
    "page": "/topics/errors-and-exceptions/",
    "line": 31,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "py",
-   "text": "libtmux.test",
-   "page": "/topics/waiting-and-retry/",
-   "line": 27,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "rs",
-   "text": "libtmux::test",
-   "page": "/topics/waiting-and-retry/",
-   "line": 47,
    "why": "not defined in the stated port"
   },
   {
