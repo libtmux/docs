@@ -5,6 +5,8 @@ import { execFileSync } from 'node:child_process'
 import { homedir } from 'node:os'
 import { dirname, join, posix, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { fromMarkdown } from 'mdast-util-from-markdown'
+import { toMarkdown } from 'mdast-util-to-markdown'
 import { PORTS } from '../site/src/lib/ports.ts'
 import { sourceGuidesFor, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
 
@@ -59,11 +61,21 @@ export function rewriteLinks(content, sourcePath, route, routes, repo, revision)
     }
     return `https://github.com/${repo}/${image ? 'raw' : 'blob'}/${revision}/${normalized}${fragment ? `#${fragment}` : ''}`
   }
+  // Scala calls such as resource[IO](config) look like Markdown links.
+  // Parse first so code remains byte-for-byte source-owned, then replace
+  // only real links; the rest of the guide keeps its authored formatting.
+  const editsFor = (node) => {
+    const children = (node.children ?? []).flatMap(editsFor)
+    if (!['link', 'image', 'definition'].includes(node.type)) return children
+    const url = targetUrl(node.url, node.type === 'image')
+    if (url === node.url) return children
+    node.url = url
+    return [{ start: node.position.start.offset, end: node.position.end.offset,
+      text: toMarkdown(node).trimEnd() }]
+  }
+  const edits = editsFor(fromMarkdown(content)).sort((a, b) => b.start - a.start)
+  for (const { start, end, text } of edits) content = content.slice(0, start) + text + content.slice(end)
   return content
-    .replace(/(!?)\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g,
-      (_all, image, label, destination) => `${image}[${label}](${targetUrl(destination, Boolean(image))})`)
-    .replace(/^(\[[^\]]+\]:)\s*\n?\s*(\S+)/gm,
-      (_all, label, destination) => `${label} ${targetUrl(destination)}`)
 }
 
 export function stagedPortGuides(port, artifact) {

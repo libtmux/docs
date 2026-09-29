@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
+import scalaGuides from '../src/data/port-guides/scala.json'
 
 describe('staged port guide links', () => {
   const routes = {
@@ -55,6 +56,44 @@ describe('staged port guide links', () => {
     expect(result).toContain('[query]: ../query/#filters')
     expect(result).toContain('[source]: https://github.com/libtmux/libtmux-java/blob/abc123/src/Server.scala')
     expect(result).toContain('[external]: https://example.org/')
+  })
+
+  it('preserves code while rewriting real links beside it', () => {
+    const examples = [
+      '```scala\nScalaServer.fromJava[IO](java).use(identity)\n```',
+      '~~~~scala\nScalaServer.resource[IO](config).use(identity)\n~~~~',
+      '> ```scala\n> Control.attach[IO](session)\n> ```',
+      '    Server.resource[IO](config)',
+      '`Server.resource[IO](config)` and ``[query](query.md)``',
+      '\\[query](query.md)',
+    ]
+    const content = `${examples.join('\n\n')}\n\n[query](query.md#filters "Read filters")\n`
+    const result = rewriteLinks(content, 'docs/runtime.md', 'guides/source/runtime', routes,
+      'libtmux/libtmux-java', 'abc123')
+    for (const example of examples) expect(result).toContain(example)
+    expect(result).toContain('[query](../query/#filters "Read filters")')
+    expect(result).not.toContain('/docs/config')
+    expect(result).not.toContain('/docs/java')
+    expect(result).not.toContain('/docs/session')
+  })
+
+  it('rewrites images nested in links without damaging their labels', () => {
+    const result = rewriteLinks('[![example](../art/example.png "Example")](query.md#filters)',
+      'docs/runtime.md', 'guides/source/runtime', routes, 'libtmux/libtmux-java', 'abc123')
+    expect(result).toContain('[![example](https://github.com/libtmux/libtmux-java/raw/abc123/art/example.png "Example")](../query/#filters)')
+  })
+
+  it('stages the actual Scala generic calls unchanged', () => {
+    const files = stagedPortGuides('scala', scalaGuides)
+    for (const [route, calls] of [
+      ['ownership', ['ScalaServer.fromJava[IO](java)']],
+      ['execution', ['ScalaServer.resource[IO](config)']],
+      ['streaming', ['Server.resource[IO](config)', 'Control.attach[IO](session)']],
+    ] as const) {
+      const staged = files.get(`scala/guides/${route}/index.md`)!
+      for (const call of calls) expect(staged).toContain(call)
+      expect(staged).not.toContain('[IO](https://')
+    }
   })
 
   it('extracts centered README titles without losing links or examples', () => {
