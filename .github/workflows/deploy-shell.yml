@@ -8,7 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - name: Inject shell refresh failure before publication
+      - name: Complete the shell refresh fixture
         run: |
-          echo '::error::Deliberate shell refresh failure; no publication steps run'
-          exit 73
+          echo 'Shell refresh fixture completed; no publication steps run'
