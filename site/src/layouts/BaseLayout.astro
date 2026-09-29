@@ -125,7 +125,8 @@ const versionEntry: VersionEntry = {
  */
 const section = (pagePath.split('/').filter(Boolean)[0] ?? 'home').toLowerCase()
 
-const navPort = portSlug ?? (process.env.LIBTMUX_DOCS_PORT || undefined) ?? (pagePath.startsWith('reference/') ? pagePath.split('/')[1] : undefined)
+const routePort = portSlug ?? (process.env.LIBTMUX_DOCS_PORT || undefined) ?? (pagePath.startsWith('reference/') ? pagePath.split('/')[1] : undefined)
+const navPort = routePort ? PORT_BY_SLUG[routePort]?.slug : undefined
 const brand = pageBrand(navPort, pagePath)
 let portDefaults: Record<string, string> = {}
 try {
@@ -271,7 +272,7 @@ const githubRepo = repository
     </div>
     {!bare && <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} githubRepo={githubRepo} flush={flush} />}
     <BackToTop />
-    <SearchModal />
+    <SearchModal port={navPort} version={navVersion} />
   </body>
 </html>
 
