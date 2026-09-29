@@ -325,11 +325,19 @@ jobs:
           # construction").
           for attempt in 1 2 3; do
             put_args=(--content-type application/json)
-            if etag=$(aws s3api head-object --bucket "$BUCKET" --key "$key" --query ETag --output text 2>/dev/null); then
-              aws s3api get-object --bucket "$BUCKET" --key "$key" "$RUNNER_TEMP/manifest-current.json" >/dev/null
+            # Read the document and its ETag together for the conditional write.
+            if etag=$(aws s3api get-object \
+              --bucket "$BUCKET" --key "$key" --query ETag --output text \
+              "$RUNNER_TEMP/manifest-current.json" 2>"$RUNNER_TEMP/manifest-read-error.txt"); then
               current=$(cat "$RUNNER_TEMP/manifest-current.json")
               put_args+=(--if-match "$etag")
             else
+              read_status=$?
+              if ! grep -Eq '^An error occurred \((404|NoSuchKey)\) when calling the GetObject operation:' "$RUNNER_TEMP/manifest-read-error.txt"; then
+                echo "::error::could not read $key" >&2
+                cat "$RUNNER_TEMP/manifest-read-error.txt" >&2
+                exit "$read_status"
+              fi
               current='{"schema":1,"ports":{},"defaultVersion":{}}'
               put_args+=(--if-none-match "*")
             fi

@@ -125,6 +125,10 @@ $ aws s3api put-object \
     --if-match "$ETAG"
 ```
 
+The document and ETag come from the same GET. Only a 404 or `NoSuchKey`
+response starts an empty manifest; permission, throttling, and network errors
+fail the step with their original diagnostics and exit status.
+
 `aws s3api put-object` is required here, not `aws s3 cp`/`sync` — neither
 exposes `--if-match`/`--if-none-match`. A 412 means another run of the same
 port's own workflow raced this one; the step re-reads and retries up to
@@ -304,7 +308,7 @@ skip them — and its runner needs `uv`.
       id-token: write
     # Full-length SHA, release name in the comment: this runs with id-token:
     # write and a bucket-writing role, and a tag can be repointed.
-    uses: libtmux/docs/.github/workflows/reusable-deploy.yml@ce9d7edd63f6a543801d9b93366ecad5e158c0ec # v0.1.0-alpha.2
+    uses: libtmux/docs/.github/workflows/reusable-deploy.yml@e30bcba4ca470e49ba798255ca4e3d36d58f95bf # v0.1.0-alpha.1
     with:
       path-prefix: py/v0.46.2
       artifact: docs-html

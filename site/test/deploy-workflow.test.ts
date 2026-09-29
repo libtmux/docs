@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
@@ -22,6 +22,160 @@ function sourceCheckoutContract(workflow: string): void {
   expect(workflow).toContain('path: .port-sources/lua')
   expect(workflow).toContain('persist-credentials: false')
 }
+
+interface ManifestResponse {
+  operation: 'get-object' | 'put-object'
+  document?: unknown
+  etag?: string
+  error?: string
+  status?: number
+}
+
+function publishManifest(responses: ManifestResponse[]) {
+  const directory = mkdtempSync(join(tmpdir(), 'libtmux-manifest-publish-'))
+  try {
+    const calls = join(directory, 'calls.jsonl')
+    writeFileSync(calls, '')
+    writeFileSync(join(directory, 'responses.json'), JSON.stringify(responses))
+    writeFileSync(join(directory, 'aws'), `#!${process.execPath}
+const fs = require('node:fs')
+const args = process.argv.slice(2)
+const calls = fs.readFileSync(process.env.CALLS, 'utf8').trim().split('\\n').filter(Boolean)
+const response = JSON.parse(fs.readFileSync(process.env.RESPONSES, 'utf8'))[calls.length]
+const call = { args }
+if (args[1] === 'put-object') call.document = JSON.parse(fs.readFileSync(args[args.indexOf('--body') + 1], 'utf8'))
+fs.appendFileSync(process.env.CALLS, JSON.stringify(call) + '\\n')
+if (!response || args[0] !== 's3api' || args[1] !== response.operation) {
+  console.error('Unexpected AWS operation: ' + args.join(' '))
+  process.exit(90)
+}
+if (response.error) {
+  console.error(response.error)
+  process.exit(response.status)
+}
+if (args[1] === 'get-object') {
+  fs.writeFileSync(args.at(-1), JSON.stringify(response.document))
+  console.log(response.etag)
+}
+`, { mode: 0o755 })
+    const body = /- name: Upsert manifest\/<port>\.json[\s\S]*?        run: \|\n((?: {10}[^\n]*\n|\n)*)/.exec(reusable)![1]
+      .replace(/^ {10}/gm, '')
+    const result = spawnSync('bash', ['-c', body], {
+      encoding: 'utf8', timeout: 10000, env: {
+        ...process.env, PATH: `${directory}:${process.env.PATH}`, RUNNER_TEMP: directory,
+        CALLS: calls, RESPONSES: join(directory, 'responses.json'), BUCKET: 'docs-test',
+        PORT: 'go', SLUG: 'next', KIND: 'alias', LABEL: 'Next', IS_DEFAULT: 'true', RESOLVES_TO: 'v2',
+      },
+    })
+    expect(result.error, result.stderr).toBeUndefined()
+    return {
+      ...result,
+      calls: readFileSync(calls, 'utf8').trim().split('\n').filter(Boolean).map((line) => JSON.parse(line)) as {
+        args: string[]
+        document?: { ports: Record<string, { slug: string }[]>; defaultVersion: Record<string, string> }
+      }[],
+    }
+  } finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
+}
+
+function existingManifest(slugs: string[]) {
+  return {
+    schema: 1,
+    ports: { go: slugs.map((slug) => ({ slug, label: slug, kind: 'tag', supported: true })) },
+    defaultVersion: { go: slugs[0] },
+  }
+}
+
+function manifestError(operation: ManifestResponse['operation'], code: string, status = 254): ManifestResponse {
+  const name = operation === 'get-object' ? 'GetObject' : 'PutObject'
+  return { operation, error: `An error occurred (${code}) when calling the ${name} operation: request failed`, status }
+}
+
+describe('port manifest publication', () => {
+  it.each([
+    manifestError('get-object', '403'),
+    manifestError('get-object', 'SlowDown'),
+    { operation: 'get-object', error: 'Could not connect to the endpoint URL: https://docs-test.s3.amazonaws.com', status: 255 },
+  ] satisfies ManifestResponse[])('reports a failed read without writing: $error', (response) => {
+    const result = publishManifest([response])
+    expect(result.status, result.stderr).toBe(response.status)
+    expect(result.stderr).toContain('::error::could not read manifest/go.json')
+    expect(result.stderr).toContain(response.error)
+    expect(result.calls.map(({ args }) => args[1])).toEqual(['get-object'])
+  })
+
+  it.each(['404', 'NoSuchKey'])('creates a missing manifest after %s with a conditional first write', (code) => {
+    const result = publishManifest([manifestError('get-object', code), { operation: 'put-object' }])
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.calls[1].args.slice(-2)).toEqual(['--if-none-match', '*'])
+    expect(result.calls[1].document).toEqual({
+      schema: 1, ports: { go: [{ slug: 'next', label: 'Next', kind: 'alias', supported: true, resolvesTo: 'v2' }] },
+      defaultVersion: { go: 'next' },
+    })
+  })
+
+  it('merges an existing document using the ETag returned with its bytes', () => {
+    const result = publishManifest([
+      { operation: 'get-object', document: existingManifest(['v1']), etag: '"first"' },
+      { operation: 'put-object' },
+    ])
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.calls.map(({ args }) => args[1])).toEqual(['get-object', 'put-object'])
+    expect(result.calls[0].args).toContain('ETag')
+    expect(result.calls[1].args.slice(-2)).toEqual(['--if-match', '"first"'])
+    expect(result.calls[1].document?.ports.go.map(({ slug }) => slug)).toEqual(['v1', 'next'])
+  })
+
+  it.each(['existing', 'missing'])('re-reads after a conditional write loses the race on an %s manifest', (mode) => {
+    const result = publishManifest([
+      mode === 'existing'
+        ? { operation: 'get-object', document: existingManifest(['v1']), etag: '"first"' }
+        : manifestError('get-object', 'NoSuchKey'),
+      manifestError('put-object', 'PreconditionFailed'),
+      { operation: 'get-object', document: existingManifest(['v1', 'v2']), etag: '"second"' },
+      { operation: 'put-object' },
+    ])
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.stderr).toContain('manifest write raced on attempt 1')
+    expect(result.calls.map(({ args }) => args[1])).toEqual(['get-object', 'put-object', 'get-object', 'put-object'])
+    expect(result.calls[3].args.slice(-2)).toEqual(['--if-match', '"second"'])
+    expect(result.calls[3].document?.ports.go.map(({ slug }) => slug)).toEqual(['v1', 'v2', 'next'])
+  })
+
+  it('reports a failed read during a retry without writing stale content', () => {
+    const failure = manifestError('get-object', 'SlowDown')
+    const result = publishManifest([
+      { operation: 'get-object', document: existingManifest(['v1']), etag: '"first"' },
+      manifestError('put-object', '412'), failure,
+    ])
+    expect(result.status, result.stderr).toBe(failure.status)
+    expect(result.stderr).toContain(failure.error)
+    expect(result.calls.map(({ args }) => args[1])).toEqual(['get-object', 'put-object', 'get-object'])
+  })
+
+  it('reports non-conflict write errors without retrying', () => {
+    const failure = manifestError('put-object', 'AccessDenied')
+    const result = publishManifest([
+      { operation: 'get-object', document: existingManifest(['v1']), etag: '"first"' }, failure,
+    ])
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain(failure.error)
+    expect(result.calls).toHaveLength(2)
+  })
+
+  it('reports a conflict after three conditional write attempts', () => {
+    const responses = [1, 2, 3].flatMap((attempt): ManifestResponse[] => [
+      { operation: 'get-object', document: existingManifest([`v${attempt}`]), etag: `"${attempt}"` },
+      manifestError('put-object', '412'),
+    ])
+    const result = publishManifest(responses)
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('::error::manifest/go.json still conflicting after 3 attempts')
+    expect(result.calls).toHaveLength(6)
+  })
+})
 
 describe('port publisher contract', () => {
   it('reserves every port and requires its exact port/version prefix', () => {
