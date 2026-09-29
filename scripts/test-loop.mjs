@@ -62,6 +62,7 @@ const tests = (directory, names = []) => node(vitest, 'run', '--root', directory
   ...names.map((name) => `test/${name}.test.ts`))
 
 try {
+  if (loop !== 'inner') await node('scripts/stage-port-docs.mjs', '--integrated')
   const checks = loop === 'inner' ? [
     tests('packages/api-model', ['concepts', 'resolver', 'mentions']),
     tests('site', ['native-switchers', 'normalize-native-shell']),

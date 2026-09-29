@@ -13,6 +13,7 @@ const output = join(root, 'site/src/content/docs/_staged')
 const selectedPort = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : undefined
 const check = process.argv.includes('--check')
 const fromSource = process.argv.includes('--from-source')
+const integrated = process.argv.includes('--integrated')
 const wrappersOnly = process.argv.includes('--wrappers')
 const refreshCache = process.argv.includes('--refresh-cache')
 const cacheRoot = join(root, 'site/src/data/port-guides')
@@ -127,20 +128,39 @@ function artifactFromSource(port, checkout) {
   }
 }
 
+/** Read the integrated commit even when a contributor's working tree has advanced. */
+export function artifactFromRevision(port, checkout, revision) {
+  if (!/^[a-f0-9]{40}$/.test(revision)) throw new Error(`${port.slug}: invalid integrated source revision`)
+  const git = (...args) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8', stdio: 'pipe' })
+  try {
+    git('cat-file', '-e', `${revision}^{commit}`)
+  } catch (cause) {
+    throw new Error(`${port.slug}: integrated guides need ${port.repo}@${revision} in ${checkout}. Set LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()} to a local checkout containing that commit; this check does not fetch.`, { cause })
+  }
+  return {
+    source: { repository: port.repo, revision },
+    guides: Object.keys(ROUTES[port.slug]).map((path) => ({ path, content: git('show', `${revision}:${path}`) })),
+  }
+}
+
 export function run() {
   if (selectedPort && !(selectedPort in ROUTES)) throw new Error(`unsupported staged port: ${selectedPort}`)
+  if (integrated && (fromSource || refreshCache || process.env.LIBTMUX_DOCS_SOURCE_SHA)) {
+    throw new Error('--integrated cannot replace selected-source publication inputs')
+  }
   const generated = new Map()
   const selected = PORTS.filter((entry) => entry.slug in ROUTES && (!selectedPort || entry.slug === selectedPort) && (!wrappersOnly || entry.parentLibrary))
   if (refreshCache && (!selectedPort || !selected[0]?.parentLibrary)) throw new Error('--refresh-cache requires one wrapper --port')
   for (const port of selected) {
-    const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || port.worktree)
+    const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || (integrated ? port.checkout : port.worktree))
     const artifactPath = join(checkout, 'docs/_build/api.json')
     const selectedSource = process.env.LIBTMUX_DOCS_PORT === port.slug && process.env.LIBTMUX_DOCS_SOURCE_SHA
     const cachePath = join(cacheRoot, `${port.slug}.json`)
     const liveWrapper = port.parentLibrary && (refreshCache || selectedSource || (selectedPort && fromSource))
-    if (!port.parentLibrary && !fromSource && !existsSync(artifactPath)) throw new Error(`${port.slug}: native artifact missing at ${artifactPath}`)
+    if (!port.parentLibrary && !fromSource && !integrated && !existsSync(artifactPath)) throw new Error(`${port.slug}: native artifact missing at ${artifactPath}`)
     const artifact = port.parentLibrary && !liveWrapper
       ? JSON.parse(readFileSync(cachePath, 'utf8'))
+      : integrated ? artifactFromRevision(port, checkout, JSON.parse(readFileSync(join(root, `site/src/data/api/${port.slug}.json`), 'utf8')).revision)
       : fromSource || liveWrapper ? artifactFromSource(port, checkout)
       : JSON.parse(readFileSync(artifactPath, 'utf8'))
     if (artifact.source.repository !== port.repo || !/^[a-f0-9]{40}$/.test(artifact.source.revision)) {

@@ -96,6 +96,15 @@ medium, and outer respectively; measure the complete pnpm command when
 changing a loop. `test:fast` aliases medium. The runner stops an over-budget
 loop and fails.
 
+The medium and outer loops first stage the integrated Ruby and Lua guides
+from local Git objects. Each revision comes from `site/src/data/api/<port>.json`;
+the checkout's current branch and uncommitted files do not affect these guides.
+Keep those repositories at their standard `checkout` paths in `ports.ts`, or
+set `LIBTMUX_DOCS_CHECKOUT_RUBY` and `LIBTMUX_DOCS_CHECKOUT_LUA` to local clones
+containing the required commits. Missing repositories or commits fail with
+the required revision and environment variable. The gate does not fetch;
+a fresh docs clone needs these source checkouts before `pnpm test`.
+
 Browser checks use Playwright's installed Chromium by default. To use local
 Chrome:
 
