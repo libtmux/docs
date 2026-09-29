@@ -11,13 +11,18 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const expand = (path) => path.startsWith('~/') ? join(homedir(), path.slice(2)) : path
 const only = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : undefined
 const checking = process.argv.includes('--check')
+const sourceBound = process.argv.includes('--source-bound')
+if (only && !PORTS.some((port) => port.slug === only)) throw new Error(`Unknown MCP port: ${only}`)
+if (sourceBound && (!only || process.env.LIBTMUX_DOCS_PORT !== only || !/^[0-9a-f]{40}$/.test(process.env.LIBTMUX_DOCS_SOURCE_SHA ?? ''))) {
+  throw new Error('source-bound MCP discovery requires --port, matching LIBTMUX_DOCS_PORT and LIBTMUX_DOCS_SOURCE_SHA')
+}
 const checkoutFor = (port) => expand(port.slug === 'py'
   ? process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp'
   : process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || port.worktree)
 const commands = {
   py: ['.venv/bin/python', '-m', 'libtmux_mcp'],
   ruby: [
-    'mise', 'exec', '--', 'bundle', 'exec', 'libtmux-mcp',
+    'bundle', 'exec', 'libtmux-mcp',
     '--socket-name', 'libtmux-docs-protocol',
     '--endpoint', 'docs',
     '--enable-tool', 'tmux_capture',
@@ -29,7 +34,6 @@ const commands = {
   ],
   ts: ['bun', 'packages/mcp/src/server.ts'],
   rs: ['target/debug/tmux-mcp'],
-  go: ['go', 'run', './cmd/libtmux-mcp'],
   java: ['libtmux-mcp/build/install/libtmux-mcp/bin/libtmux-mcp'],
   dotnet: ['dotnet', 'src/LibTmux.Mcp/bin/Release/net10.0/LibTmux.Mcp.dll'],
   cxx: ['build/cxx-dev/apps/mcp/libtmux-mcp-server', '--socket-name', 'libtmux-docs-protocol'],
@@ -43,7 +47,7 @@ const builds = {
     ['cmake', '--preset', 'cxx-dev', '-DLIBTMUX_BUILD_TESTS=OFF', '-DLIBTMUX_BUILD_EXAMPLES=OFF'],
     ['cmake', '--build', '--preset', 'cxx-dev', '--target', 'libtmux-mcp-server', '--parallel', '2'],
   ],
-  swift: [['swift', 'build', '--product', 'libtmux-mcp', '--jobs', '2']],
+  swift: [['swift', 'build', '--force-resolved-versions', '--product', 'libtmux-mcp', '--jobs', '2']],
 }
 const selections = {
   py: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
@@ -60,12 +64,15 @@ const selections = {
   cxx: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
 }
 const selectionVariables = [...new Set(Object.values(selections).flatMap(Object.keys)), 'LIBTMUX_TOOLS', 'LIBTMUX_EXCLUDE_TOOLS', 'LIBTMUX_MCP_TOOLS', 'LIBTMUX_SAFETY', 'TMUX_MCP_SAFETY', 'LIBTMUX_MCP_CAPABILITIES', 'LIBTMUX_MCP_PROMPTS_AS_TOOLS', 'LIBTMUX_SOCKET_NAME', 'LIBTMUX_SOCKET_PATH']
+const sourceStatus = (checkout, slug) => {
+  // Publication records the clean/dirty state before native generation.
+  // Generated, untracked artifacts such as Swift's symbolgraph are not edits.
+  const args = sourceBound ? ['--untracked-files=no'] : slug === 'ruby' ? ['--', 'gems/libtmux-mcp/lib'] : []
+  return execFileSync('git', ['-C', checkout, 'status', '--porcelain', ...args], { encoding: 'utf8' }).trim()
+}
 const sourceRevision = (checkout, slug) => {
   const revision = execFileSync('git', ['-C', checkout, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
-  const statusArgs = slug === 'ruby'
-    ? ['-C', checkout, 'status', '--porcelain', '--', 'gems/libtmux-mcp/lib']
-    : ['-C', checkout, 'status', '--porcelain']
-  const dirty = execFileSync('git', statusArgs, { encoding: 'utf8' }).trim()
+  const dirty = sourceStatus(checkout, slug)
   if (dirty) throw new Error('source checkout must be clean before recording a protocol snapshot')
   return revision
 }
@@ -82,7 +89,7 @@ const relevant = PORTS.filter((port) => (!only || only === port.slug) && product
 const checkoutStates = new Map(relevant.map((port) => {
   const checkout = checkoutFor(port)
   if (!existsSync(checkout)) return [port.slug, 'missing']
-  const status = execFileSync('git', ['-C', checkout, 'status', '--porcelain'], { encoding: 'utf8' }).trim()
+  const status = sourceStatus(checkout)
   return [port.slug, status ? 'dirty' : 'ready']
 }))
 const missing = [...checkoutStates].filter(([, state]) => state === 'missing').map(([slug]) => slug)
@@ -92,7 +99,7 @@ if (missing.length || dirty.length) {
     missing.length && `no checkout for ${missing.join(', ')}`,
     dirty.length && `uncommitted changes in ${dirty.join(', ')}`,
   ].filter(Boolean).join('; ')}`
-  if (checking) {
+  if (checking && !sourceBound) {
     console.log(`${note} — skipping the comparison`)
     process.exit(0)
   }
@@ -103,11 +110,16 @@ if (missing.length || dirty.length) {
 for (const port of relevant) {
   const checkout = checkoutFor(port)
   const revision = sourceRevision(checkout, port.slug)
-  const override = process.env[`LIBTMUX_DOCS_MCP_COMMAND_${port.slug.toUpperCase()}`]
-  if (!override) for (const [build, ...buildArgs] of builds[port.slug] ?? []) {
-    execFileSync(build, buildArgs, { cwd: checkout, stdio: 'inherit' })
+  const repository = port.slug === 'py' ? 'tmux-python/libtmux-mcp' : port.repo
+  if (sourceBound) {
+    const model = JSON.parse(readFileSync(join(root, 'site/src/data/api', `${port.slug}.json`), 'utf8'))
+    const source = model.sources?.find((entry) => entry.product === 'mcp' && entry.repo === repository)
+    if (model.port !== port.slug || model.revision !== process.env.LIBTMUX_DOCS_SOURCE_SHA ||
+        (source?.extractedRevision ?? source?.revision) !== revision) {
+      throw new Error(`${port.slug}: API model must describe the selected source and actual MCP checkout ${revision}`)
+    }
   }
-  const [command, ...args] = override ? JSON.parse(override) : commands[port.slug]
+  const override = process.env[`LIBTMUX_DOCS_MCP_COMMAND_${port.slug.toUpperCase()}`]
   const cwd = port.slug === 'go' ? join(checkout, 'mcp') : checkout
   const selection = selections[port.slug]
   const socketRoot = mkdtempSync(join(tmpdir(), `libtmux-docs-mcp-${port.slug}-`))
@@ -118,6 +130,15 @@ for (const port of relevant) {
   }
   let protocol
   try {
+    const goBinary = join(socketRoot, 'libtmux-mcp')
+    // Dependency downloads and compilation precede the protocol deadline.
+    if (!override) {
+      for (const [build, ...buildArgs] of builds[port.slug] ?? []) {
+        execFileSync(build, buildArgs, { cwd: checkout, stdio: 'inherit' })
+      }
+      if (port.slug === 'go') execFileSync('go', ['build', '-mod=readonly', '-o', goBinary, './cmd/libtmux-mcp'], { cwd, stdio: 'inherit' })
+    }
+    const [command, ...args] = override ? JSON.parse(override) : port.slug === 'go' ? [goBinary] : commands[port.slug]
     protocol = await captureProtocol({ command, args, cwd, env: environment })
     if (sourceRevision(checkout, port.slug) !== revision) throw new Error(`${port.slug}: source revision changed during discovery`)
   } finally {
@@ -127,7 +148,7 @@ for (const port of relevant) {
   }
   const payload = {
     generated: 'scripts/gen-mcp-protocol.mjs',
-    repo: port.slug === 'py' ? 'tmux-python/libtmux-mcp' : port.repo,
+    repo: repository,
     revision, selection, protocol,
   }
   const out = join(root, 'site/src/data/mcp-protocol', `${port.slug}.json`)

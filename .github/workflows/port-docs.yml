@@ -136,7 +136,9 @@ jobs:
 
   build:
     needs: identity
-    runs-on: ubuntu-latest
+    # Match the Clang 18/libc++ distribution used by the selected C++ preset.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.identity.outputs.matrix) }}
@@ -231,6 +233,107 @@ jobs:
           export "LIBTMUX_DOCS_CHECKOUT_${LIBTMUX_DOCS_PORT^^}=$PORT_CHECKOUT"
           node scripts/publication-provenance.mjs snapshot "$RUNNER_TEMP/build-inputs.json" "$PWD"
 
+      - name: Resolve MCP availability from the port catalog
+        id: mcp
+        working-directory: docs
+        env:
+          PORT: ${{ matrix.port }}
+        run: |
+          node --input-type=module <<'JS'
+          import { appendFileSync } from 'node:fs'
+          import { PORT_BY_SLUG, productAvailable } from './site/src/lib/ports.ts'
+          const port = PORT_BY_SLUG[process.env.PORT]
+          if (!port) throw new Error(`Unknown port: ${process.env.PORT}`)
+          appendFileSync(process.env.GITHUB_OUTPUT, `required=${productAvailable(port, 'mcp')}\n`)
+          JS
+
+      - name: Read selected Rust and Swift toolchains
+        id: native-version
+        if: matrix.port == 'rs' || matrix.port == 'swift'
+        env:
+          PORT: ${{ matrix.port }}
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re, tomllib
+          port = os.environ['PORT']
+          if port == 'rs':
+              version = tomllib.loads(pathlib.Path('port/rust-toolchain.toml').read_text())['toolchain']['channel']
+              pattern = r'(?:[0-9]+\.[0-9]+\.[0-9]+|(?:nightly|beta)-[0-9]{4}-[0-9]{2}-[0-9]{2})'
+          elif port == 'swift':
+              version = tomllib.loads(pathlib.Path('port/.mise.toml').read_text())['tools']['swift']
+              pattern = r'[0-9]+\.[0-9]+\.[0-9]+'
+          else:
+              raise ValueError(f'Unsupported native toolchain: {port}')
+          if not isinstance(version, str) or not re.fullmatch(pattern, version):
+              raise ValueError(f'{port}: selected source must pin an exact toolchain version')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={version}\n')
+          PY
+
+      - name: Install native system dependencies
+        if: steps.mcp.outputs.required == 'true' || matrix.port == 'cxx'
+        env:
+          PORT: ${{ matrix.port }}
+        run: |
+          set -euo pipefail
+          packages=(tmux)
+          if [[ "$PORT" == cxx ]]; then
+            packages+=(clang-18 libc++-18-dev libc++abi-18-dev ninja-build doxygen)
+          fi
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y -qq "${packages[@]}"
+          if [[ "$PORT" == cxx ]]; then
+            sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
+            sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
+          fi
+          tmux -V
+
+      - if: matrix.port == 'go'
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: port/mcp/go.mod
+          cache: false
+      - if: matrix.port == 'rs'
+        uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # v1
+        with:
+          toolchain: ${{ steps.native-version.outputs.version }}
+      - if: matrix.port == 'ts'
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: port/package.json
+          no-cache: true
+      - name: Install TypeScript MCP dependencies
+        if: matrix.port == 'ts'
+        working-directory: port
+        run: bun install --frozen-lockfile
+      - if: matrix.port == 'java'
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          distribution: temurin
+          # The repository's Gradle conventions compile and run on JDK 25.
+          java-version: '25'
+      - if: matrix.port == 'java'
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
+        with:
+          validate-wrappers: true
+          cache-disabled: true
+      - if: matrix.port == 'dotnet'
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: port/global.json
+          cache: false
+      - if: matrix.port == 'ruby'
+        uses: ruby/setup-ruby@762794c140bbeda0f1224786aa33b4b46783a6c1 # v1.326.0
+        with:
+          working-directory: port
+          bundler-cache: false
+      - name: Install Ruby MCP dependencies
+        if: matrix.port == 'ruby'
+        working-directory: port
+        env:
+          BUNDLE_FROZEN: 'true'
+        run: bundle install
+
       - if: inputs.port == 'py'
         uses: astral-sh/setup-uv@v10.0.1
         with:
@@ -242,6 +345,10 @@ jobs:
         # Reproduce the selected lock, including resolutions made with
         # contributor-specific package cooldowns.
         run: uv sync --frozen --all-extras --dev
+      - name: Install Python's separate MCP runtime
+        if: inputs.port == 'py'
+        working-directory: python-mcp
+        run: uv sync --frozen --no-dev
 
       # C++'s reference is read from the Doxygen XML its own build produces
       # (scripts/gen-api-model.mjs), which must be newer than the headers it
@@ -253,8 +360,6 @@ jobs:
         working-directory: port
         run: |
           set -euo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq doxygen
           doxygen --version
           OUTPUT_DIRECTORY=. doxygen Doxyfile
 
@@ -263,14 +368,15 @@ jobs:
       # versions are forced so the build neither re-resolves nor rewrites
       # Package.resolved.
       - if: matrix.port == 'swift'
-        uses: swift-actions/setup-swift@v2
+        uses: swift-actions/setup-swift@7ca6abe6b3b0e8b5421b88be48feee39cbf52c6a # v2
         with:
-          swift-version: '6.2'
+          swift-version: ${{ steps.native-version.outputs.version }}
       - name: Emit the Swift symbol graph
         if: matrix.port == 'swift'
         working-directory: port
         run: >-
           swift build --force-resolved-versions
+          --jobs 2
           -Xswiftc -emit-symbol-graph
           -Xswiftc -emit-symbol-graph-dir -Xswiftc "$PWD/symbolgraph"
 

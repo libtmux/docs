@@ -5,11 +5,9 @@
 # self-hosted port's reference where its toolchain is present, and one
 # Pagefind index over the whole tree.
 #
-# Runs end-to-end with only Node + pnpm on PATH. Every reference generator
-# is optional — an absent toolchain is a skip, printed in the summary
-# table, never a failed run. Ecosystem ports (Rust, Go, Java; see
-# site/src/lib/ports.ts) produce no local output at all: the site links out
-# to their canonical host.
+# Integrated builds use committed MCP catalogs. A selected-source build
+# requires its MCP toolchain and captures that source's runtime contracts.
+# Optional native reference generators report missing toolchains as skips.
 #
 # See scripts/README.md for usage.
 set -euo pipefail
@@ -22,7 +20,7 @@ Usage: scripts/build-site.sh [options]
                          (default: latest,stable)
   --ports p1,p2,...     Limit to these port slugs (default: all self-hosted
                          ports from site/src/lib/ports.ts)
-  --skip-refs           Skip every reference generator (shell + search only)
+  --skip-refs           Skip native reference renderers (selected-source MCP is required)
   --no-cache            Rebuild every shell even if its inputs are unchanged
   --skip-pagefind       Skip the final Pagefind indexing pass
   -h, --help            Show this message
@@ -325,6 +323,12 @@ elif [ -n "${LIBTMUX_DOCS_CHECKOUT_RUBY:-}" ] && [ -n "${LIBTMUX_DOCS_CHECKOUT_L
   node "$script_dir/stage-port-docs.mjs" --from-source
 fi
 node "$script_dir/stage-port-docs.mjs" --wrappers
+if [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
+  # The selected API and wire contracts must come from the same product source.
+  # Python's MCP product has its own checkout and revision.
+  node "$script_dir/gen-mcp-protocol.mjs" --port "$LIBTMUX_DOCS_PORT" --source-bound
+  node "$script_dir/gen-mcp-tools.mjs" --port "$LIBTMUX_DOCS_PORT" --source-bound
+fi
 node "$script_dir/gen-example-sources.mjs"
 node "$script_dir/gen-mentions.mjs"
 

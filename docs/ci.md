@@ -146,6 +146,24 @@ local assemblies without a selected source checkout make no provenance claim.
 Run IDs and timestamps are excluded from the version tree so an identical
 immutable rerun can produce identical bytes.
 
+Selected-source builds also capture MCP contracts from the selected product's
+runtime. The shared job installs its language tools before assembly: Rust and
+Swift use the checkout's exact toolchain version, Go its MCP module, Bun its
+package manifest, and .NET its `global.json`. Java uses the repository's JDK 25
+baseline and validates the Gradle wrapper. Python installs the separate MCP
+checkout's frozen lock into that checkout's virtual environment. Ruby installs
+its selected locked bundle. These installations follow the input snapshot;
+missing tools or contracts fail the build. Wrapper languages and Lua have no
+MCP runtime and are excluded through the product catalog.
+
+The job runs on Ubuntu 24.04 with a 30-minute limit and no restored dependency
+caches. C++ uses that distribution's Clang 18/libc++ packages and the source's
+compiler checks. Locked dependencies and selected toolchains constrain the
+build, but the hosted image and system package updates are not byte-pinned.
+Runtime capture requests advertised contracts only; the builder has no AWS
+credentials or OIDC permission. Each port still needs a cold hosted build to
+establish its runtime cost and compatibility.
+
 After uploading the content artifact, the builder uploads a separate
 `<artifact>-publication` descriptor containing its artifact ID, archive digest,
 source SHA, repository, run ID, and attempt. The publisher uses the existing
