@@ -251,7 +251,8 @@
     'padding:0.6rem 1rem;border-bottom:1px solid var(--lt-color-border,#eeebee)}' +
     '.lt-shell-brand{font-family:var(--lt-font-mono,monospace);font-weight:600;' +
     'font-size:1.05rem;color:var(--lt-color-fg,#000);text-decoration:none;letter-spacing:-0.01em}' +
-    '.lt-shell-nav{display:flex;flex-wrap:wrap;gap:0.15rem;flex:1}' +
+    // Wrap the controls before the language list can collapse into a column.
+    '.lt-shell-nav{display:flex;flex-wrap:wrap;gap:0.15rem;flex:1 1 15rem}' +
     '.lt-shell-nav-link{padding:0.25rem 0.5rem;border-radius:var(--lt-radius,0.375rem);' +
     'color:var(--lt-color-fg-secondary,#5a5c63);text-decoration:none}' +
     '.lt-shell-nav-link:hover{background:var(--lt-color-bg-hover,#efeff4)}' +

@@ -4,6 +4,28 @@ import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { normalizeNativeShell } from '../../scripts/normalize-native-shell.mjs'
+import { PORTS } from '../src/lib/ports.ts'
+
+/** Keep every port visible in a short language list at intermediate widths. */
+export async function checkNativeHeader(page) {
+  const navigation = await page.locator('.lt-shell-nav').evaluate((nav) => {
+    const links = [...nav.querySelectorAll('a')]
+    const bounds = links.map((link) => link.getBoundingClientRect())
+    return {
+      count: links.length,
+      rows: new Set(bounds.map((rect) => rect.top)).size,
+      visible: bounds.every((rect) => rect.width > 0 && rect.height > 0 && rect.left >= 0 && rect.right <= innerWidth),
+      covered: links.filter((link, i) => {
+        const rect = bounds[i]
+        return !link.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2))
+      }).map((link) => link.getAttribute('aria-label')),
+    }
+  })
+  assert.equal(navigation.count, PORTS.length, 'Native header keeps every port')
+  assert(navigation.rows <= 3, `Native ports use at most three rows at ${page.viewportSize().width}px: ${navigation.rows}`)
+  assert(navigation.visible, 'Native port links fit the viewport')
+  assert.deepEqual(navigation.covered, [], 'Native header controls do not cover port links')
+}
 
 /** Delay enhancement until the initial article and navigation can be inspected. */
 export async function checkNativeFirstPaint(page, url) {
@@ -23,6 +45,7 @@ export async function checkNativeFirstPaint(page, url) {
     assert(await page.locator('[data-lt-shell="header"]').isVisible(), 'Native header is visible before shell.js arrives')
     assert.equal(await page.evaluate(() => customElements.get('libtmux-version-switcher') !== undefined), false,
       'Native content and navigation are visible while shell.js is still unavailable')
+    await checkNativeHeader(page)
     const initial = await page.locator('article h1').boundingBox()
     await page.evaluate(() => { window.__initialNativeHeader = document.querySelector('[data-lt-shell="header"]') })
     release()
@@ -64,7 +87,7 @@ export async function checkNativeLayout(browser) {
     })
     await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
     const url = `http://127.0.0.1:${server.address().port}${pagePath}`
-    for (const width of [1440, 688, 390]) {
+    for (const width of [1440, 768, 688, 390]) {
       const context = await browser.newContext({ viewport: { width, height: 900 } })
       try {
         const page = await context.newPage()
@@ -79,13 +102,14 @@ export async function checkNativeLayout(browser) {
         const page = await noScript.newPage()
         await page.goto(url)
         assert(await page.locator('article h1').isVisible())
+        await checkNativeHeader(page)
         await page.locator('[data-page-port-switcher] summary').click()
         assert(await page.locator('[data-page-port-switcher] a[aria-current]').isVisible(), 'Native disclosure works without JavaScript')
       } finally {
         await noScript.close()
       }
     }
-    console.log('Native first paint: visible content, stable geometry, enhanced controls and no-JS navigation at 1440/688/390px')
+    console.log('Native first paint: compact header, visible content, stable geometry, enhanced controls and no-JS navigation at 1440/768/688/390px')
   } finally {
     if (server) await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()))
     rmSync(directory, { recursive: true, force: true })

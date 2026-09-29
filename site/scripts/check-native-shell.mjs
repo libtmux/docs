@@ -13,7 +13,7 @@ try {
   page.on('response', (response) => {
     if (response.ok()) loaded.add(response.url())
   })
-  for (const width of [1440, 768, 390]) {
+  for (const width of [1440, 768, 688, 390]) {
     for (const colorScheme of ['light', 'dark']) {
       await page.setViewportSize({ width, height: 900 })
       await page.emulateMedia({ colorScheme })
@@ -48,7 +48,7 @@ try {
   await page.waitForFunction(() => document.querySelector('[data-page-port-switcher] a[href$="/ts/latest/reference/session-session/"]'))
   await page.evaluate(() => { location.hash = 'libtmux.Session.windows' })
   await page.waitForFunction(() => document.querySelector('[data-page-port-switcher] a[href$="/ts/latest/reference/session-session-windows/"]'))
-  console.log('Native shell: stable first paint, assets, keyboard, unobscured dropdowns at 1440/768/390px in light/dark, and class/member equivalents passed')
+  console.log('Native shell: compact header, stable first paint, assets, keyboard, unobscured dropdowns at 1440/768/688/390px in light/dark, and class/member equivalents passed')
 } finally {
   await browser.close()
 }
