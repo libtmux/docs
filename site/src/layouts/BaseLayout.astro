@@ -18,7 +18,7 @@ import { buildTarget } from '../lib/versions'
 import type { VersionEntry } from '../lib/versions'
 import { withPortRoot, withRoot } from '../lib/site-root'
 import { PORT_NAME } from '../lib/api-models'
-import { PORT_BY_SLUG } from '../lib/ports'
+import { PORT_BY_SLUG, portSourceUrl } from '../lib/ports'
 import { markdownPath, type PageSource } from '../lib/markdown-twins'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath } from '../i18n/contribute'
 import type { Locale } from '../i18n/locales'
@@ -160,6 +160,11 @@ const llmsRoot = versionRoot && Astro.url.pathname.startsWith(versionRoot) ? ver
 const githubRepo = repository
   ?? (source.repo !== CONTRIBUTE_REPO ? source.repo : undefined)
   ?? ((navPort && PORT_BY_SLUG[navPort]?.repo) || CONTRIBUTE_REPO)
+const githubPort = navPort ? PORT_BY_SLUG[navPort] : undefined
+const githubUrl = githubPort?.source && githubPort.repo === githubRepo
+  ? portSourceUrl(githubPort, target.version,
+      source.repo === githubRepo ? source.ref : process.env.LIBTMUX_DOCS_PORT === navPort ? process.env.LIBTMUX_DOCS_SOURCE_SHA : undefined)
+  : `https://github.com/${githubRepo}/`
 
 ---
 
@@ -270,7 +275,7 @@ const githubRepo = repository
       <div data-pagefind-filter={`section:${section}`} data-pagefind-ignore="all" hidden></div>
       <slot />
     </div>
-    {!bare && <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} githubRepo={githubRepo} flush={flush} />}
+    {!bare && <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} githubUrl={githubUrl} flush={flush} />}
     <BackToTop />
     <SearchModal port={navPort} version={navVersion} />
   </body>

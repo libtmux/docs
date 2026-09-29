@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { PORTS, PORT_BY_SLUG, productAvailable } from '../src/lib/ports'
+import { PORTS, PORT_BY_SLUG, portSourceUrl, productAvailable } from '../src/lib/ports'
 import { documentationAreas } from '../src/lib/port-documentation'
 import { LANG_TO_PORT, remarkPortCode } from '../src/plugins/remark-port-code.mjs'
 import { QUICKSTARTS } from '../src/lib/quickstarts'
@@ -45,6 +45,23 @@ describe('wrapper library identities', () => {
       expect(productAvailable(port, 'workspace')).toBe(false)
       expect(documentationAreas(slug).every((area) => !area.product)).toBe(true)
     }
+  })
+
+  it.each(['kotlin', 'scala'])('opens the %s source directory without changing its repository identity', (slug) => {
+    const port = PORT_BY_SLUG[slug]
+    const root = `https://github.com/libtmux/libtmux-java/tree/`
+    const path = `/libtmux-${slug}`
+    expect(port.repo).toBe('libtmux/libtmux-java')
+    expect(portSourceUrl(port)).toBe(`${root}master${path}`)
+    expect(portSourceUrl(port, 'v0.0.1-alpha.17')).toBe(`${root}v0.0.1-alpha.17${path}`)
+    for (const version of ['latest', 'stable', 'next', 'pr-42', 'v0.0.1-alpha.17']) {
+      expect(portSourceUrl(port, version, 'a'.repeat(40))).toBe(`${root}${'a'.repeat(40)}${path}`)
+    }
+    for (const version of ['stable', 'next', 'pr-42']) {
+      expect(portSourceUrl(port, version)).toBe(`${root}master${path}`)
+    }
+    expect(portSourceUrl(port, 'latest', 'feature/source-links')).toBe(`${root}feature%2Fsource-links${path}`)
+    expect(portSourceUrl(PORT_BY_SLUG.java, 'v0.0.1-alpha.17', 'a'.repeat(40))).toBe('https://github.com/libtmux/libtmux-java')
   })
 
   it('supplies native examples and registry versions in the library installer', () => {
@@ -113,6 +130,8 @@ describe.skipIf(!SITE_BUILT)('published wrapper pages', () => {
           expect(logo?.getAttribute('src')).toContain(`/brand/${port.logoLanguage}/library/logo.svg`)
           expect(logo?.getAttribute('width')).toBe('88')
           expect(document.querySelector('main')?.textContent).toContain(PORT_BY_SLUG[port.parentLibrary!.slug].name)
+          expect(document.querySelector('.port-links a')?.getAttribute('href')).toBe(portSourceUrl(port))
+          expect(document.querySelector('footer a[aria-label="GitHub"]')?.getAttribute('href')).toBe(`${portSourceUrl(port)}${port.source ? '' : '/'}`)
         }
       } finally { await window.happyDOM.close() }
     }
