@@ -1,5 +1,5 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -127,8 +127,53 @@ if [[ "$1" == workflow ]]; then printf 'https://github.com/example/actions/runs/
     }
   })
 
-  it('fails a leg when the port publish it started fails', () => {
-    expect(workflow).toContain('gh run watch "$run_id" --repo "$REPO" --exit-status')
-    expect(workflow).toContain('::error::No dispatch credential')
+  it.each(['dispatch', 'shell'])('propagates %s dispatch and child-run failures with visible diagnostics', (job) => {
+    const body = (job === 'dispatch'
+      ? /- name: Publish[^\n]*\n[\s\S]*?        run: \|\n([\s\S]*?)(?=\n  # The shell)/.exec(workflow)![1]
+      : /  shell:\n[\s\S]*?        run: \|\n([\s\S]*)$/.exec(workflow)![1])
+      .replace(/^ {10}/gm, '')
+    const cases = [['success', 0], ['dispatch-failure', 17], ['invalid-id', 1], ['child-failure', 23]] as const
+    for (const [mode, expected] of cases) {
+      const directory = mkdtempSync(join(tmpdir(), 'libtmux-publish-failure-'))
+      try {
+        writeFileSync(join(directory, 'gh'), `#!/usr/bin/env bash
+printf '%s\\n' "$*" >> "$CALLS"
+if [[ "$1" == workflow ]]; then
+  if [[ "$MODE" == dispatch-failure ]]; then echo 'dispatch refused' >&2; exit 17; fi
+  if [[ "$MODE" == invalid-id ]]; then echo 'missing run URL'; exit 0; fi
+  echo 'https://github.com/libtmux/docs/actions/runs/123'
+elif [[ "$2" == watch ]]; then
+  echo 'child run status'
+  if [[ "$MODE" == child-failure ]]; then exit 23; fi
+elif [[ "$2" == view ]]; then
+  echo 'failed child step details'
+fi
+`, { mode: 0o755 })
+        const result = spawnSync('bash', ['-c', body], { encoding: 'utf8', env: {
+          ...process.env, PATH: `${directory}:${process.env.PATH}`, CALLS: join(directory, 'calls'),
+          MODE: mode, GH_TOKEN: 'test', GITHUB_STEP_SUMMARY: join(directory, 'summary'),
+          REPO: 'libtmux/docs', REF: 'main', DISPATCH_REF: 'main', SOURCE_REF: 'reviewed-ref',
+          VERSION: 'latest', KIND: 'trunk', IS_DEFAULT: 'true', RESOLVES_TO: '', LANGUAGE: '',
+        } })
+        expect(result.status, `${job}: ${mode}: ${result.stderr}`).toBe(expected)
+        const calls = readFileSync(join(directory, 'calls'), 'utf8')
+        if (mode === 'dispatch-failure' || mode === 'invalid-id') {
+          expect(calls).not.toContain('run watch')
+          expect(result.stderr).toContain(mode === 'dispatch-failure' ? 'dispatch refused' : 'no run id')
+        } else {
+          expect(calls).toContain('run watch 123 --repo libtmux/docs --exit-status --interval 30')
+          expect(result.stdout).toContain('child run status')
+          const summary = readFileSync(join(directory, 'summary'), 'utf8')
+          expect(summary).toContain('https://github.com/libtmux/docs/actions/runs/123')
+          expect(summary).toContain(mode === 'success' ? 'Completed:' : 'Failed:')
+          if (mode === 'child-failure') {
+            expect(result.stdout).toContain('failed child step details')
+            expect(result.stderr).toContain('::error::')
+          }
+        }
+      } finally {
+        rmSync(directory, { recursive: true, force: true })
+      }
+    }
   })
 })

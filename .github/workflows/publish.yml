@@ -90,6 +90,7 @@ jobs:
     needs: plan
     if: ${{ !inputs.dry-run && needs.plan.outputs.count != '0' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
@@ -134,7 +135,15 @@ jobs:
           run_id=${url##*/}
           [[ "$run_id" =~ ^[0-9]+$ ]] || { echo "::error::no run id in: $url" >&2; exit 1; }
           echo "- [$REPO $VERSION]($url)" >> "$GITHUB_STEP_SUMMARY"
-          gh run watch "$run_id" --repo "$REPO" --exit-status --interval 30 > /dev/null
+          if gh run watch "$run_id" --repo "$REPO" --exit-status --interval 30; then
+            echo "- Completed: $url" >> "$GITHUB_STEP_SUMMARY"
+          else
+            status=$?
+            echo "::error::Port publication failed: $url" >&2
+            echo "- Failed: $url" >> "$GITHUB_STEP_SUMMARY"
+            gh run view "$run_id" --repo "$REPO" --log-failed
+            exit "$status"
+          fi
 
   # The shell merges every port's manifest into versions.json, so it
   # redeploys once the ports have published. GITHUB_TOKEN may dispatch a
@@ -145,11 +154,27 @@ jobs:
     # versions.json; the failed legs still fail the run.
     if: ${{ !cancelled() && needs.dispatch.result != 'skipped' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       actions: write
     steps:
-      - env:
+      - name: Refresh the shell and wait for publication
+        env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           REF: ${{ github.event.repository.default_branch }}
-        run: gh workflow run deploy-shell.yml --repo "$REPO" --ref "$REF"
+        run: |
+          set -euo pipefail
+          url=$(gh workflow run deploy-shell.yml --repo "$REPO" --ref "$REF")
+          run_id=${url##*/}
+          [[ "$run_id" =~ ^[0-9]+$ ]] || { echo "::error::no run id in: $url" >&2; exit 1; }
+          echo "- [Shell refresh]($url)" >> "$GITHUB_STEP_SUMMARY"
+          if gh run watch "$run_id" --repo "$REPO" --exit-status --interval 30; then
+            echo "- Completed: $url" >> "$GITHUB_STEP_SUMMARY"
+          else
+            status=$?
+            echo "::error::Shell refresh failed: $url" >&2
+            echo "- Failed: $url" >> "$GITHUB_STEP_SUMMARY"
+            gh run view "$run_id" --repo "$REPO" --log-failed
+            exit "$status"
+          fi

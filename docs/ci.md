@@ -239,8 +239,11 @@ repository, which `GITHUB_TOKEN` cannot: the `LIBTMUX_DOCS_DISPATCH_TOKEN`
 secret on this repository, a fine-grained token with Actions: read and
 write on the port repositories. A `libtmux-docs-publisher` GitHub App works
 instead, with its ID in the `LIBTMUX_DOCS_APP_ID` variable and its key in
-the `LIBTMUX_DOCS_APP_KEY` secret. After the ports publish, it redeploys the
-shell so `versions.json` lists what they published. py is not dispatchable:
+the `LIBTMUX_DOCS_APP_KEY` secret. The workflow waits for each port's run and
+the final shell refresh, so success includes the `versions.json` update.
+Its summary links each child run; a failed dispatch, port publication or shell
+refresh fails the initiating run and prints the failed steps. Each waiting job
+has a 45-minute limit. py is not dispatchable:
 its workflow lives in tmux-python/libtmux and takes no inputs.
 
 ### With its own toolchain
