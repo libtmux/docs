@@ -2,13 +2,43 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { Window } from 'happy-dom'
 import { PORT_BY_SLUG } from '../site/src/lib/ports.ts'
 
-/** Keep generated native shell assets inside the assembly's locale and preview. */
-export function normalizeNativeShell(directory, prefix, { sphinxPort } = {}) {
+const currentPage = '__LIBTMUX_NATIVE_CURRENT_PAGE__'
+const escapeAttribute = (text) => text.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;')
+
+/** Render the runtime's own chrome once per port/version, without network access. */
+async function renderChrome(root, port, version) {
+  const window = new Window({ url: `https://libtmux.org${root}/${port.slug}/${version}/api/` })
+  window.fetch = async () => ({ ok: false })
+  try {
+    window.eval(readFileSync(new URL('../site/public/_shell/shell.js', import.meta.url), 'utf8'))
+    window.document.dispatchEvent(new window.Event('DOMContentLoaded'))
+    const header = window.document.querySelector('[data-lt-shell="header"]')
+    const footer = window.document.querySelector('[data-lt-shell="footer"]')
+    const style = window.document.getElementById('lt-shell-style')
+    if (!header || !footer || !style) throw new Error('Native shell did not render its header, footer and styles')
+    for (const link of header.querySelectorAll('[data-page-port-switcher] a[aria-current], a[lang="en"]')) {
+      link.setAttribute('href', currentPage)
+    }
+    return { header: header.outerHTML, footer: footer.outerHTML, style: style.outerHTML }
+  } finally {
+    await window.happyDOM.close()
+  }
+}
+
+/**
+ * Keep generated native shell assets inside the assembly's locale and preview.
+ * @param {string} directory
+ * @param {string} prefix
+ * @param {{ sphinxPort?: string, version?: string }} [options]
+ */
+export async function normalizeNativeShell(directory, prefix, { sphinxPort, version = 'latest' } = {}) {
   const port = sphinxPort ? PORT_BY_SLUG[sphinxPort] : undefined
   if (sphinxPort && port?.renderer !== 'sphinx') throw new Error(`Not a Sphinx port: ${sphinxPort}`)
   const root = prefix.replace(/\/+$/, '')
+  const chrome = port ? await renderChrome(root, port, version) : undefined
   const normalize = (content) => content.replace(/(['"(])(?:https?:\/\/libtmux\.org)?\/_shell\//g, `$1${root}/_shell/`)
   const adapterPath = join(directory, '_static/libtmux-org.css')
   if (port) {
@@ -30,8 +60,16 @@ export function normalizeNativeShell(directory, prefix, { sphinxPort } = {}) {
           after = after
             .replace(/<script\b[^>]*\bsrc=["'][^"']*\/_shell\/shell\.js(?:\?[^"']*)?["'][^>]*>[\s\S]*?<\/script>\s*/gi, '')
             .replace(/<link\b[^>]*\bhref=["'][^"']*\blibtmux-org\.css(?:\?[^"']*)?["'][^>]*>\s*/gi, '')
+            .replace(/<style\b[^>]*\bid=["']lt-shell-style["'][^>]*>[\s\S]*?<\/style>\s*/gi, '')
+            .replace(/<!-- libtmux-native-(header|footer) -->[\s\S]*?<!-- \/libtmux-native-\1 -->\s*/g, '')
           const cssUrl = relative(dirname(path), adapterPath).split(sep).join('/')
-          after = after.replace(/<\/head>/i, `<link rel="stylesheet" href="${cssUrl}">\n<script defer src="${root}/_shell/shell.js"></script>\n</head>`)
+          after = after.replace(/<\/head>/i, `<link rel="stylesheet" href="${cssUrl}">\n${chrome.style}\n<script defer src="${root}/_shell/shell.js"></script>\n</head>`)
+          if (!/<body\b[^>]*>/i.test(after) || !/<\/body>/i.test(after)) throw new Error(`Native page has no body: ${path}`)
+          const pageUrl = `${root}/${port.slug}/${version}/api/${relative(directory, path).split(sep).join('/').replace(/index\.html$/, '')}`
+          const header = chrome.header.replaceAll(currentPage, escapeAttribute(pageUrl))
+          after = after
+            .replace(/(<body\b[^>]*>)\s*/i, `$1\n<!-- libtmux-native-header -->${header}<!-- /libtmux-native-header -->\n`)
+            .replace(/\s*<\/body>/i, `\n<!-- libtmux-native-footer -->${chrome.footer}<!-- /libtmux-native-footer -->\n</body>`)
           if (!/<article\b/i.test(after)) throw new Error(`Native page has no article: ${path}`)
           after = after.replace(/<article\b([^>]*)>/i, (_tag, attributes) => {
             const clean = attributes.replace(/\sdata-pagefind-(?:body|filter)(?:=["'][^"']*["'])?/gi, '')
@@ -50,9 +88,9 @@ export function normalizeNativeShell(directory, prefix, { sphinxPort } = {}) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [directory, prefix, sphinxPort] = process.argv.slice(2)
+  const [directory, prefix, sphinxPort, version] = process.argv.slice(2)
   if (!directory || !prefix?.startsWith('/')) {
-    throw new Error('Usage: normalize-native-shell.mjs DIRECTORY /LOCALE_PREFIX [SPHINX_PORT]')
+    throw new Error('Usage: normalize-native-shell.mjs DIRECTORY /LOCALE_PREFIX [SPHINX_PORT VERSION]')
   }
-  console.log(`Native shell: prepared ${normalizeNativeShell(directory, prefix, { sphinxPort })} HTML/CSS files`)
+  console.log(`Native shell: prepared ${await normalizeNativeShell(directory, prefix, { sphinxPort, version })} HTML/CSS files`)
 }

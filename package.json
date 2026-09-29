@@ -22,6 +22,7 @@
   "packageManager": "pnpm@12.6.0",
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "happy-dom": "catalog:",
     "mdast-util-from-markdown": "2.0.3",
     "mdast-util-to-markdown": "2.1.2",
     "oxlint": "catalog:",

@@ -280,14 +280,19 @@
     '.lt-shell-footer-list a:hover{text-decoration:underline}'
 
   function injectChrome() {
-    if (document.getElementById('lt-shell-style')) return
-    var style = document.createElement('style')
-    style.id = 'lt-shell-style'
-    style.textContent = CHROME_STYLE
-    document.head.appendChild(style)
+    if (!document.getElementById('lt-shell-style')) {
+      var style = document.createElement('style')
+      style.id = 'lt-shell-style'
+      style.textContent = CHROME_STYLE
+      document.head.appendChild(style)
+    }
     defineVersionSwitcher()
-    document.body.insertBefore(buildHeader(), document.body.firstChild)
-    document.body.appendChild(buildFooter())
+    // Current native builds include chrome in the first paint. Keep the
+    // insertion fallback for references published before that integration.
+    if (!document.querySelector('[data-lt-shell="header"]')) {
+      document.body.insertBefore(buildHeader(), document.body.firstChild)
+    }
+    if (!document.querySelector('[data-lt-shell="footer"]')) document.body.appendChild(buildFooter())
     refreshPagePorts()
     manifest.then(function (data) {
       if (!data || data.schema !== 1) return

@@ -199,6 +199,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.5.14
+      happy-dom:
+        specifier: 'catalog:'
+        version: 20.14.5
       mdast-util-from-markdown:
         specifier: 2.0.3
         version: 2.0.3

@@ -16,7 +16,10 @@ directory, including the preview prefix when present.
 After Sphinx builds the selected source revision, `scripts/build-site.sh`
 runs `scripts/normalize-native-shell.mjs`. It copies `sphinx.css` to the
 reference's `_static/libtmux-org.css`, then adds its stylesheet and the shared
-script to each page. Existing integration is replaced once; redirects retain
+script to each page. It renders the script's own header, footer and styles once
+per port/version, using Happy DOM without network access. The header is present
+at first paint, so loading the script does not push the article down.
+Existing integration is replaced once; redirects retain
 their original behavior. This step does not edit source checkouts or their
 Sphinx configuration.
 
@@ -41,6 +44,8 @@ changing this contract.
 
 The script and tokens use stable URLs so navigation and theme fixes can reach
 previously published references. Changes must preserve existing page contracts.
+The script enhances existing navigation without replacing it, and still inserts
+navigation on older pages that have no initial header.
 
 ## Verification
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
 import { chromium } from 'playwright'
+import { checkNativeFirstPaint } from './check-native-layout.mjs'
 
 const base = (process.argv.find((arg) => arg.startsWith('http')) ?? 'http://localhost:8080/en').replace(/\/$/, '')
 const version = process.argv.find((arg) => arg.startsWith('--version='))?.slice('--version='.length) ?? 'stable'
@@ -16,8 +17,7 @@ try {
     for (const colorScheme of ['light', 'dark']) {
       await page.setViewportSize({ width, height: 900 })
       await page.emulateMedia({ colorScheme })
-      const response = await page.goto(`${base}/py/${version}/api/api/libtmux.session/`)
-      assert(response?.ok(), `Native Session page: HTTP ${response?.status()}`)
+      await checkNativeFirstPaint(page, `${base}/py/${version}/api/api/libtmux.session/`)
       const menu = page.locator('[data-page-port-switcher]')
       await menu.waitFor()
       await page.waitForFunction(() => document.querySelector('[data-page-port-switcher] a[href$="/ts/latest/reference/session-session/"]'))
@@ -48,7 +48,7 @@ try {
   await page.waitForFunction(() => document.querySelector('[data-page-port-switcher] a[href$="/ts/latest/reference/session-session/"]'))
   await page.evaluate(() => { location.hash = 'libtmux.Session.windows' })
   await page.waitForFunction(() => document.querySelector('[data-page-port-switcher] a[href$="/ts/latest/reference/session-session-windows/"]'))
-  console.log('Native shell: assets, keyboard, unobscured dropdowns at 1440/768/390px in light/dark, and class/member equivalents passed')
+  console.log('Native shell: stable first paint, assets, keyboard, unobscured dropdowns at 1440/768/390px in light/dark, and class/member equivalents passed')
 } finally {
   await browser.close()
 }
