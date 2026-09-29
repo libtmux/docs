@@ -45,7 +45,10 @@ export function snapshot(docsRoot, env = process.env) {
   const locale = env.LIBTMUX_DOCS_LOCALE || 'en'
   validateRoute(env.LIBTMUX_DOCS_VERSION, locale)
   const core = checkoutIdentity(env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`])
-  check(core.repository === port.repo, `source repository must be ${port.repo}`)
+  // Fork pull requests can build, but publication still requires the catalog's
+  // owning repository in verifyBuild(). Record the selected checkout's origin.
+  const sourceRepository = env.LIBTMUX_DOCS_SOURCE_REPOSITORY || port.repo
+  check(core.repository === sourceRepository, `source repository must be ${sourceRepository}`)
   check(core.sha === env.LIBTMUX_DOCS_SOURCE_SHA, 'source SHA differs from actual checkout HEAD')
   const sources = [{ product: 'core', ...core }]
   if (port.slug === 'py') {
@@ -60,7 +63,12 @@ export function snapshot(docsRoot, env = process.env) {
   }
   const docs = checkoutIdentity(docsRoot)
   check(docs.repository === 'libtmux/docs', 'docs checkout must belong to libtmux/docs')
-  const current = { schema: 1, port: port.slug, version: env.LIBTMUX_DOCS_VERSION, locale, docs, sources }
+  const nativeGenerator = ['ruby', 'lua'].includes(port.slug)
+    ? checkoutIdentity(env.LIBTMUX_DOCS_GENERATOR_CHECKOUT || env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`]) : undefined
+  if (nativeGenerator) check(nativeGenerator.repository === port.repo, `native generator repository must be ${port.repo}`)
+  const current = { schema: 1, port: port.slug, version: env.LIBTMUX_DOCS_VERSION, locale, docs, sources,
+    ...(nativeGenerator ? { nativeGenerator } : {}),
+  }
   if (!env.LIBTMUX_DOCS_INPUT_SNAPSHOT) return current
   const captured = json(env.LIBTMUX_DOCS_INPUT_SNAPSHOT)
   // The shared builder captures inputs before native generators emit files
@@ -68,10 +76,12 @@ export function snapshot(docsRoot, env = process.env) {
   // edit. Recheck every actual HEAD when assembly consumes that snapshot.
   const revisions = (value) => ({ ...value,
     docs: { ...value.docs, dirty: undefined },
+    ...(value.nativeGenerator ? { nativeGenerator: { ...value.nativeGenerator, dirty: undefined } } : {}),
     sources: value.sources.map((source) => ({ ...source, dirty: undefined })),
   })
   check(JSON.stringify(revisions(captured)) === JSON.stringify(revisions(current)), 'input snapshot no longer matches checkout revisions')
-  check(typeof captured.docs.dirty === 'boolean' && captured.sources.every((source) => typeof source.dirty === 'boolean'), 'input snapshot has no dirty state')
+  check(typeof captured.docs.dirty === 'boolean' && captured.sources.every((source) => typeof source.dirty === 'boolean') &&
+    (!nativeGenerator || typeof captured.nativeGenerator?.dirty === 'boolean'), 'input snapshot has no dirty state')
   return captured
 }
 
@@ -169,6 +179,10 @@ export function verifyBuild(root, expected) {
   check(record.docs?.repository === expected.publisherRepository && record.docs?.sha === expected.publisherSha,
     'builder docs SHA differs from publisher workflow SHA')
   check(record.docs.dirty === false, 'docs inputs are dirty')
+  if (['ruby', 'lua'].includes(record.port)) {
+    check(record.nativeGenerator?.repository === port.repo && SHA.test(record.nativeGenerator?.sha ?? ''), 'missing or invalid native generator repository/SHA')
+    check(record.nativeGenerator.dirty === false, 'native generator inputs are dirty')
+  } else check(record.nativeGenerator === undefined, 'unexpected native generator')
   const products = record.port === 'py' ? ['core', 'workspace', 'mcp'] : ['core']
   check(JSON.stringify(record.sources?.map((source) => source.product)) === JSON.stringify(products), 'missing or unexpected source products')
   const repositories = [port.repo, 'tmux-python/tmuxp', 'tmux-python/libtmux-mcp']

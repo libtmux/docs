@@ -139,6 +139,16 @@ checkout's dirty state, and a sorted SHA-256 inventory of every regular file.
 Python also records the separate workspace and MCP source checkouts. Only the
 record itself is excluded from the inventory; symlinks are rejected.
 
+Ruby and Lua also record `nativeGenerator`: the native exporter's repository,
+commit, and dirty state. Their custom callers keep the source, exporter, and
+shared docs in separate checkouts and set `LIBTMUX_DOCS_GENERATOR_CHECKOUT`.
+Local native builds default to the exporter in the selected source checkout.
+The publisher requires a clean exporter from the port's owning repository.
+
+Fork pull requests can set `LIBTMUX_DOCS_SOURCE_REPOSITORY` to the selected
+fork's origin for build-only previews. The record retains that origin; the
+publisher still rejects source inputs from outside the catalogued owner.
+
 The shared builder snapshots inputs before native generators run and rechecks
 their Git HEADs when assembly starts. Source-bound local builds capture dirty
 state **before** generators update API models. They can be previewed, but the publisher rejects dirty inputs. Full

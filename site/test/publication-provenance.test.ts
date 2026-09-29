@@ -43,12 +43,12 @@ function rewrite(root: string, change: (value: ReturnType<typeof inputs> & { fil
   change(value)
   writeFileSync(join(root, RECORD), JSON.stringify(value))
 }
-function repository(name: string) {
+function repository(name: string, source = 'committed input') {
   const directory = temporary()
   const git = (...args: string[]) => execFileSync('git', ['-C', directory, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
   git('init')
   git('remote', 'add', 'origin', `https://github.com/${name}.git`)
-  writeFileSync(join(directory, 'source.txt'), 'committed input')
+  writeFileSync(join(directory, 'source.txt'), source)
   git('add', '.')
   git('-c', 'user.name=Test', '-c', 'user.email=test@example.org', 'commit', '-m', 'fixture')
   return { directory, sha: git('rev-parse', 'HEAD') }
@@ -181,6 +181,77 @@ describe('deterministic build provenance', () => {
       { product: 'workspace', repository: 'tmux-python/tmuxp', sha: workspace.sha, dirty: false },
       { product: 'mcp', repository: 'tmux-python/libtmux-mcp', sha: mcp.sha, dirty: true },
     ])
+  })
+
+  it.each(['ruby', 'lua'])('records %s source and native exporter as separate clean inputs', (port) => {
+    const docs = repository('libtmux/docs')
+    const name = `libtmux/libtmux-${port}`
+    const source = repository(name)
+    const generator = repository(name, 'exporter from another revision')
+    const env = { LIBTMUX_DOCS_PORT: port, LIBTMUX_DOCS_VERSION: 'v1', LIBTMUX_DOCS_SOURCE_SHA: source.sha,
+      [`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}`]: source.directory, LIBTMUX_DOCS_GENERATOR_CHECKOUT: generator.directory }
+    const captured = snapshot(docs.directory, env)
+    expect(captured.sources).toEqual([{ product: 'core', repository: name, sha: source.sha, dirty: false }])
+    expect(captured.nativeGenerator).toEqual({ repository: name, sha: generator.sha, dirty: false })
+    expect(generator.sha).not.toBe(source.sha)
+    const root = tree()
+    recordBuild(root, captured)
+    const destination = { ...expected(), port, prefix: `en/${port}/v1`, repository: name, sourceSha: source.sha, publisherSha: docs.sha }
+    expect(verifyBuild(root, destination).nativeGenerator.sha).toBe(generator.sha)
+    writeFileSync(join(generator.directory, 'source.txt'), 'local exporter edit')
+    recordBuild(root, snapshot(docs.directory, env))
+    expect(() => verifyBuild(root, destination)).toThrow('native generator inputs are dirty')
+    expect(snapshot(docs.directory, { ...env, LIBTMUX_DOCS_GENERATOR_CHECKOUT: source.directory }).nativeGenerator?.sha).toBe(source.sha)
+  })
+
+  it.each(['missing', 'repository', 'sha', 'dirty', 'missing-dirty'])('rejects %s native exporter metadata', (mutation) => {
+    const root = tree()
+    const record = { ...inputs(), port: 'ruby', sources: [{ product: 'core', repository: 'libtmux/libtmux-ruby', sha: sourceSha, dirty: false }],
+      nativeGenerator: { repository: 'libtmux/libtmux-ruby', sha: 'e'.repeat(40), dirty: false } }
+    if (mutation === 'repository') record.nativeGenerator.repository = 'someone/other-exporter'
+    if (mutation === 'sha') record.nativeGenerator.sha = 'master'
+    if (mutation === 'dirty') record.nativeGenerator.dirty = true
+    if (mutation === 'missing-dirty') Reflect.deleteProperty(record.nativeGenerator, 'dirty')
+    if (mutation === 'missing') Reflect.deleteProperty(record, 'nativeGenerator')
+    recordBuild(root, record)
+    expect(() => verifyBuild(root, { ...expected(), port: 'ruby', prefix: 'en/ruby/v1', repository: 'libtmux/libtmux-ruby' })).toThrow(/native generator/)
+  })
+
+  it('rejects a native exporter claim on a shared-generator port', () => {
+    const root = tree()
+    recordBuild(root, { ...inputs(), nativeGenerator: { repository: 'libtmux/libtmux-go', sha: sourceSha, dirty: false } })
+    expect(() => verifyBuild(root, expected())).toThrow('unexpected native generator')
+  })
+
+  it('rechecks the native exporter HEAD when consuming the captured inputs', () => {
+    const docs = repository('libtmux/docs')
+    const source = repository('libtmux/libtmux-lua')
+    const generator = repository('libtmux/libtmux-lua', 'separate native exporter')
+    const env = { LIBTMUX_DOCS_PORT: 'lua', LIBTMUX_DOCS_VERSION: 'v1', LIBTMUX_DOCS_SOURCE_SHA: source.sha,
+      LIBTMUX_DOCS_CHECKOUT_LUA: source.directory, LIBTMUX_DOCS_GENERATOR_CHECKOUT: generator.directory }
+    const file = join(temporary(), 'before-native-generator.json')
+    writeFileSync(file, JSON.stringify(snapshot(docs.directory, env)))
+    writeFileSync(join(generator.directory, 'generated-output.json'), '{}')
+    expect(snapshot(docs.directory, { ...env, LIBTMUX_DOCS_INPUT_SNAPSHOT: file }).nativeGenerator?.dirty).toBe(false)
+    writeFileSync(join(generator.directory, 'source.txt'), 'new committed native exporter')
+    execFileSync('git', ['-C', generator.directory, '-c', 'user.name=Test', '-c', 'user.email=test@example.org', 'commit', '-am', 'change exporter'])
+    expect(() => snapshot(docs.directory, { ...env, LIBTMUX_DOCS_INPUT_SNAPSHOT: file })).toThrow('no longer matches checkout revisions')
+    expect(() => snapshot(docs.directory, { ...env, LIBTMUX_DOCS_GENERATOR_CHECKOUT: docs.directory })).toThrow('native generator repository')
+  })
+
+  it.each(['ruby', 'lua'])('can build an explicitly selected %s fork but rejects its publication', (port) => {
+    const docs = repository('libtmux/docs')
+    const source = repository(`contributor/libtmux-${port}`)
+    const generator = repository(`libtmux/libtmux-${port}`)
+    const env = { LIBTMUX_DOCS_PORT: port, LIBTMUX_DOCS_VERSION: 'v1', LIBTMUX_DOCS_SOURCE_SHA: source.sha,
+      [`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}`]: source.directory, LIBTMUX_DOCS_GENERATOR_CHECKOUT: generator.directory }
+    expect(() => snapshot(docs.directory, env)).toThrow('source repository must be libtmux/')
+    const captured = snapshot(docs.directory, { ...env, LIBTMUX_DOCS_SOURCE_REPOSITORY: `contributor/libtmux-${port}` })
+    const root = tree()
+    recordBuild(root, captured)
+    const destination = { ...expected(), port, prefix: `en/${port}/v1`, repository: `libtmux/libtmux-${port}`, publisherSha: docs.sha, sourceSha: source.sha }
+    expect(() => verifyBuild(root, destination)).toThrow('invalid source repository/SHA')
+    expect(() => verifyBuild(root, { ...destination, repository: `contributor/libtmux-${port}` })).toThrow('does not own this port')
   })
 
   it('allows a wrapper only through its owning library repository', () => {
