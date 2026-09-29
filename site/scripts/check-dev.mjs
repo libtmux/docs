@@ -7,7 +7,7 @@ import { dev } from 'astro'
 import { chromium, firefox, webkit } from 'playwright'
 import { PORTS, productAvailable } from '../src/lib/ports.ts'
 import { checkClipboard } from './check-clipboard.mjs'
-import { checkNavigation } from './check-navigation.mjs'
+import { checkApiNavigation, checkNavigation } from './check-navigation.mjs'
 
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 // `workspaceCli` alone also covers a port's local, unreleased dev CLI
@@ -49,9 +49,10 @@ const terminate = async () => {
 }
 process.on('SIGTERM', terminate)
 process.on('SIGINT', terminate)
-server = await dev({ root, cacheDir: join(mirror, 'cache'),
+const startServer = () => dev({ root, cacheDir: join(mirror, 'cache'),
   vite: { cacheDir: join(mirror, 'vite') }, logLevel: 'error',
   server: { host: '127.0.0.1', port: 0 } })
+server = await startServer()
 const base = `http://127.0.0.1:${server.address.port}/en`
 
 // Vite can reload once after its initial dependency optimization.
@@ -320,6 +321,14 @@ try {
     }
   }
   console.log('Heroes: 88px marks share the title row and stack at phone widths')
+  // Core API routes exist only in a port shell. Reuse the isolated fixture
+  // with its real Lua routes so the routine gate covers retained-document swaps.
+  await server.stop()
+  Object.assign(process.env, {
+    LIBTMUX_DOCS_PORT: 'lua', LIBTMUX_DOCS_BASE: '/en/lua/latest/',
+  })
+  server = await startServer()
+  await checkApiNavigation(page, `http://127.0.0.1:${server.address.port}/en`)
 } finally {
   await browser?.close()
   await server.stop()
