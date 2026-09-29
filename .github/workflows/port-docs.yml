@@ -86,6 +86,15 @@ jobs:
       matrix: ${{ steps.family.outputs.matrix }}
       should-publish: ${{ steps.identity.outputs.should_publish }}
     steps:
+      - name: Validate reusable workflow identity
+        env:
+          WORKFLOW_REPOSITORY: ${{ job.workflow_repository }}
+          WORKFLOW_SHA: ${{ job.workflow_sha }}
+        run: |
+          [[ "$WORKFLOW_REPOSITORY" == libtmux/docs && "$WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]] || {
+            echo "::error::GitHub Cloud job.workflow_repository/job.workflow_sha are required" >&2
+            exit 1
+          }
       - uses: actions/checkout@v7
         with:
           repository: ${{ job.workflow_repository }}
@@ -132,6 +141,15 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.identity.outputs.matrix) }}
     steps:
+      - name: Validate reusable workflow identity
+        env:
+          WORKFLOW_REPOSITORY: ${{ job.workflow_repository }}
+          WORKFLOW_SHA: ${{ job.workflow_sha }}
+        run: |
+          [[ "$WORKFLOW_REPOSITORY" == libtmux/docs && "$WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]] || {
+            echo "::error::GitHub Cloud job.workflow_repository/job.workflow_sha are required" >&2
+            exit 1
+          }
       - uses: actions/checkout@v7
         with:
           ref: ${{ needs.identity.outputs.source-ref }}
@@ -154,49 +172,6 @@ jobs:
             exit 1
           }
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
-
-      - if: inputs.port == 'py'
-        uses: astral-sh/setup-uv@v10.0.1
-        with:
-          enable-cache: false
-          python-version: '3.14'
-      - name: Install Python's native documentation dependencies
-        if: inputs.port == 'py'
-        working-directory: port
-        # Reproduce the selected lock, including resolutions made with
-        # contributor-specific package cooldowns.
-        run: uv sync --frozen --all-extras --dev
-
-      # C++'s reference is read from the Doxygen XML its own build produces
-      # (scripts/gen-api-model.mjs), which must be newer than the headers it
-      # describes, so it is generated here, after the checkout. The same
-      # doxygen serves gen-api-model's own run over the workspace and MCP
-      # headers.
-      - name: Generate the Doxygen XML
-        if: matrix.port == 'cxx'
-        working-directory: port
-        run: |
-          set -euo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq doxygen
-          doxygen --version
-          OUTPUT_DIRECTORY=. doxygen Doxyfile
-
-      # Swift's reference is read from the symbol graph its compiler emits,
-      # for the same reason and with the same freshness check. The resolved
-      # versions are forced so the build neither re-resolves nor rewrites
-      # Package.resolved.
-      - if: matrix.port == 'swift'
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: '6.2'
-      - name: Emit the Swift symbol graph
-        if: matrix.port == 'swift'
-        working-directory: port
-        run: >-
-          swift build --force-resolved-versions
-          -Xswiftc -emit-symbol-graph
-          -Xswiftc -emit-symbol-graph-dir -Xswiftc "$PWD/symbolgraph"
 
       - uses: actions/checkout@v7
         with:
@@ -242,6 +217,63 @@ jobs:
       - run: pnpm install --frozen-lockfile
         working-directory: docs
 
+      - name: Snapshot source inputs before native generation
+        working-directory: docs
+        env:
+          LIBTMUX_DOCS_PORT: ${{ matrix.port }}
+          LIBTMUX_DOCS_VERSION: ${{ matrix.version }}
+          LIBTMUX_DOCS_SOURCE_SHA: ${{ steps.source.outputs.sha }}
+          PORT_CHECKOUT: ${{ github.workspace }}/port
+          LIBTMUX_DOCS_WORKSPACE_PY: ${{ github.workspace }}/python-workspace
+          LIBTMUX_DOCS_MCP_PY: ${{ github.workspace }}/python-mcp
+        run: |
+          set -euo pipefail
+          export "LIBTMUX_DOCS_CHECKOUT_${LIBTMUX_DOCS_PORT^^}=$PORT_CHECKOUT"
+          node scripts/publication-provenance.mjs snapshot "$RUNNER_TEMP/build-inputs.json" "$PWD"
+
+      - if: inputs.port == 'py'
+        uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: false
+          python-version: '3.14'
+      - name: Install Python's native documentation dependencies
+        if: inputs.port == 'py'
+        working-directory: port
+        # Reproduce the selected lock, including resolutions made with
+        # contributor-specific package cooldowns.
+        run: uv sync --frozen --all-extras --dev
+
+      # C++'s reference is read from the Doxygen XML its own build produces
+      # (scripts/gen-api-model.mjs), which must be newer than the headers it
+      # describes, so it is generated here, after the checkout. The same
+      # doxygen serves gen-api-model's own run over the workspace and MCP
+      # headers.
+      - name: Generate the Doxygen XML
+        if: matrix.port == 'cxx'
+        working-directory: port
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq doxygen
+          doxygen --version
+          OUTPUT_DIRECTORY=. doxygen Doxyfile
+
+      # Swift's reference is read from the symbol graph its compiler emits,
+      # for the same reason and with the same freshness check. The resolved
+      # versions are forced so the build neither re-resolves nor rewrites
+      # Package.resolved.
+      - if: matrix.port == 'swift'
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.2'
+      - name: Emit the Swift symbol graph
+        if: matrix.port == 'swift'
+        working-directory: port
+        run: >-
+          swift build --force-resolved-versions
+          -Xswiftc -emit-symbol-graph
+          -Xswiftc -emit-symbol-graph-dir -Xswiftc "$PWD/symbolgraph"
+
       - name: Build this port's tree
         working-directory: docs
         env:
@@ -250,6 +282,7 @@ jobs:
           LIBTMUX_DOCS_VERSION_KIND: ${{ matrix.kind }}
           LIBTMUX_DOCS_IS_DEFAULT: ${{ matrix.isDefault }}
           LIBTMUX_DOCS_RESOLVES_TO: ${{ matrix.resolvesTo }}
+          LIBTMUX_DOCS_INPUT_SNAPSHOT: ${{ runner.temp }}/build-inputs.json
           LIBTMUX_DOCS_SOURCE_REF: ${{ needs.identity.outputs.source-ref }}
           LIBTMUX_DOCS_SOURCE_SHA: ${{ steps.source.outputs.sha }}
           PORT_CHECKOUT: ${{ github.workspace }}/port
@@ -276,9 +309,28 @@ jobs:
 
       # The version directory itself: its contents become
       # <locale>/<port>/<version>.
-      - uses: actions/upload-artifact@v7
+      - id: content
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: docs-${{ matrix.port }}-${{ matrix.version }}
           path: docs/_site/en/${{ matrix.port }}/${{ matrix.version }}
+          if-no-files-found: error
+          retention-days: 1
+          include-hidden-files: true
+
+      # Matrix jobs each produce their own descriptor. Run/attempt and archive
+      # digest are deliberately outside the immutable version directory.
+      - name: Describe the uploaded artifact
+        working-directory: docs
+        env:
+          ARTIFACT_ID: ${{ steps.content.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.content.outputs.artifact-digest }}
+          ARTIFACT_NAME: docs-${{ matrix.port }}-${{ matrix.version }}
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: node scripts/publication-provenance.mjs descriptor "$RUNNER_TEMP/publication.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: docs-${{ matrix.port }}-${{ matrix.version }}-publication
+          path: ${{ runner.temp }}/publication.json
           if-no-files-found: error
           retention-days: 1

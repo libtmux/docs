@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
@@ -31,11 +31,21 @@ interface ManifestResponse {
   status?: number
 }
 
-function publishManifest(responses: ManifestResponse[]) {
+const publication = {
+  build: { url: '/en/go/next/build-provenance.json', sha256: 'a'.repeat(64) },
+  artifact: { id: 17, name: 'docs-go-next', sha256: 'b'.repeat(64) },
+  run: { url: 'https://github.com/libtmux/libtmux-go/actions/runs/42', attempt: 1 },
+  publisher: { repository: 'libtmux/docs', sha: 'c'.repeat(40) },
+  destination: { prefix: 'en/go/next/', url: 'https://libtmux.org/en/go/next/' },
+}
+
+function publishManifest(responses: ManifestResponse[], env: Record<string, string> = {}) {
   const directory = mkdtempSync(join(tmpdir(), 'libtmux-manifest-publish-'))
   try {
     const calls = join(directory, 'calls.jsonl')
     writeFileSync(calls, '')
+    writeFileSync(join(directory, 'publication-receipt.json'), JSON.stringify(publication))
+    writeFileSync(join(directory, 'summary'), '')
     writeFileSync(join(directory, 'responses.json'), JSON.stringify(responses))
     writeFileSync(join(directory, 'aws'), `#!${process.execPath}
 const fs = require('node:fs')
@@ -65,14 +75,16 @@ if (args[1] === 'get-object') {
         ...process.env, PATH: `${directory}:${process.env.PATH}`, RUNNER_TEMP: directory,
         CALLS: calls, RESPONSES: join(directory, 'responses.json'), BUCKET: 'docs-test',
         PORT: 'go', SLUG: 'next', KIND: 'alias', LABEL: 'Next', IS_DEFAULT: 'true', RESOLVES_TO: 'v2',
+        GITHUB_STEP_SUMMARY: join(directory, 'summary'), PREFIX: 'en/go/next', ...env,
       },
     })
     expect(result.error, result.stderr).toBeUndefined()
     return {
       ...result,
+      summary: readFileSync(join(directory, 'summary'), 'utf8'),
       calls: readFileSync(calls, 'utf8').trim().split('\n').filter(Boolean).map((line) => JSON.parse(line)) as {
         args: string[]
-        document?: { ports: Record<string, { slug: string }[]>; defaultVersion: Record<string, string> }
+        document?: { ports: Record<string, { slug: string; publication?: typeof publication & { operation: string } }[]>; defaultVersion: Record<string, string> }
       }[],
     }
   } finally {
@@ -111,7 +123,7 @@ describe('port manifest publication', () => {
     expect(result.status, result.stderr).toBe(0)
     expect(result.calls[1].args.slice(-2)).toEqual(['--if-none-match', '*'])
     expect(result.calls[1].document).toEqual({
-      schema: 1, ports: { go: [{ slug: 'next', label: 'Next', kind: 'alias', supported: true, resolvesTo: 'v2' }] },
+      schema: 1, ports: { go: [{ slug: 'next', label: 'Next', kind: 'alias', supported: true, resolvesTo: 'v2', publication: { ...publication, operation: 'published' } }] },
       defaultVersion: { go: 'next' },
     })
   })
@@ -163,6 +175,37 @@ describe('port manifest publication', () => {
     expect(result.status).toBe(1)
     expect(result.stderr).toContain(failure.error)
     expect(result.calls).toHaveLength(2)
+    expect(result.summary).toBe('')
+  })
+
+  it('preserves the original receipt only for identical immutable bytes', () => {
+    const original = { ...publication, operation: 'published', artifact: { ...publication.artifact, id: 9 } }
+    const document = { schema: 1, ports: { go: [{ slug: 'next', publication: original }] }, defaultVersion: { go: 'next' } }
+    const responses: ManifestResponse[] = [{ operation: 'get-object', document, etag: '"old"' }, { operation: 'put-object' }]
+    const immutable = publishManifest(responses, { KIND: 'tag', SKIP_SYNC: 'true' })
+    expect(immutable.status, immutable.stderr).toBe(0)
+    expect(immutable.calls[1].document?.ports.go[0].publication).toEqual(original)
+    expect(immutable.summary).toContain('original receipt was preserved')
+    const mutable = publishManifest(responses)
+    expect(mutable.status, mutable.stderr).toBe(0)
+    expect(mutable.calls[1].document?.ports.go[0].publication?.artifact.id).toBe(17)
+  })
+
+  it('describes legacy immutable bytes without a receipt as verified existing', () => {
+    const result = publishManifest([
+      { operation: 'get-object', document: existingManifest(['next']), etag: '"old"' }, { operation: 'put-object' },
+    ], { KIND: 'tag', SKIP_SYNC: 'true' })
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.calls[1].document?.ports.go[0].publication?.operation).toBe('verified-existing')
+  })
+
+  it('fails without a successful receipt if an immutable manifest disagrees with the verified build', () => {
+    const document = { schema: 1, ports: { go: [{ slug: 'next', publication: { ...publication, build: { ...publication.build, sha256: 'd'.repeat(64) } } }] }, defaultVersion: {} }
+    const result = publishManifest([{ operation: 'get-object', document, etag: '"old"' }], { KIND: 'tag', SKIP_SYNC: 'true' })
+    expect(result.status).not.toBe(0)
+    expect(result.stderr).toContain('immutable publication receipt disagrees')
+    expect(result.calls).toHaveLength(1)
+    expect(result.summary).toBe('')
   })
 
   it('reports a conflict after three conditional write attempts', () => {
@@ -177,7 +220,89 @@ describe('port manifest publication', () => {
   })
 })
 
+describe('immutable byte guard', () => {
+  it.each(['identical', 'changed', 'legacy-no-record'])('handles %s remote bytes without rewriting them', (mode) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-immutable-'))
+    try {
+      mkdirSync(join(directory, 'dist'))
+      mkdirSync(join(directory, 'remote'))
+      for (const folder of ['dist', 'remote']) {
+        writeFileSync(join(directory, folder, 'index.html'), folder === 'remote' && mode === 'changed' ? 'other bytes' : 'same page')
+        if (folder === 'dist' || mode !== 'legacy-no-record') writeFileSync(join(directory, folder, 'build-provenance.json'), '{}')
+      }
+      writeFileSync(join(directory, 'env'), '')
+      writeFileSync(join(directory, 'aws'), `#!${process.execPath}
+const fs = require('node:fs')
+const args = process.argv.slice(2)
+if (args[0] === 's3api' && args[1] === 'list-objects-v2') console.log('1')
+else if (args[0] === 's3' && args[1] === 'sync' && args[2] === 's3://docs-test/en/go/v1/') fs.cpSync(process.env.REMOTE, args[3], { recursive: true })
+else process.exit(90)
+`, { mode: 0o755 })
+      const body = /- name: Protect immutable tag contents[\s\S]*?        run: \|\n((?: {10}[^\n]*\n|\n)*)/.exec(reusable)![1].replace(/^ {10}/gm, '')
+      const result = spawnSync('bash', ['-c', body], { cwd: directory, encoding: 'utf8', env: {
+        ...process.env, PATH: `${directory}:${process.env.PATH}`, RUNNER_TEMP: directory,
+        BUCKET: 'docs-test', PREFIX: 'en/go/v1', GITHUB_ENV: join(directory, 'env'), REMOTE: join(directory, 'remote'),
+      } })
+      expect(result.status, result.stderr).toBe(mode === 'identical' ? 0 : 1)
+      expect(readFileSync(join(directory, 'env'), 'utf8')).toBe(mode === 'identical' ? 'SKIP_SYNC=true\n' : '')
+      if (mode !== 'identical') expect(result.stderr).toContain('already exists with different bytes')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+})
+
 describe('port publisher contract', () => {
+  function validatePrefix(repository: string, port = '', prefix = 'pr-42', env: Record<string, string> = {}) {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-publish-prefix-'))
+    try {
+      const environment = join(directory, 'env')
+      writeFileSync(environment, '')
+      const body = /- name: Validate path-prefix[\s\S]*?        run: \|\n((?: {10}[^\n]*\n|\n)*)/.exec(reusable)![1].replace(/^ {10}/gm, '')
+      const result = spawnSync('bash', ['-c', body], { encoding: 'utf8', env: {
+        ...process.env, GITHUB_REPOSITORY: repository, GITHUB_ENV: environment,
+        PREFIX_IN: prefix, PORT_IN: port, VERSION_IN: 'pr-42', KIND_IN: 'pr', DEFAULT_IN: 'false', LIBTMUX_DOCS_LOCALE: 'en', ...env,
+      } })
+      return { ...result, environment: readFileSync(environment, 'utf8') }
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  }
+
+  it.each([...new Set(PORTS.map((port) => port.repo)), 'unknown/docs', ''])('rejects an empty port from %s before selecting an artifact or AWS credentials', (repository) => {
+    const result = validatePrefix(repository)
+    expect(result.status, result.stderr).toBe(1)
+    expect(result.stderr).toContain('must supply a port and its publication provenance')
+    expect(result.environment).toBe('')
+    expect(reusable.indexOf('Validate path-prefix')).toBeLessThan(reusable.indexOf('uses: actions/download-artifact'))
+    expect(reusable.indexOf('Validate path-prefix')).toBeLessThan(reusable.indexOf('uses: aws-actions/configure-aws-credentials'))
+  })
+
+  it.each(['libtmux/docs', 'tony/libtmux-docs'])('retains the shared preview contract for %s', (repository) => {
+    const result = validatePrefix(repository)
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.environment).toBe('PREFIX=pr-42\n')
+  })
+
+  it('passes a qualified port through to its required provenance validation', () => {
+    const result = validatePrefix('libtmux/libtmux-go', 'go', 'go/pr-42')
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.environment).toBe('PREFIX=en/go/pr-42\n')
+  })
+
+  it.each(['v1\nPROVENANCE_REVIEW_MARKER=1', 'v1\rMARKER=1', 'v1\n', 'v1/other', 'v1..2', 'v1+build'])('rejects malformed version %j without writing environment bytes', (version) => {
+    const result = validatePrefix('libtmux/libtmux-go', 'go', `go/${version}`, { VERSION_IN: version, KIND_IN: 'tag' })
+    expect(result.status, result.stderr).toBe(1)
+    expect(result.environment).toBe('')
+  })
+
+  it.each(['en\nPROVENANCE_REVIEW_MARKER=1', 'en\n', '../en', 'en/py', 'english'])('rejects malformed locale %j without writing environment bytes', (locale) => {
+    const result = validatePrefix('libtmux/libtmux-go', 'go', 'go/pr-42', { LIBTMUX_DOCS_LOCALE: locale })
+    expect(result.status, result.stderr).toBe(1)
+    expect(result.stderr).toContain('invalid publication locale')
+    expect(result.environment).toBe('')
+  })
+
   it('reserves every port and requires its exact port/version prefix', () => {
     const reserved = reusable.match(/reserved=\(([^)]+)\)/)?.[1].trim().split(/\s+/)
     expect(reserved).toEqual([...PORTS.map((port) => port.slug), 'manifest', '_shell'])
@@ -197,6 +322,24 @@ describe('port publisher contract', () => {
     expect(guard).not.toMatch(/^\s+--max-items/m)
     expect(reusable).toContain('immutable tag \'$PREFIX\' already exists with different bytes')
     expect(reusable).toContain("if: inputs.port != '' && inputs.version-kind != 'pr'")
+  })
+
+  it('validates a specific artifact before credentials and only records a receipt after a successful sync', () => {
+    const verify = reusable.indexOf('Verify artifact and build provenance')
+    const credentials = reusable.indexOf('uses: aws-actions/configure-aws-credentials')
+    const sync = reusable.indexOf("Sync to this call's own prefix")
+    const manifest = reusable.indexOf('Upsert manifest/<port>.json')
+    expect(verify).toBeGreaterThan(0)
+    expect(verify).toBeLessThan(credentials)
+    expect(credentials).toBeLessThan(sync)
+    expect(sync).toBeLessThan(manifest)
+    expect(reusable.slice(sync)).not.toMatch(/continue-on-error|if:.*always\(\)/)
+    expect(reusable).toContain('artifact-ids: ${{ steps.descriptor.outputs.artifact-id }}')
+    expect(reusable).toContain('skip-decompress: true')
+    expect(reusable).toContain('digest-mismatch: error')
+    expect(reusable).not.toContain('actions: read')
+    expect(reusable).toContain('ref: ${{ job.workflow_sha }}')
+    expect(reusable).toContain('"$WORKFLOW_SHA" =~ ^[0-9a-f]{40}$')
   })
 
   it('merges successful per-port fragments into both runtime switchers on the next shell publish', () => {

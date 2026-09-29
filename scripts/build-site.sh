@@ -293,6 +293,8 @@ if [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ] || [ -n "${LIBTMUX_DOCS_SOURCE_REF:-}" 
   source_resolved="$(git -C "$source_checkout" rev-parse "$LIBTMUX_DOCS_SOURCE_REF^{commit}")"
   [ "$source_head" = "$LIBTMUX_DOCS_SOURCE_SHA" ] || die "checkout HEAD $source_head differs from selected source $LIBTMUX_DOCS_SOURCE_SHA"
   [ "$source_resolved" = "$LIBTMUX_DOCS_SOURCE_SHA" ] || die "source ref resolves to $source_resolved, expected $LIBTMUX_DOCS_SOURCE_SHA"
+  # Capture dirty state before generators rewrite the committed API models.
+  node "$script_dir/publication-provenance.mjs" snapshot "$scratch/build-inputs.json" "$repo_root"
 fi
 
 # Source-owned guides are ephemeral build input. Always clear the staging
@@ -1226,4 +1228,11 @@ if [ -n "$ports_filter" ]; then
 elif ! node "$(dirname "$0")/check-links.mjs" "$out_dir" --all "${vendored_args[@]}"; then
   printf 'build-site: broken internal links from pages this repo generates (see the list above)\n' >&2
   exit 1
+fi
+
+# Run identity lives in a separate artifact; these bytes remain identical on
+# a rerun of the same clean inputs. Full local assemblies have no source claim.
+if [ -f "$scratch/build-inputs.json" ]; then
+  node "$script_dir/publication-provenance.mjs" record \
+    "$site_out/$LIBTMUX_DOCS_PORT/$LIBTMUX_DOCS_VERSION" "$scratch/build-inputs.json"
 fi
