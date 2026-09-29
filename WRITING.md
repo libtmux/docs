@@ -137,6 +137,22 @@ This checks seven examples covering input, capture, options, hooks, waiting,
 and cleanup at the integrated Go revision. It requires Go and tmux on `PATH`;
 it is separate from the ordinary docs test loop.
 
+For workspace command examples, build the native CLI from the source revision
+linked by the page, then run:
+
+```console
+$ python3 scripts/check-workspace-prose.py \
+    --port go \
+    --binary /path/to/tmux-workspace
+```
+
+The runner executes examples from the command overview, conversion, editing,
+capture, listing, diagnostics and search pages. It checks refusal to overwrite,
+editor errors, invalid patterns and invalid documents on a private tmux socket.
+Node, tmux and the selected CLI's runtime must be on `PATH`. Use `--report` to
+save command results and content hashes; record the native build revision with
+that report.
+
 ## Content collections and MDX
 
 [`site/src/content.config.ts`](site/src/content.config.ts) owns collection

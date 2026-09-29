@@ -42,8 +42,7 @@ export const GET: APIRoute = async ({ site }) => {
   const port = process.env.LIBTMUX_DOCS_PORT
   const visiblePorts = PORTS.filter((entry) => !port || entry.slug === port)
   const locale = buildLocale()
-  let defaults: Record<string, string> = {}
-  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
+  const defaults: Record<string, string> = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
   const versionFor = (slug: string) => slug === port ? buildTarget(process.env).version : (defaults[slug] ?? 'latest')
 
   const entries = await getCollection(

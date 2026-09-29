@@ -1,29 +1,22 @@
 ---
-title: "tmuxp freeze"
-description: "Capture a live session as a starting workspace file. A capture records observable session state; it cannot recover the original scripts, plugin intent, comments, or every application state."
+title: Capture a workspace
+description: Capture a running tmux session as a starting point for a workspace file.
 product: workspace
 sidebar:
-  label: "tmuxp freeze"
+  label: Capture a workspace
   group: "CLI reference"
   order: 11
 tableOfContents: true
 ---
-<!-- port:py -->
-This page documents the available Python tmuxp reference. Proposed native
-extensions are labeled separately.
-<!-- /port -->
-<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
-**tmuxp compatibility reference.** Examples using `tmuxp` run the Python reference. [Local CLI status](../../reference/compatibility/) describes this port's implemented coverage.
-<!-- /port -->
 
-Capture a live session as a starting workspace file. A capture records
-observable session state; it cannot recover the original scripts, plugin intent,
-comments, or every application state.
+<!-- port:py -->
+Capture a running tmux session as a starting workspace file. A capture cannot
+recover original scripts, plugin intent, comments or every application state.
 
 ## Export a named session
 
 After the [installation walkthrough](../../guides/installation/) creates
-`workspace-guide`, export it to a new destination:
+`workspace-guide`, choose a new destination:
 
 ```console
 $ tmuxp freeze \
@@ -34,60 +27,76 @@ $ tmuxp freeze \
     workspace-guide
 ```
 
-Without a session argument, tmuxp resolves or asks for a live session. Without a
-format or destination, it can ask for those choices. `--yes` answers yes/no
-questions; it does not supply every missing selection. `--quiet` suppresses explanatory status, but prompts can still occur.
-Successful export writes the workspace document to a file, not stdout.
-Declining a confirmation can return without saving.
+Without a session, format or destination, the command can ask for missing
+choices. `--yes` answers yes/no questions; it does not supply every choice.
+`--quiet` suppresses explanatory status but can still allow prompts.
 
-In this reference, an explicit `--save-to` path bypasses the overwrite
-confirmation used by the prompted path. Select a new path deliberately. The
-<!-- port:py -->proposed native<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->native<!-- /port --> contract applies the same protection to explicit and prompted
-destinations and keeps `--force` distinct from `--yes`.
+An explicit `--save-to` path bypasses the overwrite confirmation used by the
+prompted path. Select a new path deliberately. A successful export writes a
+file; declining a confirmation can return without saving.
 
-Inspect the capture before reloading. See the [export and reload
-workflow](../../guides/export-session/) and the [<!-- port:py -->proposed machine<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->native machine<!-- /port -->
-output](../../reference/output/) for the distinction between a saved file's
-format and a CLI result stream.
-<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+Inspect the captured commands and paths before following [export and
+reload](../../guides/export-session/).
 
-## What the captured document holds
-
-The seven native ports agree on three things a capture records, and on one it
-does not.
-
-**Window options are written under `options_after`.** tmux applies them after
-the panes exist, and options like `automatic-rename: off` do not hold if they
-are applied before. `load` accepts either spelling.
-
-**A pane sitting at a shell gets no `shell_command`.** Naming the shell would
-start a shell inside a shell when the document is reloaded. The shell is
-recognised by name as well as by the session's `default-shell`, because macOS
-runs bash for `/bin/sh` and the pane reports `bash`.
-
-**Nothing about the machine it was captured on.** No session environment, so a
-document does not carry the capturing host's `SSH_AUTH_SOCK` or `DISPLAY`, and
-no `default-size`, which would otherwise pin a reloaded session to the size of
-the terminal that captured it.
+[Command source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/freeze.py).
 <!-- /port -->
 
-## Arguments and flags
+<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+Capture a running tmux session as a starting point for a workspace file. Capture
+reads live state. It cannot recover original command arguments, command history,
+script definitions or plugin intent.
 
-| Argument or flags | Arity / default | Choices or meaning |
-| --- | --- | --- |
-| `"session_name"` | optional |  |
-| `-S` | value; None | pass-through for tmux -S |
-| `-L` | value; None | pass-through for tmux -L |
-| `-f`, `--workspace-format` | value; None | yaml, json |
-| `-o`, `--save-to` | value; None | file to save to |
-| `--yes`, `-y` | flag; False | always answer yes |
-| `--quiet`, `-q` | flag; False | suppress explanatory/status text; prompts still occur despite the parser help claiming otherwise |
-| `--force` | flag; False | overwrite the workspace file |
+## Inspect a session
 
-All commands accept `-h` / `--help`. Root options precede the command; see the
-[CLI overview](../). The [output reference](../../reference/output/)
-distinguishes current Python flags from <!-- port:py -->proposed all-command<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->native all-command<!-- /port --> JSON and NDJSON.
+After the [installation walkthrough](../../guides/installation/) creates
+`workspace-guide`, request a machine result from its private socket:
 
-[Parser and implementation source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/freeze.py).
+```console
+$ tmux-workspace freeze \
+    -S "$WORKSPACE_TMP/tmux.sock" \
+    --json \
+    workspace-guide
+```
 
-[tmuxp reference source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/__init__.py).
+## Save the captured document
+
+Name the destination and format explicitly:
+
+```console
+$ tmux-workspace freeze \
+    -S "$WORKSPACE_TMP/tmux.sock" \
+    --json \
+    --workspace-format yaml \
+    --save-to captured-workspace.yaml \
+    workspace-guide
+```
+
+Use a new destination, or pass `--force` to authorize replacement. Review
+captured commands and directories before loading the file on another machine.
+The saved document encoding is separate from the CLI result format selected by
+`--json` or `--ndjson`.
+
+See [export and reload](../../guides/export-session/) for the complete workflow.
+
+<!-- port:ts -->
+[CLI source](https://github.com/libtmux/libtmux-ts/blob/f36d692552bb9a373b45338bb5fece854e57cc3d/packages/workspace-cli/README.md).
+<!-- /port -->
+<!-- port:rs -->
+[CLI source](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/tmux-workspace/docs/cli.md).
+<!-- /port -->
+<!-- port:go -->
+[CLI source](https://github.com/libtmux/libtmux-go/blob/bb06e26e116e941813ca40bf45e7e3a47d38f52a/workspace/CLI.md).
+<!-- /port -->
+<!-- port:java -->
+[CLI source](https://github.com/libtmux/libtmux-java/blob/3e5b20d22af3890ae5f7f52842e4b05d170a983f/libtmux-workspace-cli/README.md).
+<!-- /port -->
+<!-- port:dotnet -->
+[CLI source](https://github.com/libtmux/libtmux-dotnet/blob/f77fe776ba67a04abb20ddbbc26cf4a000d63b74/src/LibTmux.Workspace.Cli/README.md).
+<!-- /port -->
+<!-- port:cxx -->
+[CLI source](https://github.com/libtmux/libtmux-cxx/blob/9c8c6a264114277df84c9f6819855093adae5c6e/apps/workspace/README.md).
+<!-- /port -->
+<!-- port:swift -->
+[CLI source](https://github.com/libtmux/libtmux-swift/blob/53c67947879f4976ddf2c43f3c8df7c7671c5b19/Sources/TmuxWorkspaceCLI/README.md).
+<!-- /port -->
+<!-- /port -->

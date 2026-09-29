@@ -484,7 +484,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       const body = read(`${root}llms-full.txt`)
       expect(body, `${root} resolved file inclusions`).not.toMatch(/```[^\n]*file="[^"\n]+"[^\n]*\n\s*```/)
       const exported = JSON.parse(read(`${root}docs.json`)) as DocsManifest
-      for (const port of PORTS) {
+      const [rootPort, rootVersion] = root.split('/')
+      const visiblePorts = PORTS.filter((port) => !rootPort || port.slug === rootPort)
+      expect(exported.ports.map((port) => port.slug), `${root} port scope`).toEqual(visiblePorts.map((port) => port.slug))
+      for (const port of visiblePorts) {
         const advertised = exported.ports.find((entry) => entry.slug === port.slug)!
         if (port.parentLibrary) {
           expect(advertised.products, `${port.slug} is library-only`).toEqual([])
@@ -496,7 +499,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           expect(metadata.inDevelopment, `${root}${port.slug} ${product} development status`).toBe(productInDevelopment(port, product))
           const section = 'reference'
           if (productAvailable(port, product)) {
-            expect(new URL(metadata.reference!, urlFor(root)).pathname).toBe(urlFor(`${port.slug}/${defaults[port.slug]}/${product}/${section}/`).pathname)
+            expect(new URL(metadata.reference!, urlFor(root)).pathname).toBe(urlFor(`${port.slug}/${rootVersion || defaults[port.slug]}/${product}/${section}/`).pathname)
           } else expect(metadata.reference).toBeNull()
           if (product === 'workspace') {
             expect(metadata.cli, `${root}${port.slug} user CLI`).toBe(port.workspaceCli ?? null)
@@ -505,17 +508,17 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           else expect(metadata.protocol).toBeNull()
         }
       }
-      const ruby = exported.ports.find((entry) => entry.slug === 'ruby')!
-      expect(ruby.documentation).toEqual(expect.arrayContaining([
+      const ruby = exported.ports.find((entry) => entry.slug === 'ruby')
+      if (ruby) expect(ruby.documentation).toEqual(expect.arrayContaining([
         expect.objectContaining({ id: 'async', kind: 'companion-package', availability: 'available', package: 'libtmux-async' }),
       ]))
-      const lua = exported.ports.find((entry) => entry.slug === 'lua')!
-      expect(lua.documentation).toEqual(expect.arrayContaining([
+      const lua = exported.ports.find((entry) => entry.slug === 'lua')
+      if (lua) expect(lua.documentation).toEqual(expect.arrayContaining([
         expect.objectContaining({ id: 'runtime', kind: 'runtime', availability: 'available' }),
         expect.objectContaining({ id: 'mcp', kind: 'unavailable', availability: 'unpublished' }),
         expect.objectContaining({ id: 'workspace', kind: 'unavailable', availability: 'unpublished' }),
       ]))
-      for (const area of [...ruby.documentation, ...lua.documentation]) {
+      for (const area of exported.ports.flatMap((port) => port.documentation)) {
         expect(resolves(area.url, urlFor(root).href), `${root}${area.url} documentation area`).toBe(true)
       }
       for (const entry of exported.pages.filter((entry) => productUrl.test(entry.url))) {

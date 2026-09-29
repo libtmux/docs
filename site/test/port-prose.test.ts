@@ -113,6 +113,17 @@ describe('port prose ownership', () => {
     }
   })
 
+  it.each(['ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'])('keeps native workspace commands on %s pages', (port) => {
+    for (const name of ['index', 'convert', 'edit', 'freeze', 'ls', 'debug-info', 'search']) {
+      const raw = readFileSync(`${contentRoot}_workspace-shared/workspace/cli/${name}.md`, 'utf8')
+      const body = resolvePortBody(raw, port)
+      expect(body, `${port}:${name}`).toMatch(/\$ (?:EDITOR=vi )?tmux-workspace /)
+      expect(body, `${port}:${name}`).not.toMatch(/\$ tmuxp |tmuxp compatibility reference|proposed native|seven native ports/i)
+      expect(body, `${port}:${name}`).toContain(`https://github.com/libtmux/libtmux-${port}/blob/`)
+      expect(body, `${port}:${name}`).not.toContain('https://github.com/tmux-python/tmuxp/')
+    }
+  })
+
   it.each(Object.entries(languageNames))('keeps shared articles specific to %s', (port, ownNames) => {
     const paths = globSync(`${contentRoot}docs/{concepts,guides,topics,examples}/*.md`)
     expect(paths.length).toBeGreaterThan(1)
