@@ -12,7 +12,7 @@ import { CHECKOUTS, LANG_TO_PORT, checkoutFor } from '../src/plugins/remark-port
  * that port's revision-bound source cache. This prevents transcription drift,
  * but does not prove the displayed region is a complete, executable program.
  * Inline programs can also have separate native proof, as the capture page
- * does. Its receipt and rendering gate live in capture-examples.test.ts.
+ * does. Its receipt and rendering gate live in complete-examples.test.ts.
  *
  * So two things are asserted. Every `file=` reference must resolve, because a
  * renamed example upstream degrades quietly rather than failing. And the count

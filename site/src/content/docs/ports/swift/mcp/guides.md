@@ -1,6 +1,6 @@
 ---
 title: Connect a Swift MCP client
-description: Build libtmux-mcp and select its tmux endpoint and tool authority through environment variables.
+description: Build the Swift MCP executable and connect it to a private tmux server.
 port: swift
 product: mcp
 sidebar:
@@ -8,61 +8,105 @@ sidebar:
   order: 2
 ---
 
-Build the Swift executable and have the MCP client launch it.
-Use the package's supported Swift toolchain and make tmux available to
-the client process.
+Build the Swift executable, then let your MCP client launch the script below.
+The script owns a private tmux server and exposes only `list_sessions`. It stops
+tmux when the MCP process exits; it does not require an existing tmux session.
 
-## Build and launch
+<a id="build-and-launch"></a>
 
-From the Swift repository:
+## Build the executable
 
-```console
-$ swift build --product libtmux-mcp
-```
-
-The debug executable is written under `.build/debug`.
-Run an inspection surface on a named socket:
+Use Swift 6.2.4, Git, and tmux 3.2a or newer on Linux. Create an empty directory
+for the launcher and source checkout:
 
 ```console
-$ LIBTMUX_SOCKET=docs-agent LIBTMUX_TOOLSETS=inspect \
-    .build/debug/libtmux-mcp
+$ mkdir swift-mcp-client && cd swift-mcp-client
 ```
 
-It waits for MCP messages. The executable accepts no flags; configure
-its endpoint through the environment.
+Fetch the library revision and build its stdio server:
+
+```console
+$ git init libtmux-source && \
+  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \
+  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \
+  git -C libtmux-source checkout --detach FETCH_HEAD && \
+  swift build --package-path libtmux-source --product libtmux-mcp --jobs 2
+```
+
+Keep the build directory: the executable uses its adjacent resource bundle.
+
+## Save the launcher
+
+Save the following file alongside the source checkout. The trap preserves a
+failed-stop socket for inspection and reports cleanup errors on stderr.
+
+```sh title="run-mcp.sh"
+#!/bin/sh
+set -eu
+unset TMUX TMUX_PANE LIBTMUX_SOCKET
+project=$(CDPATH= cd -P "$(dirname "$0")" && pwd)
+directory=$(mktemp -d /tmp/libtmux-swift-mcp.XXXXXXXX)
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    if [ -S "$directory/s" ]; then
+        if ! tmux -S "$directory/s" kill-server; then
+            printf 'Cannot stop private server; inspect %s\n' "$directory" >&2
+            exit 1
+        fi
+    fi
+    if ! rm -f "$directory/s" || ! rmdir "$directory"; then
+        printf 'Cannot remove private directory: %s\n' "$directory" >&2
+        exit 1
+    fi
+    exit "$status"
+}
+trap cleanup 0
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+tmux -S "$directory/s" -f /dev/null \
+    set-option -g default-shell /bin/sh \; \
+    set-environment -g ENV '' \; \
+    set-environment -g BASH_ENV '' \; \
+    new-session -d -s mcp-example 'exec /bin/cat'
+LIBTMUX_SOCKET_PATH="$directory/s" \
+LIBTMUX_TMUX_BIN=tmux LIBTMUX_TMUX_CONFIG=/dev/null \
+LIBTMUX_TOOLSETS= LIBTMUX_TOOLS=list_sessions LIBTMUX_EXCLUDE_TOOLS= \
+    "$project/libtmux-source/.build/debug/libtmux-mcp"
+```
+
+Run it directly to check startup:
+
+```console
+$ sh run-mcp.sh
+```
+
+It waits for MCP messages on stdin. Send EOF to close the process and trigger
+cleanup. The executable accepts no flags; its endpoint and tool selection come
+from environment variables.
 
 ## Connect a client
 
-If the executable is on the client's `PATH`, use this
-`mcpServers` entry. Otherwise set `command` to its actual built location.
+Configure the client to run `sh` with the launcher's absolute path as its only
+argument. The client must have tmux on its `PATH`. The launcher finds the build
+relative to its own file, so the client's working directory does not matter.
 
-```json
-{
-  "mcpServers": {
-    "tmux-swift": {
-      "command": "libtmux-mcp",
-      "env": {
-        "LIBTMUX_SOCKET": "docs-agent",
-        "LIBTMUX_TOOLSETS": "inspect"
-      }
-    }
-  }
-}
-```
+<a id="verify-and-narrow-the-surface"></a>
 
-`LIBTMUX_SOCKET_PATH` and `LIBTMUX_SOCKET` are mutually exclusive.
-`LIBTMUX_TMUX_BIN` selects the tmux executable.
+Ask the client to list its tools, then call
+[`list_sessions`](../tools/list_sessions/). The offered surface contains only
+that tool, and its result contains the launcher's `mcp-example` session.
 
-## Verify and narrow the surface
+An empty `LIBTMUX_TOOLSETS` plus the named `LIBTMUX_TOOLS` selection excludes
+other operations. Reconnect after changing the selection. Invalid selections
+fail startup and write diagnostics to stderr.
 
-Ask the client to list sessions and read `tmux://capabilities`.
-Retain opaque references from listings for follow-up calls.
+For a server the application already owns, select its absolute socket with
+`LIBTMUX_SOCKET_PATH` or its socket name with `LIBTMUX_SOCKET`; these settings
+are mutually exclusive. `LIBTMUX_TMUX_BIN` selects a specific tmux executable.
 
-To allow only listing and window creation, set `LIBTMUX_TOOLSETS` to
-an empty string and `LIBTMUX_TOOLS=list_sessions,create_window`.
-Reconnect after changing environment variables.
-
-Invalid tool selections fail startup; inspect stderr diagnostics. A stale pane reference needs a fresh listing,
-not another spelling of the same raw ID.
-
-[Executable contract](https://github.com/libtmux/libtmux-swift/blob/254f8b2be7eb60cacc3ffcb3ea8e456784f582df/Sources/libtmux-mcp/README.md).
+The [complete embedded example](../examples/) calls the Swift tool surface
+inside a consumer program. The
+[executable contract](https://github.com/libtmux/libtmux-swift/blob/254f8b2be7eb60cacc3ffcb3ea8e456784f582df/Sources/libtmux-mcp/README.md)
+describes its environment and protocol behavior.
