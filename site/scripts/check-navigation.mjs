@@ -138,3 +138,17 @@ export async function checkNavigation(page, base) {
   }
   console.log('Redirects: legacy query/section links and the JavaScript-disabled fallback pass')
 }
+
+/** Port references keep examples in the selected language. */
+export async function checkApiExampleOwnership(page, base) {
+  await page.goto(`${base}/ts/latest/reference/pane-pane-capture/`, { waitUntil: 'load' })
+  const languages = await page.locator('main pre[data-language]').evaluateAll((blocks) =>
+    blocks.map((block) => block.getAttribute('data-language')))
+  assert(languages.length > 0, 'The capture reference keeps its own example')
+  assert(languages.every((language) => language === 'typescript' || language === 'ts'),
+    `TypeScript reference contains another language: ${languages.join(', ')}`)
+  assert.equal(await page.locator('main .api-example-tabs').count(), 0)
+  assert.equal(await page.locator('[data-page-port-switcher]').count(), 1,
+    'Readers can still switch ports from the page toolbar')
+  console.log('Reference examples: TypeScript examples stay visible without other languages')
+}
