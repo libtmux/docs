@@ -25,6 +25,13 @@ export function isLocale(value: string): value is Locale {
   return (LOCALES as readonly string[]).includes(value)
 }
 
+/** Build locale, also available before Astro's content module is loaded. */
+export function buildLocale(env: NodeJS.ProcessEnv = process.env): Locale {
+  if (env.LIBTMUX_DOCS_PORT) return DEFAULT_LOCALE
+  const named = env.LIBTMUX_DOCS_LOCALE
+  return named && isLocale(named) ? named : DEFAULT_LOCALE
+}
+
 /**
  * Whether the default locale carries a prefix of its own.
  *

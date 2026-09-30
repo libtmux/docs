@@ -1,8 +1,9 @@
 /**
- * `/llms-full.txt` — every prose page's Markdown, concatenated.
+ * `/llms-full.txt` — prose and MCP contracts as Markdown.
  *
  * The generated API reference is indexed in llms.txt and deliberately not
- * inlined here; see the note in lib/llms.ts for why.
+ * inlined here; see lib/llms.ts. The Markdown-twins integration appends the
+ * generated MCP contracts after rendering their pages.
  */
 import type { APIRoute } from 'astro'
 import { llmsHeader, llmsPages, referenceLine } from '../lib/llms.ts'

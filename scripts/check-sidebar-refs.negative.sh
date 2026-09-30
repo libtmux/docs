@@ -22,8 +22,8 @@ trap 'rm -rf "$tmp"' EXIT
 locale="${LIBTMUX_DOCS_LOCALE:-en}"
 # The site root within the tree. `_site` is the bucket root and also holds
 # robots.txt, which sits above every locale; the check reads the site.
-site_out="_site/$locale"
-[ -d "$site_out" ] || site_out=_site
+site_out="${1:-${LIBTMUX_DOCS_OUT_DIR:-_site}/$locale}"
+if [[ $# == 0 && ! -d "$site_out" ]]; then site_out="${LIBTMUX_DOCS_OUT_DIR:-_site}"; fi
 
 page_for() {
   local port="$1" root candidate
@@ -72,6 +72,19 @@ py=$(page_for py) || { echo 'no py shell page under _site — run ./scripts/buil
 drop 'our reference removed'   "$rs" '/rs/latest/reference/' 'rs: sidebar does not link /rs/<version>/reference/' || fails=1
 drop 'ecosystem link removed'  "$rs" 'docs.rs'        'rs: sidebar does not link docs.rs' || fails=1
 drop 'upstream reference gone' "$py" '/api/'          'py: sidebar does not link the upstream gp-sphinx reference' || fails=1
+
+# Keep the link, remove its actual destination, and require the path check to
+# reject it. This also proves prefixed hrefs are resolved against this tree.
+reference="$(dirname "$(dirname "$rs")")/reference/index.html"
+cp "$reference" "$tmp/reference.bak" || exit 1
+rm "$reference"
+out=$(node scripts/check-sidebar-refs.mjs "$site_out" 2>&1); code=$?
+cp "$tmp/reference.bak" "$reference"
+if [[ "$code" == 1 && "$out" == *'rs: '*' is linked but not built'* ]]; then
+  printf '  ok    %-32s exit 1\n' 'reference target missing'
+else
+  printf '  FAIL  %-32s expected missing target diagnostic\n' 'reference target missing'; fails=1
+fi
 
 if node scripts/check-sidebar-refs.mjs "$site_out" >/dev/null 2>&1; then
   printf '  ok    %-32s exit 0\n' 'restored'

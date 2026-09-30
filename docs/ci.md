@@ -1,34 +1,22 @@
 # CI and deployment
 
-Eleven repositories exist in this scheme — this shell repo and the ten port
-repos named in `site/src/lib/ports.ts` — and all eleven write into the
-site's bucket. Each port owns and deploys its own prefix exclusively (see
-the table below); Rust, Go and Java also link out to an ecosystem host for
-their API reference. No repository shares a
-build environment, a build job, or a piece of mutable state with any other —
-the only shared executable contract is this repo's
-`.github/workflows/reusable-deploy.yml`, pinned by full commit SHA like any other
-dependency.
+Port repositories build their version trees and publish to their own prefixes.
+The shared shell publishes root pages, navigation and manifests. Java owns its
+Kotlin and Scala prefixes; .NET owns F#. `site/src/lib/ports.ts` defines the
+repositories, callers and ownership flags.
 
-## Why per-repo prefix ownership
+Each caller pins the builder and publisher to the same full commit SHA. The
+builder resolves the requested source ref and assembles the version tree. The
+publisher checks the artifact and its provenance before requesting AWS
+credentials. A port's IAM role independently limits its writable prefixes and
+accepted publisher revisions.
 
-The distinction that decides every choice below is **shared file vs. shared
-execution**. A reusable workflow (`workflow_call`) is a shared file: each
-caller pins a tag and bumps it on review, so a bad change breaks nothing
-until a repo opts in. A shared CI image, matrix job, or cross-repo credential
-is shared execution: one failure or one leaked credential reaches repos that
-had nothing to do with it.
-
-This repo publishes `reusable-deploy.yml`. It never installs a language
-toolchain, never checks out a caller's source, and never sees a caller's
-secrets except the three passed explicitly (`role-arn`, `bucket`,
-`distribution`) — `secrets: inherit` is never used anywhere in this scheme. A
-caller builds with its own toolchain, uploads the result as an artifact, and
-hands this workflow a prefix to write it to. That is the entire contract.
+Callers pass the role and bucket secrets explicitly. The optional distribution
+secret remains accepted for older callers; port publication does not use it.
 
 ## Which repos call `reusable-deploy.yml`
 
-Every port publishes its own version tree into the bucket:
+The current ownership split is:
 
 | Port | Built by | Tree ownership (`ports.ts`) |
 |---|---|---|
@@ -43,9 +31,10 @@ Every port publishes its own version tree into the bucket:
 | Lua (`lua`) | its own exporter | `publishesOwnTree` |
 | Python (`py`) | its own Sphinx build | `publishesOwnApi`; the shell publishes the rest |
 
-`ports.ts` is the single source of truth for this split (see
-**Contradictions** below — some research notes in `../notes/research/` say
-otherwise and are wrong).
+Python's reviewed caller branch can build and publish a complete tree, but its
+ownership flag still lets the shell publish the non-API pages. Migrating that
+flag and the corresponding shell IAM policy remains necessary before Python
+has exclusive ownership of its whole tree.
 
 ## Version, prefix and cache policy
 
@@ -125,6 +114,10 @@ $ aws s3api put-object \
     --if-match "$ETAG"
 ```
 
+The document and ETag come from the same GET. Only a 404 or `NoSuchKey`
+response starts an empty manifest; permission, throttling, and network errors
+fail the step with their original diagnostics and exit status.
+
 `aws s3api put-object` is required here, not `aws s3 cp`/`sync` — neither
 exposes `--if-match`/`--if-none-match`. A 412 means another run of the same
 port's own workflow raced this one; the step re-reads and retries up to
@@ -137,12 +130,94 @@ locale's runtime `versions.json`. Both switchers read that file. A port upload
 therefore makes a version eligible for the next shell/search publication; it
 does not claim that shared Pagefind or the sitemap changed in the port job.
 
+## Port build provenance
+
+The shared `port-docs.yml` builder writes `build-provenance.json` inside each
+version tree. Every HTML page links to it with `rel="describedby"`. The record
+contains the actual source checkout HEAD, the docs checkout HEAD, each
+checkout's dirty state, and a sorted SHA-256 inventory of every regular file.
+Python also records the separate workspace and MCP source checkouts. Only the
+record itself is excluded from the inventory; symlinks are rejected.
+
+Ruby and Lua also record `nativeGenerator`: the native exporter's repository,
+commit, and dirty state. Their custom callers keep the source, exporter, and
+shared docs in separate checkouts and set `LIBTMUX_DOCS_GENERATOR_CHECKOUT`.
+Local native builds default to the exporter in the selected source checkout.
+The publisher requires a clean exporter from the port's owning repository.
+
+Fork pull requests can set `LIBTMUX_DOCS_SOURCE_REPOSITORY` to the selected
+fork's origin for build-only previews. The record retains that origin; the
+publisher still rejects source inputs from outside the catalogued owner.
+
+The shared builder snapshots inputs before native generators run and rechecks
+their Git HEADs when assembly starts. Source-bound local builds capture dirty
+state **before** generators update API models. They can be previewed, but the publisher rejects dirty inputs. Full
+local assemblies without a selected source checkout make no provenance claim.
+Run IDs and timestamps are excluded from the version tree so an identical
+immutable rerun can produce identical bytes.
+
+Selected-source builds also capture MCP contracts from the selected product's
+runtime. The shared job installs its language tools before assembly: Rust and
+Swift use the checkout's exact toolchain version, Go its MCP module, Bun its
+package manifest, and .NET its `global.json`. Java uses the repository's JDK 25
+baseline and validates the Gradle wrapper. Python installs the separate MCP
+checkout's frozen lock into that checkout's virtual environment. Ruby installs
+its selected locked bundle. These installations follow the input snapshot;
+missing tools or contracts fail the build. Wrapper languages and Lua have no
+MCP runtime and are excluded through the product catalog.
+
+The job runs on Ubuntu 24.04 with a 30-minute limit and no restored dependency
+caches. C++ uses that distribution's Clang 18/libc++ packages and the source's
+compiler checks. Locked dependencies and selected toolchains constrain the
+build, but the hosted image and system package updates are not byte-pinned.
+Runtime capture requests advertised contracts only; the builder has no AWS
+credentials or OIDC permission. Each port still needs a cold hosted build to
+establish its runtime cost and compatibility.
+
+After uploading the content artifact, the builder uploads a separate
+`<artifact>-publication` descriptor containing its artifact ID, archive digest,
+source SHA, repository, run ID, and attempt. The publisher uses the existing
+same-run artifact token; callers do not need `actions: read`. It downloads the
+exact ID, fails on GitHub digest mismatches, checks the downloaded ZIP against
+the descriptor digest, and rejects unsafe archive paths before extraction.
+The current run may reuse a completed earlier build attempt.
+
+Before requesting AWS credentials, the publisher verifies repository ownership,
+port/version/locale, clean inputs, source SHA, every content byte, and equality
+between the builder's docs SHA and the publisher's own workflow SHA. Native
+shell URL normalization runs before hashing and again during verification;
+any later byte change fails the inventory check.
+
+This contract requires **GitHub Cloud**. Its documented
+[`job.workflow_repository` and `job.workflow_sha` contexts](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#example-usage-of-job-context-workflow-identity)
+identify the called reusable workflow. Both workflows reject absent contexts or
+a non-full SHA before checkout; GitHub Enterprise Server is not supported by
+this contract. `github.workflow_sha` identifies the caller and is unsuitable.
+
+After a successful sync, `manifest/<port>.json` records the build-record digest
+and URL, artifact ID/name/digest, builder run/attempt, publisher SHA, and site
+destination. The next shell publish preserves these receipts in `versions.json`.
+The artifact may expire; its ID and digest remain in the receipt, and the
+version's file inventory remains on the site.
+
+For an identical immutable rerun, the publisher preserves the original receipt
+and reports verification in the job summary. If those same bytes have no prior
+receipt, `operation: verified-existing` describes the **current verification**;
+it does not identify the original publisher. An older immutable tree without
+`build-provenance.json` differs from the new artifact and fails visibly. The
+publisher never adds metadata to an existing immutable tree.
+
+This is a build and publication trace, not an attestation of which workflow
+produced a caller-supplied artifact. IAM's reviewed-workflow boundary is a
+separate control. Ruby/Lua custom builders and shared-root artifacts still need
+their own caller migration and run evidence before claiming this contract.
+
 ## Opting in a port repo
 
 ### With `port-docs.yml`
 
 A port whose reference this repository can build from source calls two
-reusable workflows, pinned to one commit. `port-docs.yml` decides which
+reusable workflows, pinned to one commit approved by its IAM trust policy. `port-docs.yml` decides which
 versions the event builds and builds each from the port's source, checking
 out this repository at its own commit (`job.workflow_sha`), so the caller
 never pins it twice. `reusable-deploy.yml` publishes each version:
@@ -203,17 +278,22 @@ The events it answers (`scripts/port-docs-identity.sh`):
       -f publish=true
   ```
 
-  Dispatch from the default branch: the `docs` environment admits it and the
-  port's release tags, and nothing else.
+  Use the caller branch configured in `ports.ts`. Its `docs` environment must
+  admit that branch; the selected source ref is independent of the caller ref.
 
 Set `publishesOwnTree` for the port in `site/src/lib/ports.ts` once it
 publishes this way, or every shell deploy overwrites its `latest` tree.
 
 ### Publishing several ports at once
 
-`publish.yml` in this repository dispatches each selected port's `docs.yml`
-and waits for it. It always plans first, and by default stops there, so a
-dry run shows exactly what a real run would publish:
+`publish.yml` dispatches each selected port through the reviewed caller in
+`ports.ts` and waits for it. The catalog selects the workflow file and caller
+branch independently of the source ref. Python uses `docs.yml` on
+`docs-site-deploy`; `latest` still builds the core repository's `master`.
+Other ports use their default branch unless the catalog names a caller branch.
+A caller branch must be allowed by the port's docs environment.
+
+The dispatcher plans first and stops there by default:
 
 | `ports` | `ref` | Publishes |
 |---|---|---|
@@ -234,126 +314,65 @@ Kotlin and Scala dispatch through the Java repository; F# dispatches through
 only Kotlin and `ports=all` publishes each family member once. Siblings
 share one repository lookup for their default branch and release tags.
 
-A real run needs a credential that can dispatch a workflow in another
-repository, which `GITHUB_TOKEN` cannot: the `LIBTMUX_DOCS_DISPATCH_TOKEN`
-secret on this repository, a fine-grained token with Actions: read and
-write on the port repositories. A `libtmux-docs-publisher` GitHub App works
-instead, with its ID in the `LIBTMUX_DOCS_APP_ID` variable and its key in
-the `LIBTMUX_DOCS_APP_KEY` secret. After the ports publish, it redeploys the
-shell so `versions.json` lists what they published. py is not dispatchable:
-its workflow lives in tmux-python/libtmux and takes no inputs.
+For all ports in one run, install the `libtmux-docs-publisher` GitHub App on
+the selected repositories in both `libtmux` and `tmux-python`. Set
+`LIBTMUX_DOCS_APP_ID` and `LIBTMUX_DOCS_APP_KEY` on this repository. Each leg
+requests an Actions-write installation token for its owner and one repository.
+The dispatcher has no AWS identity. A `LIBTMUX_DOCS_DISPATCH_TOKEN` fallback
+works for the repositories that token can access; a fine-grained token is
+limited to one resource owner.
+
+The workflow waits for each port's run and the final shell refresh, so success
+includes the `versions.json` update. Its summary shows the caller, source and
+child run. A failed dispatch, port publication or shell refresh fails the
+initiating run and prints the failed steps. Each waiting job has a 45-minute
+limit.
 
 ### With its own toolchain
 
-A self-hosted port's own `docs.yml` builds with its own toolchain, uploads an
-artifact, then calls this repo's reusable workflow:
+A custom builder must produce the same assembled tree and publication
+metadata as `port-docs.yml`. Its native exporter output alone is insufficient.
+Ruby and Lua still use their existing custom-builder contract; migrate their
+callers before selecting this publisher revision.
 
-```yaml
-name: docs
+The required sequence is:
 
-on:
-  push:
-    branches: [master]
-    tags: ['v*']
+1. Check out the approved docs SHA and the selected port source. Snapshot
+   their identities before generators write files.
+2. Assemble `<locale>/<port>/<version>` with the selected source revision,
+   including `build-provenance.json` and its complete file inventory.
+3. Upload the version directory with hidden files included and empty uploads
+   rejected. Create a separate publication descriptor from the upload's
+   artifact ID and digest, source SHA, run ID and attempt.
+4. Upload that descriptor as `<artifact>-publication`, then call
+   `reusable-deploy.yml` at the same approved docs SHA.
 
-permissions:
-  contents: read
-  id-token: write
+The shared builder is the executable example for this sequence. Custom
+builders must verify their output through the publisher before migration.
+Python's native Sphinx reference must be included; other ports whose `api/`
+route redirects to the shared reference can use `--skip-refs`.
 
-concurrency:
-  group: docs-deploy-${{ github.repository }}
-  queue: max
+### Caller configuration
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - run: cd docs && just html
-      - uses: actions/upload-artifact@v7
-        with:
-          name: docs-html
-          path: docs/_build/html
-          retention-days: 1
+Each caller needs:
 
-### What the artifact must contain
+- A concurrency group covering its repository's publications, with
+  `queue: max`. Keep family publications serialized where they share a
+  manifest or role. Do not combine queued publication with cancellation.
+- An OIDC role whose trust policy admits the repository, environment and
+  explicit reviewed publisher SHAs. Object writes and bucket listing must
+  stay inside its locale/port or family prefixes and manifest keys. Port
+  roles do not need CloudFront invalidation permission.
+- A `docs` environment whose deployment policy admits the intended caller
+  branches and tags. Pass its name through the reusable workflow's
+  `environment` input: the called publishing job obtains the OIDC token.
+- Repository- or organization-level role and bucket secrets. A calling
+  `uses:` job cannot declare `environment:`, so Environment-scoped secrets
+  are unavailable when that job passes them to the reusable workflow.
 
-The assembled `<locale>/<port>/<version>` tree, not the port's own doc-tool
-output. That tree is the shared shell rendered with the port's code fences,
-with the port's reference nested at `api/` inside it — `build-site.sh --ports
-<slug>` produces it, and a caller uploads `_site/en/<slug>/latest` verbatim.
-
-Uploading the port's own build instead replaces the whole tree with it. That
-failure publishes cleanly: the run is green and the URL returns 200, serving
-the wrong site. It happened to Python's first publish, where `/en/py/latest/`
-served Furo and `/en/py/latest/concepts/` 403'd.
-
-`--skip-refs` is a per-port judgement, not a default. For nine ports `api/`
-is a redirect to `/reference/<slug>/`, so skipping the reference generators
-costs nothing. Python's `api/` is the real gp-sphinx render that
-`site/scripts/check-style-parity.mjs` measures against, so its build must not
-skip them — and its runner needs `uv`.
-
-  publish:
-    needs: build
-    permissions:
-      contents: read
-      id-token: write
-    # Full-length SHA, release name in the comment: this runs with id-token:
-    # write and a bucket-writing role, and a tag can be repointed.
-    uses: libtmux/docs/.github/workflows/reusable-deploy.yml@ce9d7edd63f6a543801d9b93366ecad5e158c0ec # v0.1.0-alpha.2
-    with:
-      path-prefix: py/v0.46.2
-      artifact: docs-html
-      version-kind: tag
-      port: py
-      version: v0.46.2
-      is-default: false
-      environment: docs
-    secrets:
-      role-arn: ${{ secrets.LIBTMUX_DOCS_ROLE_ARN }}
-      bucket: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
-      distribution: ${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}
-```
-
-Four things every caller needs, none of which lives in this repo:
-
-- `concurrency` at **workflow level in the caller**, with `queue: max`.
-  Groups don't cross repository boundaries, so `docs-deploy-<repo>` needs no
-  further suffix. `queue: max` cannot combine with `cancel-in-progress` —
-  don't add one.
-- An IAM role trusted for OIDC, scoped to that port's own prefix only
-  (`s3:PutObject`/`s3:DeleteObject` on `libtmux-docs/py/*`,
-  `cloudfront:CreateInvalidation` on the one distribution — that action
-  can't be scoped by path, so the S3 statement is the real containment
-  boundary). Defining these policies is `infra/`'s concern, not this
-  workflow's.
-- A `docs` GitHub Environment with a deployment-branch-and-tag policy
-  restricting who can trigger it (`master`, `v*`) — this is what actually
-  enforces "trunk, tags, release branches only," since setting
-  `environment:` rewrites the OIDC `sub` claim to drop any `ref:` clause
-  entirely. Pass its name through the `environment` input, not as
-  `environment:` on the calling job — `workflow_call` does not support that
-  keyword on the caller, and `reusable-deploy.yml`'s own `publish` job is
-  the one whose OIDC token actually needs `environment:docs` in its `sub`
-  claim.
-- The three secrets passed explicitly, never `secrets: inherit`, and **as
-  repository- or organization-level secrets, not Environment-scoped ones.**
-  `${{ secrets.LIBTMUX_DOCS_ROLE_ARN }}` in the `publish` job above is
-  evaluated in *that job's* context, and that job cannot declare
-  `environment:` (`workflow_call` does not support it) — so if a secret only
-  exists on the `docs` Environment, this expression resolves to nothing and
-  `role-arn` reaches `reusable-deploy.yml` empty. `~/work/python/libtmux`'s
-  existing `docs.yml` reads `LIBTMUX_DOCS_ROLE_ARN` from a job that itself
-  declares `environment: docs` — moving to this scheme means moving that
-  secret (and `_BUCKET`, `_DISTRIBUTION`) up to the repository or
-  organization, if it lives on that Environment today. The Environment
-  still does real work — its deployment branch/tag policy, and the OIDC
-  `sub` claim — just applied to `reusable-deploy.yml`'s own `publish` job
-  through the `environment` input, not to secret storage.
-
-Fork PRs on a port repo are that repo's own concern; this repo's shell
-handling (below) is the only fork-PR path owned here.
+Add a new publisher SHA to the IAM allowlist before updating caller pins.
+Retain the previous SHA until its callers have migrated and their runs pass.
+A branch or tag containing the publisher is insufficient for role assumption.
 
 ## This repo's own deploy (`deploy-shell.yml`)
 
@@ -372,8 +391,6 @@ Triggers and jobs:
 | push to `main` | `registry` → `build` → `publish-root` | bucket root, `docs` environment |
 | push tag `v*` | `registry` → `build` → `publish-root` | bucket root (same as trunk) |
 | `schedule` (four times an hour), `workflow_dispatch` | `registry`, then `build` → `publish-root` when the registry moved (dispatch always rebuilds) | bucket root |
-| `pull_request`, same-repo head | `build` → `publish-preview` | `pr-<n>/`, `docs-preview` environment |
-| `pull_request`, fork head | `build` only | no publish — see below |
 
 `registry` resolves `site/src/data/registry.json` against the live package
 registries, falling back to the `/registry.json` the last deploy published,
@@ -393,39 +410,42 @@ the handful of root-level files — the workflow-level twin of the IAM
 `NotResource` policy that should back it, so a bug here fails the run rather
 than depending on IAM alone.
 
-`publish-preview` fits `reusable-deploy.yml` cleanly: `pr-<n>/` is an
-exclusive prefix like any port's, so it calls the same reusable workflow with
-`version-kind: pr` and no `port` (no manifest entry for a preview).
+## PR audit and preview (`test.yml`)
 
-### Fork PRs: build-only, no `workflow_run` handoff — for now
+Every PR runs source checks before generators can refresh committed data,
+then assembles one preview under `pr-<n>/`. The publication output tests,
+link audit and preview isolation check read that exact tree. Fresh production
+root renders for each locale retain sitemap, robots and product indexing
+checks without rebuilding every port. Pushes to `main` retain the full
+production assembly audit.
 
-Fork PRs get no secrets on `pull_request` by design; `pull_request_target`
-with a checkout of PR content is the documented foot-gun this avoids
-entirely — this repo never checks out PR code under `pull_request_target`.
-The two options considered:
+Run the same PR audit locally:
 
-1. **Build-only on forks** (chosen): the `build` job runs unconditionally —
-   with no OIDC and no secrets in scope regardless of who owns the PR head —
-   and `publish-preview`'s `if` gates on
-   `github.event.pull_request.head.repo.full_name == github.repository`. A
-   fork PR gets a green build check and no preview URL.
-2. **`workflow_run` handoff**: a `pull_request` build with no secrets
-   uploads an artifact; a separate workflow, triggered by `workflow_run` and
-   so running from the default branch in this repo's own trust context,
-   downloads it by run ID and publishes to a preview-only role and prefix.
+```console
+$ pnpm test:publication --preview pr-42
+```
 
-This repo went public on 2026-09-06, so a fork PR is now a real scenario and
-option 1 is what ships: a fork's PR builds and is checked, and gets no
-preview URL. That is a degraded experience, not an exposure — no secret and
-no OIDC token is in scope for a fork's `pull_request` run.
+The successful `test` job uploads `preview-dist` and passes its immutable
+artifact ID to `check-publish-preview` and `publish-preview`. Both downloads
+are confined to the same workflow run and fail on a digest mismatch. A missing
+or replaced artifact cannot fall back to another artifact with the same name.
+Publication depends on the audit and both publisher dry-runs succeeding.
+The privileged job treats the artifact as files to publish; it executes no
+script from that artifact.
 
-Option 2 remains the documented improvement and has not been taken. A
-`workflow_run` handoff runs with secrets against a ref the forker controls,
-and every published failure of that pattern comes from trusting `head_sha`
-or `head_repository` without re-validating them in the trusted context. It
-deserves its own change and its own review rather than being added the day
-the repository's visibility changed. Widening the `if` on option 1 is never
-the alternative.
+`publish-preview` calls `reusable-deploy.yml` with `version-kind: pr`, the
+artifact ID, and no `port`. Its exclusive prefix is `pr-<n>/`; it writes no
+port manifest. Only callers from `libtmux/docs` or `tony/libtmux-docs` may omit
+`port`. Port callers retain their source and artifact provenance checks.
+
+Fork PRs run the same audit and dry-run with read-only repository access,
+no OIDC and no secrets. Only a head in the same repository may enter the
+`docs-preview` environment and publish. There is no `workflow_run` handoff
+or checkout of PR code under `pull_request_target`.
+
+The PR workflow shares `deploy-shell-pr-<n>` concurrency with preview cleanup.
+A superseding PR commit cancels the old audit/preview; production publication
+keeps its separate serialized, non-cancelling queue in `deploy-shell.yml`.
 
 ## `pr-preview-cleanup.yml`
 
@@ -454,13 +474,13 @@ concern, not this workflow's.
 | Secret | Used by | Scope | Storage level |
 |---|---|---|---|
 | `LIBTMUX_DOCS_BUCKET` | every workflow above | bucket name, not prefix-scoped | repo or org |
-| `LIBTMUX_DOCS_DISTRIBUTION` | every workflow above | one CloudFront distribution — `CreateInvalidation` can't be scoped narrower | repo or org |
+| `LIBTMUX_DOCS_DISTRIBUTION` | shell publication; optional and unused by the port publisher | one CloudFront distribution | repo or org |
 | `LIBTMUX_DOCS_ROLE_ARN` | `deploy-shell.yml`'s `publish-root` (direct job, may be Environment-scoped); each port's own `docs.yml` (passed through a `uses:` job, must be repo/org) | production write role, scoped to that caller's own prefix(es) | see "Used by" |
-| `LIBTMUX_DOCS_PREVIEW_ROLE_ARN` | `deploy-shell.yml`'s `publish-preview` (passed through a `uses:` job) | scoped to `pr-*/` only | repo or org |
+| `LIBTMUX_DOCS_PREVIEW_ROLE_ARN` | `test.yml`'s `publish-preview` (passed through a `uses:` job) | scoped to `pr-*/` only | repo or org |
 | `LIBTMUX_DOCS_PREVIEW_CLEANUP_ROLE_ARN` | `pr-preview-cleanup.yml` (direct job, may be Environment-scoped) | scoped to `pr-*/` delete only | repo, org, or the `docs-preview-cleanup` Environment |
 
 Any secret that flows through a `uses:`/`secrets:` pass-through — every
-secret named in the "Opting in" recipe above, and `publish-preview`'s three
+secret named in the "Opting in" recipe above, and `publish-preview`'s inputs
 — must live at the repository or organization level, never on a GitHub
 Environment: the job doing the passing can't declare `environment:`, so an
 Environment-scoped secret resolves empty at that point (see "Opting in a
@@ -479,8 +499,7 @@ the Ruby or Lua caller may publish, a maintainer must verify all of these:
 
 - The selected site commit is public and both the docs checkout and reusable
   workflow use that identical full SHA.
-- The port has repository- or organization-level bucket, distribution, and
-  role secrets. The `docs` and `docs-preview` environments admit only their
+- The port has repository- or organization-level bucket and role secrets. The `docs` and `docs-preview` environments admit only their
   intended refs and produce OIDC claims trusted by prefix-scoped roles.
 - The production role owns only `en/<port>/*` and
   `manifest/<port>.json`; the preview role owns only

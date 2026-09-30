@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { PORTS } from '../src/lib/ports'
-import { SITE_BUILT, BUCKET_ROOT } from './site-root'
+import { SITE_BUILT, BUCKET_ROOT, SITE_PREFIX, PREVIEW_PREFIX } from './site-root'
 
 /** Built switcher links must resolve within the assembled site. */
 const SITE = BUCKET_ROOT
@@ -11,7 +11,7 @@ const describeIfAssembled = SITE_BUILT ? describe : describe.skip
 
 /** Pages that exercise a different combination of the port, version and locale axes. */
 function samplePages(): string[] {
-  const prefix = existsSync(join(SITE, 'en/index.html')) ? 'en/' : ''
+  const prefix = SITE_PREFIX
   const wanted = [
     'index.html', 'concepts/index.html', 'mcp/tools/index.html',
     'topics/architecture/index.html', 'py/index.html',
@@ -20,7 +20,7 @@ function samplePages(): string[] {
     'ts/latest/reference/session-session-panes/index.html', 'ts/latest/reference/session-session-sessionbrand/index.html',
     'ts/latest/mcp/reference/index.html', 'go/latest/workspace/reference/index.html',
   ].map((page) => prefix + page)
-  wanted.push('ja/index.html', 'ja/concepts/index.html')
+  wanted.push(`${PREVIEW_PREFIX.slice(1)}${PREVIEW_PREFIX ? '/' : ''}ja/index.html`, `${PREVIEW_PREFIX.slice(1)}${PREVIEW_PREFIX ? '/' : ''}ja/concepts/index.html`)
   const present = wanted.filter((page) => existsSync(join(SITE, page)))
 
   return present

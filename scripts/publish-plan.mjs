@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Plan a publish.yml dispatch: which ports' docs.yml to run, and with which
-// inputs. One dispatch publishes any set of ports at a ref:
+// Plan a publish.yml dispatch: which reviewed port workflows and inputs to use.
+// One dispatch publishes any set of ports at a ref:
 //
 // - `latest` publishes each port's default branch as `latest`. It is the
 //   default version only while the port has no stable release, the rule a
@@ -9,8 +9,8 @@
 //   prerelease or `stable` (the default) for a release, as a tag push does.
 // - Any other ref is one port's exact ref, published as the inputs name it.
 //
-// Only ports whose docs.yml takes dispatch inputs are planned: those in the
-// libtmux organization. py's workflow lives elsewhere and takes none.
+// Dispatch capability and the caller branch come from the port catalog.
+// User-selected source refs never choose which workflow revision executes.
 //
 // Prints the matrix as JSON on stdout and a Markdown table on stderr.
 
@@ -31,22 +31,16 @@ function versionOf(tag, port) {
   return port.tagPrefix ? tag.slice(port.tagPrefix.length) : tag
 }
 
-/** Any letter after the leading `v` marks a prerelease, in every grammar. */
-function isPrerelease(version) {
-  return /[A-Za-z]/.test(version.replace(/^v/, ''))
-}
-
 /**
  * The dispatches one publish.yml run makes.
  *
  * @param {{ ports: string, ref: string, version?: string, versionKind?: string, isDefault?: boolean, resolvesTo?: string }} inputs
- * @param {{ slug: string, repo: string, tagPrefix?: string, tagGrammar: string, parentLibrary?: { slug: string } }[]} catalog
+ * @param {readonly { slug: string, repo: string, tagPrefix?: string, tagGrammar: string, docsDispatch?: { workflow: string, ref?: string, language?: string } }[]} catalog
  * @param {(repo: string) => { defaultBranch: string, tags: string[] }} lookup
- * @param {{ releaseTag: Function, newestPublishedTag: Function }} versions
+ * @param {{ releaseTag: Function, newestPublishedTag: Function, packageVersionIsPrerelease: Function }} versions
  */
 export function plan(inputs, catalog, lookup, versions) {
-  const dispatchable = catalog.filter((port) => port.repo.startsWith('libtmux/'))
-  const familyParents = new Set(catalog.flatMap((port) => port.parentLibrary ? [port.parentLibrary.slug] : []))
+  const dispatchable = catalog.filter((port) => port.docsDispatch)
   const wanted = inputs.ports.trim() === 'all'
     ? dispatchable
     : inputs.ports.split(',').map((slug) => slug.trim()).filter(Boolean).map((slug) => {
@@ -58,6 +52,7 @@ export function plan(inputs, catalog, lookup, versions) {
   if (wanted.length === 0) fail('no ports selected')
 
   const ref = inputs.ref.trim()
+  if (!ref) fail('source ref is required')
   const exact = ref !== 'latest' && ref !== 'release'
   if (exact && wanted.length !== 1) fail(`an exact ref (${ref}) names one port's source; select one port`)
   if (!exact && (inputs.version || (inputs.versionKind && inputs.versionKind !== 'auto') || inputs.resolvesTo)) {
@@ -67,19 +62,31 @@ export function plan(inputs, catalog, lookup, versions) {
   const entries = []
   const sources = new Map()
   for (const port of wanted) {
+    const repository = /^([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9_.-]+)$/.exec(port.repo)
+    if (!repository) fail(`invalid repository for ${port.slug}: ${port.repo}`)
+    const dispatch = port.docsDispatch
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]*\.ya?ml$/.test(dispatch.workflow)) {
+      fail(`invalid docs workflow for ${port.slug}: ${dispatch.workflow}`)
+    }
+    if (dispatch.ref !== undefined && !/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(dispatch.ref)) {
+      fail(`invalid docs workflow ref for ${port.slug}: ${dispatch.ref}`)
+    }
+    if (dispatch.language !== undefined && dispatch.language !== port.slug) {
+      fail(`docs language for ${port.slug} must select itself`)
+    }
     if (!sources.has(port.repo)) sources.set(port.repo, lookup(port.repo))
     const { defaultBranch, tags } = sources.get(port.repo)
-    const base = { port: port.slug, repo: port.repo, repoName: port.repo.split('/')[1], dispatchRef: defaultBranch,
-      language: port.parentLibrary || familyParents.has(port.slug) ? port.slug : '' }
+    const base = { port: port.slug, repo: port.repo, repoOwner: repository[1], repoName: repository[2],
+      workflow: dispatch.workflow, dispatchRef: dispatch.ref ?? defaultBranch, language: dispatch.language ?? '' }
     const releases = tags.filter((tag) => versions.releaseTag(tag, port) !== null)
     if (ref === 'latest') {
-      const stable = releases.some((tag) => !isPrerelease(versionOf(tag, port)))
+      const stable = releases.some((tag) => !versions.packageVersionIsPrerelease(versionOf(tag, port), port.tagGrammar))
       entries.push({ ...base, sourceRef: defaultBranch, version: 'latest', kind: 'trunk', isDefault: !stable, resolvesTo: '' })
     } else if (ref === 'release') {
       const tag = versions.newestPublishedTag(releases, port, null)
       if (!tag) continue
       const version = versionOf(tag, port)
-      const alias = isPrerelease(version) ? 'next' : 'stable'
+      const alias = versions.packageVersionIsPrerelease(version, port.tagGrammar) ? 'next' : 'stable'
       entries.push({ ...base, sourceRef: tag, version, kind: 'tag', isDefault: false, resolvesTo: '' })
       entries.push({ ...base, sourceRef: tag, version: alias, kind: 'alias', isDefault: alias === 'stable', resolvesTo: version })
     } else {
@@ -97,12 +104,12 @@ export function plan(inputs, catalog, lookup, versions) {
 /** The Markdown summary of a plan. */
 export function summary(entries, dryRun) {
   const rows = entries.map((e) =>
-    `| ${e.port} | \`${e.sourceRef}\` | ${e.version} | ${e.kind}${e.resolvesTo ? ` → ${e.resolvesTo}` : ''} | ${e.isDefault ? 'yes' : ''} |`)
+    `| ${e.port} | \`${e.repo}/${e.workflow}@${e.dispatchRef}\` | \`${e.sourceRef}\` | ${e.version} | ${e.kind}${e.resolvesTo ? ` → ${e.resolvesTo}` : ''} | ${e.isDefault ? 'yes' : ''} |`)
   return [
     `### ${dryRun ? 'Dry run: would publish' : 'Publishing'} ${entries.length} version(s)`,
     '',
-    '| Port | Source | Version | Kind | Default |',
-    '| --- | --- | --- | --- | --- |',
+    '| Port | Caller | Source | Version | Kind | Default |',
+    '| --- | --- | --- | --- | --- | --- |',
     ...rows,
     '',
   ].join('\n')

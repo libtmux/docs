@@ -15,7 +15,7 @@ import { registryFor } from '../src/lib/registry'
 import { highlightPrompt } from '../src/lib/prompt-highlight'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import { BUCKET_ROOT, SITE_BUILT, SKIP_REASON } from './site-root'
+import { BUCKET_ROOT, SITE_BUILT, SITE_PREFIX, REPO_ROOT, sitePath, publishedPath, SKIP_REASON } from './site-root'
 import { PROMPT_PAIRS, textPath, topicPath } from '../src/lib/prompt-routes'
 
 /**
@@ -57,8 +57,8 @@ function partsFor(port: Port) {
  */
 const COMPOSED = new Map<string, string>()
 
-function promptFor(port: Port, topicId: string, version = ctx.version): string {
-  const key = `${port.slug}/${topicId}/${version}`
+function promptFor(port: Port, topicId: string, version = ctx.version, docsBase = ctx.docsBase): string {
+  const key = `${port.slug}/${topicId}/${version}/${docsBase}`
   const hit = COMPOSED.get(key)
   if (hit !== undefined) return hit
   const entry = registryFor(port)
@@ -67,7 +67,7 @@ function promptFor(port: Port, topicId: string, version = ctx.version): string {
     entry,
     install: installCommand(port, entry),
     wording: releaseWording(port, entry),
-    ctx: { ...ctx, version },
+    ctx: { docsBase, version },
     topicId,
   })
   COMPOSED.set(key, text)
@@ -339,7 +339,7 @@ describe('topic definitions', () => {
   })
 
   it('anchors every non-setup topic on pages that exist in the content tree', () => {
-    const root = join(BUCKET_ROOT, '..', 'site', 'src', 'content', 'docs')
+    const root = join(REPO_ROOT, 'site', 'src', 'content', 'docs')
     for (const topic of TOPICS) {
       expect(topic.pages.length, `${topic.id} cites no pages`).toBeGreaterThan(0)
       for (const page of topic.pages) {
@@ -382,7 +382,7 @@ describe.skipIf(!SITE_BUILT)(`cited URLs resolve in the assembled tree${SITE_BUI
   }
 
   it.each(MATRIX)('$port.slug/$topic.id cites only published URLs', ({ port, topic }) => {
-    const urls = [...promptFor(port, topic.id).matchAll(/https:\/\/libtmux\.org\/\S*[^\s.,)]/g)].map((m) => m[0])
+    const urls = [...promptFor(port, topic.id, ctx.version, `https://libtmux.org/${SITE_PREFIX.replace(/\/$/, '')}`).matchAll(/https:\/\/libtmux\.org\/\S*[^\s.,)]/g)].map((m) => m[0])
     expect(urls.length).toBeGreaterThan(0)
     const dead = urls.filter((url) => !resolves(url))
     expect(dead, `not published: ${dead.join(', ')}`).toEqual([])
@@ -398,7 +398,7 @@ describe.skipIf(!SITE_BUILT)(`cited URLs resolve in the assembled tree${SITE_BUI
  * the consumer rather than here.
  */
 describe.skipIf(!SITE_BUILT)(`published prompt routes${SITE_BUILT ? '' : ` (${SKIP_REASON})`}`, () => {
-  const published = (path: string) => join(BUCKET_ROOT, 'en', path)
+  const published = sitePath
   const manifest = () => JSON.parse(readFileSync(published('prompts.json'), 'utf8'))
 
   it('writes a text file for every port and topic', () => {
@@ -420,8 +420,7 @@ describe.skipIf(!SITE_BUILT)(`published prompt routes${SITE_BUILT ? '' : ` (${SK
 
   it('names only files it wrote, with hashes that match their bytes', () => {
     for (const entry of manifest().prompts) {
-      const path = new URL(entry.text).pathname.replace(/^\/en\//, '')
-      const file = published(path)
+      const file = publishedPath(new URL(entry.text).pathname)
       expect(existsSync(file), `${entry.text} is named by prompts.json`).toBe(true)
       const bytes = readFileSync(file)
       expect(bytes.length, `${entry.text} length`).toBe(entry.bytes)
@@ -447,7 +446,7 @@ describe.skipIf(!SITE_BUILT)(`published prompt routes${SITE_BUILT ? '' : ` (${SK
       const version = versions.get(key)
       expect(version, `${key} is absent from prompts.json`).toBeTruthy()
       const file = readFileSync(published(textPath(port.slug, topic.id)), 'utf8')
-      expect(file, key).toBe(`${promptFor(port, topic.id, version)}\n`)
+      expect(file, key).toBe(`${promptFor(port, topic.id, version, `https://libtmux.org/${SITE_PREFIX.replace(/\/$/, '')}`)}\n`)
     }
   })
 
@@ -464,7 +463,7 @@ describe.skipIf(!SITE_BUILT)(`published prompt routes${SITE_BUILT ? '' : ` (${SK
    */
   it('does not repeat itself under a port and version prefix', () => {
     const strays = PORTS
-      .map((port) => join('en', port.slug, 'latest', 'prompts'))
+      .map((port) => join(SITE_PREFIX, port.slug, 'latest', 'prompts'))
       .filter((path) => existsSync(join(BUCKET_ROOT, path)))
     expect(strays, `prompts published under a port prefix: ${strays.join(', ')}`).toEqual([])
   })

@@ -56,11 +56,7 @@ export function localesEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
  * A port build always renders the default locale: the reference is not
  * translated, and per-port prose is the language-filtered English.
  */
-export function buildLocale(env: NodeJS.ProcessEnv = process.env): Locale {
-  if (env.LIBTMUX_DOCS_PORT) return DEFAULT_LOCALE
-  const named = env.LIBTMUX_DOCS_LOCALE
-  return named && isLocale(named) ? named : DEFAULT_LOCALE
-}
+export { buildLocale } from './locales.ts'
 
 export type TranslationState = 'translated' | 'stale' | 'missing'
 
