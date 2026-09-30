@@ -95,9 +95,19 @@ paths and a coverage floor, but it does not execute every language example.
 It scans `.md` pages, not MDX, and cannot check source existence when the
 relevant checkout is absent.
 
-For inline examples, record the verification performed in the change's
-review notes. Do not claim a code fence is executed merely because it has a
-language tag. Preserve collected examples when changing their formatting.
+Every executable example must work when copied with its displayed setup.
+Include imports, an entry point, required inputs, and cleanup. Show dependency
+and run commands. Do not rely on variables or helper code from another example.
+A source file that only declares functions is not a runnable program.
+
+Run the exact displayed program against the documented library revision.
+Record its commands, source revision, result, and content hash in the review.
+Tests that add a hidden prelude or execute a larger source file do not verify
+the copied example. Preserve collected examples when changing formatting.
+
+Put explanatory comments on separate lines above the code they describe.
+Wrap example comments at 80 columns, including indentation. Put long source
+links and attribution in prose outside the code block.
 
 ### Examples across ports
 

@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: []
 title: Capture pane output
-description: Capture a pane's screen and wait for expected output or a completion signal.
+description: Capture a tmux pane's screen and wait for a complete output line.
 sidebar:
   label: Capture pane output
   group: Examples
@@ -9,282 +9,88 @@ sidebar:
 tableOfContents: true
 ---
 
-Read a pane after [sending input](../attach-and-send-keys/). [Sending
-keys](/guides/sending-keys/#the-race-you-cant-see-from-the-call-site) explains
-why an immediate capture can miss output. These examples show screen capture and
-waiting; [Capturing output](/guides/capturing-output/) explains the choices. See
-[source details](#where-this-comes-from) for each example's source and
-validation.
+`capture-pane -p` prints a pane's visible screen. Sending a command and reading
+its result are separate operations: the pane's shell may still be processing
+input when the first capture runs.
 
 ## Read what's on screen
 
-```python
->>> pane = window.split(shell='sh')
->>> pane.capture_pane()
-['$']
+This complete shell program starts a private tmux server, sends a command, and
+captures until the expected line appears. It removes the server on exit and
+fails after 100 unsuccessful checks with 50-millisecond pauses.
 
->>> pane.send_keys('echo "Hello world"', enter=True)
+Save it as `capture.sh` and run `sh capture.sh`, or paste the whole block into
+a POSIX shell. It requires tmux 3.2 or newer and `sleep` with fractional seconds.
 
->>> pane.capture_pane()
-['$ echo "Hello world"', 'Hello world', '$']
-```
+```sh title="capture.sh"
+(
+    set -eu
+    directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-capture.XXXXXX")
+    socket="$directory/tmux.sock"
+    started=0
 
-```typescript file="examples/capture/capture.ts"
-```
+    cleanup() {
+        status=$?
+        trap - EXIT
+        if [ "$started" = 1 ]; then
+            tmux -S "$socket" kill-server || status=$?
+        fi
+        rm -rf "$directory" || status=$?
+        exit "$status"
+    }
+    trap cleanup EXIT
+    trap 'exit 1' HUP INT TERM
 
-```go
-// From examples/quickstart/main.go, shown in full on Attach and send keys.
-lines, err := pane.Capture(ctx, tmux.CapturePaneRequest{
-	Start: tmux.CaptureBoundary,
-	End:   tmux.CaptureBoundary,
-})
-if err != nil {
-    return err
-}
-for _, line := range lines {
-    fmt.Println(line)
-}
-```
+    tmux -S "$socket" -f /dev/null new-session -d -s capture \
+        -e ENV=/dev/null 'sh'
+    started=1
+    tmux -S "$socket" send-keys -t capture:0.0 -l \
+        "printf '\\nlibtmux capture ready\\n'"
+    tmux -S "$socket" send-keys -t capture:0.0 Enter
 
-```rust file="crates/libtmux/examples/scratch.rs" region="capture"
-```
-
-```java
-Pane pane = server.sessions().get(0).windows().get(0).panes().get(0);
-
-pane.sendLine("echo hello from libtmux");
-
-pane.capture().isEmpty();            // → false
-```
-
-<!-- port:dotnet -->
-The example under "Wait for output or completion" uses
-`Pane.CaptureAsync` within a wait. Its separate Psmux transport also provides a
-capture API, shown in `examples/LibTmux.Examples/Snippets/Psmux.cs`.
-<!-- /port -->
-
-```cpp
-const auto visible = pane.capture();
-if (visible.has_value()) {
-  std::printf("%zu bytes on screen\n", visible->size());
-}
-
-const auto history = pane.capture({.whole_history = true});
-if (history.has_value()) {
-  std::printf("%zu bytes of scrollback\n", history->size());
-}
-```
-
-```swift
-// From Examples/Sources/ExampleCode/Changing.swift, readBackWhatAPanePrinted: shown in full on Attach and send keys.
-let lines = try await server.capture(pane)
+    attempt=0
+    while [ "$attempt" -lt 100 ]; do
+        screen=$(tmux -S "$socket" capture-pane -p -t capture:0.0)
+        if printf '%s\n' "$screen" | grep -Fqx 'libtmux capture ready'; then
+            printf '%s\n' "$screen"
+            exit 0
+        fi
+        attempt=$((attempt + 1))
+        sleep 0.05
+    done
+    printf '%s\n' 'Timed out waiting for captured output.' >&2
+    exit 1
+)
 ```
 
 <a id="wait-for-text-instead-of-guessing-a-delay"></a>
 
 ## Wait for output or completion
 
-<!-- port:py -->
-The Python example uses `wait_for`, tmux's signal channel. It waits for a signal
-from the command rather than matching pane text.
-<!-- /port -->
+The leading newline puts the output on a fresh screen row even if the shell's
+first prompt arrives late. `grep -Fx` matches the complete line, so the echoed
+command cannot satisfy the check. The short pause limits polling; the captured
+output determines when the program finishes.
 
-```python
->>> server.new_session(session_name='wait_test')
-Session(...)
->>> server.wait_for('test_channel', set_flag=True)
-```
+Capture reads screen state, so it can miss output that has scrolled away.
+[Capturing output](/guides/capturing-output/) covers history and streaming;
+[Sending keys](/guides/sending-keys/) explains input and completion.
 
-```typescript file="examples/agent/agent.ts"
-```
+## Use a language library
 
-```go file="examples/control-mode-subscribe/main.go"
-```
+Complete programs with imports, setup, and cleanup:
 
-<!-- port:go -->
-`Session.OpenNotifications` receives tmux events as a stream. For tests that
-need to wait for screen text, use `tmuxtest.WaitForText`; see [Testing with
-libtmux](/guides/testing-with-libtmux/).
-<!-- /port -->
-
-```rust
-// From crates/libtmux/examples/scratch.rs, the wait_for_text call: shown in full on Attach and send keys.
-match pane.wait_for_text("hello", Duration::from_secs(5)).await? {
-    PaneWait::Arrived => println!("  the pane printed it"),
-    other => println!("  gave up: {other:?}"),
-}
-```
-
-<!-- port:rs -->
-Rust's `wait_for_text` looks before it sleeps, joins wrapped lines so a
-needle spanning a wrap still matches, and returns `PaneWait::Dead` rather
-than hanging forever if the pane's process ends first.
-<!-- /port -->
-
-```java file="examples/src/main/java/io/github/libtmux/examples/WatchPaneOutput.java"
-```
-
-<!-- port:java -->
-Attach the `ControlClient` to receive `%output` notifications. An unattached
-client receives command replies only.
-<!-- /port -->
-
-```csharp
-await pane.SendTextAsync("echo hello-from-libtmux", cancellationToken: ct);
-await pane.EnterAsync(ct);
-
-string output = await TmuxWait.UntilAsync(
-    async token => string.Join('\n', await pane.CaptureAsync(cancellationToken: token)),
-    text => text.Contains("hello-from-libtmux", StringComparison.Ordinal),
-    TimeSpan.FromSeconds(10),
-    TimeSpan.FromMilliseconds(20));
-```
-
-<!-- port:dotnet -->
-`TmuxWait.UntilAsync` polls a read against a predicate rather than sleeping
-a fixed amount.
-<!-- /port -->
-
-<!-- port:cxx -->
-C++ has no checked snippet that waits on pane *text*. `Server::wait_for(channel,
-timeout)`, in `include/libtmux/server.hpp`, uses tmux's own `wait-for` signal
-instead of scraping output, and its doc comment explains why that is the
-safer choice when the command you are waiting on can be made to announce
-itself: "a server that dies under a waiter makes tmux exit zero, which is
-indistinguishable from being signalled ... this reports that as a failure
-instead."
-<!-- /port -->
-
-```swift file="Examples/Sources/ExampleCode/Waiting.swift"
-```
-
-<!-- port:swift -->
-`waitForOutput` takes patterns for both success and failure, so a process
-that fails fast is discovered immediately rather than by timing out.
-<!-- /port -->
+[Python](/py/latest/examples/capture-pane-output/) ·
+[TypeScript](/ts/latest/examples/capture-pane-output/) ·
+[Go](/go/latest/examples/capture-pane-output/) ·
+[Rust](/rs/latest/examples/capture-pane-output/) ·
+[Java](/java/latest/examples/capture-pane-output/) ·
+[.NET](/dotnet/latest/examples/capture-pane-output/) ·
+[C++](/cxx/latest/examples/capture-pane-output/) ·
+[Swift](/swift/latest/examples/capture-pane-output/)
 
 <a id="source-inclusion"></a>
+<a id="where-this-comes-from"></a>
 
-## Where this comes from
-
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
-
-**Source:** `src/libtmux/pane.py` (`capture_pane`), `src/libtmux/server.py`
-(`wait_for`) docstrings
-
-**In this page:** hand-quoted
-
-**Checked by:** `pytest` runs every `>>>` doctest against a real, isolated tmux
-session on every test run
-<!-- /port -->
-
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-
-**Source:** `examples/capture/capture.ts` (read), `examples/agent/agent.ts`
-(wait)
-
-**In this page:** read whole from each file
-
-**Checked by:** both run against real tmux by `bun test examples`; `agent.ts` is
-additionally mirrored into README.md under a `<!-- runs: ... -->` marker checked
-by `scripts/check-doc-runnable.ts`
-<!-- /port -->
-
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-
-**Source:** `examples/quickstart/main.go` (read, already shown whole on the
-previous page), `examples/control-mode-subscribe/main.go` (wait)
-
-**In this page:** read: hand-quoted; wait: read whole from the file
-
-**Checked by:** both run against real tmux as `TestQuickstart` /
-`TestControlModeSubscribe`; the wait file's `docs:watching` region is
-additionally mirrored into README.md by `go generate ./tmux`
-<!-- /port -->
-
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-
-**Source:** `crates/libtmux/examples/scratch.rs`, already shown whole on the
-previous page
-
-**In this page:** hand-quoted excerpts of the same file
-
-**Checked by:** run to completion against a throwaway tmux by
-`scripts/run-examples.sh`, which CI runs
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-
-**Source:** root `README.md` Quickstart (read),
-`examples/src/main/java/io/github/libtmux/examples/WatchPaneOutput.java` (wait)
-
-**In this page:** read: hand-quoted; wait: read whole from the file
-
-**Checked by:** every README fence is compiled and run against real tmux by
-`docs-tests`; `WatchPaneOutput` is additionally run by the `examples` module's
-`ExamplesRunTest`
-<!-- /port -->
-
-<!-- port:dotnet -->
-<!-- port:root -->
-### .NET
-<!-- /port -->
-
-**Source:** root `README.md`, "Running something, and reading it back"
-
-**In this page:** hand-quoted
-
-**Checked by:** one of the `csharp run` blocks compiled and run against real
-tmux by `ReadmeExampleTests`
-<!-- /port -->
-
-<!-- port:cxx -->
-<!-- port:root -->
-### C++
-<!-- /port -->
-
-**Source:** `examples/05-readme.cpp` `capture` region (read);
-`include/libtmux/server.hpp` doc comment (wait, no fence)
-
-**In this page:** hand-quoted
-
-**Checked by:** the `capture` region is quoted verbatim into README.md and
-checked by `tools/docs/check_readme.py`; the whole file is built and run by
-CTest
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-
-**Source:** `Examples/Sources/ExampleCode/Changing.swift` (read, already shown
-whole on the previous page), `Waiting.swift` (wait)
-
-**In this page:** read: hand-quoted excerpt; wait: read whole from the file
-
-**Checked by:** both matched against the README by `Scripts/check_examples.py`
-and run by `swift test --package-path Examples`
-<!-- /port -->
-
-<!-- port:go,rs,swift -->
-### Full example
-
-[Attach and send keys](../attach-and-send-keys/#where-this-comes-from) includes
-the complete program behind the capture excerpt, including its setup and cleanup.
-<!-- /port -->
+The [tmux manual source](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1)
+describes `capture-pane`, `send-keys`, and `kill-server`.
