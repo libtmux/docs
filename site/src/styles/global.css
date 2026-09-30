@@ -323,6 +323,11 @@ html[data-theme-mode="dark"] {
   --input-text: white;
 }
 
+/* Separate adjacent program and command blocks. */
+.prose .expressive-code + .expressive-code {
+  margin-block-start: 1.5rem;
+}
+
 /* Preserve literal tabs while keeping compact indentation. */
 .expressive-code .code {
   tab-size: 2;
