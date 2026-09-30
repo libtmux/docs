@@ -3,6 +3,7 @@ title: "Python workspace examples"
 description: "Load tmux workspaces from YAML or JSON with the tmuxp CLI."
 port: py
 product: workspace
+aliases: [examples/workspace-from-file]
 sidebar:
   label: Examples
   order: 3

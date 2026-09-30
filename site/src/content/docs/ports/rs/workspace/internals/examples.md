@@ -3,6 +3,7 @@ title: Rust workspace builder examples
 description: Build, inspect, and capture a workspace on a private tmux server with Rust.
 port: rs
 product: workspace
+aliases: [examples/workspace-from-file]
 sidebar:
   group: Internals
   label: Examples

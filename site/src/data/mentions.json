@@ -1269,13 +1269,6 @@
   },
   {
    "port": "dotnet",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Always",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
-  },
-  {
-   "port": "dotnet",
    "symbol": "LibTmux.Workspace.PaneReadiness.Auto",
    "page": "/dotnet/latest/workspace/internals/topics/",
    "title": ".NET workspace builder behavior",
@@ -1290,13 +1283,6 @@
   },
   {
    "port": "dotnet",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Auto",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
-  },
-  {
-   "port": "dotnet",
    "symbol": "LibTmux.Workspace.PaneReadiness.Never",
    "page": "/dotnet/latest/workspace/internals/topics/",
    "title": ".NET workspace builder behavior",
@@ -1308,13 +1294,6 @@
    "page": "/dotnet/latest/workspace/reference/",
    "title": ".NET workspace builder API",
    "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Never",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
   },
   {
    "port": "dotnet",
@@ -1360,13 +1339,6 @@
   },
   {
    "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceBuilder.BuildAsync",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
-  },
-  {
-   "port": "dotnet",
    "symbol": "LibTmux.Workspace.WorkspaceBuildException",
    "page": "/dotnet/latest/workspace/internals/topics/",
    "title": ".NET workspace builder behavior",
@@ -1399,13 +1371,6 @@
    "page": "/dotnet/latest/workspace/reference/",
    "title": ".NET workspace builder API",
    "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceBuildException.PartialResult",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
   },
   {
    "port": "dotnet",
@@ -2096,13 +2061,6 @@
   {
    "port": "go",
    "symbol": "workspace.Build",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
-  },
-  {
-   "port": "go",
-   "symbol": "workspace.Build",
    "page": "/go/latest/workspace/internals/",
    "title": "Go workspace internals",
    "section": "ports"
@@ -2197,13 +2155,6 @@
    "page": "/go/latest/workspace/reference/",
    "title": "Go workspace builder API",
    "section": "ports"
-  },
-  {
-   "port": "go",
-   "symbol": "workspace.Parse",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
   },
   {
    "port": "go",
@@ -2778,13 +2729,6 @@
    "page": "/java/latest/workspace/reference/",
    "title": "Java workspace builder API",
    "section": "ports"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.workspace.Workspace.Workspace",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
   },
   {
    "port": "java",
@@ -4210,13 +4154,6 @@
   {
    "port": "py",
    "symbol": "libtmux.pane.Pane",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.pane.Pane",
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
@@ -4325,13 +4262,6 @@
    "page": "/guides/testing-with-libtmux/",
    "title": "Testing with libtmux",
    "section": "guides"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.server.Server",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
   },
   {
    "port": "py",
@@ -4469,13 +4399,6 @@
   {
    "port": "py",
    "symbol": "libtmux.session.Session",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.session.Session",
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
@@ -4556,13 +4479,6 @@
    "page": "/concepts/workspaces/",
    "title": "Workspaces",
    "section": "concepts"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.window.Window",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
   },
   {
    "port": "py",
@@ -5025,13 +4941,6 @@
    "page": "/topics/options-and-hooks/",
    "title": "Options and hooks",
    "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "freeze.freeze",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
   },
   {
    "port": "rs",
@@ -6695,13 +6604,6 @@
   {
    "port": "swift",
    "symbol": "Workspace.decode(json:)",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
-  },
-  {
-   "port": "swift",
-   "symbol": "Workspace.decode(json:)",
    "page": "/swift/latest/workspace/internals/examples/",
    "title": "Swift workspace builder examples",
    "section": "ports"
@@ -6719,13 +6621,6 @@
    "page": "/swift/latest/workspace/reference/",
    "title": "Swift workspace builder API",
    "section": "ports"
-  },
-  {
-   "port": "swift",
-   "symbol": "Workspace.decode(yaml:)",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
   },
   {
    "port": "swift",
@@ -6768,13 +6663,6 @@
    "page": "/swift/latest/workspace/reference/",
    "title": "Swift workspace builder API",
    "section": "ports"
-  },
-  {
-   "port": "swift",
-   "symbol": "WorkspaceBuilder.build(_:on:)",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
   },
   {
    "port": "swift",
@@ -6831,13 +6719,6 @@
    "page": "/concepts/workspaces/",
    "title": "Workspaces",
    "section": "concepts"
-  },
-  {
-   "port": "ts",
-   "symbol": "builder.applyWorkspace",
-   "page": "/examples/workspace-from-file/",
-   "title": "Build a workspace from a file",
-   "section": "examples"
   },
   {
    "port": "ts",
@@ -7511,13 +7392,6 @@
    "text": "ConnectAndBuild",
    "page": "/examples/attach-and-send-keys/",
    "line": 152,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "swift",
-   "text": "YAMLWorkspaces",
-   "page": "/examples/workspace-from-file/",
-   "line": 120,
    "why": "not defined in the stated port"
   },
   {

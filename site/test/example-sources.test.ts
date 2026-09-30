@@ -27,8 +27,9 @@ const CONTENT = join(dirname(fileURLToPath(import.meta.url)), '../src/content/do
  * Raise this as examples are converted; it exists to stop the number going
  * the other way. It measures source inclusion, not execution coverage.
  */
-// The standalone Go workspace program is covered by complete-examples.test.ts.
-const SOURCED_FLOOR = 13
+// Complete workspace programs replace their shared source excerpts; native
+// receipts and rendering checks live in complete-examples.test.ts.
+const SOURCED_FLOOR = 10
 
 interface Fence {
   file: string

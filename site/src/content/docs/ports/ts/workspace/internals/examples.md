@@ -3,6 +3,7 @@ title: TypeScript workspace builder examples
 description: Build and inspect a workspace on a private tmux server with TypeScript.
 port: ts
 product: workspace
+aliases: [examples/workspace-from-file]
 sidebar:
   group: Internals
   label: Examples

@@ -3,6 +3,7 @@ title: Go workspace builder examples
 description: Build and inspect a workspace from YAML on a private tmux server with Go.
 port: go
 product: workspace
+aliases: [examples/workspace-from-file]
 sidebar:
   group: Internals
   label: Examples
