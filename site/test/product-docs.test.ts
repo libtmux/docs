@@ -243,7 +243,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         const language = attribute(tags(block, 'pre')[0] ?? '', 'data-language')?.toLowerCase()
         const owner = language && LANG_TO_PORT[language]
         const caption = block.match(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/i)?.[1] ?? ''
-        const buildScript = page.port === 'java' && language === 'kotlin' && text(caption) === 'build.gradle.kts'
+        const buildScript = page.port === 'java' && language === 'kotlin'
+          && ['settings.gradle.kts', 'build.gradle.kts'].includes(text(caption))
         if (owner && !buildScript) expect(owner, `${page.path} foreign language example`).toBe(page.port)
       }
       const headings = [...article!.matchAll(/<h[23]\b[^>]*>([\s\S]*?)<\/h[23]>/gi)].map((match) => text(match[1]!))
