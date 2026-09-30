@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, rs, go, java, dotnet, cxx, swift]
 title: Filtering and queries
 description: How you get from every session on the server to the one pane you mean, and what happens when zero or several match.
 sidebar:
@@ -66,25 +66,11 @@ check that the session data is available.
 <!-- port:ts -->
 <a id="typescript-criteria-as-data"></a>
 
-## Criteria as data
+## TypeScript criteria
 
-TypeScript's `Selection.where()` accepts structured, serializable criteria that
-can be stored in a configuration file or sent through MCP:
-
-```ts
-snapshot.sessions.where({
-  AND: [
-    { name: { startsWith: "prod" } },
-    { windows: { some: { name: { regex: { pattern: "^log", flags: "" } } } } },
-  ],
-});
-```
-
-`some`, `every`, and `none` test related objects. `{ mode: "insensitive" }`
-enables case-insensitive comparison. Use `.where()` for criteria that can be
-encoded with `encodeWhereDocument` and decoded with `decodeWhereDocument`; use
-`.filter()` for a predicate function. `.one()` throws `NoMatchError` or
-`MultipleMatchesError`. `.oneOrUndefined()` permits an absent result.
+The [TypeScript filtering guide](/ts/latest/concepts/queries/) includes complete
+programs for matching names, handling result counts, traversing linked windows,
+refreshing snapshots, validating query documents, and filtering live tmux rows.
 <!-- /port -->
 
 <!-- port:go,rs,java,cxx,dotnet,swift -->

@@ -119,6 +119,8 @@ checks their recorded hashes, executes the displayed setup, and saves logs
 and a result. Dependency downloads and native builds are separate from the
 routine site tests. A changed hash needs a new native run before review.
 Use `--example attach` to check the existing-server programs in the attach guide.
+Use `--example query --port ts` to run every complete program on the TypeScript
+filtering page, including its displayed setup and error assertions.
 
 Put explanatory comments on separate lines above the code they describe.
 Limit example comments to 100 columns, including indentation; prefer shorter

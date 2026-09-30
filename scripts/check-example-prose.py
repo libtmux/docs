@@ -19,7 +19,7 @@ import time
 def main():
     repo = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--example', choices=['capture', 'attach'], default='capture')
+    parser.add_argument('--example', choices=['capture', 'attach', 'query'], default='capture')
     parser.add_argument('--port', required=True)
     parser.add_argument('--output-dir', required=True, type=Path)
     args = parser.parse_args()

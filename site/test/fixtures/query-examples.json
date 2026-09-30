@@ -1,0 +1,56 @@
+{
+  "page": "concepts/queries",
+  "examples": [
+    {
+      "port": "ts",
+      "page": "ports/ts/concepts/queries",
+      "sourceRevision": "3fe1ca654b81b8cbf4a13b777a001a3298c87a6f",
+      "runtime": "Bun 1.4.2",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "package.json",
+          "sha256": "acb06879bf3e3e5ce85125d64a72ff5b2579e87a66085961b1f7b88eaa813020"
+        },
+        {
+          "name": "matching.ts",
+          "sha256": "546bc696c2eedc1955b0a011b7144fad0ab502173e535a6fbb02bb1fce74f88b"
+        },
+        {
+          "name": "single-result.ts",
+          "sha256": "e72643800ae243abfbab8af70b5b76eabc66a2bea2533cbade1024ffb992d584"
+        },
+        {
+          "name": "relations.ts",
+          "sha256": "e31da357f7b06b23a7ea943d500fc8595efe9c6469116f3136afa42106739e1b"
+        },
+        {
+          "name": "refresh.ts",
+          "sha256": "8b6b303c2c0a74b8d66771532dcd697fe4243a9dc17139890308ef939614083b"
+        },
+        {
+          "name": "query-document.ts",
+          "sha256": "8a50296a867ad9a33296906a83ada52fae56932b72b9c3a2c32989e687a13fd4"
+        },
+        {
+          "name": "tmux-filter.ts",
+          "sha256": "8f95f8507965ee6d6428c816c6735ad4ffd306f89f736875c1f8903f743c4fb3"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ts libtmux &&\n  git -C libtmux checkout 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f &&\n  bun install",
+        "bun run matching.ts",
+        "bun run single-result.ts",
+        "bun run relations.ts",
+        "bun run refresh.ts",
+        "bun run query-document.ts",
+        "bun run tmux-filter.ts"
+      ],
+      "expectedOutput": "unknown token: value=<>",
+      "verificationScope": "Six independent displayed programs, each with assertions and cleanup. Commands run in page order against the pinned library on both recorded tmux versions."
+    }
+  ]
+}

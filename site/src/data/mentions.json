@@ -6918,8 +6918,29 @@
   },
   {
    "port": "ts",
+   "symbol": "errors.MultipleMatchesError",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
    "symbol": "errors.NoMatchError",
    "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "errors.NoMatchError",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "errors.QueryValidationError",
+   "page": "/ts/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -6953,10 +6974,38 @@
   },
   {
    "port": "ts",
+   "symbol": "errors.VersionTooLowError",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "errors.VersionTooLowError.criteriaName",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "errors.VersionTooLowError.serverVersion",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
    "symbol": "errors.VersionTooLowError.since",
    "page": "/topics/format-tokens/",
    "title": "Format-token fields",
    "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "errors.VersionTooLowError.since",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "ts",
@@ -7066,14 +7115,14 @@
   {
    "port": "ts",
    "symbol": "selection.decodeWhereDocument",
-   "page": "/concepts/queries/",
+   "page": "/ts/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
   {
    "port": "ts",
    "symbol": "selection.encodeWhereDocument",
-   "page": "/concepts/queries/",
+   "page": "/ts/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -7086,8 +7135,36 @@
   },
   {
    "port": "ts",
+   "symbol": "selection.Selection",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "selection.Selection.exists",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
    "symbol": "selection.Selection.filter",
    "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "selection.Selection.filter",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "selection.Selection.first",
+   "page": "/ts/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -7100,8 +7177,22 @@
   },
   {
    "port": "ts",
+   "symbol": "selection.Selection.one",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
    "symbol": "selection.Selection.oneOrUndefined",
    "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "selection.Selection.oneOrUndefined",
+   "page": "/ts/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -7114,10 +7205,24 @@
   },
   {
    "port": "ts",
+   "symbol": "selection.Selection.where",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
    "symbol": "server.Server",
    "page": "/guides/testing-with-libtmux/",
    "title": "Testing with libtmux",
    "section": "guides"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "ts",
@@ -7170,6 +7275,13 @@
   },
   {
    "port": "ts",
+   "symbol": "server.Server.cmd",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
    "symbol": "server.Server.connect",
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
@@ -7205,6 +7317,13 @@
   },
   {
    "port": "ts",
+   "symbol": "server.Server.panes",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
    "symbol": "server.Server.pipeline",
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
@@ -7226,6 +7345,13 @@
   },
   {
    "port": "ts",
+   "symbol": "server.Server.sessions",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
    "symbol": "server.Server.setEnvironment",
    "page": "/topics/environment/",
    "title": "Environment",
@@ -7240,6 +7366,13 @@
   },
   {
    "port": "ts",
+   "symbol": "server.Server.snapshot",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
    "symbol": "server.Server.unsetEnvironment",
    "page": "/topics/environment/",
    "title": "Environment",
@@ -7250,6 +7383,13 @@
    "symbol": "server.Server.watch",
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server.windows",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
    "section": "concepts"
   },
   {
