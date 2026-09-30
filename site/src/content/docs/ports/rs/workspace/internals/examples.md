@@ -36,6 +36,10 @@ Create the project manifest. Both library crates use that source tree. The
 `test-support` feature provides the public `TestServer` helper, which creates
 and owns the isolated server used by this example.
 
+`TestServer` is temporary example scaffolding. In an application, use a
+[`Server`](../../../reference/server-server/) connected to the tmux server you manage.
+Future versions of this example will use that regular server object directly.
+
 ```toml title="Cargo.toml"
 [package]
 name = "workspace-example"

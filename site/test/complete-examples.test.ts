@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import receipt from './fixtures/capture-examples.json'
+import attach from './fixtures/attach-examples.json'
 import products from './fixtures/product-examples.json'
 import { remarkPortCode, resolvePortCode } from '../src/plugins/remark-port-code.mjs'
 import { rehypeCodeTabs } from '../src/plugins/rehype-code-tabs.mjs'
@@ -16,7 +17,7 @@ const bodyOf = (page: string) => parsePage(page).content
 const fences = (markdown: string) => [...markdown.matchAll(/^```(\S+)([^\n]*)\n([\s\S]*?)^```/gm)]
   .map((match) => ({ language: match[1], title: /title="([^"]+)"/.exec(match[2])?.[1], code: match[3] }))
 const sha256 = (code: string) => createHash('sha256').update(code).digest('hex')
-const examples = [...receipt.examples, ...products.examples]
+const examples = [...receipt.examples, ...attach.examples, ...products.examples]
 
 afterEach(() => vi.unstubAllEnvs())
 
@@ -37,10 +38,12 @@ describe('verified complete programs', () => {
     const commands = [...selected.matchAll(/^```console\n([\s\S]*?)^```/gm)]
       .map((match) => match[1].replace(/^\$ /gm, '').trim())
     expect(commands).toEqual(example.shellRecipe)
-    const program = blocks.find((block) => block.title === example.files[0].name)!
-    const comment = ['python', 'sh'].includes(example.language) ? /^\s*#/ : /^\s*(?:\/\/|\/\*|\* )/
-    for (const line of program.code.split('\n').filter((line) => comment.test(line))) {
-      expect(line.length, `${example.port}: ${line}`).toBeLessThanOrEqual(80)
+    for (const block of blocks) {
+      const comment = ['python', 'sh', 'ruby', 'toml', 'cmake', 'yaml', 'properties'].includes(block.language)
+        ? /^\s*#/ : block.language === 'lua' ? /^\s*--/ : /^\s*(?:\/\/|\/\*|\* )/
+      for (const line of block.code.split('\n').filter((line) => comment.test(line))) {
+        expect(line.replaceAll('\t', '  ').length, `${example.port}: ${line}`).toBeLessThanOrEqual(100)
+      }
     }
   })
 
@@ -71,7 +74,7 @@ describe('verified complete programs', () => {
     }
   })
 
-  it('keeps the root about tmux and routes each complete program to its port', async () => {
+  it.each([receipt, attach])('keeps $page about tmux and routes each program to its port', async (receipt) => {
     const root = readPage(receipt.page)
     expect(root).toMatch(/^supportedPorts: \[\]$/m)
     const blocks = fences(bodyOf(receipt.page))

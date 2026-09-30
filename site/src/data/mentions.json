@@ -262,6 +262,20 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Server",
+   "page": "/cxx/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server",
+   "page": "/cxx/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server",
    "page": "/cxx/latest/mcp/reference/",
    "title": "C++ MCP API",
    "section": "ports"
@@ -271,6 +285,13 @@
    "symbol": "libtmux::Server",
    "page": "/cxx/latest/workspace/internals/",
    "title": "C++ workspace internals",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server",
+   "page": "/cxx/latest/workspace/internals/examples/",
+   "title": "C++ workspace builder examples",
    "section": "ports"
   },
   {
@@ -433,6 +454,20 @@
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::test::ScopedTmuxServer",
+   "page": "/cxx/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::test::ScopedTmuxServer",
+   "page": "/cxx/latest/workspace/internals/examples/",
+   "title": "C++ workspace builder examples",
+   "section": "ports"
   },
   {
    "port": "cxx",
@@ -779,13 +814,6 @@
   },
   {
    "port": "dotnet",
-   "symbol": "LibTmux.NewSessionRequest.ReplaceExisting",
-   "page": "/guides/attaching-to-tmux/",
-   "title": "Attaching to tmux",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
    "symbol": "LibTmux.OwnedSessionScope",
    "page": "/topics/context-managers/",
    "title": "Ownership and cleanup",
@@ -871,6 +899,13 @@
   {
    "port": "dotnet",
    "symbol": "LibTmux.Server",
+   "page": "/dotnet/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Server",
    "page": "/dotnet/latest/workspace/internals/",
    "title": ".NET workspace internals",
    "section": "ports"
@@ -898,13 +933,6 @@
   },
   {
    "port": "dotnet",
-   "symbol": "LibTmux.Server.CreateSessionAsync",
-   "page": "/guides/attaching-to-tmux/",
-   "title": "Attaching to tmux",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
    "symbol": "LibTmux.Server.EnterControlModeAsync",
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
@@ -923,13 +951,6 @@
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server.HasSessionAsync",
-   "page": "/guides/attaching-to-tmux/",
-   "title": "Attaching to tmux",
-   "section": "guides"
   },
   {
    "port": "dotnet",
@@ -1679,6 +1700,13 @@
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server",
+   "page": "/go/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
   },
   {
    "port": "go",
@@ -2469,6 +2497,13 @@
    "symbol": "io.github.libtmux.Server.Server",
    "page": "/guides/testing-with-libtmux/",
    "title": "Testing with libtmux",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server",
+   "page": "/java/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
    "section": "guides"
   },
   {
@@ -4266,6 +4301,13 @@
   {
    "port": "py",
    "symbol": "libtmux.server.Server",
+   "page": "/py/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.server.Server",
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
@@ -4416,13 +4458,6 @@
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.session.Session.attach",
-   "page": "/guides/attaching-to-tmux/",
-   "title": "Attaching to tmux",
-   "section": "guides"
   },
   {
    "port": "py",
@@ -5183,6 +5218,13 @@
   {
    "port": "rs",
    "symbol": "server.Server",
+   "page": "/rs/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server",
    "page": "/rs/latest/mcp/examples/",
    "title": "Rust MCP examples",
    "section": "ports"
@@ -5199,6 +5241,13 @@
    "symbol": "server.Server",
    "page": "/rs/latest/workspace/internals/",
    "title": "Rust workspace internals",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server",
+   "page": "/rs/latest/workspace/internals/examples/",
+   "title": "Rust workspace builder examples",
    "section": "ports"
   },
   {
@@ -6135,6 +6184,13 @@
   {
    "port": "swift",
    "symbol": "Server",
+   "page": "/swift/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server",
    "page": "/swift/latest/workspace/internals/",
    "title": "Swift workspace internals",
    "section": "ports"
@@ -7061,6 +7117,13 @@
    "symbol": "server.Server",
    "page": "/guides/testing-with-libtmux/",
    "title": "Testing with libtmux",
+   "section": "guides"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server",
+   "page": "/ts/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
    "section": "guides"
   },
   {

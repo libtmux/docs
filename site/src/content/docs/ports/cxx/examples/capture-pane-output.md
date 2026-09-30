@@ -18,6 +18,10 @@ This complete program creates a private tmux server, captures its output, and
 cleans up. Follow the [setup and run instructions](#setup-and-run) below. You need
 tmux and a Unix environment; no existing tmux session is required.
 
+`ScopedTmuxServer` is temporary example scaffolding. In an application, use a
+[`Server`](../../reference/libtmux-server/) connected to the tmux server you manage.
+Future versions of this example will use that regular server object directly.
+
 ## Read what's on screen
 
 The program sends `printf` with a leading newline, then waits for the complete
