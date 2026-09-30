@@ -72,6 +72,30 @@ describe('selected MCP runtime provisioning', () => {
     } finally { rmSync(directory, { recursive: true, force: true }) }
   })
 
+  it.each(['6.2.4', '6.2.3', 'unrecognized'])('verifies the installed Swift compiler reports %s before adding it to PATH', (version) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-swift-version-'))
+    try {
+      const bin = join(directory, 'bin')
+      const output = join(directory, 'path')
+      mkdirSync(bin)
+      writeFileSync(output, '')
+      writeFileSync(join(bin, 'mise'), '#!/bin/sh\nprintf "%s\\n" "$STUB_TOOLCHAIN"\n', { mode: 0o700 })
+      writeFileSync(join(bin, 'swift'), `#!/bin/sh\nprintf '%s\\n' 'Swift version ${version} (fixture)'\n`, { mode: 0o700 })
+      const result = spawnSync('bash', ['-e', '-c', script('Verify selected Swift toolchain')], {
+        cwd: directory, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, STUB_TOOLCHAIN: directory, SWIFT_VERSION: '6.2.4', GITHUB_PATH: output },
+      })
+      if (version === '6.2.4') {
+        expect(result.status, result.stderr).toBe(0)
+        expect(readFileSync(output, 'utf8')).toBe(`${bin}\n`)
+      } else {
+        expect(result.status).not.toBe(0)
+        expect(result.stderr).toContain('Expected Swift 6.2.4')
+        expect(readFileSync(output, 'utf8')).toBe('')
+      }
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
   it('installs the separate Python MCP checkout without altering the captured inputs', () => {
     const snapshot = workflow.indexOf('name: Snapshot source inputs before native generation')
     const runtime = workflow.indexOf("name: Install Python's separate MCP runtime")
