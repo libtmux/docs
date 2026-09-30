@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: []
 title: Attaching to tmux
-description: What a plain constructor call actually connects to, and how to find a session that might already exist instead of always creating a new one.
+description: Create or attach to a tmux session, select its socket, and keep terminal attachment separate from automation.
 sidebar:
   label: Attaching to tmux
   group: Guides
@@ -9,160 +9,136 @@ sidebar:
 tableOfContents: true
 ---
 
-Obtain a server and session handle to control tmux from your program. Your
-process keeps its own stdin and stdout, and tmux continues running
-independently. [Attach and send keys](/examples/attach-and-send-keys/)
-demonstrates this workflow.
+Attaching opens a tmux session in your terminal. Its shells and programs keep
+running when you detach. A script can also query or control that session
+without taking over a terminal.
 
-<!-- port:py -->
-Attaching your terminal is a separate operation. Python's `Session.attach()`
-runs `tmux attach-session` and hands the terminal to tmux.
-[tmuxp](https://tmuxp.git-pull.com/) uses it after building a workspace. Check
-your port's reference if your program needs to hand over the terminal.
-<!-- /port -->
+## Open a session in your terminal
 
-## Which socket a bare constructor reaches
+Run this from a terminal outside tmux. It creates `work` if needed and attaches
+to it otherwise. `-L libtmux-demo` keeps this demonstration on its own named
+server. `-f /dev/null` skips personal tmux configuration for this demonstration.
 
-Use an explicit socket when several tmux servers may be running. The examples
-below show each constructor's defaults and environment-aware alternatives. To
-locate the server from inside a pane, use the port's environment lookup API for
-`TMUX` and `TMUX_PANE`.
-
-```python
-# Server() with no arguments talks to tmux's own default socket.
-# Server(socket_name=...) or Server(socket_path=...) pick a different one.
-server = libtmux.Server()
-
-# from_env() is also on Session, Window, and Pane, for code running inside a
-# pane that wants to ask "where am I" instead of being told.
-server = libtmux.Server.from_env()
+```console
+$ tmux -L libtmux-demo -f /dev/null new-session -A -s work
 ```
 
-```typescript
-// Select the default tmux socket.
-const server = new Server();
+Detach with **Ctrl-b**, then **d**. You return to the original shell while
+the tmux session keeps running. List that server's sessions:
+
+```console
+$ tmux -L libtmux-demo list-sessions
 ```
 
-```go
-// Resolves the tmux binary once through the snapshotted PATH and freezes
-// it. SocketName and SocketPath select a socket explicitly (SocketPath wins
-// if both are set); a Server built this way does not drift if the
-// environment changes later.
-server, err := tmux.NewServer(tmux.ServerOptions{})
-if err != nil {
-    return err
-}
+Attach to the existing session again. The leading `=` selects its exact name:
+
+```console
+$ tmux -L libtmux-demo attach-session -t '=work'
 ```
 
-```rust
-// Server::new() uses the process's own environment. from_env() reads the
-// TMUX variable directly; find.rs tries the pane-local one first and falls
-// back to a fresh connection.
-let server = Server::from_env().or_else(|_| Server::new())?;
+`attach-session` expects a session to exist. `new-session -A` is the command
+to use when either creating or attaching is acceptable. From inside tmux,
+`attach-session` switches the attached client to the target session.
+
+After detaching, remove the demonstration session when you are finished:
+
+```console
+$ tmux -L libtmux-demo kill-session -t '=work'
 ```
 
-```java
-Server server = Server.open(
-    ServerConfig.builder().endpoint(ServerEndpoint.socketPath(socket)).build());
+<a id="which-socket-a-bare-constructor-reaches"></a>
 
-// The pane-local read-back: takes nothing, returns empty outside a pane.
-TmuxEnvironment.current();
+## Choose the server socket
+
+A socket identifies a tmux server. Use the same selection on every command:
+
+- `-L name` selects a named socket in tmux's socket directory.
+- `-S path` selects an explicit socket path and overrides `-L`.
+- Without either flag, tmux uses the socket from `TMUX` when applicable,
+  otherwise its default socket.
+
+Inside a pane, `TMUX` identifies its server and `TMUX_PANE` identifies the
+pane. Prefer explicit socket selection in automation that may run both
+inside and outside tmux.
+
+## Query a session from a shell script
+
+This complete program creates an isolated server, looks up `work`, and prints
+its name. Each command stays in the calling shell; no terminal is attached.
+It stops its own server on success or failure.
+
+Save it as `connect.sh` and run `sh connect.sh`, or paste the whole block into
+a POSIX shell. It requires tmux 3.2a or newer.
+
+```sh title="connect.sh"
+(
+    set -eu
+    directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-attach.XXXXXX")
+    socket="$directory/tmux.sock"
+
+    cleanup() {
+        status=$?
+        trap - 0 HUP INT TERM
+        if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+            printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+            exit 1
+        fi
+        rm -rf "$directory" || exit 1
+        exit "$status"
+    }
+    trap cleanup 0
+    trap 'exit 1' HUP INT TERM
+
+    unset TMUX TMUX_PANE
+    tmux -S "$socket" -f /dev/null new-session -d -s work /bin/cat
+    tmux -S "$socket" has-session -t '=work'
+    tmux -S "$socket" list-sessions -F '#{session_name}'
+)
 ```
 
-```csharp
-// Resolves in a fixed order: an explicit ServerConnectionOptions, then
-// LIBTMUX_SOCKET_PATH, then LIBTMUX_SOCKET_NAME (under TMUX_TMPDIR, or
-// /tmp), then the socket named "default". A named option always wins over
-// an environment variable.
-Server server = await Server.ConnectAsync();
+`-d` starts the session without attaching. `/bin/cat` keeps its pane open
+without loading a shell configuration. The script addresses only its private
+socket. If shutdown fails, it reports the error and keeps that socket's
+directory for inspection.
 
-// The separate pane-local read-back; ConnectAsync never consults TMUX.
-Server fromPane = Server.FromEnvironment();
-```
+<a id="finding-a-session-instead-of-always-creating-one"></a>
 
-```cpp
-// Four named constructors instead of one flexible one: pick the one that
-// names how you're reaching this tmux:
-libtmux::Server::from_env();          // inside tmux
-libtmux::Server::at_socket_name(name);
-libtmux::Server::at_socket_path(path);
-libtmux::Server::at_default();        // "my tmux", to a person
-```
+## Find a session before creating one
 
-```swift
-// Select the default tmux socket explicitly.
-let server = try Server(socketName: "default")
-```
+Use `has-session -t '=name'` to check an exact session name. It exits
+unsuccessfully when tmux cannot find the session or contact the server; keep
+the diagnostic so you can distinguish those failures.
 
-[Socket and servers](/topics/socket-and-servers/) covers endpoint selection
-and liveness. [Environment](/topics/environment/) covers pane-local lookup.
+A lookup does not reserve a name. Another client can create or remove a
+session before your next command. Handle the result of `new-session` even
+after checking. Use `new-session -A` for the interactive create-or-attach
+workflow shown above.
 
-## Finding a session instead of always creating one
+## Connect from a language library
 
-A script that runs more than once usually wants "attach if a session by
-this name already exists, create it otherwise," not a fresh session every
-time.
+Use the port menu to open this guide with a complete program, imports, build
+files, and a private-server launcher. Each program connects to an existing
+socket and leaves that server running:
 
-```python
-# default only stands in for *absence*: an ambiguous match still raises
-# MultipleObjectsReturned even with a default supplied: handing back an
-# arbitrary match from several is how a script ends up driving the wrong
-# pane. See Filtering and queries.
-session = server.sessions.get(session_name="demo", default=None)
-if session is None:
-    session = server.new_session(session_name="demo")
-```
-
-```typescript
-const session = snapshot.sessions.where({ name: "demo" }).oneOrUndefined();
-```
-
-```go
-// Push the check into tmux itself with a typed filter, rather than reading
-// everything back and filtering in the process.
-live := tmux.TmuxFilter("#{==:#{session_name},demo}")
-sessions, err := server.SearchSessions(ctx, &live)
-if err != nil {
-    return err
-}
-fmt.Println("matching sessions:", len(sessions))
-```
-
-```java
-Session session = server.hasSession("work")
-        ? server.sessions().stream()
-                .filter(candidate -> candidate.name().equals("work"))
-                .findFirst()
-                .orElseThrow()
-        : server.newSession("work");
-```
-
-```swift
-// hasSession answers the question directly as a Bool, no exception needed
-// either way.
-if try await server.hasSession("work") == false {
-    _ = try await server.newSession(named: "work", windowName: "start")
-}
-```
-
-<!-- port:dotnet -->
-`Server.HasSessionAsync(name)` checks for a session. Use `NewSessionRequest.ReplaceExisting`
-with `Server.CreateSessionAsync` only when killing and recreating it is intended.
-<!-- /port -->
-
-Finding an object and creating one are separate operations. Another client
-can change tmux state between them. Handle the creation error if the name was
-taken after the lookup.
-
-[Filtering and querying](../querying-and-filtering/) covers absent and
-ambiguous matches. [Attach and send keys](/examples/attach-and-send-keys/)
-contains complete programs and their source details.
+[Python](/py/latest/guides/attaching-to-tmux/) ·
+[TypeScript](/ts/latest/guides/attaching-to-tmux/) ·
+[Go](/go/latest/guides/attaching-to-tmux/) ·
+[Rust](/rs/latest/guides/attaching-to-tmux/) ·
+[Java](/java/latest/guides/attaching-to-tmux/) ·
+[Kotlin](/kotlin/latest/guides/attaching-to-tmux/) ·
+[Scala](/scala/latest/guides/attaching-to-tmux/) ·
+[.NET](/dotnet/latest/guides/attaching-to-tmux/) ·
+[F#](/fsharp/latest/guides/attaching-to-tmux/) ·
+[C++](/cxx/latest/guides/attaching-to-tmux/) ·
+[Swift](/swift/latest/guides/attaching-to-tmux/) ·
+[Ruby](/ruby/latest/guides/attaching-to-tmux/) ·
+[Lua](/lua/latest/guides/attaching-to-tmux/)
 
 ## Where to go next
 
-- [Sending keys](../sending-keys/) and [Capturing output](../capturing-output/)
-  pick up once you have a pane handle.
-- [Attach and send keys](/examples/attach-and-send-keys/) has the full,
-  sourced code for the round trip this guide assumes.
-- [Testing with libtmux](../testing-with-libtmux/) if the server you want to
-  attach to is one your own test suite should own and tear down.
+- [Sending keys](../sending-keys/) explains input and command completion.
+- [Capturing output](../capturing-output/) reads a pane's screen and history.
+- [Socket and servers](/topics/socket-and-servers/) covers server selection.
+
+The [tmux manual source](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1)
+describes `new-session`, `attach-session`, socket selection, and targeting.

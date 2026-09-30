@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run a complete capture example exactly as displayed, including its setup.
+"""Run a complete example exactly as displayed, including its setup.
 
 Use --port to choose a language and --output-dir for a new evidence directory.
 The selected language's native tools, Git, and tmux must already be on PATH.
@@ -18,12 +18,15 @@ import time
 
 def main():
     repo = Path(__file__).resolve().parent.parent
-    manifest = json.loads((repo / 'site/test/fixtures/capture-examples.json').read_text())
-    examples = {item['port']: item for item in manifest['examples']}
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--port', required=True, choices=examples)
+    parser.add_argument('--example', choices=['capture', 'attach'], default='capture')
+    parser.add_argument('--port', required=True)
     parser.add_argument('--output-dir', required=True, type=Path)
     args = parser.parse_args()
+    manifest = json.loads((repo / f'site/test/fixtures/{args.example}-examples.json').read_text())
+    examples = {item['port']: item for item in manifest['examples']}
+    if args.port not in examples:
+        parser.error(f'Unknown port: {args.port}; choose from {", ".join(examples)}')
     example = examples[args.port]
     page = repo / 'site/src/content/docs' / (example['page'] + '.md')
     content = page.read_text()
@@ -68,7 +71,7 @@ def main():
         if result.returncode:
             break
     passed = all(row['exit'] == 0 for row in results)
-    passed = passed and 'libtmux capture ready' in log.read_text().splitlines()
+    passed = passed and example.get('expectedOutput', 'libtmux capture ready') in log.read_text().splitlines()
     report = {'port': args.port, 'sourceRevision': example['sourceRevision'],
               'pageSha256': hashlib.sha256(page.read_bytes()).hexdigest(),
               'files': example['files'], 'runs': results, 'passed': passed,

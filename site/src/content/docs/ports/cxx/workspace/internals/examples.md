@@ -32,6 +32,10 @@ Save the following build file. The typed builder is a source header; this exampl
 does not use the optional YAML reader. The public testing library supplies
 private-server startup and cleanup.
 
+`ScopedTmuxServer` is temporary example scaffolding. In an application, use a
+[`Server`](../../../reference/libtmux-server/) connected to the tmux server you manage.
+Future versions of this example will use that regular server object directly.
+
 ```cmake title="CMakeLists.txt"
 cmake_minimum_required(VERSION 3.25)
 project(workspace_example LANGUAGES CXX)
