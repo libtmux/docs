@@ -1,4 +1,4 @@
-import { createMarkdownProcessor } from '@astrojs/markdown-remark'
+import { createMarkdownProcessor, parseFrontmatter } from '@astrojs/markdown-remark'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
@@ -11,7 +11,8 @@ import { docsEntryAvailable, pagePortLinks } from '../src/lib/page-port-links'
 import { docsRoutePath } from '../src/lib/docs-paths'
 
 const readPage = (page: string) => readFileSync(new URL(`../src/content/docs/${page}.md`, import.meta.url), 'utf8')
-const bodyOf = (page: string) => readPage(page).replace(/^---\n[\s\S]*?\n---\n/, '')
+const parsePage = (page: string) => parseFrontmatter(readPage(page), { frontmatter: 'remove' })
+const bodyOf = (page: string) => parsePage(page).content
 const fences = (markdown: string) => [...markdown.matchAll(/^```(\S+)([^\n]*)\n([\s\S]*?)^```/gm)]
   .map((match) => ({ language: match[1], title: /title="([^"]+)"/.exec(match[2])?.[1], code: match[3] }))
 const sha256 = (code: string) => createHash('sha256').update(code).digest('hex')
@@ -23,7 +24,8 @@ describe('verified complete programs', () => {
   // The receipt records separate native runs. This gate protects their exact
   // bytes through the renderers; changing a hash alone is not a native test.
   it.each(examples)('keeps the executed $page program and project files intact', (example) => {
-    const selected = resolvePortCode(bodyOf(example.page), example.port)
+    const { content, frontmatter } = parsePage(example.page)
+    const selected = resolvePortCode(content, example.port, frontmatter.port)
     const blocks = fences(selected)
     for (const file of example.files) {
       const matches = blocks.filter((block) => block.title === file.name)
@@ -43,17 +45,17 @@ describe('verified complete programs', () => {
   })
 
   it.each(examples)('preserves $page in its root-mounted and native HTML/Markdown', async (example) => {
-    const body = bodyOf(example.page)
+    const { content: body, frontmatter } = parsePage(example.page)
     for (const port of ['', example.port]) {
       vi.stubEnv('LIBTMUX_DOCS_PORT', port)
       const renderer = await createMarkdownProcessor({
         remarkPlugins: [remarkPortCode], rehypePlugins: [rehypeCodeTabs], syntaxHighlight: false,
       })
-      const html = (await renderer.render(body)).code
+      const html = (await renderer.render(body, { frontmatter })).code
       const window = new Window()
       try {
         window.document.body.innerHTML = html
-        const markdown = fences(resolvePortCode(body, port))
+        const markdown = fences(resolvePortCode(body, port, frontmatter.port))
         for (const file of example.files) {
           const expected = fences(body).find((block) => block.title === file.name)!
           const rendered = [...window.document.querySelectorAll(`pre > code.language-${expected.language}`)]

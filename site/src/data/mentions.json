@@ -2355,6 +2355,13 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.mcp.TmuxMcpServer.TmuxMcpServer.serving",
+   "page": "/java/latest/mcp/examples/",
+   "title": "Java MCP examples",
+   "section": "ports"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.mcp.TmuxMcpServer.TmuxMcpServer.serving",
    "page": "/java/latest/mcp/reference/",
    "title": "Java MCP API",
    "section": "ports"
