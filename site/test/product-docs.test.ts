@@ -396,14 +396,24 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     const defaults = manifest().defaultVersion
     for (const page of pages()) await inspect(page.path, (document) => {
       const links = [...document.querySelectorAll('[data-page-port-switcher] a[href]')]
-      const available = PORTS.filter((port) => !port.parentLibrary && sectionsFor(port.slug, page.product).includes(page.section))
-      expect(links.length, `${page.path} port counterparts`).toBe(available.length)
-      for (const port of PORTS) {
+      const counterparts = new Map(PORTS.flatMap((port) => {
+        // The Python CLI example shares the root task alias with each
+        // native builder example, whose canonical page is under Internals.
+        const section = page.port === 'py' && page.product === 'workspace' && page.section === 'examples'
+          && ['ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'].includes(port.slug)
+          ? 'internals/examples' : page.section
+        if (port.parentLibrary || !sectionsFor(port.slug, page.product).includes(section)) return []
         const version = port.slug === page.port ? page.version : defaults[port.slug]
-        const expected = urlFor(`${port.slug}/${version}/${page.product}/${page.section ? `${page.section}/` : ''}`).pathname
-        expect(links.some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === expected),
-          `${page.path} counterpart ${expected}`).toBe(available.includes(port))
-        if (!available.includes(port)) {
+        return [[port.slug, urlFor(`${port.slug}/${version}/${page.product}/${section ? `${section}/` : ''}`).pathname]]
+      }))
+      expect(links.length, `${page.path} port counterparts`).toBe(counterparts.size)
+      for (const port of PORTS) {
+        const expected = counterparts.get(port.slug)
+        if (expected) {
+          expect(links.some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === expected),
+            `${page.path} counterpart ${expected}`).toBe(true)
+          expect(resolves(expected), `${page.path} counterpart exists at ${expected}`).toBe(true)
+        } else {
           const unavailable = [...document.querySelectorAll('[data-page-port-switcher] [aria-disabled="true"]')]
           expect(unavailable.some((entry) => entry.textContent.includes(port.name)), `${page.path} unavailable ${port.name}`).toBe(true)
         }

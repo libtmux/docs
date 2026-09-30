@@ -3,6 +3,7 @@ title: Rust workspace builder examples
 description: Build, inspect, and capture a workspace on a private tmux server with Rust.
 port: rs
 product: workspace
+aliases: [examples/workspace-from-file]
 sidebar:
   group: Internals
   label: Examples
@@ -141,6 +142,9 @@ The program removes its private server before returning. If an operation and
 shutdown both fail, the error includes both failures. For a persistent
 workspace, let your application retain an explicitly selected server and
 choose its own shutdown point.
+
+<a id="where-this-comes-from"></a>
+<a id="source-inclusion"></a>
 
 [Builder source](https://github.com/libtmux/libtmux-rs/blob/d4e08b4eaab62ef4eeedab79b47973ae9a1de310/crates/tmux-workspace/src/lib.rs);
 [capture source](https://github.com/libtmux/libtmux-rs/blob/d4e08b4eaab62ef4eeedab79b47973ae9a1de310/crates/tmux-workspace/src/freeze.rs).

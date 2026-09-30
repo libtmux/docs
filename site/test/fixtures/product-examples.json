@@ -271,5 +271,35 @@
         "cargo run --quiet"
       ]
     }
-  ]
+  ],
+  "rootWorkspace": {
+    "page": "examples/workspace-from-file",
+    "files": [
+      {
+        "name": "workspace.conf",
+        "sha256": "0d166ecbe8a973649cb10498e69430bca86c647a398a830a8590d8d80f17b1a4"
+      },
+      {
+        "name": "workspace.sh",
+        "sha256": "3c3f550610e34f4b43378700915b189a4a5a37d0987352a94312674a004df411"
+      }
+    ],
+    "tmux": [
+      "3.2a",
+      "3.7c"
+    ],
+    "shellRecipe": [
+      "sh workspace.sh"
+    ],
+    "ports": [
+      "py",
+      "ts",
+      "go",
+      "rs",
+      "java",
+      "dotnet",
+      "cxx",
+      "swift"
+    ]
+  }
 }
