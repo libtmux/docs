@@ -3,7 +3,6 @@ import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
 import { compareMembers, conceptsFor, docSummaryText, memberSignals, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
 import mentionsData from '../../data/mentions.json'
 import ApiEntry from '../../components/api/ApiEntry.astro'
-import ApiExampleTabs from '../../components/api/ApiExampleTabs.astro'
 import PageToolbar from '../../components/PageToolbar.astro'
 import { pagePortsFor } from '../../lib/page-ports-for'
 import { pageBreadcrumbs } from '../../lib/sidebar'
@@ -264,43 +263,6 @@ const counterparts = model
         return { port: p, label: PORT_NAME[p] ?? p, href: id ? referenceHref(p, id) : undefined }
       })
   : []
-
-/**
- * The same example in each language that has one, this port first.
- *
- * Only where the concept map knows a counterpart — an example is a claim that
- * two pieces of code do the same thing, and nothing else here can make it.
- *
- * And only where *this* page's language has one to make the claim with.
- * Without that gate a symbol with no example of its own still got an
- * "Examples" heading, under which every tab was another language:
- * `/reference/ts/server-server/` opened on Python doctest output. A reader on
- * a TypeScript page asked for TypeScript, and a Python-only answer under that
- * heading reads as the TypeScript example rather than as a substitute for a
- * missing one. An example is an offer to copy, and there was nothing there to
- * copy.
- */
-const ownExamples = owner?.doc?.examples ?? []
-const exampleGroups = ownExamples.length === 0 ? [] : [
-  { port: model?.port ?? '', examples: ownExamples, index, context: owner },
-  ...counterparts.flatMap((c) => {
-    const id = conceptEntries.map((x) => x.symbols[c.port]).find((v) => typeof v === 'string')
-    const otherModel = API_MODELS[c.port]
-    const other = id && otherModel
-      ? otherModel.symbols.find((sym) => (sym.publicId ?? sym.id) === id)
-      : undefined
-    if (!other?.doc?.examples?.length || !otherModel) return []
-    // That port's own index, not this page's: the intro is written in the
-    // counterpart's doc dialect and names the counterpart's symbols, so
-    // resolving it here would link the wrong page or, more often, nothing.
-    return [{
-      port: c.port,
-      examples: other.doc.examples,
-      index: indexFor(otherModel, (sym) => referenceHref(c.port, sym.publicId ?? sym.id) ?? withRoot('/reference/')),
-      context: other,
-    }]
-  }),
-]
 
 const sourceUrl = (symbol: ApiSymbol): string | undefined => model ? apiSourceUrl(model, symbol) : undefined
 
@@ -814,16 +776,8 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
                 port={model?.port}
                 heading={OWNER_KINDS.has(owner.kind)}
                 member={!OWNER_KINDS.has(owner.kind)}
-                examples={exampleGroups.length <= 1}
               />
             </div>
-
-            {exampleGroups.length > 1 && (
-              <section class="mt-8">
-                <h2 class="text-lg font-semibold">Examples</h2>
-                <ApiExampleTabs groups={exampleGroups} name={`ex-${owner.slug ?? 'x'}`} />
-              </section>
-            )}
 
             <p class="mt-2 text-sm opacity-70">
               {declared.length} declared, {inherited.length} inherited

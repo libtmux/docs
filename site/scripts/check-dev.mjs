@@ -7,7 +7,7 @@ import { dev } from 'astro'
 import { chromium, firefox, webkit } from 'playwright'
 import { PORTS, productAvailable } from '../src/lib/ports.ts'
 import { checkClipboard } from './check-clipboard.mjs'
-import { checkApiNavigation, checkNavigation } from './check-navigation.mjs'
+import { checkApiExampleOwnership, checkApiNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkNativeLayout } from './check-native-layout.mjs'
 
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
@@ -333,6 +333,12 @@ try {
   })
   server = await startServer()
   await checkApiNavigation(page, `http://127.0.0.1:${server.address.port}/en`)
+  await server.stop()
+  Object.assign(process.env, {
+    LIBTMUX_DOCS_PORT: 'ts', LIBTMUX_DOCS_BASE: '/en/ts/latest/',
+  })
+  server = await startServer()
+  await retryReload(() => checkApiExampleOwnership(page, `http://127.0.0.1:${server.address.port}/en`))
 } finally {
   await browser?.close()
   await server.stop()
