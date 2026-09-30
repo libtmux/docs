@@ -69,6 +69,7 @@ try {
   if (loop !== 'inner') checks.push(
     pnpm('run', '--recursive', 'lint'),
     pnpm('exec', 'oxlint', 'scripts'),
+    node('scripts/check-api-links.mjs'),
     node('scripts/gen-mentions.mjs', '--check'),
     node('scripts/gen-shell-ports.mjs', '--check'),
     node('scripts/gen-brand-css.mjs', '--check'),

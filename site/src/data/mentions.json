@@ -7381,55 +7381,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "cxx",
-   "text": "CMakeLists.txt",
-   "page": "/cxx/latest/examples/capture-pane-output/",
-   "line": 110,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "cxx",
-   "text": "CMakeLists.txt",
-   "page": "/cxx/latest/workspace/internals/examples/",
-   "line": 30,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "dotnet",
-   "text": "Capture.csproj",
-   "page": "/dotnet/latest/examples/capture-pane-output/",
-   "line": 107,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "dotnet",
-   "text": "WorkspaceExample.csproj",
-   "page": "/dotnet/latest/workspace/internals/examples/",
-   "line": 29,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "go",
-   "text": "go.mod",
-   "page": "/go/latest/examples/capture-pane-output/",
-   "line": 125,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "java",
-   "text": "settings.gradle.kts",
-   "page": "/java/latest/workspace/internals/examples/",
-   "line": 30,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "java",
-   "text": "build.gradle.kts",
-   "page": "/java/latest/workspace/internals/examples/",
-   "line": 39,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "swift",
    "text": "YAMLWorkspaces",
    "page": "/swift/latest/workspace/internals/examples/",

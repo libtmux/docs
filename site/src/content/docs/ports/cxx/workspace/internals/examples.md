@@ -27,7 +27,7 @@ $ git -C libtmux-source fetch --depth=1 origin 393d4b0ad666f18a6581f1eb281741a75
 $ git -C libtmux-source checkout --detach FETCH_HEAD
 ```
 
-Save this as `CMakeLists.txt`. The typed builder is a source header; this example
+Save the following build file. The typed builder is a source header; this example
 does not use the optional YAML reader. The public testing library supplies
 private-server startup and cleanup.
 

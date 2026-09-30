@@ -104,8 +104,8 @@ explains why sending and waiting are separate operations.
 Use an empty directory. The commands pin the library
 revision used to verify the program.
 
-Save the program as `Program.cs` and this file as `Capture.csproj`. Use the
-.NET 10 SDK. The project disables implicit imports, so every required import
+Save the program and project file using the displayed names. Use the .NET 10
+SDK. The project disables implicit imports, so every required import
 appears in the program.
 
 ```xml title="Capture.csproj"

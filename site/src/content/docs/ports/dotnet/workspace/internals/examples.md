@@ -26,7 +26,7 @@ $ git -C libtmux-source fetch --depth=1 origin 320dc64f4b8b7815842471327a5e6b84a
 $ git -C libtmux-source checkout --detach FETCH_HEAD
 ```
 
-Save this as `WorkspaceExample.csproj`. The project reference builds the workspace
+Save the following project file. The project reference builds the workspace
 package and its core dependency from that checkout.
 
 ```xml title="WorkspaceExample.csproj"

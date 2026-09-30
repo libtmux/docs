@@ -122,7 +122,7 @@ explains why sending and waiting are separate operations.
 Use an empty directory. The commands pin the library
 revision used to verify the program.
 
-Save the program as `main.go` and this file as `go.mod`. Use Go 1.26 or newer.
+Save the program and module file using the displayed names. Use Go 1.26 or newer.
 
 ```text title="go.mod"
 module example.com/capture

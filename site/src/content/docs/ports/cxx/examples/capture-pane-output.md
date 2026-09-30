@@ -107,7 +107,7 @@ explains why sending and waiting are separate operations.
 Use an empty directory. The commands pin the library
 revision used to verify the program.
 
-Save the program as `capture.cpp` and this file as `CMakeLists.txt`. Use CMake
+Save the program and build file using the displayed names. Use CMake
 3.25 or newer, Ninja, and Clang 18 with libc++ 18 on Linux. The public testing
 library supplies the private server's lifetime management; it is linked explicitly below.
 

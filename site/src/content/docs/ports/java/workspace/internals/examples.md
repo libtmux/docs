@@ -27,7 +27,7 @@ $ git -C libtmux-source checkout --detach FETCH_HEAD
 $ mkdir -p src/main/java
 ```
 
-Save this as `settings.gradle.kts`. The included build supplies the workspace
+Save the following settings file. The included build supplies the workspace
 module and its core dependency from the selected source. Its toolchain resolver
 downloads the Temurin 21 compiler for those libraries when needed.
 
@@ -36,7 +36,7 @@ rootProject.name = "workspace-example"
 includeBuild("libtmux-source")
 ```
 
-Save this as `build.gradle.kts`:
+Save the following build file:
 
 ```kotlin title="build.gradle.kts"
 plugins {

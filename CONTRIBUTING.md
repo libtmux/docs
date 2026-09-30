@@ -73,8 +73,8 @@ asset normalization:
 $ pnpm test:inner
 ```
 
-Run workspace unit suites, lint, and generated mention/navigation freshness
-checks in the medium loop:
+Run workspace unit suites, lint, API links, and generated mention/navigation
+freshness checks in the medium loop:
 
 ```console
 $ pnpm test:medium
