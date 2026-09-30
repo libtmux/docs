@@ -72,13 +72,6 @@
   },
   {
    "port": "cxx",
-   "symbol": "libtmux::detail::Row::server",
-   "page": "/cxx/latest/workspace/internals/examples/",
-   "title": "C++ workspace builder examples",
-   "section": "ports"
-  },
-  {
-   "port": "cxx",
    "symbol": "libtmux::exactly_one",
    "page": "/guides/querying-and-filtering/",
    "title": "Filtering and querying, in practice",
@@ -212,13 +205,6 @@
   },
   {
    "port": "cxx",
-   "symbol": "libtmux::Pane::capture",
-   "page": "/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
-  },
-  {
-   "port": "cxx",
    "symbol": "libtmux::Pane::expand",
    "page": "/topics/architecture/",
    "title": "Architecture",
@@ -285,13 +271,6 @@
    "symbol": "libtmux::Server",
    "page": "/cxx/latest/workspace/internals/",
    "title": "C++ workspace internals",
-   "section": "ports"
-  },
-  {
-   "port": "cxx",
-   "symbol": "libtmux::Server",
-   "page": "/cxx/latest/workspace/internals/examples/",
-   "title": "C++ workspace builder examples",
    "section": "ports"
   },
   {
@@ -381,13 +360,6 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Server::wait_for",
-   "page": "/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
-  },
-  {
-   "port": "cxx",
-   "symbol": "libtmux::Server::wait_for",
    "page": "/guides/capturing-output/",
    "title": "Capturing output",
    "section": "guides"
@@ -461,13 +433,6 @@
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
-  },
-  {
-   "port": "cxx",
-   "symbol": "libtmux::test::ScopedTmuxServer",
-   "page": "/cxx/latest/workspace/internals/examples/",
-   "title": "C++ workspace builder examples",
-   "section": "ports"
   },
   {
    "port": "cxx",
@@ -843,13 +808,6 @@
   {
    "port": "dotnet",
    "symbol": "LibTmux.Pane.CaptureAsync",
-   "page": "/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Pane.CaptureAsync",
    "page": "/guides/capturing-output/",
    "title": "Capturing output",
    "section": "guides"
@@ -915,13 +873,6 @@
    "symbol": "LibTmux.Server",
    "page": "/dotnet/latest/workspace/internals/",
    "title": ".NET workspace internals",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server",
-   "page": "/dotnet/latest/workspace/internals/examples/",
-   "title": ".NET workspace builder examples",
    "section": "ports"
   },
   {
@@ -1200,13 +1151,6 @@
   {
    "port": "dotnet",
    "symbol": "LibTmux.TmuxWait.UntilAsync",
-   "page": "/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxWait.UntilAsync",
    "page": "/guides/sending-keys/",
    "title": "Sending keys",
    "section": "guides"
@@ -1382,6 +1326,13 @@
   {
    "port": "dotnet",
    "symbol": "LibTmux.Workspace.WorkspaceBuilder.BuildAsync",
+   "page": "/dotnet/latest/workspace/internals/examples/",
+   "title": ".NET workspace builder examples",
+   "section": "ports"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Workspace.WorkspaceBuilder.BuildAsync",
    "page": "/dotnet/latest/workspace/reference/",
    "title": ".NET workspace builder API",
    "section": "ports"
@@ -1482,13 +1433,6 @@
    "symbol": "LibTmux.Workspace.WorkspaceResult",
    "page": "/dotnet/latest/workspace/reference/",
    "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceResult.Unsupported",
-   "page": "/dotnet/latest/workspace/internals/examples/",
-   "title": ".NET workspace builder examples",
    "section": "ports"
   },
   {
@@ -1885,13 +1829,6 @@
   },
   {
    "port": "go",
-   "symbol": "tmux.Session.OpenNotifications",
-   "page": "/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
-  },
-  {
-   "port": "go",
    "symbol": "tmux.Session.Panes",
    "page": "/topics/traversal/",
    "title": "Traversal",
@@ -2116,13 +2053,6 @@
   },
   {
    "port": "go",
-   "symbol": "tmuxtest.WaitForText",
-   "page": "/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
-  },
-  {
-   "port": "go",
    "symbol": "workspace.Bool",
    "page": "/go/latest/workspace/reference/",
    "title": "Go workspace builder API",
@@ -2340,13 +2270,6 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.control.ControlClient.ControlClient",
-   "page": "/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
-  },
-  {
-   "port": "java",
    "symbol": "io.github.libtmux.control.ControlClient.ControlClient.attach",
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
@@ -2558,13 +2481,6 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Server.Server",
-   "page": "/java/latest/workspace/internals/examples/",
-   "title": "Java workspace builder examples",
-   "section": "ports"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.Server.Server",
    "page": "/java/latest/workspace/reference/",
    "title": "Java workspace builder API",
    "section": "ports"
@@ -2603,6 +2519,13 @@
    "page": "/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server.killServer",
+   "page": "/java/latest/workspace/internals/examples/",
+   "title": "Java workspace builder examples",
+   "section": "ports"
   },
   {
    "port": "java",
@@ -2652,13 +2575,6 @@
    "page": "/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.Session.Session",
-   "page": "/java/latest/workspace/internals/examples/",
-   "title": "Java workspace builder examples",
-   "section": "ports"
   },
   {
    "port": "java",
@@ -2817,13 +2733,6 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.workspace.Workspace.Workspace",
-   "page": "/java/latest/workspace/internals/examples/",
-   "title": "Java workspace builder examples",
-   "section": "ports"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.workspace.Workspace.Workspace",
    "page": "/java/latest/workspace/internals/topics/",
    "title": "Java workspace builder behavior",
    "section": "ports"
@@ -2840,13 +2749,6 @@
    "symbol": "io.github.libtmux.workspace.WorkspaceBuilder.WorkspaceBuilder",
    "page": "/java/latest/workspace/internals/",
    "title": "Java workspace internals",
-   "section": "ports"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.workspace.WorkspaceBuilder.WorkspaceBuilder",
-   "page": "/java/latest/workspace/internals/examples/",
-   "title": "Java workspace builder examples",
    "section": "ports"
   },
   {
@@ -4272,13 +4174,6 @@
   },
   {
    "port": "py",
-   "symbol": "libtmux.pane.Pane.capture_pane",
-   "page": "/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
-  },
-  {
-   "port": "py",
    "symbol": "libtmux.pane.Pane.from_env",
    "page": "/topics/environment/",
    "title": "Environment",
@@ -4486,13 +4381,6 @@
    "page": "/topics/environment/",
    "title": "Environment",
    "section": "topics"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.server.Server.wait_for",
-   "page": "/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
   },
   {
    "port": "py",
@@ -5281,13 +5169,6 @@
   {
    "port": "rs",
    "symbol": "pane.Pane.wait_for_text",
-   "page": "/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.wait_for_text",
    "page": "/guides/testing-with-libtmux/",
    "title": "Testing with libtmux",
    "section": "guides"
@@ -5298,13 +5179,6 @@
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.PaneWait.Dead",
-   "page": "/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
   },
   {
    "port": "rs",
@@ -6471,13 +6345,6 @@
   {
    "port": "swift",
    "symbol": "Server.waitForOutput(in:matching:stoppingAt:requiringFreshOutput:startingAt:timeout:tailLimit:)",
-   "page": "/examples/capture-pane-output/",
-   "title": "Capture pane output",
-   "section": "examples"
-  },
-  {
-   "port": "swift",
-   "symbol": "Server.waitForOutput(in:matching:stoppingAt:requiringFreshOutput:startingAt:timeout:tailLimit:)",
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
@@ -7486,13 +7353,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "java",
-   "text": "WatchPaneOutput",
-   "page": "/examples/capture-pane-output/",
-   "line": 204,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "swift",
    "text": "YAMLWorkspaces",
    "page": "/examples/workspace-from-file/",
@@ -7518,6 +7378,55 @@
    "text": "TmuxFixture",
    "page": "/guides/testing-with-libtmux/",
    "line": 150,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "cxx",
+   "text": "CMakeLists.txt",
+   "page": "/cxx/latest/examples/capture-pane-output/",
+   "line": 110,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "cxx",
+   "text": "CMakeLists.txt",
+   "page": "/cxx/latest/workspace/internals/examples/",
+   "line": 30,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "dotnet",
+   "text": "Capture.csproj",
+   "page": "/dotnet/latest/examples/capture-pane-output/",
+   "line": 107,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "dotnet",
+   "text": "WorkspaceExample.csproj",
+   "page": "/dotnet/latest/workspace/internals/examples/",
+   "line": 29,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "go",
+   "text": "go.mod",
+   "page": "/go/latest/examples/capture-pane-output/",
+   "line": 125,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "java",
+   "text": "settings.gradle.kts",
+   "page": "/java/latest/workspace/internals/examples/",
+   "line": 30,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "java",
+   "text": "build.gradle.kts",
+   "page": "/java/latest/workspace/internals/examples/",
+   "line": 39,
    "why": "not defined in the stated port"
   },
   {

@@ -1,4 +1,4 @@
-import { createMarkdownProcessor } from '@astrojs/markdown-remark'
+import { createMarkdownProcessor, parseFrontmatter } from '@astrojs/markdown-remark'
 import { globSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -8,6 +8,7 @@ import { rehypeSiteRoot } from '../src/plugins/rehype-site-root.mjs'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 import { proseMentions } from '@libtmux/api-model'
 import { proseHref } from '../src/lib/docs-paths'
+import { docsEntryAvailable } from '../src/lib/page-port-links'
 
 const languageNames: Record<string, string[]> = {
   py: ['Python'], ts: ['TypeScript'], go: ['Go'], rs: ['Rust'], java: ['Java'],
@@ -139,7 +140,8 @@ describe('port prose ownership', () => {
     const paths = globSync(`${contentRoot}docs/{concepts,guides,topics,examples}/*.md`)
     expect(paths.length).toBeGreaterThan(1)
     for (const path of paths) {
-      const source = readFileSync(path, 'utf8').replace(/^---\n[\s\S]*?\n---\n/, '')
+      const { content: source, frontmatter } = parseFrontmatter(readFileSync(path, 'utf8'))
+      if (!docsEntryAvailable({ id: path.slice(`${contentRoot}docs/`.length).replace(/\.md$/, ''), data: frontmatter }, port)) continue
       const prose = resolvePortCode(source, port).replace(/^ *```[\s\S]*?^ *```.*$/gm, '')
       const names = [...prose.matchAll(/\b(?:Python|TypeScript|Go|Rust|Java|Swift)\b|\.NET|C\+\+|C#/g)].map((match) => match[0])
       expect(names.filter((name) => !ownNames.includes(name)), path).toEqual([])

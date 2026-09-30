@@ -1,0 +1,222 @@
+{
+  "page": "examples/capture-pane-output",
+  "scope": "Exact complete program execution; routine site tests verify these bytes and their rendering, not native execution.",
+  "examples": [
+    {
+      "port": "py",
+      "language": "python",
+      "sourceRevision": "9fdd083a8181a827889337b63cd4e6daea661a8c",
+      "sourceRepository": "tmux-python/libtmux",
+      "files": [
+        {
+          "name": "capture.py",
+          "sha256": "51bd1cb56342cf8a390f4c70101c5f04357ce0ac9a808d74abe2e5dd1215996a"
+        }
+      ],
+      "toolchain": [
+        "Python 3.14.6"
+      ],
+      "tmux": [
+        "3.7c"
+      ],
+      "page": "ports/py/examples/capture-pane-output",
+      "shellRecipe": [
+        "uv run \\\n    --with 'libtmux @ git+https://github.com/tmux-python/libtmux@9fdd083a8181a827889337b63cd4e6daea661a8c' \\\n    capture.py"
+      ]
+    },
+    {
+      "port": "ts",
+      "language": "typescript",
+      "sourceRevision": "3fe1ca654b81b8cbf4a13b777a001a3298c87a6f",
+      "sourceRepository": "libtmux/libtmux-ts",
+      "files": [
+        {
+          "name": "capture.ts",
+          "sha256": "a6cb01f909b7b6dad5b73f0251bad9813396d82f7b4cba8f4fa3fd24b5836d34"
+        },
+        {
+          "name": "package.json",
+          "sha256": "acb06879bf3e3e5ce85125d64a72ff5b2579e87a66085961b1f7b88eaa813020"
+        }
+      ],
+      "toolchain": [
+        "Bun 1.4.2"
+      ],
+      "tmux": [
+        "3.7c"
+      ],
+      "page": "ports/ts/examples/capture-pane-output",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ts libtmux &&\n  git -C libtmux checkout 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f &&\n  bun install &&\n  bun run capture.ts"
+      ]
+    },
+    {
+      "port": "go",
+      "language": "go",
+      "sourceRevision": "bb06e26e116e941813ca40bf45e7e3a47d38f52a",
+      "sourceRepository": "libtmux/libtmux-go",
+      "files": [
+        {
+          "name": "main.go",
+          "sha256": "fc79d77f9b04eabd6d874ffae0be7f0fb4b0cdac45c9cef92473014268a56f33"
+        },
+        {
+          "name": "go.mod",
+          "sha256": "4d6b8b0545fb56b9a65bbd9276569c775e115ff61b5ccbcc8fe6281d7d521f8a"
+        }
+      ],
+      "toolchain": [
+        "Go 1.26.8"
+      ],
+      "tmux": [
+        "3.7c"
+      ],
+      "page": "ports/go/examples/capture-pane-output",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-go libtmux &&\n  git -C libtmux checkout bb06e26e116e941813ca40bf45e7e3a47d38f52a &&\n  GOWORK=off go mod tidy &&\n  GOWORK=off go run ."
+      ]
+    },
+    {
+      "port": "rs",
+      "language": "rust",
+      "sourceRevision": "d4e08b4eaab62ef4eeedab79b47973ae9a1de310",
+      "sourceRepository": "libtmux/libtmux-rs",
+      "files": [
+        {
+          "name": "main.rs",
+          "sha256": "a207a4ace3c97f9226503ccc90b03e81cbd1704333ffa6d44d4d6544deef7b67"
+        },
+        {
+          "name": "Cargo.toml",
+          "sha256": "1051eb82a28d7f94b3a57e77102c805db67c384e9e5f1f1f56be901f7b821443"
+        }
+      ],
+      "toolchain": [
+        "Rust 1.97.1"
+      ],
+      "tmux": [
+        "3.7c"
+      ],
+      "page": "ports/rs/examples/capture-pane-output",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs libtmux &&\n  git -C libtmux checkout d4e08b4eaab62ef4eeedab79b47973ae9a1de310 &&\n  cargo +1.97.1 run"
+      ]
+    },
+    {
+      "port": "java",
+      "language": "java",
+      "sourceRevision": "842228310449e879ebcaa3f910597757c9dbffd6",
+      "sourceRepository": "libtmux/libtmux-java",
+      "files": [
+        {
+          "name": "Capture.java",
+          "sha256": "91433bad174fb4db9330e36307db8face5739963bae754d94862cbbdbbec6c63"
+        }
+      ],
+      "toolchain": [
+        "JDK 25.0.3",
+        "library bytecode target Java 21"
+      ],
+      "tmux": [
+        "3.7c"
+      ],
+      "page": "ports/java/examples/capture-pane-output",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java libtmux &&\n  git -C libtmux checkout 842228310449e879ebcaa3f910597757c9dbffd6 &&\n  (cd libtmux && ./gradlew :libtmux:jar) &&\n  java --class-path 'libtmux/libtmux/build/libs/*' Capture.java"
+      ]
+    },
+    {
+      "port": "dotnet",
+      "language": "csharp",
+      "sourceRevision": "320dc64f4b8b7815842471327a5e6b84a1499bf8",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "files": [
+        {
+          "name": "Program.cs",
+          "sha256": "4fd0396a237012636ed7c8d74760a4ddd2614104c78d2dc211a5b1882cb6fc40"
+        },
+        {
+          "name": "Capture.csproj",
+          "sha256": "badc813042195a1ac170ad3952437994fe7a85425b09b888f3e1e20f6fa71d15"
+        }
+      ],
+      "toolchain": [
+        ".NET SDK 10.0.302"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/dotnet/examples/capture-pane-output",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 320dc64f4b8b7815842471327a5e6b84a1499bf8 &&\n  dotnet build Capture.csproj --maxcpucount:1 &&\n  dotnet run --project Capture.csproj --no-build"
+      ]
+    },
+    {
+      "port": "cxx",
+      "language": "cpp",
+      "sourceRevision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "files": [
+        {
+          "name": "capture.cpp",
+          "sha256": "023554185b1599bf626c7ff5f8eceafae48d68391bd2550d64c2673ad0d55f52"
+        },
+        {
+          "name": "CMakeLists.txt",
+          "sha256": "cf54e677b22402b0b07e62e36288d32d98ca496583fbf1cc69dc5f39f570d2b4"
+        }
+      ],
+      "toolchain": [
+        "Clang 18",
+        "libc++ 18",
+        "CMake 3.25+"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/cxx/examples/capture-pane-output",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx libtmux-source &&\n  git -C libtmux-source checkout 393d4b0ad666f18a6581f1eb281741a75a7503f0 &&\n  cmake -S . -B build -G Ninja \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ \\\n    -DCMAKE_EXE_LINKER_FLAGS=-stdlib=libc++ &&\n  cmake --build build --target capture --parallel 2 &&\n  ./build/capture"
+      ]
+    },
+    {
+      "port": "swift",
+      "language": "swift",
+      "sourceRevision": "254f8b2be7eb60cacc3ffcb3ea8e456784f582df",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "files": [
+        {
+          "name": "Capture.swift",
+          "sha256": "4f4258a1eb646d70712559f5a4d975d1cc36fd1805a77cbb8ddc63bc812db6da"
+        },
+        {
+          "name": "Package.swift",
+          "sha256": "8ec79477f33f8e587ab240e2026a09023e71b2c7f3724bed2b98de1a84b87645"
+        }
+      ],
+      "toolchain": [
+        "Swift 6.2.4"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/swift/examples/capture-pane-output",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift libtmux-source &&\n  git -C libtmux-source checkout 254f8b2be7eb60cacc3ffcb3ea8e456784f582df &&\n  swift run --jobs 2 Capture"
+      ]
+    }
+  ],
+  "rootExample": {
+    "file": "capture.sh",
+    "sha256": "1127dac3da7132067f2a93bc50f0e81424007e363a756f566ccb7628005406b7",
+    "tmux": [
+      "3.2a",
+      "3.7c"
+    ],
+    "shellRecipe": "sh capture.sh",
+    "source": "https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1"
+  }
+}
