@@ -367,10 +367,32 @@ jobs:
       # for the same reason and with the same freshness check. The resolved
       # versions are forced so the build neither re-resolves nor rewrites
       # Package.resolved.
-      - if: matrix.port == 'swift'
-        uses: swift-actions/setup-swift@7ca6abe6b3b0e8b5421b88be48feee39cbf52c6a # v2
+      - name: Install selected Swift toolchain
+        if: matrix.port == 'swift'
+        uses: jdx/mise-action@9149ea85001c7435d5a66bb127d6a1b6227cb0a5 # v5.0.0
+        env:
+          MISE_SWIFT_GPG_VERIFY: 'true'
         with:
-          swift-version: ${{ steps.native-version.outputs.version }}
+          version: '2026.9.17'
+          install_args: swift@${{ steps.native-version.outputs.version }}
+          cache: false
+          env: false
+          export_path: false
+          add_shims_to_path: false
+      - name: Verify selected Swift toolchain
+        if: matrix.port == 'swift'
+        env:
+          SWIFT_VERSION: ${{ steps.native-version.outputs.version }}
+        run: |
+          set -euo pipefail
+          swift_bin=$(mise where "swift@$SWIFT_VERSION")/bin
+          actual=$("$swift_bin/swift" --version | sed -nE 's/^(Apple )?Swift version ([0-9.]+).*$/\2/p')
+          [[ "$actual" == "$SWIFT_VERSION" ]] || {
+            echo "::error::Expected Swift $SWIFT_VERSION, got ${actual:-no version}" >&2
+            exit 1
+          }
+          echo "Swift $actual: $swift_bin"
+          printf '%s\n' "$swift_bin" >> "$GITHUB_PATH"
       - name: Emit the Swift symbol graph
         if: matrix.port == 'swift'
         working-directory: port
