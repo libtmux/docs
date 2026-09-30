@@ -92,8 +92,9 @@ export function entryPath(entry: CollectionEntry<'docs'>): string {
   return docsPath({ ...entry, id: sourceIdOf(entry.id) })
 }
 
-/** `entryPath`, joined to this build's own base and given the trailing slash `trailingSlash: 'always'` expects. */
-function linkHref(entry: CollectionEntry<'docs'>, version: string): string {
+/** Port pages keep their navigation scope even when rendered by a root build. */
+function linkHref(entry: CollectionEntry<'docs'>, version: string, port?: string): string {
+  if (port) return portPageUrl(PORT_BY_SLUG[port], version, entryPath(entry))
   const path = docsRoutePath({ ...entry, id: sourceIdOf(entry.id) }, process.env.LIBTMUX_DOCS_PORT,
     entry.data.port ? { [entry.data.port]: version } : {})
   const base = import.meta.env.BASE_URL
@@ -237,7 +238,7 @@ export async function getSidebar(
     const localised = translated.get(entryPath(entry)) ?? entry
     return {
       label: localised.data.sidebar?.label ?? localised.data.title,
-      href: linkHref(entry, version),
+      href: linkHref(entry, version, port),
       order: entry.data.sidebar?.order,
       group: entry.data.sidebar?.group,
     }

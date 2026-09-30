@@ -103,6 +103,25 @@ export async function checkNavigation(page, base) {
   assert.equal(await page.locator('html').getAttribute('data-mcp-install-cooldown-enabled'), '1')
   console.log('Navigation: document retained, Back, search, code tabs, menu and saved theme/cooldown pass')
 
+  for (const [port, version] of [['ts', 'latest'], ['py', 'stable']]) {
+    const prefix = new URL(`${base}/${port}/${version}/`).pathname
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 900 })
+      const response = await page.goto(`${base}/${port}/${version}/examples/capture-pane-output/`, { waitUntil: 'load' })
+      assert(response?.ok(), `${port}: owned example exists in the root build`)
+      const sidebars = page.locator('nav.sidebar-nav')
+      assert.equal(await sidebars.count(), 2, 'Desktop and mobile both have navigation')
+      for (const sidebar of await sidebars.all()) {
+        const query = sidebar.getByRole('link', { name: 'Filtering and queries', exact: true, includeHidden: true })
+        assert.equal(await query.getAttribute('href'), `${prefix}concepts/queries/`,
+          `${port} ${version} at ${width}px: shared query page stays in the selected port`)
+        const links = await sidebar.locator('a[href^="/"]').evaluateAll((items) => items.map((a) => a.getAttribute('href')))
+        for (const href of links) assert(href.startsWith(prefix), `${port} sidebar leaves ${prefix}: ${href}`)
+      }
+    }
+  }
+  console.log('Sidebars: root-mounted port pages retain the selected port and version on desktop and mobile')
+
   const legacy = `${base}/go/latest/examples/workspace-from-file/`
   const current = `${base}/go/latest/workspace/internals/examples/`
   await page.goto(`${legacy}?from=legacy#where-this-comes-from`, { waitUntil: 'load' })
