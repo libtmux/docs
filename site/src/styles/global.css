@@ -323,6 +323,11 @@ html[data-theme-mode="dark"] {
   --input-text: white;
 }
 
+/* Preserve literal tabs while keeping compact indentation. */
+.expressive-code .code {
+  tab-size: 2;
+}
+
 /*
  * A `$ ` prompt in a shell session, from `src/plugins/ec-shell-prompt.mjs`.
  * Not selectable, so a command selected by hand leaves it out, as the copy
