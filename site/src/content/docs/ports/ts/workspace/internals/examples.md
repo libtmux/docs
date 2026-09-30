@@ -3,6 +3,7 @@ title: TypeScript workspace builder examples
 description: Build and inspect a workspace on a private tmux server with TypeScript.
 port: ts
 product: workspace
+aliases: [examples/workspace-from-file]
 sidebar:
   group: Internals
   label: Examples
@@ -138,6 +139,9 @@ The program removes every session on the private server before exiting.
 For a workspace that stays open, let the application retain its explicitly
 selected server and choose when to stop it. A failed build can leave partial
 work; the example's server cleanup removes it.
+
+<a id="where-this-comes-from"></a>
+<a id="source-inclusion"></a>
 
 [Example source](https://github.com/libtmux/libtmux-ts/blob/3fe1ca654b81b8cbf4a13b777a001a3298c87a6f/examples/workspace/workspace.ts);
 [Workspace builder source](https://github.com/libtmux/libtmux-ts/blob/3fe1ca654b81b8cbf4a13b777a001a3298c87a6f/packages/workspace/src/builder.ts).

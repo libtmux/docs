@@ -3,6 +3,7 @@ title: Swift workspace builder examples
 description: Build and inspect a private workspace with a complete Swift program.
 port: swift
 product: workspace
+aliases: [examples/workspace-from-file]
 sidebar:
   group: Internals
   label: Examples
@@ -165,5 +166,8 @@ when its first session is created does not include later window additions.
 Describe panes with Swift values or decode a configuration with
 `Workspace.decode(json:)`. The [guide](../guides/) explains ownership,
 configuration input and failed-build cleanup.
+
+<a id="where-this-comes-from"></a>
+<a id="source-inclusion"></a>
 
 [Library source](https://github.com/libtmux/libtmux-swift/tree/254f8b2be7eb60cacc3ffcb3ea8e456784f582df/Sources/TmuxWorkspace).

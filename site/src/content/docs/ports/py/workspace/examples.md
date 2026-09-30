@@ -3,6 +3,7 @@ title: "Python workspace examples"
 description: "Load tmux workspaces from YAML or JSON with the tmuxp CLI."
 port: py
 product: workspace
+aliases: [examples/workspace-from-file]
 sidebar:
   label: Examples
   order: 3
@@ -82,5 +83,8 @@ selection, attachment, and existing sessions.
 
 For contributors studying how a file becomes a session, see the
 [internal builder example](../internals/examples/).
+
+<a id="where-this-comes-from"></a>
+<a id="source-inclusion"></a>
 
 [Two-pane YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/2-pane-vertical.yaml)

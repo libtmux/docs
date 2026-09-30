@@ -8,7 +8,7 @@ import products from './fixtures/product-examples.json'
 import { remarkPortCode, resolvePortCode } from '../src/plugins/remark-port-code.mjs'
 import { rehypeCodeTabs } from '../src/plugins/rehype-code-tabs.mjs'
 import { docsEntryAvailable, pagePortLinks } from '../src/lib/page-port-links'
-import { docsRoutePath } from '../src/lib/docs-paths'
+import { docsPath, docsRedirects, docsRoutePath } from '../src/lib/docs-paths'
 
 const readPage = (page: string) => readFileSync(new URL(`../src/content/docs/${page}.md`, import.meta.url), 'utf8')
 const parsePage = (page: string) => parseFrontmatter(readPage(page), { frontmatter: 'remove' })
@@ -95,5 +95,41 @@ describe('verified complete programs', () => {
     const links = pagePortLinks({ pagePath: receipt.page, version: 'latest', defaults: {}, docs })
     expect(links.filter((link) => link.links.length).map((link) => link.port).sort())
       .toEqual(receipt.examples.map((example) => example.port).sort())
+  })
+
+  it('keeps the root workspace runnable and redirects legacy port pages to their owned examples', () => {
+    const example = products.rootWorkspace
+    const { content, frontmatter } = parsePage(example.page)
+    expect(frontmatter.supportedPorts).toEqual([])
+    const blocks = fences(content)
+    expect(blocks.every((block) => ['sh', 'text', 'console'].includes(block.language))).toBe(true)
+    for (const file of example.files) {
+      const matching = blocks.filter((block) => block.title === file.name)
+      expect(matching).toHaveLength(1)
+      expect(sha256(matching[0].code)).toBe(file.sha256)
+    }
+    expect(blocks.filter((block) => block.language === 'console')
+      .map((block) => block.code.replace(/^\$ /gm, '').trim())).toEqual(example.shellRecipe)
+    const docs = [{ id: example.page, data: frontmatter }, ...example.ports.map((port) => {
+      const id = `ports/${port}/workspace/${port === 'py' ? '' : 'internals/'}examples`
+      const { frontmatter: data } = parsePage(id)
+      expect(data.port).toBe(port)
+      expect(data.aliases).toContain(example.page)
+      expect(content).toContain(`/${port}/latest/${docsPath({ id, data })}/`)
+      return { id, data }
+    })]
+    const links = pagePortLinks({ pagePath: example.page, version: 'latest', defaults: {}, docs })
+    expect(links.filter((link) => link.links.length).map((link) => link.port).sort())
+      .toEqual([...example.ports].sort())
+    for (const port of example.ports) {
+      const available = docs.filter((doc) => docsEntryAvailable(doc, port))
+      expect(available).toHaveLength(1)
+      expect(docsRedirects(available, port)).toEqual([
+        { path: example.page, target: docsPath(available[0]) },
+      ])
+      const reverse = pagePortLinks({ pagePath: docsPath(available[0]), portSlug: port, version: 'latest', defaults: {}, docs })
+      expect(reverse.filter((link) => link.links.length).map((link) => link.port).sort())
+        .toEqual([...example.ports].sort())
+    }
   })
 })

@@ -3,6 +3,7 @@ title: "C++ workspace builder examples"
 description: "Internal examples for building and inspecting workspaces through the C++ API."
 port: cxx
 product: workspace
+aliases: [examples/workspace-from-file]
 sidebar:
   group: Internals
   label: Examples
@@ -114,5 +115,8 @@ which waits for input without loading an interactive shell configuration.
 This header belongs to the source consumer. Installing the core package alone
 does not supply the workspace include directory. For YAML input, the separate
 consumer build also needs its parser and yaml-cpp dependency.
+
+<a id="where-this-comes-from"></a>
+<a id="source-inclusion"></a>
 
 [Workspace builder source](https://github.com/libtmux/libtmux-cxx/blob/393d4b0ad666f18a6581f1eb281741a75a7503f0/examples/workspace/include/libtmux_consumers/workspace.hpp)

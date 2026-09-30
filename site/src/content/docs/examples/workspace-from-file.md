@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: []
 title: Build a workspace from a file
-description: Describe a session in configuration, validate it, and build its windows and panes.
+description: Create tmux windows and panes from a command file on a private server.
 sidebar:
   label: Build a workspace from a file
   group: Examples
@@ -9,242 +9,95 @@ sidebar:
 tableOfContents: true
 ---
 
-[tmuxp](https://tmuxp.git-pull.com/) describes sessions, windows, panes, and
-shell commands in configuration files. A workspace builder turns that
-configuration into tmux objects. [Source details](#where-this-comes-from) identify the example
-files and their checks.
+A tmux command file can create a session, arrange its windows, and split its
+panes. This example builds two windows with three panes, prints their names
+and pane counts, then removes its private server. It requires tmux 3.2 or
+newer and a POSIX shell.
 
-<!-- port:py -->
-For Python, use [tmuxp](https://tmuxp.git-pull.com/), a separate application
-built on libtmux's `Server`, `Session`, `Window`, and `Pane` APIs.
-<!-- /port -->
+## Define the layout
 
-```typescript file="examples/workspace/workspace.ts"
+Save this command file:
+
+```text title="workspace.conf"
+new-session -d -s dev -n editor -x 100 -y 30 'sh'
+split-window -h -t '=dev:editor' 'sh'
+new-window -t '=dev' -n logs 'sh'
+select-window -t '=dev:editor'
+select-pane -t '=dev:editor.0'
 ```
 
-<!-- port:ts -->
-TypeScript's `applyWorkspace` reuses existing objects when the same
-configuration is applied again.
-<!-- /port -->
+The `editor` window has two panes; `logs` has one. Each pane starts `sh`.
+Explicit targets keep each command tied to the intended session and window.
 
-```go file="workspace/example_test.go"
+## Build and inspect it
+
+Save this complete program as `workspace.sh` beside the configuration file:
+
+```sh title="workspace.sh"
+(
+    set -eu
+    directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-workspace.XXXXXX")
+    socket="$directory/tmux.sock"
+
+    cleanup() {
+        status=$?
+        trap - EXIT
+        if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+            printf '%s\n' "Cannot stop tmux; kept $directory." >&2
+            exit 1
+        fi
+        rm -rf "$directory" || status=$?
+        exit "$status"
+    }
+    trap cleanup EXIT
+    trap 'exit 1' HUP INT TERM
+
+    tmux -S "$socket" -f /dev/null start-server \; \
+        set-option -s exit-empty off
+    tmux -S "$socket" source-file ./workspace.conf
+    tmux -S "$socket" list-windows -t '=dev' \
+        -F '#{window_name}: #{window_panes} panes'
+)
 ```
 
-<!-- port:go -->
-Go's `Example()`, in `workspace/example_test.go`, is a Go `Example`
-function: `go test` runs it and checks its output against the
-`// Output:` comment at the end, so this is executed on every test run
-rather than merely present in a README. `Parse` rejects a field it doesn't
-recognize rather than dropping it silently, and reports every problem it
-finds at once with the line it's on. `Build` is not atomic: tmux has no
-transaction, so a failure partway through leaves whatever was already
-created in place, identified by the session `Build` still returns.
-<!-- /port -->
+Run it from that directory:
 
-```rust
-use libtmux::test::TestServer;
-use tmux_workspace::{Workspace, WorkspaceBuilder};
-
-let source = "
-session_name: dev
-windows:
-  - window_name: editor
-    panes: [/bin/sh, /bin/sh]
-";
-let workspace = Workspace::from_yaml(source)?;
-
-let guard = TestServer::new().await?;
-let session = WorkspaceBuilder::new(guard.server()).build(&workspace).await?;
-
-assert_eq!(session.name().to_string_lossy(), "dev");
-assert_eq!(session.windows().await?.len(), 1);
+```console
+$ sh workspace.sh
 ```
 
-<!-- port:rs -->
-Rust's `freeze(&session).await?` exports an existing session to the workspace
-format. It recovers windows, panes, and working directories, but cannot recover
-the shell command originally typed to start a process.
-<!-- /port -->
+The result is:
 
-```java
-Workspace workspace = WorkspaceBuilder.parse("""
-        session_name: built
-        windows:
-          - window_name: editor
-            layout: even-horizontal
-            panes:
-              - shell_command: echo one
-              - shell_command: echo two
-          - window_name: server
-            panes:
-              - echo three
-        """);
-
-Session session = WorkspaceBuilder.build(server, workspace);
-
-session.name();                                   // → built
-session.windows().size();                         // → 2
-session.windows().get(0).panes().size();          // → 2
+```text
+editor: 2 panes
+logs: 1 panes
 ```
 
-<!-- port:java -->
-Java's `read` and `parse` validate the configuration and return a `Workspace`
-value. Only `build` changes tmux state.
-<!-- /port -->
+`source-file` executes the configuration on the private server. Setting
+`exit-empty` to `off` keeps that server available for cleanup even when a
+configuration error prevents session creation. Errors remain visible and
+make the program fail. Cleanup runs after partial creation too; if stopping
+tmux fails, the script keeps the socket directory and reports its location.
 
-```csharp
-WorkspaceFile workspace = WorkspaceFile.Parse("""
-    session_name: api
-    start_directory: /tmp
-    windows:
-      - window_name: editor
-        panes:
-          - shell_command: echo editing
-      - window_name: server
-        panes:
-          - shell_command: echo serving
-    """);
+## Use a workspace manager
 
-WorkspaceResult result = await new WorkspaceBuilder(server).BuildAsync(workspace, ct);
-Console.WriteLine($"{result.Session.Name}: {result.Windows.Count} windows");
-```
+For YAML or JSON configuration, validation, and language APIs, choose a port:
 
-<!-- port:dotnet -->
-The .NET builder can wait for shell readiness before sending commands; [Sending
-keys](/guides/sending-keys/#the-race-you-cant-see-from-the-call-site) explains
-the startup race. It polls `pane_current_command`, `cursor_x`, and `cursor_y`
-for up to ten seconds by default. `PaneReadiness.Auto` waits for zsh, `Always`
-waits for every pane running the session's default shell, and `Never` sends
-immediately. If `BuildAsync` fails partway through,
-`WorkspaceBuildException.PartialResult` identifies what was created.
-<!-- /port -->
+<a id="python"></a>[Python CLI](/py/latest/workspace/examples/) ·
+<a id="typescript"></a>[TypeScript](/ts/latest/workspace/internals/examples/) ·
+<a id="go"></a>[Go](/go/latest/workspace/internals/examples/) ·
+<a id="rust"></a>[Rust](/rs/latest/workspace/internals/examples/) ·
+<a id="java"></a>[Java](/java/latest/workspace/internals/examples/) ·
+<a id="net"></a>[.NET](/dotnet/latest/workspace/internals/examples/) ·
+<a id="c"></a>[C++](/cxx/latest/workspace/internals/examples/) ·
+<a id="swift"></a>[Swift](/swift/latest/workspace/internals/examples/)
 
-<!-- port:cxx -->
-C++'s `examples/workspace/` implements a consumer of the core API with its own
-`workspace.hpp` and `tmuxp.hpp` types. Those types are part of the example, not
-the library package. See [the example's
-README](https://github.com/libtmux/libtmux-cxx/tree/main/examples/workspace) to
-adapt it.
-<!-- /port -->
+The [workspace concept guide](/concepts/workspaces/) explains configuration
+and ownership. The [capture example](/examples/capture-pane-output/) shows
+how to wait for pane output after sending a command.
 
-```swift file="Examples/Sources/ExampleCode/Workspaces.swift"
-```
+<a id="where-this-comes-from"></a>
+<a id="source-inclusion"></a>
 
-<!-- port:swift -->
-Swift's `WorkspaceBuilder.build` rejects an existing session with the requested
-name. `Workspace.decode(yaml:)` reads tmuxp YAML when the `YAMLWorkspaces` trait
-is enabled. `Workspace.decode(json:)` needs no additional trait.
-<!-- /port -->
-
-## Where this comes from
-
-<!-- port:py -->
-<!-- port:root -->
-### Python
-<!-- /port -->
-
-**Source:** Not listed.
-
-**In this page:** no fence; the README says tmuxp is a separate project by
-design
-
-**Checked by:** n/a
-<!-- /port -->
-
-<!-- port:ts -->
-<!-- port:root -->
-### TypeScript
-<!-- /port -->
-
-**Source:** `examples/workspace/workspace.ts` (`@libtmux/workspace`)
-
-**In this page:** read whole from the file
-
-**Checked by:** run against real tmux by `bun test examples/workspace`
-<!-- /port -->
-
-<!-- port:go -->
-<!-- port:root -->
-### Go
-<!-- /port -->
-
-**Source:** `workspace/example_test.go` (`workspace.Parse` / `workspace.Build`)
-
-**In this page:** read whole from the file
-
-**Checked by:** `Example()` and its siblings run under `go test` and are checked
-against their own `// Output:` comments
-<!-- /port -->
-
-<!-- port:rs -->
-<!-- port:root -->
-### Rust
-<!-- /port -->
-
-**Source:** `crates/tmux-workspace/README.md`, "Build it"
-
-**In this page:** hand-quoted
-
-**Checked by:** the crate's own `crates/tmux-workspace/src/lib.rs` includes the
-README as a doc comment (`#![doc = include_str!("../README.md")]`), so `cargo
-test --doc` runs this exact block
-<!-- /port -->
-
-<!-- port:java -->
-<!-- port:root -->
-### Java
-<!-- /port -->
-
-**Source:** `libtmux-workspace/README.md`, "What you get back"
-
-**In this page:** hand-quoted
-
-**Checked by:** every Java fence in the module's README is compiled and run
-against real tmux by `docs-tests`
-<!-- /port -->
-
-<!-- port:dotnet -->
-<!-- port:root -->
-### .NET
-<!-- /port -->
-
-**Source:** `src/LibTmux.Workspace/README.md`
-
-**In this page:** hand-quoted
-
-**Checked by:** one of the READMEs and docs `ReadmeExampleTests` compiles and
-runs against real tmux
-<!-- /port -->
-
-<!-- port:cxx -->
-<!-- port:root -->
-### C++
-<!-- /port -->
-
-**Source:** `examples/workspace/` (a consumer, not a library API)
-
-**In this page:** prose only
-
-**Checked by:** `examples/workspace/tests/` runs the consumer suite against
-real tmux; `ctest -R consumer.workspace` selects it. It exercises the
-example's own types, not a published `libtmux` API
-<!-- /port -->
-
-<!-- port:swift -->
-<!-- port:root -->
-### Swift
-<!-- /port -->
-
-**Source:** `Examples/Sources/ExampleCode/Workspaces.swift`
-
-**In this page:** read whole from the file
-
-**Checked by:** matched against the README's "Workspaces, from a file or from
-Swift" section by `Scripts/check_examples.py`; compiled and run by `swift test
---package-path Examples`
-<!-- /port -->
-
-### Source inclusion
-
-Some blocks are excerpts from tested README examples. The source
-details above identify those files and their checks.
+The [tmux manual source](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1)
+describes `source-file`, window targets, and `exit-empty`.
