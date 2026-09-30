@@ -1,22 +1,19 @@
 ---
-description: Search discovered workspace fields using regular expressions or literal strings. Queries combine with AND unless `--any` selects OR.
+description: Search the fields of discovered workspace documents.
 product: workspace
 sidebar:
   group: CLI reference
-  label: tmuxp search
+  label: Search workspaces
   order: 16
 tableOfContents: true
-title: tmuxp search
+title: Search workspaces
 ---
 
-<!-- port:py -->This page documents the available Python tmuxp reference. Proposed native
-extensions are labeled separately.
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->**tmuxp compatibility reference.** Examples using `tmuxp` run the Python reference. [Local CLI status](../../reference/compatibility/) describes this port's implemented coverage.
-<!-- /port -->
-Search discovered workspace fields using regular expressions or literal strings.
-Queries combine with AND unless `--any` selects OR.
+<!-- port:py -->
+Search discovered workspace fields with regular expressions or literal strings.
+Query terms combine with AND unless `--any` selects OR.
 
-## Find workspaces by session name
+## Find a session name
 
 ```console
 $ tmuxp search \
@@ -26,45 +23,70 @@ $ tmuxp search \
     workspace
 ```
 
-Field prefixes in query terms and repeated `--field` restrictions select name,
-session (`s`), path (`p`), window (`w`), or pane data. `--ignore-case` ignores
-case; `--smart-case` does so only when a pattern has no uppercase.
-`--word-regexp` requires whole words and `--invert-match` selects nonmatches.
+Field prefixes and repeated `--field` restrictions select name, session (`s`),
+path (`p`), window (`w`) or pane data. `--ignore-case` ignores case;
+`--smart-case` does so only when a pattern has no uppercase. `--word-regexp`
+requires whole words and `--invert-match` selects nonmatches.
 
-JSON results contain `"name"`, `"path"`, `"session_name"`, `"source"`, `matched_fields`,
-and `"matches"`. The pinned reference emits an empty byte stream for no matches,
-even with `--json`. With no query, machine search can print human help and
-return normally. An invalid regular expression can also yield no machine output.
-<!-- port:py -->The proposed native contract instead uses `[]` for an empty JSON result and
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->The native contract instead uses `[]` for an empty JSON result and
-<!-- /port -->usage status 2 for a missing or invalid pattern.
+## Empty and invalid queries
 
-Python regular-expression behavior is part of compatibility. Native regex
-libraries differ in lookaround, backreferences, Unicode, flags, and word
-boundaries. Matching the options alone does not establish expression
-equivalence. See [compatibility](../../reference/compatibility/) and
-[output](../../reference/output/).
+The documented implementation emits no bytes for an empty search result,
+including with `--json`. With no query, machine search can print human help and
+return normally. An invalid regular expression can also produce no machine
+output. Account for these outcomes before parsing stdout as JSON.
 
-## Arguments and flags
-
-| Argument or flags | Arity / default | Choices or meaning |
-| --- | --- | --- |
-| `"query_terms"` | zero or more | search patterns (prefix with field: for field-scoped search) |
-| `-f`, `--field` | value; None | restrict search to field(s): name, session/s, path/p, window/w, pane |
-| `-i`, `--ignore-case` | flag; False | case-insensitive matching |
-| `-S`, `--smart-case` | flag; False | case-insensitive unless pattern has uppercase |
-| `-F`, `--fixed-strings` | flag; False | treat patterns as literal strings, not regex |
-| `-w`, `--word-regexp` | flag; False | match whole words only |
-| `-v`, `--invert-match` | flag; False | show workspaces that do NOT match |
-| `--any` | flag; False | match ANY pattern (OR logic); default is ALL (AND logic) |
-| `--json` | flag; False | output as JSON |
-| `--ndjson` | flag; False | output as NDJSON (one JSON per line) |
-
-All commands accept `-h` / `--help`. Root options precede the command; see the
-[CLI overview](../). The [output reference](../../reference/output/)
-<!-- port:py -->distinguishes current Python flags from proposed all-command JSON and NDJSON.
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->distinguishes current Python flags from native all-command JSON and NDJSON.
+[Command source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/search.py).
 <!-- /port -->
-[Parser and implementation source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/search.py).
 
-[tmuxp reference source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/__init__.py).
+<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+Search the fields of discovered workspace documents. Use literal matching when
+the input should be treated as text rather than a regular expression.
+
+## Find a session name
+
+```console
+$ tmux-workspace search \
+    --json \
+    --fixed-strings \
+    --field session \
+    workspace
+```
+
+Repeat `--field` to restrict additional fields. Query terms combine with AND;
+`--any` selects OR. `--ignore-case`, `--smart-case`, `--word-regexp`, and
+`--invert-match` control matching. Inspect the installed `search --help` for
+supported field names and aliases.
+
+<!-- port:go -->
+## Regular expressions
+
+The default engine uses Go regular expressions and ASCII word boundaries. Structured pane commands are searched as JSON text. Unsupported regex syntax fails; it does not start another runtime automatically.
+
+`--regex-engine python` explicitly enables lookaround, backreferences and Unicode word boundaries through an installed Python 3.10 or newer interpreter. Ordinary searches do not need that optional runtime.
+<!-- /port -->
+
+Check both the exit status and [machine result](../../reference/output/). An
+empty successful search and a failed pattern are different outcomes.
+
+<!-- port:ts -->
+[CLI source](https://github.com/libtmux/libtmux-ts/blob/f36d692552bb9a373b45338bb5fece854e57cc3d/packages/workspace-cli/README.md).
+<!-- /port -->
+<!-- port:rs -->
+[CLI source](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/tmux-workspace/docs/cli.md).
+<!-- /port -->
+<!-- port:go -->
+[CLI source](https://github.com/libtmux/libtmux-go/blob/bb06e26e116e941813ca40bf45e7e3a47d38f52a/workspace/CLI.md).
+<!-- /port -->
+<!-- port:java -->
+[CLI source](https://github.com/libtmux/libtmux-java/blob/3e5b20d22af3890ae5f7f52842e4b05d170a983f/libtmux-workspace-cli/README.md).
+<!-- /port -->
+<!-- port:dotnet -->
+[CLI source](https://github.com/libtmux/libtmux-dotnet/blob/f77fe776ba67a04abb20ddbbc26cf4a000d63b74/src/LibTmux.Workspace.Cli/README.md).
+<!-- /port -->
+<!-- port:cxx -->
+[CLI source](https://github.com/libtmux/libtmux-cxx/blob/9c8c6a264114277df84c9f6819855093adae5c6e/apps/workspace/README.md).
+<!-- /port -->
+<!-- port:swift -->
+[CLI source](https://github.com/libtmux/libtmux-swift/blob/53c67947879f4976ddf2c43f3c8df7c7671c5b19/Sources/TmuxWorkspaceCLI/README.md).
+<!-- /port -->
+<!-- /port -->

@@ -1,6 +1,6 @@
 ---
-title: "Use the Swift workspace builder"
-description: "Use the in-development Swift workspace builder from application code."
+title: Use the Swift workspace builder
+description: Build a workspace, inspect its current layout, and choose its lifetime.
 port: swift
 product: workspace
 sidebar:
@@ -10,76 +10,59 @@ sidebar:
 tableOfContents: true
 ---
 
-Add `TmuxWorkspace` and [`LibTmux`](../../../reference/) to a SwiftPM target. This isolated example
-also uses the public `TmuxFixture` product for server startup and cleanup. The
-following dependency selects the source revision used by these examples:
+Start with the [complete runnable example](../examples/). It includes the
+SwiftPM manifest, a pinned library dependency, imports, an executable entry
+point, a private tmux server, and cleanup.
 
-```swift
-.package(
-    url: "https://github.com/libtmux/libtmux-swift.git",
-    revision: "f02a4668570e1cc5198c941413750e021f42c214"
-)
-```
+## Describe the layout
 
-Add the products to the target's dependencies:
+A `Workspace` contains ordered windows. Each `WindowPlan` describes a window's
+name, layout and panes. Its `PanePlan` values describe commands to send and an
+optional starting directory.
 
-```swift
-.product(name: "LibTmux", package: "libtmux-swift"),
-.product(name: "TmuxWorkspace", package: "libtmux-swift"),
-.product(name: "TmuxFixture", package: "libtmux-swift")
-```
+The example keeps panes open with `/bin/cat`, so it needs no editor, application
+or log file. Replace those choices with commands appropriate for the workspace
+before using it as an application launcher.
 
-Use the toolchain specified by the port's package manifest and install tmux.
-For YAML input, enable `traits: ["YAMLWorkspaces"]` on the package dependency.
-Swift values and JSON need no trait.
+<a id="build-an-isolated-session"></a>
 
-## Build an isolated session
+## Build on a running server
 
-Place this entry point in your executable target. `withTmuxServer` starts a
-private server and removes it after the closure, including when building
-throws. The workspace builder needs a running server for its initial session
-lookup.
+`WorkspaceBuilder.build(_:on:)` checks the server's sessions before creating
+its workspace. Start a private bootstrap session first, or pass a running
+server whose lifetime the application owns.
 
-```swift
-import LibTmux
-import TmuxFixture
-import TmuxWorkspace
+The builder rejects an existing session with the requested name. After a
+creation failure, it attempts to remove the session it created. Inspect
+`WorkspaceBuilderError.rollbackFailed` when both the operation and its rollback
+fail; that error preserves both causes.
 
-@main
-struct WorkspaceGuide {
-    static func main() async throws {
-        try await withTmuxServer { @Sendable server in
-            let workspace = Workspace(
-                sessionName: "guide",
-                windows: [WindowPlan(
-                    windowName: "editor",
-                    panes: [PanePlan(), PanePlan()]
-                )]
-            )
-            let session = try await WorkspaceBuilder.build(workspace, on: server)
-            print(session.name)
-        }
-    }
-}
-```
+The example's final cleanup stops its whole private server, including the
+bootstrap session. An application that wants the workspace to remain open
+should retain its selected server and stop it when the application is done.
 
-Run the executable through SwiftPM:
+## Inspect the completed layout
 
-```console
-$ swift run
-```
+Request a fresh `Server.snapshot()` after building. The returned session value
+was captured when the first window was created; it does not become a live view
+as later windows are added.
+
+Use the snapshot's `windows(of:)` and `panes(of:)` methods to inspect membership.
+The complete example asserts the final window and pane counts before printing
+its result.
 
 ## Read configuration
 
-Use `Workspace.decode(json:)` with [`Data`](https://developer.apple.com/documentation/foundation/data), or `Workspace.decode(yaml:)` with a
-string when the YAML trait is enabled. Review unsupported fields before
-moving a Python workspace to this structural subset.
+`Workspace.decode(json:)` reads Foundation `Data`. The accepted model uses
+`session_name`, `windows`, `window_name` and `panes`; unknown keys are ignored.
 
-The fixture removes the server after inspecting the session name. In an
-application, pass an already running server and retain the result instead. A
-build failure triggers the builder's own cleanup attempt; inspect
-`rollbackFailed` because it reports that the cleanup also failed.
+YAML input additionally requires the dependency's `YAMLWorkspaces` trait and
+`Workspace.decode(yaml:)`. Enable that trait on the package dependency when
+using YAML. A dependency trait does not define the same compilation condition
+inside a consumer package, so do not wrap the consumer call in an
+`#if YAMLWorkspaces` guard.
 
-[Package products and toolchain](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Package.swift); [Build contract](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Sources/TmuxWorkspace/WorkspaceBuilder.swift).
-
-[Isolated server fixture](https://github.com/libtmux/libtmux-swift/blob/f02a4668570e1cc5198c941413750e021f42c214/Tests/TmuxFixture/TmuxFixture.swift).
+Swift values and JSON need no YAML dependency. The
+[workspace model](https://github.com/libtmux/libtmux-swift/blob/254f8b2be7eb60cacc3ffcb3ea8e456784f582df/Sources/TmuxWorkspace/Workspace.swift)
+and [build contract](https://github.com/libtmux/libtmux-swift/blob/254f8b2be7eb60cacc3ffcb3ea8e456784f582df/Sources/TmuxWorkspace/WorkspaceBuilder.swift)
+describe the accepted fields and failure behavior.

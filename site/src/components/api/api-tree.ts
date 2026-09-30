@@ -364,7 +364,11 @@ export function initApiTree() {
   controller = new AbortController()
   const { signal } = controller
   // By class: <html> carries data-api-nav as the drawer's pre-paint flag.
-  document.querySelectorAll<HTMLElement>('.api-nav').forEach((nav) => {
+  const navs = document.querySelectorAll<HTMLElement>('.api-nav')
+  // ClientRouter replaces the html attributes without rerunning the inline
+  // pre-paint script. Restore the enhancement before initializing the drawer.
+  document.documentElement.toggleAttribute('data-api-nav', navs.length > 0)
+  navs.forEach((nav) => {
     const tree = nav.querySelector<HTMLElement>('[role="tree"]')
     if (tree) initTree(nav, tree, signal)
     initDrawer(nav, signal)

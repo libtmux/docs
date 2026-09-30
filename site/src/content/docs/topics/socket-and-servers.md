@@ -1,6 +1,7 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
 title: Socket and servers
-description: How a port names one specific tmux server among several, checks whether it's actually there, and tells one running instance apart from another.
+description: Select a server socket, check liveness, and detect a replacement daemon.
 sidebar:
   label: Socket and servers
   group: Topics
@@ -17,15 +18,15 @@ selectors:
 
 | Port | Default | Named socket (`-L`) | Explicit path (`-S`) |
 |------|---------|----------------------|------------------------|
-| Python | `Server()` | `Server(socket_name="work")` | `Server(socket_path="/tmp/tmux-1000/work")` |
-| TypeScript | `new Server()` | `new Server({ socketName: "work" })` | `new Server({ socketPath: "..." })` |
-| Go | `tmux.NewServer(tmux.ServerOptions{})` | `tmux.ServerOptions{SocketName: "work"}` | `tmux.ServerOptions{SocketPath: "..."}` |
-| Rust | `Server::new()` | `Server::builder().socket_name("work").build()?` | `Server::builder().socket_path("...").build()?` |
-| Java | `ServerEndpoint.defaultSocket()` | `ServerEndpoint.namedSocket("work")` | `ServerEndpoint.socketPath(path)` |
-| .NET | `new ServerConnectionOptions()` | `new ServerConnectionOptions(socketName: "work")` | `new ServerConnectionOptions(socketPath: "...")` |
-| C++ | `Server::at_default()` | `Server::at_socket_name("work")` | `Server::at_socket_path("...")` |
-| Swift | no bare default: see below | `Server(socketName: "work")` | `Server(socketPath: "...")` |
-
+<!-- port:py -->| Python | `Server()` | `Server(socket_name="work")` | `Server(socket_path="/tmp/tmux-1000/work")` |
+<!-- /port --><!-- port:ts -->| TypeScript | `new Server()` | `new Server({ socketName: "work" })` | `new Server({ socketPath: "..." })` |
+<!-- /port --><!-- port:go -->| Go | `tmux.NewServer(tmux.ServerOptions{})` | `tmux.ServerOptions{SocketName: "work"}` | `tmux.ServerOptions{SocketPath: "..."}` |
+<!-- /port --><!-- port:rs -->| Rust | `Server::new()` | `Server::builder().socket_name("work").build()?` | `Server::builder().socket_path("...").build()?` |
+<!-- /port --><!-- port:java -->| Java | `ServerEndpoint.defaultSocket()` | `ServerEndpoint.namedSocket("work")` | `ServerEndpoint.socketPath(path)` |
+<!-- /port --><!-- port:dotnet -->| .NET | `new ServerConnectionOptions()` | `new ServerConnectionOptions(socketName: "work")` | `new ServerConnectionOptions(socketPath: "...")` |
+<!-- /port --><!-- port:cxx -->| C++ | `Server::at_default()` | `Server::at_socket_name("work")` | `Server::at_socket_path("...")` |
+<!-- /port --><!-- port:swift -->| Swift | no bare default: see below | `Server(socketName: "work")` | `Server(socketPath: "...")` |
+<!-- /port -->
 ```python
 default_server = libtmux.Server()
 named = libtmux.Server(socket_name="work")
@@ -37,6 +38,9 @@ const named = new Server({ socketName: "work" });
 
 ```go
 named, err := tmux.NewServer(tmux.ServerOptions{SocketName: "work"})
+if err != nil {
+    return err
+}
 ```
 
 ```rust
@@ -64,16 +68,29 @@ auto named = libtmux::Server::at_socket_name("work");
 let named = try Server(socketName: "work")
 ```
 
-Choose either a socket name or a socket path. TypeScript rejects both together
-with `TypeError`; Go documents that `SocketPath` takes precedence. tmux uses
-`TMUX_TMPDIR` to resolve the directory for default and named sockets.
+Choose either a socket name or a socket path. tmux uses `TMUX_TMPDIR` to
+resolve the directory for default and named sockets.
 
+<!-- port:ts -->
+Supplying both selectors raises `TypeError`.
+<!-- /port -->
+<!-- port:go -->
+`ServerOptions.SocketPath` takes precedence over `ServerOptions.SocketName` when both are set.
+<!-- /port -->
+
+<!-- port:swift -->
 Swift requires an explicit `socketPath` or `socketName` argument. To reach
 tmux's default socket, use `Server(socketName: "default")`.
+<!-- /port -->
 
-Python's `Server(socket_name_factory=...)` and .NET's
-`ServerConnectionOptions(socketNameFactory: ...)` accept a callable that
+<!-- port:py -->
+`Server(socket_name_factory=...)` accepts a callable that generates socket
+names. Use a unique name for each isolated test server.
+<!-- /port -->
+<!-- port:dotnet -->
+`ServerConnectionOptions(socketNameFactory: ...)` accepts a callable that
 generates socket names. Use a unique name for each isolated test server.
+<!-- /port -->
 
 ## Is the server actually there?
 
@@ -83,15 +100,15 @@ socket:
 
 | Port | Check |
 |------|-------|
-| Python | `server.is_alive()` → `bool` |
-| TypeScript | `await server.isAlive()` → `Promise<boolean>`; `await server.raiseIfDead()` throws with tmux's own reason instead |
-| Go | `server.IsAlive(ctx)` → `(bool, error)`: the `error` is reserved for a question that couldn't be answered at all, not for "not alive" |
-| Rust | `server.is_alive().await` → `bool`; `server.check_alive().await` is the fallible twin, for when the *reason* matters |
-| Java | `server.isAlive()` → `boolean` |
-| .NET | `await server.IsAliveAsync()` → `Task<bool>` |
-| C++ | `server.is_alive(timeout)` → `bool` |
-| Swift | `try await server.isRunning()` → `Bool` |
-
+<!-- port:py -->| Python | `server.is_alive()` → `bool` |
+<!-- /port --><!-- port:ts -->| TypeScript | `await server.isAlive()` → `Promise<boolean>`; `await server.raiseIfDead()` throws with tmux's own reason instead |
+<!-- /port --><!-- port:go -->| Go | `server.IsAlive(ctx)` → `(bool, error)`: the `error` is reserved for a question that couldn't be answered at all, not for "not alive" |
+<!-- /port --><!-- port:rs -->| Rust | `server.is_alive().await` → `bool`; `server.check_alive().await` is the fallible twin, for when the *reason* matters |
+<!-- /port --><!-- port:java -->| Java | `server.isAlive()` → `boolean` |
+<!-- /port --><!-- port:dotnet -->| .NET | `await server.IsAliveAsync()` → `Task<bool>` |
+<!-- /port --><!-- port:cxx -->| C++ | `server.is_alive(timeout)` → `bool` |
+<!-- /port --><!-- port:swift -->| Swift | `try await server.isRunning()` → `Bool` |
+<!-- /port -->
 ```python
 if server.is_alive():
     server.sessions
@@ -105,6 +122,10 @@ if (await server.isAlive()) {
 
 ```go
 alive, err := server.IsAlive(ctx)
+if err != nil {
+    return err
+}
+fmt.Println("server running:", alive)
 ```
 
 ```rust
@@ -138,24 +159,48 @@ if try await server.isRunning() {
 }
 ```
 
-TypeScript's `isAlive()` and Rust's `is_alive()` return a boolean. Use
-TypeScript's `raiseIfDead()` or Rust's `check_alive()` when you need failure
-details.
+<!-- port:ts -->
+`isAlive()` returns a boolean. Use `raiseIfDead()` when you need failure details.
+<!-- /port -->
+<!-- port:rs -->
+`is_alive()` returns a boolean. Use `check_alive()` when you need failure details.
+<!-- /port -->
 
 ## Killing a server, and telling two apart
 
-Kill an entire server with Python's `server.kill_server()`, TypeScript's `await
-server.kill()`, Go's `server.Kill(ctx)`, Rust's `server.kill().await?`, Java's
-or Swift's `server.killServer()`, .NET's `await server.KillAsync()`, or C++'s
-`server.kill()`. Java's `Server.close()` only releases the local connection; see
-[Context
-managers](../context-managers/#java-server-is-closeable-but-closing-one-doesnt-kill-it).
+Killing a server ends all its sessions. Use this only for a server your program
+owns; for narrower cleanup, kill the session or pane you created.
 
-Two handles can select the same socket. Python's `Server.__eq__` compares
-`socket_name` and `socket_path`. Go's `server.Equal(other)` resolves relative
-paths and environment-dependent socket names against each handle's captured
-binding.
+<!-- port:py -->
+Call `server.kill_server()`. `Server.__eq__` compares `socket_name` and
+`socket_path` when deciding whether two handles select the same endpoint.
+<!-- /port -->
+<!-- port:ts -->
+Call `await server.kill()`. `TmuxServerRestartedError` reports an operation
+whose handle encountered a replacement daemon on the same socket.
+<!-- /port -->
+<!-- port:go -->
+Call `server.Kill(ctx)` and check its error. `server.Equal(other)` compares
+the captured socket bindings, resolving relative paths and environment-based
+socket names. Equal endpoints do not prove equal daemon lifetimes.
+`ErrDaemonReplaced` reports a replacement daemon on the selected socket.
+<!-- /port -->
+<!-- port:rs -->
+Call `server.kill().await?` and handle a cleanup failure before returning.
+<!-- /port -->
+<!-- port:java -->
+Call `server.killServer()` to stop tmux. `Server.close()` releases the local
+connection and leaves tmux running; see [Ownership and cleanup](../context-managers/).
+<!-- /port -->
+<!-- port:dotnet -->
+Call `await server.KillAsync()` and handle a cleanup failure before returning.
+<!-- /port -->
+<!-- port:cxx -->
+Call `server.kill()` and inspect its result for a failure.
+<!-- /port -->
+<!-- port:swift -->
+Call `try await server.killServer()` and handle a cleanup failure before returning.
+<!-- /port -->
 
-A restarted server can reuse a socket path while having different state.
-TypeScript's `TmuxServerRestartedError` and Go's `ErrDaemonReplaced` detect a handle
-encountering a replacement daemon.
+A restarted server can reuse a socket path while having different state. Do
+not treat a matching path as proof that a cached object still exists.

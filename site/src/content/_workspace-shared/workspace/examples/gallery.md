@@ -1,35 +1,27 @@
 ---
-description: Pinned YAML examples, JSON counterparts, and execution prerequisites.
+description: Start from complete configurations for pane layout, commands and environment.
 product: workspace
 sidebar:
   group: Examples
-  label: Workspace example gallery
+  label: Workspace examples
   order: 31
 tableOfContents: true
-title: Workspace example gallery
+title: Workspace examples
 ---
 
-<!-- port:py -->This page documents the available Python tmuxp reference. Proposed native
-extensions are labeled separately.
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->**tmuxp compatibility reference.** Examples using `tmuxp` run the Python reference. [Local CLI status](../../reference/compatibility/) describes this port's implemented coverage.
-<!-- /port -->
+<!-- port:py -->
 The examples below reproduce the pinned tmuxp YAML fixture corpus. Each record
 links to its source and, where present, its JSON twin. They illustrate
 configuration features; they are not all self-contained runnable projects.
 
 The `minimal` fixture and several other files omit window names despite the
 validator requiring them. Treat these as normalization and compatibility probes,
-<!-- port:py -->not a promise that every fixture passes every load path. The [installation
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->not a promise that every fixture passes every load path. Where this port's
-native parser accepts a fixture below, that establishes only that its document
-parses, not that it fully executes. The [installation
-<!-- /port -->walkthrough](../../guides/installation/) supplies a complete runnable starting
+not a promise that every fixture passes every load path. The [installation
+walkthrough](../../guides/installation/) supplies a complete runnable starting
 file.
 
 ## 2-pane-synchronized
-<!-- port:py -->
 Pinned Python reference fixture. This docs run did not execute its full application environment.
-<!-- /port -->
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/2-pane-synchronized.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/2-pane-synchronized.json).
 
 ```yaml
@@ -45,9 +37,9 @@ windows:
 
 ## 2-pane-vertical
 
-<!-- port:py -->Pinned Python reference fixture. This docs run did not execute its full application environment.
+Pinned Python reference fixture. This docs run did not execute its full application environment.
 
-<!-- /port -->[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/2-pane-vertical.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/2-pane-vertical.json).
+[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/2-pane-vertical.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/2-pane-vertical.json).
 
 ```yaml
 session_name: 2-pane-vertical
@@ -59,9 +51,7 @@ windows:
 ```
 
 ## 3-pane
-<!-- port:py -->
 Pinned Python reference fixture. This docs run did not execute its full application environment.
-<!-- /port -->
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/3-pane.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/3-pane.json).
 
 ```yaml
@@ -81,9 +71,9 @@ windows:
 
 ## 4-pane
 
-<!-- port:py -->Pinned Python reference fixture. This docs run did not execute its full application environment.
+Pinned Python reference fixture. This docs run did not execute its full application environment.
 
-<!-- /port -->[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/4-pane.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/4-pane.json).
+[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/4-pane.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/4-pane.json).
 
 ```yaml
 session_name: 4-pane-split
@@ -102,9 +92,7 @@ windows:
 ```
 
 ## blank-panes
-<!-- port:py -->
 Pinned Python reference fixture. This docs run did not execute its full application environment.
-<!-- /port -->
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/blank-panes.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/blank-panes.json).
 
 ```yaml
@@ -139,9 +127,9 @@ windows:
 
 ## env-variables
 
-<!-- port:py -->Pinned Python reference fixture. This docs run did not execute its full application environment.
+Pinned Python reference fixture. This docs run did not execute its full application environment.
 
-<!-- /port -->[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/env-variables.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/env-variables.json).
+[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/env-variables.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/env-variables.json).
 
 ```yaml
 start_directory: "${PWD}/test"
@@ -164,9 +152,7 @@ windows:
 ```
 
 ## focus-window-and-panes
-<!-- port:py -->
 Pinned Python reference fixture. This docs run did not execute its full application environment.
-<!-- /port -->
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/focus-window-and-panes.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/focus-window-and-panes.json).
 
 ```yaml
@@ -194,9 +180,9 @@ windows:
 
 ## main-pane-height-percentage
 
-<!-- port:py -->Pinned Python reference fixture. This docs run did not execute its full application environment.
+Pinned Python reference fixture. This docs run did not execute its full application environment.
 
-<!-- /port -->[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/main-pane-height-percentage.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/main-pane-height-percentage.json).
+[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/main-pane-height-percentage.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/main-pane-height-percentage.json).
 
 ```yaml
 session_name: main-pane-height
@@ -217,9 +203,7 @@ windows:
 ```
 
 ## main-pane-height
-<!-- port:py -->
 Pinned Python reference fixture. This docs run did not execute its full application environment.
-<!-- /port -->
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/main-pane-height.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/main-pane-height.json).
 
 ```yaml
@@ -242,9 +226,9 @@ windows:
 
 ## minimal
 
-<!-- port:py -->Pinned Python reference fixture. This docs run did not execute its full application environment.
+Pinned Python reference fixture. This docs run did not execute its full application environment.
 
-<!-- /port -->[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/minimal.yaml).
+[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/minimal.yaml).
 
 ```yaml
 session_name: My tmux session
@@ -254,9 +238,7 @@ windows:
 ```
 
 ## options
-<!-- port:py -->
 Pinned Python reference fixture. This docs run did not execute its full application environment.
-<!-- /port -->
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/options.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/options.json).
 
 ```yaml
@@ -282,9 +264,7 @@ windows:
 ```
 
 ## pane-shell
-<!-- port:py -->
 Pinned Python reference fixture. This docs run did not execute its full application environment.
-<!-- /port -->
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/pane-shell.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/pane-shell.json).
 
 ```yaml
@@ -314,9 +294,9 @@ windows:
 
 ## plugin-system
 
-<!-- port:py -->Pinned Python reference fixture. This docs run did not execute its full application environment.
+Pinned Python reference fixture. This docs run did not execute its full application environment.
 
-<!-- /port -->[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/plugin-system.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/plugin-system.json).
+[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/plugin-system.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/plugin-system.json).
 
 ```yaml
 session_name: plugin-system
@@ -335,9 +315,7 @@ windows:
 ```
 
 ## session-environment
-<!-- port:py -->
 Pinned Python reference fixture. This docs run did not execute its full application environment.
-<!-- /port -->
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/session-environment.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/session-environment.json).
 
 ```yaml
@@ -364,9 +342,9 @@ windows:
 
 ## shorthands
 
-<!-- port:py -->Pinned Python reference fixture. This docs run did not execute its full application environment.
+Pinned Python reference fixture. This docs run did not execute its full application environment.
 
-<!-- /port -->[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/shorthands.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/shorthands.json).
+[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/shorthands.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/shorthands.json).
 
 ```yaml
 session_name: shorthands
@@ -381,9 +359,7 @@ windows:
 ```
 
 ## skip-send-pane-level
-<!-- port:py -->
 Pinned Python reference fixture. This docs run did not execute its full application environment.
-<!-- /port -->
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/skip-send-pane-level.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/skip-send-pane-level.json).
 
 ```yaml
@@ -400,9 +376,9 @@ windows:
 
 ## skip-send
 
-<!-- port:py -->Pinned Python reference fixture. This docs run did not execute its full application environment.
+Pinned Python reference fixture. This docs run did not execute its full application environment.
 
-<!-- /port -->[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/skip-send.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/skip-send.json).
+[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/skip-send.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/skip-send.json).
 
 ```yaml
 session_name: Skip command execution (command-level)
@@ -417,9 +393,7 @@ windows:
 ```
 
 ## sleep-pane-level
-<!-- port:py -->
 Pinned Python reference fixture. This docs run did not execute its full application environment.
-<!-- /port -->
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/sleep-pane-level.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/sleep-pane-level.json).
 
 ```yaml
@@ -438,9 +412,9 @@ windows:
 
 ## sleep-virtualenv
 
-<!-- port:py -->Pinned Python reference fixture. This docs run did not execute its full application environment.
+Pinned Python reference fixture. This docs run did not execute its full application environment.
 
-<!-- /port -->[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/sleep-virtualenv.yaml).
+[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/sleep-virtualenv.yaml).
 
 ```yaml
 session_name: virtualenv
@@ -457,9 +431,7 @@ windows:
 ```
 
 ## sleep
-<!-- port:py -->
 Pinned Python reference fixture. This docs run did not execute its full application environment.
-<!-- /port -->
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/sleep.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/sleep.json).
 
 ```yaml
@@ -482,9 +454,7 @@ windows:
 ```
 
 ## start-directory
-<!-- port:py -->
 Pinned Python reference fixture. This docs run did not execute its full application environment.
-<!-- /port -->
 [YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/start-directory.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/start-directory.json).
 
 ```yaml
@@ -533,9 +503,9 @@ windows:
 
 ## suppress-history
 
-<!-- port:py -->Pinned Python reference fixture. This docs run did not execute its full application environment.
+Pinned Python reference fixture. This docs run did not execute its full application environment.
 
-<!-- /port -->[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/suppress-history.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/suppress-history.json).
+[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/suppress-history.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/suppress-history.json).
 
 ```yaml
 session_name: suppress
@@ -571,9 +541,9 @@ windows:
 
 ## window-index
 
-<!-- port:py -->Pinned Python reference fixture. This docs run did not execute its full application environment.
+Pinned Python reference fixture. This docs run did not execute its full application environment.
 
-<!-- /port -->[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/window-index.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/window-index.json).
+[YAML source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/window-index.yaml); [JSON source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/window-index.json).
 
 ```yaml
 session_name: Window index example
@@ -602,3 +572,75 @@ upstream evidence, not recommended installation guidance. Review
 [compatibility](../../reference/compatibility/) before adapting these fixtures.
 
 [tmuxp reference source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/__init__.py).
+<!-- /port -->
+
+<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+Each configuration below is a complete workspace document. Save it to a file
+and load it on the private socket from the
+[installation walkthrough](../../guides/installation/).
+
+## Two blank panes
+
+```yaml title="gallery-blank.yaml"
+session_name: gallery-blank
+windows:
+  - window_name: work
+    layout: even-horizontal
+    panes: [null, null]
+```
+
+Blank panes open their shells without application-specific prerequisites.
+Change the [layout](../../configuration/layouts/) to arrange them vertically.
+
+## Setup before pane commands
+
+```yaml title="gallery-commands.yaml"
+session_name: gallery-commands
+shell_command_before:
+  - printf setup
+windows:
+  - window_name: shell
+    panes:
+      - shell_command:
+          - printf first
+          - printf second
+```
+
+Both commands run in one pane after its inherited setup. Read
+[command ordering](../../configuration/commands/) before adding delays or
+commands that should remain unsubmitted.
+
+## More complete examples
+
+- [Session options and environment](../../configuration/session/).
+- [Explicit window index and synchronized input](../../configuration/windows/).
+- [Pane launch shell and focus](../../configuration/panes/).
+- [Inherited directories](../../configuration/directories/).
+- [Environment overrides](../../configuration/environment/).
+- [Checked bootstrap process](../../configuration/hooks/).
+
+Use the [workspace library](../../internals/) when application code needs to
+construct sessions directly.
+
+<!-- port:ts -->
+[CLI source](https://github.com/libtmux/libtmux-ts/blob/f36d692552bb9a373b45338bb5fece854e57cc3d/packages/workspace-cli/README.md).
+<!-- /port -->
+<!-- port:rs -->
+[CLI source](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/tmux-workspace/docs/cli.md).
+<!-- /port -->
+<!-- port:go -->
+[CLI source](https://github.com/libtmux/libtmux-go/blob/bb06e26e116e941813ca40bf45e7e3a47d38f52a/workspace/CLI.md).
+<!-- /port -->
+<!-- port:java -->
+[CLI source](https://github.com/libtmux/libtmux-java/blob/3e5b20d22af3890ae5f7f52842e4b05d170a983f/libtmux-workspace-cli/README.md).
+<!-- /port -->
+<!-- port:dotnet -->
+[CLI source](https://github.com/libtmux/libtmux-dotnet/blob/f77fe776ba67a04abb20ddbbc26cf4a000d63b74/src/LibTmux.Workspace.Cli/README.md).
+<!-- /port -->
+<!-- port:cxx -->
+[CLI source](https://github.com/libtmux/libtmux-cxx/blob/9c8c6a264114277df84c9f6819855093adae5c6e/apps/workspace/README.md).
+<!-- /port -->
+<!-- port:swift -->
+[CLI source](https://github.com/libtmux/libtmux-swift/blob/53c67947879f4976ddf2c43f3c8df7c7671c5b19/Sources/TmuxWorkspaceCLI/README.md).
+<!-- /port -->
+<!-- /port -->

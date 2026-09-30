@@ -10,9 +10,9 @@ sidebar:
 tableOfContents: true
 ---
 
-These pages document the in-development workspace builder for contributors
-and applications that call its APIs. For workspace loading from a terminal,
-see [tmuxp](https://tmuxp.git-pull.com/).
+Build and inspect tmux sessions from application code with the workspace
+library. To load files from a terminal, start with the
+[native CLI walkthrough](../guides/installation/).
 
 ## Builder pipeline
 
@@ -31,7 +31,7 @@ builder tests; they do not load workspace files as a user application.
 ## Implementation scope
 
 The C++ repository includes a workspace consumer that builds a described tmux
-session and reads [tmuxp](https://tmuxp.git-pull.com)-style YAML. It exercises
+session and reads YAML. It exercises
 libtmux's public API from a separate target.
 
 The workspace headers and parser belong to `examples/workspace`. They are

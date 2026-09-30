@@ -10,9 +10,9 @@ sidebar:
 tableOfContents: true
 ---
 
-These pages document the in-development workspace builder for contributors
-and applications that call its APIs. For workspace loading from a terminal,
-see [tmuxp](https://tmuxp.git-pull.com/).
+Build and inspect tmux sessions from application code with the workspace
+library. To load files from a terminal, start with the
+[native CLI walkthrough](../guides/installation/).
 
 ## Builder pipeline
 
@@ -34,8 +34,8 @@ command-line handling, attachment, and the server connection.
 libtmux's Java API and returns the session after capturing the completed
 window and pane structure.
 
-The module supports a focused [tmuxp](https://tmuxp.git-pull.com) subset:
-session names, windows, layouts, panes, and ordered shell commands. It rejects
+The module accepts session names, windows, layouts, panes and ordered shell
+commands. It rejects
 unknown configuration fields instead of accepting a larger file with missing
 behavior.
 
@@ -44,9 +44,5 @@ behavior.
 Use the [`io.github.libtmux:libtmux-workspace`](https://central.sonatype.com/artifact/io.github.libtmux/libtmux-workspace) artifact with the libtmux BOM.
 The module targets Java 21 and requires tmux on the host for building. Parsing
 YAML does not create a session.
-
-This module does not load Python plugins or implement tmuxp's CLI. Use the
-[Python workspace documentation](https://tmuxp.git-pull.com/) when those
-features are required.
 
 [Module documentation](https://github.com/libtmux/libtmux-java/blob/4f057d367a25dee818d70876fa283fc503a3a7eb/libtmux-workspace/README.md)

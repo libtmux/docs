@@ -1,33 +1,15 @@
 ---
-description: Tmuxp workspace commands, field meanings, defaults, and execution behavior.
+description: Order pane setup and command delivery, Enter handling and delays.
 product: workspace
 sidebar:
   group: Configuration
-  label: Commands
+  label: Workspace commands
   order: 34
 tableOfContents: true
 title: Workspace commands
-ports:
-  ts:
-    description: Tmuxp workspace commands and current TypeScript builder compatibility.
-  rs:
-    description: Tmuxp workspace commands and current Rust builder compatibility.
-  go:
-    description: Tmuxp workspace commands and current Go builder compatibility.
-  java:
-    description: Tmuxp workspace commands and current Java builder compatibility.
-  dotnet:
-    description: Tmuxp workspace commands and current .NET builder compatibility.
-  cxx:
-    description: Tmuxp workspace commands and current C++ builder compatibility.
-  swift:
-    description: Tmuxp workspace commands and current Swift builder compatibility.
 ---
 
-<!-- port:py -->This page documents Python tmuxp configuration at the pinned reference revision.
-Use tmuxp for the command examples below.
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->**tmuxp compatibility reference.** Examples using `tmuxp` run the Python reference. [Local CLI status](../../reference/compatibility/) describes this port's implemented coverage.
-<!-- /port -->
+<!-- port:py -->
 Tmuxp sends workspace commands into panes in order. A command can be a string or
 a mapping with `"cmd"` and execution controls. `shell_command_before` adds shared
 setup without copying it into every pane.
@@ -103,53 +85,93 @@ checks its exit status. Use it for bootstrap work that must succeed before
 configured windows are built, rather than treating pane command delivery as a
 checked process result.
 
-<!-- port:ts -->## Current TypeScript builder
-<!-- /port --><!-- port:rs -->## Current Rust builder
-<!-- /port --><!-- port:go -->## Current Go builder
-<!-- /port --><!-- port:java -->## Native Java CLI
-<!-- /port --><!-- port:dotnet -->## Current .NET builder
-<!-- /port --><!-- port:cxx -->## Current C++ builder
-<!-- /port --><!-- port:swift -->## Current Swift builder
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->
-<!-- /port --><!-- port:ts -->The default native policy sends commands only to newly created panes. `commands:
-"always"` also replays commands in reused panes. These library options are not
-tmuxp YAML keys.
-<!-- /port --><!-- port:rs -->The native model is narrower than the command dictionaries and normalization
-described here. Do not assume enter/delay overrides or tmuxp expansion follow
-from accepting a YAML mapping.
-<!-- /port --><!-- port:go -->Command dictionaries support enter and delays in seconds. Tmuxp interpolation is
-absent. Verify override carry behavior against the reference before using a
-timing-sensitive configuration.
-<!-- /port --><!-- port:java -->The local CLI supports command strings, lists and `{cmd, enter, sleep_before,
-sleep_after}` objects. Enter and delay defaults carry forward until an explicit
-override. Before commands accumulate in session/window/pane order, and history
-suppression prefixes delivered commands with a space. Command variables remain
-for the pane shell to expand; this differs from tmuxp's invoking-process
-expansion. [Readiness policy](../../reference/compatibility/) is separate from
-command completion.
-<!-- /port --><!-- port:dotnet -->The package supports scalar or ordered shell command strings. Its readiness
-policy concerns prompt detection; it does not add the reference command
-dictionary timing and override semantics.
-<!-- /port --><!-- port:cxx -->Command metadata supports enter, delays, and suppression. The consumer creates
-topology before delivering commands; it does not perform the complete tmuxp
-normalization pipeline.
-<!-- /port --><!-- port:swift -->Swift commands carry command text and Enter behavior. The reference delay
-dictionaries, inherited before commands, history suppression, and variable
-expansion are not supplied by that model.
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->
-<!-- /port --><!-- port:ts,rs,go,dotnet,cxx,swift -->See the [native builder behavior](../../internals/topics/) and [configuration
-<!-- /port --><!-- port:ts -->source](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/packages/workspace/src/config.ts)
-<!-- /port --><!-- port:rs -->source](https://github.com/libtmux/libtmux-rs/blob/4a9afac1d82d9a6a9af16099e7b846e69f0e6388/crates/tmux-workspace/src/config.rs)
-<!-- /port --><!-- port:go -->source](https://github.com/libtmux/libtmux-go/blob/bb48780c49652d6b7a17884f19a93c269f04a688/workspace/workspace.go)
-<!-- /port --><!-- port:dotnet -->source](https://github.com/libtmux/libtmux-dotnet/blob/b71b9654f41785c93717e454cbf176672b3d634a/src/LibTmux.Workspace/WorkspaceYamlParser.cs)
-<!-- /port --><!-- port:cxx -->source](https://github.com/libtmux/libtmux-cxx/blob/c7f1146d2ebd7a8323d9f9814517dc3cdf86b4ee/examples/workspace/src/tmuxp.cpp)
-<!-- /port --><!-- port:swift -->source](https://github.com/libtmux/libtmux-swift/blob/94b9e4cc436dda8e18e064179ae7d26e55bbbd73/Sources/TmuxWorkspace/Workspace.swift)
-<!-- /port --><!-- port:ts,rs,go,dotnet,cxx,swift -->before using these fields through application code.
-<!-- /port --><!-- port:java -->See the [CLI configuration parser](https://github.com/libtmux/libtmux-java/blob/2d7e8028986b99c8e9496dc40b5d1e90fb2368c9/workspace-cli/src/main/java/io/github/libtmux/workspace/cli/WorkspacePlan.java).
-Application code using the lower-level workspace library has a separate
-[builder API](../../internals/topics/). Its schema is not the CLI configuration
-contract.
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->
-<!-- /port -->## Reference source
+## Reference source
 
 [loader.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/workspace/loader.py); [classic.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/workspace/builder/classic.py); [sleep.yaml](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/sleep.yaml); [skip-send.yaml](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/skip-send.yaml).
+<!-- /port -->
+
+<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+`shell_command_before` adds setup for every affected pane. Setup is ordered from
+session to window to pane, followed by that pane's `shell_command` entries.
+
+```yaml title="commands.yaml"
+session_name: commands-example
+shell_command_before:
+  - printf session-setup
+windows:
+  - window_name: shell
+    shell_command_before:
+      - printf window-setup
+    panes:
+      - shell_command_before:
+          - printf pane-setup
+<!-- port:swift -->
+        sleep_after: 0.01
+<!-- /port -->
+        shell_command:
+          - cmd: printf ready
+<!-- port:ts,rs,go,java,dotnet,cxx -->
+            sleep_after: 0.01
+<!-- /port -->
+          - cmd: printf waiting
+            enter: false
+<!-- port:ts,rs,go,java,dotnet,cxx -->
+            sleep_after: 0
+<!-- /port -->
+```
+
+The final command is typed without Enter. Delays are measured in seconds and
+pause delivery; they do not verify that an application is ready or that an
+earlier shell command succeeded.
+
+## Enter and timing
+
+Pane-level `enter`, `sleep_before` and `sleep_after` establish defaults.
+
+<!-- port:ts,rs,go,java,dotnet,cxx -->
+Command mappings can change those defaults. An override carries to following
+commands in that pane until another override. Set an explicit value when later
+commands need to restore Enter or remove a delay.
+<!-- /port -->
+<!-- port:swift -->
+Command mappings can override Enter, and that override carries to following
+commands. Set delays on the pane; timing fields inside command mappings are
+refused.
+<!-- /port -->
+
+## History and readiness
+
+History suppression prefixes sent commands with a space. The shell still needs
+its own setting to ignore leading-space commands, such as Bash's
+`HISTCONTROL=ignorespace` or zsh's `HIST_IGNORE_SPACE`.
+
+Prompt readiness delays initial input while a shell draws its prompt. It is
+separate from application readiness and command completion. Use a checked
+[before script](../hooks/) for bootstrap work whose exit status must stop the
+load on failure.
+
+See [environment](../environment/) before putting variable expressions in
+commands.
+
+<!-- port:ts -->
+[CLI source](https://github.com/libtmux/libtmux-ts/blob/f36d692552bb9a373b45338bb5fece854e57cc3d/packages/workspace-cli/README.md).
+<!-- /port -->
+<!-- port:rs -->
+[CLI source](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/tmux-workspace/docs/cli.md).
+<!-- /port -->
+<!-- port:go -->
+[CLI source](https://github.com/libtmux/libtmux-go/blob/bb06e26e116e941813ca40bf45e7e3a47d38f52a/workspace/CLI.md).
+<!-- /port -->
+<!-- port:java -->
+[CLI source](https://github.com/libtmux/libtmux-java/blob/3e5b20d22af3890ae5f7f52842e4b05d170a983f/libtmux-workspace-cli/README.md).
+<!-- /port -->
+<!-- port:dotnet -->
+[CLI source](https://github.com/libtmux/libtmux-dotnet/blob/f77fe776ba67a04abb20ddbbc26cf4a000d63b74/src/LibTmux.Workspace.Cli/README.md).
+<!-- /port -->
+<!-- port:cxx -->
+[CLI source](https://github.com/libtmux/libtmux-cxx/blob/9c8c6a264114277df84c9f6819855093adae5c6e/apps/workspace/README.md).
+<!-- /port -->
+<!-- port:swift -->
+[CLI source](https://github.com/libtmux/libtmux-swift/blob/53c67947879f4976ddf2c43f3c8df7c7671c5b19/Sources/TmuxWorkspaceCLI/README.md).
+<!-- /port -->
+<!-- /port -->

@@ -22,10 +22,12 @@ const pageLinks = {
   },
 }
 
-async function load(path: string, body = '') {
+async function load(path: string, body = '', head = '') {
   const window = new Window({ url: `https://libtmux.org${base}/py/latest/${path}` })
   windows.push(window)
   window.document.body.innerHTML = body
+  window.document.head.innerHTML = head
+  const initialHeader = window.document.querySelector('[data-lt-shell="header"]')
   const requests: string[] = []
   window.fetch = (async (url: unknown) => {
     requests.push(String(url))
@@ -34,7 +36,7 @@ async function load(path: string, body = '') {
   window.eval(source)
   window.document.dispatchEvent(new window.Event('DOMContentLoaded'))
   await window.happyDOM.waitUntilComplete()
-  return { window, requests, document: window.document }
+  return { window, requests, document: window.document, initialHeader }
 }
 
 afterEach(async () => {
@@ -42,12 +44,29 @@ afterEach(async () => {
 })
 
 describe('native API page switchers', () => {
+  it('enhances pre-rendered controls without replacing their header or footer', async () => {
+    const rendered = (await load('api/libtmux.session/')).document
+    const body = rendered.body.innerHTML + '<dt class="sig" id="libtmux.Session">Session</dt>'
+    const { window, document, initialHeader } = await load('api/libtmux.session/', body, rendered.head.innerHTML)
+    const header = document.querySelector('[data-lt-shell="header"]')!
+    expect(document.querySelectorAll('[data-lt-shell="header"]')).toHaveLength(1)
+    expect(document.querySelectorAll('[data-lt-shell="footer"]')).toHaveLength(1)
+    expect(document.querySelectorAll('#lt-shell-style')).toHaveLength(1)
+    expect(header).toBe(initialHeader)
+    expect(window.customElements.get('libtmux-version-switcher')).toBeTruthy()
+    expect(header.querySelector('select option')?.getAttribute('value')).toBe('latest')
+    expect(header.querySelector('[data-port-home="ts"]')?.getAttribute('href')).toBe(`${base}/ts/stable/`)
+    expect(header.querySelector('[data-page-port-switcher] a[href$="session-session/"]')).not.toBeNull()
+  })
+
   it('keeps all port homes and manifest requests inside the locale and preview', async () => {
     const { document, requests } = await load('api/libtmux.session/')
     const nav = document.querySelector('nav[aria-label="Language"]')!
     expect(nav.querySelector('[data-port-home="py"]')?.getAttribute('href')).toBe(`${base}/py/latest/`)
     expect(nav.querySelector('[data-port-home="ts"]')?.getAttribute('href')).toBe(`${base}/ts/stable/`)
     expect(nav.querySelector('[data-port-home="rs"]')?.getAttribute('href')).toBe(`${base}/rs/latest/`)
+    expect([...document.querySelectorAll('.lt-shell-search-link')].find((link) => link.textContent === 'Search')?.getAttribute('href'))
+      .toBe(`${base}/py/latest/search/`)
     expect(requests).toEqual([`${base}/versions.json`, `${base}/page-links.json`])
   })
 

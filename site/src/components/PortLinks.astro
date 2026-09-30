@@ -1,6 +1,6 @@
 ---
 import RegistryIcon from './icons/RegistryIcon.astro'
-import type { DocProduct, Port } from '../lib/ports'
+import { portSourceUrl, type DocProduct, type Port } from '../lib/ports'
 
 interface Props {
   port: Port
@@ -18,7 +18,9 @@ const repo = source?.repo ?? port.repo
 const taggedVersion = /^v?\d/.test(version) && repo === port.repo
   ? `${port.tagPrefix ?? ''}${version}` : undefined
 const ref = version === 'latest' ? source?.ref : taggedVersion ?? revision ?? source?.ref
-const sourceUrl = source ? `https://github.com/${repo}/tree/${ref}/${source.path}` : `https://github.com/${repo}`
+const sourceUrl = product
+  ? source ? `https://github.com/${repo}/tree/${ref}/${source.path}` : `https://github.com/${repo}`
+  : portSourceUrl(port, version, revision)
 const registry = product
   ? pkg?.registry && port.registry ? { ...port.registry, url: pkg.registry } : undefined
   : port.registry

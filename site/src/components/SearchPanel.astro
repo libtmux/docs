@@ -24,11 +24,13 @@ interface Props {
   subResults?: SubResultsDisplay
   /** A query to run as soon as the panel mounts. */
   initialQuery?: string
+  /** Current port's Pagefind filter value. */
+  initialPort?: string
   /** Search a small built-in index instead of Pagefind's, for the demo. */
   mock?: boolean
 }
 
-const { modal = false, subResults, initialQuery, mock = false } = Astro.props as Props
+const { modal = false, subResults, initialQuery, initialPort, mock = false } = Astro.props as Props
 // A breadcrumb names a port as the site does, not by its slug.
 const segmentNames =
   subResults === 'breadcrumbs' ? JSON.stringify(Object.fromEntries(PORTS.map((port) => [port.slug, port.name]))) : undefined
@@ -40,6 +42,7 @@ const segmentNames =
   data-search-bundle={withRoot('/pagefind/')}
   data-sub-results={subResults}
   data-initial-query={initialQuery}
+  data-initial-port={initialPort}
   data-mock={mock ? '' : undefined}
   data-segment-names={segmentNames}
 >
@@ -53,7 +56,7 @@ const segmentNames =
       type="search"
       autocomplete="off"
       spellcheck="false"
-      placeholder="Search the documentation"
+      placeholder={initialPort ? `Search ${initialPort} documentation` : 'Search the documentation'}
       aria-label="Search"
     />
     {modal && <kbd class="search-panel__hint">Esc</kbd>}
@@ -351,6 +354,7 @@ const segmentNames =
       const handle = mountSearchPanel(root, bundle, {
         subResults: root.dataset.subResults as SubResultsDisplay | undefined,
         initialQuery: root.dataset.initialQuery,
+        initialPort: root.dataset.initialPort,
         mock,
         segmentNames: root.dataset.segmentNames ? (JSON.parse(root.dataset.segmentNames) as Record<string, string>) : undefined,
       })

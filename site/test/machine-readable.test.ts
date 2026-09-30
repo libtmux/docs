@@ -40,6 +40,50 @@ const value = (tag: string, name: string) => {
   return match ? (match[1] ?? match[2] ?? match[3]) : undefined
 }
 
+/** Directory links must belong to the page's library, not just a known repository. */
+function githubSourceMatches(href: string | undefined, page: string): boolean {
+  if (!href) return false
+  const path = page.replace(/^pr-[1-9][0-9]*\//, '')
+  const port = PORTS.find((entry) => entry.slug === path.split('/')[1])
+  if (port?.source) {
+    const tree = /^https:\/\/github\.com\/([^/]+\/[^/]+)\/tree\/([^/?#]+)\/(.+?)\/?$/.exec(href)
+    return tree?.[1] === port.repo && tree[3] === port.source.path
+  }
+  const repo = /^https:\/\/github\.com\/([^/]+\/[^/]+?)\/?$/.exec(href)?.[1]
+  return !!repo && REPOS.has(repo)
+}
+
+describe('GitHub footer targets', () => {
+  it.each(['kotlin', 'scala'])('accepts the declared %s directory at a branch, tag or revision', (slug) => {
+    for (const ref of ['master', 'v0.0.1-alpha.17', 'a'.repeat(40), 'feature%2Fsource-links']) {
+      for (const prefix of ['', 'pr-50/']) {
+        expect(githubSourceMatches(`https://github.com/libtmux/libtmux-java/tree/${ref}/libtmux-${slug}`, `${prefix}en/${slug}/latest/index.html`)).toBe(true)
+      }
+    }
+  })
+
+  it('retains repository roots for core libraries, companions and shared docs', () => {
+    expect(githubSourceMatches('https://github.com/libtmux/libtmux-java/', 'en/java/latest/index.html')).toBe(true)
+    expect(githubSourceMatches('https://github.com/tmux-python/libtmux-mcp/', 'en/py/latest/mcp/index.html')).toBe(true)
+    expect(githubSourceMatches('https://github.com/libtmux/docs/', 'en/index.html')).toBe(true)
+  })
+
+  it.each([
+    undefined,
+    'https://github.com/libtmux/libtmux-java/',
+    'https://github.com/libtmux/libtmux-java/tree/master/libtmux-scala',
+    'https://github.com/libtmux/libtmux-java/tree/master/other-directory',
+    'https://github.com/libtmux/libtmux-java/tree/master/libtmux-kotlin/README.md',
+    'https://github.com/libtmux/libtmux-java/tree//libtmux-kotlin',
+    'https://github.com/unrelated/project/tree/master/libtmux-kotlin',
+    'https://example.com/libtmux/libtmux-java/tree/master/libtmux-kotlin',
+  ])('rejects an undeclared Kotlin target: %s', (href) => {
+    for (const prefix of ['', 'pr-50/']) {
+      expect(githubSourceMatches(href, `${prefix}en/kotlin/latest/index.html`)).toBe(false)
+    }
+  })
+})
+
 function htmlFiles(): string[] {
   return LOCALES.filter((locale) => existsSync(join(BUCKET_ROOT, locale))).flatMap((locale) =>
     (readdirSync(join(BUCKET_ROOT, locale), { recursive: true }) as string[])
@@ -140,8 +184,7 @@ describe.skipIf(!SITE_BUILT)('machine-readable footer', () => {
         if (footer.source !== raw[2]) problems.push(`${page}: source ${footer.source} differs from raw path ${raw[2]}`)
         if (raw[1] === 'libtmux/docs' && !tracked.has(raw[2])) problems.push(`${page}: source ${raw[2]} is not tracked`)
       }
-      const repo = footer.github && /^https:\/\/github\.com\/([^/]+\/[^/]+?)\/?$/.exec(footer.github)?.[1]
-      if (!repo || !REPOS.has(repo)) problems.push(`${page}: GitHub icon ${footer.github} is not a libtmux repository`)
+      if (!githubSourceMatches(footer.github, page)) problems.push(`${page}: GitHub icon ${footer.github} is not a declared source target`)
     }
     expect(checked, 'shell pages found').toBeGreaterThan(0)
     expect(problems.slice(0, 40), `${problems.length} footer problems across ${checked} pages`).toEqual([])

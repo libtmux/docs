@@ -69,7 +69,7 @@ const brand = branding(portSlug, pagePath)
       <a href={withPortRoot('/reference/')} class="topnav-chip site-header__wide-link">Reference</a>
       <a href={withRoot('/mcp/')} class="topnav-chip site-header__wide-link">MCP</a>
       <a
-        href={withRoot('/search/')}
+        href={portSlug ? withPortRoot(`/${portSlug}/${version}/search/`) : withRoot('/search/')}
         class="topnav-chip site-header__search border border-edge"
         aria-label="Search the documentation"
       >

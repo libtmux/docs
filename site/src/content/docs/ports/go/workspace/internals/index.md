@@ -10,9 +10,9 @@ sidebar:
 tableOfContents: true
 ---
 
-These pages document the in-development workspace builder for contributors
-and applications that call its APIs. For workspace loading from a terminal,
-see [tmuxp](https://tmuxp.git-pull.com/).
+Build and inspect tmux sessions from application code with the workspace
+library. To load files from a terminal, start with the
+[native CLI walkthrough](../guides/installation/).
 
 ## Builder pipeline
 
@@ -30,7 +30,7 @@ reading, deadlines, command-line handling, and attachment.
 
 ## Implementation scope
 
-The `workspace` module parses [tmuxp](https://tmuxp.git-pull.com)-style YAML
+The `workspace` module parses YAML
 and builds a session through libtmux's Go API. It is a separate module, so
 applications using only the core client do not acquire a YAML dependency.
 
@@ -44,9 +44,8 @@ Import [`github.com/libtmux/libtmux-go/workspace`](https://pkg.go.dev/github.com
 package. Building requires tmux on the host. Parsing and configuration
 validation do not start a tmux server.
 
-The module supports tmuxp field names for windows, panes, commands, options,
-environment variables, and working directories. Python plugins and
-`before_script` are rejected. Inspect the supported subset when moving an
-existing Python workspace to Go.
+The module accepts windows, panes, commands, options, environment variables
+and working directories. Plugin declarations and `before_script` are rejected.
+Check the [configuration contract](./topics/) before loading an existing file.
 
 [Workspace module documentation](https://github.com/libtmux/libtmux-go/blob/5f808882015a975a65acc7f9da5b3ff0d5cbdc91/workspace/README.md)

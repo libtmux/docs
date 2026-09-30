@@ -1,4 +1,5 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
 title: Sending keys
 description: Literal text versus tmux key names, whether Enter is pressed for you, and why a command can outrun the shell about to run it.
 sidebar:
@@ -37,12 +38,15 @@ await pane.sendKeys("q", { enter: false, literal: true });
 ```
 
 ```go
-// Literal disables tmux key-name lookup and treats Command as literal
-// UTF-8. It does not bypass interpretation by the pane's own shell.
-err := pane.SendKeys(ctx, tmux.SendKeysRequest{Command: &cmd, Literal: true})
-
-// A separate Enter follows Command unless SkipEnter is set.
-err = pane.SendKeys(ctx, tmux.SendKeysRequest{Command: &cmd, SkipEnter: true})
+command := "printf 'ready\\n'"
+if err := pane.SendKeys(ctx, tmux.SendKeysRequest{
+    Command: &command, Literal: true, SkipEnter: true,
+}); err != nil {
+    return err
+}
+if err := pane.Enter(ctx); err != nil {
+    return err
+}
 ```
 
 ```rust
@@ -84,22 +88,25 @@ pane.sendLine("echo hey");
 try await server.run("echo hey", in: pane)
 ```
 
-Check each method's input contract before sending text that could be a key name.
-Some ports separate text and key-name methods; others use a literal-text flag.
+Literal input disables tmux's key-name lookup. The program inside the pane
+still interprets that input, including shell quoting and expansions.
 [Concepts](/concepts/) introduces the shared tmux model.
 
 ## The race you can't see from the call site
 
 Completing `send-keys` means tmux accepted the input. The shell may still be
-starting, and the command may still be running. The port examples provide
-different ways to wait:
+starting, and the command may still be running. Use a wait that checks the state your next operation requires.
 
-- **Rust** uses a `retry_until` loop in the README's query example to wait for
-  the shell.
-- **Go** provides `tmuxtest.WaitForShellReady` for tests that need a ready
-  shell.
-- **.NET** demonstrates waiting for command output in the README's "Running
-  something, and reading it back" section.
+<!-- port:rs -->
+Use a bounded `retry_until` loop when shell startup can discard early input.
+<!-- /port -->
+<!-- port:go -->
+`tmuxtest.WaitForShellReady` waits for a ready shell in tests. It does not wait
+for a submitted command to finish.
+<!-- /port -->
+<!-- port:dotnet -->
+Use an output predicate with `TmuxWait.UntilAsync` to wait for a command result.
+<!-- /port -->
 
 Wait for shell readiness before sending input when startup matters. Then wait
 for the command's expected output or a completion signal before reading its

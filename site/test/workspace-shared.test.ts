@@ -4,8 +4,8 @@ import { parseSlots, resolvePortBody, resolvePortData, resolveSlots } from '../s
 describe('workspace-shared slots', () => {
   it('keeps unmarked text and a matching port, drops a non-matching one', () => {
     const raw = 'shared\n<!-- port:go -->\ngo only\n<!-- /port -->\nafter'
-    expect(resolvePortBody(raw, 'go')).toBe('shared\n\ngo only\n\nafter')
-    expect(resolvePortBody(raw, 'ts')).toBe('shared\n\nafter')
+    expect(resolvePortBody(raw, 'go')).toBe('shared\ngo only\nafter')
+    expect(resolvePortBody(raw, 'ts')).toBe('shared\nafter')
   })
 
   it('resolves nested blocks against the innermost matching scope', () => {

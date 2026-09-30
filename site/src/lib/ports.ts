@@ -153,6 +153,8 @@ export interface Port {
   packageName: string
   /** Source repository, `owner/name`. */
   repo: string
+  /** Library directory and default branch for browser links within a repository. */
+  source?: PortPackage['source']
   /** Working checkout, for the build script. Tilde-relative. */
   checkout: string
   /** Where the docs-branch worktree lives. Tilde-relative. */
@@ -1001,6 +1003,7 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
   {
     slug: 'kotlin', logoLanguage: 'kotlin', shortName: 'Kt', name: 'Kotlin', language: 'Kotlin',
     parentLibrary: { slug: 'java', runtime: 'JVM' },
+    source: { path: 'libtmux-kotlin', ref: 'master' },
     packageName: 'io.github.libtmux:libtmux-kotlin',
     registry: { name: 'Maven Central', url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-kotlin', icon: 'maven' },
     ecosystemHost: { name: 'Dokka', url: 'https://javadoc.io/doc/io.github.libtmux/libtmux-kotlin', rationale: 'Kotlin API documentation from the Dokka archive published with the package.' },
@@ -1018,6 +1021,7 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
   {
     slug: 'scala', logoLanguage: 'scala', shortName: 'Sc', name: 'Scala', language: 'Scala',
     parentLibrary: { slug: 'java', runtime: 'JVM' },
+    source: { path: 'libtmux-scala', ref: 'master' },
     packageName: 'io.github.libtmux:libtmux-scala_3',
     registry: { name: 'Maven Central', url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala_3', icon: 'maven' },
     ecosystemHost: { name: 'Scaladoc', url: 'https://javadoc.io/doc/io.github.libtmux/libtmux-scala_3', rationale: 'Scala 3 API documentation from the Scaladoc archive published with the package.' },
@@ -1066,6 +1070,15 @@ export const PORT_BY_SLUG: Readonly<Record<string, Port>> = Object.fromEntries(
   PORTS.map((p) => [p.slug, p]),
 )
 
+/** Open a library's directory at its documented revision, tag, or default branch. */
+export function portSourceUrl(port: Port, version = 'latest', revision?: string): string {
+  const root = `https://github.com/${port.repo}`
+  if (!port.source) return root
+  const tag = /^v?\d/.test(version) ? `${port.tagPrefix ?? ''}${version}` : undefined
+  const ref = revision ?? tag ?? port.source.ref
+  return `${root}/tree/${encodeURIComponent(ref)}/${port.source.path}`
+}
+
 /** Whether a companion product has a published implementation for a port. */
 export function productAvailable(port: Port, product: DocProduct): boolean {
   return !port.parentLibrary && port.productAvailability?.[product] !== 'unpublished'
@@ -1094,15 +1107,14 @@ export function workspaceOverviewNotice(port: Port): { title: string; body: stri
     return {
       title,
       body: `The \`tmux-workspace\` CLI is published to ${port.registry?.name ?? 'the package registry'} `
-        + 'as a prerelease. Its command and configuration coverage is partial.',
+        + 'as a prerelease. Pin its version when automation depends on its output.',
     }
   }
   if (port.workspaceCliAvailability !== 'local') return undefined
   return {
     title,
-    body: 'The local `workspace-cli` checkout contains a `tmux-workspace` CLI with native services. '
-      + 'This implementation is partial and unreleased; published library packages do '
-      + 'not provide this local CLI checkpoint.',
+    body: 'Build `tmux-workspace` from the source revision in the installation guide. '
+      + 'Its CLI and workspace library have separate installation and configuration contracts.',
   }
 }
 
@@ -1110,9 +1122,9 @@ export function productDescription(port: Port, product: DocProduct): string {
   if (!productAvailable(port, product)) return 'Not available for this language port.'
   if (product === 'workspace') {
     if (port.workspaceCliAvailability === 'local')
-      return `The local workspace-cli worktree provides ${port.workspaceCli}. Command and configuration coverage is incomplete.`
+      return `Build the CLI from source and load workspace files with ${port.workspaceCli}.`
     if (port.workspaceCliAvailability === 'published')
-      return `The published prerelease provides ${port.workspaceCli}. Command and configuration coverage is incomplete.`
+      return `Load workspace files with the ${port.workspaceCli} prerelease.`
     return port.workspaceCli
       ? `Load workspace configuration files with ${port.workspaceCli}.`
       : 'In development. Workspace builder internals; no workspace loader CLI.'
