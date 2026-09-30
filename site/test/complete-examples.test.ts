@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import receipt from './fixtures/capture-examples.json'
 import attach from './fixtures/attach-examples.json'
 import products from './fixtures/product-examples.json'
+import queries from './fixtures/query-examples.json'
 import { remarkPortCode, resolvePortCode } from '../src/plugins/remark-port-code.mjs'
 import { rehypeCodeTabs } from '../src/plugins/rehype-code-tabs.mjs'
 import { docsEntryAvailable, pagePortLinks } from '../src/lib/page-port-links'
@@ -17,7 +18,7 @@ const bodyOf = (page: string) => parsePage(page).content
 const fences = (markdown: string) => [...markdown.matchAll(/^```(\S+)([^\n]*)\n([\s\S]*?)^```/gm)]
   .map((match) => ({ language: match[1], title: /title="([^"]+)"/.exec(match[2])?.[1], code: match[3] }))
 const sha256 = (code: string) => createHash('sha256').update(code).digest('hex')
-const examples = [...receipt.examples, ...attach.examples, ...products.examples]
+const examples = [...receipt.examples, ...attach.examples, ...products.examples, ...queries.examples]
 
 afterEach(() => vi.unstubAllEnvs())
 
