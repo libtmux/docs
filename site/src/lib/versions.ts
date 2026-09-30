@@ -20,6 +20,17 @@ export type VersionKind =
    *  canonical URL is its own. */
   | 'alias'
 
+/** Evidence written only after the version bytes were published or verified. */
+export interface PublicationReceipt {
+  /** Existing bytes without an older receipt are described as verification. */
+  operation: 'published' | 'verified-existing'
+  build: { url: string; sha256: string }
+  artifact: { id: number; name: string; sha256: string }
+  run: { url: string; attempt: number }
+  publisher: { repository: string; sha: string }
+  destination: { prefix: string; url: string }
+}
+
 export interface VersionEntry {
   /** URL segment: 'latest', 'stable', 'v0.46.2', 'v0.x', 'pr-123'. */
   slug: string
@@ -30,6 +41,8 @@ export interface VersionEntry {
   resolvesTo?: string
   /** ISO date of publication. */
   published?: string
+  /** Original receipt is retained for identical immutable reruns. */
+  publication?: PublicationReceipt
   /** End of life — drives the noindex + banner treatment. */
   eol?: boolean
   /** Whether this version is offered in the switcher at all. */

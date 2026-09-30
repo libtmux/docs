@@ -27,6 +27,21 @@ describe('published version manifest merge', () => {
     expect(seed.ports.ruby).toHaveLength(1)
   })
 
+  it('preserves a valid receipt and rejects a receipt for another destination', () => {
+    const publication = {
+      operation: 'published',
+      build: { url: '/en/ruby/latest/build-provenance.json', sha256: 'a'.repeat(64) },
+      artifact: { id: 17, name: 'docs-ruby-latest', sha256: 'b'.repeat(64) },
+      run: { url: 'https://github.com/libtmux/libtmux-ruby/actions/runs/42', attempt: 1 },
+      publisher: { repository: 'libtmux/docs', sha: 'c'.repeat(40) },
+      destination: { prefix: 'en/ruby/latest/', url: 'https://libtmux.org/en/ruby/latest/' },
+    }
+    const manifest = { ...seed, ports: { ruby: [{ ...seed.ports.ruby[0], publication }] } }
+    expect(merge(seed, [{ port: 'ruby', manifest }]).ports.ruby[0].publication).toEqual(publication)
+    publication.destination.prefix = 'en/lua/latest/'
+    expect(() => merge(seed, [{ port: 'ruby', manifest }])).toThrow('another destination')
+  })
+
   it('rejects previews and defaults that do not name published entries', () => {
     expect(() => merge(seed, [{
       port: 'ruby',

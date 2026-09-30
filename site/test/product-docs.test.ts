@@ -4,7 +4,7 @@ import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
 import { PORTS, productAvailable, productDescription, productInDevelopment, workspaceOverviewNotice, type Port } from '../src/lib/ports'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
-import { SITE_BUILT, SITE_PREFIX, publishedPath, sitePath } from './site-root'
+import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedPath, sitePath } from './site-root'
 
 interface Manifest {
   ports: Record<string, { slug: string; supported: boolean }[]>
@@ -147,7 +147,7 @@ async function redirectsTo(path: string, target: string): Promise<void> {
 describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   it('publishes source guides only below their port version', async () => {
     expect(existsSync(sitePath('_staged'))).toBe(false)
-    expect(existsSync(publishedPath('ja/_staged'))).toBe(false)
+    expect(existsSync(publishedPath(`${PREVIEW_PREFIX}/ja/_staged`))).toBe(false)
     expect(existsSync(sitePath('guides/source'))).toBe(false)
     expect(existsSync(sitePath('ruby/latest/guides/core/index.html'))).toBe(true)
     expect(existsSync(sitePath('lua/latest/guides/overview/index.html'))).toBe(true)
@@ -446,7 +446,14 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(canonical && attribute(canonical, 'href'), page.path).toBe(urlFor(expected).href)
       const robotsTag = tags(html, 'meta').find((tag) => attribute(tag, 'name') === 'robots')
       const robots = robotsTag && attribute(robotsTag, 'content')
-      expect(robots, page.path).toBe(page.version === defaults[page.port] ? 'index, follow' : 'noindex, follow')
+      expect(robots, page.path).toBe(PREVIEW_PREFIX ? 'noindex, nofollow' : page.version === defaults[page.port] ? 'index, follow' : 'noindex, follow')
+      if (PREVIEW_PREFIX && page.version === defaults[page.port]) {
+        const production = readFileSync(productionPath('en', page.path, 'index.html'), 'utf8')
+        const meta = tags(production, 'meta').find((tag) => attribute(tag, 'name') === 'robots')
+        expect(meta && attribute(meta, 'content'), `${page.path} production indexing`).toBe('index, follow')
+        const canonical = tags(production, 'link').find((tag) => attribute(tag, 'rel') === 'canonical')
+        expect(canonical && attribute(canonical, 'href'), `${page.path} production canonical`).toBe(`https://libtmux.org/en/${page.path}`)
+      }
       expect(links.filter((tag) => attribute(tag, 'hreflang')), `${page.path} no invented translations`).toHaveLength(0)
       const bundles = [...html.matchAll(/\bdata-search-bundle="([^"]+)"/g)].map((match) => match[1])
       expect(bundles.length, `${page.path} search`).toBeGreaterThan(0)
@@ -459,8 +466,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
 
   it('keeps product storage paths out of shared translation coverage', () => {
     for (const locale of ['en', 'ja']) {
-      const coverage = readFileSync(publishedPath(`${locale}/translations/index.html`), 'utf8')
-      expect(coverage.match(/href="\/(?:en|ja)\/(?:ports|_staged)\/[^"]*"/g),
+      const coverage = readFileSync(publishedPath(`${PREVIEW_PREFIX}/${locale}/translations/index.html`), 'utf8')
+      expect(coverage.match(/href="\/(?:pr-\d+\/)?(?:en|ja)\/(?:ports|_staged)\/[^"]*"/g),
         `${locale} coverage links to published shared pages`).toBeNull()
     }
   })
@@ -469,15 +476,16 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     const defaults = manifest().defaultVersion
     const index = JSON.parse(read('docs.json')) as DocsManifest
     const llms = read('llms.txt')
-    const sitemapFiles = [...read('sitemap-index.xml').matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname)
-    const sitemap = sitemapFiles.map((path) => readFileSync(publishedPath(path), 'utf8')).join('\n')
+    const sitemapFiles = [...readFileSync(productionPath('en/sitemap-index.xml'), 'utf8').matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname)
+    const sitemap = sitemapFiles.map((path) => readFileSync(productionPath(path), 'utf8')).join('\n')
     for (const page of pages().filter((entry) => entry.version === defaults[entry.port])) {
       const url = urlFor(page.path).href
       expect(index.pages.some((entry) => entry.url === url), `${url} in docs.json`).toBe(true)
       expect(llms, `${url} in llms.txt`).toContain(`](${url})`)
-      expect(sitemap, `${url} in sitemap`).toContain(`<loc>${url}</loc>`)
+      const productionUrl = `https://libtmux.org/en/${page.path}`
+      expect(sitemap, `${productionUrl} in sitemap`).toContain(`<loc>${productionUrl}</loc>`)
       if (page.product === 'workspace' && page.port !== 'py' && page.section.startsWith('internals/')) {
-        const legacy = url.replace('/workspace/internals/', '/workspace/')
+        const legacy = productionUrl.replace('/workspace/internals/', '/workspace/')
         expect(sitemap, `${legacy} redirect is not canonical`).not.toContain(`<loc>${legacy}</loc>`)
       }
     }
@@ -531,7 +539,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         if (root) expect(new URL(entry.url).pathname).toContain(`/${SITE_PREFIX}${root}`)
       }
     }
-    const japanese = publishedPath('ja/docs.json')
+    const japanese = publishedPath(`${PREVIEW_PREFIX}/ja/docs.json`)
     expect(existsSync(japanese), 'Japanese assembled manifest').toBe(true)
     const translated = JSON.parse(readFileSync(japanese, 'utf8')) as { pages: { url: string }[] }
     expect(translated.pages.map((entry) => new URL(entry.url).pathname)

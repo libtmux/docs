@@ -31,14 +31,17 @@ const PORTS = PORT_DEFS.map((p) => p.slug)
 // The locale segment a served href carries, stripped before comparison. The
 // tree itself is whatever root this check was handed.
 const LOCALE = process.env.LIBTMUX_DOCS_LOCALE ?? 'en'
+const servedRoot = `${process.env.LIBTMUX_DOCS_LOCALES_ROOT ?? ''}/${LOCALE}/`
 
 function pageFor(port) {
   return pageUnder(join(SITE, port))
 }
 
 /** A served href as a path below the site root, with the locale removed. */
-const pathOf = (href) =>
-  href.replace(/^https?:\/\/[^/]+/, '').replace(new RegExp(`^/${LOCALE}/`), '/')
+const pathOf = (href) => {
+  const path = href.replace(/^https?:\/\/[^/]+/, '')
+  return path.startsWith(servedRoot) ? `/${path.slice(servedRoot.length)}` : path
+}
 
 function pageUnder(portDir) {
   const unversioned = join(portDir, 'concepts', 'index.html')
