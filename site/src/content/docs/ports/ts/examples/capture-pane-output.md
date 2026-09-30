@@ -25,7 +25,7 @@ line `libtmux capture ready`. The newline keeps a late shell prompt off that
 line. Matching the whole line avoids mistaking the echoed command for its output.
 
 ```typescript title="capture.ts"
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
@@ -35,15 +35,15 @@ const directory = await mkdtemp(join(tmpdir(), "libtmux-capture-"));
 const server = new Server({
   socketPath: join(directory, "tmux.sock"),
   configFile: "/dev/null",
+  timeoutMs: 5_000,
 });
-let started = false;
+const failures: unknown[] = [];
 try {
   const signal = AbortSignal.timeout(5_000);
   const session = await server.newSession({
     name: "capture", shellCommand: "sh", signal,
     environment: { ENV: "/dev/null" },
   });
-  started = true;
   const pane = session.activePane;
   if (!pane) throw new Error("The session has no active pane");
   await pane.sendKeys("printf '\\nlibtmux capture ready\\n'", { signal });
@@ -56,14 +56,23 @@ try {
     }
     await delay(20, undefined, { signal });
   }
+} catch (error) {
+  failures.push(error);
 } finally {
   try {
-    if (started) await server.kill();
-  } finally {
+    if ((await readdir(directory)).includes("tmux.sock")) await server.kill();
     await rm(directory, { recursive: true });
+  } catch (error) {
+    failures.push(new Error(
+      `Cleanup failed; inspect ${directory}`, { cause: error },
+    ));
   }
 }
+if (failures.length > 0) throw new AggregateError(failures, "Capture failed");
 ```
+
+Cleanup checks the private socket even if startup fails. If stopping tmux fails,
+the error reports the retained directory so the server remains reachable.
 
 <a id="wait-for-text-instead-of-guessing-a-delay"></a>
 

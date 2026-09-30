@@ -50,14 +50,23 @@ func capture() (err error) {
   if err != nil {
     return err
   }
-  defer func() { err = errors.Join(err, os.RemoveAll(directory)) }()
   server, err := tmux.NewServer(tmux.ServerOptions{
     SocketPath: filepath.Join(directory, "tmux.sock"),
     ConfigFile: "/dev/null",
   })
   if err != nil {
-    return err
+    return errors.Join(err, os.RemoveAll(directory))
   }
+  defer func() {
+    cleanup, stop := context.WithTimeout(context.Background(), time.Second)
+    defer stop()
+    if cleanupErr := server.Kill(cleanup); cleanupErr != nil {
+      err = errors.Join(err, fmt.Errorf("stop private server at %s: %w",
+        filepath.Join(directory, "tmux.sock"), cleanupErr))
+      return
+    }
+    err = errors.Join(err, os.RemoveAll(directory))
+  }()
   ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
   defer cancel()
   if _, err = server.NewSession(ctx, tmux.NewSessionRequest{
@@ -66,11 +75,6 @@ func capture() (err error) {
   }); err != nil {
     return err
   }
-  defer func() {
-    cleanup, stop := context.WithTimeout(context.Background(), time.Second)
-    defer stop()
-    err = errors.Join(err, server.Kill(cleanup))
-  }()
   panes, err := server.Panes(ctx)
   if err != nil {
     return err
@@ -102,6 +106,9 @@ func capture() (err error) {
   }
 }
 ```
+
+Cleanup is registered before session creation. If stopping tmux fails, the error
+reports the retained socket path so the server remains reachable.
 
 <a id="wait-for-text-instead-of-guessing-a-delay"></a>
 

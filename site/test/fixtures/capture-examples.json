@@ -32,7 +32,7 @@
       "files": [
         {
           "name": "capture.ts",
-          "sha256": "a6cb01f909b7b6dad5b73f0251bad9813396d82f7b4cba8f4fa3fd24b5836d34"
+          "sha256": "b005ade16cfe7183cf1b17982546ceb4a79ffc74996422c262a0a6c0497450bb"
         },
         {
           "name": "package.json",
@@ -43,6 +43,7 @@
         "Bun 1.4.2"
       ],
       "tmux": [
+        "3.2a",
         "3.7c"
       ],
       "page": "ports/ts/examples/capture-pane-output",
@@ -58,7 +59,7 @@
       "files": [
         {
           "name": "main.go",
-          "sha256": "fc79d77f9b04eabd6d874ffae0be7f0fb4b0cdac45c9cef92473014268a56f33"
+          "sha256": "fff130e7c12cd990d4e8af309a6a1e269b0ae2bf9cabfc2fbb422a90ccf2e033"
         },
         {
           "name": "go.mod",
@@ -69,6 +70,7 @@
         "Go 1.26.8"
       ],
       "tmux": [
+        "3.2a",
         "3.7c"
       ],
       "page": "ports/go/examples/capture-pane-output",
