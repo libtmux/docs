@@ -143,6 +143,66 @@
         "git init libtmux-source && \\\n  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD && \\\n  swift build --package-path libtmux-source --product libtmux-mcp --jobs 2",
         "sh run-mcp.sh"
       ]
+    },
+    {
+      "port": "java",
+      "language": "java",
+      "sourceRevision": "842228310449e879ebcaa3f910597757c9dbffd6",
+      "sourceRepository": "libtmux/libtmux-java",
+      "files": [
+        {
+          "name": "src/main/java/McpExample.java",
+          "sha256": "784f78db838619a9cdbc4507fa0abbabf262fa43f975819519f785275bddc7c8"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "68853d2191a6d1f8306684a898d2b079e2de868964123fc6b5121bb305a83844"
+        },
+        {
+          "name": "build.gradle.kts",
+          "sha256": "22f664fa486cdbaa8bb473cd245986c885e87ea86b4c6931dfab2df4ca09be1a"
+        }
+      ],
+      "toolchain": [
+        "JDK 25.0.3+9",
+        "Gradle wrapper at selected source"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/java/mcp/examples",
+      "shellRecipe": [
+        "mkdir java-mcp-example && cd java-mcp-example && \\\n    git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    mkdir -p src/main/java",
+        "./libtmux-source/gradlew --no-daemon --max-workers=2 -p . installDist",
+        "./build/install/mcp-example/bin/mcp-example"
+      ]
+    },
+    {
+      "port": "java",
+      "language": "sh",
+      "sourceRevision": "842228310449e879ebcaa3f910597757c9dbffd6",
+      "sourceRepository": "libtmux/libtmux-java",
+      "files": [
+        {
+          "name": "run-mcp.sh",
+          "sha256": "e3b697676591e62e98769a988d0002efcfa693474feb228656589a472b0744f4"
+        }
+      ],
+      "toolchain": [
+        "JDK 25.0.3+9",
+        "Gradle wrapper at selected source"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/java/mcp/guides",
+      "shellRecipe": [
+        "mkdir java-mcp-client && cd java-mcp-client",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    ./libtmux-source/gradlew --no-daemon --max-workers=2 \\\n    -p libtmux-source :libtmux-mcp:installDist",
+        "sh run-mcp.sh"
+      ]
     }
   ]
 }
