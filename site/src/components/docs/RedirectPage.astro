@@ -1,0 +1,31 @@
+---
+import { DEFAULT_LOCALE } from '../../i18n/locales'
+
+interface Props {
+  destination: string
+  title: string
+}
+
+const { destination, title } = Astro.props
+const canonical = new URL(destination, Astro.site ?? 'https://libtmux.org').href
+---
+
+<!doctype html>
+<html lang={DEFAULT_LOCALE}>
+  <head>
+    <meta charset="utf-8" />
+    <title>{title}</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={canonical} />
+    <script is:inline define:vars={{ destination }}>
+      const target = new URL(destination, location.href)
+      target.search = location.search
+      target.hash = location.hash
+      location.replace(target.href)
+    </script>
+    <noscript><meta http-equiv="refresh" content={`0;url=${destination}`} /></noscript>
+  </head>
+  <body>
+    <a href={destination}>Continue to {title}</a>
+  </body>
+</html>

@@ -186,5 +186,8 @@ error.
 For a workspace that stays open, let your application retain its explicitly
 selected server and choose when to stop it.
 
+<a id="where-this-comes-from"></a>
+<a id="source-inclusion"></a>
+
 [Builder source](https://github.com/libtmux/libtmux-go/blob/bb06e26e116e941813ca40bf45e7e3a47d38f52a/workspace/builder.go);
 [configuration source](https://github.com/libtmux/libtmux-go/blob/bb06e26e116e941813ca40bf45e7e3a47d38f52a/workspace/workspace.go).

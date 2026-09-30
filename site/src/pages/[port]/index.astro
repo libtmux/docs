@@ -4,14 +4,15 @@ import { IS_ROOT_BUILD } from '../../lib/site-root'
 import { defaultVersionFor } from '../../lib/versions'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
+import RedirectPage from '../../components/docs/RedirectPage.astro'
 
 /**
  * `/<port>/`: a redirect to the port's default version.
  *
  * The edge function answers this URL with a 302 from its KeyValueStore
  * (infra/cloudfront-function.js rule 1), so readers reach this page only
- * when that lookup misses. It takes the shape of Astro's own static redirect
- * (`redirectTemplate`): meta refresh, `noindex`, canonical, visible link.
+ * when that lookup misses. The static fallback preserves query strings and
+ * section links, with a meta refresh for browsers without JavaScript.
  */
 export function getStaticPaths() {
   // Root build only: every port+version build renders this route too.
@@ -31,19 +32,6 @@ interface Props {
 
 const { port } = Astro.props as Props
 const destination = portHomeUrl(port, defaultVersionFor(port.slug))
-const canonical = new URL(destination, Astro.site ?? 'https://libtmux.org').href
 ---
 
-<!doctype html>
-<html lang={DEFAULT_LOCALE}>
-  <head>
-    <meta charset="utf-8" />
-    <title>{port.name} documentation</title>
-    <meta http-equiv="refresh" content={`0;url=${destination}`} />
-    <meta name="robots" content="noindex" />
-    <link rel="canonical" href={canonical} />
-  </head>
-  <body>
-    <a href={destination}>Continue to the {port.name} documentation</a>
-  </body>
-</html>
+<RedirectPage destination={destination} title={`${port.name} documentation`} />

@@ -1,6 +1,7 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content'
 import DocPage from '../components/docs/DocPage.astro'
+import RedirectPage from '../components/docs/RedirectPage.astro'
 import McpOverview from '../components/mcp/Overview.astro'
 import McpTools from '../components/mcp/Tools.astro'
 import ProductApiPage from '../components/api/ProductApiPage.astro'
@@ -70,7 +71,7 @@ interface Props {
   toolName?: string
 }
 const { entry, placeholderLocale, globalPage, version, model, symbol, mcpPort, toolName, redirect } = Astro.props
-if (redirect) return Astro.redirect(`${import.meta.env.BASE_URL.replace(/\/$/, '')}/${redirect}/`, 301)
+const destination = redirect ? `${import.meta.env.BASE_URL.replace(/\/$/, '')}/${redirect}/` : undefined
 ---
 
-{globalPage === 'mcp' ? <McpOverview /> : globalPage === 'tools' ? <McpTools /> : mcpPort ? <ToolReference port={mcpPort} toolName={toolName} version={version!} /> : model && symbol ? <ProductApiPage model={model} symbol={symbol} version={version!} /> : entry && <DocPage entry={entry} version={version} placeholderLocale={placeholderLocale} />}
+{destination ? <RedirectPage destination={destination} title="the documentation" /> : globalPage === 'mcp' ? <McpOverview /> : globalPage === 'tools' ? <McpTools /> : mcpPort ? <ToolReference port={mcpPort} toolName={toolName} version={version!} /> : model && symbol ? <ProductApiPage model={model} symbol={symbol} version={version!} /> : entry && <DocPage entry={entry} version={version} placeholderLocale={placeholderLocale} />}
