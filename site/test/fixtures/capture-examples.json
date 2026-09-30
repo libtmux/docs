@@ -213,7 +213,7 @@
   ],
   "rootExample": {
     "file": "capture.sh",
-    "sha256": "1127dac3da7132067f2a93bc50f0e81424007e363a756f566ccb7628005406b7",
+    "sha256": "3e2891b426741ac3b0537244d345d04ed001dc6dcd03ace2a9a99bf8f08786fe",
     "tmux": [
       "3.2a",
       "3.7c"

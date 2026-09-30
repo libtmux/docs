@@ -27,13 +27,13 @@ a POSIX shell. It requires tmux 3.2 or newer and `sleep` with fractional seconds
     set -eu
     directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-capture.XXXXXX")
     socket="$directory/tmux.sock"
-    started=0
 
     cleanup() {
         status=$?
         trap - EXIT
-        if [ "$started" = 1 ]; then
-            tmux -S "$socket" kill-server || status=$?
+        if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+            printf '%s\n' "Cannot stop tmux; kept $directory." >&2
+            exit 1
         fi
         rm -rf "$directory" || status=$?
         exit "$status"
@@ -43,7 +43,6 @@ a POSIX shell. It requires tmux 3.2 or newer and `sleep` with fractional seconds
 
     tmux -S "$socket" -f /dev/null new-session -d -s capture \
         -e ENV=/dev/null 'sh'
-    started=1
     tmux -S "$socket" send-keys -t capture:0.0 -l \
         "printf '\\nlibtmux capture ready\\n'"
     tmux -S "$socket" send-keys -t capture:0.0 Enter
@@ -62,6 +61,10 @@ a POSIX shell. It requires tmux 3.2 or newer and `sleep` with fractional seconds
     exit 1
 )
 ```
+
+Cleanup also runs if startup fails after creating the server. If tmux cannot
+be stopped, the script reports the error and keeps its socket directory so
+you can inspect or stop that server.
 
 <a id="wait-for-text-instead-of-guessing-a-delay"></a>
 
