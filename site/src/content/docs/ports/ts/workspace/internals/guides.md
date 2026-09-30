@@ -1,6 +1,6 @@
 ---
-title: "Use the TypeScript workspace builder"
-description: "Use the in-development TypeScript workspace builder from application code."
+title: Use the TypeScript workspace builder
+description: Apply a workspace, review planned changes, and handle partial failures.
 port: ts
 product: workspace
 sidebar:
@@ -10,57 +10,42 @@ sidebar:
 tableOfContents: true
 ---
 
-Apply a workspace to create its session, windows, and panes. Install tmux on
-the host, then add the workspace package and core library:
-
-```console
-$ bun add @libtmux/workspace libtmux
-```
+Apply a workspace to create or reconcile its session, windows, and panes. Start
+with the [complete TypeScript example](../examples/): it includes imports,
+project setup, the selected library source, run commands, and private-server
+cleanup.
 
 ## Create a session
 
-Save this as `workspace.ts`. It creates a dedicated session with two panes.
-The `try` / `finally` removes that session after inspecting it, so the example
-leaves no session running.
+`applyWorkspace` accepts a `Server` and workspace configuration. Await it to
+receive the resulting session. Pane commands can still be running when it
+returns.
 
-```typescript
-import { Server } from "libtmux";
-import { applyWorkspace } from "@libtmux/workspace";
-
-const server = new Server({
-  socketName: `workspace-guide-${crypto.randomUUID()}`,
-});
-const session = await applyWorkspace(server, {
-  session_name: "workspace-guide",
-  windows: [{ window_name: "editor", panes: ["echo ready", "echo ready"] }],
-});
-try {
-  console.log(session.name);
-} finally {
-  await session.kill();
-}
-```
-
-Run it with Bun:
-
-```console
-$ bun run workspace.ts
-```
-
-The example selects a new socket name so it does not reuse a session on your
-normal tmux server. For a workspace you want to keep, choose the intended
-server explicitly and retain the returned session.
+The complete example uses a private socket and registers cleanup before
+applying the workspace. A failed apply can leave a session or some of its
+windows in place. For a workspace you want to keep, choose the intended server
+explicitly and retain the returned session.
 
 ## Read configuration
 
 `parseWorkspace` from `@libtmux/workspace/config` validates an object produced
-by your chosen JSON or YAML parser. `parseWorkspaceYaml` reads YAML through
-Bun's parser. Unknown fields fail validation rather than silently changing the
-requested workspace.
+by your chosen JSON or YAML parser. `parseWorkspaceYaml` uses Bun's YAML parser.
+Unknown fields fail validation. With another runtime, parse the document first
+and pass the resulting object to `parseWorkspace`.
 
-Use `planWorkspace` before changing an existing session. Review removal and
-retention entries, then apply promptly. Replan after any failure or outside
-change. See [Topics](../topics/) for command replay and pruning policies and
-[Examples](../examples/) for the package's integration example.
+## Review changes and failures
 
-[Parsing implementation](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/packages/workspace/src/config.ts); [Application implementation](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/packages/workspace/src/builder.ts).
+`planWorkspace` reads the server and reports planned structural creation,
+removal, retention, and window renames. Options, layouts, focus, and command
+effects are outside that plan. Review removals and retained entries, then apply
+promptly. Replan after an outside change.
+
+When an apply fails after mutation may have started, `WorkspaceApplyError`
+records completed milestones and the failed stage. Its `requiresReplan` flag
+is true; rediscover the current structure before retrying. Completed command
+effects remain part of the application's recovery decision.
+
+[Topics](../topics/) explains command replay and pruning policies. The
+[configuration parser](https://github.com/libtmux/libtmux-ts/blob/3fe1ca654b81b8cbf4a13b777a001a3298c87a6f/packages/workspace/src/config.ts)
+and [builder contracts](https://github.com/libtmux/libtmux-ts/blob/3fe1ca654b81b8cbf4a13b777a001a3298c87a6f/packages/workspace/src/builder.ts)
+cover these entry points.
