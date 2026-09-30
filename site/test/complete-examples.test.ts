@@ -87,7 +87,7 @@ describe('verified complete programs', () => {
       expect(root).toContain(`/${example.port}/latest/${receipt.page}/`)
       return { id: example.page, data: { port: example.port, route: receipt.page } }
     })]
-    expect(new Set(docs.map((doc) => docsRoutePath(doc))).size).toBe(9)
+    expect(new Set(docs.map((doc) => docsRoutePath(doc))).size).toBe(receipt.examples.length + 1)
     for (const example of receipt.examples) {
       const available = docs.filter((doc) => docsEntryAvailable(doc, example.port))
       expect(available.map((doc) => docsRoutePath(doc, example.port))).toEqual([receipt.page])

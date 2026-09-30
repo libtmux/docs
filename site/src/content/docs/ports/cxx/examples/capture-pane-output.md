@@ -107,7 +107,8 @@ explains why sending and waiting are separate operations.
 Use an empty directory. The commands pin the library
 revision used to verify the program.
 
-Save the program and build file using the displayed names. Use CMake
+No separate header is needed for this single-file executable. Save the program
+and build file using the displayed names. Use CMake
 3.25 or newer, Ninja, and Clang 18 with libc++ 18 on Linux. The public testing
 library supplies the private server's lifetime management; it is linked explicitly below.
 

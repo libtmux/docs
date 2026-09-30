@@ -105,6 +105,19 @@ Record its commands, source revision, result, and content hash in the review.
 Tests that add a hidden prelude or execute a larger source file do not verify
 the copied example. Preserve collected examples when changing formatting.
 
+Repeat a complete capture example with its native tools and tmux on `PATH`:
+
+```console
+$ python3 scripts/check-capture-prose.py \
+    --port kotlin \
+    --output-dir /tmp/capture-kotlin-proof
+```
+
+The output directory must be new. The runner extracts the displayed files,
+checks their recorded hashes, executes the displayed setup, and saves logs
+and a result. Dependency downloads and native builds are separate from the
+routine site tests. A changed hash needs a new native run before review.
+
 Put explanatory comments on separate lines above the code they describe.
 Wrap example comments at 80 columns, including indentation. Put long source
 links and attribution in prose outside the code block.
