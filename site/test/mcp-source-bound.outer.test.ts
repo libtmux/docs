@@ -15,7 +15,7 @@ const tool = { name: 'list_sessions', description: 'Selected source contract', i
   type: 'object', properties: { label: { type: 'string', description: 'Selected source argument' } },
 } }
 
-function fixture(slug: 'go' | 'py', run: (fixture: {
+function fixture(slug: 'go' | 'py' | 'ruby', run: (fixture: {
   directory: string; checkout: string; sha: string; model: string; snapshot: string; catalog: string;
   discovery: string; env: NodeJS.ProcessEnv;
   invoke: (script: 'protocol' | 'tools', args?: string[], env?: NodeJS.ProcessEnv) => SpawnSyncReturns<string>;
@@ -42,7 +42,7 @@ function fixture(slug: 'go' | 'py', run: (fixture: {
     const model = join(directory, `site/src/data/api/${slug}.json`)
     const snapshot = join(directory, `site/src/data/mcp-protocol/${slug}.json`)
     const catalog = join(directory, 'site/src/data/mcp-tools.json')
-    const repo = slug === 'py' ? 'tmux-python/libtmux-mcp' : 'libtmux/libtmux-go'
+    const repo = slug === 'py' ? 'tmux-python/libtmux-mcp' : `libtmux/libtmux-${slug}`
     write(model, JSON.stringify({ port: slug, revision: coreSha, sources: [{ product: 'mcp', repo, revision: sha, extractedRevision: sha }] }))
     write(catalog, JSON.stringify({ generated: 'fixture', referenceDocumented: 54,
       ports: Object.fromEntries(['py', 'ruby', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'].map((port) => [port, {
@@ -200,6 +200,57 @@ writeFileSync(args[args.indexOf('-o') + 1], ${JSON.stringify(`#!${process.execPa
       expect(result.stderr).toContain(scenario === 'build failure' ? 'fixture Go compile failed' : 'fixture compiled server failed')
       expect(existsSync(snapshot)).toBe(false)
       expect(existsSync(discovery)).toBe(false)
+    }
+  })
+})
+
+it.each(['success', 'startup failure', 'capture failure', 'cleanup failure', 'capture and cleanup failure'])('owns Ruby discovery daemon setup and cleanup: %s', (scenario) => {
+  fixture('ruby', ({ directory, checkout, snapshot, env, invoke }) => {
+    const bin = join(directory, 'bin')
+    const daemonLog = join(directory, 'daemon.jsonl')
+    const executable = join(bin, 'tmux')
+    mkdirSync(bin)
+    writeFileSync(executable, `#!${process.execPath}
+import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import { join, dirname } from 'node:path'
+const args = process.argv.slice(2)
+appendFileSync(${JSON.stringify(daemonLog)}, JSON.stringify({ args, tmp: process.env.TMUX_TMPDIR, tmux: process.env.TMUX, pane: process.env.TMUX_PANE }) + '\\n')
+if (args[0] === '-L') {
+  const socket = join(process.env.TMUX_TMPDIR, 'tmux-' + process.getuid(), args[1])
+  mkdirSync(dirname(socket), { recursive: true })
+  writeFileSync(socket, 'owned daemon')
+  if (${JSON.stringify(scenario)} === 'startup failure') { process.stderr.write('fixture tmux startup failed\\n'); process.exit(42) }
+} else if (${JSON.stringify(scenario)}.includes('cleanup')) { process.stderr.write('fixture tmux cleanup failed\\n'); process.exit(43) }
+`)
+    chmodSync(executable, 0o700)
+    const server = join(directory, 'borrow-daemon.mjs')
+    writeFileSync(server, `
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
+if (!existsSync(join(process.env.TMUX_TMPDIR, 'tmux-' + process.getuid(), 'libtmux-docs-protocol'))) throw new Error('discovery requires an existing daemon')
+if (${JSON.stringify(scenario)}.includes('capture')) throw new Error('fixture Ruby capture failed')
+await import(${JSON.stringify(pathToFileURL(join(directory, 'server.mjs')).href)})
+`)
+    const result = invoke('protocol', [], {
+      LIBTMUX_DOCS_MCP_COMMAND_RUBY: JSON.stringify([process.execPath, server]), PATH: `${bin}:${env.PATH}`,
+    })
+    const calls = JSON.parse(`[${readFileSync(daemonLog, 'utf8').trim().split('\n').join(',')}]`)
+    expect(calls).toHaveLength(2)
+    expect(calls[0].args).toEqual(['-L', 'libtmux-docs-protocol', '-f', '/dev/null', 'new-session', '-d', '-s', 'docs', '/bin/cat'])
+    expect(calls[0].tmp).toContain('libtmux-docs-mcp-ruby-')
+    expect(calls[0].tmp.startsWith(checkout)).toBe(false)
+    expect(calls[0].tmux).toBeUndefined()
+    expect(calls[0].pane).toBeUndefined()
+    expect(calls[1].args).toEqual(['-S', join(calls[0].tmp, `tmux-${process.getuid!()}`, 'libtmux-docs-protocol'), 'kill-server'])
+    expect(existsSync(calls[0].tmp)).toBe(false)
+    if (scenario === 'success') {
+      expect(result.status, result.stderr).toBe(0)
+      expect(JSON.parse(readFileSync(snapshot, 'utf8')).protocol.tools).toEqual([tool])
+    } else {
+      expect(result.status).not.toBe(0)
+      expect(result.stderr).toContain(scenario.includes('capture') ? 'fixture Ruby capture failed' : `fixture tmux ${scenario.split(' ')[0]} failed`)
+      if (scenario.includes('cleanup')) expect(result.stderr).toContain('fixture tmux cleanup failed')
+      expect(existsSync(snapshot)).toBe(false)
     }
   })
 })

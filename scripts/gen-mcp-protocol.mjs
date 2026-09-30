@@ -123,12 +123,14 @@ for (const port of relevant) {
   const cwd = port.slug === 'go' ? join(checkout, 'mcp') : checkout
   const selection = selections[port.slug]
   const socketRoot = mkdtempSync(join(tmpdir(), `libtmux-docs-mcp-${port.slug}-`))
+  const socket = join(socketRoot, `tmux-${process.getuid?.() ?? ''}`, 'libtmux-docs-protocol')
   const environment = {
     ...Object.fromEntries(selectionVariables.map((key) => [key, undefined])),
     ...(port.slug === 'ruby' ? {} : selection),
     TMUX: undefined, TMUX_PANE: undefined, TMUX_TMPDIR: socketRoot, LIBTMUX_SOCKET: 'libtmux-docs-protocol',
   }
   let protocol
+  let failure
   try {
     const goBinary = join(socketRoot, 'libtmux-mcp')
     // Dependency downloads and compilation precede the protocol deadline.
@@ -138,13 +140,30 @@ for (const port of relevant) {
       }
       if (port.slug === 'go') execFileSync('go', ['build', '-mod=readonly', '-o', goBinary, './cmd/libtmux-mcp'], { cwd, stdio: 'inherit' })
     }
+    // Ruby borrows an existing daemon even for protocol discovery.
+    if (port.slug === 'ruby') execFileSync('tmux', [
+      '-L', 'libtmux-docs-protocol', '-f', '/dev/null', 'new-session', '-d', '-s', 'docs', '/bin/cat',
+    ], { env: { ...process.env, ...environment }, stdio: 'inherit' })
     const [command, ...args] = override ? JSON.parse(override) : port.slug === 'go' ? [goBinary] : commands[port.slug]
     protocol = await captureProtocol({ command, args, cwd, env: environment })
     if (sourceRevision(checkout, port.slug) !== revision) throw new Error(`${port.slug}: source revision changed during discovery`)
+  } catch (error) {
+    failure = error
+    throw error
   } finally {
-    const socket = join(socketRoot, `tmux-${process.getuid?.() ?? ''}`, 'libtmux-docs-protocol')
-    if (existsSync(socket)) execFileSync('tmux', ['-S', socket, 'kill-server'], { stdio: 'ignore' })
-    rmSync(socketRoot, { recursive: true, force: true })
+    const cleanupErrors = []
+    try {
+      if (existsSync(socket)) execFileSync('tmux', ['-S', socket, 'kill-server'], { stdio: 'inherit' })
+    } catch (error) {
+      cleanupErrors.push(error)
+    }
+    try {
+      rmSync(socketRoot, { recursive: true, force: true })
+    } catch (error) {
+      cleanupErrors.push(error)
+    }
+    if (cleanupErrors.length) throw new AggregateError(failure ? [failure, ...cleanupErrors] : cleanupErrors,
+      `${port.slug}: MCP discovery cleanup failed`)
   }
   const payload = {
     generated: 'scripts/gen-mcp-protocol.mjs',
