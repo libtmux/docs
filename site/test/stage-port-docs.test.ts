@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
 import scalaGuides from '../src/data/port-guides/scala.json'
+import fsharpGuides from '../src/data/port-guides/fsharp.json'
 
 describe('staged port guide links', () => {
   const routes = {
@@ -46,6 +47,46 @@ describe('staged port guide links', () => {
       'abc123',
     )
     expect(result).toContain('[query](../query/#filters)')
+  })
+
+  it('keeps known source-guide URLs in the selected documentation tree', () => {
+    const own = 'https://github.com/libtmux/libtmux-lua/blob/'
+    const historical = `${own}older/docs/query.md`
+    const otherRepo = 'https://github.com/other/project/blob/master/docs/query.md'
+    const example = `\`${own}master/docs/query.md\``
+    const result = rewriteLinks(
+      `[current](${own}master/docs/query.md#filters) [main](${own}main/docs/query.md) `
+        + `[pinned](${own}abc123/docs/query.md) [old](${historical}) [other](${otherRepo}) ${example}`,
+      'docs/runtime.md', 'guides/source/runtime', routes, 'libtmux/libtmux-lua', 'abc123',
+    )
+    expect(result).toContain('[current](../query/#filters)')
+    expect(result).toContain('[main](../query/)')
+    expect(result).toContain('[pinned](../query/)')
+    expect(result).toContain(`[old](${historical})`)
+    expect(result).toContain(`[other](${otherRepo})`)
+    expect(result).toContain(example)
+  })
+
+  it('routes the actual F# quickstart to its staged task guides', () => {
+    const staged = stagedPortGuides('fsharp', fsharpGuides).get('fsharp/guides/quickstart/index.md')!
+    for (const route of ['getting-started', 'queries', 'streams', 'supported-query-fields', 'modes', 'interop']) {
+      expect(staged).toContain(`](../${route}/)`)
+    }
+    expect(staged).toContain('](../../reference/)')
+    expect(staged).not.toMatch(/https:\/\/github.com\/libtmux\/libtmux-dotnet\/blob\/master\/docs\/fsharp\//)
+    expect(staged).toContain(`https://github.com/libtmux/libtmux-dotnet/blob/${fsharpGuides.source.revision}/examples/LibTmux.FSharp.Quickstart/Program.fs`)
+  })
+
+  it('pins non-staged source links while preserving historical links and inline images', () => {
+    const own = 'https://github.com/libtmux/libtmux-lua/blob/'
+    const destinations = ['master', 'main', 'abc123'].map((ref) => `[source](${own}${ref}/src/main.lua#run)`)
+    const image = `![source](${own}master/art/example.png)`
+    const historical = `[old](${own}older/src/main.lua#run)`
+    const result = rewriteLinks([...destinations, image, historical].join('\n\n'),
+      'docs/runtime.md', 'guides/source/runtime', routes, 'libtmux/libtmux-lua', 'abc123')
+    expect(result.match(/\[source\]\(https:\/\/github.com\/libtmux\/libtmux-lua\/blob\/abc123\/src\/main.lua#run\)/g)).toHaveLength(3)
+    expect(result).toContain(image)
+    expect(result).toContain(historical)
   })
 
   it('rewrites Scala reference links across lines without changing external links', () => {

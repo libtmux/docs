@@ -50,6 +50,14 @@ function external(value) {
 
 export function rewriteLinks(content, sourcePath, route, routes, repo, revision) {
   const targetUrl = (destination, image = false) => {
+    const ownSource = `https://github.com/${repo}/blob/`
+    if (!image && destination.startsWith(ownSource)) {
+      const [ref, ...path] = destination.slice(ownSource.length).split('/')
+      const [target, fragment = ''] = path.join('/').split('#', 2)
+      if (['master', 'main', revision].includes(ref)) {
+        destination = `${posix.relative(posix.dirname(sourcePath), target)}${fragment ? `#${fragment}` : ''}`
+      }
+    }
     if (external(destination)) return destination
     const [target, fragment = ''] = destination.split('#', 2)
     const normalized = posix.normalize(posix.join(posix.dirname(sourcePath), target))
