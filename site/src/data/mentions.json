@@ -5868,6 +5868,13 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::Server.start",
+   "page": "/ruby/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::Session#new_window",
    "page": "/ruby/latest/guides/core/",
    "title": "libtmux",

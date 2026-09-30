@@ -191,7 +191,8 @@
       "files": [
         {
           "name": "Capture.swift",
-          "sha256": "4f4258a1eb646d70712559f5a4d975d1cc36fd1805a77cbb8ddc63bc812db6da"
+          "sha256": "4f4258a1eb646d70712559f5a4d975d1cc36fd1805a77cbb8ddc63bc812db6da",
+          "path": "Sources/Capture/Capture.swift"
         },
         {
           "name": "Package.swift",
@@ -209,6 +210,368 @@
       "shellRecipe": [
         "git clone https://github.com/libtmux/libtmux-swift libtmux-source &&\n  git -C libtmux-source checkout 254f8b2be7eb60cacc3ffcb3ea8e456784f582df &&\n  swift run --jobs 2 Capture"
       ]
+    },
+    {
+      "port": "kotlin",
+      "language": "kotlin",
+      "sourceRevision": "85ebf6955e56703c5be74e2afd34a18309044741",
+      "sourceRepository": "libtmux/libtmux-java",
+      "files": [
+        {
+          "name": "Capture.kt",
+          "sha256": "afd4b19f973c95cb434a859e5a12aeb60ffbd97a15951a1c63f37958e1d1a85a"
+        },
+        {
+          "name": "build.gradle.kts",
+          "sha256": "a705fe6e99a1931cb90267adf81650a44a93b6580c5277f0657d468287be5068"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "7c01a4d1d8620741df4852dad3a03e0eac7a084a2bbb20e53016064cab1f958b"
+        },
+        {
+          "name": "gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
+        }
+      ],
+      "toolchain": [
+        "JDK 25.0.3",
+        "Kotlin 2.4.10"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/kotlin/examples/capture-pane-output",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 85ebf6955e56703c5be74e2afd34a18309044741 &&\n  ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2"
+      ],
+      "verification": {
+        "platform": "Linux",
+        "checks": [
+          {
+            "name": "positive-3.2a",
+            "tmux": "3.2a",
+            "exit": 0,
+            "seconds": 2.282,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "positive-3.7c",
+            "tmux": "3.7c",
+            "exit": 0,
+            "seconds": 2.183,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "negative-import",
+            "tmux": "3.7c",
+            "exit": 1,
+            "seconds": 2.197,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "negative-runtime-build",
+            "tmux": "3.7c",
+            "exit": 0,
+            "seconds": 1.905,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "negative-runtime",
+            "tmux": "3.7c",
+            "exit": 1,
+            "seconds": 6.772,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "restored-build",
+            "tmux": "3.7c",
+            "exit": 0,
+            "seconds": 1.825,
+            "remainingSocketDirectories": 0
+          }
+        ]
+      }
+    },
+    {
+      "port": "scala",
+      "language": "scala",
+      "sourceRevision": "85ebf6955e56703c5be74e2afd34a18309044741",
+      "sourceRepository": "libtmux/libtmux-java",
+      "files": [
+        {
+          "name": "Capture.scala",
+          "sha256": "1514add5014928157a9110c68bb3032476d921b6b9c5fcc8d74c9eed76f32be5"
+        },
+        {
+          "name": "build.gradle.kts",
+          "sha256": "a770d0b99553598b21e82030b6c7d42215769abca70789c2aae836956a70b3c5"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "b714b16f8397fc43c5780c8a1c330ed85dcd80c3c5c565023f7504fb8fa9b06b"
+        },
+        {
+          "name": "gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
+        }
+      ],
+      "toolchain": [
+        "JDK 25.0.3",
+        "Scala 3.9.0"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/scala/examples/capture-pane-output",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 85ebf6955e56703c5be74e2afd34a18309044741 &&\n  ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2"
+      ],
+      "verification": {
+        "platform": "Linux",
+        "checks": [
+          {
+            "name": "positive-3.2a",
+            "tmux": "3.2a",
+            "exit": 0,
+            "seconds": 1.809,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "positive-3.7c",
+            "tmux": "3.7c",
+            "exit": 0,
+            "seconds": 1.596,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "negative-import",
+            "tmux": "3.7c",
+            "exit": 1,
+            "seconds": 3.527,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "negative-runtime-build",
+            "tmux": "3.7c",
+            "exit": 0,
+            "seconds": 4.32,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "negative-runtime",
+            "tmux": "3.7c",
+            "exit": 1,
+            "seconds": 6.524,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "restored-build",
+            "tmux": "3.7c",
+            "exit": 0,
+            "seconds": 4.331,
+            "remainingSocketDirectories": 0
+          }
+        ]
+      }
+    },
+    {
+      "port": "fsharp",
+      "language": "fsharp",
+      "sourceRevision": "661287848a6cfb407f37114b25e8249a29f99e3f",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "files": [
+        {
+          "name": "Program.fs",
+          "sha256": "10e4320d65f9214988a3c2203576407398646a2e6ca6d829849e15a911df10c0"
+        },
+        {
+          "name": "Capture.fsproj",
+          "sha256": "314bfb2bef111e8885728a0065943a59594721011da4ac6ef0275aebd8f14bcd"
+        }
+      ],
+      "toolchain": [
+        ".NET SDK 10.0.302"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/fsharp/examples/capture-pane-output",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 661287848a6cfb407f37114b25e8249a29f99e3f &&\n  dotnet build Capture.fsproj --maxcpucount:1 \\\n    -p:DisableImplicitLibraryPacksFolder=true \\\n    -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  dotnet run --project Capture.fsproj --no-build"
+      ],
+      "verification": {
+        "platform": "Linux",
+        "checks": [
+          {
+            "name": "positive-3.2a",
+            "tmux": "3.2a",
+            "exit": 0,
+            "seconds": 1.061,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "positive-3.7c",
+            "tmux": "3.7c",
+            "exit": 0,
+            "seconds": 0.923,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "negative-import",
+            "tmux": "3.7c",
+            "exit": 1,
+            "seconds": 2.171,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "negative-runtime-build",
+            "tmux": "3.7c",
+            "exit": 0,
+            "seconds": 2.288,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "negative-runtime",
+            "tmux": "3.7c",
+            "exit": 1,
+            "seconds": 5.919,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "restored-build",
+            "tmux": "3.7c",
+            "exit": 0,
+            "seconds": 2.903,
+            "remainingSocketDirectories": 0
+          }
+        ]
+      }
+    },
+    {
+      "port": "ruby",
+      "language": "ruby",
+      "sourceRevision": "2599d45369515aaf2fd5793bfe71cdc20de641b6",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "files": [
+        {
+          "name": "capture.rb",
+          "sha256": "15ab560716a71ef94f0b3161e09599eb090c42f533e235cac035234aea58748b"
+        },
+        {
+          "name": "Gemfile",
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c"
+        }
+      ],
+      "toolchain": [
+        "Ruby 4.0.7",
+        "Bundler"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/ruby/examples/capture-pane-output",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby libtmux-source &&\n  git -C libtmux-source checkout 2599d45369515aaf2fd5793bfe71cdc20de641b6 &&\n  bundle config set --local path vendor/bundle &&\n  bundle install &&\n  bundle exec ruby capture.rb"
+      ],
+      "verification": {
+        "platform": "Linux",
+        "checks": [
+          {
+            "name": "positive-3.2a",
+            "tmux": "3.2a",
+            "exit": 0,
+            "seconds": 0.529,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "positive-3.7c",
+            "tmux": "3.7c",
+            "exit": 0,
+            "seconds": 0.411,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "negative-import",
+            "tmux": "3.7c",
+            "exit": 1,
+            "seconds": 0.455,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "negative-runtime",
+            "tmux": "3.7c",
+            "exit": 1,
+            "seconds": 5.416,
+            "remainingSocketDirectories": 0
+          }
+        ]
+      }
+    },
+    {
+      "port": "lua",
+      "language": "lua",
+      "sourceRevision": "5baa3f9b830ebdbc76fb50b5b3d7a5ad3f76d443",
+      "sourceRepository": "libtmux/libtmux-lua",
+      "files": [
+        {
+          "name": "capture.lua",
+          "sha256": "a557a96fa3513a318cf6c17ac286d5629b1ffc05c53a466658a22a41891da89f"
+        },
+        {
+          "name": "run.sh",
+          "sha256": "33f7e048ee0682965314f47ff29ae8f57e5c67ab5466f49338b0aae7491c2b5a"
+        }
+      ],
+      "toolchain": [
+        "Lua 5.5.1",
+        "luv 1.52.1-0"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/lua/examples/capture-pane-output",
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lua libtmux-source &&\n  git -C libtmux-source checkout 5baa3f9b830ebdbc76fb50b5b3d7a5ad3f76d443 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh"
+      ],
+      "verification": {
+        "platform": "Linux",
+        "checks": [
+          {
+            "name": "positive-3.2a",
+            "tmux": "3.2a",
+            "exit": 0,
+            "seconds": 0.316,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "positive-3.7c",
+            "tmux": "3.7c",
+            "exit": 0,
+            "seconds": 0.243,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "negative-import",
+            "tmux": "3.7c",
+            "exit": 1,
+            "seconds": 0.23,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "negative-runtime",
+            "tmux": "3.7c",
+            "exit": 1,
+            "seconds": 0.272,
+            "remainingSocketDirectories": 0
+          }
+        ]
+      }
     }
   ],
   "rootExample": {

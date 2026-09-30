@@ -88,9 +88,14 @@ Complete programs with imports, setup, and cleanup:
 [Go](/go/latest/examples/capture-pane-output/) ·
 [Rust](/rs/latest/examples/capture-pane-output/) ·
 [Java](/java/latest/examples/capture-pane-output/) ·
+[Kotlin](/kotlin/latest/examples/capture-pane-output/) ·
+[Scala](/scala/latest/examples/capture-pane-output/) ·
 [.NET](/dotnet/latest/examples/capture-pane-output/) ·
+[F#](/fsharp/latest/examples/capture-pane-output/) ·
 [C++](/cxx/latest/examples/capture-pane-output/) ·
-[Swift](/swift/latest/examples/capture-pane-output/)
+[Swift](/swift/latest/examples/capture-pane-output/) ·
+[Ruby](/ruby/latest/examples/capture-pane-output/) ·
+[Lua](/lua/latest/examples/capture-pane-output/)
 
 <a id="source-inclusion"></a>
 <a id="where-this-comes-from"></a>
