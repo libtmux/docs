@@ -9,10 +9,14 @@ it.skipIf(!SITE_BUILT)('starts port search in that language and leaves root sear
     for (const route of ['search', 'reference']) {
       const html = readFileSync(sitePath(port.slug, 'latest', route, 'index.html'), 'utf8')
       expect(html, `${port.slug}/${route} search scope`).toContain(`data-initial-port="${port.name}"`)
+      if (route === 'reference') {
+        expect(/data-pagefind-filter="port:([^"]+)"/.exec(html)?.[1], `${port.slug} index scope`).toBe(port.name)
+      }
     }
   }
   const root = readFileSync(sitePath('search/index.html'), 'utf8')
   expect(root).not.toContain('data-initial-port=')
+  expect(root).toContain('data-pagefind-filter="port:All languages"')
   const symbols = readFileSync(sitePath('reference/symbols/a/index.html'), 'utf8')
   expect(symbols).toContain(`data-search-href="/${SITE_PREFIX}search/"`)
   expect(symbols).not.toContain('/symbols/latest/search/')

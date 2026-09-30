@@ -17,7 +17,6 @@ import { pickerPaintRules } from '../lib/picker-paint'
 import { buildTarget } from '../lib/versions'
 import type { VersionEntry } from '../lib/versions'
 import { withPortRoot, withRoot } from '../lib/site-root'
-import { PORT_NAME } from '../lib/api-models'
 import { PORT_BY_SLUG, portSourceUrl } from '../lib/ports'
 import { markdownPath, type PageSource } from '../lib/markdown-twins'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath } from '../i18n/contribute'
@@ -270,7 +269,7 @@ const githubUrl = githubPort?.source && githubPort.repo === githubRepo
          at all: "sessions" is a different question in Go than in Swift. -->
     <div
       data-pagefind-body={searchable ? '' : undefined}
-      data-pagefind-filter={`port:${portSlug ? (PORT_NAME[portSlug] ?? portSlug) : 'All languages'}`}
+      data-pagefind-filter={`port:${portSlug ? (PORT_BY_SLUG[portSlug]?.name ?? portSlug) : 'All languages'}`}
     >
       <div data-pagefind-filter={`section:${section}`} data-pagefind-ignore="all" hidden></div>
       <slot />
