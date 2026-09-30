@@ -1,8 +1,8 @@
 name: pr-preview-cleanup
 
 # Deletes pr-<n>/ the moment its PR closes, merged or not. Same-repo PRs
-# get a preview published by deploy-shell.yml's publish-preview job; fork
-# PRs never do (deploy-shell.yml, "Fork PRs get no secrets"), so this job
+# get a preview published by test.yml's publish-preview job; fork
+# PRs never do (test.yml, same-repository guard), so this job
 # is a no-op delete of a prefix that was never written for those — fine,
 # `aws s3 rm --recursive` on an absent prefix is not an error.
 #
@@ -11,7 +11,7 @@ name: pr-preview-cleanup
 # already validated — so it is safe to run unconditionally, including for
 # forks. It also always runs the workflow file from the default branch, so
 # a PR branch can't alter its own cleanup logic. This job gets its own
-# GitHub Environment rather than reusing deploy-shell.yml's docs-preview:
+# GitHub Environment rather than reusing test.yml's docs-preview:
 # whether pull_request_target's OIDC `sub` claim matches pull_request's
 # documented repo:ORG/REPO:pull_request format is unverified
 # (notes/research/06), so its trust-policy entry is kept separate and

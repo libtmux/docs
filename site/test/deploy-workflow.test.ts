@@ -2,8 +2,9 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
+import { createServer } from 'node:net'
 import { describe, expect, it } from 'vitest'
-import { PORTS } from '../src/lib/ports'
+import { API_MODEL_PORTS, PORTS } from '../src/lib/ports'
 
 const reusable = readFileSync(new URL('../../.github/workflows/reusable-deploy.yml', import.meta.url), 'utf8')
 const shell = readFileSync(new URL('../../.github/workflows/deploy-shell.yml', import.meta.url), 'utf8')
@@ -386,11 +387,132 @@ describe('port publisher contract', () => {
   })
 
   it('assembles previews from latest source-bound Ruby and Lua inputs', () => {
-    const preview = shell.slice(shell.indexOf('  build-preview:'), shell.indexOf('  # Same-repo PRs'))
-    sourceCheckoutContract(preview)
-    expect(preview).toContain('pnpm build:site --versions latest')
-    expect(preview).toContain('LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby')
-    expect(preview).toContain('LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua')
+    sourceCheckoutContract(testWorkflow)
+    expect(testWorkflow).toContain('pnpm test:publication --preview "$PREVIEW_PREFIX"')
+    expect(publicationAudit).toContain('./scripts/build-site.sh --versions latest,stable')
+    expect(publicationAudit.indexOf("step 'unit tests'")).toBeLessThan(publicationAudit.indexOf("step 'build'"))
+    expect(shell).not.toMatch(/^  (pull_request|build-preview|publish-preview|check-publish-preview):/m)
+  })
+
+  it('publishes only the same-run artifact that passed both the audit and publisher dry-run', () => {
+    const audit = testWorkflow.slice(testWorkflow.indexOf('  test:'), testWorkflow.indexOf('  check-publish-preview:'))
+    const check = testWorkflow.slice(testWorkflow.indexOf('  check-publish-preview:'), testWorkflow.indexOf('  publish-preview:'))
+    const publish = testWorkflow.slice(testWorkflow.indexOf('  publish-preview:'))
+    expect(audit.indexOf('name: test-all')).toBeLessThan(audit.indexOf('name: Upload audited preview'))
+    expect(audit).toContain('preview-artifact-id: ${{ steps.preview-artifact.outputs.artifact-id }}')
+    expect(check).toContain('needs: test')
+    expect(check).toContain('artifact-ids: ${{ needs.test.outputs.preview-artifact-id }}')
+    expect(check).toContain('digest-mismatch: error')
+    expect(publish).toContain('needs: [test, check-publish-preview]')
+    expect(publish).toContain('artifact-id: ${{ needs.test.outputs.preview-artifact-id }}')
+    expect(publish).toContain('github.event.pull_request.head.repo.full_name == github.repository')
+    expect(publish).toContain('environment: docs-preview')
+    expect(testWorkflow).toContain("format('deploy-shell-pr-{0}', github.event.pull_request.number)")
+    expect((audit + check).replace(/^\s*#.*$/gm, '')).not.toMatch(/id-token:|secrets\.|continue-on-error|always\(\)|run-id:|github-token:/)
+    expect(testWorkflow + shell).not.toMatch(/pull_request_target:|workflow_run:/)
+    expect(publish).not.toMatch(/continue-on-error|always\(\)/)
+    const download = reusable.slice(reusable.indexOf('      # Without github-token'), reusable.indexOf("      - if: inputs.port == '' && inputs.version-kind != 'pr'"))
+    expect(download).toContain('artifact-ids: ${{ inputs.artifact-id }}')
+    expect(download).toContain('digest-mismatch: error')
+    expect(download).not.toMatch(/^\s*(name|run-id|github-token|repository):/m)
+    expect(reusable.indexOf('Validate preview artifact identity')).toBeLessThan(reusable.indexOf('uses: aws-actions/configure-aws-credentials'))
+  })
+
+  it.each(['', '0', '-1', '12,13', '12other', '12\n', '12\nMARKER=1', '17'])(
+    'validates one immutable preview artifact ID: %j', (id) => {
+      const body = /- name: Validate preview artifact identity[\s\S]*?        run: \|\n((?: {10}[^\n]*\n|\n)*)/.exec(reusable)![1].replace(/^ {10}/gm, '')
+      const result = spawnSync('bash', ['-c', body], { encoding: 'utf8', env: { ...process.env, ARTIFACT_ID: id } })
+      expect(result.status).toBe(id === '17' ? 0 : 1)
+      if (id !== '17') expect(result.stderr).toContain('requires one audited artifact ID from this run')
+    },
+  )
+
+  it('retains fresh production root renders before output checks on preview audits', () => {
+    expect(publicationAudit).toContain("step 'production root renders'")
+    expect(publicationAudit).toContain('LIBTMUX_DOCS_VERSION_KIND=trunk LIBTMUX_DOCS_IS_DEFAULT=true')
+    expect(publicationAudit).toContain('--outDir "$LIBTMUX_DOCS_TEST_PRODUCTION_SITE/$locale"')
+    expect(publicationAudit.indexOf("step 'production root renders'")).toBeLessThan(publicationAudit.indexOf("step 'output tests'"))
+    expect(publicationAudit).toContain("echo 'missing production root render'")
+  })
+})
+
+describe('publication URL audits', () => {
+  it('skips an optional browser audit when its server accepts a connection but never responds', async () => {
+    const server = createServer((socket) => socket.destroy())
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
+    try {
+      const address = server.address()
+      if (!address || typeof address === 'string') throw new Error('missing probe server address')
+      const probes = [...publicationAudit.matchAll(/if (curl [^\n]+); then/g)].map((match) => match[1])
+      expect(probes).toHaveLength(2)
+      expect(probes[1]).toContain('--connect-timeout 1 --max-time 3')
+      // spawnSync blocks this process from handling the accepted connection,
+      // so the real curl must hit its deadline instead of receiving a reply.
+      const started = Date.now()
+      const result = spawnSync('bash', ['-c', `exec ${probes[0]}`], {
+        encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, SERVE_SITE: `http://127.0.0.1:${address.port}` },
+      })
+      expect(result.error).toBeUndefined()
+      expect(result.status, result.stderr).toBe(28)
+      expect(Date.now() - started).toBeGreaterThanOrEqual(2500)
+    } finally {
+      server.close()
+    }
+  }, 8000)
+
+  it.each([
+    ['', '', false, true],
+    ['/pr-49', '/pr-49', false, true],
+    ['/pr-49', '', false, false],
+    ['/pr-49', '/pr-50', false, false],
+    ['/pr-49', '/pr-49', true, false],
+  ] as const)('checks sidebar targets within %j with href prefix %j and missing target %j', (prefix, hrefPrefix, missing, valid) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-sidebar-prefix-'))
+    try {
+      for (const { slug } of API_MODEL_PORTS) {
+        const page = join(directory, slug, 'latest/concepts')
+        const reference = join(directory, slug, 'latest/reference')
+        mkdirSync(page, { recursive: true })
+        mkdirSync(reference, { recursive: true })
+        if (!missing || slug !== 'rs') writeFileSync(join(reference, 'index.html'), 'reference')
+        const host = ({ rs: 'docs.rs', go: 'pkg.go.dev', java: 'javadoc.io' } as Record<string, string>)[slug]
+        const links = `<a href="${hrefPrefix}/en/${slug}/latest/reference/">API reference</a>`
+          + (host ? `<a href="https://${host}/">${host}</a>` : '')
+          + (slug === 'py' ? `<a href="${hrefPrefix}/en/py/latest/api/">Upstream reference</a>` : '')
+        writeFileSync(join(page, 'index.html'), `<nav class="sidebar-nav">${links}</nav>`.repeat(2))
+      }
+      const result = spawnSync(process.execPath, ['scripts/check-sidebar-refs.mjs', directory], {
+        cwd: new URL('../..', import.meta.url), encoding: 'utf8',
+        env: { ...process.env, LIBTMUX_DOCS_LOCALES_ROOT: prefix, LIBTMUX_DOCS_LOCALE: 'en' },
+      })
+      expect(result.status, result.stderr).toBe(valid ? 0 : 1)
+      if (!valid) expect(result.stderr).toContain('is linked but not built')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
+  it.each([
+    ['', '/en/py/latest/reference/server/', true],
+    ['/pr-49', '/pr-49/en/py/latest/reference/server/', true],
+    ['/pr-49', '/en/py/latest/reference/server/', false],
+    ['/pr-49', '/pr-50/en/py/latest/reference/server/', false],
+  ] as const)('checks the declared canonical within %j', (prefix, canonical, valid) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-canonical-prefix-'))
+    try {
+      const page = join(directory, 'py/latest/reference/server')
+      mkdirSync(page, { recursive: true })
+      writeFileSync(join(page, 'index.html'), `<link rel="canonical" href="https://libtmux.org${canonical}">`)
+      const result = spawnSync(process.execPath, ['scripts/check-canonicals.mjs', directory], {
+        cwd: new URL('../..', import.meta.url), encoding: 'utf8',
+        env: { ...process.env, LIBTMUX_DOCS_LOCALES_ROOT: prefix, LIBTMUX_DOCS_LOCALE: 'en' },
+      })
+      expect(result.status, result.stderr).toBe(valid ? 0 : 1)
+      if (!valid) expect(result.stderr).toContain('canonicalise somewhere other than themselves')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
   })
 })
 

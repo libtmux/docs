@@ -2,7 +2,7 @@
 # Publication audit: source checks, complete assembly, output and browser audits.
 # This has no development-loop time budget; use pnpm test for fresh sampled rendering.
 #
-# Usage: scripts/test-all.sh [--skip-build]
+# Usage: scripts/test-all.sh [--skip-build | --preview pr-N | --output-only pr-N]
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -12,9 +12,24 @@ export LIBTMUX_DOCS_TEST_SITE="$out"
 SERVE_URL="${LIBTMUX_DOCS_SERVE:-http://localhost:8080}"
 # The served site, one locale segment below the origin. serve.sh serves the
 # bucket root, so a page URL carries the prefix the assembly built under.
-SERVE_SITE="$SERVE_URL/${LIBTMUX_DOCS_LOCALE:-en}"
+preview=""
 skip_build=false
-[[ "${1:-}" == "--skip-build" ]] && skip_build=true
+output_only=false
+case "${1:-}" in
+  '') ;;
+  --skip-build) skip_build=true ;;
+  --preview|--output-only)
+    [[ "${2:-}" =~ ^pr-[1-9][0-9]*$ && $# == 2 ]] || { echo 'expected one preview prefix: pr-N' >&2; exit 1; }
+    preview="/$2"
+    [[ "$1" == --output-only ]] && output_only=true
+    ;;
+  *) echo "unknown publication audit option: $1" >&2; exit 1 ;;
+esac
+export LIBTMUX_DOCS_TEST_PREFIX="$preview"
+SERVE_SITE="$SERVE_URL$preview/${LIBTMUX_DOCS_LOCALE:-en}"
+if [[ -n "$preview" ]]; then
+  export LIBTMUX_DOCS_TEST_PRODUCTION_SITE="${out}.production"
+fi
 
 # shellcheck source=scripts/skip-summary.sh
 . "$(dirname "$0")/skip-summary.sh"
@@ -24,6 +39,9 @@ note_skip() { skipped="${skipped:+$skipped, }$1"; }
 
 step() { printf '\n\033[1m== %s\033[0m\n' "$1"; }
 
+if [[ "$output_only" == true ]]; then note_skip 'source checks and build (explicit --output-only)'; fi
+
+if [[ "$output_only" == false ]]; then
 step 'cached inventories'
 # The inventories are committed, so this only reports their absence — but a
 # build without them silently produces fewer links rather than failing, which
@@ -183,7 +201,40 @@ fi
 # is what `scripts/serve.sh` publishes — so what is checked here is the tree a
 # reader gets, not a near-copy of it.
 step 'build'
-./scripts/build-site.sh
+if [[ -n "$preview" ]]; then
+  LIBTMUX_DOCS_LOCALES_ROOT="$preview" LIBTMUX_DOCS_VERSION="${preview#/}" \
+    LIBTMUX_DOCS_VERSION_KIND=pr LIBTMUX_DOCS_IS_DEFAULT=false \
+    ./scripts/build-site.sh --versions latest,stable
+
+  # Production robots, sitemaps and indexing must still render on a PR.
+  # Two root locale renders cover those contracts without rebuilding ports.
+  step 'production root renders'
+  (
+    flock -x 9
+    defaults="$(node -e 'console.log(JSON.stringify(JSON.parse(require("fs").readFileSync(process.argv[1])).defaultVersion))' "$out$preview/en/versions.json")"
+    locales="$(node --input-type=module -e 'import { LOCALES } from "./site/src/i18n/locales.ts"; console.log(LOCALES.join(" "))')"
+    for locale in $locales; do
+      (cd site && LIBTMUX_DOCS_LOCALES_ROOT='' LIBTMUX_DOCS_PORT='' \
+        LIBTMUX_DOCS_BASE="/$locale/" LIBTMUX_DOCS_ROOT="/$locale/" \
+        LIBTMUX_DOCS_PORT_ROOT=/en LIBTMUX_DOCS_LOCALE="$locale" \
+        LIBTMUX_DOCS_PORT_DEFAULTS="$defaults" LIBTMUX_DOCS_VERSION=latest \
+        LIBTMUX_DOCS_VERSION_KIND=trunk LIBTMUX_DOCS_IS_DEFAULT=true \
+        LIBTMUX_DOCS_SKIP_PAGEFIND=true pnpm exec astro build \
+        --outDir "$LIBTMUX_DOCS_TEST_PRODUCTION_SITE/$locale")
+    done
+    cp "$LIBTMUX_DOCS_TEST_PRODUCTION_SITE/en/robots.txt" "$LIBTMUX_DOCS_TEST_PRODUCTION_SITE/robots.txt"
+  ) 9>.build.lock
+else
+  ./scripts/build-site.sh
+fi
+fi
+
+[[ -f "$out$preview/en/index.html" ]] || { echo "missing audited assembly: $out$preview/en" >&2; exit 1; }
+if [[ -n "$preview" ]]; then
+  [[ -f "$LIBTMUX_DOCS_TEST_PRODUCTION_SITE/en/sitemap-index.xml" ]] || { echo 'missing production root render' >&2; exit 1; }
+  step 'preview isolation'
+  bash scripts/check-preview.sh "$out" "${preview#/}"
+fi
 
 # Named explicitly rather than left to the default. It is the same directory,
 # and saying so is what stops the next person reintroducing a scratch build
@@ -224,15 +275,15 @@ fi
 # simply never emitted.
 # The checks below read the site; `$out` is the bucket root, which also holds
 # robots.txt above every locale. The site itself is one segment in.
-site_out="$out/${LIBTMUX_DOCS_LOCALE:-en}"
+site_out="$out$preview/${LIBTMUX_DOCS_LOCALE:-en}"
 
 step 'sidebar references'
-node scripts/check-sidebar-refs.mjs "$site_out"
+LIBTMUX_DOCS_LOCALES_ROOT="$preview" node scripts/check-sidebar-refs.mjs "$site_out"
 
 # A cross-reference that stops resolving still renders, as plain code, so no
 # link breaks and nothing else fails. Only a floor catches it.
 step 'sidebar references (negative)'
-./scripts/check-sidebar-refs.negative.sh
+LIBTMUX_DOCS_LOCALES_ROOT="$preview" ./scripts/check-sidebar-refs.negative.sh "$site_out"
 
 step 'cross-reference resolution'
 node scripts/check-xrefs.mjs "$site_out"
@@ -254,7 +305,7 @@ node scripts/check-type-links.negative.mjs
 # The reference tree carries no version and no locale, so a page there has no
 # other page to point at. Nothing else asserts a canonical anywhere.
 step 'reference canonicals'
-node scripts/check-canonicals.mjs "$site_out"
+LIBTMUX_DOCS_LOCALES_ROOT="$preview" node scripts/check-canonicals.mjs "$site_out"
 
 step 'reference canonicals (negative)'
 node scripts/check-canonicals.negative.mjs
@@ -282,7 +333,7 @@ node scripts/check-api-fidelity.mjs "$site_out"
 # twin as well — which only a full assembly produces. Both run against a
 # running server; `pnpm test:publication` reports that they were not run rather than
 # implying they passed.
-if curl -sf -o /dev/null "$SERVE_SITE/py/stable/reference/libtmux-server/"; then
+if curl --connect-timeout 1 --max-time 3 -sf -o /dev/null "$SERVE_SITE/py/stable/reference/libtmux-server/"; then
   # Type is checked here rather than with the static suites because half of
   # it is a rendering question: which faces a page opens with is answered by
   # laying the page out, not by reading its HTML.
@@ -307,7 +358,7 @@ if curl -sf -o /dev/null "$SERVE_SITE/py/stable/reference/libtmux-server/"; then
   step 'Ruby and Lua browser coverage'
   (cd site && node scripts/check-ruby-lua.mjs "$SERVE_SITE")
 
-  if curl -sf -o /dev/null "$SERVE_SITE/py/stable/api/api/libtmux.server/"; then
+  if curl --connect-timeout 1 --max-time 3 -sf -o /dev/null "$SERVE_SITE/py/stable/api/api/libtmux.server/"; then
     step 'native page navigation'
     (cd site && node scripts/check-native-shell.mjs "$SERVE_SITE")
 

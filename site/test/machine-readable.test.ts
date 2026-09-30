@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { LOCALES } from '../src/i18n/locales'
 import { PORTS } from '../src/lib/ports'
-import { BUCKET_ROOT, SITE_BUILT } from './site-root'
+import { BUCKET_ROOT, ASSEMBLY_ROOT, PREVIEW_PREFIX, REPO_ROOT, SITE_BUILT } from './site-root'
 
 /**
  * Every page names its source and links its machine-readable forms.
@@ -20,7 +20,7 @@ import { BUCKET_ROOT, SITE_BUILT } from './site-root'
  */
 
 /** Native Sphinx output the publisher deletes before upload. */
-const NATIVE = /^[a-z]{2}\/py\/[^/]+\/api\//
+const NATIVE = /^(?:pr-\d+\/)?[a-z]{2}\/py\/[^/]+\/api\//
 const DATA = fileURLToPath(new URL('../src/data/', import.meta.url))
 const json = (file: string) => JSON.parse(readFileSync(join(DATA, file), 'utf8'))
 
@@ -41,10 +41,10 @@ const value = (tag: string, name: string) => {
 }
 
 function htmlFiles(): string[] {
-  return LOCALES.filter((locale) => existsSync(join(BUCKET_ROOT, locale))).flatMap((locale) =>
-    (readdirSync(join(BUCKET_ROOT, locale), { recursive: true }) as string[])
+  return LOCALES.filter((locale) => existsSync(join(ASSEMBLY_ROOT, locale))).flatMap((locale) =>
+    (readdirSync(join(ASSEMBLY_ROOT, locale), { recursive: true }) as string[])
       .filter((file) => file.endsWith('.html'))
-      .map((file) => `${locale}/${file.replaceAll('\\', '/')}`))
+      .map((file) => `${PREVIEW_PREFIX.slice(1)}${PREVIEW_PREFIX ? '/' : ''}${locale}/${file.replaceAll('\\', '/')}`))
 }
 
 function resolves(href: string, page: string): boolean {
@@ -56,7 +56,7 @@ function resolves(href: string, page: string): boolean {
 
 /** Files at HEAD, for footers that name a source in this repository. */
 function trackedFiles(): Set<string> {
-  const out = execFileSync('git', ['ls-files'], { cwd: join(BUCKET_ROOT, '..'), encoding: 'utf8', maxBuffer: 64 << 20 })
+  const out = execFileSync('git', ['ls-files'], { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 64 << 20 })
   return new Set(out.split('\n').filter(Boolean))
 }
 
@@ -152,8 +152,8 @@ describe.skipIf(!SITE_BUILT)('machine-readable footer', () => {
   it('keeps llms-full.txt and the page twins in step', () => {
     const problems: string[] = []
     let checked = 0
-    for (const locale of LOCALES.filter((locale) => existsSync(join(BUCKET_ROOT, locale, 'llms-full.txt')))) {
-      for (const section of readFileSync(join(BUCKET_ROOT, locale, 'llms-full.txt'), 'utf8').split('\n---\n\n').slice(1)) {
+    for (const locale of LOCALES.filter((locale) => existsSync(join(ASSEMBLY_ROOT, locale, 'llms-full.txt')))) {
+      for (const section of readFileSync(join(ASSEMBLY_ROOT, locale, 'llms-full.txt'), 'utf8').split('\n---\n\n').slice(1)) {
         const url = /^Source: (\S+)$/m.exec(section)?.[1]
         if (!url) {
           problems.push(`${locale}/llms-full.txt: a section names no page`)
@@ -188,8 +188,8 @@ describe.skipIf(!SITE_BUILT)('machine-readable footer', () => {
   it('gives each docs.json page the Markdown that page names', () => {
     const problems: string[] = []
     let checked = 0
-    for (const locale of LOCALES.filter((locale) => existsSync(join(BUCKET_ROOT, locale, 'docs.json')))) {
-      const manifest = JSON.parse(readFileSync(join(BUCKET_ROOT, locale, 'docs.json'), 'utf8')) as { pages: { url: string; markdownUrl: string; title: string }[] }
+    for (const locale of LOCALES.filter((locale) => existsSync(join(ASSEMBLY_ROOT, locale, 'docs.json')))) {
+      const manifest = JSON.parse(readFileSync(join(ASSEMBLY_ROOT, locale, 'docs.json'), 'utf8')) as { pages: { url: string; markdownUrl: string; title: string }[] }
       for (const entry of manifest.pages) {
         const file = join(BUCKET_ROOT, decodeURIComponent(new URL(entry.url).pathname).replace(/^\//, ''), 'index.html')
         if (!existsSync(file)) {

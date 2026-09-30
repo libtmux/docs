@@ -1,8 +1,8 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { PORTS } from '../src/lib/ports'
-import { SITE_BUILT, SITE_PREFIX, publishedHas, publishedPath, sitePath } from './site-root'
+import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedHas, publishedPath, sitePath } from './site-root'
 
 /**
  * The published machine-readable artifacts, checked for shape and counts.
@@ -20,13 +20,14 @@ import { SITE_BUILT, SITE_PREFIX, publishedHas, publishedPath, sitePath } from '
 const has = publishedHas
 const read = (p: string) => readFileSync(sitePath(p), 'utf8')
 const readPublished = (p: string) => readFileSync(publishedPath(p), 'utf8')
+const readProduction = (p: string) => readFileSync(productionPath(p), 'utf8')
 
 const describeIfAssembled = SITE_BUILT ? describe : describe.skip
 
 describeIfAssembled('published exports', () => {
   describe('robots.txt', () => {
     it('names the sitemap by absolute URL', () => {
-      const body = readPublished('robots.txt')
+      const body = readProduction('robots.txt')
       const sitemap = /^Sitemap:\s*(\S+)$/m.exec(body)?.[1]
       expect(sitemap, 'a Sitemap: line').toBeTruthy()
       expect(() => new URL(sitemap!)).not.toThrow()
@@ -34,8 +35,8 @@ describeIfAssembled('published exports', () => {
     })
 
     it('keeps crawlers out of previews, demos and the search index', () => {
-      const body = readPublished('robots.txt')
-      for (const path of ['/pr-', `/${SITE_PREFIX}demo`, `/${SITE_PREFIX}pagefind/`]) {
+      const body = readProduction('robots.txt')
+      for (const path of ['/pr-', '/en/demo', '/en/pagefind/', '/ja/demo', '/ja/pagefind/']) {
         expect(body, `Disallow: ${path}`).toMatch(new RegExp(`^Disallow:\\s*${path}`, 'm'))
       }
     })
@@ -43,23 +44,30 @@ describeIfAssembled('published exports', () => {
 
   describe('sitemap', () => {
     it('indexes at least one sitemap, and each one exists', () => {
-      const index = read('sitemap-index.xml')
+      const index = readProduction('en/sitemap-index.xml')
       const locs = [...index.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])
       expect(locs.length).toBeGreaterThan(0)
       for (const loc of locs) {
         const file = new URL(loc).pathname.replace(/^\//, '')
-        expect(has(file), `${file} referenced by the index`).toBe(true)
+        expect(existsSync(productionPath(file)), `${file} referenced by the index`).toBe(true)
       }
     })
 
     it('excludes preview and demo routes', () => {
-      const index = read('sitemap-index.xml')
+      const index = readProduction('en/sitemap-index.xml')
       const files = [...index.matchAll(/<loc>([^<]+)<\/loc>/g)]
         .map((m) => new URL(m[1]).pathname.replace(/^\//, ''))
-        .filter(has)
-      const urls = files.flatMap((f) => [...readPublished(f).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]))
+      const urls = files.flatMap((f) => [...readProduction(f).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]))
       expect(urls.length, 'sitemap has entries').toBeGreaterThan(0)
       expect(urls.filter((u) => /\/pr-|\/demo/.test(u))).toEqual([])
+    })
+
+    it.runIf(Boolean(PREVIEW_PREFIX))('keeps the audited preview out of indexes', () => {
+      for (const locale of ['en', 'ja']) {
+        expect(has(`${PREVIEW_PREFIX}/${locale}/sitemap-index.xml`)).toBe(false)
+        const html = readPublished(`${PREVIEW_PREFIX}/${locale}/index.html`)
+        expect(html).toMatch(/<meta name="robots" content="noindex, nofollow"/)
+      }
     })
   })
 
@@ -162,7 +170,7 @@ describeIfAssembled('published exports', () => {
     it('is a complete cluster wherever it appears, including x-default', () => {
       // A partial cluster is worse than none: a page that advertises `ja` but
       // not `x-default` tells a crawler the site has no fallback.
-      for (const page of [`${SITE_PREFIX}index.html`, `${SITE_PREFIX}concepts/index.html`, 'ja/index.html']) {
+      for (const page of [`${SITE_PREFIX}index.html`, `${SITE_PREFIX}concepts/index.html`, `${PREVIEW_PREFIX}/ja/index.html`]) {
         if (!has(page)) continue
         const html = readPublished(page)
         const tags = [...html.matchAll(/<link\b[^>]*hreflang="([^"]+)"/g)].map((m) => m[1])

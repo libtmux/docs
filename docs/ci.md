@@ -391,8 +391,6 @@ Triggers and jobs:
 | push to `main` | `registry` → `build` → `publish-root` | bucket root, `docs` environment |
 | push tag `v*` | `registry` → `build` → `publish-root` | bucket root (same as trunk) |
 | `schedule` (four times an hour), `workflow_dispatch` | `registry`, then `build` → `publish-root` when the registry moved (dispatch always rebuilds) | bucket root |
-| `pull_request`, same-repo head | `build` → `publish-preview` | `pr-<n>/`, `docs-preview` environment |
-| `pull_request`, fork head | `build` only | no publish — see below |
 
 `registry` resolves `site/src/data/registry.json` against the live package
 registries, falling back to the `/registry.json` the last deploy published,
@@ -412,42 +410,42 @@ the handful of root-level files — the workflow-level twin of the IAM
 `NotResource` policy that should back it, so a bug here fails the run rather
 than depending on IAM alone.
 
-`publish-preview` fits `reusable-deploy.yml` cleanly: `pr-<n>/` is an
-exclusive prefix like any port's, so it calls the same reusable workflow with
-`version-kind: pr` and no `port` (no manifest entry for a preview).
-Only callers from `libtmux/docs` or `tony/libtmux-docs` may omit `port`.
-Every other caller must supply a port and pass its repository ownership,
-artifact, and build provenance checks before obtaining AWS credentials.
+## PR audit and preview (`test.yml`)
 
-### Fork PRs: build-only, no `workflow_run` handoff — for now
+Every PR runs source checks before generators can refresh committed data,
+then assembles one preview under `pr-<n>/`. The publication output tests,
+link audit and preview isolation check read that exact tree. Fresh production
+root renders for each locale retain sitemap, robots and product indexing
+checks without rebuilding every port. Pushes to `main` retain the full
+production assembly audit.
 
-Fork PRs get no secrets on `pull_request` by design; `pull_request_target`
-with a checkout of PR content is the documented foot-gun this avoids
-entirely — this repo never checks out PR code under `pull_request_target`.
-The two options considered:
+Run the same PR audit locally:
 
-1. **Build-only on forks** (chosen): the `build` job runs unconditionally —
-   with no OIDC and no secrets in scope regardless of who owns the PR head —
-   and `publish-preview`'s `if` gates on
-   `github.event.pull_request.head.repo.full_name == github.repository`. A
-   fork PR gets a green build check and no preview URL.
-2. **`workflow_run` handoff**: a `pull_request` build with no secrets
-   uploads an artifact; a separate workflow, triggered by `workflow_run` and
-   so running from the default branch in this repo's own trust context,
-   downloads it by run ID and publishes to a preview-only role and prefix.
+```console
+$ pnpm test:publication --preview pr-42
+```
 
-This repo went public on 2026-09-06, so a fork PR is now a real scenario and
-option 1 is what ships: a fork's PR builds and is checked, and gets no
-preview URL. That is a degraded experience, not an exposure — no secret and
-no OIDC token is in scope for a fork's `pull_request` run.
+The successful `test` job uploads `preview-dist` and passes its immutable
+artifact ID to `check-publish-preview` and `publish-preview`. Both downloads
+are confined to the same workflow run and fail on a digest mismatch. A missing
+or replaced artifact cannot fall back to another artifact with the same name.
+Publication depends on the audit and both publisher dry-runs succeeding.
+The privileged job treats the artifact as files to publish; it executes no
+script from that artifact.
 
-Option 2 remains the documented improvement and has not been taken. A
-`workflow_run` handoff runs with secrets against a ref the forker controls,
-and every published failure of that pattern comes from trusting `head_sha`
-or `head_repository` without re-validating them in the trusted context. It
-deserves its own change and its own review rather than being added the day
-the repository's visibility changed. Widening the `if` on option 1 is never
-the alternative.
+`publish-preview` calls `reusable-deploy.yml` with `version-kind: pr`, the
+artifact ID, and no `port`. Its exclusive prefix is `pr-<n>/`; it writes no
+port manifest. Only callers from `libtmux/docs` or `tony/libtmux-docs` may omit
+`port`. Port callers retain their source and artifact provenance checks.
+
+Fork PRs run the same audit and dry-run with read-only repository access,
+no OIDC and no secrets. Only a head in the same repository may enter the
+`docs-preview` environment and publish. There is no `workflow_run` handoff
+or checkout of PR code under `pull_request_target`.
+
+The PR workflow shares `deploy-shell-pr-<n>` concurrency with preview cleanup.
+A superseding PR commit cancels the old audit/preview; production publication
+keeps its separate serialized, non-cancelling queue in `deploy-shell.yml`.
 
 ## `pr-preview-cleanup.yml`
 
@@ -478,7 +476,7 @@ concern, not this workflow's.
 | `LIBTMUX_DOCS_BUCKET` | every workflow above | bucket name, not prefix-scoped | repo or org |
 | `LIBTMUX_DOCS_DISTRIBUTION` | shell publication; optional and unused by the port publisher | one CloudFront distribution | repo or org |
 | `LIBTMUX_DOCS_ROLE_ARN` | `deploy-shell.yml`'s `publish-root` (direct job, may be Environment-scoped); each port's own `docs.yml` (passed through a `uses:` job, must be repo/org) | production write role, scoped to that caller's own prefix(es) | see "Used by" |
-| `LIBTMUX_DOCS_PREVIEW_ROLE_ARN` | `deploy-shell.yml`'s `publish-preview` (passed through a `uses:` job) | scoped to `pr-*/` only | repo or org |
+| `LIBTMUX_DOCS_PREVIEW_ROLE_ARN` | `test.yml`'s `publish-preview` (passed through a `uses:` job) | scoped to `pr-*/` only | repo or org |
 | `LIBTMUX_DOCS_PREVIEW_CLEANUP_ROLE_ARN` | `pr-preview-cleanup.yml` (direct job, may be Environment-scoped) | scoped to `pr-*/` delete only | repo, org, or the `docs-preview-cleanup` Environment |
 
 Any secret that flows through a `uses:`/`secrets:` pass-through — every

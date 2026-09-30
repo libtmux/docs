@@ -1,22 +1,8 @@
 name: test
 
-# Everything that can say the docs are wrong, on every push and pull request.
-#
-# `deploy-shell.yml` builds and publishes; it does not run the suite, so until
-# now nothing stopped a change that type-checks and builds cleanly from
-# shipping a reference full of dangling anchors.
-#
-# This runs `scripts/test-all.sh`, the same command used locally, rather than
-# restating its steps. A CI file that lists them separately drifts from the
-# script, and then "it passes locally" and "it passes in CI" stop meaning the
-# same thing.
-#
-# The port references are deliberately not built. Seven of the eight need
-# their own toolchain — Sphinx, docfx, Doxygen, a Swift compiler — each port
-# already runs its own, and installing all seven to check a Markdown change
-# would trade ten minutes for something no port owner asked for. The Ruby and
-# Lua source guides are shell input, not native references, so this job reads
-# their model-pinned sources and stages them before the shell audit.
+# The publication audit builds the PR preview once. Its immutable artifact
+# passes the publisher dry-run before a same-repository PR may publish it.
+# Pushes keep the production assembly audit; deploy-shell owns production.
 
 on:
   push:
@@ -27,14 +13,18 @@ permissions:
   contents: read
 
 concurrency:
-  group: test-${{ github.ref }}
+  group: ${{ github.event_name == 'pull_request' && format('deploy-shell-pr-{0}', github.event.pull_request.number) || format('test-{0}', github.ref) }}
   cancel-in-progress: true
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    outputs:
+      preview-artifact-id: ${{ steps.preview-artifact.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -79,10 +69,94 @@ jobs:
       # cheapest-first inside the script so a failure arrives as early as it
       # can.
       - name: test-all
-        run: pnpm test:publication
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
+            pnpm test:publication --preview "$PREVIEW_PREFIX"
+          else
+            pnpm test:publication
+          fi
         env:
+          PREVIEW_PREFIX: pr-${{ github.event.pull_request.number }}
           LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
           LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
           # Raw source proves the staged guides match the integrated models.
           # Native exporter artifacts stay checked by each port's docs-site job.
           LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua
+
+      - name: Upload audited preview
+        if: github.event_name == 'pull_request'
+        id: preview-artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: preview-dist
+          path: _site/pr-${{ github.event.pull_request.number }}/
+          if-no-files-found: error
+          retention-days: 1
+
+  # No credentials or OIDC in the audit or dry-run, including fork PRs.
+  check-publish-preview:
+    if: github.event_name == 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          artifact-ids: ${{ needs.test.outputs.preview-artifact-id }}
+          digest-mismatch: error
+          path: _site
+      - name: Exercise the publisher against the preview assembly
+        env:
+          LOCALE: en
+          BUCKET: reproduction
+        run: |
+          set -euo pipefail
+          node scripts/publication-metadata.mjs
+          cp scripts/publish-root.sh publish-root.sh
+          cp scripts/publish-default-versions.sh publish-default-versions.sh
+          mv "_site/$LOCALE" dist
+          mkdir bin
+          # Prints each call, and answers the two store reads the
+          # default-version publisher parses.
+          cat > bin/aws <<'SH'
+          #!/usr/bin/env bash
+          case "$2" in
+            describe-key-value-store) echo '{"ETag":"dry-run"}' ;;
+            list-keys) echo '{"Items":[]}' ;;
+            *) printf 'aws'; printf ' %q' "$@"; printf '\n' ;;
+          esac
+          SH
+          chmod +x bin/aws
+          PATH="$PWD/bin:$PATH" bash publish-root.sh
+
+      # Against the build's own versions.json: a preview merges no published
+      # fragments.
+      - name: Exercise the default-version publisher against the preview assembly
+        env:
+          KVS_ARN: reproduction
+        run: |
+          set -euo pipefail
+          PATH="$PWD/bin:$PATH" bash publish-default-versions.sh
+
+  # Forks are audited but never enter an AWS environment or receive secrets.
+  publish-preview:
+    needs: [test, check-publish-preview]
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      path-prefix: pr-${{ github.event.pull_request.number }}
+      artifact: preview-dist
+      artifact-id: ${{ needs.test.outputs.preview-artifact-id }}
+      version-kind: pr
+      environment: docs-preview
+    secrets:
+      role-arn: ${{ secrets.LIBTMUX_DOCS_PREVIEW_ROLE_ARN }}
+      bucket: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
+      distribution: ${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}
