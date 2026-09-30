@@ -43,7 +43,8 @@ const value = (tag: string, name: string) => {
 /** Directory links must belong to the page's library, not just a known repository. */
 function githubSourceMatches(href: string | undefined, page: string): boolean {
   if (!href) return false
-  const port = PORTS.find((entry) => entry.slug === page.split('/')[1])
+  const path = page.replace(/^pr-[1-9][0-9]*\//, '')
+  const port = PORTS.find((entry) => entry.slug === path.split('/')[1])
   if (port?.source) {
     const tree = /^https:\/\/github\.com\/([^/]+\/[^/]+)\/tree\/([^/?#]+)\/(.+?)\/?$/.exec(href)
     return tree?.[1] === port.repo && tree[3] === port.source.path
@@ -55,7 +56,9 @@ function githubSourceMatches(href: string | undefined, page: string): boolean {
 describe('GitHub footer targets', () => {
   it.each(['kotlin', 'scala'])('accepts the declared %s directory at a branch, tag or revision', (slug) => {
     for (const ref of ['master', 'v0.0.1-alpha.17', 'a'.repeat(40), 'feature%2Fsource-links']) {
-      expect(githubSourceMatches(`https://github.com/libtmux/libtmux-java/tree/${ref}/libtmux-${slug}`, `en/${slug}/latest/index.html`)).toBe(true)
+      for (const prefix of ['', 'pr-50/']) {
+        expect(githubSourceMatches(`https://github.com/libtmux/libtmux-java/tree/${ref}/libtmux-${slug}`, `${prefix}en/${slug}/latest/index.html`)).toBe(true)
+      }
     }
   })
 
@@ -75,7 +78,9 @@ describe('GitHub footer targets', () => {
     'https://github.com/unrelated/project/tree/master/libtmux-kotlin',
     'https://example.com/libtmux/libtmux-java/tree/master/libtmux-kotlin',
   ])('rejects an undeclared Kotlin target: %s', (href) => {
-    expect(githubSourceMatches(href, 'en/kotlin/latest/index.html')).toBe(false)
+    for (const prefix of ['', 'pr-50/']) {
+      expect(githubSourceMatches(href, `${prefix}en/kotlin/latest/index.html`)).toBe(false)
+    }
   })
 })
 
