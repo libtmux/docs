@@ -10,6 +10,8 @@ import { shellPrompt, shellThemes } from './src/plugins/ec-shell-prompt.mjs'
  * a config one.
  */
 export default defineEcConfig({
+  // Keep literal tabs in displayed code and clipboard text.
+  tabWidth: 0,
   themes: shellThemes(),
   plugins: [shellPrompt()],
   shiki: { langAlias: { sbt: 'scala' } },

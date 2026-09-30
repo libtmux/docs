@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { chromium } from 'playwright'
 
@@ -101,6 +103,32 @@ export async function checkClipboard(page, base) {
   assert.equal(await actions.getAttribute('open'), null)
   assert(await actions.locator('summary').evaluate((element) => document.activeElement === element), 'Escape returns focus to Page actions')
   console.log('Page actions: Markdown bytes, clipboard refusal, Edit, Print and Escape pass')
+
+  const examples = JSON.parse(readFileSync(new URL('../test/fixtures/product-examples.json', import.meta.url), 'utf8')).examples
+  const example = examples.find((entry) => entry.page === 'ports/go/workspace/internals/examples')
+  assert(example, 'The Go workspace example has a native execution receipt')
+  const response = await page.goto(`${base}/go/latest/workspace/internals/examples/`, { waitUntil: 'load' })
+  assert(response?.ok(), `Go workspace: HTTP ${response?.status()}`)
+  const digest = (text) => createHash('sha256').update(text).digest('hex')
+  for (const file of example.files) {
+    const figure = page.getByRole('figure', { name: file.name, exact: true })
+    const displayed = await figure.locator('.ec-line .code').allTextContents()
+    assert.equal(digest(displayed.map((line) => line === '\n' ? '' : line).join('\n') + '\n'),
+      file.sha256, `${file.name}: rendering preserves executed bytes, including tabs`)
+    await page.evaluate(() => {
+      window.__programCopied = undefined
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+        writeText: async (text) => { window.__programCopied = text },
+      } })
+    })
+    await figure.getByRole('button', { name: 'Copy to clipboard', exact: true }).click()
+    await page.waitForFunction(() => window.__programCopied !== undefined)
+    assert.equal(digest(await page.evaluate(() => window.__programCopied) + '\n'), file.sha256,
+      `${file.name}: the copy button preserves executed bytes`)
+  }
+  assert.equal(await page.locator('.expressive-code .code').first().evaluate((element) =>
+    getComputedStyle(element).tabSize), '2', 'Literal tabs use two-column tab stops')
+  console.log('Complete Go example: rendered and copied files match the native receipt, including tabs')
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
