@@ -3,6 +3,7 @@ title: "C++ workspace builder examples"
 description: "Internal examples for building and inspecting workspaces through the C++ API."
 port: cxx
 product: workspace
+aliases: [examples/workspace-from-file]
 sidebar:
   group: Internals
   label: Examples

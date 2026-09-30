@@ -3,6 +3,7 @@ title: Swift workspace builder examples
 description: Build and inspect a private workspace with a complete Swift program.
 port: swift
 product: workspace
+aliases: [examples/workspace-from-file]
 sidebar:
   group: Internals
   label: Examples
