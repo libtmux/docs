@@ -87,11 +87,11 @@ const PORTS = [
   {
     slug: 'java',
     dir: '~/work/libtmux/libtmux-java/libtmux-mcp/src/main/java/io/github/libtmux/mcp',
-    glob: 'Catalog.java',
-    // Anchored on `tools.add`, the registration itself, because the catalog
-    // reaches it through five factories and two decorators. Yields exactly the
-    // 45 names of `CapabilityRegistryTest.CATALOG_ORDER`.
-    pattern: /tools\.add\(\s*(?:\w+\(\s*)+"([a-z][a-z0-9_]*)"/gs,
+    glob: '{Catalog,*Tools}.java',
+    // Older revisions register in Catalog; newer ones split by toolset and
+    // qualify factories and decorators with Catalog. Anchor on registration
+    // so schema arguments and helper calls cannot become tool names.
+    pattern: /tools\.add\(\s*(?:(?:\w+\.)*\w+\(\s*)+"([a-z][a-z0-9_]*)"/gs,
   },
   {
     slug: 'dotnet',

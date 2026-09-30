@@ -15,11 +15,11 @@ const tool = { name: 'list_sessions', description: 'Selected source contract', i
   type: 'object', properties: { label: { type: 'string', description: 'Selected source argument' } },
 } }
 
-function fixture(slug: 'go' | 'py' | 'ruby', run: (fixture: {
+function fixture(slug: 'go' | 'py' | 'ruby' | 'java', run: (fixture: {
   directory: string; checkout: string; sha: string; model: string; snapshot: string; catalog: string;
   discovery: string; env: NodeJS.ProcessEnv;
   invoke: (script: 'protocol' | 'tools', args?: string[], env?: NodeJS.ProcessEnv) => SpawnSyncReturns<string>;
-}) => void) {
+}) => void, javaLayout: 'catalog' | 'toolsets' = 'catalog') {
   const directory = mkdtempSync(join(tmpdir(), 'libtmux-mcp-source-'))
   const checkout = join(directory, 'source')
   const git = (...args: string[]) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
@@ -31,8 +31,15 @@ function fixture(slug: 'go' | 'py' | 'ruby', run: (fixture: {
       copyFileSync(join(root, file), target)
     }
     write(join(directory, 'package.json'), '{"type":"module"}')
-    write(join(checkout, slug === 'go' ? 'mcp/manifest_catalog.go' : 'src/libtmux_mcp/tools/sessions.py'),
-      slug === 'go' ? 'var catalog = []tool{{name: "list_sessions"}}\n' : 'mcp.tool()(list_sessions)\n')
+    if (slug === 'java') {
+      const directory = join(checkout, 'libtmux-mcp/src/main/java/io/github/libtmux/mcp')
+      write(join(directory, javaLayout === 'catalog' ? 'Catalog.java' : 'InspectTools.java'),
+        `Catalog.tool("helper_only");\ntools.add(${javaLayout === 'catalog' ? 'inspect(' : 'Catalog.literalized(Catalog.tool('}"list_sessions")${javaLayout === 'catalog' ? ')' : '))'};\n`)
+      write(join(directory, 'CatalogTest.java'), 'tools.add(tool("test_only"));\n')
+    } else {
+      write(join(checkout, slug === 'go' ? 'mcp/manifest_catalog.go' : 'src/libtmux_mcp/tools/sessions.py'),
+        slug === 'go' ? 'var catalog = []tool{{name: "list_sessions"}}\n' : 'mcp.tool()(list_sessions)\n')
+    }
     if (slug === 'py') write(join(checkout, 'docs/tools/list-sessions.md'), '# List sessions\n')
     git('init', '-q')
     git('add', '.')
@@ -106,6 +113,24 @@ it.each(['go', 'py'] as const)('binds the %s catalog to its actual MCP source an
     expect(environment.tmp).toContain('libtmux-docs-mcp-')
     expect(existsSync(environment.tmp)).toBe(false)
   })
+})
+
+it.each(['catalog', 'toolsets'] as const)('binds Java %s registrations to runtime schemas and their source lines', (layout) => {
+  fixture('java', ({ sha, catalog, invoke }) => {
+    const captured = invoke('protocol')
+    expect(captured.status, captured.stderr).toBe(0)
+    const generated = invoke('tools')
+    expect(generated.status, generated.stderr).toBe(0)
+    const result = JSON.parse(readFileSync(catalog, 'utf8')).ports.java
+    expect(result.tools).toEqual(['list_sessions'])
+    expect(result.registrations).toEqual([expect.objectContaining({
+      ...tool, schemaStatus: 'runtime', source: {
+        repo: 'libtmux/libtmux-java', revision: sha, extractedRevision: sha,
+        file: `libtmux-mcp/src/main/java/io/github/libtmux/mcp/${layout === 'catalog' ? 'Catalog' : 'InspectTools'}.java`,
+        line: 2,
+      },
+    })])
+  }, layout)
 })
 
 it.each(['core revision', 'MCP revision', 'MCP repository'])('rejects an API model with the wrong %s before starting the server', (field) => {
