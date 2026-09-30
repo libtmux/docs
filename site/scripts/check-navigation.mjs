@@ -102,4 +102,20 @@ export async function checkNavigation(page, base) {
   assert.deepEqual(await page.evaluate(() => window.__navigationProbe), { loads: 3, blank: false, wrongTheme: false })
   assert.equal(await page.locator('html').getAttribute('data-mcp-install-cooldown-enabled'), '1')
   console.log('Navigation: document retained, Back, search, code tabs, menu and saved theme/cooldown pass')
+
+  const legacy = `${base}/go/latest/examples/workspace-from-file/`
+  const current = `${base}/go/latest/workspace/internals/examples/`
+  await page.goto(`${legacy}?from=legacy#where-this-comes-from`, { waitUntil: 'load' })
+  await page.waitForURL(`${current}?from=legacy#where-this-comes-from`)
+  assert.equal(await page.locator('#where-this-comes-from').count(), 1, 'Legacy section still exists')
+  const fallback = await page.context().browser().newContext({ javaScriptEnabled: false })
+  try {
+    const reader = await fallback.newPage()
+    await reader.goto(legacy, { waitUntil: 'load' })
+    await reader.waitForURL(current)
+    assert.match(await reader.locator('h1').textContent(), /Go workspace/)
+  } finally {
+    await fallback.close()
+  }
+  console.log('Redirects: legacy query/section links and the JavaScript-disabled fallback pass')
 }

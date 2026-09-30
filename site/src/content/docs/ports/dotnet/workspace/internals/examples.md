@@ -111,4 +111,7 @@ owned-scope cleanup uses its own lifetime.
 That does not establish completion of programs running in the panes. A build
 failure can leave partial results; the owned server scope removes them here.
 
+<a id="where-this-comes-from"></a>
+<a id="source-inclusion"></a>
+
 [Workspace API source](https://github.com/libtmux/libtmux-dotnet/tree/320dc64f4b8b7815842471327a5e6b84a1499bf8/src/LibTmux.Workspace)

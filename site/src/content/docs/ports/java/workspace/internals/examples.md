@@ -125,4 +125,7 @@ Building creates the layout and sends the pane commands. It does not wait for
 those programs to finish. Keep the session running instead of calling
 `killServer` when adapting this example into an application launcher.
 
+<a id="where-this-comes-from"></a>
+<a id="source-inclusion"></a>
+
 [Workspace API source](https://github.com/libtmux/libtmux-java/tree/842228310449e879ebcaa3f910597757c9dbffd6/libtmux-workspace/src/main/java/io/github/libtmux/workspace)
