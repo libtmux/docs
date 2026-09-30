@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { PORTS } from '../src/lib/ports'
-import { SITE_BUILT, SITE_ROOT, BUCKET_ROOT, sitePath } from './site-root'
+import { SITE_BUILT, SITE_ROOT, BUCKET_ROOT, ASSEMBLY_ROOT, PREVIEW_PREFIX, sitePath } from './site-root'
 
 /**
  * The assembled tree holds nothing the manifest no longer lists.
@@ -54,15 +54,16 @@ describeIfAssembled('assembled tree pruning', () => {
     },
   )
 
-  it('serves no pull-request preview tree', () => {
+  it('serves only the requested preview tree', () => {
     // A preview is deleted when its PR closes. One left behind is noindex, so
     // it is invisible to search and to us — it just keeps being served.
     const previews = readdirSync(BUCKET_ROOT).filter((n) => n.startsWith('pr-'))
-    expect(previews).toEqual([])
+    expect(previews).toEqual(PREVIEW_PREFIX ? [PREVIEW_PREFIX.slice(1)] : [])
+    expect(readdirSync(ASSEMBLY_ROOT).filter((n) => n.startsWith('pr-'))).toEqual([])
   })
 
   it('leaves no build scratch inside the published tree', () => {
-    const stray = readdirSync(BUCKET_ROOT).filter((n) => /\.tmp$|^\.build-|~$/.test(n) && n !== '.build-logs')
+    const stray = readdirSync(ASSEMBLY_ROOT).filter((n) => /\.tmp$|^\.build-|~$/.test(n) && n !== '.build-logs')
     expect(stray, 'scratch left in the output tree').toEqual([])
   })
 

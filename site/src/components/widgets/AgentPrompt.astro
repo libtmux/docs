@@ -3,7 +3,7 @@ import { PORTS } from '../../lib/ports'
 import { promptInputs } from '../../lib/registry'
 import { highlightPrompt } from '../../lib/prompt-highlight'
 import { composeFromParts, portParts, sharedParts, TOPICS, VERSION_SENTINEL } from '../../lib/prompts'
-import { DEFAULT_LOCALE } from '../../i18n/locales'
+import { DEFAULT_LOCALE, localeRoot } from '../../i18n/locales'
 import { SITE_ROOT } from '../../lib/site-root'
 import RerollButton from '../RerollButton.astro'
 
@@ -77,7 +77,7 @@ const initialSlug = defaultPort && items.some((p) => p.slug === defaultPort) ? d
  * optional. Prompts are English because the port trees are.
  */
 const origin = (Astro.site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
-const docsBase = `${origin}/${DEFAULT_LOCALE}`
+const docsBase = `${origin}${localeRoot(DEFAULT_LOCALE).replace(/\/$/, '')}`
 
 // process.env, not import.meta.env: build-site.sh runs astro build many times
 // in one tree and import.meta.env goes stale across them (see BaseLayout).

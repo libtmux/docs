@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { normalizeNativeShell } from '../../scripts/normalize-native-shell.mjs'
+import { recordBuild, verifyBuild } from '../../scripts/publication-provenance.mjs'
 
 describe('native shell URL normalization', () => {
   it('adds the Sphinx shell to old sources and preserves nested links and redirects', async () => {
@@ -68,14 +69,7 @@ describe('native shell URL normalization', () => {
   })
 })
 
-it('normalizes a native artifact in the reusable publisher without a docs checkout', async () => {
-  const { execFileSync } = await import('node:child_process')
-  const workflow = readFileSync(new URL('../../.github/workflows/reusable-deploy.yml', import.meta.url), 'utf8')
-  const inline = /python3 - <<'PY'\n([\s\S]*?)\n\s+PY/.exec(workflow)?.[1]
-  expect(inline, 'publisher includes native URL normalization').toBeTruthy()
-  const lines = inline!.split('\n')
-  const indent = Math.min(...lines.filter((line) => line.trim()).map((line) => /^ */.exec(line)![0].length))
-  const script = lines.map((line) => line.slice(indent)).join('\n')
+it('normalizes native HTML and CSS before hashing and preserves those bytes when publishing', () => {
   const directory = mkdtempSync(join(tmpdir(), 'native-publish-'))
   try {
     mkdirSync(join(directory, 'dist'))
@@ -83,9 +77,20 @@ it('normalizes a native artifact in the reusable publisher without a docs checko
     const css = join(directory, 'dist/theme.css')
     writeFileSync(html, '<script src="/_shell/shell.js"></script>')
     writeFileSync(css, "@import url('https://libtmux.org/_shell/tokens.css');")
-    execFileSync('python3', ['-'], { input: script, cwd: directory, env: { ...process.env, PREFIX: 'en/py/latest' } })
-    expect(readFileSync(html, 'utf8')).toBe('<script src="/en/_shell/shell.js"></script>')
+    const sourceSha = 'a'.repeat(40), docsSha = 'b'.repeat(40)
+    recordBuild(join(directory, 'dist'), {
+      schema: 1, port: 'go', version: 'latest', locale: 'en',
+      docs: { repository: 'libtmux/docs', sha: docsSha, dirty: false },
+      sources: [{ product: 'core', repository: 'libtmux/libtmux-go', sha: sourceSha, dirty: false }],
+    })
+    expect(readFileSync(html, 'utf8')).toContain('<script src="/en/_shell/shell.js"></script>')
     expect(readFileSync(css, 'utf8')).toBe("@import url('/en/_shell/tokens.css');")
+    const before = [readFileSync(html, 'utf8'), readFileSync(css, 'utf8')]
+    verifyBuild(join(directory, 'dist'), {
+      port: 'go', version: 'latest', locale: 'en', prefix: 'en/go/latest',
+      publisherRepository: 'libtmux/docs', publisherSha: docsSha, repository: 'libtmux/libtmux-go', sourceSha,
+    })
+    expect([readFileSync(html, 'utf8'), readFileSync(css, 'utf8')]).toEqual(before)
   } finally {
     rmSync(directory, { recursive: true, force: true })
   }

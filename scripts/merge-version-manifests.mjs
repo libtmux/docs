@@ -9,6 +9,20 @@ function fail(message) {
   throw new Error(`merge-version-manifests: ${message}`)
 }
 
+export function validateReceipt(value, port, version) {
+  const check = (condition, message) => { if (!condition) fail(message) }
+  const DIGEST = /^[0-9a-f]{64}$/
+  const prefix = value?.destination?.prefix
+  const parts = typeof prefix === 'string' ? prefix.split('/') : []
+  check(parts.length === 4 && /^[a-z]{2}(?:-[A-Z]{2})?$/.test(parts[0]) && parts[1] === port && parts[2] === version && parts[3] === '' && !prefix.includes('..'),
+    'publication receipt belongs to another destination')
+  check(value.destination.url === `https://libtmux.org/${prefix}` && value.build?.url === `/${prefix}build-provenance.json` && DIGEST.test(value.build?.sha256 ?? ''), 'invalid publication build/destination')
+  check(value.publisher?.repository === 'libtmux/docs' && /^[0-9a-f]{40}$/.test(value.publisher?.sha ?? ''), 'invalid publication publisher')
+  check(['published', 'verified-existing'].includes(value.operation), 'invalid publication operation')
+  check(Number.isSafeInteger(value.artifact?.id) && value.artifact.id > 0 && typeof value.artifact.name === 'string' && DIGEST.test(value.artifact.sha256 ?? ''), 'invalid publication artifact')
+  check(/^https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/runs\/[0-9]+$/.test(value.run?.url ?? '') && Number.isSafeInteger(value.run?.attempt) && value.run.attempt > 0, 'invalid publication run')
+}
+
 function parseArgs(argv) {
   const options = { base: undefined, fragments: undefined, out: undefined }
   for (let i = 0; i < argv.length; i += 1) {
@@ -42,6 +56,9 @@ export function merge(base, fragments) {
     const entries = manifest.ports[port] ?? []
     if (entries.some((entry) => entry.kind === 'pr' || /^pr-\d+$/.test(entry.slug))) {
       fail(`${port}.json contains a preview entry`)
+    }
+    for (const entry of entries) {
+      if (entry.publication) validateReceipt(entry.publication, port, entry.slug)
     }
     const slugs = new Set(entries.map((entry) => entry.slug))
     const selectedDefault = manifest.defaultVersion[port]

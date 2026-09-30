@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
 import { createHash } from 'node:crypto'
-import { DEFAULT_LOCALE } from '../i18n/locales'
+import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales'
 import { composeFromParts, sharedParts, TOPICS, type PromptContext } from '../lib/prompts'
 import { promptPartsFor, registryFor } from '../lib/registry'
 import { buildsPrompts, PROMPT_PAIRS, textPath, topicPath } from '../lib/prompt-routes'
@@ -26,7 +26,7 @@ import { buildsPrompts, PROMPT_PAIRS, textPath, topicPath } from '../lib/prompt-
 export const GET: APIRoute = ({ site }) => {
   if (!buildsPrompts()) return new Response(null, { status: 404 })
   const origin = (site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
-  const base = `${origin}/${DEFAULT_LOCALE}`
+  const base = `${origin}${localeRoot(DEFAULT_LOCALE).replace(/\/$/, '')}`
   let defaults: Record<string, string> = {}
   try {
     defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
