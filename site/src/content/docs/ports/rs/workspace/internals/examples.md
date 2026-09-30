@@ -1,6 +1,6 @@
 ---
-title: "Rust workspace builder examples"
-description: "Internal examples for building and inspecting workspaces through the Rust API."
+title: Rust workspace builder examples
+description: Build, inspect, and capture a workspace on a private tmux server with Rust.
 port: rs
 product: workspace
 sidebar:
@@ -10,55 +10,137 @@ sidebar:
 tableOfContents: true
 ---
 
-This example builds a workspace on libtmux's isolated test server, captures
-its structure, and shuts the server down. It follows the crate's README
-examples, which are included in the crate's documentation tests.
+Read a workspace file, create two windows and three panes, then capture the
+session as YAML. The example stops its private server after success or failure.
+The `/bin/cat` commands keep panes open without another application or log file.
+
+## Prepare the project
+
+Use Rust 1.97.1, Git, and tmux 3.2a or newer. These commands use a Unix shell.
+Create an empty project and fetch the source revision used by this example:
+
+```console
+$ mkdir rust-workspace-example && cd rust-workspace-example && \
+    mkdir src
+```
+
+```console
+$ git init libtmux-source && \
+    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-rs.git && \
+    git -C libtmux-source fetch --depth=1 origin d4e08b4eaab62ef4eeedab79b47973ae9a1de310 && \
+    git -C libtmux-source checkout --detach FETCH_HEAD
+```
+
+Create the project manifest. Both library crates use that source tree. The
+`test-support` feature provides the public `TestServer` helper, which creates
+and owns the isolated server used by this example.
+
+```toml title="Cargo.toml"
+[package]
+name = "workspace-example"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+libtmux = { path = "libtmux-source/crates/libtmux", features = ["test-support"] }
+tmux-workspace = { path = "libtmux-source/crates/tmux-workspace", default-features = false }
+tokio = { version = "=1.53.1", features = ["macros", "rt-multi-thread", "time"] }
+```
+
+Create the workspace file beside `Cargo.toml`:
+
+```yaml title="workspace.yaml"
+session_name: workspace-example
+windows:
+  - window_name: editor
+    layout: even-horizontal
+    panes: [/bin/cat, /bin/cat]
+  - window_name: logs
+    panes: [/bin/cat]
+```
 
 ## Build and freeze
 
-Use `tmux-workspace`, a matching `libtmux` with its `test-support` feature,
-and Tokio with `macros` and `rt-multi-thread`. The test-support feature exposes
-`TestServer`; tmux must be available on the host.
+Create the complete program below. It reads and validates the file before
+starting tmux, bounds workspace operations to 15 seconds, and explicitly
+checks server shutdown even when an earlier operation fails.
 
-```rust
+```rust title="src/main.rs"
+use std::error::Error;
+use std::time::Duration;
+
 use libtmux::test::TestServer;
-use tmux_workspace::{freeze, Workspace, WorkspaceBuilder};
+use tmux_workspace::{Workspace, WorkspaceBuilder, freeze};
+use tokio::time::timeout;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let workspace = Workspace::from_yaml(
-        "session_name: dev
-windows:
-  - window_name: editor
-    panes: [/bin/sh, /bin/sh]
-",
-    )?;
+async fn main() -> Result<(), Box<dyn Error>> {
+    let source = std::fs::read_to_string("workspace.yaml")?;
+    let workspace = Workspace::from_yaml(&source)?;
     let guard = TestServer::new().await?;
-    let session = WorkspaceBuilder::new(guard.server())
-        .build(&workspace)
-        .await?;
-    assert_eq!(session.windows().await?.len(), 1);
+    let result = timeout(Duration::from_secs(15), async {
+        let session = WorkspaceBuilder::new(guard.server())
+            .build(&workspace)
+            .await?;
+        let windows = session.windows().await?;
+        let panes = session.panes().await?;
+        if windows.len() != 2 || panes.len() != 3 {
+            return Err("expected two windows and three panes".into());
+        }
+        let captured = freeze(&session).await?;
+        if Workspace::from_yaml(&captured.to_yaml())? != captured {
+            return Err("captured workspace did not survive its YAML round trip".into());
+        }
+        println!("built: {} windows", windows.len());
+        println!("panes: {}", panes.len());
+        println!("captured workspace: YAML round trip passed");
+        Ok::<_, Box<dyn Error>>(())
+    })
+    .await
+    .map_err(|error| -> Box<dyn Error> { error.into() })
+    .and_then(|result| result);
 
-    let captured = freeze(&session).await?;
-    assert_eq!(Workspace::from_yaml(&captured.to_yaml())?, captured);
-    guard.shutdown().await?;
-    Ok(())
+    let cleanup = guard.shutdown().await;
+    match (result, cleanup) {
+        (Ok(()), Ok(())) => Ok(()),
+        (Err(error), Ok(())) => Err(error),
+        (Ok(()), Err(error)) => Err(error.into()),
+        (Err(operation), Err(cleanup)) => {
+            Err(format!("workspace failed: {operation}; cleanup failed: {cleanup}").into())
+        }
+    }
 }
 ```
 
-The round trip checks serialization of the captured workspace. It does not
-assert that freezing reproduced the commands in the original YAML.
+`build` returns after constructing the session and sending its pane commands.
+Those commands may still be running. Check application output or another
+readiness signal before depending on an application inside a pane.
+
+`freeze` captures the current session structure and observed pane commands.
+The YAML round trip checks that this captured value can be serialized and
+parsed again. It cannot recover the original command arguments or guarantee
+that the captured workspace recreates each application.
 
 ## Verification
 
-The crate includes its README with `include_str!`, so its Rust examples are
-collected as documentation tests. In a prepared source checkout, run:
+Run the program from the project directory:
 
 ```console
-$ cargo test -p tmux-workspace --doc
+$ cargo run --quiet
 ```
 
-This page combines the README's build and freeze calls. Run the page example
-when changing its sequence as well as the upstream documentation tests.
+Expected output:
 
-[Build and freeze examples](https://github.com/libtmux/libtmux-rs/blob/9331cdf556ea7a1f2589e9c3e6cece6ccdc7765c/crates/tmux-workspace/README.md)
+```text
+built: 2 windows
+panes: 3
+captured workspace: YAML round trip passed
+```
+
+The program removes its private server before returning. If an operation and
+shutdown both fail, the error includes both failures. For a persistent
+workspace, let your application retain an explicitly selected server and
+choose its own shutdown point.
+
+[Builder source](https://github.com/libtmux/libtmux-rs/blob/d4e08b4eaab62ef4eeedab79b47973ae9a1de310/crates/tmux-workspace/src/lib.rs);
+[capture source](https://github.com/libtmux/libtmux-rs/blob/d4e08b4eaab62ef4eeedab79b47973ae9a1de310/crates/tmux-workspace/src/freeze.rs).
