@@ -127,15 +127,15 @@ that accidentally leave its port or version.
 `console`, JSON, and other shared fences survive port filtering. Check that
 shared setup still makes sense in every port's rendered page.
 
-Run the Go topic examples against an isolated server when changing their calls:
+Run the Go examples against isolated servers when changing their calls:
 
 ```console
 $ python3 scripts/check-go-prose.py --checkout /path/to/libtmux-go
 ```
 
-This checks seven examples covering input, capture, options, hooks, waiting,
-and cleanup at the integrated Go revision. It requires Go and tmux on `PATH`;
-it is separate from the ordinary docs test loop.
+This checks eight examples covering transport, input, capture, options, hooks,
+waiting, and cleanup at the integrated Go revision. It requires Go and tmux
+on `PATH`; it is separate from the ordinary docs test loop.
 
 For workspace command examples, build the native CLI from the source revision
 linked by the page, then run:

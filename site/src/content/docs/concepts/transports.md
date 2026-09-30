@@ -164,7 +164,7 @@ window, err := session.ResolveActiveWindow(ctx)
 if err != nil {
 	return err
 }
-pane, _, err := window.ResolveActivePane(ctx)
+pane, err := window.ResolveActivePane(ctx)
 if err != nil {
 	return err
 }
