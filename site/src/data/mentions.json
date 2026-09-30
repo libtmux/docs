@@ -891,6 +891,13 @@
   },
   {
    "port": "dotnet",
+   "symbol": "LibTmux.Server.CreateOwnedAsync",
+   "page": "/dotnet/latest/workspace/internals/guides/",
+   "title": "Use the .NET workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "dotnet",
    "symbol": "LibTmux.Server.CreateSessionAsync",
    "page": "/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
@@ -944,6 +951,13 @@
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.ServerConnectionOptions",
+   "page": "/dotnet/latest/workspace/internals/guides/",
+   "title": "Use the .NET workspace builder",
+   "section": "ports"
   },
   {
    "port": "dotnet",
@@ -1333,6 +1347,13 @@
   {
    "port": "dotnet",
    "symbol": "LibTmux.Workspace.WorkspaceBuilder.BuildAsync",
+   "page": "/dotnet/latest/workspace/internals/guides/",
+   "title": "Use the .NET workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Workspace.WorkspaceBuilder.BuildAsync",
    "page": "/dotnet/latest/workspace/reference/",
    "title": ".NET workspace builder API",
    "section": "ports"
@@ -1431,8 +1452,22 @@
   {
    "port": "dotnet",
    "symbol": "LibTmux.Workspace.WorkspaceResult",
+   "page": "/dotnet/latest/workspace/internals/guides/",
+   "title": "Use the .NET workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Workspace.WorkspaceResult",
    "page": "/dotnet/latest/workspace/reference/",
    "title": ".NET workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Workspace.WorkspaceResult.Unsupported",
+   "page": "/dotnet/latest/workspace/internals/guides/",
+   "title": "Use the .NET workspace builder",
    "section": "ports"
   },
   {
@@ -6128,6 +6163,13 @@
   {
    "port": "swift",
    "symbol": "PanePlan",
+   "page": "/swift/latest/workspace/internals/guides/",
+   "title": "Use the Swift workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "PanePlan",
    "page": "/swift/latest/workspace/internals/topics/",
    "title": "Swift workspace builder behavior",
    "section": "ports"
@@ -6137,13 +6179,6 @@
    "symbol": "PanePlan",
    "page": "/swift/latest/workspace/reference/",
    "title": "Swift workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "swift",
-   "symbol": "Server",
-   "page": "/swift/latest/mcp/examples/",
-   "title": "Swift MCP examples",
    "section": "ports"
   },
   {
@@ -6316,6 +6351,13 @@
   },
   {
    "port": "swift",
+   "symbol": "Server.snapshot()",
+   "page": "/swift/latest/workspace/internals/guides/",
+   "title": "Use the Swift workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
    "symbol": "Server.unsetEnvironment(_:in:)",
    "page": "/topics/environment/",
    "title": "Environment",
@@ -6428,13 +6470,6 @@
   },
   {
    "port": "swift",
-   "symbol": "TmuxHook.command",
-   "page": "/swift/latest/mcp/guides/",
-   "title": "Connect a Swift MCP client",
-   "section": "ports"
-  },
-  {
-   "port": "swift",
    "symbol": "TmuxShellCommand.enter",
    "page": "/swift/latest/workspace/configuration/commands/",
    "title": "Workspace commands",
@@ -6471,8 +6506,22 @@
   {
    "port": "swift",
    "symbol": "ToolAuthority",
+   "page": "/swift/latest/mcp/examples/",
+   "title": "Swift MCP examples",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "ToolAuthority",
    "page": "/swift/latest/mcp/reference/",
    "title": "Swift MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "ToolError",
+   "page": "/swift/latest/mcp/examples/",
+   "title": "Swift MCP examples",
    "section": "ports"
   },
   {
@@ -6541,6 +6590,13 @@
   {
    "port": "swift",
    "symbol": "WindowPlan",
+   "page": "/swift/latest/workspace/internals/guides/",
+   "title": "Use the Swift workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "WindowPlan",
    "page": "/swift/latest/workspace/internals/topics/",
    "title": "Swift workspace builder behavior",
    "section": "ports"
@@ -6568,7 +6624,7 @@
   },
   {
    "port": "swift",
-   "symbol": "withTmuxServer(socketFileName:_:)",
+   "symbol": "WindowPlan.panes",
    "page": "/swift/latest/workspace/internals/guides/",
    "title": "Use the Swift workspace builder",
    "section": "ports"
@@ -6578,6 +6634,13 @@
    "symbol": "Workspace",
    "page": "/swift/latest/workspace/internals/",
    "title": "Swift workspace internals",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "Workspace",
+   "page": "/swift/latest/workspace/internals/guides/",
+   "title": "Use the Swift workspace builder",
    "section": "ports"
   },
   {
@@ -6600,6 +6663,13 @@
    "page": "/examples/workspace-from-file/",
    "title": "Build a workspace from a file",
    "section": "examples"
+  },
+  {
+   "port": "swift",
+   "symbol": "Workspace.decode(json:)",
+   "page": "/swift/latest/workspace/internals/examples/",
+   "title": "Swift workspace builder examples",
+   "section": "ports"
   },
   {
    "port": "swift",
@@ -6652,6 +6722,13 @@
   },
   {
    "port": "swift",
+   "symbol": "Workspace.windows",
+   "page": "/swift/latest/workspace/internals/guides/",
+   "title": "Use the Swift workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
    "symbol": "WorkspaceBuilder",
    "page": "/swift/latest/workspace/reference/",
    "title": "Swift workspace builder API",
@@ -6669,6 +6746,13 @@
    "symbol": "WorkspaceBuilder.build(_:on:)",
    "page": "/swift/latest/workspace/internals/",
    "title": "Swift workspace internals",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "WorkspaceBuilder.build(_:on:)",
+   "page": "/swift/latest/workspace/internals/guides/",
+   "title": "Use the Swift workspace builder",
    "section": "ports"
   },
   {
@@ -6725,6 +6809,13 @@
    "symbol": "builder.applyWorkspace",
    "page": "/ts/latest/workspace/internals/",
    "title": "TypeScript workspace internals",
+   "section": "ports"
+  },
+  {
+   "port": "ts",
+   "symbol": "builder.applyWorkspace",
+   "page": "/ts/latest/workspace/internals/examples/",
+   "title": "TypeScript workspace builder examples",
    "section": "ports"
   },
   {
@@ -7052,13 +7143,6 @@
   {
    "port": "ts",
    "symbol": "server.Server",
-   "page": "/ts/latest/workspace/internals/examples/",
-   "title": "TypeScript workspace builder examples",
-   "section": "ports"
-  },
-  {
-   "port": "ts",
-   "symbol": "server.Server",
    "page": "/ts/latest/workspace/reference/",
    "title": "TypeScript workspace builder API",
    "section": "ports"
@@ -7090,6 +7174,20 @@
    "page": "/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server.newSession",
+   "page": "/ts/latest/mcp/examples/",
+   "title": "TypeScript MCP examples",
+   "section": "ports"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server.newSession",
+   "page": "/ts/latest/workspace/internals/examples/",
+   "title": "TypeScript workspace builder examples",
+   "section": "ports"
   },
   {
    "port": "ts",
@@ -7383,22 +7481,8 @@
   {
    "port": "swift",
    "text": "YAMLWorkspaces",
-   "page": "/swift/latest/workspace/internals/examples/",
-   "line": 19,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "swift",
-   "text": "TmuxWorkspace",
    "page": "/swift/latest/workspace/internals/guides/",
-   "line": 13,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "swift",
-   "text": "TmuxFixture",
-   "page": "/swift/latest/workspace/internals/guides/",
-   "line": 14,
+   "line": 59,
    "why": "not defined in the stated port"
   },
   {

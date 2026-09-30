@@ -1,6 +1,6 @@
 ---
-title: "TypeScript workspace builder examples"
-description: "Internal examples for building and inspecting workspaces through the TypeScript API."
+title: TypeScript workspace builder examples
+description: Build and inspect a workspace on a private tmux server with TypeScript.
 port: ts
 product: workspace
 sidebar:
@@ -10,34 +10,134 @@ sidebar:
 tableOfContents: true
 ---
 
-The workspace example declares a development session, applies it through
-`@libtmux/workspace`, and provides cleanup that tolerates an absent session.
-It also shows the lower-level core API for constructing a session manually.
+Create a workspace with two windows and two editor panes, inspect the result,
+then stop its private tmux server. The `/bin/cat` commands keep panes open
+without depending on an application or log file.
+
+## Prepare the project
+
+Use Bun 1.4.2 or newer, Git, and tmux 3.2a or newer on Unix. Create an empty
+consumer directory:
+
+```console
+$ mkdir workspace-example && cd workspace-example
+```
+
+Fetch the source revision used by this example:
+
+```console
+$ git init libtmux-source && \
+    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-ts.git && \
+    git -C libtmux-source fetch --depth 1 origin 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \
+    git -C libtmux-source checkout --detach FETCH_HEAD
+```
+
+Create the project manifest. Both packages come from the same source tree:
+
+```json title="package.json"
+{
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "libtmux-source/packages/libtmux",
+    "libtmux-source/packages/workspace"
+  ],
+  "dependencies": {
+    "libtmux": "workspace:*",
+    "@libtmux/workspace": "workspace:*"
+  }
+}
+```
+
+The local workspaces keep the consumer and companion on the same core
+module from that checkout.
+
+Install the dependencies:
+
+```console
+$ bun install --production
+```
 
 ## Build and remove a workspace
 
-The `buildWorkspace` function applies `DEVELOPMENT_WORKSPACE`. Pass it the
-`Server` you want to use. `removeWorkspace` checks a fresh snapshot before
-killing the named session and returns whether a session was present.
+Create the program below. The bootstrap session keeps the private server
+running while the program sets its default shell and builds the workspace.
+Cleanup covers a failed build as well as a successful one.
 
-```typescript file="examples/workspace/workspace.ts"
+```typescript title="workspace.ts"
+import { mkdtemp, readdir, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { Server } from "libtmux";
+import { applyWorkspace } from "@libtmux/workspace";
+
+const directory = await mkdtemp(join(tmpdir(), "libtmux-workspace-"));
+const server = new Server({
+  socketPath: join(directory, "tmux.sock"),
+  configFile: "/dev/null",
+  environment: { ...process.env, ENV: "/dev/null", BASH_ENV: "/dev/null" },
+  timeoutMs: 5_000,
+});
+const failures: unknown[] = [];
+try {
+  await server.newSession({ name: "bootstrap", shellCommand: "/bin/cat" });
+  await server.setGlobalOption("session", "default-shell", "/bin/sh");
+  const session = await applyWorkspace(server, {
+    session_name: "workspace-example",
+    windows: [
+      { window_name: "editor", panes: ["/bin/cat", "/bin/cat"] },
+      { window_name: "logs", panes: ["/bin/cat"] },
+    ],
+  });
+  const windows = session.windows.toArray();
+  const editor = windows.find((window) => window.name === "editor");
+  if (windows.length !== 2 || editor?.panes.length !== 2) {
+    throw new Error("Expected two windows and two editor panes");
+  }
+  console.log(`built: ${windows.length} windows`);
+  console.log(`editor: ${editor.panes.length} panes`);
+} catch (error) {
+  failures.push(error);
+} finally {
+  for (const cleanup of [
+    async () => {
+      if ((await readdir(directory)).includes("tmux.sock")) await server.kill();
+      await rm(directory, { recursive: true });
+    },
+  ]) {
+    try { await cleanup(); }
+    catch (error) { failures.push(error); }
+  }
+}
+if (failures.length > 0) throw new AggregateError(failures, "Workspace example failed");
 ```
 
-The `sleep` commands keep panes alive for inspection. They do not represent
-application readiness checks. Cleanup removes the session and its processes,
-so use a dedicated server or a session name owned by the example.
+`newSession` can fail after starting tmux. Cleanup checks the owned socket
+even if that call did not return. If stopping tmux fails, the program keeps
+the socket directory and reports the error.
 
 ## Verification
 
-The port's workspace integration suite calls this source against real tmux.
-From a prepared source checkout, run that suite with:
+Run the program:
 
 ```console
-$ bun test examples/workspace
+$ bun run workspace.ts
 ```
 
-The source include keeps this page's code aligned with the example. Rendering
-the page alone does not execute the integration suite. For a smaller runnable
-entry point, use the [application guide](../guides/).
+Expected output:
 
-[Example source](https://github.com/libtmux/libtmux-ts/blob/f85b8de551353f746d50eaf36bf0112f4fe5a528/examples/workspace/workspace.ts)
+```text
+built: 2 windows
+editor: 2 panes
+```
+
+`applyWorkspace` returns the built session snapshot. Its windows and panes
+reflect the completed build; request another snapshot after later changes.
+The program removes every session on the private server before exiting.
+
+For a workspace that stays open, let the application retain its explicitly
+selected server and choose when to stop it. A failed build can leave partial
+work; the example's server cleanup removes it.
+
+[Example source](https://github.com/libtmux/libtmux-ts/blob/3fe1ca654b81b8cbf4a13b777a001a3298c87a6f/examples/workspace/workspace.ts);
+[Workspace builder source](https://github.com/libtmux/libtmux-ts/blob/3fe1ca654b81b8cbf4a13b777a001a3298c87a6f/packages/workspace/src/builder.ts).

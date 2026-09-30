@@ -89,12 +89,6 @@
     "sha256": "b51fb2fce7c3df5571e8d596c3ca2d636cb38b2e13a8f9d6d278d1d64010f4a7",
     "content": "// The examples in the README's \"Change what is there\" section.\n\nimport LibTmux\n\npublic func buildASessionByHand(_ server: Server) async throws -> Pane {\n    let session = try await server.newSession(named: \"work\", windowName: \"editor\")\n    _ = try await server.setOption(\"@purpose\", to: \"development\", scope: .session(session))\n    let logs = try await server.newWindow(in: session, named: \"logs\").window\n    let pane = try await server.splitWindow(logs, direction: .right)\n    try await server.run(\"tail -f /tmp/build.log\", in: pane)\n    return pane\n}\n\npublic func readBackWhatAPanePrinted(_ server: Server, _ pane: Pane) async throws -> [String] {\n    let lines = try await server.capture(pane)\n    print(lines.suffix(5).joined(separator: \"\\n\"))\n    return lines\n}\n\npublic func spendOneProcessOnAllOfIt(_ server: Server) async throws {\n    var plan = TmuxCommandList()\n    for name in [\"edit\", \"test\", \"logs\"] {\n        plan = plan.then(\"new-window\", [\"-d\", \"-n\", name])\n    }\n    _ = try await server.run(plan)\n}\n"
   },
-  "swift:Examples/Sources/ExampleCode/MCPEmbedding.swift": {
-    "repository": "libtmux/libtmux-swift",
-    "revision": "254f8b2be7eb60cacc3ffcb3ea8e456784f582df",
-    "sha256": "5411fb1acace1269e3d41357fac0b2e7fff2038b44273917def2b383445a5e57",
-    "content": "import LibTmux\nimport LibTmuxMCP\n\npublic func useEmbeddedTools(on server: Server) async throws(ToolError) -> Int {\n    let tools = TmuxTools(server: server)\n    for definition in tools.visibleDefinitions {\n        print(definition.name, definition.summary)\n    }\n    let result = try await tools.call(ToolCall(name: \"list_panes\"))\n    return result.structured[\"panes\"]?.arrayValue?.count ?? 0\n}\n\npublic func useExactEmbeddedTools(on server: Server) -> TmuxTools {\n    let authority = ToolAuthority(\n        toolsets: [],\n        includedTools: [\"create_window\", \"list_sessions\"]\n    )\n    let tools = TmuxTools(server: server, authority: authority)\n    return tools\n}\n"
-  },
   "swift:Examples/Sources/ExampleCode/Workspaces.swift": {
     "repository": "libtmux/libtmux-swift",
     "revision": "254f8b2be7eb60cacc3ffcb3ea8e456784f582df",

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import receipt from './fixtures/capture-examples.json'
+import products from './fixtures/product-examples.json'
 import { remarkPortCode, resolvePortCode } from '../src/plugins/remark-port-code.mjs'
 import { rehypeCodeTabs } from '../src/plugins/rehype-code-tabs.mjs'
 import { docsEntryAvailable, pagePortLinks } from '../src/lib/page-port-links'
@@ -14,13 +15,14 @@ const bodyOf = (page: string) => readPage(page).replace(/^---\n[\s\S]*?\n---\n/,
 const fences = (markdown: string) => [...markdown.matchAll(/^```(\S+)([^\n]*)\n([\s\S]*?)^```/gm)]
   .map((match) => ({ language: match[1], title: /title="([^"]+)"/.exec(match[2])?.[1], code: match[3] }))
 const sha256 = (code: string) => createHash('sha256').update(code).digest('hex')
+const examples = [...receipt.examples, ...products.examples]
 
 afterEach(() => vi.unstubAllEnvs())
 
-describe('verified complete capture programs', () => {
+describe('verified complete programs', () => {
   // The receipt records separate native runs. This gate protects their exact
   // bytes through the renderers; changing a hash alone is not a native test.
-  it.each(receipt.examples)('keeps the executed $port program and project files intact', (example) => {
+  it.each(examples)('keeps the executed $page program and project files intact', (example) => {
     const selected = resolvePortCode(bodyOf(example.page), example.port)
     const blocks = fences(selected)
     for (const file of example.files) {
@@ -34,13 +36,13 @@ describe('verified complete capture programs', () => {
       .map((match) => match[1].replace(/^\$ /gm, '').trim())
     expect(commands).toEqual(example.shellRecipe)
     const program = blocks.find((block) => block.title === example.files[0].name)!
-    const comment = example.port === 'py' ? /^\s*#/ : /^\s*(?:\/\/|\/\*|\* )/
+    const comment = ['python', 'sh'].includes(example.language) ? /^\s*#/ : /^\s*(?:\/\/|\/\*|\* )/
     for (const line of program.code.split('\n').filter((line) => comment.test(line))) {
       expect(line.length, `${example.port}: ${line}`).toBeLessThanOrEqual(80)
     }
   })
 
-  it.each(receipt.examples)('preserves the $port program in its root-mounted and native HTML/Markdown', async (example) => {
+  it.each(examples)('preserves $page in its root-mounted and native HTML/Markdown', async (example) => {
     const body = bodyOf(example.page)
     for (const port of ['', example.port]) {
       vi.stubEnv('LIBTMUX_DOCS_PORT', port)
@@ -51,13 +53,15 @@ describe('verified complete capture programs', () => {
       const window = new Window()
       try {
         window.document.body.innerHTML = html
-        const program = fences(body).find((block) => block.title === example.files[0].name)!
-        const rendered = [...window.document.querySelectorAll(`pre > code.language-${example.language}`)]
-          .map((code) => code.textContent)
-        expect(rendered, `${example.port} HTML`).toContain(program.code)
         const markdown = fences(resolvePortCode(body, port))
-        expect(markdown.find((block) => block.title === example.files[0].name)?.code,
-          `${example.port} Markdown`).toBe(program.code)
+        for (const file of example.files) {
+          const expected = fences(body).find((block) => block.title === file.name)!
+          const rendered = [...window.document.querySelectorAll(`pre > code.language-${expected.language}`)]
+            .map((code) => code.textContent)
+          expect(rendered, `${example.port}/${file.name} HTML`).toContain(expected.code)
+          expect(markdown.find((block) => block.title === file.name)?.code,
+            `${example.port}/${file.name} Markdown`).toBe(expected.code)
+        }
         expect(window.document.querySelectorAll('libtmux-code-tabs')).toHaveLength(0)
       } finally {
         await window.happyDOM.close()
