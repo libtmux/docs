@@ -2215,6 +2215,13 @@
   {
    "port": "go",
    "symbol": "workspace.Parse",
+   "page": "/go/latest/workspace/internals/examples/",
+   "title": "Go workspace builder examples",
+   "section": "ports"
+  },
+  {
+   "port": "go",
+   "symbol": "workspace.Parse",
    "page": "/go/latest/workspace/internals/guides/",
    "title": "Use the Go workspace builder",
    "section": "ports"
@@ -2245,6 +2252,13 @@
    "symbol": "workspace.Workspace",
    "page": "/go/latest/workspace/reference/",
    "title": "Go workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "go",
+   "symbol": "workspace.Workspace.InitialSessionRequest",
+   "page": "/go/latest/workspace/internals/examples/",
+   "title": "Go workspace builder examples",
    "section": "ports"
   },
   {
@@ -5029,6 +5043,13 @@
   {
    "port": "rs",
    "symbol": "freeze.freeze",
+   "page": "/rs/latest/workspace/internals/examples/",
+   "title": "Rust workspace builder examples",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "freeze.freeze",
    "page": "/rs/latest/workspace/internals/guides/",
    "title": "Use the Rust workspace builder",
    "section": "ports"
@@ -5465,6 +5486,13 @@
    "symbol": "src.WorkspaceBuilder",
    "page": "/rs/latest/workspace/reference/",
    "title": "Rust workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "src.WorkspaceBuilder.build",
+   "page": "/rs/latest/workspace/internals/examples/",
+   "title": "Rust workspace builder examples",
    "section": "ports"
   },
   {
@@ -6828,6 +6856,13 @@
   {
    "port": "ts",
    "symbol": "builder.applyWorkspace",
+   "page": "/ts/latest/workspace/internals/guides/",
+   "title": "Use the TypeScript workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "ts",
+   "symbol": "builder.applyWorkspace",
    "page": "/ts/latest/workspace/reference/",
    "title": "TypeScript workspace builder API",
    "section": "ports"
@@ -6863,6 +6898,13 @@
   {
    "port": "ts",
    "symbol": "builder.WorkspaceApplyError",
+   "page": "/ts/latest/workspace/internals/guides/",
+   "title": "Use the TypeScript workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "ts",
+   "symbol": "builder.WorkspaceApplyError",
    "page": "/ts/latest/workspace/internals/topics/",
    "title": "TypeScript workspace builder behavior",
    "section": "ports"
@@ -6872,6 +6914,13 @@
    "symbol": "builder.WorkspaceApplyError",
    "page": "/ts/latest/workspace/reference/",
    "title": "TypeScript workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "ts",
+   "symbol": "builder.WorkspaceApplyError.requiresReplan",
+   "page": "/ts/latest/workspace/internals/guides/",
+   "title": "Use the TypeScript workspace builder",
    "section": "ports"
   },
   {
@@ -7145,6 +7194,13 @@
    "symbol": "server.Server",
    "page": "/ts/latest/workspace/internals/",
    "title": "TypeScript workspace internals",
+   "section": "ports"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server",
+   "page": "/ts/latest/workspace/internals/guides/",
+   "title": "Use the TypeScript workspace builder",
    "section": "ports"
   },
   {

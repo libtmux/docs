@@ -57,7 +57,7 @@ const pnpm = (...args) => {
   return /\.[cm]?js$/.test(entry) ? node(entry, ...args) : run(entry, args)
 }
 const tests = (directory, names = []) => node(vitest, 'run', '--root', directory,
-  '--maxWorkers', '2', '--pool', 'threads', '--fsModuleCache',
+  '--maxWorkers', directory === 'site' ? '3' : '2', '--pool', 'threads', '--fsModuleCache',
   ...(loop === 'medium' ? ['--exclude', '**/*.outer.test.ts'] : []),
   ...names.map((name) => `test/${name}.test.ts`))
 

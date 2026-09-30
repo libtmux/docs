@@ -203,6 +203,73 @@
         "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    ./libtmux-source/gradlew --no-daemon --max-workers=2 \\\n    -p libtmux-source :libtmux-mcp:installDist",
         "sh run-mcp.sh"
       ]
+    },
+    {
+      "port": "go",
+      "language": "go",
+      "sourceRevision": "bb06e26e116e941813ca40bf45e7e3a47d38f52a",
+      "sourceRepository": "libtmux/libtmux-go",
+      "files": [
+        {
+          "name": "main.go",
+          "sha256": "8212bcec780cf5c69da03f90c9621318fc4f54e4f63d1b0147a32618173a60c5"
+        },
+        {
+          "name": "go.mod",
+          "sha256": "389de8aafa2051802de5153ff5020de1529ad034732da91885cff3b9265e324d"
+        },
+        {
+          "name": "workspace.yaml",
+          "sha256": "1caedfffbc378a50dca790038f27c662e855ff968e4f07b01bd99c20ba6a3b57"
+        }
+      ],
+      "toolchain": [
+        "Go 1.26.8"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/go/workspace/internals/examples",
+      "shellRecipe": [
+        "mkdir go-workspace-example && cd go-workspace-example",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-go.git && \\\n    git -C libtmux-source fetch --depth=1 origin bb06e26e116e941813ca40bf45e7e3a47d38f52a && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
+        "go mod tidy",
+        "go run ."
+      ]
+    },
+    {
+      "port": "rs",
+      "language": "rust",
+      "sourceRevision": "d4e08b4eaab62ef4eeedab79b47973ae9a1de310",
+      "sourceRepository": "libtmux/libtmux-rs",
+      "files": [
+        {
+          "name": "src/main.rs",
+          "sha256": "a35348dc9fa3b8db147aa11f253324845e6dee0730c9a65dd08314fd946d171a"
+        },
+        {
+          "name": "Cargo.toml",
+          "sha256": "1255751db8fb75290d2db99649c1be104325c31be652500df07d95ad5cd16ac4"
+        },
+        {
+          "name": "workspace.yaml",
+          "sha256": "1caedfffbc378a50dca790038f27c662e855ff968e4f07b01bd99c20ba6a3b57"
+        }
+      ],
+      "toolchain": [
+        "Rust 1.97.1"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/rs/workspace/internals/examples",
+      "shellRecipe": [
+        "mkdir rust-workspace-example && cd rust-workspace-example && \\\n    mkdir src",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-rs.git && \\\n    git -C libtmux-source fetch --depth=1 origin d4e08b4eaab62ef4eeedab79b47973ae9a1de310 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
+        "cargo run --quiet"
+      ]
     }
   ]
 }
