@@ -1,7 +1,53 @@
 import { describe, expect, it } from 'vitest'
-import { rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { tmpdir } from 'node:os'
+import { dirname, join } from 'node:path'
+import { artifactFromRevision, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
+import { PORTS } from '../src/lib/ports'
 import scalaGuides from '../src/data/port-guides/scala.json'
 import fsharpGuides from '../src/data/port-guides/fsharp.json'
+
+describe('integrated guide inputs', () => {
+  const port = PORTS.find((entry) => entry.slug === 'lua')!
+
+  it('reads the integrated commit regardless of newer HEAD or dirty files', () => {
+    const checkout = mkdtempSync(join(tmpdir(), 'libtmux-integrated-guides-'))
+    const git = (...args: string[]) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8', stdio: 'pipe' }).trim()
+    try {
+      git('init', '-q')
+      for (const path of Object.keys(stagedRoutesFor('lua'))) {
+        mkdirSync(dirname(join(checkout, path)), { recursive: true })
+        writeFileSync(join(checkout, path), '# Integrated guide\n')
+      }
+      git('add', '.')
+      git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'integrated')
+      const revision = git('rev-parse', 'HEAD')
+      writeFileSync(join(checkout, 'README.md'), '# Newer guide\n')
+      git('add', '.')
+      git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'newer')
+      writeFileSync(join(checkout, 'README.md'), '# Dirty guide\n')
+      const artifact = artifactFromRevision(port, checkout, revision)
+      expect(artifact.source).toEqual({ repository: port.repo, revision })
+      expect(artifact.guides.length).toBe(Object.keys(stagedRoutesFor('lua')).length)
+      expect(artifact.guides.every((guide: { content: string }) => guide.content === '# Integrated guide\n')).toBe(true)
+    } finally {
+      rmSync(checkout, { recursive: true, force: true })
+    }
+  })
+
+  it.each(['missing-checkout', 'missing-commit'])('reports the exact setup requirement for %s', (mode) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-missing-guides-'))
+    const checkout = mode === 'missing-checkout' ? join(directory, 'absent') : directory
+    try {
+      if (mode === 'missing-commit') execFileSync('git', ['-C', checkout, 'init', '-q'])
+      expect(() => artifactFromRevision(port, checkout, 'a'.repeat(40)))
+        .toThrow(`integrated guides need libtmux/libtmux-lua@${'a'.repeat(40)} in ${checkout}. Set LIBTMUX_DOCS_CHECKOUT_LUA to a local checkout containing that commit; this check does not fetch.`)
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+})
 
 describe('staged port guide links', () => {
   const routes = {

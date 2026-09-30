@@ -5,21 +5,31 @@ import { fileURLToPath } from 'node:url'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const SOURCE_ONLY = process.env.LIBTMUX_DOCS_TEST_SOURCE_ONLY === '1'
+export const REPO_ROOT = resolve(HERE, '../..')
+export const PREVIEW_PREFIX = process.env.LIBTMUX_DOCS_TEST_PREFIX || ''
+if (PREVIEW_PREFIX && !/^\/pr-[1-9][0-9]*$/.test(PREVIEW_PREFIX)) throw new Error('Invalid test preview prefix')
 
 export const BUCKET_ROOT: string = process.env.LIBTMUX_DOCS_TEST_SITE
   ? resolve(process.env.LIBTMUX_DOCS_TEST_SITE)
   : join(HERE, '../../_site')
 
 /** The default-locale content tree, or a bare shell build used by a test. */
-export const SITE_ROOT = existsSync(join(BUCKET_ROOT, 'en', 'index.html'))
-  ? join(BUCKET_ROOT, 'en')
-  : BUCKET_ROOT
+export const ASSEMBLY_ROOT = join(BUCKET_ROOT, PREVIEW_PREFIX)
+export const SITE_ROOT = existsSync(join(ASSEMBLY_ROOT, 'en', 'index.html'))
+  ? join(ASSEMBLY_ROOT, 'en')
+  : ASSEMBLY_ROOT
 export const SITE_PREFIX = relative(BUCKET_ROOT, SITE_ROOT).replaceAll('\\', '/')
   .replace(/(.+)/, '$1/')
 
 /** Resolve a published URL path from the bucket root. */
 export const publishedPath = (...parts: string[]): string => join(BUCKET_ROOT, ...parts)
 export const publishedHas = (path: string): boolean => existsSync(publishedPath(path))
+
+/** Production SEO is rendered separately when the published artifact is a preview. */
+export const PRODUCTION_ROOT = PREVIEW_PREFIX
+  ? resolve(process.env.LIBTMUX_DOCS_TEST_PRODUCTION_SITE || `${BUCKET_ROOT}.production`)
+  : BUCKET_ROOT
+export const productionPath = (...parts: string[]): string => join(PRODUCTION_ROOT, ...parts)
 
 /** Output suites must not read an assembly while its lock is held. */
 function assemblyRunning(): boolean {

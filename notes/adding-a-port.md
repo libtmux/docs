@@ -1,6 +1,6 @@
 # Adding a port
 
-`site/src/lib/ports.ts` is the single source of truth for the ten ports: nav,
+`site/src/lib/ports.ts` is the single source of truth for supported ports: nav,
 the port switcher, the sidebar scope, the parity table,
 sitemap generation, and the build script all read it. Adding a port means
 editing it and the handful of places that can't derive from it — nowhere
@@ -26,6 +26,14 @@ contracts apply. Decide the renderer and hosting ownership first:
   `astro`, or `native-skinned` fits the language's own generator — reuse an
   existing renderer before inventing a fourth. See `notes/architecture.md`
   for what each renderer expects as input.
+
+Set `docsDispatch` when the port has a reviewed workflow that accepts the
+shared dispatch inputs. `workflow` names its YAML file; optional `ref` names
+an approved caller branch instead of the repository's default branch.
+The caller branch must be admitted by its docs environment. `source-ref`
+selects the source to build independently and never changes that branch.
+Family callers also declare a `language` selector; wrappers inherit the
+workflow and select their own language.
 
 `slug` becomes the URL segment (`/<slug>/<version>/...`) and the manifest key
 in `versions.json` (§4) — pick it once, since changing it later is a URL

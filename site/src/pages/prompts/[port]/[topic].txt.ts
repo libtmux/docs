@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro'
-import { DEFAULT_LOCALE } from '../../../i18n/locales'
+import { DEFAULT_LOCALE, localeRoot } from '../../../i18n/locales'
 import { composeFromParts, sharedParts, type PromptContext } from '../../../lib/prompts'
 import { promptPartsFor } from '../../../lib/registry'
 import { buildsPrompts, PROMPT_PAIRS } from '../../../lib/prompt-routes'
@@ -47,7 +47,7 @@ export function getStaticPaths() {
 export const GET: APIRoute = ({ props, site }) => {
   const { port, topicId, version } = props as Props
   const origin = (site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
-  const ctx: PromptContext = { docsBase: `${origin}/${DEFAULT_LOCALE}`, version }
+  const ctx: PromptContext = { docsBase: `${origin}${localeRoot(DEFAULT_LOCALE).replace(/\/$/, '')}`, version }
   const text = composeFromParts(sharedParts(ctx), promptPartsFor(port, ctx), topicId)
   return new Response(`${text}\n`, {
     headers: { 'content-type': 'text/plain; charset=utf-8' },

@@ -19,7 +19,6 @@ on:
   push:
     branches: [main]
     tags: ['v*']
-  pull_request:
   # Four chances an hour, off the busy top of the hour. GitHub runs a
   # schedule best-effort and drops slots under load: at one an hour, three
   # of five slots in a row never ran while a new release waited. A run whose
@@ -32,14 +31,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.event_name == 'pull_request' && format('deploy-shell-pr-{0}', github.event.pull_request.number) || 'deploy-shell' }}
-  # A preview of a superseded commit is worth nothing, so a new push replaces
-  # the run it obsoletes. Queueing them instead made six runs pile up behind
-  # one another in twenty minutes, each waiting out the one before it.
-  #
-  # Never for a push to trunk: that job syncs S3 and invalidates CloudFront,
-  # and a deploy cancelled halfway through leaves the site inconsistent.
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: deploy-shell
+  # Let each production sync finish before the next one starts.
+  cancel-in-progress: false
 
 jobs:
   # The locale list comes from site/src/i18n/locales.ts, the same module the
@@ -232,147 +226,6 @@ jobs:
             merge-version-manifests.mjs
             skip-unchanged.mjs
           retention-days: 1
-
-  build-preview:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '26'
-          cache: pnpm
-      - name: Install audit tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y ripgrep
-      - run: pnpm install --frozen-lockfile
-
-      - name: Resolve integrated Ruby and Lua sources
-        id: integrated-sources
-        run: |
-          echo "ruby=$(jq -r .revision site/src/data/api/ruby.json)" >> "$GITHUB_OUTPUT"
-          echo "lua=$(jq -r .revision site/src/data/api/lua.json)" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/checkout@v7
-        with:
-          repository: libtmux/libtmux-ruby
-          ref: ${{ steps.integrated-sources.outputs.ruby }}
-          path: .port-sources/ruby
-          persist-credentials: false
-      - uses: actions/checkout@v7
-        with:
-          repository: libtmux/libtmux-lua
-          ref: ${{ steps.integrated-sources.outputs.lua }}
-          path: .port-sources/lua
-          persist-credentials: false
-
-      - name: Assemble and check preview
-        env:
-          PREVIEW_PREFIX: pr-${{ github.event.pull_request.number }}
-          LIBTMUX_DOCS_LOCALES_ROOT: /pr-${{ github.event.pull_request.number }}
-          LIBTMUX_DOCS_VERSION: pr-${{ github.event.pull_request.number }}
-          LIBTMUX_DOCS_VERSION_KIND: pr
-          LIBTMUX_DOCS_IS_DEFAULT: 'false'
-          LIBTMUX_DOCS_CHECKOUT_RUBY: ${{ github.workspace }}/.port-sources/ruby
-          LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
-        run: |
-          pnpm build:site --versions latest
-          bash scripts/check-preview.sh _site "$PREVIEW_PREFIX"
-      - uses: actions/upload-artifact@v7
-        with:
-          name: preview-dist
-          path: _site/pr-${{ github.event.pull_request.number }}/
-          if-no-files-found: error
-          retention-days: 1
-
-  # Same-repo PRs only. Fork PRs get no secrets on `pull_request` by
-  # design (a fork's build step above still runs, with no OIDC and no
-  # secrets in scope — GITHUB_TOKEN aside — so a malicious build script
-  # gains nothing); this job's `if` is what keeps it that way, not the
-  # trigger.
-  #
-  # The repository went public on 2026-09-06, so a fork pull request is now
-  # a real scenario rather than a hypothetical one. The guard is unchanged
-  # and still correct: a fork PR builds and is checked, and simply gets no
-  # preview URL. That is a degraded experience, not an exposure.
-  #
-  # The documented improvement is a `workflow_run` handoff that publishes a
-  # fork's already-built artifact from a trusted context. It is deliberately
-  # NOT taken here: such a workflow runs with secrets against a ref the
-  # forker controls, and every published mistake in that pattern comes from
-  # trusting `head_sha` or `head_repository` without re-validating them. It
-  # is worth building carefully, on its own, with its own review — not
-  # bolted on the day the repo's visibility changed. Widening this `if` is
-  # never the answer (notes/research/06, 07).
-  publish-preview:
-    needs: build-preview
-    if: |
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.head.repo.full_name == github.repository
-    permissions:
-      contents: read
-      id-token: write
-    uses: ./.github/workflows/reusable-deploy.yml
-    with:
-      path-prefix: pr-${{ github.event.pull_request.number }}
-      artifact: preview-dist
-      version-kind: pr
-      environment: docs-preview
-    secrets:
-      role-arn: ${{ secrets.LIBTMUX_DOCS_PREVIEW_ROLE_ARN }}
-      bucket: ${{ secrets.LIBTMUX_DOCS_BUCKET }}
-      distribution: ${{ secrets.LIBTMUX_DOCS_DISTRIBUTION }}
-
-  # `check-publish` needs the production build's artifact, which only a push
-  # produces, so a pull request never exercised the publisher at all. A preview
-  # assembly has the same shape one locale down, so the same two scripts run
-  # against it here and a mistake in either surfaces on the pull request rather
-  # than on the deploy that uploads. No credentials: the recording stand-in
-  # prints what would have been called.
-  check-publish-preview:
-    if: github.event_name == 'pull_request'
-    needs: build-preview
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v8
-        with:
-          name: preview-dist
-          path: _site
-      - name: Exercise the publisher against the preview assembly
-        env:
-          LOCALE: en
-          BUCKET: reproduction
-        run: |
-          set -euo pipefail
-          node scripts/publication-metadata.mjs
-          cp scripts/publish-root.sh publish-root.sh
-          cp scripts/publish-default-versions.sh publish-default-versions.sh
-          mv "_site/$LOCALE" dist
-          mkdir bin
-          # Prints each call, and answers the two store reads the
-          # default-version publisher parses.
-          cat > bin/aws <<'SH'
-          #!/usr/bin/env bash
-          case "$2" in
-            describe-key-value-store) echo '{"ETag":"dry-run"}' ;;
-            list-keys) echo '{"Items":[]}' ;;
-            *) printf 'aws'; printf ' %q' "$@"; printf '\n' ;;
-          esac
-          SH
-          chmod +x bin/aws
-          PATH="$PWD/bin:$PATH" bash publish-root.sh
-
-      # Against the build's own versions.json: a preview merges no published
-      # fragments.
-      - name: Exercise the default-version publisher against the preview assembly
-        env:
-          KVS_ARN: reproduction
-        run: |
-          set -euo pipefail
-          PATH="$PWD/bin:$PATH" bash publish-default-versions.sh
 
   check-publish:
     if: github.event_name != 'pull_request'

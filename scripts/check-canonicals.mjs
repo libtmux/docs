@@ -32,6 +32,7 @@ const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const defaultSite = join(repoRoot, '_site')
 const siteDir = process.argv.slice(2).find((a) => !a.startsWith('--')) ?? defaultSite
 const LOCALE = process.env.LIBTMUX_DOCS_LOCALE ?? 'en'
+const root = `${process.env.LIBTMUX_DOCS_LOCALES_ROOT ?? ''}/${LOCALE}/`
 
 if (!existsSync(siteDir)) {
   console.error(`check-canonicals: no site at ${siteDir} — run ./scripts/build-site.sh`)
@@ -96,7 +97,8 @@ for (const file of pages) {
   // below is relative to the site root, which is that segment. Strip it so the
   // two describe the same thing, and so this check reads the same on a tree
   // built with a prefix and one built without.
-  const declared = new URL(found[1]).pathname.replace(new RegExp(`^/${LOCALE}/`), '/')
+  const pathname = new URL(found[1]).pathname
+  const declared = pathname.startsWith(root) ? `/${pathname.slice(root.length)}` : pathname
   // The page's own path, as served: the directory holding its index.html.
   const own = `${file.slice(siteDir.length, -'index.html'.length)}`
   // Its canonical twin: the same page under this port's default version.

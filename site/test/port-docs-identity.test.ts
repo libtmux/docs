@@ -127,6 +127,9 @@ describe('port docs workflow', () => {
 
   it('never runs a pull request head or restores a cache', () => {
     expect(workflow).not.toContain('pull_request.head')
-    expect(workflow).not.toMatch(/^\s+cache[-a-z]*:/m)
+    expect(workflow).not.toMatch(/uses: (?:actions\/cache|Swatinem\/rust-cache)@/)
+    for (const [, key, value] of workflow.matchAll(/^\s+((?:enable-|bundler-|no-)?cache(?:-disabled)?):\s+(\S+)/gm)) {
+      expect(value, key).toBe(['cache-disabled', 'no-cache'].includes(key) ? 'true' : 'false')
+    }
   })
 })

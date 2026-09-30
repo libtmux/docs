@@ -11,7 +11,7 @@ export interface McpRegistration {
   annotations?: Record<string, unknown>
   enabledByDefault?: boolean
   schemaStatus: string
-  source: { repo: string; revision: string; file: string; line?: number }
+  source: { repo: string; revision: string; extractedRevision?: string; file: string; line?: number }
 }
 
 interface ProtocolItem {
@@ -23,6 +23,9 @@ interface ProtocolItem {
 }
 
 export interface McpReference {
+  repo: string
+  revision: string
+  extractedRevision?: string
   registrations: McpRegistration[]
   selection: Record<string, string>
   protocol: {

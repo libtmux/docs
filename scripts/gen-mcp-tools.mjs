@@ -19,10 +19,10 @@
  * exactly 54 tool pages. An extractor that agrees with the reference
  * implementation's own documentation, name for name, is not guessing.
  *
- * Usage: node scripts/gen-mcp-tools.mjs [--out <path>] [--check]
+ * Usage: node scripts/gen-mcp-tools.mjs [--port <slug>] [--source-bound] [--out <path>] [--check]
  */
 import { execFileSync } from 'node:child_process'
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, globSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join, dirname, relative, resolve } from 'node:path'
 import { mapLine, parseHunks } from '../packages/api-model/src/source-lines.ts'
@@ -30,6 +30,7 @@ import { fileURLToPath } from 'node:url'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const checking = process.argv.includes('--check')
+const sourceBound = process.argv.includes('--source-bound')
 const only = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : undefined
 const outFlag = process.argv.indexOf('--out')
 const out = outFlag === -1 ? join(repoRoot, 'site/src/data/mcp-tools.json') : process.argv[outFlag + 1]
@@ -128,6 +129,11 @@ const PORTS = [
 const portsModule = resolve(dirname(dirname(fileURLToPath(import.meta.url))), 'site/src/lib/ports.ts')
 const { PORTS: PORT_DEFS, productAvailable } = await import(`file://${portsModule}`)
 const portBySlug = Object.fromEntries(PORT_DEFS.map((port) => [port.slug, port]))
+if (only && !portBySlug[only]) throw new Error(`Unknown MCP port: ${only}`)
+if (sourceBound && (!only || process.env.LIBTMUX_DOCS_PORT !== only || !/^[0-9a-f]{40}$/.test(process.env.LIBTMUX_DOCS_SOURCE_SHA ?? ''))) {
+  throw new Error('source-bound MCP catalog requires --port, matching LIBTMUX_DOCS_PORT and LIBTMUX_DOCS_SOURCE_SHA')
+}
+if (only && !productAvailable(portBySlug[only], 'mcp')) process.exit(0)
 for (const port of PORTS) {
   const definition = portBySlug[port.slug]
   const configured = process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || definition.worktree
@@ -152,14 +158,9 @@ if (absentHere.length || absentThere.length) {
 
 
 function filesIn(dir, glob, exclude = []) {
-  try {
-    const args = ['--type', 'f', '--glob', glob, '--base-directory', dir, '--absolute-path']
-    for (const e of exclude) args.push('--exclude', e)
-    const out = execFileSync('fd', args, { encoding: 'utf8' })
-    return out.split('\n').filter(Boolean).filter((f) => !f.includes('__pycache__'))
-  } catch {
-    return []
-  }
+  if (!existsSync(dir)) return []
+  return globSync(glob, { cwd: dir, exclude }).map((file) => join(dir, file))
+    .filter((file) => !file.includes('__pycache__') && statSync(file).isFile()).sort()
 }
 
 /**
@@ -190,9 +191,9 @@ function selectsToolsets(dir) {
 const git = (checkout, ...args) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8' }).trim()
 const previous = only && existsSync(out) ? JSON.parse(readFileSync(out, 'utf8')) : undefined
 const results = previous ? { ...previous.ports } : {}
+const relevant = PORTS.filter((port) => !only || port.slug === only)
 const missing = []
-for (const port of PORTS) {
-  if (only && port.slug !== only) continue
+for (const port of relevant) {
   const dir = expand(port.dir)
   if (!existsSync(dir)) {
     missing.push(port.slug)
@@ -200,7 +201,15 @@ for (const port of PORTS) {
   }
   const head = git(port.checkout, 'rev-parse', 'HEAD')
   const apiModel = JSON.parse(readFileSync(join(repoRoot, 'site/src/data/api', `${port.slug}.json`), 'utf8'))
-  const revision = apiModel.sources?.find((source) => source.repo === port.repo && source.product === 'mcp')?.revision ?? head
+  const source = apiModel.sources?.find((entry) => entry.repo === port.repo && entry.product === 'mcp')
+  if (sourceBound && (apiModel.port !== port.slug || apiModel.revision !== process.env.LIBTMUX_DOCS_SOURCE_SHA ||
+      (source?.extractedRevision ?? source?.revision) !== head)) {
+    throw new Error(`${port.slug}: API model must describe the selected source and actual MCP checkout ${head}`)
+  }
+  if (sourceBound && git(port.checkout, 'status', '--porcelain', '--untracked-files=no')) {
+    throw new Error(`${port.slug}: MCP checkout has tracked source changes`)
+  }
+  const revision = sourceBound ? head : source?.revision ?? head
   const names = new Map()
   for (const file of filesIn(dir, port.glob, port.exclude)) {
     const text = readFileSync(file, 'utf8')
@@ -215,7 +224,8 @@ for (const port of PORTS) {
   }
   const snapshotFile = join(repoRoot, 'site/src/data/mcp-protocol', `${port.slug}.json`)
   const snapshot = existsSync(snapshotFile) ? JSON.parse(readFileSync(snapshotFile, 'utf8')) : undefined
-  if (snapshot && snapshot.revision !== head) throw new Error(`${port.slug}: MCP protocol snapshot describes another source revision`)
+  if (snapshot && (snapshot.revision !== head || snapshot.repo !== port.repo)) throw new Error(`${port.slug}: MCP protocol snapshot describes another source revision or repository`)
+  if (sourceBound && !snapshot) throw new Error(`${port.slug}: source-bound MCP catalog requires a runtime protocol snapshot`)
   const protocols = new Map((snapshot?.protocol.tools ?? []).map((tool) => [tool.name, tool]))
   const registrations = [...names.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([name, registration]) => {
     const tool = protocols.get(registration.wireName)
@@ -228,6 +238,8 @@ for (const port of PORTS) {
   })
   const unregistered = [...protocols.keys()].filter((name) => !registrations.some((registration) => registration.wireName === name))
   if (unregistered.length) throw new Error(`${port.slug}: runtime tools absent from source registrations: ${unregistered.join(', ')}`)
+  const unavailable = registrations.filter((entry) => entry.schemaStatus !== 'runtime' || !entry.inputSchema)
+  if (sourceBound && unavailable.length) throw new Error(`${port.slug}: runtime schemas missing for ${unavailable.map((entry) => entry.wireName).join(', ')}`)
   results[port.slug] = {
     tools: [...names.keys()].sort(), registrations,
     wirePrefix: port.wirePrefix ?? '',
@@ -242,7 +254,7 @@ if (missing.length) {
   // no matrix, so neither mode proceeds. Only --check tolerates it: CI clones
   // this repository alone and the comparison happens where the ports are.
   const note = `gen-mcp-tools: no checkout for ${missing.join(', ')}`
-  if (checking) {
+  if (checking && !sourceBound) {
     console.log(`${note} — skipping the comparison`)
     process.exit(0)
   }
@@ -254,7 +266,7 @@ if (missing.length) {
 // this the prefix-stripping pattern is self-confirming: an unprefixed tool
 // would simply not be found, and the claim that a port prefixes every tool
 // would be true only of the tools the instrument can see.
-for (const port of PORTS) {
+for (const port of relevant) {
   if (!port.prefixProbe) continue
   const violations = new Set()
   for (const file of filesIn(expand(port.dir), port.glob, port.exclude)) {
@@ -272,10 +284,10 @@ for (const port of PORTS) {
 }
 
 // Cross-check against the reference implementation's own documentation.
-const docsDir = expand('~/work/python/libtmux-mcp/docs/tools')
-let documented = null
-if (existsSync(docsDir)) {
-  documented = filesIn(docsDir, '*.md')
+const docsDir = join(PORTS.find((port) => port.slug === 'py').checkout, 'docs/tools')
+let referenceDocumented = previous?.referenceDocumented ?? null
+if ((!only || only === 'py') && existsSync(docsDir)) {
+  const documented = filesIn(docsDir, '*.md')
     .map((f) => f.split('/').pop().replace(/\.md$/, '').replaceAll('-', '_'))
     .filter((n) => n !== 'index')
     .sort()
@@ -288,9 +300,10 @@ if (existsSync(docsDir)) {
     if (onlyCode.length) console.error(`  extracted, not documented: ${onlyCode.join(', ')}`)
     process.exit(1)
   }
+  referenceDocumented = documented.length
 }
 
-const slugs = PORTS.map((p) => p.slug)
+const slugs = PORTS.map((p) => p.slug).filter((slug) => results[slug])
 
 /*
  * A port whose server is on disk always registers something. Zero means the
@@ -299,7 +312,7 @@ const slugs = PORTS.map((p) => p.slug)
  * kept exiting 0 while reporting `dotnet:0` until the staleness check noticed
  * the file had emptied.
  */
-const silent = PORTS.filter((p) => results[p.slug].tools.length === 0 && existsSync(expand(p.dir)))
+const silent = relevant.filter((p) => results[p.slug].tools.length === 0 && existsSync(expand(p.dir)))
 if (silent.length) {
   console.error('gen-mcp-tools: a port with a server on disk matched no tools')
   for (const p of silent) console.error(`  ${p.slug}: ${p.dir} (${p.glob})`)
@@ -316,7 +329,7 @@ const payload = {
   ports: results,
   universe,
   coverage,
-  referenceDocumented: documented?.length ?? null,
+  referenceDocumented,
 }
 
 const text = JSON.stringify(payload, null, 2) + '\n'
