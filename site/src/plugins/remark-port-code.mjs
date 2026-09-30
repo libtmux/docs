@@ -1,31 +1,9 @@
-import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-/**
- * The committed copy of every source a fence inlines, written by
- * `scripts/gen-example-sources.mjs`.
- *
- * A static import, like `site/src/data/mcp-tools.json` elsewhere, and not a
- * path read at runtime: this module is bundled, so `import.meta.url` inside
- * the build points at `.astro/.prerender/chunks/`, and a path relative to it
- * resolves to nothing. That failure is quiet in the worst way — the cache
- * simply looks empty, and the build reports the source as missing rather than
- * as unreadable.
- */
+import { resolvePortBody, resolvePortContent } from '../lib/workspace-shared-slots.ts'
+/** Static import keeps source bytes available in bundled HTML and Markdown exports. */
 import CACHE from '../data/example-sources.json' with { type: 'json' }
 import { visit } from 'unist-util-visit'
-
-/**
- * One prose source, per-language code.
- *
- * Playwright serves the same guide at /docs/intro and /python/docs/intro with
- * the code samples swapped. This does the same thing without duplicating the
- * prose: a page carries a fenced block per language, and a build for one port
- * drops the fences belonging to the others.
- *
- * The root build keeps every fence, which is what makes the cross-language
- * view work and what keeps a page readable while it is being written.
- */
 
 /**
  * Fence language to port slug. A language absent here — console, json, yaml,
@@ -62,26 +40,7 @@ export const LANG_TO_PORT = {
   swift: 'swift',
 }
 
-/**
- * Checkout root per port, mirroring ports.ts. Used to resolve `file=`.
- * @type {Record<string, string | undefined>}
- */
-/**
- * Where a `file=` fence reads its example from.
- *
- * The `-docs` worktree, not the main checkout, and for the same reason the
- * reference generators use it: every port repository is public, so a change
- * an example needs — a `region:` marker delimiting the lines a page quotes —
- * cannot be committed to `master`. The worktrees sit on `docs-site`, which
- * pushes to the private fork, so a marker has somewhere to live.
- *
- * Reading the main checkout meant a marker added on `docs-site` was invisible
- * here while being visible to the reference build, which is a confusing half
- * state: the same file, two versions, depending on which part of the assembly
- * asked.
- *
- * Python has no worktree — its docs are built from the checkout directly.
- */
+/** Checkout locations used to refresh the revision-bound cache. */
 export const CHECKOUTS = {
   py: '~/work/python/libtmux',
   ruby: '~/work/libtmux/libtmux-ruby-docs',
@@ -101,21 +60,7 @@ export const CHECKOUTS = {
 
 export const expand = (p) => (p.startsWith('~/') ? join(homedir(), p.slice(2)) : p)
 
-/**
- * Where a port's sources actually are, for this run.
- *
- * `CHECKOUTS` names the paths on the machine this site is normally assembled
- * on. A CI runner has none of them: it checks a port out wherever the runner
- * puts it, so a build there resolved `~/work/libtmux/libtmux-rs-docs`, found
- * nothing, and failed every `file=` fence in that port's pages.
- *
- * `LIBTMUX_DOCS_CHECKOUT_<SLUG>` overrides one port, uppercased —
- * `LIBTMUX_DOCS_CHECKOUT_RS=/home/runner/work/libtmux-rs/libtmux-rs`. Per
- * port rather than one root, because a runner building one port has exactly
- * that port checked out and should not be able to satisfy another port's
- * fences by accident: an unset override is an error at read time, which is
- * the behaviour that catches a half-configured job.
- */
+/** A source-bound CI build supplies its selected checkout through an override. */
 export function checkoutFor(owner) {
   const override = process.env[`LIBTMUX_DOCS_CHECKOUT_${owner.toUpperCase()}`]
   return expand(override || CHECKOUTS[owner] || '')
@@ -134,6 +79,34 @@ export function parseMeta(meta) {
   return out
 }
 
+/** The Markdown twin uses the same prose ownership and source reader as HTML. */
+export function resolvePortCode(body, port, authoredPort, link = (href) => href) {
+  const out = []
+  let fence
+  for (const line of resolvePortBody(body, authoredPort || port).split('\n')) {
+    const marker = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line)
+    if (!fence && marker && !(marker[1][0] === '`' && marker[2].includes('`'))) {
+      const [, language = '', metadata = ''] = /^(\S*)(.*)$/.exec(marker[2].trimStart())
+      const owner = LANG_TO_PORT[language.toLowerCase()]
+      const dropping = Boolean(port && owner && owner !== port && authoredPort !== port)
+      const meta = parseMeta(metadata)
+      fence = { marker: marker[1][0], length: marker[1].length, dropping, replaced: Boolean(meta.file && owner) }
+      if (dropping) continue
+      out.push(line)
+      if (fence.replaced) out.push(readFence(owner, meta, 'Markdown export'))
+    } else if (fence && marker && marker[1][0] === fence.marker
+      && marker[1].length >= fence.length && !marker[2].trim()) {
+      if (!fence.dropping) out.push(line)
+      fence = undefined
+    } else if (!fence?.dropping && !fence?.replaced) {
+      out.push(fence ? line : line
+        .replace(/(`+).*?\1|(\]\()([^\s)]+)(?=[\s)])/g, (all, code, prefix, href) => code ? all : `${prefix}${link(href)}`)
+        .replace(/^( {0,3}\[[^\]]+\]:\s*)(\S+)/, (_all, prefix, href) => `${prefix}${link(href)}`))
+    }
+  }
+  return out.join('\n').replace(/\n{3,}/g, '\n\n')
+}
+
 /**
  * Slice a file between `# region: name` / `# endregion` style markers, so a
  * page can quote one function out of a longer tested example. The comment
@@ -149,17 +122,35 @@ function sliceRegion(source, region) {
 
 export function remarkPortCode() {
   const port = process.env.LIBTMUX_DOCS_PORT || ''
+  const processor = this
 
   return (tree, file) => {
     const removals = []
     // A language-owned guide may also show its parent's API or build files.
     // Filter alternate examples only in the shared, cross-language prose.
     const authoredPort = file?.data?.astro?.frontmatter?.port
+    const raw = String(file?.value ?? '')
+    const { body: selected, portAt } = resolvePortContent(raw, authoredPort || port || undefined)
+    // Parse the selected source before headings, highlighting or API linking.
+    // The Markdown export uses the same selector, including nested regions.
+    if (raw !== selected) tree.children = processor.parse(selected).children
+
+    visit(tree, 'inlineCode', (node) => {
+      const owner = portAt(node.position?.start.offset ?? -1)
+      if (!owner) return
+      node.data ??= {}
+      node.data.hProperties = { ...node.data.hProperties, dataDocPort: owner }
+    })
 
     visit(tree, 'code', (node, _index, parent) => {
       const lang = (node.lang || '').toLowerCase()
       const owner = LANG_TO_PORT[lang]
       const meta = parseMeta(node.meta)
+
+      if (port && owner && owner !== port && authoredPort !== port) {
+        removals.push([parent, node])
+        return
+      }
 
       // A fence may name a file in that port's checkout instead of carrying a
       // copy of it. Reading it at build time is what stops a snippet drifting
@@ -168,9 +159,6 @@ export function remarkPortCode() {
         node.value = readFence(owner, meta, file?.path)
       }
 
-      // Untagged fences and shared languages (console, json, ...) stay in
-      // every build. Only a fence that belongs to a *different* port goes.
-      if (port && owner && owner !== port && authoredPort !== port) removals.push([parent, node])
     })
 
     for (const [parent, node] of removals) {
@@ -181,39 +169,26 @@ export function remarkPortCode() {
 }
 
 /**
- * The body of a `file="..."` fence, read from the port's checkout.
- *
- * Exported because the HTML pages are not the only consumer: llms-full.txt has
- * to inline the same content, and reading it from the Markdown *source* there
- * would ship a file full of empty code fences — precisely the source-versus-
- * resolved bug notes/research/10-llms-and-agents.md exists to document. One
- * reader, so the two cannot disagree.
- */
-/**
  * @param {string} owner
  * @param {{ file?: string, region?: string }} meta
  * @param {string} [pagePath]
  * @returns {string}
  */
 export function readFence(owner, meta, pagePath) {
-  const abs = join(checkoutFor(owner), meta.file)
-  /*
-   * The checkout wins when it is there, so a local build always shows what
-   * the port currently tests and the cache can never mask a change. The cache
-   * is what makes the build run where the checkouts are not — every CI runner
-   * — and `gen-example-sources.mjs --check` in the suite is what keeps the two
-   * in step. Only both being absent is an error.
-   */
-  let source
-  if (existsSync(abs)) source = readFileSync(abs, 'utf8')
-  else source = CACHE[`${owner}:${meta.file}`]
+  const cached = CACHE[`${owner}:${meta.file}`]
+  // Assembly refreshes the cache with git show at the documented revision.
+  // Reading a nearby working tree here would silently replace those bytes.
+  let source = cached?.content
+  if (process.env.LIBTMUX_DOCS_PORT === owner && process.env.LIBTMUX_DOCS_SOURCE_SHA
+      && cached?.revision !== process.env.LIBTMUX_DOCS_SOURCE_SHA) {
+    throw new Error(`${pagePath ?? 'page'}: ${owner}:${meta.file} does not match the selected source revision`)
+  }
 
   if (source === undefined) {
     // Fail the build rather than ship a silently empty example: a missing
     // tested source is exactly the drift this is meant to catch.
     throw new Error(
       `${pagePath ?? 'page'}: cannot inline ${meta.file} for ${owner} — ` +
-        `absent from ${checkoutFor(owner) || '<no checkout configured>'} and from ` +
         'site/src/data/example-sources.json (run scripts/gen-example-sources.mjs)',
     )
   }

@@ -1,37 +1,18 @@
 /**
- * The `llms.txt` family, built from the same content collection the pages are.
- *
- * `notes/research/10-llms-and-agents.md` sets the rule this follows: machine-
- * readable output must come from the *resolved* content, never from doc-comment
- * source. For the shell that is easy — its prose is hand-written Markdown, so
- * source and resolved content are the same text — and it is the reason these
- * files are generated here rather than by a post-build HTML-to-Markdown pass.
- *
- * What is genuinely new is that a per-port build gets a per-port file. The
- * remark plugin drops other ports' fences from the HTML; this does the same to
- * the Markdown, so `/py/stable/llms-full.txt` carries Python and no other
- * language. An agent pointed at one port's documentation gets one port's code,
- * which is the whole point of the per-language mechanism applied to the one
- * consumer that cannot see the language switcher.
- *
- * The Markdown-twins integration appends generated MCP contracts after their
- * HTML and Markdown are available. The language API reference is indexed in
- * `llms.txt` but not inlined into `llms-full.txt`. .NET's reference alone is
- * 1.5 MB of Markdown across 215 files, which would make the full-text file
- * useless for the context windows it exists to fit into. Agents that want it
- * can follow the URL.
+ * LLM exports use the HTML renderer's port selection and example sources.
+ * API references are linked, rather than inlined into the full prose export.
  */
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
-import { LANG_TO_PORT, parseMeta, readFence } from '../plugins/remark-port-code.mjs'
+import { resolvePortCode } from '../plugins/remark-port-code.mjs'
 import { PORTS, PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, productAvailable, referenceUrl, workspaceOverviewNotice } from './ports.ts'
 import { DEFAULT_LOCALE } from '../i18n/locales.ts'
 import { buildLocale, localeOf, sourceIdOf } from '../i18n/resolve.ts'
 import { buildTarget } from './versions.ts'
-import { docsPath, docsRoutePath, type DocsPage } from './docs-paths.ts'
+import { docsPath, docsRoutePath, proseHref, type DocsPage } from './docs-paths.ts'
 import { docsEntryAvailable } from './page-port-links.ts'
 import type { Locale } from '../i18n/locales.ts'
-import { PORT_ROOT } from './site-root.ts'
+import { PORT_ROOT, SITE_ROOT } from './site-root.ts'
 import { API_MODELS } from './api-models.ts'
 import { productApiHref, productApiRoots } from './product-api.ts'
 
@@ -42,60 +23,6 @@ export interface LlmsPage {
   url: string
   section: string
   body: string
-}
-
-/**
- * Turn a page's Markdown *source* into the Markdown a reader of this build
- * would actually see: other ports' fences dropped, `file=` fences filled in.
- *
- * Both halves matter, and the second is the one that is easy to forget.
- * `entry.body` is source, and a `file="examples/capture/capture.ts"` fence has
- * an empty body in source — the remark plugin reads the checkout while
- * rendering HTML. Concatenating source into llms-full.txt would therefore ship
- * a file whose TypeScript examples are all blank, which is exactly the
- * source-versus-resolved bug notes/research/10-llms-and-agents.md was written
- * about. So this calls the same reader the plugin does.
- *
- * A line scan rather than an AST walk on purpose: Astro has already parsed
- * this text once, and re-parsing it to delete four lines is the more fragile
- * of the two. Nested fences are the one thing a scanner gets wrong, and the
- * docs collection has none.
- */
-export function resolvePortCode(body: string, port: string | undefined): string {
-  const lines = body.split('\n')
-  const out: string[] = []
-  let inFence = false
-  // Drop this fence entirely (it belongs to another port), or drop just its
-  // source body (the plugin replaces it with the file's contents).
-  let dropping = false
-  let replaced = false
-  for (const line of lines) {
-    const fence = line.match(/^```(\S*)(.*)$/)
-    if (fence && !inFence) {
-      inFence = true
-      const owner = LANG_TO_PORT[fence[1].toLowerCase()]
-      dropping = Boolean(port) && Boolean(owner) && owner !== port
-      replaced = false
-      if (dropping) continue
-      out.push(line)
-      const meta = parseMeta(fence[2])
-      if (meta.file && owner) {
-        out.push(readFence(owner, meta, 'llms-full.txt'))
-        replaced = true
-      }
-      continue
-    }
-    if (fence && inFence) {
-      inFence = false
-      const wasDropping = dropping
-      dropping = false
-      replaced = false
-      if (!wasDropping) out.push(line)
-      continue
-    }
-    if (!dropping && !replaced) out.push(line)
-  }
-  return out.join('\n').replace(/\n{3,}/g, '\n\n')
 }
 
 /** Section label for grouping, falling back to the top path segment. */
@@ -151,7 +78,13 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
   try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
   const entryPort = entry.data.port
   const version = port ? buildTarget(process.env).version : (defaults[entryPort ?? ''] ?? 'latest')
-  let body = resolvePortCode(entry.body ?? '', entryPort ? undefined : port)
+  const path = docsRoutePath(entry, port, defaults)
+  const url = `${origin}${entry.data.product && !port ? `${PORT_ROOT}/` : base}${path ? `${path}/` : ''}`
+  let body = resolvePortCode(entry.body ?? '', port, entryPort,
+    (href: string) => new URL(proseHref(href, SITE_ROOT, entryPort ?? port, version), url).href)
+  if (entry.data.cards?.length) {
+    body += `\n\n${entry.data.cards.map((card) => `- [${card.label}](${new URL(card.href, url).href}): ${card.body}`).join('\n')}\n`
+  }
   if (entryPort && entry.data.product === 'workspace' && docsPath(entry) === 'workspace') {
     const notice = workspaceOverviewNotice(PORT_BY_SLUG[entryPort])
     if (notice) body = `**${notice.title}** ${notice.body}\n\n${body}`
@@ -164,11 +97,10 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
     if (entry.data.product === 'mcp') body += `\n[Protocol catalog](${origin}${portPageUrl(PORT_BY_SLUG[entryPort], version, 'mcp/tools').replace(/\/$/, '.json')})\n`
   }
   // A locale's landing entry routes to '', which is the root itself.
-  const path = docsRoutePath(entry, port, defaults)
   return {
     title: entry.data.title,
     description: entry.data.description ?? '',
-    url: `${origin}${entry.data.product && !port ? `${PORT_ROOT}/` : base}${path ? `${path}/` : ''}`,
+    url,
     section: sectionOf(entry),
     body,
     order: entry.data.sidebar?.order ?? Number.MAX_SAFE_INTEGER,

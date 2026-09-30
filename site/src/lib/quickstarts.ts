@@ -26,8 +26,8 @@ function documentedRegion(source: string, name: string): string {
   return selected.map((line) => line.slice(Math.min(indent, line.length))).join('\n')
 }
 
-const rubyQuickstart = documentedRegion(EXAMPLE_SOURCES['ruby:examples/quickstart.rb'], 'main')
-const luaQuickstart = documentedRegion(EXAMPLE_SOURCES['lua:examples/quickstart.lua'], 'main')
+const rubyQuickstart = documentedRegion(EXAMPLE_SOURCES['ruby:examples/quickstart.rb'].content, 'main')
+const luaQuickstart = documentedRegion(EXAMPLE_SOURCES['lua:examples/quickstart.lua'].content, 'main')
 
 /** Quote a block checked by the parent repository's documentation tests. */
 function guideExample(artifact: typeof KOTLIN_GUIDES, path: string, heading: string, lang: string): Quickstart {
@@ -59,7 +59,7 @@ export const QUICKSTARTS: Partial<Record<string, Quickstart>> = {
   },
   fsharp: {
     lang: 'fsharp',
-    code: EXAMPLE_SOURCES['fsharp:examples/LibTmux.FSharp.Quickstart/Program.fs']
+    code: EXAMPLE_SOURCES['fsharp:examples/LibTmux.FSharp.Quickstart/Program.fs'].content
       .replace(/^\/\/ fsharp-snippet: Quickstart\n/, '').replace(/\n\/\/ endfsharp-snippet\n?$/, ''),
     source: 'From examples/LibTmux.FSharp.Quickstart/Program.fs. The package consumer check runs this exact program against the packed LibTmux.FSharp artifact on .NET 8 and 10.',
   },

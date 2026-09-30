@@ -1,4 +1,5 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
 title: Workspaces
 description: Build pane layouts with the object API or a workspace configuration file.
 sidebar:
@@ -108,15 +109,17 @@ let logs = try await server.split(terminal, direction: .right)
 try await server.selectLayout(window, "main-vertical")
 ```
 
-`Window.split()` or `Pane.split()` adds a pane. Direction and size control its
-placement. `select_layout()` rearranges the panes while their processes continue
-running. tmux provides `even-horizontal`, `even-vertical`, `main-horizontal`,
+A split creates a pane; direction and size control its placement. Applying a
+layout rearranges existing panes while their processes continue running. tmux provides `even-horizontal`, `even-vertical`, `main-horizontal`,
 `main-vertical`, and `tiled` layouts.
 
-Python's `attach=False` and C++'s detached creation keep new windows in the
-background. Check the creation defaults for your port if focus matters. Splits
-and resizes require tmux commands; [Control mode vs one-shot](../transports/)
+Choose detached creation when the user's current window should retain focus.
+Splits and resizes issue tmux commands; [Control mode vs one-shot](../transports/)
 covers their transport costs and batching.
+
+<!-- port:py -->
+`attach=False` keeps a newly created window in the background.
+<!-- /port -->
 
 ## Building one declaratively
 
@@ -124,16 +127,20 @@ These packages read or build workspace configurations based on tmuxp:
 
 | Port | Package | Shape |
 |------|---------|-------|
-| Python | tmuxp itself | the format this whole idea is named after |
-| TypeScript | `@libtmux/workspace` | `applyWorkspace(server, { session_name, windows: [...] })` |
-| Go | `workspace` | tmuxp-shaped, per the port's own module layout |
-| Rust | `tmux-workspace` | tmuxp-shaped |
-| Java | `libtmux-workspace` | "enough of tmuxp's format to describe a workspace" |
-| C# | `LibTmux.Workspace` | reads tmuxp YAML directly |
-| Swift | `TmuxWorkspace` | Swift, JSON, or YAML (YAML needs the `YAMLWorkspaces` trait) |
-
+<!-- port:py -->| Python | tmuxp itself | the format this whole idea is named after |
+<!-- /port --><!-- port:ts -->| TypeScript | `@libtmux/workspace` | `applyWorkspace(server, { session_name, windows: [...] })` |
+<!-- /port --><!-- port:go -->| Go | `workspace` | tmuxp-shaped, per the port's own module layout |
+<!-- /port --><!-- port:rs -->| Rust | `tmux-workspace` | tmuxp-shaped |
+<!-- /port --><!-- port:java -->| Java | `libtmux-workspace` | "enough of tmuxp's format to describe a workspace" |
+<!-- /port --><!-- port:dotnet -->| C# | `LibTmux.Workspace` | reads tmuxp YAML directly |
+<!-- /port --><!-- port:swift -->| Swift | `TmuxWorkspace` | Swift, JSON, or YAML (YAML needs the `YAMLWorkspaces` trait) |
+<!-- /port -->
+<!-- port:ts -->
 TypeScript's `applyWorkspace` applies a desired configuration. Applying the same
 configuration again reuses its existing objects:
+<!-- /port -->
+
+
 
 ```ts
 await applyWorkspace(server, {
@@ -158,6 +165,10 @@ if err != nil {
 	return err
 }
 session, err := workspace.Build(ctx, server, described)
+if err != nil {
+    return err
+}
+fmt.Println("workspace session:", session.ID())
 ```
 
 ```java
@@ -178,9 +189,13 @@ let workspace = Workspace(
 let session = try await WorkspaceBuilder.build(workspace, on: server)
 ```
 
+<!-- port:cxx -->
 C++ provides a consumer example in `examples/workspace/` that reads tmuxp
 configuration. The workspace builder is part of that example, rather than a
 library package:
+<!-- /port -->
+
+
 
 ```cpp
 // Not a package: this is the examples/workspace/ consumer, showing the
@@ -193,8 +208,17 @@ const auto built = workspace::build(server, description);
 
 ## Cleaning up
 
-For temporary workspaces, Python's `Window` and `Session` context managers kill
-their objects on block exit, including when the block raises:
+<!-- port:py -->
+`Window` and `Session` context managers kill their objects on block exit,
+including when the block raises:
+<!-- /port -->
+<!-- port:go -->
+Use a named error result in the enclosing function so deferred cleanup can
+return its own failure. Give cleanup a fresh, bounded context:
+<!-- /port -->
+<!-- port:dotnet -->
+An ownership scope kills its session when `await using` exits:
+<!-- /port -->
 
 ```python
 with session.new_window(window_name='temp-window') as temp_win:
@@ -218,8 +242,6 @@ defer func() {
 ```
 
 ```csharp
-// The closest match: an owning scope returned alongside the session,
-// disposed with `await using` the same way Python's `with` block is.
 await using OwnedSessionScope scope = await server.CreateOwnedSessionAsync(
     new NewSessionRequest(name: "temp-session"));
 Window window = (await scope.Value.GetWindowsAsync())[0];

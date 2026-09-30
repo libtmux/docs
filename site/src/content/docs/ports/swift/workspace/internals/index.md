@@ -10,9 +10,9 @@ sidebar:
 tableOfContents: true
 ---
 
-These pages document the in-development workspace builder for contributors
-and applications that call its APIs. For workspace loading from a terminal,
-see [tmuxp](https://tmuxp.git-pull.com/).
+Build and inspect tmux sessions from application code with the workspace
+library. To load files from a terminal, start with the
+[native CLI walkthrough](../guides/installation/).
 
 ## Builder pipeline
 
@@ -31,7 +31,7 @@ handling, and attachment.
 ## Implementation scope
 
 `TmuxWorkspace` builds a tmux session from Swift values or a
-[tmuxp](https://tmuxp.git-pull.com)-style configuration. It is a SwiftPM
+file configuration. It is a SwiftPM
 library product beside the core [`LibTmux`](../../reference/) product.
 
 Swift and JSON descriptions work without a YAML dependency. Enable the

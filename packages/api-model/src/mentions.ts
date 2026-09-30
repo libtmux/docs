@@ -101,11 +101,12 @@ const FENCE_PORT: Record<string, string> = {
 }
 
 /** Inline references in prose, including port sections, tables, and existing links. */
-export function proseMentions(markdown: string, portByLabel: Record<string, string>): ProseMention[] {
+export function proseMentions(markdown: string, portByLabel: Record<string, string>, portAt?: (offset: number) => string | undefined): ProseMention[] {
   const out: ProseMention[] = []
   const lines = markdown.split('\n')
   const context: { port?: string; before: string }[] = []
-  const bodyLines = lines.map(() => '')
+  // Keep offsets stable when frontmatter, headings and examples are masked.
+  const bodyLines = lines.map((line) => ' '.repeat(line.length))
   const sections: { depth: number; port?: string }[] = []
   let fence: string | undefined
   let fencePort: string | undefined
@@ -157,7 +158,7 @@ export function proseMentions(markdown: string, portByLabel: Record<string, stri
     if (!ctx) continue
     const before = ctx.before + beforeMatch.slice(beforeMatch.lastIndexOf('\n') + 1)
     const linked = body[match.index - 1] === '[' && body.slice(match.index + match[0].length).startsWith('](')
-    out.push({ text, port: ctx.port, before, line, ...(linked ? { linked: true } : {}) })
+    out.push({ text, port: portAt?.(match.index) ?? ctx.port, before, line, ...(linked ? { linked: true } : {}) })
   }
   return out
 }

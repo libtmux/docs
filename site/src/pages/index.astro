@@ -13,7 +13,6 @@ import McpInstall from '../components/widgets/McpInstall.astro'
 import AgentPrompt from '../components/widgets/AgentPrompt.astro'
 import { QUICKSTARTS } from '../lib/quickstarts'
 import { withPortRoot, withRoot } from '../lib/site-root'
-import PageToolbar from '../components/PageToolbar.astro'
 import { localesFor } from '../i18n/resolve'
 import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE } from '../i18n/locales'
@@ -254,12 +253,10 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
 >
   {LandingContent ? (
     <main class="mx-auto max-w-3xl px-4 py-12 sm:py-16">
-      <PageToolbar breadcrumbs={[{ name: 'libtmux', url: withRoot('/') }]} />
       <LandingContent />
     </main>
   ) : (
   <main class="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-    <PageToolbar breadcrumbs={[{ name: 'libtmux', url: withRoot('/') }]} />
     <!-- Hero -->
     <section class="max-w-3xl">
       <h1 class="text-4xl font-semibold tracking-tight sm:text-5xl">libtmux</h1>

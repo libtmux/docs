@@ -63,7 +63,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     domains: [libraryDomain('Kotlin coroutine handles, builders and flows over the Java/JVM library.')],
     sourceGuides: [
       guide('libtmux-kotlin/README.md', 'guides/getting-started', 'core'),
-      guide('docs/guide/kotlin.md', 'guides/coroutines', 'core'),
+      guide('docs/guide/kotlin.md', 'guides/coroutines', 'core', { aliases: ['guides/source/coroutines', 'concepts/transports'] }),
     ],
   },
   scala: {
@@ -71,7 +71,9 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     sourceGuides: [
       guide('libtmux-scala/README.md', 'guides/overview', 'core'),
       ...['getting-started', 'query', 'ownership', 'execution', 'streaming', 'compatibility'].map((name) =>
-        guide(`docs/guide/scala/${name}.md`, `guides/${name}`, 'core')),
+        guide(`docs/guide/scala/${name}.md`, `guides/${name}`, 'core', {
+          aliases: [`guides/source/${name}`, ...(name === 'execution' ? ['concepts/transports'] : [])],
+        })),
     ],
   },
   fsharp: {
@@ -79,7 +81,9 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     sourceGuides: [
       guide('src/LibTmux.FSharp/README.md', 'guides/quickstart', 'core'),
       ...['getting-started', 'queries', 'streams', 'interop', 'modes', 'supported-query-fields'].map((name) =>
-        guide(`docs/fsharp/${name}.md`, `guides/${name}`, 'core')),
+        guide(`docs/fsharp/${name}.md`, `guides/${name}`, 'core', {
+          aliases: [`guides/source/${name}`, ...(name === 'modes' ? ['concepts/transports'] : [])],
+        })),
       guide('docs/fsharp/api.md', 'reference', 'core', { aliases: [], sidebar: { group: 'API reference' } }),
     ],
   },
@@ -103,9 +107,9 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       },
     ],
     sourceGuides: [
-      guide('README.md', 'guides/overview', 'core'),
-      guide('docs/modes.md', 'guides/execution-modes', 'core'),
-      guide('docs/ownership-errors.md', 'guides/ownership-errors', 'core'),
+      guide('README.md', 'guides/overview', 'core', { aliases: ['guides/source/overview', 'guides/getting-started'] }),
+      guide('docs/modes.md', 'guides/execution-modes', 'core', { aliases: ['guides/source/execution-modes', 'concepts/transports'] }),
+      guide('docs/ownership-errors.md', 'guides/ownership-errors', 'core', { aliases: ['guides/source/ownership-errors', 'topics/context-managers', 'topics/errors-and-exceptions'] }),
       guide('docs/recipes.md', 'examples/recipes', 'core', { aliases: ['examples/source-recipes'] }),
       guide('gems/libtmux/README.md', 'guides/core', 'core', { package: 'core', sidebar: { group: 'Core library' } }),
       guide('gems/libtmux-async/README.md', 'guides/async', 'async', { package: 'async', sidebar: { group: 'Async' } }),
@@ -133,19 +137,19 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       },
     ],
     sourceGuides: [
-      guide('README.md', 'guides/overview', 'core'),
+      guide('README.md', 'guides/overview', 'core', { aliases: ['guides/source/overview', 'guides/getting-started'] }),
       guide('docs/runtime.md', 'guides/runtime', 'runtime', { sidebar: { group: 'Runtime adapters', label: 'luv and Neovim' } }),
-      guide('docs/query.md', 'guides/query', 'core'),
+      guide('docs/query.md', 'guides/query', 'core', { aliases: ['guides/source/query', 'concepts/queries', 'guides/querying-and-filtering'] }),
       guide('docs/snapshots.md', 'guides/snapshots', 'core'),
       guide('docs/creation.md', 'guides/creation', 'core'),
       guide('docs/topology.md', 'guides/topology', 'core'),
-      guide('docs/panes.md', 'guides/panes', 'core'),
-      guide('docs/control.md', 'guides/control', 'core'),
+      guide('docs/panes.md', 'guides/panes', 'core', { aliases: ['guides/source/panes', 'topics/pane-interaction', 'guides/capturing-output', 'guides/sending-keys'] }),
+      guide('docs/control.md', 'guides/control', 'core', { aliases: ['guides/source/control', 'concepts/transports'] }),
       guide('docs/commands.md', 'guides/commands', 'core'),
       guide('docs/buffers.md', 'guides/buffers', 'core'),
       guide('docs/clients.md', 'guides/clients', 'core'),
-      guide('docs/environment.md', 'guides/environment', 'core'),
-      guide('docs/settings.md', 'guides/settings', 'core'),
+      guide('docs/environment.md', 'guides/environment', 'core', { aliases: ['guides/source/environment', 'topics/environment'] }),
+      guide('docs/settings.md', 'guides/settings', 'core', { aliases: ['guides/source/settings', 'topics/options-and-hooks'] }),
       guide('docs/fields.md', 'guides/fields', 'core'),
       guide('docs/options-reference.md', 'guides/options', 'core'),
       guide('docs/compatibility.md', 'guides/compatibility', 'core'),

@@ -68,8 +68,26 @@ describe('product context in prose', () => {
 
   it('does not borrow another language when the page already names its port', () => {
     const other = { port: 'py', version: '0', symbols: [{ id: 'Other', name: 'Other', kind: 'class', signatures: [] }] } as ApiModel
-    const result = decideMention('Other', { pagePort: 'go', product: 'workspace' }, new Resolver([model, other]), { go: model, py: other })
-    expect(result.kind).toBe('unresolved')
+    for (const product of [undefined, 'workspace'] as const) {
+      const result = decideMention('Other', { pagePort: 'go', product }, new Resolver([model, other]), { go: model, py: other })
+      expect(result.kind).toBe('unresolved')
+    }
+  })
+
+  it('links standard-library types through the existing language catalog', () => {
+    const rust = { port: 'rs', version: '0', symbols: [] } as unknown as ApiModel
+    expect(decideMention('BTreeMap', { pagePort: 'rs' }, new Resolver([rust]), { rs: rust }))
+      .toMatchObject({ kind: 'link', port: 'rs', href: 'https://doc.rust-lang.org/std/collections/struct.BTreeMap.html', external: true })
+  })
+
+  it('uses the enclosing type to distinguish nested builders', () => {
+    const java = { port: 'java', version: '0', symbols: ['SessionSpec', 'WindowSpec'].map((name) => ({
+      id: `io.example.${name}.${name}.Builder.environment`, name: 'environment', kind: 'method', signatures: [],
+    })) } as unknown as ApiModel
+    const r = new Resolver([java])
+    const found = r.resolve('java', 'SessionSpec.Builder.environment(Map)')
+    expect('symbol' in found && found.symbol.id).toBe('io.example.SessionSpec.SessionSpec.Builder.environment')
+    expect(r.resolve('java', 'Builder.environment(Map)').how).toBe('ambiguous')
   })
 
   it('classifies MCP resource URIs and newly authored filenames explicitly', () => {

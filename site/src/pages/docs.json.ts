@@ -10,6 +10,7 @@ import { docsEntryAvailable } from '../lib/page-port-links.ts'
 import { isIndexSource, markdownPath } from '../lib/markdown-twins.ts'
 import { localeProse } from '../lib/llms.ts'
 import { documentationAreas } from '../lib/port-documentation.ts'
+import { buildTarget } from '../lib/versions.ts'
 
 /**
  * `/docs.json` — the agent manifest.
@@ -39,9 +40,10 @@ export const GET: APIRoute = async ({ site }) => {
   // trailing slash; every use below joins a path that has no leading one.
   const refBase = `${PORT_ROOT}/`
   const port = process.env.LIBTMUX_DOCS_PORT
+  const visiblePorts = PORTS.filter((entry) => !port || entry.slug === port)
   const locale = buildLocale()
-  let defaults: Record<string, string> = {}
-  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
+  const defaults: Record<string, string> = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
+  const versionFor = (slug: string) => slug === port ? buildTarget(process.env).version : (defaults[slug] ?? 'latest')
 
   const entries = await getCollection(
     'docs',
@@ -76,17 +78,18 @@ export const GET: APIRoute = async ({ site }) => {
 
   // The reference is not in the docs collection, and an agent asking "what is
   // documented here" should not be told only about the prose.
-  for (const [port, model] of Object.entries(API_MODELS)) {
+  for (const [slug, model] of Object.entries(API_MODELS)) {
+    if (port && slug !== port) continue
     const types = ownersOf(model)
     pages.push({
-      title: `${PORT_NAME[port] ?? port} API reference`,
+      title: `${PORT_NAME[slug] ?? slug} API reference`,
       description: `${model.symbols.length} symbols extracted from source, ${types.length} with their own page.`,
       section: 'API reference',
       // refBase, not base: the reference is generated in the default locale
       // only, so a Japanese manifest advertising a locale-prefixed reference
       // names pages nothing builds.
-      url: `${origin}${refBase}${port}/${defaults[port] ?? 'latest'}/reference/`,
-      markdownUrl: `${origin}${refBase}${port}/${defaults[port] ?? 'latest'}/reference/index.md`,
+      url: `${origin}${refBase}${slug}/${versionFor(slug)}/reference/`,
+      markdownUrl: `${origin}${refBase}${slug}/${versionFor(slug)}/reference/index.md`,
       headings: types.slice(0, 200).map((t) => ({
         id: t.publicId ?? t.id,
         level: 2,
@@ -96,9 +99,10 @@ export const GET: APIRoute = async ({ site }) => {
   }
 
   const manifest = {
-    name: 'libtmux',
+    name: port ? `libtmux for ${PORT_BY_SLUG[port].name}` : 'libtmux',
     url: `${origin}${base}`,
-    description: `Typed tmux control libraries for ${PORTS.map((port) => port.name).join(', ')}, documented as one site.`,
+    description: port ? `Guides, examples and API reference for ${PORT_BY_SLUG[port].packageName}.`
+      : `Typed tmux control libraries for ${PORTS.map((port) => port.name).join(', ')}, documented as one site.`,
     sourceRepository: `https://github.com/${port ? PORT_BY_SLUG[port].repo : 'tmux-python/libtmux'}`,
     agentEntrypoints: {
       manifest: `${base}docs.json`,
@@ -109,31 +113,31 @@ export const GET: APIRoute = async ({ site }) => {
       // matters most for an agent that already speaks Sphinx.
       inventory: `${refBase}objects.inv`,
     },
-    ports: PORTS.map((p) => ({
+    ports: visiblePorts.map((p) => ({
       slug: p.slug,
       name: p.name,
       language: p.language,
       referenceKind: p.referenceKind ?? 'model',
       package: p.packageName,
-      reference: hasReference(p) ? referenceUrl(p, defaults[p.slug] ?? 'latest') : null,
+      reference: hasReference(p) ? referenceUrl(p, versionFor(p.slug)) : null,
       ...(p.parentLibrary ? { parentLibrary: p.parentLibrary } : {}),
       products: Object.entries(p.parentLibrary ? {} : DOC_PRODUCTS).map(([slug, product]) => ({
         slug, name: product.label,
         availability: productAvailable(p, slug as DocProduct) ? 'available' : 'unpublished',
         inDevelopment: productInDevelopment(p, slug as DocProduct),
         ...(slug === 'workspace' ? { cli: p.workspaceCli ?? null, cliAvailability: p.workspaceCliAvailability ?? null } : {}),
-        url: portPageUrl(p, defaults[p.slug] ?? 'latest', slug),
+        url: portPageUrl(p, versionFor(p.slug), slug),
         reference: productAvailable(p, slug as DocProduct)
-          ? portPageUrl(p, defaults[p.slug] ?? 'latest', productApiPath(slug as DocProduct)) : null,
+          ? portPageUrl(p, versionFor(p.slug), productApiPath(slug as DocProduct)) : null,
         ...(slug === 'mcp' ? { protocol: productAvailable(p, 'mcp')
-          ? portPageUrl(p, defaults[p.slug] ?? 'latest', 'mcp/tools').replace(/\/$/, '.json') : null } : {}),
+          ? portPageUrl(p, versionFor(p.slug), 'mcp/tools').replace(/\/$/, '.json') : null } : {}),
         source: API_MODELS[p.slug]?.sources?.find((source) => source.product === slug),
       })),
       extracted: API_MODELS[p.slug]
         ? {
             symbols: API_MODELS[p.slug].symbols.length,
             extractor: API_MODELS[p.slug].extractor,
-            inventory: `${refBase}${p.slug}/${defaults[p.slug] ?? 'latest'}/reference/objects.inv`,
+            inventory: `${refBase}${p.slug}/${versionFor(p.slug)}/reference/objects.inv`,
           }
         : null,
       documentation: documentationAreas(p.slug).map((area) => ({
@@ -141,7 +145,7 @@ export const GET: APIRoute = async ({ site }) => {
         name: area.label,
         kind: area.kind,
         availability: area.kind === 'unavailable' ? 'unpublished' : 'available',
-        url: portPageUrl(p, defaults[p.slug] ?? 'latest', area.route),
+        url: portPageUrl(p, versionFor(p.slug), area.route),
         ...(area.kind === 'companion-package' ? {
           package: p.packages?.find((entry) => entry.id === area.package)?.name,
         } : {}),

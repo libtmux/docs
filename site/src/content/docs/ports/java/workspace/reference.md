@@ -36,8 +36,7 @@ holds the name, optional layout, and panes.
 holds the ordered shell commands.
 
 These records copy their lists so later changes to an input list do not alter
-a description already constructed. They describe the supported Java subset;
-they are not Python plugin or tmuxp runtime extension interfaces.
+a description already constructed.
 
 ## Errors and lifetime
 

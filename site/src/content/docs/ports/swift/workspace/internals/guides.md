@@ -72,8 +72,8 @@ $ swift run
 ## Read configuration
 
 Use `Workspace.decode(json:)` with [`Data`](https://developer.apple.com/documentation/foundation/data), or `Workspace.decode(yaml:)` with a
-string when the YAML trait is enabled. Review unsupported fields before
-moving a Python workspace to this structural subset.
+string when the YAML trait is enabled. Check the model's accepted fields;
+the decoder ignores unknown keys.
 
 The fixture removes the server after inspecting the session name. In an
 application, pass an already running server and retain the result instead. A

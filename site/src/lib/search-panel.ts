@@ -43,6 +43,8 @@ export interface SearchPanelOptions {
   subResults?: SubResultsDisplay
   /** A query to run as soon as the panel mounts. */
   initialQuery?: string
+  /** Select the current port before the first query; readers may change it. */
+  initialPort?: string
   /** An index to search instead of Pagefind's. */
   mock?: PagefindApi
   /** Names for path segments in a breadcrumb, such as `py` for Python. */
@@ -80,6 +82,7 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
   let all: { id: string; data: () => Promise<PagefindResultData> }[] = []
   let selected = -1
   let token = 0
+  const selectedPorts = new Set(settings.initialPort ? [settings.initialPort] : [])
 
   const status = (text: string) => {
     results.innerHTML = ''
@@ -115,32 +118,32 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
   }
 
   const activeFilters = () => {
-    const checked = [...filterList.querySelectorAll<HTMLInputElement>('input:checked')].map(
-      (i) => i.value,
-    )
+    const checked = [...selectedPorts]
     return checked.length ? { port: checked } : undefined
   }
 
   async function renderFilters(counts: Record<string, number> | undefined) {
-    if (!counts || Object.keys(counts).length === 0) {
+    const available = { ...Object.fromEntries([...selectedPorts].map((port) => [port, 0])), ...counts }
+    if (Object.keys(available).length === 0) {
       filtersBox.hidden = true
       return
     }
     // Open, not collapsed. The filter is how a reader narrows twelve thousand
     // symbols to one port, and behind a closed disclosure it went unused.
     filtersBox.hidden = false
-    const previous = new Set(
-      [...filterList.querySelectorAll<HTMLInputElement>('input:checked')].map((i) => i.value),
-    )
     filterList.innerHTML = ''
-    for (const [value, count] of Object.entries(counts).sort((a, b) => b[1] - a[1])) {
+    for (const [value, count] of Object.entries(available).sort((a, b) => b[1] - a[1])) {
       const label = document.createElement('label')
       label.className = 'search-panel__filter'
       const box = document.createElement('input')
       box.type = 'checkbox'
       box.value = value
-      box.checked = previous.has(value)
-      box.addEventListener('change', () => void run(input.value))
+      box.checked = selectedPorts.has(value)
+      box.addEventListener('change', () => {
+        if (box.checked) selectedPorts.add(value)
+        else selectedPorts.delete(value)
+        void run(input.value)
+      })
       const text = document.createElement('span')
       text.textContent = value
       const n = document.createElement('span')
@@ -257,8 +260,10 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
   }
 
   async function paint() {
+    const mine = token
     const slice = all.slice(0, shown)
     const rendered = await Promise.all(slice.map((r) => r.data()))
+    if (mine !== token) return
     results.innerHTML = ''
 
     const count = document.createElement('p')
@@ -325,7 +330,10 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
       selected = -1
       status('Type to search.')
       const idle = await pagefind()
-      if (idle && mine === token) await renderFilters((await idle.filters()).port)
+      if (idle && mine === token) {
+        const counts = await idle.filters()
+        if (mine === token) await renderFilters(counts.port)
+      }
       return
     }
 

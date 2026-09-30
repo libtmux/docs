@@ -22,12 +22,21 @@
  * Usage: node scripts/check-mobile-nav.mjs [base-url]
  */
 import { chromium } from 'playwright'
+import { checkApiNavigation } from './check-navigation.mjs'
 const BASE = (process.argv[2] ?? 'http://localhost:8080').replace(/\/$/, '')
 const b = await chromium.launch()
 const fails = [], ok = []
 const note = (pass, msg) => (pass ? ok : fails).push(msg)
 const WITH_TOC = '/topics/traversal/', NO_TOC = '/concepts/'
 const ctx = await b.newContext()
+const apiPage = await ctx.newPage()
+try {
+  await checkApiNavigation(apiPage, BASE)
+} catch (error) {
+  fails.push(`API navigation: ${error.message}`)
+} finally {
+  await apiPage.close()
+}
 async function page(path, w = 390) {
   const p = await ctx.newPage()
   await p.setViewportSize({ width: w, height: 800 })

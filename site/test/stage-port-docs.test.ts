@@ -5,6 +5,8 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { artifactFromRevision, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
 import { PORTS } from '../src/lib/ports'
+import scalaGuides from '../src/data/port-guides/scala.json'
+import fsharpGuides from '../src/data/port-guides/fsharp.json'
 
 describe('integrated guide inputs', () => {
   const port = PORTS.find((entry) => entry.slug === 'lua')!
@@ -93,6 +95,46 @@ describe('staged port guide links', () => {
     expect(result).toContain('[query](../query/#filters)')
   })
 
+  it('keeps known source-guide URLs in the selected documentation tree', () => {
+    const own = 'https://github.com/libtmux/libtmux-lua/blob/'
+    const historical = `${own}older/docs/query.md`
+    const otherRepo = 'https://github.com/other/project/blob/master/docs/query.md'
+    const example = `\`${own}master/docs/query.md\``
+    const result = rewriteLinks(
+      `[current](${own}master/docs/query.md#filters) [main](${own}main/docs/query.md) `
+        + `[pinned](${own}abc123/docs/query.md) [old](${historical}) [other](${otherRepo}) ${example}`,
+      'docs/runtime.md', 'guides/source/runtime', routes, 'libtmux/libtmux-lua', 'abc123',
+    )
+    expect(result).toContain('[current](../query/#filters)')
+    expect(result).toContain('[main](../query/)')
+    expect(result).toContain('[pinned](../query/)')
+    expect(result).toContain(`[old](${historical})`)
+    expect(result).toContain(`[other](${otherRepo})`)
+    expect(result).toContain(example)
+  })
+
+  it('routes the actual F# quickstart to its staged task guides', () => {
+    const staged = stagedPortGuides('fsharp', fsharpGuides).get('fsharp/guides/quickstart/index.md')!
+    for (const route of ['getting-started', 'queries', 'streams', 'supported-query-fields', 'modes', 'interop']) {
+      expect(staged).toContain(`](../${route}/)`)
+    }
+    expect(staged).toContain('](../../reference/)')
+    expect(staged).not.toMatch(/https:\/\/github.com\/libtmux\/libtmux-dotnet\/blob\/master\/docs\/fsharp\//)
+    expect(staged).toContain(`https://github.com/libtmux/libtmux-dotnet/blob/${fsharpGuides.source.revision}/examples/LibTmux.FSharp.Quickstart/Program.fs`)
+  })
+
+  it('pins non-staged source links while preserving historical links and inline images', () => {
+    const own = 'https://github.com/libtmux/libtmux-lua/blob/'
+    const destinations = ['master', 'main', 'abc123'].map((ref) => `[source](${own}${ref}/src/main.lua#run)`)
+    const image = `![source](${own}master/art/example.png)`
+    const historical = `[old](${own}older/src/main.lua#run)`
+    const result = rewriteLinks([...destinations, image, historical].join('\n\n'),
+      'docs/runtime.md', 'guides/source/runtime', routes, 'libtmux/libtmux-lua', 'abc123')
+    expect(result.match(/\[source\]\(https:\/\/github.com\/libtmux\/libtmux-lua\/blob\/abc123\/src\/main.lua#run\)/g)).toHaveLength(3)
+    expect(result).toContain(image)
+    expect(result).toContain(historical)
+  })
+
   it('rewrites Scala reference links across lines without changing external links', () => {
     const result = rewriteLinks(
       '[query]: query.md#filters\n[source]:\n  ../src/Server.scala\n[external]: https://example.org/\n',
@@ -101,6 +143,44 @@ describe('staged port guide links', () => {
     expect(result).toContain('[query]: ../query/#filters')
     expect(result).toContain('[source]: https://github.com/libtmux/libtmux-java/blob/abc123/src/Server.scala')
     expect(result).toContain('[external]: https://example.org/')
+  })
+
+  it('preserves code while rewriting real links beside it', () => {
+    const examples = [
+      '```scala\nScalaServer.fromJava[IO](java).use(identity)\n```',
+      '~~~~scala\nScalaServer.resource[IO](config).use(identity)\n~~~~',
+      '> ```scala\n> Control.attach[IO](session)\n> ```',
+      '    Server.resource[IO](config)',
+      '`Server.resource[IO](config)` and ``[query](query.md)``',
+      '\\[query](query.md)',
+    ]
+    const content = `${examples.join('\n\n')}\n\n[query](query.md#filters "Read filters")\n`
+    const result = rewriteLinks(content, 'docs/runtime.md', 'guides/source/runtime', routes,
+      'libtmux/libtmux-java', 'abc123')
+    for (const example of examples) expect(result).toContain(example)
+    expect(result).toContain('[query](../query/#filters "Read filters")')
+    expect(result).not.toContain('/docs/config')
+    expect(result).not.toContain('/docs/java')
+    expect(result).not.toContain('/docs/session')
+  })
+
+  it('rewrites images nested in links without damaging their labels', () => {
+    const result = rewriteLinks('[![example](../art/example.png "Example")](query.md#filters)',
+      'docs/runtime.md', 'guides/source/runtime', routes, 'libtmux/libtmux-java', 'abc123')
+    expect(result).toContain('[![example](https://github.com/libtmux/libtmux-java/raw/abc123/art/example.png "Example")](../query/#filters)')
+  })
+
+  it('stages the actual Scala generic calls unchanged', () => {
+    const files = stagedPortGuides('scala', scalaGuides)
+    for (const [route, calls] of [
+      ['ownership', ['ScalaServer.fromJava[IO](java)']],
+      ['execution', ['ScalaServer.resource[IO](config)']],
+      ['streaming', ['Server.resource[IO](config)', 'Control.attach[IO](session)']],
+    ] as const) {
+      const staged = files.get(`scala/guides/${route}/index.md`)!
+      for (const call of calls) expect(staged).toContain(call)
+      expect(staged).not.toContain('[IO](https://')
+    }
   })
 
   it('extracts centered README titles without losing links or examples', () => {
@@ -119,6 +199,8 @@ describe('staged port guide links', () => {
       guides,
     })
     const overview = files.get('ruby/guides/overview/index.md')!
+    expect(files.get('ruby/examples/index.md')).toContain('../examples/recipes/')
+    expect(files.get('ruby/topics/index.md')).toContain('../guides/execution-modes/')
     expect(overview).toContain('title: "libtmux for Ruby"')
     expect(overview).not.toContain('# libtmux for Ruby')
     expect(overview).not.toContain('artwork')

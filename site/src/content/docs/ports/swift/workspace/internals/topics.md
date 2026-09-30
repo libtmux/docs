@@ -17,11 +17,10 @@ objects to create. Their Codable keys use tmuxp's field spelling.
 
 JSON decoding is always available. YAML decoding is compiled only when the
 package enables `YAMLWorkspaces`, which brings in Yams. Unknown keys are
-ignored by decoding; successful decoding does not establish full tmuxp
-compatibility.
+ignored by decoding. Validate field names against the model before loading
+a configuration.
 
-The model covers names, directories, layouts, and pane commands. Python
-plugins, hooks, and tmuxp's environment runtime are outside that model. A
+The model covers names, directories, layouts and pane commands. A
 window directory overrides the workspace directory. A split pane can provide
 its own directory; the initial pane is created with its window's directory.
 

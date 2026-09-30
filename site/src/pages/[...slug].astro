@@ -45,7 +45,8 @@ export async function getStaticPaths() {
       .map(({ path, target }) => ({ params: { slug: path }, props: { redirect: target } }))
     const routes = [...real, ...global, ...reference, ...protocol, ...redirects]
     const paths = routes.map((route) => route.params.slug)
-    if (new Set(paths).size !== paths.length) throw new Error('Duplicate generated documentation route')
+    const duplicates = paths.filter((path, index) => paths.indexOf(path) !== index)
+    if (duplicates.length) throw new Error(`Duplicate generated documentation routes: ${[...new Set(duplicates)].join(', ')}`)
     return routes
   }
   const placeholders = (await placeholderPairs())

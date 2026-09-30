@@ -1,4 +1,5 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
 title: Attaching to tmux
 description: What a plain constructor call actually connects to, and how to find a session that might already exist instead of always creating a new one.
 sidebar:
@@ -13,10 +14,12 @@ process keeps its own stdin and stdout, and tmux continues running
 independently. [Attach and send keys](/examples/attach-and-send-keys/)
 demonstrates this workflow.
 
+<!-- port:py -->
 Attaching your terminal is a separate operation. Python's `Session.attach()`
 runs `tmux attach-session` and hands the terminal to tmux.
 [tmuxp](https://tmuxp.git-pull.com/) uses it after building a workspace. Check
 your port's reference if your program needs to hand over the terminal.
+<!-- /port -->
 
 ## Which socket a bare constructor reaches
 
@@ -36,8 +39,7 @@ server = libtmux.Server.from_env()
 ```
 
 ```typescript
-// Behaves like the other ports' bare form. Naming a socket wasn't confirmed
-// against a checked snippet for this page: check the port's own reference.
+// Select the default tmux socket.
 const server = new Server();
 ```
 
@@ -47,6 +49,9 @@ const server = new Server();
 // if both are set); a Server built this way does not drift if the
 // environment changes later.
 server, err := tmux.NewServer(tmux.ServerOptions{})
+if err != nil {
+    return err
+}
 ```
 
 ```rust
@@ -72,7 +77,7 @@ TmuxEnvironment.current();
 Server server = await Server.ConnectAsync();
 
 // The separate pane-local read-back; ConnectAsync never consults TMUX.
-Server fromPane = await Server.FromEnvironment();
+Server fromPane = Server.FromEnvironment();
 ```
 
 ```cpp
@@ -85,22 +90,12 @@ libtmux::Server::at_default();        // "my tmux", to a person
 ```
 
 ```swift
-// The literal quickstart: there is no bare no-argument constructor, so
-// naming the socket is not optional the way it is elsewhere.
+// Select the default tmux socket explicitly.
 let server = try Server(socketName: "default")
 ```
 
-Sources: Python's `Server.from_env()` is doctested in `src/libtmux/server.py`
-(`pyproject.toml` `testpaths`). .NET's resolution order and `FromEnvironment`
-are from `src/LibTmux/README.md` ("Where a bare connect lands"), one of the
-nine documents `ReadmeExampleTests` compiles and runs. Go's is
-`tmux/server_options.go`'s doc comments. Rust's fallback is
-`crates/libtmux/examples/find.rs`, run via `cargo run --example find`. C++'s
-four constructors are the README's own description of `Server`, at the top
-of "What is libtmux?". Swift's is `README.md`'s top-level quickstart,
-matched against `Examples/Sources/QuickStart/main.swift` by
-`Scripts/check_examples.py`. Java's is `README.md`, run by
-[`docs-tests`](../testing-with-libtmux/#java-docs-tests).
+[Socket and servers](/topics/socket-and-servers/) covers endpoint selection
+and liveness. [Environment](/topics/environment/) covers pane-local lookup.
 
 ## Finding a session instead of always creating one
 
@@ -127,6 +122,10 @@ const session = snapshot.sessions.where({ name: "demo" }).oneOrUndefined();
 // everything back and filtering in the process.
 live := tmux.TmuxFilter("#{==:#{session_name},demo}")
 sessions, err := server.SearchSessions(ctx, &live)
+if err != nil {
+    return err
+}
+fmt.Println("matching sessions:", len(sessions))
 ```
 
 ```java
@@ -146,20 +145,18 @@ if try await server.hasSession("work") == false {
 }
 ```
 
-Sources: Go uses `examples/filter-query/main.go`, region `docs:query-in-tmux`.
-Java uses `examples/.../BuildAWorkspace.java`, run by the examples module's
-tests. For exactly-one lookup semantics, see [Filtering and querying, in
-practice](../querying-and-filtering/). Swift uses
-`Examples/Sources/ExampleCode/Querying.swift`, checked against the README by
-`Scripts/check_examples.py` and exercised by
-`Examples/Tests/ExampleTests/ModeTests.swift`.
+<!-- port:dotnet -->
+`Server.HasSessionAsync(name)` checks for a session. Use `NewSessionRequest.ReplaceExisting`
+with `Server.CreateSessionAsync` only when killing and recreating it is intended.
+<!-- /port -->
 
-.NET exposes `Server.HasSessionAsync(name)` in
-`src/LibTmux/Server.Lifecycle.cs`. Its `CreateSessionAsync` supports
-`ReplaceExisting`, which kills and recreates the session. Rust and C++ provide
-query APIs for session lookup. See [Filtering and querying, in
-practice](../querying-and-filtering/) and the port references for the call
-signatures; this page has no tested excerpt for those combinations.
+Finding an object and creating one are separate operations. Another client
+can change tmux state between them. Handle the creation error if the name was
+taken after the lookup.
+
+[Filtering and querying](../querying-and-filtering/) covers absent and
+ambiguous matches. [Attach and send keys](/examples/attach-and-send-keys/)
+contains complete programs and their source details.
 
 ## Where to go next
 

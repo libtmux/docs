@@ -1,6 +1,13 @@
 ---
 import SearchPanel from './SearchPanel.astro'
-import { withRoot } from '../lib/site-root'
+import { withPortRoot, withRoot } from '../lib/site-root'
+import { PORT_BY_SLUG } from '../lib/ports'
+
+interface Props {
+  port?: string
+  version: string
+}
+const { port, version } = Astro.props
 
 /**
  * Search without leaving the page.
@@ -10,11 +17,11 @@ import { withRoot } from '../lib/site-root'
  * /search/, and this intercepts the click — with no JavaScript the link still
  * works, which is why it is a link and not a button.
  */
-const searchHref = withRoot('/search/')
+const searchHref = port ? withPortRoot(`/${port}/${version}/search/`) : withRoot('/search/')
 ---
 
 <dialog id="search-modal" class="search-modal" aria-label="Search" data-search-href={searchHref}>
-  <SearchPanel modal />
+  <SearchPanel modal initialPort={port ? PORT_BY_SLUG[port]?.name : undefined} />
 </dialog>
 
 <style>

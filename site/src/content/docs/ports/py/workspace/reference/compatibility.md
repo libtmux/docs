@@ -1,64 +1,41 @@
 ---
-title: "tmuxp compatibility and port status"
-description: "Separate parser acceptance, builder behavior, proposed CLI services, and installed capabilities."
+title: Runtime and configuration support
+description: Runtime, configuration and extension requirements for tmuxp.
 port: py
 product: workspace
 sidebar:
-  label: "tmuxp compatibility and port status"
+  label: Runtime and configuration support
   group: "Reference"
   order: 30
 tableOfContents: true
 ---
 
-This page documents the available Python tmuxp reference. Proposed native
-extensions are labeled separately.
+These pages document tmuxp 1.74.0 at the source revision linked below. Install
+tmuxp in its own Python environment and let its dependency resolver select a
+compatible libtmux release. The walkthroughs use Python 3.10 or newer and
+tmux 3.2a or newer.
 
-The reference is Python tmuxp 1.74.0 at the source revision linked below. A
-native workspace library, parser experiment, and installed CLI are different
-deliverables. None of the seven native ports currently supplies the full
-command-line application described by the compatibility proposal.
+## Configuration and extensions
 
-## This port
+Read [configuration](../../configuration/) for normalization, inheritance,
+directories, commands and hooks. Parsing YAML alone does not establish that
+a field changes builder behavior. Plugins and custom builders execute Python
+code from their installed packages or configured import paths.
 
-Python tmuxp is the executable reference. Its YAML normalization, loader,
-capture, importers, search, shell, and plugins establish the comparison
-behavior. Current machine-output exceptions remain documented on the command
-pages.
+The [inspection shell](../../cli/shell/) runs in the same Python environment.
+Optional interactive backends need their corresponding packages installed.
 
-These observations are a dated local research snapshot, not a support guarantee
-for a published artifact. Read the port's [builder
-topics](../../internals/topics/) and [API](../) for the actual
-library interface. Use the page's language switcher to compare the same topic
-across ports.
+## Output and errors
 
-## Shared gaps
+Machine formats are command-specific. Read [output](../output/) and
+[exit codes](../exit-codes/) for empty output and status exceptions before
+using tmuxp in automation.
 
-Full parity needs document discovery and conversion, schema normalization,
-load/attach/append policy, capture, search, editor execution, diagnostics, and
-Python shell/plugin compatibility. Accepting YAML without rejecting unknown keys
-can silently lose behavior. Passing a parser probe does not establish execution
-parity.
+Capture reads current tmux state; it cannot recover original scripts,
+application state or comments. Review captured commands and directories before
+reloading. Gallery examples may require their named applications or plugins.
 
-Python shell switches and plugin import paths need a Python bridge or an
-explicitly unsupported result. Regex behavior also differs by language;
-identical search flags do not imply Python regular-expression semantics. See
-[shell](../../cli/shell/), [search](../../cli/search/), and
-[hooks](../../configuration/hooks/).
+Use [builder internals](../../internals/) for programmatic construction and
+extension development.
 
-## Optional format separator
-
-Python libtmux exposes `LIBTMUX_TMUX_FORMAT_SEPARATOR` in its format collector.
-Native ports use different framing and decoding strategies. This prototype does
-not claim support for the variable in those codecs. A port needs an explicit
-compatible seam and live tests for collisions, empty values, Unicode, and line
-breaks before accepting the setting.
-
-## Reading examples
-
-The [gallery](../../examples/gallery/) contains the upstream fixture corpus.
-Parsing a fixture and executing its applications are separate checks. Several
-require external programs, remote hosts, project directories, or plugin
-packages. Current native gaps remain visible even when a YAML reader accepts the
-file.
-
-[tmuxp reference source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/__init__.py).
+[Command source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/__init__.py).

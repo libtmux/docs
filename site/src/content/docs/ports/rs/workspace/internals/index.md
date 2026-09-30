@@ -10,9 +10,9 @@ sidebar:
 tableOfContents: true
 ---
 
-These pages document the in-development workspace builder for contributors
-and applications that call its APIs. For workspace loading from a terminal,
-see [tmuxp](https://tmuxp.git-pull.com/).
+Build and inspect tmux sessions from application code with the workspace
+library. To load files from a terminal, start with the
+[native CLI walkthrough](../guides/installation/).
 
 ## Builder pipeline
 
@@ -31,7 +31,7 @@ reading, the async runtime, command-line handling, and attachment.
 ## Implementation scope
 
 `tmux-workspace` creates a tmux session from a
-[tmuxp](https://tmuxp.git-pull.com)-style YAML description.
+YAML description.
 The crate uses the public libtmux API and returns a typed session handle. A
 separate `freeze` operation records an existing session as workspace data.
 
@@ -45,9 +45,7 @@ freezing are asynchronous and require a running Tokio runtime and tmux on the
 host. Pin a prerelease explicitly; a stable-only Cargo requirement does not
 select an alpha release.
 
-The format covers a subset of tmuxp. Unknown keys are recorded in
-`unsupported_keys` by
-the parser. Review those lists before assuming a Python workspace's setup
-hooks or configuration have taken effect.
+The parser records unknown keys in `unsupported_keys`. Review those lists
+before building: an unrecognized field does not configure the created session.
 
 [Crate documentation](https://github.com/libtmux/libtmux-rs/blob/9331cdf556ea7a1f2589e9c3e6cece6ccdc7765c/crates/tmux-workspace/README.md)

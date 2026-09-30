@@ -14,7 +14,7 @@ const check = process.argv.includes('--check')
 
 const { PORTS: PORT_DEFS } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
-const { KNOWN_PORTS, resolvePortBody } = await import(`file://${resolve(root, 'site/src/lib/workspace-shared-slots.ts')}`)
+const { KNOWN_PORTS, resolvePortBody, resolvePortContent } = await import(`file://${resolve(root, 'site/src/lib/workspace-shared-slots.ts')}`)
 
 /** The first column's label, as the prose writes it. */
 const PORT_BY_LABEL = {
@@ -159,8 +159,9 @@ for (const { file, source } of [...realEntries, ...sharedWorkspaceEntries(realFi
   if (PORT_DEFS.find((port) => port.slug === authoredPort)?.referenceKind === 'guide') continue
   const product = frontmatterValue(source, 'product') ?? /^ports\/[^/]+\/(workspace|mcp)\//.exec(file)?.[1]
 
-  for (const { port: contextPort, text, line, before, linked } of proseMentions(source, PORT_BY_LABEL)) {
-    const pagePort = contextPort ?? authoredPort
+  const selected = resolvePortContent(source, authoredPort)
+  for (const { port: contextPort, text, line, before, linked } of proseMentions(selected.body, PORT_BY_LABEL, selected.portAt)) {
+    const pagePort = authoredPort ?? contextPort
     if (notASymbol(text)) continue
     const decision = decideMention(text, { pagePort, product, before }, resolver, models)
     if (decision.kind !== 'link') {

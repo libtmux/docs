@@ -75,6 +75,7 @@ try {
     node('scripts/gen-brand-css.mjs', '--check'),
   )
   if (loop === 'outer') checks.push(
+    node('scripts/gen-example-sources.mjs', '--check'),
     pnpm('run', '--recursive', 'type-check'),
     node('site/scripts/check-dev.mjs'),
   )

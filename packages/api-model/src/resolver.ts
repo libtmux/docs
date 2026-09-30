@@ -267,6 +267,11 @@ export class Resolver {
 
     const member = parts[parts.length - 1]
     const candidates = Resolver.preferTypeOverConstructor(this.members(port, member))
+    if (parts.length > 2) {
+      const suffix = `.${parts.join('.')}`
+      const qualified = candidates.filter((row) => `.${toPath(row.qualified).join('.')}`.endsWith(suffix))
+      if (qualified.length === 1) return { how: 'scoped', symbol: qualified[0].symbol, port }
+    }
     if (candidates.length === 1) return { how: 'unique', symbol: candidates[0].symbol, port }
     let local = Resolver.preferProduct(candidates, product)
     if (parts.length === 1) {

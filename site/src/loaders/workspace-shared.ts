@@ -89,6 +89,16 @@ export function workspaceDocsLoader(): Loader {
   return {
     name: 'workspace-docs',
     load: async (context: LoaderContext) => {
+      // Astro's glob loader logs Markdown failures and keeps loading. Reject
+      // invalid ownership before that catch can turn a broken page into a build.
+      const docsDir = fileURLToPath(new URL(DOCS_BASE, context.config.root))
+      for (const file of await walkMarkdown(docsDir)) {
+        try {
+          resolvePortBody(await readFile(file, 'utf8'))
+        } catch (cause) {
+          throw new Error(`Invalid port content in ${relative(docsDir, file)}`, { cause })
+        }
+      }
       // Delegate first: glob() clears any store id it did not touch, so the
       // synthetic entries below must be written after it returns, not before.
       await glob({ base: DOCS_BASE, pattern: DOCS_PATTERN }).load(context)

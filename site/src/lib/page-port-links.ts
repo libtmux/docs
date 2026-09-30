@@ -31,6 +31,7 @@ export interface PagePortLink {
 
 /** Matches the port restriction used by the prose route. */
 export function docsEntryAvailable(entry: DocsPage, port?: string): boolean {
+  if (port && entry.data.supportedPorts && !entry.data.supportedPorts.includes(port)) return false
   if (port && PORT_BY_SLUG[port]?.parentLibrary) {
     if (entry.data.product) return false
     const first = entry.id.split('/')[0]
@@ -63,7 +64,9 @@ export function pagePortLinks({
     : undefined
   const symbolPort = portSlug
   const alternatives = symbol ? referenceAlternatives(symbolPort!, symbol.publicId ?? symbol.id) : []
-  const entries = docs.filter((entry) => docsPath(entry) === path)
+  const own = docs.find((entry) => entry.data.port === portSlug && docsPath(entry) === path)
+  const paths = [path, ...(own?.data.aliases ?? [])]
+  const entries = paths.flatMap((candidate) => docs.filter((entry) => docsPath(entry) === candidate || entry.data.aliases?.includes(candidate)))
   const tool = path.startsWith('mcp/tools/') && portSlug
     ? MCP_REFERENCE[portSlug]?.registrations.find((entry) => entry.wireName === path.slice('mcp/tools/'.length)) : undefined
 
@@ -98,8 +101,12 @@ export function pagePortLinks({
       if (target) links = [{ href: portPageUrl(port, targetVersion, `mcp/tools/${target.wireName}`) }]
     } else if (path === 'mcp/tools') {
       if (productAvailable(port, 'mcp')) links = [{ href: portPageUrl(port, targetVersion, path) }]
-    } else if ((!port.parentLibrary && (SHARED_PAGE_PATHS as readonly string[]).includes(path)) || entries.some((entry) => docsEntryAvailable(entry, port.slug))) {
+    } else if (!port.parentLibrary && (SHARED_PAGE_PATHS as readonly string[]).includes(path)) {
       links = [{ href: portPageUrl(port, targetVersion, path) }]
+    } else {
+      const target = entries.find((entry) => entry.data.port === port.slug && docsEntryAvailable(entry, port.slug))
+        ?? entries.find((entry) => docsEntryAvailable(entry, port.slug))
+      if (target) links = [{ href: portPageUrl(port, targetVersion, docsPath(target)) }]
     }
     return { port: port.slug, name: port.name, links }
   })

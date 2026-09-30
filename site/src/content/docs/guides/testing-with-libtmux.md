@@ -1,6 +1,7 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
 title: Testing with libtmux
-description: Every port ships a way to give your own tests a real, disposable tmux server. What each one hands you, and what it guarantees about cleanup.
+description: Test against a private tmux server and clean up its sessions and socket.
 sidebar:
   label: Testing with libtmux
   group: Guides
@@ -10,9 +11,10 @@ tableOfContents: true
 
 Use a private tmux server to test code that creates sessions, sends input, or
 captures output. The fixtures below allocate a separate socket and manage normal
-test cleanup. Cleanup after abrupt process termination depends on the fixture;
-Java's stale-server cleanup is described below.
+test cleanup. Give each test suite its own socket so it cannot target a
+developer's existing sessions.
 
+<!-- port:py -->
 Request the fixture to obtain its server. Python's `session` fixture depends on
 `server`, so requesting a session also creates an isolated server:
 
@@ -30,21 +32,42 @@ overrides how the fixture builds a session (window size, for instance)
 without forking it; a temporary `HOME` and tmux config keep window and pane
 indices stable across machines, so an assertion like `window_name == "test"`
 doesn't depend on whatever `.tmux.conf` the test runner happens to have.
+<!-- /port -->
 
+<!-- port:go -->
 ```go
-pane := tmuxtest.RunInPane(ctx, t, "printf 'ready\\n'; cat")
+package example_test
 
-tmuxtest.WaitForText(ctx, t, pane, "ready")
-tmuxtest.Type(ctx, t, pane, "a line for the program")
-tmuxtest.WaitForLine(ctx, t, pane, "a line for the program")
+import (
+    "context"
+    "os"
+    "testing"
+    "time"
+
+    "github.com/libtmux/libtmux-go/tmux/tmuxtest"
+)
+
+func TestMain(m *testing.M) {
+    os.Exit(tmuxtest.Main(m))
+}
+
+func TestProgram(t *testing.T) {
+    ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+    defer cancel()
+    pane := tmuxtest.RunInPane(ctx, t, "printf 'ready\\n'; cat")
+    tmuxtest.WaitForLine(ctx, t, pane, "ready")
+}
 ```
 
 `tmuxtest.NewServer(ctx, t)` captures the environment and working directory,
 resolves the tmux executable, and creates a server on its own socket.
-Construction can return an error. Test cleanup kills the server, and wait
-failures include the last captured screen. Source: `README.md`, "Testing your
-own code," backed by `tmux/tmuxtest/`.
+Setup failures stop the test. Test cleanup kills the server,
+and wait failures include the last captured screen. Call `tmuxtest.Main` once
+from `TestMain` before using these helpers. Run the test with `go test`; tmux
+3.2a or newer must be available on `PATH`.
+<!-- /port -->
 
+<!-- port:rs -->
 ```rust
 let guard = TestServer::new().await?;
 let server = guard.server();
@@ -57,7 +80,9 @@ these guards in doctests through `#![doc = include_str!("../README.md")]`.
 `libtmux::test::retry_until(deadline, condition)` polls an arbitrary async
 condition; `Pane::wait_for_text` waits specifically for pane text. See
 [Capturing output](../capturing-output/).
+<!-- /port -->
 
+<!-- port:java -->
 ```java
 @ExtendWith(TmuxExtension.class)
 class MyToolTest {
@@ -81,7 +106,9 @@ exited. Source: `libtmux-junit5/README.md`.
 from READMEs and guides, then runs them against `libtmux-junit5` servers. A
 `<!-- snippet: ... -->` directive can instead require a named exception, a
 compile failure, or an explicit skip reason. Source: `docs-tests/README.md`.
+<!-- /port -->
 
+<!-- port:dotnet -->
 ```csharp
 using LibTmux.Testing;
 
@@ -96,7 +123,9 @@ await scope.Pane.SendTextAsync("echo hello");
 when the block exits. Use `TmuxWait.UntilAsync` to wait for expected state; see
 [Capturing output](../capturing-output/). Source: `README.md`, "Testing your own
 code," exercised by `ReadmeExampleTests`.
+<!-- /port -->
 
+<!-- port:cxx -->
 ```cpp
 // A private tmux for a suite of your own, gone when the scope ends.
 auto fixture = libtmux::test::ScopedTmuxServer::start(
@@ -118,7 +147,9 @@ temporary directory, sets `TMUX_TMPDIR`, and removes `TMUX` and `TMUX_PANE` from
 the child environment. `SocketNamespace::consumer(...)` labels sockets with the
 consumer suite's name. `examples/tests/README.md` shows use from outside the
 library's build tree.
+<!-- /port -->
 
+<!-- port:swift -->
 ```swift
 import Testing
 import TmuxFixture
@@ -133,10 +164,13 @@ try await withTmuxServer { server in
 session and limits concurrent fixtures to reduce process and pseudo-terminal
 exhaustion. `LIBTMUX_TMUX_BIN` selects the executable; otherwise it checks
 installed locations. Source: `Tests/TmuxFixture/README.md`.
+<!-- /port -->
 
+<!-- port:ts -->
 TypeScript's harness at `packages/libtmux/src/_internal/test/testkit.ts` is
 internal and unpublished. For external tests, create an isolated `Server` and
 manage its cleanup in your test framework.
+<!-- /port -->
 
 ## Where to go next
 

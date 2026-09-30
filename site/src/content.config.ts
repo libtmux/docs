@@ -2,6 +2,7 @@ import { glob } from 'astro/loaders'
 import { defineCollection } from 'astro:content'
 import { z } from 'astro/zod'
 import { workspaceDocsLoader } from './loaders/workspace-shared.ts'
+import { PORTS } from './lib/ports.ts'
 
 /**
  * Shell prose. One collection for everything hand-written: the landing page,
@@ -25,6 +26,8 @@ const docs = defineCollection({
     description: z.string().optional(),
     /** Restricts a page to one port's section, e.g. 'py'. Omit for shared pages. */
     port: z.string().optional(),
+    /** Shared prose is published only where its native APIs are documented. */
+    supportedPorts: z.array(z.string().refine((slug) => PORTS.some((port) => port.slug === slug), 'Unknown documentation port')).optional(),
     /** Product pages are authored separately for each port. */
     product: z.enum(['mcp', 'workspace']).optional(),
     /** Published package a staged source guide documents. */

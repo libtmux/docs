@@ -1,4 +1,5 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
 title: Capture pane output
 description: Capture a pane's screen and wait for expected output or a completion signal.
 sidebar:
@@ -37,6 +38,12 @@ lines, err := pane.Capture(ctx, tmux.CapturePaneRequest{
 	Start: tmux.CaptureBoundary,
 	End:   tmux.CaptureBoundary,
 })
+if err != nil {
+    return err
+}
+for _, line := range lines {
+    fmt.Println(line)
+}
 ```
 
 ```rust file="crates/libtmux/examples/scratch.rs" region="capture"
@@ -50,9 +57,11 @@ pane.sendLine("echo hello from libtmux");
 pane.capture().isEmpty();            // → false
 ```
 
-The .NET example under "Wait for text instead of guessing a delay" uses
+<!-- port:dotnet -->
+The example under "Wait for output or completion" uses
 `Pane.CaptureAsync` within a wait. Its separate Psmux transport also provides a
 capture API, shown in `examples/LibTmux.Examples/Snippets/Psmux.cs`.
+<!-- /port -->
 
 ```cpp
 const auto visible = pane.capture();
@@ -71,10 +80,14 @@ if (history.has_value()) {
 let lines = try await server.capture(pane)
 ```
 
-## Wait for text instead of guessing a delay
+<a id="wait-for-text-instead-of-guessing-a-delay"></a>
 
+## Wait for output or completion
+
+<!-- port:py -->
 The Python example uses `wait_for`, tmux's signal channel. It waits for a signal
 from the command rather than matching pane text.
+<!-- /port -->
 
 ```python
 >>> server.new_session(session_name='wait_test')
@@ -88,9 +101,11 @@ Session(...)
 ```go file="examples/control-mode-subscribe/main.go"
 ```
 
+<!-- port:go -->
 `Session.OpenNotifications` receives tmux events as a stream. For tests that
 need to wait for screen text, use `tmuxtest.WaitForText`; see [Testing with
 libtmux](/guides/testing-with-libtmux/).
+<!-- /port -->
 
 ```rust
 // From crates/libtmux/examples/scratch.rs, the wait_for_text call: shown in full on Attach and send keys.
@@ -100,15 +115,19 @@ match pane.wait_for_text("hello", Duration::from_secs(5)).await? {
 }
 ```
 
+<!-- port:rs -->
 Rust's `wait_for_text` looks before it sleeps, joins wrapped lines so a
 needle spanning a wrap still matches, and returns `PaneWait::Dead` rather
 than hanging forever if the pane's process ends first.
+<!-- /port -->
 
 ```java file="examples/src/main/java/io/github/libtmux/examples/WatchPaneOutput.java"
 ```
 
+<!-- port:java -->
 Attach the `ControlClient` to receive `%output` notifications. An unattached
 client receives command replies only.
+<!-- /port -->
 
 ```csharp
 await pane.SendTextAsync("echo hello-from-libtmux", cancellationToken: ct);
@@ -121,9 +140,12 @@ string output = await TmuxWait.UntilAsync(
     TimeSpan.FromMilliseconds(20));
 ```
 
+<!-- port:dotnet -->
 `TmuxWait.UntilAsync` polls a read against a predicate rather than sleeping
 a fixed amount.
+<!-- /port -->
 
+<!-- port:cxx -->
 C++ has no checked snippet that waits on pane *text*. `Server::wait_for(channel,
 timeout)`, in `include/libtmux/server.hpp`, uses tmux's own `wait-for` signal
 instead of scraping output, and its doc comment explains why that is the
@@ -131,16 +153,24 @@ safer choice when the command you are waiting on can be made to announce
 itself: "a server that dies under a waiter makes tmux exit zero, which is
 indistinguishable from being signalled ... this reports that as a failure
 instead."
+<!-- /port -->
 
 ```swift file="Examples/Sources/ExampleCode/Waiting.swift"
 ```
 
+<!-- port:swift -->
 `waitForOutput` takes patterns for both success and failure, so a process
 that fails fast is discovered immediately rather than by timing out.
+<!-- /port -->
+
+<a id="source-inclusion"></a>
 
 ## Where this comes from
 
+<!-- port:py -->
+<!-- port:root -->
 ### Python
+<!-- /port -->
 
 **Source:** `src/libtmux/pane.py` (`capture_pane`), `src/libtmux/server.py`
 (`wait_for`) docstrings
@@ -149,8 +179,12 @@ that fails fast is discovered immediately rather than by timing out.
 
 **Checked by:** `pytest` runs every `>>>` doctest against a real, isolated tmux
 session on every test run
+<!-- /port -->
 
+<!-- port:ts -->
+<!-- port:root -->
 ### TypeScript
+<!-- /port -->
 
 **Source:** `examples/capture/capture.ts` (read), `examples/agent/agent.ts`
 (wait)
@@ -160,8 +194,12 @@ session on every test run
 **Checked by:** both run against real tmux by `bun test examples`; `agent.ts` is
 additionally mirrored into README.md under a `<!-- runs: ... -->` marker checked
 by `scripts/check-doc-runnable.ts`
+<!-- /port -->
 
+<!-- port:go -->
+<!-- port:root -->
 ### Go
+<!-- /port -->
 
 **Source:** `examples/quickstart/main.go` (read, already shown whole on the
 previous page), `examples/control-mode-subscribe/main.go` (wait)
@@ -171,8 +209,12 @@ previous page), `examples/control-mode-subscribe/main.go` (wait)
 **Checked by:** both run against real tmux as `TestQuickstart` /
 `TestControlModeSubscribe`; the wait file's `docs:watching` region is
 additionally mirrored into README.md by `go generate ./tmux`
+<!-- /port -->
 
+<!-- port:rs -->
+<!-- port:root -->
 ### Rust
+<!-- /port -->
 
 **Source:** `crates/libtmux/examples/scratch.rs`, already shown whole on the
 previous page
@@ -181,8 +223,12 @@ previous page
 
 **Checked by:** run to completion against a throwaway tmux by
 `scripts/run-examples.sh`, which CI runs
+<!-- /port -->
 
+<!-- port:java -->
+<!-- port:root -->
 ### Java
+<!-- /port -->
 
 **Source:** root `README.md` Quickstart (read),
 `examples/src/main/java/io/github/libtmux/examples/WatchPaneOutput.java` (wait)
@@ -192,8 +238,12 @@ previous page
 **Checked by:** every README fence is compiled and run against real tmux by
 `docs-tests`; `WatchPaneOutput` is additionally run by the `examples` module's
 `ExamplesRunTest`
+<!-- /port -->
 
+<!-- port:dotnet -->
+<!-- port:root -->
 ### .NET
+<!-- /port -->
 
 **Source:** root `README.md`, "Running something, and reading it back"
 
@@ -201,8 +251,12 @@ previous page
 
 **Checked by:** one of the `csharp run` blocks compiled and run against real
 tmux by `ReadmeExampleTests`
+<!-- /port -->
 
+<!-- port:cxx -->
+<!-- port:root -->
 ### C++
+<!-- /port -->
 
 **Source:** `examples/05-readme.cpp` `capture` region (read);
 `include/libtmux/server.hpp` doc comment (wait, no fence)
@@ -212,8 +266,12 @@ tmux by `ReadmeExampleTests`
 **Checked by:** the `capture` region is quoted verbatim into README.md and
 checked by `tools/docs/check_readme.py`; the whole file is built and run by
 CTest
+<!-- /port -->
 
+<!-- port:swift -->
+<!-- port:root -->
 ### Swift
+<!-- /port -->
 
 **Source:** `Examples/Sources/ExampleCode/Changing.swift` (read, already shown
 whole on the previous page), `Waiting.swift` (wait)
@@ -222,11 +280,11 @@ whole on the previous page), `Waiting.swift` (wait)
 
 **Checked by:** both matched against the README by `Scripts/check_examples.py`
 and run by `swift test --package-path Examples`
+<!-- /port -->
 
-### Source inclusion
+<!-- port:go,rs,swift -->
+### Full example
 
-Go, Rust, and Swift each reuse a file already shown in full on
-[Attach and send keys](../attach-and-send-keys/#where-this-comes-from):
-rather than dump the same file a second time, this page quotes just the
-relevant lines by hand, with a comment naming the source, and points back
-at the full listing there.
+[Attach and send keys](../attach-and-send-keys/#where-this-comes-from) includes
+the complete program behind the capture excerpt, including its setup and cleanup.
+<!-- /port -->

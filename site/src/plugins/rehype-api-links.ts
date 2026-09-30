@@ -198,7 +198,7 @@ export function rehypeApiLinks() {
         if (child.tagName === 'code' && !inLink) {
           const text = textOf(child).trim()
           const ctx = {
-            pagePort: rowPort ?? fence.lang ?? sections.at(-1)?.port ?? buildPort,
+            pagePort: String(child.properties?.dataDocPort ?? buildPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port ?? '') || undefined,
             product,
             before: scope.text,
             symbolHref: (port: string, symbol: ApiSymbol) => productApiHref(API_MODELS[port], symbol, versionOf(port)),
