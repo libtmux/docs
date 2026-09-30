@@ -150,8 +150,13 @@ function artifactFromSource(port, checkout) {
 
 export function run() {
   if (selectedPort && !(selectedPort in ROUTES)) throw new Error(`unsupported staged port: ${selectedPort}`)
+  const publicationPort = process.env.LIBTMUX_DOCS_SOURCE_SHA && process.env.LIBTMUX_DOCS_PORT
+  if (cached && selectedPort && selectedPort === publicationPort) {
+    throw new Error(`--cached cannot stage selected publication port ${selectedPort}; regenerate its source guides first`)
+  }
   const generated = new Map()
-  const selected = PORTS.filter((entry) => entry.slug in ROUTES && (!selectedPort || entry.slug === selectedPort) && (!wrappersOnly || entry.parentLibrary))
+  const selected = PORTS.filter((entry) => entry.slug in ROUTES && (!selectedPort || entry.slug === selectedPort)
+    && (!wrappersOnly || entry.parentLibrary) && !(cached && entry.slug === publicationPort))
   if (refreshCache && !selectedPort) throw new Error('--refresh-cache requires one --port')
   for (const port of selected) {
     const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || port.worktree)
