@@ -73,8 +73,8 @@
   {
    "port": "cxx",
    "symbol": "libtmux::exactly_one",
-   "page": "/guides/querying-and-filtering/",
-   "title": "Filtering and querying, in practice",
+   "page": "/cxx/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
    "section": "guides"
   },
   {
@@ -205,6 +205,27 @@
   },
   {
    "port": "cxx",
+   "symbol": "libtmux::Pane::capture",
+   "page": "/cxx/latest/guides/capturing-output/",
+   "title": "Capturing output",
+   "section": "guides"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane::capture",
+   "page": "/cxx/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane::capture",
+   "page": "/cxx/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "cxx",
    "symbol": "libtmux::Pane::expand",
    "page": "/topics/architecture/",
    "title": "Architecture",
@@ -227,9 +248,30 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Pane::send_key",
+   "page": "/cxx/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane::send_key",
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane::send_line",
+   "page": "/cxx/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Pane::send_text",
+   "page": "/cxx/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
   },
   {
    "port": "cxx",
@@ -271,6 +313,13 @@
    "symbol": "libtmux::Server",
    "page": "/cxx/latest/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server",
+   "page": "/cxx/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
    "section": "guides"
   },
   {
@@ -325,6 +374,13 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Server::at_socket_path",
+   "page": "/cxx/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server::at_socket_path",
    "page": "/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
@@ -367,6 +423,13 @@
   {
    "port": "cxx",
    "symbol": "libtmux::Server::sessions",
+   "page": "/cxx/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::Server::sessions",
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
@@ -377,13 +440,6 @@
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
-  },
-  {
-   "port": "cxx",
-   "symbol": "libtmux::Server::wait_for",
-   "page": "/guides/capturing-output/",
-   "title": "Capturing output",
-   "section": "guides"
   },
   {
    "port": "cxx",
@@ -429,6 +485,13 @@
   },
   {
    "port": "cxx",
+   "symbol": "libtmux::Session::name",
+   "page": "/cxx/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "cxx",
    "symbol": "libtmux::Session::panes",
    "page": "/topics/traversal/",
    "title": "Traversal",
@@ -465,6 +528,13 @@
   {
    "port": "cxx",
    "symbol": "libtmux::test::ScopedTmuxServer",
+   "page": "/cxx/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::test::ScopedTmuxServer",
    "page": "/cxx/latest/workspace/internals/examples/",
    "title": "C++ workspace builder examples",
    "section": "ports"
@@ -475,13 +545,6 @@
    "page": "/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
-  },
-  {
-   "port": "cxx",
-   "symbol": "libtmux::test::SocketNamespace::consumer",
-   "page": "/guides/testing-with-libtmux/",
-   "title": "Testing with libtmux",
-   "section": "guides"
   },
   {
    "port": "cxx",
@@ -814,6 +877,27 @@
   },
   {
    "port": "dotnet",
+   "symbol": "LibTmux.OwnedServerScope",
+   "page": "/dotnet/latest/guides/capturing-output/",
+   "title": "Capturing output",
+   "section": "guides"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.OwnedServerScope",
+   "page": "/dotnet/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.OwnedServerScope",
+   "page": "/dotnet/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "dotnet",
    "symbol": "LibTmux.OwnedSessionScope",
    "page": "/topics/context-managers/",
    "title": "Ownership and cleanup",
@@ -836,8 +920,29 @@
   {
    "port": "dotnet",
    "symbol": "LibTmux.Pane.CaptureAsync",
-   "page": "/guides/capturing-output/",
+   "page": "/dotnet/latest/guides/capturing-output/",
    "title": "Capturing output",
+   "section": "guides"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Pane.CaptureAsync",
+   "page": "/dotnet/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Pane.CaptureAsync",
+   "page": "/dotnet/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Pane.EnterAsync",
+   "page": "/dotnet/latest/guides/sending-keys/",
+   "title": "Sending keys",
    "section": "guides"
   },
   {
@@ -867,6 +972,13 @@
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Pane.SendTextAsync",
+   "page": "/dotnet/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
   },
   {
    "port": "dotnet",
@@ -927,6 +1039,13 @@
   {
    "port": "dotnet",
    "symbol": "LibTmux.Server.CreateOwnedAsync",
+   "page": "/dotnet/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Server.CreateOwnedAsync",
    "page": "/dotnet/latest/workspace/internals/guides/",
    "title": "Use the .NET workspace builder",
    "section": "ports"
@@ -951,6 +1070,13 @@
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Server.HasSessionAsync",
+   "page": "/dotnet/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
+   "section": "guides"
   },
   {
    "port": "dotnet",
@@ -1035,6 +1161,13 @@
    "page": "/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
+  },
+  {
+   "port": "dotnet",
+   "symbol": "LibTmux.Testing.TmuxTestFactory",
+   "page": "/dotnet/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
   },
   {
    "port": "dotnet",
@@ -1182,20 +1315,6 @@
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxWait.UntilAsync",
-   "page": "/guides/sending-keys/",
-   "title": "Sending keys",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxWait.UntilAsync",
-   "page": "/guides/testing-with-libtmux/",
-   "title": "Testing with libtmux",
-   "section": "guides"
   },
   {
    "port": "dotnet",
@@ -2012,9 +2131,72 @@
   {
    "port": "go",
    "symbol": "tmux.CaptureBoundary",
+   "page": "/go/latest/guides/capturing-output/",
+   "title": "Capturing output",
+   "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.CaptureBoundary",
+   "page": "/go/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.CaptureBoundary",
+   "page": "/go/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.CaptureBoundary",
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.CapturePaneRequest",
+   "page": "/go/latest/guides/capturing-output/",
+   "title": "Capturing output",
+   "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.CapturePaneRequest",
+   "page": "/go/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.CapturePaneRequest",
+   "page": "/go/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.CapturePaneRequest.End",
+   "page": "/go/latest/guides/capturing-output/",
+   "title": "Capturing output",
+   "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.CapturePaneRequest.End",
+   "page": "/go/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.CapturePaneRequest.End",
+   "page": "/go/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
   },
   {
    "port": "go",
@@ -2103,6 +2285,27 @@
   {
    "port": "go",
    "symbol": "tmux.Pane.Capture",
+   "page": "/go/latest/guides/capturing-output/",
+   "title": "Capturing output",
+   "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.Capture",
+   "page": "/go/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.Capture",
+   "page": "/go/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.Capture",
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
@@ -2120,6 +2323,13 @@
    "page": "/topics/format-tokens/",
    "title": "Format-token fields",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.Enter",
+   "page": "/go/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
   },
   {
    "port": "go",
@@ -2148,6 +2358,13 @@
    "page": "/topics/options-and-hooks/",
    "title": "Options and hooks",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Pane.SendKeys",
+   "page": "/go/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
   },
   {
    "port": "go",
@@ -2204,6 +2421,20 @@
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.SendKeysRequest",
+   "page": "/go/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.SendKeysRequest.SkipEnter",
+   "page": "/go/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
   },
   {
    "port": "go",
@@ -2267,6 +2498,13 @@
    "page": "/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.SearchSessions",
+   "page": "/go/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
+   "section": "guides"
   },
   {
    "port": "go",
@@ -2445,6 +2683,13 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.TmuxFilter",
+   "page": "/go/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.WaitForRequest",
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
@@ -2516,22 +2761,22 @@
   {
    "port": "go",
    "symbol": "tmuxq.ErrMultipleMatches",
-   "page": "/guides/querying-and-filtering/",
-   "title": "Filtering and querying, in practice",
+   "page": "/go/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
    "section": "guides"
   },
   {
    "port": "go",
    "symbol": "tmuxq.ErrNoMatch",
-   "page": "/guides/querying-and-filtering/",
-   "title": "Filtering and querying, in practice",
+   "page": "/go/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
    "section": "guides"
   },
   {
    "port": "go",
    "symbol": "tmuxq.ExactlyOne",
-   "page": "/guides/querying-and-filtering/",
-   "title": "Filtering and querying, in practice",
+   "page": "/go/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
    "section": "guides"
   },
   {
@@ -2543,22 +2788,15 @@
   },
   {
    "port": "go",
-   "symbol": "tmuxq.Where",
-   "page": "/guides/querying-and-filtering/",
-   "title": "Filtering and querying, in practice",
-   "section": "guides"
-  },
-  {
-   "port": "go",
    "symbol": "tmuxtest.Main",
-   "page": "/guides/testing-with-libtmux/",
+   "page": "/go/latest/guides/testing-with-libtmux/",
    "title": "Testing with libtmux",
    "section": "guides"
   },
   {
    "port": "go",
    "symbol": "tmuxtest.NewServer",
-   "page": "/guides/testing-with-libtmux/",
+   "page": "/go/latest/guides/testing-with-libtmux/",
    "title": "Testing with libtmux",
    "section": "guides"
   },
@@ -2578,9 +2816,16 @@
   },
   {
    "port": "go",
+   "symbol": "tmuxtest.WaitForLine",
+   "page": "/go/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
+  },
+  {
+   "port": "go",
    "symbol": "tmuxtest.WaitForShellReady",
-   "page": "/guides/sending-keys/",
-   "title": "Sending keys",
+   "page": "/go/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
    "section": "guides"
   },
   {
@@ -2935,8 +3180,15 @@
   },
   {
    "port": "java",
+   "symbol": "io.github.libtmux.junit5.TmuxExtension.TmuxExtension",
+   "page": "/java/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
+  },
+  {
+   "port": "java",
    "symbol": "io.github.libtmux.junit5.TmuxSocketPath.TmuxSocketPath",
-   "page": "/guides/testing-with-libtmux/",
+   "page": "/java/latest/guides/testing-with-libtmux/",
    "title": "Testing with libtmux",
    "section": "guides"
   },
@@ -3027,8 +3279,22 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Pane.Pane.capture",
-   "page": "/guides/capturing-output/",
+   "page": "/java/latest/guides/capturing-output/",
    "title": "Capturing output",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane.Pane.capture",
+   "page": "/java/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane.Pane.capture",
+   "page": "/java/latest/guides/sending-keys/",
+   "title": "Sending keys",
    "section": "guides"
   },
   {
@@ -3065,6 +3331,13 @@
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane.Pane.sendLine",
+   "page": "/java/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -3125,15 +3398,43 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Server.Server",
-   "page": "/guides/testing-with-libtmux/",
-   "title": "Testing with libtmux",
+   "page": "/java/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
    "section": "guides"
   },
   {
    "port": "java",
    "symbol": "io.github.libtmux.Server.Server",
-   "page": "/java/latest/guides/attaching-to-tmux/",
-   "title": "Attaching to tmux",
+   "page": "/java/latest/guides/capturing-output/",
+   "title": "Capturing output",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server",
+   "page": "/java/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server",
+   "page": "/java/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server",
+   "page": "/java/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server",
+   "page": "/java/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
    "section": "guides"
   },
   {
@@ -3230,6 +3531,13 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Server.Server.sessions",
+   "page": "/java/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server.sessions",
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
@@ -3239,6 +3547,20 @@
    "symbol": "io.github.libtmux.Server.Server.within",
    "page": "/scala/latest/guides/compatibility/",
    "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.ServerConfig.ServerConfig",
+   "page": "/java/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.ServerConfig.ServerConfig",
+   "page": "/java/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
    "section": "guides"
   },
   {
@@ -3317,6 +3639,13 @@
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Session.Session.name",
+   "page": "/java/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -5434,6 +5763,13 @@
   },
   {
    "port": "py",
+   "symbol": "libtmux._internal.query_list.QueryList.get",
+   "page": "/py/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "py",
    "symbol": "libtmux.constants.ResizeAdjustmentDirection.Up",
    "page": "/guides/sending-keys/",
    "title": "Sending keys",
@@ -5497,6 +5833,34 @@
   },
   {
    "port": "py",
+   "symbol": "libtmux.pane.Pane.capture_pane",
+   "page": "/py/latest/guides/capturing-output/",
+   "title": "Capturing output",
+   "section": "guides"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.capture_pane",
+   "page": "/py/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.capture_pane",
+   "page": "/py/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.enter",
+   "page": "/py/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "py",
    "symbol": "libtmux.pane.Pane.from_env",
    "page": "/topics/environment/",
    "title": "Environment",
@@ -5508,6 +5872,13 @@
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.send_keys",
+   "page": "/py/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
   },
   {
    "port": "py",
@@ -5589,7 +5960,7 @@
   {
    "port": "py",
    "symbol": "libtmux.pytest_plugin.session_params",
-   "page": "/guides/testing-with-libtmux/",
+   "page": "/py/latest/guides/testing-with-libtmux/",
    "title": "Testing with libtmux",
    "section": "guides"
   },
@@ -6309,13 +6680,6 @@
   },
   {
    "port": "rs",
-   "symbol": "hooks.SparseValues.iter",
-   "page": "/guides/querying-and-filtering/",
-   "title": "Filtering and querying, in practice",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
    "symbol": "mcp.policy.Builder.selection",
    "page": "/rs/latest/mcp/reference/",
    "title": "Rust MCP API",
@@ -6386,6 +6750,27 @@
   },
   {
    "port": "rs",
+   "symbol": "pane.Pane.capture",
+   "page": "/rs/latest/guides/capturing-output/",
+   "title": "Capturing output",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.capture",
+   "page": "/rs/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.capture",
+   "page": "/rs/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
    "symbol": "pane.Pane.from_env",
    "page": "/topics/environment/",
    "title": "Environment",
@@ -6415,6 +6800,13 @@
   {
    "port": "rs",
    "symbol": "pane.Pane.send_key_names",
+   "page": "/rs/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.send_key_names",
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
@@ -6422,9 +6814,23 @@
   {
    "port": "rs",
    "symbol": "pane.Pane.send_keys",
+   "page": "/rs/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.send_keys",
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.send_line",
+   "page": "/rs/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
   },
   {
    "port": "rs",
@@ -6467,13 +6873,6 @@
    "page": "/topics/options-and-hooks/",
    "title": "Options and hooks",
    "section": "topics"
-  },
-  {
-   "port": "rs",
-   "symbol": "pane.Pane.wait_for_text",
-   "page": "/guides/testing-with-libtmux/",
-   "title": "Testing with libtmux",
-   "section": "guides"
   },
   {
    "port": "rs",
@@ -6520,6 +6919,13 @@
   {
    "port": "rs",
    "symbol": "server.Server",
+   "page": "/rs/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server",
    "page": "/rs/latest/mcp/examples/",
    "title": "Rust MCP examples",
    "section": "ports"
@@ -6558,6 +6964,13 @@
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.builder",
+   "page": "/rs/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
   },
   {
    "port": "rs",
@@ -6607,6 +7020,13 @@
    "page": "/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.sessions",
+   "page": "/rs/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
+   "section": "guides"
   },
   {
    "port": "rs",
@@ -6677,6 +7097,13 @@
    "page": "/topics/environment/",
    "title": "Environment",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.Session.name",
+   "page": "/rs/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
+   "section": "guides"
   },
   {
    "port": "rs",
@@ -6807,23 +7234,16 @@
   {
    "port": "rs",
    "symbol": "test.retry_until",
-   "page": "/guides/sending-keys/",
-   "title": "Sending keys",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "test.retry_until",
-   "page": "/guides/testing-with-libtmux/",
-   "title": "Testing with libtmux",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "test.retry_until",
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "test.TestServer",
+   "page": "/rs/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
   },
   {
    "port": "rs",
@@ -7885,6 +8305,13 @@
   {
    "port": "swift",
    "symbol": "Server",
+   "page": "/swift/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server",
    "page": "/swift/latest/workspace/internals/",
    "title": "Swift workspace internals",
    "section": "ports"
@@ -7948,8 +8375,8 @@
   {
    "port": "swift",
    "symbol": "Server.hasSession(_:)",
-   "page": "/guides/querying-and-filtering/",
-   "title": "Filtering and querying, in practice",
+   "page": "/swift/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
    "section": "guides"
   },
   {
@@ -8000,6 +8427,13 @@
    "page": "/topics/environment/",
    "title": "Environment",
    "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "Server.run(_:in:)",
+   "page": "/swift/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
   },
   {
    "port": "swift",
@@ -8329,6 +8763,13 @@
    "page": "/swift/latest/workspace/internals/guides/",
    "title": "Use the Swift workspace builder",
    "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "withTmuxServer(socketFileName:_:)",
+   "page": "/swift/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
   },
   {
    "port": "swift",
@@ -8731,6 +9172,27 @@
   },
   {
    "port": "ts",
+   "symbol": "pane.Pane.capture",
+   "page": "/ts/latest/guides/capturing-output/",
+   "title": "Capturing output",
+   "section": "guides"
+  },
+  {
+   "port": "ts",
+   "symbol": "pane.Pane.capture",
+   "page": "/ts/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ts",
+   "symbol": "pane.Pane.capture",
+   "page": "/ts/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "ts",
    "symbol": "pane.Pane.sendKeys",
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
@@ -8742,6 +9204,13 @@
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
+  },
+  {
+   "port": "ts",
+   "symbol": "pane.Pane.sendKeys",
+   "page": "/ts/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
   },
   {
    "port": "ts",
@@ -8878,38 +9347,38 @@
   },
   {
    "port": "ts",
-   "symbol": "selection.Selection.oneOrUndefined",
-   "page": "/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "ts",
-   "symbol": "selection.Selection.oneOrUndefined",
-   "page": "/ts/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "ts",
-   "symbol": "selection.Selection.where",
-   "page": "/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "ts",
-   "symbol": "selection.Selection.where",
-   "page": "/ts/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "ts",
-   "symbol": "server.Server",
-   "page": "/guides/testing-with-libtmux/",
-   "title": "Testing with libtmux",
+   "symbol": "selection.Selection.one",
+   "page": "/ts/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
    "section": "guides"
+  },
+  {
+   "port": "ts",
+   "symbol": "selection.Selection.oneOrUndefined",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "selection.Selection.oneOrUndefined",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "selection.Selection.where",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "selection.Selection.where",
+   "page": "/ts/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "ts",
@@ -8923,6 +9392,13 @@
    "symbol": "server.Server",
    "page": "/ts/latest/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server",
+   "page": "/ts/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
    "section": "guides"
   },
   {
@@ -9064,6 +9540,13 @@
    "page": "/ts/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
+  },
+  {
+   "port": "ts",
+   "symbol": "server.Server.snapshot",
+   "page": "/ts/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
+   "section": "guides"
   },
   {
    "port": "ts",
@@ -9919,27 +10402,6 @@
    "text": "ConnectAndBuild",
    "page": "/examples/attach-and-send-keys/",
    "line": 152,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "dotnet",
-   "text": "IEnumerable<T>.Matching<T>(expression)",
-   "page": "/guides/querying-and-filtering/",
-   "line": 61,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "dotnet",
-   "text": "src/LibTmux.Testing/",
-   "page": "/guides/testing-with-libtmux/",
-   "line": 113,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "swift",
-   "text": "TmuxFixture",
-   "page": "/guides/testing-with-libtmux/",
-   "line": 150,
    "why": "not defined in the stated port"
   },
   {

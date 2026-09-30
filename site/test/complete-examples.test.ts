@@ -8,6 +8,7 @@ import attach from './fixtures/attach-examples.json'
 import products from './fixtures/product-examples.json'
 import queries from './fixtures/query-examples.json'
 import concepts from './fixtures/concept-examples.json'
+import guides from './fixtures/guide-examples.json'
 import { remarkPortCode, resolvePortCode } from '../src/plugins/remark-port-code.mjs'
 import { rehypeCodeTabs } from '../src/plugins/rehype-code-tabs.mjs'
 import { docsEntryAvailable, pagePortLinks } from '../src/lib/page-port-links'
@@ -19,7 +20,8 @@ const bodyOf = (page: string) => parsePage(page).content
 const fences = (markdown: string) => [...markdown.matchAll(/^```(\S+)([^\n]*)\n([\s\S]*?)^```/gm)]
   .map((match) => ({ language: match[1], title: /title="([^"]+)"/.exec(match[2])?.[1], code: match[3] }))
 const sha256 = (code: string) => createHash('sha256').update(code).digest('hex')
-const examples = [...receipt.examples, ...attach.examples, ...products.examples, ...queries.examples, ...concepts.examples]
+const examples = [...receipt.examples, ...attach.examples, ...products.examples, ...queries.examples,
+  ...concepts.examples, ...guides.examples]
 
 afterEach(() => vi.unstubAllEnvs())
 
@@ -66,7 +68,7 @@ describe('verified complete programs', () => {
 
   it.each(examples)('preserves $page in its root-mounted and native HTML/Markdown', async (example) => {
     const { content: body, frontmatter } = parsePage(example.page)
-    for (const port of ['', example.port]) {
+    for (const port of 'rootOnly' in example ? [''] : ['', example.port]) {
       vi.stubEnv('LIBTMUX_DOCS_PORT', port)
       const renderer = await createMarkdownProcessor({
         remarkPlugins: [remarkPortCode], rehypePlugins: [rehypeCodeTabs], syntaxHighlight: false,
@@ -89,6 +91,27 @@ describe('verified complete programs', () => {
         await window.happyDOM.close()
       }
     }
+  })
+
+  it.each(guides.examples)('keeps $page shell-only with working port routes to complete programs', (example) => {
+    const { content, frontmatter } = parsePage(example.page)
+    expect(frontmatter.supportedPorts).toEqual([])
+    expect(fences(content).every((block) => ['sh', 'console'].includes(block.language))).toBe(true)
+    const ports = ['py', 'ts', 'go', 'rs', 'java', 'dotnet', 'cxx', 'swift']
+    const variants = ports.map((port) => {
+      const id = `ports/${port}/${example.page}`
+      const variant = parsePage(id)
+      expect(variant.frontmatter.port).toBe(port)
+      expect(variant.frontmatter.route).toBe(example.page)
+      expect(variant.content).toMatch(/\]\((?:\.\.\/)+examples\/capture-pane-output\/\)|\]\(\.\.\/attaching-to-tmux\/\)/)
+      return { id, data: { port, route: example.page } }
+    })
+    const docs = [{ id: example.page, data: { supportedPorts: [] as string[] } }, ...variants]
+    for (const port of ports) {
+      expect(docs.filter((doc) => docsEntryAvailable(doc, port))).toEqual([variants.find((doc) => doc.data.port === port)])
+    }
+    const links = pagePortLinks({ pagePath: example.page, version: 'latest', defaults: {}, docs })
+    expect(links.filter((link) => link.links.length).map((link) => link.port).sort()).toEqual(ports.sort())
   })
 
   it.each([receipt, attach])('keeps $page about tmux and routes each program to its port', async (receipt) => {

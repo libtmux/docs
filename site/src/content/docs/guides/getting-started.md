@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: []
 title: Getting started
-description: Install tmux and the library, then create a session and interact with a pane.
+description: Create a tmux session, add a window and split it into panes.
 sidebar:
   label: Getting started
   group: Guides
@@ -9,195 +9,96 @@ sidebar:
 tableOfContents: true
 ---
 
+Create a session, add a window, and split that window into panes. These are the
+same tmux objects that the language libraries control.
+
 ## Install tmux
 
-The common tmux baseline documented here is 3.2a. Individual features can
-require a newer release; check your port's compatibility notes. Confirm your
-installed version:
+Install tmux with your platform's package manager. These examples require tmux
+3.2a or newer and a POSIX shell. Confirm the installed version:
 
 ```console
 $ tmux -V
 ```
 
-If `tmux` is missing or older than 3.2a, install a supported version with your
-platform's package manager. libtmux uses an installed tmux executable.
-
-<!-- port:root -->
-## Pick a port
-
-Choose the port for your project's language: [Python](/py/), [TypeScript](/ts/),
-[Rust](/rs/), [Go](/go/), [Java and Kotlin](/java/), [.NET](/dotnet/),
-[C++](/cxx/), or [Swift](/swift/). [Server, session, window,
-pane](/concepts/server-session-window-pane/) explains the shared model, and
-[Control mode vs one-shot](/concepts/transports/) covers transport differences.
-
-For a prerelease package, pin an exact version and check its release notes
-before upgrading. Check the package version's API reference for supported operations.
-<!-- /port -->
-
 ## Run the smallest thing that proves it works
 
-<!-- port:py -->
-Start a tmux session in one terminal:
+Save this complete script as `start.sh`, or paste its entire block into a shell.
+It creates a private server, so it does not need an existing session. Each pane
+runs `cat` to keep it alive until cleanup.
+
+```sh title="start.sh"
+#!/bin/sh
+set -eu
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-guide.XXXXXX")
+socket="$directory/tmux.sock"
+
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+        exit 1
+    fi
+    rm -rf "$directory" || status=$?
+    exit "$status"
+}
+trap cleanup 0
+trap 'exit 1' HUP INT TERM
+
+tmux -S "$socket" -f /dev/null new-session -d -s work -n main 'cat'
+tmux -S "$socket" new-window -t work: -n editor 'cat'
+tmux -S "$socket" split-window -h -t work:editor 'cat'
+tmux -S "$socket" list-panes -a -F '#{session_name}:#{window_name}'
+```
+
+Run the saved script:
 
 ```console
-$ tmux new-session -s foo -n bar
+$ sh start.sh
 ```
 
-Run the example in a second terminal. It uses the session you just created.
-<!-- /port -->
-
-Install the package using the command shown with its example.
-[Attach and send keys](/examples/attach-and-send-keys/) contains the complete
-program, prerequisites, and source details.
-
-```python
-# pip install libtmux
->>> import libtmux
->>> server = libtmux.Server()
->>> session = server.sessions[0]
->>> window = session.active_window
->>> pane = window.split(shell='sh')
->>> pane.capture_pane()
-['$']
-
->>> pane.send_keys('echo "Hello world"', enter=True)
-
->>> pane.capture_pane()
-['$ echo "Hello world"', 'Hello world', '$']
-```
-
-```typescript
-// bun add libtmux
-import { Server } from "libtmux";
-
-const server = new Server();
-const session = await server.newSession({ name: "work" });
-const editor = await session.newWindow({ name: "editor" });
-await editor.split();
-
-await editor.panes.at(0)?.sendKeys("echo hello");
-const lines = await editor.panes.at(0)?.capture();
-```
-
-```go
-// go get github.com/libtmux/libtmux-go
-session, err := server.NewSession(ctx, tmux.NewSessionRequest{
-	Name: "libtmux-go-quickstart", WindowName: "start",
-})
-if err != nil {
-	return fmt.Errorf("create session: %w", err)
-}
-
-windowName := "work"
-window, err := session.NewWindow(ctx, tmux.NewWindowRequest{Name: &windowName})
-if err != nil {
-	return fmt.Errorf("create window: %w", err)
-}
-pane, err := window.SplitPane(ctx, tmux.SplitPaneRequest{
-	Direction: tmux.PaneDirectionRight,
-})
-if err != nil {
-	return fmt.Errorf("split window: %w", err)
-}
-command := "printf 'libtmux ready\\n'"
-if err := pane.SendKeys(ctx, tmux.SendKeysRequest{Command: &command, Literal: true}); err != nil {
-	return fmt.Errorf("send command: %w", err)
-}
-```
-
-```rust
-// cargo add libtmux
-use libtmux::Server;
-
-// TestServer is the isolated, disposable form of this used under `test-support`
-// for the port's own tests (see Testing with libtmux): real code just calls
-// Server::new() directly, as below.
-let server = Server::new()?;
-let session = server.new_session("work").await?;
-let window = session.new_window("editor").await?;
-let pane = window.active_pane().await?.expect("a window has a pane");
-
-pane.send_line("echo hello").await?;
-
-for line in pane.capture().await? {
-    println!("{}", line.to_string_lossy());
-}
-```
-
-```java
-// implementation("io.github.libtmux:libtmux:VERSION")
-Session session = server.newSession("demo");
-Window editor = session.newWindow("editor");
-Pane right = editor.split();
-
-session.name();                      // → demo
-editor.name();                       // → editor
-editor.refresh().panes().size();     // → 2
-
-Pane pane = server.sessions().get(0).windows().get(0).panes().get(0);
-
-pane.sendLine("echo hello from libtmux");
-
-pane.capture().isEmpty();            // → false
-```
-
-```csharp
-// dotnet add package LibTmux
-using LibTmux;
-
-Server server = await Server.ConnectAsync();
-Session session = await server.CreateSessionAsync(new NewSessionRequest(name: "build"));
-Window window = await session.CreateWindowAsync(new NewWindowRequest(name: "tests"));
-Pane pane = (await window.GetPanesAsync())[0];
-
-await pane.SendTextAsync("dotnet test");
-```
-
-```cpp
-// vcpkg install libtmux-cxx
-const auto sessions = server.sessions();
-// sessions->at(0) is this example's session, from an already-open scratch server.
-const libtmux::Session& session = sessions->at(0);
-
-// Build an arrangement without composing a single tmux argument.
-const auto editor = session.new_window({.name = "editor"});
-const auto logs = editor->split({.horizontal = true, .percentage = 30});
-
-(void)logs->send_text("journalctl -f");
-(void)logs->send_key("Enter");
-
-// Read a pane's visible contents, or its scrollback.
-const auto visible = logs->capture();
-```
-
-```swift
-// .package(url: "https://github.com/libtmux/libtmux-swift", from: "0.1.0")
-let session = try await server.newSession(named: "work", windowName: "editor")
-let logs = try await server.newWindow(in: session, named: "logs").window
-let pane = try await server.splitWindow(logs, direction: .right)
-try await server.run("tail -f /tmp/build.log", in: pane)
-
-let lines = try await server.capture(pane)
-```
+The output contains `work:main` once and `work:editor` twice: one session, two
+windows, and three panes. The script stops its server on exit, including after
+a failed command. If shutdown fails, it reports and retains the socket path.
 
 ## What just happened
 
-A server handle targets tmux without taking over your terminal. Creating a
-session starts the server if needed. Sending keys writes input to a pane; the
-method's Enter and literal-text options control how tmux interprets it. [Sending
-keys](../sending-keys/) explains those defaults. Capture methods read the pane's
-screen or a requested scrollback range.
+`-S` selects the server socket. `new-session` starts that server and its first
+window; `new-window` adds another window; `split-window` adds a pane. `-d` starts
+the session without taking over the terminal. `-f /dev/null` starts this private
+server without a user configuration file.
+
+[Server, session, window, pane](/concepts/server-session-window-pane/)
+explains the hierarchy. [Attaching to tmux](../attaching-to-tmux/) shows how to
+open a session interactively and leave it running after detaching.
+
+## Pick a port
+
+Use the port dropdown for language-specific installation and APIs. The complete
+programs below include imports, project files, setup, error handling and cleanup:
+
+[Python](/py/latest/examples/capture-pane-output/) ·
+[TypeScript](/ts/latest/examples/capture-pane-output/) ·
+[Go](/go/latest/examples/capture-pane-output/) ·
+[Rust](/rs/latest/examples/capture-pane-output/) ·
+[Java](/java/latest/examples/capture-pane-output/) ·
+[Kotlin](/kotlin/latest/examples/capture-pane-output/) ·
+[Scala](/scala/latest/examples/capture-pane-output/) ·
+[.NET](/dotnet/latest/examples/capture-pane-output/) ·
+[F#](/fsharp/latest/examples/capture-pane-output/) ·
+[C++](/cxx/latest/examples/capture-pane-output/) ·
+[Swift](/swift/latest/examples/capture-pane-output/) ·
+[Ruby](/ruby/latest/examples/capture-pane-output/) ·
+[Lua](/lua/latest/examples/capture-pane-output/)
 
 ## Where to go next
 
-- [Concepts](/concepts/) for the mental model behind what you just did:
-  the object hierarchy, how commands actually reach tmux, and how filtering
-  works once you have more than one session to choose from.
-- [Attaching to tmux](../attaching-to-tmux/), [Sending keys](../sending-keys/),
-  and [Capturing output](../capturing-output/) go one level deeper into each
-  half of the round trip you just ran.
-- [Attach and send keys](/examples/attach-and-send-keys/) for the fully
-  checked version of every block above, and how each one is verified.
-- Your port's own API reference (via the port switcher) once you're ready
-  to look up method details.
+[Sending keys](../sending-keys/) types input, and
+[Capturing output](../capturing-output/) reads a result. Use
+[Querying and filtering](../querying-and-filtering/) to choose a target.
+
+## tmux reference
+
+The [tmux manual](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1)
+documents these commands and their flags.
