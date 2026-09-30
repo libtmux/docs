@@ -1,13 +1,5 @@
-/**
- * Pure text operations behind the shared-workspace-page mechanism.
- *
- * Dependency-free on purpose: `site/src/loaders/workspace-shared.ts` (the
- * Astro content loader) and `scripts/gen-mentions.mjs` (a plain-Node
- * filesystem scanner outside the site's own dependency resolution root, see
- * that script's comment) both import this module directly by relative path.
- * Neither `astro` nor any of its markdown helpers are reachable from
- * `scripts/`, so nothing here may depend on them.
- */
+/** Content ownership shared by rendering, Markdown exports and source scanners. */
+import { PORTS } from './ports.ts'
 
 /**
  * Ports the generic, unreleased native `tmux-workspace` CLI documentation
@@ -18,7 +10,30 @@
  */
 export const KNOWN_PORTS = new Set(['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'])
 
-const SLOT_TAG = /<!--\s*port:([a-z0-9,\s-]+?)\s*-->|<!--\s*\/port\s*-->/gi
+const CONTENT_PORTS = new Set([...PORTS.map((port) => port.slug), 'root'])
+const SLOT_TAG = /<!--\s*port:([\s\S]*?)-->|<!--\s*\/port\s*-->/gi
+
+/** Markdown examples can show ownership syntax literally; other fences may contain slots. */
+function fencedRanges(raw: string): [number, number][] {
+  const ranges: [number, number][] = []
+  let fence: { marker: string; length: number; start: number; literal: boolean } | undefined
+  let offset = 0
+  for (const line of raw.split(/(?<=\n)/)) {
+    const match = /^ {0,3}(`{3,}|~{3,})(.*)/.exec(line.replace(SLOT_TAG, ''))
+    if (match) {
+      const [, marker, rest] = match
+      if (!fence && !(marker[0] === '`' && rest.includes('`'))) {
+        fence = { marker: marker[0], length: marker.length, start: offset, literal: /^(?:markdown|md)\b/.test(rest.trim()) }
+      } else if (fence && marker[0] === fence.marker && marker.length >= fence.length && !rest.trim()) {
+        if (fence.literal) ranges.push([fence.start, offset + line.length])
+        fence = undefined
+      }
+    }
+    offset += line.length
+  }
+  if (fence?.literal) ranges.push([fence.start, raw.length])
+  return ranges
+}
 
 export interface SlotNode {
   /** `null` for the implicit root, which every port keeps. */
@@ -30,12 +45,24 @@ export interface SlotNode {
 export function parseSlots(raw: string): SlotNode {
   const root: SlotNode = { ports: null, children: [] }
   const stack: SlotNode[] = [root]
+  const fences = fencedRanges(raw)
   let last = 0
   for (const m of raw.matchAll(SLOT_TAG)) {
-    const idx = m.index ?? 0
+    let idx = m.index ?? 0
+    if (fences.some(([start, end]) => idx >= start && idx < end)) continue
+    let end = idx + m[0].length
+    const lineStart = raw.lastIndexOf('\n', idx - 1) + 1
+    const newline = raw.indexOf('\n', end)
+    const lineEnd = newline < 0 ? raw.length : newline
+    // A directive on its own line contributes no Markdown blank line. This
+    // keeps scoped table rows contiguous in both root and port documents.
+    if (!raw.slice(lineStart, idx).trim() && !raw.slice(end, lineEnd).trim()) {
+      idx = lineStart
+      end = newline < 0 ? raw.length : newline + 1
+    }
     const text = raw.slice(last, idx)
     if (text) stack[stack.length - 1]!.children.push(text)
-    last = idx + m[0].length
+    last = end
     if (m[1] !== undefined) {
       const ports = new Set(
         m[1]
@@ -43,9 +70,10 @@ export function parseSlots(raw: string): SlotNode {
           .map((p) => p.trim())
           .filter(Boolean),
       )
+      if (!ports.size) throw new Error('port-content: empty port list')
       for (const port of ports) {
-        if (!KNOWN_PORTS.has(port)) {
-          throw new Error(`workspace-shared: unknown port "${port}" in <!-- port:${m[1]} -->`)
+        if (!CONTENT_PORTS.has(port)) {
+          throw new Error(`port-content: unknown port "${port}" in <!-- port:${m[1]} -->`)
         }
       }
       const node: SlotNode = { ports, children: [] }
@@ -62,15 +90,38 @@ export function parseSlots(raw: string): SlotNode {
   return root
 }
 
-/** Render a slot tree for one port: drop every node whose ports exclude it. */
-export function resolveSlots(node: SlotNode, port: string): string {
-  if (node.ports && !node.ports.has(port)) return ''
+/** Root pages keep all languages; a port keeps only its own regions. */
+export function resolveSlots(node: SlotNode, port?: string): string {
+  if (port && node.ports && !node.ports.has(port)) return ''
   return node.children.map((child) => (typeof child === 'string' ? child : resolveSlots(child, port))).join('')
 }
 
+/** Resolve ownership and retain the context needed to link root-page API names. */
+export function resolvePortContent(raw: string, port?: string): { body: string; portAt: (offset: number) => string | undefined } {
+  const parts: string[] = []
+  const regions: { start: number; end: number; port: string }[] = []
+  let offset = 0
+  const append = (node: SlotNode, inherited?: string) => {
+    if (port && node.ports && !node.ports.has(port)) return
+    const owners = node.ports && [...node.ports].filter((owner) => owner !== 'root')
+    const owner = owners?.length ? (owners.length === 1 ? owners[0] : undefined) : inherited
+    for (const child of node.children) {
+      if (typeof child !== 'string') { append(child, owner); continue }
+      parts.push(child)
+      if (owner) regions.push({ start: offset, end: offset + child.length, port: owner })
+      offset += child.length
+    }
+  }
+  append(parseSlots(raw))
+  return {
+    body: parts.join(''),
+    portAt: (position) => regions.find(({ start, end }) => position >= start && position < end)?.port,
+  }
+}
+
 /** Resolve a shared page's raw body to the text one port renders. */
-export function resolvePortBody(raw: string, port: string): string {
-  return resolveSlots(parseSlots(raw), port)
+export function resolvePortBody(raw: string, port?: string): string {
+  return resolvePortContent(raw, port).body
 }
 
 export interface SharedFrontmatter {

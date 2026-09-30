@@ -1,4 +1,6 @@
 import { visit } from 'unist-util-visit'
+import { proseHref } from '../lib/docs-paths.ts'
+import { buildTarget } from '../lib/versions.ts'
 
 /**
  * Rewrite root-relative links against the deploy root.
@@ -15,16 +17,19 @@ import { visit } from 'unist-util-visit'
  */
 export function rehypeSiteRoot() {
   const root = (process.env.LIBTMUX_DOCS_ROOT || '/').replace(/\/+$/, '')
-  if (!root) return () => {}
+  const buildPort = process.env.LIBTMUX_DOCS_PORT
+  const defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
 
-  return (tree) => {
+  return (tree, file) => {
+    const port = file?.data?.astro?.frontmatter?.port || buildPort
+    const version = port === buildPort ? buildTarget(process.env).version : (defaults[port] || 'latest')
     visit(tree, 'element', (node) => {
       const attr = node.tagName === 'a' ? 'href' : node.tagName === 'img' ? 'src' : null
       if (!attr) return
       const value = node.properties?.[attr]
       // Only single-leading-slash paths: '//host' is protocol-relative.
       if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return
-      node.properties[attr] = `${root}${value}`
+      node.properties[attr] = attr === 'href' ? proseHref(value, root, port, version) : `${root}${value}`
     })
   }
 }

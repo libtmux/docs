@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-42/en')
 vi.stubEnv('LIBTMUX_DOCS_LOCALES_ROOT', '/pr-42')
-const { pagePortLinks } = await import('../src/lib/page-port-links')
+const { docsEntryAvailable, pagePortLinks } = await import('../src/lib/page-port-links')
 const { PORTS, PORT_BY_SLUG } = await import('../src/lib/ports')
 const { localePageHref, localeSourcePath } = await import('../src/i18n/locales')
 
@@ -15,6 +15,17 @@ const docs = [
 const options = { version: 'v1.2.3', defaults: { py: 'stable', ts: 'latest' }, docs }
 
 describe('matching pages in another port', () => {
+  it('uses native equivalents when a shared article does not cover a port', () => {
+    const shared = { id: 'topics/pane-interaction', data: { supportedPorts: ['go', 'py'] } }
+    const native = { id: '_staged/lua/guides/panes', data: { port: 'lua', route: 'guides/panes', aliases: ['topics/pane-interaction'] } }
+    expect(docsEntryAvailable(shared, 'lua')).toBe(false)
+    expect(docsEntryAvailable(shared, 'go')).toBe(true)
+    const links = pagePortLinks({ ...options, docs: [shared, native], pagePath: 'topics/pane-interaction', portSlug: 'go' })
+    expect(links.find((p) => p.port === 'lua')?.links[0].href).toBe('/pr-42/en/lua/latest/guides/panes/')
+    expect(links.find((p) => p.port === 'ruby')?.links).toEqual([])
+    const reverse = pagePortLinks({ ...options, docs: [shared, native], pagePath: 'guides/panes', portSlug: 'lua' })
+    expect(reverse.find((p) => p.port === 'go')?.links[0].href).toBe('/pr-42/en/go/latest/topics/pane-interaction/')
+  })
   it('switches product guides only where the matching page is authored', () => {
     const links = pagePortLinks({ ...options, pagePath: 'workspace/internals/guides', portSlug: 'ts' })
     expect(links.find((p) => p.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/v1.2.3/workspace/internals/guides/')

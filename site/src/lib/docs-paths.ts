@@ -1,7 +1,17 @@
 /** Collection identity stays distinct from a product page's public path. */
+import { PORT_BY_SLUG } from './ports.ts'
+
+/** Task links stay in the reader's port and version; explicit port links stay explicit. */
+export function proseHref(href: string, root: string, port?: string, version = 'latest'): string {
+  if (!href.startsWith('/') || href.startsWith('//')) return href
+  const section = /^\/(concepts|guides|topics|examples)(?:\/|[?#]|$)/.exec(href)?.[1]
+  const local = port && section && (!PORT_BY_SLUG[port]?.parentLibrary || section === 'concepts')
+  return `${root.replace(/\/+$/, '')}${local ? `/${port}/${version}` : ''}${href}`
+}
+
 export interface DocsPage {
   id: string
-  data: { port?: string; product?: string; route?: string; aliases?: readonly string[] }
+  data: { port?: string; supportedPorts?: readonly string[]; product?: string; route?: string; aliases?: readonly string[] }
 }
 
 /** Path below a port/version root, or the unchanged shared document id. */

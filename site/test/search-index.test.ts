@@ -1,7 +1,22 @@
 import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
 import { expect, it } from 'vitest'
-import { SITE_BUILT, sitePath } from './site-root'
+import { SITE_BUILT, SITE_PREFIX, sitePath } from './site-root'
+import { PORTS } from '../src/lib/ports'
+
+it.skipIf(!SITE_BUILT)('starts port search in that language and leaves root search unfiltered', () => {
+  for (const port of PORTS) {
+    for (const route of ['search', 'reference']) {
+      const html = readFileSync(sitePath(port.slug, 'latest', route, 'index.html'), 'utf8')
+      expect(html, `${port.slug}/${route} search scope`).toContain(`data-initial-port="${port.name}"`)
+    }
+  }
+  const root = readFileSync(sitePath('search/index.html'), 'utf8')
+  expect(root).not.toContain('data-initial-port=')
+  const symbols = readFileSync(sitePath('reference/symbols/a/index.html'), 'utf8')
+  expect(symbols).toContain(`data-search-href="/${SITE_PREFIX}search/"`)
+  expect(symbols).not.toContain('/symbols/latest/search/')
+})
 
 it.skipIf(!SITE_BUILT)('indexes scoped product declarations while retaining core, internal, and index pages', () => {
   const cases = [

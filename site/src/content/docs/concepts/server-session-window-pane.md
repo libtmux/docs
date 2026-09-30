@@ -34,11 +34,11 @@ remains stable for that object's lifetime even if its name or index changes:
 | Pane | `%` | `%5433` |
 | Server | - | identified by socket name or path instead |
 
-Python handles use the object ID to refresh their fields. Immutable snapshots,
-such as those in TypeScript, Swift, and Go, use IDs to identify the same tmux
-object across reads.
+Use stable IDs to identify the same tmux object across reads. Names and indexes
+can change while a program is running.
 
-Walking the whole tree, in each port:
+<!-- port:py,ts,rs,go,java,dotnet,cxx,swift -->
+Read the hierarchy:
 
 ```python
 for session in server.sessions:
@@ -84,6 +84,9 @@ for branch in server.hierarchy().await? {
 // A snapshot reads sessions, windows, and panes in one pass; relations
 // resolve against it without another tmux command.
 snapshot, err := server.Snapshot(ctx)
+if err != nil {
+    return err
+}
 for _, session := range snapshot.Sessions() {
 	name, _ := session.Name()
 	fmt.Printf("%s %q\n", session.ID(), name)
@@ -166,6 +169,8 @@ for session in snapshot.sessions {
 }
 ```
 
+<!-- /port -->
+
 ## Client: a view, not a child
 
 A `Client` represents a terminal attached to a session. Several clients can view
@@ -177,6 +182,7 @@ A [control-mode connection](../transports/) is also a client. It appears in
 attachment-dependent behavior such as `destroy-unattached`. Closing the last
 attached client can therefore destroy a session configured with that option.
 
+<!-- port:root -->
 ## What differs between ports
 
 Ports differ in how they read state and report failures:
@@ -194,3 +200,19 @@ Ports differ in how they read state and report failures:
 
 See [Control mode vs one-shot](../transports/) for command costs and connection
 behavior.
+<!-- /port -->
+
+
+<!-- port:go -->
+## Snapshots and live commands
+
+`Server.Snapshot(ctx)` reads the hierarchy. The resulting relationship methods
+read that captured data without another tmux command. A boolean return value
+reports whether a relationship was captured. Use `Session.SearchWindows` or
+`Server.SearchPanes` for current live state, and check the returned error.
+
+Calls that contact tmux accept a context for cancellation and deadlines.
+Cancelling a mutation does not prove that tmux never received it; check the
+resulting state before retrying. [Errors and exceptions](/topics/errors-and-exceptions/)
+covers failure handling.
+<!-- /port -->

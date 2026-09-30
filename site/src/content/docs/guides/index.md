@@ -1,4 +1,5 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
 title: Guides
 description: Task-oriented walkthroughs that sit between the concepts and each port's own API reference.
 sidebar:
@@ -11,7 +12,7 @@ Use these guides to connect to tmux, send input, capture output, query objects,
 and test your program. [Concepts](/concepts/) explains the object model and
 transport choices.
 
-- **[Getting started](getting-started/)**: install tmux, choose a port, and run
+- **[Getting started](getting-started/)**: install tmux and the library, then run
   an example.
 - **[Attaching to tmux](attaching-to-tmux/)**: select a socket and find or
   create a session.

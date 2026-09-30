@@ -1,6 +1,6 @@
 ---
 title: Concepts
-description: tmux objects, command transports, queries, and workspaces across the libtmux language ports.
+description: tmux objects, command transports, queries, and workspaces.
 sidebar:
   label: Overview
   group: Concepts
@@ -11,7 +11,8 @@ libtmux lets you create sessions, arrange windows and panes, send commands, and
 read output from tmux. Start with the object hierarchy, then read about the
 transport, query, or workspace behavior your program needs.
 
-These pages explain shared concepts and differences between language ports:
+<!-- port:root,py,ts,rs,go,java,dotnet,cxx,swift -->
+Choose the concept behind your task:
 
 - **[Server, session, window, pane](server-session-window-pane/)**: tmux's
   object hierarchy and attached clients.
@@ -22,5 +23,11 @@ These pages explain shared concepts and differences between language ports:
 - **[Workspaces](workspaces/)**: build pane layouts from code or configuration
   files.
 
-Use the header's port links to open documentation for your language, including
-its API reference.
+<!-- /port -->
+
+<!-- port:ruby,lua,kotlin,scala,fsharp -->
+Start with [the object hierarchy](server-session-window-pane/), then use
+[the native guides](../guides/) for queries, execution, and resource ownership.
+<!-- /port -->
+
+Use the API reference for signatures, defaults, and failure conditions.

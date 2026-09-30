@@ -1,0 +1,148 @@
+{
+  "scope": "Exact complete programs and project files verified by separate native runs; routine tests protect bytes and rendering, not native execution.",
+  "examples": [
+    {
+      "port": "ts",
+      "language": "typescript",
+      "sourceRevision": "3fe1ca654b81b8cbf4a13b777a001a3298c87a6f",
+      "sourceRepository": "libtmux/libtmux-ts",
+      "files": [
+        {
+          "name": "workspace.ts",
+          "sha256": "20905548b12c76a93a0c6c0e6f939ade736bcc1b753dbd767125a71bf26b87ca"
+        },
+        {
+          "name": "package.json",
+          "sha256": "cb9213ba62a6270ff81c9cf124ccc9c0bfe82d8b72712393e8c09b0baf75c374"
+        }
+      ],
+      "toolchain": [
+        "Bun 1.4.2"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/ts/workspace/internals/examples",
+      "shellRecipe": [
+        "mkdir workspace-example && cd workspace-example",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-ts.git && \\\n    git -C libtmux-source fetch --depth 1 origin 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
+        "bun install --production",
+        "bun run workspace.ts"
+      ]
+    },
+    {
+      "port": "ts",
+      "language": "typescript",
+      "sourceRevision": "3fe1ca654b81b8cbf4a13b777a001a3298c87a6f",
+      "sourceRepository": "libtmux/libtmux-ts",
+      "files": [
+        {
+          "name": "mcp.ts",
+          "sha256": "982f01a2d52160b6fbc0ed982c98542c4c8341022c1dac9da10809083a1124f7"
+        },
+        {
+          "name": "package.json",
+          "sha256": "0ae56500bcb2a1e16d6406476e09577d5ee284740bb4cb7eb04d53af2952e854"
+        }
+      ],
+      "toolchain": [
+        "Bun 1.4.2"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/ts/mcp/examples",
+      "shellRecipe": [
+        "mkdir mcp-example && cd mcp-example",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-ts.git && \\\n    git -C libtmux-source fetch --depth 1 origin 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
+        "bun install --production",
+        "bun run mcp.ts"
+      ]
+    },
+    {
+      "port": "swift",
+      "language": "swift",
+      "sourceRevision": "254f8b2be7eb60cacc3ffcb3ea8e456784f582df",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "files": [
+        {
+          "name": "Sources/WorkspaceExample/WorkspaceExample.swift",
+          "sha256": "17787f2ccf5e5d1bca44e113c2608810b8787caa6da9ecd65f371b5ba57c72b1"
+        },
+        {
+          "name": "Package.swift",
+          "sha256": "67cc9cbf83ebb2ffb9aaf083bda44e048456d94d718ab03c0cf15755052cb3cf"
+        }
+      ],
+      "toolchain": [
+        "Swift 6.2.4"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/swift/workspace/internals/examples",
+      "shellRecipe": [
+        "mkdir swift-workspace-example && cd swift-workspace-example && \\\n  mkdir -p Sources/WorkspaceExample",
+        "git init libtmux-source && \\\n  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD",
+        "swift run --jobs 2 WorkspaceExample"
+      ]
+    },
+    {
+      "port": "swift",
+      "language": "swift",
+      "sourceRevision": "254f8b2be7eb60cacc3ffcb3ea8e456784f582df",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "files": [
+        {
+          "name": "Sources/MCPExample/MCPExample.swift",
+          "sha256": "8bce43add22fad463aae112fde6e8ebb00061db00b829d61cad16c72d7a35306"
+        },
+        {
+          "name": "Package.swift",
+          "sha256": "c4042573a8834c5aca699bd1e950be9f0f625fb4f63bed089f20b7d2c7a109b4"
+        }
+      ],
+      "toolchain": [
+        "Swift 6.2.4"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/swift/mcp/examples",
+      "shellRecipe": [
+        "mkdir swift-mcp-example && cd swift-mcp-example && \\\n  mkdir -p Sources/MCPExample",
+        "git init libtmux-source && \\\n  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD",
+        "swift run --jobs 2 MCPExample"
+      ]
+    },
+    {
+      "port": "swift",
+      "language": "sh",
+      "sourceRevision": "254f8b2be7eb60cacc3ffcb3ea8e456784f582df",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "files": [
+        {
+          "name": "run-mcp.sh",
+          "sha256": "6a26dc211be10156871e51638b2fe855d3d2a958145824b0f14ce790825ecbe0"
+        }
+      ],
+      "toolchain": [
+        "Swift 6.2.4"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/swift/mcp/guides",
+      "shellRecipe": [
+        "mkdir swift-mcp-client && cd swift-mcp-client",
+        "git init libtmux-source && \\\n  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD && \\\n  swift build --package-path libtmux-source --product libtmux-mcp --jobs 2",
+        "sh run-mcp.sh"
+      ]
+    }
+  ]
+}

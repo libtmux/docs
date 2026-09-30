@@ -1,35 +1,9 @@
 #!/usr/bin/env node
-/**
- * Cache the example sources that prose inlines, so a build needs no port
- * checkouts.
- *
- * `remark-port-code.mjs` turns a fence like
- *
- *     ```typescript file="examples/quickstart/quickstart.ts"
- *
- * into the real contents of that file, read out of the port's own checkout.
- * That is the point: the code on the page is the code the port tests, and a
- * missing source fails the build rather than shipping an empty fence.
- *
- * It also means the build cannot run anywhere the eight checkouts are absent,
- * which is every CI runner. This writes what those fences resolve to into a
- * committed file, exactly as `gen-api-model.mjs` does for the extracted
- * models and for the same reason — CI builds from committed data, and
- * `--check` is what stops that data rotting, since nothing else compares it
- * against the source it came from.
- *
- * Whole files are cached, not the sliced regions: `sliceRegion` stays the one
- * implementation, so a cached read and a live read cannot disagree about what
- * a region means.
- *
- * Usage:
- *   node scripts/gen-example-sources.mjs             # rewrite the cache
- *   node scripts/gen-example-sources.mjs --check     # fail if it is stale
- *   node scripts/gen-example-sources.mjs --out PATH  # a fixture, for the
- *                                                    # negative test
- */
+/** Cache example files at the exact revision recorded by each port's documentation. */
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
+import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -76,45 +50,43 @@ for (const md of markdownFiles(CONTENT)) {
   }
 }
 
-const cache = {}
-const missing = []
-for (const [key, { owner, file }] of [...wanted].sort((a, b) => a[0].localeCompare(b[0]))) {
-  const checkout = checkoutFor(owner)
-  const abs = join(checkout, file)
-  if (!existsSync(abs)) {
-    missing.push(`${key} (looked in ${checkout})`)
-    continue
+const digest = (content) => createHash('sha256').update(content).digest('hex')
+
+/** Read committed bytes; a working tree can be dirty or on a different branch. */
+export function cachedExample({ repository, revision, file, checkout, current }) {
+  if (!/^[a-f0-9]{40}$/.test(revision)) throw new Error(`Invalid example revision: ${revision}`)
+  if (existsSync(join(checkout, '.git'))) {
+    const content = execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`],
+      { encoding: 'utf8', maxBuffer: 4 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] })
+    return { repository, revision, sha256: digest(content), content }
   }
-  cache[key] = readFileSync(abs, 'utf8')
+  if (current?.repository !== repository || current?.revision !== revision ||
+      typeof current.content !== 'string' || current.sha256 !== digest(current.content)) {
+    throw new Error(`${repository}:${file}: no verified cache for ${revision}; provide its checkout and regenerate example sources`)
+  }
+  return current
 }
 
-const current = existsSync(OUT) ? readFileSync(OUT, 'utf8') : ''
-
-/*
- * A checkout that is not here cannot be read, and its cached entry cannot be
- * confirmed either way. Reported rather than treated as agreement: silence
- * would read as "verified" on a machine that verified nothing.
- */
-if (missing.length) {
-  console.error(`gen-example-sources: ${missing.length} source(s) unreadable — checkout absent:`)
-  for (const m of missing) console.error(`  ${m}`)
-  const kept = missing.filter((m) => Object.hasOwn(JSON.parse(current || '{}'), m.split(' ')[0]))
-  if (kept.length) {
-    console.error(`  ${kept.length} of these are in the cache already; keeping the cached copy.`)
-    for (const m of kept) cache[m.split(' ')[0]] = JSON.parse(current)[m.split(' ')[0]]
+export function run() {
+  const current = existsSync(OUT) ? readFileSync(OUT, 'utf8') : ''
+  const previous = JSON.parse(current || '{}')
+  const cache = {}
+  const offline = new Set()
+  for (const [key, { owner, file }] of [...wanted].sort((a, b) => a[0].localeCompare(b[0]))) {
+    const modelPath = join(root, `site/src/data/api/${owner}.json`)
+    const provenance = existsSync(modelPath) ? JSON.parse(readFileSync(modelPath, 'utf8'))
+      : JSON.parse(readFileSync(join(root, `site/src/data/port-guides/${owner}.json`), 'utf8')).source
+    const repository = provenance.repository ?? provenance.repo
+    const revision = provenance.revision
+    const checkout = checkoutFor(owner)
+    if (!existsSync(join(checkout, '.git'))) offline.add(owner)
+    cache[key] = cachedExample({ repository, revision, file, checkout, current: previous[key] })
   }
+  const merged = `${JSON.stringify(cache, null, 2)}\n`
+  if (check && merged !== current) throw new Error(`${OUT}: stale example sources; run node scripts/gen-example-sources.mjs`)
+  if (!check) writeFileSync(OUT, merged)
+  console.log(`gen-example-sources: ${check ? 'cache matches' : 'wrote'} ${Object.keys(cache).length} revision-bound example sources`)
+  if (offline.size) console.log(`gen-example-sources: cached sources for ${[...offline].join(', ')}; checksums and revisions checked, source checkouts unavailable`)
 }
 
-const merged = `${JSON.stringify(Object.fromEntries(Object.entries(cache).sort()), null, 2)}\n`
-
-if (check) {
-  if (merged !== current) {
-    console.error(`\ngen-example-sources: ${OUT.replace(`${root}/`, '')} is stale. Rerun:`)
-    console.error('  node scripts/gen-example-sources.mjs')
-    process.exit(1)
-  }
-  console.log(`gen-example-sources: cache matches ${Object.keys(cache).length} example source(s)`)
-} else {
-  writeFileSync(OUT, merged)
-  console.log(`gen-example-sources: wrote ${Object.keys(cache).length} example source(s) to ${OUT.replace(`${root}/`, '')}`)
-}
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) run()

@@ -295,11 +295,10 @@ if [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ] || [ -n "${LIBTMUX_DOCS_SOURCE_REF:-}" 
   [ "$source_resolved" = "$LIBTMUX_DOCS_SOURCE_SHA" ] || die "source ref resolves to $source_resolved, expected $LIBTMUX_DOCS_SOURCE_SHA"
 fi
 
-# Source-owned guides are ephemeral build input. Always clear the staging
-# tree first so a guide removed on a branch cannot survive from an earlier
-# build. Exact port callers must have their native artifact; a full local
-# assembly stages both new ports only when both artifacts are present.
+# Ordinary builds use committed, revision-bound guides. A selected source
+# replaces only its port's guides after native artifact validation.
 rm -rf "$site_dir/src/content/docs/_staged"
+node "$script_dir/stage-port-docs.mjs" --cached
 if [ -n "${LIBTMUX_DOCS_PORT:-}" ] && { [ "$LIBTMUX_DOCS_PORT" = ruby ] || [ "$LIBTMUX_DOCS_PORT" = lua ]; }; then
   node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"
   node "$script_dir/stage-port-docs.mjs" --port "$LIBTMUX_DOCS_PORT"
@@ -314,15 +313,7 @@ elif [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
   # last refreshed. The generator re-checks the SHA and records it.
   node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"
   node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT" --nav
-elif [ -f "${LIBTMUX_DOCS_CHECKOUT_RUBY:-$HOME/work/libtmux/libtmux-ruby-docs}/docs/_build/api.json" ] &&
-     [ -f "${LIBTMUX_DOCS_CHECKOUT_LUA:-$HOME/work/libtmux/libtmux-lua-docs}/docs/_build/api.json" ]; then
-  node "$script_dir/gen-api-model.mjs" --port ruby
-  node "$script_dir/gen-api-model.mjs" --port lua
-  node "$script_dir/stage-port-docs.mjs"
-elif [ -n "${LIBTMUX_DOCS_CHECKOUT_RUBY:-}" ] && [ -n "${LIBTMUX_DOCS_CHECKOUT_LUA:-}" ]; then
-  node "$script_dir/stage-port-docs.mjs" --from-source
 fi
-node "$script_dir/stage-port-docs.mjs" --wrappers
 node "$script_dir/gen-example-sources.mjs"
 node "$script_dir/gen-mentions.mjs"
 
@@ -1076,7 +1067,9 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     if [ "$ref_status" = "built" ]; then
       mkdir -p "$port_out/api"
       cp -a "$ref_outdir/." "$port_out/api/"
-      node "$script_dir/normalize-native-shell.mjs" "$port_out/api" "$LIBTMUX_DOCS_PORT_ROOT"
+      native_shell_args=()
+      if [ "$renderer" = sphinx ]; then native_shell_args+=("$slug" "$version"); fi
+      node "$script_dir/normalize-native-shell.mjs" "$port_out/api" "$LIBTMUX_DOCS_PORT_ROOT" "${native_shell_args[@]}"
       node "$script_dir/brand-native-pages.mjs" "$port_out/api" "$slug" "$LIBTMUX_DOCS_PORT_ROOT"
     elif [ "$ref_status" = "skipped" ]; then
       mkdir -p "$port_out/api"

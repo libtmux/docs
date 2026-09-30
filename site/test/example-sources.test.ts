@@ -6,18 +6,18 @@ import { describe, expect, it } from 'vitest'
 import { CHECKOUTS, LANG_TO_PORT, checkoutFor } from '../src/plugins/remark-port-code.mjs'
 
 /**
- * Where the documented examples come from, and how many are checked by anyone.
+ * Where the documented example bytes come from.
  *
  * A fence written `\`\`\`python file="examples/quickstart.py"` is read out of
- * that port's own checkout at build time, so the port's test suite is what
- * keeps it honest — the docs cannot drift from code the port itself runs. A
- * fence with the code typed inline has nothing behind it: it renders
- * perfectly while calling a method that was renamed two releases ago.
+ * that port's revision-bound source cache. This prevents transcription drift,
+ * but does not prove the displayed region is a complete, executable program.
+ * Inline programs can also have separate native proof, as the capture page
+ * does. Its receipt and rendering gate live in complete-examples.test.ts.
  *
  * So two things are asserted. Every `file=` reference must resolve, because a
  * renamed example upstream degrades quietly rather than failing. And the count
  * of sourced examples must not fall, because the way this erodes is one
- * convenient inline snippet at a time.
+ * unreviewed inline snippet at a time.
  */
 const CONTENT = join(dirname(fileURLToPath(import.meta.url)), '../src/content/docs')
 
@@ -25,8 +25,7 @@ const CONTENT = join(dirname(fileURLToPath(import.meta.url)), '../src/content/do
  * How many fences are sourced from a port checkout today.
  *
  * Raise this as examples are converted; it exists to stop the number going
- * the other way. It is not a target — 14 of 236 is poor, and the remaining
- * 222 are unverified by anything.
+ * the other way. It measures source inclusion, not execution coverage.
  */
 const SOURCED_FLOOR = 14
 
@@ -87,22 +86,14 @@ describe('documented examples', () => {
     },
   )
 
-  it('does not lose ground on examples sourced from tested code', () => {
+  it('retains the expected coverage of revision-bound source inclusions', () => {
     const share = `${sourced.length}/${all.length}`
     expect(sourced.length, `examples sourced from a port checkout (${share})`).toBeGreaterThanOrEqual(
       SOURCED_FLOOR,
     )
   })
 
-  it('reports how much of the corpus nothing verifies, per port', () => {
-    // Not a failure — a number, kept visible and attributable. An inline
-    // example can be wrong without anything noticing, and one total hides
-    // which port is worst placed to fix it.
-    //
-    // A sourced fence names a file in that port's repository, so the port's
-    // own test suite executes it. An inline one is executed by nobody: it is
-    // a fragment, not a program, and converting it means finding or writing
-    // the example it should have pointed at.
+  it('reports source inclusion by port without claiming native execution', () => {
     const byPort = new Map<string, { sourced: number; inline: number }>()
     for (const f of all) {
       const port = LANG_TO_PORT[f.lang] ?? f.lang
@@ -117,7 +108,7 @@ describe('documented examples', () => {
       .map(([port, r]) => `  ${port.padEnd(7)} ${String(r.sourced).padStart(3)} sourced, ${String(r.inline).padStart(3)} inline`)
 
     console.info(
-      `example coverage: ${sourced.length} of ${all.length} sourced from code a port executes\n` +
+      `example sources: ${sourced.length} of ${all.length} included from port source (execution coverage not inferred)\n` +
         lines.join('\n'),
     )
     expect(byPort.size, 'every port appears in the breakdown').toBeGreaterThan(0)

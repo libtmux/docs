@@ -16,16 +16,14 @@ server.
 
 ## Configuration
 
-`Workspace::from_yaml` accepts [tmuxp](https://tmuxp.git-pull.com)-style
-session, window, and pane data. The configuration supports working directories,
+`Workspace::from_yaml` accepts session, window and pane data. The configuration supports working directories,
 commands, environment variables, options, focus, and layouts. Unknown keys are
 listed in `unsupported_keys` and ignored.
-That behavior differs from a strict parser: successful parsing does not prove
-that every field in a larger tmuxp file was applied.
+Review `unsupported_keys` before building so an unrecognized field does not
+leave the session missing an expected setting.
 
 A pane's working directory overrides its window's directory, which overrides
-the workspace's directory. The parser and builder own the supported shape;
-Python plugins are not loaded by the crate.
+the workspace's directory. The parser and builder own the supported configuration fields.
 
 ## Preview and execution
 

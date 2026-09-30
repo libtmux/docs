@@ -24,7 +24,7 @@ import { Resolver, decideFilePath, decideMention, isLikelyReference, looksLikeAp
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const { API_MODEL_PORTS: PORT_DEFS, PORT_BY_SLUG } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
-const { KNOWN_PORTS, resolvePortBody } = await import(`file://${resolve(root, 'site/src/lib/workspace-shared-slots.ts')}`)
+const { KNOWN_PORTS, resolvePortBody, resolvePortContent } = await import(`file://${resolve(root, 'site/src/lib/workspace-shared-slots.ts')}`)
 const SHARED = join(root, 'site/src/content/_workspace-shared')
 const CONTENT = join(root, 'site/src/content/docs')
 const started = Date.now()
@@ -157,9 +157,10 @@ for (const file of targets) {
   if (PORT_BY_SLUG[authoredPort]?.referenceKind === 'guide') continue
   const product = /^product:\s*['"]?(core|workspace|mcp)['"]?\s*$/m.exec(frontmatter)?.[1]
     ?? /^ports\/[^/]+\/(workspace|mcp)\//.exec(file.replace(`${CONTENT}/`, ''))?.[1]
-  for (const { text, port: ctxPort, before, line, linked } of proseMentions(raw, PORT_BY_LABEL)) {
+  const selected = resolvePortContent(raw, authoredPort)
+  for (const { text, port: ctxPort, before, line, linked } of proseMentions(selected.body, PORT_BY_LABEL, selected.portAt)) {
     if (linked) { tally.alreadyLinked++; continue }
-    const pagePort = ctxPort ?? authoredPort
+    const pagePort = authoredPort ?? ctxPort
 
     if (FILE_RE.test(text) || text.endsWith('/')) {
       const d = decideFilePath(text, { before, pagePort }, trees)
@@ -175,17 +176,14 @@ for (const file of targets) {
     if (notASymbol(text) || !looksLikeApiMention(text)) { tally.notASymbol++; continue }
 
 
-    const linkable = (authoredPort ? [pagePort] : [ctxPort, ...PORTS]).some((port) => {
-      if (!port) return false
-      const decision = decideMention(text, { pagePort: port, product, before }, resolver, models)
-      return decision.kind === 'link'
-    })
+    const decisions = (pagePort ? [pagePort] : PORTS)
+      .map((port) => decideMention(text, { pagePort: port, product, before }, resolver, models))
     // `notApiReason` gates *reporting*, not linking — exactly as the plugin
     // does. A span it names still gets offered to the resolver, because a
     // `TMUX_TMPDIR` that happens to resolve is a link worth having; it simply
     // is not a dangling reference when it does not.
-    if (linkable) tally.willLink++
-    else if (!isLikelyReference(text) || notApiReason(text) || EXCEPTIONS.has(text)) tally.notASymbol++
+    if (decisions.some((decision) => decision.kind === 'link')) tally.willLink++
+    else if (decisions.some((decision) => decision.kind === 'skip') || !isLikelyReference(text) || notApiReason(text) || EXCEPTIONS.has(text)) tally.notASymbol++
     else { tally.unresolved++; unresolved.push({ file, line, text }) }
   }
 }

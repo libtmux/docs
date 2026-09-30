@@ -1,94 +1,92 @@
 ---
-description: Keep help, completion, and site references aligned with command metadata.
+description: Generate command references from the parser and verify task examples against the CLI.
 product: workspace
 sidebar:
   group: Internals
-  label: Documentation
+  label: Workspace reference generation
   order: 80
 tableOfContents: true
 title: Workspace reference generation
 ---
 
-<!-- port:py -->This page describes the documentation integration for Python. Native CLI
-<!-- /port --><!-- port:dotnet -->This page describes the documentation integration for .NET. Native CLI
-<!-- /port --><!-- port:py,dotnet -->references remain compatibility targets until an installed command exists.
-<!-- /port --><!-- port:ts -->The native TypeScript CLI derives help and exports from its parser definitions.
-<!-- /port --><!-- port:rs -->The native Rust CLI derives help and exports from its parser definitions.
-<!-- /port --><!-- port:go -->The native Go CLI derives help and exports from its parser definitions.
-<!-- /port --><!-- port:java -->The native Java CLI derives help and exports from its parser definitions.
-<!-- /port --><!-- port:cxx -->The native C++ CLI derives help and exports from its parser definitions.
-<!-- /port --><!-- port:swift -->The native Swift CLI derives help and exports from its parser definitions.
-<!-- /port --><!-- port:ts,rs,go,java,cxx,swift -->[Compatibility](../../reference/compatibility/) records current coverage.
+<!-- port:py -->
+tmuxp uses argparse definitions from `tmuxp.cli.create_parser` for its command
+reference. The optional `shtab` integration reads that parser for completion.
+
+## Keep syntax and behavior aligned
+
+Preserve required and mutually exclusive groups when exporting parser metadata.
+An optional-looking positional in help can still belong to a required group.
+Run examples against the corresponding tmuxp revision, including prompts,
+machine formats, child failures and cleanup.
+
+The CLI reference and [workspace builder API](../../internals/) serve different
+tasks. Keep their example imports, prerequisites and behavior explicit.
+
+[Parser source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/__init__.py).
 <!-- /port -->
+
+<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+The executable's parser owns its command names, arguments and options. Keep
+reference generation tied to those definitions.
+
 ## Command metadata
 
-<!-- port:py -->tmuxp uses argparse metadata from create_parser for its upstream Sphinx CLI reference. Its separately installed shtab integration consumes that parser for completion. The documentation adapter must preserve required groups rather than infer arity from optional-looking help.
-<!-- /port --><!-- port:ts -->Commander defines the native command graph. The CLI package generates Markdown,
-a JSON command catalog, and Bash, Zsh, and Fish completion from those definitions.
-`docs:check` compares generated files in CI. Keep option event order when paired
-flags share a destination.
-<!-- /port --><!-- port:rs -->Clap defines the native command graph. `--generate schema` exports metadata;
-`--generate man` renders the root manual. `--generate` also accepts `bash`, `zsh`,
-`fish`, `powershell`, and `elvish` through clap_complete. Separate subcommand
-manuals are not generated.
-<!-- /port --><!-- port:go -->Cobra defines the native command graph. `--command-tree` exports JSON metadata;
-`--generate-docs` accepts `markdown`, `man`, or `yaml`.
-`--generate-completion` accepts `bash`, `zsh`, `fish`, or `powershell`. Exports
-distinguish command-local flags from inherited machine-output options.
-<!-- /port --><!-- port:java -->Picocli defines the native command graph. `--generate schema` exports metadata
-and `--generate bash` emits completion through its code generator. Other manual
-and completion formats are not exposed by the workspace executable.
-<!-- /port --><!-- port:py,ts,rs,go,java -->
-<!-- /port --><!-- port:py -->The [command reference](../../cli/) covers the Python grammar. A future native
-export must record command paths, aliases, positional arity, option spellings,
-<!-- /port --><!-- port:java -->Bash generation also supports a JSON artifact or one completed NDJSON event;
-the script remains a string inside the machine result. Schema generation keeps
-its metadata document. See [machine completion output](../../cli/completion/).
-<!-- /port --><!-- port:dotnet -->System.CommandLine defines the native command graph. `--generate reference`
-exports its metadata; `--generate man`, `bash`, `zsh`, and `fish` render the other
-formats. The completion scripts offer command and option names without full
-argument context. Spectre.Console owns human presentation separately.
-<!-- /port --><!-- port:cxx -->CLI11 defines the native command graph. Its filtered `get_subcommands` overload
-enumerates command definitions; the unfiltered overload describes parsed commands.
-A site exporter and shell completion remain unimplemented.
-<!-- /port --><!-- port:swift -->ArgumentParser defines the native command graph and supplies
-`--generate-completion-script` for shell completion. Manual, DocC, and site
-metadata integration remain separate work. Use supported parser APIs for those
-exports; private parser reflection is not a stable contract.
-<!-- /port --><!-- port:java,dotnet,cxx,swift -->
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->The [command reference](../../cli/) covers the Python grammar. Native metadata
-exports need to record command paths, aliases, positional arity, option spellings,
-<!-- /port -->types, defaults, choices, required and exclusive groups, store-constant values,
-repeat and ordering behavior, environment bindings, and child commands. Output
-schemas and availability belong alongside that metadata.
+<!-- port:ts -->
+Commander owns the command definitions. The package generates Markdown, a JSON command catalog and completion scripts from those definitions. `docs:check` checks their freshness.
+<!-- /port -->
+<!-- port:rs -->
+clap owns the command definitions. `--generate schema` exports command metadata, `--generate man` writes the manual, and completion generation uses the same graph.
+<!-- /port -->
+<!-- port:go -->
+Cobra owns the command tree. `--command-tree` exports JSON metadata; `--generate-docs` accepts `markdown`, `man` or `yaml`.
+<!-- /port -->
+<!-- port:java -->
+picocli owns the command definitions. `--generate schema` exports metadata and `--generate bash` writes completion.
+<!-- /port -->
+<!-- port:dotnet -->
+System.CommandLine owns the command definitions. `--generate reference` exports metadata; `--generate man` writes the manual.
+<!-- /port -->
+<!-- port:cxx -->
+CLI11 owns the command definitions. The CLI derives shell completion from that graph. The site task guides describe executable operations separately from the workspace library API.
+<!-- /port -->
+<!-- port:swift -->
+ArgumentParser owns the command definitions and `--generate-completion-script` generates shell completion. The site task guides describe executable operations separately from the workspace library API.
+<!-- /port -->
 
-Generate help, completion, and static reference from the same definitions.
-Compare generated results in CI and test actual installed help separately.
-A rendered example or successful parser-only probe does not establish service
-execution, distribution, or tmux compatibility.
+
+See [shell completion](../../cli/completion/) for end-user setup. A generated
+parser reference describes syntax; task examples also need to exercise the
+underlying services and their cleanup.
 
 ## Site integration
 
-Keep equivalent task pages at the same workspace path in every port. The
-existing page switcher offers authored counterparts and leaves absent pages
-unavailable. A CLI guide and a builder API guide are different counterparts;
-preserve [builder reference](../../reference/) as its own surface.
+Record the CLI's own source revision independently from the core library
+reference. Keep commands, configuration and examples specific to that source.
+Use the same content selection for HTML, search, Markdown and machine exports.
 
-Write executable shell examples per port. Shared console, YAML, and JSON blocks
-survive language filtering. Installing a native library must not be presented
-as installing a workspace executable when it has no such artifact.
+Verify guides against a private tmux server, with cleanup limited to the objects
+the test owns. Check failure cases as well as successful construction.
 
-The site version and workspace package version can differ. Record the package
-and source revision independently, and do not use an older version-shaped URL
-<!-- port:py -->to imply that today's command existed in an older release. This local research
-prototype is reviewed against current source.
-<!-- /port --><!-- port:ts,rs,go,java,dotnet,cxx,swift -->to imply that today's command existed in an older release. The installation
-guide identifies the available source builds and published artifacts.
+<!-- port:ts -->
+[CLI source](https://github.com/libtmux/libtmux-ts/blob/f36d692552bb9a373b45338bb5fece854e57cc3d/packages/workspace-cli/README.md).
 <!-- /port -->
-## Verification
-
-Check [configuration](../../configuration/), [machine output](../../reference/output/),
-and [compatibility](../../reference/compatibility/) together. Exercise equivalent
-page paths, API backlinks, fragments, sidebars, metadata exports, search, and
-preview prefixes in assembled output. Verify command examples against isolated
-tmux servers, with explicit cleanup and known limitations.
+<!-- port:rs -->
+[CLI source](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/tmux-workspace/docs/cli.md).
+<!-- /port -->
+<!-- port:go -->
+[CLI source](https://github.com/libtmux/libtmux-go/blob/bb06e26e116e941813ca40bf45e7e3a47d38f52a/workspace/CLI.md).
+<!-- /port -->
+<!-- port:java -->
+[CLI source](https://github.com/libtmux/libtmux-java/blob/3e5b20d22af3890ae5f7f52842e4b05d170a983f/libtmux-workspace-cli/README.md).
+<!-- /port -->
+<!-- port:dotnet -->
+[CLI source](https://github.com/libtmux/libtmux-dotnet/blob/f77fe776ba67a04abb20ddbbc26cf4a000d63b74/src/LibTmux.Workspace.Cli/README.md).
+<!-- /port -->
+<!-- port:cxx -->
+[CLI source](https://github.com/libtmux/libtmux-cxx/blob/9c8c6a264114277df84c9f6819855093adae5c6e/apps/workspace/README.md).
+<!-- /port -->
+<!-- port:swift -->
+[CLI source](https://github.com/libtmux/libtmux-swift/blob/53c67947879f4976ddf2c43f3c8df7c7671c5b19/Sources/TmuxWorkspaceCLI/README.md).
+<!-- /port -->
+<!-- /port -->

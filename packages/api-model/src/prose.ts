@@ -1,5 +1,6 @@
 import type { ApiModel, ApiProduct, ApiSymbol } from './model.ts'
 import type { Resolver } from './resolver.ts'
+import { builtinHref } from './builtins.ts'
 
 /**
  * Whether a code span in prose is a reference to the API, and to what.
@@ -162,6 +163,7 @@ const NOT_API: { why: string; test: RegExp }[] = [
   // Environment variables and tmux option names are SCREAMING_CASE and
   // belong to tmux or the shell, not to a port.
   { why: 'environment variable', test: /^[A-Z][A-Z0-9_]{2,}$/ },
+  { why: 'single-letter flag or type parameter', test: /^[A-Z]$/ },
   // An expression, not a name: it carries arguments, a string, or a glob.
   { why: 'expression, not a symbol', test: /["']|\*|=>|\.\.\./ },
   { why: 'expression, not a symbol', test: /^\(|,\s/ },
@@ -175,7 +177,7 @@ const NOT_API: { why: string; test: RegExp }[] = [
   { why: 'method without a receiver', test: /^[.:]/ },
   // Test and example fixtures live in files the extractors exclude, so they
   // are real classes that are deliberately not public API.
-  { why: 'test or example fixture', test: /(Tests?|TestCase|RunTest)$|^Test[A-Z]/ },
+  { why: 'test or example fixture', test: /(Tests?|TestCase|RunTest)$|^Test[A-Z]|^Example(?:\(\))?$/ },
 ]
 
 /** Why this span is not an API reference, or undefined if it might be. */
@@ -248,16 +250,21 @@ export function decideMention(
 
   const named = ctx.before ? portFromSentence(ctx.before) : undefined
   const tried: string[] = []
+  let ambiguous = false
   for (const port of [named, ctx.pagePort]) {
     if (!port || !models[port]) continue
     const res = resolver.resolve(port, text, ctx.product)
+    ambiguous ||= res.how === 'ambiguous'
     tried.push(`${port}:${res.how}`)
     const hit = link(port, res)
     if (hit) return hit
+    const builtin = builtinHref(port, text)
+    if (builtin) return { kind: 'link', port, href: builtin, title: `${text}: ${PORT_NAME[port]}`, external: true }
   }
-  // Product pages have an authored port. Shared comparisons retain their
-  // cross-port fallback when a preceding fence only suggests a language.
-  if (ctx.product && tried.length) return { kind: 'unresolved', why: 'not defined in the stated port', tried }
+  // A known language must never resolve a similarly named API in another port.
+  if (tried.length) return ambiguous
+    ? { kind: 'skip', why: 'ambiguous within the stated port; qualify the receiver to link it' }
+    : { kind: 'unresolved', why: 'not defined in the stated port', tried }
 
   // Nothing said which language. One claimant is an answer; several are not.
   const claims: { port: string; decision: MentionDecision }[] = []

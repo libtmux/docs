@@ -43,7 +43,7 @@ commands will resolve.
 
 ## Format differences
 
-Python plugins and `before_script` are rejected. `${VAR}` interpolation is
+Plugin declarations and `before_script` are rejected. `${VAR}` interpolation is
 not performed before building; render such configuration yourself if needed.
 `sleep_before` and `sleep_after` are seconds and pause construction between
 command deliveries.
