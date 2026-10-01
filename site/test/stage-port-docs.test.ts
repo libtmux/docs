@@ -118,7 +118,7 @@ describe('staged port guide links', () => {
     for (const route of ['getting-started', 'queries', 'streams', 'supported-query-fields', 'modes', 'interop']) {
       expect(staged).toContain(`](../${route}/)`)
     }
-    expect(staged).toContain('](../../reference/)')
+    expect(staged).toContain('](../api-overview/)')
     expect(staged).not.toMatch(/https:\/\/github.com\/libtmux\/libtmux-dotnet\/blob\/master\/docs\/fsharp\//)
     expect(staged).toContain(`https://github.com/libtmux/libtmux-dotnet/blob/${fsharpGuides.source.revision}/examples/LibTmux.FSharp.Quickstart/Program.fs`)
   })

@@ -33,6 +33,20 @@ const index = (symbols: ApiSymbol[]) => new SymbolIndex(symbols, (s) => `/${s.id
 const linkFor = (idx: SymbolIndex, annotation: string, name: string, context?: ApiSymbol) =>
   idx.linkType(annotation, context).find((s) => s.text === name)?.link
 
+it('resolves an explicit source import before a same-named local declaration', () => {
+  const idx = new SymbolIndex([sym('example.Server'), sym('other.Server')], (s) => `/${s.id}/`, 'kotlin')
+  const from = { ...sym('example.connect', 'function'), imports: { Server: 'other.Server', JavaServer: 'java.Server' } }
+  idx.addInventory('https://example.org/', [{ name: 'java.Server', type: 'std:label', priority: 1, uri: 'server', dispname: '-' }], ['kotlin'])
+  expect(linkFor(idx, 'Server', 'Server', from)?.href).toBe('/other.Server/')
+  expect(linkFor(idx, 'JavaServer', 'JavaServer', from)?.href).toBe('https://example.org/server')
+})
+
+it('links F# types around apostrophe-prefixed generic parameters', () => {
+  const idx = new SymbolIndex([sym('Filter'), sym('Field')], (s) => `/${s.id}/`, 'fsharp')
+  expect(idx.linkType("Filter<'T> -> Field<'T, 'Value>").filter((span) => span.link).map((span) => span.text))
+    .toEqual(['Filter', 'Field'])
+})
+
 describe('a bare name with more than one candidate', () => {
   const symbols = [
     sym('tmux.Pane'),

@@ -102,10 +102,10 @@ Fixtures live in JUnit's per-test extension store. A shutdown hook kills servers
 owned by that JVM, and startup cleanup removes servers left by JVMs that have
 exited. Source: `libtmux-junit5/README.md`.
 
-<a id="java-docs-tests"></a>The port's `docs-tests` module compiles Java fences
+<a id="java-docs-tests"></a>The port's `docs` module compiles Java fences
 from READMEs and guides, then runs them against `libtmux-junit5` servers. A
 `<!-- snippet: ... -->` directive can instead require a named exception, a
-compile failure, or an explicit skip reason. Source: `docs-tests/README.md`.
+compile failure, or an explicit skip reason. Source: `docs/README.md`.
 <!-- /port -->
 
 <!-- port:dotnet -->

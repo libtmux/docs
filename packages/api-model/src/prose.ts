@@ -25,6 +25,9 @@ export const PORT_NAME: Record<string, string> = {
   swift: 'Swift',
   ruby: 'Ruby',
   lua: 'Lua',
+  kotlin: 'Kotlin',
+  scala: 'Scala',
+  fsharp: 'F#',
 }
 
 /** Declarations that own a page of members. */
@@ -36,6 +39,7 @@ export const OWNER_KINDS: ReadonlySet<string> = new Set([
   'trait',
   'enum',
   'module',
+  'typealias',
 ])
 
 /** The types that get their own page: the ones with members to put on it. */

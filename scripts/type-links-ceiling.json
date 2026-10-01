@@ -8,5 +8,8 @@
   "java": 137,
   "dotnet": 43,
   "cxx": 342,
-  "swift": 1615
+  "swift": 1615,
+  "kotlin": 2978,
+  "scala": 3252,
+  "fsharp": 252
 }

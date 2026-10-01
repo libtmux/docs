@@ -30,7 +30,7 @@ export type Resolution =
   | { how: 'not-a-symbol'; why: string }
 
 /** Kinds that can own members, and therefore act as a scope. */
-const TYPE_KINDS = new Set(['class', 'struct', 'interface', 'enum', 'trait', 'exception'])
+const TYPE_KINDS = new Set(['class', 'struct', 'interface', 'enum', 'trait', 'exception', 'module', 'typealias'])
 
 /**
  * Ecosystems with no `objects.inv` to federate against.
@@ -66,6 +66,9 @@ export const DEFAULT_PRIMARY_MODULES: Record<string, string> = {
   rs: 'libtmux',
   go: 'tmux',
   java: 'io.github.libtmux',
+  kotlin: 'io.github.libtmux.kotlin',
+  scala: 'io.github.libtmux.scaladsl',
+  fsharp: 'LibTmux.FSharp',
   dotnet: 'LibTmux',
   cxx: 'libtmux',
   swift: 'LibTmux',
@@ -99,7 +102,10 @@ export const DEFAULT_TEMPLATES: UrlTemplate[] = [
  */
 export function notASymbol(text: string): string | undefined {
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) return 'a protocol URI'
-  if (/\.(py|ts|go|rs|java|cs|cpp|hpp|c|h|lua|rb|swift|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
+  if (/^(?:net)?\d+\.\d+(?:\.\d+)?[a-z]?$/.test(text)) return 'a version'
+  if (/^\w+(?:\.\w+)+:[\w.-]+(?::[\w.<>{}-]+)?$/.test(text)) return 'a dependency coordinate'
+  if (/\.(?:tsv|html)$/.test(text)) return 'a filename'
+  if (/\.(py|ts|go|rs|java|kt|kts|scala|cs|fs|fsi|fsproj|properties|cpp|hpp|c|h|lua|rb|swift|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
   if (/(^|\s)--?[A-Za-z]/.test(text)) return 'a command-line flag'
   if (/[=<>!]=|\s[=<>]\s/.test(text)) return 'an expression, not a reference'
   if (/^new\s/.test(text)) return 'a constructor call'
@@ -113,6 +119,7 @@ export function toPath(text: string): string[] {
   return text
     .replace(/^(await|try|new)\s+/, '')
     .replace(/\(.*$/, '')
+    .replace(/`\d+/g, '')
     .replace(/->/g, '.')
     .replace(/::/g, '.')
     // Lua's method call, `Session:new_window`. Only between two names, so a

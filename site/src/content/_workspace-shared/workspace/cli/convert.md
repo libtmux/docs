@@ -15,7 +15,7 @@ keys.
 
 ## Change the file format
 
-Given `workspace.yaml` from the [installation
+Given [`workspace.yaml`](../../guides/installation/#create-the-input) from the [installation
 walkthrough](../../guides/installation/):
 
 ```console
@@ -40,7 +40,7 @@ preserves mapping fields; it does not establish that every field can be loaded.
 
 ## Inspect the result
 
-Start with `workspace.yaml` from the [installation
+Start with [`workspace.yaml`](../../guides/installation/#create-the-input) from the [installation
 walkthrough](../../guides/installation/):
 
 ```console

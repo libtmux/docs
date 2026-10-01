@@ -1,5 +1,5 @@
 import { Resolver, type InventoryEntry } from '@libtmux/api-model'
-import { API_MODELS } from './api-models'
+import { API_MODELS, parentApiInventory } from './api-models'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
 import pythonInv from '../data/inventories/python.entries.json'
@@ -40,7 +40,7 @@ const INVENTORIES: {
     data: jdkInv,
     project: 'Java SE',
     baseUrl: 'https://docs.oracle.com/en/java/javase/21/docs/api/',
-    langs: ['java'],
+    langs: ['java', 'kotlin', 'scala'],
   },
   { data: domInv, project: 'MDN', baseUrl: 'https://developer.mozilla.org/', langs: ['ts'] },
 ]
@@ -73,6 +73,9 @@ export function getResolver(): Resolver {
   const r = new Resolver(Object.values(API_MODELS))
   for (const { data, project, baseUrl, langs } of INVENTORIES) {
     r.addInventory(project, baseUrl, entriesOf(data), langs)
+  }
+  for (const port of ['kotlin', 'scala', 'fsharp']) {
+    r.addInventory('Parent library API', '', parentApiInventory(port), [port])
   }
   resolver = r
   return r

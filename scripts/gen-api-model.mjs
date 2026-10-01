@@ -72,8 +72,8 @@ function packageVersion(checkout, port, product) {
     return /^version\s*=\s*"([^"]+)"/m.exec(read(`crates/${crate}/Cargo.toml`))?.[1]
       ?? /^version\s*=\s*"([^"]+)"/m.exec(read('Cargo.toml'))?.[1]
   }
-  if (port === 'java') return /^libtmuxVersion=(.+)$/m.exec(read('gradle.properties'))?.[1]
-  if (port === 'dotnet') {
+  if (['java', 'kotlin', 'scala'].includes(port)) return /^libtmuxVersion=(.+)$/m.exec(read('gradle.properties'))?.[1]
+  if (['dotnet', 'fsharp'].includes(port)) {
     const props = read('Directory.Build.props')
     const prefix = /<VersionPrefix>([^<]+)</.exec(props)?.[1]
     const suffix = /<VersionSuffix>([^<]+)</.exec(props)?.[1]
@@ -232,7 +232,10 @@ const PORTS = {
   },
   java: {
     checkout: '~/work/libtmux/libtmux-java',
-    roots: ['libtmux/src/main/java', 'libtmux-workspace/src/main/java', 'libtmux-jackson/src/main/java', 'libtmux-junit5/src/main/java'],
+    roots: ['libtmux/src/main/java', 'libtmux/build/generated/sources/fieldCatalog/java/main',
+      'libtmux-workspace/src/main/java', 'libtmux-jackson/src/main/java', 'libtmux-junit5/src/main/java'],
+    generate: [':libtmux:generateFieldMetamodel'],
+    generateWhen: 'build-logic/conventions/src/main/kotlin/libtmux.field-catalog.gradle.kts',
     repo: 'libtmux/libtmux-java',
     options: { inheritedMembers: true },
   },
@@ -241,6 +244,28 @@ const PORTS = {
     roots: ['src/LibTmux', 'src/LibTmux.Workspace', 'src/LibTmux.Query.Json', 'src/LibTmux.Testing'],
     repo: 'libtmux/libtmux-dotnet',
     options: { inheritedMembers: true },
+  },
+  kotlin: {
+    checkout: '~/work/libtmux/libtmux-java',
+    roots: ['libtmux-kotlin/src/main/kotlin', 'libtmux-kotlin/build/generated/sources/operations/kotlin'],
+    generate: [':libtmux-kotlin:generateOperationWrappers'],
+    pathRoots: ['libtmux-kotlin/', 'docs/guide/kotlin.md', 'examples/src/main/kotlin/'],
+    repo: 'libtmux/libtmux-java', options: {},
+  },
+  scala: {
+    checkout: '~/work/libtmux/libtmux-java',
+    roots: ['libtmux-scala/src/main/scala', 'libtmux-scala/build/generated/sources/catalog/scala',
+      'libtmux-scala-cats/src/main/scala', 'libtmux-scala-ox/src/main/scala'],
+    generate: [':libtmux-scala:generateScalaSources'],
+    pathRoots: ['libtmux-scala/', 'libtmux-scala-cats/', 'libtmux-scala-ox/',
+      'docs/guide/scala/', 'examples/src/main/scala/'],
+    repo: 'libtmux/libtmux-java', options: {},
+  },
+  fsharp: {
+    checkout: '~/work/libtmux/libtmux-dotnet',
+    root: 'src/LibTmux.FSharp',
+    pathRoots: ['src/LibTmux.FSharp/', 'docs/fsharp/', 'examples/LibTmux.FSharp.'],
+    repo: 'libtmux/libtmux-dotnet', options: {},
   },
   // C++ comes from the Doxygen XML this project's own build already produces:
   // tree-sitter has no preprocessor, so `LIBTMUX_NAMESPACE_BEGIN` derails the
@@ -272,6 +297,8 @@ const PORTS = {
 }
 
 const args = process.argv.slice(2)
+const repositoryPaths = (tree, cfg) => tree.split('\n').filter((path) =>
+  path && (!cfg.pathRoots || !path.includes('/') || cfg.pathRoots.some((prefix) => path.startsWith(prefix))))
 const only = args.includes('--port') ? args[args.indexOf('--port') + 1] : undefined
 const check = args.includes('--check')
 /*
@@ -365,6 +392,14 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   // The commit a reader can actually open, which is not always the one the
   // model is generated from. See `publicRevision`.
   const revision = selectedSource ?? publicRevision(checkout, head, port, cfg.repo)
+
+  if (cfg.generate && (!cfg.generateWhen || existsSync(join(checkout, cfg.generateWhen)))) {
+    // Gradle owns dependency tracking; stale generated methods must never be
+    // accepted simply because their output directory already exists.
+    execFileSync(join(checkout, 'gradlew'), [...cfg.generate, '--console=plain'], {
+      cwd: checkout, stdio: 'inherit',
+    })
+  }
 
   const roots = (cfg.roots ?? [cfg.root])
     .map((r) => join(checkout, r))
@@ -490,6 +525,10 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       const file = symbol.source.file
       const base = bases.find((candidate) => file.startsWith(`${candidate}/`)) ?? unit.checkout
       const relativeFile = isAbsolute(file) ? relative(base, file) : file
+      if (cfg.generate && relativeFile.includes('/build/generated/')) {
+        model.generatedSources ??= {}
+        model.generatedSources[relativeFile] ??= readFileSync(join(unit.checkout, relativeFile), 'utf8')
+      }
       symbol.product ??= productOf(relativeFile)
       symbol.source = { ...symbol.source, file: relativeFile, repo: unit.repo, revision: unit.revision, extractedRevision: unit.head }
     }
@@ -614,7 +653,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     const stalePaths = [
       strip(read(`${port}.json`)) !== strip(text) && `${port}.json`,
       tree && JSON.stringify(committedPaths && JSON.parse(committedPaths).paths) !==
-        JSON.stringify(tree.split('\n').filter(Boolean)) && `${port}.paths.json`,
+        JSON.stringify(repositoryPaths(tree, cfg)) && `${port}.paths.json`,
       nav && read(`${port}.nav.json`) !== `${JSON.stringify(nav)}\n` && `${port}.nav.json`,
     ].filter(Boolean)
     if (stalePaths.length) {
@@ -651,7 +690,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   if (tree) {
     writeFileSync(
       join(repoRoot, 'site/src/data/api', `${port}.paths.json`),
-      `${JSON.stringify({ port, repo: cfg.repo, revision, paths: tree.split('\n').filter(Boolean) })}\n`,
+      `${JSON.stringify({ port, repo: cfg.repo, revision, paths: repositoryPaths(tree, cfg) })}\n`,
     )
   }
 

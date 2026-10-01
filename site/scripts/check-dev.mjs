@@ -42,6 +42,16 @@ This article has no sections, so its content should fill the available column.
 for (const file of ['astro.config.ts', 'ec.config.mjs', 'package.json', 'tsconfig.json']) cpSync(join(source, file), join(root, file))
 for (const file of ['public', 'node_modules']) symlinkSync(join(source, file), join(root, file), 'dir')
 for (const file of ['scripts', 'packages', 'node_modules']) symlinkSync(join(source, '..', file), join(mirror, file), 'dir')
+// Exercise the production reference page in the root server. Its model and
+// owner are the same props its port route supplies, without another Vite boot.
+writeFileSync(join(root, 'src/pages/api-example-probe.astro'), `---
+import Reference from './reference/[...slug].astro'
+import { API_MODELS } from '../lib/api-models'
+const model = API_MODELS.ts
+const owner = model.symbols.find((symbol) => symbol.id === 'pane.Pane.capture')
+---
+<Reference model={model} owner={owner} />
+`)
 let server, browser
 const terminate = async () => {
   await browser?.close()
@@ -296,6 +306,7 @@ try {
   }
   console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
   await checkNavigation(page, base)
+  await checkApiExampleOwnership(page, base, 'api-example-probe/')
   for (const path of ['ts/latest/workspace/', 'ruby/latest/mcp/', 'cxx/latest/workspace/', 'cxx/latest/mcp/']) {
     await page.goto(`${base}/${path}`, { waitUntil: 'load' })
     const hero = page.locator('.port-hero, .product-hero').first()
@@ -327,18 +338,14 @@ try {
   console.log('Heroes: 88px marks share the title row and stack at phone widths')
   // Core API routes exist only in a port shell. Reuse the isolated fixture
   // with its real Lua routes so the routine gate covers retained-document swaps.
+  await page.goto('about:blank')
+  await clipboardPage.close()
   await server.stop()
   Object.assign(process.env, {
     LIBTMUX_DOCS_PORT: 'lua', LIBTMUX_DOCS_BASE: '/en/lua/latest/',
   })
   server = await startServer()
   await checkApiNavigation(page, `http://127.0.0.1:${server.address.port}/en`)
-  await server.stop()
-  Object.assign(process.env, {
-    LIBTMUX_DOCS_PORT: 'ts', LIBTMUX_DOCS_BASE: '/en/ts/latest/',
-  })
-  server = await startServer()
-  await retryReload(() => checkApiExampleOwnership(page, `http://127.0.0.1:${server.address.port}/en`))
 } finally {
   await browser?.close()
   await server.stop()

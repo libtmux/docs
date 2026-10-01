@@ -88,7 +88,7 @@ the programs running in those panes have finished or become ready.
 ## Load without attaching
 
 Continue the [installation walkthrough](../../guides/installation/) with its
-`workspace.yaml` and private socket:
+[`workspace.yaml`](../../guides/installation/#create-the-input) and private socket:
 
 ```console
 $ tmux-workspace load \

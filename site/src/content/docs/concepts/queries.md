@@ -196,7 +196,7 @@ let matching = try await server.panes().filter(expression)
 |------|--------------------|--------------|-------|---------|
 <!-- port:py -->| Python | `.filter()` | `.get()` | `ObjectDoesNotExist` (or `default=`) | `MultipleObjectsReturned` |
 <!-- /port --><!-- port:ts -->| TypeScript | `.where()` / `.filter()` | `.one()` | `NoMatchError` (or `.oneOrUndefined()`) | `MultipleMatchesError` |
-<!-- /port --><!-- port:java -->| Java | `Stream.filter()` | `Selections.exactlyOne()` | `NoMatchException` | `MultipleMatchesException` |
+<!-- /port --><!-- port:java -->| Java | `Stream.filter()` | `Selections.exactlyOne()` | `CardinalityException.NoMatch` | `CardinalityException.MultipleMatches` |
 <!-- /port -->
 <!-- /port -->
 

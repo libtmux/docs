@@ -29,7 +29,8 @@ const CONTENT = join(dirname(fileURLToPath(import.meta.url)), '../src/content/do
  */
 // Complete workspace programs replace their shared source excerpts; native
 // receipts and rendering checks live in complete-examples.test.ts.
-const SOURCED_FLOOR = 10
+// Scala's workspace excerpt depended on an undisplayed ExampleRuntime helper.
+const SOURCED_FLOOR = 9
 
 interface Fence {
   file: string

@@ -82,7 +82,7 @@ object Capture {
 
 ## Wait for output or completion
 
-The Scala facade uses blocking calls. The loop checks complete captured lines against a monotonic deadline. `Using.resource` closes the client; the `finally` block also stops the tmux server this program created. Cleanup errors stay visible, and a server that cannot be stopped keeps its socket.
+The Scala facade uses blocking calls. The loop checks complete captured lines against a monotonic deadline. [`Using.resource`](https://www.scala-lang.org/api/3.x/scala/util/Using$.html) closes the client; the `finally` block also stops the tmux server this program created. Cleanup errors stay visible, and a server that cannot be stopped keeps its socket.
 
 Capture reads screen state and scrollback, so output that has scrolled away
 may be absent. The program prints `libtmux capture ready` when its check passes

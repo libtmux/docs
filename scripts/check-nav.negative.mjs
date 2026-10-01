@@ -86,8 +86,8 @@ const CASES = {
     // Three from one run, since each reads the model beside the fixture and a
     // second fixture would cost a second process for the same proof: `sidecar`
     // compiles it with the real nav-config.ts, which this fixture was not
-    // written from, and `unreachable` finds the function nested in a type
-    // alias, which is not a declaration the tree opens for members.
+    // written from, and `unreachable` finds a function nested in another
+    // function, which is not a declaration the tree opens for members.
     trips: ['orphaned', 'sidecar', 'unreachable'],
     ports: {
       // A child bucket that holds symbols and is missing from the tree the
@@ -99,9 +99,9 @@ const CASES = {
         buckets: [bucket('server', { kind: 'name', re: 'Server' })],
         hideChildren: true,
         extraChild: { id: 'server-options', match: { kind: 'name', suffix: 'Options' } },
-        // A function inside a type alias: under no owner and not top-level.
+        // A nested function is neither a public member nor a top-level API.
         model: [
-          { id: 'mod', name: 'mod', kind: 'typealias' },
+          { id: 'mod', name: 'mod', kind: 'function' },
           { id: 'mod.helper', name: 'helper', kind: 'function', parent: 'mod' },
         ],
       },

@@ -1077,7 +1077,7 @@ export const PORTS: readonly Port[] = CORE_PORTS.flatMap((parent) => [
     repo: parent.repo, checkout: parent.checkout, worktree: parent.worktree,
     docsDispatch: parent.docsDispatch && { ...parent.docsDispatch, language: library.slug },
     tagGrammar: parent.tagGrammar, tagPrefix: parent.tagPrefix,
-    versionedDocs: parent.versionedDocs, renderer: 'none', generator: '', referenceKind: 'guide',
+    versionedDocs: parent.versionedDocs, renderer: 'none', generator: '', referenceKind: 'model',
     publishesOwnTree: true,
     ...library,
   })),

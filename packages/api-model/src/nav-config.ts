@@ -713,12 +713,35 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
  * check will fail until they are.
  */
 
+/** Place language-specific public helpers with the task they support. */
+const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
+  java: {
+    commands: ['MessageLog', 'PrintedText', 'Prompt', 'Shell'].map((name) => `io.github.libtmux.${name}.${name}`),
+    server: ['io.github.libtmux.IncarnationFence.IncarnationFence'],
+  },
+  kotlin: {
+    commands: ['Batch', 'ExecutionPolicy', 'MessageLog', 'Prompt', 'Shell', 'retryIfSafe'].map((name) => `io.github.libtmux.kotlin.${name}`),
+    server: ['io.github.libtmux.kotlin.LibTmuxDsl'],
+    control: ['io.github.libtmux.Channel.await', 'io.github.libtmux.Channel.awaitReservingCapacity'],
+  },
+  scala: {
+    snapshots: ['io.github.libtmux.scaladsl.live.LiveView', 'io.github.libtmux.scaladsl.streaming.Observation',
+      'io.github.libtmux.scaladsl.cats.Instances', 'io.github.libtmux.scaladsl.cats.Observation'],
+    commands: ['Batch', 'Shell', 'MessageLog', 'Prompt'].map((name) => `io.github.libtmux.scaladsl.cats.${name}`),
+    control: ['io.github.libtmux.scaladsl.cats.Channel', 'io.github.libtmux.scaladsl.ox.Flows'],
+  },
+  fsharp: { queries: ['LibTmux.FSharp.Selection'] },
+}
+
 export const NAV: Record<string, PortNav> = Object.fromEntries(
-  ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'].map((port) => [
+  ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'fsharp', 'dotnet', 'cxx', 'swift'].map((port) => [
     port,
     {
       port,
-      buckets: SHARED,
+      buckets: SHARED.map((bucket) => {
+        const ids = LANGUAGE_PLACEMENTS[port]?.[bucket.id]
+        return ids ? { ...bucket, match: { kind: 'anyOf' as const, of: [bucket.match, { kind: 'id' as const, is: ids }] } } : bucket
+      }),
       unsettled: OVERRIDES[port]?.unsettled,
     },
   ]),

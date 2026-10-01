@@ -24,7 +24,7 @@ export function rawSourceUrl(source: PageSource): string {
 export function symbolSource(model: ApiModel, symbol: ApiSymbol): PageSource {
   const repo = symbol.source.repo ?? model.repo
   const ref = symbol.source.revision ?? model.revision
-  return symbol.source.file && repo && ref
+  return symbol.source.file && !model.generatedSources?.[symbol.source.file] && repo && ref
     ? { repo, path: symbol.source.file, ref }
     : { repo: CONTRIBUTE_REPO, path: `site/src/data/api/${model.port}.json`, ref: CONTRIBUTE_BRANCH }
 }
