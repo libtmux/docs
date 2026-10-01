@@ -1,4 +1,5 @@
 ---
+supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift, ruby, lua]
 title: Concepts
 description: tmux objects, command transports, queries, and workspaces.
 sidebar:
