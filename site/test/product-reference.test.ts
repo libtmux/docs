@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { API_MODELS, createApiIndex, referenceAlternatives } from '../src/lib/api-models'
+import { API_MODELS, createApiIndex, referenceAlternatives, topLevelTypesOf } from '../src/lib/api-models'
 import { productApiAlternatives, productApiRoutes } from '../src/lib/product-api'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { PORT_BY_SLUG, productAvailable } from '../src/lib/ports'
@@ -23,6 +23,8 @@ it('links parent APIs in native prose without replacing facade APIs', () => {
 })
 
 it('gives Kotlin, Scala and F# native references with parent type links', () => {
+  expect(topLevelTypesOf(API_MODELS.lua).filter((symbol) => symbol.kind === 'typealias')).toEqual([])
+  expect(topLevelTypesOf(API_MODELS.scala).filter((symbol) => symbol.kind === 'typealias')).toHaveLength(7)
   for (const port of ['kotlin', 'scala', 'fsharp']) {
     const model = API_MODELS[port]
     expect(PORT_BY_SLUG[port].referenceKind).toBe('model')
