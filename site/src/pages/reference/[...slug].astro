@@ -271,6 +271,7 @@ const sourceUrl = (symbol: ApiSymbol): string | undefined => model
 const members = owner && model ? model.symbols.filter((s) => s.parent === owner.id).sort(byUsefulness) : []
 
 const owners = (model ? topLevelTypesOf(model) : []).sort((a, b) => a.name.localeCompare(b.name))
+const cardIds = new Set(owners.map((symbol) => symbol.id))
 
 /**
  * How many entries in the contents share each name.
@@ -388,8 +389,8 @@ const sectionOf = (id: string, name: string, collapsed: boolean) => {
     id,
     name,
     collapsed,
-    types: symbols.filter((sym) => OWNER_KINDS.has(sym.kind)),
-    free: symbols.filter((sym) => !OWNER_KINDS.has(sym.kind)),
+    types: symbols.filter((sym) => cardIds.has(sym.id)),
+    free: symbols.filter((sym) => !cardIds.has(sym.id)),
   }
 }
 

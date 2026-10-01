@@ -172,7 +172,9 @@ export function ownersOf(model: ApiModel) {
 
 /** The types the port index lists: top-level only, so nesting reads as nesting. */
 export function topLevelTypesOf(model: ApiModel) {
-  return model.symbols.filter((s) => !s.parent && OWNER_KINDS.has(s.kind))
+  const owners = new Set(ownersOf(model).map((symbol) => symbol.id))
+  return model.symbols.filter((s) => !s.parent && OWNER_KINDS.has(s.kind)
+    && (s.kind !== 'typealias' || owners.has(s.id)))
 }
 
 /**
