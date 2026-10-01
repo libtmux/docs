@@ -378,11 +378,8 @@ const symbolById = new Map(
  * One bucket's section: its types as cards, and its functions, values and
  * type aliases in full, in the order the nav lists them.
  */
-const sectionOf = (id: string, name: string, collapsed: boolean) => {
-  // The "Other" bucket's members are in `unplaced`, not `assignments`; reading
-  // only the latter rendered none of them on the index, which `check-xrefs`
-  // caught as resolution falling on four ports.
-  const symbols = (id === '__unplaced' ? (nav?.unplaced ?? []) : (nav?.assignments[id] ?? []))
+const sectionOf = (id: string, name: string, collapsed: boolean, entries: { id: string }[]) => {
+  const symbols = entries
     .map((e) => symbolById.get(e.id))
     .filter((o): o is NonNullable<typeof o> => o !== undefined)
   return {
@@ -397,8 +394,8 @@ const sectionOf = (id: string, name: string, collapsed: boolean) => {
 const bucketSections = nav
   ? tree
       .flatMap((b) => [
-        sectionOf(b.id, b.label, b.collapsed),
-        ...b.children.map((c) => sectionOf(c.id, `${b.label} — ${c.label}`, b.collapsed)),
+        sectionOf(b.id, b.label, b.collapsed, b.entries),
+        ...b.children.map((c) => sectionOf(c.id, `${b.label} — ${c.label}`, b.collapsed, c.entries)),
       ])
       .filter((sec) => sec.types.length > 0 || sec.free.length > 0)
   : []
@@ -587,9 +584,18 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
                       <a class="api-index-card__link" href={hrefFor(o)}>
                         <span class="font-mono font-semibold">{o.name}</span>
                         <span class="ml-2 text-xs opacity-60">
-                          {model.symbols.filter((s) => s.parent === o.id).length} members
+                          {model.symbols.some((s) => s.parent === o.id)
+                            ? `${model.symbols.filter((s) => s.parent === o.id).length} members`
+                            : o.signatures.some((sig) => /\bannotation class\b/.test(sig.raw ?? '')) ? 'annotation' : 'type'}
                         </span>
                       </a>
+                      {ownerNames.get(o.name)! > 1 && (
+                        <p class="mt-1 text-xs opacity-70">
+                          {model.port === 'scala'
+                            ? o.id.includes('.cats.') ? 'Cats Effect' : o.id.includes('.ox.') ? 'Ox' : 'Direct API'
+                            : (o.publicId ?? o.id).slice(0, -(o.name.length + 1))}
+                        </p>
+                      )}
                       {o.doc?.summary && (
                         <p class="mt-1 text-sm opacity-80">
                           <ApiDoc text={o.doc.summary} index={index} context={o} citations={false} />

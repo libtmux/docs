@@ -5,7 +5,8 @@
  * Buckets and their contents are decided once per port in
  * `scripts/gen-api-model.mjs`; this only shapes them for a tree.
  */
-import { symbolsForProduct } from '@libtmux/api-model'
+import { compareMembers, memberSignals, symbolsForProduct } from '@libtmux/api-model'
+import mentions from '../data/mentions.json'
 import { API_MODELS, API_NAV, OWNER_KINDS, pageSlug, type NavEntry } from './api-models'
 
 export interface TreeBucket {
@@ -131,7 +132,7 @@ export const firstEntry = (b: TreeBucket) => {
 
 const membersCache = new Map<string, Map<string, TreeMember[]>>()
 
-/** Every owner's members, sorted by name and keyed by the id the nav uses for the owner. */
+/** Every owner's members, in the same useful-first order as its reference page. */
 export function membersByType(port: string): Map<string, TreeMember[]> {
   const cached = membersCache.get(port)
   if (cached) return cached
@@ -139,7 +140,8 @@ export function membersByType(port: string): Map<string, TreeMember[]> {
   const model = API_MODELS[port]
   if (model) {
     const byId = new Map(model.symbols.map((s) => [s.id, s]))
-    for (const s of model.symbols) {
+    const ordered = model.symbols.toSorted(compareMembers(memberSignals(port, mentions.mentions)))
+    for (const s of ordered) {
       const owner = s.parent ? byId.get(s.parent) : undefined
       if (!owner || !OWNER_KINDS.has(owner.kind)) continue
       const key = owner.publicId ?? owner.id
@@ -147,7 +149,6 @@ export function membersByType(port: string): Map<string, TreeMember[]> {
       list.push({ id: s.id, name: s.name, slug: s.slug ?? pageSlug(s.publicId ?? s.id) })
       out.set(key, list)
     }
-    for (const list of out.values()) list.sort((a, b) => a.name.localeCompare(b.name))
   }
   membersCache.set(port, out)
   return out

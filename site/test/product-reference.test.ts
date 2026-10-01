@@ -18,6 +18,9 @@ it('links parent APIs in native prose without replacing facade APIs', () => {
   }
   const native = resolver.resolve('scala', 'Session.name')
   expect('symbol' in native && native.port).toBe('scala')
+  expect('symbol' in native && native.symbol.id).toBe('io.github.libtmux.scaladsl.Session.name')
+  const effect = resolver.resolve('scala', 'cats.Session.name')
+  expect('symbol' in effect && effect.symbol.id).toBe('io.github.libtmux.scaladsl.cats.Session.name')
   expect(resolver.resolve('fsharp', 'LibTmux.FSharp.Filter`1').how).not.toBe('no-symbol')
   expect(resolver.resolve('go', 'ServerConfig').how).toBe('no-symbol')
 })

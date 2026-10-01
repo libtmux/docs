@@ -24,6 +24,43 @@ const invDir = join(here, '../src/data/inventories')
 const href = (s: { publicId?: string; id: string }) => `#${s.publicId ?? s.id}`
 
 describe('indexFor attaches the inventories', () => {
+  it('links Kotlin prose, parameters and each declared call-chain step', () => {
+    const model = API_MODELS.kotlin
+    const member = model.symbols.find((symbol) => symbol.id === 'io.github.libtmux.kotlin.Server.liveState')!
+    const index = indexFor(model, href)
+    const targets = Object.fromEntries(index.linkType(member.signatures[0].raw!, member)
+      .filter((span) => span.link).map((span) => [span.text, span.link!.href]))
+    expect(targets.config).toContain('Server.config')
+    expect(targets.defaultTimeout).toContain('/java/latest/reference/io-github-libtmux-serverconfig-serverconfig-defaulttimeout/')
+    expect(targets.toKotlinDuration).toContain('/kotlin.time/to-kotlin-duration.html')
+    expect(targets.scope).toContain('.parameter.scope')
+    expect(targets.CoroutineScope).toContain('/kotlinx.coroutines/-coroutine-scope/')
+    expect(targets.Duration).toContain('/kotlin.time/-duration/')
+    expect(targets.StateFlow).toContain('/kotlinx.coroutines.flow/-state-flow/')
+    for (const name of ['CoroutineDispatcher', 'Dispatchers.IO']) {
+      expect(index.resolve(name, 'any', member)?.href, name).toContain('/kotlinx.coroutines/')
+    }
+    for (const name of ['server', 'scope', 'StateFlow', 'launch', 'finally', 'suspend']) {
+      expect(index.linkText('`' + name + '`', member)[0].link, name).toBeDefined()
+    }
+    expect(index.resolve('nonexistent.defaultTimeout', 'any', member)).toBeUndefined()
+  })
+
+  it('links Scala imports to Cats Effect and the parent Java reference', () => {
+    const model = API_MODELS.scala
+    const member = model.symbols.find((symbol) => symbol.id === 'io.github.libtmux.scaladsl.cats.LiveServer')!
+    const index = indexFor(model, href)
+    expect(index.resolve('Deferred', 'any', member)?.href).toContain('/cats/effect/kernel/Deferred.html')
+    expect(index.resolve('Signal', 'any', member)?.href).toContain('/fs2-core_3/3.13.0/fs2/concurrent/Signal.html')
+    expect(index.resolve('io.github.libtmux.snapshot.ServerMirror', 'any', member)?.href)
+      .toContain('/java/latest/reference/io-github-libtmux-snapshot-servermirror-servermirror/')
+    expect(index.resolve('Handles.scala', 'any', member)?.href).toMatch(/github\.com\/libtmux\/libtmux-java\/blob\/[a-f0-9]{40}\/libtmux-scala-cats\/src\/main\/scala\/.*\/Handles\.scala$/)
+    for (const prefix of ['io.github.libtmux.scaladsl', 'io.github.libtmux.scaladsl.cats']) {
+      const server = model.symbols.find((symbol) => symbol.id === `${prefix}.Server`)!
+      expect(index.resolve('Window', 'class', server)?.symbol?.id).toBe(`${prefix}.Window`)
+      expect(index.resolve(`${prefix}.Server#sessions`, 'any', server)?.symbol?.id).toBe(`${prefix}.Server.sessions`)
+    }
+  })
   it('links a JDK type from a Java annotation', () => {
     const index = indexFor(API_MODELS.java, href)
     const hit = index.resolve('List', 'class')
@@ -55,7 +92,7 @@ describe('indexFor attaches the inventories', () => {
       const index = indexFor(API_MODELS[port], href)
       for (const name of ['List', 'AbortController', 'str', 'Optional']) {
         const hit = index.resolve(name, 'class')
-        expect(hit?.external, `${port} resolved ${name} externally`).not.toBe(true)
+        expect(hit?.href ?? '', `${port} resolved ${name} in another language`).not.toMatch(/docs\.python\.org|docs\.oracle\.com|developer\.mozilla\.org/)
       }
     }
   })

@@ -49,7 +49,9 @@ const spans = index.linkText(text, context)
         <code class="api-literal api-literal--link">{span.label}</code>
       </a>
     ) : (
-      <code class="api-literal">{span.label}</code>
+      <code class="api-literal">{index.linkType(span.label, context).map((part) => part.link
+        ? <a class="api-xref api-literal--link" href={part.link.href}>{part.text}</a>
+        : part.text)}</code>
     )
   })
 }</span>

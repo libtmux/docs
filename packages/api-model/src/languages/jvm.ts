@@ -35,12 +35,9 @@ function documentation(node: Node, language: Language, signature: Signature, com
   if (!before || node.startPosition.row > before.endPosition.row + 1 ||
       source.slice(before.endIndex, node.startIndex).trim()) return undefined
   const raw = before.text.slice(3, -2).split('\n').map((line) => line.replace(/^\s*\* ?/, '')).join('\n').trim()
-  // KDoc and Scaladoc links use their native delimiters. The shared doc
-  // renderer resolves code references through the port's symbol inventory.
-  const linked = raw.replace(/\[\[([^\]\s]+)(?:\s+([^\]]+))?\]\]/g, (_, target, label) =>
-    label ? `${label} (\`${target}\`)` : `\`${target}\``)
-    .replace(/(?<!\[)\[([A-Za-z_][\w.]*|\.[A-Za-z_]\w*)\](?![\](])/g, '`$1`')
-  const parsed = parseMarkdownDocFull(linked, language)
+  // Keep native links intact; the inline tokenizer must distinguish them
+  // from generic brackets inside code such as `Execution[F]`.
+  const parsed = parseMarkdownDocFull(raw, language)
   for (const param of signature.params) param.doc = parsed.params.get(param.name)
   if (parsed.returnsDoc) signature.returnsDoc = parsed.returnsDoc
   if (parsed.raises.length) signature.raises = parsed.raises
@@ -217,6 +214,20 @@ export async function extractJvm(port: Language, roots: string[], revision?: str
             if (ownReceiver) extensions.push(symbol)
             else emit(symbol)
             if (container) {
+              if (port === 'scala') {
+                for (const group of childrenOf(node).filter((child) => child.type === 'class_parameters')) {
+                  for (const prop of childrenOf(group).filter((child) => child.type === 'class_parameter')) {
+                    if (!visible(prop) || !/\b(?:val|var)\b/.test(prop.text)) continue
+                    const propName = field(prop, 'name')?.text
+                    const propType = field(prop, 'type')?.text
+                    if (!propName || !propType) throw new Error(`Unparsed public Scala property: ${prop.text}`)
+                    emit({ id: `${id}.${propName}`, name: propName, kind: 'property', parent: id,
+                      imports: Object.fromEntries(imports), modifiers: [],
+                      signatures: [{ raw: prop.text, params: [], returns: propType }],
+                      source: { file, line: prop.startPosition.row + 1 } })
+                  }
+                }
+              }
               if (constructor) {
                 for (const prop of childrenOf(constructor).filter((child) => child.type === 'class_parameter')) {
                   if (!visible(prop) || !named(prop, 'binding_pattern_kind')) continue

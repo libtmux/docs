@@ -1,4 +1,4 @@
-import { conceptsFor, parentInventory, SymbolIndex, type ApiModel, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
+import { conceptsFor, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
 import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
@@ -282,6 +282,28 @@ export function createApiIndex(model: ApiModel, hrefFor: (s: ApiSymbol) => strin
   if (parent) {
     index.addInventory('', parentApiInventory(model.port), [model.port], `libtmux ${PORT_NAME[parent.slug]}`)
   }
+  const sourceFiles = new Map<string, Map<string, string>>()
+  for (const symbol of model.symbols) {
+    const file = symbol.source.file
+    const referenceBase = hrefFor(symbol).replace(/(\/reference\/).*$/, '$1')
+    const href = sourceUrl(model, { ...symbol, source: { ...symbol.source, line: undefined } }, referenceBase)
+    if (!href || !file) continue
+    for (const name of [file, file.split('/').at(-1)!]) {
+      const targets = sourceFiles.get(name) ?? new Map<string, string>()
+      targets.set(file, href)
+      sourceFiles.set(name, targets)
+    }
+  }
+  const filesByBase = new Map<string, InventoryEntry[]>()
+  for (const [name, candidates] of sourceFiles) {
+    if (candidates.size !== 1) continue
+    const href = [...candidates.values()][0]!
+    const base = href.startsWith('https://github.com/') ? 'https://github.com/' : ''
+    const entries = filesByBase.get(base) ?? []
+    entries.push({ name, uri: href.slice(base.length), type: 'std:label', priority: 1, dispname: '-' })
+    filesByBase.set(base, entries)
+  }
+  for (const [base, entries] of filesByBase) index.addInventory(base, entries, [model.port], 'Source')
   return index
 }
 

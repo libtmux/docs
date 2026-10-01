@@ -8,7 +8,7 @@ import type { ApiModel, ApiSymbol } from '../src/model.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const DATA = join(here, '../../../site/src/data')
-const PORTS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'] as const
+const PORTS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'dotnet', 'cxx', 'swift'] as const
 const LISTINGS = ['list-sessions', 'list-windows', 'list-panes']
 const TOP = 3
 const available = existsSync(join(DATA, 'api/py.json'))

@@ -79,6 +79,7 @@ try {
     node('scripts/gen-example-sources.mjs', '--check'),
     pnpm('run', '--recursive', 'type-check'),
     node('site/scripts/check-dev.mjs'),
+    node('site/scripts/check-dev.mjs', '--api-navigation'),
   )
   await Promise.all(checks)
   const elapsed = (performance.now() - started) / 1000

@@ -7464,6 +7464,13 @@
   },
   {
    "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Server.panes",
+   "page": "/scala/latest/guides/overview/",
+   "title": "libtmux-scala",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.cats.Server.resource",
    "page": "/scala/latest/concepts/transports/",
    "title": "Commands and control mode",
@@ -7492,9 +7499,30 @@
   },
   {
    "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Pane",
+   "page": "/scala/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.Pane.active",
    "page": "/scala/latest/guides/query/",
    "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Pane.await",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Pane.awaitText",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
    "section": "guides"
   },
   {
@@ -7507,6 +7535,13 @@
   {
    "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.Pane.options",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Pane.run",
    "page": "/scala/latest/guides/execution/",
    "title": "Execution",
    "section": "guides"
@@ -7555,20 +7590,6 @@
   },
   {
    "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.query.Fields.ToManyRef.all",
-   "page": "/scala/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.query.Fields.ToManyRef.all",
-   "page": "/scala/latest/guides/query/",
-   "title": "Queries",
-   "section": "guides"
-  },
-  {
-   "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.query.Fields.ToManyRef.any",
    "page": "/scala/latest/concepts/queries/",
    "title": "Filtering and queries",
@@ -7611,6 +7632,41 @@
   },
   {
    "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server",
+   "page": "/scala/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server",
+   "page": "/scala/latest/concepts/transports/",
+   "title": "Commands and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server",
+   "page": "/scala/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server",
+   "page": "/scala/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server",
+   "page": "/scala/latest/guides/ownership/",
+   "title": "Ownership",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.Server.cmd",
    "page": "/scala/latest/guides/execution/",
    "title": "Execution",
@@ -7618,44 +7674,9 @@
   },
   {
    "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.Server.config",
-   "page": "/scala/latest/guides/execution/",
-   "title": "Execution",
-   "section": "guides"
-  },
-  {
-   "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.Server.config",
-   "page": "/scala/latest/guides/getting-started/",
-   "title": "Getting started",
-   "section": "guides"
-  },
-  {
-   "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.Server.config",
-   "page": "/scala/latest/guides/overview/",
-   "title": "libtmux-scala",
-   "section": "guides"
-  },
-  {
-   "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.Server.config",
+   "symbol": "io.github.libtmux.scaladsl.Server.fromJava",
    "page": "/scala/latest/guides/ownership/",
    "title": "Ownership",
-   "section": "guides"
-  },
-  {
-   "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.Server.config",
-   "page": "/scala/latest/guides/query/",
-   "title": "Queries",
-   "section": "guides"
-  },
-  {
-   "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.Server.config",
-   "page": "/scala/latest/guides/streaming/",
-   "title": "Streaming",
    "section": "guides"
   },
   {
@@ -7667,30 +7688,9 @@
   },
   {
    "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.Server.killServer",
-   "page": "/scala/latest/guides/ownership/",
-   "title": "Ownership",
-   "section": "guides"
-  },
-  {
-   "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.Server.newSession",
-   "page": "/scala/latest/guides/getting-started/",
-   "title": "Getting started",
-   "section": "guides"
-  },
-  {
-   "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.Server.open",
    "page": "/scala/latest/guides/ownership/",
    "title": "Ownership",
-   "section": "guides"
-  },
-  {
-   "port": "scala",
-   "symbol": "io.github.libtmux.scaladsl.Server.panes",
-   "page": "/scala/latest/guides/overview/",
-   "title": "libtmux-scala",
    "section": "guides"
   },
   {
@@ -7699,6 +7699,13 @@
    "page": "/scala/latest/guides/execution/",
    "title": "Execution",
    "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Session",
+   "page": "/scala/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "scala",
@@ -7727,6 +7734,13 @@
    "page": "/scala/latest/guides/query/",
    "title": "Queries",
    "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Window",
+   "page": "/scala/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "swift",

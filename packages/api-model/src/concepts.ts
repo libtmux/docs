@@ -4,6 +4,8 @@ export interface Concept {
   label: string
   /** Public id of the symbol implementing it, per port. */
   symbols: Record<string, string>
+  /** Additional APIs in the same port implementing the same operation. */
+  variants?: Record<string, string[]>
   /** Why a port is missing, when it is. */
   absent?: Record<string, string>
 }
@@ -131,6 +133,8 @@ export const CONCEPTS: Record<string, Concept> = {
   'send-keys': {
     label: 'Send keystrokes to a pane',
     symbols: {
+      scala: 'io.github.libtmux.scaladsl.Pane.sendKeys',
+      kotlin: 'io.github.libtmux.kotlin.Pane.sendKeys',
       py: 'libtmux.Pane.send_keys',
       ts: 'pane.Pane.sendKeys',
       rs: 'pane.Pane.send_keys',
@@ -146,6 +150,8 @@ export const CONCEPTS: Record<string, Concept> = {
   'split-pane': {
     label: 'Split a pane in two',
     symbols: {
+      scala: 'io.github.libtmux.scaladsl.Pane.split',
+      kotlin: 'io.github.libtmux.kotlin.Pane.split',
       py: 'libtmux.Pane.split',
       ts: 'pane.Pane.split',
       rs: 'pane.Pane.split',
@@ -161,6 +167,8 @@ export const CONCEPTS: Record<string, Concept> = {
   'split-window': {
     label: "Split a window's active pane",
     symbols: {
+      scala: 'io.github.libtmux.scaladsl.Window.split',
+      kotlin: 'io.github.libtmux.kotlin.Window.split',
       py: 'libtmux.Window.split',
       ts: 'window.Window.split',
       rs: 'window.Window.split',
@@ -278,6 +286,8 @@ export const CONCEPTS: Record<string, Concept> = {
   'list-clients': {
     label: "List the server's attached clients",
     symbols: {
+      scala: 'io.github.libtmux.scaladsl.Server.clients',
+      kotlin: 'io.github.libtmux.kotlin.Server.clients',
       py: 'libtmux.Server.clients',
       ts: 'server.Server.clients',
       rs: 'server.Server.clients',
@@ -321,6 +331,8 @@ export const CONCEPTS: Record<string, Concept> = {
   'new-session': {
     label: 'Create a session',
     symbols: {
+      scala: 'io.github.libtmux.scaladsl.Server.newSession',
+      kotlin: 'io.github.libtmux.kotlin.Server.newSession',
       py: 'libtmux.Server.new_session',
       ts: 'server.Server.newSession',
       rs: 'server.Server.new_session',
@@ -334,6 +346,8 @@ export const CONCEPTS: Record<string, Concept> = {
   'new-window': {
     label: 'Create a window',
     symbols: {
+      scala: 'io.github.libtmux.scaladsl.Session.newWindow',
+      kotlin: 'io.github.libtmux.kotlin.Session.newWindow',
       py: 'libtmux.Session.new_window',
       ts: 'session.Session.newWindow',
       rs: 'session.Session.new_window',
@@ -347,6 +361,8 @@ export const CONCEPTS: Record<string, Concept> = {
   'kill-server': {
     label: 'Shut the tmux server down',
     symbols: {
+      scala: 'io.github.libtmux.scaladsl.Server.killServer',
+      kotlin: 'io.github.libtmux.kotlin.Server.killServer',
       py: 'libtmux.Server.kill',
       ts: 'server.Server.kill',
       rs: 'server.Server.kill',
@@ -360,6 +376,8 @@ export const CONCEPTS: Record<string, Concept> = {
   'list-sessions': {
     label: 'List the server’s sessions',
     symbols: {
+      scala: 'io.github.libtmux.scaladsl.Server.sessions',
+      kotlin: 'io.github.libtmux.kotlin.Server.sessions',
       py: 'libtmux.Server.sessions',
       ts: 'server.Server.sessions',
       rs: 'server.Server.sessions',
@@ -495,6 +513,8 @@ export const CONCEPTS: Record<string, Concept> = {
   'list-windows': {
     label: "List a session's windows",
     symbols: {
+      scala: 'io.github.libtmux.scaladsl.Session.windows',
+      kotlin: 'io.github.libtmux.kotlin.Session.windows',
       py: 'libtmux.Session.windows',
       ts: 'session.Session.windows',
       rs: 'session.Session.windows',
@@ -508,6 +528,8 @@ export const CONCEPTS: Record<string, Concept> = {
   'list-panes': {
     label: "List a window's panes",
     symbols: {
+      scala: 'io.github.libtmux.scaladsl.Window.panes',
+      kotlin: 'io.github.libtmux.kotlin.Window.panes',
       py: 'libtmux.Window.panes',
       ts: 'window.Window.panes',
       rs: 'window.Window.panes',
@@ -536,6 +558,8 @@ export const CONCEPTS: Record<string, Concept> = {
   'list-server-windows': {
     label: "List the server's windows",
     symbols: {
+      scala: 'io.github.libtmux.scaladsl.Server.windows',
+      kotlin: 'io.github.libtmux.kotlin.Server.windows',
       py: 'libtmux.Server.windows',
       ts: 'server.Server.windows',
       rs: 'server.Server.windows',
@@ -549,6 +573,8 @@ export const CONCEPTS: Record<string, Concept> = {
   'list-server-panes': {
     label: "List the server's panes",
     symbols: {
+      scala: 'io.github.libtmux.scaladsl.Server.panes',
+      kotlin: 'io.github.libtmux.kotlin.Server.panes',
       py: 'libtmux.Server.panes',
       ts: 'server.Server.panes',
       rs: 'server.Server.panes',
@@ -1703,6 +1729,8 @@ export const CONCEPTS: Record<string, Concept> = {
   'snapshot': {
     label: 'Capture the whole hierarchy at one instant',
     symbols: {
+      scala: 'io.github.libtmux.scaladsl.Server.snapshot',
+      kotlin: 'io.github.libtmux.kotlin.Server.snapshot',
       ts: 'server.Server.snapshot',
       go: 'tmux.Server.Snapshot',
       java: 'io.github.libtmux.Server.Server.snapshot',
@@ -3555,15 +3583,32 @@ const LUA_CONCEPTS: Record<string, string> = {
   'copy-mode': 'libtmux.Pane:copy_mode',
 }
 
+// These Cats Effect operations forward to the corresponding Java handle;
+// their execution and ownership differ, while the tmux operation is shared.
+const SCALA_EFFECT_CONCEPTS: Record<string, string> = {
+  server: 'Server', session: 'Session', window: 'Window', pane: 'Pane',
+  'capture-pane': 'Pane.capture', 'send-keys': 'Pane.sendKeys',
+  'split-pane': 'Pane.split', 'split-window': 'Window.split',
+  'new-session': 'Server.newSession', 'new-window': 'Session.newWindow',
+  'kill-server': 'Server.killServer', 'list-sessions': 'Server.sessions',
+  'list-windows': 'Session.windows', 'list-panes': 'Window.panes',
+  'list-server-windows': 'Server.windows', 'list-server-panes': 'Server.panes',
+  'list-clients': 'Server.clients', snapshot: 'Server.snapshot',
+}
+for (const [id, symbol] of Object.entries(SCALA_EFFECT_CONCEPTS)) {
+  CONCEPTS[id]!.variants = { scala: [`io.github.libtmux.scaladsl.cats.${symbol}`] }
+}
 for (const [id, symbol] of Object.entries(RUBY_CONCEPTS)) CONCEPTS[id]!.symbols.ruby = symbol
 for (const [id, symbol] of Object.entries(LUA_CONCEPTS)) CONCEPTS[id]!.symbols.lua = symbol
 for (const concept of Object.values(CONCEPTS)) {
   concept.absent ??= {}
   if (!concept.symbols.ruby) concept.absent.ruby = 'No source-verified Ruby equivalent is recorded for this operation.'
   if (!concept.symbols.lua) concept.absent.lua = 'No source-verified Lua equivalent is recorded for this operation.'
+  if (!concept.symbols.kotlin) concept.absent.kotlin = 'No source-verified Kotlin equivalent is recorded for this operation.'
+  if (!concept.symbols.scala) concept.absent.scala = 'No source-verified Scala equivalent is recorded for this operation.'
 }
 
 /** Every concept naming this symbol, including concepts sharing an overload group. */
 export function conceptsFor(port: string, publicId: string): Concept[] {
-  return Object.values(CONCEPTS).filter((c) => c.symbols[port] === publicId)
+  return Object.values(CONCEPTS).filter((c) => c.symbols[port] === publicId || c.variants?.[port]?.includes(publicId))
 }

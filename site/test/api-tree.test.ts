@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { API_NAV, OWNER_KINDS } from '../src/lib/api-models'
-import { navTree } from '../src/lib/api-tree'
+import { API_MODELS, API_NAV, OWNER_KINDS } from '../src/lib/api-models'
+import { membersByType, navTree } from '../src/lib/api-tree'
 
 const PRIMARY_OBJECT_BUCKETS = new Set(['server', 'session', 'window', 'pane', 'client'])
 
@@ -40,6 +40,18 @@ describe('Lua API sidebar', () => {
 })
 
 describe('major tmux object domains', () => {
+  it.each(['kotlin', 'scala', 'ts'])('puts %s listings first in lazily expanded branches', (port) => {
+    const servers = API_MODELS[port]!.symbols.filter((symbol) => symbol.name === 'Server' && !symbol.parent)
+    expect(servers.length).toBeGreaterThan(0)
+    for (const server of servers) {
+      const names = membersByType(port).get(server.publicId ?? server.id)!.map((member) => member.name)
+      for (const listing of ['sessions', 'windows', 'panes', 'clients']) {
+        expect(names.indexOf(listing), `${server.id}.${listing}`).toBeGreaterThanOrEqual(0)
+        expect(names.indexOf(listing), `${server.id}.${listing}`).toBeLessThan(names.indexOf('newSession'))
+      }
+      expect(names.indexOf('newSession'), server.id).toBeLessThan(names.indexOf(port === 'ts' ? 'toString' : 'asJava'))
+    }
+  })
   it('puts a domain’s shallowest primary object first across ports', () => {
     for (const port of Object.keys(API_NAV)) {
       for (const bucket of navTree(port).filter((candidate) => PRIMARY_OBJECT_BUCKETS.has(candidate.id))) {

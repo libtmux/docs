@@ -109,6 +109,9 @@ export interface LinkTarget {
   symbol?: ApiSymbol
 }
 
+/** Stable parameter anchors shared by prose links and the definition list. */
+export const parameterId = (symbol: ApiSymbol, name: string) => `${symbol.publicId ?? symbol.id}.parameter.${name}`
+
 /**
  * An index built once per port and queried per span.
  *
@@ -302,10 +305,17 @@ export class SymbolIndex {
   resolve(target: string, role = 'any', context?: ApiSymbol): LinkTarget | undefined {
     const relative = target.startsWith('.')
     let clean = target.replace(/^[~.]/, '').replace(/\(\)$/, '')
+    if (this.lang === 'scala') clean = clean.replace(/^_root_\./, '').replace(/#/g, '.')
     if (this.lang === 'fsharp' || this.lang === 'dotnet') clean = clean.replace(/`\d+/g, '')
     const [importHead, ...tail] = clean.split('.')
     const imported = !relative && context?.imports?.[importHead]
     if (imported) clean = [imported, ...tail].join('.')
+    if (this.lang === 'scala') clean = clean.replace(/^_root_\./, '')
+
+    if (context && ['kotlin', 'scala', 'fsharp'].includes(this.lang ?? '') && !relative &&
+        context.signatures.some((sig) => sig.params.some((param) => param.name === clean))) {
+      return { href: `${this.hrefFor(context).split('#')[0]}#${parameterId(context, clean)}`, external: false }
+    }
 
     // Walk outward from the current symbol: a member first, then a sibling of
     // its owner. This is Sphinx's own search order for a relative target.
@@ -316,6 +326,13 @@ export class SymbolIndex {
       if (context.parent) {
         const owner = this.byDeclared.get(context.parent)
         scopes.push(owner?.publicId ?? context.parent)
+      }
+      if (this.lang === 'kotlin' || this.lang === 'scala') {
+        let scope = own
+        while (scope.includes('.')) {
+          scope = scope.slice(0, scope.lastIndexOf('.'))
+          scopes.push(scope)
+        }
       }
       if (this.lang === 'cxx') {
         let scope = own
@@ -336,6 +353,14 @@ export class SymbolIndex {
     const exact = this.byPublic.get(clean)
     if (exact) return { href: this.hrefFor(exact), external: false, symbol: exact }
 
+    // Native extension prose often names its receiver in lower case.
+    if (context?.parent && ['kotlin', 'scala'].includes(this.lang ?? '')) {
+      const owner = this.byDeclared.get(context.parent)
+      if (owner && clean === owner.name[0]?.toLowerCase() + owner.name.slice(1)) {
+        return { href: this.hrefFor(owner), external: false, symbol: owner }
+      }
+    }
+
     const bySuffix = this.pick(this.bySuffix.get(clean), role, context)
     if (bySuffix) return { href: this.hrefFor(bySuffix), external: false, symbol: bySuffix }
 
@@ -353,6 +378,9 @@ export class SymbolIndex {
         .map((namespace) => inv.byName.get(`${namespace}.${clean}`)).find(Boolean)
       if (hit) return { href: inv.baseUrl + hit.uri, external: true, project: inv.project }
     }
+
+    const builtin = this.lang ? builtinHref(this.lang, clean) : undefined
+    if (builtin) return { href: builtin, external: true }
 
     // Everything below is CPython's, and applies to CPython only. `time`,
     // `os` and `io` are Python stdlib module names *and* Go package names;
@@ -434,15 +462,23 @@ export class SymbolIndex {
       // renders unlinked in a signature is a builtin — `bool`, `Task`,
       // `Result`, `string` — which nothing here defines and no intersphinx
       // inventory covers for five of the eight ports.
-      const link =
-        this.resolve(ident, 'class', context) ??
-        (this.lang
-          ? (() => {
-              const href = builtinHref(this.lang, ident)
-              return href ? { href, external: true } : undefined
-            })()
-          : undefined)
-      out.push({ text: ident, link })
+      const link = this.resolve(ident, 'class', context)
+      if (link || !['kotlin', 'scala'].includes(this.lang ?? '') || !ident.includes('.')) {
+        out.push({ text: ident, link })
+        continue
+      }
+      let previous: LinkTarget | undefined
+      const parts = ident.split('.')
+      for (const [position, part] of parts.entries()) {
+        if (position > 0) out.push({ text: '.' })
+        // Follow only an explicit declared return type. Imported extension
+        // functions can resolve independently after a call's parentheses.
+        const returns = previous?.symbol?.signatures[0]?.returns
+        const member = returns ? this.resolve(`${returns}.${part}`, 'any', previous?.symbol) : undefined
+        const resolved = member ?? (position === 0 ? this.resolve(part, 'any', context) : undefined)
+        out.push({ text: part, link: resolved })
+        previous = resolved
+      }
     }
     return out
   }

@@ -272,6 +272,15 @@ export class Resolver {
     const whole = this.byQualified.get(port + ' ' + parts.join('.'))
     if (whole) return { how: 'module', symbol: whole.symbol, port }
 
+    // Unqualified core prose uses the port's primary namespace. A nested
+    // effect facade stays addressable through its explicit namespace.
+    const primary = this.primary[port]
+    const primaryMember = primary && (!product || product === 'core')
+      ? this.byQualified.get(`${port} ${primary}.${parts.join('.')}`) : undefined
+    if (primaryMember && primaryMember.symbol.apiScope !== 'internal') {
+      return { how: 'scoped', symbol: primaryMember.symbol, port }
+    }
+
     const member = parts[parts.length - 1]
     const candidates = Resolver.preferTypeOverConstructor(this.members(port, member))
     if (parts.length > 2) {

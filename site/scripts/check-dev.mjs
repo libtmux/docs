@@ -10,6 +10,7 @@ import { checkClipboard } from './check-clipboard.mjs'
 import { checkApiExampleOwnership, checkApiNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkNativeLayout } from './check-native-layout.mjs'
 
+const apiNavigationOnly = process.argv.includes('--api-navigation')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 // `workspaceCli` alone also covers a port's local, unreleased dev CLI
 // (`workspaceCliAvailability: 'local'`), which publishes no top-level
@@ -17,8 +18,8 @@ const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'worksp
 const workspaceCliPortCount = PORTS.filter((port) => port.workspaceCliAvailability === 'released').length
 
 Object.assign(process.env, {
-  LIBTMUX_DOCS_BASE: '/en/', LIBTMUX_DOCS_ROOT: '/en', LIBTMUX_DOCS_PORT_ROOT: '/en',
-  LIBTMUX_DOCS_LOCALES_ROOT: '', LIBTMUX_DOCS_LOCALE: 'en', LIBTMUX_DOCS_PORT: '',
+  LIBTMUX_DOCS_BASE: apiNavigationOnly ? '/en/lua/latest/' : '/en/', LIBTMUX_DOCS_ROOT: '/en', LIBTMUX_DOCS_PORT_ROOT: '/en',
+  LIBTMUX_DOCS_LOCALES_ROOT: '', LIBTMUX_DOCS_LOCALE: 'en', LIBTMUX_DOCS_PORT: apiNavigationOnly ? 'lua' : '',
   LIBTMUX_DOCS_VERSION: 'latest', LIBTMUX_DOCS_PORT_DEFAULTS: '{"py":"stable"}',
 })
 // Astro always writes root/.astro, so a separate cacheDir alone cannot isolate it.
@@ -52,6 +53,22 @@ const owner = model.symbols.find((symbol) => symbol.id === 'pane.Pane.capture')
 ---
 <Reference model={model} owner={owner} />
 `)
+for (const port of apiNavigationOnly ? [] : ['kotlin']) {
+  const directory = join(root, `src/pages/${port}/latest/reference`)
+  mkdirSync(directory, { recursive: true })
+  writeFileSync(join(directory, '[...slug].astro'), `---
+import Reference from '../../../reference/[...slug].astro'
+import { API_MODELS } from '../../../../lib/api-models'
+export function getStaticPaths() {
+  const model = API_MODELS.${port}
+  return [{ params: { slug: undefined }, props: { model } },
+    ...model.symbols.map((owner) => ({ params: { slug: owner.slug }, props: { model, owner } }))]
+}
+const { model, owner } = Astro.props
+---
+<Reference model={model} owner={owner} />
+`)
+}
 let server, browser
 const terminate = async () => {
   await browser?.close()
@@ -77,275 +94,297 @@ async function retryReload(check) {
 }
 
 try {
+  // Compile the first port page during setup; navigation assertions measure
+  // the running app. The outer loop still budgets this initial compilation.
+  const ready = apiNavigationOnly
+    ? fetch(`${base}/lua/latest/reference/libtmux-server/`).then(async (response) => {
+      assert(response.ok, `Lua reference setup: HTTP ${response.status}`)
+      await response.text()
+    })
+    : Promise.resolve()
   const engine = process.env.LIBTMUX_DOCS_BROWSER ?? 'chromium'
   const driver = { chromium, firefox, webkit }[engine]
   if (!driver) throw new Error(`Unknown browser: ${engine}`)
   browser = await driver.launch(engine === 'chromium' ? { channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL } : {})
-  const nativeLayout = checkNativeLayout(browser).then(() => null, (error) => error)
-  const page = await browser.newPage({ reducedMotion: 'reduce' })
-  page.setDefaultTimeout(10000)
-  const manifest = await page.request.get(`${base}/page-links.json`)
-  assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
-  assert.equal((await manifest.json()).schema, 1)
-  const clipboardPage = await browser.newPage()
-  clipboardPage.setDefaultTimeout(10000)
-  const clipboard = checkClipboard(clipboardPage, base).then(() => null, (error) => error)
-  const paths = ['concepts/server-session-window-pane', 'examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
-    'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
-    'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/capture_pane']
-  for (const path of paths) await retryReload(async () => {
-    await page.setViewportSize({ width: 1440, height: 1000 })
-    const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
-    assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
-    await page.evaluate(() => document.fonts.ready)
-    assert.equal(await page.locator('nav[aria-label="Language"] a').first().getAttribute('href'), '/en/py/stable/')
-    const switcher = page.locator('[data-page-port-switcher]')
-    const hasSwitcher = path !== 'mcp/tools'
-    const isReference = path.includes('/reference/')
-    if (hasSwitcher) {
-      assert.equal(await page.locator('[data-page-toolbar] nav[aria-label="Breadcrumb"]').count(), 1, `${path}: breadcrumbs above the heading`)
-      const geometry = await page.evaluate(() => {
-        const toolbar = document.querySelector('[data-page-toolbar]').getBoundingClientRect()
-        const breadcrumb = document.querySelector('[data-page-toolbar] nav').getBoundingClientRect()
-        const picker = document.querySelector('[data-page-port-switcher]').getBoundingClientRect()
-        const title = document.querySelector('h1').getBoundingClientRect()
-        return { above: toolbar.bottom <= title.top, sameRow: picker.top < breadcrumb.bottom && breadcrumb.top < picker.bottom }
-      })
-      assert(geometry.above && geometry.sameRow, `${path}: breadcrumb and port picker share the row above H1`)
-    }
-    const expected = isReference ? '/en/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/' : path.includes('workspace/') ? `/en/${path}/`
-      : path === 'dotnet/latest/mcp/tools/capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : `/en/py/stable/${path.replace(/^ts\/latest\//, '')}/`
-    if (hasSwitcher) assert.equal(await switcher.locator('a').first().getAttribute('href'), expected)
-    if (path === 'py/stable/workspace/guides') {
-      assert.equal(await switcher.locator('a').count(), workspaceCliPortCount)
-      assert.equal(
-        await switcher.locator('[aria-disabled="true"]').count(),
-        PORTS.length - workspaceCliPortCount,
-      )
-    }
-    if (path === 'ts/latest/workspace/internals/guides') {
-      const unavailable = await switcher.locator('[aria-disabled="true"]').allTextContents()
-      assert(unavailable.some((label) => /Python/.test(label)), 'Python internals guide stays unavailable')
-    }
-    if (path === 'dotnet/latest/mcp/tools/capture_pane') {
-      assert.equal(await switcher.locator('a').count(), 8)
-      assert.equal(await switcher.locator('a[aria-current="page"]').getAttribute('href'), `/en/${path}/`)
-    }
-    if (isReference) {
-      assert.equal(
-        await switcher.locator('a').count(),
-        workspacePortCount,
-        'Workspace construction has an equivalent in every published workspace product',
-      )
-      const target = await page.request.get(base.replace(/\/en$/, '') + expected)
-      assert(target.ok(), `Equivalent target: HTTP ${target.status()}`)
-    }
-    for (const width of [1600, 1440, 1024, 832, 768, 390]) {
-      await page.setViewportSize({ width, height: 1000 })
-
-      const result = await page.evaluate(() => ({
-        overflow: document.documentElement.scrollWidth - innerWidth,
-        headerHeight: document.querySelector('.site-header__bar').getBoundingClientRect().height,
-        badgeForeground: getComputedStyle(document.querySelector('.prerelease-notice__badge')).color,
-        portVisibility: getComputedStyle(document.querySelector('.site-header__ports')).display,
-        shortLabel: getComputedStyle(document.querySelector('.site-header__ports .port-abbreviation')).display,
-        languageEnd: document.querySelector('.site-header__ports nav a:last-child').getBoundingClientRect().right,
-        controlsStart: document.querySelector('.site-header__always').getBoundingClientRect().left,
-        schemeLabelWidth: document.querySelector('.scheme-switch__label').getBoundingClientRect().width,
-        columns: [...document.querySelectorAll('table')].flatMap((table) => {
-          const head = [...(table.tHead?.rows[0]?.cells ?? [])]
-          const body = [...(table.tBodies[0]?.rows[0]?.cells ?? [])]
-          return head.length === body.length && [...head, ...body].every((cell) => cell.colSpan === 1)
-            ? head.map((cell, i) => Math.abs(cell.getBoundingClientRect().x - body[i].getBoundingClientRect().x)) : []
-        }),
-      }))
-      assert(result.headerHeight <= 49, `${path} at ${width}px: header grew`)
-      assert.equal(result.badgeForeground, 'rgb(255, 255, 255)', 'Filled badge uses white foreground')
-      if (width === 768) {
-        assert.notEqual(result.portVisibility, 'none', 'Language links remain visible on tablets')
-        assert.notEqual(result.shortLabel, 'none', 'Tablet navigation uses abbreviated language names')
-      }
-      if (width >= 1024) assert.equal(result.shortLabel, 'none', 'Full language names fit with compact scheme controls')
-      if (width >= 768) assert(result.languageEnd <= result.controlsStart, 'Language links do not overlap controls')
-      if (width < 1536) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
-      assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
-      assert(result.columns.every((delta) => delta <= 1), `${path} at ${width}px: table columns misaligned`)
+  await ready
+  if (apiNavigationOnly) {
+    const page = await browser.newPage({ reducedMotion: 'reduce' })
+    page.setDefaultTimeout(10000)
+    await retryReload(() => checkApiNavigation(page, base))
+  } else {
+    const nativeLayout = checkNativeLayout(browser).then(() => null, (error) => error)
+    const page = await browser.newPage({ reducedMotion: 'reduce' })
+    page.setDefaultTimeout(10000)
+    const manifest = await page.request.get(`${base}/page-links.json`)
+    assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
+    assert.equal((await manifest.json()).schema, 1)
+    const clipboardPage = await browser.newPage()
+    clipboardPage.setDefaultTimeout(10000)
+    const clipboard = checkClipboard(clipboardPage, base).then(() => null, (error) => error)
+    const navigationPage = await browser.newPage({ reducedMotion: 'reduce' })
+    navigationPage.setDefaultTimeout(10000)
+    const navigation = retryReload(() => checkNavigation(navigationPage, base)).then(() => null, (error) => error)
+    const paths = ['concepts/server-session-window-pane', 'examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
+      'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
+      'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/capture_pane']
+    for (const path of paths) await retryReload(async () => {
+      await page.setViewportSize({ width: 1440, height: 1000 })
+      const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
+      assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
+      await page.evaluate(() => document.fonts.ready)
+      assert.equal(await page.locator('nav[aria-label="Language"] a').first().getAttribute('href'), '/en/py/stable/')
+      const switcher = page.locator('[data-page-port-switcher]')
+      const hasSwitcher = path !== 'mcp/tools'
+      const isReference = path.includes('/reference/')
       if (hasSwitcher) {
-        const selector = await switcher.locator('summary').boundingBox()
-        const action = await page.locator('[data-page-actions] > summary').boundingBox()
-        const icon = await page.locator('[data-page-actions] > summary > svg').boundingBox()
-        assert(Math.abs(action.height - selector.height) < 0.1, `${path}: page controls have equal height at ${width}px`)
-        assert(Math.abs(action.y - selector.y) < 0.1, `${path}: page controls align at ${width}px`)
-        assert(Math.abs(icon.x + icon.width / 2 - action.x - action.width / 2) < 0.1, `${path}: action icon centered horizontally`)
-        assert(Math.abs(icon.y + icon.height / 2 - action.y - action.height / 2) < 0.1, `${path}: action icon centered vertically`)
-      }
-    }
-
-    if (hasSwitcher) {
-      assert.equal(await switcher.count(), 1, `${path}: one page port switcher`)
-      await switcher.locator('summary').click()
-      const menu = await switcher.locator('ul').boundingBox()
-      assert(menu && menu.x >= 0 && menu.x + menu.width <= 390, `${path}: dropdown leaves phone viewport`)
-    }
-  })
-  for (const path of [
-    'py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder',
-    'java/latest/workspace/reference/io-github-libtmux-workspace-workspacebuilder-workspacebuilder',
-  ]) await retryReload(async () => {
-    const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
-    assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
-    await page.evaluate(() => document.fonts.ready)
-    for (const width of [1440, 768, 390]) {
-      await page.setViewportSize({ width, height: 1000 })
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
-      assert(overflow <= 1, `${path} at ${width}px: declaration page overflow ${overflow}px`)
-    }
-  })
-  for (const width of [1440, 1920]) {
-    await page.setViewportSize({ width, height: 1000 })
-    await page.goto(`${base}/sidebar-free-layout/`, { waitUntil: 'load' })
-    const reading = await page.evaluate(() => {
-      const main = document.querySelector('main')
-      const article = main.querySelector('article')
-      return {
-        unused: main.getBoundingClientRect().width - article.getBoundingClientRect().width,
-        rightSidebar: main.nextElementSibling?.tagName === 'ASIDE',
-        toc: document.querySelector('starlight-toc') !== null,
-      }
-    })
-    assert(reading.unused < 1 && !reading.rightSidebar && !reading.toc,
-      `Empty table of contents at ${width}px must leave no unused article column: ${JSON.stringify(reading)}`)
-    await page.goto(`${base}/reference/`, { waitUntil: 'load' })
-    const reference = await page.evaluate(() => {
-      const main = document.querySelector('main')
-      return { children: main.children.length,
-        unused: main.getBoundingClientRect().width - main.lastElementChild.getBoundingClientRect().width }
-    })
-    assert(reference.children === 1 && reference.unused < 1,
-      `Reference index at ${width}px must not reserve an empty navigation column: ${JSON.stringify(reference)}`)
-  }
-  console.log('Empty sidebars: article and reference index use their available width')
-  const clipboardError = await clipboard
-  if (clipboardError) throw clipboardError
-  const nativeLayoutError = await nativeLayout
-  if (nativeLayoutError) throw nativeLayoutError
-  await page.goto(`${base}/`, { waitUntil: 'load' })
-  await page.locator('.scheme-switch input[value="dark"]').check({ force: true })
-  const chipPixel = await page.evaluate(() => {
-    const canvas = document.createElement('canvas')
-    const context = canvas.getContext('2d')
-    context.fillStyle = getComputedStyle(document.querySelector('.topnav-chip')).backgroundColor
-    context.fillRect(0, 0, 1, 1)
-    return [...context.getImageData(0, 0, 1, 1).data]
-  })
-  assert(chipPixel[2] > chipPixel[1] && chipPixel[1] > chipPixel[0],
-    `Python dark chip must retain its blue-gray hue: ${chipPixel}`)
-  const darkSurface = () => page.evaluate(() => ({
-    background: getComputedStyle(document.body).backgroundColor,
-    foreground: getComputedStyle(document.body).color,
-    navigation: getComputedStyle(document.querySelector('.topnav-chip:not([aria-current])')).color,
-    notice: getComputedStyle(document.querySelector('.prerelease-notice')).backgroundColor,
-  }))
-  const pythonSurface = await darkSurface()
-  await page.goto(`${base}/cxx/latest/mcp/`, { waitUntil: 'load' })
-  assert.deepEqual(await darkSurface(), pythonSurface, 'C++ keeps the shared neutral dark surfaces')
-  for (const mode of ['light', 'dark']) {
-    await page.locator(`.scheme-switch input[value="${mode}"]`).check({ force: true })
-    let reference
-    for (const port of ['py/stable', 'swift/latest', 'go/latest', 'cxx/latest']) {
-      await page.goto(`${base}/${port}/workspace/`, { waitUntil: 'load' })
-      const reading = await page.evaluate(() => {
-        const tokens = getComputedStyle(document.documentElement)
-        const style = (selector) => getComputedStyle(document.querySelector(selector))
-        return {
-          text: style('.prose > p').color, heading: style('.prose h1').color,
-          muted: tokens.getPropertyValue('--color-foreground-muted').trim(),
-          background: style('body').backgroundColor,
-          surface: tokens.getPropertyValue('--color-background-secondary').trim(),
-          border: tokens.getPropertyValue('--color-background-border').trim(),
-          nativeText: tokens.getPropertyValue('--lt-color-fg').trim(),
-          nativeSurface: tokens.getPropertyValue('--lt-color-bg-secondary').trim(),
-        }
-      })
-      reference ??= reading
-      assert.deepEqual(reading, reference, `${port}: neutral ${mode} reading colors`)
-    }
-  }
-  console.log('Reading colors: Python, Swift, Go and C++ share neutral light/dark text and surfaces')
-  for (const colorScheme of ['light', 'dark']) {
-    const context = await browser.newContext({ javaScriptEnabled: false, colorScheme })
-    const noScript = await context.newPage()
-    await noScript.goto(`${base}/concepts/server-session-window-pane/`, { waitUntil: 'load' })
-    const checkContrast = async (scheme) => {
-      const samples = await noScript.evaluate(() => {
-        const context = document.createElement('canvas').getContext('2d')
-        const luminance = (color) => {
-          context.fillStyle = color
-          context.fillRect(0, 0, 1, 1)
-          const channels = [...context.getImageData(0, 0, 1, 1).data].slice(0, 3)
-            .map((v) => v / 255).map((v) => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4)
-          return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722
-        }
-        return ['h1', '.prose h2', '.prose p'].map((selector) => {
-          const element = document.querySelector(selector)
-          let parent = element
-          while (getComputedStyle(parent).backgroundColor === 'rgba(0, 0, 0, 0)') parent = parent.parentElement
-          const values = [getComputedStyle(element).color, getComputedStyle(parent).backgroundColor]
-            .map(luminance).sort((a, b) => b - a)
-          return { selector, contrast: (values[0] + .05) / (values[1] + .05) }
+        assert.equal(await page.locator('[data-page-toolbar] nav[aria-label="Breadcrumb"]').count(), 1, `${path}: breadcrumbs above the heading`)
+        const geometry = await page.evaluate(() => {
+          const toolbar = document.querySelector('[data-page-toolbar]').getBoundingClientRect()
+          const breadcrumb = document.querySelector('[data-page-toolbar] nav').getBoundingClientRect()
+          const picker = document.querySelector('[data-page-port-switcher]').getBoundingClientRect()
+          const title = document.querySelector('h1').getBoundingClientRect()
+          return { above: toolbar.bottom <= title.top, sameRow: picker.top < breadcrumb.bottom && breadcrumb.top < picker.bottom }
         })
-      })
-      for (const sample of samples) assert(sample.contrast >= 4.5,
-        `No-JS ${scheme} ${sample.selector} contrast: ${sample.contrast}`)
-    }
-    await checkContrast(colorScheme)
-    const override = colorScheme === 'dark' ? 'light' : 'dark'
-    await noScript.evaluate((mode) => { document.documentElement.dataset.themeMode = mode }, override)
-    await checkContrast(`${colorScheme} with ${override} override`)
-    await context.close()
-  }
-  console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
-  await checkNavigation(page, base)
-  await checkApiExampleOwnership(page, base, 'api-example-probe/')
-  for (const path of ['ts/latest/workspace/', 'ruby/latest/mcp/', 'cxx/latest/workspace/', 'cxx/latest/mcp/']) {
-    await page.goto(`${base}/${path}`, { waitUntil: 'load' })
-    const hero = page.locator('.port-hero, .product-hero').first()
-    assert(!(await hero.locator('h1').textContent()).includes('(in development)'), `${path}: development stays in the callout`)
-    const source = hero.getByRole('link', { name: 'GitHub', exact: true })
-    assert.equal(await source.count(), 1, `${path}: source button belongs to the heading`)
-    if (path.startsWith('cxx/')) {
-      const product = path.includes('/mcp/') ? 'mcp' : 'workspace'
-      assert.equal(await source.getAttribute('href'), `https://github.com/libtmux/libtmux-cxx/tree/master/apps/${product}`)
-      assert.equal(await hero.locator('.port-link').count(), 1, 'C++ source applications do not advertise a registry package')
-    } else {
-      assert.equal(await hero.locator('.port-link').count(), 2, `${path}: source and registry buttons`)
-    }
-    for (const width of [1440, 600, 390]) {
-      await page.setViewportSize({ width, height: 1000 })
-      const logo = await hero.locator('img').first().boundingBox()
-      const title = await hero.locator('h1').boundingBox()
-      assert(Math.abs(logo.width - 88) < 0.01, `${path}: ${width}px logo width`)
-      assert(Math.abs(logo.height - 88) < 0.01, `${path}: ${width}px logo height`)
-      if (width >= 480) {
-        assert(logo.x + logo.width <= title.x, `${path}: mark beside title`)
-        assert(title.y < logo.y + logo.height, `${path}: title shares the logo row`)
-      } else {
-        assert(title.y >= logo.y + logo.height, `${path}: phone title follows mark`)
+        assert(geometry.above && geometry.sameRow, `${path}: breadcrumb and port picker share the row above H1`)
       }
-      assert(title.x + title.width <= width, `${path}: heading fits the viewport`)
+      const expected = isReference ? '/en/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/' : path.includes('workspace/') ? `/en/${path}/`
+        : path === 'dotnet/latest/mcp/tools/capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : `/en/py/stable/${path.replace(/^ts\/latest\//, '')}/`
+      if (hasSwitcher) assert.equal(await switcher.locator('a').first().getAttribute('href'), expected)
+      if (path === 'py/stable/workspace/guides') {
+        assert.equal(await switcher.locator('a').count(), workspaceCliPortCount)
+        assert.equal(
+          await switcher.locator('[aria-disabled="true"]').count(),
+          PORTS.length - workspaceCliPortCount,
+        )
+      }
+      if (path === 'ts/latest/workspace/internals/guides') {
+        const unavailable = await switcher.locator('[aria-disabled="true"]').allTextContents()
+        assert(unavailable.some((label) => /Python/.test(label)), 'Python internals guide stays unavailable')
+      }
+      if (path === 'dotnet/latest/mcp/tools/capture_pane') {
+        assert.equal(await switcher.locator('a').count(), 8)
+        assert.equal(await switcher.locator('a[aria-current="page"]').getAttribute('href'), `/en/${path}/`)
+      }
+      if (isReference) {
+        assert.equal(
+          await switcher.locator('a').count(),
+          workspacePortCount,
+          'Workspace construction has an equivalent in every published workspace product',
+        )
+        const target = await page.request.get(base.replace(/\/en$/, '') + expected)
+        assert(target.ok(), `Equivalent target: HTTP ${target.status()}`)
+      }
+      for (const width of [1600, 1440, 1024, 832, 768, 390]) {
+        await page.setViewportSize({ width, height: 1000 })
+
+        const result = await page.evaluate(() => ({
+          overflow: document.documentElement.scrollWidth - innerWidth,
+          headerHeight: document.querySelector('.site-header__bar').getBoundingClientRect().height,
+          badgeForeground: getComputedStyle(document.querySelector('.prerelease-notice__badge')).color,
+          portVisibility: getComputedStyle(document.querySelector('.site-header__ports')).display,
+          shortLabel: getComputedStyle(document.querySelector('.site-header__ports .port-abbreviation')).display,
+          languageEnd: document.querySelector('.site-header__ports nav a:last-child').getBoundingClientRect().right,
+          controlsStart: document.querySelector('.site-header__always').getBoundingClientRect().left,
+          schemeLabelWidth: document.querySelector('.scheme-switch__label').getBoundingClientRect().width,
+          columns: [...document.querySelectorAll('table')].flatMap((table) => {
+            const head = [...(table.tHead?.rows[0]?.cells ?? [])]
+            const body = [...(table.tBodies[0]?.rows[0]?.cells ?? [])]
+            return head.length === body.length && [...head, ...body].every((cell) => cell.colSpan === 1)
+              ? head.map((cell, i) => Math.abs(cell.getBoundingClientRect().x - body[i].getBoundingClientRect().x)) : []
+          }),
+        }))
+        assert(result.headerHeight <= 49, `${path} at ${width}px: header grew`)
+        assert.equal(result.badgeForeground, 'rgb(255, 255, 255)', 'Filled badge uses white foreground')
+        if (width === 768) {
+          assert.notEqual(result.portVisibility, 'none', 'Language links remain visible on tablets')
+          assert.notEqual(result.shortLabel, 'none', 'Tablet navigation uses abbreviated language names')
+        }
+        if (width >= 1024) assert.equal(result.shortLabel, 'none', 'Full language names fit with compact scheme controls')
+        if (width >= 768) assert(result.languageEnd <= result.controlsStart, 'Language links do not overlap controls')
+        if (width < 1536) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
+        assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
+        assert(result.columns.every((delta) => delta <= 1), `${path} at ${width}px: table columns misaligned`)
+        if (hasSwitcher) {
+          const selector = await switcher.locator('summary').boundingBox()
+          const action = await page.locator('[data-page-actions] > summary').boundingBox()
+          const icon = await page.locator('[data-page-actions] > summary > svg').boundingBox()
+          assert(Math.abs(action.height - selector.height) < 0.1, `${path}: page controls have equal height at ${width}px`)
+          assert(Math.abs(action.y - selector.y) < 0.1, `${path}: page controls align at ${width}px`)
+          assert(Math.abs(icon.x + icon.width / 2 - action.x - action.width / 2) < 0.1, `${path}: action icon centered horizontally`)
+          assert(Math.abs(icon.y + icon.height / 2 - action.y - action.height / 2) < 0.1, `${path}: action icon centered vertically`)
+        }
+      }
+
+      if (hasSwitcher) {
+        assert.equal(await switcher.count(), 1, `${path}: one page port switcher`)
+        await switcher.locator('summary').click()
+        const menu = await switcher.locator('ul').boundingBox()
+        assert(menu && menu.x >= 0 && menu.x + menu.width <= 390, `${path}: dropdown leaves phone viewport`)
+      }
+    })
+    for (const path of [
+      'py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder',
+      'java/latest/workspace/reference/io-github-libtmux-workspace-workspacebuilder-workspacebuilder',
+    ]) await retryReload(async () => {
+      const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
+      assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
+      await page.evaluate(() => document.fonts.ready)
+      for (const width of [1440, 768, 390]) {
+        await page.setViewportSize({ width, height: 1000 })
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
+        assert(overflow <= 1, `${path} at ${width}px: declaration page overflow ${overflow}px`)
+      }
+    })
+    for (const width of [1440, 1920]) {
+      await page.setViewportSize({ width, height: 1000 })
+      await page.goto(`${base}/sidebar-free-layout/`, { waitUntil: 'load' })
+      const reading = await page.evaluate(() => {
+        const main = document.querySelector('main')
+        const article = main.querySelector('article')
+        return {
+          unused: main.getBoundingClientRect().width - article.getBoundingClientRect().width,
+          rightSidebar: main.nextElementSibling?.tagName === 'ASIDE',
+          toc: document.querySelector('starlight-toc') !== null,
+        }
+      })
+      assert(reading.unused < 1 && !reading.rightSidebar && !reading.toc,
+        `Empty table of contents at ${width}px must leave no unused article column: ${JSON.stringify(reading)}`)
+      await page.goto(`${base}/reference/`, { waitUntil: 'load' })
+      const reference = await page.evaluate(() => {
+        const main = document.querySelector('main')
+        return { children: main.children.length,
+          unused: main.getBoundingClientRect().width - main.lastElementChild.getBoundingClientRect().width }
+      })
+      assert(reference.children === 1 && reference.unused < 1,
+        `Reference index at ${width}px must not reserve an empty navigation column: ${JSON.stringify(reference)}`)
     }
+    console.log('Empty sidebars: article and reference index use their available width')
+    const clipboardError = await clipboard
+    if (clipboardError) throw clipboardError
+    const nativeLayoutError = await nativeLayout
+    if (nativeLayoutError) throw nativeLayoutError
+    await page.goto(`${base}/`, { waitUntil: 'load' })
+    await page.locator('.scheme-switch input[value="dark"]').check({ force: true })
+    const chipPixel = await page.evaluate(() => {
+      const canvas = document.createElement('canvas')
+      const context = canvas.getContext('2d')
+      context.fillStyle = getComputedStyle(document.querySelector('.topnav-chip')).backgroundColor
+      context.fillRect(0, 0, 1, 1)
+      return [...context.getImageData(0, 0, 1, 1).data]
+    })
+    assert(chipPixel[2] > chipPixel[1] && chipPixel[1] > chipPixel[0],
+      `Python dark chip must retain its blue-gray hue: ${chipPixel}`)
+    const darkSurface = () => page.evaluate(() => ({
+      background: getComputedStyle(document.body).backgroundColor,
+      foreground: getComputedStyle(document.body).color,
+      navigation: getComputedStyle(document.querySelector('.topnav-chip:not([aria-current])')).color,
+      notice: getComputedStyle(document.querySelector('.prerelease-notice')).backgroundColor,
+    }))
+    const pythonSurface = await darkSurface()
+    await page.goto(`${base}/cxx/latest/mcp/`, { waitUntil: 'load' })
+    assert.deepEqual(await darkSurface(), pythonSurface, 'C++ keeps the shared neutral dark surfaces')
+    for (const mode of ['light', 'dark']) {
+      await page.locator(`.scheme-switch input[value="${mode}"]`).check({ force: true })
+      let reference
+      for (const port of ['py/stable', 'swift/latest', 'go/latest', 'cxx/latest']) {
+        await page.goto(`${base}/${port}/workspace/`, { waitUntil: 'load' })
+        const reading = await page.evaluate(() => {
+          const tokens = getComputedStyle(document.documentElement)
+          const style = (selector) => getComputedStyle(document.querySelector(selector))
+          return {
+            text: style('.prose > p').color, heading: style('.prose h1').color,
+            muted: tokens.getPropertyValue('--color-foreground-muted').trim(),
+            background: style('body').backgroundColor,
+            surface: tokens.getPropertyValue('--color-background-secondary').trim(),
+            border: tokens.getPropertyValue('--color-background-border').trim(),
+            nativeText: tokens.getPropertyValue('--lt-color-fg').trim(),
+            nativeSurface: tokens.getPropertyValue('--lt-color-bg-secondary').trim(),
+          }
+        })
+        reference ??= reading
+        assert.deepEqual(reading, reference, `${port}: neutral ${mode} reading colors`)
+      }
+    }
+    console.log('Reading colors: Python, Swift, Go and C++ share neutral light/dark text and surfaces')
+    for (const colorScheme of ['light', 'dark']) {
+      const context = await browser.newContext({ javaScriptEnabled: false, colorScheme })
+      const noScript = await context.newPage()
+      await noScript.goto(`${base}/concepts/server-session-window-pane/`, { waitUntil: 'load' })
+      const checkContrast = async (scheme) => {
+        const samples = await noScript.evaluate(() => {
+          const context = document.createElement('canvas').getContext('2d')
+          const luminance = (color) => {
+            context.fillStyle = color
+            context.fillRect(0, 0, 1, 1)
+            const channels = [...context.getImageData(0, 0, 1, 1).data].slice(0, 3)
+              .map((v) => v / 255).map((v) => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4)
+            return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722
+          }
+          return ['h1', '.prose h2', '.prose p'].map((selector) => {
+            const element = document.querySelector(selector)
+            let parent = element
+            while (getComputedStyle(parent).backgroundColor === 'rgba(0, 0, 0, 0)') parent = parent.parentElement
+            const values = [getComputedStyle(element).color, getComputedStyle(parent).backgroundColor]
+              .map(luminance).sort((a, b) => b - a)
+            return { selector, contrast: (values[0] + .05) / (values[1] + .05) }
+          })
+        })
+        for (const sample of samples) assert(sample.contrast >= 4.5,
+          `No-JS ${scheme} ${sample.selector} contrast: ${sample.contrast}`)
+      }
+      await checkContrast(colorScheme)
+      const override = colorScheme === 'dark' ? 'light' : 'dark'
+      await noScript.evaluate((mode) => { document.documentElement.dataset.themeMode = mode }, override)
+      await checkContrast(`${colorScheme} with ${override} override`)
+      await context.close()
+    }
+    console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
+    const navigationError = await navigation
+    if (navigationError) throw navigationError
+    await navigationPage.close()
+    await checkApiExampleOwnership(page, base, 'api-example-probe/')
+    for (const path of ['ts/latest/workspace/', 'ruby/latest/mcp/', 'cxx/latest/workspace/', 'cxx/latest/mcp/']) {
+      await page.goto(`${base}/${path}`, { waitUntil: 'load' })
+      const hero = page.locator('.port-hero, .product-hero').first()
+      assert(!(await hero.locator('h1').textContent()).includes('(in development)'), `${path}: development stays in the callout`)
+      const source = hero.getByRole('link', { name: 'GitHub', exact: true })
+      assert.equal(await source.count(), 1, `${path}: source button belongs to the heading`)
+      if (path.startsWith('cxx/')) {
+        const product = path.includes('/mcp/') ? 'mcp' : 'workspace'
+        assert.equal(await source.getAttribute('href'), `https://github.com/libtmux/libtmux-cxx/tree/master/apps/${product}`)
+        assert.equal(await hero.locator('.port-link').count(), 1, 'C++ source applications do not advertise a registry package')
+      } else {
+        assert.equal(await hero.locator('.port-link').count(), 2, `${path}: source and registry buttons`)
+      }
+      for (const width of [1440, 600, 390]) {
+        await page.setViewportSize({ width, height: 1000 })
+        const logo = await hero.locator('img').first().boundingBox()
+        const title = await hero.locator('h1').boundingBox()
+        assert(Math.abs(logo.width - 88) < 0.01, `${path}: ${width}px logo width`)
+        assert(Math.abs(logo.height - 88) < 0.01, `${path}: ${width}px logo height`)
+        if (width >= 480) {
+          assert(logo.x + logo.width <= title.x, `${path}: mark beside title`)
+          assert(title.y < logo.y + logo.height, `${path}: title shares the logo row`)
+        } else {
+          assert(title.y >= logo.y + logo.height, `${path}: phone title follows mark`)
+        }
+        assert(title.x + title.width <= width, `${path}: heading fits the viewport`)
+      }
+    }
+    console.log('Heroes: 88px marks share the title row and stack at phone widths')
+    await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server-livestate/`)
+    for (const width of [1440, 768, 390]) {
+      await page.setViewportSize({ width, height: 900 })
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+        `Kotlin parameter and exception fields fit at ${width}px`)
+    }
+    for (const name of ['config', 'defaultTimeout', 'toKotlinDuration', 'Duration', 'CoroutineScope', 'StateFlow']) {
+      assert(await page.locator('main a').filter({ hasText: new RegExp(`^${name}$`) }).count() > 0,
+        `Kotlin liveState links ${name}`)
+    }
+    console.log('Native API: Kotlin call-chain links and parameter layout pass at 1440/768/390px')
+    await clipboardPage.close()
   }
-  console.log('Heroes: 88px marks share the title row and stack at phone widths')
-  // Core API routes exist only in a port shell. Reuse the isolated fixture
-  // with its real Lua routes so the routine gate covers retained-document swaps.
-  await page.goto('about:blank')
-  await clipboardPage.close()
-  await server.stop()
-  Object.assign(process.env, {
-    LIBTMUX_DOCS_PORT: 'lua', LIBTMUX_DOCS_BASE: '/en/lua/latest/',
-  })
-  server = await startServer()
-  await checkApiNavigation(page, `http://127.0.0.1:${server.address.port}/en`)
 } finally {
   await browser?.close()
   await server.stop()
