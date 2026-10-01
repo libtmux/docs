@@ -47,13 +47,15 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   facts.push(`- **Language:** ${PORT_NAME[model.port] ?? model.port}`)
   if (symbol.kind) facts.push(`- **Kind:** ${symbol.kind}`)
   if (ctx.source) facts.push(`- **Source:** ${ctx.source}`)
+  if (symbol.exportedFrom) facts.push(`- **Exported from:** ${symbol.exportedFrom}`)
   if (ctx.canonical) facts.push(`- **Page:** ${ctx.canonical}`)
   if (facts.length) out.push(...facts, '')
   if (symbol.apiScope === 'supporting') {
     out.push('This type appears in public signatures. It is not a package entry point.', '')
   }
 
-  const sig = signatureLine(symbol)
+  const sig = ['kotlin', 'scala', 'fsharp'].includes(model.port)
+    ? symbol.signatures.map((entry) => entry.raw).join('\n\n') : signatureLine(symbol)
   if (sig) out.push('```', sig, '```', '')
 
   if (symbol.doc?.summary) out.push(symbol.doc.summary, '')

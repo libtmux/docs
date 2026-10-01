@@ -1,8 +1,47 @@
 import { describe, expect, it } from 'vitest'
-import { API_MODELS, referenceAlternatives } from '../src/lib/api-models'
+import { API_MODELS, createApiIndex, referenceAlternatives } from '../src/lib/api-models'
 import { productApiAlternatives, productApiRoutes } from '../src/lib/product-api'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { PORT_BY_SLUG, productAvailable } from '../src/lib/ports'
+import { getResolver } from '../src/lib/prose-resolver'
+
+it('links parent APIs in native prose without replacing facade APIs', () => {
+  const resolver = getResolver()
+  for (const [port, name, suffix] of [
+    ['fsharp', 'QueryDocument', '/dotnet/latest/reference/libtmux-query-querydocument/'],
+    ['fsharp', 'Session.Name', '/dotnet/latest/reference/libtmux-session-name/'],
+    ['kotlin', 'ServerConfig', '/java/latest/reference/io-github-libtmux-serverconfig-serverconfig/'],
+  ]) {
+    const hit = resolver.resolve(port, name)
+    expect(hit.how).toBe('federated')
+    expect('href' in hit && hit.href).toBe(suffix)
+  }
+  const native = resolver.resolve('scala', 'Session.name')
+  expect('symbol' in native && native.port).toBe('scala')
+  expect(resolver.resolve('fsharp', 'LibTmux.FSharp.Filter`1').how).not.toBe('no-symbol')
+  expect(resolver.resolve('go', 'ServerConfig').how).toBe('no-symbol')
+})
+
+it('gives Kotlin, Scala and F# native references with parent type links', () => {
+  for (const port of ['kotlin', 'scala', 'fsharp']) {
+    const model = API_MODELS[port]
+    expect(PORT_BY_SLUG[port].referenceKind).toBe('model')
+    expect(model.symbols.length).toBeGreaterThan(20)
+    expect(model.symbols.every((symbol) => !symbol.product || symbol.product === 'core')).toBe(true)
+    const index = createApiIndex(model, (symbol) => `/reference/${symbol.slug}/`)
+    if (port === 'fsharp') {
+      const capture = model.symbols.find((symbol) => symbol.id === 'LibTmux.FSharp.Pane.capture')!
+      expect(index.linkType(capture.signatures[0].raw!, capture)
+        .find((span) => span.text === 'CapturePaneRequest')?.link?.href)
+        .toBe('/dotnet/latest/reference/libtmux-capturepanerequest/')
+    } else {
+      const parent = index.resolve('io.github.libtmux.Server')
+      expect(parent?.href).toBe('/java/latest/reference/io-github-libtmux-server-server/')
+      const generated = model.symbols.find((symbol) => symbol.source.file.includes('/build/generated/'))!
+      expect(model.generatedSources?.[generated.source.file]).toContain('package io.github.libtmux')
+    }
+  }
+})
 
 describe('product reference equivalents', () => {
   it('keeps body links in the product with the correct target version', () => {

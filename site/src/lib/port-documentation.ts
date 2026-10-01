@@ -84,7 +84,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
         guide(`docs/fsharp/${name}.md`, `guides/${name}`, 'core', {
           aliases: [`guides/source/${name}`, ...(name === 'modes' ? ['concepts/transports'] : [])],
         })),
-      guide('docs/fsharp/api.md', 'reference', 'core', { aliases: [], sidebar: { group: 'API reference' } }),
+      guide('docs/fsharp/api.md', 'guides/api-overview', 'core', { aliases: [] }),
     ],
   },
   ruby: {

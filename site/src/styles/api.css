@@ -593,3 +593,12 @@
 .api-bases-list li:not(:last-child)::after {
   content: ",\00a0";
 }
+/* Preserve native declarations, including F# currying and Scala extensions. */
+.api-native-signature {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.api-native-signature + .api-native-signature {
+  margin-top: .75rem;
+}

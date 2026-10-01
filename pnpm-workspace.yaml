@@ -17,5 +17,7 @@ catalog:
 allowBuilds:
   esbuild: true
   sharp: true
+  # The extractor loads this package's prebuilt WASM grammar.
+  tree-sitter-scala: false
 minimumReleaseAge: 4320
 minimumReleaseAgeStrict: false

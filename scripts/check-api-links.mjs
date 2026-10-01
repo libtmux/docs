@@ -19,7 +19,7 @@
 import { existsSync, globSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Resolver, decideFilePath, decideMention, isLikelyReference, looksLikeApiMention, notASymbol, notApiReason, proseMentions, readInventory } from '../packages/api-model/src/index.ts'
+import { Resolver, parentInventory, decideFilePath, decideMention, isLikelyReference, looksLikeApiMention, notASymbol, notApiReason, proseMentions, readInventory } from '../packages/api-model/src/index.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const { API_MODEL_PORTS: PORT_DEFS, PORT_BY_SLUG } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
@@ -39,6 +39,12 @@ if (!Object.keys(models).length) {
   process.exit(1)
 }
 const resolver = new Resolver(Object.values(models))
+for (const port of PORTS) {
+  const parent = PORT_BY_SLUG[port]?.parentLibrary
+  if (parent) resolver.addInventory('Parent library API', '', parentInventory(models[parent.slug],
+    (symbol) => `/reference/${parent.slug}/${symbol.slug}/`), [port])
+}
+
 
 /*
  * The same federated inventories the linker loads, scoped the same way.
@@ -50,7 +56,7 @@ const resolver = new Resolver(Object.values(models))
  */
 const INVENTORIES = [
   { file: 'python.inv', project: 'Python', baseUrl: 'https://docs.python.org/3/', langs: ['py'] },
-  { file: 'jdk.inv', project: 'Java SE', baseUrl: 'https://docs.oracle.com/en/java/javase/21/docs/api/', langs: ['java'] },
+  { file: 'jdk.inv', project: 'Java SE', baseUrl: 'https://docs.oracle.com/en/java/javase/21/docs/api/', langs: ['java', 'kotlin', 'scala'] },
   { file: 'dom.inv', project: 'MDN', baseUrl: 'https://developer.mozilla.org/', langs: ['ts'] },
 ]
 for (const { file, project, baseUrl, langs } of INVENTORIES) {

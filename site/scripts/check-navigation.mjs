@@ -7,7 +7,7 @@ export async function checkApiNavigation(page, base) {
   for (const width of [688, 390]) {
     await page.setViewportSize({ width, height: 759 })
     await page.goto(server, { waitUntil: 'load' })
-    await page.waitForLoadState('networkidle')
+    await page.locator('[data-api-nav-toggle]').waitFor({ state: 'visible' })
     await page.evaluate(() => { window.__apiNavigationProbe = true })
     await page.locator('.api-member-link[href$="libtmux-server-snapshot/"]').click()
     await page.waitForURL(snapshot)
@@ -140,8 +140,8 @@ export async function checkNavigation(page, base) {
 }
 
 /** Port references keep examples in the selected language. */
-export async function checkApiExampleOwnership(page, base) {
-  await page.goto(`${base}/ts/latest/reference/pane-pane-capture/`, { waitUntil: 'load' })
+export async function checkApiExampleOwnership(page, base, path = 'ts/latest/reference/pane-pane-capture/') {
+  await page.goto(`${base}/${path}`, { waitUntil: 'load' })
   const languages = await page.locator('main pre[data-language]').evaluateAll((blocks) =>
     blocks.map((block) => block.getAttribute('data-language')))
   assert(languages.length > 0, 'The capture reference keeps its own example')

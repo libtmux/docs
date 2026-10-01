@@ -1471,6 +1471,398 @@
    "section": "ports"
   },
   {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.CardinalityError",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.CardinalityError.MultipleMatches",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.CardinalityError.NoMatches",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.ClientFields",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.enter",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.enter",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.foldEventsWhile",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.foldEventsWhile",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.iterEvents",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.iterEvents",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.useSession",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.useSession",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.withSession",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.withSession",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Queries with LibTmux.FSharp",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "F# portable query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.all",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "F# portable query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.allOf",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "F# portable query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.any",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "LibTmux.FSharp",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.any",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "F# portable query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.anyOf",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "F# portable query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.eq",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "F# portable query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.isNull",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "F# portable query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.none",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "F# portable query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.oneOf",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "F# portable query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.startsWith",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "F# portable query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane",
+   "page": "/fsharp/latest/guides/interop/",
+   "title": ".NET interoperation",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.capture",
+   "page": "/fsharp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.currentPath",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Queries with LibTmux.FSharp",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.currentPath",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "F# portable query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.sendKeys",
+   "page": "/fsharp/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.sendKeys",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "title": "Getting started with LibTmux.FSharp",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.PaneFields",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.matching",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Queries with LibTmux.FSharp",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.matching",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "LibTmux.FSharp",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.matching",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "F# portable query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Selection",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Selection.exactlyOne",
+   "page": "/fsharp/latest/guides/interop/",
+   "title": ".NET interoperation",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Selection.exactlyOne",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "LibTmux.FSharp",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Server",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Server",
+   "page": "/fsharp/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Server",
+   "page": "/fsharp/latest/guides/interop/",
+   "title": ".NET interoperation",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Server.capture",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "title": "Getting started with LibTmux.FSharp",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Server.capture",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "LibTmux.FSharp",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Server.tryFindPane",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "title": "Getting started with LibTmux.FSharp",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.SessionFields",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Snapshot",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.StreamStep.Stop",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Window",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Window",
+   "page": "/fsharp/latest/guides/interop/",
+   "title": ".NET interoperation",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.WindowFields",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.WindowPlacementKey",
+   "page": "/fsharp/latest/guides/api-overview/",
+   "title": "F# API reference",
+   "section": "guides"
+  },
+  {
    "port": "go",
    "symbol": "mcp.AssumeResponseCommit",
    "page": "/go/latest/mcp/reference/",
@@ -2284,10 +2676,38 @@
   },
   {
    "port": "java",
+   "symbol": "io.github.libtmux.catalog.Kind.Kind.LIFECYCLE",
+   "page": "/scala/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.catalog.Kind.Kind.STREAM",
+   "page": "/scala/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.catalog.Kind.Kind.WAIT",
+   "page": "/scala/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "java",
    "symbol": "io.github.libtmux.Channel.Channel.drain",
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Client_.Client_",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -2319,6 +2739,76 @@
   },
   {
    "port": "java",
+   "symbol": "io.github.libtmux.control.EventSubscription.EventSubscription.next",
+   "page": "/scala/latest/guides/streaming/",
+   "title": "Streaming",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.control.EventSubscription.EventSubscription.onReady",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.control.EventSubscription.EventSubscription.poll",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.control.PaneOutput.PaneOutput",
+   "page": "/scala/latest/guides/streaming/",
+   "title": "Streaming",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.exception.CardinalityException.CardinalityException",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.exception.CardinalityException.CardinalityException.MultipleMatches",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.exception.CardinalityException.CardinalityException.MultipleMatches",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.exception.CardinalityException.CardinalityException.NoMatch",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.exception.LibTmuxException.LibTmuxException",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.exception.ServerClosedException.ServerClosedException",
+   "page": "/scala/latest/guides/ownership/",
+   "title": "Ownership",
+   "section": "guides"
+  },
+  {
+   "port": "java",
    "symbol": "io.github.libtmux.Hooks.Hooks",
    "page": "/topics/architecture/",
    "title": "Architecture",
@@ -2326,10 +2816,24 @@
   },
   {
    "port": "java",
+   "symbol": "io.github.libtmux.junit5.FakeTmux.FakeTmux.output",
+   "page": "/scala/latest/guides/streaming/",
+   "title": "Streaming",
+   "section": "guides"
+  },
+  {
+   "port": "java",
    "symbol": "io.github.libtmux.junit5.TmuxSocketPath.TmuxSocketPath",
    "page": "/guides/testing-with-libtmux/",
    "title": "Testing with libtmux",
    "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.mcp.Main.Main.main",
+   "page": "/kotlin/latest/examples/",
+   "title": "Kotlin examples",
+   "section": "examples"
   },
   {
    "port": "java",
@@ -2376,9 +2880,23 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.Pane_.Pane_",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane_.Pane_",
    "page": "/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane_.Pane_.command",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -2386,6 +2904,13 @@
    "page": "/topics/architecture/",
    "title": "Architecture",
    "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Pane.Pane.awaitText",
+   "page": "/scala/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -2445,31 +2970,31 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.PaneStart.PaneStart.shell",
-   "page": "/java/latest/workspace/configuration/panes/",
-   "title": "Pane configuration",
-   "section": "ports"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.PaneStart.PaneStart.shell",
-   "page": "/java/latest/workspace/configuration/windows/",
-   "title": "Window configuration",
-   "section": "ports"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.PaneStart.PaneStart.shell",
-   "page": "/java/latest/workspace/reference/compatibility/",
-   "title": "Runtime and configuration support",
-   "section": "ports"
-  },
-  {
-   "port": "java",
    "symbol": "io.github.libtmux.query.Fields.Fields.TextField.startsWith",
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.query.FilterExpr.FilterExpr",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.query.FilterExpr.FilterExpr.and",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.query.FilterExpr.FilterExpr.or",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -2480,17 +3005,10 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.query.Selections.Selections.MultipleMatchesException",
-   "page": "/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.query.Selections.Selections.NoMatchException",
-   "page": "/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
+   "symbol": "io.github.libtmux.query.Selections.Selections.exactlyOne",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -2557,6 +3075,20 @@
   },
   {
    "port": "java",
+   "symbol": "io.github.libtmux.Server.Server.commands",
+   "page": "/java/latest/workspace/cli/import-teamocil/",
+   "title": "Import from Teamocil",
+   "section": "ports"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server.control",
+   "page": "/scala/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "java",
    "symbol": "io.github.libtmux.Server.Server.isAlive",
    "page": "/topics/socket-and-servers/",
    "title": "Socket and servers",
@@ -2578,10 +3110,38 @@
   },
   {
    "port": "java",
+   "symbol": "io.github.libtmux.Server.Server.open",
+   "page": "/scala/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "java",
    "symbol": "io.github.libtmux.Server.Server.sessions",
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Server.Server.within",
+   "page": "/scala/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.ServerConfig.ServerConfig",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.ServerConfig.ServerConfig",
+   "page": "/scala/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -2610,6 +3170,13 @@
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Session_.Session_",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -2655,10 +3222,66 @@
   },
   {
    "port": "java",
+   "symbol": "io.github.libtmux.SessionSpec.SessionSpec.Builder",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "java",
    "symbol": "io.github.libtmux.SessionSpec.SessionSpec.Builder.environment",
    "page": "/topics/environment/",
    "title": "Environment",
    "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Shell.Shell.capturing",
+   "page": "/scala/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.snapshot.ClientState.ClientState",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.snapshot.PaneState.PaneState",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.snapshot.ServerMirror.ServerMirror",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.snapshot.SessionState.SessionState",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.snapshot.WindowState.WindowState",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.SplitSpec.SplitSpec.Builder",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -2676,6 +3299,13 @@
   },
   {
    "port": "java",
+   "symbol": "io.github.libtmux.transport.CommandResult.CommandResult",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "java",
    "symbol": "io.github.libtmux.transport.DispatchOutcome.DispatchOutcome",
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
@@ -2684,13 +3314,6 @@
   {
    "port": "java",
    "symbol": "io.github.libtmux.transport.DispatchOutcome.DispatchOutcome.NOT_DISPATCHED",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.transport.TmuxTransportException.TmuxTransportException.outcome",
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
    "section": "topics"
@@ -2708,6 +3331,13 @@
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.Window_.Window_",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -2743,6 +3373,13 @@
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.WindowSpec.WindowSpec.Builder",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
   },
   {
    "port": "java",
@@ -2848,6 +3485,440 @@
    "page": "/java/latest/workspace/reference/",
    "title": "Java workspace builder API",
    "section": "ports"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Client",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Client",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ControlClient",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ControlClient",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ControlClient.events",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ControlClient.events",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ControlClient.output",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ControlClient.output",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ExecutionPolicy",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ExecutionPolicy.commands",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ExecutionPolicy.Companion.default",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.ExecutionPolicy.streamReads",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Pane",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Pane",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Pane.capture",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Pane.Companion.command",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Pane.Companion.command",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Pane.currentCommand",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Pane.options",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Pane.options",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.retryIfSafe",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server",
+   "page": "/kotlin/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.batch",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.buffers",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.chain",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.commands",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.Companion.fromJava",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.Companion.fromJava",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.Companion.open",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.hooks",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.hooks",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.keys",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.keys",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.liveState",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.liveState",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.messageLog",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.newSession",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.prompt",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.session",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.sessionOrNull",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.shell",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server.withLiveState",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Session",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Session",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Session.environment",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.SessionBuilder",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.SplitBuilder",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.SplitBuilder.above",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.SplitBuilder.below",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.SplitBuilder.cells",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.SplitBuilder.percent",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.SplitBuilder.toLeft",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.SplitBuilder.toRight",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Window",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Window",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.WindowBuilder",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.withControl",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.withServer",
+   "page": "/kotlin/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.withServer",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "title": "Kotlin",
+   "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.withServer",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "title": "libtmux-kotlin",
+   "section": "guides"
   },
   {
    "port": "lua",
@@ -3419,6 +4490,20 @@
   {
    "port": "lua",
    "symbol": "libtmux.query.NULL",
+   "page": "/lua/latest/guides/query/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.query.select",
+   "page": "/lua/latest/guides/query/",
+   "title": "Query captured data",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.query.where",
    "page": "/lua/latest/guides/query/",
    "title": "Query captured data",
    "section": "guides"
@@ -6063,6 +7148,335 @@
    "section": "workspace"
   },
   {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Control.Ack.accepted",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Control.acknowledge",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Control.acknowledge",
+   "page": "/scala/latest/guides/streaming/",
+   "title": "Streaming",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Control.attach",
+   "page": "/scala/latest/guides/ownership/",
+   "title": "Ownership",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Control.attachUnfenced",
+   "page": "/scala/latest/guides/ownership/",
+   "title": "Ownership",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Control.events",
+   "page": "/scala/latest/guides/streaming/",
+   "title": "Streaming",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Control.isAlive",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Control.standardError",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Control.standardErrorTruncated",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Control.unwatch",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Control.watch",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.LiveServer",
+   "page": "/scala/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Observation.kept",
+   "page": "/scala/latest/guides/streaming/",
+   "title": "Streaming",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Observation.UnknownCause",
+   "page": "/scala/latest/guides/streaming/",
+   "title": "Streaming",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Observation.value",
+   "page": "/lua/latest/guides/settings/",
+   "title": "Options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Observation.value",
+   "page": "/scala/latest/guides/streaming/",
+   "title": "Streaming",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Server.fromJava",
+   "page": "/scala/latest/guides/ownership/",
+   "title": "Ownership",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Server.resource",
+   "page": "/scala/latest/examples/capture-pane-output/",
+   "title": "Capture pane output",
+   "section": "examples"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Server.resource",
+   "page": "/scala/latest/guides/ownership/",
+   "title": "Ownership",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.live.LiveView",
+   "page": "/scala/latest/guides/compatibility/",
+   "title": "Compatibility",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Pane.active",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Pane.command",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Pane.options",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.Expr.not",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.Fields.NumberField.atLeast",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.Fields.ToManyRef",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.Fields.ToManyRef.all",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.Fields.ToManyRef.any",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.Fields.ToManyRef.none",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.Fields.ToOneRef",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.IterableOnce.atMostOne",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.cmd",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.config",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.config",
+   "page": "/scala/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.config",
+   "page": "/scala/latest/guides/overview/",
+   "title": "libtmux-scala",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.config",
+   "page": "/scala/latest/guides/ownership/",
+   "title": "Ownership",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.config",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.config",
+   "page": "/scala/latest/guides/streaming/",
+   "title": "Streaming",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.hooks",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.killServer",
+   "page": "/scala/latest/guides/ownership/",
+   "title": "Ownership",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.newSession",
+   "page": "/scala/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.open",
+   "page": "/scala/latest/guides/ownership/",
+   "title": "Ownership",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.panes",
+   "page": "/scala/latest/guides/overview/",
+   "title": "libtmux-scala",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Server.shell",
+   "page": "/scala/latest/guides/execution/",
+   "title": "Execution",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.streaming.Observation.close",
+   "page": "/scala/latest/guides/ownership/",
+   "title": "Ownership",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.streaming.Observation.read",
+   "page": "/scala/latest/guides/streaming/",
+   "title": "Streaming",
+   "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Vector.matching",
+   "page": "/scala/latest/guides/query/",
+   "title": "Queries",
+   "section": "guides"
+  },
+  {
    "port": "swift",
    "symbol": "ControlSession",
    "page": "/topics/errors-and-exceptions/",
@@ -7535,6 +8949,538 @@
  ],
  "dangling": [
   {
+   "port": "fsharp",
+   "text": "LibTmux.FSharp",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "line": 16,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "IncompleteSnapshotException",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "line": 112,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "QueryDocument",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "line": 115,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Session",
+   "page": "/fsharp/latest/guides/interop/",
+   "line": 16,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "TmuxOperationCanceledException",
+   "page": "/fsharp/latest/guides/interop/",
+   "line": 27,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "CommandMayHaveExecuted",
+   "page": "/fsharp/latest/guides/interop/",
+   "line": 28,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "ClientProcessId",
+   "page": "/fsharp/latest/guides/interop/",
+   "line": 28,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "LibTmux.Query.Json",
+   "page": "/fsharp/latest/guides/interop/",
+   "line": 32,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "QueryDocument",
+   "page": "/fsharp/latest/guides/interop/",
+   "line": 33,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "MoveAsync",
+   "page": "/fsharp/latest/guides/interop/",
+   "line": 132,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "TmuxEventsDroppedEvent",
+   "page": "/fsharp/latest/guides/modes/",
+   "line": 56,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "TmuxExitEvent",
+   "page": "/fsharp/latest/guides/modes/",
+   "line": 58,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "TmuxChain",
+   "page": "/fsharp/latest/guides/modes/",
+   "line": 68,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "ExecuteAsync",
+   "page": "/fsharp/latest/guides/modes/",
+   "line": 69,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "TmuxCommandResult",
+   "page": "/fsharp/latest/guides/modes/",
+   "line": 91,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "QueryDocument",
+   "page": "/fsharp/latest/guides/queries/",
+   "line": 13,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "RequiredSnapshotDepth",
+   "page": "/fsharp/latest/guides/queries/",
+   "line": 32,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "IncompleteSnapshotException",
+   "page": "/fsharp/latest/guides/queries/",
+   "line": 33,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "LibTmux",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 69,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "CreateOwnedAsync",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 176,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "ConnectAsync",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 176,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "LibTmux.FSharp",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 185,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "ConnectAsync",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 193,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "ConnectAsync()",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 193,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Server.FromEnvironment()",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 196,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "server.GetSessionsAsync(ct)",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 202,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "IncompleteSnapshotException",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 211,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "LibTmux.Mcp",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 219,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "TmuxEventsDroppedEvent",
+   "page": "/fsharp/latest/guides/streams/",
+   "line": 22,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "TmuxExitEvent",
+   "page": "/fsharp/latest/guides/streams/",
+   "line": 23,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "QueryDocument",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 12,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "LibTmux.Query.Json",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 17,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Session.Name",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 27,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Sessions",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 31,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Session.Id",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 36,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "SessionId",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 38,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Sessions",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 40,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Session.Attached",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 45,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Sessions",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 49,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Session.Windows",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 54,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Windows",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 58,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Window.Name",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 65,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Windows",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 69,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Window.Id",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 74,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "WindowId",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 76,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Windows",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 78,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Window.Panes",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 83,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Panes",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 87,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Pane.CurrentCommand",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 94,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Panes",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 98,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Pane.Id",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 103,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "PaneId",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 105,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Panes",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 107,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Client.Name",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 114,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Sessions",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 118,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Client.IsControlClient",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 123,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Sessions",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "line": 127,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "ServerConfig.maxConcurrentCommands()",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "line": 53,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "EventSubscription.poll",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "line": 58,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "next()",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "line": 58,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "EventSubscription.poll()",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "line": 67,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "clearReady()",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "line": 69,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "poll()",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "line": 74,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "Gap",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "line": 75,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "poll()",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "line": 76,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "Gap",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "line": 78,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "SplitSpec.Builder",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "line": 117,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "SplitDirection",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "line": 120,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "PaneSize",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "line": 120,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "@kotlin.Metadata",
+   "page": "/kotlin/latest/guides/coroutines/",
+   "line": 130,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "CardinalityException",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "line": 128,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "Delivery.Gap",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "line": 195,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "ServerMirror",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "line": 216,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "DispatchException",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "line": 233,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "failure.safeToRetry()",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "line": 234,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "@kotlin.Metadata",
+   "page": "/kotlin/latest/guides/getting-started/",
+   "line": 241,
+   "why": "not defined in the stated port"
+  },
+  {
    "port": "lua",
    "text": "err.partial.outcomes",
    "page": "/lua/latest/guides/commands/",
@@ -7574,6 +9520,90 @@
    "text": "libtmux-ruby.workspace",
    "page": "/ruby/latest/workspace/source-guide/",
    "line": 78,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "scala",
+   "text": "Flow",
+   "page": "/scala/latest/guides/compatibility/",
+   "line": 30,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "scala",
+   "text": "ScalaOperationGenerator",
+   "page": "/scala/latest/guides/compatibility/",
+   "line": 44,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "scala",
+   "text": "Execution.waiting",
+   "page": "/scala/latest/guides/execution/",
+   "line": 66,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "scala",
+   "text": "Outcome.Canceled",
+   "page": "/scala/latest/guides/execution/",
+   "line": 96,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "scala",
+   "text": "OperationObserver",
+   "page": "/scala/latest/guides/execution/",
+   "line": 98,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "scala",
+   "text": "io.github.libtmux",
+   "page": "/scala/latest/guides/getting-started/",
+   "line": 17,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "scala",
+   "text": "Flow",
+   "page": "/scala/latest/guides/getting-started/",
+   "line": 24,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "scala",
+   "text": "java.time.Duration",
+   "page": "/scala/latest/guides/getting-started/",
+   "line": 128,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "scala",
+   "text": "ServerConfig",
+   "page": "/scala/latest/guides/overview/",
+   "line": 50,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "scala",
+   "text": "AutoCloseable",
+   "page": "/scala/latest/guides/ownership/",
+   "line": 19,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "scala",
+   "text": "libtmux.filter/1",
+   "page": "/scala/latest/guides/query/",
+   "line": 119,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "scala",
+   "text": "Delivery.Gap",
+   "page": "/scala/latest/guides/streaming/",
+   "line": 65,
    "why": "not defined in the stated port"
   },
   {
@@ -7623,6 +9653,13 @@
    "text": "TmuxFixture",
    "page": "/guides/testing-with-libtmux/",
    "line": 150,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "WatchPaneOutput",
+   "page": "/kotlin/latest/examples/",
+   "line": 14,
    "why": "not defined in the stated port"
   },
   {

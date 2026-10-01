@@ -89,12 +89,25 @@ ownership together while giving each package its own routes, artwork,
 installation commands, and navigation position. They have no companion
 MCP server or workspace CLI.
 
-For a wrapper with `referenceKind: 'guide'`, keep native API links and authored
-guides in `port-documentation.ts`. Do not add an empty shared API model.
-`stage-port-docs.mjs` stages those guides and records their source revision.
-Ordinary shell builds use the committed guide caches; source-bound builds read
-the selected checkout. Refresh a wrapper's cache after verifying its native
-documentation and examples:
+Each library has its own extracted API model. Kotlin includes public KDoc
+declarations and generated coroutine extensions. Scala includes Scaladoc,
+opaque types, companions and generated extensions. F# reads the public `.fsi`
+files listed in its project through the pinned SDK's FSharp.Compiler.Service.
+Private declarations stay out of the reference; malformed public syntax fails
+extraction. Generated source files travel with the API model so their source
+links resolve at the documented version.
+
+Refresh the API model with its native tools available. Kotlin and Scala need
+the source project's JDK and Gradle; F# needs its .NET SDK:
+
+```console
+$ node scripts/gen-api-model.mjs --port kotlin
+```
+
+`stage-port-docs.mjs` stages authored guides from `port-documentation.ts` and
+records their source revision. Ordinary shell builds use committed caches;
+source-bound builds extract both the API and guides from the selected checkout.
+Refresh the guide cache after verifying its documentation and examples:
 
 ```console
 $ node scripts/stage-port-docs.mjs --port kotlin --refresh-cache

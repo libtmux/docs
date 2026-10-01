@@ -4,6 +4,9 @@ import { SymbolIndex } from '../src/link.ts'
 
 describe('standard types in product signatures', () => {
   it.each([
+    ['kotlin', 'List<String>', 'List', 'https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/'],
+    ['scala', 'Option[String]', 'Option', 'https://www.scala-lang.org/api/3.x/scala/Option.html'],
+    ['fsharp', "Result<'T, 'Error>", 'Result', 'https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-fsharpresult-2.html'],
     ['rs', 'Option<OsString>', 'OsString', 'https://doc.rust-lang.org/std/ffi/struct.OsString.html'],
     ['dotnet', 'IProgress<T>?', 'IProgress', 'https://learn.microsoft.com/dotnet/api/system.iprogress-1'],
     ['dotnet', 'ReadOnlyMemory<byte>', 'ReadOnlyMemory', 'https://learn.microsoft.com/dotnet/api/system.readonlymemory-1'],
@@ -25,5 +28,16 @@ describe('standard types in product signatures', () => {
     }
     expect(builtinHref('go', 'OsString')).toBeUndefined()
     expect(builtinHref('rs', 'Data')).toBeUndefined()
+  })
+
+  it('keeps inherited object properties out of documentation URLs', () => {
+    for (const name of ['toString', 'constructor', '__proto__', 'hasOwnProperty']) {
+      expect(builtinHref('scala', name)).toBeUndefined()
+      expect(builtinHref(name, 'toString')).toBeUndefined()
+    }
+    const index = new SymbolIndex([], () => '#', 'scala')
+    const signature = index.linkType('override def toString: String')
+    expect(signature.find((span) => span.text === 'toString')?.link).toBeUndefined()
+    expect(signature.find((span) => span.text === 'String')?.link?.href).toMatch(/^https:\/\//)
   })
 })

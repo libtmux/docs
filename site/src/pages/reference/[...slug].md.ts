@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
 import { API_MODELS } from '../../lib/api-models'
-import { pageSlug, symbolsForProduct } from '@libtmux/api-model'
+import { pageSlug, sourceUrl, symbolsForProduct } from '@libtmux/api-model'
 import { symbolMarkdown } from '../../lib/symbol-markdown'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { DEFAULT_LOCALE } from '../../i18n/locales'
@@ -50,18 +50,14 @@ export const GET: APIRoute = ({ props, site }) => {
 
   const origin = (site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
   const slug = symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)
-  const repo = symbol.source.repo ?? model.repo
-  const rev = symbol.source.revision ?? model.revision
-  const file = symbol.source?.file
+  const referenceBase = referenceUrl(PORT_BY_SLUG[port]!, buildTarget(process.env).version)
 
   return new Response(
     symbolMarkdown({
       model,
       symbol,
       canonical: `${origin}${referenceUrl(PORT_BY_SLUG[port]!, buildTarget(process.env).version)}${slug}/`,
-      source: repo && rev && file
-        ? `https://github.com/${repo}/blob/${rev}/${file}${symbol.source?.line ? `#L${symbol.source.line}` : ''}`
-        : undefined,
+      source: sourceUrl(model, symbol, `${origin}${referenceBase}`),
       packageName: symbol.package ?? PORT_BY_SLUG[port]?.packageName,
     }),
     { headers: { 'Content-Type': 'text/markdown; charset=utf-8' } },

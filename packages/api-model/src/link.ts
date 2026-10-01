@@ -18,7 +18,7 @@ import { builtinHref } from './builtins.ts'
 
 /** Which symbol kinds a role is allowed to match. */
 const ROLE_KINDS: Record<string, SymbolKind[]> = {
-  class: ['class', 'exception', 'enum', 'struct', 'interface'],
+  class: ['class', 'exception', 'enum', 'struct', 'interface', 'typealias', 'trait'],
   exc: ['exception', 'class'],
   meth: ['method', 'function'],
   func: ['function', 'method'],
@@ -301,7 +301,11 @@ export class SymbolIndex {
    */
   resolve(target: string, role = 'any', context?: ApiSymbol): LinkTarget | undefined {
     const relative = target.startsWith('.')
-    const clean = target.replace(/^[~.]/, '').replace(/\(\)$/, '')
+    let clean = target.replace(/^[~.]/, '').replace(/\(\)$/, '')
+    if (this.lang === 'fsharp' || this.lang === 'dotnet') clean = clean.replace(/`\d+/g, '')
+    const [importHead, ...tail] = clean.split('.')
+    const imported = !relative && context?.imports?.[importHead]
+    if (imported) clean = [imported, ...tail].join('.')
 
     // Walk outward from the current symbol: a member first, then a sibling of
     // its owner. This is Sphinx's own search order for a relative target.
@@ -345,7 +349,8 @@ export class SymbolIndex {
     // built-in table rather than after.
     for (const inv of this.external) {
       if (inv.langs && (!this.lang || !inv.langs.includes(this.lang))) continue
-      const hit = inv.byName.get(clean) ?? inv.byName.get(`${clean}`)
+      const hit = inv.byName.get(clean) ?? context?.namespaceImports?.toReversed()
+        .map((namespace) => inv.byName.get(`${namespace}.${clean}`)).find(Boolean)
       if (hit) return { href: inv.baseUrl + hit.uri, external: true, project: inv.project }
     }
 
@@ -410,7 +415,11 @@ export class SymbolIndex {
     // `::` is part of a name, not punctuation between two. Splitting there
     // turned `std::vector` into `std` and `vector`, so neither half matched
     // anything and C++ annotations rendered almost entirely plain.
-    const re = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*|["'][^"']*["']|[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*)|([^A-Za-z_"'/]+|["'/])/g
+    const pattern = String.raw`(\/\*[\s\S]*?\*\/|\/\/[^\n]*|["'][^"']*["']|[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*)|([^A-Za-z_"'/]+|["'/])`
+    // F# type variables start with an apostrophe but do not close like strings.
+    const re = new RegExp(this.lang === 'fsharp'
+      ? pattern.replace('(', String.raw`('[A-Za-z_][A-Za-z0-9_]*(?![A-Za-z0-9_'])|`)
+      : pattern, 'g')
     for (const m of annotation.matchAll(re)) {
       const [whole, ident, other] = m
       if (other !== undefined || !ident) {

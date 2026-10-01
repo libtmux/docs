@@ -1,4 +1,4 @@
-import { conceptsFor, SymbolIndex, type ApiModel, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
+import { conceptsFor, parentInventory, SymbolIndex, type ApiModel, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
 import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
@@ -26,6 +26,12 @@ import luaModel from '../data/api/lua.json'
 import rsModel from '../data/api/rs.json'
 import swiftModel from '../data/api/swift.json'
 import tsModel from '../data/api/ts.json'
+import kotlinModel from '../data/api/kotlin.json'
+import scalaModel from '../data/api/scala.json'
+import fsharpModel from '../data/api/fsharp.json'
+import kotlinNav from '../data/api/kotlin.nav.json'
+import scalaNav from '../data/api/scala.nav.json'
+import fsharpNav from '../data/api/fsharp.nav.json'
 
 /**
  * The extracted models, in one module rather than in the route.
@@ -47,6 +53,9 @@ export const API_MODELS: Record<string, ApiModel> = {
   dotnet: dotnetModel as unknown as ApiModel,
   cxx: cxxModel as unknown as ApiModel,
   swift: swiftModel as unknown as ApiModel,
+  kotlin: kotlinModel as unknown as ApiModel,
+  scala: scalaModel as unknown as ApiModel,
+  fsharp: fsharpModel as unknown as ApiModel,
 }
 
 /** One entry in a curated sidebar bucket, carrying just enough to link it. */
@@ -100,13 +109,16 @@ export const API_NAV: Record<string, PortNavData> = {
   dotnet: dotnetNav as unknown as PortNavData,
   cxx: cxxNav as unknown as PortNavData,
   swift: swiftNav as unknown as PortNavData,
+  kotlin: kotlinNav as unknown as PortNavData,
+  scala: scalaNav as unknown as PortNavData,
+  fsharp: fsharpNav as unknown as PortNavData,
 }
 
 /**
  * Declarations that own a page of members.
  *
  * A Rust `enum` and a Go `struct` earn one for the same reason a Python class
- * does; a type alias does not, because it has nothing under it.
+ * does. Scala opaque types can own extensions and companion members.
  */
 export const OWNER_KINDS = new Set([
   'class',
@@ -115,6 +127,8 @@ export const OWNER_KINDS = new Set([
   'struct',
   'trait',
   'enum',
+  'module',
+  'typealias',
 ])
 
 export const PORT_NAME: Record<string, string> = {
@@ -128,6 +142,9 @@ export const PORT_NAME: Record<string, string> = {
   dotnet: '.NET',
   cxx: 'C++',
   swift: 'Swift',
+  kotlin: 'Kotlin',
+  scala: 'Scala',
+  fsharp: 'F#',
 }
 
 /**
@@ -210,7 +227,7 @@ const INVENTORIES: {
   {
     data: jdkInv,
     baseUrl: 'https://docs.oracle.com/en/java/javase/21/docs/api/',
-    langs: ['java'],
+    langs: ['java', 'kotlin', 'scala'],
     project: 'Java SE',
   },
   {
@@ -246,11 +263,22 @@ const entriesOf = (inv: InventorySidecar): InventoryEntry[] =>
     dispname: '-',
   }))
 
+/** Parent APIs used by a facade, at the parent's published default version. */
+export function parentApiInventory(port: string): InventoryEntry[] {
+  const parent = PORT_BY_SLUG[port]?.parentLibrary
+  return parent ? parentInventory(API_MODELS[parent.slug],
+    (symbol) => referenceHref(parent.slug, symbol.publicId ?? symbol.id)!) : []
+}
+
 /** Build an index with this site's language-scoped external inventories. */
 export function createApiIndex(model: ApiModel, hrefFor: (s: ApiSymbol) => string): SymbolIndex {
   const index = new SymbolIndex(model.symbols, hrefFor, model.port)
   for (const { data, baseUrl, langs, project } of INVENTORIES) {
     index.addInventory(baseUrl, entriesOf(data), langs, project)
+  }
+  const parent = PORT_BY_SLUG[model.port]?.parentLibrary
+  if (parent) {
+    index.addInventory('', parentApiInventory(model.port), [model.port], `libtmux ${PORT_NAME[parent.slug]}`)
   }
   return index
 }

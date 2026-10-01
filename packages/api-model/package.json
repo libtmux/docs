@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "One normalized API model for ten languages, extracted from native documentation artifacts and source.",
+  "description": "A shared API model for language ports, extracted from native documentation artifacts and source.",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -13,6 +13,7 @@
     "type-check": "oxlint --type-aware --type-check -A all --tsconfig tsconfig.json --ignore-pattern '**/*.test.ts' src"
   },
   "dependencies": {
+    "tree-sitter-scala": "0.24.0",
     "tree-sitter-wasms": "catalog:",
     "web-tree-sitter": "catalog:"
   },

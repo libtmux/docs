@@ -264,7 +264,9 @@ const counterparts = model
       })
   : []
 
-const sourceUrl = (symbol: ApiSymbol): string | undefined => model ? apiSourceUrl(model, symbol) : undefined
+const sourceUrl = (symbol: ApiSymbol): string | undefined => model
+  ? apiSourceUrl(model, symbol, referenceUrl(PORT_BY_SLUG[model.port]!, buildTarget(process.env).version))
+  : undefined
 
 const members = owner && model ? model.symbols.filter((s) => s.parent === owner.id).sort(byUsefulness) : []
 

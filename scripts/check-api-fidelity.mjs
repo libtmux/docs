@@ -114,7 +114,7 @@ for (const port of PORTS) {
         ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" })[entity])
       const symbol = symbols.get(id)
       if (!symbol?.inheritedFrom || symbol.source.file) eligible++
-      if (symbol && sourceUrl(model, symbol) && attrs['data-has-source'] !== 'true') {
+      if (symbol && sourceUrl(model, symbol, '/reference/') && attrs['data-has-source'] !== 'true') {
         failures.push(`${port}: ${rel}#${id} omits its known source link`)
       }
       for (const hook of HOOKS) {

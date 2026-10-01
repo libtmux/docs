@@ -1,5 +1,5 @@
 /**
- * One API model, ten languages.
+ * A shared API model for language libraries.
  *
  * The site renders every port's reference through the same components, so the
  * shape below is the contract those components read. It is deliberately
@@ -13,8 +13,8 @@
  * permalink per symbol.
  */
 
-/** The ten ports, by the slug the site already uses. */
-export type PortSlug = 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'dotnet' | 'cxx' | 'swift'
+/** Language libraries, by the slug the site uses. */
+export type PortSlug = 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'dotnet' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp'
 
 export type ApiProduct = 'core' | 'workspace' | 'mcp'
 
@@ -183,6 +183,12 @@ export interface ApiSymbol {
   /** Enclosing symbol's id, or undefined at module level. */
   parent?: string
   signatures: Signature[]
+  /** Explicit source imports used to resolve aliases in native signatures. */
+  imports?: Record<string, string>
+  /** Opened namespaces, in source order, for native unqualified types. */
+  namespaceImports?: string[]
+  /** Declaration forwarded by a native export, such as a Scala companion field. */
+  exportedFrom?: string
   doc?: DocBlock
   /** Base classes / implemented interfaces, as written. */
   extends?: string[]
@@ -223,6 +229,8 @@ export interface ApiSymbol {
 /** Everything extracted from one port's source tree. */
 export interface ApiModel {
   port: PortSlug
+  /** Generated public source files, stored with the revision that produced them. */
+  generatedSources?: Record<string, string>
   repo?: string
   sources?: ApiSource[]
   /** Commit the tree was at, so a rendered page can say what it describes. */

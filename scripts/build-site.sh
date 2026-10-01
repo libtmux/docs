@@ -307,6 +307,7 @@ elif [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ] && node --input-type=module -e '
   process.exit(PORT_BY_SLUG[process.env.LIBTMUX_DOCS_PORT]?.parentLibrary ? 0 : 1);
 '; then
   node "$script_dir/stage-port-docs.mjs" --port "$LIBTMUX_DOCS_PORT" --from-source
+  node "$script_dir/gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"
 elif [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
   # A source-bound build renders the reference from the verified checkout,
   # not from the model committed here, which describes whatever revision was

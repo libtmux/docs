@@ -14,7 +14,7 @@ Resolve a saved workspace or file and open it in the configured editor.
 
 ## Open a workspace
 
-With `workspace.yaml` saved and `vi` installed:
+With [`workspace.yaml`](../../guides/installation/#create-the-input) saved and `vi` installed:
 
 ```console
 $ EDITOR=vi tmuxp edit workspace.yaml
@@ -37,7 +37,7 @@ path when editing a particular file.
 
 ## Open the file
 
-With `vi` installed and `workspace.yaml` saved:
+With `vi` installed and [`workspace.yaml`](../../guides/installation/#create-the-input) saved:
 
 ```console
 $ EDITOR=vi tmux-workspace edit workspace.yaml

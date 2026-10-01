@@ -146,6 +146,7 @@ async function handler(event) {
  */
 const ASSET_EXTENSIONS = {
     html: 1, htm: 1, xml: 1, txt: 1, json: 1, js: 1, mjs: 1, map: 1, css: 1,
+    java: 1, kt: 1, scala: 1,
     svg: 1, png: 1, jpg: 1, jpeg: 1, gif: 1, webp: 1, avif: 1, ico: 1,
     woff: 1, woff2: 1, ttf: 1, otf: 1, eot: 1,
     md: 1, pdf: 1, zip: 1, gz: 1, wasm: 1, pf_meta: 1, pf_fragment: 1,

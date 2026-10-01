@@ -3,6 +3,8 @@ import { basename, join, relative, sep } from 'node:path'
 import { extractPython } from './languages/python.ts'
 import { extractDoxygen } from './languages/doxygen.ts'
 import { extractSymbolGraph } from './languages/symbolgraph.ts'
+import { extractFSharp } from './languages/fsharp.ts'
+import { extractJvm } from './languages/jvm.ts'
 import { extractWithSpec } from './languages/spec.ts'
 import { SPECS } from './languages/specs.ts'
 import { resolvePublicIds } from './reexports.ts'
@@ -371,6 +373,11 @@ export async function extractProject(opts: {
   options?: ExtractOptions
 }): Promise<ApiModel> {
   const options = { ...DEFAULT_EXTRACT_OPTIONS, ...opts.options }
+
+  if (opts.port === 'fsharp') return extractFSharp(opts.root, opts.revision)
+  if (opts.port === 'kotlin' || opts.port === 'scala') {
+    return extractJvm(opts.port, opts.roots ?? [opts.root], opts.revision)
+  }
 
   // Two ports do not come through tree-sitter, and arrive already resolved.
   if (opts.port === 'cxx') {

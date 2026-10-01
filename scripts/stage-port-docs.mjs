@@ -130,7 +130,7 @@ export function stagedPortGuides(port, artifact) {
       writeIndex(section, `${identity.name} ${section}`,
         `Use these ${identity.packageName} guides for the APIs and examples in this version.`, cards)
     }
-    if (identity.parentLibrary && identity.ecosystemHost) writeIndex('reference', `${identity.name} API reference`,
+    if (identity.referenceKind === 'guide' && identity.ecosystemHost) writeIndex('reference', `${identity.name} API reference`,
       `Use the [${identity.ecosystemHost.name} reference](${identity.ecosystemHost.url}) for published package versions.\n\nThe [source at this documentation revision](https://github.com/${source.repo}/tree/${source.ref}/${posix.dirname(source.path)}/src/main) contains the wrapper declarations and their documentation.\n\n${identity.name} and its ${identity.parentLibrary.runtime} core share a release version.`)
   }
   return files

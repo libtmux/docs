@@ -306,18 +306,18 @@ jobs:
         if: matrix.port == 'ts'
         working-directory: port
         run: bun install --frozen-lockfile
-      - if: matrix.port == 'java'
+      - if: matrix.port == 'java' || matrix.port == 'kotlin' || matrix.port == 'scala'
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
         with:
           distribution: temurin
           # The repository's Gradle conventions compile and run on JDK 25.
           java-version: '25'
-      - if: matrix.port == 'java'
+      - if: matrix.port == 'java' || matrix.port == 'kotlin' || matrix.port == 'scala'
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
         with:
           validate-wrappers: true
           cache-disabled: true
-      - if: matrix.port == 'dotnet'
+      - if: matrix.port == 'dotnet' || matrix.port == 'fsharp'
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: port/global.json

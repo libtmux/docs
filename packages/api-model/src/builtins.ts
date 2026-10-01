@@ -28,13 +28,62 @@ const swift = (page: string) => `https://developer.apple.com/documentation/swift
 const mdn = (page: string) =>
   `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/${page}`
 const ts = (page: string) => `https://www.typescriptlang.org/docs/handbook/2/${page}`
+const kotlin = (page: string) => `https://kotlinlang.org/api/core/kotlin-stdlib/${page}/`
+const scala = (page: string) => `https://www.scala-lang.org/api/3.x/${page}.html`
+const fsharp = (page: string) => `https://fsharp.github.io/fsharp-core-docs/reference/${page}.html`
 
 export const BUILTINS: Record<string, Record<string, string>> = {
+  kotlin: {
+    String: kotlin('kotlin/-string'), Boolean: kotlin('kotlin/-boolean'),
+    Int: kotlin('kotlin/-int'), Long: kotlin('kotlin/-long'),
+    Unit: kotlin('kotlin/-unit'), Any: kotlin('kotlin/-any'),
+    List: kotlin('kotlin.collections/-list'), Map: kotlin('kotlin.collections/-map'),
+    Iterable: kotlin('kotlin.collections/-iterable'),
+    Flow: 'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/',
+    StateFlow: 'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-state-flow/',
+    'collect()': 'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/collect.html',
+  },
+  scala: {
+    String: scala('scala/Predef$'), Boolean: scala('scala/Boolean'),
+    Int: scala('scala/Int'), Long: scala('scala/Long'), Unit: scala('scala/Unit'),
+    Option: scala('scala/Option'), Either: scala('scala/util/Either'),
+    Vector: scala('scala/collection/immutable/Vector'),
+    List: scala('scala/collection/immutable/List'),
+    IterableOnce: scala('scala/collection/IterableOnce'),
+    'scala.concurrent.duration.FiniteDuration': scala('scala/concurrent/duration/FiniteDuration'),
+    ExecutionContext: scala('scala/concurrent/ExecutionContext'),
+    'scala.util.Using.resource': scala('scala/util/Using$'),
+    IO: 'https://typelevel.org/cats-effect/api/3.x/cats/effect/IO.html',
+    Resource: 'https://typelevel.org/cats-effect/api/3.x/cats/effect/kernel/Resource.html',
+  },
+  fsharp: {
+    Result: fsharp('fsharp-core-fsharpresult-2'),
+    option: fsharp('fsharp-core-fsharpoption-1'),
+    list: fsharp('fsharp-collections-fsharplist-1'),
+    seq: dotnet('system.collections.generic.ienumerable-1'),
+    string: dotnet('system.string'), bool: dotnet('system.boolean'),
+    int: dotnet('system.int32'), int64: dotnet('system.int64'),
+    Task: dotnet('system.threading.tasks.task'),
+    CancellationToken: dotnet('system.threading.cancellationtoken'),
+    IReadOnlyList: dotnet('system.collections.generic.ireadonlylist-1'),
+    IAsyncEnumerable: dotnet('system.collections.generic.iasyncenumerable-1'),
+    None: fsharp('fsharp-core-fsharpoption-1'),
+    Some: fsharp('fsharp-core-fsharpoption-1'),
+    Seq: fsharp('fsharp-collections-seqmodule'),
+    'Seq.filter': `${fsharp('fsharp-collections-seqmodule')}#filter`,
+    Async: fsharp('fsharp-control-fsharpasync'),
+    'Async.AwaitTask': `${fsharp('fsharp-control-fsharpasync')}#AwaitTask`,
+    'Async.StartAsTask': `${fsharp('fsharp-control-fsharpasync')}#StartAsTask`,
+    TaskCanceledException: dotnet('system.threading.tasks.taskcanceledexception'),
+    'Task.WhenAll': dotnet('system.threading.tasks.task.whenall'),
+  },
   dotnet: {
     bool: dotnet('system.boolean'),
     Boolean: dotnet('system.boolean'),
     string: dotnet('system.string'),
     String: dotnet('system.string'),
+    char: dotnet('system.char'),
+    Char: dotnet('system.char'),
     int: dotnet('system.int32'),
     Int32: dotnet('system.int32'),
     long: dotnet('system.int64'),
@@ -216,6 +265,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Readonly: ts('..%2Futility-types.html#readonlytype'),
   },
   java: {
+    ExtensionContext: 'https://docs.junit.org/current/api/org.junit.jupiter.api/org/junit/jupiter/api/extension/ExtensionContext.html',
     boolean: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.5',
     int: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.1',
     long: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.1',
@@ -240,5 +290,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
 
 /** The documentation URL for a language's own type, if this is one. */
 export function builtinHref(port: string, name: string): string | undefined {
-  return BUILTINS[port]?.[name]
+  if (!Object.hasOwn(BUILTINS, port)) return undefined
+  const types = BUILTINS[port]!
+  return Object.hasOwn(types, name) ? types[name] : undefined
 }

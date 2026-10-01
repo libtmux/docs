@@ -27,6 +27,8 @@ const GRAMMAR = {
   csharp: 'c_sharp',
   cpp: 'cpp',
   swift: 'swift',
+  kotlin: 'kotlin',
+  scala: 'scala',
 } as const
 
 export type GrammarName = keyof typeof GRAMMAR
@@ -40,7 +42,10 @@ export async function loadLanguage(name: GrammarName): Promise<Language> {
   await ready
   const hit = cache.get(name)
   if (hit) return hit
-  const wasm = require.resolve(`tree-sitter-wasms/out/tree-sitter-${GRAMMAR[name]}.wasm`)
+  // The older bundle predates Scala 3 opaque types, givens, and extensions.
+  const wasm = require.resolve(name === 'scala'
+    ? 'tree-sitter-scala/tree-sitter-scala.wasm'
+    : `tree-sitter-wasms/out/tree-sitter-${GRAMMAR[name]}.wasm`)
   const lang = await Language.load(wasm)
   cache.set(name, lang)
   return lang

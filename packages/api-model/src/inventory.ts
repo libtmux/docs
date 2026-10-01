@@ -40,6 +40,9 @@ const DOMAIN: Record<PortSlug, string> = {
   rs: 'std',
   go: 'std',
   java: 'std',
+  kotlin: 'std',
+  scala: 'std',
+  fsharp: 'std',
   dotnet: 'std',
   swift: 'std',
 }

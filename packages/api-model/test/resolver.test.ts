@@ -47,6 +47,9 @@ d('resolver', () => {
     expect(notASymbol('tmux.ServerOptions{SocketName: "work"}')).toBeTruthy()
     // And does not reject a real one.
     expect(notASymbol('server.sessions()')).toBeUndefined()
+    expect(notASymbol('io.github.libtmux:libtmux-scala_3')).toBe('a dependency coordinate')
+    expect(notASymbol('3.7c')).toBe('a version')
+    expect(notASymbol('Server:new_session')).toBeUndefined()
   })
 
   it('normalises call syntax to a path', () => {
