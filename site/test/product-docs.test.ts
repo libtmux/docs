@@ -299,9 +299,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     expect(checked, 'overviews with an install picker').toBeGreaterThan(0)
   })
 
-  it('distinguishes unfinished products and groups workspace implementation docs under Internals', async () => {
-    for (const page of pages()) await inspect(page.path, (document) => {
-      const port = PORTS.find((entry) => entry.slug === page.port)!
+  it.each(PORTS.filter((port) => !port.parentLibrary))('$name distinguishes unfinished products and groups workspace internals', async (port) => {
+    for (const page of pages().filter((entry) => entry.port === port.slug)) await inspect(page.path, (document) => {
       if (productInDevelopment(port, page.product)) developmentStatus(document, page.path)
       const navigation = document.querySelectorAll('nav[aria-label="Documentation"]')
       expect(navigation.length, `${page.path} documentation navigation`).toBeGreaterThan(0)
