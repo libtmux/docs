@@ -1480,9 +1480,23 @@
   {
    "port": "fsharp",
    "symbol": "LibTmux.FSharp.CardinalityError.MultipleMatches",
+   "page": "/fsharp/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.CardinalityError.MultipleMatches",
    "page": "/fsharp/latest/guides/api-overview/",
    "title": "F# API reference",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.CardinalityError.NoMatches",
+   "page": "/fsharp/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "fsharp",
@@ -1564,6 +1578,13 @@
   {
    "port": "fsharp",
    "symbol": "LibTmux.FSharp.Control.withSession",
+   "page": "/fsharp/latest/concepts/transports/",
+   "title": "Commands and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.withSession",
    "page": "/fsharp/latest/guides/modes/",
    "title": "Execution modes",
    "section": "guides"
@@ -1574,6 +1595,13 @@
    "page": "/fsharp/latest/guides/streams/",
    "title": "Streams and cleanup",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter",
+   "page": "/fsharp/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "fsharp",
@@ -1599,6 +1627,13 @@
   {
    "port": "fsharp",
    "symbol": "LibTmux.FSharp.Filter.all",
+   "page": "/fsharp/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.all",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "title": "F# portable query fields",
    "section": "guides"
@@ -1606,9 +1641,23 @@
   {
    "port": "fsharp",
    "symbol": "LibTmux.FSharp.Filter.allOf",
+   "page": "/fsharp/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.allOf",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "title": "F# portable query fields",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.any",
+   "page": "/fsharp/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "fsharp",
@@ -1623,6 +1672,13 @@
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "title": "F# portable query fields",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.anyOf",
+   "page": "/fsharp/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "fsharp",
@@ -1644,6 +1700,20 @@
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "title": "F# portable query fields",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.negate",
+   "page": "/fsharp/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.none",
+   "page": "/fsharp/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "fsharp",
@@ -1732,6 +1802,13 @@
   {
    "port": "fsharp",
    "symbol": "LibTmux.FSharp.Query.matching",
+   "page": "/fsharp/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.matching",
    "page": "/fsharp/latest/guides/queries/",
    "title": "Queries with LibTmux.FSharp",
    "section": "guides"
@@ -1760,6 +1837,13 @@
   {
    "port": "fsharp",
    "symbol": "LibTmux.FSharp.Selection.exactlyOne",
+   "page": "/fsharp/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Selection.exactlyOne",
    "page": "/fsharp/latest/guides/interop/",
    "title": ".NET interoperation",
    "section": "guides"
@@ -1770,6 +1854,13 @@
    "page": "/fsharp/latest/guides/quickstart/",
    "title": "LibTmux.FSharp",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Server",
+   "page": "/fsharp/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "fsharp",
@@ -1791,6 +1882,13 @@
    "page": "/fsharp/latest/guides/interop/",
    "title": ".NET interoperation",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Server.capture",
+   "page": "/fsharp/latest/concepts/transports/",
+   "title": "Commands and control mode",
+   "section": "concepts"
   },
   {
    "port": "fsharp",
@@ -3573,6 +3671,13 @@
   {
    "port": "kotlin",
    "symbol": "io.github.libtmux.kotlin.Pane",
+   "page": "/kotlin/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Pane",
    "page": "/kotlin/latest/guides/coroutines/",
    "title": "Kotlin",
    "section": "guides"
@@ -3628,10 +3733,73 @@
   },
   {
    "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.query.TextField",
+   "page": "/kotlin/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.query.TextField.contains",
+   "page": "/kotlin/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.query.TextField.endsWith",
+   "page": "/kotlin/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.query.TextField.matches",
+   "page": "/kotlin/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.query.TextField.oneOf",
+   "page": "/kotlin/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.query.TextField.startsWith",
+   "page": "/kotlin/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.query.ToManyField.any",
+   "page": "/kotlin/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.query.ToManyField.none",
+   "page": "/kotlin/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "kotlin",
    "symbol": "io.github.libtmux.kotlin.retryIfSafe",
    "page": "/kotlin/latest/guides/getting-started/",
    "title": "libtmux-kotlin",
    "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Server",
+   "page": "/kotlin/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "kotlin",
@@ -3797,6 +3965,13 @@
   {
    "port": "kotlin",
    "symbol": "io.github.libtmux.kotlin.Session",
+   "page": "/kotlin/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Session",
    "page": "/kotlin/latest/guides/coroutines/",
    "title": "Kotlin",
    "section": "guides"
@@ -3874,6 +4049,13 @@
   {
    "port": "kotlin",
    "symbol": "io.github.libtmux.kotlin.Window",
+   "page": "/kotlin/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.Window",
    "page": "/kotlin/latest/guides/coroutines/",
    "title": "Kotlin",
    "section": "guides"
@@ -3895,9 +4077,23 @@
   {
    "port": "kotlin",
    "symbol": "io.github.libtmux.kotlin.withControl",
+   "page": "/kotlin/latest/concepts/transports/",
+   "title": "Commands and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.withControl",
    "page": "/kotlin/latest/guides/getting-started/",
    "title": "libtmux-kotlin",
    "section": "guides"
+  },
+  {
+   "port": "kotlin",
+   "symbol": "io.github.libtmux.kotlin.withServer",
+   "page": "/kotlin/latest/concepts/transports/",
+   "title": "Commands and control mode",
+   "section": "concepts"
   },
   {
    "port": "kotlin",
@@ -7269,6 +7465,13 @@
   {
    "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.cats.Server.resource",
+   "page": "/scala/latest/concepts/transports/",
+   "title": "Commands and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.cats.Server.resource",
    "page": "/scala/latest/examples/capture-pane-output/",
    "title": "Capture pane output",
    "section": "examples"
@@ -7310,6 +7513,27 @@
   },
   {
    "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.CardinalityError.MultipleMatches",
+   "page": "/scala/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.CardinalityError.NoMatch",
+   "page": "/scala/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.Expr",
+   "page": "/scala/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.query.Expr.not",
    "page": "/scala/latest/guides/query/",
    "title": "Queries",
@@ -7332,6 +7556,13 @@
   {
    "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.query.Fields.ToManyRef.all",
+   "page": "/scala/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.Fields.ToManyRef.all",
    "page": "/scala/latest/guides/query/",
    "title": "Queries",
    "section": "guides"
@@ -7339,9 +7570,23 @@
   {
    "port": "scala",
    "symbol": "io.github.libtmux.scaladsl.query.Fields.ToManyRef.any",
+   "page": "/scala/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.Fields.ToManyRef.any",
    "page": "/scala/latest/guides/query/",
    "title": "Queries",
    "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.query.Fields.ToManyRef.none",
+   "page": "/scala/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "scala",
@@ -7468,6 +7713,13 @@
    "page": "/scala/latest/guides/streaming/",
    "title": "Streaming",
    "section": "guides"
+  },
+  {
+   "port": "scala",
+   "symbol": "io.github.libtmux.scaladsl.Vector.matching",
+   "page": "/scala/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "scala",
@@ -9653,6 +9905,13 @@
    "text": "TmuxFixture",
    "page": "/guides/testing-with-libtmux/",
    "line": 150,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "kotlin",
+   "text": "CardinalityException.MultipleMatches",
+   "page": "/kotlin/latest/concepts/queries/",
+   "line": 145,
    "why": "not defined in the stated port"
   },
   {

@@ -63,7 +63,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     domains: [libraryDomain('Kotlin coroutine handles, builders and flows over the Java/JVM library.')],
     sourceGuides: [
       guide('libtmux-kotlin/README.md', 'guides/getting-started', 'core'),
-      guide('docs/guide/kotlin.md', 'guides/coroutines', 'core', { aliases: ['guides/source/coroutines', 'concepts/transports'] }),
+      guide('docs/guide/kotlin.md', 'guides/coroutines', 'core', { aliases: ['guides/source/coroutines'] }),
     ],
   },
   scala: {
@@ -72,7 +72,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('libtmux-scala/README.md', 'guides/overview', 'core'),
       ...['getting-started', 'query', 'ownership', 'execution', 'streaming', 'compatibility'].map((name) =>
         guide(`docs/guide/scala/${name}.md`, `guides/${name}`, 'core', {
-          aliases: [`guides/source/${name}`, ...(name === 'execution' ? ['concepts/transports'] : [])],
+          aliases: [`guides/source/${name}`],
         })),
     ],
   },
@@ -82,7 +82,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('src/LibTmux.FSharp/README.md', 'guides/quickstart', 'core'),
       ...['getting-started', 'queries', 'streams', 'interop', 'modes', 'supported-query-fields'].map((name) =>
         guide(`docs/fsharp/${name}.md`, `guides/${name}`, 'core', {
-          aliases: [`guides/source/${name}`, ...(name === 'modes' ? ['concepts/transports'] : [])],
+          aliases: [`guides/source/${name}`],
         })),
       guide('docs/fsharp/api.md', 'guides/api-overview', 'core', { aliases: [] }),
     ],

@@ -121,6 +121,9 @@ routine site tests. A changed hash needs a new native run before review.
 Use `--example attach` to check the existing-server programs in the attach guide.
 Use `--example query --port ts` to run every complete program on the TypeScript
 filtering page, including its displayed setup and error assertions.
+Use `--example concept --port fsharp --page concepts/queries` for the native
+concept pages. Each run command checks its own expected output; a later success
+cannot hide an earlier missing result.
 
 Put explanatory comments on separate lines above the code they describe.
 Limit example comments to 100 columns, including indentation; prefer shorter

@@ -42,6 +42,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Flow: 'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/',
     StateFlow: 'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-state-flow/',
     'collect()': 'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/collect.html',
+    'singleOrNull()': 'https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/single-or-null.html',
   },
   scala: {
     String: scala('scala/Predef$'), Boolean: scala('scala/Boolean'),
