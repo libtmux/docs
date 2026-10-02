@@ -72,6 +72,7 @@ const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Objec
   scala: 'def extension val var class trait object type given using implicit inline transparent opaque override abstract final sealed case lazy private protected open infix export derives end',
   fsharp: 'module namespace type member static abstract override interface inherit let rec mutable inline internal private public of with get set new val and when',
   ts: 'readonly keyof typeof infer extends unique',
+  swift: 'any',
 }).map(([port, words]) => [port, new Set(words.split(' '))]))
 
 /**

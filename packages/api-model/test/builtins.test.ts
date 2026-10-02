@@ -30,6 +30,21 @@ describe('standard types in product signatures', () => {
     expect(builtinHref('rs', 'Data')).toBeUndefined()
   })
 
+  it('keeps Swift existential any as syntax while resolving the error protocol', () => {
+    const swift = new SymbolIndex([], () => '#', 'swift')
+    const spans = swift.linkType('any Error')
+    expect(spans.map((span) => span.text).join('')).toBe('any Error')
+    expect(spans.find((span) => span.text === 'any')).toEqual({ text: 'any', keyword: true })
+    expect(spans.find((span) => span.text === 'Error')?.link).toMatchObject({
+      href: 'https://developer.apple.com/documentation/swift/error', external: true,
+    })
+    expect(swift.linkType('any MissingError').find((span) => span.text === 'MissingError')).toEqual({
+      text: 'MissingError', link: undefined,
+    })
+    expect(builtinHref('swift', 'any')).toBeUndefined()
+    expect(new SymbolIndex([], () => '#', 'go').linkType('any')[0].link?.href).toBe('https://pkg.go.dev/builtin#any')
+  })
+
   it('keeps inherited object properties out of documentation URLs', () => {
     for (const name of ['toString', 'constructor', '__proto__', 'hasOwnProperty']) {
       expect(builtinHref('scala', name)).toBeUndefined()

@@ -1,0 +1,13 @@
+---
+interface Props { labels: string[] }
+const { labels } = Astro.props
+---
+{labels.length > 0 && (
+  <span class="api-field-overloads">
+    {' (for '}{labels.map((label, i) => <>{i > 0 && '; '}<code>{label}</code></>)}{')'}
+  </span>
+)}
+<style>
+  .api-field-overloads { font-size: 0.875em; }
+  .api-field-overloads code { white-space: normal; overflow-wrap: anywhere; }
+</style>
