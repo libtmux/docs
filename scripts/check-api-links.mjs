@@ -98,7 +98,8 @@ const EXCEPTIONS = new Map()
 }
 
 const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|md|toml|json|ya?ml|sh)$/
-const PORT_BY_LABEL = { Python: 'py', TypeScript: 'ts', Rust: 'rs', Go: 'go', Java: 'java', '.NET': 'dotnet', 'C#': 'dotnet', 'C++': 'cxx', Swift: 'swift' }
+const PORT_BY_LABEL = Object.fromEntries(PORT_DEFS.map((port) => [port.name, port.slug]))
+PORT_BY_LABEL['C#'] = 'dotnet'
 
 /**
  * `workspaceDocsLoader()` (site/src/loaders/workspace-shared.ts) synthesizes

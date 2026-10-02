@@ -4,6 +4,16 @@ import { productApiAlternatives, productApiRoutes } from '../src/lib/product-api
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { PORT_BY_SLUG, productAvailable } from '../src/lib/ports'
 import { getResolver } from '../src/lib/prose-resolver'
+import { decideMention, type ApiProduct } from '@libtmux/api-model'
+import mentionIndex from '../src/data/mentions.json'
+
+it('keeps the mention audit consistent with rendered prose links', () => {
+  for (const row of mentionIndex.dangling) {
+    const product = /\/(workspace|mcp)\//.exec(row.page)?.[1] as ApiProduct | undefined
+    const decision = decideMention(row.text, { pagePort: row.port, product }, getResolver(), API_MODELS)
+    expect(decision.kind, `${row.port} ${row.text} on ${row.page}`).not.toBe('link')
+  }
+})
 
 it('links parent APIs in native prose without replacing facade APIs', () => {
   const resolver = getResolver()
