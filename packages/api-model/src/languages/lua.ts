@@ -1,4 +1,5 @@
 import type { ApiModel, ApiSymbol, DocBlock, Param, Signature } from '../model.ts'
+import { attachCompleteLuaExamples, type LuaExampleManifest } from './lua-examples.ts'
 
 interface LuaNode {
   name?: string
@@ -32,6 +33,8 @@ interface LuaArtifact {
   exporter: { name: string; version: number; luals: string }
   package: { name: string; version: string; source_tag: string }
   declarations: LuaDeclaration[]
+  examples?: { path: string; content: string }[]
+  api_examples?: LuaExampleManifest
 }
 
 function assertArtifact(input: unknown, expectedRevision?: string): LuaArtifact {
@@ -192,6 +195,7 @@ export function extractLua(input: unknown, expectedRevision?: string): ApiModel 
       })
     }
   }
+  attachCompleteLuaExamples(symbols, artifact.api_examples, artifact.examples, artifact.source)
   return {
     port: 'lua',
     repo: artifact.source.repository,
