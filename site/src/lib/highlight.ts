@@ -1,6 +1,7 @@
 import { createHighlighter, type Highlighter } from 'shiki'
 import { COOLDOWN_FORMATS, COOLDOWN_MARKERS, COOLDOWN_SLOTS, formatCooldown, type CooldownUnit } from './cooldown.ts'
 import { promptElement, SESSION_LANGS, sessionLines, shellThemes } from '../plugins/ec-shell-prompt.mjs'
+import { tmuxUsage } from './tmux-usage.mjs'
 
 /**
  * Syntax highlighting for the examples in doc comments.
@@ -45,7 +46,7 @@ async function highlighter(): Promise<Highlighter> {
   instance ??= createHighlighter({
     // Registered under the names in `THEMES`, with plain Bash arguments.
     themes: shellThemes(),
-    langs: [...LANGS],
+    langs: [...LANGS, tmuxUsage],
   })
   return instance
 }
@@ -53,7 +54,7 @@ async function highlighter(): Promise<Highlighter> {
 /** Whether a language has a grammar loaded, so an unknown one degrades. */
 function known(lang: string): string {
   const normalised = lang === 'typescript' ? 'ts' : lang === 'javascript' ? 'js' : lang
-  return (LANGS as readonly string[]).includes(normalised) ? normalised : 'text'
+  return normalised === tmuxUsage.name || (LANGS as readonly string[]).includes(normalised) ? normalised : 'text'
 }
 
 /**
@@ -109,7 +110,7 @@ export async function highlight(code: string, lang: string): Promise<string | un
 const EC_LANGS = new Set([
   'python', 'ruby', 'lua', 'rust', 'ts', 'tsx', 'js', 'jsx', 'java', 'kotlin', 'scala', 'fsharp', 'swift',
   'csharp', 'cpp', 'c', 'go', 'bash', 'shell', 'console', 'json', 'yaml',
-  'toml', 'xml', 'diff', 'text',
+  'toml', 'xml', 'diff', 'text', 'tmux-usage',
 ])
 
 const EC_ALIASES: Record<string, string> = {
