@@ -207,7 +207,7 @@ describe('symbol graph throwing contracts', () => {
       .toEqual([{ type: 'TmuxError' }])
     expect(signature([...head, text(' -> () '), keyword('throws'), ...returned]).raises).toBeUndefined()
     expect(signature([...callback, keyword('rethrows'), ...returned]).raises)
-      .toEqual([{ type: 'any Error', doc: 'Rethrows errors from a throwing argument.' }])
+      .toEqual([{ type: 'any Error', doc: 'Conditionally propagates errors (rethrows).' }])
   })
 
   it('does not invent a throwing contract from empty, incomplete or Never clauses', () => {

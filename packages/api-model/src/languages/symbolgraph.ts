@@ -79,7 +79,7 @@ function raisesOf(fragments: Fragment[]): Signature['raises'] {
   let depth = 0
   for (const [index, fragment] of fragments.entries()) {
     if (depth === 0 && fragment.kind === 'keyword' && fragment.spelling === 'rethrows') {
-      return [{ type: 'any Error', doc: 'Rethrows errors from a throwing argument.' }]
+      return [{ type: 'any Error', doc: 'Conditionally propagates errors (rethrows).' }]
     }
     if (depth === 0 && fragment.kind === 'keyword' && fragment.spelling === 'throws') {
       const suffix = fragmentText(fragments.slice(index + 1)) ?? ''
