@@ -31,9 +31,9 @@ client can change the server between a read and the operation using its result.
 
 ## Declarative filters
 
-[Filtering and queries](/concepts/queries/) describes this port's query APIs,
-accepted fields and result-count contracts. Use that contract when storing a
-query in configuration.
+[Filtering and queries](/concepts/queries/) provides complete Go programs
+for combined predicates, invalid filters, missing and ambiguous results, and
+related windows. Use that contract when storing a query in configuration.
 
 ## Case-insensitive matching
 

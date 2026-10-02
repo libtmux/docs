@@ -26,8 +26,12 @@ const examples = [...receipt.examples, ...attach.examples, ...products.examples,
 afterEach(() => vi.unstubAllEnvs())
 
 describe('verified complete programs', () => {
-  it.each(['kotlin', 'scala', 'fsharp'])('gives %s one owned route for every staple concept', (port) => {
-    const paths = ['index', 'server-session-window-pane', 'queries', 'transports', 'workspaces']
+  it.each([
+    ...['kotlin', 'scala', 'fsharp'].map((port) => ({
+      port, paths: ['index', 'server-session-window-pane', 'queries', 'transports', 'workspaces'],
+    })),
+    { port: 'go', paths: ['server-session-window-pane', 'queries'] },
+  ])('gives $port one owned route for its complete concept programs', ({ port, paths }) => {
     const docs = paths.flatMap((path) => {
       const route = path === 'index' ? 'concepts' : `concepts/${path}`
       return [

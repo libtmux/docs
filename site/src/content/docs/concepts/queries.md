@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, rs, java, dotnet, cxx, swift]
 title: Filtering and queries
 description: How you get from every session on the server to the one pane you mean, and what happens when zero or several match.
 sidebar:

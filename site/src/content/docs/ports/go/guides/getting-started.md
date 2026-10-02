@@ -37,6 +37,12 @@ Use the [complete attach program](../attaching-to-tmux/) to select an existing
 socket and find the `work` session. That example leaves tmux running; its
 launcher owns setup and cleanup for trying it safely.
 
+## Create and inspect the hierarchy
+
+The [complete hierarchy programs](../../concepts/server-session-window-pane/)
+create a session, add a window, split a pane and list the resulting objects.
+They also show how captured records differ from a fresh read after a rename.
+
 ## Where to go next
 
 [Sending keys](../sending-keys/) explains input, and
