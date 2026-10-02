@@ -1,19 +1,19 @@
 import type { ApiModel, ApiSymbol } from './model.ts'
 
+/** The source-qualified spelling shown to readers; stable link ids remain separate. */
+export const qualifiedNameOf = (symbol: ApiSymbol): string => symbol.qualifiedName ?? symbol.publicId ?? symbol.id
+
 /**
  * The module, package or namespace a symbol is declared in.
  *
- * No extractor records this as a field, and it does not need to: a public id
- * is the module path and the name joined by whatever separator the language
- * writes, so removing the name and the separator leaves the module. Handling
- * it here rather than per-port keeps `libtmux.neo`, `tmux`, `LibTmux.Testing`
- * and `libtmux::test` on one code path — the `::` case is why this trims a
- * run of separator characters rather than a fixed number.
+ * Prefer a source declaration. Older models encode their module in the public
+ * id; trimming the symbol name retains that fallback, including C++'s `::`.
  *
  * Returns '' for a symbol whose id is a bare name, which is a symbol at the
  * root of a port that has no module concept.
  */
 export function moduleOf(symbol: ApiSymbol): string {
+  if (symbol.namespace !== undefined) return symbol.namespace
   const id = symbol.publicId ?? symbol.id
   if (!id.endsWith(symbol.name)) return ''
   return id.slice(0, id.length - symbol.name.length).replace(/[.:]+$/, '')
@@ -37,11 +37,8 @@ export function modulesIn(model: ApiModel): { name: string; symbols: ApiSymbol[]
     list.push(s)
     byModule.set(mod, list)
   }
-  // Grouping has to earn its place. docfx and the Java extractor both take a
-  // module segment from the file name, so
-  // `Exceptions.LibTmuxException.LibTmuxException` and
-  // `io.github.libtmux.Pane_.Pane_` yield one "module" per type: .NET produced
-  // 243 headings for 239 cards, which is a flat list wearing a costume. Below
+  // Older models can take a module segment from the file name and yield one
+  // "module" per type. Below
   // an average of two symbols per module there is no grouping to be had, and
   // saying so here — rather than on the page — is what keeps the set of
   // modules that resolve identical to the set that gets rendered an anchor.

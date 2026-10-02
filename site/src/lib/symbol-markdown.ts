@@ -1,5 +1,5 @@
 import type { ApiModel, ApiSymbol, Signature } from '@libtmux/api-model'
-import { compareMembers, memberSignals, moduleOf } from '@libtmux/api-model'
+import { compareMembers, memberSignals, moduleOf, qualifiedNameOf } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { apiEntryFields, apiMemberGroups } from './api-sections'
@@ -31,7 +31,7 @@ function signatureLine(symbol: ApiSymbol, sig: Signature): string {
     .map((p) => `${p.name}${p.type ? `: ${p.type}` : ''}${p.default ? ` = ${p.default}` : ''}`)
     .join(', ')
   const returns = sig.returns ? ` -> ${sig.returns}` : ''
-  return `${symbol.publicId ?? symbol.id}(${params})${returns}`
+  return `${qualifiedNameOf(symbol)}(${params})${returns}`
 }
 
 function fencedCode(code: string, language = ''): string {
@@ -47,7 +47,7 @@ function inlineCode(code: string): string {
 
 export function symbolMarkdown(ctx: MarkdownContext): string {
   const { model, symbol } = ctx
-  const id = symbol.publicId ?? symbol.id
+  const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
 
   // The definition block, in the same order the page shows it.

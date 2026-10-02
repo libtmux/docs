@@ -2,7 +2,7 @@
 import SymbolName from './SymbolName.astro'
 
 interface Props {
-  /** The exact public identity copied by the adjacent button. */
+  /** The source-qualified name copied by the adjacent button. */
   name: string
   namespace?: string
   label?: string
@@ -12,7 +12,8 @@ const { name, namespace, label = 'Module', href } = Astro.props as Props
 ---
 <div class="api-qualified-name" data-pagefind-ignore="all">
   {namespace && <span class="api-qualified-label">{label}</span>}
-  <code class="api-qualified-namespace">
+  <span class="sr-only">{name}</span>
+  <code class="api-qualified-namespace" title={name}>
     {href ? <a href={href}><SymbolName name={namespace ?? name} /></a> : <SymbolName name={namespace ?? name} />}
   </code>
   <button type="button" class="api-copy-name" data-api-copy-name={name} aria-label="Copy fully qualified name" title={`Copy ${name}`}>

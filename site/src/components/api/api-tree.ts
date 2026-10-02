@@ -53,7 +53,7 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
         const name = document.createElement('strong')
         name.textContent = record.name
         const path = document.createElement('small')
-        path.textContent = `${record.kind} · ${record.id}`
+        path.textContent = `${record.kind} · ${record.qualifiedName}`
         link.append(name, path)
         li.append(link)
         results.append(li)

@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro'
+import { moduleOf, qualifiedNameOf } from '@libtmux/api-model'
 import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales.ts'
 import { buildLocale, localeOf } from '../i18n/resolve.ts'
@@ -94,6 +95,8 @@ export const GET: APIRoute = async ({ site }) => {
         id: t.publicId ?? t.id,
         level: 2,
         text: t.name,
+        qualifiedName: qualifiedNameOf(t),
+        namespace: moduleOf(t),
       })),
     })
   }

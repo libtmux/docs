@@ -1,6 +1,6 @@
 ---
-import { parameterId, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
-import { mentionsOf, referenceAlternatives } from '../../lib/api-models'
+import { parameterId, qualifiedNameOf, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
+import { API_MODELS, mentionsOf, referenceAlternatives } from '../../lib/api-models'
 import { withRoot } from '../../lib/site-root'
 import { Code } from 'astro-expressive-code/components'
 import { codeLang } from '../../lib/highlight'
@@ -95,7 +95,11 @@ const absentParts = (text?: string) => (text ?? '').split(/`([^`]+)`/)
 
 const elsewhere = port ? (alternativesFor?.(symbol) ?? referenceAlternatives(port, anchor)).map((group) => ({
   ...group,
-  ports: group.ports.filter((entry) => entry.port !== port),
+  ports: group.ports.filter((entry) => entry.port !== port).map((entry) => {
+    const target = entry.publicId ? API_MODELS[entry.port]?.symbols.find((symbol) =>
+      (symbol.publicId ?? symbol.id) === entry.publicId) : undefined
+    return { ...entry, qualifiedName: target ? qualifiedNameOf(target) : entry.publicId }
+  }),
 })) : []
 
 const inheritedHref = symbol.inheritedFrom
@@ -130,8 +134,9 @@ const keyword = heading ? KEYWORD[kind] : undefined
  * `libtmux.` before `Server`, dimmed — which is what tells a reader whether
  * two same-named types on different pages are the same type.
  */
-const prename = heading && anchor.endsWith(symbol.name)
-  ? anchor.slice(0, anchor.length - symbol.name.length)
+const qualifiedName = qualifiedNameOf(symbol)
+const prename = heading && qualifiedName.endsWith(symbol.name)
+  ? qualifiedName.slice(0, qualifiedName.length - symbol.name.length)
   : ''
 
 const bases = heading ? ((symbol as { extends?: string[] }).extends ?? []) : []
@@ -679,10 +684,10 @@ const hasBody =
                 <span class="api-elsewhere-port">{e.name}</span>
                 {e.href ? (
                   <a href={e.href}>
-                    <code>{e.publicId}</code>
+                    <code>{e.qualifiedName}</code>
                   </a>
                 ) : e.publicId ? (
-                  <code>{e.publicId}</code>
+                  <code>{e.qualifiedName}</code>
                 ) : (
                   <span class="api-elsewhere-absent">
                     {absentParts(e.absent).map((part, i) =>
