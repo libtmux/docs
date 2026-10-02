@@ -1,0 +1,7 @@
+{
+  "latest": "3.7c",
+  "versions": [
+    { "version": "3.7c", "revision": "79072dd1a9f5fb437a5859e362a496fd57ec0981" },
+    { "version": "3.2a", "revision": "85893888497c5077979bc7557fb970ee5e3d13d9" }
+  ]
+}

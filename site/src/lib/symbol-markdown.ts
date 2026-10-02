@@ -3,6 +3,7 @@ import { compareMembers, memberSignals, moduleOf, qualifiedNameOf } from '@libtm
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { apiEntryFields, apiMemberGroups } from './api-sections'
+import { tmuxCommandsFor, tmuxReferenceUrl } from './tmux-reference'
 
 /**
  * A symbol's page as Markdown.
@@ -65,6 +66,9 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (symbol.extends?.length) facts.push(`- **Bases:** ${symbol.extends.join(', ')}`)
   if (ctx.canonical) facts.push(`- **Page:** ${ctx.canonical}`)
   if (facts.length) out.push(...facts, '')
+  for (const command of tmuxCommandsFor(model.port, symbol.publicId ?? symbol.id)) {
+    out.push(`tmux command: [\`${command.name}\`](${tmuxReferenceUrl('latest', command.name)})`, '')
+  }
   if (symbol.apiScope === 'supporting') {
     out.push('This type appears in public signatures. It is not a package entry point.', '')
   }

@@ -10,7 +10,8 @@ import CodeTabs from '../components/CodeTabs.astro'
 import { generateToC } from '../utils/generateToC'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import PageToolbar from '../components/PageToolbar.astro'
-import { pageBreadcrumbs } from '../lib/sidebar'
+import { pageBreadcrumbs, type SidebarItem } from '../lib/sidebar'
+import type { PagePortLink } from '../lib/page-port-links'
 import ProseText from '../components/ProseText.astro'
 import { pagePortsFor } from '../lib/page-ports-for'
 import Aside from '../components/Aside.astro'
@@ -47,6 +48,7 @@ interface Props {
   /** Path within the current port+version, e.g. 'guides/panes'. Forwarded to BaseLayout for canonical/SEO. */
   pagePath?: string
   noindex?: boolean
+  searchable?: boolean
   updated?: string
   headings?: MarkdownHeading[]
   /** Suppress the on-page table of contents (frontmatter `tableOfContents`). */
@@ -78,6 +80,9 @@ interface Props {
    * renders would be a second.
    */
   bare?: boolean
+  navigation?: SidebarItem[]
+  breadcrumbs?: { name: string; url: string }[]
+  pagePorts?: PagePortLink[]
 }
 
 const {
@@ -88,6 +93,7 @@ const {
   version: requestedVersion,
   pagePath = '',
   noindex = false,
+  searchable = true,
   updated,
   headings = [],
   tableOfContents = true,
@@ -102,6 +108,9 @@ const {
   editHref,
   editLabel,
   bare = false,
+  navigation,
+  breadcrumbs: requestedBreadcrumbs,
+  pagePorts: requestedPagePorts,
 } = Astro.props as Props
 
 // process.env, not import.meta.env: import.meta.env.LIBTMUX_DOCS_* goes
@@ -117,19 +126,19 @@ const currentPath = Astro.url.pathname
 
 const tocItems =
   tableOfContents && headings.length > 0 ? generateToC(headings) : []
-const pagePorts = await pagePortsFor(sourcePath ?? pagePath, port, version)
+const pagePorts = requestedPagePorts ?? await pagePortsFor(sourcePath ?? pagePath, port, version)
 const productBrand = port && product && pagePath === product && productAvailable(PORT_BY_SLUG[port], product)
   ? branding(port, pagePath) : undefined
 const development = product && port && productInDevelopment(PORT_BY_SLUG[port], product)
 const workspaceOverview = product === 'workspace' && pagePath === 'workspace' && port
   ? workspaceOverviewNotice(PORT_BY_SLUG[port]) : undefined
 const workspaceInternals = product === 'workspace' && pagePath.startsWith('workspace/internals/')
-const breadcrumbs = product && port ? [
+const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
   { name: PORT_BY_SLUG[port].name, url: portPageUrl(PORT_BY_SLUG[port], version) },
   { name: DOC_PRODUCTS[product].label, url: portPageUrl(PORT_BY_SLUG[port], version, product) },
   ...(workspaceInternals ? [{ name: 'Internals', url: portPageUrl(PORT_BY_SLUG[port], version, 'workspace/internals') }] : []),
   ...(pagePath !== product ? [{ name: title, url: portPageUrl(PORT_BY_SLUG[port], version, pagePath) }] : []),
-] : await pageBreadcrumbs(title, pagePath, version, port, locale)
+] : await pageBreadcrumbs(title, pagePath, version, port, locale))
 ---
 
 <BaseLayout
@@ -139,6 +148,7 @@ const breadcrumbs = product && port ? [
   portSlug={port}
   version={version}
   noindex={noindex}
+  searchable={searchable}
   updated={updated}
   locale={locale}
   locales={locales}
@@ -190,7 +200,7 @@ const breadcrumbs = product && port ? [
     <div class="mobile-fallback lg:hidden" data-pagefind-ignore="all">
       <details>
         <summary>Browse documentation</summary>
-        <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} />
+        <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={navigation} />
       </details>
       {tocItems.length > 0 && <details>
         <summary>On this page</summary>
@@ -218,7 +228,7 @@ const breadcrumbs = product && port ? [
           </svg>
         </button>
       </div>
-      <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} />
+      <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={navigation} />
     </div>
   </aside>
 
@@ -233,7 +243,7 @@ const breadcrumbs = product && port ? [
   <div class="mx-auto flex max-w-[100rem] gap-5 px-4 py-6 lg:px-5">
     <aside class="hidden w-64 shrink-0 lg:block">
       <div class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
-        <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} />
+        <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={navigation} />
       </div>
     </aside>
 

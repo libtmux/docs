@@ -106,5 +106,9 @@ cleans up. Use the port dropdown for its input APIs, or open the program:
 
 ## tmux reference
 
+The [send-keys reference](/tmux/latest/reference/send-keys/) describes literal
+input, key names, and each supported flag. Select your installed tmux version
+on that page.
+
 The [tmux manual](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1)
 documents these commands and their flags.

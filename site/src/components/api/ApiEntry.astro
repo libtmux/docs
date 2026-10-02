@@ -11,6 +11,7 @@ import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
 import type { AsideType } from '../../lib/aside'
 import { apiEntryFields } from '../../lib/api-sections'
+import { tmuxCommandsFor, tmuxReferenceUrl } from '../../lib/tmux-reference'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
 
 /**
@@ -152,6 +153,7 @@ const references = symbol.doc?.references ?? []
  * "explained in a concept" and "used in an example" are different offers.
  */
 const mentions = port ? mentionsOf(port, symbol.id) : []
+const tmuxCommands = port ? tmuxCommandsFor(port, anchor) : []
 const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].sort()
 
 const badges = [
@@ -252,6 +254,7 @@ const hasBody =
   Boolean(symbol.doc?.body) ||
   Boolean(symbol.doc?.deprecated) ||
   hasFields ||
+  tmuxCommands.length > 0 ||
   elsewhere.length > 0
 ---
 
@@ -651,6 +654,13 @@ const hasBody =
       )
     }
 
+    {tmuxCommands.length > 0 && <p class="gp-sphinx-api-mentions">
+      <span class="gp-sphinx-api-mentions-label">tmux command</span>
+      {tmuxCommands.map((command, i) => <>
+        {i > 0 && ', '}
+        <a href={tmuxReferenceUrl('latest', command.name)}><code>{command.name}</code></a>
+      </>)}
+    </p>}
     {
       mentions.length > 0 && (
         <p class="gp-sphinx-api-mentions">

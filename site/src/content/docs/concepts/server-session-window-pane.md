@@ -217,3 +217,13 @@ Cancelling a mutation does not prove that tmux never received it; check the
 resulting state before retrying. [Errors and exceptions](/topics/errors-and-exceptions/)
 covers failure handling.
 <!-- /port -->
+
+<!-- port:root -->
+## tmux command reference
+
+Read the tmux command references for [list-sessions](/tmux/latest/reference/list-sessions/),
+[list-windows](/tmux/latest/reference/list-windows/), and
+[list-panes](/tmux/latest/reference/list-panes/). The
+[target syntax](/tmux/latest/reference/manual/#COMMANDS) explains IDs, names,
+and indexes.
+<!-- /port -->
