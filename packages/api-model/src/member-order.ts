@@ -72,14 +72,14 @@ const idOf = (s: ApiSymbol) => s.publicId ?? s.id
 
 /**
  * `sessions`, `Sessions`, `sessions()`, `list_sessions`, `listSessions`,
- * `ListSessionsAsync`: every port's spelling of the accessor that walks one
+ * `ListSessionsAsync`, `GetClientsAsync`: accessors that walk one
  * level down tmux's hierarchy.
  */
-const LISTING = /^(list_?)?(sessions|windows|panes|clients|buffers)$/
+const LISTING = /^(list_?|get)?(sessions|windows|panes|clients|buffers)$/
 const LISTING_ORDER = ['sessions', 'windows', 'panes', 'clients', 'buffers']
 const listingRank = (s: ApiSymbol, signals: MemberSignals) => {
   const concept = signals.conceptIds.get(idOf(s))
-  const name = concept?.startsWith('list-') ? concept.slice(5) : bareName(s).replace(/^list_?/, '')
+  const name = concept?.startsWith('list-') ? concept.slice(5) : bareName(s).replace(/^(list_?|get)/, '')
   const rank = LISTING_ORDER.indexOf(name)
   return rank < 0 ? LISTING_ORDER.length : rank
 }
@@ -137,5 +137,6 @@ export function compareMembers(signals: MemberSignals): (a: ApiSymbol, b: ApiSym
     (signals.conceptOrder.get(idOf(a)) ?? Infinity) - (signals.conceptOrder.get(idOf(b)) ?? Infinity) ||
     (rank(a) === 0 ? listingRank(a, signals) - listingRank(b, signals) : 0) ||
     (signals.mentions.get(idOf(b)) ?? 0) - (signals.mentions.get(idOf(a)) ?? 0) ||
-    a.name.localeCompare(b.name)
+    a.name.localeCompare(b.name) ||
+    idOf(a).localeCompare(idOf(b))
 }

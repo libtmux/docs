@@ -2,13 +2,14 @@ import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { API_MODEL_PORTS } from '../../../site/src/lib/ports.ts'
 import { CONCEPTS } from '../src/concepts.ts'
 import { compareMembers, memberSignals, memberTier, type MemberSignals } from '../src/member-order.ts'
 import type { ApiModel, ApiSymbol } from '../src/model.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const DATA = join(here, '../../../site/src/data')
-const PORTS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'dotnet', 'cxx', 'swift'] as const
+const PORTS = API_MODEL_PORTS.map((port) => port.slug)
 const LISTINGS = ['list-sessions', 'list-windows', 'list-panes']
 const TOP = 3
 const available = existsSync(join(DATA, 'api/py.json'))
@@ -60,6 +61,14 @@ function violations(compare: Compare): string[] {
 }
 
 d('member order', () => {
+  it('breaks equal-name ties by public identity, independent of input order', () => {
+    const symbol = model('ts').symbols.find((entry) => entry.name === 'Server')!
+    const left = { ...symbol, name: 'handle', id: 'a.handle', publicId: 'a.handle', doc: undefined }
+    const right = { ...left, id: 'b.handle', publicId: 'b.handle' }
+    const compare = compareMembers(memberSignals('ts'))
+    expect([right, left].sort(compare)).toEqual([left, right])
+    expect([left, right].sort(compare)).toEqual([left, right])
+  })
   it('leads with listing accessors and ends with private members on every port', () => {
     expect(violations(compareMembers)).toEqual([])
   })
@@ -68,6 +77,31 @@ d('member order', () => {
     const found = violations(alphabetical)
     expect(found.some((v) => /^py: list-sessions is #\d+ on libtmux\.server\.Server$/.test(v))).toBe(true)
     expect(found.some((v) => /^py: __\w+__ ranks above public members/.test(v))).toBe(true)
+  })
+
+  it.each(PORTS)('puts %s listings and queries before creation and utility methods', (port) => {
+    const { symbols } = model(port)
+    const signals = memberSignals(port)
+    let checked = 0
+    for (const owner of symbols.filter((symbol) => ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot'].includes(symbol.name))) {
+      const members = symbols.filter((symbol) => symbol.parent === owner.id)
+      const ordered = members.toSorted(compareMembers(signals))
+      const routine = members.filter((symbol) => /^(new_?session|new_?window|create_?session|create_?window|close|dispose|asjava|tostring|__enter__|kill_?server)$/.test(
+        symbol.name.replace(/\(.*$/, '').replace(/Async$/, '').toLowerCase()))
+      const priority = members.filter((symbol) => symbol.doc?.deprecated === undefined && !symbol.modifiers?.includes('deprecated') && (
+        /^(?:list_?|get)?(?:sessions|windows|panes|clients|buffers)$/.test(symbol.name.replace(/\(.*$/, '').replace(/Async$/, '').toLowerCase()) ||
+        /^(search-|snapshot$)/.test(signals.conceptIds.get(symbol.publicId ?? symbol.id) ?? '')))
+      for (const listing of priority) for (const helper of routine) {
+        expect(ordered.indexOf(listing), `${owner.id}: ${listing.name} before ${helper.name}`).toBeLessThan(ordered.indexOf(helper))
+        checked++
+      }
+      // F# currently exposes listPanes without creation or lifecycle helpers.
+      if (priority.length && !routine.length) {
+        expect(priority, owner.id).toContain(ordered[0])
+        checked++
+      }
+    }
+    expect(checked, `${port} must exercise at least one real listing or query`).toBeGreaterThan(0)
   })
 
   it('leads a Lua Server, which has no sessions accessor, with its queries', () => {
