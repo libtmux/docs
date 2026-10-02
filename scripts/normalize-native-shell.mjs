@@ -54,6 +54,20 @@ export async function normalizeNativeShell(directory, prefix, { sphinxPort, vers
       } else if (/\.(html|css)$/.test(entry.name)) {
         const before = readFileSync(path, 'utf8')
         let after = normalize(before)
+        // Native search delegates to the owned search page for this port/version.
+        if (port && /^search(?:\.html|\/index\.html)$/.test(relative(directory, path).split(sep).join('/'))) {
+          const target = `${root}/${port.slug}/${version}/search/`
+          const href = escapeAttribute(target)
+          const scriptTarget = JSON.stringify(target).replaceAll('<', '\\u003c')
+          after = `<!doctype html>
+<html><head><meta charset="utf-8"><title>Search</title>
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="${href}">
+<script>window.location.replace(${scriptTarget} + window.location.search + window.location.hash)</script>
+<meta http-equiv="refresh" content="0; url=${href}">
+</head><body><p><a href="${href}">Search the ${port.name} documentation</a>.</p></body></html>
+`
+        }
         if (port && entry.name.endsWith('.html') && !/<meta\b[^>]*http-equiv=["']refresh["']/i.test(after)) {
           if (!/<\/head>/i.test(after)) throw new Error(`Native page has no closing head: ${path}`)
           // Old source refs may predate the shell; replace existing integration once.
