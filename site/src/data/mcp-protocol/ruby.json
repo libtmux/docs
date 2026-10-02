@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-ruby",
-  "revision": "e3815d2b35a6c663f20769231e1d22b565f87038",
+  "revision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
   "selection": {
     "mode": "explicit CLI options",
     "tools": "tmux_capabilities,tmux_snapshot,tmux_capture,tmux_wait,tmux_create,tmux_send,tmux_close,tmux_run"
