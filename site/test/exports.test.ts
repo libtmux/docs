@@ -1,7 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { PORTS } from '../src/lib/ports'
+import { Window } from 'happy-dom'
+import { API_MODEL_PORTS, PORTS } from '../src/lib/ports'
 import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedHas, publishedPath, sitePath } from './site-root'
 
 /**
@@ -118,6 +119,38 @@ describeIfAssembled('published exports', () => {
         (m.ports as Array<{ slug?: string }>).map((p) => p.slug).sort(),
         'one entry per port in ports.ts',
       ).toEqual(PORTS.map((p) => p.slug).sort())
+    })
+
+    it.each(API_MODEL_PORTS)('advertises real $name reference sections and declaration links', async (port) => {
+      const reference = manifest().pages.find((page: { title: string; section: string }) =>
+        page.section === 'API reference' && page.title === `${port.name} API reference`)
+      expect(reference).toBeDefined()
+      const root = new URL(reference.url).pathname.replace(/^\//, '')
+      const window = new Window()
+      try {
+        // Keep scripts and preload links inert while inspecting the rendered anchors.
+        const template = window.document.createElement('template')
+        template.innerHTML = readPublished(join(root, 'index.html'))
+        const actual = [...template.content.querySelectorAll('.api-index-summary[id]')].map((node) => node.id)
+        expect(reference.headings.map((heading: { id: string }) => heading.id)).toEqual(actual)
+        expect(actual[0]).toBe('section-server')
+        expect(reference.symbols[0].name).toBe('Server')
+        for (const symbol of reference.symbols) {
+          const target = new URL(symbol.url).pathname.replace(/^\//, '')
+          expect(has(join(target, 'index.html')), symbol.url).toBe(true)
+          expect(symbol.qualifiedName).toBeTruthy()
+        }
+        const inventoryPath = new URL(reference.symbolIndexUrl).pathname.replace(/^\//, '')
+        expect(has(inventoryPath)).toBe(true)
+        const inventory = JSON.parse(readPublished(inventoryPath))
+        for (const members of Object.values(inventory.members) as string[][][]) {
+          for (const [, slug] of members) {
+            expect(has(join(root, slug, 'index.html')), `${reference.symbolIndexUrl}: ${slug}`).toBe(true)
+          }
+        }
+      } finally {
+        await window.happyDOM.close()
+      }
     })
 
     it('describes pages that exist', () => {

@@ -3,7 +3,7 @@ import { moduleOf, qualifiedNameOf } from '@libtmux/api-model'
 import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales.ts'
 import { buildLocale, localeOf } from '../i18n/resolve.ts'
-import { API_MODELS, PORT_NAME, ownersOf } from '../lib/api-models.ts'
+import { API_MODELS, PORT_NAME, pageSlug } from '../lib/api-models.ts'
 import { DOC_PRODUCTS, hasReference, PORTS, PORT_BY_SLUG, portPageUrl, productApiPath, productAvailable, productInDevelopment, referenceUrl, type DocProduct } from '../lib/ports.ts'
 import { PORT_ROOT } from '../lib/site-root.ts'
 import { docsRoutePath } from '../lib/docs-paths.ts'
@@ -12,16 +12,16 @@ import { isIndexSource, markdownPath } from '../lib/markdown-twins.ts'
 import { localeProse } from '../lib/llms.ts'
 import { documentationAreas } from '../lib/port-documentation.ts'
 import { buildTarget } from '../lib/versions.ts'
+import { referenceIndexSections } from '../lib/api-tree.ts'
 import { tmuxPageDescription, tmuxPageHeadings, tmuxPageTitle, tmuxReferenceRoutes, tmuxReferenceUrl } from '../lib/tmux-reference.ts'
 
 /**
  * `/docs.json` — the agent manifest.
  *
- * The schema is `sphinx-gp-llms`'s, field for field, read from its
- * `_docs_json.py` and from the 55-page instance that ships under each
- * version's Python API subtree. Matching it exactly matters more than our
- * own: the Python port publishes both files, so an agent that understands one
- * must not find the other contradicting it.
+ * The base fields follow `sphinx-gp-llms`'s `_docs_json.py`, also published
+ * under the Python API subtree. API index entries add ordered `symbols`
+ * with declaration URLs and a `symbolIndexUrl` for the complete core inventory.
+ * Their `headings` still describe anchors on the index page itself.
  *
  *   { name, url, description, sourceRepository,
  *     agentEntrypoints: { manifest, llms, llmsFull },
@@ -80,24 +80,29 @@ export const GET: APIRoute = async ({ site }) => {
 
   // The reference is not in the docs collection, and an agent asking "what is
   // documented here" should not be told only about the prose.
-  for (const [slug, model] of Object.entries(API_MODELS)) {
+  for (const slug of Object.keys(API_MODELS)) {
     if (port && slug !== port) continue
-    const types = ownersOf(model)
+    const sections = referenceIndexSections(slug)
+    const declarations = sections.flatMap((section) => [...section.types, ...section.free])
+    const referencePath = `${refBase}${slug}/${versionFor(slug)}/reference/`
     pages.push({
       title: `${PORT_NAME[slug] ?? slug} API reference`,
-      description: `${model.symbols.length} symbols extracted from source, ${types.length} with their own page.`,
+      description: `${declarations.length} declarations in the reference index. The symbol index also includes their members.`,
       section: 'API reference',
       // refBase, not base: the reference is generated in the default locale
       // only, so a Japanese manifest advertising a locale-prefixed reference
       // names pages nothing builds.
-      url: `${origin}${refBase}${slug}/${versionFor(slug)}/reference/`,
-      markdownUrl: `${origin}${refBase}${slug}/${versionFor(slug)}/reference/index.md`,
-      headings: types.slice(0, 200).map((t) => ({
-        id: t.publicId ?? t.id,
-        level: 2,
-        text: t.name,
-        qualifiedName: qualifiedNameOf(t),
-        namespace: moduleOf(t),
+      url: `${origin}${referencePath}`,
+      markdownUrl: `${origin}${referencePath}index.md`,
+      symbolIndexUrl: `${origin}${referencePath}tree.json`,
+      headings: sections.map((section) => ({ id: `section-${section.id}`, level: 2, text: section.name })),
+      symbols: declarations.map((symbol) => ({
+        id: symbol.publicId ?? symbol.id,
+        name: symbol.name,
+        kind: symbol.kind,
+        qualifiedName: qualifiedNameOf(symbol),
+        namespace: moduleOf(symbol),
+        url: `${origin}${referencePath}${symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)}/`,
       })),
     })
   }
