@@ -39,6 +39,12 @@ function fencedCode(code: string, language = ''): string {
   return `${fence}${language}\n${code}${code.endsWith('\n') ? '' : '\n'}${fence}`
 }
 
+function inlineCode(code: string): string {
+  const fence = '`'.repeat(Math.max(1, ...[...code.matchAll(/`+/g)].map((match) => match[0].length + 1)))
+  const pad = /^`|`$|^ .* $/.test(code) ? ' ' : ''
+  return `${fence}${pad}${code}${pad}${fence}`
+}
+
 export function symbolMarkdown(ctx: MarkdownContext): string {
   const { model, symbol } = ctx
   const id = symbol.publicId ?? symbol.id
@@ -90,11 +96,11 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
 
   const { params, returns, raises } = apiEntryFields(symbol, model.port)
-  const overloads = (labels: string[]) => labels.length ? ` (for ${labels.map((label) => `\`${label}\``).join('; ')})` : ''
+  const overloads = (labels: string[]) => labels.length ? ` (for ${labels.map(inlineCode).join('; ')})` : ''
   if (params.length) {
     out.push('## Parameters', '')
     for (const p of params) {
-      out.push(`- \`${p.name}\`${p.type ? ` (${p.type})` : ''}${p.doc ? `: ${p.doc}` : ''}${p.since ? ` (added ${p.since})` : ''}${p.deprecated ? ` (deprecated ${p.deprecated})` : ''}${overloads(p.overloads)}`)
+      out.push(`- ${inlineCode(p.name)}${p.type ? ` (${inlineCode(p.type)})` : ''}${p.doc ? `: ${p.doc}` : ''}${p.since ? ` (added ${p.since})` : ''}${p.deprecated ? ` (deprecated ${p.deprecated})` : ''}${overloads(p.overloads)}`)
     }
     out.push('')
   }
@@ -106,7 +112,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
 
   if (raises.length) {
     out.push('## Raises', '')
-    for (const r of raises) out.push(`- \`${r.type}\`${r.doc ? `: ${r.doc}` : ''}${overloads(r.overloads)}`)
+    for (const r of raises) out.push(`- ${inlineCode(r.type)}${r.doc ? `: ${r.doc}` : ''}${overloads(r.overloads)}`)
     out.push('')
   }
 
@@ -116,7 +122,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const inherited = members.filter((member) => member.inheritedFrom)
   const appendMembers = (entries: ApiSymbol[]) => {
     for (const member of entries) {
-      out.push(`- \`${member.name}\` (${member.kind})${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
+      out.push(`- ${inlineCode(member.name)} (${member.kind})${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
     }
     out.push('')
   }

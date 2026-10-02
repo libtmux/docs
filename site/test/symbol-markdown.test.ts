@@ -1,11 +1,48 @@
 import { describe, expect, it } from 'vitest'
+import { fromMarkdown } from 'mdast-util-from-markdown'
 import type { ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS, OWNER_KINDS } from '../src/lib/api-models'
 import { membersByType } from '../src/lib/api-tree'
 import { PORTS } from '../src/lib/ports'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 
+function inlineCodes(text: string): string[] {
+  const values: string[] = []
+  type Node = { type: string; value?: string; children?: Node[] }
+  const collect = (node: Node) => {
+    if (node.type === 'inlineCode') values.push(node.value!)
+    for (const child of node.children ?? []) collect(child)
+  }
+  collect(fromMarkdown(text))
+  return values
+}
+
 describe('API Markdown content parity', () => {
+  it('keeps escaped Kotlin and Scala names literal in overload labels', () => {
+    for (const [port, id, expected] of [
+      ['kotlin', 'io.github.libtmux.kotlin.Hooks.`set`', '`set`(event, command) [overload 1]'],
+      ['scala', 'io.github.libtmux.scaladsl.cats.CommandChain.`then`', '`then`(argv)'],
+    ]) {
+      const model = API_MODELS[port]
+      const symbol = model.symbols.find((entry) => entry.id === id)!
+      expect(inlineCodes(symbolMarkdown({ model, symbol }))).toContain(expected)
+    }
+  })
+
+  it('preserves escaped parameter names and generic types as literal code', () => {
+    const model = API_MODELS.kotlin
+    for (const symbol of model.symbols.filter((entry) => entry.signatures.some((signature) =>
+      signature.params.some((param) => param.name.includes('`'))))) {
+      const codes = inlineCodes(symbolMarkdown({ model, symbol }))
+      for (const signature of symbol.signatures) {
+        for (const param of signature.params) {
+          expect(codes, symbol.id).toContain(param.name)
+          if (param.type) expect(codes, symbol.id).toContain(param.type)
+        }
+      }
+    }
+  })
+
   it('retains earlier overload contracts instead of replacing them with an undocumented final overload', () => {
     const model = API_MODELS.kotlin
     for (const name of ['session', 'window', 'pane']) {
@@ -57,7 +94,7 @@ describe('API Markdown content parity', () => {
     expect(text).toContain('**Module:** io.github.libtmux.scaladsl\n')
     for (const signature of symbol.signatures) expect(text).toContain(signature.raw)
     expect(text).toContain('## Parameters\n\n- `expression`')
-    expect(text).toContain('- `id` (io.github.libtmux.WindowId)')
+    expect(text).toContain('- `id` (`io.github.libtmux.WindowId`)')
   })
 
   it('uses the documented signature and keeps all declarations, warnings and provenance', () => {
@@ -82,7 +119,7 @@ describe('API Markdown content parity', () => {
     expect(text).toContain('## Changed\n\nReturns complete lines.')
     expect(text).toContain('**warning:** The pane may exit between commands.')
     expect(text).toContain('- [manual] The tmux capture-pane manual.')
-    expect(text).toContain('## Parameters\n\n- `options` (CaptureOptions): Choose the line range. (added 1.2) (deprecated Use a range.)')
+    expect(text).toContain('## Parameters\n\n- `options` (`CaptureOptions`): Choose the line range. (added 1.2) (deprecated Use a range.)')
     expect(text).not.toContain('- `limit`')
     expect(text).toContain('## Returns\n\nThe captured lines.')
     expect(text).toContain('## Raises\n\n- `CaptureError`: The pane no longer exists.')

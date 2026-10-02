@@ -223,7 +223,7 @@ async function checkReferenceAndHeroes(browser, base) {
     const errors = page.locator('[id="io.github.libtmux.kotlin.Server.session.errors"] + dd')
     assert.match(await errors.innerText(), /NoMatch/)
     assert.match(await errors.innerText(), /MultipleMatches/)
-    assert.match(await errors.innerText(), /expression:/, 'Errors identify the expression overload')
+    assert.match(await errors.innerText(), /session\(expression\)/, 'Errors identify the expression overload')
     const fieldIds = await page.locator('.gp-sphinx-api-parameters [id]').evaluateAll((elements) => elements.map((element) => element.id))
     assert.equal(fieldIds.length, new Set(fieldIds).size, 'Overload parameters retain unique anchors')
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Overload field labels fit on a phone')

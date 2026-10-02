@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { compareMembers, memberSignals, SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
 import { apiEntryFields, apiEntrySections, apiMemberGroups, relatedApiTypes } from '../src/lib/api-sections'
+import { API_MODELS } from '../src/lib/api-models'
 
 const symbol = (id: string, overrides: Partial<ApiSymbol> = {}): ApiSymbol => ({
   id, name: id.split('.').at(-1)!, kind: 'class', modifiers: [], signatures: [],
@@ -22,13 +23,30 @@ describe('reference page navigation', () => {
       ['id', 'SessionId', undefined],
     ])
     expect(fields.returns).toEqual([
-      { doc: 'The matching session.', overloads: ['session(value: Expr)'] },
-      { doc: 'The named session or null.', overloads: ['session(value: string)'] },
+      { doc: 'The matching session.', overloads: ['session(value) [overload 1]'] },
+      { doc: 'The named session or null.', overloads: ['session(value) [overload 2]'] },
     ])
     expect(fields.raises).toEqual([
-      { type: 'CardinalityError', doc: 'Zero or multiple matches.', overloads: ['session(value: Expr)'] },
+      { type: 'CardinalityError', doc: 'Zero or multiple matches.', overloads: ['session(value) [overload 1]'] },
     ])
     expect(apiEntrySections(method, 'kotlin').map((section) => section.label)).toEqual(['Parameters', 'Returns', 'Errors'])
+  })
+
+  it('treats the Python implementation docstring as documentation for every overload', () => {
+    const capture = API_MODELS.py.symbols.find((entry) => entry.id === 'libtmux.pane.Pane.capture_pane')!
+    const fields = apiEntryFields(capture, 'py')
+    expect(fields.params).toHaveLength(15)
+    expect(fields.params.every((param) => param.overloads.length === 0)).toBe(true)
+    expect(fields.returns[0].doc).toContain('Captured pane content')
+    expect(fields.returns[0].overloads).toEqual([])
+  })
+
+  it('distinguishes Swift overloads without duplicating its name parentheses', () => {
+    const next = API_MODELS.swift.symbols.find((entry) => entry.id === 'ControlNotificationStream.Iterator.next()')!
+    const fields = apiEntryFields(next, 'swift')
+    expect(fields.raises.map((entry) => entry.overloads)).toEqual([
+      ['next() [overload 1]'], ['next() [overload 2]'],
+    ])
   })
 
   it('renders a shared field once without an unnecessary overload qualifier', () => {

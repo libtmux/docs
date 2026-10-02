@@ -10,8 +10,15 @@ export interface ApiSection {
 /** The fields shown by ApiEntry, shared with its section navigation. */
 export function apiEntryFields(symbol: ApiSymbol, port?: string) {
   const native = ['kotlin', 'scala', 'fsharp'].includes(port ?? '')
-  const label = (signature: Signature) => signature.raw?.replace(/\s+/g, ' ').trim() ??
-    `${symbol.name}(${signature.params.map((param) => `${param.name}${param.type ? `: ${param.type}` : ''}`).join(', ')})`
+  const name = port === 'swift' ? symbol.name.replace(/\([^)]*\)$/, '') : symbol.name
+  const labels = symbol.signatures.map((signature) =>
+    `${name}(${signature.params.map((param) => param.name).join(', ')})`)
+  const label = (i: number) => labels.filter((entry) => entry === labels[i]).length > 1
+    ? `${labels[i]} [overload ${i + 1}]` : labels[i]
+  // Python's extractor merges @overload stubs followed by their implementation.
+  // The implementation docstring documents the complete callable, not one stub.
+  const familyDocumentation = port === 'py' && !symbol.modifiers.includes('overload')
+    ? symbol.signatures.length - 1 : -1
   const collect = <T>(read: (signature: Signature) => T[]) => {
     const fields = new Map<string, { value: T; signatures: Set<number> }>()
     symbol.signatures.forEach((signature, i) => {
@@ -24,8 +31,8 @@ export function apiEntryFields(symbol: ApiSymbol, port?: string) {
     })
     return [...fields.values()].map(({ value, signatures }) => ({
       ...value,
-      overloads: signatures.size < symbol.signatures.length
-        ? [...signatures].map((i) => label(symbol.signatures[i])) : [],
+      overloads: signatures.size < symbol.signatures.length && !signatures.has(familyDocumentation)
+        ? [...signatures].map(label) : [],
     }))
   }
   return {
