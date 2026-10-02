@@ -10,6 +10,7 @@ import ApiDoc from './ApiDoc.astro'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
 import type { AsideType } from '../../lib/aside'
+import { apiEntryFields } from '../../lib/api-sections'
 
 /**
  * One documented symbol, in the shape gp-sphinx's stylesheet expects.
@@ -195,11 +196,7 @@ const FOLD_THRESHOLD = 10
 const folds = (sig: { params: unknown[] }) => sig.params.length >= FOLD_THRESHOLD
 const foldable = symbol.signatures.some(folds)
 
-const params = nativeSignatures
-  ? [...new Map(symbol.signatures.flatMap((sig) => sig.params).map((param) => [param.name, param])).values()]
-  : symbol.signatures.at(-1)?.params.filter((p) => p.doc) ?? []
-const returnsDoc = symbol.signatures.at(-1)?.returnsDoc
-const raises = symbol.signatures.at(-1)?.raises ?? []
+const { params, returnsDoc, raises } = apiEntryFields(symbol, port)
 const hasFields = params.length > 0 || Boolean(returnsDoc) || raises.length > 0
 
 /**
@@ -497,7 +494,7 @@ const hasBody =
       </p>
     )}
     {symbol.doc?.body && (
-      <div class="gp-sphinx-api-description">
+      <div class="gp-sphinx-api-description" id={`${anchor}.description`}>
         <ApiProse text={symbol.doc.body} index={index} context={symbol} />
       </div>
     )}
@@ -524,7 +521,7 @@ const hasBody =
 
     {
       references.length > 0 && (
-        <div class="gp-sphinx-api-references">
+        <div class="gp-sphinx-api-references" id={`${anchor}.references`}>
           <p class="rubric">References</p>
           <dl class="citation">
             {references.map((r) => (
@@ -578,7 +575,7 @@ const hasBody =
           <dl class="field-list simple">
             {params.length > 0 && (
               <>
-                <dt class="field-odd">Parameters</dt>
+                <dt class="field-odd" id={`${anchor}.parameters`}>Parameters</dt>
                 <dd class="field-odd">
                   <ul class="simple">
                     {params.map((p) => (
@@ -608,7 +605,7 @@ const hasBody =
             )}
             {returnsDoc && (
               <>
-                <dt class="field-even">Returns</dt>
+                <dt class="field-even" id={`${anchor}.returns`}>Returns</dt>
                 <dd class="field-even">
                   <p>
                     <ApiDoc text={returnsDoc} index={index} context={symbol} />
@@ -618,7 +615,7 @@ const hasBody =
             )}
             {raises.length > 0 && (
               <>
-                <dt class="field-odd">Raises</dt>
+                <dt class="field-odd" id={`${anchor}.errors`}>Raises</dt>
                 <dd class="field-odd">
                   <ul class="simple">
                     {raises.map((r) => (

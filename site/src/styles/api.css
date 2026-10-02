@@ -256,7 +256,9 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--color-background-border, #e2e8f0);
+  border: 1px solid var(--color-edge);
+  border-radius: 0.45rem;
+  overflow: hidden;
 }
 
 .api-member-list li {
@@ -264,8 +266,23 @@
   grid-template-columns: minmax(8rem, 18rem) auto;
   gap: 0.35rem 0.75rem;
   align-items: baseline;
-  padding: 0.8rem 0;
+  padding: 0.9rem 1rem;
   border-bottom: 1px solid var(--color-background-border, #e2e8f0);
+}
+.api-member-list li:last-child { border-bottom: 0; }
+.api-member-list li:hover { background: var(--color-surface); }
+.api-member-group { margin-block: 1.5rem 2rem; }
+.api-member-group h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+.api-member-group h3 span {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 400;
 }
 
 .api-member-link {
@@ -610,6 +627,75 @@
 .api-reference-content {
   overflow-wrap: anywhere;
 }
+.api-reference-layout { max-width: 108rem; margin-inline: auto; }
+.api-page-contents { display: none; }
+@media (min-width: 85rem) {
+  .api-reference-layout--symbol {
+    grid-template-columns: 18rem minmax(0, 1fr) 14rem;
+  }
+  .api-reference-layout--symbol > .api-reference-content {
+    padding-inline: 2.25rem;
+    padding-bottom: 3rem;
+  }
+  .api-page-contents {
+    display: block;
+    min-width: 0;
+    padding: 4.5rem 1.5rem 2rem 0;
+  }
+  .api-page-contents > aside {
+    position: sticky;
+    top: 6.5rem;
+    max-height: calc(100dvh - 8rem);
+    overflow-y: auto;
+    border-left: 1px solid var(--color-edge);
+    padding-left: 1.25rem;
+    scrollbar-width: thin;
+  }
+}
+.api-page-contents h2 {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.045em;
+  margin-bottom: 1rem;
+}
+.api-page-contents ul { list-style: none; margin: 0; padding: 0; }
+.api-page-contents a {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-left: 2px solid transparent;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+.api-page-contents a:hover { color: var(--color-link); }
+.api-page-contents a[aria-current="location"] {
+  border-left-color: var(--color-link);
+  color: var(--color-link);
+  font-weight: 600;
+}
+.api-contents-nested a { padding-left: 1.5rem; font-size: 0.75rem; }
+.api-related { margin-top: 2rem; }
+.api-related code { font-size: 0.8125rem; }
+.api-related-kind {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 1rem;
+  height: 1rem;
+  margin-top: 0.1rem;
+  border: 1px solid var(--color-edge);
+  border-radius: 0.2rem;
+  color: var(--color-link);
+  background: var(--color-surface);
+  font: 0.625rem/1 var(--font-mono, monospace);
+}
+.api-page-contents a:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: -2px;
+}
 .api-reference-heading {
   margin-block: 1.5rem 1.75rem;
 }
@@ -682,6 +768,10 @@
   border-bottom: 2px solid transparent;
 }
 .api-section-links a:hover, .api-section-links a:focus-visible { border-bottom-color: currentColor; }
+.api-section-links a[aria-current="location"] {
+  color: var(--color-link);
+  border-bottom-color: currentColor;
+}
 .api-section-links span {
   margin-left: 0.25rem;
   padding: 0.1rem 0.3rem;
@@ -692,7 +782,13 @@
 }
 .api-source-details { margin-block: 1rem 1.5rem; font-size: 0.875rem; }
 .api-source-details > summary { cursor: pointer; color: var(--color-muted); }
-.api-reference-content :is(section, h2, .gp-sphinx-api-examples) { scroll-margin-top: 5rem; }
+.api-reference-content :is(section, h2, h3, .gp-sphinx-api-examples, .gp-sphinx-api-description, .gp-sphinx-api-references, dt[id]) {
+  scroll-margin-top: 7rem;
+}
+@media print {
+  .api-page-contents, .api-section-links { display: none; }
+  .api-reference-layout--symbol { display: block; }
+}
 
 @container gp-sphinx-api-entry (max-width: 36rem) {
   dl.py.gp-sphinx-api-container > dd .gp-sphinx-api-parameters > dl.field-list {

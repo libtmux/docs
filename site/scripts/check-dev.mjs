@@ -170,6 +170,26 @@ async function checkReferenceAndHeroes(browser, base) {
     const anchors = await page.locator('[id]').evaluateAll((elements) => elements.map((element) => element.id))
     assert.equal(anchors.filter((id) => id === fullName).length, 1, 'Page title and declaration have distinct anchors')
     console.log('Qualified names: disclosure, exact copied identity and clipboard refusal pass')
+    await page.setViewportSize({ width: 1440, height: 900 })
+    const contents = page.getByRole('navigation', { name: 'On this page', exact: true })
+    assert(await contents.isVisible(), 'Wide reference pages show section navigation')
+    assert.deepEqual(await page.locator('[data-api-section-link]').evaluateAll((links) => links
+      .map((link) => decodeURIComponent(link.hash.slice(1)))
+      .filter((id) => [...document.querySelectorAll('[id]')].filter((element) => element.id === id).length !== 1)), [],
+    'Every reference section link has exactly one target')
+    await contents.getByRole('link', { name: 'Parameters', exact: true }).click()
+    await page.waitForFunction(() => document.querySelector('api-page-contents a[aria-current="location"]')?.textContent === 'Parameters')
+    await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server/`)
+    const memberNames = await page.locator('.api-member-link').allTextContents()
+    assert.deepEqual(memberNames.slice(0, 3), ['sessions', 'windows', 'panes'])
+    assert.equal(new Set(memberNames).size, memberNames.length, 'Grouped members appear once')
+    assert(await page.getByRole('navigation', { name: 'Related APIs' }).getByRole('link', { name: 'io.github.libtmux.kotlin.Session', exact: true }).count())
+    for (const width of [1440, 768, 390]) {
+      await page.setViewportSize({ width, height: 900 })
+      assert.equal(await page.locator('api-page-contents').isVisible(), width >= 1360)
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Reference columns fit at ${width}px`)
+    }
+    console.log('Reference contents: section targets, active links, related declarations and grouped member order pass')
   } finally {
     await page.close()
   }

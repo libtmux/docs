@@ -5,6 +5,8 @@ import mentionsData from '../../data/mentions.json'
 import ApiEntry from '../../components/api/ApiEntry.astro'
 import ApiBadge from '../../components/api/ApiBadge.astro'
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
+import ApiPageContents from '../../components/api/ApiPageContents.astro'
+import { apiEntrySections, apiMemberGroups, relatedApiTypes, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
 import { pagePortsFor } from '../../lib/page-ports-for'
 import { pageBreadcrumbs } from '../../lib/sidebar'
@@ -188,7 +190,8 @@ const currentRoot = tree.find(
  * walk the hierarchy, then the operations every port shares, then the rest,
  * with private and special members last. See `member-order.ts`.
  */
-const byUsefulness = model ? compareMembers(memberSignals(model.port, mentionsData.mentions)) : () => 0
+const signals = memberSignals(model?.port ?? '', mentionsData.mentions)
+const byUsefulness = compareMembers(signals)
 const currentMembers = currentType
   ? (model?.symbols.filter((sym) => sym.parent === currentType.id) ?? []).sort(byUsefulness)
   : []
@@ -410,6 +413,18 @@ const sections = bucketSections.length
 
 const declared = members.filter((m) => !m.inheritedFrom)
 const inherited = members.filter((m) => m.inheritedFrom)
+const memberGroups = apiMemberGroups(declared, signals)
+const pageSections: ApiSection[] = owner ? [
+  { id: 'api-overview', label: 'Overview' },
+  ...apiEntrySections(owner, model?.port),
+  ...(declared.length ? [{ id: 'api-members', label: 'Members', count: declared.length },
+    ...memberGroups.map((group) => ({ id: group.id, label: group.label, nested: true }))] : []),
+  ...(inherited.length ? [{ id: 'api-inherited', label: 'Inherited members', count: inherited.length }] : []),
+] : []
+const related = owner ? relatedApiTypes(owner, members, index, declaringType).map((symbol) => ({
+  name: ownerNames.get(symbol.name)! > 1 ? `${symbol.name} (${moduleOf(symbol)})` : symbol.name,
+  identity: symbol.publicId ?? symbol.id, kind: symbol.kind, href: hrefFor(symbol),
+})) : []
 const title = owner
   ? (owner.publicId ?? owner.name)
   : model
@@ -445,7 +460,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
 >
   <!-- Flush: the tree's column runs from the header to the footer against the
        viewport's edge, as Learn's does, and only the text column is padded. -->
-  <main class:list={["grid", model && "lg:grid-cols-[18rem_minmax(0,1fr)]"]}>
+  <main class:list={["api-reference-layout grid", model && "lg:grid-cols-[18rem_minmax(0,1fr)]", owner && 'api-reference-layout--symbol']}>
     {model && (
       <ApiTree
         port={model.port}
@@ -672,12 +687,10 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
       {
         owner && (
           <>
-            {(members.length > 0 || (owner.doc?.examples?.length ?? 0) > 0) &&
+            {pageSections.length > 1 &&
               <nav class="api-section-links" aria-label="Reference sections" data-pagefind-ignore="all">
-                <a href="#api-overview">Overview</a>
-                {declared.length > 0 && <a href="#api-members">Members <span>{declared.length}</span></a>}
-                {inherited.length > 0 && <a href="#api-inherited">Inherited <span>{inherited.length}</span></a>}
-                {(owner.doc?.examples?.length ?? 0) > 0 && <a href={`#${owner.publicId ?? owner.id}.examples`}>Examples</a>}
+                {pageSections.filter((section) => !section.nested && !['Description', 'References'].includes(section.label))
+                  .map((section) => <a href={`#${section.id}`} data-api-section-link>{section.label}{section.count && <span>{section.count}</span>}</a>)}
               </nav>}
             <!-- The type's own entry, through the same component as its
                  members. It is a declaration like any other — the only
@@ -819,8 +832,10 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
             {declared.length > 0 && (
               <div class="mt-8">
                 <h2 class="text-lg font-semibold" id="api-members">Members</h2>
+                {memberGroups.map((group) => <section class="api-member-group" aria-labelledby={group.id}>
+                <h3 id={group.id}>{group.label}<span>{group.members.length}</span></h3>
                 <ul class="api-member-list mt-3">
-                  {declared.map((m) => (
+                  {group.members.map((m) => (
                     <li>
                       <a class="api-member-link" href={hrefFor(m)}>{m.name}</a>
                       <span class="api-member-kind">{m.kind}</span>
@@ -832,6 +847,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
                     </li>
                   ))}
                 </ul>
+                </section>)}
               </div>
             )}
 
@@ -860,6 +876,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
         )
       }
     </div>
+    {owner && <ApiPageContents sections={pageSections} related={related} />}
   </main>
 
   <script is:inline>
