@@ -5,6 +5,42 @@ import { readFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { chromium } from 'playwright'
 
+/** Inspect rendered API examples against their native execution receipts. */
+export async function checkCompleteApiExamples(browser, base) {
+  const examples = JSON.parse(readFileSync(new URL('../test/fixtures/api-examples.json', import.meta.url), 'utf8')).examples
+  const page = await browser.newPage()
+  try {
+    for (const example of examples) {
+      const path = example.page.replace(`ports/${example.port}/`, `${example.port}/latest/`)
+      const response = await page.request.get(`${base}/${path}/`)
+      assert(response.ok(), `${example.symbol}: HTTP ${response.status()}`)
+      const rendered = await page.evaluate(({ html, symbol }) => {
+        const doc = new DOMParser().parseFromString(html, 'text/html')
+        const section = doc.getElementById(`${symbol}.examples`)
+        return section && {
+          text: section.textContent,
+          links: [...section.querySelectorAll('.gp-sphinx-api-example-intro a')]
+            .map((link) => ({ href: link.getAttribute('href'), label: link.textContent })),
+          files: [...section.querySelectorAll('.gp-sphinx-api-example [data-code]')]
+            .map((button) => button.getAttribute('data-code').replaceAll('\x7f', '\n')),
+        }
+      }, { html: await response.text(), symbol: example.symbol })
+      assert(rendered, `${example.symbol}: Examples section exists`)
+      const href = `https://github.com/libtmux/libtmux-go/blob/${example.sourceRevision}/${example.sourceFile}`
+      assert.deepEqual(rendered.links.filter((link) => link.href === href),
+        [{ href, label: 'Source example' }], `${example.symbol}: exact pinned source is a readable link`)
+      assert(!rendered.text.includes('[source example]('), `${example.symbol}: no literal Markdown link`)
+      for (const file of example.files) {
+        const digest = createHash('sha256').update(rendered.files[file.block] + '\n').digest('hex')
+        assert.equal(digest, file.sha256, `${example.symbol}/${file.name}: copied file matches native receipt`)
+      }
+    }
+    console.log('Go API examples: nine rendered source links and 18 copied file hashes match native receipts')
+  } finally {
+    await page.close()
+  }
+}
+
 /** Exercise the installed widget scripts with accepted and refused clipboard writes. */
 export async function checkClipboard(page, base) {
   const widgets = [

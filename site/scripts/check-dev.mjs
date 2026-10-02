@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { dev } from 'astro'
 import { chromium, firefox, webkit } from 'playwright'
 import { API_MODEL_PORTS, PORTS, productAvailable } from '../src/lib/ports.ts'
-import { checkClipboard } from './check-clipboard.mjs'
+import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
 import { checkApiExampleOwnership, checkApiNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkNativeLayout } from './check-native-layout.mjs'
 
@@ -81,7 +81,7 @@ const entries = API_MODEL_PORTS.filter(({ slug }) => ${JSON.stringify(signatureP
   ))}
 </DocsLayout>
 `)
-for (const port of ['py', 'kotlin', 'scala', 'lua', 'java']) {
+for (const port of ['py', 'kotlin', 'scala', 'lua', 'java', 'go']) {
   const directory = join(root, `src/pages/${port}/latest/reference`)
   mkdirSync(directory, { recursive: true })
   writeFileSync(join(directory, '[...slug].astro'), `---
@@ -350,10 +350,11 @@ async function checkReferenceAndHeroes(browser, base) {
     }
     const manifest = await page.request.get(`${base}/docs.json`).then((response) => response.json())
     const javaReference = manifest.pages.find((entry) => entry.title === 'Java API reference')
-    assert.deepEqual(javaReference.headings.find((entry) => entry.id === 'io.github.libtmux.Server.Server'), {
-      id: 'io.github.libtmux.Server.Server', level: 2, text: 'Server',
+    assert.deepEqual(javaReference.symbols.find((entry) => entry.id === 'io.github.libtmux.Server.Server'), {
+      id: 'io.github.libtmux.Server.Server', name: 'Server', kind: 'class',
+      url: new URL(`${base}/java/latest/reference/io-github-libtmux-server-server/`).href,
       qualifiedName: 'io.github.libtmux.Server', namespace: 'io.github.libtmux',
-    }, 'Java manifest records source identity alongside its stable declaration anchor')
+    }, 'Java manifest records source identity alongside its stable declaration URL')
     await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server/`)
     const javaEquivalent = page.locator('.api-elsewhere a[href$="/java/latest/reference/io-github-libtmux-server-server/"]')
     assert.equal(await javaEquivalent.textContent().then((text) => text.trim()), 'io.github.libtmux.Server',
@@ -386,6 +387,7 @@ try {
     await retryReload(() => checkApiNavigation(page, base))
   } else {
     const nativeLayout = checkNativeLayout(browser).then(() => null, (error) => error)
+    const apiExamples = checkCompleteApiExamples(browser, base).then(() => null, (error) => error)
     const page = await browser.newPage({ reducedMotion: 'reduce' })
     page.setDefaultTimeout(10000)
     const manifest = await page.request.get(`${base}/page-links.json`)
@@ -649,6 +651,8 @@ try {
     }
     console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
     const navigationError = await navigation
+    const apiExamplesError = await apiExamples
+    if (apiExamplesError) throw apiExamplesError
     if (navigationError) throw navigationError
     await navigationPage.close()
     const referenceError = await reference

@@ -21,7 +21,7 @@ import { buildLocale } from '../../i18n/resolve'
 import { buildTarget, defaultVersionFor } from '../../lib/versions'
 import ApiDoc from '../../components/api/ApiDoc.astro'
 import ApiTree from '../../components/api/ApiTree.astro'
-import { navTree } from '../../lib/api-tree'
+import { navTree, referenceIndexSections } from '../../lib/api-tree'
 import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
@@ -277,7 +277,6 @@ const sourceUrl = (symbol: ApiSymbol): string | undefined => model
 const members = owner && model ? model.symbols.filter((s) => s.parent === owner.id).sort(byUsefulness) : []
 
 const owners = (model ? topLevelTypesOf(model) : []).sort((a, b) => a.name.localeCompare(b.name))
-const cardIds = new Set(owners.map((symbol) => symbol.id))
 
 /**
  * How many entries in the contents share each name.
@@ -376,35 +375,7 @@ const grouped = namedGroups.length > 0
  * `check-xrefs` caught as resolution falling by six, because a symbol that
  * renders nowhere links nowhere.
  */
-const symbolById = new Map(
-  (model?.symbols ?? []).filter((sym) => !sym.parent).map((sym) => [sym.publicId ?? sym.id, sym]),
-)
-
-/**
- * One bucket's section: its types as cards, and its functions, values and
- * type aliases in full, in the order the nav lists them.
- */
-const sectionOf = (id: string, name: string, collapsed: boolean, entries: { id: string }[]) => {
-  const symbols = entries
-    .map((e) => symbolById.get(e.id))
-    .filter((o): o is NonNullable<typeof o> => o !== undefined)
-  return {
-    id,
-    name,
-    collapsed,
-    types: symbols.filter((sym) => cardIds.has(sym.id)),
-    free: symbols.filter((sym) => !cardIds.has(sym.id)),
-  }
-}
-
-const bucketSections = nav
-  ? tree
-      .flatMap((b) => [
-        sectionOf(b.id, b.label, b.collapsed, b.entries),
-        ...b.children.map((c) => sectionOf(c.id, `${b.label} — ${c.label}`, b.collapsed, c.entries)),
-      ])
-      .filter((sec) => sec.types.length > 0 || sec.free.length > 0)
-  : []
+const bucketSections = model ? referenceIndexSections(model.port) : []
 
 const sections = bucketSections.length
   ? bucketSections

@@ -129,7 +129,13 @@ export interface DocBlock {
    * "The server can be used as a context manager to ensure proper cleanup:".
    * Merged into a single block, the sentences render inside the code.
    */
-  examples?: { lang: string; code: string; intro?: string }[]
+  examples?: {
+    lang: string
+    code: string
+    intro?: string
+    /** Source for this complete example, independent of native comment syntax. */
+    sourceUrl?: string
+  }[]
   /**
    * Citations the docstring defines, as `.. [name] text`.
    *

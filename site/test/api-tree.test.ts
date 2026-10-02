@@ -1,11 +1,13 @@
 import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { compareMembers, memberSignals } from '@libtmux/api-model'
 import mentions from '../src/data/mentions.json'
 import { API_MODELS, API_NAV, OWNER_KINDS, topLevelTypesOf } from '../src/lib/api-models'
-import { membersByType, navTree } from '../src/lib/api-tree'
+import { membersByType, navTree, referenceIndexSections } from '../src/lib/api-tree'
 import { API_MODEL_PORTS } from '../src/lib/ports'
+import type { ApiTreeBucket, ApiTreeJson } from '../src/lib/api-search'
+import { GET as referenceTreeRoute } from '../src/pages/reference/tree.json'
 import { versionsOf } from '../../scripts/reference-trees.mjs'
 import { SITE_BUILT, SITE_ROOT, sitePath } from './site-root'
 
@@ -44,6 +46,61 @@ describe('Lua API sidebar', () => {
     ]) {
       expect(tree.find((b) => b.id === bucket)?.entries[0]?.id, bucket).toBe(id)
     }
+  })
+})
+
+describe('shared reference index sections', () => {
+  it.each(PORTS)('leads the %s index and exports with the primary server', (port) => {
+    const sections = referenceIndexSections(port)
+    expect(sections[0].id).toBe('server')
+    expect(sections[0].types[0].name).toBe('Server')
+    const ids = sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => symbol.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    const available = new Set(sections.map((section) => section.id))
+    expect(sections.map((section) => section.id).filter((id) => PRIMARY_OBJECT_BUCKETS.has(id)))
+      .toEqual([...PRIMARY_OBJECT_BUCKETS].filter((id) => available.has(id)))
+  })
+})
+
+describe('core reference inventory', () => {
+  it.each(PORTS)('publishes every reachable %s core declaration without product-only records', async (port) => {
+    const model = API_MODELS[port]
+    const core = model.symbols.filter((symbol) =>
+      !['mcp', 'workspace'].includes(symbol.product ?? 'core') || symbol.apiScope === 'internal')
+    const coreIds = new Set(core.map((symbol) => symbol.id))
+    const expected = [...coreIds].sort()
+    const identities = new Map(model.symbols.flatMap((symbol) =>
+      [[symbol.id, symbol.id], [symbol.publicId ?? symbol.id, symbol.id]] as const))
+    const allMembers = membersByType(port)
+    const before = structuredClone([...allMembers])
+    vi.stubEnv('LIBTMUX_DOCS_PORT', port)
+    let tree: ApiTreeJson
+    try {
+      const response = await referenceTreeRoute({} as never)
+      expect(response.status).toBe(200)
+      tree = await response.json()
+    } finally {
+      vi.unstubAllEnvs()
+    }
+    const roots = (buckets: ApiTreeBucket[]): string[] => buckets.flatMap((bucket) =>
+      [...bucket.types.map((entry) => entry.id), ...roots(bucket.children)])
+    const listed = [...roots(tree.buckets), ...Object.values(tree.members).flatMap((rows) => rows.map((row) => row[2]!))]
+    expect([...new Set(listed.map((id) => identities.get(id) ?? id))].sort()).toEqual(expected)
+    const reachable = new Set<string>()
+    const visit = (id: string) => {
+      if (reachable.has(id)) return
+      reachable.add(id)
+      for (const row of tree.members[id] ?? []) visit(row[2]!)
+    }
+    roots(tree.buckets).forEach(visit)
+    expect([...new Set([...reachable].map((id) => identities.get(id) ?? id))].sort()).toEqual(expected)
+    for (const [owner, rows] of Object.entries(tree.members)) {
+      expect(reachable.has(owner), `${port}: orphan owner ${owner}`).toBe(true)
+      expect(rows.map((row) => row.slice(0, 3))).toEqual(allMembers.get(owner)!
+        .filter((member) => coreIds.has(member.id))
+        .map((member) => [member.name, member.slug, member.id]))
+    }
+    expect([...membersByType(port)]).toEqual(before)
   })
 })
 
@@ -128,7 +185,14 @@ describe.skipIf(!SITE_BUILT)('rendered reference ordering', () => {
           expect(lazy.buckets.find((entry: { id: string }) => entry.id === bucket.id)?.types.map((entry: { id: string }) => entry.id))
             .toEqual(bucket.entries.map((entry) => entry.id))
         }
-        for (const [owner, members] of membersByType(port)) {
+        const coreIds = new Set(API_MODELS[port].symbols.filter((symbol) =>
+          !['mcp', 'workspace'].includes(symbol.product ?? 'core') || symbol.apiScope === 'internal')
+          .flatMap((symbol) => [symbol.id, symbol.publicId ?? symbol.id]))
+        const coreMembers = [...membersByType(port)].filter(([owner]) => coreIds.has(owner))
+          .map(([owner, members]) => [owner, members.filter((member) => coreIds.has(member.id))] as const)
+          .filter(([, members]) => members.length)
+        expect(Object.keys(lazy.members), `${port}/${version}: core owner keys`).toEqual(coreMembers.map(([owner]) => owner))
+        for (const [owner, members] of coreMembers) {
           expect(lazy.members[owner]?.map((member: string[]) => member.slice(0, 2)), `${port}/${version}:${owner}`)
             .toEqual(members.map((member) => [member.name, member.slug]))
         }
