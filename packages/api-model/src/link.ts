@@ -446,8 +446,8 @@ export class SymbolIndex {
    * identifier boundaries and passing everything else through verbatim is what
    * makes those all work without a grammar for type syntax.
    */
-  linkType(annotation: string, context?: ApiSymbol): { text: string; link?: LinkTarget }[] {
-    const out: { text: string; link?: LinkTarget }[] = []
+  linkType(annotation: string, context?: ApiSymbol): { text: string; link?: LinkTarget; declaration?: true }[] {
+    const out: { text: string; link?: LinkTarget; declaration?: true }[] = []
     // Identifiers, including dotted ones; everything else is punctuation,
     // whitespace or a string literal and passes through untouched.
     // `::` is part of a name, not punctuation between two. Splitting there
@@ -466,6 +466,13 @@ export class SymbolIndex {
       }
       if (/^(?:["']|\/[/*])/.test(ident)) {
         out.push({ text: ident })
+        continue
+      }
+      // Object fields, callback parameters and tuple labels declare names;
+      // the types after their colons still use ordinary reference resolution.
+      if (this.lang === 'ts' && /^\s*\??\s*:(?!:)/.test(annotation.slice(m.index! + ident.length)) &&
+          /(?:^|[{[(;,])(?:\s|\/\*[\s\S]*?\*\/|\/\/[^\n]*)*(?:readonly\s+)?(?:\.\.\.)?$/.test(annotation.slice(0, m.index))) {
+        out.push({ text: ident, declaration: true })
         continue
       }
       // The model first, then the language's own documentation. Most of what

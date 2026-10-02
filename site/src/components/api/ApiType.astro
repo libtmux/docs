@@ -40,7 +40,7 @@ const NAME = /^[A-Za-z_][A-Za-z0-9_.]*$/
         title={span.link.external ? `${span.text} (${span.link.project ?? "external"})` : span.link.symbol?.publicId}
       >{span.text}</a>
     ) : (
-      <span class:list={['api-punct', chip && NAME.test(span.text) && 'api-literal']}>{span.text}</span>
+      <span class:list={[span.declaration ? 'api-type-label' : 'api-punct', chip && NAME.test(span.text) && 'api-literal']}>{span.text}</span>
     ),
   )
 }</span>

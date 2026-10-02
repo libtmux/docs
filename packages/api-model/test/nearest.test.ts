@@ -122,3 +122,28 @@ it('preserves comments in inline types without interpreting their prose as refer
   expect(spans.map((span) => span.text).join('')).toBe(annotation)
   expect(spans.filter((span) => span.link).map((span) => span.text)).toEqual(['Server'])
 })
+
+it('distinguishes TypeScript declaration labels from the types they annotate', () => {
+  const idx = new SymbolIndex([sym('Server')], (symbol) => `/${symbol.id}/`, 'ts')
+  for (const annotation of [
+    '{ readonly Server: Server; signal?: MissingType }',
+    '(Server: Server, ...signal: MissingType[]) => void',
+    '[Server: Server, signal?: MissingType]',
+    '{ /** Server selection. */ Server: Server; // Cancellation\n signal?: MissingType }',
+  ]) {
+    const spans = idx.linkType(annotation)
+    expect(spans.map((span) => span.text).join('')).toBe(annotation)
+    expect(spans.filter((span) => span.declaration).map((span) => span.text)).toEqual(['Server', 'signal'])
+    expect(spans.filter((span) => span.text === 'Server' && span.link)).toHaveLength(1)
+    expect(spans.find((span) => span.text === 'MissingType')).toEqual({ text: 'MissingType', link: undefined })
+  }
+})
+
+it('keeps conditional TypeScript branches and other languages as type references', () => {
+  const idx = new SymbolIndex([sym('Server')], (symbol) => `/${symbol.id}/`, 'ts')
+  const spans = idx.linkType('T extends object ? Server : MissingType')
+  expect(spans.some((span) => span.declaration)).toBe(false)
+  expect(spans.find((span) => span.text === 'Server')?.link?.href).toBe('/Server/')
+  const scala = new SymbolIndex([sym('Server')], (symbol) => `/${symbol.id}/`, 'scala')
+  expect(scala.linkType('Server: Context')[0].link?.href).toBe('/Server/')
+})
