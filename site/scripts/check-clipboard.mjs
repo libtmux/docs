@@ -26,16 +26,28 @@ export async function checkCompleteApiExamples(browser, base) {
         }
       }, { html: await response.text(), symbol: example.symbol })
       assert(rendered, `${example.symbol}: Examples section exists`)
-      const href = `https://github.com/libtmux/libtmux-go/blob/${example.sourceRevision}/${example.sourceFile}`
-      assert.deepEqual(rendered.links.filter((link) => link.href === href),
-        [{ href, label: 'Source example' }], `${example.symbol}: exact pinned source is a readable link`)
+      const repository = example.sourceRepository ?? 'libtmux/libtmux-go'
+      const sources = new Set([example.sourceFile, ...example.files.map((file) => file.sourceFile)].filter(Boolean))
+      for (const file of sources) {
+        const href = `https://github.com/${repository}/blob/${example.sourceRevision}/${file}`
+        assert.deepEqual(rendered.links.filter((link) => link.href === href),
+          [{ href, label: 'Source example' }], `${example.symbol}: exact pinned source is a readable link`)
+      }
       assert(!rendered.text.includes('[source example]('), `${example.symbol}: no literal Markdown link`)
       for (const file of example.files) {
+        if (file.clipboardSha256) {
+          assert.equal(createHash('sha256').update(rendered.files[file.block]).digest('hex'),
+            file.clipboardSha256, `${example.symbol}/${file.name}: exact clipboard bytes`)
+        }
         const digest = createHash('sha256').update(rendered.files[file.block] + '\n').digest('hex')
         assert.equal(digest, file.sha256, `${example.symbol}/${file.name}: copied file matches native receipt`)
       }
+      if (example.consoleBlocks) {
+        assert.deepEqual(example.consoleBlocks.map((index) => rendered.files[index]), example.shellRecipe,
+          `${example.symbol}: copied setup and run commands match native receipts`)
+      }
     }
-    console.log('Go API examples: nine rendered source links and 18 copied file hashes match native receipts')
+    console.log(`API examples: ${examples.length} pages preserve source links and copied file hashes`)
   } finally {
     await page.close()
   }

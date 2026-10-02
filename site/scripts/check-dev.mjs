@@ -53,7 +53,7 @@ const owner = model.symbols.find((symbol) => symbol.id === 'pane.Pane.capture')
 ---
 <Reference model={model} owner={owner} />
 `)
-for (const port of ['py', 'kotlin', 'scala', 'lua', 'java', 'go']) {
+for (const port of ['py', 'kotlin', 'scala', 'lua', 'java', 'go', 'ruby']) {
   const directory = join(root, `src/pages/${port}/latest/reference`)
   mkdirSync(directory, { recursive: true })
   writeFileSync(join(directory, '[...slug].astro'), `---
