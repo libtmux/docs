@@ -123,6 +123,15 @@ describe('staged port guide links', () => {
     expect(staged).toContain(`https://github.com/libtmux/libtmux-dotnet/blob/${fsharpGuides.source.revision}/examples/LibTmux.FSharp.Quickstart/Program.fs`)
   })
 
+  it('keeps F# query API links in the owned reference', () => {
+    const files = stagedPortGuides('fsharp', fsharpGuides)
+    const queries = files.get('fsharp/guides/queries/index.md')!
+    expect(queries).toContain('](../../reference/libtmux-fsharp-server/)')
+    expect(queries).toContain('](../../reference/libtmux-fsharp-query-matching/)')
+    expect(files.get('fsharp/guides/api-overview/index.md')).toContain('](../../reference/)')
+    expect(queries).not.toContain('/blob/' + fsharpGuides.source.revision + '/docs/fsharp-reference/')
+  })
+
   it('pins non-staged source links while preserving historical links and inline images', () => {
     const own = 'https://github.com/libtmux/libtmux-lua/blob/'
     const destinations = ['master', 'main', 'abc123'].map((ref) => `[source](${own}${ref}/src/main.lua#run)`)

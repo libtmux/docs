@@ -204,6 +204,8 @@ export interface Port {
   tagPrefix?: string
   /** A native guide may link to a package-hosted reference without an API model. */
   referenceKind?: 'model' | 'guide'
+  /** Generated Markdown reference with type pages and named member anchors. */
+  sourceReferenceDirectory?: string
   renderer: Renderer
   /**
    * Whether this port's own documentation pipeline publishes
@@ -1058,6 +1060,7 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
   {
     slug: 'fsharp', logoLanguage: 'fsharp', shortName: 'F#', name: 'F#', language: 'F#',
     parentLibrary: { slug: 'dotnet', runtime: '.NET' },
+    sourceReferenceDirectory: 'docs/fsharp-reference/reference',
     packageName: 'LibTmux.FSharp',
     registry: { name: 'NuGet', url: 'https://www.nuget.org/packages/LibTmux.FSharp', icon: 'nuget' },
     installs: [{ label: 'dotnet', lang: 'console', code: 'dotnet package add LibTmux.FSharp --version {version}' }],
