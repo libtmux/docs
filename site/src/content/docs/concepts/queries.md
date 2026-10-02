@@ -203,3 +203,12 @@ let matching = try await server.panes().filter(expression)
 [Filtering and querying](/guides/querying-and-filtering/) shows exactly-one
 lookups and their error handling. Do not index the first result until the
 operation has established that a match exists.
+
+<!-- port:root -->
+## tmux command reference
+
+The tmux [list-panes](/tmux/latest/reference/list-panes/) and
+[list-windows](/tmux/latest/reference/list-windows/) references describe native
+format filters. See [formats](/tmux/latest/reference/manual/#FORMATS) for
+expressions and available variables.
+<!-- /port -->

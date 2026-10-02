@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { LOCALES } from '../src/i18n/locales'
 import { PORTS } from '../src/lib/ports'
+import { TMUX_REPOSITORY } from '../src/lib/tmux-reference'
 import { BUCKET_ROOT, ASSEMBLY_ROOT, PREVIEW_PREFIX, REPO_ROOT, SITE_BUILT } from './site-root'
 
 /**
@@ -25,7 +26,7 @@ const DATA = fileURLToPath(new URL('../src/data/', import.meta.url))
 const json = (file: string) => JSON.parse(readFileSync(join(DATA, file), 'utf8'))
 
 /** This repository, and every repository the site's data names as a source. */
-const REPOS = new Set<string>(['libtmux/docs', ...PORTS.map((port) => port.repo)])
+const REPOS = new Set<string>(['libtmux/docs', TMUX_REPOSITORY, ...PORTS.map((port) => port.repo)])
 for (const file of readdirSync(join(DATA, 'api')).filter((name) => name.endsWith('.json'))) {
   const model = json(`api/${file}`)
   for (const repo of [model.repo, ...(model.sources ?? []).map((source: { repo?: string }) => source.repo),
@@ -44,6 +45,9 @@ const value = (tag: string, name: string) => {
 function githubSourceMatches(href: string | undefined, page: string): boolean {
   if (!href) return false
   const path = page.replace(/^pr-[1-9][0-9]*\//, '')
+  if (/^[a-z]{2}\/tmux\/[^/]+\/reference\//.test(path)) {
+    return href === `https://github.com/${TMUX_REPOSITORY}/`
+  }
   const port = PORTS.find((entry) => entry.slug === path.split('/')[1])
   if (port?.source) {
     const tree = /^https:\/\/github\.com\/([^/]+\/[^/]+)\/tree\/([^/?#]+)\/(.+?)\/?$/.exec(href)
@@ -54,6 +58,16 @@ function githubSourceMatches(href: string | undefined, page: string): boolean {
 }
 
 describe('GitHub footer targets', () => {
+  it('identifies tmux command sources independently of the library ports', () => {
+    for (const prefix of ['', 'pr-67/']) {
+      const page = `${prefix}en/tmux/3.2a/reference/capture-pane/index.html`
+      expect(githubSourceMatches('https://github.com/tmux/tmux/', page)).toBe(true)
+      expect(githubSourceMatches('https://github.com/libtmux/docs/', page)).toBe(false)
+      expect(githubSourceMatches('https://github.com/unrelated/tmux/', page)).toBe(false)
+      expect(REPOS.has(TMUX_REPOSITORY)).toBe(true)
+    }
+  })
+
   it.each(['kotlin', 'scala'])('accepts the declared %s directory at a branch, tag or revision', (slug) => {
     for (const ref of ['master', 'v0.0.1-alpha.17', 'a'.repeat(40), 'feature%2Fsource-links']) {
       for (const prefix of ['', 'pr-50/']) {

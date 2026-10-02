@@ -121,5 +121,9 @@ imports and setup are available here:
 
 ## tmux reference
 
+The [capture-pane reference](/tmux/latest/reference/capture-pane/) documents
+line ranges, scrollback, and output flags for each supported tmux version.
+See [wait-for](/tmux/latest/reference/wait-for/) for completion channels.
+
 The [tmux manual](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1)
 documents these commands and their flags.
