@@ -51,7 +51,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (symbol.exportedFrom) facts.push(`- **Exported from:** ${symbol.exportedFrom}`)
   if (ctx.canonical) facts.push(`- **Page:** ${ctx.canonical}`)
   if (facts.length) out.push(...facts, '')
-  for (const command of tmuxCommandsFor(model.port, id)) {
+  for (const command of tmuxCommandsFor(model.port, symbol.publicId ?? symbol.id)) {
     out.push(`tmux command: [\`${command.name}\`](${tmuxReferenceUrl('latest', command.name)})`, '')
   }
   if (symbol.apiScope === 'supporting') {

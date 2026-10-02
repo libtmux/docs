@@ -2,7 +2,7 @@
 import DocsLayout from '../../../../layouts/DocsLayout.astro'
 import { withRoot } from '../../../../lib/site-root'
 import type { SidebarItem } from '../../../../lib/sidebar'
-import { TMUX_VERSIONS, tmuxApiLinks, tmuxGuidesFor, tmuxManualHtml, tmuxPageDescription, tmuxPageHeadings, tmuxPageTitle, tmuxReference, tmuxReferenceRoutes, tmuxReferenceUrl } from '../../../../lib/tmux-reference'
+import { TMUX_REPOSITORY, TMUX_VERSIONS, tmuxApiLinks, tmuxGuidesFor, tmuxManualHtml, tmuxPageDescription, tmuxPageHeadings, tmuxPageTitle, tmuxReference, tmuxReferenceRoutes, tmuxReferenceUrl } from '../../../../lib/tmux-reference'
 
 export function getStaticPaths() {
   return tmuxReferenceRoutes().map(({ version, slug }) => ({ params: { version, slug } }))
@@ -34,7 +34,7 @@ const breadcrumbs = [
 const equivalents = tmuxApiLinks(command?.name ?? '')
 const guides = tmuxGuidesFor(command?.name ?? '')
 const headings = tmuxPageHeadings(version, slug)
-const source = { repo: 'tmux/tmux', path: 'tmux.1', ref: reference.revision }
+const source = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.revision }
 ---
 
 <DocsLayout title={title} description={description} pagePath={pagePath}
@@ -81,8 +81,8 @@ const source = { repo: 'tmux/tmux', path: 'tmux.1', ref: reference.revision }
   </>}
   <details class="mt-8">
     <summary>tmux sources and license</summary>
-    <p>Behavior is taken from the <a href={`https://github.com/tmux/tmux/blob/${reference.revision}/tmux.1`}>tmux {reference.version} manual</a>.</p>
-    {command && <p><a href={`https://github.com/tmux/tmux/blob/${reference.revision}/${command.sourceFile}#L${command.sourceLine}`}>Command declaration</a></p>}
+    <p>Behavior is taken from the <a href={`https://github.com/${TMUX_REPOSITORY}/blob/${reference.revision}/tmux.1`}>tmux {reference.version} manual</a>.</p>
+    {command && <p><a href={`https://github.com/${TMUX_REPOSITORY}/blob/${reference.revision}/${command.sourceFile}#L${command.sourceLine}`}>Command declaration</a></p>}
     <pre class="tmux-license">{reference.license}</pre>
   </details>
 </DocsLayout>

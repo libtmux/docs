@@ -9,6 +9,7 @@ import { withPortRoot } from './site-root'
 
 export type TmuxReference = typeof v37
 export type TmuxCommand = TmuxReference['commands'][number]
+export const TMUX_REPOSITORY = 'tmux/tmux'
 export const TMUX_REFERENCES: Record<string, TmuxReference> = { '3.2a': v32, '3.7c': v37 }
 export const TMUX_VERSIONS = ['latest', ...pins.versions.map((pin) => pin.version)]
 
