@@ -633,7 +633,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   margin-top: .75rem;
 }
 .api-native-signature :is(.api-punct, .api-type-label) {
-  color: var(--color-foreground-muted);
+  color: var(--color-foreground-primary);
   opacity: 1;
 }
 
