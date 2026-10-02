@@ -285,7 +285,7 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
       kind: 'anyOf',
       of: [
         nameOrPath(
-          'Query|Filter|Predicate|Matcher|Criteria|Operator|Quantifier|Expr|Node$|Field$',
+          'Query|Filter|Predicate|Matcher|Criteria|Operator|Quantifier|Expr|Node$|Field$|^(Server|Session|Window|Pane|Client)Fields$',
           '(^|/)quer(y|ies)[./]|(^|/)matching|(^|/)filter',
           'query', 'queries', 'filter', 'predicate', 'matcher', 'criteria', 'where', 'relation', 'field', 'fields',
         ),

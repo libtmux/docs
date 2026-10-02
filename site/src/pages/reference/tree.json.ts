@@ -12,24 +12,10 @@
  */
 import type { APIRoute } from 'astro'
 import { API_MODELS } from '../../lib/api-models'
-import { bucketTotal, firstEntry, membersByType, navTree, type TreeBucket } from '../../lib/api-tree'
+import { referenceTree } from '../../lib/api-tree'
 
 export const GET: APIRoute = () => {
   const port = process.env.LIBTMUX_DOCS_PORT ?? ''
   if (!API_MODELS[port]) return new Response('Not found', { status: 404 })
-  const members = membersByType(port)
-  const bucket = (b: TreeBucket): unknown => ({
-    id: b.id,
-    label: b.label,
-    count: bucketTotal(b),
-    slug: firstEntry(b)?.slug ?? null,
-    types: b.entries.map((t) => ({ id: t.id, name: t.name, slug: t.slug, m: members.has(t.id) ? 1 : 0 })),
-    children: b.children.map(bucket),
-  })
-  const body = {
-    port,
-    buckets: navTree(port).map(bucket),
-    members: Object.fromEntries([...members].map(([id, list]) => [id, list.map((m) => [m.name, m.slug])])),
-  }
-  return new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } })
+  return new Response(JSON.stringify(referenceTree(port)), { headers: { 'Content-Type': 'application/json' } })
 }

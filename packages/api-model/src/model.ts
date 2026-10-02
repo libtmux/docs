@@ -109,6 +109,8 @@ export interface Signature {
   returnsDoc?: string
   /** Type parameters / generics, as written: `T`, `T: Clone`, `<T extends X>`. */
   typeParams?: string[]
+  /** Named or implicit receiver of a native extension declaration. */
+  receiver?: Param
   /** `throws` / `raises`, as a type and its doc text. */
   raises?: { type: string; doc?: string }[]
 }

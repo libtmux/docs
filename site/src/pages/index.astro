@@ -70,7 +70,11 @@ const explore = [
  * renders the version root for that port instead: the same hero and cards as
  * the port home, but scoped to the version actually being built.
  */
-const buildPort = process.env.LIBTMUX_DOCS_PORT || undefined
+interface Props {
+  /** Select a port when this landing page is rendered by another route. */
+  port?: string
+}
+const buildPort = Astro.props.port ?? (process.env.LIBTMUX_DOCS_PORT || undefined)
 const versionRootPort = buildPort ? PORT_BY_SLUG[buildPort] : undefined
 const { version: buildVersion } = buildTarget(process.env)
 

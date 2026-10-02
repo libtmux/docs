@@ -15,7 +15,7 @@ import type { ApiModel } from '../src/model.ts'
  */
 const here = dirname(fileURLToPath(import.meta.url))
 const DATA = join(here, '../../../site/src/data/api')
-const PORTS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
+const PORTS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'dotnet', 'cxx', 'swift']
 
 const models = new Map<string, ApiModel>()
 for (const port of PORTS) {
@@ -60,6 +60,19 @@ describe('concept map', () => {
     expect(CONCEPTS['capture-pane'].symbols.lua).toBe('libtmux.Pane:capture')
   })
 
+  it('preserves native handle scopes and recognises Cats Effect operations', () => {
+    for (const port of ['kotlin', 'scala']) {
+      for (const [concept, member] of Object.entries({
+        'split-pane': 'Pane.split', 'split-window': 'Window.split',
+        'list-windows': 'Session.windows', 'list-panes': 'Window.panes',
+        'list-server-windows': 'Server.windows', 'list-server-panes': 'Server.panes',
+      })) {
+        expect(CONCEPTS[concept].symbols[port]).toBe(`io.github.libtmux.${port === 'scala' ? 'scaladsl' : port}.${member}`)
+      }
+    }
+    expect(conceptsFor('scala', 'io.github.libtmux.scaladsl.cats.Server.newSession')).toContain(CONCEPTS['new-session'])
+  })
+
   it('keeps Lua request completion distinct from snapshot capture', () => {
     expect(CONCEPTS.snapshot.symbols.lua).toBe('libtmux.Server:snapshot')
     expect(CONCEPTS.snapshot.symbols.lua).not.toContain('Request')
@@ -80,8 +93,10 @@ describe('concept map', () => {
       for (const [port, publicId] of Object.entries(concept.symbols)) {
         const model = models.get(port)
         if (!model) continue
-        const found = model.symbols.some((s) => (s.publicId ?? s.id) === publicId)
-        if (!found) missing.push(`${id} ${port}: ${publicId}`)
+        for (const target of [publicId, ...(concept.variants?.[port] ?? [])]) {
+          const found = model.symbols.some((s) => (s.publicId ?? s.id) === target)
+          if (!found) missing.push(`${id} ${port}: ${target}`)
+        }
       }
     }
     expect(missing, `concept map names symbols that no longer exist:\n${missing.join('\n')}`).toEqual([])

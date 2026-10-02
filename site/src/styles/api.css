@@ -383,6 +383,7 @@
  */
 .api-type-link {
   color: var(--color-link);
+  overflow-wrap: anywhere;
   text-decoration: none;
   text-underline-offset: 0.15em;
 }
@@ -446,11 +447,12 @@
 .api-literal {
   background: var(--color-inline-code-background);
   border: 1px solid var(--color-background-border);
-  /* gp-sphinx measures 2.665px of padding and radius on a 13.325px chip —
-     0.2em of its own size, equal on all four sides. Expressed in `em` so it
-     tracks the chip rather than pinning to one page's root. */
   border-radius: 0.2em;
-  padding: 0.2em;
+  /* Inline padding does not increase the line box. Leave vertical room
+     between wrapped code and the neighboring line's border. */
+  padding: 0.075em 0.2em;
+  box-decoration-break: clone;
+  overflow-wrap: anywhere;
   font-size: 0.8125em;
   font-family: var(--font-ibm-plex-mono, ui-monospace, monospace);
 }
@@ -601,4 +603,13 @@
 }
 .api-native-signature + .api-native-signature {
   margin-top: .75rem;
+}
+
+@container gp-sphinx-api-entry (max-width: 36rem) {
+  dl.py.gp-sphinx-api-container > dd .gp-sphinx-api-parameters > dl.field-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  dl.py.gp-sphinx-api-container > dd .gp-sphinx-api-parameters > dl.field-list > :is(dt, dd) {
+    grid-column: 1;
+  }
 }

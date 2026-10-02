@@ -31,9 +31,40 @@ const ts = (page: string) => `https://www.typescriptlang.org/docs/handbook/2/${p
 const kotlin = (page: string) => `https://kotlinlang.org/api/core/kotlin-stdlib/${page}/`
 const scala = (page: string) => `https://www.scala-lang.org/api/3.x/${page}.html`
 const fsharp = (page: string) => `https://fsharp.github.io/fsharp-core-docs/reference/${page}.html`
+const coroutines = (page: string) => `https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/${page}`
+const catsEffect = (name: string) => `https://typelevel.org/cats-effect/api/3.x/cats/effect/kernel/${name}.html`
+
+/** Imports and unqualified references share the same verified destination. */
+const qualifiedKotlin = Object.fromEntries([
+  ['kotlin.time.Duration', kotlin('kotlin.time/-duration')],
+  ['kotlin.time.toKotlinDuration', kotlin('kotlin.time').replace(/\/$/, '/to-kotlin-duration.html')],
+  ['kotlin.time.toJavaDuration', kotlin('kotlin.time').replace(/\/$/, '/to-java-duration.html')],
+  ['kotlinx.coroutines.CoroutineScope', coroutines('kotlinx.coroutines/-coroutine-scope/')],
+  ['kotlinx.coroutines.CoroutineDispatcher', coroutines('kotlinx.coroutines/-coroutine-dispatcher/')],
+  ['kotlinx.coroutines.Dispatchers', coroutines('kotlinx.coroutines/-dispatchers/')],
+  ['kotlinx.coroutines.Dispatchers.IO', coroutines('kotlinx.coroutines/-dispatchers/-i-o.html')],
+  ['kotlinx.coroutines.Dispatchers.Default', coroutines('kotlinx.coroutines/-dispatchers/-default.html')],
+  ['kotlinx.coroutines.NonCancellable', coroutines('kotlinx.coroutines/-non-cancellable/')],
+  ['kotlinx.coroutines.launch', coroutines('kotlinx.coroutines/launch.html')],
+  ['kotlinx.coroutines.coroutineScope', coroutines('kotlinx.coroutines/coroutine-scope.html')],
+  ['kotlinx.coroutines.withContext', coroutines('kotlinx.coroutines/with-context.html')],
+  ['kotlinx.coroutines.runInterruptible', coroutines('kotlinx.coroutines/run-interruptible.html')],
+  ['kotlinx.coroutines.flow.Flow', coroutines('kotlinx.coroutines.flow/-flow/')],
+  ['kotlinx.coroutines.flow.StateFlow', coroutines('kotlinx.coroutines.flow/-state-flow/')],
+  ['kotlinx.coroutines.flow.MutableStateFlow', coroutines('kotlinx.coroutines.flow/-mutable-state-flow/')],
+].flatMap(([name, href]) => [[name!, href!], [name!.replace(/^kotlin(?:x\.coroutines(?:\.flow)?|\.time)\./, ''), href!]]))
+const qualifiedScala = Object.fromEntries([
+  ...['Async', 'Deferred', 'Outcome', 'Resource', 'Fiber', 'Ref'].flatMap((name) =>
+    [name, `cats.effect.${name}`, `cats.effect.kernel.${name}`].map((alias) => [alias, catsEffect(name)])),
+  ...['Signal', 'SignallingRef'].flatMap((name) =>
+    [name, `fs2.concurrent.${name}`].map((alias) => [alias, `https://javadoc.io/static/co.fs2/fs2-core_3/3.13.0/fs2/concurrent/${name}.html`])),
+])
 
 export const BUILTINS: Record<string, Record<string, string>> = {
   kotlin: {
+    ...qualifiedKotlin,
+    suspend: 'https://kotlinlang.org/docs/composing-suspending-functions.html',
+    finally: 'https://kotlinlang.org/docs/exceptions.html#finally-block',
     String: kotlin('kotlin/-string'), Boolean: kotlin('kotlin/-boolean'),
     Int: kotlin('kotlin/-int'), Long: kotlin('kotlin/-long'),
     Unit: kotlin('kotlin/-unit'), Any: kotlin('kotlin/-any'),
@@ -45,6 +76,9 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     'singleOrNull()': 'https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/single-or-null.html',
   },
   scala: {
+    ...qualifiedScala,
+    def: 'https://docs.scala-lang.org/scala3/book/methods-most.html',
+    extension: 'https://docs.scala-lang.org/scala3/reference/contextual/extension-methods.html',
     String: scala('scala/Predef$'), Boolean: scala('scala/Boolean'),
     Int: scala('scala/Int'), Long: scala('scala/Long'), Unit: scala('scala/Unit'),
     Option: scala('scala/Option'), Either: scala('scala/util/Either'),
@@ -293,5 +327,9 @@ export const BUILTINS: Record<string, Record<string, string>> = {
 export function builtinHref(port: string, name: string): string | undefined {
   if (!Object.hasOwn(BUILTINS, port)) return undefined
   const types = BUILTINS[port]!
-  return Object.hasOwn(types, name) ? types[name] : undefined
+  if (Object.hasOwn(types, name)) return types[name]
+  const nativeName = port === 'kotlin'
+    ? name.replace(/^kotlin\.(?:collections\.)?/, '')
+    : port === 'scala' ? name.replace(/^scala\.(?:Predef\.|collection\.(?:immutable\.)?|util\.)?/, '') : name
+  return Object.hasOwn(types, nativeName) ? types[nativeName] : undefined
 }

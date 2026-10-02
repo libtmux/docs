@@ -255,8 +255,9 @@ const PORTS = {
   scala: {
     checkout: '~/work/libtmux/libtmux-java',
     roots: ['libtmux-scala/src/main/scala', 'libtmux-scala/build/generated/sources/catalog/scala',
-      'libtmux-scala-cats/src/main/scala', 'libtmux-scala-ox/src/main/scala'],
-    generate: [':libtmux-scala:generateScalaSources'],
+      'libtmux-scala-cats/src/main/scala', 'libtmux-scala-cats/build/generated/sources/catalog/scala',
+      'libtmux-scala-ox/src/main/scala'],
+    generate: [':libtmux-scala:generateScalaSources', ':libtmux-scala-cats:generateScalaSources'],
     pathRoots: ['libtmux-scala/', 'libtmux-scala-cats/', 'libtmux-scala-ox/',
       'docs/guide/scala/', 'examples/src/main/scala/'],
     repo: 'libtmux/libtmux-java', options: {},

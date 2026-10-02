@@ -224,6 +224,8 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   // Swift doc comment ``Server`` is a symbol link, not code.
   swift: new Set(['docc']),
   cxx: new Set([]),
+  kotlin: new Set(['kdoc', 'jsdoc']),
+  scala: new Set(['scaladoc', 'jsdoc']),
 }
 
 /**
@@ -249,6 +251,25 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
 
   type Hit = { start: number; end: number; span: DocSpan }
   const hits: Hit[] = []
+
+  if (syntax.has('kdoc') || syntax.has('scaladoc')) {
+    const prose = text.split('')
+    for (const pattern of [LITERAL_RE, BACKTICK_RE]) {
+      for (const match of text.matchAll(pattern)) {
+        for (let i = match.index; i < match.index + match[0].length; i++) prose[i] = ' '
+      }
+    }
+    const links = syntax.has('scaladoc')
+      ? /\[\[([^\]\s]+)(?:\s+([^\]]+))?\]\]/g
+      : /(?<!\[)\[([^\]\n]+)\](?:\[([\w.]+)\])?(?![\](])/g
+    for (const match of prose.join('').matchAll(links)) {
+      const target = syntax.has('scaladoc') ? match[1] : (match[2] ?? match[1])
+      const label = syntax.has('scaladoc') ? (match[2] ?? match[1]) : match[1]
+      if (!/^[\w.#]+$/.test(target)) continue
+      hits.push({ start: match.index, end: match.index + match[0].length,
+        span: { kind: 'ref', role: 'any', target, label } })
+    }
+  }
 
   for (const m of text.matchAll(STRONG_RE)) {
     hits.push({ start: m.index, end: m.index + m[0].length, span: { kind: 'strong', text: m[1] } })

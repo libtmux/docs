@@ -1,5 +1,5 @@
 ---
-import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
+import { parameterId, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
 import { mentionsOf, referenceAlternatives } from '../../lib/api-models'
 import { withRoot } from '../../lib/site-root'
 import { Code } from 'astro-expressive-code/components'
@@ -190,7 +190,9 @@ const FOLD_THRESHOLD = 10
 const folds = (sig: { params: unknown[] }) => sig.params.length >= FOLD_THRESHOLD
 const foldable = symbol.signatures.some(folds)
 
-const params = symbol.signatures.at(-1)?.params.filter((p) => p.doc) ?? []
+const params = nativeSignatures
+  ? [...new Map(symbol.signatures.flatMap((sig) => sig.params).map((param) => [param.name, param])).values()]
+  : symbol.signatures.at(-1)?.params.filter((p) => p.doc) ?? []
 const returnsDoc = symbol.signatures.at(-1)?.returnsDoc
 const raises = symbol.signatures.at(-1)?.raises ?? []
 const hasFields = params.length > 0 || Boolean(returnsDoc) || raises.length > 0
@@ -574,7 +576,7 @@ const hasBody =
                 <dd class="field-odd">
                   <ul class="simple">
                     {params.map((p) => (
-                      <li>
+                      <li id={parameterId(symbol, p.name)}>
                         <p>
                           <strong>{p.name}</strong>
                           {p.type && (
@@ -584,8 +586,7 @@ const hasBody =
                               {') '}
                             </>
                           )}
-                          {' – '}
-                          <ApiDoc text={p.doc ?? ''} index={index} context={symbol} />
+                          {p.doc && <>{' – '}<ApiDoc text={p.doc} index={index} context={symbol} /></>}
                           {p.since && <span class="gp-sphinx-api-param-since">added {p.since}</span>}
                           {p.deprecated && (
                             <span class="gp-sphinx-api-param-deprecated">

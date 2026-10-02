@@ -55,10 +55,12 @@ export function memberSignals(
     if (!symbol) continue
     const ports = Object.keys(concept.symbols).length
     // A member can realise several concepts; the broadest one speaks for it.
-    if ((conceptPorts.get(symbol) ?? 0) < ports) {
-      conceptPorts.set(symbol, ports)
-      conceptIds.set(symbol, id)
-      conceptOrder.set(symbol, index)
+    for (const target of [symbol, ...(concept.variants?.[port] ?? [])]) {
+      if ((conceptPorts.get(target) ?? 0) < ports) {
+        conceptPorts.set(target, ports)
+        conceptIds.set(target, id)
+        conceptOrder.set(target, index)
+      }
     }
   }
   const counts = new Map<string, number>()
@@ -70,10 +72,17 @@ const idOf = (s: ApiSymbol) => s.publicId ?? s.id
 
 /**
  * `sessions`, `Sessions`, `sessions()`, `list_sessions`, `listSessions`,
- * `ListSessionsAsync`: every port's spelling of the accessor that walks one
+ * `ListSessionsAsync`, `GetClientsAsync`: accessors that walk one
  * level down tmux's hierarchy.
  */
-const LISTING = /^(list_?)?(sessions|windows|panes|clients|buffers)$/
+const LISTING = /^(list_?|get)?(sessions|windows|panes|clients|buffers)$/
+const LISTING_ORDER = ['sessions', 'windows', 'panes', 'clients', 'buffers']
+const listingRank = (s: ApiSymbol, signals: MemberSignals) => {
+  const concept = signals.conceptIds.get(idOf(s))
+  const name = concept?.startsWith('list-') ? concept.slice(5) : bareName(s).replace(/^(list_?|get)/, '')
+  const rank = LISTING_ORDER.indexOf(name)
+  return rank < 0 ? LISTING_ORDER.length : rank
+}
 
 /**
  * Operations that return a collection to filter: `search_panes`, `Snapshot`,
@@ -126,6 +135,8 @@ export function compareMembers(signals: MemberSignals): (a: ApiSymbol, b: ApiSym
     Number(Boolean(a.inheritedFrom)) - Number(Boolean(b.inheritedFrom)) ||
     (signals.conceptPorts.get(idOf(b)) ?? 0) - (signals.conceptPorts.get(idOf(a)) ?? 0) ||
     (signals.conceptOrder.get(idOf(a)) ?? Infinity) - (signals.conceptOrder.get(idOf(b)) ?? Infinity) ||
+    (rank(a) === 0 ? listingRank(a, signals) - listingRank(b, signals) : 0) ||
     (signals.mentions.get(idOf(b)) ?? 0) - (signals.mentions.get(idOf(a)) ?? 0) ||
-    a.name.localeCompare(b.name)
+    a.name.localeCompare(b.name) ||
+    idOf(a).localeCompare(idOf(b))
 }
