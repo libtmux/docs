@@ -74,6 +74,38 @@ function modifiersOf(raw: RawSymbol): Modifier[] {
   return [...new Set(out)]
 }
 
+/** Only a declaration's own throws clause describes its error type. */
+function raisesOf(fragments: Fragment[]): Signature['raises'] {
+  let depth = 0
+  for (const [index, fragment] of fragments.entries()) {
+    if (depth === 0 && fragment.kind === 'keyword' && fragment.spelling === 'rethrows') {
+      return [{ type: 'any Error', doc: 'Rethrows errors from a throwing argument.' }]
+    }
+    if (depth === 0 && fragment.kind === 'keyword' && fragment.spelling === 'throws') {
+      const suffix = fragmentText(fragments.slice(index + 1)) ?? ''
+      // Plain throws erases its error type to Swift's existential Error.
+      if (!suffix.startsWith('(')) return [{ type: 'any Error' }]
+      let parentheses = 0
+      for (let i = 0; i < suffix.length; i++) {
+        if (suffix[i] === '(') parentheses++
+        if (suffix[i] === ')' && --parentheses === 0) {
+          const type = suffix.slice(1, i).trim()
+          return type && type !== 'Never' ? [{ type }] : undefined
+        }
+      }
+      return undefined
+    }
+    for (let i = 0; i < fragment.spelling.length; i++) {
+      const char = fragment.spelling[i]
+      // A returned function can throw without the enclosing function throwing.
+      if (depth === 0 && char === '-' && fragment.spelling[i + 1] === '>') return undefined
+      if (char === '(') depth++
+      if (char === ')') depth--
+    }
+  }
+  return undefined
+}
+
 function signatureOf(raw: RawSymbol): Signature | undefined {
   const fn = raw.functionSignature
   if (!fn) return undefined
@@ -87,13 +119,7 @@ function signatureOf(raw: RawSymbol): Signature | undefined {
     // Typed throws lives in the subHeading rather than in functionSignature —
     // `throws(TmuxError)` — and it is the construct tree-sitter loses, so it
     // is lifted out deliberately rather than left in the signature text.
-    raises: (() => {
-      const sub = raw.names.subHeading ?? []
-      const i = sub.findIndex((f) => f.kind === 'keyword' && f.spelling === 'throws')
-      if (i === -1) return undefined
-      const thrown = sub.slice(i + 1).find((f) => f.kind === 'typeIdentifier')
-      return thrown ? [{ type: thrown.spelling }] : undefined
-    })(),
+    raises: raisesOf(raw.names.subHeading ?? []),
   }
 }
 

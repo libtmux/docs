@@ -160,3 +160,68 @@ describe('symbol graph source locations', () => {
     expect(symbol.inheritedFrom).toBe('Decodable.init(from:)')
   })
 })
+
+describe('symbol graph throwing contracts', () => {
+  const keyword = (spelling: string) => ({ kind: 'keyword', spelling })
+  const text = (spelling: string) => ({ kind: 'text', spelling })
+  const type = (spelling: string) => ({ kind: 'typeIdentifier', spelling })
+  const head = [keyword('func'), text(' '), { kind: 'identifier', spelling: 'next' }, text('() '), keyword('async'), text(' ')]
+  const returns = [type('Self'), text('.'), type('Element'), text('?')]
+  const returned = [text(' -> '), ...returns]
+
+  function signature(fragments: { kind: string; spelling: string }[]) {
+    const dir = mkdtempSync(join(tmpdir(), 'symbolgraph-throws-'))
+    dirs.push(dir)
+    const file = join(dir, 'Iterator.symbols.json')
+    writeFileSync(file, JSON.stringify({ symbols: [{
+      identifier: { precise: 'iterator-next' }, kind: { identifier: 'swift.method' },
+      pathComponents: ['Iterator', 'next()'], accessLevel: 'public',
+      names: { title: 'next()', subHeading: fragments },
+      functionSignature: { parameters: [], returns },
+    }] }))
+    return extractSymbolGraph([file])[0].signatures[0]
+  }
+
+  it('records untyped throws without treating the returned type as an error', () => {
+    expect(signature([...head, keyword('throws'), ...returned])).toEqual({
+      params: [], returns: 'Self.Element?', raises: [{ type: 'any Error' }],
+    })
+    expect(signature([...head, keyword('throws')]).raises).toEqual([{ type: 'any Error' }])
+    expect(signature([...head, ...returned]).raises).toBeUndefined()
+  })
+
+  it.each([
+    ['TmuxError', [type('TmuxError')]],
+    ['Self.Failure', [type('Self'), text('.'), type('Failure')]],
+    ['any Error', [keyword('any'), text(' '), type('Error')]],
+    ['Failures.Box<(Int, String)>', [type('Failures'), text('.'), type('Box'), text('<('), type('Int'), text(', '), type('String'), text(')>')]],
+  ] as const)('preserves the complete balanced error type %s', (expected, fragments) => {
+    expect(signature([...head, keyword('throws'), text('('), ...fragments, text(')'), ...returned]).raises)
+      .toEqual([{ type: expected }])
+  })
+
+  it('does not attribute a throwing callback or returned function to its enclosing function', () => {
+    const callback = [keyword('func'), text(' map(('), type('Element'), text(') '), keyword('throws'), text(' -> '), type('Value'), text(') ')]
+    expect(signature([...callback, ...returned]).raises).toBeUndefined()
+    expect(signature([...callback, keyword('throws'), text('('), type('TmuxError'), text(')'), ...returned]).raises)
+      .toEqual([{ type: 'TmuxError' }])
+    expect(signature([...head, text(' -> () '), keyword('throws'), ...returned]).raises).toBeUndefined()
+    expect(signature([...callback, keyword('rethrows'), ...returned]).raises)
+      .toEqual([{ type: 'any Error', doc: 'Rethrows errors from a throwing argument.' }])
+  })
+
+  it('does not invent a throwing contract from empty, incomplete or Never clauses', () => {
+    for (const fragments of [[text('()')], [text('('), type('Failure')], [text('('), type('Never'), text(')')]]) {
+      expect(signature([...head, keyword('throws'), ...fragments, ...returned]).raises).toBeUndefined()
+    }
+  })
+
+  it('keeps the integrated iterator and callback wrapper error contracts separate', () => {
+    const model = JSON.parse(readFileSync(new URL('../../../site/src/data/api/swift.json', import.meta.url), 'utf8'))
+    const iterator = model.symbols.find((symbol: { id: string }) => symbol.id === 'ControlNotificationStream.Iterator.next()')
+    expect(iterator.signatures.map((signature: { raises: { type: string }[] }) => signature.raises))
+      .toEqual([[{ type: 'Self.Failure' }], [{ type: 'TmuxError' }]])
+    const wrapper = model.symbols.find((symbol: { id: string }) => symbol.id === 'withTmuxError(_:)')
+    expect(wrapper.signatures[0].raises).toEqual([{ type: 'TmuxError' }])
+  })
+})
