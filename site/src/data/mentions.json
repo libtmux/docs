@@ -1829,6 +1829,13 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.matchingWithCancellation",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Queries with LibTmux.FSharp",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Selection",
    "page": "/fsharp/latest/guides/api-overview/",
    "title": "F# API reference",
@@ -1881,6 +1888,13 @@
    "symbol": "LibTmux.FSharp.Server",
    "page": "/fsharp/latest/guides/interop/",
    "title": ".NET interoperation",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Server",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Queries with LibTmux.FSharp",
    "section": "guides"
   },
   {
@@ -9323,21 +9337,28 @@
    "port": "fsharp",
    "text": "QueryDocument",
    "page": "/fsharp/latest/guides/queries/",
-   "line": 13,
+   "line": 15,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "LibTmux.FSharp",
+   "page": "/fsharp/latest/guides/queries/",
+   "line": 20,
    "why": "not defined in the stated port"
   },
   {
    "port": "fsharp",
    "text": "RequiredSnapshotDepth",
    "page": "/fsharp/latest/guides/queries/",
-   "line": 32,
+   "line": 327,
    "why": "not defined in the stated port"
   },
   {
    "port": "fsharp",
    "text": "IncompleteSnapshotException",
    "page": "/fsharp/latest/guides/queries/",
-   "line": 33,
+   "line": 328,
    "why": "not defined in the stated port"
   },
   {

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { CONCEPTS, conceptsFor } from '../src/concepts.ts'
 import type { ApiModel } from '../src/model.ts'
+import { API_MODEL_PORTS } from '../../../site/src/lib/ports.ts'
 
 /**
  * The concept map is hand-maintained, so this is what keeps it true.
@@ -15,7 +16,7 @@ import type { ApiModel } from '../src/model.ts'
  */
 const here = dirname(fileURLToPath(import.meta.url))
 const DATA = join(here, '../../../site/src/data/api')
-const PORTS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'dotnet', 'cxx', 'swift']
+const PORTS = API_MODEL_PORTS.map((port) => port.slug)
 
 const models = new Map<string, ApiModel>()
 for (const port of PORTS) {
@@ -52,6 +53,12 @@ describe('concept map', () => {
     expect(CONCEPTS['list-panes'].symbols.swift).toBe('Snapshot.panes(of:)')
     expect(CONCEPTS['list-server-windows']?.symbols.swift).toBe('Server.windows()')
     expect(CONCEPTS['list-server-panes']?.symbols.swift).toBe('Server.panes()')
+    expect(CONCEPTS['list-sessions'].symbols.fsharp).toBe('LibTmux.FSharp.Server.listSessions')
+    expect(CONCEPTS['list-clients'].symbols.fsharp).toBe('LibTmux.FSharp.Server.listClients')
+    expect(CONCEPTS['list-server-windows'].symbols.fsharp).toBe('LibTmux.FSharp.Server.listWindows')
+    expect(CONCEPTS['list-server-panes'].symbols.fsharp).toBe('LibTmux.FSharp.Server.listPanes')
+    expect(CONCEPTS['list-windows'].symbols.fsharp).toBeUndefined()
+    expect(CONCEPTS['list-panes'].symbols.fsharp).toBeUndefined()
   })
 
   it('links visible capture to the visible capture overload', () => {

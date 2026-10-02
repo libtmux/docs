@@ -286,6 +286,7 @@ export const CONCEPTS: Record<string, Concept> = {
   'list-clients': {
     label: "List the server's attached clients",
     symbols: {
+      fsharp: 'LibTmux.FSharp.Server.listClients',
       scala: 'io.github.libtmux.scaladsl.Server.clients',
       kotlin: 'io.github.libtmux.kotlin.Server.clients',
       py: 'libtmux.Server.clients',
@@ -376,6 +377,7 @@ export const CONCEPTS: Record<string, Concept> = {
   'list-sessions': {
     label: 'List the server’s sessions',
     symbols: {
+      fsharp: 'LibTmux.FSharp.Server.listSessions',
       scala: 'io.github.libtmux.scaladsl.Server.sessions',
       kotlin: 'io.github.libtmux.kotlin.Server.sessions',
       py: 'libtmux.Server.sessions',
@@ -558,6 +560,7 @@ export const CONCEPTS: Record<string, Concept> = {
   'list-server-windows': {
     label: "List the server's windows",
     symbols: {
+      fsharp: 'LibTmux.FSharp.Server.listWindows',
       scala: 'io.github.libtmux.scaladsl.Server.windows',
       kotlin: 'io.github.libtmux.kotlin.Server.windows',
       py: 'libtmux.Server.windows',
@@ -573,6 +576,7 @@ export const CONCEPTS: Record<string, Concept> = {
   'list-server-panes': {
     label: "List the server's panes",
     symbols: {
+      fsharp: 'LibTmux.FSharp.Server.listPanes',
       scala: 'io.github.libtmux.scaladsl.Server.panes',
       kotlin: 'io.github.libtmux.kotlin.Server.panes',
       py: 'libtmux.Server.panes',
@@ -3606,6 +3610,7 @@ for (const concept of Object.values(CONCEPTS)) {
   if (!concept.symbols.lua) concept.absent.lua = 'No source-verified Lua equivalent is recorded for this operation.'
   if (!concept.symbols.kotlin) concept.absent.kotlin = 'No source-verified Kotlin equivalent is recorded for this operation.'
   if (!concept.symbols.scala) concept.absent.scala = 'No source-verified Scala equivalent is recorded for this operation.'
+  if (!concept.symbols.fsharp) concept.absent.fsharp = 'No source-verified F# equivalent is recorded for this operation.'
 }
 
 /** Every concept naming this symbol, including concepts sharing an overload group. */
