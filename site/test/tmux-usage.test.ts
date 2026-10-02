@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createHighlighterCore, createOnigurumaEngine, type HighlighterCore, type ThemedToken } from 'shiki'
+import bash from 'shiki/langs/bash.mjs'
 import { createRenderer } from 'astro-expressive-code'
 import { select, toHtml } from 'astro-expressive-code/hast'
 import config from '../ec.config.mjs'
@@ -7,6 +8,7 @@ import catalog32 from '../src/data/tmux/3.2a.json'
 import catalog37 from '../src/data/tmux/3.7c.json'
 import { codeLang, highlightInline } from '../src/lib/highlight'
 import { tmuxUsage } from '../src/lib/tmux-usage.mjs'
+import { tmuxShell } from '../src/lib/tmux-shell.mjs'
 import { shellThemes } from '../src/plugins/ec-shell-prompt.mjs'
 
 function contrast(foreground: string, background: string) {
@@ -30,7 +32,7 @@ describe('tmux usage highlighting', () => {
   let highlighter: HighlighterCore
   beforeAll(async () => {
     highlighter = await createHighlighterCore({
-      themes: shellThemes(), langs: [tmuxUsage],
+      themes: shellThemes(), langs: [tmuxUsage, tmuxShell, ...bash],
       engine: createOnigurumaEngine(import('shiki/wasm')),
     })
   })
@@ -103,5 +105,53 @@ describe('tmux usage highlighting', () => {
     expect(html).toContain('target-pane')
     expect(html).toContain('--0:#E5C07B')
     expect(html).toContain('--1:#8A5400')
+  })
+
+  const captureCommands = [
+    'tmux capture-pane -p -t "$TMUX_PANE"',
+    'tmux capture-pane -p -J -S -1000 -t "$TMUX_PANE"',
+  ]
+
+  it.each(captureCommands)('highlights the runnable command %s in both themes', async (code) => {
+    for (const theme of ['github-light', 'github-dark']) {
+      const result = highlighter.codeToTokens(code, {
+        lang: 'tmux-shell', theme, includeExplanation: true,
+      })
+      const tokens = result.tokens.flat()
+      expect(tokens.map((token) => token.content).join('')).toBe(code)
+      const colors = ['tmux', 'capture-pane', '-p', '$TMUX_PANE'].map((text) => {
+        const token = tokens.find((part) => part.content === text)!
+        expect(token, `missing shell token ${text}`).toBeDefined()
+        expect(contrast(token.color!, result.bg!)).toBeGreaterThanOrEqual(4.5)
+        expect(scopeOf(token)).not.toContain('variable.parameter.tmux-usage')
+        expect(token.fontStyle! & 1, `${text} must not be an italic placeholder`).toBe(0)
+        return token.color
+      })
+      expect(new Set(colors).size).toBe(4)
+      expect(scopeOf(tokens.find((part) => part.content === '$TMUX_PANE'))).toContain('variable.other.normal.shell')
+      expect(scopeOf(tokens.find((part) => part.content === '"'))).toContain('string.quoted.double.shell')
+    }
+    expect(codeLang('tmux-shell')).toBe('tmux-shell')
+    expect((await highlightInline(code, 'tmux-shell')).replace(/<[^>]+>/g, '')).toBe(code)
+    const renderer = await createRenderer(config)
+    const result = await renderer.ec.render({ code, language: 'tmux-shell' })
+    expect(select('[data-code]', result.renderedGroupAst)?.properties.dataCode).toBe(code)
+    const html = toHtml(result.renderedGroupAst)
+    expect(html).toContain('--0:#98C379')
+    expect(html).toContain('--1:#16713A')
+    expect(html).toContain('--0:#E5C07B')
+    expect(html).toContain('--1:#8A5400')
+  })
+
+  it('lets Bash distinguish literal, escaped and expanded dollar signs', () => {
+    const code = `tmux display-message '$TMUX_PANE' "\\$TMUX_PANE" "$TMUX_PANE"`
+    const result = highlighter.codeToTokens(code, {
+      lang: 'tmux-shell', theme: 'github-light', includeExplanation: true,
+    }).tokens.flat()
+    expect(result.map((token) => token.content).join('')).toBe(code)
+    const expanded = result.filter((token) => scopeOf(token).includes('variable.other.normal.shell'))
+    expect(expanded.map((token) => token.content)).toEqual(['$TMUX_PANE'])
+    expect(scopeOf(result.find((token) => token.content.includes("'$TMUX_PANE'")))).toContain('string.quoted.single.shell')
+    expect(result.some((token) => scopeOf(token).includes('constant.character.escape.shell'))).toBe(true)
   })
 })
