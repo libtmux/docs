@@ -12,6 +12,7 @@ import ApiType from './ApiType.astro'
 import type { AsideType } from '../../lib/aside'
 import { apiEntryFields } from '../../lib/api-sections'
 import { tmuxCommandsFor, tmuxReferenceUrl } from '../../lib/tmux-reference'
+import ApiFieldOverloads from './ApiFieldOverloads.astro'
 
 /**
  * One documented symbol, in the shape gp-sphinx's stylesheet expects.
@@ -203,8 +204,8 @@ const FOLD_THRESHOLD = 10
 const folds = (sig: { params: unknown[] }) => sig.params.length >= FOLD_THRESHOLD
 const foldable = symbol.signatures.some(folds)
 
-const { params, returnsDoc, raises } = apiEntryFields(symbol, port)
-const hasFields = params.length > 0 || Boolean(returnsDoc) || raises.length > 0
+const { params, returns, raises } = apiEntryFields(symbol, port)
+const hasFields = params.length > 0 || returns.length > 0 || raises.length > 0
 
 /**
  * Whether there is a description at all.
@@ -587,8 +588,8 @@ const hasBody =
                 <dt class="field-odd" id={`${anchor}.parameters`}>Parameters</dt>
                 <dd class="field-odd">
                   <ul class="simple">
-                    {params.map((p) => (
-                      <li id={parameterId(symbol, p.name)}>
+                    {params.map((p, i) => (
+                      <li id={params.findIndex((entry) => entry.name === p.name) === i ? parameterId(symbol, p.name) : undefined}>
                         <p>
                           <strong>{p.name}</strong>
                           {p.type && (
@@ -605,6 +606,7 @@ const hasBody =
                               deprecated {p.deprecated}
                             </span>
                           )}
+                          <ApiFieldOverloads labels={p.overloads} />
                         </p>
                       </li>
                     ))}
@@ -612,13 +614,16 @@ const hasBody =
                 </dd>
               </>
             )}
-            {returnsDoc && (
+            {returns.length > 0 && (
               <>
                 <dt class="field-even" id={`${anchor}.returns`}>Returns</dt>
                 <dd class="field-even">
-                  <p>
-                    <ApiDoc text={returnsDoc} index={index} context={symbol} />
-                  </p>
+                  {returns.map((entry) => (
+                    <p>
+                      <ApiDoc text={entry.doc} index={index} context={symbol} />
+                      <ApiFieldOverloads labels={entry.overloads} />
+                    </p>
+                  ))}
                 </dd>
               </>
             )}
@@ -637,6 +642,7 @@ const hasBody =
                               <ApiDoc text={r.doc} index={index} context={symbol} />
                             </>
                           )}
+                          <ApiFieldOverloads labels={r.overloads} />
                         </p>
                       </li>
                     ))}

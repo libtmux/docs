@@ -1,7 +1,9 @@
-import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { moduleOf, qualifiedNameOf } from '@libtmux/api-model'
+import type { ApiModel, ApiSymbol, Signature } from '@libtmux/api-model'
+import { compareMembers, memberSignals, moduleOf, qualifiedNameOf } from '@libtmux/api-model'
+import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { tmuxCommandsFor, tmuxReferenceUrl } from './tmux-reference'
+import { apiEntryFields, apiMemberGroups } from './api-sections'
 
 /**
  * A symbol's page as Markdown.
@@ -25,14 +27,23 @@ export interface MarkdownContext {
   packageName?: string
 }
 
-function signatureLine(symbol: ApiSymbol): string | undefined {
-  const sig = symbol.signatures?.[0]
-  if (!sig) return undefined
+function signatureLine(symbol: ApiSymbol, sig: Signature): string {
   const params = (sig.params ?? [])
     .map((p) => `${p.name}${p.type ? `: ${p.type}` : ''}${p.default ? ` = ${p.default}` : ''}`)
     .join(', ')
   const returns = sig.returns ? ` -> ${sig.returns}` : ''
   return `${qualifiedNameOf(symbol)}(${params})${returns}`
+}
+
+function fencedCode(code: string, language = ''): string {
+  const fence = '`'.repeat(Math.max(3, ...[...code.matchAll(/`+/g)].map((match) => match[0].length + 1)))
+  return `${fence}${language}\n${code}${code.endsWith('\n') ? '' : '\n'}${fence}`
+}
+
+function inlineCode(code: string): string {
+  const fence = '`'.repeat(Math.max(1, ...[...code.matchAll(/`+/g)].map((match) => match[0].length + 1)))
+  const pad = /^`|`$|^ .* $/.test(code) ? ' ' : ''
+  return `${fence}${pad}${code}${pad}${fence}`
 }
 
 export function symbolMarkdown(ctx: MarkdownContext): string {
@@ -42,13 +53,17 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
 
   // The definition block, in the same order the page shows it.
   const facts: string[] = []
-  const mod = moduleOf(symbol)
+  const parent = symbol.parent ? model.symbols.find((entry) => entry.id === symbol.parent) : undefined
+  const mod = moduleOf(parent ?? symbol)
   if (mod) facts.push(`- **Module:** ${mod}`)
   if (ctx.packageName) facts.push(`- **Package:** ${ctx.packageName}`)
   facts.push(`- **Language:** ${PORT_NAME[model.port] ?? model.port}`)
   if (symbol.kind) facts.push(`- **Kind:** ${symbol.kind}`)
   if (ctx.source) facts.push(`- **Source:** ${ctx.source}`)
   if (symbol.exportedFrom) facts.push(`- **Exported from:** ${symbol.exportedFrom}`)
+  if (symbol.inheritedFrom) facts.push(`- **Inherited from:** ${symbol.inheritedFrom}`)
+  if (symbol.publicOwner && symbol.publicOwner !== symbol.id) facts.push(`- **Public owner:** ${symbol.publicOwner}`)
+  if (symbol.extends?.length) facts.push(`- **Bases:** ${symbol.extends.join(', ')}`)
   if (ctx.canonical) facts.push(`- **Page:** ${ctx.canonical}`)
   if (facts.length) out.push(...facts, '')
   for (const command of tmuxCommandsFor(model.port, symbol.publicId ?? symbol.id)) {
@@ -58,47 +73,76 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push('This type appears in public signatures. It is not a package entry point.', '')
   }
 
-  const sig = ['kotlin', 'scala', 'fsharp'].includes(model.port)
-    ? symbol.signatures.map((entry) => entry.raw).join('\n\n') : signatureLine(symbol)
-  if (sig) out.push('```', sig, '```', '')
+  const native = ['kotlin', 'scala', 'fsharp'].includes(model.port)
+  const sig = symbol.signatures.map((entry) => native && entry.raw ? entry.raw : signatureLine(symbol, entry)).join('\n\n')
+  if (sig) out.push(fencedCode(sig), '')
 
   if (symbol.doc?.summary) out.push(symbol.doc.summary, '')
   if (symbol.doc?.body) out.push(symbol.doc.body, '')
 
-  const params = symbol.signatures?.[0]?.params ?? []
-  if (params.some((p) => p.doc)) {
+  if (symbol.doc?.examples?.length) {
+    out.push('## Examples', '')
+    for (const ex of symbol.doc.examples) {
+      if (ex.intro) out.push(ex.intro, '')
+      if (ex.sourceUrl) out.push(`[Source example](${ex.sourceUrl}).`, '')
+      out.push(fencedCode(ex.code, ex.lang), '')
+    }
+  }
+
+  if (symbol.doc?.references?.length) {
+    out.push('## References', '')
+    for (const reference of symbol.doc.references) out.push(`- [${reference.name}] ${reference.text}`)
+    out.push('')
+  }
+  if (symbol.doc?.deprecated) out.push('## Deprecated', '', symbol.doc.deprecated, '')
+  if (symbol.doc?.changed) out.push('## Changed', '', symbol.doc.changed, '')
+  for (const note of symbol.doc?.admonitions ?? []) {
+    out.push(`> **${note.kind}:** ${note.text.replaceAll('\n', '\n> ')}`, '')
+  }
+
+  const { params, returns, raises } = apiEntryFields(symbol, model.port)
+  const overloads = (labels: string[]) => labels.length ? ` (for ${labels.map(inlineCode).join('; ')})` : ''
+  if (params.length) {
     out.push('## Parameters', '')
     for (const p of params) {
-      out.push(`- \`${p.name}\`${p.type ? ` (${p.type})` : ''}${p.doc ? `: ${p.doc}` : ''}`)
+      out.push(`- ${inlineCode(p.name)}${p.type ? ` (${inlineCode(p.type)})` : ''}${p.doc ? `: ${p.doc}` : ''}${p.since ? ` (added ${p.since})` : ''}${p.deprecated ? ` (deprecated ${p.deprecated})` : ''}${overloads(p.overloads)}`)
     }
     out.push('')
   }
 
-  const sig0 = symbol.signatures?.[0]
-  if (sig0?.returnsDoc) out.push('## Returns', '', sig0.returnsDoc, '')
+  if (returns.length) {
+    out.push('## Returns', '')
+    for (const entry of returns) out.push(`${entry.doc}${overloads(entry.overloads)}`, '')
+  }
 
-  if (sig0?.raises?.length) {
+  if (raises.length) {
     out.push('## Raises', '')
-    for (const r of sig0.raises) out.push(`- \`${r.type}\`${r.doc ? `: ${r.doc}` : ''}`)
+    for (const r of raises) out.push(`- ${inlineCode(r.type)}${r.doc ? `: ${r.doc}` : ''}${overloads(r.overloads)}`)
     out.push('')
   }
 
-  for (const ex of symbol.doc?.examples ?? []) {
-    out.push('## Example', '')
-    if (ex.intro) out.push(ex.intro, '')
-    if (ex.sourceUrl) out.push(`[Source example](${ex.sourceUrl}).`, '')
-    out.push('```' + (ex.lang ?? ''), ex.code, '```', '')
-  }
-
-  const members = model.symbols.filter((s) => s.parent === symbol.id)
-  if (members.length) {
-    out.push('## Members', '')
-    for (const m of members) {
-      out.push(`- \`${m.name}\` (${m.kind})${m.doc?.summary ? `: ${m.doc.summary}` : ''}`)
+  const signals = memberSignals(model.port, mentions.mentions)
+  const members = model.symbols.filter((s) => s.parent === symbol.id).sort(compareMembers(signals))
+  const declared = members.filter((member) => !member.inheritedFrom)
+  const inherited = members.filter((member) => member.inheritedFrom)
+  const appendMembers = (entries: ApiSymbol[]) => {
+    for (const member of entries) {
+      out.push(`- ${inlineCode(member.name)} (${member.kind})${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
     }
     out.push('')
+  }
+  if (declared.length) {
+    out.push('## Members', '')
+    for (const group of apiMemberGroups(declared, signals)) {
+      out.push(`### ${group.label}`, '')
+      appendMembers(group.members)
+    }
+  }
+  if (inherited.length) {
+    out.push('## Inherited members', '')
+    appendMembers(inherited)
   }
 
   // One trailing newline, so the file ends the way a text file should.
-  return `${out.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd()}\n`
+  return `${out.join('\n').trimEnd()}\n`
 }

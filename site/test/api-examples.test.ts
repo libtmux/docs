@@ -1,5 +1,6 @@
 import type { ApiModel } from '@libtmux/api-model'
 import { createHash } from 'node:crypto'
+import { fromMarkdown } from 'mdast-util-from-markdown'
 import { describe, expect, it } from 'vitest'
 import go from '../src/data/api/go.json'
 import receipt from './fixtures/api-examples.json'
@@ -14,16 +15,20 @@ describe('verified complete API programs', () => {
     expect(symbols).toHaveLength(1)
     const symbol = symbols[0]
     const blocks = symbol.doc?.examples ?? []
+    const markdown = symbolMarkdown({ model, symbol })
+    const exported = fromMarkdown(markdown).children.filter((node) => node.type === 'code')
     expect(symbol.source.revision).toBe(example.sourceRevision)
     expect(example.page).toBe(`ports/go/reference/${symbol.slug}`)
     for (const file of example.files) {
       expect(hash(blocks[file.block].code), `${example.symbol}/${file.name}`).toBe(file.sha256)
+      expect(exported.some((block) => hash(block.value + '\n') === file.sha256),
+        `${example.symbol}/${file.name} Markdown`).toBe(true)
     }
     expect(blocks.filter((block) => block.lang === 'console')
       .map((block) => block.code.replace(/^\$ /gm, '').trim())).toEqual(example.shellRecipe)
     expect(blocks[2].sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${example.sourceFile}`)
     expect(blocks[2].intro).not.toContain('[source example](')
-    expect(symbolMarkdown({ model, symbol })).toContain(`[Source example](${blocks[2].sourceUrl}).`)
+    expect(markdown).toContain(`[Source example](${blocks[2].sourceUrl}).`)
     expect(blocks[2].code).toMatch(/^package tmux_test\n/)
     expect(blocks[2].code).toMatch(/func Example\w+_complete\(\)/)
     expect(blocks[2].code).toContain('// Output:')
