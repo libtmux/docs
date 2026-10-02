@@ -7,7 +7,7 @@
  */
 import { compareMembers, memberSignals, qualifiedNameOf, symbolsForProduct } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
-import { API_MODELS, API_NAV, OWNER_KINDS, pageSlug, type NavEntry } from './api-models'
+import { API_MODELS, API_NAV, OWNER_KINDS, pageSlug, topLevelTypesOf, type NavEntry } from './api-models'
 import type { ApiTreeBucket, ApiTreeJson } from './api-search'
 
 export interface TreeBucket {
@@ -112,6 +112,28 @@ export function navTree(port: string): TreeBucket[] {
   ]
 }
 
+/** The same ordered declarations and section anchors serve HTML and exports. */
+export function referenceIndexSections(port: string) {
+  const model = API_MODELS[port]
+  if (!model) return []
+  const cards = new Set(topLevelTypesOf(model).map((symbol) => symbol.id))
+  const symbols = new Map(model.symbols.filter((symbol) => !symbol.parent)
+    .map((symbol) => [symbol.publicId ?? symbol.id, symbol]))
+  const section = (bucket: TreeBucket, name: string, collapsed: boolean) => {
+    const entries = bucket.entries.map((entry) => symbols.get(entry.id))
+      .filter((symbol): symbol is NonNullable<typeof symbol> => symbol !== undefined)
+    return {
+      id: bucket.id, name, collapsed,
+      types: entries.filter((symbol) => cards.has(symbol.id)),
+      free: entries.filter((symbol) => !cards.has(symbol.id)),
+    }
+  }
+  return navTree(port).flatMap((bucket) => [
+    section(bucket, bucket.label, bucket.collapsed),
+    ...bucket.children.map((child) => section(child, `${bucket.label} — ${child.label}`, bucket.collapsed)),
+  ]).filter((entry) => entry.types.length || entry.free.length)
+}
+
 /** Everything a bucket holds, its children included, for the count beside it. */
 export const bucketTotal = (b: TreeBucket): number =>
   b.entries.length + b.children.reduce((n, c) => n + c.entries.length, 0)
@@ -163,9 +185,18 @@ export function membersByType(port: string): Map<string, TreeMember[]> {
 
 /** The port-scoped inventory served to lazy branches and symbol search. */
 export function referenceTree(port: string): ApiTreeJson {
-  const members = membersByType(port)
-  const symbols = new Map(API_MODELS[port]?.symbols.flatMap((symbol) =>
+  const model = API_MODELS[port]
+  const products = new Set(model
+    ? [...symbolsForProduct(model, 'mcp'), ...symbolsForProduct(model, 'workspace')].map((symbol) => symbol.id)
+    : [])
+  const symbols = new Map(model?.symbols.filter((symbol) => !products.has(symbol.id)).flatMap((symbol) =>
     [[symbol.id, symbol], [symbol.publicId ?? symbol.id, symbol]] as const))
+  // The shared cache includes product declarations; scope only this core inventory.
+  const members = new Map([...membersByType(port)].flatMap(([id, list]) => {
+    if (!symbols.has(id)) return []
+    const core = list.filter((member) => symbols.has(member.id))
+    return core.length ? [[id, core] as const] : []
+  }))
   const category = (kind: string) => OWNER_KINDS.has(kind) ? 'types' as const : 'members' as const
   const bucket = (b: TreeBucket): ApiTreeBucket => ({
     id: b.id,

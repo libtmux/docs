@@ -254,10 +254,11 @@ async function checkReferenceAndHeroes(browser, base) {
     }
     const manifest = await page.request.get(`${base}/docs.json`).then((response) => response.json())
     const javaReference = manifest.pages.find((entry) => entry.title === 'Java API reference')
-    assert.deepEqual(javaReference.headings.find((entry) => entry.id === 'io.github.libtmux.Server.Server'), {
-      id: 'io.github.libtmux.Server.Server', level: 2, text: 'Server',
+    assert.deepEqual(javaReference.symbols.find((entry) => entry.id === 'io.github.libtmux.Server.Server'), {
+      id: 'io.github.libtmux.Server.Server', name: 'Server', kind: 'class',
+      url: new URL(`${base}/java/latest/reference/io-github-libtmux-server-server/`).href,
       qualifiedName: 'io.github.libtmux.Server', namespace: 'io.github.libtmux',
-    }, 'Java manifest records source identity alongside its stable declaration anchor')
+    }, 'Java manifest records source identity alongside its stable declaration URL')
     await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server/`)
     const javaEquivalent = page.locator('.api-elsewhere a[href$="/java/latest/reference/io-github-libtmux-server-server/"]')
     assert.equal(await javaEquivalent.textContent().then((text) => text.trim()), 'io.github.libtmux.Server',
