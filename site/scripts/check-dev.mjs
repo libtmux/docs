@@ -231,7 +231,37 @@ async function checkReferenceAndHeroes(browser, base) {
       assert.equal(await page.locator('main h1').getAttribute('id'), qualifiedName.replace('libtmux.Server', 'libtmux.Server.Server'))
       assert(await page.locator('.api-qualified-name').textContent().then((text) => text.includes(qualifiedName)),
         `${qualifiedName}: complete source name remains in accessible HTML`)
+      if (!qualifiedName.endsWith('.sessions')) {
+        const legacyId = qualifiedName.replace('libtmux.Server', 'libtmux.Server.Server')
+        const declaration = page.locator(`dt[data-symbol-id="${legacyId}"]`)
+        assert.equal(await declaration.getAttribute('id'), `${legacyId}.declaration`)
+        for (const width of [1440, 390]) {
+          await page.setViewportSize({ width, height: 900 })
+          const signature = declaration.locator('.gp-sphinx-api-signature:visible')
+          assert.equal((await signature.locator(':scope > .sig-prename, :scope > .sig-name').allTextContents()).join(''), qualifiedName,
+            `${width}px ${qualifiedName}: visible declaration uses its source-qualified name`)
+        }
+      }
     }
+    await page.goto(`${base}/java/latest/mcp/reference/io-github-libtmux-mcp-main-main/`)
+    const productDeclaration = page.locator('dt[data-symbol-id="io.github.libtmux.mcp.Main.Main"]')
+    assert.equal(await productDeclaration.getAttribute('id'), 'io.github.libtmux.mcp.Main.Main')
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 900 })
+      const signature = productDeclaration.locator('.gp-sphinx-api-signature:visible')
+      assert.equal((await signature.locator(':scope > .sig-prename, :scope > .sig-name').allTextContents()).join(''), 'io.github.libtmux.mcp.Main',
+        `${width}px Java product declaration uses its source-qualified name`)
+    }
+    const manifest = await page.request.get(`${base}/docs.json`).then((response) => response.json())
+    const javaReference = manifest.pages.find((entry) => entry.title === 'Java API reference')
+    assert.deepEqual(javaReference.headings.find((entry) => entry.id === 'io.github.libtmux.Server.Server'), {
+      id: 'io.github.libtmux.Server.Server', level: 2, text: 'Server',
+      qualifiedName: 'io.github.libtmux.Server', namespace: 'io.github.libtmux',
+    }, 'Java manifest records source identity alongside its stable declaration anchor')
+    await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server/`)
+    const javaEquivalent = page.locator('.api-elsewhere a[href$="/java/latest/reference/io-github-libtmux-server-server/"]')
+    assert.equal(await javaEquivalent.textContent().then((text) => text.trim()), 'io.github.libtmux.Server',
+      'Equivalent Java API labels use the target source identity while retaining its stable URL')
     console.log('Java names: source package and exact qualified names render without changing declaration anchors')
   } finally {
     await page.close()
