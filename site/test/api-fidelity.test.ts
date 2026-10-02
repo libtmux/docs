@@ -17,11 +17,11 @@ afterEach(() => scratch.splice(0).forEach((path) => rmSync(path, { recursive: tr
 
 const escape = (value: string) => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 
-function entry(model: ApiModel, symbol: ApiSymbol, linked = true): string {
-  const id = escape(symbol.publicId ?? symbol.id)
+function entry(model: ApiModel, symbol: ApiSymbol, linked = true, declaration = false): string {
+  const id = escape(`${symbol.publicId ?? symbol.id}${declaration ? '.declaration' : ''}`)
   const source = linked ? sourceUrl(model, symbol) : undefined
   const links = `<a class="headerlink" href="#${id}">¶</a>${source ? `<a href="${escape(source)}">source</a>` : ''}`
-  return `<dl><dt class="gp-sphinx-api-header" id="${id}" data-domain="std" data-objtype="${symbol.kind}" data-badge-count="0" data-has-badges="false" data-has-source="${Boolean(source)}" data-signature-expanded="true"><span class="gp-sphinx-api-layout--desktop">${links}</span><span class="gp-sphinx-api-layout--mobile">${links}</span></dt><dd>Reference fixture</dd></dl>`
+  return `<dl><dt class="gp-sphinx-api-header" id="${id}" data-symbol-id="${escape(symbol.id)}" data-domain="std" data-objtype="${symbol.kind}" data-badge-count="0" data-has-badges="false" data-has-source="${Boolean(source)}" data-signature-expanded="true"><span class="gp-sphinx-api-layout--desktop">${links}</span><span class="gp-sphinx-api-layout--mobile">${links}</span></dt><dd>Reference fixture</dd></dl>`
 }
 
 function page(path: string, port: string, entries: string[]): void {
@@ -49,7 +49,7 @@ describe('API source fidelity gate', () => {
     const declared = model.symbols.find((symbol) => sourceUrl(model, symbol))!
     const inherited = model.symbols.find((symbol) => symbol.inheritedFrom && !symbol.source.file)!
     expect(inherited).toBeDefined()
-    page(path, 'swift', [entry(model, declared), entry(model, inherited, false)])
+    page(path, 'swift', [entry(model, declared, true, true), entry(model, inherited, false, true)])
     const result = audit(path)
     expect(result.status, result.stderr).toBe(0)
     expect(result.stdout).toMatch(/swift\s+1\s+2\s+1\s+1\s+100%/)
@@ -71,11 +71,11 @@ describe('API source fidelity gate', () => {
     const model = models.py
     const declarations = model.symbols.filter((symbol) => sourceUrl(model, symbol)).slice(0, 20)
     expect(declarations).toHaveLength(20)
-    page(path, 'py', declarations.map((symbol, index) => entry(model, symbol, index !== 0)))
+    page(path, 'py', declarations.map((symbol, index) => entry(model, symbol, index !== 0, true)))
     const result = audit(path)
     expect(result.status).toBe(1)
     expect(result.stdout).toMatch(/py\s+1\s+20\s+20\s+19\s+95%/)
-    expect(result.stderr).toContain(`#${declarations[0].publicId ?? declarations[0].id} omits its known source link`)
+    expect(result.stderr).toContain(`#${declarations[0].publicId ?? declarations[0].id}.declaration omits its known source link`)
     expect(result.stderr).not.toContain('source-eligible entries link to source')
   })
 })

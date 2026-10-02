@@ -1,0 +1,70 @@
+---
+import type { ApiSection } from '../../lib/api-sections'
+
+interface Props {
+  sections: ApiSection[]
+  related: { name: string; identity: string; kind: string; href: string }[]
+}
+const { sections, related } = Astro.props as Props
+---
+<api-page-contents class="api-page-contents" data-pagefind-ignore="all">
+  <aside aria-label="Reference page navigation">
+    <nav aria-label="On this page">
+      <h2>On this page</h2>
+      <ul>
+        {sections.map((section) => <li class:list={[section.nested && 'api-contents-nested']}>
+          <a href={`#${section.id}`} data-api-section-link>{section.label}</a>
+        </li>)}
+      </ul>
+    </nav>
+    {related.length > 0 && <nav class="api-related" aria-label="Related APIs">
+      <h2>Related APIs</h2>
+      <ul>{related.map((symbol) => <li>
+        <a href={symbol.href} title={symbol.identity} aria-label={symbol.identity}>
+          <span class="api-related-kind" aria-hidden="true">{symbol.kind[0].toUpperCase()}</span><code>{symbol.name}</code>
+        </a>
+      </li>)}</ul>
+    </nav>}
+  </aside>
+</api-page-contents>
+<script>
+  class ApiPageContents extends HTMLElement {
+    private controller?: AbortController
+    private frame = 0
+
+    connectedCallback() {
+      this.controller = new AbortController()
+      const { signal } = this.controller
+      const update = () => {
+        const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-api-section-link]')]
+        const targets = [...new Set(links.map((link) => decodeURIComponent(link.hash.slice(1))))]
+          .map((id) => document.getElementById(id)).filter((target): target is HTMLElement => Boolean(target))
+          .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)
+        // A short page cannot scroll its final section up to the sticky header.
+        // Keep an explicitly selected section active while it remains visible.
+        const selected = targets.find((target) => target.id === decodeURIComponent(location.hash.slice(1)))
+        const selectedTop = selected?.getBoundingClientRect().top ?? -1
+        const current = selectedTop >= 112 && selectedTop < innerHeight ? selected
+          : targets.findLast((target) => target.getBoundingClientRect().top <= 144) ?? targets[0]
+        for (const link of links) {
+          if (decodeURIComponent(link.hash.slice(1)) === current?.id) link.setAttribute('aria-current', 'location')
+          else link.removeAttribute('aria-current')
+        }
+      }
+      const schedule = () => {
+        cancelAnimationFrame(this.frame)
+        this.frame = requestAnimationFrame(update)
+      }
+      window.addEventListener('scroll', schedule, { passive: true, signal })
+      window.addEventListener('hashchange', schedule, { signal })
+      window.addEventListener('resize', schedule, { signal })
+      schedule()
+    }
+
+    disconnectedCallback() {
+      this.controller?.abort()
+      cancelAnimationFrame(this.frame)
+    }
+  }
+  if (!customElements.get('api-page-contents')) customElements.define('api-page-contents', ApiPageContents)
+</script>

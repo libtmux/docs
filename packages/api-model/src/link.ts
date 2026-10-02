@@ -1,6 +1,6 @@
 import { tokenizeDoc, type DocSpan } from './doc/roles.ts'
 import type { InventoryEntry } from './inventory.ts'
-import type { ApiSymbol, SymbolKind } from './model.ts'
+import type { ApiSymbol, Signature, SymbolKind } from './model.ts'
 import { builtinHref } from './builtins.ts'
 
 /**
@@ -64,6 +64,14 @@ const PY_INTERSPHINX: Record<string, string> = {
 }
 
 const PY_DOCS = 'https://docs.python.org/3/'
+
+/** Syntax words in the native declarations rendered as complete signatures. */
+const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Object.entries({
+  kotlin: 'public private protected internal class interface object fun val var suspend override abstract open final data sealed enum inline reified crossinline noinline vararg in out where companion constructor operator infix tailrec external expect actual by',
+  scala: 'def extension val var class trait object type given using implicit inline transparent opaque override abstract final sealed case lazy private protected open infix export derives end',
+  fsharp: 'module namespace type member static abstract override interface inherit let rec mutable inline internal private public of with get set new val and when',
+  ts: 'readonly keyof typeof infer extends unique',
+}).map(([port, words]) => [port, new Set(words.split(' '))]))
 
 /**
  * Builtin exceptions, which docstrings reference constantly and which all live
@@ -379,6 +387,11 @@ export class SymbolIndex {
       if (byName) return { href: this.hrefFor(byName), external: false, symbol: byName }
     }
 
+    // Scala and Kotlin default imports take precedence over a JDK inventory's
+    // bare aliases. An explicit java.util.Vector import still resolves there.
+    const builtin = this.lang ? builtinHref(this.lang, clean) : undefined
+    if (builtin && ['kotlin', 'scala'].includes(this.lang ?? '')) return { href: builtin, external: true }
+
     // Intersphinx order: exact name, then the shortest suffix. An inventory
     // is authoritative for its own project, so it is consulted before the
     // built-in table rather than after.
@@ -389,7 +402,6 @@ export class SymbolIndex {
       if (hit) return { href: inv.baseUrl + hit.uri, external: true, project: inv.project }
     }
 
-    const builtin = this.lang ? builtinHref(this.lang, clean) : undefined
     if (builtin) return { href: builtin, external: true }
 
     // Everything below is CPython's, and applies to CPython only. `time`,
@@ -446,8 +458,8 @@ export class SymbolIndex {
    * identifier boundaries and passing everything else through verbatim is what
    * makes those all work without a grammar for type syntax.
    */
-  linkType(annotation: string, context?: ApiSymbol): { text: string; link?: LinkTarget; declaration?: true }[] {
-    const out: { text: string; link?: LinkTarget; declaration?: true }[] = []
+  linkType(annotation: string, context?: ApiSymbol, signature?: Signature): { text: string; link?: LinkTarget; declaration?: true; keyword?: true }[] {
+    const out: { text: string; link?: LinkTarget; declaration?: true; keyword?: true }[] = []
     // Identifiers, including dotted ones; everything else is punctuation,
     // whitespace or a string literal and passes through untouched.
     // `::` is part of a name, not punctuation between two. Splitting there
@@ -466,6 +478,28 @@ export class SymbolIndex {
       }
       if (/^(?:["']|\/[/*])/.test(ident)) {
         out.push({ text: ident })
+        continue
+      }
+      // A declaration's bindings are not references to other APIs. Keep this
+      // separate from prose resolution, where an explicit parameter reference
+      // can still point to that parameter's documentation.
+      if (SIGNATURE_KEYWORDS[this.lang ?? '']?.has(ident)) {
+        out.push({ text: ident, keyword: true })
+        continue
+      }
+      if (signature && context && (ident === context.name || ident.endsWith(`.${context.name}`)) &&
+          /\b(?:def|fun|class|interface|trait|object|type|val|var|member|let)\s+$/.test(annotation.slice(0, m.index))) {
+        const receiver = ident.slice(0, -context.name.length).replace(/\.$/, '')
+        if (receiver) out.push(...this.linkType(receiver, context), { text: '.' })
+        out.push({ text: context.name, declaration: true })
+        continue
+      }
+      if (signature && (
+        ((signature.params.some((param) => param.name === ident) || signature.receiver?.name === ident) &&
+          /^\s*\??\s*:(?!:)/.test(annotation.slice(m.index! + ident.length))) ||
+        signature.typeParams?.includes(ident)
+      )) {
+        out.push({ text: ident, declaration: true })
         continue
       }
       // Object fields, callback parameters and tuple labels declare names;

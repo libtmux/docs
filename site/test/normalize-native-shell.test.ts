@@ -1,11 +1,37 @@
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { runInNewContext } from 'node:vm'
 import { describe, expect, it } from 'vitest'
 import { normalizeNativeShell } from '../../scripts/normalize-native-shell.mjs'
 import { recordBuild, verifyBuild } from '../../scripts/publication-provenance.mjs'
 
 describe('native shell URL normalization', () => {
+  it.each(['search.html', 'search/index.html'])('routes native %s to scoped search with the query intact', async (name) => {
+    const directory = mkdtempSync(join(tmpdir(), 'native-search-'))
+    try {
+      mkdirSync(join(directory, 'search'), { recursive: true })
+      const page = join(directory, name)
+      writeFileSync(page, '<html><head><title>Search</title></head><body><script>window.location.replace("/search/")</script></body></html>')
+      await normalizeNativeShell(directory, '/pr-42/en', { sphinxPort: 'py', version: 'v0.62.0' })
+      const html = readFileSync(page, 'utf8')
+      const target = '/pr-42/en/py/v0.62.0/search/'
+      expect(html).toContain(`<meta http-equiv="refresh" content="0; url=${target}">`)
+      expect(html).toContain(`<a href="${target}">Search the Python documentation</a>`)
+      expect(html).not.toContain('data-pagefind-body')
+      let destination = ''
+      runInNewContext(html.match(/<script>(.*?)<\/script>/)![1]!, {
+        window: { location: { search: '?q=Server%20panes', hash: '#results', replace: (href: string) => { destination = href } } },
+      })
+      expect(destination).toBe(`${target}?q=Server%20panes#results`)
+      expect(await normalizeNativeShell(directory, '/pr-42/en', { sphinxPort: 'py', version: 'v0.62.0' })).toBe(0)
+      writeFileSync(join(directory, 'index.html'), '<html><head></head><body>Missing article</body></html>')
+      await expect(normalizeNativeShell(directory, '/pr-42/en', { sphinxPort: 'py' })).rejects.toThrow('no article')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
   it('adds the Sphinx shell to old sources and preserves nested links and redirects', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'native-sphinx-'))
     try {

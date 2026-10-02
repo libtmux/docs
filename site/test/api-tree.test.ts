@@ -48,6 +48,18 @@ describe('Lua API sidebar', () => {
 })
 
 describe('major tmux object domains', () => {
+  it('puts Kotlin handles before builders and Rust Server before helpers', () => {
+    for (const [port, bucket, name] of [['rs', 'server', 'Server'], ['kotlin', 'session', 'Session'], ['kotlin', 'window', 'Window']]) {
+      expect(navTree(port).find((entry) => entry.id === bucket)?.entries[0].name).toBe(name)
+    }
+    expect(navTree('rs').find((entry) => entry.id === 'server')?.entries.some((entry) => entry.name.startsWith('__fuzz_'))).toBe(false)
+    expect(navTree('rs').find((entry) => entry.id === 'internal')?.entries.some((entry) => entry.name.startsWith('__fuzz_'))).toBe(true)
+  })
+  it('distinguishes Scala variants without long package labels', () => {
+    const names = navTree('scala').find((entry) => entry.id === 'window')!.entries.map((entry) => entry.name)
+    expect(names).toContain('Window (Direct API)')
+    expect(names).toContain('Window (Cats Effect)')
+  })
   it('covers every reference port in both the model and navigation', () => {
     expect(Object.keys(API_MODELS).sort()).toEqual([...PORTS].sort())
     expect(Object.keys(API_NAV).sort()).toEqual([...PORTS].sort())

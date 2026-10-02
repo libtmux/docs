@@ -1,5 +1,6 @@
 ---
-import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
+import type { ApiSymbol, Signature, SymbolIndex } from '@libtmux/api-model'
+import SymbolName from './SymbolName.astro'
 
 /**
  * A type annotation, with every name it mentions linked.
@@ -21,9 +22,10 @@ interface Props {
   index: SymbolIndex
   context?: ApiSymbol
   chip?: boolean
+  signature?: Signature
 }
-const { type, index, context, chip } = Astro.props as Props
-const spans = index.linkType(type, context)
+const { type, index, context, chip, signature } = Astro.props as Props
+const spans = index.linkType(type, context, signature)
 /* gp-sphinx renders a type cross-reference as a code chip — `Bases:` and the
    parameter list both — and chips the names that resolve to nothing too, so
    the box marks "this is a type" and the colour marks "this one is a link".
@@ -38,9 +40,9 @@ const NAME = /^[A-Za-z_][A-Za-z0-9_.]*$/
         class:list={['api-type-link', chip && 'api-literal api-literal--link']}
         rel={span.link.external ? 'nofollow noopener' : undefined}
         title={span.link.external ? `${span.text} (${span.link.project ?? "external"})` : span.link.symbol?.publicId}
-      >{span.text}</a>
+      ><SymbolName name={span.text} /></a>
     ) : (
-      <span class:list={[span.declaration ? 'api-type-label' : 'api-punct', chip && NAME.test(span.text) && 'api-literal']}>{span.text}</span>
+      <span class:list={[span.declaration || span.keyword ? 'api-type-label' : 'api-punct', chip && NAME.test(span.text) && 'api-literal']}>{span.text}</span>
     ),
   )
 }</span>

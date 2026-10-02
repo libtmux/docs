@@ -10,6 +10,7 @@ import ApiDoc from './ApiDoc.astro'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
 import type { AsideType } from '../../lib/aside'
+import { apiEntryFields } from '../../lib/api-sections'
 
 /**
  * One documented symbol, in the shape gp-sphinx's stylesheet expects.
@@ -53,8 +54,13 @@ interface Props {
    * bases belong here too.
    */
   heading?: boolean
+  /** The page header already carries this summary. */
+  showSummary?: boolean
+  /** Keep the declaration anchor distinct from the page heading. */
+  anchorId?: string
 }
-const { symbol, index, sourceUrl, port, alternativesFor, heading = false, member = false } = Astro.props as Props
+const { symbol, index, sourceUrl, port, alternativesFor, heading = false, member = false,
+  showSummary = true, anchorId } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
 const nativeSignatures = ['kotlin', 'scala', 'fsharp'].includes(port ?? '')
@@ -190,11 +196,7 @@ const FOLD_THRESHOLD = 10
 const folds = (sig: { params: unknown[] }) => sig.params.length >= FOLD_THRESHOLD
 const foldable = symbol.signatures.some(folds)
 
-const params = nativeSignatures
-  ? [...new Map(symbol.signatures.flatMap((sig) => sig.params).map((param) => [param.name, param])).values()]
-  : symbol.signatures.at(-1)?.params.filter((p) => p.doc) ?? []
-const returnsDoc = symbol.signatures.at(-1)?.returnsDoc
-const raises = symbol.signatures.at(-1)?.raises ?? []
+const { params, returnsDoc, raises } = apiEntryFields(symbol, port)
 const hasFields = params.length > 0 || Boolean(returnsDoc) || raises.length > 0
 
 /**
@@ -257,8 +259,9 @@ const hasBody =
   ]}
 >
   <dt
-    class="sig sig-object py gp-sphinx-api-header"
-    id={anchor}
+    class:list={['sig sig-object py gp-sphinx-api-header', nativeSignatures && 'api-native-header']}
+    id={anchorId ?? anchor}
+    data-symbol-id={symbol.id}
     data-domain={domain}
     data-objtype={kind}
     data-badge-count={String(badges.length)}
@@ -271,7 +274,7 @@ const hasBody =
       <div class="gp-sphinx-api-layout-left">
         <span class="gp-sphinx-api-signature">
           {nativeSignatures ? symbol.signatures.map((sig) => (
-            <span class="api-native-signature"><ApiType type={sig.raw ?? symbol.name} index={index} context={symbol} /></span>
+            <span class="api-native-signature"><ApiType type={sig.raw ?? symbol.name} index={index} context={symbol} signature={sig} /></span>
           )) : <>
           {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
           {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname"><span class="pre">{symbol.name}</span></span>
@@ -430,7 +433,7 @@ const hasBody =
       <div class="gp-sphinx-api-layout-bottom">
         <span class="gp-sphinx-api-signature">
           {nativeSignatures ? symbol.signatures.map((sig) => (
-            <span class="api-native-signature"><ApiType type={sig.raw ?? symbol.name} index={index} context={symbol} /></span>
+            <span class="api-native-signature"><ApiType type={sig.raw ?? symbol.name} index={index} context={symbol} signature={sig} /></span>
           )) : <>
           {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
           {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname"><span class="pre">{symbol.name}</span></span>
@@ -485,20 +488,20 @@ const hasBody =
       )
     }
 
-    {symbol.doc?.summary && (
+    {showSummary && symbol.doc?.summary && (
       <p class="gp-sphinx-api-summary">
         <ApiDoc text={symbol.doc.summary} index={index} context={symbol} />
       </p>
     )}
     {symbol.doc?.body && (
-      <div class="gp-sphinx-api-description">
+      <div class="gp-sphinx-api-description" id={`${anchor}.description`}>
         <ApiProse text={symbol.doc.body} index={index} context={symbol} />
       </div>
     )}
 
     {
       examples.length > 0 && (
-        <div class="gp-sphinx-api-examples">
+        <div class="gp-sphinx-api-examples" id={`${anchor}.examples`}>
           <p class="rubric">Examples</p>
           {examples.map((ex) => (
             <>
@@ -518,7 +521,7 @@ const hasBody =
 
     {
       references.length > 0 && (
-        <div class="gp-sphinx-api-references">
+        <div class="gp-sphinx-api-references" id={`${anchor}.references`}>
           <p class="rubric">References</p>
           <dl class="citation">
             {references.map((r) => (
@@ -572,7 +575,7 @@ const hasBody =
           <dl class="field-list simple">
             {params.length > 0 && (
               <>
-                <dt class="field-odd">Parameters</dt>
+                <dt class="field-odd" id={`${anchor}.parameters`}>Parameters</dt>
                 <dd class="field-odd">
                   <ul class="simple">
                     {params.map((p) => (
@@ -602,7 +605,7 @@ const hasBody =
             )}
             {returnsDoc && (
               <>
-                <dt class="field-even">Returns</dt>
+                <dt class="field-even" id={`${anchor}.returns`}>Returns</dt>
                 <dd class="field-even">
                   <p>
                     <ApiDoc text={returnsDoc} index={index} context={symbol} />
@@ -612,7 +615,7 @@ const hasBody =
             )}
             {raises.length > 0 && (
               <>
-                <dt class="field-odd">Raises</dt>
+                <dt class="field-odd" id={`${anchor}.errors`}>Raises</dt>
                 <dd class="field-odd">
                   <ul class="simple">
                     {raises.map((r) => (

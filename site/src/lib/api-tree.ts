@@ -8,6 +8,7 @@
 import { compareMembers, memberSignals, symbolsForProduct } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { API_MODELS, API_NAV, OWNER_KINDS, pageSlug, type NavEntry } from './api-models'
+import type { ApiTreeBucket, ApiTreeJson } from './api-search'
 
 export interface TreeBucket {
   id: string
@@ -30,10 +31,16 @@ export interface TreeMember {
  * functions called `register`, and ten rows reading `logger` ask a reader to
  * pick one by guessing.
  */
-const distinct = (entries: NavEntry[]): NavEntry[] => {
+const distinct = (entries: NavEntry[], port: string): NavEntry[] => {
   const count = new Map<string, number>()
   for (const e of entries) count.set(e.name, (count.get(e.name) ?? 0) + 1)
-  return entries.map((e) => ((count.get(e.name) ?? 0) > 1 ? { ...e, name: e.id } : e))
+  return entries.map((entry) => {
+    if ((count.get(entry.name) ?? 0) < 2) return entry
+    const label = port === 'scala'
+      ? `${entry.name} (${entry.id.includes('.cats.') ? 'Cats Effect' : entry.id.includes('.ox.') ? 'Ox' : 'Direct API'})`
+      : entry.id
+    return { ...entry, name: label }
+  })
 }
 
 /** tmux's five primary objects lead their own reader-facing domains. */
@@ -86,7 +93,7 @@ export function navTree(port: string): TreeBucket[] {
     : [])
   const core = (entries: NavEntry[]) => entries.filter((e) => !products.has(e.id))
   const displayEntries = (bucket: { id: string; label: string }, entries: NavEntry[]) =>
-    primaryObjectFirst(bucket, distinct(core(entries)))
+    primaryObjectFirst(bucket, distinct(core(entries), port))
   return [
     ...nav.buckets
       .map((b) => ({
@@ -155,19 +162,28 @@ export function membersByType(port: string): Map<string, TreeMember[]> {
 }
 
 /** The port-scoped inventory served to lazy branches and symbol search. */
-export function referenceTree(port: string) {
+export function referenceTree(port: string): ApiTreeJson {
   const members = membersByType(port)
-  const bucket = (b: TreeBucket): unknown => ({
+  const symbols = new Map(API_MODELS[port]?.symbols.flatMap((symbol) =>
+    [[symbol.id, symbol], [symbol.publicId ?? symbol.id, symbol]] as const))
+  const category = (kind: string) => OWNER_KINDS.has(kind) ? 'types' as const : 'members' as const
+  const bucket = (b: TreeBucket): ApiTreeBucket => ({
     id: b.id,
     label: b.label,
     count: bucketTotal(b),
     slug: firstEntry(b)?.slug ?? null,
-    types: b.entries.map((t) => ({ id: t.id, name: t.name, slug: t.slug, m: members.has(t.id) ? 1 : 0 })),
+    types: b.entries.map((t) => ({ id: t.id, name: t.name, symbolName: symbols.get(t.id)?.name ?? t.name,
+      slug: t.slug, m: members.has(t.id) ? 1 : 0,
+      kind: t.kind, category: category(t.kind), summary: symbols.get(t.id)?.doc?.summary ?? '' })),
     children: b.children.map(bucket),
   })
   return {
     port,
     buckets: navTree(port).map(bucket),
-    members: Object.fromEntries([...members].map(([id, list]) => [id, list.map((m) => [m.name, m.slug])])),
+    members: Object.fromEntries([...members].map(([id, list]) => [id, list.map((m) => {
+      const symbol = symbols.get(m.id)
+      const kind = symbol?.kind ?? 'member'
+      return [m.name, m.slug, m.id, kind, category(kind), symbol?.doc?.summary ?? '']
+    })])),
   }
 }

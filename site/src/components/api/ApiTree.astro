@@ -130,12 +130,25 @@ if (!mark(nodes) && nodes[0]) nodes[0].tab = true
         <Sidebar port={port} version={menuVersion} currentPath={currentPath} menuOnly />
       </div>
     </details>
+    <div class="api-nav__search">
+      <label for="api-symbol-search">Find a type or member</label>
+      <input id="api-symbol-search" type="search" autocomplete="off" placeholder="Name or full path…" disabled />
+      <div class="api-nav__filters" role="group" aria-label="API search category">
+        <button type="button" data-api-search-kind="all" aria-pressed="true" disabled>All</button>
+        <button type="button" data-api-search-kind="types" aria-pressed="false" disabled>Types</button>
+        <button type="button" data-api-search-kind="members" aria-pressed="false" disabled>Members</button>
+      </div>
+    </div>
     <nav class="api-nav__nav" aria-label="API reference" data-pagefind-ignore="all">
+      <p class="api-nav__search-status" role="status" data-api-search-status></p>
+      <button type="button" class="api-nav__retry" data-api-search-retry hidden>Retry search</button>
+      <ul class="api-nav__results" data-api-search-results hidden></ul>
       <ul class="api-nav__tree" role="tree" aria-label={`${portName} API`}>
         <ApiTreeItems nodes={nodes} />
       </ul>
     </nav>
   </div>
+  <noscript><style>.api-nav__search { display: none; }</style></noscript>
   <script is:inline>
     // Open the tree at the page being read before it paints, as Learn's does:
     // the tree scrolls on its own, so this moves the tree, never the page.

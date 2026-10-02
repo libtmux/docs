@@ -40,4 +40,15 @@ describe('standard types in product signatures', () => {
     expect(signature.find((span) => span.text === 'toString')?.link).toBeUndefined()
     expect(signature.find((span) => span.text === 'String')?.link?.href).toMatch(/^https:\/\//)
   })
+
+  it('uses Scala collections before bare aliases from the JDK inventory', () => {
+    const index = new SymbolIndex([], () => '#', 'scala')
+    index.addInventory('https://docs.oracle.com/', ['Vector', 'java.util.Vector'].map((name) => ({
+      name, type: 'class', priority: 1, uri: 'java/util/Vector.html', dispname: '-',
+    })), ['scala'], 'Java SE')
+    expect(index.resolve('Vector')?.href).toBe('https://www.scala-lang.org/api/3.x/scala/collection/immutable/Vector.html')
+    expect(index.resolve('java.util.Vector')?.href).toBe('https://docs.oracle.com/java/util/Vector.html')
+    expect(index.resolve('def')).toBeUndefined()
+    expect(index.resolve('extension')).toBeUndefined()
+  })
 })

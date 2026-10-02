@@ -36,6 +36,28 @@ extension [F[_]](self: Box[F, String]) {
     expect(index.resolve('B', 'class', map)?.href).toBe('#example.Box.map')
     expect(index.resolve('self', 'any', map)?.href).toBe('#example.Box')
     expect(index.resolve('UnresolvedType', 'class', map)).toBeUndefined()
+    const signature = map.signatures[0]
+    const spans = index.linkType(signature.raw!, map, signature)
+    expect(spans.filter((span) => span.link).map((span) => span.text)).toEqual(['Box', 'String'])
+    expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
+  })
+  it('links the types in an overload while leaving its bindings plain', async () => {
+    const root = fixture('Server.scala', `package example
+class Server
+class Window
+class WindowId
+extension (self: Server) {
+  def windows(id: WindowId): Vector[Window] = TODO
+}
+`)
+    const { symbols } = await extractJvm('scala', [root])
+    const method = symbols.find((s) => s.name === 'windows')!
+    const index = new SymbolIndex(symbols, (symbol) => `#${symbol.id}`, 'scala')
+    const signature = method.signatures[0]
+    const spans = index.linkType(signature.raw!, method, signature)
+    expect(spans.filter((span) => span.link).map((span) => span.text)).toEqual(['Server', 'WindowId', 'Vector', 'Window'])
+    expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
+    expect(index.resolve('id', 'any', method)?.href).toContain('.parameter.id')
   })
   it.each(['kotlin', 'scala'] as const)('keeps %s links outside generic code', async (port) => {
     const doc = port === 'kotlin' ? '[the server][Handle]' : '[[Handle the server]]'
@@ -89,6 +111,11 @@ public val KotlinPane.Companion.id: TextField<JavaPane>
     expect(symbols.some((s) => /\.java$|\.implementation$/.test(s.id))).toBe(false)
     expect(symbols.find((s) => s.id === 'example.Pane')!.signatures[0]).toMatchObject({ raw: 'public class Pane', params: [] })
     const capture = symbols.find((s) => s.id === 'example.Pane.capture')!
+    const index = new SymbolIndex(symbols, (symbol) => `#${symbol.id}`, 'kotlin')
+    const signature = capture.signatures[0]
+    const spans = index.linkType(signature.raw!, capture, signature)
+    expect(spans.filter((span) => span.link).map((span) => span.text)).toEqual(['Pane', 'Boolean', 'List', 'String'])
+    expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
     expect(capture.parent).toBe('example.Pane')
     expect(capture.modifiers).toEqual(['async', 'overload'])
     expect(capture.signatures).toHaveLength(2)

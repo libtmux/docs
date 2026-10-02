@@ -53,7 +53,7 @@ const owner = model.symbols.find((symbol) => symbol.id === 'pane.Pane.capture')
 ---
 <Reference model={model} owner={owner} />
 `)
-for (const port of ['kotlin', 'lua']) {
+for (const port of ['py', 'kotlin', 'scala', 'lua']) {
   const directory = join(root, `src/pages/${port}/latest/reference`)
   mkdirSync(directory, { recursive: true })
   writeFileSync(join(directory, '[...slug].astro'), `---
@@ -143,12 +143,82 @@ async function checkReferenceAndHeroes(browser, base) {
       await page.setViewportSize({ width, height: 900 })
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
         `Kotlin parameter and exception fields fit at ${width}px`)
+      const namespace = await page.locator('.api-qualified-namespace').boundingBox()
+      const copy = await page.getByRole('button', { name: 'Copy fully qualified name' }).boundingBox()
+      const row = await page.locator('.api-qualified-name').boundingBox()
+      const title = await page.locator('.api-reference-heading h1').boundingBox()
+      assert(Math.abs(namespace.y + namespace.height / 2 - copy.y - copy.height / 2) < 2,
+        `Package and copy control share a center line at ${width}px`)
+      assert(row.height <= 32 && row.y - title.y - title.height <= 8,
+        `Package stays in one compact row beneath the heading at ${width}px`)
     }
     for (const name of ['config', 'defaultTimeout', 'toKotlinDuration', 'Duration', 'CoroutineScope', 'StateFlow']) {
       assert(await page.locator('main a').filter({ hasText: new RegExp(`^${name}$`) }).count() > 0,
         `Kotlin liveState links ${name}`)
     }
     console.log('Native API: Kotlin call-chain links and parameter layout pass at 1440/768/390px')
+    const qualified = page.locator('.api-qualified-name')
+    const fullName = 'io.github.libtmux.kotlin.Server.liveState'
+    assert.equal((await qualified.locator('.api-qualified-namespace').textContent()).trim(), 'io.github.libtmux.kotlin')
+    for (const reject of [false, true]) {
+      await page.evaluate((reject) => {
+        Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+          writeText: async (text) => {
+            window.__copiedQualifiedName = text
+            if (reject) throw new Error('Clipboard denied')
+          },
+        } })
+      }, reject)
+      await qualified.getByRole('button', { name: 'Copy fully qualified name' }).click()
+      await page.waitForFunction((reject) => document.querySelector('.api-copy-status').textContent
+        .startsWith(reject ? 'Copy failed' : 'Name copied'), reject)
+      assert.equal(await page.evaluate(() => window.__copiedQualifiedName), fullName)
+    }
+    const anchors = await page.locator('[id]').evaluateAll((elements) => elements.map((element) => element.id))
+    assert.equal(anchors.filter((id) => id === fullName).length, 1, 'Page title and declaration have distinct anchors')
+    console.log('Qualified names: compact package row, exact copied identity and clipboard refusal pass')
+    await page.setViewportSize({ width: 1440, height: 900 })
+    const contents = page.getByRole('navigation', { name: 'On this page', exact: true })
+    assert(await contents.isVisible(), 'Wide reference pages show section navigation')
+    assert.deepEqual(await page.locator('[data-api-section-link]').evaluateAll((links) => links
+      .map((link) => decodeURIComponent(link.hash.slice(1)))
+      .filter((id) => [...document.querySelectorAll('[id]')].filter((element) => element.id === id).length !== 1)), [],
+    'Every reference section link has exactly one target')
+    await contents.getByRole('link', { name: 'Parameters', exact: true }).click()
+    await page.waitForFunction(() => document.querySelector('api-page-contents a[aria-current="location"]')?.textContent === 'Parameters')
+    await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server/`)
+    const memberNames = await page.locator('.api-member-link').allTextContents()
+    assert.deepEqual(memberNames.slice(0, 3), ['sessions', 'windows', 'panes'])
+    assert.equal(new Set(memberNames).size, memberNames.length, 'Grouped members appear once')
+    assert(await page.getByRole('navigation', { name: 'Related APIs' }).getByRole('link', { name: 'io.github.libtmux.kotlin.Session', exact: true }).count())
+    for (const width of [1440, 768, 390]) {
+      await page.setViewportSize({ width, height: 900 })
+      assert.equal(await page.locator('api-page-contents').isVisible(), width >= 1360)
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Reference columns fit at ${width}px`)
+    }
+    console.log('Reference contents: section targets, active links, related declarations and grouped member order pass')
+    await page.goto(`${base}/scala/latest/reference/io-github-libtmux-scaladsl-server-windows/`)
+    const signature = page.locator('dt.api-native-header').first()
+    const links = await signature.locator('.api-native-signature a').evaluateAll((elements) =>
+      elements.map((element) => ({ name: element.textContent, href: element.getAttribute('href') })))
+    for (const name of ['def', 'extension', 'self', 'windows', 'id', 'expression']) {
+      assert(!links.some((link) => link.name === name), `${name} is a declaration token, not an API link`)
+    }
+    for (const name of ['Server', 'Window', 'io.github.libtmux.WindowId']) {
+      assert(links.some((link) => link.name === name), `Scala signature links ${name}`)
+    }
+    assert(links.filter((link) => link.name === 'Vector').every((link) =>
+      link.href === 'https://www.scala-lang.org/api/3.x/scala/collection/immutable/Vector.html'),
+    'Scala Vector links to its own collection type')
+    for (const width of [1440, 768, 390]) {
+      await page.setViewportSize({ width, height: 900 })
+      const header = await signature.boundingBox()
+      const code = await signature.locator('.gp-sphinx-api-layout-left:visible, .gp-sphinx-api-layout-bottom:visible').boundingBox()
+      assert(code.width >= header.width - 36, `Scala overloads use the signature width at ${width}px`)
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+        `Scala overloads fit at ${width}px`)
+    }
+    console.log('Scala overloads: only API symbols link, Vector resolves to Scala, and badges leave the full code width')
   } finally {
     await page.close()
   }
@@ -287,12 +357,14 @@ try {
       }
     })
     for (const path of [
+      'py/latest/reference/libtmux-server',
       'py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder',
       'java/latest/workspace/reference/io-github-libtmux-workspace-workspacebuilder-workspacebuilder',
     ]) await retryReload(async () => {
       const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
       assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
       await page.evaluate(() => document.fonts.ready)
+      await page.locator('.api-elsewhere').evaluateAll((entries) => entries.forEach((entry) => { entry.open = true }))
       for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 })
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
@@ -371,11 +443,22 @@ try {
     }
     console.log('Reading colors: Python, Swift, Go and C++ share neutral light/dark text and surfaces')
     for (const colorScheme of ['light', 'dark']) {
-      const context = await browser.newContext({ javaScriptEnabled: false, colorScheme })
+      await page.setViewportSize({ width: 390, height: 844 })
+      await page.emulateMedia({ colorScheme })
+      await page.goto(`${base}/concepts/server-session-window-pane/`, { waitUntil: 'load' })
+      const toolbar = await page.evaluate(() => {
+        delete document.documentElement.dataset.themeMode
+        const style = (selector) => getComputedStyle(document.querySelector(selector))
+        return { background: style('.mobile-toolbar').backgroundColor, page: style('body').backgroundColor,
+          icon: style('.toolbar-button').color, text: style('body').color }
+      })
+      assert.equal(toolbar.background, toolbar.page, `${colorScheme}: toolbar uses the page surface before theme initialization`)
+      assert.equal(toolbar.icon, toolbar.text, `${colorScheme}: toolbar icons use the page text color`)
+      const context = await browser.newContext({ javaScriptEnabled: false, colorScheme, viewport: { width: 390, height: 844 } })
       const noScript = await context.newPage()
       await noScript.goto(`${base}/concepts/server-session-window-pane/`, { waitUntil: 'load' })
-      const checkContrast = async (scheme) => {
-        const samples = await noScript.evaluate(() => {
+      const checkContrast = async (scheme, selectors = ['h1', '.prose h2', '.prose p']) => {
+        const samples = await noScript.evaluate((selectors) => {
           const context = document.createElement('canvas').getContext('2d')
           const luminance = (color) => {
             context.fillStyle = color
@@ -384,22 +467,40 @@ try {
               .map((v) => v / 255).map((v) => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4)
             return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722
           }
-          return ['h1', '.prose h2', '.prose p'].map((selector) => {
+          return selectors.map((selector) => {
             const element = document.querySelector(selector)
             let parent = element
             while (getComputedStyle(parent).backgroundColor === 'rgba(0, 0, 0, 0)') parent = parent.parentElement
             const values = [getComputedStyle(element).color, getComputedStyle(parent).backgroundColor]
               .map(luminance).sort((a, b) => b - a)
-            return { selector, contrast: (values[0] + .05) / (values[1] + .05) }
+            return { selector, contrast: (values[0] + .05) / (values[1] + .05), opacity: getComputedStyle(element).opacity }
           })
-        })
-        for (const sample of samples) assert(sample.contrast >= 4.5,
-          `No-JS ${scheme} ${sample.selector} contrast: ${sample.contrast}`)
+        }, selectors)
+        for (const sample of samples) {
+          assert(sample.contrast >= 4.5, `No-JS ${scheme} ${sample.selector} contrast: ${sample.contrast}`)
+          assert.equal(sample.opacity, '1', `${scheme} ${sample.selector} remains fully legible`)
+        }
       }
       await checkContrast(colorScheme)
+      assert.equal(await noScript.locator('.mobile-toolbar').isVisible(), false, 'No-JS hides inactive drawer buttons')
+      assert.equal(await noScript.locator('.mobile-fallback').isVisible(), true, 'No-JS has usable mobile navigation')
+      await checkContrast(colorScheme, ['.mobile-fallback summary'])
+      const browse = noScript.locator('.mobile-fallback > details').first()
+      await browse.locator('summary').first().focus()
+      await noScript.keyboard.press('Enter')
+      assert.equal(await browse.getAttribute('open'), '', 'Keyboard opens the native navigation disclosure')
+      assert.equal(await browse.locator('a:visible').count() > 0, true, 'The navigation disclosure exposes links')
+      await browse.locator('summary').first().click()
+      const contents = noScript.locator('.mobile-fallback > details').nth(1)
+      await contents.locator('summary').click()
+      const destination = await contents.locator('a').first().getAttribute('href')
+      await contents.locator('a').first().click()
+      assert.equal(new URL(noScript.url()).hash, destination, 'No-JS contents reaches its section')
       const override = colorScheme === 'dark' ? 'light' : 'dark'
       await noScript.evaluate((mode) => { document.documentElement.dataset.themeMode = mode }, override)
       await checkContrast(`${colorScheme} with ${override} override`)
+      await noScript.goto(`${base}/scala/latest/reference/io-github-libtmux-scaladsl-server-windows/`)
+      await checkContrast(colorScheme, ['.api-native-signature .api-type-label', '.api-native-signature .api-punct'])
       await context.close()
     }
     console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
