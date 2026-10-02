@@ -3,7 +3,7 @@
 import { existsSync, globSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Resolver, decideMention, isLikelyReference, notASymbol, notApiReason, proseMentions } from '../packages/api-model/src/index.ts'
+import { Resolver, parentInventory, decideMention, isLikelyReference, notASymbol, notApiReason, proseMentions } from '../packages/api-model/src/index.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const contentDir = join(root, 'site/src/content/docs')
@@ -17,19 +17,8 @@ const PORTS = PORT_DEFS.map((p) => p.slug)
 const { KNOWN_PORTS, resolvePortBody, resolvePortContent } = await import(`file://${resolve(root, 'site/src/lib/workspace-shared-slots.ts')}`)
 
 /** The first column's label, as the prose writes it. */
-const PORT_BY_LABEL = {
-  Python: 'py',
-  Ruby: 'ruby',
-  Lua: 'lua',
-  TypeScript: 'ts',
-  Rust: 'rs',
-  Go: 'go',
-  Java: 'java',
-  '.NET': 'dotnet',
-  'C#': 'dotnet',
-  'C++': 'cxx',
-  Swift: 'swift',
-}
+const PORT_BY_LABEL = Object.fromEntries(PORT_DEFS.map((port) => [port.name, port.slug]))
+PORT_BY_LABEL['C#'] = 'dotnet'
 
 const modelList = PORTS.map((port) => join(modelDir, `${port}.json`))
   .filter((f) => existsSync(f))
@@ -40,10 +29,15 @@ if (!modelList.length) {
 }
 const models = Object.fromEntries(modelList.map((model) => [model.port, model]))
 const resolver = new Resolver(modelList)
+for (const port of PORT_DEFS) {
+  const parent = port.parentLibrary
+  if (parent) resolver.addInventory('Parent library API', '', parentInventory(models[parent.slug],
+    (symbol) => `/reference/${parent.slug}/${symbol.slug}/`), [port.slug])
+}
 // Match the renderer's external names before considering a cross-port fallback.
 for (const [file, project, baseUrl, langs] of [
   ['python', 'Python', 'https://docs.python.org/3/', ['py']],
-  ['jdk', 'Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', ['java']],
+  ['jdk', 'Java SE', 'https://docs.oracle.com/en/java/javase/21/docs/api/', ['java', 'kotlin', 'scala']],
   ['dom', 'MDN', 'https://developer.mozilla.org/', ['ts']],
 ]) {
   const inventory = JSON.parse(readFileSync(join(root, `site/src/data/inventories/${file}.entries.json`), 'utf8'))
