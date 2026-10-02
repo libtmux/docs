@@ -1,10 +1,26 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { parseManual } from '../../scripts/gen-tmux-reference.mjs'
-import { buildsTmuxReference, tmuxCommandsFor, tmuxGuidesFor, tmuxManualHtml, tmuxPageHeadings, tmuxReference, tmuxReferenceUrl } from '../src/lib/tmux-reference'
+import { buildsTmuxReference, tmuxCommandNotes, tmuxCommandsFor, tmuxGuidesFor, tmuxManualHtml, tmuxPageHeadings, tmuxReference, tmuxReferenceUrl } from '../src/lib/tmux-reference'
 
 afterEach(() => { vi.unstubAllEnvs(); vi.resetModules() })
 
 describe('versioned tmux reference', () => {
+  it('organizes every capture flag for lookup without showing flags from newer tmux releases', () => {
+    const current = tmuxCommandNotes('latest', 'capture-pane')!
+    const old = tmuxCommandNotes('3.2a', 'capture-pane')!
+    const flags = (notes: typeof current) => notes.groups.flatMap((group) => group.options.map((option) => option.flag)).sort()
+    expect(flags(current)).toEqual(['C', 'E', 'F', 'H', 'J', 'L', 'M', 'N', 'P', 'S', 'T', 'a', 'b', 'e', 'p', 'q', 't'])
+    expect(flags(old)).toEqual(['C', 'E', 'J', 'N', 'P', 'S', 'a', 'b', 'e', 'p', 'q', 't'])
+    expect(current.groups[1].options.find((option) => option.flag === 'J')!.text).toContain('Implies -T.')
+    expect(old.groups[1].options.find((option) => option.flag === 'J')!.text).not.toContain('-T')
+    expect(current.examples.map((example) => example.code)).toEqual([
+      'tmux capture-pane -p -t "$TMUX_PANE"',
+      'tmux capture-pane -p -J -S -1000 -t "$TMUX_PANE"',
+    ])
+    expect(current.context).toContain('inside tmux')
+    expect(tmuxCommandNotes('latest', 'new-session')).toBeUndefined()
+  })
+
   it('keeps version-specific commands and flags separate', () => {
     const old = tmuxReference('3.2a')
     const current = tmuxReference('latest')
@@ -68,7 +84,7 @@ describe('versioned tmux reference', () => {
 
   it('exports the same command sections and related guides as the page', () => {
     expect(tmuxPageHeadings('latest', 'capture-pane').map((heading) => heading.slug))
-      .toEqual(['syntax', 'behavior', 'guides', 'libraries'])
+      .toEqual(['examples', 'syntax', 'behavior', 'output-and-range', 'text-formatting', 'screens-and-pending-output', 'guides', 'libraries'])
     expect(tmuxPageHeadings('latest', 'server-access').map((heading) => heading.slug))
       .toEqual(['syntax', 'behavior'])
     expect(tmuxGuidesFor('capture-pane').map((guide) => guide.href))

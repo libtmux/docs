@@ -90,13 +90,56 @@ export function tmuxApiLinks(command: string) {
   }))
 }
 
+/** Task-oriented notes complement the pinned manual; the native catalog gates flags. */
+export function tmuxCommandNotes(version: string, slug?: string) {
+  if (slug !== 'capture-pane') return undefined
+  const command = tmuxReference(version).commands.find((entry) => entry.name === slug)!
+  const flags = new Set([...command.usage.matchAll(/(?:^|[\s\[])-([A-Za-z]+)/g)].flatMap((match) => [...match[1]]))
+  const groups = [
+    { id: 'output-and-range', title: 'Output and line range', options: [
+      { flag: 'p', label: '-p', text: 'Print to standard output. Without this flag, tmux saves the capture in a paste buffer.' },
+      { flag: 'b', label: '-b name', text: 'Choose the paste buffer when -p is omitted. Without -b, tmux creates a new buffer.' },
+      { flag: 't', label: '-t pane', text: 'Choose the pane to capture. Inside tmux, "$TMUX_PANE" identifies the current pane.' },
+      { flag: 'S', label: '-S start', text: 'First line to capture. Zero is the first visible line; negative numbers reach into history. Use - for the start of history.' },
+      { flag: 'E', label: '-E end', text: 'Last line to capture. Use a line number, or - for the end of the visible pane. By default, capture only the visible pane.' },
+    ] },
+    { id: 'text-formatting', title: 'Text formatting', options: [
+      { flag: 'J', label: '-J', text: `Join wrapped lines and preserve trailing spaces.${flags.has('T') ? ' Implies -T.' : ''}` },
+      { flag: 'e', label: '-e', text: 'Keep escape sequences for text attributes and colors.' },
+      { flag: 'C', label: '-C', text: 'Escape non-printable characters as octal \\xxx sequences.' },
+      { flag: 'N', label: '-N', text: 'Preserve trailing spaces at the end of each line.' },
+      { flag: 'T', label: '-T', text: 'Ignore trailing positions that contain no character.' },
+      { flag: 'H', label: '-H', text: 'Capture only hyperlink targets, separated by spaces when a line contains several.' },
+      { flag: 'L', label: '-L', text: 'Prefix each line with its line number.' },
+      { flag: 'F', label: '-F', text: 'Prefix each line with its flags: - none, D unused, O output, P prompt, X extended cells, H hyperlinks.' },
+    ] },
+    { id: 'screens-and-pending-output', title: 'Screens and pending output', options: [
+      { flag: 'a', label: '-a', text: 'Capture the alternate screen instead of the normal screen. History is unavailable. Fails if no alternate screen exists.' },
+      { flag: 'q', label: '-q', text: 'With -a, suppress the error when no alternate screen exists.' },
+      { flag: 'M', label: '-M', text: 'Capture the mode screen, such as copy mode, when the pane is in a mode.' },
+      { flag: 'P', label: '-P', text: 'Capture a received but incomplete escape sequence, rather than the pane contents.' },
+    ] },
+  ].map((group) => ({ ...group, options: group.options.filter((option) => flags.has(option.flag)) }))
+  return {
+    context: 'Run these commands inside tmux, in the pane you want to capture. TMUX_PANE identifies that pane.',
+    examples: [
+      { title: 'Print the visible pane', code: 'tmux capture-pane -p -t "$TMUX_PANE"' },
+      { title: 'Include up to 1,000 history lines and join wrapped lines', code: 'tmux capture-pane -p -J -S -1000 -t "$TMUX_PANE"' },
+    ],
+    groups,
+  }
+}
+
 /** The same section identities drive the visible contents and agent manifest. */
 export function tmuxPageHeadings(version: string, slug?: string) {
   const reference = tmuxReference(version)
   if (slug === 'manual') return reference.sections.map((section) => ({ depth: 2, slug: section.id, text: section.title }))
+  const notes = tmuxCommandNotes(version, slug)
   if (slug) return [
+    ...(notes ? [{ depth: 2, slug: 'examples', text: 'Common uses' }] : []),
     { depth: 2, slug: 'syntax', text: 'Syntax' },
-    { depth: 2, slug: 'behavior', text: 'Behavior' },
+    { depth: 2, slug: 'behavior', text: notes ? 'Options' : 'Behavior' },
+    ...(notes?.groups.map((group) => ({ depth: 3, slug: group.id, text: group.title })) ?? []),
     ...(tmuxGuidesFor(slug).length ? [{ depth: 2, slug: 'guides', text: 'Guides' }] : []),
     ...(tmuxApiLinks(slug).length ? [{ depth: 2, slug: 'libraries', text: 'Use from a library' }] : []),
   ]
