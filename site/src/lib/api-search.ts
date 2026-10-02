@@ -3,6 +3,7 @@ export interface ApiTreeEntry {
   id: string
   name: string
   symbolName?: string
+  qualifiedName?: string
   slug: string
   m: 0 | 1
   kind?: string
@@ -22,13 +23,14 @@ export interface ApiTreeBucket {
 export interface ApiTreeJson {
   port: string
   buckets: ApiTreeBucket[]
-  members: Record<string, [string, string, string?, string?, ('types' | 'members')?, string?][]>
+  members: Record<string, [string, string, string?, string?, ('types' | 'members')?, string?, string?][]>
 }
 
 export interface ApiSearchResult {
   id: string
   name: string
   symbolName: string
+  qualifiedName: string
   slug: string
   kind: string
   category: 'types' | 'members'
@@ -48,15 +50,15 @@ export function searchApi(json: ApiTreeJson, query: string, category = 'all'): A
     if (seen.has(entry.id)) return
     seen.add(entry.id)
     records.push(entry)
-    for (const [name, slug, id, kind, category, summary] of json.members[entry.id] ?? []) {
+    for (const [name, slug, id, kind, category, summary, qualifiedName] of json.members[entry.id] ?? []) {
       append({ name, symbolName: name, slug, id: id ?? `${entry.id}.${name}`, kind: kind ?? 'member',
-        category: category ?? 'members', summary: summary ?? '' })
+        category: category ?? 'members', summary: summary ?? '', qualifiedName: qualifiedName ?? id ?? `${entry.id}.${name}` })
     }
   }
   const visit = (buckets: ApiTreeBucket[]) => {
     for (const bucket of buckets) {
       for (const entry of bucket.types) append({ ...entry, symbolName: entry.symbolName ?? entry.name, kind: entry.kind ?? 'symbol',
-        category: entry.category ?? 'types', summary: entry.summary ?? '' })
+        category: entry.category ?? 'types', summary: entry.summary ?? '', qualifiedName: entry.qualifiedName ?? entry.id })
       visit(bucket.children)
     }
   }
@@ -66,17 +68,18 @@ export function searchApi(json: ApiTreeJson, query: string, category = 'all'): A
   const literal = query.trim().toLowerCase()
   const symbolic = /[.:/]/.test(query)
   const rank = (entry: ApiSearchResult) => {
-    if (entry.symbolName.toLowerCase() === literal || entry.id.toLowerCase() === literal) return 0
+    if (entry.symbolName === query.trim() || entry.qualifiedName === query.trim() || entry.id === query.trim()) return -1
+    if (entry.symbolName.toLowerCase() === literal || entry.qualifiedName.toLowerCase() === literal || entry.id.toLowerCase() === literal) return 0
     if (phrase && words(entry.symbolName).join(' ') === phrase) return 1
-    const identity = words(entry.id).join(' ')
+    const identity = words(entry.qualifiedName).join(' ')
     if (terms.length > 1 && (identity === phrase || identity.endsWith(` ${phrase}`))) return 2
     return 3
   }
   return records.filter((entry) => {
     if (category !== 'all' && category !== entry.category) return false
-    if (literal && !terms.length) return `${entry.symbolName} ${entry.id}`.toLowerCase().includes(literal)
-    const tokens = words(`${entry.id} ${entry.name} ${entry.symbolName} ${symbolic ? '' : entry.summary}`)
-    const identity = words(entry.id).join('')
+    if (literal && !terms.length) return `${entry.symbolName} ${entry.qualifiedName} ${entry.id}`.toLowerCase().includes(literal)
+    const tokens = words(`${entry.qualifiedName} ${entry.id} ${entry.name} ${entry.symbolName} ${symbolic ? '' : entry.summary}`)
+    const identity = words(entry.qualifiedName).join('')
     return terms.every((term) => tokens.some((token) => token.startsWith(term)) || identity.includes(term))
   }).sort((left, right) => rank(left) - rank(right))
 }

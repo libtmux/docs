@@ -172,12 +172,16 @@ export interface ApiSymbol {
    */
   id: string
   /**
-   * The shortest path the symbol can be imported by,
-   * `libtmux.Pane.capture_pane` — what people write, what docstring roles
-   * reference, and what gp-sphinx anchors. Anchors and cross-links render
-   * from this; `id` stays the key.
+   * Stable public reference identity, usually the shortest importable path,
+   * such as `libtmux.Pane.capture_pane`. Anchors and cross-links use this;
+   * `id` stays the key. Historical file-based identities remain here when
+   * `qualifiedName` records a different source spelling.
    */
   publicId?: string
+  /** Source-qualified spelling, when a stable public id includes legacy file segments. */
+  qualifiedName?: string
+  /** Declared package or namespace; an empty string means the unnamed namespace. */
+  namespace?: string
   /** Last path segment: `capture_pane`. */
   name: string
   kind: SymbolKind

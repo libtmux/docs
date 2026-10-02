@@ -5,7 +5,7 @@
  * Buckets and their contents are decided once per port in
  * `scripts/gen-api-model.mjs`; this only shapes them for a tree.
  */
-import { compareMembers, memberSignals, symbolsForProduct } from '@libtmux/api-model'
+import { compareMembers, memberSignals, qualifiedNameOf, symbolsForProduct } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { API_MODELS, API_NAV, OWNER_KINDS, pageSlug, type NavEntry } from './api-models'
 import type { ApiTreeBucket, ApiTreeJson } from './api-search'
@@ -38,7 +38,7 @@ const distinct = (entries: NavEntry[], port: string): NavEntry[] => {
     if ((count.get(entry.name) ?? 0) < 2) return entry
     const label = port === 'scala'
       ? `${entry.name} (${entry.id.includes('.cats.') ? 'Cats Effect' : entry.id.includes('.ox.') ? 'Ox' : 'Direct API'})`
-      : entry.id
+      : API_MODELS[port]?.symbols.find((symbol) => (symbol.publicId ?? symbol.id) === entry.id)?.qualifiedName ?? entry.id
     return { ...entry, name: label }
   })
 }
@@ -173,6 +173,7 @@ export function referenceTree(port: string): ApiTreeJson {
     count: bucketTotal(b),
     slug: firstEntry(b)?.slug ?? null,
     types: b.entries.map((t) => ({ id: t.id, name: t.name, symbolName: symbols.get(t.id)?.name ?? t.name,
+      qualifiedName: symbols.get(t.id) ? qualifiedNameOf(symbols.get(t.id)!) : t.id,
       slug: t.slug, m: members.has(t.id) ? 1 : 0,
       kind: t.kind, category: category(t.kind), summary: symbols.get(t.id)?.doc?.summary ?? '' })),
     children: b.children.map(bucket),
@@ -183,7 +184,7 @@ export function referenceTree(port: string): ApiTreeJson {
     members: Object.fromEntries([...members].map(([id, list]) => [id, list.map((m) => {
       const symbol = symbols.get(m.id)
       const kind = symbol?.kind ?? 'member'
-      return [m.name, m.slug, m.id, kind, category(kind), symbol?.doc?.summary ?? '']
+      return [m.name, m.slug, m.id, kind, category(kind), symbol?.doc?.summary ?? '', symbol ? qualifiedNameOf(symbol) : m.id]
     })])),
   }
 }

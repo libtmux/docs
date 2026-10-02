@@ -2,6 +2,7 @@ import { tokenizeDoc, type DocSpan } from './doc/roles.ts'
 import type { InventoryEntry } from './inventory.ts'
 import type { ApiSymbol, Signature, SymbolKind } from './model.ts'
 import { builtinHref } from './builtins.ts'
+import { qualifiedNameOf } from './modules.ts'
 
 /**
  * Turn reference targets into links, and type annotations into linked spans.
@@ -133,6 +134,7 @@ export const parameterId = (symbol: ApiSymbol, name: string) => `${symbol.public
  */
 export class SymbolIndex {
   private readonly byPublic = new Map<string, ApiSymbol>()
+  private readonly byQualified = new Map<string, ApiSymbol[]>()
   // Keyed by declaration id. `parent` is a declaration id, so looking an owner
   // up in byPublic silently misses every time — which is why relative
   // references stayed at 0% until this map existed.
@@ -181,9 +183,16 @@ export class SymbolIndex {
       // page where the thing is written, not on one of its 30 subclasses.
       if (!this.byPublic.has(pub) || !s.inheritedFrom) this.byPublic.set(pub, s)
 
-      const parts = pub.split('.')
-      for (let i = 1; i < parts.length; i++) {
-        const suffix = parts.slice(i).join('.')
+      const qualified = qualifiedNameOf(s)
+      const aliases = this.byQualified.get(qualified) ?? []
+      aliases.push(s)
+      this.byQualified.set(qualified, aliases)
+
+      const suffixes = new Set([pub, qualified].flatMap((name) => {
+        const parts = name.split('.')
+        return parts.slice(1).map((_, i) => parts.slice(i + 1).join('.'))
+      }))
+      for (const suffix of suffixes) {
         const list = this.bySuffix.get(suffix) ?? []
         list.push(s)
         this.bySuffix.set(suffix, list)
@@ -287,9 +296,9 @@ export class SymbolIndex {
    */
   private static nearest(candidates: ApiSymbol[], context?: ApiSymbol): ApiSymbol | undefined {
     if (!context || candidates.length === 0) return undefined
-    const from = (context.publicId ?? context.id).split('.')
+    const from = qualifiedNameOf(context).split('.')
     const shared = (c: ApiSymbol) => {
-      const id = (c.publicId ?? c.id).split('.')
+      const id = qualifiedNameOf(c).split('.')
       let n = 0
       while (n < id.length && n < from.length && id[n] === from[n]) n++
       return n
@@ -345,8 +354,8 @@ export class SymbolIndex {
         const owner = this.byDeclared.get(context.parent)
         scopes.push(owner?.publicId ?? context.parent)
       }
-      if (this.lang === 'kotlin' || this.lang === 'scala') {
-        let scope = own
+      if (this.lang === 'kotlin' || this.lang === 'scala' || this.lang === 'java') {
+        let scope = qualifiedNameOf(context)
         while (scope.includes('.')) {
           scope = scope.slice(0, scope.lastIndexOf('.'))
           scopes.push(scope)
@@ -360,7 +369,9 @@ export class SymbolIndex {
         }
       }
       for (const scope of scopes) {
-        const hit = this.byPublic.get(`${scope}${this.lang === 'cxx' ? '::' : '.'}${clean}`)
+        const target = `${scope}${this.lang === 'cxx' ? '::' : '.'}${clean}`
+        const hit = this.byPublic.get(target) ?? this.pick(this.byQualified.get(target), role, context)
+        if (hit && this.lang === 'java' && role === 'class' && !ROLE_KINDS.class.includes(hit.kind)) continue
         if (hit) return { href: this.hrefFor(hit), external: false, symbol: hit }
       }
       // A relative reference must not fall through to a global bare-name
@@ -370,6 +381,11 @@ export class SymbolIndex {
 
     const exact = this.byPublic.get(clean)
     if (exact) return { href: this.hrefFor(exact), external: false, symbol: exact }
+
+    // Keep existing ids authoritative when a constructor's native spelling
+    // also names a legacy type id.
+    const qualified = this.pick(this.byQualified.get(clean), role, context)
+    if (qualified) return { href: this.hrefFor(qualified), external: false, symbol: qualified }
 
     // Native extension prose often names its receiver in lower case.
     if (context?.parent && ['kotlin', 'scala'].includes(this.lang ?? '')) {

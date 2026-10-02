@@ -1,5 +1,6 @@
 import { gunzipSync, inflateSync, deflateSync } from 'node:zlib'
 import type { ApiModel, ApiSymbol, PortSlug, SymbolKind } from './model.ts'
+import { qualifiedNameOf } from './modules.ts'
 
 /**
  * Sphinx `objects.inv` v2, read and written.
@@ -147,7 +148,8 @@ export function writeInventory(model: ApiModel, options: InventoryOptions): Buff
     // `#name` at the end collapses to `#$`; Sphinx's own comment puts the
     // saving at up to 25% of the file.
     if (uri.endsWith(`#${name}`)) uri = `${uri.slice(0, -name.length)}$`
-    lines.push(`${name} ${roleFor(model.port, symbol.kind)} 1 ${uri} -\n`)
+    const display = qualifiedNameOf(symbol)
+    lines.push(`${name} ${roleFor(model.port, symbol.kind)} 1 ${uri} ${display === name ? '-' : display}\n`)
   }
 
   return Buffer.concat([Buffer.from(header, 'utf8'), deflateSync(Buffer.from(lines.join(''), 'utf8'), { level: 9 })])

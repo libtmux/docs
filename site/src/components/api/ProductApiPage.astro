@@ -1,5 +1,5 @@
 ---
-import { docSummaryText, sourceUrl, symbolsForProduct, type ApiModel, type ApiSymbol } from '@libtmux/api-model'
+import { qualifiedNameOf, docSummaryText, sourceUrl, symbolsForProduct, type ApiModel, type ApiSymbol } from '@libtmux/api-model'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import ApiEntry from './ApiEntry.astro'
 import { productApiAlternatives, productApiHref, productApiIndex } from '../../lib/product-api'
@@ -19,7 +19,7 @@ try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } ca
 const alternativesFor = (entry: ApiSymbol) => productApiAlternatives(model, entry, version, defaults)
 ---
 
-<DocsLayout title={symbol.publicId ?? symbol.name} description={symbol.doc?.summary ? docSummaryText(symbol.doc.summary, model.port) : `${symbol.name} API documentation.`}
+<DocsLayout title={qualifiedNameOf(symbol)} description={symbol.doc?.summary ? docSummaryText(symbol.doc.summary, model.port) : `${symbol.name} API documentation.`}
   port={model.port} product={product} version={version} pagePath={pagePath} tableOfContents={false}
   pageSource={symbolSource(model, symbol)} markdown="source">
   <p><a href="../">API reference</a> · <a href={`../${symbol.slug}.md`}>Markdown</a></p>

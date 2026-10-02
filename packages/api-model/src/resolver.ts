@@ -1,6 +1,6 @@
 import type { ApiModel, ApiProduct, ApiSymbol } from './model.ts'
 import type { InventoryEntry } from './inventory.ts'
-import { modulesIn } from './modules.ts'
+import { modulesIn, qualifiedNameOf } from './modules.ts'
 
 /**
  * One resolver for every place a symbol is mentioned: a prose table cell, a
@@ -185,7 +185,7 @@ export class Resolver {
         this.modules.set(model.port + ' ' + mod.name.replace(/::/g, '.'), mod.name)
       }
       for (const symbol of model.symbols) {
-        const qualified = symbol.publicId ?? symbol.id
+        const qualified = qualifiedNameOf(symbol)
         const row: Row = { port: model.port, symbol, qualified }
         // Swift's symbol graph names a method by its full selector —
         // `unsetEnvironment(_:in:)` — so prose saying `unsetEnvironment`
@@ -199,6 +199,13 @@ export class Resolver {
         }
         this.byQualified.set(model.port + ' ' + qualified, row)
 
+      }
+      // Old anchors remain accepted, including identities that overlap a
+      // constructor's native qualified name.
+      for (const symbol of model.symbols) {
+        this.byQualified.set(model.port + ' ' + (symbol.publicId ?? symbol.id), {
+          port: model.port, symbol, qualified: qualifiedNameOf(symbol),
+        })
       }
     }
   }

@@ -315,6 +315,10 @@ function resolveInheritance(symbols: ApiSymbol[], stopList: string[]): ApiSymbol
           ...member,
           id: `${cls.id}.${member.name}`,
           parent: cls.id,
+          ...(cls.qualifiedName === undefined ? {} : {
+            qualifiedName: `${cls.qualifiedName}.${member.name}`,
+            namespace: cls.namespace,
+          }),
           inheritedFrom: member.inheritedFrom ?? baseSym.id,
         })
       }
