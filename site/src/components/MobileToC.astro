@@ -13,7 +13,7 @@ const { tocItems } = Astro.props
 <div id="mobile-toc-overlay" class="fixed inset-0 bg-black/50 z-40 opacity-0 invisible lg:hidden"></div>
 
 <!-- Mobile ToC -->
-<aside id="mobile-toc" class="drawer-surface fixed right-0 top-0 h-full w-64 z-50 transform translate-x-full lg:hidden overflow-y-auto">
+<aside id="mobile-toc" inert class="drawer-surface fixed right-0 top-0 h-full w-64 z-50 transform translate-x-full lg:hidden overflow-y-auto">
   <div class="p-4">
     <!-- Header with close button -->
     <div class="flex items-center justify-between mb-6">

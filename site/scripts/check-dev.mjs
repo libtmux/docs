@@ -443,7 +443,18 @@ try {
     }
     console.log('Reading colors: Python, Swift, Go and C++ share neutral light/dark text and surfaces')
     for (const colorScheme of ['light', 'dark']) {
-      const context = await browser.newContext({ javaScriptEnabled: false, colorScheme })
+      await page.setViewportSize({ width: 390, height: 844 })
+      await page.emulateMedia({ colorScheme })
+      await page.goto(`${base}/concepts/server-session-window-pane/`, { waitUntil: 'load' })
+      const toolbar = await page.evaluate(() => {
+        delete document.documentElement.dataset.themeMode
+        const style = (selector) => getComputedStyle(document.querySelector(selector))
+        return { background: style('.mobile-toolbar').backgroundColor, page: style('body').backgroundColor,
+          icon: style('.toolbar-button').color, text: style('body').color }
+      })
+      assert.equal(toolbar.background, toolbar.page, `${colorScheme}: toolbar uses the page surface before theme initialization`)
+      assert.equal(toolbar.icon, toolbar.text, `${colorScheme}: toolbar icons use the page text color`)
+      const context = await browser.newContext({ javaScriptEnabled: false, colorScheme, viewport: { width: 390, height: 844 } })
       const noScript = await context.newPage()
       await noScript.goto(`${base}/concepts/server-session-window-pane/`, { waitUntil: 'load' })
       const checkContrast = async (scheme, selectors = ['h1', '.prose h2', '.prose p']) => {
@@ -471,6 +482,20 @@ try {
         }
       }
       await checkContrast(colorScheme)
+      assert.equal(await noScript.locator('.mobile-toolbar').isVisible(), false, 'No-JS hides inactive drawer buttons')
+      assert.equal(await noScript.locator('.mobile-fallback').isVisible(), true, 'No-JS has usable mobile navigation')
+      await checkContrast(colorScheme, ['.mobile-fallback summary'])
+      const browse = noScript.locator('.mobile-fallback > details').first()
+      await browse.locator('summary').first().focus()
+      await noScript.keyboard.press('Enter')
+      assert.equal(await browse.getAttribute('open'), '', 'Keyboard opens the native navigation disclosure')
+      assert.equal(await browse.locator('a:visible').count() > 0, true, 'The navigation disclosure exposes links')
+      await browse.locator('summary').first().click()
+      const contents = noScript.locator('.mobile-fallback > details').nth(1)
+      await contents.locator('summary').click()
+      const destination = await contents.locator('a').first().getAttribute('href')
+      await contents.locator('a').first().click()
+      assert.equal(new URL(noScript.url()).hash, destination, 'No-JS contents reaches its section')
       const override = colorScheme === 'dark' ? 'light' : 'dark'
       await noScript.evaluate((mode) => { document.documentElement.dataset.themeMode = mode }, override)
       await checkContrast(`${colorScheme} with ${override} override`)
