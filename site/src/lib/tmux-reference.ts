@@ -1,0 +1,111 @@
+/** Versioned tmux command syntax and manual text, extracted together. */
+import { CONCEPTS, conceptsFor } from '@libtmux/api-model'
+import pins from '../data/tmux/versions.json'
+import v32 from '../data/tmux/3.2a.json'
+import v37 from '../data/tmux/3.7c.json'
+import { API_MODELS, referenceHref } from './api-models'
+import { PORT_BY_SLUG } from './ports'
+import { withPortRoot } from './site-root'
+
+export type TmuxReference = typeof v37
+export type TmuxCommand = TmuxReference['commands'][number]
+export const TMUX_REFERENCES: Record<string, TmuxReference> = { '3.2a': v32, '3.7c': v37 }
+export const TMUX_VERSIONS = ['latest', ...pins.versions.map((pin) => pin.version)]
+
+export function tmuxReference(version: string): TmuxReference {
+  const reference = TMUX_REFERENCES[version === 'latest' ? pins.latest : version]
+  if (!reference) throw new Error(`Unknown tmux reference version: ${version}`)
+  return reference
+}
+
+/** tmux belongs to the general documentation, outside each library's tree. */
+export function buildsTmuxReference(env: Record<string, string | undefined> = process.env): boolean {
+  return !env.LIBTMUX_DOCS_PORT && (!env.LIBTMUX_DOCS_LOCALE || env.LIBTMUX_DOCS_LOCALE === 'en')
+}
+
+export function tmuxReferenceUrl(version = 'latest', command = ''): string {
+  return withPortRoot(`/tmux/${version}/reference/${command ? `${command}/` : ''}`)
+}
+
+export function tmuxReferenceRoutes(): { version: string; slug?: string }[] {
+  if (!buildsTmuxReference()) return []
+  return TMUX_VERSIONS.flatMap((version) => [
+    { version }, { version, slug: 'manual' },
+    ...tmuxReference(version).commands.map((command) => ({ version, slug: command.name })),
+  ])
+}
+
+/** Keep cross-references in the selected version and any preview prefix. */
+export function tmuxManualHtml(html: string, version: string): string {
+  const reference = tmuxReference(version)
+  return html.replaceAll(`/tmux/${reference.version}/reference/`, tmuxReferenceUrl(version))
+}
+
+export function tmuxPageTitle(version: string, slug?: string): string {
+  return slug === 'manual' ? `tmux ${tmuxReference(version).version} manual`
+    : slug ? `tmux ${slug}` : 'tmux CLI reference'
+}
+
+export function tmuxPageDescription(version: string, slug?: string): string {
+  const reference = tmuxReference(version)
+  return reference.commands.find((command) => command.name === slug)?.summary
+    ?? `Command syntax and behavior for tmux ${reference.version}.`
+}
+
+// These concepts differ by target scope, while tmux uses flags on one command.
+const scopedConcepts: Record<string, string[]> = {
+  'split-window': ['split-pane'],
+  'list-windows': ['list-server-windows'],
+  'list-panes': ['list-session-panes', 'list-server-panes'],
+}
+const commandConcepts = (name: string) => [name, ...(scopedConcepts[name] ?? [])]
+  .flatMap((key) => CONCEPTS[key] ? [CONCEPTS[key]] : [])
+
+const guides = [
+  { path: 'guides/getting-started', title: 'Start a tmux session', commands: ['new-session', 'list-sessions'] },
+  { path: 'guides/attaching-to-tmux', title: 'Attach to an existing session', commands: ['attach-session', 'has-session'] },
+  { path: 'guides/sending-keys', title: 'Send input to a pane', commands: ['send-keys', 'send-prefix'] },
+  { path: 'guides/capturing-output', title: 'Capture pane output', commands: ['capture-pane', 'clear-history'] },
+  { path: 'guides/querying-and-filtering', title: 'Find sessions, windows, and panes', commands: ['list-sessions', 'list-windows', 'list-panes', 'display-message'] },
+  { path: 'guides/testing-with-libtmux', title: 'Test with an isolated server', commands: ['new-session', 'new-window', 'kill-server'] },
+  { path: 'topics/options-and-hooks', title: 'Set options and hooks', commands: ['set-option', 'show-options', 'set-window-option', 'show-window-options', 'set-hook', 'show-hooks'] },
+  { path: 'topics/waiting-and-retry', title: 'Wait for completion', commands: ['wait-for'] },
+]
+
+export function tmuxGuidesFor(command: string) {
+  return guides.filter((guide) => guide.commands.includes(command))
+    .map((guide) => ({ title: guide.title, href: withPortRoot(`/${guide.path}/`) }))
+}
+
+/** Link only declarations present in the integrated library models. */
+export function tmuxApiLinks(command: string) {
+  const seen = new Set<string>()
+  return commandConcepts(command).flatMap((concept) => Object.entries(concept.symbols).flatMap(([port, id]) => {
+    if (seen.has(port) || !API_MODELS[port]?.symbols.some((symbol) => (symbol.publicId ?? symbol.id) === id)) return []
+    const href = referenceHref(port, id)
+    if (!href) return []
+    seen.add(port)
+    return [{ name: PORT_BY_SLUG[port].name, href }]
+  }))
+}
+
+/** The same section identities drive the visible contents and agent manifest. */
+export function tmuxPageHeadings(version: string, slug?: string) {
+  const reference = tmuxReference(version)
+  if (slug === 'manual') return reference.sections.map((section) => ({ depth: 2, slug: section.id, text: section.title }))
+  if (slug) return [
+    { depth: 2, slug: 'syntax', text: 'Syntax' },
+    { depth: 2, slug: 'behavior', text: 'Behavior' },
+    ...(tmuxGuidesFor(slug).length ? [{ depth: 2, slug: 'guides', text: 'Guides' }] : []),
+    ...(tmuxApiLinks(slug).length ? [{ depth: 2, slug: 'libraries', text: 'Use from a library' }] : []),
+  ]
+  return [...new Set(reference.commands.map((entry) => entry.section))].map((section) => ({
+    depth: 2, slug: section.toLowerCase().replaceAll(' ', '-'), text: section[0] + section.slice(1).toLowerCase(),
+  }))
+}
+
+/** Match source-verified concepts to commands present in the selected manual. */
+export function tmuxCommandsFor(port: string, publicId: string): TmuxCommand[] {
+  const concepts = conceptsFor(port, publicId)
+  return tmuxReference('latest').commands.filter((command) => commandConcepts(command.name).some((concept) => concepts.includes(concept)))
+}

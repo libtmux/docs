@@ -35,18 +35,20 @@ interface Props {
    * the part that is a page list to the pages that have room for it.
    */
   menuOnly?: boolean
+  /** A generated reference can supply its own section tree. */
+  navigation?: SidebarItem[]
 }
 
-const { port, product, version, currentPath, locale = DEFAULT_LOCALE, menuOnly = false } = Astro.props
+const { port, product, version, currentPath, locale = DEFAULT_LOCALE, menuOnly = false, navigation } = Astro.props
 const portInfo = port ? PORT_BY_SLUG[port] : undefined
 // Skipped entirely when the caller wants the menu: `getSidebar` queries the
 // content collection and sorts it, and the reference renders this component on
 // every one of its pages.
-const items: SidebarItem[] = menuOnly
+const items: SidebarItem[] = navigation ?? (menuOnly
   ? port
     ? [portAreas(port, version), { type: 'group', label: 'Reference', items: referenceEntries(port, version) }]
     : []
-  : await getSidebar(port, version, locale, product)
+  : await getSidebar(port, version, locale, product))
 const domains = portInfo ? documentationNavigation(portInfo.slug, version) : []
 ---
 

@@ -1,6 +1,7 @@
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
 import { moduleOf } from '@libtmux/api-model'
 import { PORT_NAME } from './api-models'
+import { tmuxCommandsFor, tmuxReferenceUrl } from './tmux-reference'
 
 /**
  * A symbol's page as Markdown.
@@ -50,6 +51,9 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (symbol.exportedFrom) facts.push(`- **Exported from:** ${symbol.exportedFrom}`)
   if (ctx.canonical) facts.push(`- **Page:** ${ctx.canonical}`)
   if (facts.length) out.push(...facts, '')
+  for (const command of tmuxCommandsFor(model.port, id)) {
+    out.push(`tmux command: [\`${command.name}\`](${tmuxReferenceUrl('latest', command.name)})`, '')
+  }
   if (symbol.apiScope === 'supporting') {
     out.push('This type appears in public signatures. It is not a package entry point.', '')
   }

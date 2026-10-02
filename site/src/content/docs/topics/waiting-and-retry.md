@@ -253,6 +253,11 @@ server loss from a signal.
 Use a channel name specific to the task. A remembered signal can otherwise
 satisfy an unrelated later wait.
 
+<!-- port:root -->
+The [wait-for reference](/tmux/latest/reference/wait-for/) describes completion
+signals and locks for each supported tmux version.
+<!-- /port -->
+
 <details>
 <summary>tmux manual and source</summary>
 

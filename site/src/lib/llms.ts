@@ -15,6 +15,7 @@ import type { Locale } from '../i18n/locales.ts'
 import { PORT_ROOT, SITE_ROOT } from './site-root.ts'
 import { API_MODELS } from './api-models.ts'
 import { productApiHref, productApiRoots } from './product-api.ts'
+import { buildsTmuxReference, tmuxReferenceUrl } from './tmux-reference.ts'
 
 export interface LlmsPage {
   title: string
@@ -153,6 +154,7 @@ export function llmsHeader(): { title: string; blurb: string } {
  * ecosystem host, so only the former needs the origin.
  */
 export function referenceLine(origin: string): string | null {
+  if (buildsTmuxReference()) return `- [tmux CLI reference](${origin}${tmuxReferenceUrl()}): versioned command syntax and the tmux manual.`
   const port = process.env.LIBTMUX_DOCS_PORT || undefined
   const p = port ? PORT_BY_SLUG[port] : undefined
   if (!p || !hasReference(p)) return null

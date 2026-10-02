@@ -100,5 +100,11 @@ target, and [Capturing output](../capturing-output/) reads its screen.
 
 ## tmux reference
 
+See [new-session](/tmux/latest/reference/new-session/),
+[new-window](/tmux/latest/reference/new-window/), and
+[kill-server](/tmux/latest/reference/kill-server/) for the commands used by the
+fixture. The [global options](/tmux/latest/reference/manual/#DESCRIPTION)
+describe socket selection and configuration files.
+
 The [tmux manual](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1)
 documents these commands and their flags.

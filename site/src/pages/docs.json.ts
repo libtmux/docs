@@ -11,6 +11,7 @@ import { isIndexSource, markdownPath } from '../lib/markdown-twins.ts'
 import { localeProse } from '../lib/llms.ts'
 import { documentationAreas } from '../lib/port-documentation.ts'
 import { buildTarget } from '../lib/versions.ts'
+import { tmuxPageDescription, tmuxPageHeadings, tmuxPageTitle, tmuxReferenceRoutes, tmuxReferenceUrl } from '../lib/tmux-reference.ts'
 
 /**
  * `/docs.json` — the agent manifest.
@@ -96,6 +97,13 @@ export const GET: APIRoute = async ({ site }) => {
         text: t.name,
       })),
     })
+  }
+
+  for (const { version, slug } of tmuxReferenceRoutes()) {
+    const url = `${origin}${tmuxReferenceUrl(version, slug)}`
+    pages.push({ title: tmuxPageTitle(version, slug), description: tmuxPageDescription(version, slug),
+      section: 'tmux CLI reference', url, markdownUrl: markdownPath(url, !slug),
+      headings: tmuxPageHeadings(version, slug).map((heading) => ({ id: heading.slug, level: heading.depth, text: heading.text })) })
   }
 
   const manifest = {
