@@ -2,8 +2,8 @@ import type { ApiModel, ApiSymbol, Signature } from '@libtmux/api-model'
 import { compareMembers, memberSignals, moduleOf, qualifiedNameOf } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
-import { tmuxCommandsFor, tmuxReferenceUrl } from './tmux-reference'
 import { apiEntryFields, apiMemberGroups } from './api-sections'
+import { tmuxCommandsFor, tmuxReferenceUrl } from './tmux-reference'
 
 /**
  * A symbol's page as Markdown.
