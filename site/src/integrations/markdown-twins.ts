@@ -168,6 +168,7 @@ function prune(node: Node, origin: string, drop?: Node, preserveSchemas = false,
       if (typeof props[key] !== 'string') continue
       if (preserveSchemas && pageUrl) props[key] = new URL(props[key] as string, pageUrl).href
       else if ((props[key] as string).startsWith('/') && !(props[key] as string).startsWith('//')) props[key] = `${origin}${props[key]}`
+      else if (pageUrl && (props[key] as string).startsWith('#')) props[key] = new URL(props[key] as string, pageUrl).href
     }
     // Shiki and the install widget put the language on the block, not on `code`.
     if (typeof props.dataLanguage === 'string') {
