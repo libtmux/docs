@@ -323,6 +323,848 @@
       ],
       "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
       "sourceFile": "tmux/api_session_new_window_example_test.go"
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-server",
+      "symbol": "LibTmux::Server",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/server.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "server.rb",
+          "block": 2,
+          "sha256": "61db6f40d8347cdbc96879007450dfc58ae6c375da8cb48d349d393c7ac96e64",
+          "clipboardSha256": "fffc1ba7c49c0467819803f35f85f3d5553b5556c46fdde2e7d884703f3b2c23",
+          "sourceFile": "examples/api/server.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby server.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "connected sessions: 1",
+          "sessions after client close: 1"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-server-new",
+      "symbol": "LibTmux::Server.new",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/server.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "server.rb",
+          "block": 2,
+          "sha256": "61db6f40d8347cdbc96879007450dfc58ae6c375da8cb48d349d393c7ac96e64",
+          "clipboardSha256": "fffc1ba7c49c0467819803f35f85f3d5553b5556c46fdde2e7d884703f3b2c23",
+          "sourceFile": "examples/api/server.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby server.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "connected sessions: 1",
+          "sessions after client close: 1"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-server-list_sessions",
+      "symbol": "LibTmux::Server#list_sessions",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/list_sessions.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "list_sessions.rb",
+          "block": 2,
+          "sha256": "68dce6379b9091de45b554798ebc9d631804de733a0a003e30850740b9157edb",
+          "clipboardSha256": "1e4e88a35d8b3e7170e985d061eb574b47bcdbf3399241b181d41c20f094fd9a",
+          "sourceFile": "examples/api/list_sessions.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby list_sessions.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "sessions: $0, $1"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-server-list_windows",
+      "symbol": "LibTmux::Server#list_windows",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/list_windows.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "list_windows.rb",
+          "block": 2,
+          "sha256": "5225b6a81e5707fa130c0e3bcd44ca57202963e861131981ae02bfcf08a2bec8",
+          "clipboardSha256": "b0630421ebbac2b0c39e026af2d5b8a787d21faee3a183ca198736835635f9f0",
+          "sourceFile": "examples/api/list_windows.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby list_windows.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "server windows: 3",
+          "work windows: 2"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-session-list_windows",
+      "symbol": "LibTmux::Session#list_windows",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/list_windows.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "list_windows.rb",
+          "block": 2,
+          "sha256": "5225b6a81e5707fa130c0e3bcd44ca57202963e861131981ae02bfcf08a2bec8",
+          "clipboardSha256": "b0630421ebbac2b0c39e026af2d5b8a787d21faee3a183ca198736835635f9f0",
+          "sourceFile": "examples/api/list_windows.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby list_windows.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "server windows: 3",
+          "work windows: 2"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-server-list_panes",
+      "symbol": "LibTmux::Server#list_panes",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/list_panes.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "list_panes.rb",
+          "block": 2,
+          "sha256": "9f5eb1aaa95ff01cedcb558226798a3b9dd554825cd6ef67738ac65cde9c66ca",
+          "clipboardSha256": "38726a0114f97333c6d1fe2ebbcaf37036cd3b2d71add6f2697e0f5d5fd26395",
+          "sourceFile": "examples/api/list_panes.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby list_panes.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "server panes: 3",
+          "work panes: 2",
+          "window panes: 2"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-session-list_panes",
+      "symbol": "LibTmux::Session#list_panes",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/list_panes.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "list_panes.rb",
+          "block": 2,
+          "sha256": "9f5eb1aaa95ff01cedcb558226798a3b9dd554825cd6ef67738ac65cde9c66ca",
+          "clipboardSha256": "38726a0114f97333c6d1fe2ebbcaf37036cd3b2d71add6f2697e0f5d5fd26395",
+          "sourceFile": "examples/api/list_panes.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby list_panes.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "server panes: 3",
+          "work panes: 2",
+          "window panes: 2"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-window-list_panes",
+      "symbol": "LibTmux::Window#list_panes",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/list_panes.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "list_panes.rb",
+          "block": 2,
+          "sha256": "9f5eb1aaa95ff01cedcb558226798a3b9dd554825cd6ef67738ac65cde9c66ca",
+          "clipboardSha256": "38726a0114f97333c6d1fe2ebbcaf37036cd3b2d71add6f2697e0f5d5fd26395",
+          "sourceFile": "examples/api/list_panes.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby list_panes.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "server panes: 3",
+          "work panes: 2",
+          "window panes: 2"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-server-start",
+      "symbol": "LibTmux::Server.start",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/new_session.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "new_session.rb",
+          "block": 2,
+          "sha256": "8f4aafe3a3ea9622c7234b02812037069ef0cbec8e79a33cccdbddaa4bf1bdaf",
+          "clipboardSha256": "ab98f6a52f225ba782335564670129db434a1c82878232b488328646b6662a1f",
+          "sourceFile": "examples/api/new_session.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby new_session.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "session: $0",
+          "window: @0",
+          "pane: %0"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-server-new_session",
+      "symbol": "LibTmux::Server#new_session",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/new_session.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "new_session.rb",
+          "block": 2,
+          "sha256": "8f4aafe3a3ea9622c7234b02812037069ef0cbec8e79a33cccdbddaa4bf1bdaf",
+          "clipboardSha256": "ab98f6a52f225ba782335564670129db434a1c82878232b488328646b6662a1f",
+          "sourceFile": "examples/api/new_session.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby new_session.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "session: $0",
+          "window: @0",
+          "pane: %0"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-session-new_window",
+      "symbol": "LibTmux::Session#new_window",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/new_window.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "new_window.rb",
+          "block": 2,
+          "sha256": "f05abeff14b8aa63bf611ec23f065514c5965cc88a06552c817424ba45be2fde",
+          "clipboardSha256": "ae465259b4fe0cdb4844c4787cc0f84c78b687ca3db33c48cf49bfd6f2b1a339",
+          "sourceFile": "examples/api/new_window.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby new_window.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "window: logs",
+          "session windows: 2"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-server-snapshot",
+      "symbol": "LibTmux::Server#snapshot",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/query.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "query.rb",
+          "block": 2,
+          "sha256": "fc018d1765e3e963db67c6539ec6f02c1d109a52e54323352fb973592840d316",
+          "clipboardSha256": "51045ba77079d7625f16abc2a5e2d40fd25b26d7aadd988515489cb4d754400c",
+          "sourceFile": "examples/api/query.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby query.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "matching session: work",
+          "missing session: true",
+          "matching pane: %0"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-server-search_panes",
+      "symbol": "LibTmux::Server#search_panes",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/query.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "query.rb",
+          "block": 2,
+          "sha256": "fc018d1765e3e963db67c6539ec6f02c1d109a52e54323352fb973592840d316",
+          "clipboardSha256": "51045ba77079d7625f16abc2a5e2d40fd25b26d7aadd988515489cb4d754400c",
+          "sourceFile": "examples/api/query.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby query.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "matching session: work",
+          "missing session: true",
+          "matching pane: %0"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-selection-where",
+      "symbol": "LibTmux::Selection#where",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/query.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "query.rb",
+          "block": 2,
+          "sha256": "fc018d1765e3e963db67c6539ec6f02c1d109a52e54323352fb973592840d316",
+          "clipboardSha256": "51045ba77079d7625f16abc2a5e2d40fd25b26d7aadd988515489cb4d754400c",
+          "sourceFile": "examples/api/query.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby query.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "matching session: work",
+          "missing session: true",
+          "matching pane: %0"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-selection-one",
+      "symbol": "LibTmux::Selection#one",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/query.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "query.rb",
+          "block": 2,
+          "sha256": "fc018d1765e3e963db67c6539ec6f02c1d109a52e54323352fb973592840d316",
+          "clipboardSha256": "51045ba77079d7625f16abc2a5e2d40fd25b26d7aadd988515489cb4d754400c",
+          "sourceFile": "examples/api/query.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby query.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "matching session: work",
+          "missing session: true",
+          "matching pane: %0"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-selection-one_or_nil",
+      "symbol": "LibTmux::Selection#one_or_nil",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/query.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "query.rb",
+          "block": 2,
+          "sha256": "fc018d1765e3e963db67c6539ec6f02c1d109a52e54323352fb973592840d316",
+          "clipboardSha256": "51045ba77079d7625f16abc2a5e2d40fd25b26d7aadd988515489cb4d754400c",
+          "sourceFile": "examples/api/query.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby query.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "matching session: work",
+          "missing session: true",
+          "matching pane: %0"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-pane-send_text",
+      "symbol": "LibTmux::Pane#send_text",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/capture.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "capture.rb",
+          "block": 2,
+          "sha256": "7163be5f09609005ea3a4c7a4ac472024603cd69c4118e1ac6cb83676983e525",
+          "clipboardSha256": "6647c256ac0351e8dfe3284e0a05ec05d8d710d96d55774578f1faaccd09487c",
+          "sourceFile": "examples/api/capture.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby capture.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "libtmux capture ready"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-pane-send_keys",
+      "symbol": "LibTmux::Pane#send_keys",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/capture.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "capture.rb",
+          "block": 2,
+          "sha256": "7163be5f09609005ea3a4c7a4ac472024603cd69c4118e1ac6cb83676983e525",
+          "clipboardSha256": "6647c256ac0351e8dfe3284e0a05ec05d8d710d96d55774578f1faaccd09487c",
+          "sourceFile": "examples/api/capture.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby capture.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "libtmux capture ready"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "ruby",
+      "page": "ports/ruby/reference/libtmux-pane-capture",
+      "symbol": "LibTmux::Pane#capture",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceFile": "examples/api/capture.rb",
+      "files": [
+        {
+          "name": "Gemfile",
+          "block": 1,
+          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c",
+          "clipboardSha256": "3045ee24e36365b941b6ab27a6227ebb31af5ab9b0faeee492763fc838388309"
+        },
+        {
+          "name": "capture.rb",
+          "block": 2,
+          "sha256": "7163be5f09609005ea3a4c7a4ac472024603cd69c4118e1ac6cb83676983e525",
+          "clipboardSha256": "6647c256ac0351e8dfe3284e0a05ec05d8d710d96d55774578f1faaccd09487c",
+          "sourceFile": "examples/api/capture.rb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-ruby.git libtmux-source && \\\n  git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby capture.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "libtmux capture ready"
+        ]
+      ],
+      "runtime": "Ruby 4.0.7",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
     }
   ]
 }
