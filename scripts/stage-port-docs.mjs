@@ -62,11 +62,12 @@ export function rewriteLinks(content, sourcePath, route, routes, repo, revision)
     if (external(destination)) return destination
     const [target, fragment = ''] = destination.split('#', 2)
     const normalized = posix.normalize(posix.join(posix.dirname(sourcePath), target))
-    const staged = routes[normalized]
+    const memberRoute = fragment && routes[`${normalized}#${fragment}`]
+    const staged = memberRoute || routes[normalized]
     if (staged) {
       let href = posix.relative(route, staged[0]) || '.'
       if (!href.startsWith('.')) href = `./${href}`
-      return `${href.replace(/\/$/, '')}/${fragment ? `#${fragment}` : ''}`
+      return `${href.replace(/\/$/, '')}/${fragment && !memberRoute ? `#${fragment}` : ''}`
     }
     return `https://github.com/${repo}/${image ? 'raw' : 'blob'}/${revision}/${normalized}${fragment ? `#${fragment}` : ''}`
   }
@@ -88,8 +89,20 @@ export function rewriteLinks(content, sourcePath, route, routes, repo, revision)
 }
 
 export function stagedPortGuides(port, artifact) {
+  const identity = PORTS.find((entry) => entry.slug === port)
   const routes = ROUTES[port]
   const linkRoutes = Object.fromEntries(Object.entries(routes).map(([sourcePath, guide]) => [sourcePath, [guide.route]]))
+  if (identity.sourceReferenceDirectory) {
+    const { symbols } = JSON.parse(readFileSync(join(root, `site/src/data/api/${port}.json`), 'utf8'))
+    const byId = new Map(symbols.map((symbol) => [symbol.id, symbol]))
+    const directory = identity.sourceReferenceDirectory
+    linkRoutes[`${directory}/index.md`] = ['reference']
+    for (const symbol of symbols) {
+      linkRoutes[`${directory}/${symbol.slug}.md`] = [`reference/${symbol.slug}`]
+      const parent = byId.get(symbol.parent)
+      if (parent) linkRoutes[`${directory}/${parent.slug}.md#${symbol.name}`] = [`reference/${symbol.slug}`]
+    }
+  }
   const guides = new Map((artifact.guides ?? []).map((guide) => [guide.path, guide.content]))
   const files = new Map()
   for (const [sourcePath, guide] of Object.entries(routes)) {
@@ -113,7 +126,6 @@ export function stagedPortGuides(port, artifact) {
     const frontmatter = Object.entries(data).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
     files.set(`${port}/${route}/index.md`, `---\n${frontmatter}\n---\n\n${rewritten.trim()}\n`)
   }
-  const identity = PORTS.find((entry) => entry.slug === port)
   {
     const source = { repo: artifact.source.repository, path: Object.keys(routes)[0], ref: artifact.source.revision }
     const writeIndex = (route, title, body, cards = []) => {

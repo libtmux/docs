@@ -34,7 +34,7 @@ function fixture(slug: 'ruby' | 'lua' | 'kotlin', run: (fixture: {
     write(join(directory, 'package.json'), '{"type":"module"}')
     for (const port of stagedPorts) {
       write(join(directory, `site/src/data/port-guides/${port}.json`), artifact(port, cachedRevision, 'cached'))
-      if (port === 'ruby' || port === 'lua') write(join(directory, `site/src/data/api/${port}.json`), JSON.stringify({ revision: cachedRevision }))
+      write(join(directory, `site/src/data/api/${port}.json`), JSON.stringify({ revision: cachedRevision, symbols: [] }))
     }
     let revision = 'b'.repeat(40)
     if (slug === 'kotlin') {
