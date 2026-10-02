@@ -2,17 +2,20 @@
 import SymbolName from './SymbolName.astro'
 
 interface Props {
-  /** The exact public identity, preserved when its disclosure is closed. */
+  /** The exact public identity copied by the adjacent button. */
   name: string
+  namespace?: string
+  label?: string
+  href?: string
 }
-const { name } = Astro.props as Props
+const { name, namespace, label = 'Module', href } = Astro.props as Props
 ---
 <div class="api-qualified-name" data-pagefind-ignore="all">
-  <details>
-    <summary>Full name</summary>
-    <code class="api-qualified-full"><SymbolName name={name} /></code>
-  </details>
-  <button type="button" class="api-copy-name" data-api-copy-name={name} aria-label="Copy fully qualified name" title="Copy fully qualified name">
+  {namespace && <span class="api-qualified-label">{label}</span>}
+  <code class="api-qualified-namespace">
+    {href ? <a href={href}><SymbolName name={namespace ?? name} /></a> : <SymbolName name={namespace ?? name} />}
+  </code>
+  <button type="button" class="api-copy-name" data-api-copy-name={name} aria-label="Copy fully qualified name" title={`Copy ${name}`}>
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
       <rect x="8" y="8" width="12" height="13" rx="2" />
       <path d="M15 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3" />
@@ -22,15 +25,18 @@ const { name } = Astro.props as Props
 </div>
 <noscript><style>.api-copy-name { display: none; }</style></noscript>
 <script>
+  const dismissals = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>()
   document.addEventListener('click', async (event) => {
     const button = (event.target as Element).closest<HTMLButtonElement>('[data-api-copy-name]')
     const status = button?.parentElement?.querySelector<HTMLElement>('[role="status"]')
     if (!button || !status) return
+    clearTimeout(dismissals.get(status))
     try {
       await navigator.clipboard.writeText(button.dataset.apiCopyName!)
       status.textContent = 'Name copied'
     } catch {
-      status.textContent = 'Copy failed. Expand and select the full name.'
+      status.textContent = `Copy failed. Select and copy: ${button.dataset.apiCopyName}`
     }
+    dismissals.set(status, setTimeout(() => { status.textContent = '' }, 5000))
   })
 </script>

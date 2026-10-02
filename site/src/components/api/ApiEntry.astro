@@ -259,7 +259,7 @@ const hasBody =
   ]}
 >
   <dt
-    class="sig sig-object py gp-sphinx-api-header"
+    class:list={['sig sig-object py gp-sphinx-api-header', nativeSignatures && 'api-native-header']}
     id={anchorId ?? anchor}
     data-symbol-id={symbol.id}
     data-domain={domain}
@@ -274,7 +274,7 @@ const hasBody =
       <div class="gp-sphinx-api-layout-left">
         <span class="gp-sphinx-api-signature">
           {nativeSignatures ? symbol.signatures.map((sig) => (
-            <span class="api-native-signature"><ApiType type={sig.raw ?? symbol.name} index={index} context={symbol} /></span>
+            <span class="api-native-signature"><ApiType type={sig.raw ?? symbol.name} index={index} context={symbol} signature={sig} /></span>
           )) : <>
           {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
           {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname"><span class="pre">{symbol.name}</span></span>
@@ -433,7 +433,7 @@ const hasBody =
       <div class="gp-sphinx-api-layout-bottom">
         <span class="gp-sphinx-api-signature">
           {nativeSignatures ? symbol.signatures.map((sig) => (
-            <span class="api-native-signature"><ApiType type={sig.raw ?? symbol.name} index={index} context={symbol} /></span>
+            <span class="api-native-signature"><ApiType type={sig.raw ?? symbol.name} index={index} context={symbol} signature={sig} /></span>
           )) : <>
           {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
           {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname"><span class="pre">{symbol.name}</span></span>

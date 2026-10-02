@@ -53,7 +53,7 @@ const owner = model.symbols.find((symbol) => symbol.id === 'pane.Pane.capture')
 ---
 <Reference model={model} owner={owner} />
 `)
-for (const port of ['py', 'kotlin', 'lua']) {
+for (const port of ['py', 'kotlin', 'scala', 'lua']) {
   const directory = join(root, `src/pages/${port}/latest/reference`)
   mkdirSync(directory, { recursive: true })
   writeFileSync(join(directory, '[...slug].astro'), `---
@@ -143,6 +143,14 @@ async function checkReferenceAndHeroes(browser, base) {
       await page.setViewportSize({ width, height: 900 })
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
         `Kotlin parameter and exception fields fit at ${width}px`)
+      const namespace = await page.locator('.api-qualified-namespace').boundingBox()
+      const copy = await page.getByRole('button', { name: 'Copy fully qualified name' }).boundingBox()
+      const row = await page.locator('.api-qualified-name').boundingBox()
+      const title = await page.locator('.api-reference-heading h1').boundingBox()
+      assert(Math.abs(namespace.y + namespace.height / 2 - copy.y - copy.height / 2) < 2,
+        `Package and copy control share a center line at ${width}px`)
+      assert(row.height <= 32 && row.y - title.y - title.height <= 8,
+        `Package stays in one compact row beneath the heading at ${width}px`)
     }
     for (const name of ['config', 'defaultTimeout', 'toKotlinDuration', 'Duration', 'CoroutineScope', 'StateFlow']) {
       assert(await page.locator('main a').filter({ hasText: new RegExp(`^${name}$`) }).count() > 0,
@@ -150,9 +158,8 @@ async function checkReferenceAndHeroes(browser, base) {
     }
     console.log('Native API: Kotlin call-chain links and parameter layout pass at 1440/768/390px')
     const qualified = page.locator('.api-qualified-name')
-    await qualified.locator('summary').click()
     const fullName = 'io.github.libtmux.kotlin.Server.liveState'
-    assert.equal(await qualified.locator('.api-qualified-full').textContent(), fullName)
+    assert.equal((await qualified.locator('.api-qualified-namespace').textContent()).trim(), 'io.github.libtmux.kotlin')
     for (const reject of [false, true]) {
       await page.evaluate((reject) => {
         Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
@@ -169,7 +176,7 @@ async function checkReferenceAndHeroes(browser, base) {
     }
     const anchors = await page.locator('[id]').evaluateAll((elements) => elements.map((element) => element.id))
     assert.equal(anchors.filter((id) => id === fullName).length, 1, 'Page title and declaration have distinct anchors')
-    console.log('Qualified names: disclosure, exact copied identity and clipboard refusal pass')
+    console.log('Qualified names: compact package row, exact copied identity and clipboard refusal pass')
     await page.setViewportSize({ width: 1440, height: 900 })
     const contents = page.getByRole('navigation', { name: 'On this page', exact: true })
     assert(await contents.isVisible(), 'Wide reference pages show section navigation')
@@ -190,6 +197,28 @@ async function checkReferenceAndHeroes(browser, base) {
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Reference columns fit at ${width}px`)
     }
     console.log('Reference contents: section targets, active links, related declarations and grouped member order pass')
+    await page.goto(`${base}/scala/latest/reference/io-github-libtmux-scaladsl-server-windows/`)
+    const signature = page.locator('dt.api-native-header').first()
+    const links = await signature.locator('.api-native-signature a').evaluateAll((elements) =>
+      elements.map((element) => ({ name: element.textContent, href: element.getAttribute('href') })))
+    for (const name of ['def', 'extension', 'self', 'windows', 'id', 'expression']) {
+      assert(!links.some((link) => link.name === name), `${name} is a declaration token, not an API link`)
+    }
+    for (const name of ['Server', 'Window', 'io.github.libtmux.WindowId']) {
+      assert(links.some((link) => link.name === name), `Scala signature links ${name}`)
+    }
+    assert(links.filter((link) => link.name === 'Vector').every((link) =>
+      link.href === 'https://www.scala-lang.org/api/3.x/scala/collection/immutable/Vector.html'),
+    'Scala Vector links to its own collection type')
+    for (const width of [1440, 768, 390]) {
+      await page.setViewportSize({ width, height: 900 })
+      const header = await signature.boundingBox()
+      const code = await signature.locator('.gp-sphinx-api-layout-left:visible, .gp-sphinx-api-layout-bottom:visible').boundingBox()
+      assert(code.width >= header.width - 36, `Scala overloads use the signature width at ${width}px`)
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+        `Scala overloads fit at ${width}px`)
+    }
+    console.log('Scala overloads: only API symbols link, Vector resolves to Scala, and badges leave the full code width')
   } finally {
     await page.close()
   }
