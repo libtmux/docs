@@ -2,9 +2,15 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, expect, it, vi } from 'vitest'
+import { fromHtml } from 'hast-util-from-html'
 import { markdownTwins, writeMcpExports } from '../src/integrations/markdown-twins'
 import { markdownDocument } from '../src/lib/markdown-twins'
 import { MCP_REFERENCE, mcpReferenceRoutes } from '../src/lib/mcp-reference'
+
+vi.mock('hast-util-from-html', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('hast-util-from-html')>()
+  return { ...actual, fromHtml: vi.fn(actual.fromHtml) }
+})
 
 afterEach(() => vi.unstubAllEnvs())
 
@@ -86,6 +92,51 @@ it('keeps repeated export generation byte-identical', () => {
     const before = files.map((file) => readFileSync(join(out, file), 'utf8'))
     writeMcpExports(out, base, routes)
     expect(files.map((file) => readFileSync(join(out, file), 'utf8'))).toEqual(before)
+  })
+})
+
+it('parses each MCP twin once while preserving every final export byte', () => {
+  let expected: string[] = []
+  for (const legacyOrder of [true, false]) fixture((out, routes) => {
+    // A translated root runs only the generic pass, reproducing the old first pass.
+    vi.stubEnv('LIBTMUX_DOCS_PORT', legacyOrder ? '' : 'go')
+    vi.stubEnv('LIBTMUX_DOCS_LOCALE', legacyOrder ? 'ja' : 'en')
+    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'v9-proof')
+    writeFileSync(join(out, 'ordinary.html'), `<html><head>
+<link rel="canonical" href="https://libtmux.org${base}ordinary/">
+<link rel="alternate" type="text/markdown" data-twin="rendered" href="${base}ordinary.md">
+</head><body><main><h1>Ordinary page</h1><p>Keep this content.</p></main></body></html>`)
+    const hooks = markdownTwins().hooks
+    ;(hooks['astro:config:done'] as (value: unknown) => void)({ config: { base } })
+    vi.mocked(fromHtml).mockClear()
+    ;(hooks['astro:build:done'] as (value: unknown) => void)({ dir: new URL(`file://${out}/`), logger: { info() {} } })
+    if (legacyOrder) writeMcpExports(out, base, routes)
+    const files = ['docs.json', 'llms.txt', 'llms-full.txt', 'ordinary.md',
+      ...routes.map((route) => `${route.path}.md`)]
+    const actual = files.map((file) => readFileSync(join(out, file), 'utf8'))
+    if (legacyOrder) {
+      expected = actual
+      expect(fromHtml).toHaveBeenCalledTimes(routes.length * 2 + 1)
+    } else {
+      expect(actual).toEqual(expected)
+      expect(fromHtml).toHaveBeenCalledTimes(routes.length + 1)
+    }
+  })
+})
+
+it('still rejects a missing ordinary source twin after MCP exports are written', () => {
+  fixture((out) => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'go')
+    vi.stubEnv('LIBTMUX_DOCS_LOCALE', 'en')
+    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'v9-proof')
+    writeFileSync(join(out, 'missing.html'), `<html><head>
+<link rel="alternate" type="text/markdown" data-twin="source" href="${base}missing.md">
+</head><body><main>Missing source twin</main></body></html>`)
+    const hooks = markdownTwins().hooks
+    ;(hooks['astro:config:done'] as (value: unknown) => void)({ config: { base } })
+    expect(() => (hooks['astro:build:done'] as (value: unknown) => void)({
+      dir: new URL(`file://${out}/`), logger: { info() {} },
+    })).toThrow(/missing\.html.*missing\.md/)
   })
 })
 
