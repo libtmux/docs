@@ -82,6 +82,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   for (const ex of symbol.doc?.examples ?? []) {
     out.push('## Example', '')
     if (ex.intro) out.push(ex.intro, '')
+    if (ex.sourceUrl) out.push(`[Source example](${ex.sourceUrl}).`, '')
     out.push('```' + (ex.lang ?? ''), ex.code, '```', '')
   }
 

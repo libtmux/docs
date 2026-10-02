@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 import go from '../src/data/api/go.json'
 import receipt from './fixtures/api-examples.json'
+import { symbolMarkdown } from '../src/lib/symbol-markdown'
 
 const model = go as unknown as ApiModel
 const hash = (code: string) => createHash('sha256').update(code).digest('hex')
@@ -20,7 +21,9 @@ describe('verified complete API programs', () => {
     }
     expect(blocks.filter((block) => block.lang === 'console')
       .map((block) => block.code.replace(/^\$ /gm, '').trim())).toEqual(example.shellRecipe)
-    expect(blocks[2].intro).toContain(`/blob/${example.sourceRevision}/tmux/`)
+    expect(blocks[2].sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${example.sourceFile}`)
+    expect(blocks[2].intro).not.toContain('[source example](')
+    expect(symbolMarkdown({ model, symbol })).toContain(`[Source example](${blocks[2].sourceUrl}).`)
     expect(blocks[2].code).toMatch(/^package tmux_test\n/)
     expect(blocks[2].code).toMatch(/func Example\w+_complete\(\)/)
     expect(blocks[2].code).toContain('// Output:')

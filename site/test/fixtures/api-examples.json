@@ -33,7 +33,8 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket."
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_server_sessions_example_test.go"
     },
     {
       "port": "go",
@@ -68,7 +69,8 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket."
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_server_windows_example_test.go"
     },
     {
       "port": "go",
@@ -103,7 +105,8 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket."
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_server_panes_example_test.go"
     },
     {
       "port": "go",
@@ -138,7 +141,8 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket."
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_pane_capture_example_test.go"
     },
     {
       "port": "go",
@@ -173,7 +177,8 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket."
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_pane_send_keys_example_test.go"
     },
     {
       "port": "go",
@@ -208,7 +213,8 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket."
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_server_search_sessions_example_test.go"
     },
     {
       "port": "go",
@@ -243,7 +249,8 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket."
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_new_server_example_test.go"
     },
     {
       "port": "go",
@@ -278,7 +285,8 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket."
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_server_new_session_example_test.go"
     },
     {
       "port": "go",
@@ -313,7 +321,8 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket."
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_session_new_window_example_test.go"
     }
   ]
 }

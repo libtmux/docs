@@ -98,7 +98,8 @@ export function attachCompleteGoExamples(
       },
       {
         lang: 'go',
-        intro: `Save this complete [source example](https://github.com/${source.repo}/blob/${source.revision}/${example.file}) as example_test.go. It creates a private temporary socket and stops its server before removing the directory. Cleanup failure fails the example and retains the socket directory.`,
+        intro: 'Save this complete example as example_test.go. It creates a private temporary socket and stops its server before removing the directory. Cleanup failure fails the example and retains the socket directory.',
+        sourceUrl: `https://github.com/${source.repo}/blob/${source.revision}/${example.file}`,
         code: example.code,
       },
       {

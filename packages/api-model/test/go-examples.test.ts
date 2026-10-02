@@ -39,7 +39,8 @@ describe('complete native Go examples', () => {
     expect(blocks[1].code).toBe(`$ git clone https://github.com/libtmux/libtmux-go.git libtmux-source && \\\n  git -C libtmux-source checkout ${source.revision}\n`)
     expect(blocks[2].code).toContain('replace github.com/libtmux/libtmux-go => ./libtmux-source')
     expect(blocks[3].code).toBe(code)
-    expect(blocks[3].intro).toContain(`/blob/${source.revision}/${file}`)
+    expect(blocks[3].sourceUrl).toBe(`https://github.com/${source.repo}/blob/${source.revision}/${file}`)
+    expect(blocks[3].intro).not.toContain('[source example](')
     expect(blocks[4].code).toBe('$ GOWORK=off go test -count=1 -v example_test.go\n')
   })
 
