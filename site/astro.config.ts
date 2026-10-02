@@ -18,6 +18,7 @@ import { rehypeCodeTabs } from './src/plugins/rehype-code-tabs.mjs'
 import { danglingReport } from './src/integrations/dangling-report'
 import { inventory } from './src/integrations/inventory'
 import { rehypeApiLinks } from './src/plugins/rehype-api-links'
+import { rehypeRowAnchors } from './src/plugins/rehype-row-anchors'
 import { PORT_BY_SLUG, PORTS } from './src/lib/ports.ts'
 import { workspaceRedirectPath } from './src/lib/docs-paths.ts'
 
@@ -309,14 +310,13 @@ export default defineConfig({
         // are untouched by both, and running last keeps its <a> wrappers out
         // of the heading-anchor pass.
         rehypeApiLinks,
+        rehypeRowAnchors,
         [
           rehypeAutolinkHeadings,
           {
             behavior: 'append',
             properties: { className: ['anchor-link'], ariaLabel: 'Link to this section' },
-            content: [
-              { type: 'element', tagName: 'span', properties: { className: ['sr-only'] }, children: [{ type: 'text', value: 'Link to section' }] },
-            ],
+            content: [{ type: 'text', value: '¶' }],
           },
         ],
       ],

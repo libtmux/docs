@@ -232,6 +232,41 @@ html {
   scroll-margin-top: calc(var(--topnav-height, 3rem) + 1.5rem);
 }
 
+.anchored-entry:target, .prose :is(h2, h3, h4, h5, h6):is(:target, :has(> .section-anchor-alias:target)) {
+  background: color-mix(in oklab, var(--theme-primary) 12%, transparent);
+}
+.anchored-entry:target { box-shadow: inset 3px 0 var(--theme-primary); }
+
+.prose .row-label-link { position: relative; display: inline-block; color: inherit; text-decoration: none; }
+.prose .row-label-link:hover { text-decoration: underline; }
+.prose .row-label-link::after {
+  content: '¶';
+  position: absolute;
+  left: calc(100% + .25rem);
+  top: 0;
+  font-weight: 400;
+  opacity: 0;
+}
+.anchored-entry:is(:hover, :target, :focus-within) .row-label-link::after { opacity: 1; }
+.section-anchor-alias { position: absolute; }
+.prose .row-anchor-cell { position: relative; }
+.prose .row-anchor-link {
+  /* Fit the existing cell padding without widening columns or wrapping labels. */
+  position: absolute;
+  inset-inline-end: 0;
+  top: .45rem;
+  width: .5rem;
+  font-size: .75rem;
+  font-weight: 400;
+  text-decoration: none;
+  opacity: .65;
+}
+.prose .row-anchor-link:hover, .prose .row-anchor-link:focus-visible { opacity: 1; }
+.prose :is(.row-anchor-link, .row-label-link):focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 3px;
+}
+
 /*
  * Top-nav chips: the port switcher, Reference, MCP and Search.
  *
@@ -554,6 +589,8 @@ html[data-theme="purple"][data-theme-mode="dark"] {
   .prose h6:hover .anchor-link {
     @apply opacity-100;
   }
+
+  .prose :target > .anchor-link { @apply opacity-100; }
 
   /* Anchor icon styling */
   .anchor-icon {
