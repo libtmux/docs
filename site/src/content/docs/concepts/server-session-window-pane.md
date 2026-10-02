@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift, ruby, lua]
+supportedPorts: [py, ts, rs, java, dotnet, cxx, swift, ruby, lua]
 title: Server, session, window, pane
 description: The object hierarchy every libtmux port mirrors from tmux itself, and the client that sits outside it.
 sidebar:
@@ -216,4 +216,14 @@ Calls that contact tmux accept a context for cancellation and deadlines.
 Cancelling a mutation does not prove that tmux never received it; check the
 resulting state before retrying. [Errors and exceptions](/topics/errors-and-exceptions/)
 covers failure handling.
+<!-- /port -->
+
+<!-- port:root -->
+## tmux command reference
+
+Read the tmux command references for [list-sessions](/tmux/latest/reference/list-sessions/),
+[list-windows](/tmux/latest/reference/list-windows/), and
+[list-panes](/tmux/latest/reference/list-panes/). The
+[target syntax](/tmux/latest/reference/manual/#COMMANDS) explains IDs, names,
+and indexes.
 <!-- /port -->

@@ -140,5 +140,10 @@ socket and leaves that server running:
 - [Capturing output](../capturing-output/) reads a pane's screen and history.
 - [Socket and servers](/topics/socket-and-servers/) covers server selection.
 
+The [attach-session reference](/tmux/latest/reference/attach-session/) covers
+attachment flags. See [has-session](/tmux/latest/reference/has-session/) for
+existence checks and the [global options](/tmux/latest/reference/manual/#DESCRIPTION)
+for selecting a server socket.
+
 The [tmux manual source](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1)
 describes `new-session`, `attach-session`, socket selection, and targeting.

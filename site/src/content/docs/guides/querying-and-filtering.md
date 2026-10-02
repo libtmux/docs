@@ -116,5 +116,10 @@ absence:
 
 ## tmux reference
 
+See [has-session](/tmux/latest/reference/has-session/),
+[list-panes](/tmux/latest/reference/list-panes/), and the
+[target syntax](/tmux/latest/reference/manual/#COMMANDS). The version selector
+shows the flags supported by your installed tmux release.
+
 The [tmux manual](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1)
 documents these commands and their flags.

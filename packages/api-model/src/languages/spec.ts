@@ -244,6 +244,7 @@ function signatureOf(node: Node, spec: LanguageSpec): Signature {
 interface Ctx {
   file: string
   module: string
+  namespace?: string
   symbols: ApiSymbol[]
   byId: Map<string, ApiSymbol>
   spec: LanguageSpec
@@ -251,6 +252,11 @@ interface Ctx {
 }
 
 function emit(ctx: Ctx, sym: ApiSymbol): void {
+  if (ctx.namespace !== undefined) {
+    const owner = sym.parent ? ctx.byId.get(sym.parent)?.qualifiedName : ctx.namespace
+    sym.qualifiedName = owner ? `${owner}.${sym.name}` : sym.name
+    sym.namespace = ctx.namespace
+  }
   const existing = ctx.byId.get(sym.id)
   if (!existing) {
     ctx.byId.set(sym.id, sym)
@@ -403,9 +409,18 @@ export async function extractWithSpec(
   const parser = await parserFor(spec.grammar)
   const tree = parser.parse(readFileSync(file, 'utf8'))
   if (!tree) return []
+  const packageName = spec.grammar === 'java'
+    ? tree.rootNode.namedChildren.find((node) => node?.type === 'package_declaration')
+      ?.namedChildren.find((node) => node?.type === 'scoped_identifier' || node?.type === 'identifier')
+    : undefined
   const ctx: Ctx = {
     file,
     module,
+    // Java packages come from declarations, not source paths or file names.
+    namespace: spec.grammar === 'java'
+      ? packageName?.type === 'identifier' ? packageName.text
+        : packageName?.descendantsOfType('identifier').flatMap((node) => node ? [node.text] : []).join('.') ?? ''
+      : undefined,
     symbols: [],
     byId: new Map(),
     spec,

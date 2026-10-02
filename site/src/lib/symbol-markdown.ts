@@ -1,6 +1,7 @@
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { moduleOf } from '@libtmux/api-model'
+import { moduleOf, qualifiedNameOf } from '@libtmux/api-model'
 import { PORT_NAME } from './api-models'
+import { tmuxCommandsFor, tmuxReferenceUrl } from './tmux-reference'
 
 /**
  * A symbol's page as Markdown.
@@ -31,12 +32,12 @@ function signatureLine(symbol: ApiSymbol): string | undefined {
     .map((p) => `${p.name}${p.type ? `: ${p.type}` : ''}${p.default ? ` = ${p.default}` : ''}`)
     .join(', ')
   const returns = sig.returns ? ` -> ${sig.returns}` : ''
-  return `${symbol.publicId ?? symbol.id}(${params})${returns}`
+  return `${qualifiedNameOf(symbol)}(${params})${returns}`
 }
 
 export function symbolMarkdown(ctx: MarkdownContext): string {
   const { model, symbol } = ctx
-  const id = symbol.publicId ?? symbol.id
+  const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
 
   // The definition block, in the same order the page shows it.
@@ -50,6 +51,9 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (symbol.exportedFrom) facts.push(`- **Exported from:** ${symbol.exportedFrom}`)
   if (ctx.canonical) facts.push(`- **Page:** ${ctx.canonical}`)
   if (facts.length) out.push(...facts, '')
+  for (const command of tmuxCommandsFor(model.port, symbol.publicId ?? symbol.id)) {
+    out.push(`tmux command: [\`${command.name}\`](${tmuxReferenceUrl('latest', command.name)})`, '')
+  }
   if (symbol.apiScope === 'supporting') {
     out.push('This type appears in public signatures. It is not a package entry point.', '')
   }

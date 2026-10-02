@@ -1,6 +1,8 @@
 import { select } from 'astro-expressive-code/hast'
 import githubDark from 'shiki/themes/github-dark.mjs'
 import githubLight from 'shiki/themes/github-light.mjs'
+import { tmuxUsageColors } from '../lib/tmux-usage.mjs'
+import { tmuxShellColors } from '../lib/tmux-shell.mjs'
 
 /**
  * Shell session prompts: coloured, unselectable, and left out of copied text.
@@ -83,6 +85,8 @@ export function shellThemes() {
     ...theme,
     tokenColors: [
       ...theme.tokenColors,
+      ...tmuxUsageColors(theme.type === 'dark'),
+      ...tmuxShellColors(theme.type === 'dark'),
       {
         scope: [
           'source.shell entity.name.command',

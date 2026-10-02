@@ -2200,6 +2200,20 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.ClientFilter",
+   "page": "/go/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.CommandError.Is",
+   "page": "/go/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.CommandError.Is",
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
@@ -2221,6 +2235,13 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.ErrInvalidFilter",
+   "page": "/go/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.ErrNoServer",
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
@@ -2235,10 +2256,24 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.ErrSnapshotAmbiguous",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.FromEnvError",
    "page": "/topics/environment/",
    "title": "Environment",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewServer",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "go",
@@ -2382,6 +2417,13 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.PaneFilter",
+   "page": "/go/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.PaneFilter.Predicate",
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
@@ -2424,6 +2466,13 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.Ptr",
+   "page": "/go/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.SendKeysRequest",
    "page": "/go/latest/guides/sending-keys/",
    "title": "Sending keys",
@@ -2435,6 +2484,13 @@
    "page": "/go/latest/guides/sending-keys/",
    "title": "Sending keys",
    "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "go",
@@ -2487,6 +2543,20 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.Server.NewSession",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.Panes",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.Server.SearchPanes",
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
@@ -2502,9 +2572,23 @@
   {
    "port": "go",
    "symbol": "tmux.Server.SearchSessions",
+   "page": "/go/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.SearchSessions",
    "page": "/go/latest/guides/querying-and-filtering/",
    "title": "Querying and filtering",
    "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.Sessions",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "go",
@@ -2536,6 +2620,13 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.Server.Snapshot",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.Server.UnsetEnvironment",
    "page": "/topics/environment/",
    "title": "Environment",
@@ -2547,6 +2638,13 @@
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.Windows",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "go",
@@ -2582,6 +2680,13 @@
    "page": "/topics/options-and-hooks/",
    "title": "Options and hooks",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Session.NewWindow",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
   },
   {
    "port": "go",
@@ -2656,6 +2761,20 @@
   {
    "port": "go",
    "symbol": "tmux.Session.Windows",
+   "page": "/go/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Session.Windows",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Session.Windows",
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
@@ -2669,6 +2788,13 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.SessionFilter",
+   "page": "/go/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.SessionFromEnv",
    "page": "/topics/environment/",
    "title": "Environment",
@@ -2676,8 +2802,43 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.Snapshot.Clients",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Snapshot.WindowByID",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Snapshot.Windows",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Snapshot.WindowsByID",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.TmuxFilter",
    "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.TmuxFilter",
+   "page": "/go/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },
@@ -2726,6 +2887,13 @@
   {
    "port": "go",
    "symbol": "tmux.Window.Panes",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Window.Panes",
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
@@ -2746,6 +2914,13 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.Window.SplitPane",
+   "page": "/go/latest/concepts/server-session-window-pane/",
+   "title": "Server, session, window, pane",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.Window.UnsetOption",
    "page": "/topics/options-and-hooks/",
    "title": "Options and hooks",
@@ -2753,10 +2928,31 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.WindowFilter",
+   "page": "/go/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.WindowFromEnv",
    "page": "/topics/environment/",
    "title": "Environment",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.WindowRel",
+   "page": "/go/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmuxq.ErrMultipleMatches",
+   "page": "/go/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "go",
@@ -2768,9 +2964,23 @@
   {
    "port": "go",
    "symbol": "tmuxq.ErrNoMatch",
+   "page": "/go/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmuxq.ErrNoMatch",
    "page": "/go/latest/guides/querying-and-filtering/",
    "title": "Querying and filtering",
    "section": "guides"
+  },
+  {
+   "port": "go",
+   "symbol": "tmuxq.ExactlyOne",
+   "page": "/go/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "go",
@@ -2781,8 +2991,22 @@
   },
   {
    "port": "go",
+   "symbol": "tmuxq.First",
+   "page": "/go/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
    "symbol": "tmuxq.Matching",
    "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmuxq.Matching",
+   "page": "/go/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
   },

@@ -1,6 +1,6 @@
 ---
-import { parameterId, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
-import { mentionsOf, referenceAlternatives } from '../../lib/api-models'
+import { parameterId, qualifiedNameOf, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
+import { API_MODELS, mentionsOf, referenceAlternatives } from '../../lib/api-models'
 import { withRoot } from '../../lib/site-root'
 import { Code } from 'astro-expressive-code/components'
 import { codeLang } from '../../lib/highlight'
@@ -11,6 +11,7 @@ import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
 import type { AsideType } from '../../lib/aside'
 import { apiEntryFields } from '../../lib/api-sections'
+import { tmuxCommandsFor, tmuxReferenceUrl } from '../../lib/tmux-reference'
 
 /**
  * One documented symbol, in the shape gp-sphinx's stylesheet expects.
@@ -94,7 +95,11 @@ const absentParts = (text?: string) => (text ?? '').split(/`([^`]+)`/)
 
 const elsewhere = port ? (alternativesFor?.(symbol) ?? referenceAlternatives(port, anchor)).map((group) => ({
   ...group,
-  ports: group.ports.filter((entry) => entry.port !== port),
+  ports: group.ports.filter((entry) => entry.port !== port).map((entry) => {
+    const target = entry.publicId ? API_MODELS[entry.port]?.symbols.find((symbol) =>
+      (symbol.publicId ?? symbol.id) === entry.publicId) : undefined
+    return { ...entry, qualifiedName: target ? qualifiedNameOf(target) : entry.publicId }
+  }),
 })) : []
 
 const inheritedHref = symbol.inheritedFrom
@@ -129,8 +134,9 @@ const keyword = heading ? KEYWORD[kind] : undefined
  * `libtmux.` before `Server`, dimmed — which is what tells a reader whether
  * two same-named types on different pages are the same type.
  */
-const prename = heading && anchor.endsWith(symbol.name)
-  ? anchor.slice(0, anchor.length - symbol.name.length)
+const qualifiedName = qualifiedNameOf(symbol)
+const prename = heading && qualifiedName.endsWith(symbol.name)
+  ? qualifiedName.slice(0, qualifiedName.length - symbol.name.length)
   : ''
 
 const bases = heading ? ((symbol as { extends?: string[] }).extends ?? []) : []
@@ -146,6 +152,7 @@ const references = symbol.doc?.references ?? []
  * "explained in a concept" and "used in an example" are different offers.
  */
 const mentions = port ? mentionsOf(port, symbol.id) : []
+const tmuxCommands = port ? tmuxCommandsFor(port, anchor) : []
 const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].sort()
 
 const badges = [
@@ -246,6 +253,7 @@ const hasBody =
   Boolean(symbol.doc?.body) ||
   Boolean(symbol.doc?.deprecated) ||
   hasFields ||
+  tmuxCommands.length > 0 ||
   elsewhere.length > 0
 ---
 
@@ -641,6 +649,13 @@ const hasBody =
       )
     }
 
+    {tmuxCommands.length > 0 && <p class="gp-sphinx-api-mentions">
+      <span class="gp-sphinx-api-mentions-label">tmux command</span>
+      {tmuxCommands.map((command, i) => <>
+        {i > 0 && ', '}
+        <a href={tmuxReferenceUrl('latest', command.name)}><code>{command.name}</code></a>
+      </>)}
+    </p>}
     {
       mentions.length > 0 && (
         <p class="gp-sphinx-api-mentions">
@@ -674,10 +689,10 @@ const hasBody =
                 <span class="api-elsewhere-port">{e.name}</span>
                 {e.href ? (
                   <a href={e.href}>
-                    <code>{e.publicId}</code>
+                    <code>{e.qualifiedName}</code>
                   </a>
                 ) : e.publicId ? (
-                  <code>{e.publicId}</code>
+                  <code>{e.qualifiedName}</code>
                 ) : (
                   <span class="api-elsewhere-absent">
                     {absentParts(e.absent).map((part, i) =>

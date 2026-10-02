@@ -1,6 +1,6 @@
 ---
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { compareMembers, conceptsFor, docSummaryText, memberSignals, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
+import { compareMembers, conceptsFor, docSummaryText, memberSignals, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
 import mentionsData from '../../data/mentions.json'
 import ApiEntry from '../../components/api/ApiEntry.astro'
 import ApiBadge from '../../components/api/ApiBadge.astro'
@@ -25,6 +25,7 @@ import { navTree } from '../../lib/api-tree'
 import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
+import { tmuxReferenceUrl } from '../../lib/tmux-reference'
 
 /**
  * The tree-sitter-extracted reference, rendered through this site's own
@@ -423,10 +424,10 @@ const pageSections: ApiSection[] = owner ? [
 ] : []
 const related = owner ? relatedApiTypes(owner, members, index, declaringType).map((symbol) => ({
   name: ownerNames.get(symbol.name)! > 1 ? `${symbol.name} (${moduleOf(symbol)})` : symbol.name,
-  identity: symbol.publicId ?? symbol.id, kind: symbol.kind, href: hrefFor(symbol),
+  identity: qualifiedNameOf(symbol), kind: symbol.kind, href: hrefFor(symbol),
 })) : []
 const title = owner
-  ? (owner.publicId ?? owner.name)
+  ? qualifiedNameOf(owner)
   : model
     ? `${PORT_NAME[model.port] ?? model.port} API reference`
     : 'API reference'
@@ -442,7 +443,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
         // ``Server`` reached all three as markup.
         owner.doc?.summary
         ? docSummaryText(owner.doc.summary, model?.port)
-        : `${owner.publicId ?? owner.name} API documentation.`
+        : `${qualifiedNameOf(owner)} API documentation.`
       : model
         ? `Types, methods, and functions in libtmux for ${PORT_NAME[model.port] ?? model.port}.`
         : 'Types, methods, and functions in the libtmux language libraries.'
@@ -507,7 +508,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
         </h1>
         {owner && <>
           <ApiQualifiedName
-            name={owner.publicId ?? owner.id}
+            name={qualifiedNameOf(owner)}
             namespace={ownerModule || undefined}
             label={['java', 'kotlin', 'scala', 'go'].includes(model?.port ?? '') ? 'Package'
               : ['dotnet', 'fsharp', 'cxx'].includes(model?.port ?? '') ? 'Namespace' : 'Module'}
@@ -522,6 +523,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
       {
         !owner && !model && (
           <>
+            <p class="mt-3"><a href={tmuxReferenceUrl()}>tmux CLI reference</a>: command flags and behavior by tmux version.</p>
             <p class="mt-3 max-w-2xl">
               Choose a language to browse its public types, functions, and
               members, with signatures, examples, and links to related guides.
@@ -617,7 +619,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
                         <p class="mt-1 text-xs opacity-70">
                           {model.port === 'scala'
                             ? o.id.includes('.cats.') ? 'Cats Effect' : o.id.includes('.ox.') ? 'Ox' : 'Direct API'
-                            : (o.publicId ?? o.id).slice(0, -(o.name.length + 1))}
+                            : qualifiedNameOf(o).slice(0, -(o.name.length + 1))}
                         </p>
                       )}
                       {o.doc?.summary && (

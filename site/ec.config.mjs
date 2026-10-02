@@ -1,5 +1,8 @@
 import { defineEcConfig } from 'astro-expressive-code'
 import { shellPrompt, shellThemes } from './src/plugins/ec-shell-prompt.mjs'
+import { tmuxUsage } from './src/lib/tmux-usage.mjs'
+import { tmuxShell } from './src/lib/tmux-shell.mjs'
+import bash from 'shiki/langs/bash.mjs'
 
 /**
  * Expressive Code options live here rather than inline in astro.config.ts
@@ -14,7 +17,7 @@ export default defineEcConfig({
   tabWidth: 0,
   themes: shellThemes(),
   plugins: [shellPrompt()],
-  shiki: { langAlias: { sbt: 'scala' } },
+  shiki: { langs: [tmuxUsage, ...bash, tmuxShell], langAlias: { sbt: 'scala' } },
   useDarkModeMediaQuery: false,
   themeCssSelector: (theme) =>
     theme.name === 'github-light'

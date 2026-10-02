@@ -621,6 +621,112 @@
         ]
       ],
       "verificationScope": "Each displayed program runs independently with its displayed project, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
+    },
+    {
+      "port": "go",
+      "page": "ports/go/concepts/server-session-window-pane",
+      "sourceRevision": "bb06e26e116e941813ca40bf45e7e3a47d38f52a",
+      "runtime": "Go 1.26.8",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "go.mod",
+          "sha256": "f0ee6f28f1960092884e9a6f29e5d411e77e69737d53c551c115de97eb4cc0bb"
+        },
+        {
+          "name": "run.sh",
+          "sha256": "c198606b019bc0d077c83c90032b6e690ed1901c718ddd0cbe8f88e0a077ec40"
+        },
+        {
+          "name": "Create.go",
+          "sha256": "a5b7ae2cd453887395709de50ff1ae6ccb9318ebbaa88ccf874b789a851ed3d9"
+        },
+        {
+          "name": "Snapshot.go",
+          "sha256": "c085f116c805cde587eebe0ad9d9189798b9191bab8b6f1ae402396a1fd17c03"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-go libtmux-source &&\n  git -C libtmux-source checkout bb06e26e116e941813ca40bf45e7e3a47d38f52a &&\n  GOWORK=off go mod tidy",
+        "sh run.sh env GOWORK=off go run Create.go",
+        "sh run.sh env GOWORK=off go run Snapshot.go"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "server: 3 sessions, 4 windows, 5 panes",
+          "tools: 2 windows, 3 panes"
+        ],
+        [
+          "work-one: editor, 1 pane",
+          "work-two: logs, 1 pane",
+          "captured: editor; returned: renamed; fresh: renamed"
+        ]
+      ],
+      "verificationScope": "Each displayed program runs independently with its displayed module, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
+    },
+    {
+      "port": "go",
+      "page": "ports/go/concepts/queries",
+      "sourceRevision": "bb06e26e116e941813ca40bf45e7e3a47d38f52a",
+      "runtime": "Go 1.26.8",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "go.mod",
+          "sha256": "f0ee6f28f1960092884e9a6f29e5d411e77e69737d53c551c115de97eb4cc0bb"
+        },
+        {
+          "name": "run.sh",
+          "sha256": "c198606b019bc0d077c83c90032b6e690ed1901c718ddd0cbe8f88e0a077ec40"
+        },
+        {
+          "name": "Local.go",
+          "sha256": "cdc231b445cf0ed10e74ddc80c486da7beaf46fe115f3b9072edef27a09c5305"
+        },
+        {
+          "name": "Cardinality.go",
+          "sha256": "6ccab5e42c7b50a29147d0066d0d3b3a113a9531449a17bf8dcb4913b63e4f5f"
+        },
+        {
+          "name": "Relations.go",
+          "sha256": "b68f5614cdd02bb8a9835c94fa00c588e2cfe412248a30be9ef1d7f298b3c9a8"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-go libtmux-source &&\n  git -C libtmux-source checkout bb06e26e116e941813ca40bf45e7e3a47d38f52a &&\n  GOWORK=off go mod tidy",
+        "sh run.sh env GOWORK=off go run Local.go",
+        "sh run.sh env GOWORK=off go run Cardinality.go",
+        "sh run.sh env GOWORK=off go run Relations.go"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "prefix: work-one, work-two",
+          "AND and NOT: work-one",
+          "OR: work-one, work-two",
+          "case-sensitive: (no matches)",
+          "invalid regular expression: rejected"
+        ],
+        [
+          "work-one: selected",
+          "missing: absent",
+          "work-: ambiguous"
+        ],
+        [
+          "some editor: work-one",
+          "no editor: work-two",
+          "every window is editor: work-one",
+          "live session listing: window relations not captured"
+        ]
+      ],
+      "verificationScope": "Each displayed program runs independently with its displayed module, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
     }
   ]
 }

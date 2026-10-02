@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, rs, java, dotnet, cxx, swift]
 title: Filtering and queries
 description: How you get from every session on the server to the one pane you mean, and what happens when zero or several match.
 sidebar:
@@ -203,3 +203,12 @@ let matching = try await server.panes().filter(expression)
 [Filtering and querying](/guides/querying-and-filtering/) shows exactly-one
 lookups and their error handling. Do not index the first result until the
 operation has established that a match exists.
+
+<!-- port:root -->
+## tmux command reference
+
+The tmux [list-panes](/tmux/latest/reference/list-panes/) and
+[list-windows](/tmux/latest/reference/list-windows/) references describe native
+format filters. See [formats](/tmux/latest/reference/manual/#FORMATS) for
+expressions and available variables.
+<!-- /port -->

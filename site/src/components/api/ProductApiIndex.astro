@@ -1,5 +1,5 @@
 ---
-import { docSummaryText } from '@libtmux/api-model'
+import { qualifiedNameOf, docSummaryText } from '@libtmux/api-model'
 import { API_MODELS } from '../../lib/api-models'
 import { productApiHref, productApiRoots } from '../../lib/product-api'
 import type { DocProduct } from '../../lib/ports'
@@ -20,7 +20,7 @@ const groups = [
     <h3>{group.title}</h3>
     {group.title === 'Types used in signatures' && <p>These types describe returned values or parameters; they are not package entry points.</p>}
     <dl>{group.symbols.map((symbol) => <>
-        <dt><a href={productApiHref(model, symbol, version)}><code>{symbol.publicId ?? symbol.name}</code></a></dt>
+        <dt><a href={productApiHref(model, symbol, version)}><code>{qualifiedNameOf(symbol)}</code></a></dt>
         {symbol.doc?.summary && <dd>{docSummaryText(symbol.doc.summary, port)}</dd>}
       </>)}</dl>
   </section>)}

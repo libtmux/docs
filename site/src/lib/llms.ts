@@ -3,6 +3,7 @@
  * API references are linked, rather than inlined into the full prose export.
  */
 import { getCollection } from 'astro:content'
+import { qualifiedNameOf } from '@libtmux/api-model'
 import type { CollectionEntry } from 'astro:content'
 import { resolvePortCode } from '../plugins/remark-port-code.mjs'
 import { PORTS, PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, productAvailable, referenceUrl, workspaceOverviewNotice } from './ports.ts'
@@ -15,6 +16,7 @@ import type { Locale } from '../i18n/locales.ts'
 import { PORT_ROOT, SITE_ROOT } from './site-root.ts'
 import { API_MODELS } from './api-models.ts'
 import { productApiHref, productApiRoots } from './product-api.ts'
+import { buildsTmuxReference, tmuxReferenceUrl } from './tmux-reference.ts'
 
 export interface LlmsPage {
   title: string
@@ -93,7 +95,7 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
     && docsPath(entry) === productApiPath(entry.data.product)) {
     const model = API_MODELS[entryPort]
     const symbols = productApiRoots(model, entry.data.product)
-    body += `\n\n## API declarations\n\n${symbols.map((symbol) => `- [${symbol.publicId ?? symbol.name}](${origin}${productApiHref(model, symbol, version)})`).join('\n')}\n`
+    body += `\n\n## API declarations\n\n${symbols.map((symbol) => `- [${qualifiedNameOf(symbol)}](${origin}${productApiHref(model, symbol, version)})`).join('\n')}\n`
     if (entry.data.product === 'mcp') body += `\n[Protocol catalog](${origin}${portPageUrl(PORT_BY_SLUG[entryPort], version, 'mcp/tools').replace(/\/$/, '.json')})\n`
   }
   // A locale's landing entry routes to '', which is the root itself.
@@ -153,6 +155,7 @@ export function llmsHeader(): { title: string; blurb: string } {
  * ecosystem host, so only the former needs the origin.
  */
 export function referenceLine(origin: string): string | null {
+  if (buildsTmuxReference()) return `- [tmux CLI reference](${origin}${tmuxReferenceUrl()}): versioned command syntax and the tmux manual.`
   const port = process.env.LIBTMUX_DOCS_PORT || undefined
   const p = port ? PORT_BY_SLUG[port] : undefined
   if (!p || !hasReference(p)) return null

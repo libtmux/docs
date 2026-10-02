@@ -100,5 +100,10 @@ programs below include imports, project files, setup, error handling and cleanup
 
 ## tmux reference
 
+Read the command references for [new-session](/tmux/latest/reference/new-session/),
+[list-sessions](/tmux/latest/reference/list-sessions/), and
+[kill-server](/tmux/latest/reference/kill-server/). Select your tmux version on
+any reference page.
+
 The [tmux manual](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1)
 documents these commands and their flags.
