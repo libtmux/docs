@@ -465,7 +465,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
         </button>
       )}
       <PageToolbar breadcrumbs={breadcrumbs} pagePorts={pagePorts} port={model?.port} />
-      <header class:list={[owner && 'api-reference-heading']}>
+      <header id={owner ? 'api-overview' : undefined} class:list={[owner && 'api-reference-heading']}>
         {owner && <div class="api-reference-eyebrow">
           <ApiBadge label={owner.kind} variant="kind" value={owner.kind} />
           <span>{model && PORT_NAME[model.port]}</span>
@@ -716,7 +716,10 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
                 <span hidden data-pagefind-meta={`file:${owner.source.file}`} />
               )}
               {owner?.kind && <span hidden data-pagefind-meta={`kind:${owner.kind}`} />}
-            <details class="api-source-details" data-pagefind-ignore="all">
+            <details class="api-source-details" data-pagefind-ignore="all" open>
+              <script is:inline>
+                window.__initApiSourceDetails?.(document)
+              </script>
               <summary>Source and package</summary>
               <dl class="api-definition">
               {ownerModule && (
@@ -772,7 +775,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
             </dl>
             </details>
 
-            <section class="api-overview mt-6" id="api-overview" aria-label="Declaration and behavior">
+            <section class="api-overview mt-6" aria-label="Declaration and behavior">
               {/*
                 `heading` for a type, `member` for everything else.
 

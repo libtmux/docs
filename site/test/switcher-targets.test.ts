@@ -62,11 +62,12 @@ describeIfAssembled('switcher targets', () => {
 
   it.each(pages.map((p) => [p]))('%s: port homes and page counterparts resolve', (page) => {
     const html = readFileSync(join(SITE, page), 'utf8')
-    const nav = /<nav[^>]*aria-label="Language"[^>]*>([\s\S]*?)<\/nav>/.exec(html)
+    const nav = /<nav[^>]*aria-label="Documentation destinations"[^>]*>([\s\S]*?)<\/nav>/.exec(html)
     if (!nav) return // not every page carries the switcher
 
     const hrefs = [...nav[1].matchAll(/href="([^"]+)"/g)].map((m) => m[1])
-    expect(hrefs).toHaveLength(PORTS.length)
+    expect(hrefs).toHaveLength(PORTS.length + 1)
+    expect(hrefs[0]).toBe(`/${SITE_PREFIX}tmux/latest/reference/`)
     expect(hrefs.filter((h) => !resolves(h)), `${page}: port links with no page`).toEqual([])
     for (const port of PORTS) {
       const pattern = new RegExp(`/${port.slug}/${port.versionedDocs ? '[^/]+/' : ''}$`)
@@ -109,10 +110,11 @@ describeIfAssembled('switcher targets', () => {
     // being read has.
     for (const page of pages) {
       const html = readFileSync(join(SITE, page), 'utf8')
-      const nav = /<nav[^>]*aria-label="Language"[^>]*>([\s\S]*?)<\/nav>/.exec(html)
+      const nav = /<nav[^>]*aria-label="Documentation destinations"[^>]*>([\s\S]*?)<\/nav>/.exec(html)
       if (!nav) continue
       const bad = [...nav[1].matchAll(/href="([^"]+)"/g)]
         .map((m) => m[1])
+        .slice(1) // The separate tmux link opens its command reference.
         .filter((h) => !/\/[a-z]+(?:\/[^/]+)?\/$/.test(h))
       expect(bad, `${page}: port link deeper than that port's root`).toEqual([])
     }
