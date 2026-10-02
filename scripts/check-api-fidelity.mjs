@@ -34,6 +34,7 @@ if (!root) {
 const { API_MODEL_PORTS: PORT_DEFS } = await import(`file://${join(repoRoot, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
 const HOOKS = [
+  'data-symbol-id',
   'data-domain',
   'data-objtype',
   'data-badge-count',
@@ -83,6 +84,8 @@ function entriesIn(html) {
 
 const failures = []
 const summary = []
+const decode = (value) => value?.replace(/&(amp|lt|gt|quot|#39);/g, (_, entity) =>
+  ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" })[entity])
 
 for (const port of PORTS) {
   const model = JSON.parse(readFileSync(join(repoRoot, `site/src/data/api/${port}.json`), 'utf8'))
@@ -110,9 +113,8 @@ for (const port of PORTS) {
 
     for (const attrs of entriesIn(html)) {
       entries++
-      const id = attrs.id?.replace(/&(amp|lt|gt|quot|#39);/g, (_, entity) =>
-        ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" })[entity])
-      const symbol = symbols.get(id)
+      const id = decode(attrs.id)
+      const symbol = symbols.get(decode(attrs['data-symbol-id']))
       if (!symbol?.inheritedFrom || symbol.source.file) eligible++
       if (symbol && sourceUrl(model, symbol, '/reference/') && attrs['data-has-source'] !== 'true') {
         failures.push(`${port}: ${rel}#${id} omits its known source link`)

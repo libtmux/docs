@@ -53,8 +53,13 @@ interface Props {
    * bases belong here too.
    */
   heading?: boolean
+  /** The page header already carries this summary. */
+  showSummary?: boolean
+  /** Keep the declaration anchor distinct from the page heading. */
+  anchorId?: string
 }
-const { symbol, index, sourceUrl, port, alternativesFor, heading = false, member = false } = Astro.props as Props
+const { symbol, index, sourceUrl, port, alternativesFor, heading = false, member = false,
+  showSummary = true, anchorId } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
 const nativeSignatures = ['kotlin', 'scala', 'fsharp'].includes(port ?? '')
@@ -258,7 +263,8 @@ const hasBody =
 >
   <dt
     class="sig sig-object py gp-sphinx-api-header"
-    id={anchor}
+    id={anchorId ?? anchor}
+    data-symbol-id={symbol.id}
     data-domain={domain}
     data-objtype={kind}
     data-badge-count={String(badges.length)}
@@ -485,7 +491,7 @@ const hasBody =
       )
     }
 
-    {symbol.doc?.summary && (
+    {showSummary && symbol.doc?.summary && (
       <p class="gp-sphinx-api-summary">
         <ApiDoc text={symbol.doc.summary} index={index} context={symbol} />
       </p>
@@ -498,7 +504,7 @@ const hasBody =
 
     {
       examples.length > 0 && (
-        <div class="gp-sphinx-api-examples">
+        <div class="gp-sphinx-api-examples" id={`${anchor}.examples`}>
           <p class="rubric">Examples</p>
           {examples.map((ex) => (
             <>

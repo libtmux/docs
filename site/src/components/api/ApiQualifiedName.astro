@@ -1,0 +1,36 @@
+---
+import SymbolName from './SymbolName.astro'
+
+interface Props {
+  /** The exact public identity, preserved when its disclosure is closed. */
+  name: string
+}
+const { name } = Astro.props as Props
+---
+<div class="api-qualified-name" data-pagefind-ignore="all">
+  <details>
+    <summary>Full name</summary>
+    <code class="api-qualified-full"><SymbolName name={name} /></code>
+  </details>
+  <button type="button" class="api-copy-name" data-api-copy-name={name} aria-label="Copy fully qualified name" title="Copy fully qualified name">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+      <rect x="8" y="8" width="12" height="13" rx="2" />
+      <path d="M15 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3" />
+    </svg>
+  </button>
+  <span class="api-copy-status" role="status"></span>
+</div>
+<noscript><style>.api-copy-name { display: none; }</style></noscript>
+<script>
+  document.addEventListener('click', async (event) => {
+    const button = (event.target as Element).closest<HTMLButtonElement>('[data-api-copy-name]')
+    const status = button?.parentElement?.querySelector<HTMLElement>('[role="status"]')
+    if (!button || !status) return
+    try {
+      await navigator.clipboard.writeText(button.dataset.apiCopyName!)
+      status.textContent = 'Name copied'
+    } catch {
+      status.textContent = 'Copy failed. Expand and select the full name.'
+    }
+  })
+</script>

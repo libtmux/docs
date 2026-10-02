@@ -53,7 +53,7 @@ const owner = model.symbols.find((symbol) => symbol.id === 'pane.Pane.capture')
 ---
 <Reference model={model} owner={owner} />
 `)
-for (const port of ['kotlin', 'lua']) {
+for (const port of ['py', 'kotlin', 'lua']) {
   const directory = join(root, `src/pages/${port}/latest/reference`)
   mkdirSync(directory, { recursive: true })
   writeFileSync(join(directory, '[...slug].astro'), `---
@@ -149,6 +149,27 @@ async function checkReferenceAndHeroes(browser, base) {
         `Kotlin liveState links ${name}`)
     }
     console.log('Native API: Kotlin call-chain links and parameter layout pass at 1440/768/390px')
+    const qualified = page.locator('.api-qualified-name')
+    await qualified.locator('summary').click()
+    const fullName = 'io.github.libtmux.kotlin.Server.liveState'
+    assert.equal(await qualified.locator('.api-qualified-full').textContent(), fullName)
+    for (const reject of [false, true]) {
+      await page.evaluate((reject) => {
+        Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+          writeText: async (text) => {
+            window.__copiedQualifiedName = text
+            if (reject) throw new Error('Clipboard denied')
+          },
+        } })
+      }, reject)
+      await qualified.getByRole('button', { name: 'Copy fully qualified name' }).click()
+      await page.waitForFunction((reject) => document.querySelector('.api-copy-status').textContent
+        .startsWith(reject ? 'Copy failed' : 'Name copied'), reject)
+      assert.equal(await page.evaluate(() => window.__copiedQualifiedName), fullName)
+    }
+    const anchors = await page.locator('[id]').evaluateAll((elements) => elements.map((element) => element.id))
+    assert.equal(anchors.filter((id) => id === fullName).length, 1, 'Page title and declaration have distinct anchors')
+    console.log('Qualified names: disclosure, exact copied identity and clipboard refusal pass')
   } finally {
     await page.close()
   }
@@ -287,12 +308,14 @@ try {
       }
     })
     for (const path of [
+      'py/latest/reference/libtmux-server',
       'py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder',
       'java/latest/workspace/reference/io-github-libtmux-workspace-workspacebuilder-workspacebuilder',
     ]) await retryReload(async () => {
       const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
       assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
       await page.evaluate(() => document.fonts.ready)
+      await page.locator('.api-elsewhere').evaluateAll((entries) => entries.forEach((entry) => { entry.open = true }))
       for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 })
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)

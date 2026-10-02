@@ -3,6 +3,8 @@ import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
 import { compareMembers, conceptsFor, docSummaryText, memberSignals, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
 import mentionsData from '../../data/mentions.json'
 import ApiEntry from '../../components/api/ApiEntry.astro'
+import ApiBadge from '../../components/api/ApiBadge.astro'
+import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import PageToolbar from '../../components/PageToolbar.astro'
 import { pagePortsFor } from '../../lib/page-ports-for'
 import { pageBreadcrumbs } from '../../lib/sidebar'
@@ -461,7 +463,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
       />
     )}
 
-    <div class="min-w-0 px-4 py-6 lg:px-6">
+    <div class="api-reference-content min-w-0 px-4 py-6 lg:px-6">
       <!-- The id is the anchor every link to this type uses. `hrefFor` sends a
            type to `<page>/#<publicId>` whether the link comes from a
            signature, a doc comment or prose, and without this the fragment
@@ -476,21 +478,32 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
         </button>
       )}
       <PageToolbar breadcrumbs={breadcrumbs} pagePorts={pagePorts} port={model?.port} />
+      <header class:list={[owner && 'api-reference-heading']}>
+        {owner && <div class="api-reference-eyebrow">
+          <ApiBadge label={owner.kind} variant="kind" value={owner.kind} />
+          <span>{model && PORT_NAME[model.port]}</span>
+          {owner.doc?.since && <span>Since {owner.doc.since}</span>}
+        </div>}
         <h1
           id={owner ? (owner.publicId ?? owner.id) : undefined}
           class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight"
         >
-          <SymbolName name={title} />
+          <SymbolName name={owner ? (declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : title} />
         </h1>
+        {owner && <>
+          <ApiQualifiedName name={owner.publicId ?? owner.id} />
+          {owner.doc?.summary && <p class="api-reference-summary">
+            <ApiDoc text={owner.doc.summary} index={index} context={owner} />
+          </p>}
+        </>}
+      </header>
 
       {
         !owner && !model && (
           <>
             <p class="mt-3 max-w-2xl">
-              One reference, extracted from each port's own source and rendered
-              through the same components. Every type name in a signature links
-              to its own entry; every cross-reference in a doc comment resolves
-              against the same table.
+              Choose a language to browse its public types, functions, and
+              members, with signatures, examples, and links to related guides.
             </p>
             <p class="mt-4">
               <a href={withRoot('/reference/symbols/a/')}>Symbol index (A–Z)</a>
@@ -514,16 +527,6 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
                 </a>
               ))}
             </div>
-            <p class="mt-6 max-w-3xl text-sm opacity-70">
-              Six of these come from <code>web-tree-sitter</code>. C++ and Swift
-              do not: their grammars lose 0.34% and 2.84% of the real source,
-              and what they lose is what a reference exists to show — the
-              default argument in <code>void f(std::string s = &#123;&#125;)</code>,
-              a typed <code>throws(TmuxError)</code>. Those two come from the
-              Doxygen XML this build already produces and from
-              <code>swift -emit-symbol-graph</code>, which resolves its own
-              cross-references. See <code>packages/api-model/docs/DESIGN.md</code>.
-            </p>
           </>
         )
       }
@@ -532,9 +535,9 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
         !owner && model && (
           <>
             <p class="mt-3 max-w-2xl">
-              {model.symbols.length} symbols, extracted from source. Every type name in
-              a signature links to its own entry; every cross-reference in a
-              doc comment resolves against the same table.
+              Browse the {PORT_NAME[model.port]} types and operations for working
+              with tmux. Start with the core objects below, or search for a type
+              or member.
             </p>
             {sections.map((mod) => (
               /*
@@ -669,6 +672,13 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
       {
         owner && (
           <>
+            {(members.length > 0 || (owner.doc?.examples?.length ?? 0) > 0) &&
+              <nav class="api-section-links" aria-label="Reference sections" data-pagefind-ignore="all">
+                <a href="#api-overview">Overview</a>
+                {declared.length > 0 && <a href="#api-members">Members <span>{declared.length}</span></a>}
+                {inherited.length > 0 && <a href="#api-inherited">Inherited <span>{inherited.length}</span></a>}
+                {(owner.doc?.examples?.length ?? 0) > 0 && <a href={`#${owner.publicId ?? owner.id}.examples`}>Examples</a>}
+              </nav>}
             <!-- The type's own entry, through the same component as its
                  members. It is a declaration like any other — the only
                  difference is that this one is what the page is about, which
@@ -714,7 +724,9 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
                 <span hidden data-pagefind-meta={`file:${owner.source.file}`} />
               )}
               {owner?.kind && <span hidden data-pagefind-meta={`kind:${owner.kind}`} />}
-            <dl class="api-definition" data-pagefind-ignore="all">
+            <details class="api-source-details" data-pagefind-ignore="all">
+              <summary>Source and package</summary>
+              <dl class="api-definition">
               {ownerModule && (
                 <>
                   <dt>Module</dt>
@@ -766,8 +778,9 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
                 </>
               )}
             </dl>
+            </details>
 
-            <div class="mt-6">
+            <section class="api-overview mt-6" id="api-overview" aria-label="Declaration and behavior">
               {/*
                 `heading` for a type, `member` for everything else.
 
@@ -785,12 +798,14 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
                 port={model?.port}
                 heading={OWNER_KINDS.has(owner.kind)}
                 member={!OWNER_KINDS.has(owner.kind)}
+                showSummary={false}
+                anchorId={`${owner.publicId ?? owner.id}.declaration`}
               />
-            </div>
+            </section>
 
-            <p class="mt-2 text-sm opacity-70">
+            {members.length > 0 && <p class="mt-2 text-sm opacity-70">
               {declared.length} declared, {inherited.length} inherited
-            </p>
+            </p>}
 
             {/*
               A list, not a stack of entries.
@@ -803,7 +818,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
             */}
             {declared.length > 0 && (
               <div class="mt-8">
-                <h2 class="text-lg font-semibold">Members</h2>
+                <h2 class="text-lg font-semibold" id="api-members">Members</h2>
                 <ul class="api-member-list mt-3">
                   {declared.map((m) => (
                     <li>
@@ -822,7 +837,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
 
             {inherited.length > 0 && (
               <>
-                <h2 class="mt-12 text-lg font-semibold">Inherited members</h2>
+                <h2 class="mt-12 text-lg font-semibold" id="api-inherited">Inherited members</h2>
                 <p class="mt-1 text-sm opacity-70">
                   Reached through {[...new Set(inherited.map((m) => m.inheritedFrom))].join(', ')}.
                 </p>

@@ -227,7 +227,7 @@
 }
 .api-elsewhere li {
   display: grid;
-  grid-template-columns: 8rem 1fr;
+  grid-template-columns: minmax(0, 8rem) minmax(0, 1fr);
   gap: 0.5rem;
   padding: 0.125rem 0;
 }
@@ -262,9 +262,9 @@
 .api-member-list li {
   display: grid;
   grid-template-columns: minmax(8rem, 18rem) auto;
-  gap: 0 0.75rem;
+  gap: 0.35rem 0.75rem;
   align-items: baseline;
-  padding: 0.4rem 0;
+  padding: 0.8rem 0;
   border-bottom: 1px solid var(--color-background-border, #e2e8f0);
 }
 
@@ -287,6 +287,8 @@
   grid-column: 1 / -1;
   font-size: 0.9em;
   opacity: 0.8;
+  max-width: 76ch;
+  line-height: 1.6;
 }
 
 /* One column below the container's own threshold, the same 36rem the entry
@@ -604,6 +606,93 @@
 .api-native-signature + .api-native-signature {
   margin-top: .75rem;
 }
+
+.api-reference-content {
+  overflow-wrap: anywhere;
+}
+.api-reference-heading {
+  margin-block: 1.5rem 1.75rem;
+}
+.api-reference-heading h1 {
+  margin-block: 0.75rem 1rem;
+  font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  font-size: clamp(1.8rem, 2.4vw, 2.5rem);
+  line-height: 1.2;
+}
+.api-reference-eyebrow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+}
+.api-reference-summary {
+  max-width: 76ch;
+  margin-top: 1.25rem;
+  line-height: 1.75;
+}
+.api-qualified-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.75rem;
+  min-width: 0;
+  font-size: 0.8125rem;
+}
+.api-qualified-name code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  overflow-wrap: anywhere;
+}
+.api-qualified-name details {
+  min-width: 0;
+}
+.api-qualified-name summary {
+  cursor: pointer;
+  color: var(--color-link);
+}
+.api-qualified-name summary:hover { text-decoration: underline; }
+.api-qualified-full { display: block; margin-top: 0.5rem; }
+.api-copy-status { color: var(--color-muted); }
+.api-copy-name {
+  display: inline-grid;
+  place-items: center;
+  padding: 0.5rem;
+  align-self: center;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  color: var(--color-muted);
+}
+.api-copy-name:hover { background: var(--color-surface-hover); color: var(--color-link); }
+.api-copy-name:focus-visible, .api-qualified-name summary:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+.api-section-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  margin-block: 1.25rem;
+  border-bottom: 1px solid var(--color-edge);
+  font-size: 0.875rem;
+}
+.api-section-links a {
+  padding-block: 0.75rem;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+.api-section-links a:hover, .api-section-links a:focus-visible { border-bottom-color: currentColor; }
+.api-section-links span {
+  margin-left: 0.25rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+.api-source-details { margin-block: 1rem 1.5rem; font-size: 0.875rem; }
+.api-source-details > summary { cursor: pointer; color: var(--color-muted); }
+.api-reference-content :is(section, h2, .gp-sphinx-api-examples) { scroll-margin-top: 5rem; }
 
 @container gp-sphinx-api-entry (max-width: 36rem) {
   dl.py.gp-sphinx-api-container > dd .gp-sphinx-api-parameters > dl.field-list {
