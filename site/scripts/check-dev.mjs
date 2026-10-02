@@ -5,12 +5,15 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { dev } from 'astro'
 import { chromium, firefox, webkit } from 'playwright'
-import { PORTS, productAvailable } from '../src/lib/ports.ts'
+import { API_MODEL_PORTS, PORTS, productAvailable } from '../src/lib/ports.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
 import { checkApiExampleOwnership, checkApiNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkNativeLayout } from './check-native-layout.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
+const apiSignaturesOnly = process.argv.includes('--api-signatures')
+const signaturePorts = apiSignaturesOnly ? API_MODEL_PORTS
+  : API_MODEL_PORTS.filter((port) => ['py', 'ts'].includes(port.slug))
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 // `workspaceCli` alone also covers a port's local, unreleased dev CLI
 // (`workspaceCliAvailability: 'local'`), which publishes no top-level
@@ -52,6 +55,31 @@ const model = API_MODELS.ts
 const owner = model.symbols.find((symbol) => symbol.id === 'pane.Pane.capture')
 ---
 <Reference model={model} owner={owner} />
+`)
+writeFileSync(join(root, 'src/pages/api-signature-probe.astro'), `---
+import ApiEntry from '../components/api/ApiEntry.astro'
+import DocsLayout from '../layouts/DocsLayout.astro'
+import { API_MODELS, indexFor } from '../lib/api-models'
+import { API_MODEL_PORTS, referenceUrl } from '../lib/ports'
+import '../styles/api.css'
+import '../styles/vendor/gp-sphinx-api.css'
+const entries = API_MODEL_PORTS.filter(({ slug }) => ${JSON.stringify(signaturePorts.map((port) => port.slug))}.includes(slug))
+  .flatMap(({ slug: port }) => {
+  const model = API_MODELS[port]
+  const callable = model.symbols.filter((symbol) => symbol.signatures.some((signature) =>
+    signature.params.length > 0 && signature.returns))
+  const symbol = callable.find((symbol) => /capture/i.test(symbol.name)) ?? callable[0]
+  const scalar = model.symbols.find((symbol) => symbol.signatures.length === 0 && symbol.type && symbol.value)
+  return [symbol, scalar].filter(Boolean).map((symbol) => ({ port, model, symbol }))
+})
+---
+<DocsLayout title="API signature layout" tableOfContents={false}>
+  {entries.map(({ port, model, symbol }) => (
+    <section data-signature-port={port} data-signature-model={JSON.stringify(symbol)}>
+      <ApiEntry symbol={{ ...symbol, doc: undefined }} index={indexFor(model, (entry) => referenceUrl(port, entry.slug))} port={port} />
+    </section>
+  ))}
+</DocsLayout>
 `)
 for (const port of ['py', 'kotlin', 'scala', 'lua', 'java', 'go']) {
   const directory = join(root, `src/pages/${port}/latest/reference`)
@@ -101,6 +129,62 @@ async function retryReload(check) {
   } catch (error) {
     if (!/Execution context was destroyed/.test(String(error))) throw error
     await check()
+  }
+}
+
+async function checkSignatureLayouts(browser, base) {
+  const page = await browser.newPage({ javaScriptEnabled: false })
+  try {
+    await page.goto(`${base}/api-signature-probe/`, { waitUntil: 'load' })
+    const entries = page.locator('[data-signature-port]')
+    assert.equal(new Set(await entries.evaluateAll((elements) => elements.map((entry) =>
+      entry.dataset.signaturePort))).size, signaturePorts.length)
+    for (const width of [1440, 768, 390]) {
+      await page.setViewportSize({ width, height: 1000 })
+      for (const entry of await entries.all()) {
+        const port = await entry.getAttribute('data-signature-port')
+        const model = JSON.parse(await entry.getAttribute('data-signature-model'))
+        const signature = entry.locator('.gp-sphinx-api-signature:visible')
+        assert.equal(await signature.count(), 1, `${port}: one visible signature at ${width}px`)
+        const clean = (text) => text.replace(/\s+/g, ' ').trim()
+        assert.equal(await entry.locator('.gp-sphinx-api-signature').count(), 1,
+          `${port}: one declaration serves every layout`)
+        for (const fold of await signature.locator('details').all()) {
+          if (await fold.getAttribute('open') === null) {
+            await fold.locator('summary').focus()
+            await page.keyboard.press('Enter')
+          }
+        }
+        const visibleText = clean(await signature.innerText())
+        if (await signature.locator('.api-native-signature').count()) {
+          for (const declaration of model.signatures) assert(visibleText.includes(clean(declaration.raw)),
+            `${port}: native declaration survives at ${width}px`)
+        } else {
+          assert.deepEqual(await signature.locator('.sig-param > .n').allTextContents(),
+            model.signatures.flatMap((declaration) => declaration.params.map((param) => param.name)),
+            `${port}: all parameters survive at ${width}px`)
+          assert.deepEqual((await signature.locator('.sig-return-typehint').allTextContents()).map(clean),
+            model.signatures.flatMap((declaration) => declaration.returns ? [clean(declaration.returns)] : []),
+            `${port}: all return types survive at ${width}px`)
+          for (const declaration of model.signatures) {
+            for (const param of declaration.params) {
+              if (param.default) assert(visibleText.includes(param.default), `${port}: default remains visible`)
+            }
+          }
+          if (model.signatures.length === 0) {
+            assert(visibleText.includes(clean(model.type)), `${port}: attribute type survives`)
+            assert(visibleText.includes(model.value), `${port}: attribute value survives`)
+          }
+        }
+        assert(await signature.evaluate((element) => element.getBoundingClientRect().right <= innerWidth + 1),
+          `${port}: declaration fits at ${width}px`)
+      }
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+        `API signatures fit at ${width}px`)
+    }
+    console.log(`API signatures: ${signaturePorts.length} ports retain declarations without JavaScript at 1440/768/390px`)
+  } finally {
+    await page.close()
   }
 }
 
@@ -284,7 +368,8 @@ async function checkReferenceAndHeroes(browser, base) {
 try {
   // Compile the first page during setup; navigation assertions measure
   // the running app. The outer loop still budgets this initial compilation.
-  const firstPage = apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/concepts/server-session-window-pane/'
+  const firstPage = apiSignaturesOnly ? '/api-signature-probe/'
+    : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/concepts/server-session-window-pane/'
   const ready = fetch(`${base}${firstPage}`).then(async (response) => {
     assert(response.ok, `Browser setup: HTTP ${response.status} at ${firstPage}`)
     await response.text()
@@ -294,7 +379,9 @@ try {
   if (!driver) throw new Error(`Unknown browser: ${engine}`)
   browser = await driver.launch(engine === 'chromium' ? { channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL } : {})
   await ready
-  if (apiNavigationOnly) {
+  if (apiSignaturesOnly) {
+    await checkSignatureLayouts(browser, base)
+  } else if (apiNavigationOnly) {
     const page = await browser.newPage({ reducedMotion: 'reduce' })
     page.setDefaultTimeout(10000)
     await retryReload(() => checkApiNavigation(page, base))
@@ -312,7 +399,8 @@ try {
     const navigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     navigationPage.setDefaultTimeout(10000)
     const navigation = retryReload(() => checkNavigation(navigationPage, base)).then(() => null, (error) => error)
-    const reference = checkReferenceAndHeroes(browser, base).then(() => null, (error) => error)
+    const reference = checkReferenceAndHeroes(browser, base).then(() => checkSignatureLayouts(browser, base))
+      .then(() => null, (error) => error)
     const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     apiNavigationPage.setDefaultTimeout(10000)
     const apiNavigation = retryReload(() => checkApiNavigation(apiNavigationPage, base)).then(() => null, (error) => error)
