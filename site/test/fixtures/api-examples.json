@@ -1,0 +1,328 @@
+{
+  "examples": [
+    {
+      "port": "go",
+      "page": "ports/go/reference/tmux-server-sessions",
+      "symbol": "tmux.Server.Sessions",
+      "sourceRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+      "files": [
+        {
+          "name": "go.mod",
+          "block": 1,
+          "sha256": "379df68bcdbd6ad608106042dea8b67572560d33963395041ad6126179f133fb"
+        },
+        {
+          "name": "example_test.go",
+          "block": 2,
+          "sha256": "bc1c41bdf5e05f1a4a874e1a1743bf9b1aedf0016e09d8ad4f0e8e3ff1f3aa41"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-go.git libtmux-source && \\\n  git -C libtmux-source checkout 6f3df55f8a41999e41225eefb3940545b834e6a2",
+        "GOWORK=off go test -count=1 -v example_test.go"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "=== RUN   ExampleServer_Sessions_complete",
+          "PASS"
+        ]
+      ],
+      "runtime": "Go 1.26.8",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_server_sessions_example_test.go"
+    },
+    {
+      "port": "go",
+      "page": "ports/go/reference/tmux-server-windows",
+      "symbol": "tmux.Server.Windows",
+      "sourceRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+      "files": [
+        {
+          "name": "go.mod",
+          "block": 1,
+          "sha256": "379df68bcdbd6ad608106042dea8b67572560d33963395041ad6126179f133fb"
+        },
+        {
+          "name": "example_test.go",
+          "block": 2,
+          "sha256": "b4858a0fd248ba70928b88eb15f12b946c35a776158137d00605df81869e3c16"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-go.git libtmux-source && \\\n  git -C libtmux-source checkout 6f3df55f8a41999e41225eefb3940545b834e6a2",
+        "GOWORK=off go test -count=1 -v example_test.go"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "=== RUN   ExampleServer_Windows_complete",
+          "PASS"
+        ]
+      ],
+      "runtime": "Go 1.26.8",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_server_windows_example_test.go"
+    },
+    {
+      "port": "go",
+      "page": "ports/go/reference/tmux-server-panes",
+      "symbol": "tmux.Server.Panes",
+      "sourceRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+      "files": [
+        {
+          "name": "go.mod",
+          "block": 1,
+          "sha256": "379df68bcdbd6ad608106042dea8b67572560d33963395041ad6126179f133fb"
+        },
+        {
+          "name": "example_test.go",
+          "block": 2,
+          "sha256": "dec1202e80544296ea3ef050a5fb857afaa9e8624999776c2a631f9bdb658349"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-go.git libtmux-source && \\\n  git -C libtmux-source checkout 6f3df55f8a41999e41225eefb3940545b834e6a2",
+        "GOWORK=off go test -count=1 -v example_test.go"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "=== RUN   ExampleServer_Panes_complete",
+          "PASS"
+        ]
+      ],
+      "runtime": "Go 1.26.8",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_server_panes_example_test.go"
+    },
+    {
+      "port": "go",
+      "page": "ports/go/reference/tmux-pane-capture",
+      "symbol": "tmux.Pane.Capture",
+      "sourceRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+      "files": [
+        {
+          "name": "go.mod",
+          "block": 1,
+          "sha256": "379df68bcdbd6ad608106042dea8b67572560d33963395041ad6126179f133fb"
+        },
+        {
+          "name": "example_test.go",
+          "block": 2,
+          "sha256": "3856577df0e822a0fa5696d869cef60deaaf0f7e3b75c847b58f86d5acd02118"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-go.git libtmux-source && \\\n  git -C libtmux-source checkout 6f3df55f8a41999e41225eefb3940545b834e6a2",
+        "GOWORK=off go test -count=1 -v example_test.go"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "=== RUN   ExamplePane_Capture_complete",
+          "PASS"
+        ]
+      ],
+      "runtime": "Go 1.26.8",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_pane_capture_example_test.go"
+    },
+    {
+      "port": "go",
+      "page": "ports/go/reference/tmux-pane-sendkeys",
+      "symbol": "tmux.Pane.SendKeys",
+      "sourceRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+      "files": [
+        {
+          "name": "go.mod",
+          "block": 1,
+          "sha256": "379df68bcdbd6ad608106042dea8b67572560d33963395041ad6126179f133fb"
+        },
+        {
+          "name": "example_test.go",
+          "block": 2,
+          "sha256": "810d65b5f4d289c93febe28b5d58118e6bf32292277d93a8a95e44772b8a7704"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-go.git libtmux-source && \\\n  git -C libtmux-source checkout 6f3df55f8a41999e41225eefb3940545b834e6a2",
+        "GOWORK=off go test -count=1 -v example_test.go"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "=== RUN   ExamplePane_SendKeys_complete",
+          "PASS"
+        ]
+      ],
+      "runtime": "Go 1.26.8",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_pane_send_keys_example_test.go"
+    },
+    {
+      "port": "go",
+      "page": "ports/go/reference/tmux-server-searchsessions",
+      "symbol": "tmux.Server.SearchSessions",
+      "sourceRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+      "files": [
+        {
+          "name": "go.mod",
+          "block": 1,
+          "sha256": "379df68bcdbd6ad608106042dea8b67572560d33963395041ad6126179f133fb"
+        },
+        {
+          "name": "example_test.go",
+          "block": 2,
+          "sha256": "ad5f6efa0d5243d781a70ea0e20fa399bf160e456da24bdaefd33549edfd9845"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-go.git libtmux-source && \\\n  git -C libtmux-source checkout 6f3df55f8a41999e41225eefb3940545b834e6a2",
+        "GOWORK=off go test -count=1 -v example_test.go"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "=== RUN   ExampleServer_SearchSessions_complete",
+          "PASS"
+        ]
+      ],
+      "runtime": "Go 1.26.8",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_server_search_sessions_example_test.go"
+    },
+    {
+      "port": "go",
+      "page": "ports/go/reference/tmux-newserver",
+      "symbol": "tmux.NewServer",
+      "sourceRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+      "files": [
+        {
+          "name": "go.mod",
+          "block": 1,
+          "sha256": "379df68bcdbd6ad608106042dea8b67572560d33963395041ad6126179f133fb"
+        },
+        {
+          "name": "example_test.go",
+          "block": 2,
+          "sha256": "62d20d989c3ab7894a027f41a1e897055cd6e207fad6539568ce6585292d1420"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-go.git libtmux-source && \\\n  git -C libtmux-source checkout 6f3df55f8a41999e41225eefb3940545b834e6a2",
+        "GOWORK=off go test -count=1 -v example_test.go"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "=== RUN   ExampleNewServer_complete",
+          "PASS"
+        ]
+      ],
+      "runtime": "Go 1.26.8",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_new_server_example_test.go"
+    },
+    {
+      "port": "go",
+      "page": "ports/go/reference/tmux-server-newsession",
+      "symbol": "tmux.Server.NewSession",
+      "sourceRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+      "files": [
+        {
+          "name": "go.mod",
+          "block": 1,
+          "sha256": "379df68bcdbd6ad608106042dea8b67572560d33963395041ad6126179f133fb"
+        },
+        {
+          "name": "example_test.go",
+          "block": 2,
+          "sha256": "9e0814addf256123ac4942fa49699beb16547950b97d19666632f7c2ff6def59"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-go.git libtmux-source && \\\n  git -C libtmux-source checkout 6f3df55f8a41999e41225eefb3940545b834e6a2",
+        "GOWORK=off go test -count=1 -v example_test.go"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "=== RUN   ExampleServer_NewSession_complete",
+          "PASS"
+        ]
+      ],
+      "runtime": "Go 1.26.8",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_server_new_session_example_test.go"
+    },
+    {
+      "port": "go",
+      "page": "ports/go/reference/tmux-session-newwindow",
+      "symbol": "tmux.Session.NewWindow",
+      "sourceRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+      "files": [
+        {
+          "name": "go.mod",
+          "block": 1,
+          "sha256": "379df68bcdbd6ad608106042dea8b67572560d33963395041ad6126179f133fb"
+        },
+        {
+          "name": "example_test.go",
+          "block": 2,
+          "sha256": "56eddb5c0edc8ecacaea707ffd79bf84f9a4473cbe62e2533ce8f279ca1ffa6e"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-go.git libtmux-source && \\\n  git -C libtmux-source checkout 6f3df55f8a41999e41225eefb3940545b834e6a2",
+        "GOWORK=off go test -count=1 -v example_test.go"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "=== RUN   ExampleSession_NewWindow_complete",
+          "PASS"
+        ]
+      ],
+      "runtime": "Go 1.26.8",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Each displayed test file runs independently with its displayed go.mod and public clone/checkout. Native Go checks assert output and cleanup on a private socket.",
+      "sourceFile": "tmux/api_session_new_window_example_test.go"
+    }
+  ]
+}

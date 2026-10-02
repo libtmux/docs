@@ -84,6 +84,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push('## Examples', '')
     for (const ex of symbol.doc.examples) {
       if (ex.intro) out.push(ex.intro, '')
+      if (ex.sourceUrl) out.push(`[Source example](${ex.sourceUrl}).`, '')
       out.push(fencedCode(ex.code, ex.lang), '')
     }
   }

@@ -20,9 +20,10 @@ import time
 def main():
     repo = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--example', choices=['capture', 'attach', 'query', 'concept', 'guide'], default='capture')
+    parser.add_argument('--example', choices=['capture', 'attach', 'query', 'concept', 'guide', 'api'], default='capture')
     parser.add_argument('--port')
     parser.add_argument('--page', help='Guide path, or page within the selected port')
+    parser.add_argument('--api-model', type=Path, help='Review model for an unpublished source revision')
     parser.add_argument('--output-dir', required=True, type=Path)
     args = parser.parse_args()
     manifest = json.loads((repo / f'site/test/fixtures/{args.example}-examples.json').read_text())
@@ -36,24 +37,42 @@ def main():
         choices = ', '.join(item['page'] for item in examples)
         parser.error(f'Choose one example with --port and --page; matching pages: {choices or "none"}')
     example = examples[0]
-    page = repo / 'site/src/content/docs' / (example['page'] + '.md')
+    if args.api_model and args.example != 'api':
+        parser.error('--api-model is only valid for API examples')
+    page = (args.api_model or repo / 'site/src/data/api' / f'{args.port}.json') \
+        if args.example == 'api' else repo / 'site/src/content/docs' / (example['page'] + '.md')
     content = page.read_text()
-    blocks = list(re.finditer(r'^```(\S+)([^\n]*)\n(.*?)^```', content, re.M | re.S))
+    if args.example == 'api':
+        model = json.loads(content)
+        symbols = [symbol for symbol in model['symbols'] if symbol['id'] == example['symbol']]
+        if len(symbols) != 1:
+            raise ValueError(f'Expected one API symbol: {example["symbol"]}')
+        if symbols[0]['source']['revision'] != example['sourceRevision']:
+            raise ValueError('API source revision differs from the verification record')
+        api_blocks = symbols[0].get('doc', {}).get('examples', [])
+        blocks = []
+    else:
+        blocks = list(re.finditer(r'^```(\S+)([^\n]*)\n(.*?)^```', content, re.M | re.S))
     files = {}
     for item in example['files']:
         name = item['name']
         path = Path(item.get('path', name))
         if path.is_absolute() or '..' in path.parts:
             raise ValueError(f'Invalid example filename: {name}')
-        matches = [block[3] for block in blocks if f'title="{name}"' in block[2]]
+        if args.example == 'api':
+            block_index = item['block']
+            matches = [api_blocks[block_index]['code']] if 0 <= block_index < len(api_blocks) else []
+        else:
+            matches = [block[3] for block in blocks if f'title="{name}"' in block[2]]
         if len(matches) != 1:
             raise ValueError(f'Expected one displayed file: {name}')
         code = matches[0]
         if hashlib.sha256(code.encode()).hexdigest() != item['sha256']:
             raise ValueError(f'Changed example bytes: {name}; review its verification record')
         files[str(path)] = code
-    commands = [re.sub(r'^\$ ', '', block[3], flags=re.M).strip()
-                for block in blocks if block[1] == 'console']
+    command_blocks = [block['code'] for block in api_blocks if block['lang'] == 'console'] \
+        if args.example == 'api' else [block[3] for block in blocks if block[1] == 'console']
+    commands = [re.sub(r'^\$ ', '', code, flags=re.M).strip() for code in command_blocks]
     if not commands or commands != example['shellRecipe']:
         raise ValueError('Setup commands differ from the verification record')
     expected = example.get('expectedOutputs', [[] for _ in commands[:-1]] +

@@ -514,9 +514,10 @@ const hasBody =
           <p class="rubric">Examples</p>
           {examples.map((ex) => (
             <>
-              {ex.intro && (
+              {(ex.intro || ex.sourceUrl) && (
                 <p class="gp-sphinx-api-example-intro">
-                  <ApiDoc text={ex.intro} index={index} context={symbol} />
+                  {ex.intro && <ApiDoc text={ex.intro} index={index} context={symbol} />}
+                  {ex.sourceUrl && <> <a href={ex.sourceUrl}>Source example</a>.</>}
                 </p>
               )}
               <div class="gp-sphinx-api-example">
