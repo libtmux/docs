@@ -1,16 +1,30 @@
 import assert from 'node:assert/strict'
 
+/** Browser load can precede the router's initial page-load event in development. */
+async function observeInitialPageLoad(page) {
+  await page.addInitScript(() => {
+    window.__docsPageLoaded = false
+    document.addEventListener('astro:page-load', () => { window.__docsPageLoaded = true }, { once: true })
+  })
+}
+
 /** Keep the API drawer usable after the router replaces the document. */
 export async function checkApiNavigation(page, base) {
+  await observeInitialPageLoad(page)
   const server = `${base}/lua/latest/reference/libtmux-server/`
   const snapshot = `${base}/lua/latest/reference/libtmux-server-snapshot/`
   for (const width of [688, 390]) {
     await page.setViewportSize({ width, height: 759 })
     await page.goto(server, { waitUntil: 'load' })
+    await page.waitForFunction(() => window.__docsPageLoaded)
     await page.locator('[data-api-nav-toggle]').waitFor({ state: 'visible' })
-    await page.evaluate(() => { window.__apiNavigationProbe = true })
+    await page.evaluate(() => {
+      window.__apiNavigationProbe = { loads: 0 }
+      document.addEventListener('astro:page-load', () => window.__apiNavigationProbe.loads++)
+    })
     await page.locator('.api-member-link[href$="libtmux-server-snapshot/"]').click()
     await page.waitForURL(snapshot)
+    await page.waitForFunction(() => window.__apiNavigationProbe?.loads === 1)
     assert(await page.evaluate(() => window.__apiNavigationProbe), 'API navigation retains the document')
     assert(await page.locator('html').evaluate((el) => el.hasAttribute('data-api-nav')),
       `API navigation restores the drawer styles at ${width}px`)
@@ -19,6 +33,7 @@ export async function checkApiNavigation(page, base) {
     await nav.waitFor({ state: 'hidden' })
     const open = async () => {
       await toggle.click()
+      await nav.waitFor({ state: 'visible' })
       await page.waitForFunction(() => document.querySelector('#api-nav').getBoundingClientRect().left >= 0)
       assert.equal(await toggle.getAttribute('aria-expanded'), 'true')
     }
@@ -34,6 +49,7 @@ export async function checkApiNavigation(page, base) {
     }
     await page.goBack()
     await page.waitForURL(server)
+    await page.waitForFunction(() => window.__apiNavigationProbe?.loads === 2)
     await open()
     const menu = nav.locator('.api-nav__menu')
     const summary = menu.locator(':scope > summary')
@@ -47,7 +63,9 @@ export async function checkApiNavigation(page, base) {
     await nav.locator('[data-api-nav-close]').click()
   }
   for (const path of ['', 'guides/overview/']) {
-    await page.goto(`${base}/lua/latest/${path}`, { waitUntil: 'load' })
+    const response = await page.goto(`${base}/lua/latest/${path}`, { waitUntil: 'load' })
+    assert(response?.ok(), `Lua ${path || 'home'}: HTTP ${response?.status()}`)
+    await page.waitForFunction(() => window.__docsPageLoaded)
     await page.locator('#mobile-sidebar-toggle').click()
     await page.locator('#mobile-sidebar a[href$="/reference/"]').click()
     await page.waitForURL(`${base}/lua/latest/reference/`)
@@ -67,7 +85,9 @@ export async function checkApiNavigation(page, base) {
 
 /** Check the controls attached to a document after its content is replaced. */
 export async function checkNavigation(page, base) {
+  await observeInitialPageLoad(page)
   await page.goto(`${base}/examples/attach-and-send-keys/`, { waitUntil: 'load' })
+  await page.waitForFunction(() => window.__docsPageLoaded)
   await page.evaluate(() => {
     localStorage.setItem('color-scheme', 'dark')
     localStorage.setItem('libtmux-docs.mcp-install.cooldown.enabled', '1')

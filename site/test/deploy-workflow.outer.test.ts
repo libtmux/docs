@@ -17,14 +17,14 @@ describe('publication server deadlines', () => {
       expect(probes[1]).toContain('--connect-timeout 1 --max-time 3')
       // spawnSync blocks this process from handling the accepted connection,
       // so the real curl must hit its deadline instead of receiving a reply.
-      const started = Date.now()
+      const started = performance.now()
       const result = spawnSync('bash', ['-c', `exec ${probes[0]}`], {
         encoding: 'utf8', timeout: 5000,
         env: { ...process.env, SERVE_SITE: `http://127.0.0.1:${address.port}` },
       })
       expect(result.error).toBeUndefined()
       expect(result.status, result.stderr).toBe(28)
-      expect(Date.now() - started).toBeGreaterThanOrEqual(2500)
+      expect(performance.now() - started).toBeGreaterThanOrEqual(2500)
     } finally {
       server.close()
     }

@@ -153,3 +153,21 @@ export function membersByType(port: string): Map<string, TreeMember[]> {
   membersCache.set(port, out)
   return out
 }
+
+/** The port-scoped inventory served to lazy branches and symbol search. */
+export function referenceTree(port: string) {
+  const members = membersByType(port)
+  const bucket = (b: TreeBucket): unknown => ({
+    id: b.id,
+    label: b.label,
+    count: bucketTotal(b),
+    slug: firstEntry(b)?.slug ?? null,
+    types: b.entries.map((t) => ({ id: t.id, name: t.name, slug: t.slug, m: members.has(t.id) ? 1 : 0 })),
+    children: b.children.map(bucket),
+  })
+  return {
+    port,
+    buckets: navTree(port).map(bucket),
+    members: Object.fromEntries([...members].map(([id, list]) => [id, list.map((m) => [m.name, m.slug])])),
+  }
+}

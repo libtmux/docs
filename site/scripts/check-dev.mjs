@@ -18,8 +18,8 @@ const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'worksp
 const workspaceCliPortCount = PORTS.filter((port) => port.workspaceCliAvailability === 'released').length
 
 Object.assign(process.env, {
-  LIBTMUX_DOCS_BASE: apiNavigationOnly ? '/en/lua/latest/' : '/en/', LIBTMUX_DOCS_ROOT: '/en', LIBTMUX_DOCS_PORT_ROOT: '/en',
-  LIBTMUX_DOCS_LOCALES_ROOT: '', LIBTMUX_DOCS_LOCALE: 'en', LIBTMUX_DOCS_PORT: apiNavigationOnly ? 'lua' : '',
+  LIBTMUX_DOCS_BASE: '/en/', LIBTMUX_DOCS_ROOT: '/en', LIBTMUX_DOCS_PORT_ROOT: '/en',
+  LIBTMUX_DOCS_LOCALES_ROOT: '', LIBTMUX_DOCS_LOCALE: 'en', LIBTMUX_DOCS_PORT: '',
   LIBTMUX_DOCS_VERSION: 'latest', LIBTMUX_DOCS_PORT_DEFAULTS: '{"py":"stable"}',
 })
 // Astro always writes root/.astro, so a separate cacheDir alone cannot isolate it.
@@ -53,7 +53,7 @@ const owner = model.symbols.find((symbol) => symbol.id === 'pane.Pane.capture')
 ---
 <Reference model={model} owner={owner} />
 `)
-for (const port of apiNavigationOnly ? [] : ['kotlin']) {
+for (const port of ['kotlin', 'lua']) {
   const directory = join(root, `src/pages/${port}/latest/reference`)
   mkdirSync(directory, { recursive: true })
   writeFileSync(join(directory, '[...slug].astro'), `---
@@ -68,7 +68,18 @@ const { model, owner } = Astro.props
 ---
 <Reference model={model} owner={owner} />
 `)
+  writeFileSync(join(directory, 'tree.json.ts'), `
+import { referenceTree } from '../../../../lib/api-tree'
+export const GET = () => new Response(JSON.stringify(referenceTree('${port}')), {
+  headers: { 'Content-Type': 'application/json' },
+})
+`)
 }
+writeFileSync(join(root, 'src/pages/lua/latest/index.astro'), `---
+import Home from '../../index.astro'
+---
+<Home port="lua" />
+`)
 let server, browser
 const terminate = async () => {
   await browser?.close()
@@ -93,15 +104,64 @@ async function retryReload(check) {
   }
 }
 
+async function checkReferenceAndHeroes(browser, base) {
+  const page = await browser.newPage({ reducedMotion: 'reduce' })
+  page.setDefaultTimeout(10000)
+  try {
+    await checkApiExampleOwnership(page, base, 'api-example-probe/')
+    for (const path of ['ts/latest/workspace/', 'ruby/latest/mcp/', 'cxx/latest/workspace/', 'cxx/latest/mcp/']) {
+      await page.goto(`${base}/${path}`, { waitUntil: 'load' })
+      const hero = page.locator('.port-hero, .product-hero').first()
+      assert(!(await hero.locator('h1').textContent()).includes('(in development)'), `${path}: development stays in the callout`)
+      const source = hero.getByRole('link', { name: 'GitHub', exact: true })
+      assert.equal(await source.count(), 1, `${path}: source button belongs to the heading`)
+      if (path.startsWith('cxx/')) {
+        const product = path.includes('/mcp/') ? 'mcp' : 'workspace'
+        assert.equal(await source.getAttribute('href'), `https://github.com/libtmux/libtmux-cxx/tree/master/apps/${product}`)
+        assert.equal(await hero.locator('.port-link').count(), 1, 'C++ source applications do not advertise a registry package')
+      } else {
+        assert.equal(await hero.locator('.port-link').count(), 2, `${path}: source and registry buttons`)
+      }
+      for (const width of [1440, 600, 390]) {
+        await page.setViewportSize({ width, height: 1000 })
+        const logo = await hero.locator('img').first().boundingBox()
+        const title = await hero.locator('h1').boundingBox()
+        assert(Math.abs(logo.width - 88) < 0.01, `${path}: ${width}px logo width`)
+        assert(Math.abs(logo.height - 88) < 0.01, `${path}: ${width}px logo height`)
+        if (width >= 480) {
+          assert(logo.x + logo.width <= title.x, `${path}: mark beside title`)
+          assert(title.y < logo.y + logo.height, `${path}: title shares the logo row`)
+        } else {
+          assert(title.y >= logo.y + logo.height, `${path}: phone title follows mark`)
+        }
+        assert(title.x + title.width <= width, `${path}: heading fits the viewport`)
+      }
+    }
+    console.log('Heroes: 88px marks share the title row and stack at phone widths')
+    await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server-livestate/`)
+    for (const width of [1440, 768, 390]) {
+      await page.setViewportSize({ width, height: 900 })
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+        `Kotlin parameter and exception fields fit at ${width}px`)
+    }
+    for (const name of ['config', 'defaultTimeout', 'toKotlinDuration', 'Duration', 'CoroutineScope', 'StateFlow']) {
+      assert(await page.locator('main a').filter({ hasText: new RegExp(`^${name}$`) }).count() > 0,
+        `Kotlin liveState links ${name}`)
+    }
+    console.log('Native API: Kotlin call-chain links and parameter layout pass at 1440/768/390px')
+  } finally {
+    await page.close()
+  }
+}
+
 try {
-  // Compile the first port page during setup; navigation assertions measure
+  // Compile the first page during setup; navigation assertions measure
   // the running app. The outer loop still budgets this initial compilation.
-  const ready = apiNavigationOnly
-    ? fetch(`${base}/lua/latest/reference/libtmux-server/`).then(async (response) => {
-      assert(response.ok, `Lua reference setup: HTTP ${response.status}`)
-      await response.text()
-    })
-    : Promise.resolve()
+  const firstPage = apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/concepts/server-session-window-pane/'
+  const ready = fetch(`${base}${firstPage}`).then(async (response) => {
+    assert(response.ok, `Browser setup: HTTP ${response.status} at ${firstPage}`)
+    await response.text()
+  })
   const engine = process.env.LIBTMUX_DOCS_BROWSER ?? 'chromium'
   const driver = { chromium, firefox, webkit }[engine]
   if (!driver) throw new Error(`Unknown browser: ${engine}`)
@@ -124,6 +184,10 @@ try {
     const navigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     navigationPage.setDefaultTimeout(10000)
     const navigation = retryReload(() => checkNavigation(navigationPage, base)).then(() => null, (error) => error)
+    const reference = checkReferenceAndHeroes(browser, base).then(() => null, (error) => error)
+    const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
+    apiNavigationPage.setDefaultTimeout(10000)
+    const apiNavigation = retryReload(() => checkApiNavigation(apiNavigationPage, base)).then(() => null, (error) => error)
     const paths = ['concepts/server-session-window-pane', 'examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
       'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
       'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/capture_pane']
@@ -342,47 +406,11 @@ try {
     const navigationError = await navigation
     if (navigationError) throw navigationError
     await navigationPage.close()
-    await checkApiExampleOwnership(page, base, 'api-example-probe/')
-    for (const path of ['ts/latest/workspace/', 'ruby/latest/mcp/', 'cxx/latest/workspace/', 'cxx/latest/mcp/']) {
-      await page.goto(`${base}/${path}`, { waitUntil: 'load' })
-      const hero = page.locator('.port-hero, .product-hero').first()
-      assert(!(await hero.locator('h1').textContent()).includes('(in development)'), `${path}: development stays in the callout`)
-      const source = hero.getByRole('link', { name: 'GitHub', exact: true })
-      assert.equal(await source.count(), 1, `${path}: source button belongs to the heading`)
-      if (path.startsWith('cxx/')) {
-        const product = path.includes('/mcp/') ? 'mcp' : 'workspace'
-        assert.equal(await source.getAttribute('href'), `https://github.com/libtmux/libtmux-cxx/tree/master/apps/${product}`)
-        assert.equal(await hero.locator('.port-link').count(), 1, 'C++ source applications do not advertise a registry package')
-      } else {
-        assert.equal(await hero.locator('.port-link').count(), 2, `${path}: source and registry buttons`)
-      }
-      for (const width of [1440, 600, 390]) {
-        await page.setViewportSize({ width, height: 1000 })
-        const logo = await hero.locator('img').first().boundingBox()
-        const title = await hero.locator('h1').boundingBox()
-        assert(Math.abs(logo.width - 88) < 0.01, `${path}: ${width}px logo width`)
-        assert(Math.abs(logo.height - 88) < 0.01, `${path}: ${width}px logo height`)
-        if (width >= 480) {
-          assert(logo.x + logo.width <= title.x, `${path}: mark beside title`)
-          assert(title.y < logo.y + logo.height, `${path}: title shares the logo row`)
-        } else {
-          assert(title.y >= logo.y + logo.height, `${path}: phone title follows mark`)
-        }
-        assert(title.x + title.width <= width, `${path}: heading fits the viewport`)
-      }
-    }
-    console.log('Heroes: 88px marks share the title row and stack at phone widths')
-    await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server-livestate/`)
-    for (const width of [1440, 768, 390]) {
-      await page.setViewportSize({ width, height: 900 })
-      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
-        `Kotlin parameter and exception fields fit at ${width}px`)
-    }
-    for (const name of ['config', 'defaultTimeout', 'toKotlinDuration', 'Duration', 'CoroutineScope', 'StateFlow']) {
-      assert(await page.locator('main a').filter({ hasText: new RegExp(`^${name}$`) }).count() > 0,
-        `Kotlin liveState links ${name}`)
-    }
-    console.log('Native API: Kotlin call-chain links and parameter layout pass at 1440/768/390px')
+    const referenceError = await reference
+    if (referenceError) throw referenceError
+    const apiNavigationError = await apiNavigation
+    if (apiNavigationError) throw apiNavigationError
+    await apiNavigationPage.close()
     await clipboardPage.close()
   }
 } finally {
