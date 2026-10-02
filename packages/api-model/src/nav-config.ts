@@ -186,7 +186,7 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
     match: {
       kind: 'anyOf',
       of: [
-        nameRe('Internal|Generated'),
+        nameRe('Internal|Generated|^__fuzz_'),
         // A public API can live in a private implementation directory. Lua
         // exposes Server, Session, Window, Pane and Client from `_internal/`;
         // their public contract outranks that layout detail while retained

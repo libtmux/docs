@@ -10,34 +10,93 @@
  * holds the tree's Tab stop.
  */
 import { wordBreak } from '../../lib/word-break'
-
-interface JsonType {
-  id: string
-  name: string
-  slug: string
-  m: 0 | 1
-}
-
-interface JsonBucket {
-  id: string
-  label: string
-  count: number
-  slug: string | null
-  types: JsonType[]
-  children: JsonBucket[]
-}
-
-interface TreeJson {
-  port: string
-  buckets: JsonBucket[]
-  members: Record<string, [string, string][]>
-}
+import { searchApi, type ApiTreeBucket as JsonBucket, type ApiTreeJson as TreeJson } from '../../lib/api-search'
 
 const ITEM = '[role="treeitem"]'
 const EASING = 'cubic-bezier(0.8, 0, 0.2, 1)'
 const requests = new Map<string, Promise<TreeJson>>()
 let seq = 0
 let controller: AbortController | undefined
+
+/** Search the same port inventory used for lazy branches. */
+function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
+  const input = nav.querySelector<HTMLInputElement>('#api-symbol-search')
+  const results = nav.querySelector<HTMLElement>('[data-api-search-results]')
+  const status = nav.querySelector<HTMLElement>('[data-api-search-status]')
+  const retry = nav.querySelector<HTMLButtonElement>('[data-api-search-retry]')
+  const filters = [...nav.querySelectorAll<HTMLButtonElement>('[data-api-search-kind]')]
+  if (!input || !results || !status) return
+  let kind = 'all'
+  let generation = 0
+  input.disabled = false
+  for (const button of filters) button.disabled = false
+  const render = async () => {
+    const ownGeneration = ++generation
+    const query = input.value.trim()
+    const active = Boolean(query) || kind !== 'all'
+    tree.hidden = active
+    results.hidden = !active
+    results.replaceChildren()
+    if (retry) retry.hidden = true
+    status.textContent = active ? 'Loading API names…' : ''
+    if (!active) return
+    try {
+      const json = await load(nav.dataset.src ?? '')
+      if (signal.aborted || generation !== ownGeneration) return
+      const found = searchApi(json, query, kind)
+      status.textContent = found.length > 100 ? `Showing 100 of ${found.length} results. Refine your search.`
+        : `${found.length} ${found.length === 1 ? 'result' : 'results'}`
+      for (const record of found.slice(0, 100)) {
+        const li = document.createElement('li')
+        const link = document.createElement('a')
+        link.href = `${nav.dataset.base}${record.slug}/`
+        const name = document.createElement('strong')
+        name.textContent = record.name
+        const path = document.createElement('small')
+        path.textContent = `${record.kind} · ${record.id}`
+        link.append(name, path)
+        li.append(link)
+        results.append(li)
+      }
+    } catch {
+      if (generation === ownGeneration && !signal.aborted) {
+        status.textContent = 'API names could not load. Try again.'
+        if (retry) retry.hidden = false
+      }
+    }
+  }
+  input.addEventListener('input', () => void render(), { signal })
+  retry?.addEventListener('click', () => void render(), { signal })
+  for (const button of filters) button.addEventListener('click', () => {
+    kind = button.dataset.apiSearchKind ?? 'all'
+    for (const filter of filters) filter.setAttribute('aria-pressed', String(filter === button))
+    void render()
+  }, { signal })
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowDown') {
+      results.querySelector<HTMLAnchorElement>('a')?.focus()
+      event.preventDefault()
+    } else if (event.key === 'Escape' && (input.value || kind !== 'all')) {
+      event.stopPropagation()
+      input.value = ''
+      filters[0]?.click()
+    }
+  }, { signal })
+  results.addEventListener('keydown', (event) => {
+    const links = [...results.querySelectorAll<HTMLAnchorElement>('a')]
+    const current = links.indexOf(document.activeElement as HTMLAnchorElement)
+    if (event.key === 'Escape') {
+      input.focus()
+      return
+    }
+    const next = event.key === 'ArrowDown' ? current + 1 : event.key === 'ArrowUp' ? current - 1
+      : event.key === 'Home' ? 0 : event.key === 'End' ? links.length - 1 : undefined
+    if (next === undefined) return
+    event.preventDefault()
+    if (next < 0) input.focus()
+    else links[Math.min(next, links.length - 1)]?.focus()
+  }, { signal })
+}
 
 function load(src: string): Promise<TreeJson> {
   let request = requests.get(src)
@@ -370,7 +429,10 @@ export function initApiTree() {
   document.documentElement.toggleAttribute('data-api-nav', navs.length > 0)
   navs.forEach((nav) => {
     const tree = nav.querySelector<HTMLElement>('[role="tree"]')
-    if (tree) initTree(nav, tree, signal)
+    if (tree) {
+      initTree(nav, tree, signal)
+      initSearch(nav, tree, signal)
+    }
     initDrawer(nav, signal)
   })
 }
