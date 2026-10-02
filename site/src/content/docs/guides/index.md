@@ -12,8 +12,7 @@ Use these guides to connect to tmux, send input, capture output, query objects,
 and test your program. [Concepts](/concepts/) explains the object model and
 transport choices.
 
-- **[Getting started](getting-started/)**: install tmux and the library, then run
-  an example.
+- **[Getting started](getting-started/)**: install tmux and run a complete example.
 - **[Attaching to tmux](attaching-to-tmux/)**: select a socket and find or
   create a session.
 - **[Sending keys](sending-keys/)**: send literal text, named keys, and Enter.
@@ -21,8 +20,12 @@ transport choices.
   wait for a result.
 - **[Filtering and querying, in practice](querying-and-filtering/)**: apply the
   lookup contracts from [Filtering and queries](/concepts/queries/).
-- **[Testing with libtmux](testing-with-libtmux/)**: use isolated tmux servers
+- **[Testing](testing-with-libtmux/)**: use isolated tmux servers
   and manage test cleanup.
 
-[Examples](/examples/) provides source-backed programs for the same tasks, with
-source and validation details on each page.
+[Examples](/examples/) provides complete programs with setup and cleanup.
+
+<!-- port:root -->
+The general guides use tmux shell commands. Select a port from the dropdown
+for its library APIs, imports and native project setup.
+<!-- /port -->

@@ -124,6 +124,8 @@ filtering page, including its displayed setup and error assertions.
 Use `--example concept --port fsharp --page concepts/queries` for the native
 concept pages. Each run command checks its own expected output; a later success
 cannot hide an earlier missing result.
+Use `--example guide --page guides/capturing-output` for a root guide's shell
+program. Select the tmux release through `PATH`; the result records `tmux -V`.
 
 Put explanatory comments on separate lines above the code they describe.
 Limit example comments to 100 columns, including indentation; prefer shorter

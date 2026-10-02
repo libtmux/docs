@@ -1,0 +1,110 @@
+{
+  "examples": [
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "guides/getting-started",
+      "sourceRevision": "94796f6b1182507efac8a272fc309a79e22e58a5",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "start.sh",
+          "sha256": "c8463712889cd42eb7ef9edfe1c240b52ddea521062579b9e545c76125949b40"
+        }
+      ],
+      "shellRecipe": [
+        "tmux -V",
+        "sh start.sh"
+      ],
+      "expectedOutput": "work:main"
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "guides/sending-keys",
+      "sourceRevision": "94796f6b1182507efac8a272fc309a79e22e58a5",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "send.sh",
+          "sha256": "babbabad661b7635de7047476031d9bb40c49ae8811d5845d1848d51282c000a"
+        }
+      ],
+      "shellRecipe": [
+        "sh send.sh"
+      ],
+      "expectedOutput": "Enter"
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "guides/capturing-output",
+      "sourceRevision": "94796f6b1182507efac8a272fc309a79e22e58a5",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "history.sh",
+          "sha256": "e328f0ec37798b1519c10d2e5d6009ce0c6904a28bec1158be52bc9c056de0bb"
+        }
+      ],
+      "shellRecipe": [
+        "sh history.sh"
+      ],
+      "expectedOutput": "row-1"
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "guides/querying-and-filtering",
+      "sourceRevision": "94796f6b1182507efac8a272fc309a79e22e58a5",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "query.sh",
+          "sha256": "fecff77e546ba3309d87f450e2e2ac0a6cc65ebc23da0149d7d4b33a978c5c0a"
+        }
+      ],
+      "shellRecipe": [
+        "sh query.sh"
+      ],
+      "expectedOutput": "work"
+    },
+    {
+      "port": "tmux",
+      "rootOnly": true,
+      "page": "guides/testing-with-libtmux",
+      "sourceRevision": "94796f6b1182507efac8a272fc309a79e22e58a5",
+      "sourceUse": "tmux manual; native runtime versions recorded separately",
+      "verifiedTmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "files": [
+        {
+          "name": "test-tmux.sh",
+          "sha256": "37ee90390d88df2910b62e20e79660fa954b7bda0a1b45c5563a29b4de2f38e8"
+        }
+      ],
+      "shellRecipe": [
+        "sh test-tmux.sh"
+      ],
+      "expectedOutput": "tmux fixture passed"
+    }
+  ]
+}

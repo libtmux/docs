@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: []
 title: Capturing output
-description: Read a pane's screen or scrollback and wait for output or a completion signal.
+description: Capture a tmux pane screen or include its scrollback history.
 sidebar:
   label: Capturing output
   group: Guides
@@ -9,183 +9,117 @@ sidebar:
 tableOfContents: true
 ---
 
-Capture a pane to read its visible screen or scrollback. After [Sending
-keys](../sending-keys/), wait for the expected output or a completion signal
-before reading the result.
+`capture-pane -p` prints a pane's visible screen. Add `-S -` to start at the oldest
+line still present in its scrollback history. Capture is a snapshot of terminal
+state; it is not a log of every byte the application wrote.
 
 ## Visible pane vs. scrollback
 
-`tmux capture-pane` distinguishes the currently visible screen from the
-scrollback history above it. Choose the range required by your task:
+This example forces output into scrollback: it prints 40 numbered lines in a
+pane with 10 rows. A normal capture shows the last screenful. Adding `-S -`
+also retrieves earlier lines, including `row-1`.
 
-```python
-# 0 is the first visible line; positive numbers stay in the visible pane;
-# negative numbers reach into history; "-" means "the start of the
-# history." With no arguments you get the visible screen.
->>> pane = window.split(shell='sh')
->>> pane.capture_pane()
-['$']
-```
+Save the script as `history.sh`. It needs tmux 3.2a or newer, a POSIX shell and
+fractional `sleep` support.
 
-```typescript
-// start counts back from the visible top, so -100 asks for the last
-// hundred lines or as many as exist.
-const lines = await pane.capture({ start: -100 });
-```
+```sh title="history.sh"
+#!/bin/sh
+set -eu
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-guide.XXXXXX")
+socket="$directory/tmux.sock"
 
-```go
-// Include scrollback from its beginning through the bottom of the screen.
-lines, err := pane.Capture(ctx, tmux.CapturePaneRequest{
-	Start: tmux.CaptureBoundary, End: tmux.CaptureBoundary,
-})
-if err != nil {
-    return err
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+        exit 1
+    fi
+    rm -rf "$directory" || status=$?
+    exit "$status"
 }
-for _, line := range lines {
-    fmt.Println(line)
-}
+trap cleanup 0
+trap 'exit 1' HUP INT TERM
+
+tmux -S "$socket" -f /dev/null new-session -d -s capture -x 80 -y 10 \
+    'i=1; while [ "$i" -le 40 ]; do printf "row-%s\n" "$i"; i=$((i + 1)); done; exec cat'
+tmux -S "$socket" resize-window -t capture:0 -x 80 -y 10
+
+attempt=0
+while [ "$attempt" -lt 100 ]; do
+    screen=$(tmux -S "$socket" capture-pane -p -t capture:0.0)
+    if printf '%s\n' "$screen" | grep -Fqx 'row-40'; then
+        printf 'Visible screen:\n%s\n' "$screen"
+        printf '\nScreen and scrollback:\n'
+        tmux -S "$socket" capture-pane -p -S - -t capture:0.0
+        exit 0
+    fi
+    attempt=$((attempt + 1))
+    sleep 0.05
+done
+printf '%s\n' 'Timed out waiting for pane output.' >&2
+exit 1
 ```
 
-```rust
-// capture() for the visible screen; capture_with(...) for scrollback and
-// other options.
-let visible = pane.capture().await?;
+Run the saved script:
+
+```console
+$ sh history.sh
 ```
 
-```cpp
-// A capture that doesn't fit is reported, not silently truncated:
-// output_limit says how much you're prepared to hold.
-const auto visible = pane.capture();
-const auto history = pane.capture({.whole_history = true});
-```
+`row-1` appears in the history capture but has already scrolled off the visible
+screen. `row-40` appears in both. The script cleans up its private server after
+printing or after any failure.
 
-```swift
-// The streaming form (below) additionally tracks a cursor, so a caller can
-// ask for only what's new since the last read.
-let lines = try await server.capture(pane)
-```
-
-<!-- port:java -->
-`pane.capture()` returns visible pane contents as a list of lines.
-<!-- /port -->
-<!-- port:dotnet -->
-`pane.CaptureAsync()` returns visible pane contents as a list of lines.
-<!-- /port -->
-
-[Capture pane output](/examples/capture-pane-output/) includes complete
-programs and source details.
+A numeric `-S` chooses a starting row: `0` is the top visible row and negative
+values reach into history. `-E` selects the final row. `-J` joins wrapped rows;
+`-e` includes terminal escape sequences for attributes such as color. History
+is bounded by `history-limit`, so discarded lines cannot be recovered by capture.
 
 <a id="dont-poll-wait-for-the-text-instead"></a>
 
 ## Wait for the expected text
 
-An immediate capture can race the shell, as [Sending
-keys](../sending-keys/#the-race-you-cant-see-from-the-call-site) explains. Wait
-for the expected text with a timeout so your program stops promptly when the
-output arrives and reports a failure if it never does:
+Wait for an observable result with a deadline. An immediate capture after
+[Sending keys](../sending-keys/) can race the application. Match a complete
+output line, as [Capture pane output](/examples/capture-pane-output/) does, to
+avoid treating an echoed command as completed work.
 
-```go
-// A wait that times out fails with the screen the pane last held rather
-// than sending you back to add a print statement.
-tmuxtest.WaitForText(ctx, t, pane, "ready")
-```
-
-```rust
-// Looks before it sleeps (text already present is an answer, not a wait)
-// and joins wrapped lines so a needle spanning a wrap still matches. The
-// result is checked rather than discarded: a deadline reached is still an
-// answer you have to look at, not a silent pass.
-match pane.wait_for_text("ready", Duration::from_secs(10)).await? {
-    PaneWait::Arrived => {}
-    PaneWait::Dead => { /* the pane's process ended before it showed up */ }
-    PaneWait::TimedOut => { /* still alive, but the deadline ran out first */ }
-}
-```
-
-```typescript
-// No fixed-poll helper: subscribe to the event stream *before* sending,
-// then wait for the specific event, so a marker printed between the two
-// calls is never missed.
-const found = live.subscribe().find(
-  (event) => event.kind === "output" && event.paneId === pane.id && event.data.includes(marker),
-  { timeoutMs: 30_000 },
-);
-await pane.sendKeys(command);
-await found;
-```
-
-```java
-// A client has to attach first: attaching is what makes tmux push
-// %output at all; a client that never attaches hears command replies and
-// nothing else.
-EventSubscription<PaneOutput> output = client.subscribeOutput(32);
-```
-
-```csharp
-// Polls a read function against a predicate rather than sleeping a fixed
-// amount.
-string output = await TmuxWait.UntilAsync(
-    async token => string.Join('\n', await pane.CaptureAsync(cancellationToken: token)),
-    text => text.Contains("hello-from-libtmux", StringComparison.Ordinal),
-    TimeSpan.FromSeconds(10),
-    TimeSpan.FromMilliseconds(20));
-```
-
-```swift
-// Takes patterns for both success and failure, so a process that fails
-// fast doesn't have to be discovered by timeout.
-try await server.waitForOutput(in: pane, matching: [ready], stoppingAt: [failed])
-```
-
-<!-- port:py,cxx -->
-Use a completion channel when the program can announce that its work is done.
-The next section explains that protocol.
-<!-- /port -->
-
-[Testing with libtmux](../testing-with-libtmux/) explains isolated servers
-and fixtures. [Capture pane output](/examples/capture-pane-output/) provides
-the full examples.
+A screen may change before the next capture. For continuously consumed output,
+use a pipe or an attached control-mode client's output events; see
+[Control mode vs one-shot](/concepts/transports/).
 
 <a id="when-the-pane-can-announce-itself-wait-for-not-scraping"></a>
 
 ## Wait for a completion signal
 
-If you control the command, have it signal completion with `tmux wait-for -S
-done`. Wait on the same channel to avoid matching screen text:
+A program that controls its own completion can send `wait-for -S` on a dedicated
+tmux channel. A matching `wait-for` waits on that server. Use the same socket
+and a distinct channel for each task, and put a deadline around the wait.
+[Waiting and retrying](/topics/waiting-and-retry/) covers the channel protocol.
 
-```python
->>> server.new_session(session_name='wait_test')
-Session(...)
->>> server.wait_for('test_channel', set_flag=True)
-```
+<a id="where-to-go-next"></a>
 
-<!-- port:cxx -->
-`Server::wait_for(channel, timeout)` also detects a server that dies during
-the wait and reports failure.
-<!-- /port -->
+## Use a language library
 
-```swift
-import LibTmux
+The port dropdown opens that language's capture guide. Complete programs with
+imports and setup are available here:
 
-public func waitingOnAChannel(_ server: Server, pane: Pane) async throws {
-    try await server.run(
-        "make; \(server.shellInvocation) wait-for -S built",
-        in: pane
-    )
-    try await server.wait(for: "built")
-}
-```
+[Python](/py/latest/examples/capture-pane-output/) ·
+[TypeScript](/ts/latest/examples/capture-pane-output/) ·
+[Go](/go/latest/examples/capture-pane-output/) ·
+[Rust](/rs/latest/examples/capture-pane-output/) ·
+[Java](/java/latest/examples/capture-pane-output/) ·
+[Kotlin](/kotlin/latest/examples/capture-pane-output/) ·
+[Scala](/scala/latest/examples/capture-pane-output/) ·
+[.NET](/dotnet/latest/examples/capture-pane-output/) ·
+[F#](/fsharp/latest/examples/capture-pane-output/) ·
+[C++](/cxx/latest/examples/capture-pane-output/) ·
+[Swift](/swift/latest/examples/capture-pane-output/) ·
+[Ruby](/ruby/latest/examples/capture-pane-output/) ·
+[Lua](/lua/latest/examples/capture-pane-output/)
 
-Use a distinct channel name for each task. tmux remembers a signal sent before
-a waiter starts; reusing a signalled name can therefore finish an unrelated
-later wait. [Waiting and retrying](/topics/waiting-and-retry/) covers channel
-APIs and server-loss handling.
+## tmux reference
 
-## Where to go next
-
-- [Filtering and querying, in practice](../querying-and-filtering/): once
-  you're reading more than one pane, finding the right one to capture.
-- [Testing with libtmux](../testing-with-libtmux/): the isolated-server
-  fixtures that make waiting on real tmux practical inside a test suite.
-- [Capture pane output](/examples/capture-pane-output/): the full
-  sourced code for the patterns above.
+The [tmux manual](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1)
+documents these commands and their flags.

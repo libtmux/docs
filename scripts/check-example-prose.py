@@ -2,6 +2,7 @@
 """Run a complete example exactly as displayed, including its setup.
 
 Use --port to choose a language and --output-dir for a new evidence directory.
+Use --example guide --page guides/<name> for a shared tmux shell program.
 The selected language's native tools, Git, and tmux must already be on PATH.
 This downloads and builds dependencies; it belongs outside routine site tests.
 """
@@ -19,15 +20,18 @@ import time
 def main():
     repo = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--example', choices=['capture', 'attach', 'query', 'concept'], default='capture')
-    parser.add_argument('--port', required=True)
-    parser.add_argument('--page', help='Page path within the port, for example concepts/queries')
+    parser.add_argument('--example', choices=['capture', 'attach', 'query', 'concept', 'guide'], default='capture')
+    parser.add_argument('--port')
+    parser.add_argument('--page', help='Guide path, or page within the selected port')
     parser.add_argument('--output-dir', required=True, type=Path)
     args = parser.parse_args()
     manifest = json.loads((repo / f'site/test/fixtures/{args.example}-examples.json').read_text())
-    examples = [item for item in manifest['examples'] if item['port'] == args.port]
+    if args.example != 'guide' and not args.port:
+        parser.error('--port is required for language examples')
+    examples = [item for item in manifest['examples'] if args.example == 'guide' or item['port'] == args.port]
     if args.page:
-        examples = [item for item in examples if item['page'] == f'ports/{args.port}/{args.page}']
+        page_path = args.page if args.example == 'guide' else f'ports/{args.port}/{args.page}'
+        examples = [item for item in examples if item['page'] == page_path]
     if len(examples) != 1:
         choices = ', '.join(item['page'] for item in examples)
         parser.error(f'Choose one example with --port and --page; matching pages: {choices or "none"}')
@@ -70,7 +74,7 @@ def main():
     for index, command in enumerate(commands):
         start = time.monotonic()
         log = output / f'run-{index + 1}.log'
-        print(f'Running {args.port}; log: {log}', flush=True)
+        print(f'Running {example["page"]}; log: {log}', flush=True)
         with log.open('w') as stream:
             result = subprocess.run(['sh', '-eu', '-c', command], cwd=output,
                                     env=env, stdout=stream, stderr=subprocess.STDOUT)
@@ -81,7 +85,8 @@ def main():
             break
     passed = len(results) == len(commands) and all(
         row['exit'] == 0 and not row['missingOutput'] for row in results)
-    report = {'port': args.port, 'page': example['page'], 'sourceRevision': example['sourceRevision'],
+    report = {'port': example['port'], 'page': example['page'], 'sourceRevision': example['sourceRevision'],
+              'tmuxVersion': subprocess.check_output(['tmux', '-V'], text=True).strip(),
               'pageSha256': hashlib.sha256(page.read_bytes()).hexdigest(),
               'files': example['files'], 'runs': results, 'passed': passed,
               'scope': 'Exact displayed program and setup; native execution on this host.'}

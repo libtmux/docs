@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
-title: Filtering and querying, in practice
-description: Filter tmux objects, require one match, and choose where a query runs.
+supportedPorts: []
+title: Querying and filtering
+description: Find an exact tmux session and select one pane using formats and filters.
 sidebar:
   label: Querying and filtering
   group: Guides
@@ -9,149 +9,112 @@ sidebar:
 tableOfContents: true
 ---
 
-Find sessions, windows, or panes with collection filters and exactly-one
-lookups. [Filtering and queries](/concepts/queries/) explains the result-count
-contracts and the choice between local and tmux-side filtering. This guide adds
-examples for common queries.
+Use an exact target when you know its name, or filter a listing when you need to
+inspect several objects. A session named `work` and one named `worker` should
+not become interchangeable targets.
 
 <a id="filling-in-the-rest-of-the-cardinality-table"></a>
 
 ## Require exactly one match
 
-<!-- port:go,rs,cxx -->
-| Port | Collection filter | Exactly-one | Empty | Several |
-|------|--------------------|--------------|-------|---------|
-<!-- port:go -->| Go | `tmuxq.Where(values, predicate)` | `tmuxq.ExactlyOne(values, predicate)` | `tmuxq.ErrNoMatch` | `tmuxq.ErrMultipleMatches` |
-<!-- /port --><!-- port:rs -->| Rust | `.iter().matching(&expr)` | `.exactly_one()` | prints via the error's `Display` | same, one error type covers both |
-<!-- /port --><!-- port:cxx -->| C++ | pipe a range into [`libtmux::matching(expr)`](/cxx/latest/reference/libtmux-matching/) | `libtmux::exactly_one(range)` | `.error()` says which way it went wrong | same call, same error type |
-<!-- /port -->
-<!-- /port -->
+Prefix a session target with `=` to require an exact name. `has-session` reports
+whether it exists; it does not return a pane. This script selects panes in
+`work` and rejects both zero matches and multiple matches before using an ID.
 
-<!-- port:go -->
-`tmuxq.ExactlyOne` returns `ErrNoMatch` for no matches and
-`ErrMultipleMatches` for an ambiguous result. Keep the error when wrapping it:
+Save the complete script as `query.sh`. It requires tmux 3.2a or newer and a
+POSIX shell. It creates and cleans up its own server.
 
-```go
-pane, err := tmuxq.ExactlyOne(snapshot.Panes(), func(pane *tmux.Pane) bool {
-    name, present := pane.CurrentCommand()
-    return present && name == "nvim"
-})
-if err != nil {
-    return fmt.Errorf("find one editor pane: %w", err)
+```sh title="query.sh"
+#!/bin/sh
+set -eu
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-guide.XXXXXX")
+socket="$directory/tmux.sock"
+
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+        exit 1
+    fi
+    rm -rf "$directory" || status=$?
+    exit "$status"
 }
-fmt.Println("editor pane:", pane.ID())
+trap cleanup 0
+trap 'exit 1' HUP INT TERM
+
+tmux -S "$socket" -f /dev/null new-session -d -s work 'cat'
+tmux -S "$socket" new-session -d -s worker 'cat'
+tmux -S "$socket" has-session -t '=work'
+
+panes=$(tmux -S "$socket" list-panes -a \
+    -f '#{==:#{session_name},work}' -F '#{pane_id}')
+# Pane IDs contain no whitespace; split the rows to count matches.
+# shellcheck disable=SC2086
+set -- $panes
+if [ "$#" -ne 1 ]; then
+    printf 'Expected one work pane, found %s.\n' "$#" >&2
+    exit 1
+fi
+tmux -S "$socket" display-message -p -t "$1" '#{session_name}'
 ```
-<!-- /port -->
 
-<!-- port:rs -->
-Rust's is `examples/find.rs`, run via `cargo run --example find`:
+Run the saved script:
 
-```rust
-match panes.iter().matching(&running).exactly_one() {
-    Ok(pane) => println!("exactly one: {}", pane.id()),
-    Err(error) => println!("not exactly one: {error}"),
-}
+```console
+$ sh query.sh
 ```
-<!-- /port -->
 
-<!-- port:cxx -->
-C++'s is quoted straight from `examples/05-readme.cpp`'s `cardinality`
-region into `README.md`, and `tools/docs/check_readme.py` fails the build
-if the two ever disagree:
+The output is `work`. The `worker` session remains outside the result. Targeting
+the returned pane ID avoids repeating name matching when the next command runs.
+An object can still disappear between commands; keep errors visible.
 
-```cpp
-auto addressed = *panes | libtmux::matching(libtmux::pane::id == panes->at(0).id());
-if (const auto one = libtmux::exactly_one(addressed); one.has_value()) {
-    std::printf("exactly one: %s\n", std::string{one->get().id()}.c_str());
-}
-```
-<!-- /port -->
-
-<!-- port:dotnet -->
-`IEnumerable<T>.Matching<T>(expression)` returns all matching objects.
-Choose an exactly-one operation only when an absent or ambiguous target should
-stop the task.
-<!-- /port -->
-<!-- port:swift -->
-`hasSession(_:)` checks existence. It does not select a single matching object.
-See [Attaching to tmux](../attaching-to-tmux/).
-<!-- /port -->
-<!-- port:py,ts,java -->
-[Filtering and queries](/concepts/queries/) describes the exactly-one method
-and its missing- or multiple-match errors.
-<!-- /port -->
-
-<!-- port:dotnet,swift -->
 <a id="declarative-filters-that-travel-beyond-python-and-typescript"></a>
 
 ## Declarative filters
 
-A query document can be stored in configuration and evaluated against captured
-objects. It does not contain an arbitrary callback.
+`list-panes -a` searches every session. `-f` evaluates a tmux format as a boolean
+for each pane; here `#{==:#{session_name},work}` keeps only exact session-name
+matches. `-F` chooses what each returned row contains. Using only `#{pane_id}`
+keeps the result easy to pass to another tmux command.
 
-```csharp
-// Turns a LINQ expression into a portable QueryDocument (or throws),
-// evaluated locally over objects you already hold rather than compiled
-// into tmux's own format language. Translate<T>(...) produces the document
-// directly when you want the wire form without also running the filter.
-// Stable wire names map Session.Name to session_name in the query document.
-IReadOnlyList<Session> building = sessions.Matching<Session>(
-    session => session.Name.StartsWith("build", StringComparison.Ordinal) && session.Attached);
-```
-
-```swift
-// Built from key paths, so a text operator on a number is a compile error,
-// and it holds no closures, so it encodes for an MCP tool call.
-let expression = FilterExpr<Pane>.where(\.currentCommand, .isIn(["nvim", "vim"]))
-```
-<!-- /port -->
-
-<!-- port:py,ts,go,swift -->
 ## Case-insensitive matching
 
-```python
-# An i-prefixed lookup.
-session.windows.filter(window_name__istartswith="bg")
-```
-
-```typescript
-// mode: "insensitive" on the comparison, rather than a separate lookup name.
-snapshot.sessions.where({ name: { contains: "API", mode: "insensitive" } });
-```
-
-```swift
-// Passed to the regex pattern itself rather than to the filter.
-let editors = try RegexPattern("^(n?vim|hx)$", options: [.caseInsensitive])
-let expression = FilterExpr<Pane>.where(\.currentCommand, .matches(editors))
-```
-
-<!-- port:go -->
-Use a predicate with `strings.EqualFold` for case-insensitive equality:
-
-```go
-matches := tmuxq.Where(snapshot.Sessions(), func(session *tmux.Session) bool {
-    name, present := session.Name()
-    return present && strings.EqualFold(name, "api")
-})
-fmt.Println("matching sessions:", len(matches))
-```
-<!-- /port -->
-
-<!-- /port -->
+Choose case handling explicitly when a name may vary in capitalization. tmux's
+`m` format operator supports an `i` modifier for case-insensitive matching.
+Keep the ordinary `==` comparison when exact case is part of your contract.
+[Filtering and queries](/concepts/queries/) explains the query model.
 
 ## Push the filter into tmux, or read once and filter locally
 
-Use a tmux-side filter to reduce the rows returned, or query a snapshot when you
-need several answers from one read. [Filtering and queries](/concepts/queries/)
-explains that choice. Unknown format tokens expand to empty values, so
-validate an unexpectedly empty search before concluding that no objects match.
+A tmux-side filter reduces returned rows. Capturing a listing once and filtering
+it in your program is useful when several decisions should use the same read.
+Neither approach reserves the objects. Unknown format names expand to empty
+values; check an unexpectedly empty result before assuming nothing exists.
 
-## Where to go next
+<a id="where-to-go-next"></a>
 
-- [Attach and send keys](/examples/attach-and-send-keys/): its
-  "Finding an existing session instead" section is this guide's recipes
-  applied to one concrete lookup.
-- [Testing with libtmux](../testing-with-libtmux/): most of the fixtures
-  there hand you a server with exactly one thing on it, which is precisely
-  when an exactly-one query is the right tool instead of a filter you then
-  index into.
+## Use a language library
+
+The port dropdown opens the language's query guide. These complete programs
+connect to an existing server, find exactly the `work` session and report its
+absence:
+
+[Python](/py/latest/guides/attaching-to-tmux/) ·
+[TypeScript](/ts/latest/guides/attaching-to-tmux/) ·
+[Go](/go/latest/guides/attaching-to-tmux/) ·
+[Rust](/rs/latest/guides/attaching-to-tmux/) ·
+[Java](/java/latest/guides/attaching-to-tmux/) ·
+[Kotlin](/kotlin/latest/guides/attaching-to-tmux/) ·
+[Scala](/scala/latest/guides/attaching-to-tmux/) ·
+[.NET](/dotnet/latest/guides/attaching-to-tmux/) ·
+[F#](/fsharp/latest/guides/attaching-to-tmux/) ·
+[C++](/cxx/latest/guides/attaching-to-tmux/) ·
+[Swift](/swift/latest/guides/attaching-to-tmux/) ·
+[Ruby](/ruby/latest/guides/attaching-to-tmux/) ·
+[Lua](/lua/latest/guides/attaching-to-tmux/)
+
+## tmux reference
+
+The [tmux manual](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1)
+documents these commands and their flags.

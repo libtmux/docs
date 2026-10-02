@@ -1,7 +1,7 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: []
 title: Sending keys
-description: Literal text versus tmux key names, whether Enter is pressed for you, and why a command can outrun the shell about to run it.
+description: Send literal text or named keys to a tmux pane and distinguish input from completion.
 sidebar:
   label: Sending keys
   group: Guides
@@ -9,112 +9,102 @@ sidebar:
 tableOfContents: true
 ---
 
-Send literal text to type characters into a pane, or send tmux key names such as
-`C-c`, `Enter`, and `Up` to press those keys. Check the method's literal-text
-and Enter defaults: typing the word `Enter` and pressing Enter are different
-operations.
+`send-keys -l` types literal characters. Without `-l`, tmux recognizes key names
+such as `Enter`, `C-c`, and `Up`. Typing the word `Enter` and pressing Enter are
+separate operations.
 
 ## Literal text, key names, and whether Enter follows
 
-These examples show each port's text, named-key, and Enter behavior. [Attach and
-send keys](/examples/attach-and-send-keys/) provides the full source examples
-and validation details.
+This complete script types the word `Enter` into a pane running `cat`, then
+presses the Enter key. Neither command starts an interactive tmux client.
+Save it as `send.sh` and run it in a POSIX shell with tmux 3.2a or newer and
+fractional `sleep` support.
 
-```python
-# literal=True disables tmux's key-name lookup; left at its default, a
-# string that happens to look like a key name is interpreted as one.
-pane.send_keys(cmd, literal=True)
+```sh title="send.sh"
+#!/bin/sh
+set -eu
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-guide.XXXXXX")
+socket="$directory/tmux.sock"
 
-# enter defaults to True. Pass enter=False to type without submitting, then
-# press Enter yourself: the README's own example, to show the steps apart.
-pane.send_keys('echo hey', enter=False)
-pane.enter()
-```
-
-```typescript
-// literal: true reads the text as characters even when it could be read as
-// a tmux key name. sendKeys presses Enter unless you say otherwise.
-await pane.sendKeys("q", { enter: false, literal: true });
-```
-
-```go
-command := "printf 'ready\\n'"
-if err := pane.SendKeys(ctx, tmux.SendKeysRequest{
-    Command: &command, Literal: true, SkipEnter: true,
-}); err != nil {
-    return err
+cleanup() {
+    status=$?
+    trap - 0 HUP INT TERM
+    if [ -S "$socket" ] && ! tmux -S "$socket" kill-server; then
+        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
+        exit 1
+    fi
+    rm -rf "$directory" || status=$?
+    exit "$status"
 }
-if err := pane.Enter(ctx); err != nil {
-    return err
-}
+trap cleanup 0
+trap 'exit 1' HUP INT TERM
+
+tmux -S "$socket" -f /dev/null new-session -d -s input 'cat'
+tmux -S "$socket" send-keys -t input:0.0 -l 'Enter'
+tmux -S "$socket" send-keys -t input:0.0 Enter
+
+attempt=0
+while [ "$attempt" -lt 100 ]; do
+    screen=$(tmux -S "$socket" capture-pane -p -t input:0.0)
+    if printf '%s\n' "$screen" | grep -Fqx 'Enter'; then
+        printf '%s\n' "$screen"
+        exit 0
+    fi
+    attempt=$((attempt + 1))
+    sleep 0.05
+done
+printf '%s\n' 'Timed out waiting for typed input.' >&2
+exit 1
 ```
 
-```rust
-// send_keys always sends with tmux's "-l" (literal) flag: key names such as
-// C-c are typed rather than interpreted. It sends no Enter.
-pane.send_keys("echo hey").await?;
+Run the saved script:
 
-// send_line sends literal text *and* Enter as one dispatch, so cancelling
-// this future cannot leave a completed text send without its Enter.
-pane.send_line("echo hey").await?;
-
-// send_key_names takes actual key names, for when you mean the key.
-pane.send_key_names(["C-c"]).await?;
+```console
+$ sh send.sh
 ```
 
-```cpp
-// Literal text, never interpreted as key names or formats, and never
-// followed by a newline the caller did not ask for.
-pane.send_text("echo hey");
+The screen contains `Enter`: the terminal echoes the input, and `cat` writes it
+back after the newline. The polling loop waits for visible text and fails after
+100 unsuccessful checks. Cleanup stops only the private server.
 
-// One named key, sent separately: this is how Enter gets pressed.
-pane.send_key("Enter");
-```
-
-```csharp
-await pane.SendTextAsync("echo hey", cancellationToken: ct);
-await pane.EnterAsync(ct);
-```
-
-```java
-// Sends the text and submits it as one call: no separate literal switch
-// and no documented "type without submitting" step as of this page.
-pane.sendLine("echo hey");
-```
-
-```swift
-// One call: types the command line, then presses Enter. No literal switch
-// and no separate "type, don't submit" step is exposed at this level.
-try await server.run("echo hey", in: pane)
-```
-
-Literal input disables tmux's key-name lookup. The program inside the pane
-still interprets that input, including shell quoting and expansions.
-[Concepts](/concepts/) introduces the shared tmux model.
+Literal input disables tmux's key-name lookup. The application still interprets
+those characters. In a shell pane, that includes shell quoting, expansions and
+commands; literal mode does not make shell input safe to compose from arbitrary
+text.
 
 ## The race you can't see from the call site
 
-Completing `send-keys` means tmux accepted the input. The shell may still be
-starting, and the command may still be running. Use a wait that checks the state your next operation requires.
+Completing `send-keys` means tmux accepted the input. It does not establish that
+the application read it or finished a command. Terminal echo can appear before
+the application processes a line.
 
-<!-- port:rs -->
-Use a bounded `retry_until` loop when shell startup can discard early input.
-<!-- /port -->
-<!-- port:go -->
-`tmuxtest.WaitForShellReady` waits for a ready shell in tests. It does not wait
-for a submitted command to finish.
-<!-- /port -->
-<!-- port:dotnet -->
-Use an output predicate with `TmuxWait.UntilAsync` to wait for a command result.
-<!-- /port -->
+For a shell command, wait for its distinct output or a completion signal before
+using the result. [Capture pane output](/examples/capture-pane-output/) matches
+a complete output line so the echoed command cannot satisfy the check.
+[Capturing output](../capturing-output/) explains screen and history capture.
 
-Wait for shell readiness before sending input when startup matters. Then wait
-for the command's expected output or a completion signal before reading its
-result. The next guide covers those waiting APIs.
+<a id="where-to-go-next"></a>
 
-## Where to go next
+## Use a language library
 
-- [Capturing output](../capturing-output/): reading back what you just
-  sent, and waiting for it correctly instead of guessing a delay.
-- [Attach and send keys](/examples/attach-and-send-keys/): the full
-  sourced round trip this guide picks apart piece by piece.
+Each port's complete capture program sends a command, waits for its output and
+cleans up. Use the port dropdown for its input APIs, or open the program:
+
+[Python](/py/latest/examples/capture-pane-output/) ·
+[TypeScript](/ts/latest/examples/capture-pane-output/) ·
+[Go](/go/latest/examples/capture-pane-output/) ·
+[Rust](/rs/latest/examples/capture-pane-output/) ·
+[Java](/java/latest/examples/capture-pane-output/) ·
+[Kotlin](/kotlin/latest/examples/capture-pane-output/) ·
+[Scala](/scala/latest/examples/capture-pane-output/) ·
+[.NET](/dotnet/latest/examples/capture-pane-output/) ·
+[F#](/fsharp/latest/examples/capture-pane-output/) ·
+[C++](/cxx/latest/examples/capture-pane-output/) ·
+[Swift](/swift/latest/examples/capture-pane-output/) ·
+[Ruby](/ruby/latest/examples/capture-pane-output/) ·
+[Lua](/lua/latest/examples/capture-pane-output/)
+
+## tmux reference
+
+The [tmux manual](https://github.com/tmux/tmux/blob/94796f6b1182507efac8a272fc309a79e22e58a5/tmux.1)
+documents these commands and their flags.
