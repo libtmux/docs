@@ -316,6 +316,16 @@ export class SymbolIndex {
         context.signatures.some((sig) => sig.params.some((param) => param.name === clean))) {
       return { href: `${this.hrefFor(context).split('#')[0]}#${parameterId(context, clean)}`, external: false }
     }
+    if (context && ['kotlin', 'scala'].includes(this.lang ?? '')) {
+      for (let scope: ApiSymbol | undefined = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
+        if (scope.signatures.some((sig) => sig.typeParams?.includes(clean))) {
+          return { href: this.hrefFor(scope), external: false, symbol: scope }
+        }
+      }
+      const receiver = context.signatures.find((sig) => sig.receiver?.name === clean)?.receiver
+      const receiverType = receiver?.type?.replace(/[<[].*$/, '')
+      if (receiverType && receiverType !== clean) return this.resolve(receiverType, 'class', context)
+    }
 
     // Walk outward from the current symbol: a member first, then a sibling of
     // its owner. This is Sphinx's own search order for a relative target.

@@ -77,6 +77,8 @@ export const BUILTINS: Record<string, Record<string, string>> = {
   },
   scala: {
     ...qualifiedScala,
+    def: 'https://docs.scala-lang.org/scala3/book/methods-most.html',
+    extension: 'https://docs.scala-lang.org/scala3/reference/contextual/extension-methods.html',
     String: scala('scala/Predef$'), Boolean: scala('scala/Boolean'),
     Int: scala('scala/Int'), Long: scala('scala/Long'), Unit: scala('scala/Unit'),
     Option: scala('scala/Option'), Either: scala('scala/util/Either'),

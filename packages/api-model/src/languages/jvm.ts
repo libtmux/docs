@@ -66,6 +66,16 @@ function parameters(node: Node, language: Language, firstGroupOnly = false): Par
     }))
 }
 
+/** Bound names only: nested arguments such as the `_` in `F[_]` are not binders. */
+function typeParameters(node: Node, language: Language): string[] {
+  const group = named(node, 'type_parameters')
+  return group ? childrenOf(group).flatMap((param) => {
+    const name = language === 'kotlin' ? named(param, 'type_identifier')
+      : param.type === 'identifier' ? param : /^(co|contra)variant_type_parameter$/.test(param.type) ? field(param, 'name') : undefined
+    return name ? [name.text] : []
+  }) : []
+}
+
 /** Extract handwritten declarations and generated extensions in one symbol table. */
 export async function extractJvm(port: Language, roots: string[], revision?: string): Promise<ApiModel> {
   const parser = await parserFor(port)
@@ -139,7 +149,8 @@ export async function extractJvm(port: Language, roots: string[], revision?: str
         }
         checkSyntax(root)
 
-        const walk = (body: Node, parent?: string, receiver?: string, extensionHeader?: string): void => {
+        const walk = (body: Node, parent?: string, receiver?: string, extensionHeader?: string,
+          extensionTypes: string[] = [], extensionReceiver?: Param): void => {
           for (const node of declarations(body, port)) {
             if (!visible(node)) continue
             if (node.type === 'export_declaration') {
@@ -155,7 +166,7 @@ export async function extractJvm(port: Language, roots: string[], revision?: str
               if (params.length !== 1 || !params[0].type) throw new Error(`Unsupported extension receiver: ${node.text}`)
               const end = Math.max(...childrenOf(node).filter((child) => ['parameters', 'type_parameters'].includes(child.type)).map((child) => child.endIndex))
               const header = node.text.slice(0, end - node.startIndex).trim()
-              walk(node, parent, receiverId(params[0].type), header)
+              walk(node, parent, receiverId(params[0].type), header, typeParameters(node, port), params[0])
               continue
             }
             const variable = named(node, 'variable_declaration')
@@ -173,10 +184,14 @@ export async function extractJvm(port: Language, roots: string[], revision?: str
               : /given/.test(node.type) ? 'constant' : 'property'
             let owner = parent
             let ownReceiver = receiver
+            let receiverParam = extensionReceiver
             // Kotlin extensions put their receiver before the member name.
             if (port === 'kotlin' && !container && nameNode) {
               const receiverNode = childrenOf(node).find((child) => /^(user_type|nullable_type|receiver_type)$/.test(child.type) && child.endIndex < nameNode.startIndex)
-              if (receiverNode) ownReceiver = receiverId(receiverNode.text)
+              if (receiverNode) {
+                ownReceiver = receiverId(receiverNode.text)
+                receiverParam = { name: 'this', type: compact(receiverNode.text) }
+              }
             }
             if (ownReceiver) owner = ownReceiver
             const id = `${owner ?? namespace}.${name}`
@@ -202,7 +217,10 @@ export async function extractJvm(port: Language, roots: string[], revision?: str
               raw: extensionHeader ? `${extensionHeader}\n${raw}` : raw,
               params: parameters(constructor ?? node, port),
               ...(returns ? { returns: compact(returns.text) } : {}),
+              ...(receiverParam ? { receiver: receiverParam } : {}),
             }
+            const generics = [...new Set([...extensionTypes, ...typeParameters(node, port)])]
+            if (generics.length) signature.typeParams = generics
             // A private constructor is not a public callable signature.
             if (privateConstructor) signature.params = []
             const symbol: ApiSymbol = {

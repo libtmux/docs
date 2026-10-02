@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { extractJvm } from '../src/languages/jvm.ts'
 import { tokenizeDoc } from '../src/doc/roles.ts'
+import { SymbolIndex } from '../src/link.ts'
 
 const directories: string[] = []
 afterEach(() => directories.splice(0).forEach((dir) => rmSync(dir, { recursive: true })))
@@ -15,6 +16,27 @@ function fixture(file: string, code: string) {
 }
 
 describe('native JVM declarations', () => {
+  it('links Scala type parameters and extension receivers to their declarations', async () => {
+    const root = fixture('Box.scala', `package example
+class Box[F[_], +A <: Other](val value: A) {
+  def read: F[A] = TODO
+}
+extension [F[_]](self: Box[F, String]) {
+  def map[B](value: B): F[B] = TODO
+}
+`)
+    const model = await extractJvm('scala', [root])
+    const box = model.symbols.find((s) => s.id === 'example.Box')!
+    const read = model.symbols.find((s) => s.id === 'example.Box.read')!
+    const map = model.symbols.find((s) => s.id === 'example.Box.map')!
+    expect(box.signatures[0].typeParams).toEqual(['F', 'A'])
+    expect(map.signatures[0]).toMatchObject({ typeParams: ['F', 'B'], receiver: { name: 'self', type: 'Box[F, String]' } })
+    const index = new SymbolIndex(model.symbols, (symbol) => `#${symbol.id}`, 'scala')
+    expect(index.resolve('F', 'class', read)?.href).toBe('#example.Box')
+    expect(index.resolve('B', 'class', map)?.href).toBe('#example.Box.map')
+    expect(index.resolve('self', 'any', map)?.href).toBe('#example.Box')
+    expect(index.resolve('UnresolvedType', 'class', map)).toBeUndefined()
+  })
   it.each(['kotlin', 'scala'] as const)('keeps %s links outside generic code', async (port) => {
     const doc = port === 'kotlin' ? '[the server][Handle]' : '[[Handle the server]]'
     const root = fixture(port === 'kotlin' ? 'Handle.kt' : 'Handle.scala',
