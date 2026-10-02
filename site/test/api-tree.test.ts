@@ -3,7 +3,7 @@ import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
 import { compareMembers, memberSignals } from '@libtmux/api-model'
 import mentions from '../src/data/mentions.json'
-import { API_MODELS, API_NAV, OWNER_KINDS } from '../src/lib/api-models'
+import { API_MODELS, API_NAV, OWNER_KINDS, topLevelTypesOf } from '../src/lib/api-models'
 import { membersByType, navTree } from '../src/lib/api-tree'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 import { versionsOf } from '../../scripts/reference-trees.mjs'
@@ -102,12 +102,17 @@ describe.skipIf(!SITE_BUILT)('rendered reference ordering', () => {
         template.innerHTML = readFileSync(sitePath(port, version, 'reference/index.html'), 'utf8')
         const lazy = JSON.parse(readFileSync(sitePath(port, version, 'reference/tree.json'), 'utf8'))
         const tree = navTree(port).filter((bucket) => PRIMARY_OBJECT_BUCKETS.has(bucket.id))
+        const cardIds = new Set(topLevelTypesOf(API_MODELS[port]!).map((symbol) => symbol.publicId ?? symbol.id))
         for (const bucket of tree) {
           const section = template.content.getElementById(`section-${bucket.id}`)?.closest('details')
           const cards = [...section?.querySelectorAll('.api-index-card__link') ?? []]
             .map((link) => new URL(link.getAttribute('href')!, 'https://libtmux.org').pathname.split('/').filter(Boolean).at(-1))
-          const types = bucket.entries.filter((entry) => OWNER_KINDS.has(entry.kind))
+          const types = bucket.entries.filter((entry) => cardIds.has(entry.id))
           expect(cards, `${port}/${version}:${bucket.id}`).toEqual(types.map((entry) => entry.slug))
+          const declarations = [...section?.querySelectorAll(':scope > div > dl > dt[id]') ?? []]
+            .map((entry) => entry.id)
+          expect(declarations, `${port}/${version}:${bucket.id} inline declarations`)
+            .toEqual(bucket.entries.filter((entry) => !cardIds.has(entry.id)).map((entry) => entry.id))
           expect(lazy.buckets.find((entry: { id: string }) => entry.id === bucket.id)?.types.map((entry: { id: string }) => entry.id))
             .toEqual(bucket.entries.map((entry) => entry.id))
         }
