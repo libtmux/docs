@@ -29,6 +29,9 @@ describe('verified complete Ruby API programs', () => {
     expect(example.page).toBe(`ports/ruby/reference/${symbol.slug}`)
     expect(blocks).toHaveLength(5)
     for (const file of example.files) {
+      if (!('clipboardSha256' in file)) {
+        throw new Error(`Missing Ruby clipboard hash: ${example.symbol}/${file.name}`)
+      }
       const code = blocks[file.block].code
       expect(hash(code), `${example.symbol}/${file.name}`).toBe(file.sha256)
       expect(exported.some((block) => hash(block.value + '\n') === file.sha256),
