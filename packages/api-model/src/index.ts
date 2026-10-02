@@ -12,7 +12,7 @@ export { tokenizeDoc, docSummaryText, referencesIn, type DocSpan } from './doc/r
 export { writeInventory, readInventory, type InventoryEntry } from './inventory.ts'
 export { Resolver, notASymbol, toPath, DEFAULT_TEMPLATES, DEFAULT_PRIMARY_MODULES } from './resolver.ts'
 export type { Resolution, UrlTemplate } from './resolver.ts'
-export { moduleOf, modulesIn } from './modules.ts'
+export { qualifiedNameOf, moduleOf, modulesIn } from './modules.ts'
 export { CONCEPTS, conceptsFor, type Concept } from './concepts.ts'
 export { looksLikeApiMention, tableMentions, proseMentions, type TableMention, type ProseMention } from './mentions.ts'
 export { parseHunks, mapLine, type Hunk } from './source-lines.ts'

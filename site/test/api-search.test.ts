@@ -5,6 +5,17 @@ import { referenceTree } from '../src/lib/api-tree'
 import { API_MODEL_PORTS } from '../src/lib/ports'
 
 describe('reference symbol search', () => {
+  it('finds Java source-qualified names while retaining stable result identities and URLs', () => {
+    const tree = referenceTree('java')
+    for (const [query, id, slug] of [
+      ['io.github.libtmux.Server', 'io.github.libtmux.Server.Server', 'io-github-libtmux-server-server'],
+      ['io.github.libtmux.Server.Builder', 'io.github.libtmux.Server.Server.Builder', 'io-github-libtmux-server-server-builder-dv7l'],
+      ['io.github.libtmux.Server.sessions', 'io.github.libtmux.Server.Server.sessions', 'io-github-libtmux-server-server-sessions'],
+    ]) {
+      expect(searchApi(tree, query)[0]).toMatchObject({ id, qualifiedName: query, slug })
+      expect(searchApi(tree, id)[0].id).toBe(id)
+    }
+  })
   it.each(['Server.panes', 'Server panes'])('finds an owner and member from %s', (query) => {
     const found = searchApi(referenceTree('ts'), query)
     expect(found[0].id).toBe('server.Server.panes')

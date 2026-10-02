@@ -53,7 +53,7 @@ const owner = model.symbols.find((symbol) => symbol.id === 'pane.Pane.capture')
 ---
 <Reference model={model} owner={owner} />
 `)
-for (const port of ['py', 'kotlin', 'scala', 'lua']) {
+for (const port of ['py', 'kotlin', 'scala', 'lua', 'java']) {
   const directory = join(root, `src/pages/${port}/latest/reference`)
   mkdirSync(directory, { recursive: true })
   writeFileSync(join(directory, '[...slug].astro'), `---
@@ -219,6 +219,20 @@ async function checkReferenceAndHeroes(browser, base) {
         `Scala overloads fit at ${width}px`)
     }
     console.log('Scala overloads: only API symbols link, Vector resolves to Scala, and badges leave the full code width')
+    for (const [slug, qualifiedName] of [
+      ['server-server', 'io.github.libtmux.Server'],
+      ['server-server-builder-dv7l', 'io.github.libtmux.Server.Builder'],
+      ['server-server-sessions', 'io.github.libtmux.Server.sessions'],
+    ]) {
+      await page.goto(`${base}/java/latest/reference/io-github-libtmux-${slug}/`)
+      assert.equal(await page.title(), `${qualifiedName} | libtmux`)
+      assert.equal(await page.locator('.api-qualified-namespace').innerText(), 'io.github.libtmux')
+      assert.equal(await page.locator('[data-api-copy-name]').getAttribute('data-api-copy-name'), qualifiedName)
+      assert.equal(await page.locator('main h1').getAttribute('id'), qualifiedName.replace('libtmux.Server', 'libtmux.Server.Server'))
+      assert(await page.locator('.api-qualified-name').textContent().then((text) => text.includes(qualifiedName)),
+        `${qualifiedName}: complete source name remains in accessible HTML`)
+    }
+    console.log('Java names: source package and exact qualified names render without changing declaration anchors')
   } finally {
     await page.close()
   }

@@ -7,7 +7,7 @@ export function parentInventory(model: ApiModel, hrefFor: (symbol: ApiSymbol) =>
   const candidates = new Map<string, Map<string, { entry: InventoryEntry; rank: number }>>()
   for (const symbol of model.symbols) {
     if (symbol.apiScope === 'internal' || (symbol.product && symbol.product !== 'core')) continue
-    const name = (symbol.publicId ?? symbol.id).replace(/(^|\.)(\w+)\.\2(?=\.|$)/g, '$1$2')
+    const name = symbol.qualifiedName ?? (symbol.publicId ?? symbol.id).replace(/(^|\.)(\w+)\.\2(?=\.|$)/g, '$1$2')
     const uri = hrefFor(symbol).replace(/^\/+/, '')
     const parts = name.split('.')
     for (let offset = 0; offset < parts.length; offset++) {
