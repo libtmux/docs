@@ -1,0 +1,131 @@
+#!/usr/bin/env node
+/*
+ * Run the port examples these docs quote against a tmux server this script
+ * owns, through each port's arena adapter, then prove every adapter fails
+ * closed when its contract is incomplete.
+ *
+ * A port runs when its `tmux-arena` worktree and toolchain are present. One
+ * without them is reported as not run, never as passed; `--require` turns
+ * that into a failure. It starts with the quote coverage, which is a rule
+ * rather than a report: a page quoting a program no artifact runs fails here
+ * unless check-quote-coverage.mjs excuses it with a reason code.
+ *
+ * Usage: node scripts/docs-arena.mjs [--port <slug>]... [--require] [--no-prepare]
+ */
+import { spawnSync } from 'node:child_process'
+import { accessSync, constants, existsSync, mkdirSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { delimiter, join, resolve } from 'node:path'
+import sources from '../site/src/data/example-sources.json' with { type: 'json' }
+import { ARTIFACTS, arenaWorktree } from './arena/artifacts.mjs'
+import { runCheck as checkQuoteCoverage } from './arena/check-quote-coverage.mjs'
+import { ArenaFailure, resolveTmux, runFailClosed, runInArena, runInArenaMulti } from './arena/supervisor.mjs'
+
+const argv = process.argv.slice(2)
+const only = new Set(argv.flatMap((arg, index) => (argv[index - 1] === '--port' ? [arg] : [])))
+const requireAll = argv.includes('--require')
+const prepare = !argv.includes('--no-prepare')
+
+const onPath = (tool) => (process.env.PATH ?? '').split(delimiter).filter(Boolean).some((dir) => {
+  try {
+    accessSync(join(dir, tool), constants.X_OK)
+    return true
+  } catch {
+    return false
+  }
+})
+
+function step(worktree, { cwd, command }) {
+  const result = spawnSync(command[0], command.slice(1), {
+    cwd: resolve(worktree, cwd), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'],
+  })
+  if (result.status !== 0) {
+    const output = `${result.stdout ?? ''}${result.stderr ?? ''}${result.error?.message ?? ''}`.trim()
+    throw new ArenaFailure(`preparing failed: ${command.join(' ')}\n${output.slice(-2000)}`)
+  }
+}
+
+// Coverage has two kinds of key and they can never match each other. A quoted
+// file is `slug:path`, recorded by gen-example-sources when a page fences it.
+// A doctest page is `slug:page:path`: there the page is the executable unit,
+// and it lives in the port's own documentation tree, which gen-example-sources
+// never scans. Counted in one bucket, a page looked like a quoted file nothing
+// quoted, and a file the arena runs but no page shows looked like coverage.
+const isPage = (key) => key.split(':')[1] === 'page'
+const executed = new Set(ARTIFACTS.flatMap((entry) => entry.runs))
+const executedFiles = [...executed].filter((key) => !isPage(key))
+const executedPages = [...executed].filter(isPage).sort()
+// The quoted direction is a rule, not a report, and it lives in one place so
+// that the every-run gate and this port lane cannot disagree about it: a page
+// quoting a program the arena never runs fails here too.
+const coverage = checkQuoteCoverage()
+const covered = (status) => coverage.filter((result) => result.status === status).map((result) => result.key)
+console.log(`quoted and run in the arena: ${covered('run').join(', ') || 'none'}`)
+console.log(`quoted, not run here, exempt with a reason: ${covered('exempt').join(', ') || 'none'}`)
+console.log(`run in the arena but quoted by no page: ${executedFiles.filter((key) => !Object.hasOwn(sources, key)).sort().join(', ') || 'none'}`)
+console.log(`pages run in the arena: ${executedPages.join(', ') || 'none'}`)
+for (const result of coverage.filter((entry) => entry.status === 'fail')) {
+  console.error(`quote coverage: ${result.key} — ${result.reason}`)
+}
+
+let tmuxBin
+let tmuxProblem
+try {
+  tmuxBin = resolveTmux()
+} catch (error) {
+  tmuxProblem = error.message
+}
+
+const results = []
+const prepared = new Set()
+for (const entry of ARTIFACTS) {
+  if (only.size && !only.has(entry.slug)) continue
+  const worktree = arenaWorktree(entry.slug)
+  const absent = tmuxProblem
+    ?? (existsSync(worktree) ? undefined : `no tmux-arena worktree at ${worktree}`)
+    ?? entry.tools.filter((tool) => !onPath(tool)).map((tool) => `${tool} is not on PATH`)[0]
+  if (absent) {
+    results.push({ slug: entry.slug, status: 'not run', detail: absent })
+    continue
+  }
+  const build = join(tmpdir(), 'libtmux-docs-arena', entry.slug)
+  mkdirSync(build, { recursive: true })
+  const startedAt = Date.now()
+  try {
+    if (prepare) {
+      for (const buildStep of entry.prepare(build)) {
+        // Artifacts of one port share install and build commands. Each
+        // distinct command runs once per worktree, so four ts examples do not
+        // pay for the same install and build four times.
+        const key = [worktree, buildStep.cwd, ...buildStep.command].join('\u0000')
+        if (prepared.has(key)) continue
+        step(worktree, buildStep)
+        prepared.add(key)
+      }
+    }
+    const { cwd, command } = entry.run(build)
+    const target = { tmuxBin, artifact: entry.artifact, command, cwd: resolve(worktree, cwd) }
+    // An artifact that declares several sources is lent one server for all of
+    // them and answers with one record each, so a page that produced none is
+    // caught. One source is still one record, which is what every other
+    // artifact does.
+    const evidence = entry.sources
+      ? (await runInArenaMulti({ ...target, sources: entry.sources }))[0]
+      : await runInArena(target)
+    await runFailClosed(target)
+    const ms = Date.now() - startedAt
+    results.push({ slug: entry.slug, status: 'pass', detail: `${entry.artifact} reached server ${evidence.server_pid}; failed closed without its socket (${ms}ms)` })
+  } catch (error) {
+    if (!(error instanceof ArenaFailure)) throw error
+    const ms = Date.now() - startedAt
+    results.push({ slug: entry.slug, status: 'fail', detail: `${entry.artifact}: ${error.message} (${ms}ms)` })
+  }
+}
+
+for (const { slug, status, detail } of results) console.log(`${status.padEnd(7)} ${slug.padEnd(6)} ${detail}`)
+const count = (status) => results.filter((result) => result.status === status).map((result) => result.slug)
+const notRun = count('not run')
+console.log(`docs arena: passed ${count('pass').join(', ') || 'none'}; failed ${count('fail').join(', ') || 'none'}; not run: ${notRun.join(', ') || 'none'}`)
+const unaccounted = coverage.filter((result) => result.status === 'fail')
+if (unaccounted.length) console.log(`docs arena: ${unaccounted.length} quoted source(s) unaccounted for, listed above`)
+if (count('fail').length || unaccounted.length || (requireAll && notRun.length)) process.exitCode = 1
