@@ -3,6 +3,7 @@
  * API references are linked, rather than inlined into the full prose export.
  */
 import { getCollection } from 'astro:content'
+import { qualifiedNameOf } from '@libtmux/api-model'
 import type { CollectionEntry } from 'astro:content'
 import { resolvePortCode } from '../plugins/remark-port-code.mjs'
 import { PORTS, PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, productAvailable, referenceUrl, workspaceOverviewNotice } from './ports.ts'
@@ -93,7 +94,7 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
     && docsPath(entry) === productApiPath(entry.data.product)) {
     const model = API_MODELS[entryPort]
     const symbols = productApiRoots(model, entry.data.product)
-    body += `\n\n## API declarations\n\n${symbols.map((symbol) => `- [${symbol.publicId ?? symbol.name}](${origin}${productApiHref(model, symbol, version)})`).join('\n')}\n`
+    body += `\n\n## API declarations\n\n${symbols.map((symbol) => `- [${qualifiedNameOf(symbol)}](${origin}${productApiHref(model, symbol, version)})`).join('\n')}\n`
     if (entry.data.product === 'mcp') body += `\n[Protocol catalog](${origin}${portPageUrl(PORT_BY_SLUG[entryPort], version, 'mcp/tools').replace(/\/$/, '.json')})\n`
   }
   // A locale's landing entry routes to '', which is the root itself.

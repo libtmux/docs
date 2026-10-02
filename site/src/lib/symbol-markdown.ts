@@ -1,5 +1,5 @@
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { moduleOf } from '@libtmux/api-model'
+import { moduleOf, qualifiedNameOf } from '@libtmux/api-model'
 import { PORT_NAME } from './api-models'
 
 /**
@@ -31,12 +31,12 @@ function signatureLine(symbol: ApiSymbol): string | undefined {
     .map((p) => `${p.name}${p.type ? `: ${p.type}` : ''}${p.default ? ` = ${p.default}` : ''}`)
     .join(', ')
   const returns = sig.returns ? ` -> ${sig.returns}` : ''
-  return `${symbol.publicId ?? symbol.id}(${params})${returns}`
+  return `${qualifiedNameOf(symbol)}(${params})${returns}`
 }
 
 export function symbolMarkdown(ctx: MarkdownContext): string {
   const { model, symbol } = ctx
-  const id = symbol.publicId ?? symbol.id
+  const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
 
   // The definition block, in the same order the page shows it.
