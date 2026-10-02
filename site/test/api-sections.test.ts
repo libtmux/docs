@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { compareMembers, memberSignals, SymbolIndex, type ApiSymbol } from '@libtmux/api-model'
-import { apiEntrySections, apiMemberGroups, relatedApiTypes } from '../src/lib/api-sections'
+import { apiEntryFields, apiEntrySections, apiMemberGroups, relatedApiTypes } from '../src/lib/api-sections'
 
 const symbol = (id: string, overrides: Partial<ApiSymbol> = {}): ApiSymbol => ({
   id, name: id.split('.').at(-1)!, kind: 'class', modifiers: [], signatures: [],
@@ -8,6 +8,39 @@ const symbol = (id: string, overrides: Partial<ApiSymbol> = {}): ApiSymbol => ({
 })
 
 describe('reference page navigation', () => {
+  it('preserves distinct overload fields and identifies which calls they describe', () => {
+    const method = symbol('Server.session', { kind: 'method', signatures: [
+      { params: [{ name: 'value', type: 'Expr', doc: 'Match exactly one session.' }],
+        returnsDoc: 'The matching session.', raises: [{ type: 'CardinalityError', doc: 'Zero or multiple matches.' }] },
+      { params: [{ name: 'value', type: 'string', doc: 'Look up a session name.' }],
+        returnsDoc: 'The named session or null.' },
+      { params: [{ name: 'id', type: 'SessionId' }] },
+    ] })
+    const fields = apiEntryFields(method, 'kotlin')
+    expect(fields.params.map((param) => [param.name, param.type, param.doc])).toEqual([
+      ['value', 'Expr', 'Match exactly one session.'], ['value', 'string', 'Look up a session name.'],
+      ['id', 'SessionId', undefined],
+    ])
+    expect(fields.returns).toEqual([
+      { doc: 'The matching session.', overloads: ['session(value: Expr)'] },
+      { doc: 'The named session or null.', overloads: ['session(value: string)'] },
+    ])
+    expect(fields.raises).toEqual([
+      { type: 'CardinalityError', doc: 'Zero or multiple matches.', overloads: ['session(value: Expr)'] },
+    ])
+    expect(apiEntrySections(method, 'kotlin').map((section) => section.label)).toEqual(['Parameters', 'Returns', 'Errors'])
+  })
+
+  it('renders a shared field once without an unnecessary overload qualifier', () => {
+    const common = { params: [{ name: 'value', type: 'string', doc: 'The name.' }],
+      returnsDoc: 'The matching session.', raises: [{ type: 'TransportError', doc: 'The server is unavailable.' }] }
+    const method = symbol('Server.session', { signatures: [common, { ...common, returns: 'Session?' }] })
+    const fields = apiEntryFields(method, 'kotlin')
+    expect(fields.params).toHaveLength(1)
+    expect(fields.returns).toEqual([{ doc: 'The matching session.', overloads: [] }])
+    expect(fields.raises).toEqual([{ type: 'TransportError', doc: 'The server is unavailable.', overloads: [] }])
+  })
+
   it('offers parameter sections only when the port renders those parameters', () => {
     const method = symbol('Server.capture', { signatures: [{ params: [{ name: 'limit', type: 'number' }] }] })
     expect(apiEntrySections(method, 'ts')).toEqual([])

@@ -1,4 +1,4 @@
-import { memberTier, type ApiSymbol, type MemberSignals, type SymbolIndex } from '@libtmux/api-model'
+import { memberTier, type ApiSymbol, type MemberSignals, type Signature, type SymbolIndex } from '@libtmux/api-model'
 
 export interface ApiSection {
   id: string
@@ -9,11 +9,30 @@ export interface ApiSection {
 
 /** The fields shown by ApiEntry, shared with its section navigation. */
 export function apiEntryFields(symbol: ApiSymbol, port?: string) {
-  const signature = symbol.signatures.at(-1)
-  const params = ['kotlin', 'scala', 'fsharp'].includes(port ?? '')
-    ? [...new Map(symbol.signatures.flatMap((sig) => sig.params).map((param) => [param.name, param])).values()]
-    : signature?.params.filter((param) => param.doc) ?? []
-  return { params, returnsDoc: signature?.returnsDoc, raises: signature?.raises ?? [] }
+  const native = ['kotlin', 'scala', 'fsharp'].includes(port ?? '')
+  const label = (signature: Signature) => signature.raw?.replace(/\s+/g, ' ').trim() ??
+    `${symbol.name}(${signature.params.map((param) => `${param.name}${param.type ? `: ${param.type}` : ''}`).join(', ')})`
+  const collect = <T>(read: (signature: Signature) => T[]) => {
+    const fields = new Map<string, { value: T; signatures: Set<number> }>()
+    symbol.signatures.forEach((signature, i) => {
+      for (const value of read(signature)) {
+        const key = JSON.stringify(value)
+        const field = fields.get(key) ?? { value, signatures: new Set<number>() }
+        field.signatures.add(i)
+        fields.set(key, field)
+      }
+    })
+    return [...fields.values()].map(({ value, signatures }) => ({
+      ...value,
+      overloads: signatures.size < symbol.signatures.length
+        ? [...signatures].map((i) => label(symbol.signatures[i])) : [],
+    }))
+  }
+  return {
+    params: collect((signature) => signature.params.filter((param) => native || param.doc)),
+    returns: collect((signature) => signature.returnsDoc ? [{ doc: signature.returnsDoc }] : []),
+    raises: collect((signature) => signature.raises ?? []),
+  }
 }
 
 /** Only sections that the declaration actually renders, in reading order. */
@@ -25,7 +44,7 @@ export function apiEntrySections(symbol: ApiSymbol, port?: string): ApiSection[]
   if (symbol.doc?.examples?.length) sections.push({ id: `${anchor}.examples`, label: 'Examples' })
   if (symbol.doc?.references?.length) sections.push({ id: `${anchor}.references`, label: 'References' })
   if (fields.params.length) sections.push({ id: `${anchor}.parameters`, label: 'Parameters' })
-  if (fields.returnsDoc) sections.push({ id: `${anchor}.returns`, label: 'Returns' })
+  if (fields.returns.length) sections.push({ id: `${anchor}.returns`, label: 'Returns' })
   if (fields.raises.length) sections.push({ id: `${anchor}.errors`, label: 'Errors' })
   return sections
 }

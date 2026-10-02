@@ -219,6 +219,18 @@ async function checkReferenceAndHeroes(browser, base) {
         `Scala overloads fit at ${width}px`)
     }
     console.log('Scala overloads: only API symbols link, Vector resolves to Scala, and badges leave the full code width')
+    await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server-session/`)
+    const errors = page.locator('[id="io.github.libtmux.kotlin.Server.session.errors"] + dd')
+    assert.match(await errors.innerText(), /NoMatch/)
+    assert.match(await errors.innerText(), /MultipleMatches/)
+    assert.match(await errors.innerText(), /expression:/, 'Errors identify the expression overload')
+    const fieldIds = await page.locator('.gp-sphinx-api-parameters [id]').evaluateAll((elements) => elements.map((element) => element.id))
+    assert.equal(fieldIds.length, new Set(fieldIds).size, 'Overload parameters retain unique anchors')
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Overload field labels fit on a phone')
+    await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-options-get/`)
+    assert(await page.locator('[id="io.github.libtmux.kotlin.Options.get.returns"] + dd').innerText(),
+      'The earlier get overload retains its return documentation')
+    console.log('Overload contracts: earlier errors and returns render with their owning calls and unique anchors')
   } finally {
     await page.close()
   }

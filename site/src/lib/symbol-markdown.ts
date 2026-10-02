@@ -89,20 +89,24 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push(`> **${note.kind}:** ${note.text.replaceAll('\n', '\n> ')}`, '')
   }
 
-  const { params, returnsDoc, raises } = apiEntryFields(symbol, model.port)
+  const { params, returns, raises } = apiEntryFields(symbol, model.port)
+  const overloads = (labels: string[]) => labels.length ? ` (for ${labels.map((label) => `\`${label}\``).join('; ')})` : ''
   if (params.length) {
     out.push('## Parameters', '')
     for (const p of params) {
-      out.push(`- \`${p.name}\`${p.type ? ` (${p.type})` : ''}${p.doc ? `: ${p.doc}` : ''}${p.since ? ` (added ${p.since})` : ''}${p.deprecated ? ` (deprecated ${p.deprecated})` : ''}`)
+      out.push(`- \`${p.name}\`${p.type ? ` (${p.type})` : ''}${p.doc ? `: ${p.doc}` : ''}${p.since ? ` (added ${p.since})` : ''}${p.deprecated ? ` (deprecated ${p.deprecated})` : ''}${overloads(p.overloads)}`)
     }
     out.push('')
   }
 
-  if (returnsDoc) out.push('## Returns', '', returnsDoc, '')
+  if (returns.length) {
+    out.push('## Returns', '')
+    for (const entry of returns) out.push(`${entry.doc}${overloads(entry.overloads)}`, '')
+  }
 
   if (raises.length) {
     out.push('## Raises', '')
-    for (const r of raises) out.push(`- \`${r.type}\`${r.doc ? `: ${r.doc}` : ''}`)
+    for (const r of raises) out.push(`- \`${r.type}\`${r.doc ? `: ${r.doc}` : ''}${overloads(r.overloads)}`)
     out.push('')
   }
 

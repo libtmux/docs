@@ -6,6 +6,39 @@ import { PORTS } from '../src/lib/ports'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 
 describe('API Markdown content parity', () => {
+  it('retains earlier overload contracts instead of replacing them with an undocumented final overload', () => {
+    const model = API_MODELS.kotlin
+    for (const name of ['session', 'window', 'pane']) {
+      const symbol = model.symbols.find((entry) => entry.id === `io.github.libtmux.kotlin.Server.${name}`)!
+      const text = symbolMarkdown({ model, symbol })
+      expect(text).toContain('## Raises')
+      expect(text).toContain('NoMatch')
+      expect(text).toContain('MultipleMatches')
+      expect(text).toContain('expression:')
+    }
+    const get = model.symbols.find((entry) => entry.id === 'io.github.libtmux.kotlin.Options.get')!
+    expect(symbolMarkdown({ model, symbol: get })).toContain('## Returns')
+  })
+
+  for (const port of PORTS) {
+    it(`${port.name} keeps every documented overload contract in Markdown`, () => {
+      const model = API_MODELS[port.slug]
+      for (const symbol of model.symbols.filter((entry) => entry.signatures.length > 1)) {
+        const text = symbolMarkdown({ model, symbol })
+        for (const signature of symbol.signatures) {
+          if (signature.returnsDoc) expect(text, symbol.id).toContain(signature.returnsDoc)
+          for (const param of signature.params) {
+            if (param.doc) expect(text, `${symbol.id} parameter ${param.name}`).toContain(param.doc)
+          }
+          for (const error of signature.raises ?? []) {
+            expect(text, symbol.id).toContain(error.type)
+            if (error.doc) expect(text, symbol.id).toContain(error.doc)
+          }
+        }
+      }
+    })
+  }
+
   it('preserves example bytes when blank lines and backticks are part of the program', () => {
     const code = 'const output = `first\n\n\nlast`;\nconsole.log(output);\nconsole.log("```");\n'
     const symbol: ApiSymbol = {
