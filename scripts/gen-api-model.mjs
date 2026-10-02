@@ -14,6 +14,7 @@ import { PORTS as PORT_DEFS } from '../site/src/lib/ports.ts'
 import { extractDoxygen } from '../packages/api-model/src/languages/doxygen.ts'
 import { extractLua } from '../packages/api-model/src/languages/lua.ts'
 import { extractRuby } from '../packages/api-model/src/languages/ruby.ts'
+import { attachCompleteGoExamples, readCompleteGoExamples } from '../packages/api-model/src/languages/go-examples.ts'
 import { mapLine, parseHunks } from '../packages/api-model/src/source-lines.ts'
 import { extractProject } from '../packages/api-model/src/project.ts'
 import { scopeProductSymbols } from '../packages/api-model/src/product-exports.ts'
@@ -452,6 +453,24 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       roots,
       revision,
       options: cfg.options,
+    })
+  }
+
+  if (port === 'go') {
+    // Read committed bytes at the citation revision, never a newer working tree.
+    const files = (git(checkout, 'ls-tree', '-r', '--name-only', revision, 'tmux') ?? '')
+      .split('\n').filter((file) => /^tmux\/[^/]+_test\.go$/.test(file))
+      .map((file) => ({
+        file,
+        code: execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
+          encoding: 'utf8', maxBuffer: 1 << 26,
+        }),
+      }))
+    const examples = await readCompleteGoExamples(files)
+    const goVersion = /^go (\d+\.\d+\.\d+)$/m.exec(git(checkout, 'show', `${revision}:go.mod`) ?? '')?.[1]
+    if (examples.length && !goVersion) throw new Error('Missing Go version for complete examples')
+    if (examples.length) attachCompleteGoExamples(model.symbols, examples, {
+      repo: cfg.repo, revision, goVersion,
     })
   }
 

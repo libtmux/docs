@@ -127,6 +127,14 @@ cannot hide an earlier missing result.
 Use `--example guide --page guides/capturing-output` for a root guide's shell
 program. Select the tmux release through `PATH`; the result records `tmux -V`.
 
+Use `--example api --port go --page reference/tmux-newserver` for a complete
+native Go API example. The runner reads the displayed files and commands from
+the generated API model. Go source files opt in with an
+`ExampleName_complete` or `ExampleType_Method_complete` function, one complete
+example per file, with its own imports, cleanup and `Output` assertion. The
+extractor reads committed source at the citation revision. Ordinary examples
+that depend on package helpers are not imported as complete programs.
+
 Put explanatory comments on separate lines above the code they describe.
 Limit example comments to 100 columns, including indentation; prefer shorter
 lines that fit the code panel. Put long source links and attribution in prose
