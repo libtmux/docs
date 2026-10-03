@@ -1165,6 +1165,531 @@
         "3.7c"
       ],
       "verificationScope": "Complete program and displayed Gemfile against the pinned public source. Native checks assert output and owned-server cleanup on both recorded tmux versions; HTML copy removes only the terminal newline."
+    },
+    {
+      "port": "lua",
+      "page": "ports/lua/reference/libtmux-runtime-connect",
+      "symbol": "libtmux.Runtime:connect",
+      "sourceRepository": "libtmux/libtmux-lua",
+      "sourceRevision": "0395620d362ef75c74cd488f9577afda68922586",
+      "sourceFile": "examples/api/connect.lua",
+      "sourceProgramId": "connect",
+      "files": [
+        {
+          "name": "run.sh",
+          "block": 1,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "d11e8fe41d66e134b1a4e4c533d1757b572f6352eac14ed04d177cd5c035513c",
+          "clipboardSha256": "b6dbf9c892c337b97b91a7e8dcbb12b770e452701ec52896dff883b609c5fb78"
+        },
+        {
+          "name": "connect.lua",
+          "block": 2,
+          "sourceFile": "examples/api/connect.lua",
+          "sha256": "572b7ed3414351471c47ab506b89c108f3f7dfc30d77c34f748e22ec4db2de67",
+          "clipboardSha256": "26c40ebab5a82f6558e97dc5b378e8d8f15aa553aaa2e9360adbdcaa5d64bf18"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lua.git libtmux-source &&\n  git -C libtmux-source checkout 0395620d362ef75c74cd488f9577afda68922586 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\"",
+        "eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh connect.lua"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "connected"
+        ]
+      ],
+      "runtime": "Lua 5.5.1; luv 1.52.1-0; LuaRocks 3.13.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "copyConvention": "Source files contain LF line endings and one final newline. HTML clipboard payloads omit that final newline; both hashes are recorded. Console clipboard payloads remove the displayed dollar prompt and final newline.",
+      "verificationScope": "The exact public source checkout, setup, full program and launcher ran on both tmux releases. The shared snapshot program is byte-identical on its four API pages.",
+      "nativeReceiptSha256": "d918c604660888ae5a4d6abe1b40ba13e90140bed884a1e5dc3d2651a840f3b9"
+    },
+    {
+      "port": "lua",
+      "page": "ports/lua/reference/libtmux-server-snapshot",
+      "symbol": "libtmux.Server:snapshot",
+      "sourceRepository": "libtmux/libtmux-lua",
+      "sourceRevision": "0395620d362ef75c74cd488f9577afda68922586",
+      "sourceFile": "examples/api/snapshot.lua",
+      "sourceProgramId": "snapshot",
+      "files": [
+        {
+          "name": "run.sh",
+          "block": 1,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "d11e8fe41d66e134b1a4e4c533d1757b572f6352eac14ed04d177cd5c035513c",
+          "clipboardSha256": "b6dbf9c892c337b97b91a7e8dcbb12b770e452701ec52896dff883b609c5fb78"
+        },
+        {
+          "name": "snapshot.lua",
+          "block": 2,
+          "sourceFile": "examples/api/snapshot.lua",
+          "sha256": "b93cd81190209c09f72b756c486bf13ad5f44056c60e13a1ae1c0f34f1e50de9",
+          "clipboardSha256": "6bfd1f9072ec29f591bbcfae8e83bf4369dc8066fcbd2d802499ad91daa7f781"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lua.git libtmux-source &&\n  git -C libtmux-source checkout 0395620d362ef75c74cd488f9577afda68922586 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\"",
+        "eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh snapshot.lua"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "sessions: bootstrap, demo",
+          "windows: bootstrap, main",
+          "panes: 2"
+        ]
+      ],
+      "runtime": "Lua 5.5.1; luv 1.52.1-0; LuaRocks 3.13.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "copyConvention": "Source files contain LF line endings and one final newline. HTML clipboard payloads omit that final newline; both hashes are recorded. Console clipboard payloads remove the displayed dollar prompt and final newline.",
+      "verificationScope": "The exact public source checkout, setup, full program and launcher ran on both tmux releases. The shared snapshot program is byte-identical on its four API pages.",
+      "nativeReceiptSha256": "d918c604660888ae5a4d6abe1b40ba13e90140bed884a1e5dc3d2651a840f3b9"
+    },
+    {
+      "port": "lua",
+      "page": "ports/lua/reference/libtmux-snapshot-sessions",
+      "symbol": "libtmux.Snapshot.sessions",
+      "sourceRepository": "libtmux/libtmux-lua",
+      "sourceRevision": "0395620d362ef75c74cd488f9577afda68922586",
+      "sourceFile": "examples/api/snapshot.lua",
+      "sourceProgramId": "snapshot",
+      "files": [
+        {
+          "name": "run.sh",
+          "block": 1,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "d11e8fe41d66e134b1a4e4c533d1757b572f6352eac14ed04d177cd5c035513c",
+          "clipboardSha256": "b6dbf9c892c337b97b91a7e8dcbb12b770e452701ec52896dff883b609c5fb78"
+        },
+        {
+          "name": "snapshot.lua",
+          "block": 2,
+          "sourceFile": "examples/api/snapshot.lua",
+          "sha256": "b93cd81190209c09f72b756c486bf13ad5f44056c60e13a1ae1c0f34f1e50de9",
+          "clipboardSha256": "6bfd1f9072ec29f591bbcfae8e83bf4369dc8066fcbd2d802499ad91daa7f781"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lua.git libtmux-source &&\n  git -C libtmux-source checkout 0395620d362ef75c74cd488f9577afda68922586 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\"",
+        "eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh snapshot.lua"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "sessions: bootstrap, demo",
+          "windows: bootstrap, main",
+          "panes: 2"
+        ]
+      ],
+      "runtime": "Lua 5.5.1; luv 1.52.1-0; LuaRocks 3.13.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "copyConvention": "Source files contain LF line endings and one final newline. HTML clipboard payloads omit that final newline; both hashes are recorded. Console clipboard payloads remove the displayed dollar prompt and final newline.",
+      "verificationScope": "The exact public source checkout, setup, full program and launcher ran on both tmux releases. The shared snapshot program is byte-identical on its four API pages.",
+      "nativeReceiptSha256": "d918c604660888ae5a4d6abe1b40ba13e90140bed884a1e5dc3d2651a840f3b9"
+    },
+    {
+      "port": "lua",
+      "page": "ports/lua/reference/libtmux-snapshot-windows",
+      "symbol": "libtmux.Snapshot.windows",
+      "sourceRepository": "libtmux/libtmux-lua",
+      "sourceRevision": "0395620d362ef75c74cd488f9577afda68922586",
+      "sourceFile": "examples/api/snapshot.lua",
+      "sourceProgramId": "snapshot",
+      "files": [
+        {
+          "name": "run.sh",
+          "block": 1,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "d11e8fe41d66e134b1a4e4c533d1757b572f6352eac14ed04d177cd5c035513c",
+          "clipboardSha256": "b6dbf9c892c337b97b91a7e8dcbb12b770e452701ec52896dff883b609c5fb78"
+        },
+        {
+          "name": "snapshot.lua",
+          "block": 2,
+          "sourceFile": "examples/api/snapshot.lua",
+          "sha256": "b93cd81190209c09f72b756c486bf13ad5f44056c60e13a1ae1c0f34f1e50de9",
+          "clipboardSha256": "6bfd1f9072ec29f591bbcfae8e83bf4369dc8066fcbd2d802499ad91daa7f781"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lua.git libtmux-source &&\n  git -C libtmux-source checkout 0395620d362ef75c74cd488f9577afda68922586 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\"",
+        "eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh snapshot.lua"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "sessions: bootstrap, demo",
+          "windows: bootstrap, main",
+          "panes: 2"
+        ]
+      ],
+      "runtime": "Lua 5.5.1; luv 1.52.1-0; LuaRocks 3.13.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "copyConvention": "Source files contain LF line endings and one final newline. HTML clipboard payloads omit that final newline; both hashes are recorded. Console clipboard payloads remove the displayed dollar prompt and final newline.",
+      "verificationScope": "The exact public source checkout, setup, full program and launcher ran on both tmux releases. The shared snapshot program is byte-identical on its four API pages.",
+      "nativeReceiptSha256": "d918c604660888ae5a4d6abe1b40ba13e90140bed884a1e5dc3d2651a840f3b9"
+    },
+    {
+      "port": "lua",
+      "page": "ports/lua/reference/libtmux-snapshot-panes",
+      "symbol": "libtmux.Snapshot.panes",
+      "sourceRepository": "libtmux/libtmux-lua",
+      "sourceRevision": "0395620d362ef75c74cd488f9577afda68922586",
+      "sourceFile": "examples/api/snapshot.lua",
+      "sourceProgramId": "snapshot",
+      "files": [
+        {
+          "name": "run.sh",
+          "block": 1,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "d11e8fe41d66e134b1a4e4c533d1757b572f6352eac14ed04d177cd5c035513c",
+          "clipboardSha256": "b6dbf9c892c337b97b91a7e8dcbb12b770e452701ec52896dff883b609c5fb78"
+        },
+        {
+          "name": "snapshot.lua",
+          "block": 2,
+          "sourceFile": "examples/api/snapshot.lua",
+          "sha256": "b93cd81190209c09f72b756c486bf13ad5f44056c60e13a1ae1c0f34f1e50de9",
+          "clipboardSha256": "6bfd1f9072ec29f591bbcfae8e83bf4369dc8066fcbd2d802499ad91daa7f781"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lua.git libtmux-source &&\n  git -C libtmux-source checkout 0395620d362ef75c74cd488f9577afda68922586 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\"",
+        "eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh snapshot.lua"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "sessions: bootstrap, demo",
+          "windows: bootstrap, main",
+          "panes: 2"
+        ]
+      ],
+      "runtime": "Lua 5.5.1; luv 1.52.1-0; LuaRocks 3.13.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "copyConvention": "Source files contain LF line endings and one final newline. HTML clipboard payloads omit that final newline; both hashes are recorded. Console clipboard payloads remove the displayed dollar prompt and final newline.",
+      "verificationScope": "The exact public source checkout, setup, full program and launcher ran on both tmux releases. The shared snapshot program is byte-identical on its four API pages.",
+      "nativeReceiptSha256": "d918c604660888ae5a4d6abe1b40ba13e90140bed884a1e5dc3d2651a840f3b9"
+    },
+    {
+      "port": "lua",
+      "page": "ports/lua/reference/libtmux-server-new_session",
+      "symbol": "libtmux.Server:new_session",
+      "sourceRepository": "libtmux/libtmux-lua",
+      "sourceRevision": "0395620d362ef75c74cd488f9577afda68922586",
+      "sourceFile": "examples/api/new_session.lua",
+      "sourceProgramId": "new_session",
+      "files": [
+        {
+          "name": "run.sh",
+          "block": 1,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "d11e8fe41d66e134b1a4e4c533d1757b572f6352eac14ed04d177cd5c035513c",
+          "clipboardSha256": "b6dbf9c892c337b97b91a7e8dcbb12b770e452701ec52896dff883b609c5fb78"
+        },
+        {
+          "name": "new_session.lua",
+          "block": 2,
+          "sourceFile": "examples/api/new_session.lua",
+          "sha256": "6c3661bf00ae2f607cac6b5c1b66cd7dbb4db975a65ac06072ebbd93d580e116",
+          "clipboardSha256": "8271d0a613dbf7b76d3433645538f2398e9796ab09e4c394a72c65fbdc0175e5"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lua.git libtmux-source &&\n  git -C libtmux-source checkout 0395620d362ef75c74cd488f9577afda68922586 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\"",
+        "eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh new_session.lua"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "session: demo"
+        ]
+      ],
+      "runtime": "Lua 5.5.1; luv 1.52.1-0; LuaRocks 3.13.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "copyConvention": "Source files contain LF line endings and one final newline. HTML clipboard payloads omit that final newline; both hashes are recorded. Console clipboard payloads remove the displayed dollar prompt and final newline.",
+      "verificationScope": "The exact public source checkout, setup, full program and launcher ran on both tmux releases. The shared snapshot program is byte-identical on its four API pages.",
+      "nativeReceiptSha256": "d918c604660888ae5a4d6abe1b40ba13e90140bed884a1e5dc3d2651a840f3b9"
+    },
+    {
+      "port": "lua",
+      "page": "ports/lua/reference/libtmux-session-new_window",
+      "symbol": "libtmux.Session:new_window",
+      "sourceRepository": "libtmux/libtmux-lua",
+      "sourceRevision": "0395620d362ef75c74cd488f9577afda68922586",
+      "sourceFile": "examples/api/new_window.lua",
+      "sourceProgramId": "new_window",
+      "files": [
+        {
+          "name": "run.sh",
+          "block": 1,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "d11e8fe41d66e134b1a4e4c533d1757b572f6352eac14ed04d177cd5c035513c",
+          "clipboardSha256": "b6dbf9c892c337b97b91a7e8dcbb12b770e452701ec52896dff883b609c5fb78"
+        },
+        {
+          "name": "new_window.lua",
+          "block": 2,
+          "sourceFile": "examples/api/new_window.lua",
+          "sha256": "5ea71a825363a2f3d1bc4a7841a3598e6b1aba0899f95e1b754177d3d91eb032",
+          "clipboardSha256": "6559caa5b10a6a935d506236f34d5e0d8371a8a2331a1066be36b16f6777f158"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lua.git libtmux-source &&\n  git -C libtmux-source checkout 0395620d362ef75c74cd488f9577afda68922586 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\"",
+        "eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh new_window.lua"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "window: logs"
+        ]
+      ],
+      "runtime": "Lua 5.5.1; luv 1.52.1-0; LuaRocks 3.13.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "copyConvention": "Source files contain LF line endings and one final newline. HTML clipboard payloads omit that final newline; both hashes are recorded. Console clipboard payloads remove the displayed dollar prompt and final newline.",
+      "verificationScope": "The exact public source checkout, setup, full program and launcher ran on both tmux releases. The shared snapshot program is byte-identical on its four API pages.",
+      "nativeReceiptSha256": "d918c604660888ae5a4d6abe1b40ba13e90140bed884a1e5dc3d2651a840f3b9"
+    },
+    {
+      "port": "lua",
+      "page": "ports/lua/reference/libtmux-server-query",
+      "symbol": "libtmux.Server:query",
+      "sourceRepository": "libtmux/libtmux-lua",
+      "sourceRevision": "0395620d362ef75c74cd488f9577afda68922586",
+      "sourceFile": "examples/api/query.lua",
+      "sourceProgramId": "query",
+      "files": [
+        {
+          "name": "run.sh",
+          "block": 1,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "d11e8fe41d66e134b1a4e4c533d1757b572f6352eac14ed04d177cd5c035513c",
+          "clipboardSha256": "b6dbf9c892c337b97b91a7e8dcbb12b770e452701ec52896dff883b609c5fb78"
+        },
+        {
+          "name": "query.lua",
+          "block": 2,
+          "sourceFile": "examples/api/query.lua",
+          "sha256": "876a7ba5fa17692ae70dd5f51aeccb981becd73b97efe01a0bb9f14a41daf236",
+          "clipboardSha256": "aba218809f1aed9e3fe560eff671f13fc8947139a9a5c17e73edf95dcc242875"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lua.git libtmux-source &&\n  git -C libtmux-source checkout 0395620d362ef75c74cd488f9577afda68922586 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\"",
+        "eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh query.lua"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "matched: demo"
+        ]
+      ],
+      "runtime": "Lua 5.5.1; luv 1.52.1-0; LuaRocks 3.13.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "copyConvention": "Source files contain LF line endings and one final newline. HTML clipboard payloads omit that final newline; both hashes are recorded. Console clipboard payloads remove the displayed dollar prompt and final newline.",
+      "verificationScope": "The exact public source checkout, setup, full program and launcher ran on both tmux releases. The shared snapshot program is byte-identical on its four API pages.",
+      "nativeReceiptSha256": "d918c604660888ae5a4d6abe1b40ba13e90140bed884a1e5dc3d2651a840f3b9"
+    },
+    {
+      "port": "lua",
+      "page": "ports/lua/reference/libtmux-pane-send_text",
+      "symbol": "libtmux.Pane:send_text",
+      "sourceRepository": "libtmux/libtmux-lua",
+      "sourceRevision": "0395620d362ef75c74cd488f9577afda68922586",
+      "sourceFile": "examples/api/send_keys.lua",
+      "sourceProgramId": "send_keys",
+      "files": [
+        {
+          "name": "run.sh",
+          "block": 1,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "d11e8fe41d66e134b1a4e4c533d1757b572f6352eac14ed04d177cd5c035513c",
+          "clipboardSha256": "b6dbf9c892c337b97b91a7e8dcbb12b770e452701ec52896dff883b609c5fb78"
+        },
+        {
+          "name": "send_keys.lua",
+          "block": 2,
+          "sourceFile": "examples/api/send_keys.lua",
+          "sha256": "e2d0e485febc632ad56973a1fa4cdb5cf5c69158162790a9f0c389f6a14b527a",
+          "clipboardSha256": "2250b572b3e822dc338aaf81c4f2129af4153a32b7502374e7901ffe69e67532"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lua.git libtmux-source &&\n  git -C libtmux-source checkout 0395620d362ef75c74cd488f9577afda68922586 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\"",
+        "eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh send_keys.lua"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "lua input ready"
+        ]
+      ],
+      "runtime": "Lua 5.5.1; luv 1.52.1-0; LuaRocks 3.13.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "copyConvention": "Source files contain LF line endings and one final newline. HTML clipboard payloads omit that final newline; both hashes are recorded. Console clipboard payloads remove the displayed dollar prompt and final newline.",
+      "verificationScope": "The exact public source checkout, setup, full program and launcher ran on both tmux releases. The shared snapshot program is byte-identical on its four API pages.",
+      "nativeReceiptSha256": "d918c604660888ae5a4d6abe1b40ba13e90140bed884a1e5dc3d2651a840f3b9"
+    },
+    {
+      "port": "lua",
+      "page": "ports/lua/reference/libtmux-pane-send_keys",
+      "symbol": "libtmux.Pane:send_keys",
+      "sourceRepository": "libtmux/libtmux-lua",
+      "sourceRevision": "0395620d362ef75c74cd488f9577afda68922586",
+      "sourceFile": "examples/api/send_keys.lua",
+      "sourceProgramId": "send_keys",
+      "files": [
+        {
+          "name": "run.sh",
+          "block": 1,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "d11e8fe41d66e134b1a4e4c533d1757b572f6352eac14ed04d177cd5c035513c",
+          "clipboardSha256": "b6dbf9c892c337b97b91a7e8dcbb12b770e452701ec52896dff883b609c5fb78"
+        },
+        {
+          "name": "send_keys.lua",
+          "block": 2,
+          "sourceFile": "examples/api/send_keys.lua",
+          "sha256": "e2d0e485febc632ad56973a1fa4cdb5cf5c69158162790a9f0c389f6a14b527a",
+          "clipboardSha256": "2250b572b3e822dc338aaf81c4f2129af4153a32b7502374e7901ffe69e67532"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lua.git libtmux-source &&\n  git -C libtmux-source checkout 0395620d362ef75c74cd488f9577afda68922586 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\"",
+        "eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh send_keys.lua"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "lua input ready"
+        ]
+      ],
+      "runtime": "Lua 5.5.1; luv 1.52.1-0; LuaRocks 3.13.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "copyConvention": "Source files contain LF line endings and one final newline. HTML clipboard payloads omit that final newline; both hashes are recorded. Console clipboard payloads remove the displayed dollar prompt and final newline.",
+      "verificationScope": "The exact public source checkout, setup, full program and launcher ran on both tmux releases. The shared snapshot program is byte-identical on its four API pages.",
+      "nativeReceiptSha256": "d918c604660888ae5a4d6abe1b40ba13e90140bed884a1e5dc3d2651a840f3b9"
+    },
+    {
+      "port": "lua",
+      "page": "ports/lua/reference/libtmux-pane-capture",
+      "symbol": "libtmux.Pane:capture",
+      "sourceRepository": "libtmux/libtmux-lua",
+      "sourceRevision": "0395620d362ef75c74cd488f9577afda68922586",
+      "sourceFile": "examples/api/capture.lua",
+      "sourceProgramId": "capture",
+      "files": [
+        {
+          "name": "run.sh",
+          "block": 1,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "d11e8fe41d66e134b1a4e4c533d1757b572f6352eac14ed04d177cd5c035513c",
+          "clipboardSha256": "b6dbf9c892c337b97b91a7e8dcbb12b770e452701ec52896dff883b609c5fb78"
+        },
+        {
+          "name": "capture.lua",
+          "block": 2,
+          "sourceFile": "examples/api/capture.lua",
+          "sha256": "7a2ad97835f9bdade5796ea62a043f7fc0f9fd3dec20dc8571b6423f1b58ae04",
+          "clipboardSha256": "df961582aee2ee7e677c22bd893c8201da40da4b1052efacb9d58a26483e0bad"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        3
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-lua.git libtmux-source &&\n  git -C libtmux-source checkout 0395620d362ef75c74cd488f9577afda68922586 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\"",
+        "eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh capture.lua"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "lua capture ready"
+        ]
+      ],
+      "runtime": "Lua 5.5.1; luv 1.52.1-0; LuaRocks 3.13.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "copyConvention": "Source files contain LF line endings and one final newline. HTML clipboard payloads omit that final newline; both hashes are recorded. Console clipboard payloads remove the displayed dollar prompt and final newline.",
+      "verificationScope": "The exact public source checkout, setup, full program and launcher ran on both tmux releases. The shared snapshot program is byte-identical on its four API pages.",
+      "nativeReceiptSha256": "d918c604660888ae5a4d6abe1b40ba13e90140bed884a1e5dc3d2651a840f3b9"
     }
   ]
 }

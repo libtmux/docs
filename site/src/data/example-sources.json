@@ -31,19 +31,19 @@
   },
   "lua:examples/native_query.lua": {
     "repository": "libtmux/libtmux-lua",
-    "revision": "777d546f87f9f5293e51f498d2addc7877b7561e",
+    "revision": "0395620d362ef75c74cd488f9577afda68922586",
     "sha256": "502af1ffa1985867a5b5281eda249c1109a7e720274aac303999856b9f348b98",
     "content": "local query = require(\"libtmux.query\")\n\nlocal schema = {\n    fields = {\n        id = { type = \"string\" },\n        active = { type = \"boolean\" },\n        current_command = { type = \"string\" },\n    },\n}\nlocal rows = {\n    { id = \"%1\", active = true, current_command = \"nvim\" },\n    { id = \"%2\", active = false, current_command = \"sh\" },\n    { id = \"%3\", active = false, current_command = \"vim\" },\n}\nlocal panes = query.select(rows, schema)\nlocal editors = panes:where({ current_command = { one_of = { \"nvim\", \"vim\" } } })\nassert(#editors == 2 and editors[1] == rows[1] and editors[2] == rows[3])\n\nlocal inactive = panes:filter(function(pane)\n    return not pane.active\nend)\nassert(#inactive == 2 and inactive[1].id == \"%2\")\nfor _, pane in ipairs(editors) do\n    print(pane.id, pane.current_command)\nend\n"
   },
   "lua:examples/quickstart.lua": {
     "repository": "libtmux/libtmux-lua",
-    "revision": "777d546f87f9f5293e51f498d2addc7877b7561e",
+    "revision": "0395620d362ef75c74cd488f9577afda68922586",
     "sha256": "78881ed3811b43bb096323b426028bac446c7ffd3ec32dfe0c17013f0cbb820c",
     "content": "local adapter = require(\"libtmux.runtime.luv\")\n\nlocal function must(value, err)\n    if err ~= nil then\n        error(err, 0)\n    end\n    return value\nend\n\nlocal binary = assert(os.getenv(\"TMUX_BIN\"), \"set TMUX_BIN to an absolute tmux executable\")\nlocal socket = assert(os.getenv(\"TMUX_SOCKET\"), \"set TMUX_SOCKET to an explicit socket\")\n\nlocal result = must(adapter.run(function(runtime)\n    local server = must(runtime:connect({ binary = binary, socket_path = socket }):await())\n\n    -- docs:begin main\n    local created = must(\n        server\n            :new_session({ name = \"quickstart\", window_name = \"main\", argv = { \"/bin/sh\" } })\n            :await()\n    )\n    local logs = must(created.session:new_window({ name = \"logs\", argv = { \"/bin/cat\" } }):await())\n    local split =\n        must(logs.pane:split({ direction = \"right\", percent = 40, argv = { \"/bin/cat\" } }):await())\n\n    -- The pane signals through the same tmux binary; a bare `tmux` there may be\n    -- another build that cannot reach this server.\n    local marker = \"libtmux-lua-quickstart\"\n    local signal = (\"printf 'libtmux ready\\\\n'; '%s' wait-for -S %s\"):format(binary, marker)\n    must(created.pane:send_text(signal):await())\n    must(created.pane:send_keys({ \"Enter\" }):await())\n    must(server:command({ \"wait-for\", marker }, { timeout = 10000 }):await())\n\n    local capture = must(created.pane:capture({ history_lines = 20 }):await())\n    assert(must(capture:text()):find(\"libtmux ready\", 1, true), \"pane output was not captured\")\n    print(created.session:reference().id, logs.window:reference().id, split.pane:reference().id)\n\n    must(created.session:kill():await())\n    -- docs:end main\n    must(server:close():await())\n    return true\nend))\n\nassert(result)\n"
   },
   "lua:examples/snapshot.lua": {
     "repository": "libtmux/libtmux-lua",
-    "revision": "777d546f87f9f5293e51f498d2addc7877b7561e",
+    "revision": "0395620d362ef75c74cd488f9577afda68922586",
     "sha256": "4c2c130f34507c5983d266f6bd47a4af87dbc558e021a2cd2d07b7eddaf4fe56",
     "content": "local adapter = require(\"libtmux.runtime.luv\")\n\nlocal function must(value, err)\n    if err ~= nil then\n        error(err, 0)\n    end\n    return value\nend\n\nmust(adapter.run(function(runtime)\n    local server = must(runtime\n        :connect({\n            binary = assert(os.getenv(\"TMUX_BIN\"), \"set TMUX_BIN to an absolute tmux executable\"),\n            socket_path = assert(os.getenv(\"TMUX_SOCKET\"), \"set TMUX_SOCKET to an explicit socket\"),\n        })\n        :await())\n    local snapshot = must(server:snapshot({ strict = true }):await())\n    for _, pane in ipairs(snapshot.panes) do\n        io.stdout:write(pane.id, \"\\t\", pane.window_id, \"\\n\")\n    end\n    must(server:close():await())\n    return true\nend))\n"
   },

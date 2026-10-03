@@ -159,7 +159,13 @@
     header.appendChild(brand)
     var nav = document.createElement('nav')
     nav.className = 'lt-shell-nav'
-    nav.setAttribute('aria-label', 'Language')
+    nav.setAttribute('aria-label', 'Documentation destinations')
+    var tmux = document.createElement('a')
+    tmux.href = siteRoot + '/tmux/latest/reference/'
+    tmux.className = 'lt-shell-nav-link'
+    tmux.setAttribute('aria-label', 'tmux CLI reference')
+    tmux.textContent = 'tmux'
+    nav.appendChild(tmux)
     PORTS.forEach(function (port) {
       var link = document.createElement('a')
       link.href = portHome(port)
