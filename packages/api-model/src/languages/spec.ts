@@ -115,6 +115,8 @@ export interface LanguageSpec {
    * every method is a free function and no type has members.
    */
   receiverType?: (node: Node) => string | undefined
+  /** A parameter whose native syntax cannot be split into a name and type. */
+  parameter?: (node: Node) => Param | undefined
   /**
    * The type a declaration has without spelling it, where the language
    * repeats one: in Go's `const` block a spec with no value takes the type of
@@ -198,12 +200,17 @@ function modifiersFor(node: Node, spec: LanguageSpec): Modifier[] {
   return [...found]
 }
 
-function paramsOf(node: Node | null): Param[] {
+function paramsOf(node: Node | null, spec: LanguageSpec): Param[] {
   if (!node) return []
   const out: Param[] = []
   for (const child of node.namedChildren) {
     if (!child) continue
     if (child.type === 'comment') continue
+    const native = spec.parameter?.(child)
+    if (native) {
+      out.push(native)
+      continue
+    }
     const name = child.childForFieldName('name') ?? child.childForFieldName('pattern')
     const type = child.childForFieldName('type')
     const value = child.childForFieldName('value') ?? child.childForFieldName('default_value')
@@ -228,7 +235,7 @@ function signatureOf(node: Node, spec: LanguageSpec): Signature {
     node.childForFieldName('result') ??
     node.childForFieldName('type')
   return {
-    params: paramsOf(node.childForFieldName(f.params)),
+    params: paramsOf(node.childForFieldName(f.params), spec),
     // A grammar's return-type node often includes the syntax that introduces
     // it: TypeScript's `type_annotation` is `: string`, and all 240 of its
     // signatures rendered as `foo() → : string`. The arrow or colon is the

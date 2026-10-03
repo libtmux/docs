@@ -1,3 +1,4 @@
+import type { Node } from 'web-tree-sitter'
 import type { LanguageSpec } from './spec.ts'
 
 /**
@@ -80,6 +81,23 @@ export const TYPESCRIPT: LanguageSpec = {
   fields: { returns: 'return_type' },
 }
 
+/** Only a bare `hidden` doc argument hides an item; alias strings do not. */
+function rustDocHidden(node: Node): boolean {
+  for (let sibling = node.previousNamedSibling; sibling; sibling = sibling.previousNamedSibling) {
+    if (sibling.type === 'attribute_item') {
+      const attribute = sibling.namedChildren.find((child) => child?.type === 'attribute')
+      if (attribute?.namedChildren[0]?.text !== 'doc') continue
+      const args = attribute.namedChildren.find((child) => child?.type === 'token_tree')
+      const tokens = args?.children.filter((child) => child &&
+        child.type !== 'line_comment' && child.type !== 'block_comment') ?? []
+      if (tokens.some((token, index) => token?.type === 'identifier' && token.text === 'hidden' &&
+        ['(', ','].includes(tokens[index - 1]?.type ?? '') &&
+        [')', ','].includes(tokens[index + 1]?.type ?? ''))) return true
+    } else if (sibling.type !== 'line_comment' && sibling.type !== 'block_comment') break
+  }
+  return false
+}
+
 export const RUST: LanguageSpec = {
   grammar: 'rust',
   // `class` is only ever `impl_item` here: Rust has no other construct that
@@ -96,6 +114,7 @@ export const RUST: LanguageSpec = {
   },
   members: {
     function_item: 'method',
+    function_signature_item: 'method',
     field_declaration: 'attribute',
     const_item: 'constant',
     type_item: 'typealias',
@@ -139,26 +158,21 @@ export const RUST: LanguageSpec = {
       .replace(/\bmut\s+/g, '')
       .replace(/\bdyn\s+/g, '')
       .trim(),
-  // Rust's privacy is a keyword on the item, and everything without `pub` is
-  // crate-internal — which is exactly what a public reference must exclude.
-  //
-  // Two exceptions, and both are the same mistake made twice.
-  //
-  // An `impl` block is never written `pub impl`, so the visibility test
-  // rejected the block and its fifty `pub fn`s were never reached — that cost
-  // every method on every struct. An enum variant is never written `pub
-  // Session` either, for the same reason: a variant is as public as its enum,
-  // and there is no syntax to say otherwise. Adding `enum_variant` to the
-  // members map changed nothing at all until this line changed with it.
-  //
-  // `pub(crate)`, `pub(super)` and `pub(in path)` are all visibility modifiers
-  // and none of them is public: 110 of libtmux-rs's top-level symbols are
-  // restricted that way, and `pub(crate) struct RequestId` had a page saying
-  // it was part of the API. rustdoc's default shows what is `pub`.
-  isExported: (node) =>
-    node.type === 'impl_item' ||
-    node.type === 'enum_variant' ||
-    node.children.some((c) => c?.type === 'visibility_modifier' && c.text.trim() === 'pub'),
+  // Receivers have no name field: splitting `mut self` would name it `mut`.
+  parameter: (node) => node.type === 'self_parameter' ? { name: node.text } : undefined,
+  // Trait methods and enum variants inherit their owner's visibility; the
+  // walker rejects private owners before visiting their members. Impl blocks
+  // have no visibility keyword, but inherent methods still require `pub`.
+  // Restricted `pub(crate)`, `pub(super)` and `pub(in path)` are not public.
+  isExported: (node) => {
+    if (node.type === 'trait_item' && rustDocHidden(node)) return false
+    if (node.type === 'impl_item' || node.type === 'enum_variant') return true
+    if ((node.type === 'function_item' || node.type === 'function_signature_item') &&
+      node.parent?.type === 'declaration_list' && node.parent.parent?.type === 'trait_item') {
+      return !rustDocHidden(node)
+    }
+    return node.children.some((c) => c?.type === 'visibility_modifier' && c.text.trim() === 'pub')
+  },
   fields: { returns: 'return_type' },
 }
 
