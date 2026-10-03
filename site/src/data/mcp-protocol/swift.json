@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-swift",
-  "revision": "dd646bf5d63b9cf9816d2bb919c31f44cff2bfe4",
+  "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -30,7 +30,7 @@
     "serverInfo": {
       "name": "libtmux",
       "title": "tmux",
-      "version": "0.1.0-alpha.5"
+      "version": "0.1.0-alpha.6"
     },
     "tools": [
       {
@@ -5365,7 +5365,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Apply one named tmux layout to a window.",
+            "description": "Change tmux state; no client-supplied executable input. Apply a named layout, a unique abbreviation for the running tmux version, or a checksummed saved layout. Invalid syntax is refused before window lookup; tmux validates geometry when applying the layout.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -5424,7 +5424,7 @@
           "readOnlyHint": false,
           "title": "Select layout"
         },
-        "description": "Change tmux state; no client-supplied executable input. Apply one named tmux layout to a window.",
+        "description": "Change tmux state; no client-supplied executable input. Apply a named layout, a unique abbreviation for the running tmux version, or a checksummed saved layout. Invalid syntax is refused before window lookup; tmux validates geometry when applying the layout.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {

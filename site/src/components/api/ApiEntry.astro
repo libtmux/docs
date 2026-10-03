@@ -479,7 +479,8 @@ const hasBody =
                 </p>
               )}
               <div class="gp-sphinx-api-example">
-                <Code code={ex.code} lang={codeLang(ex.lang)} />
+                {/* Preserve source comments, including Swift's required tools-version directive. */}
+                <Code code={ex.code} lang={codeLang(ex.lang)} title="" />
               </div>
             </>
           ))}

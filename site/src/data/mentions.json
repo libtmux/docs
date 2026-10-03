@@ -8409,6 +8409,20 @@
   },
   {
    "port": "swift",
+   "symbol": "PanePlan.shell",
+   "page": "/swift/latest/workspace/configuration/panes/",
+   "title": "Pane configuration",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
+   "symbol": "PanePlan.shell",
+   "page": "/swift/latest/workspace/configuration/windows/",
+   "title": "Window configuration",
+   "section": "ports"
+  },
+  {
+   "port": "swift",
    "symbol": "Server",
    "page": "/swift/latest/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
@@ -8448,34 +8462,6 @@
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
-  },
-  {
-   "port": "swift",
-   "symbol": "Server.environment(_:)",
-   "page": "/swift/latest/workspace/configuration/environment/",
-   "title": "Workspace environment",
-   "section": "ports"
-  },
-  {
-   "port": "swift",
-   "symbol": "Server.environment(_:)",
-   "page": "/swift/latest/workspace/configuration/panes/",
-   "title": "Pane configuration",
-   "section": "ports"
-  },
-  {
-   "port": "swift",
-   "symbol": "Server.environment(_:)",
-   "page": "/swift/latest/workspace/configuration/session/",
-   "title": "Session configuration",
-   "section": "ports"
-  },
-  {
-   "port": "swift",
-   "symbol": "Server.environment(_:)",
-   "page": "/swift/latest/workspace/configuration/windows/",
-   "title": "Window configuration",
-   "section": "ports"
   },
   {
    "port": "swift",

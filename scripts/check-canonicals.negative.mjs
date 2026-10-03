@@ -84,6 +84,30 @@ const check = (name, ok, detail) => {
   rmSync(dir, { recursive: true, force: true })
 }
 
+for (const variant of ['valid', 'missing', 'foreign', 'origin', 'fallback', 'indexable', 'chain']) {
+  const dir = site((p) => p)
+  const old = '/ts/latest/reference/old-pane/'
+  const destination = variant === 'missing' ? '/ts/latest/reference/missing/'
+    : variant === 'foreign' ? '/py/latest/reference/pane/' : '/ts/latest/reference/pane/'
+  const href = variant === 'origin' ? `https://example.invalid${destination}` : destination
+  mkdirSync(join(dir, old), { recursive: true })
+  writeFileSync(join(dir, old, 'index.html'), `<html><head>
+    ${variant === 'indexable' ? '' : '<meta name="robots" content="noindex">'}
+    <link rel="canonical" href="${variant === 'origin' ? href : `${ORIGIN}${destination}`}">
+    <noscript><meta http-equiv="refresh" content="0;url=${href}"></noscript>
+    </head><body><a href="${variant === 'fallback' ? old : href}">Continue</a></body></html>`)
+  if (variant === 'chain') {
+    writeFileSync(join(dir, destination, 'index.html'), `<html><head>
+      <meta name="robots" content="noindex"><link rel="canonical" href="${ORIGIN}${old}">
+      <noscript><meta http-equiv="refresh" content="0;url=${old}"></noscript>
+      </head><body><a href="${old}">Continue</a></body></html>`)
+  }
+  const { code, out } = run(dir)
+  check(`reference redirect ${variant}`, variant === 'valid' ? code === 0 : code !== 0,
+    `exited ${code}:\n${out}`)
+  rmSync(dir, { recursive: true, force: true })
+}
+
 if (failures) {
   console.error(`\ncheck-canonicals cannot detect ${failures} of the situations it exists for.`)
   process.exit(1)

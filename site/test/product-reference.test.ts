@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { API_MODELS, createApiIndex, referenceAlternatives, topLevelTypesOf } from '../src/lib/api-models'
-import { productApiAlternatives, productApiRoutes } from '../src/lib/product-api'
+import { productApiAlternatives, productApiRedirects, productApiRoutes } from '../src/lib/product-api'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { PORT_BY_SLUG, productAvailable } from '../src/lib/ports'
 import { getResolver } from '../src/lib/prose-resolver'
@@ -59,6 +59,25 @@ it('gives Kotlin, Scala and F# native references with parent type links', () => 
 })
 
 describe('product reference equivalents', () => {
+  it('preserves a removed Swift operator URL without advertising a current operator', () => {
+    const model = API_MODELS.swift
+    expect(model.symbols.some((symbol) => symbol.id === 'WorkspaceBuilderError.!=(_:_:)')).toBe(false)
+    const routes = productApiRedirects({ swift: model }, 'swift', {}, 'latest')
+    expect(routes).toHaveLength(1)
+    expect(routes[0]).toMatchObject({ path: 'workspace/reference/workspacebuildererror-(_-_-)',
+      target: 'workspace/reference/workspacebuildererror', symbol: { id: 'WorkspaceBuilderError' } })
+    expect(productApiRoutes({ swift: model }, 'swift', {}, 'latest')
+      .some((route) => route.path === routes[0].path)).toBe(false)
+    expect(productApiRedirects({ swift: model }, undefined, { swift: 'stable' }, 'latest')[0].path)
+      .toBe(`swift/stable/${routes[0].path}`)
+    expect(productApiRedirects({ swift: model }, 'go', {}, 'latest')).toEqual([])
+    expect(productApiRedirects({}, 'swift', {}, 'latest')).toEqual([])
+    const oldModel = { ...model, symbols: [...model.symbols, {
+      ...routes[0].symbol, id: 'WorkspaceBuilderError.!=(_:_:)',
+    }] }
+    expect(productApiRedirects({ swift: oldModel }, 'swift', {}, 'v0.1.0')).toEqual([])
+  })
+
   it('keeps body links in the product with the correct target version', () => {
     const model = API_MODELS.go
     const symbol = model.symbols.find((entry) => entry.id === 'workspace.Build')!

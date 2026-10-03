@@ -397,7 +397,7 @@ jobs:
         if: matrix.port == 'swift'
         working-directory: port
         run: >-
-          swift build --force-resolved-versions
+          swift build --force-resolved-versions --enable-all-traits
           --jobs 2
           -Xswiftc -emit-symbol-graph
           -Xswiftc -emit-symbol-graph-dir -Xswiftc "$PWD/symbolgraph"

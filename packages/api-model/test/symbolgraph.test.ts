@@ -3,6 +3,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { extractSymbolGraph } from '../src/languages/symbolgraph.ts'
+import { SymbolIndex } from '../src/link.ts'
+import { pageSlug } from '../src/prose.ts'
+import { Resolver } from '../src/resolver.ts'
 
 /**
  * Conformance targets, which the reference renders as `Bases:`.
@@ -56,6 +59,68 @@ function graph(conformances: [string, string?][]): string[] {
 
 const basesOf = (files: string[]) =>
   extractSymbolGraph(files).find((s) => s.id === 'Thing')?.extends
+
+const compatibleSelectors = [
+  ['LibTmux', 'Server.newSession(named:startDirectory:windowName:width:height:)',
+    'Server.newSession(named:startDirectory:windowName:width:height:environment:shell:)'],
+  ['LibTmux', 'Server.newWindow(in:named:startDirectory:)',
+    'Server.newWindow(in:named:startDirectory:at:environment:shell:)'],
+  ['LibTmux', 'Server.split(_:direction:size:startDirectory:)',
+    'Server.split(_:direction:size:startDirectory:environment:shell:)'],
+  ['LibTmux', 'Server.splitWindow(_:direction:size:startDirectory:)',
+    'Server.splitWindow(_:direction:size:startDirectory:environment:shell:)'],
+  ['TmuxWorkspace', 'PanePlan.init(shellCommands:startDirectory:)',
+    'PanePlan.init(shellCommands:startDirectory:focus:environment:shell:sleepBefore:sleepAfter:)'],
+  ['TmuxWorkspace', 'WindowPlan.init(windowName:startDirectory:layout:panes:)',
+    'WindowPlan.init(windowName:startDirectory:layout:panes:windowIndex:focus:environment:windowShell:)'],
+] as const
+
+function selectorGraph(module: string, ids: string[]) {
+  const dir = mkdtempSync(join(tmpdir(), 'symbolgraph-selector-'))
+  dirs.push(dir)
+  const file = join(dir, `${module}.symbols.json`)
+  writeFileSync(file, JSON.stringify({
+    module: { name: module },
+    symbols: ids.map((id) => ({
+      identifier: { precise: `s:${id}` },
+      kind: { identifier: 'swift.method' },
+      pathComponents: id.split('.'),
+      names: { title: id.split('.').at(-1), subHeading: [{ kind: 'text', spelling: `func ${id}` }] },
+      functionSignature: { parameters: [{ name: 'environment', declarationFragments: [
+        { kind: 'text', spelling: 'environment: [String: String] = [:]' },
+      ] }] },
+      accessLevel: 'public',
+    })),
+  }))
+  return extractSymbolGraph([file])
+}
+
+describe('compatible Swift selectors', () => {
+  it.each(compatibleSelectors)('keeps %s %s links with the current declaration', (module, previous, current) => {
+    const symbols = selectorGraph(module, [current])
+    const [symbol] = symbols
+    expect(symbol).toMatchObject({ id: current, publicId: previous, qualifiedName: current,
+      name: current.split('.').at(-1), signatures: [{ params: [
+        { name: 'environment', type: '[String: String] = [:]' },
+      ] }] })
+    const href = `/reference/${pageSlug(symbol.publicId!)}/#${symbol.publicId}`
+    expect(href).toBe(`/reference/${pageSlug(previous)}/#${previous}`)
+    const index = new SymbolIndex(symbols, () => href, 'swift')
+    const resolver = new Resolver([{ port: 'swift', extractor: 'test', symbols }])
+    for (const selector of [previous, current]) {
+      expect(index.resolve(selector)).toMatchObject({ symbol: { id: current }, href })
+      expect(resolver.resolve('swift', selector)).toMatchObject({ symbol: { id: current } })
+    }
+  })
+
+  it('does not rename another module or an explicitly retained overload', () => {
+    const [module, previous, current] = compatibleSelectors[0]
+    expect(selectorGraph('OtherLibrary', [current])[0].publicId).toBe(current)
+    const symbols = selectorGraph(module, [previous, current])
+    expect(symbols.map((symbol) => symbol.publicId)).toEqual([previous, current])
+    expect(selectorGraph(module, [previous])[0].publicId).toBe(previous)
+  })
+})
 
 describe('symbol graph conformances', () => {
   it('names a standard library protocol rather than its USR', () => {

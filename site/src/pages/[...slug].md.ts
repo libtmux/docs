@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro'
 import { getCollection, type CollectionEntry } from 'astro:content'
 import { sourceUrl } from '@libtmux/api-model'
 import { API_MODELS } from '../lib/api-models'
-import { productApiHref, productApiRoutes } from '../lib/product-api'
+import { productApiHref, productApiRedirects, productApiRoutes } from '../lib/product-api'
 import { symbolMarkdown } from '../lib/symbol-markdown'
 import { buildLocale } from '../i18n/resolve'
 import { DEFAULT_LOCALE } from '../i18n/locales'
@@ -53,7 +53,9 @@ export async function getStaticPaths() {
   const routes = productApiRoutes(API_MODELS, port, defaults, buildTarget(process.env).version)
     .map(({ path, model, symbol, version }) => ({ params: { slug: path }, props: { port: model.port, id: symbol.id, version } as Props }))
   const byPath = new Map(routes.map((route) => [route.params.slug, route.props]))
-  const all = [...prose, ...aliases, ...routes, ...workspaceRedirects([...byPath.keys()])
+  const retired = productApiRedirects(API_MODELS, port, defaults, buildTarget(process.env).version)
+    .map(({ path, target }) => ({ params: { slug: path }, props: byPath.get(target)! }))
+  const all = [...prose, ...aliases, ...routes, ...retired, ...workspaceRedirects([...byPath.keys()])
     .map(({ path, target }) => ({ params: { slug: path }, props: byPath.get(target)! }))]
   const paths = all.map((route) => route.params.slug)
   if (new Set(paths).size !== paths.length) throw new Error('Duplicate generated Markdown route')

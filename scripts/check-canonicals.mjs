@@ -83,8 +83,10 @@ const walk = (dir) => {
 for (const root of roots) walk(root)
 
 const CANONICAL = /<link\s+rel="canonical"\s+href="([^"]+)"/i
+const REFRESH = /<meta\s+http-equiv="refresh"\s+content="0;url=([^"]+)"/i
 const wrong = []
 let checked = 0
+let redirects = 0
 
 for (const file of pages) {
   const html = readFileSync(file, 'utf8')
@@ -103,6 +105,26 @@ for (const file of pages) {
   const own = `${file.slice(siteDir.length, -'index.html'.length)}`
   // Its canonical twin: the same page under this port's default version.
   const [, port, version] = own.split('/')
+  const refresh = html.match(REFRESH)
+  if (refresh) {
+    // A retired declaration has no content to canonicalise. Its canonical,
+    // no-JS redirect and fallback link must reach the same reference page.
+    const destination = new URL(refresh[1], found[1])
+    const fallback = html.match(/<a\s+href="([^"]+)"/i)
+    const prefix = own.slice(0, own.indexOf('/reference/') + '/reference/'.length)
+    const targetFile = join(siteDir, declared, 'index.html')
+    const target = existsSync(targetFile) ? readFileSync(targetFile, 'utf8') : ''
+    const targetCanonical = target.match(CANONICAL)
+    const valid = /<meta\s+name="robots"\s+content="noindex"/i.test(html) &&
+      destination.href === new URL(found[1]).href &&
+      fallback && new URL(fallback[1], found[1]).href === destination.href &&
+      declared !== own && declared.startsWith(prefix) && targetCanonical &&
+      new URL(targetCanonical[1]).origin === destination.origin && !REFRESH.test(target)
+    checked += 1
+    if (valid) redirects += 1
+    else wrong.push({ file, want: `${own} (a noindex redirect within ${prefix})`, got: declared })
+    continue
+  }
   const want = DEFAULTS[port] && DEFAULTS[port] !== version
     ? own.replace(`/${port}/${version}/`, `/${port}/${DEFAULTS[port]}/`)
     : own
@@ -117,9 +139,9 @@ if (wrong.length) {
     console.error(`    declares ${w.got}`)
   }
   if (wrong.length > 8) console.error(`  ... and more`)
-  console.error(`\nThe reference tree carries no version and no locale, so a page here has`)
-  console.error(`no other page to point at. Compose pagePath from the route, not the symbol.`)
+  console.error(`\nReference content must canonicalise to its own route under the default version.`)
+  console.error(`Retired declarations may redirect to an existing page in the same reference.`)
   process.exit(1)
 }
 
-console.log(`check-canonicals: every reference page is canonical to itself (${checked} pages)`)
+console.log(`check-canonicals: ${checked} reference pages have valid canonicals (${redirects} redirects)`)

@@ -115,7 +115,7 @@ const PORTS = [
     // tools, two of which (`rename`, `select`) Java also registers, which is
     // how it was found: a name cannot be unique to one port and shared.
     // The file holds exactly one enum, which is what makes a bare `case` safe.
-    pattern: /^\s*case (\w+?)(?:\s*=\s*"([a-z_]+)")?\s*$/gm,
+    pattern: /^[\t ]*case (\w+?)(?:[\t ]*=[\t ]*"([a-z_]+)")?[\t ]*$/gm,
     capture: (m) => m[2] ?? m[1],
   },
 ]

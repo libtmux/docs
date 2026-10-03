@@ -45,6 +45,24 @@ export function productApiRoutes(
     })
 }
 
+/** Retired generated operators lead to their current type, outside the API inventory. */
+export function productApiRedirects(
+  models: Record<string, ApiModel>,
+  buildPort: string | undefined,
+  defaults: Record<string, string>,
+  buildVersion: string,
+) {
+  // WorkspaceBuilderError now carries arbitrary callback errors and is no longer Equatable.
+  const model = models.swift
+  if (!model || (buildPort && buildPort !== 'swift') ||
+      model.symbols.some((symbol) => symbol.id === 'WorkspaceBuilderError.!=(_:_:)')) return []
+  const owner = productApiRoutes({ swift: model }, buildPort, defaults, buildVersion)
+    .find((route) => route.symbol.id === 'WorkspaceBuilderError')
+  if (!owner) return []
+  return [{ ...owner, target: owner.path,
+    path: owner.path.replace(/workspacebuildererror$/, 'workspacebuildererror-(_-_-)') }]
+}
+
 /** Public declarations listed on a product's reference landing page. */
 export function productApiRoots(model: ApiModel, product: DocProduct): ApiSymbol[] {
   const symbols = symbolsForProduct(model, product)

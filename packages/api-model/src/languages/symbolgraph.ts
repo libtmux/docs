@@ -36,6 +36,26 @@ const KIND: Record<string, SymbolKind> = {
   'swift.var': 'constant',
 }
 
+/** Preserve published selectors when added default arguments keep old calls valid. */
+const PUBLIC_IDS: Record<string, Record<string, string>> = {
+  LibTmux: {
+    'Server.newSession(named:startDirectory:windowName:width:height:environment:shell:)':
+      'Server.newSession(named:startDirectory:windowName:width:height:)',
+    'Server.newWindow(in:named:startDirectory:at:environment:shell:)':
+      'Server.newWindow(in:named:startDirectory:)',
+    'Server.split(_:direction:size:startDirectory:environment:shell:)':
+      'Server.split(_:direction:size:startDirectory:)',
+    'Server.splitWindow(_:direction:size:startDirectory:environment:shell:)':
+      'Server.splitWindow(_:direction:size:startDirectory:)',
+  },
+  TmuxWorkspace: {
+    'PanePlan.init(shellCommands:startDirectory:focus:environment:shell:sleepBefore:sleepAfter:)':
+      'PanePlan.init(shellCommands:startDirectory:)',
+    'WindowPlan.init(windowName:startDirectory:layout:panes:windowIndex:focus:environment:windowShell:)':
+      'WindowPlan.init(windowName:startDirectory:layout:panes:)',
+  },
+}
+
 interface Fragment {
   kind: string
   spelling: string
@@ -155,6 +175,7 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
 
   for (const file of files) {
     const graph = JSON.parse(readFileSync(file, 'utf8')) as {
+      module?: { name: string }
       symbols: RawSymbol[]
       relationships?: {
         kind: string
@@ -164,6 +185,8 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
         sourceOrigin?: { identifier: string; displayName: string }
       }[]
     }
+
+    const selectors = new Set(graph.symbols.map((symbol) => symbol.pathComponents.join('.')))
 
     const titleOf = new Map(graph.symbols.map((s) => [s.identifier.precise, s.pathComponents]))
     const origins = new Map((graph.relationships ?? [])
@@ -202,6 +225,9 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
 
       const path = raw.pathComponents
       const id = path.join('.')
+      const previous = PUBLIC_IDS[graph.module?.name ?? '']?.[id]
+      // An explicitly retained overload owns its URL; never merge distinct declarations.
+      const publicId = previous && !selectors.has(previous) ? previous : id
       const doc = raw.docComment?.lines.map((l) => l.text).join('\n').trim()
       const signature = signatureOf(raw)
       // Swift doc comments are Markdown, and this used to split on the first
@@ -237,7 +263,8 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
 
       const sym: ApiSymbol = {
         id,
-        publicId: id,
+        publicId,
+        ...(publicId !== id ? { qualifiedName: id } : {}),
         name: path.at(-1) ?? raw.names.title,
         kind,
         modifiers: modifiersOf(raw),

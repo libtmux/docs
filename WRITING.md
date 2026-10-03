@@ -140,6 +140,12 @@ source program ID from `site/test/fixtures/api-examples.json`. The runner
 selects that program's files and console blocks, so each program uses its own
 empty working directory and displayed setup.
 
+Use `--example api --port swift --page reference/server` for the Swift server
+program. `Examples/api-examples.json` in the selected Swift source maps whole
+programs and their standalone package to exact API declarations. The displayed
+files retain their source bytes and pinned citations; the verification records
+cover success, operation failure, and owned-server cleanup on both tmux versions.
+
 Put explanatory comments on separate lines above the code they describe.
 Limit example comments to 100 columns, including indentation; prefer shorter
 lines that fit the code panel. Put long source links and attribution in prose
