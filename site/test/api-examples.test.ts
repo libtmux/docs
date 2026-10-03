@@ -10,7 +10,7 @@ const model = go as unknown as ApiModel
 const hash = (code: string) => createHash('sha256').update(code).digest('hex')
 
 describe('verified complete API programs', () => {
-  it.each(receipt.examples)('preserves the executed $symbol files and setup', (example) => {
+  it.each(receipt.examples.filter((example) => example.port === 'go'))('preserves the executed $symbol files and setup', (example) => {
     const symbols = model.symbols.filter((symbol) => symbol.id === example.symbol)
     expect(symbols).toHaveLength(1)
     const symbol = symbols[0]

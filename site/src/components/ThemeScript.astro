@@ -98,6 +98,29 @@
     }
   }
 
+  const apiSourceKey = 'libtmux-docs.api-source-details';
+  const apiSourceStates = new WeakMap();
+  function initApiSourceDetails(root) {
+    let open = true;
+    try { open = localStorage.getItem(apiSourceKey) !== 'closed'; } catch (_) {}
+    for (const details of root.querySelectorAll('details.api-source-details')) {
+      details.open = open;
+      apiSourceStates.set(details, open);
+    }
+  }
+  window.__initApiSourceDetails = initApiSourceDetails;
+  document.addEventListener('toggle', (event) => {
+    const details = event.target;
+    if (!apiSourceStates.has(details) || apiSourceStates.get(details) === details.open) return;
+    apiSourceStates.set(details, details.open);
+    try { localStorage.setItem(apiSourceKey, details.open ? 'open' : 'closed'); } catch (_) {}
+  }, true);
+  // Set native disclosure state before a client-routed page reaches the DOM.
+  document.addEventListener('astro:before-swap', (event) => initApiSourceDetails(event.newDocument));
+  window.addEventListener('storage', (event) => {
+    if (event.key === apiSourceKey || event.key === null) initApiSourceDetails(document);
+  });
+
   /**
    * Hold the page until the real faces are in, then show it once.
    *

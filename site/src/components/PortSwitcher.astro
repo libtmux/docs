@@ -1,11 +1,13 @@
 ---
 import { PORTS, portHomeUrl } from '../lib/ports'
+import { withPortRoot } from '../lib/site-root'
 
 interface Props {
   portSlug?: string
   version: string
 }
 const { portSlug, version } = Astro.props as Props
+const tmuxActive = /\/tmux\/[^/]+\/reference(?:\/|$)/.test(Astro.url.pathname)
 
 const PORT_DEFAULTS: Record<string, string> = (() => {
   try {
@@ -17,7 +19,13 @@ const PORT_DEFAULTS: Record<string, string> = (() => {
 const defaultFor = (slug: string) => PORT_DEFAULTS[slug] ?? 'latest'
 ---
 
-<nav aria-label="Language" class="flex flex-wrap gap-1">
+<nav aria-label="Documentation destinations" class="flex flex-wrap gap-1">
+  <a
+    href={withPortRoot('/tmux/latest/reference/')}
+    class="topnav-chip rounded px-2 py-1 text-sm transition-colors"
+    aria-label="tmux CLI reference"
+    aria-current={tmuxActive ? 'page' : undefined}
+  >tmux</a>
   {
     PORTS.map((p) => {
       const active = p.slug === portSlug

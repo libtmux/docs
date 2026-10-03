@@ -829,7 +829,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header--simple .
 }
 .api-source-details { margin-block: 1rem 1.5rem; font-size: 0.875rem; }
 .api-source-details > summary { cursor: pointer; color: var(--color-muted); }
-.api-reference-content :is(section, h2, h3, .gp-sphinx-api-examples, .gp-sphinx-api-description, .gp-sphinx-api-references, dt[id]) {
+.api-reference-content :is(.api-reference-heading, section, h2, h3, .gp-sphinx-api-examples, .gp-sphinx-api-description, .gp-sphinx-api-references, dt[id]) {
   scroll-margin-top: 7rem;
 }
 @media print {
