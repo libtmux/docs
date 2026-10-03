@@ -36790,10 +36790,10 @@
           "wireName": "call_read_tools_batch",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 492
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 391
           },
           "description": "Calls up to sixteen eligible inspect tools serially; inner tools receive no separate approval, and its nested authority is disclosed. The complete JSON-RPC response is capped at 1,000,000 bytes; a removed nested envelope is marked on its row and counted in truncatedBytes. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
           "schemaStatus": "runtime",
@@ -36837,8 +36837,12 @@
                         "arguments": {
                           "additionalProperties": false,
                           "properties": {
-                            "session": {
-                              "description": "Only windows in this session name.",
+                            "session_id": {
+                              "description": "Only windows in this session, such as $1.",
+                              "type": "string"
+                            },
+                            "session_name": {
+                              "description": "Only windows in the session with this exact name.",
                               "type": "string"
                             }
                           },
@@ -37209,7 +37213,7 @@
                               "type": "string"
                             },
                             "target": {
-                              "description": "The target required by session, window and pane scopes.",
+                              "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
                               "type": "string"
                             }
                           },
@@ -37234,8 +37238,12 @@
                         "arguments": {
                           "additionalProperties": false,
                           "properties": {
-                            "session": {
-                              "description": "A session name; omit for the global environment.",
+                            "session_id": {
+                              "description": "A session, such as $1; omit both for the global environment.",
+                              "type": "string"
+                            },
+                            "session_name": {
+                              "description": "A session's exact name, in place of session_id.",
                               "type": "string"
                             }
                           },
@@ -37267,7 +37275,7 @@
                               "type": "string"
                             },
                             "target": {
-                              "description": "The target required by session, window and pane scopes.",
+                              "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
                               "type": "string"
                             }
                           },
@@ -37465,8 +37473,12 @@
                             "arguments": {
                               "additionalProperties": false,
                               "properties": {
-                                "session": {
-                                  "description": "Only windows in this session name.",
+                                "session_id": {
+                                  "description": "Only windows in this session, such as $1.",
+                                  "type": "string"
+                                },
+                                "session_name": {
+                                  "description": "Only windows in the session with this exact name.",
                                   "type": "string"
                                 }
                               },
@@ -37837,7 +37849,7 @@
                                   "type": "string"
                                 },
                                 "target": {
-                                  "description": "The target required by session, window and pane scopes.",
+                                  "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
                                   "type": "string"
                                 }
                               },
@@ -37862,8 +37874,12 @@
                             "arguments": {
                               "additionalProperties": false,
                               "properties": {
-                                "session": {
-                                  "description": "A session name; omit for the global environment.",
+                                "session_id": {
+                                  "description": "A session, such as $1; omit both for the global environment.",
+                                  "type": "string"
+                                },
+                                "session_name": {
+                                  "description": "A session's exact name, in place of session_id.",
                                   "type": "string"
                                 }
                               },
@@ -37895,7 +37911,7 @@
                                   "type": "string"
                                 },
                                 "target": {
-                                  "description": "The target required by session, window and pane scopes.",
+                                  "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
                                   "type": "string"
                                 }
                               },
@@ -38076,12 +38092,12 @@
           "wireName": "capture_pane",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 258
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 134
           },
-          "description": "Returns bounded pane content and a cursor. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+          "description": "Returns what a pane shows now, its newest lines first to go when bounded, and a cursor for capture_since. Use it to read a pane once. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -38160,7 +38176,7 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Returns bounded pane content and a cursor. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+              "description": "Returns what a pane shows now, its newest lines first to go when bounded, and a cursor for capture_since. Use it to read a pane once. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
               "inputLiteralization": {},
               "inputSchema": {
                 "additionalProperties": false,
@@ -38245,12 +38261,12 @@
           "wireName": "capture_since",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 276
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 153
           },
-          "description": "Returns pane output produced after a cursor. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+          "description": "Returns only the output a pane produced after a cursor from capture_pane or an earlier capture_since. Use it to follow a pane across turns without rereading it. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -38332,7 +38348,7 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Returns pane output produced after a cursor. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+              "description": "Returns only the output a pane produced after a cursor from capture_pane or an earlier capture_since. Use it to follow a pane across turns without rereading it. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
               "inputLiteralization": {},
               "inputSchema": {
                 "additionalProperties": false,
@@ -38420,10 +38436,10 @@
           "wireName": "clear_pane_scrollback",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 895
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/TeardownTools.java",
+            "line": 25
           },
           "description": "Deletes retained scrollback from one pane. Delete tmux state; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -38524,10 +38540,10 @@
           "wireName": "create_session",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 676
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
+            "line": 39
           },
           "description": "Creates a detached session whose first pane runs the configured process. Start a pane's configured process; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -38681,10 +38697,10 @@
           "wireName": "create_window",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 704
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
+            "line": 67
           },
           "description": "Creates a window whose first pane runs the configured process. Start a pane's configured process; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -38863,10 +38879,10 @@
           "wireName": "find_pane_by_position",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 340
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 219
           },
           "description": "Finds a pane at one of a window's four corners. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -39033,10 +39049,10 @@
           "wireName": "get_pane_info",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 241
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 117
           },
           "description": "Returns metadata for one pane. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -39193,10 +39209,10 @@
           "wireName": "get_server_info",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 213
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 89
           },
           "description": "Reports whether the pinned server exists and its version. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -39299,10 +39315,10 @@
           "wireName": "get_session_info",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 225
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 101
           },
           "description": "Returns metadata for one session. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -39419,10 +39435,10 @@
           "wireName": "get_tmux_variables",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 393
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 272
           },
           "description": "Reads a capped list of validated tmux variable names, not free-form formats. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
           "schemaStatus": "runtime",
@@ -39542,10 +39558,10 @@
           "wireName": "get_window_info",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 233
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 109
           },
           "description": "Returns metadata for one window. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -39686,10 +39702,10 @@
           "wireName": "kill_pane",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 903
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/TeardownTools.java",
+            "line": 33
           },
           "description": "Deletes one pane and ends its process. Delete tmux state; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -39807,10 +39823,10 @@
           "wireName": "kill_session",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 919
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/TeardownTools.java",
+            "line": 52
           },
           "description": "Deletes one session and every window and pane in it. Delete tmux state; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -39928,10 +39944,10 @@
           "wireName": "kill_window",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 911
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/TeardownTools.java",
+            "line": 42
           },
           "description": "Deletes one window and every pane in it. Delete tmux state; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -40049,12 +40065,12 @@
           "wireName": "list_panes",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 194
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 69
           },
-          "description": "Lists pane metadata and stable pane IDs. Inspect tmux metadata; accepts no client-supplied executable input.",
+          "description": "Lists pane metadata and stable pane IDs. No filter; use the 'command' field to find a pane by what it runs. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -40140,7 +40156,7 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Lists pane metadata and stable pane IDs. Inspect tmux metadata; accepts no client-supplied executable input.",
+              "description": "Lists pane metadata and stable pane IDs. No filter; use the 'command' field to find a pane by what it runs. Inspect tmux metadata; accepts no client-supplied executable input.",
               "inputLiteralization": {},
               "inputSchema": {
                 "additionalProperties": false,
@@ -40231,10 +40247,10 @@
           "wireName": "list_sessions",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 166
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 39
           },
           "description": "Lists sessions on the pinned tmux server. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -40389,18 +40405,22 @@
           "wireName": "list_windows",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 180
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 53
           },
-          "description": "Lists windows, optionally only those in one named session. Inspect tmux metadata; accepts no client-supplied executable input.",
+          "description": "Lists windows, optionally only those in one session, named by ID or by name. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
             "properties": {
-              "session": {
-                "description": "Only windows in this session name.",
+              "session_id": {
+                "description": "Only windows in this session, such as $1.",
+                "type": "string"
+              },
+              "session_name": {
+                "description": "Only windows in the session with this exact name.",
                 "type": "string"
               }
             },
@@ -40474,13 +40494,17 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Lists windows, optionally only those in one named session. Inspect tmux metadata; accepts no client-supplied executable input.",
+              "description": "Lists windows, optionally only those in one session, named by ID or by name. Inspect tmux metadata; accepts no client-supplied executable input.",
               "inputLiteralization": {},
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
-                  "session": {
-                    "description": "Only windows in this session name.",
+                  "session_id": {
+                    "description": "Only windows in this session, such as $1.",
+                    "type": "string"
+                  },
+                  "session_name": {
+                    "description": "Only windows in the session with this exact name.",
                     "type": "string"
                   }
                 },
@@ -40559,10 +40583,10 @@
           "wireName": "move_window",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 591
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
+            "line": 121
           },
           "description": "Moves a window to another session, optionally at an index. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -40692,10 +40716,10 @@
           "wireName": "paste_text",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 854
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
+            "line": 218
           },
           "description": "Pastes one literal text block into one target pane through an ephemeral buffer; paste-buffer input does not fan out to synchronized peers. The target cannot be caller or attended. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
           "schemaStatus": "runtime",
@@ -40831,10 +40855,10 @@
           "wireName": "rename_session",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 512
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
+            "line": 31
           },
           "description": "Replaces a session's name. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -40964,10 +40988,10 @@
           "wireName": "rename_window",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 525
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
+            "line": 44
           },
           "description": "Replaces a window's name. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -41121,10 +41145,10 @@
           "wireName": "resize_pane",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 579
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
+            "line": 106
           },
           "description": "Sets a pane's width, height or both. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -41260,10 +41284,10 @@
           "wireName": "resize_window",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 567
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
+            "line": 91
           },
           "description": "Sets a window's width, height or both. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -41425,10 +41449,10 @@
           "wireName": "respawn_pane",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 755
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
+            "line": 118
           },
           "description": "Kills the pane's current process and starts its configured process again. Start a pane's configured process; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -41541,10 +41565,10 @@
           "wireName": "run_shell_command",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 778
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
+            "line": 142
           },
           "description": "Runs one authored command in a trusted pane shell and waits for singular framed output and completion. Its two preflights refuse caller or attended panes and an effective cohort larger than one. Pre-existing exact-client-path, trap, eval, or exit functions are outside the supported boundary; marker display-message commands honor the trusted server's command aliases and hooks. Run a shell command in a pane with your user's permissions.",
           "schemaStatus": "runtime",
@@ -41753,10 +41777,10 @@
           "wireName": "search_panes",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 322
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 201
           },
           "description": "Searches the visible output of every pane. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
           "schemaStatus": "runtime",
@@ -41798,9 +41822,6 @@
               "count": {
                 "type": "integer"
               },
-              "limited": {
-                "type": "boolean"
-              },
               "lines_searched": {
                 "type": "integer"
               },
@@ -41837,6 +41858,9 @@
               "panes_searched": {
                 "type": "integer"
               },
+              "truncated": {
+                "type": "boolean"
+              },
               "work_seconds": {
                 "type": "number"
               }
@@ -41847,7 +41871,7 @@
               "lines_searched",
               "bytes_searched",
               "work_seconds",
-              "limited",
+              "truncated",
               "matches"
             ],
             "type": "object"
@@ -41916,9 +41940,6 @@
                   "count": {
                     "type": "integer"
                   },
-                  "limited": {
-                    "type": "boolean"
-                  },
                   "lines_searched": {
                     "type": "integer"
                   },
@@ -41955,6 +41976,9 @@
                   "panes_searched": {
                     "type": "integer"
                   },
+                  "truncated": {
+                    "type": "boolean"
+                  },
                   "work_seconds": {
                     "type": "number"
                   }
@@ -41965,7 +41989,7 @@
                   "lines_searched",
                   "bytes_searched",
                   "work_seconds",
-                  "limited",
+                  "truncated",
                   "matches"
                 ],
                 "type": "object"
@@ -41984,18 +42008,18 @@
           "wireName": "select_layout",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 556
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
+            "line": 75
           },
-          "description": "Applies one built-in tmux layout. Change tmux state; no client-supplied executable input.",
+          "description": "Applies a named tmux layout, a unique abbreviation or a checksummed saved layout. Names follow the running daemon's version; mirrored main layouts require tmux 3.5. Malformed syntax is refused before window lookup; tmux validates geometry. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
             "properties": {
               "layout": {
-                "description": "A built-in layout name.",
+                "description": "A built-in name, unique abbreviation or saved tmux layout. Existing enum-style names are also accepted.",
                 "type": "string"
               },
               "window_id": {
@@ -42048,13 +42072,13 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Applies one built-in tmux layout. Change tmux state; no client-supplied executable input.",
+              "description": "Applies a named tmux layout, a unique abbreviation or a checksummed saved layout. Names follow the running daemon's version; mirrored main layouts require tmux 3.5. Malformed syntax is refused before window lookup; tmux validates geometry. Change tmux state; no client-supplied executable input.",
               "inputLiteralization": {},
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
                   "layout": {
-                    "description": "A built-in layout name.",
+                    "description": "A built-in name, unique abbreviation or saved tmux layout. Existing enum-style names are also accepted.",
                     "type": "string"
                   },
                   "window_id": {
@@ -42113,10 +42137,10 @@
           "wireName": "select_pane",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 547
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
+            "line": 66
           },
           "description": "Makes one pane active. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -42274,10 +42298,10 @@
           "wireName": "select_window",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 538
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
+            "line": 57
           },
           "description": "Makes one window active. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -42419,10 +42443,10 @@
           "wireName": "send_keys",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 812
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
+            "line": 176
           },
           "description": "Sends input to the target's configured effective synchronized cohort without waiting for output. Every configured member must be live, nonmodal, and neither caller nor attended. Reports configured pane ids observed before dispatch, not delivery receipts. wait_for_text discounts recognized input; wait for the prompt before typing into a cold shell. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
           "schemaStatus": "runtime",
@@ -42592,10 +42616,10 @@
           "wireName": "send_keys_batch",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 833
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
+            "line": 197
           },
           "description": "Sends up to sixty-four ordered pane-input operations, resolving and guarding the configured effective cohort separately for each ordered operation. A later policy or dispatch failure retains observed membership. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
           "schemaStatus": "runtime",
@@ -42633,6 +42657,9 @@
                     "error": {
                       "type": "string"
                     },
+                    "error_code": {
+                      "type": "string"
+                    },
                     "index": {
                       "type": "integer"
                     },
@@ -42644,6 +42671,9 @@
                         "type": "string"
                       },
                       "type": "array"
+                    },
+                    "retryable": {
+                      "type": "boolean"
                     },
                     "success": {
                       "type": "boolean"
@@ -42725,6 +42755,9 @@
                         "error": {
                           "type": "string"
                         },
+                        "error_code": {
+                          "type": "string"
+                        },
                         "index": {
                           "type": "integer"
                         },
@@ -42736,6 +42769,9 @@
                             "type": "string"
                           },
                           "type": "array"
+                        },
+                        "retryable": {
+                          "type": "boolean"
                         },
                         "success": {
                           "type": "boolean"
@@ -42773,10 +42809,10 @@
           "wireName": "set_history_limit",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 662
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
+            "line": 198
           },
           "description": "Sets a bounded integer scrollback limit for future panes in a session. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -42887,10 +42923,10 @@
           "wireName": "set_mouse_enabled",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 653
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
+            "line": 189
           },
           "description": "Enables or disables tmux mouse handling. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -42981,10 +43017,10 @@
           "wireName": "set_pane_title",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 612
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
+            "line": 148
           },
           "description": "Replaces a pane's literal title. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -43154,10 +43190,10 @@
           "wireName": "set_synchronize_panes",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 875
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
+            "line": 239
           },
           "description": "When enabled, sets the inherited window default; pane-level overrides determine each pane's effective synchronized value. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -43268,18 +43304,22 @@
           "wireName": "show_environment",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 441
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 328
           },
           "description": "Reads the environment tmux passes to processes. Read the tmux environment; accepts no client-supplied executable input. Returned values may contain secrets.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
             "properties": {
-              "session": {
-                "description": "A session name; omit for the global environment.",
+              "session_id": {
+                "description": "A session, such as $1; omit both for the global environment.",
+                "type": "string"
+              },
+              "session_name": {
+                "description": "A session's exact name, in place of session_id.",
                 "type": "string"
               }
             },
@@ -43337,8 +43377,12 @@
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
-                  "session": {
-                    "description": "A session name; omit for the global environment.",
+                  "session_id": {
+                    "description": "A session, such as $1; omit both for the global environment.",
+                    "type": "string"
+                  },
+                  "session_name": {
+                    "description": "A session's exact name, in place of session_id.",
                     "type": "string"
                   }
                 },
@@ -43396,10 +43440,10 @@
           "wireName": "show_hooks",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 460
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 352
           },
           "description": "Reads configured tmux hooks. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
           "schemaStatus": "runtime",
@@ -43415,7 +43459,7 @@
                 "type": "string"
               },
               "target": {
-                "description": "The target required by session, window and pane scopes.",
+                "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
                 "type": "string"
               }
             },
@@ -43476,7 +43520,7 @@
                     "type": "string"
                   },
                   "target": {
-                    "description": "The target required by session, window and pane scopes.",
+                    "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
                     "type": "string"
                   }
                 },
@@ -43528,10 +43572,10 @@
           "wireName": "show_option",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 423
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 306
           },
           "description": "Reads one named tmux option. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
           "schemaStatus": "runtime",
@@ -43552,7 +43596,7 @@
                 "type": "string"
               },
               "target": {
-                "description": "The target required by session, window and pane scopes.",
+                "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
                 "type": "string"
               }
             },
@@ -43620,7 +43664,7 @@
                     "type": "string"
                   },
                   "target": {
-                    "description": "The target required by session, window and pane scopes.",
+                    "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
                     "type": "string"
                   }
                 },
@@ -43675,10 +43719,10 @@
           "wireName": "signal_channel",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 644
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
+            "line": 180
           },
           "description": "Signals one server-wide tmux channel. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -43779,12 +43823,12 @@
           "wireName": "snapshot_pane",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 293
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 171
           },
-          "description": "Returns pane metadata and bounded terminal content together. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+          "description": "Returns what a pane shows and its metadata, as list_panes describes a pane, in one call. Use it when both are needed; capture_pane alone reads less. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -43856,7 +43900,7 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Returns pane metadata and bounded terminal content together. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+              "description": "Returns what a pane shows and its metadata, as list_panes describes a pane, in one call. Use it when both are needed; capture_pane alone reads less. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
               "inputLiteralization": {},
               "inputSchema": {
                 "additionalProperties": false,
@@ -43934,10 +43978,10 @@
           "wireName": "split_window",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 731
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ExecuteTools.java",
+            "line": 94
           },
           "description": "Creates a pane whose configured process starts after the split. Start a pane's configured process; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -44123,10 +44167,10 @@
           "wireName": "swap_pane",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 603
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
+            "line": 139
           },
           "description": "Swaps the positions of two panes. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -44238,10 +44282,10 @@
           "wireName": "wait_for_channel",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 627
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/ManageTools.java",
+            "line": 163
           },
           "description": "Waits on tmux's channel state with a bounded timeout. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -44384,10 +44428,10 @@
           "wireName": "wait_for_text",
           "source": {
             "repo": "libtmux/libtmux-java",
-            "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-            "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
-            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Catalog.java",
-            "line": 367
+            "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+            "file": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/InspectTools.java",
+            "line": 246
           },
           "description": "Waits for new pane output without accepting executable input. Discounts recognized input from this server while pending and for ten seconds after submission. Output identical to that input and partially redrawn echoes are ambiguous; use run_shell_command for commands you start. Wait for the prompt before typing into a cold shell. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
           "schemaStatus": "runtime",
@@ -44647,8 +44691,8 @@
       "selectable": true,
       "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp",
       "repo": "libtmux/libtmux-java",
-      "revision": "842228310449e879ebcaa3f910597757c9dbffd6",
-      "extractedRevision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "extractedRevision": "a0ecbc16da00140e2520462d478a2af470878272",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -44676,7 +44720,7 @@
         "resourceTemplates": [],
         "serverInfo": {
           "name": "libtmux",
-          "version": "0.0.1-alpha.12-SNAPSHOT"
+          "version": "0.0.1-alpha.17-SNAPSHOT"
         }
       }
     },
