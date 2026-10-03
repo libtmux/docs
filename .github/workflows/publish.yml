@@ -99,7 +99,7 @@ jobs:
       # repositories, or the libtmux-docs-publisher App when it is set up.
       - id: app
         if: vars.LIBTMUX_DOCS_APP_ID != ''
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ vars.LIBTMUX_DOCS_APP_ID }}
           private-key: ${{ secrets.LIBTMUX_DOCS_APP_KEY }}
