@@ -51,7 +51,7 @@ describe('shared browse cards', () => {
   })
 
   it('preserves unrestricted product cards and treats an empty restriction as no destination', () => {
-    const shared = { label: 'Guide', href: './guide/', body: 'Read the guide.' }
+    const shared: Card = { label: 'Guide', href: './guide/', body: 'Read the guide.' }
     expect(selectPortCards([shared], 'go')).toEqual([shared])
     expect(selectPortCards([shared])).toEqual([shared])
     expect(selectPortCards([{ ...shared, ports: [] }], 'go')).toEqual([])
