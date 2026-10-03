@@ -13,6 +13,11 @@ export const KNOWN_PORTS = new Set(['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'c
 const CONTENT_PORTS = new Set([...PORTS.map((port) => port.slug), 'root'])
 const SLOT_TAG = /<!--\s*port:([\s\S]*?)-->|<!--\s*\/port\s*-->/gi
 
+/** Keep browse cards in their authored port, including explicitly shared root cards. */
+export function selectPortCards<T extends { ports?: readonly string[] }>(cards: readonly T[] | undefined, port?: string): T[] {
+  return cards?.filter((card) => !card.ports || card.ports.includes(port || 'root')) ?? []
+}
+
 /** Markdown examples can show ownership syntax literally; other fences may contain slots. */
 function fencedRanges(raw: string): [number, number][] {
   const ranges: [number, number][] = []

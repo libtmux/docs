@@ -48,11 +48,11 @@ const docs = defineCollection({
         group: z.string().optional(),
       })
       .optional(),
-    /**
-     * Boxes linking a product overview's main sections, shown under its
-     * install picker. `href` is relative to the page, as in its Markdown.
-     */
-    cards: z.array(z.object({ label: z.string(), href: z.string(), body: z.string() })).optional(),
+    /** Browse links shared by HTML and Markdown; `href` is relative to the page. */
+    cards: z.array(z.object({
+      label: z.string(), href: z.string(), body: z.string(),
+      ports: z.array(z.string().refine((slug) => slug === 'root' || PORTS.some((port) => port.slug === slug), 'Unknown card port')).optional(),
+    })).optional(),
     /** Suppress the on-page table of contents. */
     tableOfContents: z.boolean().default(true),
     /** Explicit canonical override; normally computed. */
