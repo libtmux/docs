@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-java",
-  "revision": "a960145afeefb340d85ea76ea0d62c29517b1c85",
+  "revision": "a0ecbc16da00140e2520462d478a2af470878272",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -29,7 +29,7 @@
     "resourceTemplates": [],
     "serverInfo": {
       "name": "libtmux",
-      "version": "0.0.1-alpha.12-SNAPSHOT"
+      "version": "0.0.1-alpha.17-SNAPSHOT"
     },
     "tools": [
       {
@@ -84,8 +84,12 @@
                           "arguments": {
                             "additionalProperties": false,
                             "properties": {
-                              "session": {
-                                "description": "Only windows in this session name.",
+                              "session_id": {
+                                "description": "Only windows in this session, such as $1.",
+                                "type": "string"
+                              },
+                              "session_name": {
+                                "description": "Only windows in the session with this exact name.",
                                 "type": "string"
                               }
                             },
@@ -456,7 +460,7 @@
                                 "type": "string"
                               },
                               "target": {
-                                "description": "The target required by session, window and pane scopes.",
+                                "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
                                 "type": "string"
                               }
                             },
@@ -481,8 +485,12 @@
                           "arguments": {
                             "additionalProperties": false,
                             "properties": {
-                              "session": {
-                                "description": "A session name; omit for the global environment.",
+                              "session_id": {
+                                "description": "A session, such as $1; omit both for the global environment.",
+                                "type": "string"
+                              },
+                              "session_name": {
+                                "description": "A session's exact name, in place of session_id.",
                                 "type": "string"
                               }
                             },
@@ -514,7 +522,7 @@
                                 "type": "string"
                               },
                               "target": {
-                                "description": "The target required by session, window and pane scopes.",
+                                "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
                                 "type": "string"
                               }
                             },
@@ -737,8 +745,12 @@
                       "arguments": {
                         "additionalProperties": false,
                         "properties": {
-                          "session": {
-                            "description": "Only windows in this session name.",
+                          "session_id": {
+                            "description": "Only windows in this session, such as $1.",
+                            "type": "string"
+                          },
+                          "session_name": {
+                            "description": "Only windows in the session with this exact name.",
                             "type": "string"
                           }
                         },
@@ -1109,7 +1121,7 @@
                             "type": "string"
                           },
                           "target": {
-                            "description": "The target required by session, window and pane scopes.",
+                            "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
                             "type": "string"
                           }
                         },
@@ -1134,8 +1146,12 @@
                       "arguments": {
                         "additionalProperties": false,
                         "properties": {
-                          "session": {
-                            "description": "A session name; omit for the global environment.",
+                          "session_id": {
+                            "description": "A session, such as $1; omit both for the global environment.",
+                            "type": "string"
+                          },
+                          "session_name": {
+                            "description": "A session's exact name, in place of session_id.",
                             "type": "string"
                           }
                         },
@@ -1167,7 +1183,7 @@
                             "type": "string"
                           },
                           "target": {
-                            "description": "The target required by session, window and pane scopes.",
+                            "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
                             "type": "string"
                           }
                         },
@@ -1319,7 +1335,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Returns bounded pane content and a cursor. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+            "description": "Returns what a pane shows now, its newest lines first to go when bounded, and a cursor for capture_since. Use it to read a pane once. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -1405,7 +1421,7 @@
           "readOnlyHint": false,
           "title": "Capture a pane"
         },
-        "description": "Returns bounded pane content and a cursor. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+        "description": "Returns what a pane shows now, its newest lines first to go when bounded, and a cursor for capture_since. Use it to read a pane once. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -1479,7 +1495,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Returns pane output produced after a cursor. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+            "description": "Returns only the output a pane produced after a cursor from capture_pane or an earlier capture_since. Use it to follow a pane across turns without rereading it. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -1568,7 +1584,7 @@
           "readOnlyHint": false,
           "title": "Capture new pane output"
         },
-        "description": "Returns pane output produced after a cursor. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+        "description": "Returns only the output a pane produced after a cursor from capture_pane or an earlier capture_since. Use it to follow a pane across turns without rereading it. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -3166,7 +3182,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Lists pane metadata and stable pane IDs. Inspect tmux metadata; accepts no client-supplied executable input.",
+            "description": "Lists pane metadata and stable pane IDs. No filter; use the 'command' field to find a pane by what it runs. Inspect tmux metadata; accepts no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -3258,7 +3274,7 @@
           "readOnlyHint": false,
           "title": "List panes"
         },
-        "description": "Lists pane metadata and stable pane IDs. Inspect tmux metadata; accepts no client-supplied executable input.",
+        "description": "Lists pane metadata and stable pane IDs. No filter; use the 'command' field to find a pane by what it runs. Inspect tmux metadata; accepts no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {},
@@ -3488,13 +3504,17 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Lists windows, optionally only those in one named session. Inspect tmux metadata; accepts no client-supplied executable input.",
+            "description": "Lists windows, optionally only those in one session, named by ID or by name. Inspect tmux metadata; accepts no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
               "properties": {
-                "session": {
-                  "description": "Only windows in this session name.",
+                "session_id": {
+                  "description": "Only windows in this session, such as $1.",
+                  "type": "string"
+                },
+                "session_name": {
+                  "description": "Only windows in the session with this exact name.",
                   "type": "string"
                 }
               },
@@ -3574,12 +3594,16 @@
           "readOnlyHint": false,
           "title": "List windows"
         },
-        "description": "Lists windows, optionally only those in one named session. Inspect tmux metadata; accepts no client-supplied executable input.",
+        "description": "Lists windows, optionally only those in one session, named by ID or by name. Inspect tmux metadata; accepts no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
-            "session": {
-              "description": "Only windows in this session name.",
+            "session_id": {
+              "description": "Only windows in this session, such as $1.",
+              "type": "string"
+            },
+            "session_name": {
+              "description": "Only windows in the session with this exact name.",
               "type": "string"
             }
           },
@@ -4819,9 +4843,6 @@
                 "count": {
                   "type": "integer"
                 },
-                "limited": {
-                  "type": "boolean"
-                },
                 "lines_searched": {
                   "type": "integer"
                 },
@@ -4858,6 +4879,9 @@
                 "panes_searched": {
                   "type": "integer"
                 },
+                "truncated": {
+                  "type": "boolean"
+                },
                 "work_seconds": {
                   "type": "number"
                 }
@@ -4868,7 +4892,7 @@
                 "lines_searched",
                 "bytes_searched",
                 "work_seconds",
-                "limited",
+                "truncated",
                 "matches"
               ],
               "type": "object"
@@ -4928,9 +4952,6 @@
             "count": {
               "type": "integer"
             },
-            "limited": {
-              "type": "boolean"
-            },
             "lines_searched": {
               "type": "integer"
             },
@@ -4967,6 +4988,9 @@
             "panes_searched": {
               "type": "integer"
             },
+            "truncated": {
+              "type": "boolean"
+            },
             "work_seconds": {
               "type": "number"
             }
@@ -4977,7 +5001,7 @@
             "lines_searched",
             "bytes_searched",
             "work_seconds",
-            "limited",
+            "truncated",
             "matches"
           ],
           "type": "object"
@@ -4993,13 +5017,13 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Applies one built-in tmux layout. Change tmux state; no client-supplied executable input.",
+            "description": "Applies a named tmux layout, a unique abbreviation or a checksummed saved layout. Names follow the running daemon's version; mirrored main layouts require tmux 3.5. Malformed syntax is refused before window lookup; tmux validates geometry. Change tmux state; no client-supplied executable input.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
               "properties": {
                 "layout": {
-                  "description": "A built-in layout name.",
+                  "description": "A built-in name, unique abbreviation or saved tmux layout. Existing enum-style names are also accepted.",
                   "type": "string"
                 },
                 "window_id": {
@@ -5059,12 +5083,12 @@
           "readOnlyHint": false,
           "title": "Select a layout"
         },
-        "description": "Applies one built-in tmux layout. Change tmux state; no client-supplied executable input.",
+        "description": "Applies a named tmux layout, a unique abbreviation or a checksummed saved layout. Names follow the running daemon's version; mirrored main layouts require tmux 3.5. Malformed syntax is refused before window lookup; tmux validates geometry. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
             "layout": {
-              "description": "A built-in layout name.",
+              "description": "A built-in name, unique abbreviation or saved tmux layout. Existing enum-style names are also accepted.",
               "type": "string"
             },
             "window_id": {
@@ -5608,6 +5632,9 @@
                       "error": {
                         "type": "string"
                       },
+                      "error_code": {
+                        "type": "string"
+                      },
                       "index": {
                         "type": "integer"
                       },
@@ -5619,6 +5646,9 @@
                           "type": "string"
                         },
                         "type": "array"
+                      },
+                      "retryable": {
+                        "type": "boolean"
                       },
                       "success": {
                         "type": "boolean"
@@ -5693,6 +5723,9 @@
                   "error": {
                     "type": "string"
                   },
+                  "error_code": {
+                    "type": "string"
+                  },
                   "index": {
                     "type": "integer"
                   },
@@ -5704,6 +5737,9 @@
                       "type": "string"
                     },
                     "type": "array"
+                  },
+                  "retryable": {
+                    "type": "boolean"
                   },
                   "success": {
                     "type": "boolean"
@@ -6201,8 +6237,12 @@
             "inputSchema": {
               "additionalProperties": false,
               "properties": {
-                "session": {
-                  "description": "A session name; omit for the global environment.",
+                "session_id": {
+                  "description": "A session, such as $1; omit both for the global environment.",
+                  "type": "string"
+                },
+                "session_name": {
+                  "description": "A session's exact name, in place of session_id.",
                   "type": "string"
                 }
               },
@@ -6265,8 +6305,12 @@
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
-            "session": {
-              "description": "A session name; omit for the global environment.",
+            "session_id": {
+              "description": "A session, such as $1; omit both for the global environment.",
+              "type": "string"
+            },
+            "session_name": {
+              "description": "A session's exact name, in place of session_id.",
               "type": "string"
             }
           },
@@ -6329,7 +6373,7 @@
                   "type": "string"
                 },
                 "target": {
-                  "description": "The target required by session, window and pane scopes.",
+                  "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
                   "type": "string"
                 }
               },
@@ -6395,7 +6439,7 @@
               "type": "string"
             },
             "target": {
-              "description": "The target required by session, window and pane scopes.",
+              "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
               "type": "string"
             }
           },
@@ -6457,7 +6501,7 @@
                   "type": "string"
                 },
                 "target": {
-                  "description": "The target required by session, window and pane scopes.",
+                  "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
                   "type": "string"
                 }
               },
@@ -6531,7 +6575,7 @@
               "type": "string"
             },
             "target": {
-              "description": "The target required by session, window and pane scopes.",
+              "description": "Required for session scope (an ID such as $1, or a name), window scope (@1) and pane scope (%1).",
               "type": "string"
             }
           },
@@ -6671,7 +6715,7 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Returns pane metadata and bounded terminal content together. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+            "description": "Returns what a pane shows and its metadata, as list_panes describes a pane, in one call. Use it when both are needed; capture_pane alone reads less. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
@@ -6750,7 +6794,7 @@
           "readOnlyHint": false,
           "title": "Snapshot a pane"
         },
-        "description": "Returns pane metadata and bounded terminal content together. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
+        "description": "Returns what a pane shows and its metadata, as list_panes describes a pane, in one call. Use it when both are needed; capture_pane alone reads less. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {

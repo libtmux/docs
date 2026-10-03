@@ -15,6 +15,7 @@ import { extractDoxygen } from '../packages/api-model/src/languages/doxygen.ts'
 import { extractLua } from '../packages/api-model/src/languages/lua.ts'
 import { extractRuby } from '../packages/api-model/src/languages/ruby.ts'
 import { attachCompleteGoExamples, readCompleteGoExamples } from '../packages/api-model/src/languages/go-examples.ts'
+import { attachCompleteJvmExamples } from '../packages/api-model/src/languages/jvm-examples.ts'
 import { mapLine, parseHunks } from '../packages/api-model/src/source-lines.ts'
 import { extractProject } from '../packages/api-model/src/project.ts'
 import { scopeProductSymbols } from '../packages/api-model/src/product-exports.ts'
@@ -472,6 +473,18 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     if (examples.length) attachCompleteGoExamples(model.symbols, examples, {
       repo: cfg.repo, revision, goVersion,
     })
+  }
+
+  if (['java', 'kotlin', 'scala'].includes(port)) {
+    attachCompleteJvmExamples(model.symbols, port, (file) => {
+      try {
+        return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
+          encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'],
+        })
+      } catch {
+        return undefined
+      }
+    }, { repo: cfg.repo, revision })
   }
 
   const legacyIds = new Set(model.symbols.map((symbol) => symbol.id))

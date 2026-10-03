@@ -1,0 +1,127 @@
+import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { describe, expect, it } from 'vitest'
+import { assertCompleteApiExample } from '../scripts/check-clipboard.mjs'
+
+const root = fileURLToPath(new URL('../../', import.meta.url))
+const python = (code: string) => JSON.parse(execFileSync('python3', ['-B', '-c', `
+import importlib.util, json, pathlib, re
+spec = importlib.util.spec_from_file_location('runner', 'scripts/check-example-prose.py')
+runner = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(runner)
+${code}
+`], { cwd: root, encoding: 'utf8' }))
+const hash = (code: string) => createHash('sha256').update(code).digest('hex')
+
+describe('complete API example selection', () => {
+  it('keeps the current fixtures and their exact displayed commands selectable', () => {
+    const results = python(`
+manifest = json.loads(pathlib.Path('site/test/fixtures/api-examples.json').read_text())
+results = []
+for example in manifest['examples']:
+    page = example['page'].removeprefix('ports/' + example['port'] + '/')
+    selected = runner.select_examples(manifest, 'api', example['port'], page, example.get('sourceProgramId'))
+    assert selected == [example], example['page']
+    model = json.loads(pathlib.Path('site/src/data/api/' + example['port'] + '.json').read_text())
+    symbol = next(symbol for symbol in model['symbols'] if symbol['id'] == example['symbol'])
+    commands = [re.sub(r'^\\$ ', '', code, flags=re.M).strip()
+                for code in runner.api_command_blocks(symbol['doc']['examples'], example)]
+    assert commands == example['shellRecipe'], example['page']
+    results.append(example['port'])
+print(json.dumps(results))`)
+    expect(results.length).toBeGreaterThanOrEqual(20)
+    expect(results).toContain('go')
+    expect(results).toContain('lua')
+  })
+
+  it('selects one program on a shared page without including another setup', () => {
+    expect(python(`
+examples = [{'port': 'java', 'page': 'ports/java/reference/server-sessions', 'sourceProgramId': name}
+            for name in ['java-ListSessions', 'java-Query']]
+manifest = {'examples': examples}
+assert runner.select_examples(manifest, 'api', 'java', 'reference/server-sessions') == examples
+assert runner.select_examples(manifest, 'api', 'java', 'reference/server-sessions', 'missing') == []
+assert runner.select_examples(manifest, 'api', 'kotlin', 'reference/server-sessions', 'java-Query') == []
+selected = runner.select_examples(manifest, 'api', 'java', 'reference/server-sessions', 'java-Query')
+assert selected == [examples[1]]
+blocks = [{'lang': 'console', 'code': 'first setup'}, {'lang': 'java', 'code': 'first program'},
+          {'lang': 'console', 'code': 'first run'}, {'lang': 'console', 'code': 'second setup'},
+          {'lang': 'java', 'code': 'second program'}, {'lang': 'console', 'code': 'second run'}]
+print(json.dumps(runner.api_command_blocks(blocks, {'consoleBlocks': [3, 5]})))`))
+      .toEqual(['second setup', 'second run'])
+  })
+
+  it('rejects duplicate, non-console, invalid and empty command selections', () => {
+    expect(python(`
+blocks = [{'lang': 'console', 'code': 'setup'}, {'lang': 'java', 'code': 'program'}]
+for indices in [[0, 0], [1], [-1], [2], [True], []]:
+    try:
+        runner.api_command_blocks(blocks, {'consoleBlocks': indices})
+    except ValueError:
+        continue
+    raise AssertionError(indices)
+print(json.dumps(runner.api_command_blocks(blocks, {})))`)).toEqual(['setup'])
+  })
+})
+
+describe('API example source and clipboard receipts', () => {
+  const fixture = () => {
+    const revision = 'a'.repeat(40)
+    const href = `https://github.com/libtmux/libtmux-java/blob/${revision}/examples/api/run.sh`
+    const link = { href, label: 'Source example' }
+    const rendered = { text: '', links: [link, link], sourceLinks: [[link], [], [link], []],
+      files: ['whole launcher', 'first recipe', 'whole launcher', 'second recipe'] }
+    const example = { symbol: 'Server.sessions', sourceRepository: 'libtmux/libtmux-java',
+      sourceRevision: revision, sourceFile: 'examples/api/run.sh', consoleBlocks: [3],
+      shellRecipe: ['second recipe'], files: [{ block: 2, name: 'run.sh',
+        sourceFile: 'examples/api/run.sh', sha256: hash('whole launcher\n'),
+        clipboardSha256: hash('whole launcher') }] }
+    return { rendered, example }
+  }
+
+  it('retains the current fixture source links, file hashes and recipes', () => {
+    const manifest = JSON.parse(readFileSync(new URL('./fixtures/api-examples.json', import.meta.url), 'utf8'))
+    for (const example of manifest.examples) {
+      const model = JSON.parse(readFileSync(new URL(`../src/data/api/${example.port}.json`, import.meta.url), 'utf8'))
+      const symbol = model.symbols.find((entry: { id: string }) => entry.id === example.symbol)
+      const blocks = symbol.doc.examples as { sourceUrl?: string; code: string; lang: string }[]
+      const sourceLinks = blocks.map((block) => block.sourceUrl
+        ? [{ href: block.sourceUrl, label: 'Source example' }] : [])
+      const rendered = { text: '', links: sourceLinks.flat(), sourceLinks,
+        files: blocks.map((block) => block.lang === 'console'
+          ? block.code.replace(/^\$ /gm, '').trim() : block.code.replace(/\n$/, '')) }
+      expect(() => assertCompleteApiExample(rendered, example), example.symbol).not.toThrow()
+    }
+  })
+
+  it('accepts the same setup source on two independent programs', () => {
+    const { rendered, example } = fixture()
+    expect(() => assertCompleteApiExample(rendered, example)).not.toThrow()
+  })
+
+  it('rejects a source link missing beside its file even when another program has it', () => {
+    const { rendered, example } = fixture()
+    rendered.sourceLinks[2] = []
+    expect(() => assertCompleteApiExample(rendered, example)).toThrow('exact pinned source')
+  })
+
+  it('rejects duplicate or incorrect source citations beside the selected file', () => {
+    const duplicate = fixture()
+    duplicate.rendered.sourceLinks[2].push(duplicate.rendered.sourceLinks[2][0])
+    expect(() => assertCompleteApiExample(duplicate.rendered, duplicate.example)).toThrow('exact pinned source')
+    const wrong = fixture()
+    wrong.rendered.sourceLinks[2] = [{ href: 'https://github.com/libtmux/libtmux-java/blob/main/run.sh', label: 'Source example' }]
+    expect(() => assertCompleteApiExample(wrong.rendered, wrong.example)).toThrow('exact pinned source')
+  })
+
+  it('rejects altered file bytes or the other program setup', () => {
+    const bytes = fixture()
+    bytes.rendered.files[2] += ' changed'
+    expect(() => assertCompleteApiExample(bytes.rendered, bytes.example)).toThrow('exact clipboard bytes')
+    const commands = fixture()
+    commands.example.consoleBlocks = [1]
+    expect(() => assertCompleteApiExample(commands.rendered, commands.example)).toThrow('copied setup and run commands')
+  })
+})

@@ -1690,6 +1690,4089 @@
       "copyConvention": "Source files contain LF line endings and one final newline. HTML clipboard payloads omit that final newline; both hashes are recorded. Console clipboard payloads remove the displayed dollar prompt and final newline.",
       "verificationScope": "The exact public source checkout, setup, full program and launcher ran on both tmux releases. The shared snapshot program is byte-identical on its four API pages.",
       "nativeReceiptSha256": "d918c604660888ae5a4d6abe1b40ba13e90140bed884a1e5dc3d2651a840f3b9"
+    },
+    {
+      "port": "java",
+      "page": "ports/java/reference/io-github-libtmux-server-server",
+      "symbol": "io.github.libtmux.Server.Server",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/Connect.java",
+      "sourceProgramId": "java-Connect",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/java/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/java/build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Connect.java",
+          "path": "src/main/java/Connect.java",
+          "block": 5,
+          "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/Connect.java",
+          "sha256": "26bdb1353032f61b2f069978a22a6f6b807d6e5ad11abd3c30a15e10a1d4a5d3",
+          "clipboardSha256": "ca6ee23e51d4f1a417c22404f1176edb01fa6fd62a88f566088926aa386ece60"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.java.Connect && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "connected=true"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "java",
+      "page": "ports/java/reference/io-github-libtmux-server-server-open",
+      "symbol": "io.github.libtmux.Server.Server.open",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/Connect.java",
+      "sourceProgramId": "java-Connect",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/java/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/java/build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Connect.java",
+          "path": "src/main/java/Connect.java",
+          "block": 5,
+          "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/Connect.java",
+          "sha256": "26bdb1353032f61b2f069978a22a6f6b807d6e5ad11abd3c30a15e10a1d4a5d3",
+          "clipboardSha256": "ca6ee23e51d4f1a417c22404f1176edb01fa6fd62a88f566088926aa386ece60"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.java.Connect && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "connected=true"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "java",
+      "page": "ports/java/reference/io-github-libtmux-server-server-sessions",
+      "symbol": "io.github.libtmux.Server.Server.sessions",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/ListSessions.java",
+      "sourceProgramId": "java-ListSessions",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/java/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/java/build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListSessions.java",
+          "path": "src/main/java/ListSessions.java",
+          "block": 5,
+          "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/ListSessions.java",
+          "sha256": "b8117fe462df20a8cb3a29401d5f5f0e47f5a70a24196e04e3034e61ca5e7052",
+          "clipboardSha256": "d7a16a74bde1e8dff6a6484fca663452de46a29f7cf362b7f4128aa0088b9163"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.java.ListSessions && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "sessions=work-one,work-two"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "java",
+      "page": "ports/java/reference/io-github-libtmux-server-server-windows",
+      "symbol": "io.github.libtmux.Server.Server.windows",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/ListWindows.java",
+      "sourceProgramId": "java-ListWindows",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/java/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/java/build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListWindows.java",
+          "path": "src/main/java/ListWindows.java",
+          "block": 5,
+          "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/ListWindows.java",
+          "sha256": "762d7bcd619ecd41a523d3456aa2bdcdc3afa313366177e2f179db41ddd5d4ce",
+          "clipboardSha256": "7dfe463eb1f6a2e01f82c3ce6d9f9a67a1e44e41a4ca97d525e56273cfa2f329"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.java.ListWindows && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "windows=editor,editor,logs",
+          "session-windows=editor,logs"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "java",
+      "page": "ports/java/reference/io-github-libtmux-session-session-windows",
+      "symbol": "io.github.libtmux.Session.Session.windows",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/ListWindows.java",
+      "sourceProgramId": "java-ListWindows",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/java/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/java/build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListWindows.java",
+          "path": "src/main/java/ListWindows.java",
+          "block": 5,
+          "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/ListWindows.java",
+          "sha256": "762d7bcd619ecd41a523d3456aa2bdcdc3afa313366177e2f179db41ddd5d4ce",
+          "clipboardSha256": "7dfe463eb1f6a2e01f82c3ce6d9f9a67a1e44e41a4ca97d525e56273cfa2f329"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.java.ListWindows && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "windows=editor,editor,logs",
+          "session-windows=editor,logs"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "java",
+      "page": "ports/java/reference/io-github-libtmux-server-server-panes",
+      "symbol": "io.github.libtmux.Server.Server.panes",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/ListPanes.java",
+      "sourceProgramId": "java-ListPanes",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/java/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/java/build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListPanes.java",
+          "path": "src/main/java/ListPanes.java",
+          "block": 5,
+          "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/ListPanes.java",
+          "sha256": "9dc91effa55175a437c1ff15829c7aa4a693446d0de935001196b33cdbc8320b",
+          "clipboardSha256": "cc1671aa866b01f6375433002a0b195721b76ba18762115bef19a894954dd41e"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.java.ListPanes && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "panes=4",
+          "window-panes=2"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "java",
+      "page": "ports/java/reference/io-github-libtmux-window-window-panes",
+      "symbol": "io.github.libtmux.Window.Window.panes",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/ListPanes.java",
+      "sourceProgramId": "java-ListPanes",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/java/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/java/build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListPanes.java",
+          "path": "src/main/java/ListPanes.java",
+          "block": 5,
+          "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/ListPanes.java",
+          "sha256": "9dc91effa55175a437c1ff15829c7aa4a693446d0de935001196b33cdbc8320b",
+          "clipboardSha256": "cc1671aa866b01f6375433002a0b195721b76ba18762115bef19a894954dd41e"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.java.ListPanes && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "panes=4",
+          "window-panes=2"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "java",
+      "page": "ports/java/reference/io-github-libtmux-server-server-newsession",
+      "symbol": "io.github.libtmux.Server.Server.newSession",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/NewSession.java",
+      "sourceProgramId": "java-NewSession",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/java/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/java/build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "NewSession.java",
+          "path": "src/main/java/NewSession.java",
+          "block": 5,
+          "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/NewSession.java",
+          "sha256": "b56dbd6e5f91a8ab0f92dadec1f8117913932c9db504309a2428fe7f15baf63b",
+          "clipboardSha256": "92094031a7b9e1c7659b5413edcf931561e0325a3b93c5bb18fb5248d774f86b"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.java.NewSession && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "created=api-session"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "java",
+      "page": "ports/java/reference/io-github-libtmux-session-session-newwindow",
+      "symbol": "io.github.libtmux.Session.Session.newWindow",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/NewWindow.java",
+      "sourceProgramId": "java-NewWindow",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/java/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/java/build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "NewWindow.java",
+          "path": "src/main/java/NewWindow.java",
+          "block": 5,
+          "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/NewWindow.java",
+          "sha256": "5f60c020bee5f048d332558d9abb63887b3a16fd260f2e1684f902e6101b4e61",
+          "clipboardSha256": "6d868f171ed893a5f4d8425054f1d94493ab44047e7a97c05fbc187abc809444"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.java.NewWindow && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "created=api-window",
+          "windows=api-window,editor,logs"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "java",
+      "page": "ports/java/reference/io-github-libtmux-server-server-sessions",
+      "symbol": "io.github.libtmux.Server.Server.sessions",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/Query.java",
+      "sourceProgramId": "java-Query",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 9,
+          "sourceFile": "examples/api/java/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 10,
+          "sourceFile": "examples/api/java/build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 11,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 12,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Query.java",
+          "path": "src/main/java/Query.java",
+          "block": 13,
+          "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/Query.java",
+          "sha256": "70183177da83e4a45fb19e2f3aa7ef1883d076687a0a57927c6150c0ece8a5b9",
+          "clipboardSha256": "8d54a7abe2c9012f9046993042d231b0468d32d31facb25d657483a7ce0f93ff"
+        }
+      ],
+      "consoleBlocks": [
+        8,
+        14
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.java.Query && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "matches=work-one"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "java",
+      "page": "ports/java/reference/io-github-libtmux-pane-pane-sendkeys",
+      "symbol": "io.github.libtmux.Pane.Pane.sendKeys",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/Capture.java",
+      "sourceProgramId": "java-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/java/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/java/build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.java",
+          "path": "src/main/java/Capture.java",
+          "block": 5,
+          "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/Capture.java",
+          "sha256": "207eb5bee76d23bee9dd019d1c9f6cbc084f97e81a7b692ab8bdcc91dc252db2",
+          "clipboardSha256": "1616e21478e42c2472e0d632ab658ea311fd61ff6a52e63adde1cc566affbc42"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.java.Capture && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "java",
+      "page": "ports/java/reference/io-github-libtmux-pane-pane-sendline",
+      "symbol": "io.github.libtmux.Pane.Pane.sendLine",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/Capture.java",
+      "sourceProgramId": "java-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/java/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/java/build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.java",
+          "path": "src/main/java/Capture.java",
+          "block": 5,
+          "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/Capture.java",
+          "sha256": "207eb5bee76d23bee9dd019d1c9f6cbc084f97e81a7b692ab8bdcc91dc252db2",
+          "clipboardSha256": "1616e21478e42c2472e0d632ab658ea311fd61ff6a52e63adde1cc566affbc42"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.java.Capture && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "java",
+      "page": "ports/java/reference/io-github-libtmux-pane-pane-awaittext",
+      "symbol": "io.github.libtmux.Pane.Pane.awaitText",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/Capture.java",
+      "sourceProgramId": "java-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/java/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/java/build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.java",
+          "path": "src/main/java/Capture.java",
+          "block": 5,
+          "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/Capture.java",
+          "sha256": "207eb5bee76d23bee9dd019d1c9f6cbc084f97e81a7b692ab8bdcc91dc252db2",
+          "clipboardSha256": "1616e21478e42c2472e0d632ab658ea311fd61ff6a52e63adde1cc566affbc42"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.java.Capture && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "java",
+      "page": "ports/java/reference/io-github-libtmux-pane-pane-capture",
+      "symbol": "io.github.libtmux.Pane.Pane.capture",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/Capture.java",
+      "sourceProgramId": "java-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/java/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/java/build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.java",
+          "path": "src/main/java/Capture.java",
+          "block": 5,
+          "sourceFile": "examples/src/main/java/io/github/libtmux/examples/api/java/Capture.java",
+          "sha256": "207eb5bee76d23bee9dd019d1c9f6cbc084f97e81a7b692ab8bdcc91dc252db2",
+          "clipboardSha256": "1616e21478e42c2472e0d632ab658ea311fd61ff6a52e63adde1cc566affbc42"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.java.Capture && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-server",
+      "symbol": "io.github.libtmux.kotlin.Server",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Connect.kt",
+      "sourceProgramId": "kotlin-Connect",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Connect.kt",
+          "path": "src/main/kotlin/Connect.kt",
+          "block": 5,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Connect.kt",
+          "sha256": "4d075481b22e09d8063bfc310d61056e5e342a2f42aa52bc896aa65aa8b3cc71",
+          "clipboardSha256": "f7236a83212a612f8f3ddac7c017caeda0a528dc0e2763eae591e90e5249a35f"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.ConnectKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "connected=true"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-withserver",
+      "symbol": "io.github.libtmux.kotlin.withServer",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Connect.kt",
+      "sourceProgramId": "kotlin-Connect",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Connect.kt",
+          "path": "src/main/kotlin/Connect.kt",
+          "block": 5,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Connect.kt",
+          "sha256": "4d075481b22e09d8063bfc310d61056e5e342a2f42aa52bc896aa65aa8b3cc71",
+          "clipboardSha256": "f7236a83212a612f8f3ddac7c017caeda0a528dc0e2763eae591e90e5249a35f"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.ConnectKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "connected=true"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-server-companion-open",
+      "symbol": "io.github.libtmux.kotlin.Server.Companion.open",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Connect.kt",
+      "sourceProgramId": "kotlin-Connect",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Connect.kt",
+          "path": "src/main/kotlin/Connect.kt",
+          "block": 5,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Connect.kt",
+          "sha256": "4d075481b22e09d8063bfc310d61056e5e342a2f42aa52bc896aa65aa8b3cc71",
+          "clipboardSha256": "f7236a83212a612f8f3ddac7c017caeda0a528dc0e2763eae591e90e5249a35f"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.ConnectKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "connected=true"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-server-sessions",
+      "symbol": "io.github.libtmux.kotlin.Server.sessions",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/ListSessions.kt",
+      "sourceProgramId": "kotlin-ListSessions",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListSessions.kt",
+          "path": "src/main/kotlin/ListSessions.kt",
+          "block": 5,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/ListSessions.kt",
+          "sha256": "c001e77ec9c61181513016bdec556299c3f115df9e92daffacb8dde463c9ceae",
+          "clipboardSha256": "d8fbea451b075adb6d08b4c1b55619899b5bd693bb8371d3f68aa9a1bfa3f278"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.ListSessionsKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "sessions=work-one,work-two"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-server-windows",
+      "symbol": "io.github.libtmux.kotlin.Server.windows",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/ListWindows.kt",
+      "sourceProgramId": "kotlin-ListWindows",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListWindows.kt",
+          "path": "src/main/kotlin/ListWindows.kt",
+          "block": 5,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/ListWindows.kt",
+          "sha256": "8b4d628f2d8176f0e1fd06bd0c72bb5e6b75482b7c8f97a9380c8c495410737d",
+          "clipboardSha256": "fc04951a9b261705dd7cf2e6b492ef095d1389ec143d4ddbf72e4f870d206868"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.ListWindowsKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "windows=editor,editor,logs",
+          "session-windows=editor,logs"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-session-windows",
+      "symbol": "io.github.libtmux.kotlin.Session.windows",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/ListWindows.kt",
+      "sourceProgramId": "kotlin-ListWindows",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListWindows.kt",
+          "path": "src/main/kotlin/ListWindows.kt",
+          "block": 5,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/ListWindows.kt",
+          "sha256": "8b4d628f2d8176f0e1fd06bd0c72bb5e6b75482b7c8f97a9380c8c495410737d",
+          "clipboardSha256": "fc04951a9b261705dd7cf2e6b492ef095d1389ec143d4ddbf72e4f870d206868"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.ListWindowsKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "windows=editor,editor,logs",
+          "session-windows=editor,logs"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-server-panes",
+      "symbol": "io.github.libtmux.kotlin.Server.panes",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/ListPanes.kt",
+      "sourceProgramId": "kotlin-ListPanes",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListPanes.kt",
+          "path": "src/main/kotlin/ListPanes.kt",
+          "block": 5,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/ListPanes.kt",
+          "sha256": "860e110415b40f8094d396f9efd9df0ec8db41daf2a2e44cba24c57ec73a4016",
+          "clipboardSha256": "ad8185ab7874126ab05fbbee1948d5a48b0343eeb5da60c0e0097edf8fbd8dbd"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.ListPanesKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "panes=4",
+          "window-panes=2"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-window-panes",
+      "symbol": "io.github.libtmux.kotlin.Window.panes",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/ListPanes.kt",
+      "sourceProgramId": "kotlin-ListPanes",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListPanes.kt",
+          "path": "src/main/kotlin/ListPanes.kt",
+          "block": 5,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/ListPanes.kt",
+          "sha256": "860e110415b40f8094d396f9efd9df0ec8db41daf2a2e44cba24c57ec73a4016",
+          "clipboardSha256": "ad8185ab7874126ab05fbbee1948d5a48b0343eeb5da60c0e0097edf8fbd8dbd"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.ListPanesKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "panes=4",
+          "window-panes=2"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-server-newsession",
+      "symbol": "io.github.libtmux.kotlin.Server.newSession",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/NewSession.kt",
+      "sourceProgramId": "kotlin-NewSession",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "NewSession.kt",
+          "path": "src/main/kotlin/NewSession.kt",
+          "block": 5,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/NewSession.kt",
+          "sha256": "7ad25f6dbd6b8282db4078541bb681bf3c053d180f1a439df40da37ec947b29d",
+          "clipboardSha256": "adefa1e77c2f3b03e9c968b3082157cc1d920f8766712ad412ad62b2ec00582d"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.NewSessionKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "created=api-session"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-session-newwindow",
+      "symbol": "io.github.libtmux.kotlin.Session.newWindow",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/NewWindow.kt",
+      "sourceProgramId": "kotlin-NewWindow",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "NewWindow.kt",
+          "path": "src/main/kotlin/NewWindow.kt",
+          "block": 5,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/NewWindow.kt",
+          "sha256": "402a0c744f06e2e794a4922d2b55a3e96e58765dc60e19120025a50c694edf1f",
+          "clipboardSha256": "2ce4f1214192de427a36fb4d380a6523ded3e8d1003cc3e4563e1db1ab510e77"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.NewWindowKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "created=api-window",
+          "windows=api-window,editor,logs"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-server-sessions",
+      "symbol": "io.github.libtmux.kotlin.Server.sessions",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Query.kt",
+      "sourceProgramId": "kotlin-Query",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 9,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 10,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 11,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 12,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Query.kt",
+          "path": "src/main/kotlin/Query.kt",
+          "block": 13,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Query.kt",
+          "sha256": "e9ce3ee450ae2d4835c0372d3f6678f55c0fe14d202ed1e8132865f8392f4fbb",
+          "clipboardSha256": "cd5a4d380cb2885b1da5f9abc65fd1fe979911609cf416c6f5b5921432ea27ca"
+        }
+      ],
+      "consoleBlocks": [
+        8,
+        14
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.QueryKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "matches=work-one"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-pane-sendkeys",
+      "symbol": "io.github.libtmux.kotlin.Pane.sendKeys",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Capture.kt",
+      "sourceProgramId": "kotlin-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.kt",
+          "path": "src/main/kotlin/Capture.kt",
+          "block": 5,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Capture.kt",
+          "sha256": "21fab256103f557baa6b130100547269a725bb6ccfff6ccba3d814b507e667eb",
+          "clipboardSha256": "6a2173bcf1458ca05e08112c4e7133ddda9ee1fd59acd26e3b888fa9af60afdd"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.CaptureKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-pane-sendline",
+      "symbol": "io.github.libtmux.kotlin.Pane.sendLine",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Capture.kt",
+      "sourceProgramId": "kotlin-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.kt",
+          "path": "src/main/kotlin/Capture.kt",
+          "block": 5,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Capture.kt",
+          "sha256": "21fab256103f557baa6b130100547269a725bb6ccfff6ccba3d814b507e667eb",
+          "clipboardSha256": "6a2173bcf1458ca05e08112c4e7133ddda9ee1fd59acd26e3b888fa9af60afdd"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.CaptureKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-pane-awaittext",
+      "symbol": "io.github.libtmux.kotlin.Pane.awaitText",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Capture.kt",
+      "sourceProgramId": "kotlin-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.kt",
+          "path": "src/main/kotlin/Capture.kt",
+          "block": 5,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Capture.kt",
+          "sha256": "21fab256103f557baa6b130100547269a725bb6ccfff6ccba3d814b507e667eb",
+          "clipboardSha256": "6a2173bcf1458ca05e08112c4e7133ddda9ee1fd59acd26e3b888fa9af60afdd"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.CaptureKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/reference/io-github-libtmux-kotlin-pane-capture",
+      "symbol": "io.github.libtmux.kotlin.Pane.capture",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Capture.kt",
+      "sourceProgramId": "kotlin-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/kotlin/settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/kotlin/build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.kt",
+          "path": "src/main/kotlin/Capture.kt",
+          "block": 5,
+          "sourceFile": "examples/src/main/kotlin/io/github/libtmux/examples/api/kotlin/Capture.kt",
+          "sha256": "21fab256103f557baa6b130100547269a725bb6ccfff6ccba3d814b507e667eb",
+          "clipboardSha256": "6a2173bcf1458ca05e08112c4e7133ddda9ee1fd59acd26e3b888fa9af60afdd"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.kotlin.CaptureKt && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-server",
+      "symbol": "io.github.libtmux.scaladsl.Server",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/Connect.scala",
+      "sourceProgramId": "scala-direct-Connect",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-direct/settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-direct/build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Connect.scala",
+          "path": "src/main/scala/Connect.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/Connect.scala",
+          "sha256": "f1834177591d2186bf800cc14506ffe058abf0569f0c8320dc73efa41ab843ec",
+          "clipboardSha256": "2664d65570497830b94890207ea29747532c88bfd198bec05ddcd68eace114fb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scaladirect.Connect && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "connected=true"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-server-open",
+      "symbol": "io.github.libtmux.scaladsl.Server.open",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/Connect.scala",
+      "sourceProgramId": "scala-direct-Connect",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-direct/settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-direct/build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Connect.scala",
+          "path": "src/main/scala/Connect.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/Connect.scala",
+          "sha256": "f1834177591d2186bf800cc14506ffe058abf0569f0c8320dc73efa41ab843ec",
+          "clipboardSha256": "2664d65570497830b94890207ea29747532c88bfd198bec05ddcd68eace114fb"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scaladirect.Connect && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "connected=true"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-server-sessions",
+      "symbol": "io.github.libtmux.scaladsl.Server.sessions",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/ListSessions.scala",
+      "sourceProgramId": "scala-direct-ListSessions",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-direct/settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-direct/build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListSessions.scala",
+          "path": "src/main/scala/ListSessions.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/ListSessions.scala",
+          "sha256": "f976d4ac734b6c05f2d1c5ac10298f88ada26c90386d429c81d8e13252b77b2d",
+          "clipboardSha256": "a82a78c6c59c88a9bdfd6583d1ac9e4b8ff9220aebd2776d4f42711e15f8f0e0"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scaladirect.ListSessions && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "sessions=work-one,work-two"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-server-windows",
+      "symbol": "io.github.libtmux.scaladsl.Server.windows",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/ListWindows.scala",
+      "sourceProgramId": "scala-direct-ListWindows",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-direct/settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-direct/build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListWindows.scala",
+          "path": "src/main/scala/ListWindows.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/ListWindows.scala",
+          "sha256": "b0ef662e3d23afa70564c7449547e7f53db29ec19063c50d8db57e854f5fa114",
+          "clipboardSha256": "1cd2a4664cbddccd566da7f6eef01bce6f1eff14831b9fe4b51f85ff0cd5fc62"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scaladirect.ListWindows && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "windows=editor,editor,logs",
+          "session-windows=editor,logs"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-session-windows",
+      "symbol": "io.github.libtmux.scaladsl.Session.windows",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/ListWindows.scala",
+      "sourceProgramId": "scala-direct-ListWindows",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-direct/settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-direct/build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListWindows.scala",
+          "path": "src/main/scala/ListWindows.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/ListWindows.scala",
+          "sha256": "b0ef662e3d23afa70564c7449547e7f53db29ec19063c50d8db57e854f5fa114",
+          "clipboardSha256": "1cd2a4664cbddccd566da7f6eef01bce6f1eff14831b9fe4b51f85ff0cd5fc62"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scaladirect.ListWindows && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "windows=editor,editor,logs",
+          "session-windows=editor,logs"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-server-panes",
+      "symbol": "io.github.libtmux.scaladsl.Server.panes",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/ListPanes.scala",
+      "sourceProgramId": "scala-direct-ListPanes",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-direct/settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-direct/build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListPanes.scala",
+          "path": "src/main/scala/ListPanes.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/ListPanes.scala",
+          "sha256": "132d47a29873e1d78df13f273a3fac39490b7f4edd8154a777f946fc597d4709",
+          "clipboardSha256": "09b290f9a6ef2a841c613b55b719d8ad3e72130737c350c9223a8e791933b891"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scaladirect.ListPanes && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "panes=4",
+          "window-panes=2"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-window-panes",
+      "symbol": "io.github.libtmux.scaladsl.Window.panes",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/ListPanes.scala",
+      "sourceProgramId": "scala-direct-ListPanes",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-direct/settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-direct/build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListPanes.scala",
+          "path": "src/main/scala/ListPanes.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/ListPanes.scala",
+          "sha256": "132d47a29873e1d78df13f273a3fac39490b7f4edd8154a777f946fc597d4709",
+          "clipboardSha256": "09b290f9a6ef2a841c613b55b719d8ad3e72130737c350c9223a8e791933b891"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scaladirect.ListPanes && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "panes=4",
+          "window-panes=2"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-server-newsession",
+      "symbol": "io.github.libtmux.scaladsl.Server.newSession",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/NewSession.scala",
+      "sourceProgramId": "scala-direct-NewSession",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-direct/settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-direct/build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "NewSession.scala",
+          "path": "src/main/scala/NewSession.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/NewSession.scala",
+          "sha256": "3330b26c8560216f4a150158c4d395b29e292dc3a557eeb82c55454ff1e25f9b",
+          "clipboardSha256": "8c8f6684dd1c89f8a7dfc7a6513402043b867599d3d6e17d14ab9e2f369d7413"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scaladirect.NewSession && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "created=api-session"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-session-newwindow",
+      "symbol": "io.github.libtmux.scaladsl.Session.newWindow",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/NewWindow.scala",
+      "sourceProgramId": "scala-direct-NewWindow",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-direct/settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-direct/build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "NewWindow.scala",
+          "path": "src/main/scala/NewWindow.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/NewWindow.scala",
+          "sha256": "3b69e962b6d41e21e6dce292f515dd69ea44ef33b76c2ca2529d26d7b5f26b03",
+          "clipboardSha256": "063d52cf4aad3453bded362c77eaf6b17c7cb83d36cbb50d016f119345e63232"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scaladirect.NewWindow && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "created=api-window",
+          "windows=api-window,editor,logs"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-server-sessions",
+      "symbol": "io.github.libtmux.scaladsl.Server.sessions",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/Query.scala",
+      "sourceProgramId": "scala-direct-Query",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 9,
+          "sourceFile": "examples/api/scala-direct/settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 10,
+          "sourceFile": "examples/api/scala-direct/build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 11,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 12,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Query.scala",
+          "path": "src/main/scala/Query.scala",
+          "block": 13,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/Query.scala",
+          "sha256": "d8bf1bfbdfabf342e62b5b6836a3f0e84f7b5a9ce058bf0cec2694d1520aa1d4",
+          "clipboardSha256": "d56d28e313e97eae7f04e214fa90780cf1b77ad4d8e535fb813338edef8b7f91"
+        }
+      ],
+      "consoleBlocks": [
+        8,
+        14
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scaladirect.Query && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "matches=work-one"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-pane-sendkeys",
+      "symbol": "io.github.libtmux.scaladsl.Pane.sendKeys",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/Capture.scala",
+      "sourceProgramId": "scala-direct-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-direct/settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-direct/build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.scala",
+          "path": "src/main/scala/Capture.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/Capture.scala",
+          "sha256": "560eb803df152dada0bc8491d5abea4a602a44bc72a8336c4645cd30b16fe716",
+          "clipboardSha256": "7b9f9c2f02fbd2ff13fa862a1dff2a5e13fcda7974873136278728ba03614e98"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scaladirect.Capture && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-pane-sendline",
+      "symbol": "io.github.libtmux.scaladsl.Pane.sendLine",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/Capture.scala",
+      "sourceProgramId": "scala-direct-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-direct/settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-direct/build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.scala",
+          "path": "src/main/scala/Capture.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/Capture.scala",
+          "sha256": "560eb803df152dada0bc8491d5abea4a602a44bc72a8336c4645cd30b16fe716",
+          "clipboardSha256": "7b9f9c2f02fbd2ff13fa862a1dff2a5e13fcda7974873136278728ba03614e98"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scaladirect.Capture && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-pane-awaittext",
+      "symbol": "io.github.libtmux.scaladsl.Pane.awaitText",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/Capture.scala",
+      "sourceProgramId": "scala-direct-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-direct/settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-direct/build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.scala",
+          "path": "src/main/scala/Capture.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/Capture.scala",
+          "sha256": "560eb803df152dada0bc8491d5abea4a602a44bc72a8336c4645cd30b16fe716",
+          "clipboardSha256": "7b9f9c2f02fbd2ff13fa862a1dff2a5e13fcda7974873136278728ba03614e98"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scaladirect.Capture && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-pane-capture",
+      "symbol": "io.github.libtmux.scaladsl.Pane.capture",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/Capture.scala",
+      "sourceProgramId": "scala-direct-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-direct/settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-direct/build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.scala",
+          "path": "src/main/scala/Capture.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scaladirect/Capture.scala",
+          "sha256": "560eb803df152dada0bc8491d5abea4a602a44bc72a8336c4645cd30b16fe716",
+          "clipboardSha256": "7b9f9c2f02fbd2ff13fa862a1dff2a5e13fcda7974873136278728ba03614e98"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scaladirect.Capture && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-cats-server",
+      "symbol": "io.github.libtmux.scaladsl.cats.Server",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/Connect.scala",
+      "sourceProgramId": "scala-cats-Connect",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-cats/settings.gradle.kts",
+          "sha256": "b45d8787265555f6bda702870aaf0f1e95b031e5a602bb515ebd893f918bc6bf",
+          "clipboardSha256": "1ebf276fa1f72735e6a0839b39af6c3477e6cf5188d0733f61c1204a14a16714"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-cats/build.gradle.kts",
+          "sha256": "a725fd534d1acb179948fb51c80c3d3fc02f75844c483d730b9378e654b594ef",
+          "clipboardSha256": "e0a9e22213b9f978d2c23998f09441b4432453efc1072d50d576504a0471b569"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Connect.scala",
+          "path": "src/main/scala/Connect.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/Connect.scala",
+          "sha256": "0296e3cc319b1e88cbc08cbc9339dfdd5f6b748af6cf1d1815df1e351d36a186",
+          "clipboardSha256": "776b4af9b821441b92f30e775741bf749e35177b5b5510d7e1f5d3155672457b"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scalacats.Connect && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "connected=true"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-cats-server-resource",
+      "symbol": "io.github.libtmux.scaladsl.cats.Server.resource",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/Connect.scala",
+      "sourceProgramId": "scala-cats-Connect",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-cats/settings.gradle.kts",
+          "sha256": "b45d8787265555f6bda702870aaf0f1e95b031e5a602bb515ebd893f918bc6bf",
+          "clipboardSha256": "1ebf276fa1f72735e6a0839b39af6c3477e6cf5188d0733f61c1204a14a16714"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-cats/build.gradle.kts",
+          "sha256": "a725fd534d1acb179948fb51c80c3d3fc02f75844c483d730b9378e654b594ef",
+          "clipboardSha256": "e0a9e22213b9f978d2c23998f09441b4432453efc1072d50d576504a0471b569"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Connect.scala",
+          "path": "src/main/scala/Connect.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/Connect.scala",
+          "sha256": "0296e3cc319b1e88cbc08cbc9339dfdd5f6b748af6cf1d1815df1e351d36a186",
+          "clipboardSha256": "776b4af9b821441b92f30e775741bf749e35177b5b5510d7e1f5d3155672457b"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scalacats.Connect && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "connected=true"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-cats-server-sessions",
+      "symbol": "io.github.libtmux.scaladsl.cats.Server.sessions",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/ListSessions.scala",
+      "sourceProgramId": "scala-cats-ListSessions",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-cats/settings.gradle.kts",
+          "sha256": "b45d8787265555f6bda702870aaf0f1e95b031e5a602bb515ebd893f918bc6bf",
+          "clipboardSha256": "1ebf276fa1f72735e6a0839b39af6c3477e6cf5188d0733f61c1204a14a16714"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-cats/build.gradle.kts",
+          "sha256": "a725fd534d1acb179948fb51c80c3d3fc02f75844c483d730b9378e654b594ef",
+          "clipboardSha256": "e0a9e22213b9f978d2c23998f09441b4432453efc1072d50d576504a0471b569"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListSessions.scala",
+          "path": "src/main/scala/ListSessions.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/ListSessions.scala",
+          "sha256": "984af27ce18ca0223d78f2de8f199887232857ca38f5f082a27892376c754ec6",
+          "clipboardSha256": "a91c4145573206615127b43275914e1870fd39672c61323062f98d11b41ab7c2"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scalacats.ListSessions && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "sessions=work-one,work-two"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-cats-server-windows",
+      "symbol": "io.github.libtmux.scaladsl.cats.Server.windows",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/ListWindows.scala",
+      "sourceProgramId": "scala-cats-ListWindows",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-cats/settings.gradle.kts",
+          "sha256": "b45d8787265555f6bda702870aaf0f1e95b031e5a602bb515ebd893f918bc6bf",
+          "clipboardSha256": "1ebf276fa1f72735e6a0839b39af6c3477e6cf5188d0733f61c1204a14a16714"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-cats/build.gradle.kts",
+          "sha256": "a725fd534d1acb179948fb51c80c3d3fc02f75844c483d730b9378e654b594ef",
+          "clipboardSha256": "e0a9e22213b9f978d2c23998f09441b4432453efc1072d50d576504a0471b569"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListWindows.scala",
+          "path": "src/main/scala/ListWindows.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/ListWindows.scala",
+          "sha256": "c4ee5fc901cbab2452feeb4aeaf314f607244e75ffc3c1208fd9440f127a967a",
+          "clipboardSha256": "bd428ba55f93ea92c7a669845d8422ae7e383a87611e252e1f3d678329fd799f"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scalacats.ListWindows && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "windows=editor,editor,logs",
+          "session-windows=editor,logs"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-cats-session-windows",
+      "symbol": "io.github.libtmux.scaladsl.cats.Session.windows",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/ListWindows.scala",
+      "sourceProgramId": "scala-cats-ListWindows",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-cats/settings.gradle.kts",
+          "sha256": "b45d8787265555f6bda702870aaf0f1e95b031e5a602bb515ebd893f918bc6bf",
+          "clipboardSha256": "1ebf276fa1f72735e6a0839b39af6c3477e6cf5188d0733f61c1204a14a16714"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-cats/build.gradle.kts",
+          "sha256": "a725fd534d1acb179948fb51c80c3d3fc02f75844c483d730b9378e654b594ef",
+          "clipboardSha256": "e0a9e22213b9f978d2c23998f09441b4432453efc1072d50d576504a0471b569"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListWindows.scala",
+          "path": "src/main/scala/ListWindows.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/ListWindows.scala",
+          "sha256": "c4ee5fc901cbab2452feeb4aeaf314f607244e75ffc3c1208fd9440f127a967a",
+          "clipboardSha256": "bd428ba55f93ea92c7a669845d8422ae7e383a87611e252e1f3d678329fd799f"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scalacats.ListWindows && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "windows=editor,editor,logs",
+          "session-windows=editor,logs"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-cats-server-panes",
+      "symbol": "io.github.libtmux.scaladsl.cats.Server.panes",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/ListPanes.scala",
+      "sourceProgramId": "scala-cats-ListPanes",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-cats/settings.gradle.kts",
+          "sha256": "b45d8787265555f6bda702870aaf0f1e95b031e5a602bb515ebd893f918bc6bf",
+          "clipboardSha256": "1ebf276fa1f72735e6a0839b39af6c3477e6cf5188d0733f61c1204a14a16714"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-cats/build.gradle.kts",
+          "sha256": "a725fd534d1acb179948fb51c80c3d3fc02f75844c483d730b9378e654b594ef",
+          "clipboardSha256": "e0a9e22213b9f978d2c23998f09441b4432453efc1072d50d576504a0471b569"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListPanes.scala",
+          "path": "src/main/scala/ListPanes.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/ListPanes.scala",
+          "sha256": "1eb2fb0f331ff52f838e8a51a4f5fbc14c4c33cd9810f2c719580293e6e54729",
+          "clipboardSha256": "45c3f285639b2b67c8680dad896998a8a2e7b455c4dcbdf5a8f7e3358a73c371"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scalacats.ListPanes && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "panes=4",
+          "window-panes=2"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-cats-window-panes",
+      "symbol": "io.github.libtmux.scaladsl.cats.Window.panes",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/ListPanes.scala",
+      "sourceProgramId": "scala-cats-ListPanes",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-cats/settings.gradle.kts",
+          "sha256": "b45d8787265555f6bda702870aaf0f1e95b031e5a602bb515ebd893f918bc6bf",
+          "clipboardSha256": "1ebf276fa1f72735e6a0839b39af6c3477e6cf5188d0733f61c1204a14a16714"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-cats/build.gradle.kts",
+          "sha256": "a725fd534d1acb179948fb51c80c3d3fc02f75844c483d730b9378e654b594ef",
+          "clipboardSha256": "e0a9e22213b9f978d2c23998f09441b4432453efc1072d50d576504a0471b569"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "ListPanes.scala",
+          "path": "src/main/scala/ListPanes.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/ListPanes.scala",
+          "sha256": "1eb2fb0f331ff52f838e8a51a4f5fbc14c4c33cd9810f2c719580293e6e54729",
+          "clipboardSha256": "45c3f285639b2b67c8680dad896998a8a2e7b455c4dcbdf5a8f7e3358a73c371"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scalacats.ListPanes && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "panes=4",
+          "window-panes=2"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-cats-server-newsession",
+      "symbol": "io.github.libtmux.scaladsl.cats.Server.newSession",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/NewSession.scala",
+      "sourceProgramId": "scala-cats-NewSession",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-cats/settings.gradle.kts",
+          "sha256": "b45d8787265555f6bda702870aaf0f1e95b031e5a602bb515ebd893f918bc6bf",
+          "clipboardSha256": "1ebf276fa1f72735e6a0839b39af6c3477e6cf5188d0733f61c1204a14a16714"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-cats/build.gradle.kts",
+          "sha256": "a725fd534d1acb179948fb51c80c3d3fc02f75844c483d730b9378e654b594ef",
+          "clipboardSha256": "e0a9e22213b9f978d2c23998f09441b4432453efc1072d50d576504a0471b569"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "NewSession.scala",
+          "path": "src/main/scala/NewSession.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/NewSession.scala",
+          "sha256": "ac1085bed8d57140f0dc352e3ed2c34ccbdb07f5da107d904d3aa059ee0aa75d",
+          "clipboardSha256": "89e369650d21d2216a04df4242422b6026434a1ddf9ff9a3818c40ba9ef92bfd"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scalacats.NewSession && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "created=api-session"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-cats-session-newwindow",
+      "symbol": "io.github.libtmux.scaladsl.cats.Session.newWindow",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/NewWindow.scala",
+      "sourceProgramId": "scala-cats-NewWindow",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-cats/settings.gradle.kts",
+          "sha256": "b45d8787265555f6bda702870aaf0f1e95b031e5a602bb515ebd893f918bc6bf",
+          "clipboardSha256": "1ebf276fa1f72735e6a0839b39af6c3477e6cf5188d0733f61c1204a14a16714"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-cats/build.gradle.kts",
+          "sha256": "a725fd534d1acb179948fb51c80c3d3fc02f75844c483d730b9378e654b594ef",
+          "clipboardSha256": "e0a9e22213b9f978d2c23998f09441b4432453efc1072d50d576504a0471b569"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "NewWindow.scala",
+          "path": "src/main/scala/NewWindow.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/NewWindow.scala",
+          "sha256": "073ea58031add7772ad2ac0dd3df961e9c2af57739d30a7bc5296d3354096cf5",
+          "clipboardSha256": "815ffa00492c7a28756b5916b238fb944485e7e0405b3835ff29ce41de453e4f"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scalacats.NewWindow && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "created=api-window",
+          "windows=api-window,editor,logs"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-cats-server-sessions",
+      "symbol": "io.github.libtmux.scaladsl.cats.Server.sessions",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/Query.scala",
+      "sourceProgramId": "scala-cats-Query",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 9,
+          "sourceFile": "examples/api/scala-cats/settings.gradle.kts",
+          "sha256": "b45d8787265555f6bda702870aaf0f1e95b031e5a602bb515ebd893f918bc6bf",
+          "clipboardSha256": "1ebf276fa1f72735e6a0839b39af6c3477e6cf5188d0733f61c1204a14a16714"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 10,
+          "sourceFile": "examples/api/scala-cats/build.gradle.kts",
+          "sha256": "a725fd534d1acb179948fb51c80c3d3fc02f75844c483d730b9378e654b594ef",
+          "clipboardSha256": "e0a9e22213b9f978d2c23998f09441b4432453efc1072d50d576504a0471b569"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 11,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 12,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Query.scala",
+          "path": "src/main/scala/Query.scala",
+          "block": 13,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/Query.scala",
+          "sha256": "f256df28e378165b341ecaa9301c21f8a4ed6c9dc428b0abb74cf23091b3008f",
+          "clipboardSha256": "94f846f36199506910bc37886d7e5e3ce054695a5be523a4161f8d2321bae70b"
+        }
+      ],
+      "consoleBlocks": [
+        8,
+        14
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scalacats.Query && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "matches=work-one"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-cats-pane-sendkeys",
+      "symbol": "io.github.libtmux.scaladsl.cats.Pane.sendKeys",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/Capture.scala",
+      "sourceProgramId": "scala-cats-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-cats/settings.gradle.kts",
+          "sha256": "b45d8787265555f6bda702870aaf0f1e95b031e5a602bb515ebd893f918bc6bf",
+          "clipboardSha256": "1ebf276fa1f72735e6a0839b39af6c3477e6cf5188d0733f61c1204a14a16714"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-cats/build.gradle.kts",
+          "sha256": "a725fd534d1acb179948fb51c80c3d3fc02f75844c483d730b9378e654b594ef",
+          "clipboardSha256": "e0a9e22213b9f978d2c23998f09441b4432453efc1072d50d576504a0471b569"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.scala",
+          "path": "src/main/scala/Capture.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/Capture.scala",
+          "sha256": "f54eac046c52607c78f454f9ff54269bb877dc1bf26c792cd48d5bd08f2debe2",
+          "clipboardSha256": "45d80caf34363940a50e5d14d3d43fc3da3a1959453b323e3301f0cb503a6be5"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scalacats.Capture && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-cats-pane-sendline",
+      "symbol": "io.github.libtmux.scaladsl.cats.Pane.sendLine",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/Capture.scala",
+      "sourceProgramId": "scala-cats-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-cats/settings.gradle.kts",
+          "sha256": "b45d8787265555f6bda702870aaf0f1e95b031e5a602bb515ebd893f918bc6bf",
+          "clipboardSha256": "1ebf276fa1f72735e6a0839b39af6c3477e6cf5188d0733f61c1204a14a16714"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-cats/build.gradle.kts",
+          "sha256": "a725fd534d1acb179948fb51c80c3d3fc02f75844c483d730b9378e654b594ef",
+          "clipboardSha256": "e0a9e22213b9f978d2c23998f09441b4432453efc1072d50d576504a0471b569"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.scala",
+          "path": "src/main/scala/Capture.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/Capture.scala",
+          "sha256": "f54eac046c52607c78f454f9ff54269bb877dc1bf26c792cd48d5bd08f2debe2",
+          "clipboardSha256": "45d80caf34363940a50e5d14d3d43fc3da3a1959453b323e3301f0cb503a6be5"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scalacats.Capture && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-cats-pane-awaittext",
+      "symbol": "io.github.libtmux.scaladsl.cats.Pane.awaitText",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/Capture.scala",
+      "sourceProgramId": "scala-cats-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-cats/settings.gradle.kts",
+          "sha256": "b45d8787265555f6bda702870aaf0f1e95b031e5a602bb515ebd893f918bc6bf",
+          "clipboardSha256": "1ebf276fa1f72735e6a0839b39af6c3477e6cf5188d0733f61c1204a14a16714"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-cats/build.gradle.kts",
+          "sha256": "a725fd534d1acb179948fb51c80c3d3fc02f75844c483d730b9378e654b594ef",
+          "clipboardSha256": "e0a9e22213b9f978d2c23998f09441b4432453efc1072d50d576504a0471b569"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.scala",
+          "path": "src/main/scala/Capture.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/Capture.scala",
+          "sha256": "f54eac046c52607c78f454f9ff54269bb877dc1bf26c792cd48d5bd08f2debe2",
+          "clipboardSha256": "45d80caf34363940a50e5d14d3d43fc3da3a1959453b323e3301f0cb503a6be5"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scalacats.Capture && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "scala",
+      "page": "ports/scala/reference/io-github-libtmux-scaladsl-cats-pane-capture",
+      "symbol": "io.github.libtmux.scaladsl.cats.Pane.capture",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/Capture.scala",
+      "sourceProgramId": "scala-cats-Capture",
+      "files": [
+        {
+          "name": "settings.gradle.kts",
+          "path": "settings.gradle.kts",
+          "block": 1,
+          "sourceFile": "examples/api/scala-cats/settings.gradle.kts",
+          "sha256": "b45d8787265555f6bda702870aaf0f1e95b031e5a602bb515ebd893f918bc6bf",
+          "clipboardSha256": "1ebf276fa1f72735e6a0839b39af6c3477e6cf5188d0733f61c1204a14a16714"
+        },
+        {
+          "name": "build.gradle.kts",
+          "path": "build.gradle.kts",
+          "block": 2,
+          "sourceFile": "examples/api/scala-cats/build.gradle.kts",
+          "sha256": "a725fd534d1acb179948fb51c80c3d3fc02f75844c483d730b9378e654b594ef",
+          "clipboardSha256": "e0a9e22213b9f978d2c23998f09441b4432453efc1072d50d576504a0471b569"
+        },
+        {
+          "name": "gradle.properties",
+          "path": "gradle.properties",
+          "block": 3,
+          "sourceFile": "examples/api/gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "path": "run.sh",
+          "block": 4,
+          "sourceFile": "examples/api/run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "Capture.scala",
+          "path": "src/main/scala/Capture.scala",
+          "block": 5,
+          "sourceFile": "examples/src/main/scala/io/github/libtmux/examples/api/scalacats/Capture.scala",
+          "sha256": "f54eac046c52607c78f454f9ff54269bb877dc1bf26c792cd48d5bd08f2debe2",
+          "clipboardSha256": "45d80caf34363940a50e5d14d3d43fc3da3a1959453b323e3301f0cb503a6be5"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-java.git libtmux-source && \\\n  git -C libtmux-source checkout a0ecbc16da00140e2520462d478a2af470878272",
+        "./libtmux-source/gradlew --project-dir . --console=plain --quiet \\\n    installDist -PexampleMain=io.github.libtmux.examples.api.scalacats.Capture && \\\n  sh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api-keys",
+          "api-line"
+        ]
+      ],
+      "runtime": "JDK 25.0.3; Gradle 9.7.0",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
     }
   ]
 }
