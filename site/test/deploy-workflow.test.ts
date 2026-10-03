@@ -442,7 +442,7 @@ describe('publication URL audits', () => {
     ['/pr-49', '', false, false],
     ['/pr-49', '/pr-50', false, false],
     ['/pr-49', '/pr-49', true, false],
-  ] as const)('checks sidebar targets within %j with href prefix %j and missing target %j', (prefix, hrefPrefix, missing, valid) => {
+  ] as const)('checks Core Library targets within %j with href prefix %j and missing target %j', (prefix, hrefPrefix, missing, valid) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-sidebar-prefix-'))
     try {
       for (const { slug } of API_MODEL_PORTS) {
@@ -452,10 +452,12 @@ describe('publication URL audits', () => {
         mkdirSync(reference, { recursive: true })
         if (!missing || slug !== 'rs') writeFileSync(join(reference, 'index.html'), 'reference')
         const host = ({ rs: 'docs.rs', go: 'pkg.go.dev', java: 'javadoc.io' } as Record<string, string>)[slug]
-        const links = `<a href="${hrefPrefix}/en/${slug}/latest/reference/">API reference</a>`
-          + (host ? `<a href="https://${host}/">${host}</a>` : '')
-          + (slug === 'py' ? `<a href="${hrefPrefix}/en/py/latest/api/">Upstream reference</a>` : '')
-        writeFileSync(join(page, 'index.html'), `<nav class="sidebar-nav">${links}</nav>`.repeat(2))
+        const links = `<div class="surface-options"><a href="${hrefPrefix}/en/${slug}/latest/">Home</a><a href="${hrefPrefix}/en/${slug}/latest/reference/">Reference</a></div>`
+          + '<div class="surface-alternatives">'
+          + (host ? `<a href="https://${host}/" target="_blank" rel="noopener noreferrer">${host}</a>` : '')
+          + (slug === 'py' ? `<a href="${hrefPrefix}/en/py/latest/api/">Upstream reference</a>` : '') + '</div>'
+        writeFileSync(join(page, 'index.html'), `<details data-surface-picker><details data-surface-group><summary><strong>Core Library</strong></summary>${links}</details></details>`
+          + '<nav class="sidebar-nav"><a href="#concept">Concepts</a></nav>'.repeat(2))
       }
       const result = spawnSync(process.execPath, ['scripts/check-sidebar-refs.mjs', directory], {
         cwd: new URL('../..', import.meta.url), encoding: 'utf8',

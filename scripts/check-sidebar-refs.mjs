@@ -1,23 +1,15 @@
 #!/usr/bin/env node
 /**
- * Every port's sidebar offers this site's reference, and the ecosystem link
- * beside it where there is one.
+ * Each port's Core Library picker offers its own reference and native or
+ * ecosystem alternatives. The shared picker serves desktop and phone readers;
+ * the section sidebar contains only the pages in the selected section.
  *
- * `sidebarFor` used to return a single reference entry — the ecosystem host
- * when a port had one and this site otherwise — so the two could never
- * coexist and five of the eight ports never linked the reference this site
- * generates for them. That was invisible in a build: every link resolved,
- * because the missing one was simply never emitted.
- *
- * Reads the assembled HTML rather than the source, because what matters is
- * what a reader is offered on the page. Checks the desktop sidebar and the
- * mobile drawer, which render the same tree and so must agree.
- *
- * Usage: node scripts/check-sidebar-refs.mjs [site-dir]
+ * Usage: node scripts/check-sidebar-refs.mjs [locale-site-dir]
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { Window } from 'happy-dom'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const SITE = resolve(process.argv[2] ?? join(root, '_site'))
@@ -54,23 +46,21 @@ function pageUnder(portDir) {
    */
   if (!existsSync(portDir)) return undefined
   for (const version of readdirSync(portDir)) {
-    const candidate = join(portDir, version, 'concepts', 'index.html')
-    if (existsSync(candidate)) return candidate
+    for (const route of ['concepts/index.html', 'index.html']) {
+      const candidate = join(portDir, version, route)
+      if (existsSync(candidate)) return candidate
+    }
   }
   return undefined
 }
 
-const strip = (s) => s.replace(/<[^>]+>/g, '').replace(/&#\d+;|&\w+;/g, '').replace(/\s+/g, ' ').trim()
-
-/** The links of one navigation region, in document order. */
-function linksIn(html, pattern) {
-  const region = pattern.exec(html)
-  if (!region) return undefined
-  return [...region[0].matchAll(/<a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)].map((m) => ({
-    href: m[1],
-    label: strip(m[2]),
-    external: /rel="[^"]*noopener|target="_blank"/.test(m[0]) || /^https?:/.test(m[1]),
-  }))
+const window = new Window({ settings: { enableJavaScriptEvaluation: false, disableCSSFileLoading: true, disableJavaScriptFileLoading: true } })
+const template = window.document.createElement('template')
+const labelOf = (element) => element.textContent.replace(/\s+/g, ' ').trim()
+const hrefOf = (link) => link.getAttribute('href') ?? ''
+const owned = (link) => hrefOf(link).startsWith(servedRoot)
+const hostOf = (href) => {
+  try { return new URL(href).hostname } catch { return undefined }
 }
 
 const failures = []
@@ -82,80 +72,64 @@ for (const port of PORTS) {
     failures.push(`${port}: no shell page found under ${SITE}`)
     continue
   }
-  const html = readFileSync(file, 'utf8')
-  /*
-   * Both copies of the tree, told apart by position rather than by selector.
-   *
-   * The shell renders `<nav class="sidebar-nav">` twice — once inside the
-   * mobile drawer and once as the desktop column — and the drawer comes
-   * first. A regex for "the sidebar nav" therefore matches the drawer, and
-   * comparing that against the drawer compares it with itself and passes on
-   * anything.
-   */
-  const navs = [...html.matchAll(/<nav[^>]*class="[^"]*sidebar[\s\S]*?<\/nav>/g)].map((m) =>
-    linksIn(m[0], /[\s\S]*/),
-  )
-  const [drawer, desktop] = navs.length > 1 ? navs : [undefined, navs[0]]
-  const sidebar = desktop ?? drawer
-  if (!sidebar) {
-    failures.push(`${port}: no sidebar in ${file.replace(`${SITE}/`, '')}`)
+  template.innerHTML = readFileSync(file, 'utf8')
+  const pickers = template.content.querySelectorAll('[data-surface-picker]')
+  if (pickers.length !== 1) {
+    failures.push(`${port}: expected one shared documentation picker, found ${pickers.length}`)
     continue
   }
-
-  // The drawer renders the same tree, so it must offer the same references.
-  // A reader on a phone is the one most likely to be looking for the API and
-  // least able to hunt for it.
-  if (desktop && drawer) {
-    const refsOf = (links) =>
-      links
-        .filter((l) => l.href.includes('/reference/') || /\/py\/[^/]+\/api\//.test(l.href) ||
-          Object.values(ECOSYSTEM).some((h) => l.href.includes(h)))
-        .map((l) => `${l.label}|${l.href}`)
-        .join(', ')
-    if (refsOf(desktop) !== refsOf(drawer)) {
-      failures.push(
-        `${port}: the mobile drawer offers different references — sidebar [${refsOf(desktop)}] drawer [${refsOf(drawer)}]`,
-      )
-    }
+  const cores = [...pickers[0].querySelectorAll('[data-surface-group]')].filter((group) =>
+    group.querySelector(':scope > summary strong')?.textContent.trim() === 'Core Library')
+  if (cores.length !== 1) {
+    failures.push(`${port}: expected one Core Library group, found ${cores.length}`)
+    continue
   }
-
-  /*
-   * Compared without the locale segment. The sidebar composes through the
-   * site root, so the href carries whatever prefix the tree was built under —
-   * asserting the bare form here would make this check fail on a correctly
-   * prefixed build, and asserting the prefixed form would fail on an
-   * unprefixed one.
-   */
-  const REFERENCE = new RegExp(`/${port}/[^/]+/reference/$`)
-  const ours = sidebar.findIndex((l) => REFERENCE.test(pathOf(l.href)))
-  if (ours === -1) failures.push(`${port}: sidebar does not link /${port}/<version>/reference/`)
-  else if (ours !== 0) failures.push(`${port}: /${port}/<version>/reference/ is entry ${ours}, not first`)
+  const core = cores[0]
+  const sections = [...core.querySelectorAll(':scope > .surface-options a[href]')]
+  const alternatives = [...core.querySelectorAll(':scope > .surface-alternatives a[href]')]
+  const links = [...sections, ...alternatives]
+  // The sampled page supplies the version; a valid link to another version
+  // must not satisfy the current context's native-reference contract.
+  const version = relative(join(SITE, port), file).split('/')[0]
+  const expected = version === 'concepts' ? new RegExp(`^/${port}/[^/]+/reference/$`)
+    : new RegExp(`^/${port}/${version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/reference/$`)
+  const ours = sections.filter((link) => owned(link) && expected.test(pathOf(hrefOf(link))))
+  if (ours.length !== 1) failures.push(`${port}: Core Library does not offer exactly one current native reference`)
+  else if (labelOf(ours[0]) !== 'Reference') failures.push(`${port}: native reference is not labelled Reference`)
 
   const host = ECOSYSTEM[port]
   if (host) {
-    const eco = sidebar.find((l) => l.href.includes(host))
-    if (!eco) failures.push(`${port}: sidebar does not link ${host}`)
-    else if (!eco.external) failures.push(`${port}: ${host} is not marked as leaving the site`)
-    else if (!eco.label.toLowerCase().includes(host.split('.')[0])) {
-      failures.push(`${port}: ${host} entry is labelled "${eco.label}", not for its host`)
+    const matches = alternatives.filter((link) => hostOf(hrefOf(link)) === host)
+    if (matches.length !== 1) failures.push(`${port}: Core Library does not offer exactly one ${host} alternative`)
+    else {
+      const eco = matches[0]
+      if (eco.getAttribute('target') !== '_blank' || !eco.relList.contains('noopener')) {
+        failures.push(`${port}: ${host} is not marked as leaving the site`)
+      }
+      if (!labelOf(eco).toLowerCase().includes(host)) {
+        failures.push(`${port}: ${host} entry is not labelled for its host`)
+      }
     }
   }
 
-  if (port === 'py' && !sidebar.some((l) => /\/py\/[^/]+\/api\//.test(l.href))) {
-    failures.push('py: sidebar does not link the upstream gp-sphinx reference')
-  }
-
-  // Every internal reference link must be a page that exists. The href is a
-  // served URL and carries the locale segment; SITE is the site root, which is
-  // that segment, so it comes off before the two are joined.
-  for (const l of sidebar.filter((x) => !x.external && x.href.includes('/reference/'))) {
-    const path = pathOf(l.href).replace(/^\//, '')
-    if (!existsSync(join(SITE, path, 'index.html'))) {
-      failures.push(`${port}: ${l.href} is linked but not built`)
+  if (port === 'py') {
+    const upstream = version === 'concepts' ? /^\/py\/[^/]+\/api\/$/ : new RegExp(`^/py/${version}/api/$`)
+    if (alternatives.filter((link) => owned(link) && upstream.test(pathOf(hrefOf(link)))).length !== 1) {
+      failures.push('py: Core Library does not offer exactly one current upstream gp-sphinx reference')
     }
   }
 
-  const refs = sidebar.filter((l) => l.href.includes('/reference/') || Object.values(ECOSYSTEM).some((h) => l.href.includes(h)) || /\/py\/[^/]+\/api\//.test(l.href))
+  // Native references must exist in this locale/prefix. Native Python output
+  // has its own assembly gate; its picker destination is checked above.
+  for (const link of links.filter((entry) => !hostOf(hrefOf(entry)) && hrefOf(entry).includes('/reference/'))) {
+    const href = hrefOf(link)
+    const path = pathOf(href).replace(/^\//, '')
+    if (!existsSync(join(SITE, path, 'index.html'))) failures.push(`${port}: ${href} is linked but not built`)
+  }
+  const refs = links.filter((link) => hrefOf(link).includes('/reference/') ||
+    Object.values(ECOSYSTEM).includes(hostOf(hrefOf(link))) || /\/py\/[^/]+\/api\//.test(hrefOf(link)))
+    .map((link) => ({ label: labelOf(link), external: Boolean(hostOf(hrefOf(link))) }))
+
   rows.push({ port, refs })
 }
 

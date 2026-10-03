@@ -6,13 +6,30 @@
   0%, 55% { background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent); }
   100% { background-color: transparent; }
 }
+/* Extend only the painted heading surface; its text and neighbors never move. */
+:is(h1, h2, h3, h4, h5, h6)[data-anchor-arrival] {
+  animation-name: libtmux-heading-arrival;
+}
+@keyframes libtmux-heading-arrival {
+  0%, 55% {
+    background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent);
+    box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent);
+  }
+  100% { background-color: transparent; box-shadow: 0 0 0 .25rem transparent; }
+}
 @media (prefers-reduced-motion: reduce) {
   [data-anchor-arrival], [data-anchor-arrival] > :is(td, th) {
     animation: none;
     background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent);
   }
+  :is(h1, h2, h3, h4, h5, h6)[data-anchor-arrival] {
+    box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent);
+  }
 }
 /* Native fragments remain visible when scripting is unavailable. */
 html:not([data-anchor-navigation]) :is(:target, :has(> .section-anchor-alias:target)) {
   background-color: color-mix(in srgb, var(--color-link, #2879d0) 12%, transparent);
+}
+html:not([data-anchor-navigation]) :is(h1, h2, h3, h4, h5, h6):is(:target, :has(> .section-anchor-alias:target)) {
+  box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--color-link, #2879d0) 12%, transparent);
 }

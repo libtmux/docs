@@ -31,6 +31,7 @@ export interface SidebarLinkItem {
   href: string
   /** True when the link leaves libtmux.org (an ecosystem reference host). */
   external?: boolean
+  kind?: string
 }
 
 export interface SidebarGroupItem {
@@ -260,7 +261,8 @@ export async function getSidebar(
       const items = byOrderThenLabel(rows.filter((r) => r.group === label))
       // Standard sections keep the same reading order in every port.
       // Product-specific groups retain their authored order.
-      const section = items.find((item) => item.path === label.toLowerCase())
+      const sectionPath = [product, label === 'CLI reference' ? 'cli' : label.toLowerCase()].filter(Boolean).join('/')
+      const section = items.find((item) => item.path === sectionPath)
       const rank = !product ? sectionOrder.indexOf(label) : -1
       const order = rank >= 0 ? rank : items.find((i) => i.order !== undefined)?.order
       return { label, order, href: section?.href, items: items.filter((item) => item !== section) }

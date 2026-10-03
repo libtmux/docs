@@ -8,19 +8,24 @@
  * coloured; modifiers are outline-only, so exactly one thing per entry is
  * loud.
  */
+import { kindMark } from '../../lib/api-labels'
 interface Props {
   label: string
   variant: 'kind' | 'mod'
   /** Drives the palette class: the symbol kind, or the modifier name. */
   value: string
+  /** The small symbol mark shared by navigation and related APIs. */
+  compact?: boolean
 }
-const { label, variant, value } = Astro.props as Props
+const { label, variant, value, compact = false } = Astro.props as Props
+const text = compact ? kindMark(value) : label
 ---
-<span
-  class:list={[
+{text && <span
+  class:list={compact ? ['api-nav__kind', `api-badge--kind-${value}`] : [
     'api-badge',
     `api-badge--${variant}`,
     `api-badge--${variant}-${value}`,
   ]}
-  title={variant === 'kind' ? `${label} (kind)` : label}
->{label}</span>
+  title={compact ? value : variant === 'kind' ? `${label} (kind)` : label}
+  aria-hidden={compact ? 'true' : undefined}
+>{text}</span>}

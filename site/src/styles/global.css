@@ -967,6 +967,13 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   flex: none;
 }
 
+.site-header__search,
+.site-header .scheme-switch,
+.site-header__menu-button {
+  box-sizing: border-box;
+  height: 1.75rem;
+}
+
 /* The languages hold the middle of the bar and never wrap; below the width
    where all ten fit they are not shown here at all. */
 .site-header__ports {
@@ -1072,16 +1079,8 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 
 /* ── Where the pieces move ──────────────────────────────
  *
- * Wide screens also show the secondary links and color-scheme labels.
- * The compact language row below keeps those links in the menu.
+ * Wide screens also show the color-scheme labels.
  */
-.site-header__wide-link {
-  display: none;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1;
-}
-
 @media (min-width: 96rem) {
   .site-header__ports {
     display: block;
@@ -1091,18 +1090,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
     display: none;
   }
 
-  /* Reference and MCP sit beside search, and the panel stops repeating what
-     the bar already shows: the ten languages are in the bar at this width,
-     and a menu that lists them again is a second answer to a settled
-     question. What is left in the panel is the three controls that were never
-     in the bar. */
-  .site-header__wide-link {
-    display: inline-flex;
-    align-items: center;
-  }
-
-  .site-header__panel-ports,
-  .site-header__panel-links {
+  .site-header__panel-ports {
     display: none;
   }
 
@@ -1150,7 +1138,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
  * that grows, rather than a second surface fighting the first for room on a
  * screen that has none.
  */
-.site-header__panel details > ul {
+.site-header__panel .doc-picker:not([data-enhanced]) > .doc-picker-panel {
   position: static;
   width: auto;
   max-width: none;
