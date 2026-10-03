@@ -122,9 +122,10 @@ describeIfAssembled('published exports', () => {
     })
 
     it.each(API_MODEL_PORTS)('advertises real $name reference sections and declaration links', async (port) => {
-      const reference = manifest().pages.find((page: { title: string; section: string }) =>
-        page.section === 'API reference' && page.title === `${port.name} API reference`)
+      const reference = manifest().pages.find((page: { url: string; section: string }) =>
+        page.section === 'API reference' && new RegExp(`/${port.slug}/[^/]+/reference/$`).test(new URL(page.url).pathname))
       expect(reference).toBeDefined()
+      expect(reference.title).toBe('API reference')
       const root = new URL(reference.url).pathname.replace(/^\//, '')
       const window = new Window()
       try {

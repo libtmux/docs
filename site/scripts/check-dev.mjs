@@ -405,7 +405,8 @@ async function checkReferenceAndHeroes(browser, base) {
         `${width}px Java product declaration uses its source-qualified name`)
     }
     const manifest = await page.request.get(`${base}/docs.json`).then((response) => response.json())
-    const javaReference = manifest.pages.find((entry) => entry.title === 'Java API reference')
+    const javaReference = manifest.pages.find((entry) => new URL(entry.url).pathname.endsWith('/java/latest/reference/'))
+    assert.equal(javaReference.title, 'API reference')
     assert.deepEqual(javaReference.symbols.find((entry) => entry.id === 'io.github.libtmux.Server.Server'), {
       id: 'io.github.libtmux.Server.Server', name: 'Server', kind: 'class',
       url: new URL(`${base}/java/latest/reference/io-github-libtmux-server-server/`).href,

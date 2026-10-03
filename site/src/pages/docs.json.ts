@@ -86,8 +86,8 @@ export const GET: APIRoute = async ({ site }) => {
     const declarations = sections.flatMap((section) => [...section.types, ...section.free])
     const referencePath = `${refBase}${slug}/${versionFor(slug)}/reference/`
     pages.push({
-      title: `${PORT_NAME[slug] ?? slug} API reference`,
-      description: `${declarations.length} declarations in the reference index. The symbol index also includes their members.`,
+      title: 'API reference',
+      description: `${declarations.length} declarations in the ${PORT_NAME[slug] ?? slug} reference index. The symbol index also includes their members.`,
       section: 'API reference',
       // refBase, not base: the reference is generated in the default locale
       // only, so a Japanese manifest advertising a locale-prefixed reference
