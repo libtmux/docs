@@ -8591,6 +8591,2125 @@
         "3.7c"
       ],
       "verificationScope": "Eight whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server",
+      "symbol": "LibTmux.Server",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
+      "sourceProgramId": "csharp-ServerConstruction",
+      "sourceCompilerIds": [
+        "T:LibTmux.Server"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
+          "sha256": "f00763e29fe5da25c60169f3404dcbe89eaf7f8982a4821e10ee5dba5afb32e0",
+          "clipboardSha256": "47fa5c68f27b693b72962b9500655af1ec1f1e646008cd5dfc40d7bee460145e"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Open records an endpoint; Connect discovers the running server.",
+          "The original handle stays unmaterialized; relations remain uncaptured.",
+          "Open records an endpoint; Connect discovers the running server.",
+          "The original handle stays unmaterialized; relations remain uncaptured."
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-open",
+      "symbol": "LibTmux.Server.Open",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
+      "sourceProgramId": "csharp-ServerConstruction",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.Open(LibTmux.ServerConnectionOptions)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
+          "sha256": "f00763e29fe5da25c60169f3404dcbe89eaf7f8982a4821e10ee5dba5afb32e0",
+          "clipboardSha256": "47fa5c68f27b693b72962b9500655af1ec1f1e646008cd5dfc40d7bee460145e"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Open records an endpoint; Connect discovers the running server.",
+          "The original handle stays unmaterialized; relations remain uncaptured.",
+          "Open records an endpoint; Connect discovers the running server.",
+          "The original handle stays unmaterialized; relations remain uncaptured."
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-connectasync",
+      "symbol": "LibTmux.Server.ConnectAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
+      "sourceProgramId": "csharp-ServerConstruction",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.ConnectAsync(LibTmux.ServerConnectionOptions,System.Threading.CancellationToken)",
+        "M:LibTmux.Server.ConnectAsync(System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
+          "sha256": "f00763e29fe5da25c60169f3404dcbe89eaf7f8982a4821e10ee5dba5afb32e0",
+          "clipboardSha256": "47fa5c68f27b693b72962b9500655af1ec1f1e646008cd5dfc40d7bee460145e"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Open records an endpoint; Connect discovers the running server.",
+          "The original handle stays unmaterialized; relations remain uncaptured.",
+          "Open records an endpoint; Connect discovers the running server.",
+          "The original handle stays unmaterialized; relations remain uncaptured."
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-createownedasync",
+      "symbol": "LibTmux.Server.CreateOwnedAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
+      "sourceProgramId": "csharp-ServerConstruction",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.CreateOwnedAsync(LibTmux.ServerConnectionOptions,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
+          "sha256": "f00763e29fe5da25c60169f3404dcbe89eaf7f8982a4821e10ee5dba5afb32e0",
+          "clipboardSha256": "47fa5c68f27b693b72962b9500655af1ec1f1e646008cd5dfc40d7bee460145e"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Open records an endpoint; Connect discovers the running server.",
+          "The original handle stays unmaterialized; relations remain uncaptured.",
+          "Open records an endpoint; Connect discovers the running server.",
+          "The original handle stays unmaterialized; relations remain uncaptured."
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-createownedsessionasync",
+      "symbol": "LibTmux.Server.CreateOwnedSessionAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
+      "sourceProgramId": "csharp-ServerConstruction",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.CreateOwnedSessionAsync(LibTmux.NewSessionRequest,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
+          "sha256": "f00763e29fe5da25c60169f3404dcbe89eaf7f8982a4821e10ee5dba5afb32e0",
+          "clipboardSha256": "47fa5c68f27b693b72962b9500655af1ec1f1e646008cd5dfc40d7bee460145e"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Open records an endpoint; Connect discovers the running server.",
+          "The original handle stays unmaterialized; relations remain uncaptured.",
+          "Open records an endpoint; Connect discovers the running server.",
+          "The original handle stays unmaterialized; relations remain uncaptured."
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-getsessionsasync",
+      "symbol": "LibTmux.Server.GetSessionsAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/ServerListings.cs",
+      "sourceProgramId": "csharp-ServerListings",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.GetSessionsAsync(System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/ServerListings.cs",
+          "sha256": "422d569ddc14848e9896384620410f323195bce2d63062871a843eb640dda7bb",
+          "clipboardSha256": "9c204ded0017b4b0dc92fc815478d8b4e8b73f9d8995b51642a21337c72264d4"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Session: demo ($0)",
+          "Session: worker ($1)",
+          "Windows: 2; panes: 2; clients: 0",
+          "Session: demo ($0)",
+          "Session: worker ($1)",
+          "Windows: 2; panes: 2; clients: 0"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-getwindowsasync",
+      "symbol": "LibTmux.Server.GetWindowsAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/ServerListings.cs",
+      "sourceProgramId": "csharp-ServerListings",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.GetWindowsAsync(System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/ServerListings.cs",
+          "sha256": "422d569ddc14848e9896384620410f323195bce2d63062871a843eb640dda7bb",
+          "clipboardSha256": "9c204ded0017b4b0dc92fc815478d8b4e8b73f9d8995b51642a21337c72264d4"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Session: demo ($0)",
+          "Session: worker ($1)",
+          "Windows: 2; panes: 2; clients: 0",
+          "Session: demo ($0)",
+          "Session: worker ($1)",
+          "Windows: 2; panes: 2; clients: 0"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-getpanesasync",
+      "symbol": "LibTmux.Server.GetPanesAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/ServerListings.cs",
+      "sourceProgramId": "csharp-ServerListings",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.GetPanesAsync(System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/ServerListings.cs",
+          "sha256": "422d569ddc14848e9896384620410f323195bce2d63062871a843eb640dda7bb",
+          "clipboardSha256": "9c204ded0017b4b0dc92fc815478d8b4e8b73f9d8995b51642a21337c72264d4"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Session: demo ($0)",
+          "Session: worker ($1)",
+          "Windows: 2; panes: 2; clients: 0",
+          "Session: demo ($0)",
+          "Session: worker ($1)",
+          "Windows: 2; panes: 2; clients: 0"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-getclientsasync",
+      "symbol": "LibTmux.Server.GetClientsAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/ServerListings.cs",
+      "sourceProgramId": "csharp-ServerListings",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.GetClientsAsync(System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/ServerListings.cs",
+          "sha256": "422d569ddc14848e9896384620410f323195bce2d63062871a843eb640dda7bb",
+          "clipboardSha256": "9c204ded0017b4b0dc92fc815478d8b4e8b73f9d8995b51642a21337c72264d4"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Session: demo ($0)",
+          "Session: worker ($1)",
+          "Windows: 2; panes: 2; clients: 0",
+          "Session: demo ($0)",
+          "Session: worker ($1)",
+          "Windows: 2; panes: 2; clients: 0"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-createsessionasync",
+      "symbol": "LibTmux.Server.CreateSessionAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
+      "sourceProgramId": "csharp-CreateWindowPane",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.CreateSessionAsync(LibTmux.NewSessionRequest,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
+          "sha256": "bdec104933d514ab10ba09241730e477fc1cf747afa8a3c3ee195df4662c69de",
+          "clipboardSha256": "bfd913d2ace5655369459ddebbc2f974c3f74deedfe88c917b81c256525c4872"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Created session demo and window editor.",
+          "Windows: 2; panes: 3",
+          "Created session demo and window editor.",
+          "Windows: 2; panes: 3"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-session-createwindowasync",
+      "symbol": "LibTmux.Session.CreateWindowAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
+      "sourceProgramId": "csharp-CreateWindowPane",
+      "sourceCompilerIds": [
+        "M:LibTmux.Session.CreateWindowAsync(LibTmux.NewWindowRequest,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
+          "sha256": "bdec104933d514ab10ba09241730e477fc1cf747afa8a3c3ee195df4662c69de",
+          "clipboardSha256": "bfd913d2ace5655369459ddebbc2f974c3f74deedfe88c917b81c256525c4872"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Created session demo and window editor.",
+          "Windows: 2; panes: 3",
+          "Created session demo and window editor.",
+          "Windows: 2; panes: 3"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-window-getpanesasync",
+      "symbol": "LibTmux.Window.GetPanesAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
+      "sourceProgramId": "csharp-CreateWindowPane",
+      "sourceCompilerIds": [
+        "M:LibTmux.Window.GetPanesAsync(System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
+          "sha256": "bdec104933d514ab10ba09241730e477fc1cf747afa8a3c3ee195df4662c69de",
+          "clipboardSha256": "bfd913d2ace5655369459ddebbc2f974c3f74deedfe88c917b81c256525c4872"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Created session demo and window editor.",
+          "Windows: 2; panes: 3",
+          "Created session demo and window editor.",
+          "Windows: 2; panes: 3"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-pane-splitasync",
+      "symbol": "LibTmux.Pane.SplitAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
+      "sourceProgramId": "csharp-CreateWindowPane",
+      "sourceCompilerIds": [
+        "M:LibTmux.Pane.SplitAsync(LibTmux.SplitPaneRequest,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
+          "sha256": "bdec104933d514ab10ba09241730e477fc1cf747afa8a3c3ee195df4662c69de",
+          "clipboardSha256": "bfd913d2ace5655369459ddebbc2f974c3f74deedfe88c917b81c256525c4872"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Created session demo and window editor.",
+          "Windows: 2; panes: 3",
+          "Created session demo and window editor.",
+          "Windows: 2; panes: 3"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-session-getwindowsasync",
+      "symbol": "LibTmux.Session.GetWindowsAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
+      "sourceProgramId": "csharp-CreateWindowPane",
+      "sourceCompilerIds": [
+        "M:LibTmux.Session.GetWindowsAsync(System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
+          "sha256": "bdec104933d514ab10ba09241730e477fc1cf747afa8a3c3ee195df4662c69de",
+          "clipboardSha256": "bfd913d2ace5655369459ddebbc2f974c3f74deedfe88c917b81c256525c4872"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Created session demo and window editor.",
+          "Windows: 2; panes: 3",
+          "Created session demo and window editor.",
+          "Windows: 2; panes: 3"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-session-getpanesasync",
+      "symbol": "LibTmux.Session.GetPanesAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
+      "sourceProgramId": "csharp-CreateWindowPane",
+      "sourceCompilerIds": [
+        "M:LibTmux.Session.GetPanesAsync(System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
+          "sha256": "bdec104933d514ab10ba09241730e477fc1cf747afa8a3c3ee195df4662c69de",
+          "clipboardSha256": "bfd913d2ace5655369459ddebbc2f974c3f74deedfe88c917b81c256525c4872"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Created session demo and window editor.",
+          "Windows: 2; panes: 3",
+          "Created session demo and window editor.",
+          "Windows: 2; panes: 3"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-query-queryextensions-translate",
+      "symbol": "LibTmux.Query.QueryExtensions.Translate",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/ServerQueries.cs",
+      "sourceProgramId": "csharp-ServerQueries",
+      "sourceCompilerIds": [
+        "M:LibTmux.Query.QueryExtensions.Translate``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/ServerQueries.cs",
+          "sha256": "464259af6c120b3b08cec745fd3138b127a37a0d8810a71d9b48ec26530dff3a",
+          "clipboardSha256": "304fe55ea1b257183e557ae2cf526ff3c1d3017275fcdd3c977474167b885cd1"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Cancelled filtering remains OperationCanceledException.",
+          "LINQ, expression and document filters: demo; captured parent: demo",
+          "Cancelled filtering remains OperationCanceledException.",
+          "LINQ, expression and document filters: demo; captured parent: demo"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-query-queryextensions-matching",
+      "symbol": "LibTmux.Query.QueryExtensions.Matching",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/ServerQueries.cs",
+      "sourceProgramId": "csharp-ServerQueries",
+      "sourceCompilerIds": [
+        "M:LibTmux.Query.QueryExtensions.Matching``1(System.Collections.Generic.IEnumerable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})",
+        "M:LibTmux.Query.QueryExtensions.Matching``1(System.Collections.Generic.IEnumerable{``0},LibTmux.Query.QueryDocument)",
+        "M:LibTmux.Query.QueryExtensions.Matching``1(System.Collections.Generic.IEnumerable{``0},LibTmux.Query.QueryDocument,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/ServerQueries.cs",
+          "sha256": "464259af6c120b3b08cec745fd3138b127a37a0d8810a71d9b48ec26530dff3a",
+          "clipboardSha256": "304fe55ea1b257183e557ae2cf526ff3c1d3017275fcdd3c977474167b885cd1"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Cancelled filtering remains OperationCanceledException.",
+          "LINQ, expression and document filters: demo; captured parent: demo",
+          "Cancelled filtering remains OperationCanceledException.",
+          "LINQ, expression and document filters: demo; captured parent: demo"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-getsessionasync",
+      "symbol": "LibTmux.Server.GetSessionAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
+      "sourceProgramId": "csharp-EntityLookups",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.GetSessionAsync(LibTmux.SessionId,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
+          "sha256": "7317ab2f3f764fa9580bee35066600bcdcc731308f9f623280300923a7690103",
+          "clipboardSha256": "31d2c56e649a07a50d54b950ae41d4c018fb03a62e42faa4626eaa1bf988527d"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "A successful lookup can return null.",
+          "Required lookup reports TmuxObjectNotFoundException.",
+          "Cancellation remains OperationCanceledException.",
+          "A blank pane target remains ArgumentException.",
+          "A stopped server remains a LibTmuxException.",
+          "A successful lookup can return null.",
+          "Required lookup reports TmuxObjectNotFoundException.",
+          "Cancellation remains OperationCanceledException.",
+          "A blank pane target remains ArgumentException.",
+          "A stopped server remains a LibTmuxException."
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-findsessionasync",
+      "symbol": "LibTmux.Server.FindSessionAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
+      "sourceProgramId": "csharp-EntityLookups",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.FindSessionAsync(LibTmux.SessionId,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
+          "sha256": "7317ab2f3f764fa9580bee35066600bcdcc731308f9f623280300923a7690103",
+          "clipboardSha256": "31d2c56e649a07a50d54b950ae41d4c018fb03a62e42faa4626eaa1bf988527d"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "A successful lookup can return null.",
+          "Required lookup reports TmuxObjectNotFoundException.",
+          "Cancellation remains OperationCanceledException.",
+          "A blank pane target remains ArgumentException.",
+          "A stopped server remains a LibTmuxException.",
+          "A successful lookup can return null.",
+          "Required lookup reports TmuxObjectNotFoundException.",
+          "Cancellation remains OperationCanceledException.",
+          "A blank pane target remains ArgumentException.",
+          "A stopped server remains a LibTmuxException."
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-getwindowasync",
+      "symbol": "LibTmux.Server.GetWindowAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
+      "sourceProgramId": "csharp-EntityLookups",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.GetWindowAsync(LibTmux.WindowId,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
+          "sha256": "7317ab2f3f764fa9580bee35066600bcdcc731308f9f623280300923a7690103",
+          "clipboardSha256": "31d2c56e649a07a50d54b950ae41d4c018fb03a62e42faa4626eaa1bf988527d"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "A successful lookup can return null.",
+          "Required lookup reports TmuxObjectNotFoundException.",
+          "Cancellation remains OperationCanceledException.",
+          "A blank pane target remains ArgumentException.",
+          "A stopped server remains a LibTmuxException.",
+          "A successful lookup can return null.",
+          "Required lookup reports TmuxObjectNotFoundException.",
+          "Cancellation remains OperationCanceledException.",
+          "A blank pane target remains ArgumentException.",
+          "A stopped server remains a LibTmuxException."
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-getpaneasync",
+      "symbol": "LibTmux.Server.GetPaneAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
+      "sourceProgramId": "csharp-EntityLookups",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.GetPaneAsync(LibTmux.PaneId,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
+          "sha256": "7317ab2f3f764fa9580bee35066600bcdcc731308f9f623280300923a7690103",
+          "clipboardSha256": "31d2c56e649a07a50d54b950ae41d4c018fb03a62e42faa4626eaa1bf988527d"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "A successful lookup can return null.",
+          "Required lookup reports TmuxObjectNotFoundException.",
+          "Cancellation remains OperationCanceledException.",
+          "A blank pane target remains ArgumentException.",
+          "A stopped server remains a LibTmuxException.",
+          "A successful lookup can return null.",
+          "Required lookup reports TmuxObjectNotFoundException.",
+          "Cancellation remains OperationCanceledException.",
+          "A blank pane target remains ArgumentException.",
+          "A stopped server remains a LibTmuxException."
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-window-findpaneasync",
+      "symbol": "LibTmux.Window.FindPaneAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
+      "sourceProgramId": "csharp-EntityLookups",
+      "sourceCompilerIds": [
+        "M:LibTmux.Window.FindPaneAsync(System.String,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
+          "sha256": "7317ab2f3f764fa9580bee35066600bcdcc731308f9f623280300923a7690103",
+          "clipboardSha256": "31d2c56e649a07a50d54b950ae41d4c018fb03a62e42faa4626eaa1bf988527d"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "A successful lookup can return null.",
+          "Required lookup reports TmuxObjectNotFoundException.",
+          "Cancellation remains OperationCanceledException.",
+          "A blank pane target remains ArgumentException.",
+          "A stopped server remains a LibTmuxException.",
+          "A successful lookup can return null.",
+          "Required lookup reports TmuxObjectNotFoundException.",
+          "Cancellation remains OperationCanceledException.",
+          "A blank pane target remains ArgumentException.",
+          "A stopped server remains a LibTmuxException."
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-capturesnapshotasync",
+      "symbol": "LibTmux.Server.CaptureSnapshotAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/SnapshotAccess.cs",
+      "sourceProgramId": "csharp-SnapshotAccess",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.CaptureSnapshotAsync(LibTmux.SnapshotDepth,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/SnapshotAccess.cs",
+          "sha256": "579e4909cd2437b67b7387f716296157838e89c39641f54ba373aa594f2f971c",
+          "clipboardSha256": "0acd853e9564a28e32fe527da553a2087760f668b9085e9cad3ee94835f1c747"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Sessions have not been captured.",
+          "The captured active pane has a path and command.",
+          "The original handle is still uncaptured.",
+          "Captured sessions can be empty.",
+          "Sessions have not been captured.",
+          "The captured active pane has a path and command.",
+          "The original handle is still uncaptured.",
+          "Captured sessions can be empty."
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-capturedrelation-iscaptured",
+      "symbol": "LibTmux.CapturedRelation.IsCaptured",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/SnapshotAccess.cs",
+      "sourceProgramId": "csharp-SnapshotAccess",
+      "sourceCompilerIds": [
+        "P:LibTmux.CapturedRelation`1.IsCaptured"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/SnapshotAccess.cs",
+          "sha256": "579e4909cd2437b67b7387f716296157838e89c39641f54ba373aa594f2f971c",
+          "clipboardSha256": "0acd853e9564a28e32fe527da553a2087760f668b9085e9cad3ee94835f1c747"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Sessions have not been captured.",
+          "The captured active pane has a path and command.",
+          "The original handle is still uncaptured.",
+          "Captured sessions can be empty.",
+          "Sessions have not been captured.",
+          "The captured active pane has a path and command.",
+          "The original handle is still uncaptured.",
+          "Captured sessions can be empty."
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-capturedvalue-iscaptured",
+      "symbol": "LibTmux.CapturedValue.IsCaptured",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/SnapshotAccess.cs",
+      "sourceProgramId": "csharp-SnapshotAccess",
+      "sourceCompilerIds": [
+        "P:LibTmux.CapturedValue`1.IsCaptured"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/SnapshotAccess.cs",
+          "sha256": "579e4909cd2437b67b7387f716296157838e89c39641f54ba373aa594f2f971c",
+          "clipboardSha256": "0acd853e9564a28e32fe527da553a2087760f668b9085e9cad3ee94835f1c747"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Sessions have not been captured.",
+          "The captured active pane has a path and command.",
+          "The original handle is still uncaptured.",
+          "Captured sessions can be empty.",
+          "Sessions have not been captured.",
+          "The captured active pane has a path and command.",
+          "The original handle is still uncaptured.",
+          "Captured sessions can be empty."
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-capturedvalue-value",
+      "symbol": "LibTmux.CapturedValue.Value",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/SnapshotAccess.cs",
+      "sourceProgramId": "csharp-SnapshotAccess",
+      "sourceCompilerIds": [
+        "P:LibTmux.CapturedValue`1.Value"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/SnapshotAccess.cs",
+          "sha256": "579e4909cd2437b67b7387f716296157838e89c39641f54ba373aa594f2f971c",
+          "clipboardSha256": "0acd853e9564a28e32fe527da553a2087760f668b9085e9cad3ee94835f1c747"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Sessions have not been captured.",
+          "The captured active pane has a path and command.",
+          "The original handle is still uncaptured.",
+          "Captured sessions can be empty.",
+          "Sessions have not been captured.",
+          "The captured active pane has a path and command.",
+          "The original handle is still uncaptured.",
+          "Captured sessions can be empty."
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-pane-sendkeysasync",
+      "symbol": "LibTmux.Pane.SendKeysAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/InputCapture.cs",
+      "sourceProgramId": "csharp-InputCapture",
+      "sourceCompilerIds": [
+        "M:LibTmux.Pane.SendKeysAsync(LibTmux.SendKeysRequest,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/InputCapture.cs",
+          "sha256": "ae8a70f6300c894ca5ada8a58c52395834d239de81c5469d4950dc43a1a0e020",
+          "clipboardSha256": "2fa7cac16fd70c853e9613f9671c3c6cc710261106ee19c3c408e06e450d84c9"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api capture ready",
+          "api capture ready"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-pane-captureasync",
+      "symbol": "LibTmux.Pane.CaptureAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/InputCapture.cs",
+      "sourceProgramId": "csharp-InputCapture",
+      "sourceCompilerIds": [
+        "M:LibTmux.Pane.CaptureAsync(LibTmux.CapturePaneRequest,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/InputCapture.cs",
+          "sha256": "ae8a70f6300c894ca5ada8a58c52395834d239de81c5469d4950dc43a1a0e020",
+          "clipboardSha256": "2fa7cac16fd70c853e9613f9671c3c6cc710261106ee19c3c408e06e450d84c9"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api capture ready",
+          "api capture ready"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-server-openwaitchannel",
+      "symbol": "LibTmux.Server.OpenWaitChannel",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/InputCapture.cs",
+      "sourceProgramId": "csharp-InputCapture",
+      "sourceCompilerIds": [
+        "M:LibTmux.Server.OpenWaitChannel(System.String)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/InputCapture.cs",
+          "sha256": "ae8a70f6300c894ca5ada8a58c52395834d239de81c5469d4950dc43a1a0e020",
+          "clipboardSha256": "2fa7cac16fd70c853e9613f9671c3c6cc710261106ee19c3c408e06e450d84c9"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api capture ready",
+          "api capture ready"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "dotnet",
+      "page": "ports/dotnet/reference/libtmux-tmuxwaitchannel-waitasync",
+      "symbol": "LibTmux.TmuxWaitChannel.WaitAsync",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "sourceFile": "examples/LibTmux.Examples/Programs/InputCapture.cs",
+      "sourceProgramId": "csharp-InputCapture",
+      "sourceCompilerIds": [
+        "M:LibTmux.TmuxWaitChannel.WaitAsync(System.TimeSpan,System.Threading.CancellationToken)"
+      ],
+      "files": [
+        {
+          "name": "global.json",
+          "path": "global.json",
+          "block": 1,
+          "sourceFile": "global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "NuGet.config",
+          "path": "NuGet.config",
+          "block": 2,
+          "sourceFile": "examples/api/NuGet.config",
+          "sha256": "abc653de4a28073f9f8620a9e9dabb087e00fbc9cf0370b159dcef60d6feacbe",
+          "clipboardSha256": "860f270b3c434ee9fa7fedced8b10d147521cb223408ccecb030e8c387828d71"
+        },
+        {
+          "name": "Example.csproj",
+          "path": "Example.csproj",
+          "block": 3,
+          "sourceFile": "examples/api/csharp/Example.csproj",
+          "sha256": "fd3dd7e66ef314c0a61eff785389be19cb6305e6613f62a4c6cdfead4fa71ea4",
+          "clipboardSha256": "c4978e2d8b048e9187223f9949f467662a310f779447b73ec93dd8b0a3a02f00"
+        },
+        {
+          "name": "Program.cs",
+          "path": "Program.cs",
+          "block": 4,
+          "sourceFile": "examples/LibTmux.Examples/Programs/InputCapture.cs",
+          "sha256": "ae8a70f6300c894ca5ada8a58c52395834d239de81c5469d4950dc43a1a0e020",
+          "clipboardSha256": "2fa7cac16fd70c853e9613f9671c3c6cc710261106ee19c3c408e06e450d84c9"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+        "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "api capture ready",
+          "api capture ready"
+        ]
+      ],
+      "runtime": ".NET SDK 10.0.302; .NET 8 and 10 runtimes",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
     }
   ]
 }
