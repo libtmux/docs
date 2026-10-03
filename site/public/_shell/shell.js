@@ -167,25 +167,6 @@
     tmux.setAttribute('aria-label', 'tmux CLI reference')
     tmux.textContent = 'tmux'
     nav.appendChild(tmux)
-    PORTS.forEach(function (port) {
-      var link = document.createElement('a')
-      link.href = portHome(port)
-      link.dataset.portHome = port.slug
-      link.setAttribute('aria-label', port.name)
-      link.title = port.name
-      var fullName = document.createElement('span')
-      fullName.className = 'lt-shell-port-name'
-      fullName.textContent = port.name
-      var abbreviation = document.createElement('span')
-      abbreviation.className = 'lt-shell-port-abbreviation'
-      abbreviation.textContent = port.shortName
-      abbreviation.setAttribute('aria-hidden', 'true')
-      link.appendChild(fullName)
-      link.appendChild(abbreviation)
-      link.className = 'lt-shell-nav-link' + (port.slug === currentPort ? ' lt-shell-nav-link--active' : '')
-      if (port.slug === currentPort) link.setAttribute('aria-current', 'page')
-      nav.appendChild(link)
-    })
     header.appendChild(nav)
     var controls = document.createElement('div')
     controls.className = 'lt-shell-controls'
@@ -248,8 +229,7 @@
   }
 
   var CHROME_STYLE =
-    '.lt-shell-brand{display:inline-flex;align-items:center;gap:.35rem}.lt-shell-port-abbreviation{display:none}' +
-    '@media(max-width:80rem){.lt-shell-port-name{display:none}.lt-shell-port-abbreviation{display:inline}}' +
+    '.lt-shell-brand{display:inline-flex;align-items:center;gap:.35rem}' +
     '.lt-shell-header,.lt-shell-footer{font-family:var(--lt-font-sans,sans-serif);' +
     'font-size:0.875rem;background:var(--lt-color-bg,#fff);color:var(--lt-color-fg,#000);box-sizing:border-box}' +
     '.lt-shell-header *,.lt-shell-footer *{box-sizing:border-box}' +
@@ -258,13 +238,10 @@
     'padding:0.6rem 1rem;border-bottom:1px solid var(--lt-color-border,#eeebee)}' +
     '.lt-shell-brand{font-family:var(--lt-font-mono,monospace);font-weight:600;' +
     'font-size:1.05rem;color:var(--lt-color-fg,#000);text-decoration:none;letter-spacing:-0.01em}' +
-    // Wrap the controls before the language list can collapse into a column.
-    '.lt-shell-nav{display:flex;flex-wrap:wrap;gap:0.15rem;flex:1 1 15rem}' +
+    '.lt-shell-nav{display:flex;flex-wrap:wrap;gap:0.15rem;flex:1 1 auto}' +
     '.lt-shell-nav-link{padding:0.25rem 0.5rem;border-radius:var(--lt-radius,0.375rem);' +
     'color:var(--lt-color-fg-secondary,#5a5c63);text-decoration:none}' +
     '.lt-shell-nav-link:hover{background:var(--lt-color-bg-hover,#efeff4)}' +
-    '.lt-shell-nav-link--active{font-weight:600;color:var(--lt-color-accent,#0a4bff);' +
-    'background:var(--lt-color-bg-secondary,#f8f9fb)}' +
     '.lt-shell-version select{border:1px solid var(--lt-color-border,#eeebee);' +
     'border-radius:var(--lt-radius,0.375rem);padding:0.2rem 0.4rem;font-size:0.85rem;' +
     'background:var(--lt-color-bg,#fff);color:var(--lt-color-fg,#000)}' +

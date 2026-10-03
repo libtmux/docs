@@ -411,6 +411,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
   }
   pagePath={slug ? `reference/${slug}` : 'reference'}
   portSlug={model?.port}
+  pagePortSwitcher={Boolean(model)}
   version={buildTarget(process.env).version}
   noindex={true}
   searchable={searchable}

@@ -5,8 +5,10 @@ import { withPortRoot } from '../lib/site-root'
 interface Props {
   portSlug?: string
   version: string
+  /** Include language links when the page has no counterpart picker. */
+  showPorts?: boolean
 }
-const { portSlug, version } = Astro.props as Props
+const { portSlug, version, showPorts = true } = Astro.props as Props
 const tmuxActive = /\/tmux\/[^/]+\/reference(?:\/|$)/.test(Astro.url.pathname)
 
 const PORT_DEFAULTS: Record<string, string> = (() => {
@@ -27,7 +29,7 @@ const defaultFor = (slug: string) => PORT_DEFAULTS[slug] ?? 'latest'
     aria-current={tmuxActive ? 'page' : undefined}
   >tmux</a>
   {
-    PORTS.map((p) => {
+    showPorts && PORTS.map((p) => {
       const active = p.slug === portSlug
       return (
         <a

@@ -67,11 +67,12 @@ describeIfAssembled('switcher targets', () => {
     const nav = /<nav[^>]*aria-label="Documentation destinations"[^>]*>([\s\S]*?)<\/nav>/.exec(html)
     if (!nav) return // not every page carries the switcher
 
+    const noDocument = NO_PAGE_COUNTERPART.some((suffix) => page.endsWith(suffix))
     const hrefs = [...nav[1].matchAll(/href="([^"]+)"/g)].map((m) => m[1])
-    expect(hrefs).toHaveLength(PORTS.length + 1)
+    expect(hrefs).toHaveLength(noDocument ? PORTS.length + 1 : 1)
     expect(hrefs[0]).toBe(`/${SITE_PREFIX}tmux/latest/reference/`)
     expect(hrefs.filter((h) => !resolves(h)), `${page}: port links with no page`).toEqual([])
-    for (const port of PORTS) {
+    for (const port of noDocument ? PORTS : []) {
       const pattern = new RegExp(`/${port.slug}/${port.versionedDocs ? '[^/]+/' : ''}$`)
       expect(hrefs.some((href) => pattern.test(href)), `${page}: ${port.slug} root`).toBe(true)
     }
@@ -81,8 +82,10 @@ describeIfAssembled('switcher targets', () => {
     try {
       window.document.write(html)
       const menus = window.document.querySelectorAll('details[data-page-port-switcher]')
-      const noDocument = NO_PAGE_COUNTERPART.some((suffix) => page.endsWith(suffix))
       expect(menus, `${page} matching-page controls`).toHaveLength(noDocument ? 0 : 1)
+      for (const navigation of window.document.querySelectorAll('header nav[aria-label="Documentation destinations"]')) {
+        expect([...navigation.querySelectorAll('a')].map((link) => link.getAttribute('href'))).toEqual(hrefs)
+      }
       if (noDocument) return
       const counterparts = [...menus[0].querySelectorAll('a[href]')].map((link) => link.getAttribute('href')!)
       expect(counterparts.length, `${page} has an available counterpart`).toBeGreaterThan(0)

@@ -55,11 +55,13 @@ describe('native API page switchers', () => {
     expect(header).toBe(initialHeader)
     expect(window.customElements.get('libtmux-version-switcher')).toBeTruthy()
     expect(header.querySelector('select option')?.getAttribute('value')).toBe('latest')
-    expect(header.querySelector('[data-port-home="ts"]')?.getAttribute('href')).toBe(`${base}/ts/stable/`)
+    expect(header.querySelectorAll('.lt-shell-nav a')).toHaveLength(1)
+    expect(document.querySelector('[data-lt-shell="footer"] [data-port-home="ts"]')?.getAttribute('href'))
+      .toBe(`${base}/ts/stable/`)
     expect(header.querySelector('[data-page-port-switcher] a[href$="session-session/"]')).not.toBeNull()
   })
 
-  it('keeps all port homes and manifest requests inside the locale and preview', async () => {
+  it('keeps tmux and the page picker without duplicate language links', async () => {
     const { document, requests } = await load('api/libtmux.session/')
     const nav = document.querySelector('nav[aria-label="Documentation destinations"]')!
     const tmux = nav.querySelector('a')!
@@ -67,11 +69,10 @@ describe('native API page switchers', () => {
     expect(tmux.getAttribute('href')).toBe(`${base}/tmux/latest/reference/`)
     expect(tmux.getAttribute('aria-label')).toBe('tmux CLI reference')
     expect(tmux.hasAttribute('data-port-home')).toBe(false)
-    expect(tmux.nextElementSibling?.getAttribute('data-port-home')).toBe('py')
-    expect(nav.querySelectorAll('[data-port-home]')).toHaveLength(PORTS.length)
-    expect(nav.querySelector('[data-port-home="py"]')?.getAttribute('href')).toBe(`${base}/py/latest/`)
-    expect(nav.querySelector('[data-port-home="ts"]')?.getAttribute('href')).toBe(`${base}/ts/stable/`)
-    expect(nav.querySelector('[data-port-home="rs"]')?.getAttribute('href')).toBe(`${base}/rs/latest/`)
+    expect(nav.querySelectorAll('a')).toHaveLength(1)
+    expect(document.querySelectorAll('[data-page-port-switcher]')).toHaveLength(1)
+    expect(document.querySelector('[data-page-port-switcher] a[aria-current]')?.getAttribute('href'))
+      .toBe(`${base}/py/latest/api/libtmux.session/`)
     expect([...document.querySelectorAll('.lt-shell-search-link')].find((link) => link.textContent === 'Search')?.getAttribute('href'))
       .toBe(`${base}/py/latest/search/`)
     expect(requests).toEqual([`${base}/versions.json`, `${base}/page-links.json`])

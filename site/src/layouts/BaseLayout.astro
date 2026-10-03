@@ -39,6 +39,8 @@ interface Props {
   pagePath?: string
   /** Port slug when this page belongs to one. */
   portSlug?: string
+  /** The page provides its own programming-language switcher. */
+  pagePortSwitcher?: boolean
   version?: string
   noindex?: boolean
   /** Include this page in the local search index. */
@@ -79,6 +81,7 @@ const {
   description,
   pagePath: requestedPagePath,
   portSlug,
+  pagePortSwitcher = false,
   version: requestedVersion,
   noindex = false,
   searchable = true,
@@ -252,6 +255,7 @@ const githubUrl = githubPort?.source && githubPort.repo === githubRepo
       !bare && (
         <SiteHeader
           documentationContext={Astro.slots.has('context')}
+          pagePortSwitcher={pagePortSwitcher}
           portSlug={navPort}
           version={navVersion}
           pagePath={sourcePath ?? pagePath}

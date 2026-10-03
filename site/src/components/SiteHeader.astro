@@ -10,6 +10,8 @@ import { withPortRoot, withRoot } from '../lib/site-root'
 
 interface Props {
   documentationContext?: boolean
+  /** The page already provides its programming-language switcher. */
+  pagePortSwitcher?: boolean
   portSlug?: string
   version: string
   /** Current page path for the locale control. */
@@ -33,6 +35,7 @@ const {
   sourcePath,
   localeStatuses,
   documentationContext = false,
+  pagePortSwitcher = false,
 } = Astro.props as Props
 const brand = branding(portSlug, pagePath)
 ---
@@ -48,7 +51,7 @@ const brand = branding(portSlug, pagePath)
       Keep language navigation on one line. On phones, move it into the menu
       so the header leaves room for the page and its documentation toolbar.
     */}
-    <div class="site-header__ports"><PortSwitcher portSlug={portSlug} version={version} /></div>
+    <div class="site-header__ports"><PortSwitcher portSlug={portSlug} version={version} showPorts={!pagePortSwitcher} /></div>
 
     <div class="site-header__spacer"></div>
 
@@ -90,7 +93,7 @@ const brand = branding(portSlug, pagePath)
       <div class="site-header__panel">
         {/* Hidden while the language navigation fits in the bar. */}
         <div class="site-header__panel-ports">
-          <PortSwitcher portSlug={portSlug} version={version} />
+          <PortSwitcher portSlug={portSlug} version={version} showPorts={!pagePortSwitcher} />
         </div>
         {!documentationContext && <div class="site-header__panel-row site-header__panel-controls">
           <VersionSwitcher portSlug={pagePath.startsWith('reference') ? undefined : portSlug} version={version} />

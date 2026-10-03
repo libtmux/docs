@@ -4,9 +4,8 @@ import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { normalizeNativeShell } from '../../scripts/normalize-native-shell.mjs'
-import { PORTS } from '../src/lib/ports.ts'
 
-/** Keep every port visible in a short language list at intermediate widths. */
+/** Keep the tmux destination beside one programming-language picker. */
 export async function checkNativeHeader(page) {
   const navigation = await page.locator('.lt-shell-nav').evaluate((nav) => {
     const links = [...nav.querySelectorAll('a')]
@@ -23,12 +22,13 @@ export async function checkNativeHeader(page) {
       }).map((link) => link.getAttribute('aria-label')),
     }
   })
-  assert.equal(navigation.count, PORTS.length + 1, 'Native header keeps tmux and every port')
-  assert.deepEqual(navigation.ports, PORTS.map((port) => port.slug), 'Native header keeps the port order')
+  assert.equal(navigation.count, 1, 'Native header keeps tmux without duplicate language links')
+  assert.deepEqual(navigation.ports, [], 'Native language navigation belongs to the page picker')
+  assert.equal(await page.locator('[data-page-port-switcher]').count(), 1)
   assert.equal(navigation.firstLabel, 'tmux CLI reference')
-  assert(navigation.rows <= 3, `Native ports use at most three rows at ${page.viewportSize().width}px: ${navigation.rows}`)
-  assert(navigation.visible, 'Native port links fit the viewport')
-  assert.deepEqual(navigation.covered, [], 'Native header controls do not cover port links')
+  assert.equal(navigation.rows, 1, 'Native destination fits on one row')
+  assert(navigation.visible, 'Native destination fits the viewport')
+  assert.deepEqual(navigation.covered, [], 'Native header controls do not cover the tmux link')
 }
 
 /** Delay enhancement until the initial article and navigation can be inspected. */
