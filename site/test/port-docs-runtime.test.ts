@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 
 const root = new URL('../../', import.meta.url).pathname
 const workflow = readFileSync(join(root, '.github/workflows/port-docs.yml'), 'utf8')
+const doxygenCheck = join(root, 'scripts/check-doxygen.py')
 function script(name: string) {
   const start = workflow.indexOf(`      - name: ${name}\n`)
   expect(start).toBeGreaterThan(-1)
@@ -28,6 +29,96 @@ function selectedVersion(port: string, source?: string) {
     return { ...result, output: readFileSync(output, 'utf8') }
   } finally { rmSync(directory, { recursive: true, force: true }) }
 }
+
+function doxygenProbe(version: string, aliases = 1, overloads = 2, protection = 'public') {
+  const directory = mkdtempSync(join(tmpdir(), 'libtmux-doxygen-test-'))
+  try {
+    const binary = join(directory, 'doxygen')
+    writeFileSync(binary, `#!${process.execPath}
+const fs = require('node:fs')
+if (process.argv[2] === '--version') {
+  console.log(${JSON.stringify(version)})
+  process.exit(0)
+}
+const source = fs.readFileSync('query.hpp', 'utf8')
+if (!source.includes('using tmuxq::matching;')) process.exit(91)
+fs.mkdirSync('xml')
+const member = name => '<memberdef kind="function" prot="${protection}"><qualifiedname>' + name + '</qualifiedname></memberdef>'
+fs.writeFileSync('xml/namespacelibtmux.xml', '<doxygen><compounddef>' +
+  Array(${aliases}).fill(member('libtmux::matching')).join('') +
+  Array(${overloads}).fill(member('libtmux::tmuxq::matching')).join('') + '</compounddef></doxygen>')
+`, { mode: 0o700 })
+    return spawnSync('python3', [doxygenCheck, binary, '1.18.0'], {
+      encoding: 'utf8', timeout: 5000,
+    })
+  } finally { rmSync(directory, { recursive: true, force: true }) }
+}
+
+describe('C++ Doxygen producer', () => {
+  it('checks the downloaded producer before exposing it to every XML generation step', () => {
+    const install = workflow.indexOf('name: Install tested Doxygen producer')
+    const core = workflow.indexOf('name: Generate the Doxygen XML')
+    const companions = workflow.indexOf("name: Build this port's tree")
+    expect(install).toBeGreaterThan(-1)
+    expect(install).toBeLessThan(core)
+    expect(core).toBeLessThan(companions)
+    expect(workflow.slice(install, install + 150)).toContain("if: matrix.port == 'cxx'")
+    expect(script('Install native system dependencies')).not.toMatch(/packages\+=\([^)]*\bdoxygen\b/)
+    const body = script('Install tested Doxygen producer')
+    expect(body).toContain('version=1.18.0')
+    expect(body).toContain('https://github.com/doxygen/doxygen/releases/download/Release_1_18_0/')
+    expect(body).toContain('14fa81bdc34171edb5f1f02b1d60e74802f0439b77fa44e592565d517d72df90')
+    expect(body.indexOf('sha256sum --check --strict')).toBeLessThan(body.indexOf('tar -xzf'))
+    expect(body.indexOf('python3 scripts/check-doxygen.py')).toBeLessThan(body.indexOf('>> "$GITHUB_PATH"'))
+    expect(body).toContain('printf \'%s\\n\' "$bin" >> "$GITHUB_PATH"')
+  })
+
+  it('rejects a changed archive before extraction or PATH publication', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-doxygen-download-'))
+    try {
+      const output = join(directory, 'path')
+      const extracted = join(directory, 'extracted')
+      writeFileSync(output, '')
+      writeFileSync(join(directory, 'curl'), `#!${process.execPath}
+const fs = require('node:fs')
+fs.writeFileSync(process.argv[process.argv.indexOf('--output') + 1], 'changed archive')
+`, { mode: 0o700 })
+      writeFileSync(join(directory, 'tar'), `#!/bin/sh\ntouch '${extracted}'\n`, { mode: 0o700 })
+      const result = spawnSync('bash', ['-e', '-c', script('Install tested Doxygen producer')], {
+        cwd: root, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, RUNNER_TEMP: directory, GITHUB_PATH: output },
+      })
+      expect(result.status).not.toBe(0)
+      expect(result.stderr).toContain('computed checksum did NOT match')
+      expect(readFileSync(output, 'utf8')).toBe('')
+      expect(() => readFileSync(extracted)).toThrow()
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
+  it.each(['1.18.0', '1.18.0 (8e760943e5d9581a444cf327f43a0b4d20d29482)'])(
+    'accepts %s with the public alias and both original overloads', (version) => {
+      const result = doxygenProbe(version)
+      expect(result.status, result.stderr).toBe(0)
+      expect(result.stdout).toContain('public using-declaration and two original overloads verified')
+    },
+  )
+
+  it.each(['1.9.8', '1.14.0', '1.18.1', '1.18.0 unexpected'])(
+    'rejects an untested producer %s', (version) => {
+      const result = doxygenProbe(version)
+      expect(result.status).not.toBe(0)
+      expect(result.stderr).toContain('Expected Doxygen 1.18.0')
+    },
+  )
+
+  it.each([[0, 2, 'public'], [2, 2, 'public'], [1, 1, 'public'], [1, 2, 'private']] as const)(
+    'rejects %s aliases, %s original overloads, and %s visibility', (aliases, overloads, protection) => {
+      const result = doxygenProbe('1.18.0', aliases, overloads, protection)
+      expect(result.status).not.toBe(0)
+      expect(result.stderr).toContain('must emit the public libtmux::matching using-declaration')
+    },
+  )
+})
 
 describe('selected MCP runtime provisioning', () => {
   it.each([

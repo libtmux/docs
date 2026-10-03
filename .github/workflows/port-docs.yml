@@ -278,7 +278,7 @@ jobs:
           set -euo pipefail
           packages=(tmux)
           if [[ "$PORT" == cxx ]]; then
-            packages+=(clang-18 libc++-18-dev libc++abi-18-dev ninja-build doxygen)
+            packages+=(clang-18 libc++-18-dev libc++abi-18-dev ninja-build)
           fi
           sudo apt-get update -qq
           sudo apt-get install --no-install-recommends -y -qq "${packages[@]}"
@@ -287,6 +287,23 @@ jobs:
             sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
           fi
           tmux -V
+
+      - name: Install tested Doxygen producer
+        if: matrix.port == 'cxx'
+        working-directory: docs
+        run: |
+          set -euo pipefail
+          version=1.18.0
+          archive="$RUNNER_TEMP/doxygen-$version.linux.bin.tar.gz"
+          curl --fail --location --retry 3 --output "$archive" \
+            "https://github.com/doxygen/doxygen/releases/download/Release_1_18_0/doxygen-$version.linux.bin.tar.gz"
+          printf '%s  %s\n' \
+            14fa81bdc34171edb5f1f02b1d60e74802f0439b77fa44e592565d517d72df90 \
+            "$archive" | sha256sum --check --strict
+          tar -xzf "$archive" -C "$RUNNER_TEMP" "doxygen-$version/bin/doxygen"
+          bin="$RUNNER_TEMP/doxygen-$version/bin"
+          python3 scripts/check-doxygen.py "$bin/doxygen" "$version"
+          printf '%s\n' "$bin" >> "$GITHUB_PATH"
 
       - if: matrix.port == 'go'
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
