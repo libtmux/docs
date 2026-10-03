@@ -752,11 +752,15 @@ html[data-prerelease='dismissed'] .prerelease-notice {
 
 .prerelease-notice__inner {
   margin-inline: auto;
-  max-width: 80rem;
+  max-width: 96rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 1rem;
+}
+
+.prerelease-notice--centered .prerelease-notice__inner {
+  max-width: 80rem;
 }
 
 .prerelease-notice__text {
@@ -1113,6 +1117,10 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 
   .site-header__bar {
     gap: 0.5rem;
+    padding-inline: 0.75rem;
+  }
+
+  .prerelease-notice:not(.prerelease-notice--centered) .prerelease-notice__inner {
     padding-inline: 0.75rem;
   }
 }

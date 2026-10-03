@@ -309,10 +309,11 @@ export function documentationNavigation(portSlug: string, version: string): Docu
   if (!port) throw new Error(`port-documentation: unknown port ${portSlug}`)
   const groups = new Map<string, DocumentationNavigationGroup>()
   for (const domain of documentationAreas(portSlug)) {
+    if (domain.kind === 'unavailable') continue
     const group = groups.get(domain.navGroup) ?? { label: domain.navGroup, items: [] }
     group.items.push({
       type: 'link',
-      label: domain.kind === 'unavailable' ? `${domain.label} (not available)` : domain.label,
+      label: domain.label,
       href: portPageUrl(port, version, domain.route),
     })
     groups.set(domain.navGroup, group)
@@ -325,9 +326,9 @@ export function documentationCards(portSlug: string, version: string): Documenta
   const port = PORT_BY_SLUG[portSlug]
   if (!port) throw new Error(`port-documentation: unknown port ${portSlug}`)
   return documentationAreas(portSlug)
-    .filter((domain) => domain.kind !== 'core')
+    .filter((domain) => domain.kind !== 'core' && domain.kind !== 'unavailable')
     .map((domain) => ({
-      label: domain.kind === 'unavailable' ? `${domain.label} (not available)` : domain.label,
+      label: domain.label,
       body: domain.description,
       href: portPageUrl(port, version, domain.route),
       kind: domain.kind,

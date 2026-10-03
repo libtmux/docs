@@ -17,7 +17,6 @@ export interface DocumentationSurface {
   id: string
   label: string
   href: string
-  unavailable: boolean
   sections: DocumentationSection[]
 }
 
@@ -36,7 +35,7 @@ export function buildDocumentationSurfaces(
 ): DocumentationSurface[] {
   const info = PORT_BY_SLUG[port]
   const base = portPageUrl(info, version)
-  return documentationAreas(port).filter((domain) => domain.id === 'core' || domain.product)
+  return documentationAreas(port).filter((domain) => domain.kind !== 'unavailable' && (domain.id === 'core' || domain.product))
     .sort((a, b) => ['core', 'mcp', 'workspace'].indexOf(a.product ?? 'core') - ['core', 'mcp', 'workspace'].indexOf(b.product ?? 'core'))
     .map((domain) => {
     const id = domain.product ?? 'core'
@@ -44,7 +43,6 @@ export function buildDocumentationSurfaces(
     const href = portPageUrl(info, version, domain.route)
     const home: DocumentationSection = { id: 'home', label: 'Home', href, items: [] }
     const sections = new Map<string, DocumentationSection>([['home', home]])
-    const unavailable = domain.kind === 'unavailable'
     const seen = new Set<string>()
     for (const link of linksOf(menus[id] ?? [])) {
       if (seen.has(link.href)) continue
@@ -58,50 +56,45 @@ export function buildDocumentationSurfaces(
       section.items.push(link)
       sections.set(key, section)
     }
-    if (!unavailable) {
-      const reference: DocumentationSection = sections.get('reference') ?? { id: 'reference', label: 'Reference', items: [] }
-      reference.href = referenceUrl(info, version, id)
-      if (domain.product) {
-        // Protocol tools, CLI contracts and the implementation API are distinct
-        // references within the same application, with their own native URLs.
-        const groups = new Map<string, SidebarLinkItem[]>()
-        for (const item of linksOf(reference.items)) {
-          const route = item.href.slice(base.length)
-          const label = route.startsWith(`${prefix}cli/`) ? 'CLI reference'
-            : route.startsWith(`${prefix}tools/`) ? 'Tools'
-            : domain.product === 'workspace' && item.href !== reference.href ? 'CLI contracts' : 'Language API'
-          const entries = groups.get(label) ?? []
-          entries.push(item)
-          groups.set(label, entries)
-        }
-        const api = groups.get('Language API') ?? []
-        if (API_MODELS[port]) api.push(...productApiRoots(API_MODELS[port], domain.product).map((symbol) => ({
-          type: 'link' as const, label: symbol.name, kind: symbol.kind,
-          href: productApiHref(API_MODELS[port], symbol, version),
-        })))
-        groups.set('Language API', api)
-        reference.items = [...groups].map(([label, items]) => ({ type: 'group', label, items }))
-      } else {
-        reference.alternatives = linksOf(reference.items).filter((item) => item.href !== reference.href)
+    const reference: DocumentationSection = sections.get('reference') ?? { id: 'reference', label: 'Reference', items: [] }
+    reference.href = referenceUrl(info, version, id)
+    if (domain.product) {
+      // Protocol tools, CLI contracts and the implementation API are distinct
+      // references within the same application, with their own native URLs.
+      const groups = new Map<string, SidebarLinkItem[]>()
+      for (const item of linksOf(reference.items)) {
+        const route = item.href.slice(base.length)
+        const label = route.startsWith(`${prefix}cli/`) ? 'CLI reference'
+          : route.startsWith(`${prefix}tools/`) ? 'Tools'
+          : domain.product === 'workspace' && item.href !== reference.href ? 'CLI contracts' : 'Language API'
+        const entries = groups.get(label) ?? []
+        entries.push(item)
+        groups.set(label, entries)
       }
-      sections.set('reference', reference)
-      for (const key of standardSections) {
-        if (!sections.has(key) && key !== 'concepts') sections.set(key, { id: key, label: labels[key], items: [] })
-      }
+      const api = groups.get('Language API') ?? []
+      if (API_MODELS[port]) api.push(...productApiRoots(API_MODELS[port], domain.product).map((symbol) => ({
+        type: 'link' as const, label: symbol.name, kind: symbol.kind,
+        href: productApiHref(API_MODELS[port], symbol, version),
+      })))
+      groups.set('Language API', api)
+      reference.items = [...groups].map(([label, items]) => ({ type: 'group', label, items }))
+    } else {
+      reference.alternatives = linksOf(reference.items).filter((item) => item.href !== reference.href)
     }
+    sections.set('reference', reference)
     // Some named areas have no overview. Their first real page is a useful
-    // destination; empty preview sections never acquire a made-up link.
+    // destination without inventing an overview route.
     for (const section of sections.values()) section.href ??= linksOf(section.items)[0]?.href
-    const ordered = [...sections.values()].sort((a, b) => {
+    const ordered = [...sections.values()].filter((section) => section.href).sort((a, b) => {
       const rank = (key: string) => standardSections.includes(key) ? standardSections.indexOf(key) : standardSections.length
       return rank(a.id) - rank(b.id)
     })
     home.items = [
-      { type: 'link', label: unavailable ? 'Availability' : 'Overview', href },
+      { type: 'link', label: 'Overview', href },
       ...ordered.filter((section) => section.id !== 'home' && section.href)
         .map((section): SidebarLinkItem => ({ type: 'link', label: section.label, href: section.href! })),
     ]
-    return { id, label: domain.id === 'core' ? 'Core Library' : domain.label, href, unavailable, sections: ordered }
+    return { id, label: domain.id === 'core' ? 'Core Library' : domain.label, href, sections: ordered }
   })
 }
 
@@ -111,7 +104,7 @@ const cache = new Map<string, Promise<DocumentationSurface[]>>()
 export function getDocumentationSurfaces(port: string, version: string, locale: Locale = DEFAULT_LOCALE) {
   const key = `${port}/${version}/${locale}`
   const build = async () => {
-    const products = documentationAreas(port).flatMap((domain) => domain.product ? [domain.product] : [])
+    const products = documentationAreas(port).flatMap((domain) => domain.kind !== 'unavailable' && domain.product ? [domain.product] : [])
     const menus = await Promise.all(['core' as const, ...products].map(async (product) =>
       [product, await getSidebar(port, version, locale, product === 'core' ? undefined : product)] as const))
     return buildDocumentationSurfaces(port, version, Object.fromEntries(menus))

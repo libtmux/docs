@@ -32,19 +32,10 @@ describe('port documentation domains', () => {
     expect(documentationNavigation('lua', 'latest')).toEqual([
       { label: 'Library', items: [{ type: 'link', label: 'Core library', href: '/lua/latest/' }] },
       { label: 'Runtime adapters', items: [{ type: 'link', label: 'luv and Neovim', href: '/lua/latest/guides/runtime/' }] },
-      {
-        label: 'Availability',
-        items: [
-          { type: 'link', label: 'MCP (not available)', href: '/lua/latest/mcp/' },
-          { type: 'link', label: 'Workspace Manager (not available)', href: '/lua/latest/workspace/' },
-        ],
-      },
     ])
     expect(documentationCards('ruby', 'latest').map((card) => card.label)).toEqual(['Async', 'MCP', 'Workspace Manager'])
     expect(documentationCards('lua', 'latest').map((card) => card.label)).toEqual([
       'luv and Neovim',
-      'MCP (not available)',
-      'Workspace Manager (not available)',
     ])
   })
 

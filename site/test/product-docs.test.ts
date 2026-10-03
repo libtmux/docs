@@ -180,7 +180,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it.each(PORTS.filter((port) => !port.parentLibrary).map((port) => port.slug))('%s exposes products from latest homes and core navigation', async (port) => {
+  it.each(PORTS.filter((port) => !port.parentLibrary).map((port) => port.slug))('%s exposes supported products from latest homes and core navigation', async (port) => {
     for (const section of ['', 'guides/', 'topics/']) {
       const path = `${port}/latest/${section}`
       await inspect(path, (document) => {
@@ -191,12 +191,13 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
             const expected = urlFor(`${port}/latest/${product}/`).pathname
             const link = [...container.querySelectorAll('a[href]')]
               .find((entry) => new URL(entry.getAttribute('href')!, urlFor(path)).pathname === expected)
+            if (!productAvailable(PORTS.find((entry) => entry.slug === port)!, product)) {
+              expect(link, `${path} omits unavailable ${product}`).toBeUndefined()
+              continue
+            }
             expect(link, `${path} links to ${expected}`).toBeDefined()
             const label = section ? link!.closest('[data-surface-group]')!.textContent : link!.textContent
             expect(label, `${path} product label`).toContain(product === 'workspace' ? 'Workspace Manager' : 'MCP')
-            if (!productAvailable(PORTS.find((entry) => entry.slug === port)!, product)) {
-              expect(label, `${path} unavailable product label`).toMatch(/not available/i)
-            }
             expect(resolves(link!.getAttribute('href')!, urlFor(path).href), `${path} resolves ${expected}`).toBe(true)
           }
         }
@@ -240,8 +241,9 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       })
     }
     await inspect('lua/latest/', (document) => {
-      for (const label of ['MCP (not available)', 'Workspace Manager (not available)']) {
-        expect(document.querySelector('main')!.textContent, `Lua landing ${label}`).toContain(label)
+      for (const product of products) {
+        expect(document.querySelector(`main a[href="${urlFor(`lua/latest/${product}/`).pathname}"]`),
+          `Lua landing omits unavailable ${product}`).toBeNull()
       }
     })
   })

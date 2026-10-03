@@ -31,19 +31,16 @@ const artwork = (id: string) => {
     <nav aria-label="Documentation apps and sections">
       {surfaces.map((entry) => <details class="surface-group" data-surface-group data-picker-group open={entry.id === surface.id}>
         <summary><img class="surface-artwork" src={artwork(entry.id)} width="30" height="30" alt="" />
-          <span class="surface-group-name"><strong>{entry.label}</strong>{' '}<small>{entry.unavailable ? 'Not available for this port' : descriptions[entry.id]}</small></span>
+          <span class="surface-group-name"><strong>{entry.label}</strong>{' '}<small>{descriptions[entry.id]}</small></span>
           <svg class="surface-chevron" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 4 4 4-4 4" /></svg>
         </summary>
         <div class="surface-options doc-picker-options">
-          {entry.sections.map((item) => item.href ? <a href={item.href} class="surface-option doc-picker-option"
+          {entry.sections.map((item) => item.href && <a href={item.href} class="surface-option doc-picker-option"
             data-surface-option data-picker-option data-match={`${entry.label} ${item.label} ${item.id === 'reference' ? 'api tools cli' : ''}`}
             aria-current={entry.id === surface.id && item.id === section.id ? 'location' : undefined}>
               <DocumentationIcon name={item.id} /><span>{item.label}</span>
               {entry.id === surface.id && item.id === section.id && <span class="doc-picker-check" aria-hidden="true">✓</span>}
-            </a> : <span class="surface-option doc-picker-option surface-preview" aria-disabled="true" data-surface-option data-picker-option
-                data-match={`${entry.label} ${item.label}`} title="Navigation preview; documentation is not available yet.">
-              <DocumentationIcon name={item.id} /><span>{item.label}<small>Navigation preview</small></span>
-            </span>)}
+            </a>)}
         </div>
         {entry.sections.some((item) => item.alternatives?.length) && <div class="surface-alternatives">
           <small>Other references</small>

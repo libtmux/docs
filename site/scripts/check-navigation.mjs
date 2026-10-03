@@ -1,5 +1,17 @@
 import assert from 'node:assert/strict'
-import { PORTS } from '../src/lib/ports.ts'
+import { PORTS, productAvailable } from '../src/lib/ports.ts'
+
+async function checkNoticeAlignment(page, centered = false) {
+  const { noticeLeft, contentLeft } = await page.evaluate((landing) => {
+    const badge = document.querySelector('.prerelease-notice__badge')
+    const content = document.querySelector(landing ? 'main' : '.site-header__mark')
+    return {
+      noticeLeft: badge.getBoundingClientRect().left,
+      contentLeft: content.getBoundingClientRect().left + (landing ? parseFloat(getComputedStyle(content).paddingLeft) : 0),
+    }
+  }, centered)
+  assert(Math.abs(noticeLeft - contentLeft) <= 1, `${page.url()}: notice at ${noticeLeft}px aligns with ${centered ? 'landing content' : 'documentation header'} at ${contentLeft}px`)
+}
 
 /** Surface selection changes the page tree without losing the port or version. */
 export async function checkDocumentationNavigation(browser, base, complete = false) {
@@ -19,9 +31,13 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
     }
   }
   try {
-    for (const { slug, parentLibrary } of ports) {
+    await page.goto(`${base}/`, { waitUntil: 'load' })
+    await checkNoticeAlignment(page, true)
+    for (const port of ports) {
+      const { slug, parentLibrary } = port
       const response = await page.goto(`${base}/${slug}/latest/`, { waitUntil: 'load' })
       assert(response?.ok(), `${slug}: documentation home responds`)
+      await checkNoticeAlignment(page)
       assert.equal(await page.locator('[data-page-toolbar]').count(), 0, `${slug}: home has no redundant breadcrumb/action row`)
       assert.equal(await page.locator('.port-hero h1').count(), 1, `${slug}: one port heading`)
       const picker = desktopPicker(page)
@@ -39,9 +55,14 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
         `${slug}: sections retain the selected port and version`)
       const names = await picker.locator('[data-surface-group] > summary strong').allTextContents()
       assert.equal(names[0], 'Core Library', `${slug}: the library is the default surface`)
-      assert.deepEqual(names.slice(1).sort(), parentLibrary ? [] : ['MCP', 'Workspace Manager'],
-        `${slug}: wrapper ports do not inherit parent applications`)
-      assert.equal(await picker.locator('.surface-preview[href]').count(), 0, `${slug}: previews never invent links`)
+      const appNames = parentLibrary ? [] : [
+        ...(productAvailable(port, 'mcp') ? ['MCP'] : []),
+        ...(productAvailable(port, 'workspace') ? ['Workspace Manager'] : []),
+      ]
+      assert.deepEqual(names.slice(1).sort(), appNames, `${slug}: only available applications appear`)
+      assert.equal(await picker.locator('[data-surface-option]:not(a[href])').count(), 0,
+        `${slug}: every section has a real destination`)
+      assert.equal(await picker.getByText('Navigation preview').count(), 0, `${slug}: no empty section placeholders`)
       await page.keyboard.press('Escape')
       assert.equal(await picker.getAttribute('open'), null)
     }
@@ -87,9 +108,10 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
       reader.setDefaultTimeout(10000)
       try {
         if (javaScriptEnabled) await reader.addInitScript((scheme) => localStorage.setItem('color-scheme', scheme), colorScheme)
-        for (const width of [320, 390, 768, 1440]) {
+        for (const width of [320, 390, 768, 1440, 1920]) {
           await reader.setViewportSize({ width, height: 900 })
           await reader.goto(`${base}/go/latest/workspace/`, { waitUntil: 'load' })
+          await checkNoticeAlignment(reader)
           const picker = desktopPicker(reader)
           const layout = await reader.evaluate(() => {
             const bounds = (selector) => {
