@@ -1,5 +1,6 @@
 ---
 import SymbolName from './SymbolName.astro'
+import { abbreviateNamespace } from '../../lib/api-labels'
 
 interface Props {
   /** The source-qualified name copied by the adjacent button. */
@@ -9,13 +10,22 @@ interface Props {
   href?: string
 }
 const { name, namespace, label = 'Module', href } = Astro.props as Props
+const shortNamespace = namespace ? abbreviateNamespace(namespace) : name
+const collapsible = Boolean(namespace && shortNamespace !== namespace)
 ---
 <div class="api-qualified-name" data-pagefind-ignore="all">
   {namespace && <span class="api-qualified-label">{label}</span>}
   <span class="sr-only">{name}</span>
-  <code class="api-qualified-namespace" title={name}>
-    {href ? <a href={href}><SymbolName name={namespace ?? name} /></a> : <SymbolName name={namespace ?? name} />}
+  <code class="api-qualified-namespace" id="api-namespace-path" title={namespace ?? name}>
+    {href ? <a href={href} aria-label={namespace ?? name}>
+      {collapsible && <span class="api-namespace-short" aria-hidden="true"><SymbolName name={shortNamespace} /></span>}
+      <span class:list={{ 'api-namespace-full': collapsible }}><SymbolName name={namespace ?? name} /></span>
+    </a> : <>
+      {collapsible && <span class="api-namespace-short" aria-hidden="true"><SymbolName name={shortNamespace} /></span>}
+      <span class:list={{ 'api-namespace-full': collapsible }}><SymbolName name={namespace ?? name} /></span>
+    </>}
   </code>
+  {collapsible && <button type="button" class="api-expand-name" data-api-expand-name aria-expanded="false" aria-controls="api-namespace-path">Show full name</button>}
   <button type="button" class="api-copy-name" data-api-copy-name={name} aria-label="Copy fully qualified name" title={`Copy ${name}`}>
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
       <rect x="8" y="8" width="12" height="13" rx="2" />
@@ -24,10 +34,21 @@ const { name, namespace, label = 'Module', href } = Astro.props as Props
   </button>
   <span class="api-copy-status" role="status"></span>
 </div>
-<noscript><style>.api-copy-name { display: none; }</style></noscript>
+<noscript><style>
+  .api-copy-name, .api-expand-name, .api-namespace-short { display: none; }
+  .api-qualified-name .api-namespace-full { display: inline; }
+</style></noscript>
 <script>
   const dismissals = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>()
   document.addEventListener('click', async (event) => {
+    const expand = (event.target as Element).closest<HTMLButtonElement>('[data-api-expand-name]')
+    if (expand) {
+      const expanded = expand.getAttribute('aria-expanded') !== 'true'
+      expand.setAttribute('aria-expanded', String(expanded))
+      expand.textContent = expanded ? 'Collapse' : 'Show full name'
+      expand.closest('.api-qualified-name')?.toggleAttribute('data-expanded', expanded)
+      return
+    }
     const button = (event.target as Element).closest<HTMLButtonElement>('[data-api-copy-name]')
     const status = button?.parentElement?.querySelector<HTMLElement>('[role="status"]')
     if (!button || !status) return

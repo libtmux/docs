@@ -209,9 +209,11 @@ export function extractDoxygen(xmlDir: string, sourceRoot = ''): ApiSymbol[] {
       const brief = textOf(own.brief)
       const detail = textOf(own.detail)
       const location = /<location file="([^"]*)"[^>]*line="(\d+)"/.exec(xml)
-      const bases = [...xml.matchAll(/<basecompoundref[^>]*>([\s\S]*?)<\/basecompoundref>/g)].map(
-        (m) => textOf(m[1]),
-      )
+      // Private and protected inheritance does not expose a public base type.
+      // Public members remain independently eligible below.
+      const bases = [...xml.matchAll(/<basecompoundref([^>]*)>([\s\S]*?)<\/basecompoundref>/g)]
+        .filter((m) => attr(m[1], 'prot') === 'public')
+        .map((m) => textOf(m[2]))
       if (!seen.has(owner)) {
         const sym: ApiSymbol = {
           id: owner,

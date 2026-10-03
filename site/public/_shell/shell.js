@@ -23,6 +23,7 @@
   var portNames = PORTS.map(function (port) { return port.slug }).join('|')
   var routeMatch = new RegExp('^(.*?)/(' + portNames + ')/([^/]+)/(.*)$').exec(location.pathname)
   var siteRoot = routeMatch ? routeMatch[1] : '/en'
+  import(siteRoot + '/_shell/anchors.js').catch(function () { /* Native fragment navigation remains available offline. */ })
   var currentPort = routeMatch ? routeMatch[2] : null
   var currentVersion = routeMatch ? routeMatch[3] : null
   var pagePath = routeMatch ? routeMatch[4] : ''

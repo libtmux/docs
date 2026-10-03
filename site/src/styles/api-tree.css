@@ -2,34 +2,50 @@
  * The reference's navigation tree.
  *
  * Fluent UI's Tree for its rows and Nav for its layout and selection: 32px
- * rows with 24px of indent per level, the expand chevron at the row's end
+ * rows with 12px of indent per level, the expand chevron at the row's end
  * where NavCategoryItem draws it, the page's row in semibold, and the count
  * as a small CounterBadge. Markup in `components/api/ApiTreeItems.astro`, the
  * keyboard model in `components/api/api-tree.ts`.
  */
 
 .api-nav {
-  --api-nav-indent: 1.5rem;
+  --api-nav-indent: 0.75rem;
   font-size: 0.875rem;
 }
 
 .api-nav .api-nav__tree[hidden], .api-nav .api-nav__results[hidden] { display: none; }
 .api-nav__search { padding: 0.75rem 0.5rem; }
-.api-nav__search label {
-  display: block;
-  margin-bottom: 0.4rem;
-  font-size: 0.75rem;
+.api-nav__search-field { position: relative; }
+.api-nav__search-field > svg {
+  position: absolute;
+  left: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
   color: var(--color-muted);
 }
+.api-nav__search-field > kbd {
+  position: absolute;
+  right: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 1px solid var(--color-edge);
+  border-radius: 0.2rem;
+  padding-inline: 0.2rem;
+  color: var(--color-muted);
+  font: 0.6875rem/1.25 var(--font-mono, monospace);
+  pointer-events: none;
+}
+.api-nav__search-field:focus-within > kbd { display: none; }
 .api-nav__search input {
   width: 100%;
   min-width: 0;
   border: 1px solid var(--color-edge);
   border-radius: 0.35rem;
-  padding: 0.55rem;
+  padding: 0.5rem 2rem 0.5rem 2.1rem;
   background: var(--background-color);
   color: inherit;
-  font: inherit;
+  font-size: 0.8125rem;
 }
 .api-nav__filters {
   display: flex;
@@ -203,6 +219,28 @@
   text-decoration: none;
 }
 
+.api-nav__kind {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 1.0625rem;
+  width: 1.0625rem;
+  height: 1.0625rem;
+  border: 1px solid var(--color-edge);
+  border-radius: 0.2rem;
+  font: 0.6875rem/1 var(--font-mono, ui-monospace, monospace);
+  vertical-align: middle;
+}
+.api-nav__kind:is(.api-badge--kind-interface, .api-badge--kind-struct, .api-badge--kind-trait) {
+  background: var(--api-kind-class-bg);
+  color: var(--api-kind-class-fg);
+  border-color: var(--api-kind-class-border);
+}
+.api-nav__kind.api-badge--kind-enum {
+  background: var(--api-kind-typealias-bg);
+  color: var(--api-kind-typealias-fg);
+  border-color: var(--api-kind-typealias-border);
+}
+
 .api-nav__count {
   flex: none;
   min-width: 1rem;
@@ -299,7 +337,7 @@ html[data-api-nav] .api-nav__item[aria-expanded='false'] > [role='group']:not([d
   display: contents;
 }
 
-@media (width >= 64rem) {
+@media (width >= 56rem) {
   /* The column spans the whole row, so its rule runs from the header to the
    * footer against the viewport's edge; the tree sticks inside it, under the
    * header, a viewport tall, as Learn's does. */
@@ -331,7 +369,7 @@ html[data-api-nav] .api-nav__item[aria-expanded='false'] > [role='group']:not([d
 }
 
 /* The phone drawer, docked left like Learn's table of contents. */
-@media (width < 64rem) {
+@media (width < 56rem) {
   html[data-api-nav] .api-nav {
     position: fixed;
     inset: 0 auto 0 0;

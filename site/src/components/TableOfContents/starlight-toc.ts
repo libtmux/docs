@@ -325,6 +325,22 @@ class StarlightTOC extends HTMLElement {
           }
         }
       }
+
+      // Long sections and option links can leave every heading outside the
+      // observer's narrow band. Keep their nearest preceding section active.
+      if (!selectedId) {
+        const padding = Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0
+        let nearest = -Infinity
+        for (const [id, element] of this.headingElements) {
+          if (!element.getClientRects().length) continue
+          const top = element.getBoundingClientRect().top
+          const margin = Number.parseFloat(getComputedStyle(element).scrollMarginTop) || 0
+          if (top <= Math.max(buffer, padding + margin) + 1 && top > nearest) {
+            nearest = top
+            selectedId = id
+          }
+        }
+      }
     }
 
     // Update active heading if changed

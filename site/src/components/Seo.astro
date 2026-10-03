@@ -1,6 +1,6 @@
 ---
 import type { Graph } from 'schema-dts'
-import { branding, jsonLd, PYTHON_DESCRIPTION, PYTHON_SAME_AS } from '../lib/branding'
+import { branding, documentationTitle, jsonLd, PYTHON_DESCRIPTION, PYTHON_SAME_AS } from '../lib/branding'
 import { DOC_PRODUCTS, PORT_BY_SLUG, type DocProduct } from '../lib/ports'
 import { canonicalUrl, robotsFor, type VersionEntry } from '../lib/versions'
 import { IS_ROOT_BUILD, SITE_ROOT } from '../lib/site-root'
@@ -83,8 +83,8 @@ const {
 } = Astro.props as Props
 
 const origin = (Astro.site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
-const port = PORT_BY_SLUG[brandPort ?? portSlug ?? '']
 const brand = branding(brandPort ?? portSlug, pagePath, SITE_ROOT)
+const port = PORT_BY_SLUG[brandPort ?? portSlug ?? ''] ? brand.port : undefined
 const imageUrl = new URL(brand.asset('opengraph-light.png'), origin).href
 const logoUrl = new URL(brand.asset('logo-512.png'), origin).href
 const repositoryUrl = port ? `https://github.com/${repository ?? port.repo}` : undefined
@@ -137,10 +137,10 @@ const indexable = portSlug ? isDefault : isRootShellBuild
 
 const robots = noindex ? 'noindex, nofollow' : robotsFor(versionEntry, indexable)
 
-const fullTitle = title === 'libtmux' ? title : `${title} | libtmux`
+const fullTitle = documentationTitle(title, brand.projectName)
 const desc =
   description ??
-  (port ? `Typed tmux control for ${port.language}.` : PYTHON_DESCRIPTION)
+  (port ? `${brand.projectName}: typed tmux control for ${port.language}.` : PYTHON_DESCRIPTION)
 
 // Structured data. WebSite on the landing page, TechArticle elsewhere —
 // TechArticle is the schema.org type that actually fits API documentation,
@@ -170,13 +170,15 @@ const graph: Graph = {
       image: new URL(`${SITE_ROOT}/brand/python/library/logo-512.png`, origin).href,
       author: { '@type': 'Person', name: 'Tony Narlock', url: 'https://tony.sh/' },
     },
-    ...(pagePath
+    ...(pagePath || port
       ? [
           {
-            '@type': /^(?:(?:mcp|workspace)\/)?(?:internals\/)?(?:reference|api|tools)(\/|$)/.test(pagePath) ? 'APIReference' as const : 'TechArticle' as const,
+            '@type': !pagePath ? 'CollectionPage' as const
+              : /^(?:(?:mcp|workspace)\/)?(?:internals\/)?(?:reference|api|tools)(\/|$)/.test(pagePath) ? 'APIReference' as const : 'TechArticle' as const,
             '@id': `${canonical}#article`,
             url: canonical,
-            headline: title,
+            headline: fullTitle,
+            name: fullTitle,
             description: desc,
             image: imageUrl,
             isPartOf: { '@id': `${origin}/#website` },
@@ -184,7 +186,7 @@ const graph: Graph = {
             ...(updated ? { dateModified: updated } : {}),
             ...(port
               ? {
-                  about: { '@type': 'SoftwareSourceCode' as const, name: brand.variant === 'library' ? port.packageName : `${port.packageName} ${DOC_PRODUCTS[brand.variant as DocProduct].label}`, programmingLanguage: brand.palette.name, codeRepository: repositoryUrl, image: logoUrl, sameAs: [repositoryUrl!] },
+                  about: { '@type': 'SoftwareSourceCode' as const, name: brand.variant === 'library' ? brand.projectName : `${brand.projectName} ${DOC_PRODUCTS[brand.variant as DocProduct].label}`, alternateName: port.packageName, programmingLanguage: brand.palette.name, codeRepository: repositoryUrl, image: logoUrl, sameAs: [repositoryUrl!] },
                 }
               : {}),
           },
@@ -227,7 +229,7 @@ const graph: Graph = {
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={desc} />
 <meta property="og:url" content={canonical} />
-<meta property="og:site_name" content="libtmux" />
+<meta property="og:site_name" content={brand.projectName} />
 <meta property="og:image" content={imageUrl} />
 <meta property="og:image:secure_url" content={imageUrl} />
 <meta property="og:image:type" content="image/png" />

@@ -37,7 +37,7 @@ interface Props {
   ownerNavId?: string
   /** Declaration id of the page's own symbol, when it is a member. */
   ownerId?: string
-  members: { id: string; name: string; href: string }[]
+  members: { id: string; name: string; kind: string; href: string }[]
   /** Nav ids of the types that have members, which open into them. */
   withMembers: Set<string>
   menuVersion: string
@@ -60,12 +60,12 @@ const typeNode = (t: NavEntry, level: number): TreeNode => {
   const current = t.id === ownerNavId
   if (t.id === currentTypeId && members.length > 0) {
     return {
-      id: nextId(), label: t.name, href: href(t.slug), level, current, expanded: true,
-      children: members.map((m) => ({ id: nextId(), label: m.name, href: m.href, level: level + 1, current: m.id === ownerId })),
+      id: nextId(), label: t.name, kind: t.kind, href: href(t.slug), level, current, expanded: true,
+      children: members.map((m) => ({ id: nextId(), label: m.name, kind: m.kind, href: m.href, level: level + 1, current: m.id === ownerId })),
     }
   }
   return {
-    id: nextId(), label: t.name, href: href(t.slug), level, current,
+    id: nextId(), label: t.name, kind: t.kind, href: href(t.slug), level, current,
     ...(withMembers.has(t.id) ? { expanded: false, lazy: `type:${t.id}` } : {}),
   }
 }
@@ -131,8 +131,12 @@ if (!mark(nodes) && nodes[0]) nodes[0].tab = true
       </div>
     </details>
     <div class="api-nav__search">
-      <label for="api-symbol-search">Find a type or member</label>
-      <input id="api-symbol-search" type="search" autocomplete="off" placeholder="Name or full path…" disabled />
+      <label for="api-symbol-search" class="sr-only">Find a type or member</label>
+      <div class="api-nav__search-field">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6.75" cy="6.75" r="4.5" /><path d="m10.25 10.25 3.5 3.5" /></svg>
+        <input id="api-symbol-search" type="search" autocomplete="off" placeholder="Find symbol" aria-keyshortcuts="/" disabled />
+        <kbd aria-hidden="true">/</kbd>
+      </div>
       <div class="api-nav__filters" role="group" aria-label="API search category">
         <button type="button" data-api-search-kind="all" aria-pressed="true" disabled>All</button>
         <button type="button" data-api-search-kind="types" aria-pressed="false" disabled>Types</button>

@@ -2,7 +2,7 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { branding, jsonLd } from '../site/src/lib/branding.ts'
+import { branding, documentationTitle, jsonLd } from '../site/src/lib/branding.ts'
 import { PORT_BY_SLUG } from '../site/src/lib/ports.ts'
 
 const escape = (text) => String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
@@ -14,8 +14,16 @@ export function nativeBrandHead(html, { port, pagePath, root = '/en' }) {
   const origin = 'https://libtmux.org'
   const image = new URL(brand.asset('opengraph-light.png'), origin).href
   const twitter = new URL(brand.asset('twitter-light.png'), origin).href
+  // Native generators already escape title text. Retain those entities when
+  // adding the project suffix, including in the social-title attributes.
+  const title = documentationTitle(/<title\b[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1].trim() || brand.projectName, brand.projectName)
+  const titleAttribute = title.replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
   const attr = (text) => escape(text)
   const tags = [
+    `<title>${title}</title>`,
+    `<meta property="og:title" content="${titleAttribute}">`,
+    `<meta property="og:site_name" content="${attr(brand.projectName)}">`,
+    `<meta name="twitter:title" content="${titleAttribute}">`,
     `<link rel="icon" href="${attr(brand.asset('favicon.ico'))}" sizes="16x16 32x32 48x48 256x256">`,
     `<link rel="icon" href="${attr(brand.asset('logo-32.png'))}" type="image/png" sizes="32x32">`,
     `<link rel="icon" href="${attr(brand.asset('logo.svg'))}" type="image/svg+xml" sizes="any">`,
@@ -35,9 +43,10 @@ export function nativeBrandHead(html, { port, pagePath, root = '/en' }) {
     `<meta name="twitter:image:alt" content="${attr(brand.label)}">`,
     `<script type="application/ld+json" data-libtmux-brand>${jsonLd({
       '@context': 'https://schema.org', '@type': 'SoftwareSourceCode',
-      name: PORT_BY_SLUG[port]?.packageName ?? 'libtmux',
-      programmingLanguage: PORT_BY_SLUG[port]?.language ?? 'Python',
-      codeRepository: `https://github.com/${PORT_BY_SLUG[port]?.repo ?? 'tmux-python/libtmux'}`,
+      name: brand.projectName,
+      alternateName: brand.port?.packageName,
+      programmingLanguage: brand.palette.name,
+      codeRepository: `https://github.com/${brand.port?.repo ?? 'tmux-python/libtmux'}`,
       image: new URL(brand.asset('logo-512.png'), origin).href,
     })}</script>`,
   ].join('\n')
@@ -51,8 +60,9 @@ export function nativeBrandHead(html, { port, pagePath, root = '/en' }) {
   })
   return withLogo.replace(/(<head\b[^>]*>)([\s\S]*?)(<\/head>)/i, (_match, open, head, close) => {
     const clean = head
+      .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, '')
       .replace(/<link\b[^>]*\brel=["'](?:shortcut icon|icon|apple-touch-icon|mask-icon|manifest)["'][^>]*>/gi, '')
-      .replace(/<meta\b[^>]*\b(?:name|property)=["'](?:og:image(?::[a-z_]+)?|twitter:image(?::alt)?|twitter:card|theme-color|msapplication-config)["'][^>]*>/gi, '')
+      .replace(/<meta\b[^>]*\b(?:name|property)=["'](?:og:title|og:site_name|twitter:title|og:image(?::[a-z_]+)?|twitter:image(?::alt)?|twitter:card|theme-color|msapplication-config)["'][^>]*>/gi, '')
       .replace(/<script\b[^>]*\bdata-libtmux-brand[^>]*>[\s\S]*?<\/script>/gi, '')
     return `${open}${clean.trimEnd()}\n${tags}\n${close}`
   })

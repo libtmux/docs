@@ -1,5 +1,5 @@
 import type { ApiModel, ApiSymbol, Signature } from '@libtmux/api-model'
-import { compareMembers, memberSignals, moduleOf, qualifiedNameOf } from '@libtmux/api-model'
+import { membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { apiEntryFields, apiMemberGroups } from './api-sections'
@@ -130,12 +130,12 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
 
   const signals = memberSignals(model.port, mentions.mentions)
-  const members = model.symbols.filter((s) => s.parent === symbol.id).sort(compareMembers(signals))
-  const declared = members.filter((member) => !member.inheritedFrom)
-  const inherited = members.filter((member) => member.inheritedFrom)
+  const members = membersOf(model, symbol, signals)
+  const declared = members.filter((member) => !member.inheritedFrom || memberTier(member, signals) === 'parent')
+  const inherited = members.filter((member) => member.inheritedFrom && memberTier(member, signals) !== 'parent')
   const appendMembers = (entries: ApiSymbol[]) => {
     for (const member of entries) {
-      out.push(`- ${inlineCode(member.name)} (${member.kind})${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
+      out.push(`- ${inlineCode(member.name)} (${member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
     }
     out.push('')
   }

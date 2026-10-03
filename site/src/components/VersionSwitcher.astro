@@ -18,10 +18,7 @@ interface Props {
 }
 const { portSlug, version } = Astro.props as Props
 const candidate = portSlug ? PORT_BY_SLUG[portSlug] : undefined
-// A port without a version tree has no prefixes to switch between, and
-// offering the control would navigate to ones that never existed. Rust, Go
-// and Java are the three today; `gen-versions` does find versions for them,
-// so this is a consequence of `versionedDocs`, not of their reference.
+// Only documentation with a real version tree offers this control.
 const port = candidate?.versionedDocs ? candidate : undefined
 ---
 
@@ -33,11 +30,7 @@ const port = candidate?.versionedDocs ? candidate : undefined
       data-root={withRoot('/')}
       class="inline-block"
     >
-      <label class="sr-only" for="libtmux-version">
-        Version
-      </label>
       <select
-        id="libtmux-version"
         class="rounded border border-edge bg-surface px-2 py-1 text-sm"
         aria-label={`Version of the ${port.name} documentation`}
       >
@@ -88,6 +81,15 @@ const port = candidate?.versionedDocs ? candidate : undefined
       if (entries.length === 0) return
 
       select.innerHTML = ''
+      // A preview or an older immutable version may not be in the manifest.
+      // Keep the displayed selection truthful until the reader chooses one.
+      if (!entries.some((entry) => entry.slug === current)) {
+        const option = document.createElement('option')
+        option.value = current ?? ''
+        option.textContent = current ?? ''
+        option.selected = true
+        select.append(option)
+      }
       for (const entry of entries) {
         const opt = document.createElement('option')
         opt.value = entry.slug
@@ -105,7 +107,7 @@ const port = candidate?.versionedDocs ? candidate : undefined
         const path = location.pathname
         const marker = `${root}/${port}/${current}/`
         const rest = path.startsWith(marker) ? path.slice(marker.length) : ''
-        void navigate(`${root}/${port}/${next}/${rest}`)
+        void navigate(`${root}/${port}/${next}/${rest}${location.hash}`)
       }, { signal })
     }
     disconnectedCallback() { this.controller?.abort() }

@@ -1,10 +1,11 @@
 ---
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { compareMembers, conceptsFor, docSummaryText, memberSignals, parameterId, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
+import { membersOf, memberTier, conceptsFor, docSummaryText, memberSignals, parameterId, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
 import mentionsData from '../../data/mentions.json'
 import ApiEntry from '../../components/api/ApiEntry.astro'
 import ApiBadge from '../../components/api/ApiBadge.astro'
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
+import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
 import { apiEntryFields, apiEntrySections, apiMemberGroups, relatedApiTypes, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
@@ -16,7 +17,7 @@ import { API_MODELS, API_NAV, OWNER_KINDS, PORT_NAME, indexFor, ownersOf, pageSl
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { productApiHref } from '../../lib/product-api'
 import { symbolSource } from '../../lib/markdown-twins'
-import { DEFAULT_LOCALE } from '../../i18n/locales'
+import { DEFAULT_LOCALE, localeSourcePath } from '../../i18n/locales'
 import { buildLocale } from '../../i18n/resolve'
 import { buildTarget, defaultVersionFor } from '../../lib/versions'
 import ApiDoc from '../../components/api/ApiDoc.astro'
@@ -26,6 +27,7 @@ import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
 import { tmuxReferenceUrl } from '../../lib/tmux-reference'
+import { kindMark } from '../../lib/api-labels'
 
 /**
  * The tree-sitter-extracted reference, rendered through this site's own
@@ -192,9 +194,8 @@ const currentRoot = tree.find(
  * with private and special members last. See `member-order.ts`.
  */
 const signals = memberSignals(model?.port ?? '', mentionsData.mentions)
-const byUsefulness = compareMembers(signals)
-const currentMembers = currentType
-  ? (model?.symbols.filter((sym) => sym.parent === currentType.id) ?? []).sort(byUsefulness)
+const currentMembers = currentType && model
+  ? membersOf(model, currentType, signals)
   : []
 
 /** This port's package, for the definition block's Package row. */
@@ -274,7 +275,7 @@ const sourceUrl = (symbol: ApiSymbol): string | undefined => model
   ? apiSourceUrl(model, symbol, referenceUrl(PORT_BY_SLUG[model.port]!, buildTarget(process.env).version))
   : undefined
 
-const members = owner && model ? model.symbols.filter((s) => s.parent === owner.id).sort(byUsefulness) : []
+const members = owner && model ? membersOf(model, owner, signals) : []
 
 const owners = (model ? topLevelTypesOf(model) : []).sort((a, b) => a.name.localeCompare(b.name))
 
@@ -390,27 +391,31 @@ const legacyIndexAnchors = (symbol: ApiSymbol) => [...new Set([
   ...apiEntryFields(symbol, model?.port).params.map((param) => parameterId(symbol, param.name)),
 ])]
 
-const declared = members.filter((m) => !m.inheritedFrom)
 const inherited = members.filter((m) => m.inheritedFrom)
-const memberGroups = apiMemberGroups(declared, signals)
+const listed = members.filter((m) => !m.inheritedFrom || memberTier(m, signals) === 'parent')
+const otherInherited = inherited.filter((m) => memberTier(m, signals) !== 'parent')
+const memberGroups = apiMemberGroups(listed, signals)
 const pageSections: ApiSection[] = owner ? [
   { id: 'api-overview', label: 'Overview' },
   ...apiEntrySections(owner, model?.port),
-  ...(declared.length ? [{ id: 'api-members', label: 'Members', count: declared.length },
+  ...(listed.length ? [{ id: 'api-members', label: 'Members', count: listed.length },
     ...memberGroups.map((group) => ({ id: group.id, label: group.label, nested: true }))] : []),
-  ...(inherited.length ? [{ id: 'api-inherited', label: 'Inherited members', count: inherited.length }] : []),
+  ...(otherInherited.length ? [{ id: 'api-inherited', label: 'Inherited members', count: otherInherited.length }] : []),
 ] : []
 const related = owner ? relatedApiTypes(owner, members, index, declaringType).map((symbol) => ({
   name: ownerNames.get(symbol.name)! > 1 ? `${symbol.name} (${moduleOf(symbol)})` : symbol.name,
-  identity: qualifiedNameOf(symbol), kind: symbol.kind, href: hrefFor(symbol),
+  identity: qualifiedNameOf(symbol), kind: symbol.kind, href: hrefFor(symbol), symbol,
 })) : []
+if (related.length) pageSections.push({ id: 'api-related-types', label: 'Related types', count: related.length })
 const title = owner
   ? qualifiedNameOf(owner)
   : model
     ? `${PORT_NAME[model.port] ?? model.port} API reference`
     : 'API reference'
 const pageTitle = owner ? title : 'API reference'
-const breadcrumbs = await pageBreadcrumbs(pageTitle, slug ? `reference/${slug}` : 'reference', buildTarget(process.env).version, model?.port)
+const displayName = owner ? (declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle
+const breadcrumbs = await pageBreadcrumbs(displayName, slug ? `reference/${slug}` : 'reference', buildTarget(process.env).version, model?.port)
+const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
 ---
 
 <BaseLayout
@@ -440,7 +445,7 @@ const breadcrumbs = await pageBreadcrumbs(pageTitle, slug ? `reference/${slug}` 
 >
   <!-- Flush: the tree's column runs from the header to the footer against the
        viewport's edge, as Learn's does, and only the text column is padded. -->
-  <main class:list={["api-reference-layout grid", model && "lg:grid-cols-[18rem_minmax(0,1fr)]", owner && 'api-reference-layout--symbol']}>
+  <main class:list={["api-reference-layout grid", owner && 'api-reference-layout--symbol']}>
     {model && (
       <ApiTree
         port={model.port}
@@ -451,7 +456,7 @@ const breadcrumbs = await pageBreadcrumbs(pageTitle, slug ? `reference/${slug}` 
         currentTypeId={currentType ? (currentType.publicId ?? currentType.id) : undefined}
         ownerNavId={owner ? (owner.publicId ?? owner.id) : undefined}
         ownerId={owner?.id}
-        members={currentMembers.map((m) => ({ id: m.id, name: m.name, href: hrefFor(m) }))}
+        members={currentMembers.map((m) => ({ id: m.id, name: m.name, kind: m.kind, href: hrefFor(m) }))}
         withMembers={withMembers}
         menuVersion={menuVersion}
         currentPath={Astro.url.pathname}
@@ -472,18 +477,20 @@ const breadcrumbs = await pageBreadcrumbs(pageTitle, slug ? `reference/${slug}` 
           {PORT_NAME[model.port] ?? model.port} API contents
         </button>
       )}
-      <PageToolbar breadcrumbs={breadcrumbs} pagePorts={pagePorts} port={model?.port} />
+      <PageToolbar breadcrumbs={breadcrumbs} pagePorts={pagePorts} port={model?.port}
+        referenceContext={model ? { version: buildTarget(process.env).version, locale: buildLocale(), sourcePath: localeSourcePath(Astro.url.pathname, buildLocale()) } : undefined} />
       <header id={owner ? 'api-overview' : undefined} class:list={[owner && 'api-reference-heading']}>
         {owner && <div class="api-reference-eyebrow">
           <ApiBadge label={owner.kind} variant="kind" value={owner.kind} />
-          <span>{model && PORT_NAME[model.port]}</span>
+          <span>{model && PORT_BY_SLUG[model.port]?.projectName}</span>
           {owner.doc?.since && <span>Since {owner.doc.since}</span>}
+          <span class="api-reference-version">{buildTarget(process.env).version}</span>
         </div>}
         <h1
           id={owner ? (owner.publicId ?? owner.id) : undefined}
           class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight"
         >
-          <SymbolName name={owner ? (declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle} />
+          <SymbolName name={displayName} />
         </h1>
         {owner && <>
           <ApiQualifiedName
@@ -496,6 +503,10 @@ const breadcrumbs = await pageBreadcrumbs(pageTitle, slug ? `reference/${slug}` 
           {owner.doc?.summary && <p class="api-reference-summary">
             <ApiDoc text={owner.doc.summary} index={index} context={owner} />
           </p>}
+          {bases.length > 0 && <div class="api-reference-relationships">
+            <span>Base types</span>
+            {bases.map((base) => <ApiType type={base} index={index} context={owner} chip />)}
+          </div>}
         </>}
       </header>
 
@@ -798,13 +809,10 @@ const breadcrumbs = await pageBreadcrumbs(pageTitle, slug ? `reference/${slug}` 
                 heading={OWNER_KINDS.has(owner.kind)}
                 member={!OWNER_KINDS.has(owner.kind)}
                 showSummary={false}
+                showBases={false}
                 anchorId={`${owner.publicId ?? owner.id}.declaration`}
               />
             </section>
-
-            {members.length > 0 && <p class="mt-2 text-sm opacity-70">
-              {declared.length} declared, {inherited.length} inherited
-            </p>}
 
             {/*
               A list, not a stack of entries.
@@ -815,16 +823,19 @@ const breadcrumbs = await pageBreadcrumbs(pageTitle, slug ? `reference/${slug}` 
               the shape of the type — the names, their kind and one line each
               — which is what learn.microsoft.com puts here too.
             */}
-            {declared.length > 0 && (
+            {listed.length > 0 && (
               <div class="mt-8">
-                <h2 class="text-lg font-semibold" id="api-members">Members</h2>
+                <h2 class="api-section-heading text-lg font-semibold" id="api-members">Members<span class="api-section-count">{listed.length} {listed.length === 1 ? 'member' : 'members'}</span><a class="api-heading-link" href="#api-members" aria-label="Link to Members">#</a></h2>
                 {memberGroups.map((group) => <section class="api-member-group" aria-labelledby={group.id}>
-                <h3 id={group.id}>{group.label}<span>{group.members.length}</span></h3>
+                <h3 id={group.id}>{group.label}<span class="api-section-count">{group.members.length} {group.members.length === 1 ? 'member' : 'members'}</span><a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.label}`}>#</a></h3>
                 <ul class="api-member-list mt-3">
                   {group.members.map((m) => (
                     <li>
                       <a class="api-member-link" href={hrefFor(m)}>{m.name}</a>
-                      <span class="api-member-kind">{m.kind}</span>
+                      <span class="api-member-badges">
+                        <ApiBadge label={m.kind} variant="kind" value={m.kind} />
+                        {m.inheritedFrom && <span class="api-badge api-badge--mod" title={`Inherited from ${m.inheritedFrom}`}>inherited</span>}
+                      </span>
                       {m.doc?.summary && (
                         <span class="api-member-summary">
                           <ApiDoc text={m.doc.summary} index={index} context={m} citations={false} />
@@ -837,17 +848,20 @@ const breadcrumbs = await pageBreadcrumbs(pageTitle, slug ? `reference/${slug}` 
               </div>
             )}
 
-            {inherited.length > 0 && (
+            {otherInherited.length > 0 && (
               <>
-                <h2 class="mt-12 text-lg font-semibold" id="api-inherited">Inherited members</h2>
+                <h2 class="api-section-heading mt-12 text-lg font-semibold" id="api-inherited">Inherited members<span class="api-section-count">{otherInherited.length} {otherInherited.length === 1 ? 'member' : 'members'}</span><a class="api-heading-link" href="#api-inherited" aria-label="Link to Inherited members">#</a></h2>
                 <p class="mt-1 text-sm opacity-70">
-                  Reached through {[...new Set(inherited.map((m) => m.inheritedFrom))].join(', ')}.
+                  Reached through {[...new Set(otherInherited.map((m) => m.inheritedFrom))].join(', ')}.
                 </p>
                 <ul class="api-member-list mt-4">
-                  {inherited.map((m) => (
+                  {otherInherited.map((m) => (
                     <li>
                       <a class="api-member-link" href={hrefFor(m)}>{m.name}</a>
-                      <span class="api-member-kind">{m.inheritedFrom}</span>
+                      <span class="api-member-badges">
+                        <ApiBadge label={m.kind} variant="kind" value={m.kind} />
+                        <span class="api-badge api-badge--mod" title={`Inherited from ${m.inheritedFrom}`}>inherited</span>
+                      </span>
                       {m.doc?.summary && (
                         <span class="api-member-summary">
                           <ApiDoc text={m.doc.summary} index={index} context={m} citations={false} />
@@ -858,6 +872,18 @@ const breadcrumbs = await pageBreadcrumbs(pageTitle, slug ? `reference/${slug}` 
                 </ul>
               </>
             )}
+            {related.length > 0 && <section class="api-related-types" aria-labelledby="api-related-types">
+              <h2 class="api-section-heading text-lg font-semibold" id="api-related-types">Related types<a class="api-heading-link" href="#api-related-types" aria-label="Link to Related types">#</a></h2>
+              <div class="api-related-cards">
+                {related.map((item) => <div class="api-index-card api-related-card">
+                  <a class="api-index-card__link" href={item.href} title={item.identity}>
+                    <span class={`api-nav__kind api-badge--kind-${item.kind}`} title={item.kind} aria-hidden="true">{kindMark(item.kind)}</span>
+                    <code>{item.name}</code>
+                  </a>
+                  {item.symbol.doc?.summary && <p><ApiDoc text={item.symbol.doc.summary} index={index} context={item.symbol} citations={false} /></p>}
+                </div>)}
+              </div>
+            </section>}
           </>
         )
       }
@@ -865,45 +891,7 @@ const breadcrumbs = await pageBreadcrumbs(pageTitle, slug ? `reference/${slug}` 
     {owner && <ApiPageContents sections={pageSections} related={related} />}
   </main>
 
-  <script is:inline>
-    // Examples carry Expressive Code's own copy button, so nothing here
-    // listens for one. The hand-rolled button it replaced needed a delegated
-    // listener, because a page can hold 600 examples and 600 listeners is a
-    // cost paid on every load for a control most readers never press.
 
-    // Open the disclosure a fragment points at.
-    //
-    // A browser opens a <details> that *contains* the target, but not one that
-    // *is* the target — and `#<module>` on the index is the disclosure itself,
-    // which is where 9,160 links from prose, signatures and the inventories
-    // land. Without this they arrived at a closed row.
-    //
-    // getElementById, not querySelector: a module id is `mcp.server` or
-    // `libtmux.neo`, and the dots are class selectors to a CSS parser.
-    ;(() => {
-      const reveal = () => {
-        const id = decodeURIComponent(location.hash.slice(1))
-        if (!id) return
-        const target = document.getElementById(id)
-        if (!target) return
-        let opened = false
-        for (let el = target; el; el = el.parentElement) {
-          if (el.tagName === 'DETAILS' && !el.open) {
-            el.open = true
-            opened = true
-          }
-        }
-        // Only when opening one moved the page under the browser's own
-        // fragment scroll. Every other reference page's fragment lands on an
-        // ordinary heading, and scrolling it again would fight a restored
-        // position for no reason.
-        if (opened) target.scrollIntoView()
-      }
-      reveal()
-      window.addEventListener('hashchange', reveal)
-    })()
-
-  </script>
 </BaseLayout>
 
 <script>

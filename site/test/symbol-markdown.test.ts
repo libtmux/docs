@@ -18,6 +18,24 @@ function inlineCodes(text: string): string[] {
 }
 
 describe('API Markdown content parity', () => {
+  it('exports parent objects ahead of the collections and operations they own', () => {
+    const model = API_MODELS.java
+    const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.Window.Window')!
+    const text = symbolMarkdown({ model, symbol })
+    const parents = text.slice(text.indexOf('### Parent objects'), text.indexOf('### Collections and queries'))
+    expect([...parents.matchAll(/^- `([^`]+)`/gm)].map((match) => match[1])).toEqual(['session', 'server'])
+    expect(text.indexOf('### Parent objects')).toBeLessThan(text.indexOf('### Collections and queries'))
+  })
+
+  it('keeps a publicly inherited C++ server accessor with its parent objects', () => {
+    const model = API_MODELS.cxx
+    const symbol = model.symbols.find((entry) => entry.id === 'libtmux::Pane')!
+    const text = symbolMarkdown({ model, symbol })
+    const parents = text.slice(text.indexOf('### Parent objects')).split(/\n### /)[0]
+    expect([...parents.matchAll(/^- `([^`]+)`/gm)].map((match) => match[1])).toEqual(['window', 'session', 'server'])
+    expect(parents).toContain('inherited from `libtmux::detail::Row`')
+  })
+
   it('links the F# lookup error to its .NET API in copied Markdown', () => {
     const model = API_MODELS.fsharp
     const symbol = model.symbols.find((entry) => entry.id === 'LibTmux.FSharp.Server.tryFindClient')!

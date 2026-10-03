@@ -1,0 +1,18 @@
+/* Paint the destination without changing its size or obscuring its text. */
+[data-anchor-arrival], [data-anchor-arrival] > :is(td, th) {
+  animation: libtmux-anchor-arrival 2.6s ease-out;
+}
+@keyframes libtmux-anchor-arrival {
+  0%, 55% { background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent); }
+  100% { background-color: transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-anchor-arrival], [data-anchor-arrival] > :is(td, th) {
+    animation: none;
+    background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent);
+  }
+}
+/* Native fragments remain visible when scripting is unavailable. */
+html:not([data-anchor-navigation]) :is(:target, :has(> .section-anchor-alias:target)) {
+  background-color: color-mix(in srgb, var(--color-link, #2879d0) 12%, transparent);
+}

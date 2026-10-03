@@ -59,13 +59,14 @@ export function apiEntrySections(symbol: ApiSymbol, port?: string): ApiSection[]
 /** Group the existing semantic order without sorting or omitting members. */
 export function apiMemberGroups(members: ApiSymbol[], signals: MemberSignals) {
   const groups = [
+    { id: 'api-parent-objects', label: 'Parent objects', members: [] as ApiSymbol[] },
     { id: 'api-collections', label: 'Collections and queries', members: [] as ApiSymbol[] },
     { id: 'api-operations', label: 'Common operations', members: [] as ApiSymbol[] },
     { id: 'api-other-members', label: 'Other members', members: [] as ApiSymbol[] },
   ]
   for (const member of members) {
     const tier = memberTier(member, signals)
-    const group = tier === 'listing' || tier === 'query' ? 0 : tier === 'concept' || tier === 'discussed' ? 1 : 2
+    const group = tier === 'parent' ? 0 : tier === 'listing' || tier === 'query' ? 1 : tier === 'concept' || tier === 'discussed' ? 2 : 3
     groups[group].members.push(member)
   }
   return groups.filter((group) => group.members.length > 0)

@@ -5,7 +5,7 @@
  * Buckets and their contents are decided once per port in
  * `scripts/gen-api-model.mjs`; this only shapes them for a tree.
  */
-import { compareMembers, memberSignals, qualifiedNameOf, symbolsForProduct } from '@libtmux/api-model'
+import { membersOf, memberSignals, qualifiedNameOf, symbolsForProduct } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { API_MODELS, API_NAV, OWNER_KINDS, pageSlug, topLevelTypesOf, type NavEntry } from './api-models'
 import type { ApiTreeBucket, ApiTreeJson } from './api-search'
@@ -168,15 +168,12 @@ export function membersByType(port: string): Map<string, TreeMember[]> {
   const out = new Map<string, TreeMember[]>()
   const model = API_MODELS[port]
   if (model) {
-    const byId = new Map(model.symbols.map((s) => [s.id, s]))
-    const ordered = model.symbols.toSorted(compareMembers(memberSignals(port, mentions.mentions)))
-    for (const s of ordered) {
-      const owner = s.parent ? byId.get(s.parent) : undefined
-      if (!owner || !OWNER_KINDS.has(owner.kind)) continue
-      const key = owner.publicId ?? owner.id
-      const list = out.get(key) ?? []
-      list.push({ id: s.id, name: s.name, slug: s.slug ?? pageSlug(s.publicId ?? s.id) })
-      out.set(key, list)
+    const signals = memberSignals(port, mentions.mentions)
+    for (const owner of model.symbols.filter((symbol) => OWNER_KINDS.has(symbol.kind))) {
+      const members = membersOf(model, owner, signals)
+      if (members.length) out.set(owner.publicId ?? owner.id, members.map((symbol) => ({
+        id: symbol.id, name: symbol.name, slug: symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id),
+      })))
     }
   }
   membersCache.set(port, out)
