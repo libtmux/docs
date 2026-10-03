@@ -9,12 +9,12 @@
  * the desktop column — so it owns no positioning of its own; the caller
  * decides how it's placed.
  */
-import { getSidebar, isActivePath, portAreas, referenceEntries, type SidebarItem } from '../../lib/sidebar'
+import { getSidebar, isActivePath, type SidebarItem } from '../../lib/sidebar'
 import { DEFAULT_LOCALE, type Locale } from '../../i18n/locales'
 import SidebarLink from './SidebarLink.astro'
 import SidebarSection from './SidebarSection.astro'
 import { PORT_BY_SLUG, type DocProduct } from '../../lib/ports'
-import { documentationNavigation } from '../../lib/port-documentation'
+import { currentDocumentation, getDocumentationSurfaces } from '../../lib/documentation-navigation'
 import '../../styles/api-tree.css'
 
 interface Props {
@@ -24,64 +24,50 @@ interface Props {
   currentPath: string
   /** Scopes the nav to one locale, the way `port` scopes it to one port. */
   locale?: Locale
-  /**
-   * The menu only, without the page list.
-   *
-   * The reference pages have a navigation column of their own — a tree over
-   * twelve thousand symbols — and they had nothing above it: a reader who
-   * reached `/reference/ts/` could not get back to the TypeScript guides
-   * without the browser's back button. The full nav would answer that and
-   * push the tree two screens down, so this renders the part that is a menu
-   * (the port's products, its documentation areas, its references) and leaves
-   * the part that is a page list to the pages that have room for it.
-   */
-  menuOnly?: boolean
   /** A generated reference can supply its own section tree. */
   navigation?: SidebarItem[]
 }
 
-const { port, product, version, currentPath, locale = DEFAULT_LOCALE, menuOnly = false, navigation } = Astro.props
+const { port, product, version, currentPath, locale = DEFAULT_LOCALE, navigation } = Astro.props
 const portInfo = port ? PORT_BY_SLUG[port] : undefined
-// Skipped entirely when the caller wants the menu: `getSidebar` queries the
-// content collection and sorts it, and the reference renders this component on
-// every one of its pages.
-const items: SidebarItem[] = navigation ?? (menuOnly
-  ? port
-    ? [portAreas(port, version), { type: 'group', label: 'Reference', items: referenceEntries(port, version) }]
-    : []
-  : await getSidebar(port, version, locale, product))
-const domains = portInfo ? documentationNavigation(portInfo.slug, version) : []
-const domainHrefs = new Set(domains.flatMap((group) => group.items.map((item) => item.href)))
-const pageItems = items.flatMap<SidebarItem>((item) => {
-  if (item.type === 'link') return domainHrefs.has(item.href) ? [] : [item]
-  const children = item.items.filter((child) => !domainHrefs.has(child.href))
-  return children.length || item.href ? [{ ...item, items: children }] : []
-})
+const surfaces = portInfo ? await getDocumentationSurfaces(portInfo.slug, version, locale) : []
+const selected = surfaces.length ? currentDocumentation(surfaces, currentPath) : undefined
+const pageItems: SidebarItem[] = navigation ?? (selected ? selected.section.items : await getSidebar(port, version, locale, product))
 ---
 
-{portInfo && <nav aria-label="Port documentation" class="product-nav">
-  {domains.map((group) => group.items.length === 1
-    ? <SidebarLink href={group.items[0].href} label={group.items[0].label}
-        isActive={isActivePath(group.items[0].href, currentPath)} />
-    : <SidebarSection label={group.label} items={group.items} currentPath={currentPath} />)}
-</nav>}
-<nav aria-label="Documentation" class="sidebar-nav">
+{selected && <p class="section-context"><span>{selected.surface.label}</span><a href={selected.section.href}>{selected.section.label}</a></p>}
+<div data-section-navigation>
+  <label class="section-search" data-section-search-label hidden>
+    <span class="sr-only">Find a page in {selected?.section.label ?? 'documentation'}</span>
+    <input type="search" autocomplete="off" placeholder="Find page" data-section-search />
+  </label>
+  <nav aria-label={selected ? `${selected.surface.label}: ${selected.section.label}` : 'Documentation'} class="sidebar-nav">
   {
     pageItems.map((item) =>
       item.type === 'group' ? (
         <SidebarSection label={item.label} href={item.href} items={item.items} currentPath={currentPath} />
       ) : (
-        <SidebarLink href={item.href} label={item.label} external={item.external} isActive={isActivePath(item.href, currentPath)} />
+        <SidebarLink href={item.href} label={item.label} external={item.external} kind={item.kind} isActive={isActivePath(item.href, currentPath)} />
       ),
     )
   }
-</nav>
+  </nav>
+  <p class="section-empty" data-section-empty role="status" hidden>No matching pages.</p>
+</div>
 
 <style>
-  .sidebar-nav, .product-nav {
-    --api-nav-indent: 1.5rem;
+  .section-context { margin: 0 0 .75rem; }
+  .section-context span { display: block; color: var(--color-muted); font-size: .75rem; }
+  .section-context a { font-size: .875rem; font-weight: 600; }
+  .sidebar-nav {
+    --api-nav-indent: .75rem;
     font-size: 0.875rem;
   }
+  [hidden] { display: none !important; }
+  .section-search { display: block; margin-bottom: .65rem; }
+  .section-search input { width: 100%; min-width: 0; border: 1px solid var(--color-edge); border-radius: .35rem; padding: .5rem .65rem; background: var(--background-color); color: inherit; font-size: .8125rem; }
+  .section-search input:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+  .section-empty { padding: .5rem; color: var(--color-muted); font-size: .8125rem; }
   .sidebar-nav::-webkit-scrollbar {
     width: 4px;
   }

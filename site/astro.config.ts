@@ -2,7 +2,7 @@ import { rehypeHeadingIds, unified } from '@astrojs/markdown-remark'
 import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import tailwindcss from '@tailwindcss/vite'
-import { existsSync, readdirSync, statSync } from 'node:fs'
+import { createReadStream, existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, fontProviders } from 'astro/config'
@@ -329,6 +329,27 @@ export default defineConfig({
 
   vite: {
     resolve: { tsconfigPaths: false, noExternal: ['@tailwindcss/typography'] },
-    plugins: [tailwindcss() as never],
+    plugins: [tailwindcss() as never, {
+      name: 'libtmux-shared-assets-dev',
+      apply: 'serve',
+      configureServer(server) {
+        // Port builds use a nested base, while their shell assets belong to
+        // the locale root. Serve the same public files at that root in dev.
+        const root = (env.LIBTMUX_DOCS_ROOT ?? '/').replace(/\/+$/, '')
+        if (base.replace(/\/+$/, '') === root) return
+        server.middlewares.use((request, response, next) => {
+          const pathname = new URL(request.url ?? '/', 'http://localhost').pathname
+          if (!pathname.startsWith(`${root}/`)) return next()
+          const asset = pathname.slice(root.length + 1)
+          if (!/^(?:brand\/|_shell\/|versions\.json$)/.test(asset) || asset.includes('..')) return next()
+          const file = fileURLToPath(new URL(`./public/${asset}`, import.meta.url))
+          if (!existsSync(file) || !statSync(file).isFile()) return next()
+          const contentType = asset.endsWith('.svg') ? 'image/svg+xml' : asset.endsWith('.css') ? 'text/css'
+            : asset.endsWith('.js') ? 'text/javascript' : 'application/json'
+          response.setHeader('Content-Type', contentType)
+          createReadStream(file).pipe(response)
+        })
+      },
+    }],
   },
 })

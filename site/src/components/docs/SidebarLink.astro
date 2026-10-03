@@ -4,15 +4,17 @@
  * (external + target=_blank) so Sidebar.astro doesn't need a second
  * component for that case.
  */
+import ApiBadge from '../api/ApiBadge.astro'
 interface Props {
   href: string
   label: string
   isActive?: boolean
   external?: boolean
   level?: number
+  kind?: string
 }
 
-const { href, label, isActive = false, external = false, level = 1 } = Astro.props
+const { href, label, isActive = false, external = false, level = 1, kind } = Astro.props
 ---
 
 <a
@@ -20,9 +22,11 @@ const { href, label, isActive = false, external = false, level = 1 } = Astro.pro
   class:list={['sidebar-link api-nav__row', { active: isActive }]}
   style={`--level:${level}`}
   aria-current={isActive ? 'page' : undefined}
+  aria-description={kind}
   target={external ? '_blank' : undefined}
   rel={external ? 'noopener noreferrer' : undefined}
 >
+  {kind && <ApiBadge label={kind} variant="kind" value={kind} compact />}
   <span>{label}</span>
   {
     external && (
@@ -35,6 +39,7 @@ const { href, label, isActive = false, external = false, level = 1 } = Astro.pro
 </a>
 
 <style>
+  .sidebar-link[hidden] { display: none; }
   .sidebar-link {
     display: flex;
     align-items: center;

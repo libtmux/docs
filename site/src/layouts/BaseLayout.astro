@@ -251,6 +251,7 @@ const githubUrl = githubPort?.source && githubPort.repo === githubRepo
     {
       !bare && (
         <SiteHeader
+          documentationContext={Astro.slots.has('context')}
           portSlug={navPort}
           version={navVersion}
           pagePath={sourcePath ?? pagePath}
@@ -264,6 +265,7 @@ const githubUrl = githubPort?.source && githubPort.repo === githubRepo
         top bar is an embedded or vendored one, and a notice about this site's
         stability has no business appearing there. */}
     {!bare && <PrereleaseNotice />}
+    <slot name="context" />
     <!-- `data-pagefind-body` scopes the index to the page's own content.
          Without it Pagefind indexed the header and footer on all 1,066
          pages, so every nav label outranked the prose that mentioned it
@@ -283,6 +285,13 @@ const githubUrl = githubPort?.source && githubPort.repo === githubRepo
 </html>
 
 <script>
+  import { initDocumentationNavigation } from '../components/docs/documentation-navigation'
+
+  // A Sidebar may first render inside <noscript>. Start the shared behavior
+  // here so Astro's script deduplication cannot strand it in that fallback.
+  initDocumentationNavigation()
+  document.addEventListener('astro:after-swap', initDocumentationNavigation)
+
   // Port/version trees have independently built scripts. Loading a second
   // bundle into the same document would keep both sets of global listeners.
   document.addEventListener('astro:before-preparation', (event) => {

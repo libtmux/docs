@@ -1,65 +1,80 @@
 import assert from 'node:assert/strict'
 import { PORTS } from '../src/lib/ports.ts'
 
-/** Shared section drawers navigate, disclose their children, and keep the current page visible. */
+/** Surface selection changes the page tree without losing the port or version. */
 export async function checkDocumentationNavigation(browser, base, complete = false) {
   const ports = complete ? PORTS : PORTS.filter((port) => ['fsharp', 'ruby'].includes(port.slug))
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
   page.setDefaultTimeout(10000)
+  const desktopPicker = (reader) => reader.locator('[data-documentation-context] [data-surface-picker]')
+  const group = (picker, label) => picker.locator('[data-surface-group]').filter({
+    has: picker.page().locator('summary strong', { hasText: new RegExp(`^${label}$`) }),
+  })
+  const openPicker = async (picker, enhanced = true) => {
+    await picker.locator(':scope > summary').click()
+    if (enhanced) {
+      const search = picker.locator('[data-surface-search]')
+      await search.waitFor({ state: 'visible' })
+      assert(await search.evaluate((element) => element === document.activeElement), 'Opening the picker focuses search')
+    }
+  }
   try {
-    for (const { slug } of ports) {
+    for (const { slug, parentLibrary } of ports) {
       const response = await page.goto(`${base}/${slug}/latest/`, { waitUntil: 'load' })
       assert(response?.ok(), `${slug}: documentation home responds`)
-      const nav = page.locator('.sidebar-nav:visible')
-      const sections = await nav.locator(':scope > details > summary > a').evaluateAll((links) =>
-        links.map((link) => ({ label: link.textContent.trim(), href: link.getAttribute('href') })))
-      assert.deepEqual(sections.map(({ label }) => label),
-        PORTS.find((port) => port.slug === slug).parentLibrary
-          ? ['Guides', 'Concepts', 'Examples'] : ['Guides', 'Concepts', 'Examples', 'Topics'],
-        `${slug}: shared section names and reading order`)
-      for (const { label, href } of sections) {
-        assert.equal(await nav.locator('a').evaluateAll((links, href) => links.filter((link) =>
-          link.getAttribute('href') === href).length, href), 1, `${slug}: ${label} has one section link`)
+      assert.equal(await page.locator('[data-page-toolbar]').count(), 0, `${slug}: home has no redundant breadcrumb/action row`)
+      assert.equal(await page.locator('.port-hero h1').count(), 1, `${slug}: one port heading`)
+      const picker = desktopPicker(page)
+      await picker.locator(':scope > summary').waitFor({ state: 'visible' })
+      assert.equal((await picker.locator('.surface-current').innerText()).replace(/\s+/g, ' ').trim(), 'Core Library Home')
+      await openPicker(picker)
+      const core = group(picker, 'Core Library')
+      const sections = await core.locator('.surface-options a').evaluateAll((links) =>
+        links.map((link) => ({ label: link.textContent.trim().replace(/\s*✓$/, ''), href: link.getAttribute('href') })))
+      for (const label of ['Home', 'Guides', 'Concepts', 'Examples', 'Reference']) {
+        assert.equal(sections.filter((section) => section.label === label).length, 1,
+          `${slug}: ${label} has one real destination`)
       }
-      assert.equal(await nav.locator('details[open]').count(), 0, `${slug}: home has no unrelated expanded section`)
+      assert(sections.every(({ href }) => href.startsWith(`${new URL(base).pathname}/${slug}/latest/`)),
+        `${slug}: sections retain the selected port and version`)
+      const names = await picker.locator('[data-surface-group] > summary strong').allTextContents()
+      assert.equal(names[0], 'Core Library', `${slug}: the library is the default surface`)
+      assert.deepEqual(names.slice(1).sort(), parentLibrary ? [] : ['MCP', 'Workspace Manager'],
+        `${slug}: wrapper ports do not inherit parent applications`)
+      assert.equal(await picker.locator('.surface-preview[href]').count(), 0, `${slug}: previews never invent links`)
+      await page.keyboard.press('Escape')
+      assert.equal(await picker.getAttribute('open'), null)
     }
     for (const slug of ['fsharp', 'ruby']) {
       await page.goto(`${base}/${slug}/latest/guides/`, { waitUntil: 'load' })
       assert.equal((await page.locator('main h1').textContent()).trim(), 'Guides')
       const nav = page.locator('.sidebar-nav:visible')
-      const section = nav.locator('details').filter({ has: page.locator('summary > a', { hasText: /^Guides$/ }) })
-      assert.equal(await section.evaluate((element) => element.open), true, `${slug}: current section starts open`)
-      assert.deepEqual((await section.locator('.sidebar-link').allTextContents()).slice(0, 2)
-        .map((label) => label.trim()), ['Getting started', 'Attaching to tmux'], `${slug}: setup leads the guides`)
+      const guideLinks = nav.locator('a').filter({ hasNotText: /^\s*Guides\s*$/ })
+      assert.deepEqual((await guideLinks.allTextContents()).slice(0, 2).map((label) => label.trim()),
+        ['Getting started', 'Attaching to tmux'], `${slug}: setup leads the guides`)
       assert.equal(await nav.locator('a[href*="api-overview"]').count(), 0, `${slug}: no duplicate API guide`)
-      const cards = page.locator('main .doc-card')
-      assert.equal((await cards.first().locator('h3').textContent()).trim(), 'Getting started')
-      await section.locator('summary > .api-nav__chevron').click()
-      assert.equal(await section.evaluate((element) => element.open), false, `${slug}: chevron closes the drawer`)
-      await section.locator('summary').focus()
-      await page.keyboard.press('Enter')
-      assert.equal(await section.evaluate((element) => element.open), true, `${slug}: keyboard opens the drawer`)
-      await section.locator('.sidebar-link').first().click()
+      assert.equal((await page.locator('main .doc-card').first().locator('h3').textContent()).trim(), 'Getting started')
+      await guideLinks.first().click()
       await page.waitForURL(`${base}/${slug}/latest/guides/getting-started/`)
       const selected = page.locator('.sidebar-nav:visible a[aria-current="page"]')
       assert.equal((await selected.textContent()).trim(), 'Getting started')
       assert(await selected.isVisible(), `${slug}: current child remains visible`)
       const browse = slug === 'fsharp' ? 'Concepts' : 'Examples'
-      await page.locator('.sidebar-nav:visible summary > a').filter({ hasText: new RegExp(`^${browse}$`) }).click()
+      const picker = desktopPicker(page)
+      await openPicker(picker)
+      await group(picker, 'Core Library').getByRole('link', { name: browse, exact: true }).click()
       await page.waitForURL(`${base}/${slug}/latest/${browse.toLowerCase()}/`)
       assert.equal((await page.locator('main h1').textContent()).trim(), browse)
       assert.equal(await page.locator('main .doc-card').count(), slug === 'fsharp' ? 4 : 2,
         `${slug}: browse pages use the shared cards`)
     }
-    const oldFsharp = `${base}/fsharp/latest/guides/api-overview/`
-    await page.goto(`${oldFsharp}?from=bookmark`, { waitUntil: 'load' })
+    await page.goto(`${base}/fsharp/latest/guides/api-overview/?from=bookmark`, { waitUntil: 'load' })
     await page.waitForURL(`${base}/fsharp/latest/reference/?from=bookmark`)
-    assert.equal((await page.locator('main h1').textContent()).trim(), 'API reference',
-      'The current portal already identifies the API language')
-    assert.equal(await page.title(), 'F# API reference | libtmux', 'The browser title preserves language context')
+    assert.equal((await page.locator('main h1').textContent()).trim(), 'API reference')
+    assert.equal(await page.title(), 'F# API reference | libtmux-fsharp')
     await page.goto(`${base}/ruby/latest/guides/overview/`, { waitUntil: 'load' })
     await page.waitForURL(`${base}/ruby/latest/guides/getting-started/`)
-    console.log(`Documentation sections: ${ports.length} ports share ordered, unique section links; Ruby/F# setup, cards and legacy links pass`)
+    console.log(`Documentation surfaces: ${ports.length} ports retain real section links; Ruby/F# setup, cards and legacy links pass`)
   } finally {
     await page.close()
   }
@@ -72,52 +87,76 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
       reader.setDefaultTimeout(10000)
       try {
         if (javaScriptEnabled) await reader.addInitScript((scheme) => localStorage.setItem('color-scheme', scheme), colorScheme)
-        for (const width of [390, 768, 1440]) {
+        for (const width of [320, 390, 768, 1440]) {
           await reader.setViewportSize({ width, height: 900 })
-          for (const slug of ['fsharp', 'ruby']) {
-            const area = slug === 'fsharp' ? 'Concepts' : 'Guides'
-            await reader.goto(`${base}/${slug}/latest/${area.toLowerCase()}/`, { waitUntil: 'load' })
-            if (width < 1024) {
-              if (javaScriptEnabled) await reader.locator('#mobile-sidebar-toggle').click()
-              else await reader.locator('.mobile-fallback > details > summary').first().click()
+          await reader.goto(`${base}/go/latest/workspace/`, { waitUntil: 'load' })
+          const picker = desktopPicker(reader)
+          const layout = await reader.evaluate(() => {
+            const bounds = (selector) => {
+              const { top, bottom, height, width } = document.querySelector(selector).getBoundingClientRect()
+              return { top, bottom, height, width }
             }
-            const nav = reader.locator('.sidebar-nav:visible')
-            const current = nav.locator('summary > a[aria-current="page"]')
-            assert.equal((await current.textContent()).trim(), area, `${slug}/${width}: current section is identified`)
-            const section = nav.locator('details').filter({ has: reader.locator('summary > a', { hasText: new RegExp(`^${area}$`) }) })
-            assert.equal(await section.evaluate((element) => element.open), true)
-            const summary = section.locator('summary')
-            await summary.focus()
-            await reader.keyboard.press('Space')
-            assert.equal(await section.evaluate((element) => element.open), false, `${slug}/${width}: Space closes the drawer`)
-            await reader.keyboard.press('Enter')
-            assert.equal(await section.evaluate((element) => element.open), true)
-            const geometry = await reader.evaluate(() => ({
-              overflow: document.documentElement.scrollWidth - innerWidth,
-              cards: [...document.querySelectorAll('main .doc-card')].map((card) => {
-                const rect = card.getBoundingClientRect()
-                return { left: rect.left, right: rect.right }
-              }),
-            }))
-            assert(geometry.overflow <= 1, `${slug}/${width}/${colorScheme}/${javaScriptEnabled}: page fits`)
-            assert(geometry.cards.every((card) => card.left >= 0 && card.right <= width + 1), `${slug}/${width}: cards fit`)
-            const destination = slug === 'fsharp' ? 'Guides' : 'Examples'
-            const target = nav.locator('summary > a').filter({ hasText: new RegExp(`^${destination}$`) })
-            await target.focus()
-            await reader.keyboard.press('Enter')
-            await reader.waitForURL(`${base}/${slug}/latest/${destination.toLowerCase()}/`)
-            if (width < 1024 && javaScriptEnabled) {
-              assert.equal(await reader.locator('#mobile-sidebar-toggle').getAttribute('aria-expanded'), 'false',
-                `${slug}/${width}: navigating closes the mobile drawer`)
-            }
+            return { bar: bounds('[data-documentation-context]'), surface: bounds('[data-surface-picker] > summary'),
+              port: bounds('[data-page-port-switcher] > summary'), header: ['.site-header__search', '.scheme-switch', '.site-header__menu-button'].map(bounds) }
+          })
+          assert(layout.bar.height <= 58, `${width}: context remains a single compact row`)
+          assert(Math.abs((layout.surface.top + layout.surface.bottom) - (layout.port.top + layout.port.bottom)) <= 1,
+            `${width}: surface and context controls are vertically centered`)
+          assert(layout.surface.width >= 60, `${width}: the surface trigger remains usable`)
+          assert(layout.header.every((item) => Math.abs(item.height - layout.header[0].height) < .1
+            && Math.abs(item.top - layout.header[0].top) < .1), `${width}: Search, scheme and menu have equal heights`)
+          assert.equal((await picker.locator('.surface-current').innerText()).replace(/\s+/g, ' ').trim(), 'Workspace Manager Home')
+          await openPicker(picker, javaScriptEnabled)
+          if (javaScriptEnabled) {
+            const search = picker.locator('[data-surface-search]')
+            await search.fill('no-such-documentation')
+            assert(await picker.locator('[data-surface-empty]').isVisible(), 'Unknown searches show an empty state')
+            await search.fill('mcp guides')
+            const links = picker.locator('a[data-surface-option]:visible')
+            assert.equal(await links.count(), 1, 'Search matches both the surface and section')
+            assert.equal(await links.first().getAttribute('href'), `${new URL(base).pathname}/go/latest/mcp/guides/`)
+            await search.press('ArrowDown')
+            assert(await links.first().evaluate((link) => link === document.activeElement), 'ArrowDown reaches a result')
+            await reader.keyboard.press('Escape')
+            assert.equal(await picker.getAttribute('open'), null, 'Escape closes the picker')
+            await openPicker(picker)
+            await search.fill('workspace guides')
           }
+          const panel = await picker.locator('[data-surface-panel]').boundingBox()
+          assert(panel.x >= 0 && panel.x + panel.width <= width + 1, `${width}/${colorScheme}: picker fits the viewport`)
+          if (javaScriptEnabled) assert(panel.y >= 0 && panel.y + panel.height <= 901, `${width}: floating picker fits vertically`)
+          const target = group(picker, 'Workspace Manager').getByRole('link', { name: 'Guides', exact: true })
+          if (javaScriptEnabled) await picker.locator('[data-surface-search]').press('Enter')
+          else { await target.focus(); await reader.keyboard.press('Enter') }
+          await reader.waitForURL(`${base}/go/latest/workspace/guides/`)
+          assert.equal((await reader.locator('main h1').textContent()).trim(), 'Guides', 'Guides has a real browse page')
+          assert(await reader.locator('main .doc-card').count() >= 5, 'Workspace guides show task cards')
+          if (width < 1024 && javaScriptEnabled) assert.equal(await reader.locator('#mobile-sidebar-toggle').getAttribute('aria-expanded'), 'false',
+            'Changing sections closes the mobile drawer')
+          if (javaScriptEnabled) {
+            if (width < 1024) await reader.locator('#mobile-sidebar-toggle').click()
+            const search = reader.locator('[data-section-search]:visible')
+            await search.fill('troubleshoot')
+            const links = reader.locator('.sidebar-nav:visible a:visible')
+            assert.equal(await links.count(), 1, 'Section search filters its own pages')
+            assert((await links.first().getAttribute('href')).endsWith('/workspace/guides/troubleshooting/'))
+            await search.fill('')
+            assert(await links.count() > 1, 'Clearing search restores the page list')
+          }
+          await reader.goBack()
+          await reader.waitForURL(`${base}/go/latest/workspace/`)
+          await reader.goForward()
+          await reader.waitForURL(`${base}/go/latest/workspace/guides/`)
+          assert(await reader.locator('[data-surface-picker] > summary').first().getAttribute('aria-label').then((label) => label.endsWith('Workspace Manager, Guides')),
+            'History restores the selected surface and section')
+          assert(await reader.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${width}: page has no horizontal overflow`)
         }
       } finally {
         await context.close()
       }
     }
   }
-  console.log('Documentation drawers: mouse and keyboard navigation pass at phone/tablet/desktop widths, both themes, with and without JavaScript')
+  console.log('Surface picker: search, keyboard, history and scoped page lists pass on phone/tablet/desktop, both themes and without JavaScript')
 }
 
 /** Browser load can precede the router's initial page-load event in development. */
@@ -170,24 +209,20 @@ export async function checkApiNavigation(page, base) {
     await page.goBack()
     await page.waitForURL(server)
     await page.waitForFunction(() => window.__apiNavigationProbe?.loads === 2)
-    await open()
-    const menu = nav.locator('.api-nav__menu')
-    const summary = menu.locator(':scope > summary')
-    const row = await summary.boundingBox(), section = await menu.boundingBox()
-    assert(Math.abs(row.y + row.height / 2 - section.y - section.height / 2) <= 1,
-      `Documentation disclosure is vertically centered at ${width}px`)
-    await summary.click()
+    const menu = page.locator('[data-documentation-context] [data-surface-picker]')
+    assert(await menu.locator(':scope > summary').isVisible(), 'Documentation context is available above the closed API drawer')
+    await menu.locator(':scope > summary').click()
     assert.equal(await menu.evaluate((el) => el.open), true)
-    await summary.click()
+    await page.keyboard.press('Escape')
     assert.equal(await menu.evaluate((el) => el.open), false)
-    await nav.locator('[data-api-nav-close]').click()
   }
   for (const path of ['', 'guides/overview/']) {
     const response = await page.goto(`${base}/lua/latest/${path}`, { waitUntil: 'load' })
     assert(response?.ok(), `Lua ${path || 'home'}: HTTP ${response?.status()}`)
     await page.waitForFunction(() => window.__docsPageLoaded)
-    await page.locator('#mobile-sidebar-toggle').click()
-    await page.locator('#mobile-sidebar a[href$="/reference/"]').click()
+    const picker = page.locator('[data-documentation-context] [data-surface-picker]')
+    await picker.locator(':scope > summary').click()
+    await picker.locator('a[href$="/lua/latest/reference/"]').click()
     await page.waitForURL(`${base}/lua/latest/reference/`)
     await page.locator('.api-index-card__link[href$="/reference/libtmux-server/"]').click()
     await page.waitForURL(server)
@@ -261,8 +296,12 @@ export async function checkNavigation(page, base) {
   await page.getByRole('navigation', { name: 'Breadcrumb', exact: true }).getByRole('link', { name: 'Examples', exact: true }).click()
   await page.waitForFunction(() => window.__navigationProbe?.loads === 1)
   assert.match(page.url(), /\/examples\/$/)
-  await page.locator('main').getByRole('link', { name: 'Attach and send keys', exact: true }).click()
+  const example = page.locator('main').getByRole('link').filter({
+    has: page.getByRole('heading', { name: 'Attach and send keys', exact: true }),
+  })
+  await example.click()
   await page.waitForFunction(() => window.__navigationProbe?.loads === 2)
+  assert.match(page.url(), /\/examples\/attach-and-send-keys\/$/)
   await page.keyboard.press('Control+k')
   await page.locator('#search-modal[open] .search-panel__input').waitFor({ state: 'visible' })
   assert(await page.locator('#search-modal .search-panel__input').evaluate((input) => document.activeElement === input))
@@ -291,9 +330,9 @@ export async function checkNavigation(page, base) {
       const sidebars = page.locator('nav.sidebar-nav')
       assert.equal(await sidebars.count(), 2, 'Desktop and mobile both have navigation')
       for (const sidebar of await sidebars.all()) {
-        const query = sidebar.getByRole('link', { name: 'Filtering and queries', exact: true, includeHidden: true })
-        assert.equal(await query.getAttribute('href'), `${prefix}concepts/queries/`,
-          `${port} ${version} at ${width}px: shared query page stays in the selected port`)
+        const current = sidebar.locator('a[aria-current="page"]')
+        assert.equal(await current.getAttribute('href'), `${prefix}examples/capture-pane-output/`,
+          `${port} ${version} at ${width}px: the section menu identifies the current example`)
         const links = await sidebar.locator('a[href^="/"]').evaluateAll((items) => items.map((a) => a.getAttribute('href')))
         for (const href of links) assert(href.startsWith(prefix), `${port} sidebar leaves ${prefix}: ${href}`)
       }
@@ -328,6 +367,6 @@ export async function checkApiExampleOwnership(page, base, path = 'ts/latest/ref
     `TypeScript reference contains another language: ${languages.join(', ')}`)
   assert.equal(await page.locator('main .api-example-tabs').count(), 0)
   assert.equal(await page.locator('[data-page-port-switcher]').count(), 1,
-    'Readers can still switch ports from the page toolbar')
+    'Readers can still switch ports from the documentation context')
   console.log('Reference examples: TypeScript examples stay visible without other languages')
 }

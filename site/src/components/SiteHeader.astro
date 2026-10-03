@@ -9,6 +9,7 @@ import type { LocaleStatus } from '../i18n/resolve'
 import { withPortRoot, withRoot } from '../lib/site-root'
 
 interface Props {
+  documentationContext?: boolean
   portSlug?: string
   version: string
   /** Current page path for the locale control. */
@@ -31,6 +32,7 @@ const {
   locale = DEFAULT_LOCALE,
   sourcePath,
   localeStatuses,
+  documentationContext = false,
 } = Astro.props as Props
 const brand = branding(portSlug, pagePath)
 ---
@@ -57,17 +59,6 @@ const brand = branding(portSlug, pagePath)
       landed on is the wrong one.
     */}
     <div class="site-header__always">
-      {/*
-        These links appear in either the bar or the panel according to width.
-        They have no state to keep in step between the two locations.
-      */}
-      {/*
-        Three places to go, then the one control that changes how they look.
-        Reference, MCP and Search are the same kind of thing and read as a set;
-        the colour scheme sat between them and split the set for no reason.
-      */}
-      <a href={withPortRoot('/reference/')} class="topnav-chip site-header__wide-link">Reference</a>
-      <a href={withRoot('/mcp/')} class="topnav-chip site-header__wide-link">MCP</a>
       <a
         href={portSlug ? withPortRoot(`/${portSlug}/${version}/search/`) : withRoot('/search/')}
         class="topnav-chip site-header__search border border-edge"
@@ -101,7 +92,7 @@ const brand = branding(portSlug, pagePath)
         <div class="site-header__panel-ports">
           <PortSwitcher portSlug={portSlug} version={version} />
         </div>
-        <div class="site-header__panel-row site-header__panel-controls">
+        {!documentationContext && <div class="site-header__panel-row site-header__panel-controls">
           <VersionSwitcher portSlug={pagePath.startsWith('reference') ? undefined : portSlug} version={version} />
           {
             localeStatuses && (
@@ -112,7 +103,7 @@ const brand = branding(portSlug, pagePath)
               />
             )
           }
-        </div>
+        </div>}
         <div class="site-header__panel-row site-header__panel-links">
           <a href={withPortRoot('/reference/')} class="topnav-chip px-2 py-1 text-sm">Reference</a>
           <a href={withRoot('/mcp/')} class="topnav-chip px-2 py-1 text-sm">MCP</a>

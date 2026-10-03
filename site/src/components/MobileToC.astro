@@ -17,7 +17,7 @@ const { tocItems } = Astro.props
   <div class="p-4">
     <!-- Header with close button -->
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">On this page</h2>
+      <h2 id="mobile-toc-title" class="text-lg font-semibold text-gray-900 dark:text-gray-100">On this page</h2>
       <button
         id="mobile-toc-close"
         type="button"
@@ -32,7 +32,7 @@ const { tocItems } = Astro.props
 
     <!-- Table of Contents -->
     {tocItems.length > 0 ? (
-      <TableOfContents items={tocItems} />
+      <TableOfContents items={tocItems} labelledBy="mobile-toc-title" />
     ) : (
       <p class="text-sm text-muted">No table of contents available for this page.</p>
     )}

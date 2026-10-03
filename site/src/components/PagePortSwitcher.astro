@@ -1,55 +1,62 @@
 ---
 import type { PagePortLink } from '../lib/page-port-links'
+import { PORT_BY_SLUG } from '../lib/ports'
+import { branding } from '../lib/branding'
+import { withRoot } from '../lib/site-root'
+import '../styles/documentation-picker.css'
 
-interface Props {
-  entries: PagePortLink[]
-  portSlug?: string
-}
+interface Props { entries: PagePortLink[]; portSlug?: string }
 const { entries, portSlug } = Astro.props
 const current = entries.find((entry) => entry.port === portSlug)
+const name = current?.name ?? PORT_BY_SLUG[portSlug ?? '']?.name ?? 'In other ports'
+const shortName = PORT_BY_SLUG[portSlug ?? '']?.shortName ?? name
+const families = [
+  { label: 'Scripting & web', ports: ['py', 'ruby', 'lua', 'ts'] },
+  { label: 'Compiled & native', ports: ['rs', 'go', 'cxx', 'swift'] },
+  { label: 'JVM', ports: ['java', 'kotlin', 'scala'] },
+  { label: '.NET', ports: ['dotnet', 'fsharp'] },
+]
+const known = new Set(families.flatMap((family) => family.ports))
+families.push({ label: 'Other languages', ports: entries.filter((entry) => !known.has(entry.port)).map((entry) => entry.port) })
 ---
-
-<details data-page-port-switcher>
-  {/*
-    The label is the language this page is in, which is the useful half of the
-    answer. On its own it was ambiguous to the point of being wrong — a chip
-    reading "Go" in the corner of a page is a verb before it is a language —
-    so it carries a mark and a caret and reads as a picker.
-  */}
-  <summary
-    class="topnav-chip page-control page-port-switcher__summary cursor-pointer list-none"
-    aria-label="This page in other programming languages"
-  >
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-      <path d="m5 4-4 4 4 4m6-8 4 4-4 4M9.5 2l-3 12" stroke-linecap="round" stroke-linejoin="round" />
-    </svg>
-    <span>{current?.name ?? 'In other ports'}</span>
-    <svg class="page-port-switcher__caret" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-      <path d="M4 6.5 8 10.5l4-4" stroke-linecap="round" stroke-linejoin="round" />
-    </svg>
+<details class="doc-picker" data-page-port-switcher data-doc-picker>
+  <summary aria-label={`${name}: this page in other programming languages`}>
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="m5 4-4 4 4 4m6-8 4 4-4 4M9.5 2l-3 12" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    <span class="page-port-name">{name}</span><span class="page-port-short-name" aria-hidden="true">{shortName}</span>
+    <svg class="doc-picker-caret" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
   </summary>
-  <ul class="absolute right-0 z-50 mt-1 w-64 max-w-[calc(100vw-2rem)] rounded border border-edge bg-surface py-1 shadow-lg">
-    {entries.map((entry) => (
-      <li>
-        {entry.links.length ? entry.links.map((link) => (
-          <a
-            class="flex items-baseline justify-between gap-3 px-3 py-1.5 text-sm hover:bg-edge/30"
-            href={link.href}
-            aria-current={entry.port === portSlug ? 'page' : undefined}
-          >
-            <span class:list={[entry.port === portSlug && 'font-semibold']}>{entry.name}</span>
-            {entry.links.length > 1 && <span class="text-xs text-muted">{link.label}</span>}
-          </a>
-        )) : (
-          <span
-            class="flex items-baseline justify-between gap-3 px-3 py-1.5 text-sm text-muted"
-            aria-disabled="true"
-          >
-            <span>{entry.name}</span>
-            <span class="text-xs">Unavailable</span>
-          </span>
-        )}
-      </li>
-    ))}
-  </ul>
+  <div class="doc-picker-panel port-picker-panel" data-picker-panel>
+    <p class="doc-picker-title">Choose a port <span class="doc-picker-count">{entries.length}</span></p>
+    <label class="doc-picker-search" data-picker-search-label hidden>
+      <span class="sr-only">Find a port</span>
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>
+      <input type="search" placeholder="Find a port…" autocomplete="off" data-picker-search />
+    </label>
+    {families.map((family) => {
+      const ports = family.ports.flatMap((slug) => entries.filter((entry) => entry.port === slug))
+      return ports.length > 0 && <section class="port-family" data-picker-group>
+        <h3>{family.label}</h3>
+        <div class="doc-picker-options">
+          {ports.map((entry) => entry.links.length ? entry.links.map((link) => <a class="doc-picker-option" href={link.href}
+            data-picker-option data-match={`${entry.port} ${entry.name} ${PORT_BY_SLUG[entry.port]?.shortName ?? ''} ${link.label ?? ''}`}
+            aria-current={entry.port === portSlug ? 'page' : undefined}>
+            <img class="port-artwork" src={withRoot(branding(entry.port).asset('logo.svg'))} width="26" height="26" alt="" />
+            <span>{entry.name}{entry.links.length > 1 && <small>{link.label}</small>}</span>
+            {entry.port === portSlug && <span class="doc-picker-check" aria-hidden="true">✓</span>}
+          </a>) : <span class="doc-picker-option" aria-disabled="true" data-picker-option data-match={`${entry.port} ${entry.name}`}>
+            <img class="port-artwork" src={withRoot(branding(entry.port).asset('logo.svg'))} width="26" height="26" alt="" />
+            <span>{entry.name}<small>Unavailable</small></span>
+          </span>)}
+        </div>
+      </section>
+    })}
+    <p class="doc-picker-empty" data-picker-empty hidden>No matching ports.</p>
+    <p class="sr-only" role="status" data-picker-status></p>
+  </div>
 </details>
+<style>
+  .page-port-short-name { display: none; }
+  .port-family + .port-family { margin-top: .65rem; }
+  .port-family h3 { margin: .75rem .4rem .25rem; font-size: .6875rem; font-weight: 400; text-transform: uppercase; letter-spacing: .025em; color: var(--color-muted); }
+  .port-artwork { flex: none; width: 1.625rem; height: 1.625rem; object-fit: contain; }
+</style>

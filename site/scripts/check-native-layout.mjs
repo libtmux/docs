@@ -13,6 +13,8 @@ export async function checkNativeHeader(page) {
     const bounds = links.map((link) => link.getBoundingClientRect())
     return {
       count: links.length,
+      ports: links.filter((link) => link.hasAttribute('data-port-home')).map((link) => link.dataset.portHome),
+      firstLabel: links[0]?.getAttribute('aria-label'),
       rows: new Set(bounds.map((rect) => rect.top)).size,
       visible: bounds.every((rect) => rect.width > 0 && rect.height > 0 && rect.left >= 0 && rect.right <= innerWidth),
       covered: links.filter((link, i) => {
@@ -21,7 +23,9 @@ export async function checkNativeHeader(page) {
       }).map((link) => link.getAttribute('aria-label')),
     }
   })
-  assert.equal(navigation.count, PORTS.length, 'Native header keeps every port')
+  assert.equal(navigation.count, PORTS.length + 1, 'Native header keeps tmux and every port')
+  assert.deepEqual(navigation.ports, PORTS.map((port) => port.slug), 'Native header keeps the port order')
+  assert.equal(navigation.firstLabel, 'tmux CLI reference')
   assert(navigation.rows <= 3, `Native ports use at most three rows at ${page.viewportSize().width}px: ${navigation.rows}`)
   assert(navigation.visible, 'Native port links fit the viewport')
   assert.deepEqual(navigation.covered, [], 'Native header controls do not cover port links')
