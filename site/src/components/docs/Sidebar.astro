@@ -15,6 +15,7 @@ import SidebarLink from './SidebarLink.astro'
 import SidebarSection from './SidebarSection.astro'
 import { PORT_BY_SLUG, type DocProduct } from '../../lib/ports'
 import { documentationNavigation } from '../../lib/port-documentation'
+import '../../styles/api-tree.css'
 
 interface Props {
   port?: string
@@ -50,16 +51,25 @@ const items: SidebarItem[] = navigation ?? (menuOnly
     : []
   : await getSidebar(port, version, locale, product))
 const domains = portInfo ? documentationNavigation(portInfo.slug, version) : []
+const domainHrefs = new Set(domains.flatMap((group) => group.items.map((item) => item.href)))
+const pageItems = items.flatMap<SidebarItem>((item) => {
+  if (item.type === 'link') return domainHrefs.has(item.href) ? [] : [item]
+  const children = item.items.filter((child) => !domainHrefs.has(child.href))
+  return children.length || item.href ? [{ ...item, items: children }] : []
+})
 ---
 
 {portInfo && <nav aria-label="Port documentation" class="product-nav">
-  {domains.map((group) => <SidebarSection label={group.label} items={group.items} currentPath={currentPath} />)}
+  {domains.map((group) => group.items.length === 1
+    ? <SidebarLink href={group.items[0].href} label={group.items[0].label}
+        isActive={isActivePath(group.items[0].href, currentPath)} />
+    : <SidebarSection label={group.label} items={group.items} currentPath={currentPath} />)}
 </nav>}
 <nav aria-label="Documentation" class="sidebar-nav">
   {
-    items.map((item) =>
+    pageItems.map((item) =>
       item.type === 'group' ? (
-        <SidebarSection label={item.label} items={item.items} currentPath={currentPath} />
+        <SidebarSection label={item.label} href={item.href} items={item.items} currentPath={currentPath} />
       ) : (
         <SidebarLink href={item.href} label={item.label} external={item.external} isActive={isActivePath(item.href, currentPath)} />
       ),
@@ -68,6 +78,10 @@ const domains = portInfo ? documentationNavigation(portInfo.slug, version) : []
 </nav>
 
 <style>
+  .sidebar-nav, .product-nav {
+    --api-nav-indent: 1.5rem;
+    font-size: 0.875rem;
+  }
   .sidebar-nav::-webkit-scrollbar {
     width: 4px;
   }

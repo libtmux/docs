@@ -9,14 +9,16 @@ interface Props {
   label: string
   isActive?: boolean
   external?: boolean
+  level?: number
 }
 
-const { href, label, isActive = false, external = false } = Astro.props
+const { href, label, isActive = false, external = false, level = 1 } = Astro.props
 ---
 
 <a
   href={href}
-  class:list={['sidebar-link', { active: isActive }]}
+  class:list={['sidebar-link api-nav__row', { active: isActive }]}
+  style={`--level:${level}`}
   aria-current={isActive ? 'page' : undefined}
   target={external ? '_blank' : undefined}
   rel={external ? 'noopener noreferrer' : undefined}
@@ -37,26 +39,24 @@ const { href, label, isActive = false, external = false } = Astro.props
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    padding: 0.375rem 0.75rem;
     margin: 0.125rem 0;
-    border-radius: 0.375rem;
     font-size: 0.875rem;
-    color: rgb(71 85 105); /* slate-600 */
+    color: var(--color-foreground-primary);
     text-decoration: none;
   }
 
   :global([data-theme-mode='dark']) .sidebar-link {
-    color: rgb(148 163 184); /* slate-400 */
+    color: var(--color-foreground-primary);
   }
 
   .sidebar-link:hover {
-    color: rgb(15 23 42); /* slate-900 */
-    background: rgb(241 245 249); /* slate-100 */
+    color: var(--color-foreground-primary);
+    background: var(--color-surface-hover);
   }
 
   :global([data-theme-mode='dark']) .sidebar-link:hover {
-    color: rgb(241 245 249); /* slate-100 */
-    background: rgb(30 41 59); /* slate-800 */
+    color: var(--color-foreground-primary);
+    background: var(--color-surface-hover);
   }
 
   .sidebar-link.active {

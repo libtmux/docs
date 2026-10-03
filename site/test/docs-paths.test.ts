@@ -1,9 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import { docsPath, docsRedirects, docsRoutePath, workspaceRedirectPath } from '../src/lib/docs-paths'
+import { docsPath, docsRedirects, docsRoutePath, sourceGuideRedirects, workspaceRedirectPath } from '../src/lib/docs-paths'
 
 const pythonGuide = { id: 'ports/py/workspace/guides', data: { port: 'py', product: 'workspace' } }
 
 describe('product document URLs', () => {
+  it('retires the duplicate F# API overview in root and selected-version builds', () => {
+    expect(sourceGuideRedirects(undefined, { fsharp: 'stable' })).toEqual([
+      { path: 'fsharp/stable/guides/api-overview', target: 'fsharp/stable/reference' },
+    ])
+    expect(sourceGuideRedirects('fsharp')).toEqual([
+      { path: 'guides/api-overview', target: 'reference' },
+    ])
+    expect(sourceGuideRedirects('py')).toEqual([])
+  })
   it('uses the same path in root and per-port builds', () => {
     expect(docsRoutePath(pythonGuide, undefined, { py: 'stable' })).toBe('py/stable/workspace/guides')
     expect(docsRoutePath(pythonGuide, 'py')).toBe('workspace/guides')

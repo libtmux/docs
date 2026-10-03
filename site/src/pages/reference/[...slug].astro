@@ -402,7 +402,8 @@ const title = owner
   : model
     ? `${PORT_NAME[model.port] ?? model.port} API reference`
     : 'API reference'
-const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'reference', buildTarget(process.env).version, model?.port)
+const pageTitle = owner ? title : 'API reference'
+const breadcrumbs = await pageBreadcrumbs(pageTitle, slug ? `reference/${slug}` : 'reference', buildTarget(process.env).version, model?.port)
 ---
 
 <BaseLayout
@@ -475,7 +476,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
           id={owner ? (owner.publicId ?? owner.id) : undefined}
           class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight"
         >
-          <SymbolName name={owner ? (declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : title} />
+          <SymbolName name={owner ? (declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle} />
         </h1>
         {owner && <>
           <ApiQualifiedName

@@ -1,10 +1,11 @@
 ---
-title: Scala examples
+title: Examples
 description: Tested Scala examples against an isolated tmux server.
 port: scala
 route: examples
 sidebar:
   group: Examples
+  order: 1
 ---
 
 Start with [Capture pane output](./capture-pane-output/) for a standalone program with imports, Gradle files, and private-server cleanup.

@@ -7,13 +7,14 @@ import { dev } from 'astro'
 import { chromium, firefox, webkit } from 'playwright'
 import { API_MODEL_PORTS, PORTS, productAvailable } from '../src/lib/ports.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
-import { checkApiExampleOwnership, checkApiNavigation, checkNavigation } from './check-navigation.mjs'
+import { checkApiExampleOwnership, checkApiNavigation, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkNativeLayout } from './check-native-layout.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
 const signaturePorts = apiSignaturesOnly ? API_MODEL_PORTS
   : API_MODEL_PORTS.filter((port) => ['py', 'ts'].includes(port.slug))
+const documentationNavigationOnly = process.argv.includes('--documentation-navigation')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 // `workspaceCli` alone also covers a port's local, unreleased dev CLI
 // (`workspaceCliAvailability: 'local'`), which publishes no top-level
@@ -81,7 +82,7 @@ const entries = API_MODEL_PORTS.filter(({ slug }) => ${JSON.stringify(signatureP
   ))}
 </DocsLayout>
 `)
-for (const port of ['py', 'kotlin', 'scala', 'lua', 'java', 'go']) {
+for (const { slug: port } of PORTS) {
   const directory = join(root, `src/pages/${port}/latest/reference`)
   mkdirSync(directory, { recursive: true })
   writeFileSync(join(directory, '[...slug].astro'), `---
@@ -102,12 +103,12 @@ export const GET = () => new Response(JSON.stringify(referenceTree('${port}')), 
   headers: { 'Content-Type': 'application/json' },
 })
 `)
-}
-writeFileSync(join(root, 'src/pages/lua/latest/index.astro'), `---
+  writeFileSync(join(root, `src/pages/${port}/latest/index.astro`), `---
 import Home from '../../index.astro'
 ---
-<Home port="lua" />
+<Home port="${port}" />
 `)
+}
 let server, browser
 const terminate = async () => {
   await browser?.close()
@@ -368,7 +369,7 @@ async function checkReferenceAndHeroes(browser, base) {
 try {
   // Compile the first page during setup; navigation assertions measure
   // the running app. The outer loop still budgets this initial compilation.
-  const firstPage = apiSignaturesOnly ? '/api-signature-probe/'
+  const firstPage = documentationNavigationOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/concepts/server-session-window-pane/'
   const ready = fetch(`${base}${firstPage}`).then(async (response) => {
     assert(response.ok, `Browser setup: HTTP ${response.status} at ${firstPage}`)
@@ -381,6 +382,8 @@ try {
   await ready
   if (apiSignaturesOnly) {
     await checkSignatureLayouts(browser, base)
+  } else if (documentationNavigationOnly) {
+    await retryReload(() => checkDocumentationNavigation(browser, base, true))
   } else if (apiNavigationOnly) {
     const page = await browser.newPage({ reducedMotion: 'reduce' })
     page.setDefaultTimeout(10000)
@@ -401,6 +404,7 @@ try {
     const navigation = retryReload(() => checkNavigation(navigationPage, base)).then(() => null, (error) => error)
     const reference = checkReferenceAndHeroes(browser, base).then(() => checkSignatureLayouts(browser, base))
       .then(() => null, (error) => error)
+    const documentationNavigation = retryReload(() => checkDocumentationNavigation(browser, base)).then(() => null, (error) => error)
     const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     apiNavigationPage.setDefaultTimeout(10000)
     const apiNavigation = retryReload(() => checkApiNavigation(apiNavigationPage, base)).then(() => null, (error) => error)
@@ -545,6 +549,8 @@ try {
     if (clipboardError) throw clipboardError
     const nativeLayoutError = await nativeLayout
     if (nativeLayoutError) throw nativeLayoutError
+    const documentationNavigationError = await documentationNavigation
+    if (documentationNavigationError) throw documentationNavigationError
     await page.goto(`${base}/`, { waitUntil: 'load' })
     await page.locator('.scheme-switch input[value="dark"]').check({ force: true })
     const chipPixel = await page.evaluate(() => {

@@ -1,5 +1,6 @@
 /** Collection identity stays distinct from a product page's public path. */
 import { PORT_BY_SLUG } from './ports.ts'
+import { SOURCE_GUIDE_PORTS, sourceGuideRedirectsFor } from './port-documentation.ts'
 
 /** Task links stay in the reader's port and version; explicit port links stay explicit. */
 export function proseHref(href: string, root: string, port?: string, version = 'latest'): string {
@@ -45,6 +46,15 @@ export interface DocsRedirect {
   path: string
   /** Canonical public path below the current build base. */
   target: string
+}
+
+/** Preserve incoming links to retired reference summaries without a second API page. */
+export function sourceGuideRedirects(buildPort?: string, defaults: Record<string, string> = {}): DocsRedirect[] {
+  return (buildPort ? [buildPort] : SOURCE_GUIDE_PORTS).flatMap((port) =>
+    sourceGuideRedirectsFor(port).map(({ path, target }) => {
+      const project = (route: string) => docsRoutePath({ id: route, data: { port, route } }, buildPort, defaults)
+      return { path: project(path), target: project(target) }
+    }))
 }
 
 /**

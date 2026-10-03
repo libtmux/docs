@@ -36,6 +36,8 @@ export interface SidebarLinkItem {
 export interface SidebarGroupItem {
   type: 'group'
   label: string
+  /** The section overview belongs on the group row, not in a duplicate child. */
+  href?: string
   items: SidebarLinkItem[]
 }
 
@@ -68,7 +70,7 @@ interface OrderedLabel {
 /** Ascending by `sidebar.order` when set (unordered items sort last), then alphabetical. */
 function byOrderThenLabel<T extends OrderedLabel>(items: T[]): T[] {
   return [...items].sort((a, b) => {
-    if (a.order !== undefined && b.order !== undefined) return a.order - b.order
+    if (a.order !== undefined && b.order !== undefined) return a.order - b.order || a.label.localeCompare(b.label)
     if (a.order !== undefined) return -1
     if (b.order !== undefined) return 1
     return a.label.localeCompare(b.label)
@@ -241,6 +243,7 @@ export async function getSidebar(
       href: linkHref(entry, version, port),
       order: entry.data.sidebar?.order,
       group: entry.data.sidebar?.group,
+      path: entryPath(entry),
     }
   })
 
@@ -251,18 +254,21 @@ export async function getSidebar(
   }))
 
   const groupNames = [...new Set(rows.flatMap((r) => (r.group ? [r.group] : [])))]
+  const sectionOrder = ['Guides', 'Concepts', 'Examples', 'Topics']
   const groups: SidebarGroupItem[] = byOrderThenLabel(
     groupNames.map((label) => {
       const items = byOrderThenLabel(rows.filter((r) => r.group === label))
-      // items is already order-then-label sorted, so the first defined
-      // order in it is the group's minimum — used only to place the group
-      // among its siblings, not carried into the returned shape.
-      const order = items.find((i) => i.order !== undefined)?.order
-      return { label, order, items }
+      // Standard sections keep the same reading order in every port.
+      // Product-specific groups retain their authored order.
+      const section = items.find((item) => item.path === label.toLowerCase())
+      const rank = !product ? sectionOrder.indexOf(label) : -1
+      const order = rank >= 0 ? rank : items.find((i) => i.order !== undefined)?.order
+      return { label, order, href: section?.href, items: items.filter((item) => item !== section) }
     }),
-  ).map(({ label, items }) => ({
+  ).map(({ label, href, items }) => ({
     type: 'group' as const,
     label,
+    href,
     items: items.map((i): SidebarLinkItem => ({ type: 'link', label: i.label, href: i.href })),
   }))
 

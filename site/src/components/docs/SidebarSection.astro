@@ -1,48 +1,46 @@
 ---
-/**
- * A labeled group of sidebar links (frontmatter `sidebar.group`). Always
- * expanded — collapsing is left for later since no port has enough pages
- * yet to need it.
- */
 import { isActivePath, type SidebarLinkItem } from '../../lib/sidebar'
 import SidebarLink from './SidebarLink.astro'
 
 interface Props {
   label: string
+  href?: string
   items: SidebarLinkItem[]
   currentPath: string
 }
 
-const { label, items, currentPath } = Astro.props
+const { label, href, items, currentPath } = Astro.props
+const current = Boolean(href && isActivePath(href, currentPath))
+const expanded = current || items.some((item) => isActivePath(item.href, currentPath))
 ---
 
-<div class="sidebar-section">
-  <p class="section-label">{label}</p>
-  <div>
-    {
-      items.map((item) => (
-        <SidebarLink href={item.href} label={item.label} external={item.external} isActive={isActivePath(item.href, currentPath)} />
-      ))
-    }
-  </div>
-</div>
+{items.length ? (
+  <details class="sidebar-section" open={expanded}>
+    <summary class="api-nav__row section-label" style="--level:1">
+      {href ? <a href={href} class="api-nav__label" aria-current={current ? 'page' : undefined}>{label}</a>
+        : <span class="api-nav__label">{label}</span>}
+      <span class="api-nav__chevron" aria-hidden="true" />
+    </summary>
+    <div class="sidebar-section__children">
+      {items.map((item) => <SidebarLink href={item.href} label={item.label} external={item.external}
+        isActive={isActivePath(item.href, currentPath)} level={2} />)}
+    </div>
+  </details>
+) : href && <SidebarLink href={href} label={label} isActive={current} />}
 
 <style>
-  .sidebar-section {
-    margin-bottom: 1rem;
+  .sidebar-section { margin-block: 0.125rem; }
+  .section-label { list-style: none; }
+  .section-label::-webkit-details-marker { display: none; }
+  .section-label:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: -2px;
   }
-
-  .section-label {
-    margin: 0 0 0.25rem;
-    padding: 0.375rem 0.75rem;
-    font-size: 0.75rem;
+  .sidebar-section[open] > summary > .api-nav__chevron::before {
+    transform: translateY(0.1rem) rotate(225deg);
+  }
+  .sidebar-section:not([open]):has([aria-current='page']) > summary {
+    background: color-mix(in oklab, var(--theme-primary), transparent 90%);
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: rgb(100 116 139); /* slate-500 */
-  }
-
-  :global([data-theme-mode='dark']) .section-label {
-    color: rgb(148 163 184); /* slate-400 */
   }
 </style>
