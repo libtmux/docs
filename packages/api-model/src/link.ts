@@ -75,6 +75,50 @@ const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Objec
   swift: 'any',
 }).map(([port, words]) => [port, new Set(words.split(' '))]))
 
+/** Language help stays separate from links to API declarations. */
+export interface KeywordHelp {
+  title: string
+  description: string
+  href: string
+}
+
+const KEYWORD_HELP: Record<string, Record<string, KeywordHelp>> = {
+  kotlin: {
+    suspend: {
+      title: 'Kotlin suspending functions',
+      description: 'Allows a function to call suspending operations and pause without blocking a thread. It does not start a coroutine by itself.',
+      href: builtinHref('kotlin', 'suspend')!,
+    },
+  },
+  scala: {
+    def: {
+      title: 'Scala method declarations',
+      description: 'Declares a method, with its name, parameter lists and return type.',
+      href: 'https://docs.scala-lang.org/tour/basics.html#methods',
+    },
+    extension: {
+      title: 'Scala extension methods',
+      description: 'Adds methods callable on the receiver type without changing its definition.',
+      href: 'https://docs.scala-lang.org/scala3/reference/contextual/extension-methods.html',
+    },
+  },
+  fsharp: {
+    val: {
+      title: 'F# value signatures',
+      description: 'Declares the name and type of a value or function in a signature.',
+      href: 'https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/signature-files',
+    },
+  },
+}
+
+interface TypeSpan {
+  text: string
+  link?: LinkTarget
+  declaration?: true
+  keyword?: true
+  help?: KeywordHelp
+}
+
 /**
  * Builtin exceptions, which docstrings reference constantly and which all live
  * on one page.
@@ -475,8 +519,8 @@ export class SymbolIndex {
    * identifier boundaries and passing everything else through verbatim is what
    * makes those all work without a grammar for type syntax.
    */
-  linkType(annotation: string, context?: ApiSymbol, signature?: Signature): { text: string; link?: LinkTarget; declaration?: true; keyword?: true }[] {
-    const out: { text: string; link?: LinkTarget; declaration?: true; keyword?: true }[] = []
+  linkType(annotation: string, context?: ApiSymbol, signature?: Signature): TypeSpan[] {
+    const out: TypeSpan[] = []
     // Identifiers, including dotted ones; everything else is punctuation,
     // whitespace or a string literal and passes through untouched.
     // `::` is part of a name, not punctuation between two. Splitting there
@@ -501,7 +545,9 @@ export class SymbolIndex {
       // separate from prose resolution, where an explicit parameter reference
       // can still point to that parameter's documentation.
       if (SIGNATURE_KEYWORDS[this.lang ?? '']?.has(ident)) {
-        out.push({ text: ident, keyword: true })
+        const languageHelp = KEYWORD_HELP[this.lang ?? ''] ?? {}
+        const help = Object.hasOwn(languageHelp, ident) ? languageHelp[ident] : undefined
+        out.push({ text: ident, keyword: true, ...(help ? { help } : {}) })
         continue
       }
       if (signature && context && (ident === context.name || ident.endsWith(`.${context.name}`)) &&

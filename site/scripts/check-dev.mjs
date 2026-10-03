@@ -13,6 +13,7 @@ import { checkReferencePreferences, checkTmuxHeader } from './check-reference-pr
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
+const keywordHelpOnly = process.argv.includes('--keyword-help')
 const signaturePorts = apiSignaturesOnly ? API_MODEL_PORTS
   : API_MODEL_PORTS.filter((port) => ['py', 'ts'].includes(port.slug))
 const referencePreferencesOnly = process.argv.includes('--reference-preferences')
@@ -222,7 +223,8 @@ async function checkSignatureLayouts(browser, base) {
         if (width === 803) {
           const first = await keyword.boundingBox()
           const parameter = await declaration.locator('.api-parameter-name').first().boundingBox()
-          assert(Math.abs(first.y - parameter.y) < 2, 'F# source indentation does not force an empty signature row')
+          assert(Math.abs(first.y + first.height / 2 - parameter.y - parameter.height / 2) < 2,
+            'F# source indentation does not force an empty signature row')
         }
       }
     }
@@ -238,10 +240,113 @@ async function checkSignatureLayouts(browser, base) {
       'The function card opens its individual reference page')
     assert.equal(await page.locator('dt[data-symbol-id="io.github.libtmux.kotlin.withServer"]').count(), 1,
       'The individual page retains the complete declaration')
+    const kotlin = page.locator('dt[data-symbol-id="io.github.libtmux.kotlin.withServer"]')
+    for (const colorScheme of apiSignaturesOnly ? ['light', 'dark'] : ['light']) {
+      await page.emulateMedia({ colorScheme })
+      for (const width of apiSignaturesOnly ? [1920, 1440, 803, 768, 390, 320] : [803, 390]) {
+        await page.setViewportSize({ width, height: 1000 })
+        const code = await kotlin.locator('.gp-sphinx-api-layout-left').boundingBox()
+        const toolbar = await kotlin.locator('.gp-sphinx-api-layout-right').boundingBox()
+        if (width === 803 || width === 1920) {
+          assert(Math.abs(code.y - toolbar.y) < 2,
+            `${colorScheme}/${width}px: toolbar shares the declaration's first row when it fits`)
+          assert(code.x + code.width <= toolbar.x,
+            `${colorScheme}/${width}px: declaration leaves room for its toolbar`)
+        }
+        if (width <= 390) {
+          assert(toolbar.y >= code.y + code.height,
+            `${colorScheme}/${width}px: toolbar follows the full-width signature`)
+        }
+        assert(toolbar.height < 30, `${colorScheme}/${width}px: badges and links stay in one compact row`)
+        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+          `${colorScheme}/${width}px: declaration and toolbar fit without clipping`)
+      }
+    }
     console.log('Native browse layout: compact F# modules and linked Kotlin function cards work without JavaScript')
   } finally {
     await page.close()
   }
+}
+
+async function checkKeywordHelp(browser, base) {
+  const fullMatrix = apiSignaturesOnly || keywordHelpOnly
+  for (const javaScriptEnabled of [false, true]) {
+    const page = await browser.newPage({ javaScriptEnabled })
+    const errors = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    page.setDefaultTimeout(5000)
+    try {
+      for (const colorScheme of fullMatrix ? ['light', 'dark'] : ['light']) {
+        await page.emulateMedia({ colorScheme })
+        for (const width of fullMatrix ? [803, 390] : [390]) {
+          await page.setViewportSize({ width, height: 900 })
+          await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/`)
+          await page.evaluate(() => document.fonts.ready)
+          const trigger = page.locator('dt.api-native-header .api-keyword-trigger').first()
+          const id = await trigger.getAttribute('popovertarget')
+          const panel = page.locator(`[id="${id}"]`)
+          const declaration = page.locator('dt.api-native-header').first()
+          await trigger.scrollIntoViewIfNeeded()
+          const before = await declaration.boundingBox()
+          await trigger.focus()
+          if (!javaScriptEnabled) await page.keyboard.press('Enter')
+          await panel.waitFor({ state: 'visible' })
+          if (javaScriptEnabled) await page.evaluate(() => new Promise(requestAnimationFrame))
+          const box = await panel.boundingBox()
+          assert(box.x >= 0 && box.y >= 0 && box.x + box.width <= width + 1 && box.y + box.height <= 901,
+            `${colorScheme}/${width}px/JS=${javaScriptEnabled}: keyword help stays inside the viewport`)
+          if (!javaScriptEnabled) {
+            assert(Math.abs(box.x + box.width / 2 - width / 2) < 1 && Math.abs(box.y + box.height / 2 - 450) < 1,
+              'Native keyword help stays centered without JavaScript')
+          }
+          const after = await declaration.boundingBox()
+          assert.equal(after.height, before.height, 'Keyword help does not change the signature height')
+          const docs = panel.getByRole('link', { name: 'Language documentation' })
+          assert.equal(await docs.getAttribute('href'), 'https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions')
+          await page.keyboard.press('Tab')
+          assert(await docs.evaluate((element) => element === document.activeElement), 'Tab reaches the documentation link')
+          await page.keyboard.press('Escape')
+          await panel.waitFor({ state: 'hidden' })
+          await page.setViewportSize({ width, height: 360 })
+          await page.keyboard.press('Enter')
+          await panel.waitFor({ state: 'visible' })
+          if (javaScriptEnabled) await page.evaluate(() => new Promise(requestAnimationFrame))
+          const reopened = await panel.boundingBox()
+          assert(reopened.y >= 0 && reopened.y + reopened.height <= 361,
+            'Keyboard reopening after a resize uses the current viewport')
+          await page.keyboard.press('Escape')
+          await panel.waitFor({ state: 'hidden' })
+          await page.setViewportSize({ width, height: 900 })
+          await trigger.click()
+          await panel.waitFor({ state: 'visible' })
+          await panel.getByRole('button', { name: 'Close', exact: true }).click()
+          await panel.waitFor({ state: 'hidden' })
+          if (javaScriptEnabled) {
+            await page.mouse.move(0, 0)
+            await trigger.evaluate((element) => element.blur())
+            await trigger.hover()
+            await panel.waitFor({ state: 'visible' })
+            await docs.hover()
+            assert(await panel.isVisible(), 'Hover help stays open while reaching its link')
+            await docs.focus()
+            await page.setViewportSize({ width, height: 360 })
+            await page.evaluate(async () => {
+              window.scrollTo(0, 0)
+              await new Promise(requestAnimationFrame)
+            })
+            const resized = await panel.boundingBox()
+            assert(resized.y >= 0 && resized.y + resized.height <= 361,
+              'Open help remains in view after scrolling its keyword offscreen')
+            await page.keyboard.press('Escape')
+          }
+        }
+      }
+      assert.deepEqual(errors, [], 'Keyword help does not raise JavaScript errors')
+    } finally {
+      await page.close()
+    }
+  }
+  console.log('Keyword help: official docs, hover, keyboard, dismissal and viewport bounds pass with and without JavaScript')
 }
 
 async function checkReferenceAndHeroes(browser, base) {
@@ -425,7 +530,8 @@ async function checkReferenceAndHeroes(browser, base) {
 try {
   // Compile the first page during setup; navigation assertions measure
   // the running app. The outer loop still budgets this initial compilation.
-  const firstPage = documentationNavigationOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
+  const firstPage = keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
+    : documentationNavigationOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/concepts/server-session-window-pane/'
   const ready = fetch(`${base}${firstPage}`).then(async (response) => {
     assert(response.ok, `Browser setup: HTTP ${response.status} at ${firstPage}`)
@@ -436,8 +542,11 @@ try {
   if (!driver) throw new Error(`Unknown browser: ${engine}`)
   browser = await driver.launch(engine === 'chromium' ? { channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL } : {})
   await ready
-  if (apiSignaturesOnly) {
+  if (keywordHelpOnly) {
+    await retryReload(() => checkKeywordHelp(browser, base))
+  } else if (apiSignaturesOnly) {
     await checkSignatureLayouts(browser, base)
+    await retryReload(() => checkKeywordHelp(browser, base))
   } else if (tmuxHeaderOnly) {
     await retryReload(() => checkTmuxHeader(browser, base))
   } else if (referencePreferencesOnly) {
@@ -464,6 +573,7 @@ try {
     navigationPage.setDefaultTimeout(10000)
     const navigation = retryReload(() => checkNavigation(navigationPage, base)).then(() => null, (error) => error)
     const reference = checkReferenceAndHeroes(browser, base).then(() => checkSignatureLayouts(browser, base))
+      .then(() => retryReload(() => checkKeywordHelp(browser, base)))
       .then(() => null, (error) => error)
     const preferences = checkReferencePreferences(browser, base).then(() => null, (error) => error)
     const tmuxHeader = checkTmuxHeader(browser, base).then(() => null, (error) => error)

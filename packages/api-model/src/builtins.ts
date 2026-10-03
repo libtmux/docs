@@ -79,7 +79,7 @@ const qualifiedDotnetExceptions = Object.fromEntries([
 export const BUILTINS: Record<string, Record<string, string>> = {
   kotlin: {
     ...qualifiedKotlin,
-    suspend: 'https://kotlinlang.org/docs/composing-suspending-functions.html',
+    suspend: 'https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions',
     finally: 'https://kotlinlang.org/docs/exceptions.html#finally-block',
     String: kotlin('kotlin/-string'), Boolean: kotlin('kotlin/-boolean'),
     Int: kotlin('kotlin/-int'), Long: kotlin('kotlin/-long'),

@@ -6,6 +6,23 @@ import type { ApiModel, ApiSymbol } from '../src/model.ts'
 
 describe('standard types in product signatures', () => {
   it.each([
+    ['kotlin', 'suspend', 'https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions'],
+    ['scala', 'def', 'https://docs.scala-lang.org/tour/basics.html#methods'],
+    ['scala', 'extension', 'https://docs.scala-lang.org/scala3/reference/contextual/extension-methods.html'],
+    ['fsharp', 'val', 'https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/signature-files'],
+  ])('offers %s %s language help without making it an API link', (port, word, href) => {
+    const span = new SymbolIndex([], () => '#', port).linkType(word)[0]
+    expect(span).toMatchObject({ text: word, keyword: true, help: { href } })
+    expect(span.link).toBeUndefined()
+    expect(new SymbolIndex([], () => '#', 'java').linkType(word)[0].help).toBeUndefined()
+  })
+
+  it('does not inherit object properties as keyword help', () => {
+    expect(new SymbolIndex([], () => '#', 'kotlin').linkType('constructor')[0])
+      .toEqual({ text: 'constructor', keyword: true })
+  })
+
+  it.each([
     ['kotlin', 'List<String>', 'List', 'https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/'],
     ['scala', 'Option[String]', 'Option', 'https://www.scala-lang.org/api/3.x/scala/Option.html'],
     ['fsharp', "Result<'T, 'Error>", 'Result', 'https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-fsharpresult-2.html'],

@@ -2,6 +2,7 @@
 import type { ApiSymbol, Signature, SymbolIndex } from '@libtmux/api-model'
 import { qualifiedNameOf } from '@libtmux/api-model'
 import SymbolName from './SymbolName.astro'
+import ApiKeyword from './ApiKeyword.astro'
 
 /**
  * A type annotation, with every name it mentions linked.
@@ -45,7 +46,7 @@ const isOperator = (text: string) => /^(->|=>|<:|:>)$/.test(text)
         rel={span.link.external ? 'nofollow noopener' : undefined}
         title={span.link.external ? `${span.text} (${span.link.project ?? "external"})` : span.link.symbol ? qualifiedNameOf(span.link.symbol) : undefined}
       ><SymbolName name={span.text} /></a>
-    ) : (
+    ) : span.help ? <ApiKeyword text={span.text} help={span.help} /> : (
       <span class:list={[
         span.declaration || span.keyword ? 'api-type-label' : 'api-punct',
         span.keyword && 'api-keyword',

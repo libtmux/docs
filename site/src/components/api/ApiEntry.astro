@@ -64,8 +64,6 @@ const { symbol, index, sourceUrl, port, alternativesFor, heading = false, member
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
 const nativeSignatures = ['kotlin', 'scala', 'fsharp'].includes(port ?? '')
-const simpleNativeSignature = nativeSignatures && symbol.signatures.length === 1 &&
-  symbol.signatures[0].params.length === 0 && !/[\r\n]/.test(symbol.signatures[0].raw ?? '')
 
 /**
  * The Sphinx domain this port's symbols belong to.
@@ -268,8 +266,7 @@ const hasBody =
   ]}
 >
   <dt
-    class:list={['sig sig-object py gp-sphinx-api-header', nativeSignatures && 'api-native-header',
-      simpleNativeSignature && 'api-native-header--simple']}
+    class:list={['sig sig-object py gp-sphinx-api-header', nativeSignatures && 'api-native-header']}
     id={anchorId ?? anchor}
     data-symbol-id={symbol.id}
     data-domain={domain}
