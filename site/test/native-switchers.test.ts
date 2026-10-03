@@ -61,7 +61,14 @@ describe('native API page switchers', () => {
 
   it('keeps all port homes and manifest requests inside the locale and preview', async () => {
     const { document, requests } = await load('api/libtmux.session/')
-    const nav = document.querySelector('nav[aria-label="Language"]')!
+    const nav = document.querySelector('nav[aria-label="Documentation destinations"]')!
+    const tmux = nav.querySelector('a')!
+    expect(tmux.textContent).toBe('tmux')
+    expect(tmux.getAttribute('href')).toBe(`${base}/tmux/latest/reference/`)
+    expect(tmux.getAttribute('aria-label')).toBe('tmux CLI reference')
+    expect(tmux.hasAttribute('data-port-home')).toBe(false)
+    expect(tmux.nextElementSibling?.getAttribute('data-port-home')).toBe('py')
+    expect(nav.querySelectorAll('[data-port-home]')).toHaveLength(PORTS.length)
     expect(nav.querySelector('[data-port-home="py"]')?.getAttribute('href')).toBe(`${base}/py/latest/`)
     expect(nav.querySelector('[data-port-home="ts"]')?.getAttribute('href')).toBe(`${base}/ts/stable/`)
     expect(nav.querySelector('[data-port-home="rs"]')?.getAttribute('href')).toBe(`${base}/rs/latest/`)

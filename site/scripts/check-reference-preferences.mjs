@@ -1,0 +1,144 @@
+import assert from 'node:assert/strict'
+
+/** Exercise native disclosures and fragment navigation on a short API page. */
+export async function checkReferencePreferences(browser, base) {
+  const path = '/java/latest/reference/io-github-libtmux-buffers-buffers-delete/'
+  const key = 'libtmux-docs.api-source-details'
+  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 784, height: 760 } })
+  await context.addInitScript(() => {
+    window.__sourceFrames = []
+    const seen = new WeakSet()
+    const observe = () => {
+      const details = document.querySelector('.api-source-details')
+      if (details?.querySelector('summary') && !seen.has(details)) {
+        seen.add(details)
+        window.__sourceFrames.push({ path: location.pathname, open: details.open })
+      }
+      requestAnimationFrame(observe)
+    }
+    requestAnimationFrame(observe)
+    window.__docsPageLoaded = false
+    document.addEventListener('astro:page-load', () => { window.__docsPageLoaded = true })
+  })
+  const page = await context.newPage()
+  page.setDefaultTimeout(10000)
+  const source = page.locator('.api-source-details')
+  const assertFirstFrame = async (open) => {
+    await page.waitForFunction(() => window.__sourceFrames.length > 0)
+    assert.equal(await page.evaluate(() => window.__sourceFrames.at(-1).open), open,
+      'The first frame has the saved native disclosure state')
+    assert.equal(await source.evaluate((el) => el.open), open)
+  }
+  try {
+    await page.goto(`${base}${path}`)
+    await page.waitForFunction(() => window.__docsPageLoaded)
+    await assertFirstFrame(true)
+    // Exercise both possible disclosure heights on the reported short page.
+    for (const open of [true, false]) {
+      if (!open) {
+        await source.locator('summary').focus()
+        await page.keyboard.press('Space')
+        await page.waitForFunction((key) => localStorage.getItem(key) === 'closed', key)
+      }
+      const sections = page.getByRole('navigation', { name: 'Reference sections', exact: true })
+      await sections.getByRole('link', { name: 'Errors', exact: true }).click()
+      const errorsScroll = await page.evaluate(() => scrollY)
+      await sections.getByRole('link', { name: 'Overview', exact: true }).click()
+      await page.waitForFunction(() => location.hash === '#api-overview')
+      const overview = await page.evaluate(() => ({
+        scroll: scrollY,
+        heading: document.querySelector('h1').getBoundingClientRect().top,
+        header: document.querySelector('.site-header').getBoundingClientRect().bottom,
+      }))
+      assert(overview.scroll < errorsScroll - 20, `Overview returns above Errors with source ${open ? 'open' : 'closed'}`)
+      assert(overview.heading >= overview.header && overview.heading < 350, 'Overview reveals the heading')
+    }
+    await page.reload()
+    await assertFirstFrame(false)
+    await page.waitForFunction(() => window.__docsPageLoaded)
+    // A real declaration link uses the client router, without replacing Window.
+    const linked = page.locator('.api-overview a[href*="/java/latest/reference/"]').first()
+    const target = await linked.getAttribute('href')
+    await linked.click()
+    await page.waitForURL(new URL(target, base).href)
+    await page.waitForFunction(() => window.__sourceFrames.length === 2)
+    await assertFirstFrame(false)
+    await source.locator('summary').click()
+    await page.waitForFunction((key) => localStorage.getItem(key) === 'open', key)
+    await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server-livestate/`)
+    await assertFirstFrame(true)
+    await source.locator('summary').click()
+    await page.waitForFunction((key) => localStorage.getItem(key) === 'closed', key)
+    // A new tab and another port share the same persistent preference.
+    const other = await context.newPage()
+    await other.goto(`${base}${path}`)
+    assert.equal(await other.locator('.api-source-details').evaluate((el) => el.open), false)
+    await other.locator('.api-source-details > summary').click()
+    await page.waitForFunction(() => document.querySelector('.api-source-details').open)
+    await other.close()
+    console.log('Source and package: default open, keyboard, reload, client route, cross-port/tab and first-frame state pass')
+  } finally {
+    await context.close()
+  }
+
+  for (const javaScriptEnabled of [false, true]) {
+    const fallback = await browser.newContext({ javaScriptEnabled, reducedMotion: 'reduce' })
+    if (javaScriptEnabled) await fallback.addInitScript(() => {
+      Object.defineProperty(window, 'localStorage', { get() { throw new Error('Storage blocked') } })
+    })
+    const page = await fallback.newPage()
+    try {
+      await page.goto(`${base}${path}`)
+      const details = page.locator('.api-source-details')
+      assert.equal(await details.evaluate((el) => el.open), true)
+      await details.locator('summary').focus()
+      await page.keyboard.press('Space')
+      assert.equal(await details.evaluate((el) => el.open), false)
+      await page.keyboard.press('Space')
+      assert.equal(await details.evaluate((el) => el.open), true)
+    } finally {
+      await fallback.close()
+    }
+  }
+  console.log('Source disclosure stays usable without JavaScript or localStorage')
+}
+
+/** The CLI is a separate destination before the registry-derived language links. */
+export async function checkTmuxHeader(browser, base) {
+  for (const javaScriptEnabled of [false, true]) {
+    const context = await browser.newContext({ javaScriptEnabled, reducedMotion: 'reduce' })
+    const page = await context.newPage()
+    try {
+      await page.goto(`${base}/tmux/latest/reference/capture-pane/`)
+      for (const width of [390, 768, 784, 1024, 1440, 1600]) {
+        await page.setViewportSize({ width, height: 900 })
+        const menu = page.locator('.site-header__menu')
+        if (width < 768) await menu.locator(':scope > summary').click()
+        const nav = page.locator('nav[aria-label="Documentation destinations"]:visible')
+        assert.equal(await nav.count(), 1)
+        const tmux = nav.locator('a').first()
+        assert.equal((await tmux.innerText()).trim(), 'tmux', `${width}px: all four letters remain visible`)
+        assert.equal(await tmux.getAttribute('href'), `${new URL(base).pathname}/tmux/latest/reference/`)
+        assert.equal(await tmux.getAttribute('aria-current'), 'page')
+        assert.equal(await nav.locator('a').nth(1).getAttribute('aria-label'), 'Python')
+        const geometry = await page.evaluate(() => {
+          const nav = [...document.querySelectorAll('.site-header nav')].find((el) => el.getBoundingClientRect().width)
+          const rect = nav.getBoundingClientRect()
+          const controls = document.querySelector('.site-header__always').getBoundingClientRect()
+          return { fits: document.documentElement.scrollWidth <= innerWidth + 1,
+            separate: innerWidth < 768 || rect.right <= controls.left }
+        })
+        assert(geometry.fits && geometry.separate, `${width}px: documentation links fit beside header controls`)
+        if (width < 768) await menu.locator(':scope > summary').click()
+      }
+      const tmux = page.locator('nav[aria-label="Documentation destinations"]:visible').getByRole('link', { name: 'tmux CLI reference' })
+      await tmux.focus()
+      await page.keyboard.press('Enter')
+      await page.waitForURL(`${base}/tmux/latest/reference/`)
+      assert(await page.getByRole('heading', { name: 'tmux CLI reference', exact: true }).isVisible())
+    } finally {
+      await context.close()
+    }
+  }
+  console.log('tmux header: CLI target, full label, Python ordering, active state, keyboard and 390–1600px layout pass with/without JavaScript')
+}

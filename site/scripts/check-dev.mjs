@@ -9,11 +9,14 @@ import { API_MODEL_PORTS, PORTS, productAvailable } from '../src/lib/ports.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
 import { checkApiExampleOwnership, checkApiNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkNativeLayout } from './check-native-layout.mjs'
+import { checkReferencePreferences, checkTmuxHeader } from './check-reference-preferences.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
 const signaturePorts = apiSignaturesOnly ? API_MODEL_PORTS
   : API_MODEL_PORTS.filter((port) => ['py', 'ts'].includes(port.slug))
+const referencePreferencesOnly = process.argv.includes('--reference-preferences')
+const tmuxHeaderOnly = process.argv.includes('--tmux-header')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 // `workspaceCli` alone also covers a port's local, unreleased dev CLI
 // (`workspaceCliAvailability: 'local'`), which publishes no top-level
@@ -381,6 +384,11 @@ try {
   await ready
   if (apiSignaturesOnly) {
     await checkSignatureLayouts(browser, base)
+  } else if (tmuxHeaderOnly) {
+    await retryReload(() => checkTmuxHeader(browser, base))
+  } else if (referencePreferencesOnly) {
+    await retryReload(() => checkReferencePreferences(browser, base))
+    await retryReload(() => checkTmuxHeader(browser, base))
   } else if (apiNavigationOnly) {
     const page = await browser.newPage({ reducedMotion: 'reduce' })
     page.setDefaultTimeout(10000)
@@ -401,6 +409,8 @@ try {
     const navigation = retryReload(() => checkNavigation(navigationPage, base)).then(() => null, (error) => error)
     const reference = checkReferenceAndHeroes(browser, base).then(() => checkSignatureLayouts(browser, base))
       .then(() => null, (error) => error)
+    const preferences = checkReferencePreferences(browser, base).then(() => null, (error) => error)
+    const tmuxHeader = checkTmuxHeader(browser, base).then(() => null, (error) => error)
     const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     apiNavigationPage.setDefaultTimeout(10000)
     const apiNavigation = retryReload(() => checkApiNavigation(apiNavigationPage, base)).then(() => null, (error) => error)
@@ -412,7 +422,9 @@ try {
       const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
       assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
       await page.evaluate(() => document.fonts.ready)
-      assert.equal(await page.locator('nav[aria-label="Language"] a').first().getAttribute('href'), '/en/py/stable/')
+      const documentation = page.locator('nav[aria-label="Documentation destinations"]').first()
+      assert.equal(await documentation.locator('a').nth(0).getAttribute('href'), '/en/tmux/latest/reference/')
+      assert.equal(await documentation.locator('a').nth(1).getAttribute('href'), '/en/py/stable/')
       const switcher = page.locator('[data-page-port-switcher]')
       const hasSwitcher = path !== 'mcp/tools'
       const isReference = path.includes('/reference/')
@@ -657,6 +669,10 @@ try {
     await navigationPage.close()
     const referenceError = await reference
     if (referenceError) throw referenceError
+    const preferencesError = await preferences
+    if (preferencesError) throw preferencesError
+    const tmuxHeaderError = await tmuxHeader
+    if (tmuxHeaderError) throw tmuxHeaderError
     const apiNavigationError = await apiNavigation
     if (apiNavigationError) throw apiNavigationError
     await apiNavigationPage.close()
