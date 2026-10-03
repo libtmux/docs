@@ -1,5 +1,27 @@
+import { readFileSync } from 'node:fs'
 import { expect, it } from 'vitest'
+import catalogs from '../src/data/mcp-tools.json'
 import { equivalentMcpTool, MCP_REFERENCE, renderToolDescription, toolSummary } from '../src/lib/mcp-reference'
+
+it.each(Object.entries(catalogs.ports))('keeps the %s catalog bound to its committed native snapshot', (port, catalog) => {
+  const snapshot = JSON.parse(readFileSync(new URL(`../src/data/mcp-protocol/${port}.json`, import.meta.url), 'utf8'))
+  const { tools, ...protocol } = snapshot.protocol as {
+    tools: (Record<string, unknown> & { name: string })[]
+  }
+  expect(catalog.repo).toBe(snapshot.repo)
+  expect(catalog.extractedRevision).toBe(snapshot.revision)
+  expect(catalog.selection).toEqual(snapshot.selection)
+  expect(catalog.protocol).toEqual(protocol)
+  expect(catalog.registrations.map((tool) => tool.wireName).sort()).toEqual(tools.map((tool) => tool.name).sort())
+  const contract = ({ description, inputSchema, outputSchema, annotations, meta, _meta }: Record<string, unknown>) =>
+    ({ description, inputSchema, outputSchema, annotations, meta: meta ?? _meta })
+  for (const tool of tools) {
+    const registration = catalog.registrations.find((entry) => entry.wireName === tool.name)!
+    expect(registration.source.repo, tool.name).toBe(snapshot.repo)
+    expect(registration.source.extractedRevision, tool.name).toBe(snapshot.revision)
+    expect(contract(registration), tool.name).toEqual(contract(tool))
+  }
+})
 
 it('preserves protocol description structure while keeping index summaries short', async () => {
   const description = 'Read a pane.\n\n## Example\n\n```json\n{"pane_id":"%1"}\n```'
