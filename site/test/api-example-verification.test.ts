@@ -1,3 +1,4 @@
+import type { ApiModel } from '@libtmux/api-model'
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
@@ -19,12 +20,14 @@ describe('complete API example selection', () => {
   it('keeps the current fixtures and their exact displayed commands selectable', () => {
     const results = python(`
 manifest = json.loads(pathlib.Path('site/test/fixtures/api-examples.json').read_text())
+models = {port: json.loads(pathlib.Path('site/src/data/api/' + port + '.json').read_text())
+          for port in {example['port'] for example in manifest['examples']}}
 results = []
 for example in manifest['examples']:
     page = example['page'].removeprefix('ports/' + example['port'] + '/')
     selected = runner.select_examples(manifest, 'api', example['port'], page, example.get('sourceProgramId'))
     assert selected == [example], example['page']
-    model = json.loads(pathlib.Path('site/src/data/api/' + example['port'] + '.json').read_text())
+    model = models[example['port']]
     symbol = next(symbol for symbol in model['symbols'] if symbol['id'] == example['symbol'])
     commands = [re.sub(r'^\\$ ', '', code, flags=re.M).strip()
                 for code in runner.api_command_blocks(symbol['doc']['examples'], example)]
@@ -83,10 +86,15 @@ describe('API example source and clipboard receipts', () => {
 
   it('retains the current fixture source links, file hashes and recipes', () => {
     const manifest = JSON.parse(readFileSync(new URL('./fixtures/api-examples.json', import.meta.url), 'utf8'))
+    const models = new Map<string, ApiModel>()
     for (const example of manifest.examples) {
-      const model = JSON.parse(readFileSync(new URL(`../src/data/api/${example.port}.json`, import.meta.url), 'utf8'))
-      const symbol = model.symbols.find((entry: { id: string }) => entry.id === example.symbol)
-      const blocks = symbol.doc.examples as { sourceUrl?: string; code: string; lang: string }[]
+      let model = models.get(example.port)
+      if (!model) {
+        model = JSON.parse(readFileSync(new URL(`../src/data/api/${example.port}.json`, import.meta.url), 'utf8')) as ApiModel
+        models.set(example.port, model)
+      }
+      const symbol = model.symbols.find((entry) => entry.id === example.symbol)!
+      const blocks = symbol.doc!.examples as { sourceUrl?: string; code: string; lang: string }[]
       const sourceLinks = blocks.map((block) => block.sourceUrl
         ? [{ href: block.sourceUrl, label: 'Source example' }] : [])
       const rendered = { text: '', links: sourceLinks.flat(), sourceLinks,

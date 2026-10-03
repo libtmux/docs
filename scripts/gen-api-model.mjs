@@ -17,6 +17,7 @@ import { extractRuby } from '../packages/api-model/src/languages/ruby.ts'
 import { attachCompleteGoExamples, readCompleteGoExamples } from '../packages/api-model/src/languages/go-examples.ts'
 import { attachCompleteCSharpExamples } from '../packages/api-model/src/languages/csharp-examples.ts'
 import { attachCompleteFSharpExamples } from '../packages/api-model/src/languages/fsharp-examples.ts'
+import { attachCompleteCxxExamples } from '../packages/api-model/src/languages/cxx-examples.ts'
 import { attachCompleteJvmExamples } from '../packages/api-model/src/languages/jvm-examples.ts'
 import { attachCompleteSwiftExamples } from '../packages/api-model/src/languages/swift-examples.ts'
 import { mapLine, parseHunks } from '../packages/api-model/src/source-lines.ts'
@@ -505,6 +506,18 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   if (port === 'fsharp' || port === 'dotnet') {
     const attach = port === 'fsharp' ? attachCompleteFSharpExamples : attachCompleteCSharpExamples
     attach(model.symbols, (file) => {
+      try {
+        return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
+          encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'],
+        })
+      } catch {
+        return undefined
+      }
+    }, { repo: cfg.repo, revision })
+  }
+
+  if (port === 'cxx') {
+    attachCompleteCxxExamples(model.symbols, (file) => {
       try {
         return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
           encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'],

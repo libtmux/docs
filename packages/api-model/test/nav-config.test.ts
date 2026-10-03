@@ -32,3 +32,17 @@ describe('Lua reference navigation', () => {
     expect(compiled.assignments.internal).toContain('libtmux.Implementation')
   })
 })
+
+it('keeps explicit workspace helpers out of unrelated naming buckets', () => {
+  const compiled = compileNav(
+    NAV.cxx,
+    [
+      { ...symbol('libtmux::workspace::BuildEvent', 'BuildEvent', 'examples/workspace/include/libtmux_consumers/workspace.hpp'), kind: 'struct' },
+      symbol('libtmux::OtherEvent', 'OtherEvent', 'include/libtmux/events.hpp'),
+    ],
+    { conceptIds: {}, moduleOf: () => 'libtmux' },
+  )
+  expect(compiled.assignments.workspace).toContain('libtmux::workspace::BuildEvent')
+  expect(compiled.assignments.constants).toContain('libtmux::OtherEvent')
+  expect(compiled.diagnostics.ambiguous).toEqual([])
+})

@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-cxx",
-  "revision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+  "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -28,7 +28,7 @@
     "serverInfo": {
       "name": "libtmux-cxx",
       "title": "libtmux C++ tmux server",
-      "version": "0.1.0-alpha.10"
+      "version": "0.1.0-alpha.11"
     },
     "tools": [
       {
@@ -2218,12 +2218,12 @@
           "readOnlyHint": false,
           "title": "Select a tmux layout"
         },
-        "description": "Replace the pane layout of one window. Change tmux state; no client-supplied executable input.",
+        "description": "Replace the pane layout of one window. Names and mirrored layouts follow the selected daemon version. Saved layouts accept v1 checksums and v2 JSON; v2 requires tmux 3.8 (including 3.8-rc) or newer. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
             "layout": {
-              "description": "Named or saved tmux layout.",
+              "description": "Built-in name, unambiguous abbreviation or saved tmux layout.",
               "maxLength": 4096,
               "type": "string"
             },

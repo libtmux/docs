@@ -731,6 +731,25 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     control: ['io.github.libtmux.scaladsl.cats.Channel', 'io.github.libtmux.scaladsl.ox.Flows'],
   },
   fsharp: { queries: ['LibTmux.FSharp.Selection'] },
+  cxx: {
+    workspace: ['BuildEvent', 'BuildPhase', 'BuildStop'].map((name) => `libtmux::workspace::${name}`),
+  },
+}
+
+/** Exact editorial placements exclude rules in unrelated bucket trees. */
+function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket {
+  const placements = LANGUAGE_PLACEMENTS[port] ?? {}
+  const ids = bucket.id === root ? placements[root] : undefined
+  const elsewhere = Object.entries(placements)
+    .flatMap(([id, symbols]) => id === root ? [] : symbols)
+  const match: Match = elsewhere.length
+    ? { kind: 'allOf', of: [bucket.match, { kind: 'not', of: { kind: 'id', is: elsewhere } }] }
+    : bucket.match
+  return {
+    ...bucket,
+    match: ids ? { kind: 'anyOf', of: [match, { kind: 'id', is: ids }] } : match,
+    ...(bucket.children ? { children: bucket.children.map((child) => languageBucket(child, port, root)) } : {}),
+  }
 }
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
@@ -738,10 +757,7 @@ export const NAV: Record<string, PortNav> = Object.fromEntries(
     port,
     {
       port,
-      buckets: SHARED.map((bucket) => {
-        const ids = LANGUAGE_PLACEMENTS[port]?.[bucket.id]
-        return ids ? { ...bucket, match: { kind: 'anyOf' as const, of: [bucket.match, { kind: 'id' as const, is: ids }] } } : bucket
-      }),
+      buckets: SHARED.map((bucket) => languageBucket(bucket, port)),
       unsettled: OVERRIDES[port]?.unsettled,
     },
   ]),

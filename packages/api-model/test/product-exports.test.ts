@@ -39,4 +39,16 @@ describe('package export boundaries', () => {
     scopeProductSymbols([email], { port: 'py', entries: [], readSource: () => '' })
     expect(email.apiScope).toBe('internal')
   })
+
+  it('keeps C++ implementation namespaces out of product exports', () => {
+    const symbols: ApiSymbol[] = [
+      declaration('libtmux::workspace::build', '/workspace.hpp', 'function'),
+      declaration('libtmux::workspace::detail::build_windows', '/workspace.hpp', 'function'),
+      declaration('libtmux::workspace::detail::State', '/workspace.hpp', 'struct'),
+      { ...declaration('libtmux::workspace::detail::State::value', '/workspace.hpp', 'attribute'),
+        parent: 'libtmux::workspace::detail::State' },
+    ]
+    scopeProductSymbols(symbols, { port: 'cxx', entries: [], readSource: () => '' })
+    expect(symbols.map((symbol) => symbol.apiScope)).toEqual(['exported', 'internal', 'internal', 'internal'])
+  })
 })

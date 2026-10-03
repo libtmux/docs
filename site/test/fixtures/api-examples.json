@@ -10710,6 +10710,1427 @@
         "3.7c"
       ],
       "verificationScope": "Seven whole source programs and all three consumer setup files were verified from one fresh public HTTPS checkout. Native source packs supplied isolated package consumers; each exact program ran on .NET 8 and 10 against tmux 3.2a and 3.7c with exact stdout and no owned server left. The displayed source-pack commands correspond to the recorded native commands; no hidden program prelude. Full compiler IDs were verified against both source-built XML documentation files; distinct overload IDs share one complete program on their common page."
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-server",
+      "symbol": "libtmux::Server",
+      "publicId": "libtmux::Server",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "server",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "b3874e9957faf8242d46f752813ffbea97da96ccc28b53485656444a118ba44b",
+          "clipboardSha256": "22e92342bc8a0c14a93835a2f5b7c635b886fd2c30c15f34d4b35ba4e6f4b7ca",
+          "sourceFile": "examples/api/server.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "Connected to the private api session."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/server.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-server-at_socket_path",
+      "symbol": "libtmux::Server::at_socket_path",
+      "publicId": "libtmux::Server::at_socket_path",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "server",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "b3874e9957faf8242d46f752813ffbea97da96ccc28b53485656444a118ba44b",
+          "clipboardSha256": "22e92342bc8a0c14a93835a2f5b7c635b886fd2c30c15f34d4b35ba4e6f4b7ca",
+          "sourceFile": "examples/api/server.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "Connected to the private api session."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/server.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-server-sessions",
+      "symbol": "libtmux::Server::sessions",
+      "publicId": "libtmux::Server::sessions",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "listings",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "73c8e6df3f703fedec70d54527f92d7134e354957828c0b4e1b54c3dfebadad2",
+          "clipboardSha256": "bc3fbd251b8235e9376d9f2c3fca1bcadebfe6141860ab207e7d07fed8bcd68f",
+          "sourceFile": "examples/api/listings.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "sessions=1 windows=1 panes=1 clients=0"
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/listings.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-server-windows",
+      "symbol": "libtmux::Server::windows",
+      "publicId": "libtmux::Server::windows",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "listings",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "73c8e6df3f703fedec70d54527f92d7134e354957828c0b4e1b54c3dfebadad2",
+          "clipboardSha256": "bc3fbd251b8235e9376d9f2c3fca1bcadebfe6141860ab207e7d07fed8bcd68f",
+          "sourceFile": "examples/api/listings.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "sessions=1 windows=1 panes=1 clients=0"
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/listings.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-server-panes",
+      "symbol": "libtmux::Server::panes",
+      "publicId": "libtmux::Server::panes",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "listings",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "73c8e6df3f703fedec70d54527f92d7134e354957828c0b4e1b54c3dfebadad2",
+          "clipboardSha256": "bc3fbd251b8235e9376d9f2c3fca1bcadebfe6141860ab207e7d07fed8bcd68f",
+          "sourceFile": "examples/api/listings.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "sessions=1 windows=1 panes=1 clients=0"
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/listings.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-server-clients",
+      "symbol": "libtmux::Server::clients",
+      "publicId": "libtmux::Server::clients",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "listings",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "73c8e6df3f703fedec70d54527f92d7134e354957828c0b4e1b54c3dfebadad2",
+          "clipboardSha256": "bc3fbd251b8235e9376d9f2c3fca1bcadebfe6141860ab207e7d07fed8bcd68f",
+          "sourceFile": "examples/api/listings.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "sessions=1 windows=1 panes=1 clients=0"
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/listings.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-session",
+      "symbol": "libtmux::Session",
+      "publicId": "libtmux::Session",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "relations",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "bd1e81a810bc9afe423fcbdec34a8c7f370f69ccfb742c7408bd5aa6cf62dbc6",
+          "clipboardSha256": "8dc18f0b7a1e190ed9314c7fa892ac968c6cfe7b2b94477f8b545788ec90859b",
+          "sourceFile": "examples/api/relations.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "api session -> one window -> one pane; owners match."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/relations.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-window",
+      "symbol": "libtmux::Window",
+      "publicId": "libtmux::Window",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "relations",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "bd1e81a810bc9afe423fcbdec34a8c7f370f69ccfb742c7408bd5aa6cf62dbc6",
+          "clipboardSha256": "8dc18f0b7a1e190ed9314c7fa892ac968c6cfe7b2b94477f8b545788ec90859b",
+          "sourceFile": "examples/api/relations.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "api session -> one window -> one pane; owners match."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/relations.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-pane",
+      "symbol": "libtmux::Pane",
+      "publicId": "libtmux::Pane",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "relations",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "bd1e81a810bc9afe423fcbdec34a8c7f370f69ccfb742c7408bd5aa6cf62dbc6",
+          "clipboardSha256": "8dc18f0b7a1e190ed9314c7fa892ac968c6cfe7b2b94477f8b545788ec90859b",
+          "sourceFile": "examples/api/relations.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "api session -> one window -> one pane; owners match."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/relations.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-session-windows",
+      "symbol": "libtmux::Session::windows",
+      "publicId": "libtmux::Session::windows",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "relations",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "bd1e81a810bc9afe423fcbdec34a8c7f370f69ccfb742c7408bd5aa6cf62dbc6",
+          "clipboardSha256": "8dc18f0b7a1e190ed9314c7fa892ac968c6cfe7b2b94477f8b545788ec90859b",
+          "sourceFile": "examples/api/relations.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "api session -> one window -> one pane; owners match."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/relations.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-session-panes",
+      "symbol": "libtmux::Session::panes",
+      "publicId": "libtmux::Session::panes",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "relations",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "bd1e81a810bc9afe423fcbdec34a8c7f370f69ccfb742c7408bd5aa6cf62dbc6",
+          "clipboardSha256": "8dc18f0b7a1e190ed9314c7fa892ac968c6cfe7b2b94477f8b545788ec90859b",
+          "sourceFile": "examples/api/relations.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "api session -> one window -> one pane; owners match."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/relations.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-window-panes",
+      "symbol": "libtmux::Window::panes",
+      "publicId": "libtmux::Window::panes",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "relations",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "bd1e81a810bc9afe423fcbdec34a8c7f370f69ccfb742c7408bd5aa6cf62dbc6",
+          "clipboardSha256": "8dc18f0b7a1e190ed9314c7fa892ac968c6cfe7b2b94477f8b545788ec90859b",
+          "sourceFile": "examples/api/relations.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "api session -> one window -> one pane; owners match."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/relations.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-pane-window",
+      "symbol": "libtmux::Pane::window",
+      "publicId": "libtmux::Pane::window",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "relations",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "bd1e81a810bc9afe423fcbdec34a8c7f370f69ccfb742c7408bd5aa6cf62dbc6",
+          "clipboardSha256": "8dc18f0b7a1e190ed9314c7fa892ac968c6cfe7b2b94477f8b545788ec90859b",
+          "sourceFile": "examples/api/relations.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "api session -> one window -> one pane; owners match."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/relations.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-pane-session",
+      "symbol": "libtmux::Pane::session",
+      "publicId": "libtmux::Pane::session",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "relations",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "bd1e81a810bc9afe423fcbdec34a8c7f370f69ccfb742c7408bd5aa6cf62dbc6",
+          "clipboardSha256": "8dc18f0b7a1e190ed9314c7fa892ac968c6cfe7b2b94477f8b545788ec90859b",
+          "sourceFile": "examples/api/relations.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "api session -> one window -> one pane; owners match."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/relations.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-server-new_session",
+      "symbol": "libtmux::Server::new_session",
+      "publicId": "libtmux::Server::new_session",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "new-session",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "04e28e886a8faef87b2e7782041282c23699f4232f38c3a385c25ef0e325a595",
+          "clipboardSha256": "8014a31c5705651e4ae27f60cc52f79e3540f556740e507476d67987f65028ae",
+          "sourceFile": "examples/api/new-session.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "Created work with the main window; two sessions are available."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/new-session.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-newsessionoptions",
+      "symbol": "libtmux::NewSessionOptions",
+      "publicId": "libtmux::NewSessionOptions",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "new-session",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "04e28e886a8faef87b2e7782041282c23699f4232f38c3a385c25ef0e325a595",
+          "clipboardSha256": "8014a31c5705651e4ae27f60cc52f79e3540f556740e507476d67987f65028ae",
+          "sourceFile": "examples/api/new-session.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "Created work with the main window; two sessions are available."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/new-session.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-session-new_window",
+      "symbol": "libtmux::Session::new_window",
+      "publicId": "libtmux::Session::new_window",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "new-window-pane",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "985a1cd000ebb592be4294fe6cb78c7f4e75b1adea00a6644010d399f08ab792",
+          "clipboardSha256": "f06cd0f5e16da0da82177c64b480e888b853c97a61b410199629e56a40f57ea5",
+          "sourceFile": "examples/api/new-window-pane.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "Created editor with two panes; the active window is unchanged."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/new-window-pane.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-pane-split",
+      "symbol": "libtmux::Pane::split",
+      "publicId": "libtmux::Pane::split",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "new-window-pane",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "985a1cd000ebb592be4294fe6cb78c7f4e75b1adea00a6644010d399f08ab792",
+          "clipboardSha256": "f06cd0f5e16da0da82177c64b480e888b853c97a61b410199629e56a40f57ea5",
+          "sourceFile": "examples/api/new-window-pane.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "Created editor with two panes; the active window is unchanged."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/new-window-pane.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-newwindowoptions",
+      "symbol": "libtmux::NewWindowOptions",
+      "publicId": "libtmux::NewWindowOptions",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "new-window-pane",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "985a1cd000ebb592be4294fe6cb78c7f4e75b1adea00a6644010d399f08ab792",
+          "clipboardSha256": "f06cd0f5e16da0da82177c64b480e888b853c97a61b410199629e56a40f57ea5",
+          "sourceFile": "examples/api/new-window-pane.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "Created editor with two panes; the active window is unchanged."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/new-window-pane.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-splitoptions",
+      "symbol": "libtmux::SplitOptions",
+      "publicId": "libtmux::SplitOptions",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "new-window-pane",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "985a1cd000ebb592be4294fe6cb78c7f4e75b1adea00a6644010d399f08ab792",
+          "clipboardSha256": "f06cd0f5e16da0da82177c64b480e888b853c97a61b410199629e56a40f57ea5",
+          "sourceFile": "examples/api/new-window-pane.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "Created editor with two panes; the active window is unchanged."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/new-window-pane.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-matching",
+      "symbol": "libtmux::matching",
+      "publicId": "libtmux::matching",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "query",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "d2554b88dc89979c87d80328048b82b5dda8210b2573982e1a6bd546496395eb",
+          "clipboardSha256": "6a2a4bd3dd16137eaef3c8b7648f59a27f486beaea26d540999cb7d64d5d61e3",
+          "sourceFile": "examples/api/query.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "Selected editor; two matches; missing and ambiguous are distinct."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/query.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-exactly_one",
+      "symbol": "libtmux::exactly_one",
+      "publicId": "libtmux::exactly_one",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "query",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "d2554b88dc89979c87d80328048b82b5dda8210b2573982e1a6bd546496395eb",
+          "clipboardSha256": "6a2a4bd3dd16137eaef3c8b7648f59a27f486beaea26d540999cb7d64d5d61e3",
+          "sourceFile": "examples/api/query.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "Selected editor; two matches; missing and ambiguous are distinct."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/query.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-exactly_one_owned",
+      "symbol": "libtmux::exactly_one_owned",
+      "publicId": "libtmux::exactly_one_owned",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "query",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "d2554b88dc89979c87d80328048b82b5dda8210b2573982e1a6bd546496395eb",
+          "clipboardSha256": "6a2a4bd3dd16137eaef3c8b7648f59a27f486beaea26d540999cb7d64d5d61e3",
+          "sourceFile": "examples/api/query.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "Selected editor; two matches; missing and ambiguous are distinct."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/query.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-cardinalityerror",
+      "symbol": "libtmux::CardinalityError",
+      "publicId": "libtmux::CardinalityError",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "query",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "d2554b88dc89979c87d80328048b82b5dda8210b2573982e1a6bd546496395eb",
+          "clipboardSha256": "6a2a4bd3dd16137eaef3c8b7648f59a27f486beaea26d540999cb7d64d5d61e3",
+          "sourceFile": "examples/api/query.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "Selected editor; two matches; missing and ambiguous are distinct."
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/query.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-pane-send_text",
+      "symbol": "libtmux::Pane::send_text",
+      "publicId": "libtmux::Pane::send_text",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "input-capture",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "1c3eb64547479a660a872853ffef2a62161c7fb9aa1996aeee808e11d69d2957",
+          "clipboardSha256": "ce3441d62f499a80c45c4b38a85c1ab02f95f51a35792078120e69e30607ef29",
+          "sourceFile": "examples/api/input-capture.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "got:hello C++"
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/input-capture.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-pane-send_line",
+      "symbol": "libtmux::Pane::send_line",
+      "publicId": "libtmux::Pane::send_line",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "input-capture",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "1c3eb64547479a660a872853ffef2a62161c7fb9aa1996aeee808e11d69d2957",
+          "clipboardSha256": "ce3441d62f499a80c45c4b38a85c1ab02f95f51a35792078120e69e30607ef29",
+          "sourceFile": "examples/api/input-capture.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "got:hello C++"
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/input-capture.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-pane-capture",
+      "symbol": "libtmux::Pane::capture",
+      "publicId": "libtmux::Pane::capture",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "input-capture",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "1c3eb64547479a660a872853ffef2a62161c7fb9aa1996aeee808e11d69d2957",
+          "clipboardSha256": "ce3441d62f499a80c45c4b38a85c1ab02f95f51a35792078120e69e30607ef29",
+          "sourceFile": "examples/api/input-capture.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "got:hello C++"
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/input-capture.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-pane-wait_for_text",
+      "symbol": "libtmux::Pane::wait_for_text",
+      "publicId": "libtmux::Pane::wait_for_text",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "input-capture",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "1c3eb64547479a660a872853ffef2a62161c7fb9aa1996aeee808e11d69d2957",
+          "clipboardSha256": "ce3441d62f499a80c45c4b38a85c1ab02f95f51a35792078120e69e30607ef29",
+          "sourceFile": "examples/api/input-capture.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "got:hello C++"
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/input-capture.cpp"
+    },
+    {
+      "port": "cxx",
+      "page": "ports/cxx/reference/libtmux-capture_lines",
+      "symbol": "libtmux::capture_lines",
+      "publicId": "libtmux::capture_lines",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "programId": "input-capture",
+      "files": [
+        {
+          "name": "CMakeLists.txt",
+          "block": 2,
+          "sha256": "512d0575ee774e214ed93348ca0ad10223c7f14a50297a49020a6d41861d854c",
+          "clipboardSha256": "fd6de1d38dfd6eea1ce04f07d9176088b9f9fbf99757d657bdfbf9ca785a00c5",
+          "sourceFile": "examples/api/project/CMakeLists.txt"
+        },
+        {
+          "name": "main.cpp",
+          "block": 3,
+          "sha256": "1c3eb64547479a660a872853ffef2a62161c7fb9aa1996aeee808e11d69d2957",
+          "clipboardSha256": "ce3441d62f499a80c45c4b38a85c1ab02f95f51a35792078120e69e30607ef29",
+          "sourceFile": "examples/api/input-capture.cpp"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        1,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-cxx.git libtmux-source && \\\n  git -C libtmux-source checkout 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+        "cmake -S libtmux-source -B libtmux-build -G Ninja \\\n    -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n    -DCMAKE_C_COMPILER=clang \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_BUILD_TYPE=Release \\\n    -DLIBTMUX_BUILD_TESTS=OFF \\\n    -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n    -DLIBTMUX_BUILD_TESTING_LIBRARY=ON && \\\n  cmake --build libtmux-build --parallel 2 && \\\n  cmake --install libtmux-build --prefix \"$PWD/libtmux-prefix\"",
+        "cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH=\"$PWD/libtmux-prefix\" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example"
+      ],
+      "expectedOutputs": [
+        [],
+        [],
+        [
+          "got:hello C++"
+        ]
+      ],
+      "runtime": "Clang 18, libc++ 18, C++23, CMake 3.25+, Ninja",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
+      "sourceFile": "examples/api/input-capture.cpp"
     }
   ]
 }
