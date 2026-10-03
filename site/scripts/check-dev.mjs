@@ -605,9 +605,14 @@ try {
       await page.evaluate(() => document.fonts.ready)
       const documentation = page.locator('nav[aria-label="Documentation destinations"]').first()
       assert.equal(await documentation.locator('a').nth(0).getAttribute('href'), '/en/tmux/latest/reference/')
-      assert.equal(await documentation.locator('a').nth(1).getAttribute('href'), '/en/py/stable/')
       const switcher = page.locator('[data-page-port-switcher]')
       const hasSwitcher = path !== 'mcp/tools'
+      assert.equal(await switcher.count(), hasSwitcher ? 1 : 0, `${path}: one page language switcher when available`)
+      for (const nav of await page.locator('header nav[aria-label="Documentation destinations"]').all()) {
+        assert.equal(await nav.locator('a').count(), hasSwitcher ? 1 : PORTS.length + 1,
+          `${path}: header and overflow menu only include language links without a page switcher`)
+      }
+      if (!hasSwitcher) assert.equal(await documentation.locator('a').nth(1).getAttribute('href'), '/en/py/stable/')
       const isReference = path.includes('/reference/')
       if (hasSwitcher) {
         assert.equal(await page.locator('[data-page-toolbar] nav[aria-label="Breadcrumb"]').count(), 1, `${path}: breadcrumbs above the heading`)
@@ -656,7 +661,8 @@ try {
           headerHeight: document.querySelector('.site-header__bar').getBoundingClientRect().height,
           badgeForeground: getComputedStyle(document.querySelector('.prerelease-notice__badge')).color,
           portVisibility: getComputedStyle(document.querySelector('.site-header__ports')).display,
-          shortLabel: getComputedStyle(document.querySelector('.site-header__ports .port-abbreviation')).display,
+          shortLabel: document.querySelector('.site-header__ports .port-abbreviation')
+            ? getComputedStyle(document.querySelector('.site-header__ports .port-abbreviation')).display : null,
           languageEnd: document.querySelector('.site-header__ports nav a:last-child').getBoundingClientRect().right,
           controlsStart: document.querySelector('.site-header__always').getBoundingClientRect().left,
           schemeLabelWidth: document.querySelector('.scheme-switch__label').getBoundingClientRect().width,
@@ -678,10 +684,10 @@ try {
           && Math.abs(control.top - result.headerControls[0].top) < 0.1), `${path} at ${width}px: header controls align at equal heights`)
         assert.equal(result.badgeForeground, 'rgb(255, 255, 255)', 'Filled badge uses white foreground')
         if (width === 768) {
-          assert.notEqual(result.portVisibility, 'none', 'Language links remain visible on tablets')
-          assert.notEqual(result.shortLabel, 'none', 'Tablet navigation uses abbreviated language names')
+          assert.notEqual(result.portVisibility, 'none', 'Documentation destinations remain visible on tablets')
+          if (!hasSwitcher) assert.notEqual(result.shortLabel, 'none', 'Tablet navigation uses abbreviated language names')
         }
-        if (width >= 1024) assert.equal(result.shortLabel, 'none', 'Full language names fit with compact scheme controls')
+        if (width >= 1024 && !hasSwitcher) assert.equal(result.shortLabel, 'none', 'Full language names fit with compact scheme controls')
         if (width >= 768) assert(result.languageEnd <= result.controlsStart, 'Language links do not overlap controls')
         if (width < 1536) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
         assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)

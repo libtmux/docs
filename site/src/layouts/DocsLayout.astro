@@ -147,6 +147,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
   description={description}
   pagePath={pagePath}
   portSlug={port}
+  pagePortSwitcher={Boolean(port) || pagePorts.length > 0}
   version={version}
   noindex={noindex}
   searchable={searchable}
