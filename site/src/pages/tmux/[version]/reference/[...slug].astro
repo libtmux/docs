@@ -1,7 +1,9 @@
 ---
 import DocsLayout from '../../../../layouts/DocsLayout.astro'
+import SectionHeading from '../../../../components/SectionHeading.astro'
 import { Code } from 'astro-expressive-code/components'
 import { withRoot } from '../../../../lib/site-root'
+import { rowAnchor } from '../../../../lib/row-anchors'
 import type { SidebarItem } from '../../../../lib/sidebar'
 import { TMUX_REPOSITORY, TMUX_VERSIONS, tmuxApiLinks, tmuxCommandNotes, tmuxGuidesFor, tmuxManualHtml, tmuxPageDescription, tmuxPageHeadings, tmuxPageTitle, tmuxReference, tmuxReferenceRoutes, tmuxReferenceUrl } from '../../../../lib/tmux-reference'
 
@@ -56,22 +58,22 @@ const source = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.revision 
   {command ? <>
     <p>{command.summary}</p>
     {notes && <>
-      <h2 id="examples">Common uses</h2>
+      <SectionHeading id={rowAnchor(command.name, 'common uses')} legacyId="examples">Common uses</SectionHeading>
       <p>{notes.context}</p>
       {notes.examples.map((example) => <>
         <p class="tmux-example-label">{example.title}</p>
         <Code code={example.code} lang="tmux-shell" wrap />
       </>)}
     </>}
-    <h2 id="syntax">Syntax</h2>
+    <SectionHeading id={rowAnchor(command.name, 'syntax')} legacyId="syntax">Syntax</SectionHeading>
     <div class="tmux-syntax"><Code code={`tmux ${command.name}${command.usage ? ` ${command.usage}` : ''}`} lang="tmux-usage" wrap /></div>
     {command.alias && <p>Alias: <code>{command.alias}</code>.</p>}
     {notes ? <>
-      <h2 id="behavior">Options</h2>
+      <SectionHeading id={rowAnchor(command.name, 'options')} legacyId="behavior">Options</SectionHeading>
       {notes.groups.map((group) => <section>
-        <h3 id={group.id}>{group.title}</h3>
-        <dl class="tmux-option-list">{group.options.map((option) => <div>
-          <dt><code>{option.label}</code></dt><dd>{option.text}</dd>
+        <SectionHeading level={3} id={group.id} legacyId={group.legacyId}>{group.title}</SectionHeading>
+        <dl class="tmux-option-list">{group.options.map((option) => <div id={option.id} class="anchored-entry">
+          <dt><a class="row-label-link" href={`#${option.id}`} aria-label={`Link to ${option.label} in ${group.title}`}><code>{option.label}</code></a></dt><dd>{option.text}</dd>
         </div>)}</dl>
       </section>)}
       <details class="tmux-original-manual">
@@ -79,15 +81,15 @@ const source = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.revision 
         <div class="tmux-manual" set:html={tmuxManualHtml(command.html, version)} />
       </details>
     </> : <>
-      <h2 id="behavior">Behavior</h2>
+      <SectionHeading id={rowAnchor(command.name, 'behavior')} legacyId="behavior">Behavior</SectionHeading>
       <div class="tmux-manual" set:html={tmuxManualHtml(command.html, version)} />
     </>}
     {guides.length > 0 && <>
-      <h2 id="guides">Guides</h2>
+      <SectionHeading id={rowAnchor(command.name, 'guides')} legacyId="guides">Guides</SectionHeading>
       <ul>{guides.map((guide) => <li><a href={guide.href}>{guide.title}</a></li>)}</ul>
     </>}
     {equivalents.length > 0 && <>
-      <h2 id="libraries">Use from a library</h2>
+      <SectionHeading id={rowAnchor(command.name, 'use from a library')} legacyId="libraries">Use from a library</SectionHeading>
       <p>Each API describes its own defaults, errors and execution model.</p>
       <ul>{equivalents.map((entry) => <li><a href={entry.href}>{entry.name}</a></li>)}</ul>
     </>}
@@ -95,7 +97,7 @@ const source = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.revision 
     <p>Look up the flags and behavior supported by tmux {reference.version}. Choose the version installed on your machine with <code>tmux -V</code>.</p>
     <p>Start with the <a href={`${tmuxReferenceUrl(version, 'manual')}#DESCRIPTION`}>global options</a>, <a href={`${tmuxReferenceUrl(version, 'manual')}#COMMANDS`}>target syntax</a>, or <a href={`${tmuxReferenceUrl(version, 'manual')}#FORMATS`}>formats</a>. The <a href={tmuxReferenceUrl(version, 'manual')}>full manual</a> also covers options, hooks and key bindings.</p>
     {sections.map((section) => <section>
-      <h2 id={section.toLowerCase().replaceAll(' ', '-')}>{sectionTitle(section)}</h2>
+      <SectionHeading id={section.toLowerCase().replaceAll(' ', '-')}>{sectionTitle(section)}</SectionHeading>
       <dl class="tmux-command-list">{reference.commands.filter((entry) => entry.section === section).map((entry) => <>
         <dt><a href={tmuxReferenceUrl(version, entry.name)}><code>{entry.name}</code></a></dt>
         <dd>{entry.summary}</dd>

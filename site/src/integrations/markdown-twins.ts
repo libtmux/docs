@@ -39,6 +39,11 @@ export function markdownTwins(): AstroIntegration {
         const out = fileURLToPath(dir)
         const missing: string[] = []
         let converted = 0
+        // MCP exports write schema-preserving twins. Let the generic pass skip them.
+        if (buildLocale() === DEFAULT_LOCALE) {
+          const defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
+          writeMcpExports(out, base, mcpReferenceRoutes(process.env.LIBTMUX_DOCS_PORT, defaults, buildTarget(process.env).version))
+        }
         for (const page of (readdirSync(out, { recursive: true }) as string[]).filter((file) => file.endsWith('.html'))) {
           const html = readFileSync(join(out, page), 'utf8')
           const link = [...html.matchAll(/<link\b[^>]*>/g)].map((tag) => tag[0])
@@ -59,10 +64,6 @@ export function markdownTwins(): AstroIntegration {
         }
         if (missing.length > 0) {
           throw new Error(`${missing.length} pages link a Markdown twin no route wrote:\n${missing.slice(0, 20).join('\n')}`)
-        }
-        if (buildLocale() === DEFAULT_LOCALE) {
-          const defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
-          writeMcpExports(out, base, mcpReferenceRoutes(process.env.LIBTMUX_DOCS_PORT, defaults, buildTarget(process.env).version))
         }
         logger.info(`${converted} twins converted from rendered pages`)
       },
@@ -167,6 +168,7 @@ function prune(node: Node, origin: string, drop?: Node, preserveSchemas = false,
       if (typeof props[key] !== 'string') continue
       if (preserveSchemas && pageUrl) props[key] = new URL(props[key] as string, pageUrl).href
       else if ((props[key] as string).startsWith('/') && !(props[key] as string).startsWith('//')) props[key] = `${origin}${props[key]}`
+      else if (pageUrl && (props[key] as string).startsWith('#')) props[key] = new URL(props[key] as string, pageUrl).href
     }
     // Shiki and the install widget put the language on the block, not on `code`.
     if (typeof props.dataLanguage === 'string') {

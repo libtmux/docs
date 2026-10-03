@@ -9944,41 +9944,6 @@
   },
   {
    "port": "fsharp",
-   "text": "IncompleteSnapshotException",
-   "page": "/fsharp/latest/guides/getting-started/",
-   "line": 112,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "QueryDocument",
-   "page": "/fsharp/latest/guides/getting-started/",
-   "line": 115,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Session",
-   "page": "/fsharp/latest/guides/interop/",
-   "line": 16,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "TmuxOperationCanceledException",
-   "page": "/fsharp/latest/guides/interop/",
-   "line": 27,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "CommandMayHaveExecuted",
-   "page": "/fsharp/latest/guides/interop/",
-   "line": 28,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
    "text": "ClientProcessId",
    "page": "/fsharp/latest/guides/interop/",
    "line": 28,
@@ -9993,37 +9958,9 @@
   },
   {
    "port": "fsharp",
-   "text": "QueryDocument",
-   "page": "/fsharp/latest/guides/interop/",
-   "line": 33,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
    "text": "MoveAsync",
    "page": "/fsharp/latest/guides/interop/",
    "line": 132,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "TmuxEventsDroppedEvent",
-   "page": "/fsharp/latest/guides/modes/",
-   "line": 56,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "TmuxExitEvent",
-   "page": "/fsharp/latest/guides/modes/",
-   "line": 58,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "TmuxChain",
-   "page": "/fsharp/latest/guides/modes/",
-   "line": 68,
    "why": "not defined in the stated port"
   },
   {
@@ -10035,20 +9972,6 @@
   },
   {
    "port": "fsharp",
-   "text": "TmuxCommandResult",
-   "page": "/fsharp/latest/guides/modes/",
-   "line": 91,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "QueryDocument",
-   "page": "/fsharp/latest/guides/queries/",
-   "line": 15,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
    "text": "LibTmux.FSharp",
    "page": "/fsharp/latest/guides/queries/",
    "line": 20,
@@ -10056,30 +9979,9 @@
   },
   {
    "port": "fsharp",
-   "text": "RequiredSnapshotDepth",
-   "page": "/fsharp/latest/guides/queries/",
-   "line": 327,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "IncompleteSnapshotException",
-   "page": "/fsharp/latest/guides/queries/",
-   "line": 328,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
    "text": "LibTmux",
    "page": "/fsharp/latest/guides/quickstart/",
    "line": 69,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "CreateOwnedAsync",
-   "page": "/fsharp/latest/guides/quickstart/",
-   "line": 176,
    "why": "not defined in the stated port"
   },
   {
@@ -10112,23 +10014,9 @@
   },
   {
    "port": "fsharp",
-   "text": "Server.FromEnvironment()",
-   "page": "/fsharp/latest/guides/quickstart/",
-   "line": 196,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
    "text": "server.GetSessionsAsync(ct)",
    "page": "/fsharp/latest/guides/quickstart/",
    "line": 202,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "IncompleteSnapshotException",
-   "page": "/fsharp/latest/guides/quickstart/",
-   "line": 211,
    "why": "not defined in the stated port"
   },
   {
@@ -10140,37 +10028,9 @@
   },
   {
    "port": "fsharp",
-   "text": "TmuxEventsDroppedEvent",
-   "page": "/fsharp/latest/guides/streams/",
-   "line": 22,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "TmuxExitEvent",
-   "page": "/fsharp/latest/guides/streams/",
-   "line": 23,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "QueryDocument",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 12,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
    "text": "LibTmux.Query.Json",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "line": 17,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Session.Name",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 27,
    "why": "not defined in the stated port"
   },
   {
@@ -10182,30 +10042,9 @@
   },
   {
    "port": "fsharp",
-   "text": "Session.Id",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 36,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "SessionId",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 38,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
    "text": "Sessions",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "line": 40,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Session.Attached",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 45,
    "why": "not defined in the stated port"
   },
   {
@@ -10217,23 +10056,9 @@
   },
   {
    "port": "fsharp",
-   "text": "Session.Windows",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 54,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
    "text": "Windows",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "line": 58,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Window.Name",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 65,
    "why": "not defined in the stated port"
   },
   {
@@ -10245,30 +10070,9 @@
   },
   {
    "port": "fsharp",
-   "text": "Window.Id",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 74,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "WindowId",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 76,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
    "text": "Windows",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "line": 78,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Window.Panes",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 83,
    "why": "not defined in the stated port"
   },
   {
@@ -10280,30 +10084,9 @@
   },
   {
    "port": "fsharp",
-   "text": "Pane.CurrentCommand",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 94,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
    "text": "Panes",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "line": 98,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Pane.Id",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 103,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "PaneId",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 105,
    "why": "not defined in the stated port"
   },
   {
@@ -10315,23 +10098,9 @@
   },
   {
    "port": "fsharp",
-   "text": "Client.Name",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 114,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
    "text": "Sessions",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "line": 118,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Client.IsControlClient",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 123,
    "why": "not defined in the stated port"
   },
   {
@@ -10343,121 +10112,9 @@
   },
   {
    "port": "kotlin",
-   "text": "ServerConfig.maxConcurrentCommands()",
-   "page": "/kotlin/latest/guides/coroutines/",
-   "line": 53,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "EventSubscription.poll",
-   "page": "/kotlin/latest/guides/coroutines/",
-   "line": 58,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "next()",
-   "page": "/kotlin/latest/guides/coroutines/",
-   "line": 58,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "EventSubscription.poll()",
-   "page": "/kotlin/latest/guides/coroutines/",
-   "line": 67,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "clearReady()",
-   "page": "/kotlin/latest/guides/coroutines/",
-   "line": 69,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "poll()",
-   "page": "/kotlin/latest/guides/coroutines/",
-   "line": 74,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "Gap",
-   "page": "/kotlin/latest/guides/coroutines/",
-   "line": 75,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "poll()",
-   "page": "/kotlin/latest/guides/coroutines/",
-   "line": 76,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "Gap",
-   "page": "/kotlin/latest/guides/coroutines/",
-   "line": 78,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "SplitSpec.Builder",
-   "page": "/kotlin/latest/guides/coroutines/",
-   "line": 117,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "SplitDirection",
-   "page": "/kotlin/latest/guides/coroutines/",
-   "line": 120,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "PaneSize",
-   "page": "/kotlin/latest/guides/coroutines/",
-   "line": 120,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
    "text": "@kotlin.Metadata",
    "page": "/kotlin/latest/guides/coroutines/",
    "line": 130,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "CardinalityException",
-   "page": "/kotlin/latest/guides/getting-started/",
-   "line": 128,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "Delivery.Gap",
-   "page": "/kotlin/latest/guides/getting-started/",
-   "line": 195,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "ServerMirror",
-   "page": "/kotlin/latest/guides/getting-started/",
-   "line": 216,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "DispatchException",
-   "page": "/kotlin/latest/guides/getting-started/",
-   "line": 233,
    "why": "not defined in the stated port"
   },
   {
@@ -10518,13 +10175,6 @@
   },
   {
    "port": "scala",
-   "text": "Flow",
-   "page": "/scala/latest/guides/compatibility/",
-   "line": 30,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "scala",
    "text": "ScalaOperationGenerator",
    "page": "/scala/latest/guides/compatibility/",
    "line": 44,
@@ -10546,13 +10196,6 @@
   },
   {
    "port": "scala",
-   "text": "OperationObserver",
-   "page": "/scala/latest/guides/execution/",
-   "line": 98,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "scala",
    "text": "io.github.libtmux",
    "page": "/scala/latest/guides/getting-started/",
    "line": 17,
@@ -10560,44 +10203,9 @@
   },
   {
    "port": "scala",
-   "text": "Flow",
-   "page": "/scala/latest/guides/getting-started/",
-   "line": 24,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "scala",
-   "text": "java.time.Duration",
-   "page": "/scala/latest/guides/getting-started/",
-   "line": 128,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "scala",
-   "text": "ServerConfig",
-   "page": "/scala/latest/guides/overview/",
-   "line": 50,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "scala",
-   "text": "AutoCloseable",
-   "page": "/scala/latest/guides/ownership/",
-   "line": 19,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "scala",
    "text": "libtmux.filter/1",
    "page": "/scala/latest/guides/query/",
    "line": 119,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "scala",
-   "text": "Delivery.Gap",
-   "page": "/scala/latest/guides/streaming/",
-   "line": 65,
    "why": "not defined in the stated port"
   },
   {
@@ -10626,13 +10234,6 @@
    "text": "ConnectAndBuild",
    "page": "/examples/attach-and-send-keys/",
    "line": 152,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "kotlin",
-   "text": "CardinalityException.MultipleMatches",
-   "page": "/kotlin/latest/concepts/queries/",
-   "line": 145,
    "why": "not defined in the stated port"
   },
   {

@@ -12,7 +12,7 @@
  *   - a permalink, whose target is the entry's own id
  *   - a source link, wherever the model knows a file and line
  *   - the data hooks gp-sphinx's CSS and JS bind to, with real values
- *   - both layout variants, since the container query needs both to exist
+ *   - one responsive header or a retained pair of desktop and mobile headers
  *
  * Usage: node scripts/check-api-fidelity.mjs <site-dir>
  */
@@ -104,6 +104,7 @@ for (const port of PORTS) {
   let sources = 0
   let eligible = 0
   let mobile = 0
+  let responsive = 0
   const missingHooks = new Map()
   const badPermalink = []
 
@@ -130,16 +131,16 @@ for (const port of PORTS) {
     }
     permalinks += (html.match(/class="headerlink"/g) ?? []).length
     mobile += (html.match(/gp-sphinx-api-layout--mobile/g) ?? []).length
+    responsive += (html.match(/gp-sphinx-api-layout--responsive/g) ?? []).length
   }
 
-  // Two of each per entry: the desktop and mobile variants both carry the
-  // affordances, and the container query shows exactly one.
-  const expected = entries * 2
+  // Retained port builds may still carry paired desktop and mobile layouts.
+  const expected = entries * 2 - responsive
   if (permalinks !== expected) {
     failures.push(`${port}: ${permalinks} permalinks for ${entries} entries, expected ${expected}`)
   }
-  if (mobile !== entries) {
-    failures.push(`${port}: ${mobile} mobile layouts for ${entries} entries`)
+  if (mobile + responsive !== entries) {
+    failures.push(`${port}: ${mobile + responsive} responsive or mobile layouts for ${entries} entries`)
   }
   for (const [hook, n] of missingHooks) {
     failures.push(`${port}: ${n} entries missing ${hook}`)
@@ -169,4 +170,4 @@ if (failures.length) {
   for (const f of failures) console.error(`  ${f}`)
   process.exit(1)
 }
-console.log('\nevery entry carries a permalink, its hooks and both layouts')
+console.log('\nevery entry carries a permalink, its hooks and a responsive layout')

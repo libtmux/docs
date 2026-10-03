@@ -84,9 +84,11 @@ describe('versioned tmux reference', () => {
 
   it('exports the same command sections and related guides as the page', () => {
     expect(tmuxPageHeadings('latest', 'capture-pane').map((heading) => heading.slug))
-      .toEqual(['examples', 'syntax', 'behavior', 'output-and-range', 'text-formatting', 'screens-and-pending-output', 'guides', 'libraries'])
+      .toEqual(['capture-pane-common-uses', 'capture-pane-syntax', 'capture-pane-options',
+        'capture-pane-options-output-and-line-range', 'capture-pane-options-text-formatting',
+        'capture-pane-options-screens-and-pending-output', 'capture-pane-guides', 'capture-pane-use-from-a-library'])
     expect(tmuxPageHeadings('latest', 'server-access').map((heading) => heading.slug))
-      .toEqual(['syntax', 'behavior'])
+      .toEqual(['server-access-syntax', 'server-access-behavior'])
     expect(tmuxGuidesFor('capture-pane').map((guide) => guide.href))
       .toEqual([tmuxReferenceUrl().replace('/tmux/latest/reference/', '/guides/capturing-output/')])
     expect(tmuxPageHeadings('3.2a', 'manual').some((heading) => heading.slug === 'COMMANDS')).toBe(true)

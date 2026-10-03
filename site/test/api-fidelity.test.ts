@@ -17,11 +17,13 @@ afterEach(() => scratch.splice(0).forEach((path) => rmSync(path, { recursive: tr
 
 const escape = (value: string) => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 
-function entry(model: ApiModel, symbol: ApiSymbol, linked = true, declaration = false): string {
+function entry(model: ApiModel, symbol: ApiSymbol, linked = true, declaration = false, responsive = false): string {
   const id = escape(`${symbol.publicId ?? symbol.id}${declaration ? '.declaration' : ''}`)
   const source = linked ? sourceUrl(model, symbol) : undefined
   const links = `<a class="headerlink" href="#${id}">¶</a>${source ? `<a href="${escape(source)}">source</a>` : ''}`
-  return `<dl><dt class="gp-sphinx-api-header" id="${id}" data-symbol-id="${escape(symbol.id)}" data-domain="std" data-objtype="${symbol.kind}" data-badge-count="0" data-has-badges="false" data-has-source="${Boolean(source)}" data-signature-expanded="true"><span class="gp-sphinx-api-layout--desktop">${links}</span><span class="gp-sphinx-api-layout--mobile">${links}</span></dt><dd>Reference fixture</dd></dl>`
+  const layout = responsive ? `<span class="gp-sphinx-api-layout--responsive">${links}</span>`
+    : `<span class="gp-sphinx-api-layout--desktop">${links}</span><span class="gp-sphinx-api-layout--mobile">${links}</span>`
+  return `<dl><dt class="gp-sphinx-api-header" id="${id}" data-symbol-id="${escape(symbol.id)}" data-domain="std" data-objtype="${symbol.kind}" data-badge-count="0" data-has-badges="false" data-has-source="${Boolean(source)}" data-signature-expanded="true">${layout}</dt><dd>Reference fixture</dd></dl>`
 }
 
 function page(path: string, port: string, entries: string[]): void {
@@ -30,12 +32,12 @@ function page(path: string, port: string, entries: string[]): void {
   writeFileSync(join(directory, 'index.html'), entries.join('\n'))
 }
 
-function fixture(): string {
+function fixture(responsive = false): string {
   const path = mkdtempSync(join(tmpdir(), 'libtmux-api-fidelity-'))
   scratch.push(path)
   for (const [port, model] of Object.entries(models)) {
     const symbol = model.symbols.find((candidate) => sourceUrl(model, candidate))!
-    page(path, port, [entry(model, symbol)])
+    page(path, port, [entry(model, symbol, true, false, responsive)])
   }
   return path
 }
@@ -43,6 +45,20 @@ function fixture(): string {
 const audit = (path: string) => spawnSync(process.execPath, ['scripts/check-api-fidelity.mjs', path], { cwd: root, encoding: 'utf8' })
 
 describe('API source fidelity gate', () => {
+  it('accepts one responsive header per entry', () => {
+    const result = audit(fixture(true))
+    expect(result.status, result.stderr).toBe(0)
+  })
+
+  it('rejects a missing permalink in a responsive header', () => {
+    const path = fixture(true)
+    const file = join(path, 'py/latest/reference/sample/index.html')
+    writeFileSync(file, readFileSync(file, 'utf8').replace(/<a class="headerlink"[^>]*>.*?<\/a>/, ''))
+    const result = audit(path)
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('py: 0 permalinks for 1 entries, expected 1')
+  })
+
   it('exempts a graph-proven inherited Swift entry without inventing a link', () => {
     const path = fixture()
     const model = models.swift

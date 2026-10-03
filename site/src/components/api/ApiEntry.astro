@@ -23,10 +23,8 @@ import ApiFieldOverloads from './ApiFieldOverloads.astro'
  * description. Nested divs would have meant re-writing 1,652 lines of CSS by
  * hand to arrive at the same picture.
  *
- * The header carries two layout variants and a container query decides
- * between them, so the entry responds to its own width rather than the
- * window's — correct in an article column, a sidebar and a narrow embed
- * without being told which it is in.
+ * A container query stacks the toolbar above the complete signature when
+ * the entry narrows, preserving one declaration at every width.
  */
 interface Props {
   symbol: ApiSymbol
@@ -279,7 +277,7 @@ const hasBody =
     data-has-source={String(Boolean(source))}
     data-signature-expanded="false"
   >
-    <div class="gp-sphinx-api-layout gp-sphinx-api-layout--desktop">
+    <div class="gp-sphinx-api-layout gp-sphinx-api-layout--responsive">
       <div class="gp-sphinx-api-layout-left">
         <span class="gp-sphinx-api-signature">
           {nativeSignatures ? symbol.signatures.map((sig) => (
@@ -408,46 +406,6 @@ const hasBody =
           )
         }
         <a class="headerlink" href={`#${anchor}`} title={`Permalink to ${symbol.name}`}>&#182;</a>
-      </div>
-    </div>
-
-    <!-- Same content, stacked: toolbar above, signature below. gp-sphinx's
-         order, which puts the affordances where a thumb reaches first. -->
-    <div class="gp-sphinx-api-layout gp-sphinx-api-layout--mobile">
-      <div class="gp-sphinx-api-layout-top">
-        <span class="gp-sphinx-api-slot gp-sphinx-api-slot--badges">
-          {badges.map((b) => <ApiBadge label={b.label} variant={b.variant} value={b.value} />)}
-        </span>
-        {
-          /*
-           * The brackets are punctuation, not part of the link.
-           *
-           * `[source]` was one anchor, so hovering underlined the brackets
-           * too and the click target included them. gp-sphinx's own viewcode
-           * link is the whole thing, which is the one place this deliberately
-           * differs — see notes/gp-sphinx-parity.md.
-           *
-           * The wrapper keeps the layout classes so the vendored rule making
-           * this an inline-flex item in the header row still applies; only
-           * the anchor inside it is new.
-           */
-          source && (
-            <span class="gp-sphinx-api-source-link viewcode-link">
-              <span class="pre">[<a class="api-source-anchor" href={source}>source</a>]</span>
-            </span>
-          )
-        }
-        <a class="headerlink" href={`#${anchor}`} title={`Permalink to ${symbol.name}`}>&#182;</a>
-      </div>
-      <div class="gp-sphinx-api-layout-bottom">
-        <span class="gp-sphinx-api-signature">
-          {nativeSignatures ? symbol.signatures.map((sig) => (
-            <span class="api-native-signature"><ApiType type={sig.raw ?? symbol.name} index={index} context={symbol} signature={sig} /></span>
-          )) : <>
-          {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
-          {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname"><span class="pre">{symbol.name}</span></span>
-          </>}
-        </span>
       </div>
     </div>
   </dt>

@@ -6,6 +6,7 @@ import v37 from '../data/tmux/3.7c.json'
 import { API_MODELS, referenceHref } from './api-models'
 import { PORT_BY_SLUG } from './ports'
 import { withPortRoot } from './site-root'
+import { rowAnchor } from './row-anchors'
 
 export type TmuxReference = typeof v37
 export type TmuxCommand = TmuxReference['commands'][number]
@@ -119,7 +120,11 @@ export function tmuxCommandNotes(version: string, slug?: string) {
       { flag: 'M', label: '-M', text: 'Capture the mode screen, such as copy mode, when the pane is in a mode.' },
       { flag: 'P', label: '-P', text: 'Capture a received but incomplete escape sequence, rather than the pane contents.' },
     ] },
-  ].map((group) => ({ ...group, options: group.options.filter((option) => flags.has(option.flag)) }))
+  ].map((group) => {
+    const id = rowAnchor(rowAnchor(command.name, 'options'), group.title)
+    return { ...group, id, legacyId: group.id, options: group.options.filter((option) => flags.has(option.flag))
+      .map((option) => ({ ...option, id: rowAnchor(id, option.flag) })) }
+  })
   return {
     context: 'Run these commands inside tmux, in the pane you want to capture. TMUX_PANE identifies that pane.',
     examples: [
@@ -142,7 +147,7 @@ export function tmuxPageHeadings(version: string, slug?: string) {
     ...(notes?.groups.map((group) => ({ depth: 3, slug: group.id, text: group.title })) ?? []),
     ...(tmuxGuidesFor(slug).length ? [{ depth: 2, slug: 'guides', text: 'Guides' }] : []),
     ...(tmuxApiLinks(slug).length ? [{ depth: 2, slug: 'libraries', text: 'Use from a library' }] : []),
-  ]
+  ].map((heading) => heading.depth === 2 ? { ...heading, slug: rowAnchor(slug, heading.text) } : heading)
   return [...new Set(reference.commands.map((entry) => entry.section))].map((section) => ({
     depth: 2, slug: section.toLowerCase().replaceAll(' ', '-'), text: section[0] + section.slice(1).toLowerCase(),
   }))
