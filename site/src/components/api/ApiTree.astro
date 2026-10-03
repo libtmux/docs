@@ -15,7 +15,6 @@
  * of links above the title. Without JavaScript it stays an inline column, and
  * every closed row is still a link.
  */
-import Sidebar from '../docs/Sidebar.astro'
 import ApiTreeItems, { type TreeNode } from './ApiTreeItems.astro'
 import type { NavEntry } from '../../lib/api-models'
 import { bucketTotal, firstEntry, type TreeBucket } from '../../lib/api-tree'
@@ -40,13 +39,12 @@ interface Props {
   members: { id: string; name: string; kind: string; href: string }[]
   /** Nav ids of the types that have members, which open into them. */
   withMembers: Set<string>
-  menuVersion: string
   currentPath: string
 }
 
 const {
   port, portName, tree, currentRoot, currentBucket, currentTypeId, ownerNavId, ownerId,
-  members, withMembers, menuVersion, currentPath,
+  members, withMembers, currentPath,
 } = Astro.props as Props
 // The port's own reference root. `withRoot` would give the locale root:
 // Astro's `base` prefixes routes, not strings a component builds.
@@ -124,12 +122,6 @@ if (!mark(nodes) && nodes[0]) nodes[0].tab = true
         </svg>
       </button>
     </div>
-    <details class="api-nav__menu" data-pagefind-ignore="all">
-      <summary class="api-nav__menu-summary">{portName} documentation</summary>
-      <div class="api-nav__menu-body">
-        <Sidebar port={port} version={menuVersion} currentPath={currentPath} menuOnly />
-      </div>
-    </details>
     <div class="api-nav__search">
       <label for="api-symbol-search" class="sr-only">Find a type or member</label>
       <div class="api-nav__search-field">

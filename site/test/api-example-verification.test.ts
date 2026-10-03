@@ -73,7 +73,7 @@ describe('API example source and clipboard receipts', () => {
   const fixture = () => {
     const revision = 'a'.repeat(40)
     const href = `https://github.com/libtmux/libtmux-java/blob/${revision}/examples/api/run.sh`
-    const link = { href, label: 'Source example' }
+    const link = { href, label: 'View source' }
     const rendered = { text: '', links: [link, link], sourceLinks: [[link], [], [link], []],
       files: ['whole launcher', 'first recipe', 'whole launcher', 'second recipe'] }
     const example = { symbol: 'Server.sessions', sourceRepository: 'libtmux/libtmux-java',
@@ -96,7 +96,7 @@ describe('API example source and clipboard receipts', () => {
       const symbol = model.symbols.find((entry) => entry.id === example.symbol)!
       const blocks = symbol.doc!.examples as { sourceUrl?: string; code: string; lang: string }[]
       const sourceLinks = blocks.map((block) => block.sourceUrl
-        ? [{ href: block.sourceUrl, label: 'Source example' }] : [])
+        ? [{ href: block.sourceUrl, label: 'View source' }] : [])
       const rendered = { text: '', links: sourceLinks.flat(), sourceLinks,
         files: blocks.map((block) => block.lang === 'console'
           ? block.code.replace(/^\$ /gm, '').trim() : block.code.replace(/\n$/, '')) }
@@ -120,7 +120,7 @@ describe('API example source and clipboard receipts', () => {
     duplicate.rendered.sourceLinks[2].push(duplicate.rendered.sourceLinks[2][0])
     expect(() => assertCompleteApiExample(duplicate.rendered, duplicate.example)).toThrow('exact pinned source')
     const wrong = fixture()
-    wrong.rendered.sourceLinks[2] = [{ href: 'https://github.com/libtmux/libtmux-java/blob/main/run.sh', label: 'Source example' }]
+    wrong.rendered.sourceLinks[2] = [{ href: 'https://github.com/libtmux/libtmux-java/blob/main/run.sh', label: 'View source' }]
     expect(() => assertCompleteApiExample(wrong.rendered, wrong.example)).toThrow('exact pinned source')
   })
 

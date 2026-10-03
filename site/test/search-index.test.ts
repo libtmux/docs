@@ -25,7 +25,9 @@ it.skipIf(!SITE_BUILT)('starts port search in that language and leaves root sear
 it.skipIf(!SITE_BUILT)('indexes scoped product declarations while retaining core, internal, and index pages', () => {
   const cases = [
     ['go/latest/workspace/reference/workspace-build', true],
-    ['go/latest/workspace/guides', false],
+    ['go/latest/workspace/guides', true],
+    ['go/latest/workspace/examples', true],
+    ['go/latest/workspace/topics', false],
     ['go/latest/workspace/internals/guides', true],
     ['py/latest/workspace/guides', true],
     ['py/latest/workspace/internals', true],

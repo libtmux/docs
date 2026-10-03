@@ -68,7 +68,7 @@ function sectionsFor(port: string, product: ProductPage['product']): string[] {
   if (product === 'mcp') return ['', 'topics', 'guides', 'examples', 'reference']
   return port === 'py'
     ? ['', 'topics', 'guides', 'examples', 'reference', 'internals', 'internals/topics', 'internals/examples']
-    : ['', 'reference', 'internals', 'internals/topics', 'internals/guides', 'internals/examples']
+    : ['', 'guides', 'examples', 'reference', 'internals', 'internals/topics', 'internals/guides', 'internals/examples']
 }
 
 function pages(): ProductPage[] {
@@ -159,7 +159,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
 
   it('renders Lua Server in the public Server branch of its API sidebar', async () => {
     await inspect('lua/latest/reference/libtmux-server', (document) => {
-      const current = document.querySelector('a[aria-current="page"][href$="/lua/latest/reference/libtmux-server/"]')
+      const current = document.querySelector('[role="tree"] a[aria-current="page"][href$="/lua/latest/reference/libtmux-server/"]')
       expect(current).toBeDefined()
       const ancestors: Array<NonNullable<typeof current>> = []
       let node = current?.closest('[role="treeitem"]')
@@ -168,11 +168,15 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         node = node.parentElement?.closest('[role="treeitem"]') ?? null
       }
       const top = ancestors.at(-1)
-      expect(top?.querySelector(':scope > .api-nav__row > a')?.textContent?.trim()).toBe('Server')
+      expect(top?.querySelector(':scope > .api-nav__row > .api-nav__label')?.textContent?.trim()).toBe('Server')
       // A row shows its id only when a sibling shares its name.
-      const first = top?.querySelector(':scope > [role="group"] > li:first-child a')
-      expect(first?.textContent?.trim()).toBe('Server')
-      expect(first?.getAttribute('href')).toMatch(/\/lua\/latest\/reference\/libtmux-server\/$/)
+      const first = top?.querySelector(':scope > [role="group"] > li:first-child > .api-nav__row')
+      expect(first?.querySelector('.api-nav__label')?.textContent?.trim()).toBe('Server')
+      expect(first?.querySelector('a')?.getAttribute('href')).toMatch(/\/lua\/latest\/reference\/libtmux-server\/$/)
+      const badge = first?.querySelector('.api-nav__kind')
+      expect(badge?.textContent).toBe('C')
+      expect(badge?.getAttribute('title')).toBe('class')
+      expect(badge?.getAttribute('aria-hidden')).toBe('true')
     })
   })
 
@@ -180,7 +184,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     for (const section of ['', 'guides/', 'topics/']) {
       const path = `${port}/latest/${section}`
       await inspect(path, (document) => {
-        const navigation = document.querySelectorAll(section ? 'nav[aria-label="Port documentation"]' : 'main')
+        const navigation = document.querySelectorAll(section ? '[data-surface-picker]' : 'main')
         expect(navigation.length, `${path} product entry points`).toBeGreaterThan(0)
         for (const container of navigation) {
           for (const product of products) {
@@ -188,11 +192,21 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
             const link = [...container.querySelectorAll('a[href]')]
               .find((entry) => new URL(entry.getAttribute('href')!, urlFor(path)).pathname === expected)
             expect(link, `${path} links to ${expected}`).toBeDefined()
-            expect(link!.textContent, `${path} product label`).toContain(product === 'workspace' ? 'Workspace Manager' : 'MCP')
+            const label = section ? link!.closest('[data-surface-group]')!.textContent : link!.textContent
+            expect(label, `${path} product label`).toContain(product === 'workspace' ? 'Workspace Manager' : 'MCP')
             if (!productAvailable(PORTS.find((entry) => entry.slug === port)!, product)) {
-              expect(link!.textContent, `${path} unavailable product label`).toContain('not available')
+              expect(label, `${path} unavailable product label`).toMatch(/not available/i)
             }
             expect(resolves(link!.getAttribute('href')!, urlFor(path).href), `${path} resolves ${expected}`).toBe(true)
+          }
+        }
+        if (section) {
+          expect(document.querySelector('[data-surface-picker] .surface-current strong')?.textContent).toBe('Core Library')
+          const current = document.querySelector('[data-surface-picker] [aria-current="location"]')
+          expect(current?.getAttribute('href'), `${path} selected section`).toBe(urlFor(path).pathname)
+          for (const nav of document.querySelectorAll('[data-section-navigation] nav')) {
+            expect([...nav.querySelectorAll('a[href]')].some((link) => /\/(?:mcp|workspace)\//.test(link.getAttribute('href')!)),
+              `${path} section sidebar excludes other apps`).toBe(false)
           }
         }
         const assets = [...document.querySelectorAll('script[src], link[rel="stylesheet"][href], link[rel="preload"][as="font"][href]')]
@@ -216,7 +230,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(link!.textContent, `${domain.path} ${domain.label} card label`).toContain(domain.label)
       })
       await inspect(domain.target, (document) => {
-        const navigation = document.querySelector('nav[aria-label="Port documentation"]')
+        const navigation = document.querySelector('[data-section-navigation] nav')
         expect(navigation, `${domain.target} port navigation`).toBeDefined()
         const links = [...navigation!.querySelectorAll('a[href]')]
           .filter((entry) => new URL(entry.getAttribute('href')!, urlFor(domain.target)).pathname === urlFor(domain.target).pathname)
@@ -304,25 +318,51 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   it.each(PORTS.filter((port) => !port.parentLibrary))('$name distinguishes unfinished products and groups workspace internals', async (port) => {
     for (const page of pages().filter((entry) => entry.port === port.slug)) await inspect(page.path, (document) => {
       if (productInDevelopment(port, page.product)) developmentStatus(document, page.path)
-      const navigation = document.querySelectorAll('nav[aria-label="Documentation"]')
+      const surface = page.product === 'mcp' ? 'MCP' : 'Workspace Manager'
+      const section = page.section.split('/')[0] || 'home'
+      const sectionLabel = section[0].toUpperCase() + section.slice(1)
+      const picker = document.querySelector('[data-surface-picker]')
+      expect(picker?.querySelector('.surface-current strong')?.textContent, `${page.path} current app`).toBe(surface)
+      expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} current section`).toBe(sectionLabel)
+      const current = picker?.querySelectorAll('[aria-current="location"]')
+      expect(current, `${page.path} one current section`).toHaveLength(1)
+      const sectionPath = `${page.port}/${page.version}/${page.product}/${section === 'home' ? '' : `${section}/`}`
+      expect(current![0].getAttribute('href'), `${page.path} current destination`).toBe(urlFor(sectionPath).pathname)
+      expect(resolves(current![0].getAttribute('href')!), `${page.path} current destination exists`).toBe(true)
+      const navigation = document.querySelectorAll('[data-section-navigation] nav')
       expect(navigation.length, `${page.path} documentation navigation`).toBeGreaterThan(0)
       for (const nav of navigation) {
-        if (page.product === 'mcp' && productAvailable(port, 'mcp')) {
+        expect(nav.getAttribute('aria-label'), page.path).toBe(`${surface}: ${sectionLabel}`)
+        const links = [...nav.querySelectorAll('a[href]')]
+        expect(links.length, `${page.path} current section pages`).toBeGreaterThan(0)
+        for (const link of links) {
+          const href = link.getAttribute('href')!
+          const path = new URL(href, urlFor(page.path)).pathname
+          if (section === 'reference') {
+            const prefix = urlFor(`${page.port}/${page.version}/${page.product}/`).pathname
+            expect(path.startsWith(prefix), `${page.path} reference stays in its app`).toBe(true)
+            expect(['reference', page.product === 'mcp' ? 'tools' : 'cli'], `${page.path} reference kinds`)
+              .toContain(path.slice(prefix.length).split('/')[0])
+          } else expect(path, `${page.path} scoped sidebar`).toContain(urlFor(sectionPath).pathname)
+          expect(resolves(href, urlFor(page.path).href), `${page.path} sidebar destination ${href}`).toBe(true)
+        }
+        if (page.product === 'mcp' && page.section === 'reference' && productAvailable(port, 'mcp')) {
           const tools = [...nav.querySelectorAll('a[href]')].find((link) => link.textContent.trim() === 'Tools')
           expect(tools, `${page.path} Tools navigation`).toBeDefined()
           const href = tools!.getAttribute('href')!
           expect(new URL(href, urlFor(page.path)).pathname).toBe(urlFor(`${page.port}/${page.version}/mcp/tools/`).pathname)
           expect(resolves(href, urlFor(page.path).href), href).toBe(true)
-        } else if (page.product === 'workspace' && page.port !== 'ruby' && productAvailable(port, 'workspace')) {
-          const internals = [...nav.querySelectorAll('.sidebar-section')]
-            .find((section) => section.querySelector('.section-label')?.textContent.trim() === 'Internals')
-          expect(internals, `${page.path} Internals navigation group`).toBeDefined()
-          const hrefs = [...internals!.querySelectorAll('a[href]')]
+        } else if (page.product === 'workspace' && section === 'internals' && productAvailable(port, 'workspace')) {
+          const hrefs = links
             .map((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname)
           for (const section of sectionsFor(page.port, 'workspace').filter((entry) => entry.startsWith('internals'))) {
             expect(hrefs, `${page.path} ${section} navigation`).toContain(urlFor(`${page.port}/${page.version}/workspace/${section}/`).pathname)
           }
         }
+      }
+      if (page.product === 'workspace' && page.port !== 'ruby' && productAvailable(port, 'workspace')) {
+        expect([...picker!.querySelectorAll('a[href]')].some((link) => link.getAttribute('href') === urlFor(`${page.port}/${page.version}/workspace/internals/`).pathname),
+          `${page.path} Internals remains reachable in the picker`).toBe(true)
       }
       if (!productAvailable(port, page.product)) {
         expect(document.querySelector('article')!.textContent, `${page.path} availability`).toMatch(/not published|no published/i)
@@ -398,11 +438,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     for (const page of pages()) await inspect(page.path, (document) => {
       const links = [...document.querySelectorAll('[data-page-port-switcher] a[href]')]
       const counterparts = new Map(PORTS.flatMap((port) => {
-        // The Python CLI example shares the root task alias with each
-        // native builder example, whose canonical page is under Internals.
-        const section = page.port === 'py' && page.product === 'workspace' && page.section === 'examples'
-          && ['ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'].includes(port.slug)
-          ? 'internals/examples' : page.section
+        const section = page.section
         if (port.parentLibrary || !sectionsFor(port.slug, page.product).includes(section)) return []
         const version = port.slug === page.port ? page.version : defaults[port.slug]
         return [[port.slug, urlFor(`${port.slug}/${version}/${page.product}/${section ? `${section}/` : ''}`).pathname]]
@@ -432,18 +468,35 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it('redirects previous workspace implementation URLs without replacing Python CLI docs', async () => {
-    // The reference is a section of the product now, not a page inside
-    // Internals, so it has no lifted twin to redirect. What remains under
-    // Internals still does, for a port with no workspace CLI of its own.
+  it('redirects legacy workspace Topics without replacing Python CLI docs', async () => {
+    // Guides and Examples now browse the native CLI documentation. The old
+    // Topics route still redirects to the builder's internal topics.
     for (const page of pages().filter((entry) => entry.product === 'workspace'
-      && entry.port !== 'py' && entry.section.startsWith('internals/'))) {
+      && entry.port !== 'py' && entry.section === 'internals/topics')) {
       await redirectsTo(page.path.replace('/internals/', '/'), page.path)
     }
     for (const page of pages().filter((entry) => entry.port === 'py' && entry.product === 'workspace'
       && ['guides', 'examples'].includes(entry.section))) await inspect(page.path, (document) => {
       expect(document.querySelector('meta[http-equiv="refresh"]'), `${page.path} remains a user guide`).toBeNull()
       expect(document.querySelector('article')!.textContent, `${page.path} CLI usage`).toContain('tmuxp load')
+    })
+  })
+
+  it.each(PORTS.filter((port) => !port.parentLibrary && !['py', 'ruby', 'lua'].includes(port.slug)))
+    ('$name publishes workspace Guides and Examples browse pages', async (port) => {
+    for (const page of pages().filter((entry) => entry.product === 'workspace'
+      && entry.port === port.slug && ['guides', 'examples'].includes(entry.section))) await inspect(page.path, (document) => {
+      expect(document.querySelector('meta[http-equiv="refresh"]'), `${page.path} is a browse page`).toBeNull()
+      expect(document.querySelector('[data-pagefind-body]'), `${page.path} is searchable`).not.toBeNull()
+      const cards = [...document.querySelectorAll('article .doc-card[href]')]
+      expect(cards.length, `${page.path} published tasks`).toBeGreaterThan(0)
+      for (const card of cards) {
+        const href = card.getAttribute('href')!
+        expect(resolves(href, urlFor(page.path).href), `${page.path} task ${href}`).toBe(true)
+        expect(new URL(href, urlFor(page.path)).pathname).toContain(urlFor(`${page.port}/${page.version}/workspace/`).pathname)
+      }
+      expect([...document.querySelectorAll('article a[href]')].some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname.startsWith(urlFor(`${page.port}/${page.version}/workspace/internals/`).pathname)),
+        `${page.path} keeps builder documentation reachable`).toBe(true)
     })
   })
 
@@ -495,7 +548,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(llms, `${url} in llms.txt`).toContain(`](${url})`)
       const productionUrl = `https://libtmux.org/en/${page.path}`
       expect(sitemap, `${productionUrl} in sitemap`).toContain(`<loc>${productionUrl}</loc>`)
-      if (page.product === 'workspace' && page.port !== 'py' && page.section.startsWith('internals/')) {
+      if (page.product === 'workspace' && page.port !== 'py' && page.section === 'internals/topics') {
         const legacy = productionUrl.replace('/workspace/internals/', '/workspace/')
         expect(sitemap, `${legacy} redirect is not canonical`).not.toContain(`<loc>${legacy}</loc>`)
       }
@@ -546,7 +599,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(resolves(entry.url), entry.url).toBe(true)
         expect(resolves(entry.markdownUrl), entry.markdownUrl).toBe(true)
         expect(entry.url, `${root} canonical workspace API exports`).not.toMatch(/\/workspace\/api(?:\/|$)/)
-        expect(entry.url, `${root} canonical workspace prose exports`).not.toMatch(/\/(?:lua|ts|rs|go|java|dotnet|cxx|swift)\/[^/]+\/workspace\/(?:topics|guides|examples)\/?$/)
+        expect(entry.url, `${root} legacy workspace Topics redirect excluded`).not.toMatch(/\/(?:lua|ts|rs|go|java|dotnet|cxx|swift)\/[^/]+\/workspace\/topics\/?$/)
         if (root) expect(new URL(entry.url).pathname).toContain(`/${SITE_PREFIX}${root}`)
       }
     }

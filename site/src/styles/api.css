@@ -664,7 +664,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   .api-page-contents {
     display: block;
     min-width: 0;
-    padding: 4.5rem 1.5rem 2rem 0;
+    padding: 4.5rem 0.5rem 2rem 0;
   }
   .api-page-contents > aside {
     position: sticky;
@@ -672,7 +672,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
     max-height: calc(100dvh - 8rem);
     overflow-y: auto;
     border-left: 1px solid var(--color-edge);
-    padding-left: 1.25rem;
+    padding-left: 0.75rem;
     scrollbar-width: thin;
   }
 }
@@ -687,10 +687,10 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
 .api-page-contents a {
   display: flex;
   gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0.35rem;
   border-left: 2px solid transparent;
   color: var(--color-muted);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   line-height: 1.5;
   overflow-wrap: anywhere;
   text-decoration: none;
@@ -701,21 +701,10 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   color: var(--color-link);
   font-weight: 600;
 }
-.api-contents-nested a { padding-left: 1.5rem; font-size: 0.75rem; }
+.api-contents-nested a { padding-left: 1rem; }
 .api-related { margin-top: 2rem; }
-.api-related code { font-size: 0.8125rem; }
-.api-related-kind {
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 1rem;
-  height: 1rem;
-  margin-top: 0.1rem;
-  border: 1px solid var(--color-edge);
-  border-radius: 0.2rem;
-  color: var(--color-link);
-  background: var(--color-surface);
-  font: 0.625rem/1 var(--font-mono, monospace);
-}
+.api-related code { font-size: inherit; }
+.api-related a { align-items: center; }
 .api-page-contents a:focus-visible {
   outline: 2px solid var(--focus-ring-color);
   outline-offset: -2px;

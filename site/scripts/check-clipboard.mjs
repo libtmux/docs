@@ -15,7 +15,7 @@ export function assertCompleteApiExample(rendered, example) {
     const linkGroups = files.length ? files.map((entry) => rendered.sourceLinks[entry.block]) : [rendered.links]
     for (const links of linkGroups) {
       assert.deepEqual(links.filter((link) => link.href === href),
-        [{ href, label: 'Source example' }], `${example.symbol}: exact pinned source is a readable link for its file`)
+        [{ href, label: 'View source' }], `${example.symbol}: exact pinned source is a readable link for its file`)
     }
   }
   assert(!rendered.text.includes('[source example]('), `${example.symbol}: no literal Markdown link`)
@@ -116,11 +116,19 @@ export async function checkClipboard(page, base) {
         } })
       }, mode)
       await button.evaluate((element) => { element.textContent = 'Copy' })
-      await button.click()
       const copied = !['false', 'throw'].includes(mode)
-      await page.waitForFunction(([selector, label]) => [...document.querySelectorAll(selector)]
-        .some((element) => element.textContent === label), [selector, copied ? 'Copied' : 'Copy failed'])
-      assert.equal(await button.textContent(), copied ? 'Copied' : 'Copy failed', `${path}: ${mode}`)
+      // Record the transient label before a busy renderer can reset it.
+      await button.evaluate((element, label) => {
+        window.__copyFeedback = undefined
+        const observer = new MutationObserver(() => {
+          if (element.textContent !== label) return
+          window.__copyFeedback = label
+          observer.disconnect()
+        })
+        observer.observe(element, { childList: true, characterData: true, subtree: true })
+      }, copied ? 'Copied' : 'Copy failed')
+      await button.click()
+      await page.waitForFunction((label) => window.__copyFeedback === label, copied ? 'Copied' : 'Copy failed')
       const announcement = copied ? 'Copied to clipboard.' : 'Copy failed. Select and copy the text manually.'
       assert.equal(await status.textContent(), announcement, `${path}: ${mode} accessible result`)
       assert.match(await status.ariaSnapshot(), /status/, `${path}: ${mode} status remains accessible`)

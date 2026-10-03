@@ -1,0 +1,18 @@
+---
+interface Props { name: string }
+const paths: Record<string, string> = {
+  core: 'M3 3h7v14H3z M10 3h7v14h-7 M6 6h1 M13 6h1',
+  mcp: 'M3 8l5-5 9 9-5 5z M6 11l5-5 M9 14l5-5',
+  workspace: 'M2 4h16v13H2z M2 8h16 M8 8v9',
+  home: 'M2 9l8-7 8 7 M4 8v10h12V8 M8 18v-6h4v6',
+  guides: 'M3 3h6l1 2 1-2h6v14h-6l-1 1-1-1H3z M10 5v13',
+  tutorials: 'M7 3l10 7-10 7z',
+  topics: 'M3 3h14v11H9l-5 4v-4H3z M6 7h8 M6 10h5',
+  concepts: 'M7 15h6 M8 18h4 M6 10a6 6 0 1 1 8 0l-1 2H7z',
+  examples: 'M6 5l-4 5 4 5 M14 5l4 5-4 5 M12 3l-4 14',
+  reference: 'M5 2h10v16H5z M8 6h4 M8 10h4 M8 14h4',
+  configuration: 'M2 5h16 M2 10h16 M2 15h16 M6 3v4 M14 8v4 M8 13v4',
+  internals: 'M3 3h5v5H3z M12 12h5v5h-5z M6 8v6h6',
+}
+---
+<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={paths[Astro.props.name] ?? paths.reference} /></svg>
