@@ -146,6 +146,13 @@ programs and their standalone package to exact API declarations. The displayed
 files retain their source bytes and pinned citations; the verification records
 cover success, operation failure, and owned-server cleanup on both tmux versions.
 
+Use `--example api --port cxx --page reference/libtmux-pane-capture` for a
+complete C++ consumer. Source files and API targets come from the pinned
+port's `examples/api/api-examples.json`. Each page includes the whole CMake
+project and `main.cpp`, installs the library with its public testing component,
+and builds against that installed prefix. The native source suite checks the
+same files against private tmux servers, including operation failure and cleanup.
+
 Put explanatory comments on separate lines above the code they describe.
 Limit example comments to 100 columns, including indentation; prefer shorter
 lines that fit the code panel. Put long source links and attribution in prose

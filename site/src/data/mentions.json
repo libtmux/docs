@@ -646,13 +646,6 @@
   },
   {
    "port": "cxx",
-   "symbol": "libtmux::workspace::BuildError::window_index",
-   "page": "/cxx/latest/workspace/configuration/windows/",
-   "title": "Window configuration",
-   "section": "ports"
-  },
-  {
-   "port": "cxx",
    "symbol": "libtmux::workspace::Command",
    "page": "/cxx/latest/workspace/internals/topics/",
    "title": "C++ workspace builder behavior",
@@ -740,6 +733,13 @@
    "symbol": "libtmux::workspace::ParseError",
    "page": "/cxx/latest/workspace/internals/topics/",
    "title": "C++ workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "cxx",
+   "symbol": "libtmux::workspace::ParseError::unsupported_key",
+   "page": "/cxx/latest/workspace/reference/exit-codes/",
+   "title": "Exit codes and errors",
    "section": "ports"
   },
   {

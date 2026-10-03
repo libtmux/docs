@@ -50290,10 +50290,10 @@
           "wireName": "call_read_tools_batch",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2135
+            "line": 2162
           },
           "description": "Run up to sixteen declared inspect operations serially under this one call; inner operations receive no separate approval. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
           "schemaStatus": "runtime",
@@ -50827,10 +50827,10 @@
           "wireName": "capture_pane",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 1809
+            "line": 1836
           },
           "description": "Return visible text, or retained history when requested. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
           "schemaStatus": "runtime",
@@ -50900,10 +50900,10 @@
           "wireName": "capture_since",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 1831
+            "line": 1858
           },
           "description": "Return bytes after a bounded client cursor and a replacement cursor. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
           "schemaStatus": "runtime",
@@ -50961,10 +50961,10 @@
           "wireName": "clear_pane_scrollback",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 3113
+            "line": 3145
           },
           "description": "Irreversibly discard retained scrollback for one pane. Delete tmux state; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -51016,10 +51016,10 @@
           "wireName": "create_session",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2511
+            "line": 2543
           },
           "description": "Create a detached session; names and path data are literalized before tmux expansion. Start a pane's configured process; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -51109,10 +51109,10 @@
           "wireName": "create_window",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2555
+            "line": 2587
           },
           "description": "Create a detached window; name and path data are literalized before tmux expansion. Start a pane's configured process; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -51192,10 +51192,10 @@
           "wireName": "find_pane_by_position",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 1924
+            "line": 1951
           },
           "description": "Resolve coordinates using fixed tmux layout fields. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -51258,10 +51258,10 @@
           "wireName": "get_pane_info",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 1796
+            "line": 1823
           },
           "description": "Return one pane by stable ID. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -51313,10 +51313,10 @@
           "wireName": "get_server_info",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 1734
+            "line": 1761
           },
           "description": "Report liveness, tmux version, and the resolved socket when running. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -51360,10 +51360,10 @@
           "wireName": "get_session_info",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 1767
+            "line": 1794
           },
           "description": "Return one session by stable ID or name. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -51415,10 +51415,10 @@
           "wireName": "get_tmux_variables",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 1996
+            "line": 2023
           },
           "description": "Expand only validated variable identifiers, never a caller format. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
           "schemaStatus": "runtime",
@@ -51483,10 +51483,10 @@
           "wireName": "get_window_info",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 1782
+            "line": 1809
           },
           "description": "Return one window by stable ID. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -51538,10 +51538,10 @@
           "wireName": "kill_pane",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 3129
+            "line": 3161
           },
           "description": "Delete one pane and its running process. Delete tmux state; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -51594,10 +51594,10 @@
           "wireName": "kill_session",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 3164
+            "line": 3196
           },
           "description": "Delete one session and every window it owns. Delete tmux state; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -51650,10 +51650,10 @@
           "wireName": "kill_window",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 3146
+            "line": 3178
           },
           "description": "Delete one window and every pane it owns. Delete tmux state; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -51706,10 +51706,10 @@
           "wireName": "list_panes",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 1706
+            "line": 1733
           },
           "description": "List every pane with stable pane, window, and session IDs. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -51824,10 +51824,10 @@
           "wireName": "list_sessions",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 1672
+            "line": 1699
           },
           "description": "List stable session IDs, names, paths, and client counts. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -51914,10 +51914,10 @@
           "wireName": "list_windows",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 1681
+            "line": 1708
           },
           "description": "List windows through an exact owning session. Inspect tmux metadata; accepts no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -52026,10 +52026,10 @@
           "wireName": "move_window",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2385
+            "line": 2417
           },
           "description": "Move a window to an exact index in its owning session. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -52089,10 +52089,10 @@
           "wireName": "paste_text",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2976
+            "line": 3008
           },
           "description": "Require the target pane to be live and outside human-owned mode, then stage a private target-only buffer, optionally append Enter, paste it once, and verify cleanup. Empty text without Enter is a guarded buffer-free no-op. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
           "schemaStatus": "runtime",
@@ -52167,10 +52167,10 @@
           "wireName": "rename_session",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2242
+            "line": 2269
           },
           "description": "Replace one session name. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -52231,10 +52231,10 @@
           "wireName": "rename_window",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2261
+            "line": 2288
           },
           "description": "Replace one window name. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -52295,10 +52295,10 @@
           "wireName": "resize_pane",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2351
+            "line": 2383
           },
           "description": "Replace one or both pane dimensions. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -52363,10 +52363,10 @@
           "wireName": "resize_window",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2330
+            "line": 2362
           },
           "description": "Replace one window's dimensions. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -52433,10 +52433,10 @@
           "wireName": "respawn_pane",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2626
+            "line": 2658
           },
           "description": "Restart only the pane's configured process; no caller command is accepted. Start a pane's configured process; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -52517,10 +52517,10 @@
           "wireName": "run_shell_command",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2657
+            "line": 2689
           },
           "description": "Require one live configured pane, outside human-owned mode and running a supported POSIX foreground shell, then send one command and return output after its private completion boundary. Run a shell command in a pane with your user's permissions.",
           "schemaStatus": "runtime",
@@ -52586,10 +52586,10 @@
           "wireName": "search_panes",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 1879
+            "line": 1906
           },
           "description": "Search captured lines using a length-limited expression. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
           "schemaStatus": "runtime",
@@ -52667,18 +52667,18 @@
           "wireName": "select_layout",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2312
+            "line": 2339
           },
-          "description": "Replace the pane layout of one window. Change tmux state; no client-supplied executable input.",
+          "description": "Replace the pane layout of one window. Names and mirrored layouts follow the selected daemon version. Saved layouts accept v1 checksums and v2 JSON; v2 requires tmux 3.8 (including 3.8-rc) or newer. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
             "properties": {
               "layout": {
-                "description": "Named or saved tmux layout.",
+                "description": "Built-in name, unambiguous abbreviation or saved tmux layout.",
                 "maxLength": 4096,
                 "type": "string"
               },
@@ -52729,10 +52729,10 @@
           "wireName": "select_pane",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2296
+            "line": 2323
           },
           "description": "Make one pane active. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -52785,10 +52785,10 @@
           "wireName": "select_window",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2280
+            "line": 2307
           },
           "description": "Make one window active. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -52841,10 +52841,10 @@
           "wireName": "send_keys",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2771
+            "line": 2803
           },
           "description": "Require every configured synchronized pane to be live and outside human-owned mode, then send one validated tmux key name. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
           "schemaStatus": "runtime",
@@ -52920,10 +52920,10 @@
           "wireName": "send_keys_batch",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2844
+            "line": 2876
           },
           "description": "Preflight each row's configured synchronized pane cohort independently, requiring every pane to be live and outside human-owned mode before its text or key and optional Enter. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
           "schemaStatus": "runtime",
@@ -53009,10 +53009,10 @@
           "wireName": "set_history_limit",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2491
+            "line": 2523
           },
           "description": "Replace retained-history bounds with a non-negative integer. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -53071,10 +53071,10 @@
           "wireName": "set_mouse_enabled",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2478
+            "line": 2510
           },
           "description": "Replace the global mouse option with a typed boolean. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -53125,10 +53125,10 @@
           "wireName": "set_pane_title",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2425
+            "line": 2457
           },
           "description": "Replace one pane title. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -53189,10 +53189,10 @@
           "wireName": "set_synchronize_panes",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 3074
+            "line": 3106
           },
           "description": "Set the inherited window synchronize-panes default; pane-level overrides determine effective synchronized input membership. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -53249,10 +53249,10 @@
           "wireName": "show_environment",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2070
+            "line": 2097
           },
           "description": "Read global or session environment values. Read the tmux environment; accepts no client-supplied executable input. Returned values may contain secrets.",
           "schemaStatus": "runtime",
@@ -53307,10 +53307,10 @@
           "wireName": "show_hooks",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2109
+            "line": 2136
           },
           "description": "Read configured hooks, optionally filtered by exact name. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
           "schemaStatus": "runtime",
@@ -53365,10 +53365,10 @@
           "wireName": "show_option",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2045
+            "line": 2072
           },
           "description": "Read one exact option without accepting an option value. Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration.",
           "schemaStatus": "runtime",
@@ -53426,10 +53426,10 @@
           "wireName": "signal_channel",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2464
+            "line": 2496
           },
           "description": "Release or latch one named server-side channel. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -53481,10 +53481,10 @@
           "wireName": "snapshot_pane",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 1860
+            "line": 1887
           },
           "description": "Return pane metadata and visible terminal content from one call. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
           "schemaStatus": "runtime",
@@ -53537,10 +53537,10 @@
           "wireName": "split_window",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2590
+            "line": 2622
           },
           "description": "Create a configured-process pane; path data is literalized before tmux expansion. Start a pane's configured process; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -53617,10 +53617,10 @@
           "wireName": "swap_pane",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2403
+            "line": 2435
           },
           "description": "Exchange two pane positions without changing their IDs. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -53679,10 +53679,10 @@
           "wireName": "wait_for_channel",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 2444
+            "line": 2476
           },
           "description": "Wait for a named server-side channel with an optional deadline. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -53740,10 +53740,10 @@
           "wireName": "wait_for_text",
           "source": {
             "repo": "libtmux/libtmux-cxx",
-            "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-            "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+            "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+            "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
             "file": "apps/mcp/src/tool_catalog.cpp",
-            "line": 1979
+            "line": 2006
           },
           "description": "Discount this server's pending input and recent submitted echoes; unmodelled keys stop tracking the current line. Wait for a new shell's prompt before typing. `matched_at_entry` reports visible text at entry; a mode ending in -unconfirmed identifies input that was still unconfirmed at the deadline. Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted.",
           "schemaStatus": "runtime",
@@ -53841,8 +53841,8 @@
       "selectable": true,
       "source": "apps/mcp/src",
       "repo": "libtmux/libtmux-cxx",
-      "revision": "393d4b0ad666f18a6581f1eb281741a75a7503f0",
-      "extractedRevision": "4665d2b15f76200c1caa65978d79e595541f7a90",
+      "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "extractedRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -53869,7 +53869,7 @@
         "serverInfo": {
           "name": "libtmux-cxx",
           "title": "libtmux C++ tmux server",
-          "version": "0.1.0-alpha.10"
+          "version": "0.1.0-alpha.11"
         }
       }
     },

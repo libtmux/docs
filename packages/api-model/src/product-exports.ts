@@ -64,6 +64,8 @@ export function scopeProductSymbols(symbols: ApiSymbol[], context: ExportContext
       publicImport = new RegExp(`\\bpublic\\s+(?:(?:final|abstract|sealed|static)\\s+)*(?:class|record|interface|enum)\\s+${escape(symbol.name)}\\b`).test(source)
     } else if (context.port === 'py') {
       publicImport = !symbol.name.startsWith('_') && !/^(?:logger|log)$/.test(symbol.name) && !/(?:^|\/)(?!__init__\.py$)_(?:[^/]+)(?:\/|\.py$)/.test(file)
+    } else if (context.port === 'cxx') {
+      publicImport = !/(?:^|::)detail(?:::|$)/.test(symbol.id)
     }
     symbol.apiScope = publicImport ? 'exported' : 'internal'
   }

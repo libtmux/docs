@@ -731,6 +731,9 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     control: ['io.github.libtmux.scaladsl.cats.Channel', 'io.github.libtmux.scaladsl.ox.Flows'],
   },
   fsharp: { queries: ['LibTmux.FSharp.Selection'] },
+  cxx: {
+    workspace: ['BuildEvent', 'BuildPhase', 'BuildStop'].map((name) => `libtmux::workspace::${name}`),
+  },
 }
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
