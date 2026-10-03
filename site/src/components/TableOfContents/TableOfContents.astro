@@ -15,16 +15,18 @@ interface Props {
   items: TocItem[]
   minHeadingLevel?: number
   maxHeadingLevel?: number
+  /** Reuse the drawer's heading instead of rendering a second title. */
+  labelledBy?: string
 }
 
-const { items, minHeadingLevel = 2, maxHeadingLevel = 3 } = Astro.props
+const { items, minHeadingLevel = 2, maxHeadingLevel = 3, labelledBy } = Astro.props
 ---
 
 <starlight-toc data-min-h={minHeadingLevel} data-max-h={maxHeadingLevel}>
-  <nav aria-labelledby="starlight__on-this-page" class="toc-nav">
-    <h2 id="starlight__on-this-page" class="text-sm font-semibold text-slate-900 dark:text-white mb-4">
+  <nav aria-labelledby={labelledBy ?? 'starlight__on-this-page'} class="toc-nav">
+    {!labelledBy && <h2 id="starlight__on-this-page" class="text-sm font-semibold text-slate-900 dark:text-white mb-4">
       On this page
-    </h2>
+    </h2>}
     <TableOfContentsList toc={items} />
   </nav>
 </starlight-toc>

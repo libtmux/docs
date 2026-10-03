@@ -22,7 +22,7 @@ const expanded = current || items.some((item) => isActivePath(item.href, current
       <span class="api-nav__chevron" aria-hidden="true" />
     </summary>
     <div class="sidebar-section__children">
-      {items.map((item) => <SidebarLink href={item.href} label={item.label} external={item.external}
+      {items.map((item) => <SidebarLink href={item.href} label={item.label} external={item.external} kind={item.kind}
         isActive={isActivePath(item.href, currentPath)} level={2} />)}
     </div>
   </details>

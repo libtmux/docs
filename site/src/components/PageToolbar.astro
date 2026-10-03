@@ -1,9 +1,6 @@
 ---
 import PageActions from './PageActions.astro'
 import PagePortSwitcher from './PagePortSwitcher.astro'
-import VersionSwitcher from './VersionSwitcher.astro'
-import LocaleSwitcher from './LocaleSwitcher.astro'
-import type { Locale } from '../i18n/locales'
 import type { PagePortLink } from '../lib/page-port-links'
 
 interface Props {
@@ -12,9 +9,8 @@ interface Props {
   port?: string
   editHref?: string
   editLabel?: string
-  referenceContext?: { version: string; locale: Locale; sourcePath: string }
 }
-const { breadcrumbs, pagePorts = [], port, editHref, editLabel, referenceContext } = Astro.props
+const { breadcrumbs, pagePorts = [], port, editHref, editLabel } = Astro.props
 ---
 
 <div class="not-prose mb-4 flex flex-wrap items-center gap-x-4 gap-y-2" data-page-toolbar data-pagefind-ignore="all">
@@ -26,18 +22,10 @@ const { breadcrumbs, pagePorts = [], port, editHref, editLabel, referenceContext
       </li>)}
     </ol>
   </nav>
-  <div class:list={["page-toolbar-controls ml-auto flex flex-wrap items-center gap-2", referenceContext && 'page-toolbar-controls--reference']}>
+  <div class="page-toolbar-controls ml-auto flex flex-wrap items-center gap-2">
     {pagePorts.length > 0 && <div class="page-ports">
       <PagePortSwitcher entries={pagePorts} portSlug={port} />
     </div>}
-    {referenceContext && <>
-      <VersionSwitcher portSlug={port} version={referenceContext.version} />
-      <div class="page-ports"><LocaleSwitcher
-        locale={referenceContext.locale}
-        sourcePath={referenceContext.sourcePath}
-        localeStatuses={{ [referenceContext.locale]: 'translated' }}
-      /></div>
-    </>}
     <PageActions editHref={editHref} editLabel={editLabel} />
   </div>
 </div>

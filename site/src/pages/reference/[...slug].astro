@@ -9,6 +9,7 @@ import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
 import { apiEntryFields, apiEntrySections, apiMemberGroups, relatedApiTypes, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
+import DocumentationContext from '../../components/docs/DocumentationContext.astro'
 import { pagePortsFor } from '../../lib/page-ports-for'
 import { pageBreadcrumbs } from '../../lib/sidebar'
 import BaseLayout from '../../layouts/BaseLayout.astro'
@@ -27,7 +28,6 @@ import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
 import { tmuxReferenceUrl } from '../../lib/tmux-reference'
-import { kindMark } from '../../lib/api-labels'
 
 /**
  * The tree-sitter-extracted reference, rendered through this site's own
@@ -203,29 +203,6 @@ const portMeta = model ? PORT_BY_SLUG[model.port] : undefined
 const ownerPackage = owner?.package ?? portMeta?.packageName
 const packageMeta = portMeta?.packages?.find((candidate) => candidate.name === ownerPackage)
 const packageUrl = packageMeta?.registry ?? portMeta?.registry?.url ?? withRoot(`/${model?.port}/`)
-
-/**
- * The version the site menu in the sidebar links its prose at.
- *
- * The reference sits above the version axis — one tree, not one per release —
- * so it has no version of its own to pass on. `LIBTMUX_DOCS_PORT_DEFAULTS` is
- * the same per-port map `[port]/index.astro` reads for the same reason, and
- * for the same reason again the fallback is `latest` rather than `stable`:
- * every port has a `latest`, and `stable` is the entry that may be absent.
- *
- * process.env, not import.meta.env — the latter goes stale across repeated
- * astro builds in one tree (see BaseLayout.astro).
- */
-const PORT_DEFAULTS: Record<string, string> = (() => {
-  try {
-    return JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
-  } catch {
-    return {}
-  }
-})()
-const menuVersion = model
-  ? (PORT_DEFAULTS[model.port] ?? process.env.LIBTMUX_DOCS_DEFAULT_VERSION ?? 'latest')
-  : 'latest'
 
 /**
  * The module rows of the definition block.
@@ -443,6 +420,15 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
   flush
   breadcrumbs={breadcrumbs}
 >
+  {model && <DocumentationContext slot="context" port={model.port} version={buildTarget(process.env).version}
+    locale={buildLocale()} sourcePath={localeSourcePath(Astro.url.pathname, buildLocale())} pagePorts={pagePorts} reference>
+    <button type="button" class="api-nav-toggle" slot="navigation" data-api-nav-toggle data-pagefind-ignore="all" aria-controls="api-nav" aria-expanded="false">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <path stroke-linecap="round" d="M2 4h12M2 8h12M2 12h8" />
+          </svg>
+          {PORT_NAME[model.port] ?? model.port} API contents
+        </button>
+  </DocumentationContext>}
   <!-- Flush: the tree's column runs from the header to the footer against the
        viewport's edge, as Learn's does, and only the text column is padded. -->
   <main class:list={["api-reference-layout grid", owner && 'api-reference-layout--symbol']}>
@@ -458,7 +444,6 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
         ownerId={owner?.id}
         members={currentMembers.map((m) => ({ id: m.id, name: m.name, kind: m.kind, href: hrefFor(m) }))}
         withMembers={withMembers}
-        menuVersion={menuVersion}
         currentPath={Astro.url.pathname}
       />
     )}
@@ -469,16 +454,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
            signature, a doc comment or prose, and without this the fragment
            had nothing to land on: the page was right and the scroll position
            was the top of it. -->
-      {model && (
-        <button type="button" class="api-nav-toggle" data-api-nav-toggle data-pagefind-ignore="all" aria-controls="api-nav" aria-expanded="false">
-          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-            <path stroke-linecap="round" d="M2 4h12M2 8h12M2 12h8" />
-          </svg>
-          {PORT_NAME[model.port] ?? model.port} API contents
-        </button>
-      )}
-      <PageToolbar breadcrumbs={breadcrumbs} pagePorts={pagePorts} port={model?.port}
-        referenceContext={model ? { version: buildTarget(process.env).version, locale: buildLocale(), sourcePath: localeSourcePath(Astro.url.pathname, buildLocale()) } : undefined} />
+      <PageToolbar breadcrumbs={breadcrumbs} />
       <header id={owner ? 'api-overview' : undefined} class:list={[owner && 'api-reference-heading']}>
         {owner && <div class="api-reference-eyebrow">
           <ApiBadge label={owner.kind} variant="kind" value={owner.kind} />
@@ -877,7 +853,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               <div class="api-related-cards">
                 {related.map((item) => <div class="api-index-card api-related-card">
                   <a class="api-index-card__link" href={item.href} title={item.identity}>
-                    <span class={`api-nav__kind api-badge--kind-${item.kind}`} title={item.kind} aria-hidden="true">{kindMark(item.kind)}</span>
+                    <ApiBadge label={item.kind} variant="kind" value={item.kind} compact />
                     <code>{item.name}</code>
                   </a>
                   {item.symbol.doc?.summary && <p><ApiDoc text={item.symbol.doc.summary} index={index} context={item.symbol} citations={false} /></p>}

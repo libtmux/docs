@@ -1,5 +1,6 @@
 import { createMarkdownProcessor, parseFrontmatter } from '@astrojs/markdown-remark'
-import { globSync, readFileSync } from 'node:fs'
+import { existsSync, globSync, readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { resolvePortBody, resolvePortContent } from '../src/lib/workspace-shared-slots'
@@ -129,7 +130,21 @@ describe('port prose ownership', () => {
     for (const path of globSync(`${contentRoot}_workspace-shared/workspace/**/*.md`)) {
       const body = resolvePortBody(readFileSync(path, 'utf8'), port)
       expect(body, path).not.toMatch(/\$ (?:uv tool install tmuxp|tmuxp )|Python alternative|tmuxp compatibility reference|proposed native|seven native ports|workspace-cli worktree/i)
-      expect(body, path).toContain(`https://github.com/libtmux/libtmux-${port}/blob/`)
+      const { frontmatter } = parseFrontmatter(body)
+      if (/\/(?:guides|examples)\/index\.md$/.test(path) && Array.isArray(frontmatter.cards)) {
+        // Browse pages link to complete guides; the guides own the programs
+        // and source attribution. Every card must still name a real page.
+        expect(body, path).not.toContain('```')
+        expect(frontmatter.cards.length, path).toBeGreaterThan(0)
+        for (const card of frontmatter.cards) {
+          if (card.ports && !card.ports.includes(port)) continue
+          expect(card.href, path).toMatch(/^\.\.?\//)
+          const target = resolve(dirname(path), card.href)
+          const relative = target.slice(`${contentRoot}_workspace-shared/`.length)
+          const override = `${contentRoot}docs/ports/${port}/${relative}`
+          expect([target, override].some((page) => existsSync(`${page}.md`) || existsSync(`${page}/index.md`)), `${path}: ${card.href}`).toBe(true)
+        }
+      } else expect(body, path).toContain(`https://github.com/libtmux/libtmux-${port}/blob/`)
       expect(body, path).not.toContain('https://github.com/tmux-python/tmuxp/')
       const repositories = [...body.matchAll(/https:\/\/github\.com\/libtmux\/libtmux-([a-z]+)\//g)]
       expect(repositories.map((match) => match[1]).every((slug) => slug === port), path).toBe(true)

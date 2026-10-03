@@ -1,94 +1,110 @@
 #!/usr/bin/env bash
-# Prove check-sidebar-refs.mjs can fail.
-#
-# A check that only ever passes is worth nothing, and this repository has
-# produced several. Each case removes one thing the check claims to guarantee
-# and asserts it is named with exit 1, then that the tree recovers.
-#
-# The mutation is done in Python, not sed: a sidebar anchor wraps its label in
-# a `<span>`, so `>[^<]*</a>` matches nothing and every case "passed" while
-# changing the page not at all.
-set -uo pipefail
-cd "$(dirname "$0")/.." || exit 1
-
-tmp=$(mktemp -d)
-trap 'rm -rf "$tmp"' EXIT
-
-# Whichever version was built, mirroring check-sidebar-refs.mjs's pageFor().
-#
-# Naming a slug in advance is what broke this: `rs` was hard-coded to the
-# unversioned path with no fallback, so once its prose moved under a version
-# every case here died on a missing file rather than testing anything.
+# Mutate a sparse private copy so a failed control cannot alter the assembly.
+set -euo pipefail
+cd "$(dirname "$0")/.."
 locale="${LIBTMUX_DOCS_LOCALE:-en}"
-# The site root within the tree. `_site` is the bucket root and also holds
-# robots.txt, which sits above every locale; the check reads the site.
 site_out="${1:-${LIBTMUX_DOCS_OUT_DIR:-_site}/$locale}"
 if [[ $# == 0 && ! -d "$site_out" ]]; then site_out="${LIBTMUX_DOCS_OUT_DIR:-_site}"; fi
+node --input-type=module - "$site_out" <<'JS'
+import assert from 'node:assert/strict'
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join, relative, resolve } from 'node:path'
+import { spawnSync } from 'node:child_process'
+import { Window } from 'happy-dom'
+import { API_MODEL_PORTS } from './site/src/lib/ports.ts'
 
-page_for() {
-  local port="$1" root candidate
-  root="$site_out/$port"
-  candidate="$root/concepts/index.html"
-  if [ -f "$candidate" ]; then printf '%s' "$candidate"; return 0; fi
-  for dir in "$root"/*/; do
-    candidate="${dir}concepts/index.html"
-    if [ -f "$candidate" ]; then printf '%s' "$candidate"; return 0; fi
-  done
-  return 1
+const source = resolve(process.argv[2])
+const copy = mkdtempSync(join(tmpdir(), 'libtmux-reference-negative-'))
+const servedRoot = `${process.env.LIBTMUX_DOCS_LOCALES_ROOT ?? ''}/${process.env.LIBTMUX_DOCS_LOCALE ?? 'en'}/`
+const window = new Window({ settings: { enableJavaScriptEvaluation: false, disableCSSFileLoading: true, disableJavaScriptFileLoading: true } })
+const template = window.document.createElement('template')
+const pages = new Map()
+function pageFor(port) {
+  const root = join(source, port)
+  for (const suffix of ['concepts/index.html', ...readdirSync(root).flatMap((version) =>
+    [`${version}/concepts/index.html`, `${version}/index.html`])]) {
+    if (existsSync(join(root, suffix))) return join(root, suffix)
+  }
+  throw new Error(`${port}: no shell page under ${source}`)
 }
-
-drop() {  # name, page, href-substring, expected-message
-  local name="$1" page="$2" needle="$3" says="$4"
-  cp "$page" "$tmp/page.bak"
-  python3 - "$page" "$needle" <<'PY'
-import re, sys
-path, needle = sys.argv[1], sys.argv[2]
-html = open(path, encoding='utf8').read()
-out, n = re.subn(r'<a[^>]*href="[^"]*' + re.escape(needle) + r'[^"]*"[\s\S]*?</a>', '', html)
-if n == 0:
-    sys.exit(f'negative test could not find an anchor matching {needle}')
-open(path, 'w', encoding='utf8').write(out)
-PY
-  local out code
-  out=$(node scripts/check-sidebar-refs.mjs "$site_out" 2>&1); code=$?
-  cp "$tmp/page.bak" "$page"
-  if [ "$code" -eq 0 ]; then
-    printf '  FAIL  %-32s check still passed\n' "$name"; return 1
-  fi
-  # The message, not just the exit code. A build-layout change that made the
-  # mutation a no-op would still exit non-zero for its own reasons, and this
-  # would have read as a pass.
-  if ! printf '%s' "$out" | grep -qF "$says"; then
-    printf '  FAIL  %-32s exit 1 but never said: %s\n' "$name" "$says"; return 1
-  fi
-  printf '  ok    %-32s exit 1: %s\n' "$name" \
-    "$(printf '%s' "$out" | grep -m1 -E '^  ' | sed 's/^ *//' | cut -c1-58)"
+function preserve(file) {
+  const target = join(copy, relative(source, file))
+  mkdirSync(dirname(target), { recursive: true })
+  copyFileSync(file, target)
+  return target
 }
-
-fails=0
-rs=$(page_for rs) || { echo 'no rs shell page under _site — run ./scripts/build-site.sh' >&2; exit 1; }
-py=$(page_for py) || { echo 'no py shell page under _site — run ./scripts/build-site.sh' >&2; exit 1; }
-
-drop 'our reference removed'   "$rs" '/rs/latest/reference/' 'rs: sidebar does not link /rs/<version>/reference/' || fails=1
-drop 'ecosystem link removed'  "$rs" 'docs.rs'        'rs: sidebar does not link docs.rs' || fails=1
-drop 'upstream reference gone' "$py" '/api/'          'py: sidebar does not link the upstream gp-sphinx reference' || fails=1
-
-# Keep the link, remove its actual destination, and require the path check to
-# reject it. This also proves prefixed hrefs are resolved against this tree.
-reference="$(dirname "$(dirname "$rs")")/reference/index.html"
-cp "$reference" "$tmp/reference.bak" || exit 1
-rm "$reference"
-out=$(node scripts/check-sidebar-refs.mjs "$site_out" 2>&1); code=$?
-cp "$tmp/reference.bak" "$reference"
-if [[ "$code" == 1 && "$out" == *'rs: '*' is linked but not built'* ]]; then
-  printf '  ok    %-32s exit 1\n' 'reference target missing'
-else
-  printf '  FAIL  %-32s expected missing target diagnostic\n' 'reference target missing'; fails=1
-fi
-
-if node scripts/check-sidebar-refs.mjs "$site_out" >/dev/null 2>&1; then
-  printf '  ok    %-32s exit 0\n' 'restored'
-else
-  printf '  FAIL  %-32s did not recover\n' 'restored'; fails=1
-fi
-exit $fails
+function coreOf() {
+  return [...template.content.querySelectorAll('[data-surface-picker] [data-surface-group]')].find((group) =>
+    group.querySelector(':scope > summary strong')?.textContent.trim() === 'Core Library')
+}
+function run() {
+  return spawnSync(process.execPath, ['scripts/check-sidebar-refs.mjs', copy], { encoding: 'utf8', env: process.env })
+}
+function rejects(name, port, mutate, message) {
+  const file = pages.get(port)
+  const original = readFileSync(file, 'utf8')
+  template.innerHTML = original
+  const core = coreOf()
+  assert(core, `${name}: missing Core Library group`)
+  mutate(core)
+  writeFileSync(file, template.innerHTML)
+  try {
+    const result = run()
+    assert.equal(result.status, 1, `${name}: check must reject mutation`)
+    assert(result.stderr.includes(message), `${name}: expected ${message}\n${result.stderr}`)
+    console.log(`  ok    ${name}: exit 1, ${message}`)
+  } finally { writeFileSync(file, original) }
+}
+try {
+  for (const { slug } of API_MODEL_PORTS) {
+    pages.set(slug, preserve(pageFor(slug)))
+    template.innerHTML = readFileSync(pages.get(slug), 'utf8')
+    for (const link of coreOf().querySelectorAll('a[href]')) {
+      const href = link.getAttribute('href')
+      if (href.startsWith(servedRoot) && href.includes('/reference/')) {
+        preserve(join(source, href.slice(servedRoot.length), 'index.html'))
+      }
+    }
+  }
+  assert.equal(run().status, 0, 'Unmodified private copy must pass before any mutation')
+  const reference = (core) => core.querySelector('.surface-options a[href$="/reference/"]')
+  // Leave identical links outside Core Library. A global href search would
+  // incorrectly accept these missing destinations in the actual picker group.
+  const moveOutside = (link) => {
+    assert(link, 'mutation must find its anchor')
+    template.content.append(link.cloneNode(true))
+    link.remove()
+  }
+  const nativeMessage = 'rs: Core Library does not offer exactly one current native reference'
+  rejects('native only outside Core Library', 'rs', (core) => moveOutside(reference(core)), nativeMessage)
+  rejects('wrong native port', 'rs', (core) => reference(core).href = reference(core).getAttribute('href').replace('/rs/', '/go/'), nativeMessage)
+  rejects('wrong native version', 'rs', (core) => reference(core).href = reference(core).getAttribute('href').replace(/\/[^/]+\/reference\/$/, '/other/reference/'), nativeMessage)
+  rejects('foreign native origin', 'rs', (core) => reference(core).href = `https://example.com${reference(core).getAttribute('href')}`, nativeMessage)
+  rejects('duplicate native reference', 'rs', (core) => reference(core).after(reference(core).cloneNode(true)), nativeMessage)
+  const ecosystem = (core) => core.querySelector('.surface-alternatives a[href*="docs.rs"]')
+  const ecoMessage = 'rs: Core Library does not offer exactly one docs.rs alternative'
+  rejects('ecosystem only outside Core Library', 'rs', (core) => moveOutside(ecosystem(core)), ecoMessage)
+  rejects('ecosystem host impersonation', 'rs', (core) => ecosystem(core).href = 'https://docs.rs.invalid/', ecoMessage)
+  rejects('ecosystem external marker', 'rs', (core) => ecosystem(core).removeAttribute('target'), 'rs: docs.rs is not marked as leaving the site')
+  rejects('ecosystem host label', 'rs', (core) => ecosystem(core).textContent = 'Elsewhere', 'rs: docs.rs entry is not labelled for its host')
+  rejects('upstream only outside Core Library', 'py', (core) => moveOutside(core.querySelector('a[href$="/api/"]')),
+    'py: Core Library does not offer exactly one current upstream gp-sphinx reference')
+  rejects('foreign upstream origin', 'py', (core) => {
+    const link = core.querySelector('a[href$="/api/"]')
+    link.href = `https://example.com${link.getAttribute('href')}`
+  }, 'py: Core Library does not offer exactly one current upstream gp-sphinx reference')
+  template.innerHTML = readFileSync(pages.get('rs'), 'utf8')
+  const href = reference(coreOf()).getAttribute('href')
+  const destination = join(copy, href.slice(servedRoot.length), 'index.html')
+  const original = readFileSync(destination)
+  rmSync(destination)
+  const missing = run()
+  assert.equal(missing.status, 1)
+  assert(missing.stderr.includes(`rs: ${href} is linked but not built`))
+  writeFileSync(destination, original)
+  console.log('  ok    native target missing: exit 1, linked but not built')
+  assert.equal(run().status, 0, 'Restored private copy must pass')
+  console.log('  ok    restored private copy: exit 0; original assembly untouched')
+} finally { rmSync(copy, { recursive: true, force: true }) }
+JS

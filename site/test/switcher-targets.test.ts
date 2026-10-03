@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
 import { PORTS } from '../src/lib/ports'
 import { SITE_BUILT, BUCKET_ROOT, SITE_PREFIX, PREVIEW_PREFIX } from './site-root'
@@ -42,8 +43,8 @@ function resolves(href: string): boolean {
 
 /**
  * Sampled pages that are not about one document, so no other port serves a
- * matching page: the locale home, each port's home, and the MCP tool table,
- * which is one global page rather than a per-port one.
+ * matching page: the locale home, each port's home, the all-port reference
+ * index, and the global MCP tool table.
  */
 const NO_PAGE_COUNTERPART = [
   'en/index.html',
@@ -51,6 +52,7 @@ const NO_PAGE_COUNTERPART = [
   'py/index.html',
   'rs/index.html',
   'mcp/tools/index.html',
+  'en/reference/index.html',
 ]
 
 const pages = samplePages()
@@ -73,27 +75,24 @@ describeIfAssembled('switcher targets', () => {
       const pattern = new RegExp(`/${port.slug}/${port.versionedDocs ? '[^/]+/' : ''}$`)
       expect(hrefs.some((href) => pattern.test(href)), `${page}: ${port.slug} root`).toBe(true)
     }
-    /*
-     * The page-port control renders on the page's own title row, so a page
-     * that is not about one document has nothing to switch and renders
-     * none: the site home, a port home, the MCP tool table. It used to sit
-     * in the header, where every page had one whether or not it meant
-     * anything, which is why this expected it everywhere.
-     *
-     * The exceptions are listed rather than sniffed from the markup. A page
-     * that stops carrying the control fails here and someone decides
-     * whether that was the intent, which is the regression worth catching.
-     */
-    const menu = /<details[^>]*data-page-port-switcher[^>]*>([\s\S]*?)<\/details>/.exec(html)
-    const noDocument = NO_PAGE_COUNTERPART.some((suffix) => page.endsWith(suffix))
-    if (noDocument) {
-      expect(menu, `${page} is listed as having no counterpart but renders the control`).toBeNull()
-      return
+    // The counterpart picker is distinct from the app/section picker. Keep
+    // explicit exceptions so losing a document's control remains a failure.
+    const window = new Window({ url: `https://libtmux.org/${page}`, settings: { disableJavaScriptEvaluation: true, disableJavaScriptFileLoading: true, disableCSSFileLoading: true } })
+    try {
+      window.document.write(html)
+      const menus = window.document.querySelectorAll('details[data-page-port-switcher]')
+      const noDocument = NO_PAGE_COUNTERPART.some((suffix) => page.endsWith(suffix))
+      expect(menus, `${page} matching-page controls`).toHaveLength(noDocument ? 0 : 1)
+      if (noDocument) return
+      const counterparts = [...menus[0].querySelectorAll('a[href]')].map((link) => link.getAttribute('href')!)
+      expect(counterparts.length, `${page} has an available counterpart`).toBeGreaterThan(0)
+      expect(counterparts.filter((href) => !resolves(href)), `${page}: matching pages missing on disk`).toEqual([])
+      for (const disabled of menus[0].querySelectorAll('[aria-disabled="true"]')) {
+        expect(disabled.hasAttribute('href'), `${page} unavailable counterparts are not links`).toBe(false)
+      }
+    } finally {
+      window.close()
     }
-    expect(menu, `${page} has a matching-page control`).not.toBeNull()
-    const counterparts = [...menu![1].matchAll(/href="([^"]+)"/g)].map((match) => match[1])
-    expect(counterparts.length, `${page} has an available counterpart`).toBeGreaterThan(0)
-    expect(counterparts.filter((href) => !resolves(href)), `${page}: matching pages missing on disk`).toEqual([])
   })
 
   it.each(pages.map((p) => [p]))('%s: every hreflang alternate resolves', (page) => {

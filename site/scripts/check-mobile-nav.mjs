@@ -131,34 +131,48 @@ for (const [w, want] of [[360, true], [390, true], [768, true], [1023, true], [1
   note(visible === want, `toolbar ${want ? 'visible' : 'hidden'} at ${w}px`)
   await p.close()
 }
-// The API drawer keeps the product menu reachable without displacing the heading.
+// The shared picker stays reachable while the API drawer opens and resizes.
 for (const path of ['/go/latest/reference/', '/py/stable/reference/libtmux-server/']) {
   const p = await page(path)
-  const menu = p.locator('.api-nav__menu')
+  const menu = p.locator('[data-documentation-context] [data-surface-picker]')
+  const trigger = menu.locator(':scope > summary')
   const contents = p.locator('#api-nav')
-  note(!(await menu.isVisible()), `${path}: phone product menu starts collapsed`)
-  note((await p.locator('h1').boundingBox())?.y < 320, `${path}: phone heading stays above the fold`)
+  note(await trigger.isVisible(), `${path}: phone product picker is outside the closed drawer`)
+  const headingBefore = await p.locator('main h1').first().boundingBox()
+  note(headingBefore && headingBefore.y >= 0 && headingBefore.y + headingBefore.height <= p.viewportSize().height,
+    `${path}: phone heading is fully visible above the fold`)
+  note((await p.locator('[data-documentation-context]').boundingBox())?.height <= 58,
+    `${path}: documentation context stays compact`)
+  await trigger.click()
+  note((await p.locator('main h1').first().boundingBox())?.y === headingBefore?.y,
+    `${path}: opening the picker does not move the heading`)
+  const workspace = menu.locator('[data-surface-group]').filter({ has: p.locator('summary strong', { hasText: /^Workspace Manager$/ }) })
+  await workspace.locator(':scope > summary').click()
+  const home = workspace.getByRole('link', { name: 'Home', exact: true })
+  note(await home.isVisible(), `${path}: workspace remains reachable from the product picker`)
+  note(await home.getAttribute('href') === new URL(`${BASE}${path.replace(/reference\/.*$/, 'workspace/')}`).pathname,
+    `${path}: workspace keeps the current port and version`)
+  await p.keyboard.press('Escape')
+  note(!(await menu.evaluate((el) => el.open)), `${path}: Escape closes the picker`)
   await p.locator('[data-api-nav-toggle]').click()
-  note(await menu.isVisible(), `${path}: opening navigation exposes the product menu`)
-  await menu.locator(':scope > summary').click()
-  note(await menu.getByRole('link', { name: 'Workspace Manager', exact: true }).isVisible(),
-    `${path}: workspace remains reachable from reference navigation`)
+  await contents.waitFor({ state: 'visible' })
+  note(!(await contents.evaluate((el) => el.inert)), `${path}: opening navigation exposes the symbol tree`)
   await contents.locator('[data-api-nav-close]').click()
   await p.setViewportSize({ width: 1440, height: 900 })
   await contents.waitFor({ state: 'visible' })
-  note(await menu.isVisible(), `${path}: widening restores the product menu`)
+  note(await trigger.isVisible(), `${path}: desktop keeps the product picker`)
   note(!(await contents.evaluate((el) => el.inert)), `${path}: widening restores the symbol tree`)
-  await menu.locator('a').first().focus()
+  await contents.locator('a').first().focus()
   await p.setViewportSize({ width: 390, height: 800 })
   await contents.waitFor({ state: 'hidden' })
-  note(!(await menu.isVisible()), `${path}: narrowing collapses the product menu`)
+  note(await trigger.isVisible(), `${path}: narrowing keeps the product picker`)
   note(await p.locator('[data-api-nav-toggle]').evaluate((element) => document.activeElement === element),
     `${path}: narrowing focused navigation returns focus to its toggle`)
   const heading = p.locator('main h1').first()
   await heading.evaluate((element) => { element.tabIndex = -1; element.focus() })
   for (const width of [1440, 768, 390]) {
     await p.setViewportSize({ width, height: 900 })
-    await p.waitForFunction((narrow) => document.querySelector('#api-nav').inert === narrow, width < 1024)
+    await p.waitForFunction((narrow) => document.querySelector('#api-nav').inert === narrow, width < 896)
     note(await heading.evaluate((element) => document.activeElement === element),
       `${path}: resizing to ${width}px preserves focus in the content`)
   }

@@ -1,5 +1,6 @@
 ---
 import type { ApiSection } from '../../lib/api-sections'
+import ApiBadge from './ApiBadge.astro'
 
 interface Props {
   sections: ApiSection[]
@@ -21,7 +22,7 @@ const { sections, related } = Astro.props as Props
       <h2>Related APIs</h2>
       <ul>{related.map((symbol) => <li>
         <a href={symbol.href} title={symbol.identity} aria-label={symbol.identity}>
-          <span class="api-related-kind" aria-hidden="true">{symbol.kind[0].toUpperCase()}</span><code>{symbol.name}</code>
+          <ApiBadge label={symbol.kind} variant="kind" value={symbol.kind} compact /><code>{symbol.name}</code>
         </a>
       </li>)}</ul>
     </nav>}

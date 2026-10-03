@@ -1,118 +1,112 @@
 ---
 import { PORT_BY_SLUG } from '../lib/ports'
 import { withRoot } from '../lib/site-root'
+import '../styles/documentation-picker.css'
 
-/**
- * Version switcher.
- *
- * Renders a native <select> with this build's own version pre-selected, then
- * hydrates from /versions.json at runtime. That split matters: an immutable
- * tag build published months ago still lists versions released after it,
- * because the list is fetched rather than baked.
- *
- * Native documentation uses the separate switcher in the injected shell.
- */
-interface Props {
-  portSlug?: string
-  version: string
-}
-const { portSlug, version } = Astro.props as Props
+interface Props { portSlug?: string; version: string }
+const { portSlug, version } = Astro.props
 const candidate = portSlug ? PORT_BY_SLUG[portSlug] : undefined
-// Only documentation with a real version tree offers this control.
 const port = candidate?.versionedDocs ? candidate : undefined
+// Astro emits the not-found page as a file even with directory-style URLs.
+const currentHref = Astro.url.pathname.replace(/\/404\/?$/, '/404.html') + Astro.url.search
 ---
-
-{
-  port && (
-    <libtmux-version-switcher
-      data-port={port.slug}
-      data-current={version}
-      data-root={withRoot('/')}
-      class="inline-block"
-    >
-      <select
-        class="rounded border border-edge bg-surface px-2 py-1 text-sm"
-        aria-label={`Version of the ${port.name} documentation`}
-      >
-        <option value={version} selected>
-          {version}
-        </option>
-      </select>
-    </libtmux-version-switcher>
-  )
-}
-
+{port && <libtmux-version-switcher data-port={port.slug} data-current={version}
+  data-grammar={port.tagGrammar} data-root={withRoot('/')}>
+  <details class="doc-picker" data-doc-picker data-version-picker>
+    <summary aria-label={`Version of the ${port.name} documentation`}>
+      <span class="version-label">{version}</span>
+      <svg class="doc-picker-caret" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
+    </summary>
+    <div class="doc-picker-panel version-picker-panel" data-picker-panel>
+      <div data-version-options>
+        <p class="doc-picker-title">Current version</p>
+        <a class="doc-picker-option" data-picker-option data-preserve-fragment href={currentHref} aria-current="page">
+          <span>{version}</span><span class="doc-picker-check" aria-hidden="true">✓</span>
+        </a>
+      </div>
+    </div>
+  </details>
+</libtmux-version-switcher>}
+<style>
+  libtmux-version-switcher { display: inline-block; }
+  .version-label { font-family: var(--font-mono); font-size: .75rem; }
+  .version-picker-panel { --picker-width: 14rem; }
+</style>
 <script>
-  import { navigate } from 'astro:transitions/client'
+  import { parseTag, type TagGrammar, type VersionEntry, type VersionManifest } from '../lib/versions'
+
+  // Read the published manifest on each page load so an immutable version
+  // continues to offer releases published after its own build.
   class LibtmuxVersionSwitcher extends HTMLElement {
     private controller?: AbortController
     async connectedCallback() {
       this.controller?.abort()
       this.controller = new AbortController()
       const { signal } = this.controller
-      const select = this.querySelector('select')
       const port = this.dataset.port
-      const current = this.dataset.current
-      // The site root, baked in at build time. A PR preview publishes the
-      // whole site under /pr-42/, where a hardcoded '/versions.json' reads
-      // production's manifest and a hardcoded '/<port>/<version>/' navigates
-      // out of the preview entirely — with the preview's own header still on
-      // screen, which is the confusing part.
+      const current = this.dataset.current ?? ''
       const root = (this.dataset.root || '/').replace(/\/+$/, '')
-      if (!select || !port) return
-
-      let manifest: {
-        schema: number
-        ports: Record<string, Array<{ slug: string; label: string; supported: boolean; eol?: boolean }>>
-        defaultVersion: Record<string, string>
-      }
+      const target = this.querySelector('[data-version-options]')
+      if (!port || !target) return
+      let manifest: VersionManifest
       try {
-        const res = await fetch(`${root}/versions.json`, { cache: 'no-cache', signal })
-        if (!res.ok) return
-        manifest = await res.json()
-      } catch {
-        // Offline, or the manifest is not deployed yet. The baked-in single
-        // option stays, which is correct rather than empty.
-        return
-      }
+        const response = await fetch(`${root}/versions.json`, { cache: 'no-cache', signal })
+        if (!response.ok) return
+        manifest = await response.json()
+      } catch { return }
       if (signal.aborted || manifest.schema !== 1) return
-
-      const entries = (manifest.ports[port] ?? []).filter((e) => e.supported)
-      if (entries.length === 0) return
-
-      select.innerHTML = ''
-      // A preview or an older immutable version may not be in the manifest.
-      // Keep the displayed selection truthful until the reader chooses one.
-      if (!entries.some((entry) => entry.slug === current)) {
-        const option = document.createElement('option')
-        option.value = current ?? ''
-        option.textContent = current ?? ''
-        option.selected = true
-        select.append(option)
+      const entries = (manifest.ports[port] ?? []).filter((entry) => entry.supported && /^[a-zA-Z0-9][\w.+-]*$/.test(entry.slug))
+      if (!entries.length) return
+      const groups = new Map<string, VersionEntry[]>()
+      const grammar = this.dataset.grammar as TagGrammar
+      const groupName = (entry: VersionEntry) => {
+        if (entry.kind === 'trunk') return 'Development'
+        if (entry.kind === 'branch') return 'Branches'
+        if (entry.kind === 'pr') return 'Previews'
+        if (entry.kind === 'alias') return 'Aliases'
+        const pre = parseTag(entry.slug, grammar)?.pre
+        return pre && !pre.startsWith('post') ? 'Prereleases' : 'Releases'
       }
+      if (!entries.some((entry) => entry.slug === current)) groups.set('Current version', [{ slug: current, label: current, kind: 'pr', supported: true }])
       for (const entry of entries) {
-        const opt = document.createElement('option')
-        opt.value = entry.slug
-        opt.textContent = entry.eol ? `${entry.label} (end of life)` : entry.label
-        if (entry.slug === current) opt.selected = true
-        select.append(opt)
+        const label = groupName(entry)
+        const group = groups.get(label) ?? []
+        group.push(entry)
+        groups.set(label, group)
       }
-
-      select.addEventListener('change', () => {
-        const next = select.value
-        if (!next || next === current) return
-        // Keep the reader on the same page across the version jump when that
-        // page exists; the 404 handler sends them to the version root when it
-        // does not. Landing on the version root beats a hard 404.
-        const path = location.pathname
-        const marker = `${root}/${port}/${current}/`
-        const rest = path.startsWith(marker) ? path.slice(marker.length) : ''
-        void navigate(`${root}/${port}/${next}/${rest}${location.hash}`)
-      }, { signal })
+      const fragment = document.createDocumentFragment()
+      for (const [label, versions] of groups) {
+        const section = document.createElement('section')
+        const heading = document.createElement('p')
+        heading.className = 'doc-picker-title'
+        heading.textContent = label
+        section.append(heading)
+        for (const entry of versions) {
+          const link = document.createElement('a')
+          link.className = 'doc-picker-option'
+          link.dataset.pickerOption = ''
+          link.dataset.preserveFragment = ''
+          const marker = `${root}/${port}/${current}/`
+          const rest = location.pathname.startsWith(marker) ? location.pathname.slice(marker.length) : ''
+          link.href = `${root}/${port}/${entry.slug}/${rest}${location.search}${location.hash}`
+          const name = document.createElement('span')
+          name.textContent = entry.eol ? `${entry.label} (end of life)` : entry.label
+          link.append(name)
+          if (entry.slug === current) {
+            link.setAttribute('aria-current', 'page')
+            const check = document.createElement('span')
+            check.className = 'doc-picker-check'
+            check.ariaHidden = 'true'
+            check.textContent = '✓'
+            link.append(check)
+          }
+          section.append(link)
+        }
+        fragment.append(section)
+      }
+      target.replaceChildren(fragment)
     }
     disconnectedCallback() { this.controller?.abort() }
   }
-  if (!customElements.get('libtmux-version-switcher')) {
-    customElements.define('libtmux-version-switcher', LibtmuxVersionSwitcher)
-  }
+  if (!customElements.get('libtmux-version-switcher')) customElements.define('libtmux-version-switcher', LibtmuxVersionSwitcher)
 </script>

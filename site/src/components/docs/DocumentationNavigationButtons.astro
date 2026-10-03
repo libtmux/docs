@@ -1,0 +1,36 @@
+---
+import TableOfContentsIcon from '../icons/TableOfContentsIcon.astro'
+interface Props { tableOfContents?: boolean }
+const { tableOfContents = false } = Astro.props
+---
+    <button
+      id="mobile-sidebar-toggle"
+      type="button"
+      aria-label="Open navigation menu"
+      aria-controls="mobile-sidebar"
+      aria-expanded="false"
+      class="toolbar-button"
+    >
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+    {
+      tableOfContents && (
+        <button
+          id="mobile-toc-toggle"
+          type="button"
+          aria-label="Open table of contents"
+          aria-controls="mobile-toc"
+          aria-expanded="false"
+          class="toolbar-button ml-auto"
+        >
+          <TableOfContentsIcon class="h-5 w-5" />
+        </button>
+      )
+    }
+<style>
+  .toolbar-button { display: flex; align-items: center; justify-content: center; flex: none; height: 2.25rem; width: 2.25rem; border-radius: .375rem; border: 1px solid var(--color-edge); }
+  .toolbar-button:hover { background: var(--color-surface-hover); }
+  .toolbar-button:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+</style>

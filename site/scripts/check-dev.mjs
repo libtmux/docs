@@ -13,6 +13,7 @@ import { checkReferencePreferences, checkTmuxHeader } from './check-reference-pr
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
+const referenceLayoutOnly = process.argv.includes('--reference-layout')
 const keywordHelpOnly = process.argv.includes('--keyword-help')
 const signaturePorts = apiSignaturesOnly ? API_MODEL_PORTS
   : API_MODEL_PORTS.filter((port) => ['py', 'ts'].includes(port.slug))
@@ -20,12 +21,9 @@ const referencePreferencesOnly = process.argv.includes('--reference-preferences'
 const tmuxHeaderOnly = process.argv.includes('--tmux-header')
 const documentationNavigationOnly = process.argv.includes('--documentation-navigation')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
-// `workspaceCli` alone also covers a port's local, unreleased dev CLI
-// (`workspaceCliAvailability: 'local'`), which publishes no top-level
-// `workspace/guides` page. Only a released CLI does.
-const workspaceCliPortCount = PORTS.filter((port) => port.workspaceCliAvailability === 'released').length
 
 Object.assign(process.env, {
+  LIBTMUX_DOCS_SITE: 'https://libtmux.org',
   LIBTMUX_DOCS_BASE: '/en/', LIBTMUX_DOCS_ROOT: '/en', LIBTMUX_DOCS_PORT_ROOT: '/en',
   LIBTMUX_DOCS_LOCALES_ROOT: '', LIBTMUX_DOCS_LOCALE: 'en', LIBTMUX_DOCS_PORT: '',
   LIBTMUX_DOCS_VERSION: 'latest', LIBTMUX_DOCS_PORT_DEFAULTS: '{"py":"stable"}',
@@ -404,7 +402,17 @@ async function checkReferenceAndHeroes(browser, base) {
     console.log('Native API: Kotlin call-chain links and parameter layout pass at 1440/768/390px')
     const qualified = page.locator('.api-qualified-name')
     const fullName = 'io.github.libtmux.kotlin.Server.liveState'
-    assert.equal((await qualified.locator('.api-qualified-namespace').textContent()).trim(), 'io.github.libtmux.kotlin')
+    const namespace = qualified.locator('.api-qualified-namespace')
+    assert.equal(await namespace.innerText(), 'i.g.l.kotlin')
+    assert.equal(await namespace.getAttribute('title'), 'io.github.libtmux.kotlin')
+    const expand = qualified.getByRole('button', { name: 'Show full name', exact: true })
+    await expand.focus()
+    await page.keyboard.press('Enter')
+    assert.equal(await namespace.innerText(), 'io.github.libtmux.kotlin')
+    assert.equal(await qualified.locator('[data-api-expand-name]').getAttribute('aria-expanded'), 'true')
+    await page.keyboard.press('Enter')
+    assert.equal(await namespace.innerText(), 'i.g.l.kotlin')
+    assert.equal(await expand.getAttribute('aria-expanded'), 'false')
     for (const reject of [false, true]) {
       await page.evaluate((reject) => {
         Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
@@ -482,7 +490,9 @@ async function checkReferenceAndHeroes(browser, base) {
       ['server-server-sessions', 'io.github.libtmux.Server.sessions'],
     ]) {
       await page.goto(`${base}/java/latest/reference/io-github-libtmux-${slug}/`)
-      assert.equal(await page.title(), `${qualifiedName} | libtmux`)
+      assert.equal(await page.title(), `${qualifiedName} | libtmux-java`)
+      assert.equal(await page.locator('.api-qualified-namespace').innerText(), 'i.g.libtmux')
+      await page.getByRole('button', { name: 'Show full name', exact: true }).click()
       assert.equal(await page.locator('.api-qualified-namespace').innerText(), 'io.github.libtmux')
       assert.equal(await page.locator('[data-api-copy-name]').getAttribute('data-api-copy-name'), qualifiedName)
       assert.equal(await page.locator('main h1').getAttribute('id'), qualifiedName.replace('libtmux.Server', 'libtmux.Server.Server'))
@@ -514,7 +524,7 @@ async function checkReferenceAndHeroes(browser, base) {
     assert.equal(javaReference.title, 'API reference')
     assert.deepEqual(javaReference.symbols.find((entry) => entry.id === 'io.github.libtmux.Server.Server'), {
       id: 'io.github.libtmux.Server.Server', name: 'Server', kind: 'class',
-      url: new URL(`${base}/java/latest/reference/io-github-libtmux-server-server/`).href,
+      url: 'https://libtmux.org/en/java/latest/reference/io-github-libtmux-server-server/',
       qualifiedName: 'io.github.libtmux.Server', namespace: 'io.github.libtmux',
     }, 'Java manifest records source identity alongside its stable declaration URL')
     await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server/`)
@@ -545,6 +555,10 @@ try {
   if (keywordHelpOnly) {
     await retryReload(() => checkKeywordHelp(browser, base))
   } else if (apiSignaturesOnly) {
+    await checkSignatureLayouts(browser, base)
+    await retryReload(() => checkKeywordHelp(browser, base))
+  } else if (referenceLayoutOnly) {
+    await retryReload(() => checkReferenceAndHeroes(browser, base))
     await checkSignatureLayouts(browser, base)
     await retryReload(() => checkKeywordHelp(browser, base))
   } else if (tmuxHeaderOnly) {
@@ -602,18 +616,19 @@ try {
           const breadcrumb = document.querySelector('[data-page-toolbar] nav').getBoundingClientRect()
           const picker = document.querySelector('[data-page-port-switcher]').getBoundingClientRect()
           const title = document.querySelector('h1').getBoundingClientRect()
-          return { above: toolbar.bottom <= title.top, sameRow: picker.top < breadcrumb.bottom && breadcrumb.top < picker.bottom }
+          const context = document.querySelector('[data-documentation-context]')?.getBoundingClientRect()
+          return { above: toolbar.bottom <= title.top, contextAbove: context ? context.bottom <= breadcrumb.top : picker.top < breadcrumb.bottom && breadcrumb.top < picker.bottom }
         })
-        assert(geometry.above && geometry.sameRow, `${path}: breadcrumb and port picker share the row above H1`)
+        assert(geometry.above && geometry.contextAbove, `${path}: context controls precede the breadcrumb and heading`)
       }
       const expected = isReference ? '/en/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/' : path.includes('workspace/') ? `/en/${path}/`
         : path === 'dotnet/latest/mcp/tools/capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : `/en/py/stable/${path.replace(/^ts\/latest\//, '')}/`
       if (hasSwitcher) assert.equal(await switcher.locator('a').first().getAttribute('href'), expected)
       if (path === 'py/stable/workspace/guides') {
-        assert.equal(await switcher.locator('a').count(), workspaceCliPortCount)
+        assert.equal(await switcher.locator('a').count(), workspacePortCount)
         assert.equal(
           await switcher.locator('[aria-disabled="true"]').count(),
-          PORTS.length - workspaceCliPortCount,
+          PORTS.length - workspacePortCount,
         )
       }
       if (path === 'ts/latest/workspace/internals/guides') {
@@ -645,6 +660,11 @@ try {
           languageEnd: document.querySelector('.site-header__ports nav a:last-child').getBoundingClientRect().right,
           controlsStart: document.querySelector('.site-header__always').getBoundingClientRect().left,
           schemeLabelWidth: document.querySelector('.scheme-switch__label').getBoundingClientRect().width,
+          headerControls: ['.site-header__search', '.scheme-switch', '.site-header__menu-button'].map((selector) => {
+            const { top, height } = document.querySelector(selector).getBoundingClientRect()
+            return { top, height }
+          }),
+          redundantHeaderLinks: document.querySelectorAll('.site-header__wide-link').length,
           columns: [...document.querySelectorAll('table')].flatMap((table) => {
             const head = [...(table.tHead?.rows[0]?.cells ?? [])]
             const body = [...(table.tBodies[0]?.rows[0]?.cells ?? [])]
@@ -653,6 +673,9 @@ try {
           }),
         }))
         assert(result.headerHeight <= 49, `${path} at ${width}px: header grew`)
+        assert.equal(result.redundantHeaderLinks, 0, 'Surface destinations are absent from the header bar')
+        assert(result.headerControls.every((control) => Math.abs(control.height - result.headerControls[0].height) < 0.1
+          && Math.abs(control.top - result.headerControls[0].top) < 0.1), `${path} at ${width}px: header controls align at equal heights`)
         assert.equal(result.badgeForeground, 'rgb(255, 255, 255)', 'Filled badge uses white foreground')
         if (width === 768) {
           assert.notEqual(result.portVisibility, 'none', 'Language links remain visible on tablets')
@@ -667,8 +690,10 @@ try {
           const selector = await switcher.locator('summary').boundingBox()
           const action = await page.locator('[data-page-actions] > summary').boundingBox()
           const icon = await page.locator('[data-page-actions] > summary > svg').boundingBox()
-          assert(Math.abs(action.height - selector.height) < 0.1, `${path}: page controls have equal height at ${width}px`)
-          assert(Math.abs(action.y - selector.y) < 0.1, `${path}: page controls align at ${width}px`)
+          if (await page.locator('[data-documentation-context]').count() === 0) {
+            assert(Math.abs(action.height - selector.height) < 0.1, `${path}: page controls have equal height at ${width}px`)
+            assert(Math.abs(action.y - selector.y) < 0.1, `${path}: page controls align at ${width}px`)
+          }
           assert(Math.abs(icon.x + icon.width / 2 - action.x - action.width / 2) < 0.1, `${path}: action icon centered horizontally`)
           assert(Math.abs(icon.y + icon.height / 2 - action.y - action.height / 2) < 0.1, `${path}: action icon centered vertically`)
         }
@@ -677,7 +702,8 @@ try {
       if (hasSwitcher) {
         assert.equal(await switcher.count(), 1, `${path}: one page port switcher`)
         await switcher.locator('summary').click()
-        const menu = await switcher.locator('ul').boundingBox()
+        await switcher.locator('[data-picker-panel]').waitFor({ state: 'visible' })
+        const menu = await switcher.locator('[data-picker-panel]').boundingBox()
         assert(menu && menu.x >= 0 && menu.x + menu.width <= 390, `${path}: dropdown leaves phone viewport`)
       }
     })
@@ -720,12 +746,6 @@ try {
         `Reference index at ${width}px must not reserve an empty navigation column: ${JSON.stringify(reference)}`)
     }
     console.log('Empty sidebars: article and reference index use their available width')
-    const clipboardError = await clipboard
-    if (clipboardError) throw clipboardError
-    const nativeLayoutError = await nativeLayout
-    if (nativeLayoutError) throw nativeLayoutError
-    const documentationNavigationError = await documentationNavigation
-    if (documentationNavigationError) throw documentationNavigationError
     await page.goto(`${base}/`, { waitUntil: 'load' })
     await page.locator('.scheme-switch input[value="dark"]').check({ force: true })
     const chipPixel = await page.evaluate(() => {
@@ -787,19 +807,28 @@ try {
       const checkContrast = async (scheme, selectors = ['h1', '.prose h2', '.prose p']) => {
         const samples = await noScript.evaluate((selectors) => {
           const context = document.createElement('canvas').getContext('2d')
-          const luminance = (color) => {
-            context.fillStyle = color
-            context.fillRect(0, 0, 1, 1)
+          const luminance = () => {
             const channels = [...context.getImageData(0, 0, 1, 1).data].slice(0, 3)
               .map((v) => v / 255).map((v) => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4)
             return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722
           }
           return selectors.map((selector) => {
             const element = document.querySelector(selector)
-            let parent = element
-            while (getComputedStyle(parent).backgroundColor === 'rgba(0, 0, 0, 0)') parent = parent.parentElement
-            const values = [getComputedStyle(element).color, getComputedStyle(parent).backgroundColor]
-              .map(luminance).sort((a, b) => b - a)
+            const backgrounds = []
+            for (let parent = element; parent; parent = parent.parentElement) {
+              backgrounds.unshift(getComputedStyle(parent).backgroundColor)
+            }
+            // Translucent anchor highlights composite over the page surface.
+            context.fillStyle = '#fff'
+            context.fillRect(0, 0, 1, 1)
+            for (const color of backgrounds) {
+              context.fillStyle = color
+              context.fillRect(0, 0, 1, 1)
+            }
+            const background = luminance()
+            context.fillStyle = getComputedStyle(element).color
+            context.fillRect(0, 0, 1, 1)
+            const values = [luminance(), background].sort((a, b) => b - a)
             return { selector, contrast: (values[0] + .05) / (values[1] + .05), opacity: getComputedStyle(element).opacity }
           })
         }, selectors)
@@ -831,19 +860,12 @@ try {
       await context.close()
     }
     console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
-    const navigationError = await navigation
-    const apiExamplesError = await apiExamples
-    if (apiExamplesError) throw apiExamplesError
-    if (navigationError) throw navigationError
+    const failures = (await Promise.all([
+      navigation, apiExamples, reference, preferences, tmuxHeader, apiNavigation,
+      clipboard, nativeLayout, documentationNavigation,
+    ])).filter(Boolean)
+    if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
     await navigationPage.close()
-    const referenceError = await reference
-    if (referenceError) throw referenceError
-    const preferencesError = await preferences
-    if (preferencesError) throw preferencesError
-    const tmuxHeaderError = await tmuxHeader
-    if (tmuxHeaderError) throw tmuxHeaderError
-    const apiNavigationError = await apiNavigation
-    if (apiNavigationError) throw apiNavigationError
     await apiNavigationPage.close()
     await clipboardPage.close()
   }
