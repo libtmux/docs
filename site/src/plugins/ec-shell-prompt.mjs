@@ -23,12 +23,48 @@ export const SESSION_LANGS = new Set(['console', 'shellsession'])
 export const PROMPT = '$ '
 
 /**
+ * Recognize trailing shell operators without treating quoted text or comments as syntax.
+ * @param {string} text
+ */
+function commandContinuation(text) {
+  if (text.endsWith('\\')) return 'backslash'
+  let quote = ''
+  let escaped = false
+  let syntax = ''
+  for (let index = 0; index < text.length; index++) {
+    const character = text[index]
+    if (escaped) {
+      escaped = false
+      syntax += 'x'
+      continue
+    }
+    if (quote) {
+      if (character === quote) quote = ''
+      else if (character === '\\' && quote !== "'") escaped = true
+      continue
+    }
+    if (character === '\\') {
+      escaped = true
+      syntax += 'x'
+    } else if (['"', "'", '`'].includes(character)) {
+      quote = character
+      syntax += 'x'
+    } else if (character === '#' && (index === 0 || /[\s;&|()]/.test(text[index - 1]))) {
+      break
+    } else {
+      syntax += character
+    }
+  }
+  return !quote && /(?:&&|\|\||\|)\s*$/.test(syntax) ? 'operator' : ''
+}
+
+/**
  * Classify each line of a session.
  *
  * A line that starts with the prompt is a command, and so is each line after
- * one that ends in `\`. Anything else is output. A block with no prompt at
- * all is a bare command list, like the MCP widget's CLI bodies, so every line
- * is a command.
+ * one that ends in `\` or an unquoted `&&`, `||`, or `|`. Anything else is
+ * output. A block with no prompt at all is a bare command list, like the MCP
+ * widget's CLI bodies, so every line is a command.
  *
  * @param {string[]} lines
  * @returns {{ kind: 'prompt' | 'command' | 'output', text: string }[]} `text`
@@ -38,12 +74,13 @@ export function sessionLines(lines) {
   if (!lines.some((line) => line.startsWith(PROMPT))) {
     return lines.map((text) => ({ kind: 'command', text }))
   }
-  let continued = false
+  let continuation = ''
   return lines.map((line) => {
     /** @type {'prompt' | 'command' | 'output'} */
-    const kind = continued ? 'command' : line.startsWith(PROMPT) ? 'prompt' : 'output'
+    const kind = continuation ? 'command' : line.startsWith(PROMPT) ? 'prompt' : 'output'
     const text = kind === 'prompt' ? line.slice(PROMPT.length) : line
-    continued = kind !== 'output' && text.endsWith('\\')
+    const awaitingOperand = continuation === 'operator' && /^\s*(?:#.*)?$/.test(text)
+    if (!awaitingOperand) continuation = kind !== 'output' ? commandContinuation(text) : ''
     return { kind, text }
   })
 }

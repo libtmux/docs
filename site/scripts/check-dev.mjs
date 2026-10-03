@@ -84,7 +84,7 @@ const entries = API_MODEL_PORTS.filter(({ slug }) => ${JSON.stringify(signatureP
   ))}
 </DocsLayout>
 `)
-for (const port of ['py', 'kotlin', 'scala', 'lua', 'java', 'go']) {
+for (const port of ['py', 'kotlin', 'scala', 'lua', 'java', 'go', 'ruby']) {
   const directory = join(root, `src/pages/${port}/latest/reference`)
   mkdirSync(directory, { recursive: true })
   writeFileSync(join(directory, '[...slug].astro'), `---
