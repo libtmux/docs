@@ -46,3 +46,18 @@ it('keeps explicit workspace helpers out of unrelated naming buckets', () => {
   expect(compiled.assignments.constants).toContain('libtmux::OtherEvent')
   expect(compiled.diagnostics.ambiguous).toEqual([])
 })
+
+it('groups F# command composition and dispatch failures by their task', () => {
+  const compiled = compileNav(
+    NAV.fsharp,
+    ['Chain', 'Retry', 'TmuxFailure'].map((name) => ({
+      ...symbol(`LibTmux.FSharp.${name}`, name, 'src/LibTmux.FSharp/Library.fsi'),
+      kind: 'module',
+    })),
+    { conceptIds: {}, moduleOf: () => 'LibTmux.FSharp' },
+  )
+  expect(compiled.assignments.commands).toEqual(['LibTmux.FSharp.Chain', 'LibTmux.FSharp.Retry'])
+  expect(compiled.assignments.errors).toEqual(['LibTmux.FSharp.TmuxFailure'])
+  expect(compiled.diagnostics.unmatched).toEqual([])
+  expect(compiled.diagnostics.ambiguous).toEqual([])
+})

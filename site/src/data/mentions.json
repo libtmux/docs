@@ -1605,6 +1605,76 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Chain",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Chain.add",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Chain.arrange",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Chain.newWindow",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Chain.run",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Chain.sendLine",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Chain.splitLeftRight",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Chain.splitTopBottom",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.cleanupFailure",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.cleanupFailure",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Control.enter",
    "page": "/fsharp/latest/guides/modes/",
    "title": "Execution modes",
@@ -1619,28 +1689,63 @@
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Control.foldEventsWhile",
+   "symbol": "LibTmux.FSharp.Control.enterSession",
    "page": "/fsharp/latest/guides/modes/",
    "title": "Execution modes",
    "section": "guides"
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Control.foldEventsWhile",
+   "symbol": "LibTmux.FSharp.Control.enterSession",
    "page": "/fsharp/latest/guides/streams/",
    "title": "Streams and cleanup",
    "section": "guides"
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Control.iterEvents",
+   "symbol": "LibTmux.FSharp.Control.events",
    "page": "/fsharp/latest/guides/modes/",
    "title": "Execution modes",
    "section": "guides"
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Control.iterEvents",
+   "symbol": "LibTmux.FSharp.Control.events",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.events",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.foldWhile",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.foldWhile",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.iter",
+   "page": "/fsharp/latest/guides/modes/",
+   "title": "Execution modes",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.iter",
    "page": "/fsharp/latest/guides/streams/",
    "title": "Streams and cleanup",
    "section": "guides"
@@ -1655,6 +1760,48 @@
   {
    "port": "fsharp",
    "symbol": "LibTmux.FSharp.Control.useSession",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.watchPane",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.watchPane",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.watchPane",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.watchPanes",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.watchPanes",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.watchPanes",
    "page": "/fsharp/latest/guides/streams/",
    "title": "Streams and cleanup",
    "section": "guides"
@@ -1676,6 +1823,13 @@
   {
    "port": "fsharp",
    "symbol": "LibTmux.FSharp.Control.withSession",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Control.withSession",
    "page": "/fsharp/latest/guides/streams/",
    "title": "Streams and cleanup",
    "section": "guides"
@@ -1690,13 +1844,6 @@
   {
    "port": "fsharp",
    "symbol": "LibTmux.FSharp.Filter",
-   "page": "/fsharp/latest/guides/queries/",
-   "title": "Querying and filtering",
-   "section": "guides"
-  },
-  {
-   "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Filter",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "title": "Query fields",
    "section": "guides"
@@ -1724,24 +1871,10 @@
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Filter.allOf",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "title": "Query fields",
-   "section": "guides"
-  },
-  {
-   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Filter.any",
    "page": "/fsharp/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
-  },
-  {
-   "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Filter.any",
-   "page": "/fsharp/latest/guides/quickstart/",
-   "title": "Quick start",
-   "section": "guides"
   },
   {
    "port": "fsharp",
@@ -1759,7 +1892,28 @@
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Filter.anyOf",
+   "symbol": "LibTmux.FSharp.Filter.contains",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.containsIgnoreCase",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.endsWith",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.endsWithIgnoreCase",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "title": "Query fields",
    "section": "guides"
@@ -1773,7 +1927,63 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.eqIgnoreCase",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.ge",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.gt",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Filter.isNull",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.le",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.lt",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.matches",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.matchesIgnoreCase",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.ne",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "title": "Query fields",
    "section": "guides"
@@ -1801,6 +2011,13 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.notOneOf",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Filter.oneOf",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "title": "Query fields",
@@ -1811,6 +2028,69 @@
    "symbol": "LibTmux.FSharp.Filter.startsWith",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Filter.startsWithIgnoreCase",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Mirror.start",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Mirror.startRefreshing",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Mirror.views",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Mirror.waitUntil",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Mirror.waitUntil",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Options.get",
+   "page": "/fsharp/latest/guides/interop/",
+   "title": ".NET interoperation",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Options.set",
+   "page": "/fsharp/latest/guides/interop/",
+   "title": ".NET interoperation",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Options.set",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
    "section": "guides"
   },
   {
@@ -1829,16 +2109,72 @@
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Pane.currentPath",
+   "symbol": "LibTmux.FSharp.Pane.capture",
    "page": "/fsharp/latest/guides/queries/",
    "title": "Querying and filtering",
    "section": "guides"
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Pane.currentPath",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "title": "Query fields",
+   "symbol": "LibTmux.FSharp.Pane.findOnScreen",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.run",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.run",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.run",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.sendAndWait",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.sendAndWait",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.sendAndWait",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.sendAndWaitFor",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.sendAndWaitFor",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
    "section": "guides"
   },
   {
@@ -1857,24 +2193,87 @@
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Query.matching",
-   "page": "/fsharp/latest/concepts/queries/",
-   "title": "Filtering and queries",
-   "section": "concepts"
+   "symbol": "LibTmux.FSharp.Pane.waitFor",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Query.matching",
+   "symbol": "LibTmux.FSharp.Pane.waitForText",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.waitForText",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.waitUntil",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Pane.waitUntil",
+   "page": "/fsharp/latest/guides/streams/",
+   "title": "Streams and cleanup",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.atMostOne",
    "page": "/fsharp/latest/guides/queries/",
    "title": "Querying and filtering",
    "section": "guides"
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Query.matching",
+   "symbol": "LibTmux.FSharp.Query.atMostOne",
    "page": "/fsharp/latest/guides/quickstart/",
    "title": "Quick start",
    "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.exactlyOne",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.exactlyOne",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.list",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.list",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.matching",
+   "page": "/fsharp/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "fsharp",
@@ -1885,9 +2284,51 @@
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Query.matchingWithCancellation",
+   "symbol": "LibTmux.FSharp.Query.showing",
    "page": "/fsharp/latest/guides/queries/",
    "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.tryExactlyOne",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.tryExactlyOne",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.where",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Query.whereUnsafe",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Retry.ifNotSent",
+   "page": "/fsharp/latest/guides/interop/",
+   "title": ".NET interoperation",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.ScreenSearch.Text",
+   "page": "/fsharp/latest/guides/interop/",
+   "title": ".NET interoperation",
    "section": "guides"
   },
   {
@@ -1934,13 +2375,6 @@
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Server",
-   "page": "/fsharp/latest/guides/queries/",
-   "title": "Querying and filtering",
-   "section": "guides"
-  },
-  {
-   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Server.capture",
    "page": "/fsharp/latest/concepts/transports/",
    "title": "Commands and control mode",
@@ -1955,9 +2389,30 @@
   },
   {
    "port": "fsharp",
-   "symbol": "LibTmux.FSharp.Server.capture",
-   "page": "/fsharp/latest/guides/quickstart/",
-   "title": "Quick start",
+   "symbol": "LibTmux.FSharp.Server.clients",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Server.newSession",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Server.panes",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Server.sessions",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Querying and filtering",
    "section": "guides"
   },
   {
@@ -1969,6 +2424,69 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Server.windows",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Server.within",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Session",
+   "page": "/fsharp/latest/guides/interop/",
+   "title": ".NET interoperation",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Session",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Session.panes",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Session.windows",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.SessionSpec",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.SessionSpec.Windows",
+   "page": "/fsharp/latest/guides/supported-query-fields/",
+   "title": "Query fields",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.SplitSpec",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.StreamStep.Stop",
    "page": "/fsharp/latest/guides/modes/",
    "title": "Execution modes",
@@ -1976,9 +2494,30 @@
   },
   {
    "port": "fsharp",
+   "symbol": "LibTmux.FSharp.TmuxFailure",
+   "page": "/fsharp/latest/guides/interop/",
+   "title": ".NET interoperation",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
    "symbol": "LibTmux.FSharp.Window",
    "page": "/fsharp/latest/guides/interop/",
    "title": ".NET interoperation",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.Window.panes",
+   "page": "/fsharp/latest/guides/queries/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "fsharp",
+   "symbol": "LibTmux.FSharp.WindowSpec",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "title": "Quick start",
    "section": "guides"
   },
   {
@@ -9818,6 +10357,41 @@
   },
   {
    "port": "fsharp",
+   "text": "LibTmux.Workspace",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "line": 268,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "WorkspaceBuilder",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "line": 305,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "PaneReadiness.Never",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "line": 306,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "BuildAsync",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "line": 307,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "WorkspaceFile.Parse",
+   "page": "/fsharp/latest/guides/getting-started/",
+   "line": 308,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
    "text": "ClientProcessId",
    "page": "/fsharp/latest/guides/interop/",
    "line": 28,
@@ -9832,72 +10406,128 @@
   },
   {
    "port": "fsharp",
+   "text": "NotSent",
+   "page": "/fsharp/latest/guides/interop/",
+   "line": 39,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "Ran",
+   "page": "/fsharp/latest/guides/interop/",
+   "line": 40,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "MayHaveRun",
+   "page": "/fsharp/latest/guides/interop/",
+   "line": 41,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "NotSent",
+   "page": "/fsharp/latest/guides/interop/",
+   "line": 43,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "NotSent",
+   "page": "/fsharp/latest/guides/interop/",
+   "line": 67,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "TmuxFailure.MayHaveRun",
+   "page": "/fsharp/latest/guides/interop/",
+   "line": 79,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
    "text": "MoveAsync",
    "page": "/fsharp/latest/guides/interop/",
-   "line": 132,
+   "line": 204,
    "why": "not defined in the stated port"
   },
   {
    "port": "fsharp",
    "text": "ExecuteAsync",
    "page": "/fsharp/latest/guides/modes/",
-   "line": 69,
+   "line": 77,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "ToCommand",
+   "page": "/fsharp/latest/guides/modes/",
+   "line": 101,
    "why": "not defined in the stated port"
   },
   {
    "port": "fsharp",
    "text": "LibTmux.FSharp",
    "page": "/fsharp/latest/guides/queries/",
-   "line": 20,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "LibTmux",
-   "page": "/fsharp/latest/guides/quickstart/",
-   "line": 69,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "ConnectAsync",
-   "page": "/fsharp/latest/guides/quickstart/",
-   "line": 176,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "LibTmux.FSharp",
-   "page": "/fsharp/latest/guides/quickstart/",
-   "line": 185,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "ConnectAsync",
-   "page": "/fsharp/latest/guides/quickstart/",
-   "line": 193,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "ConnectAsync()",
-   "page": "/fsharp/latest/guides/quickstart/",
-   "line": 193,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "server.GetSessionsAsync(ct)",
-   "page": "/fsharp/latest/guides/quickstart/",
-   "line": 202,
+   "line": 32,
    "why": "not defined in the stated port"
   },
   {
    "port": "fsharp",
    "text": "LibTmux.Mcp",
    "page": "/fsharp/latest/guides/quickstart/",
-   "line": 219,
+   "line": 93,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "LibTmux",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 117,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "ConnectAsync",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 214,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "LibTmux.FSharp",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 222,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "ConnectAsync",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 230,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "ConnectAsync()",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 230,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "LibTmux.Mcp",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 242,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
+   "text": "AggregateException",
+   "page": "/fsharp/latest/guides/streams/",
+   "line": 308,
    "why": "not defined in the stated port"
   },
   {
@@ -9905,83 +10535,6 @@
    "text": "LibTmux.Query.Json",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "line": 17,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Sessions",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 31,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Sessions",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 40,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Sessions",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 49,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Windows",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 58,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Windows",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 69,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Windows",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 78,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Panes",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 87,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Panes",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 98,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Panes",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 107,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Sessions",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 118,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "fsharp",
-   "text": "Sessions",
-   "page": "/fsharp/latest/guides/supported-query-fields/",
-   "line": 127,
    "why": "not defined in the stated port"
   },
   {

@@ -12,9 +12,9 @@ const hash = (code: string) => createHash('sha256').update(code).digest('hex')
 
 describe('verified complete F# API programs', () => {
   it('covers all native targets while retaining separate programs on shared lookup pages', () => {
-    expect(examples).toHaveLength(27)
-    expect(new Set(examples.map((example) => 'sourceProgramId' in example && example.sourceProgramId)).size).toBe(8)
-    expect(new Set(examples.map((example) => example.page)).size).toBe(25)
+    expect(examples).toHaveLength(52)
+    expect(new Set(examples.map((example) => 'sourceProgramId' in example && example.sourceProgramId)).size).toBe(13)
+    expect(new Set(examples.map((example) => example.page)).size).toBe(46)
     const covered = model.symbols.filter((symbol) => symbol.doc?.examples?.some(
       (block) => block.sourceUrl?.includes('/examples/LibTmux.FSharp.Examples/Programs/'))).map((symbol) => symbol.id)
     expect([...new Set(examples.map((example) => example.symbol))].sort()).toEqual(covered.sort())

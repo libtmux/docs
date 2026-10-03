@@ -44778,8 +44778,8 @@
           "wireName": "call_read_tools_batch",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 575
           },
@@ -45462,8 +45462,8 @@
           "wireName": "capture_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 565
           },
@@ -45573,8 +45573,8 @@
           "wireName": "capture_since",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 566
           },
@@ -45694,8 +45694,8 @@
           "wireName": "clear_pane_scrollback",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 602
           },
@@ -45778,8 +45778,8 @@
           "wireName": "create_session",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 592
           },
@@ -45894,8 +45894,8 @@
           "wireName": "create_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 593
           },
@@ -45998,8 +45998,8 @@
           "wireName": "find_pane_by_position",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 569
           },
@@ -46149,8 +46149,8 @@
           "wireName": "get_pane_info",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 564
           },
@@ -46293,8 +46293,8 @@
           "wireName": "get_server_info",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 561
           },
@@ -46390,8 +46390,8 @@
           "wireName": "get_session_info",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 562
           },
@@ -46467,8 +46467,8 @@
           "wireName": "get_tmux_variables",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 571
           },
@@ -46538,8 +46538,8 @@
           "wireName": "get_window_info",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 563
           },
@@ -46638,8 +46638,8 @@
           "wireName": "kill_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 603
           },
@@ -46722,8 +46722,8 @@
           "wireName": "kill_session",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 605
           },
@@ -46806,8 +46806,8 @@
           "wireName": "kill_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 604
           },
@@ -46890,8 +46890,8 @@
           "wireName": "list_panes",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 560
           },
@@ -47054,8 +47054,8 @@
           "wireName": "list_sessions",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 558
           },
@@ -47134,8 +47134,8 @@
           "wireName": "list_windows",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 559
           },
@@ -47246,8 +47246,8 @@
           "wireName": "move_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 584
           },
@@ -47348,8 +47348,8 @@
           "wireName": "paste_text",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 599
           },
@@ -47450,8 +47450,8 @@
           "wireName": "rename_session",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 577
           },
@@ -47544,8 +47544,8 @@
           "wireName": "rename_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 578
           },
@@ -47638,8 +47638,8 @@
           "wireName": "resize_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 583
           },
@@ -47748,8 +47748,8 @@
           "wireName": "resize_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 582
           },
@@ -47853,8 +47853,8 @@
           "wireName": "respawn_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 595
           },
@@ -47954,8 +47954,8 @@
           "wireName": "run_shell_command",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 596
           },
@@ -48107,8 +48107,8 @@
           "wireName": "search_panes",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 568
           },
@@ -48245,8 +48245,8 @@
           "wireName": "select_layout",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 581
           },
@@ -48338,8 +48338,8 @@
           "wireName": "select_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 580
           },
@@ -48422,8 +48422,8 @@
           "wireName": "select_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 579
           },
@@ -48506,8 +48506,8 @@
           "wireName": "send_keys",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 597
           },
@@ -48603,8 +48603,8 @@
           "wireName": "send_keys_batch",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 598
           },
@@ -48772,8 +48772,8 @@
           "wireName": "set_history_limit",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 590
           },
@@ -48862,8 +48862,8 @@
           "wireName": "set_mouse_enabled",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 589
           },
@@ -48945,8 +48945,8 @@
           "wireName": "set_pane_title",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 586
           },
@@ -49039,8 +49039,8 @@
           "wireName": "set_synchronize_panes",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 600
           },
@@ -49130,8 +49130,8 @@
           "wireName": "show_environment",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 573
           },
@@ -49231,8 +49231,8 @@
           "wireName": "show_hooks",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 574
           },
@@ -49334,8 +49334,8 @@
           "wireName": "show_option",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 572
           },
@@ -49448,8 +49448,8 @@
           "wireName": "signal_channel",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 588
           },
@@ -49531,8 +49531,8 @@
           "wireName": "snapshot_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 567
           },
@@ -49740,8 +49740,8 @@
           "wireName": "split_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 594
           },
@@ -49856,8 +49856,8 @@
           "wireName": "swap_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 585
           },
@@ -49955,8 +49955,8 @@
           "wireName": "wait_for_channel",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 587
           },
@@ -50041,8 +50041,8 @@
           "wireName": "wait_for_text",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-            "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
             "line": 570
           },
@@ -50200,8 +50200,8 @@
       "selectable": true,
       "source": "src/LibTmux.Mcp/Policy",
       "repo": "libtmux/libtmux-dotnet",
-      "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
-      "extractedRevision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+      "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -50232,7 +50232,7 @@
         "resourceTemplates": [],
         "serverInfo": {
           "name": "tmux",
-          "version": "0.0.0-alpha.17"
+          "version": "0.0.0-alpha.18"
         }
       }
     },
