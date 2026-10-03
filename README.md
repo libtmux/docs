@@ -80,3 +80,16 @@ Each port has an API reference on this site. Rust, Go, and Java also link to
 Read [Architecture](notes/architecture.md) for the build and hosting design,
 [Adding a port](notes/adding-a-port.md) for integration steps, and
 [Writing](WRITING.md) for documentation conventions.
+
+## Attribution
+
+Please use the following BibTeX template to cite libtmux.org in scientific discourse:
+
+```bibtex
+@misc{libtmux-org,
+   author = {Tony Narlock},
+   year = {2026},
+   note = {https://libtmux.org},
+   title = {libtmux.org: documentation for the libtmux ports}
+}
+```
