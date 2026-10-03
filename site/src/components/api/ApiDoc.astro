@@ -33,6 +33,7 @@ const spans = index.linkText(text, context)
   spans.map((span) => {
     if (span.kind === 'code') return <code class="api-literal">{span.text}</code>
     if (span.kind === 'strong') return <strong>{span.text}</strong>
+    if (span.kind === 'emphasis') return <em>{span.text}</em>
     if (span.kind === 'text') return <span>{span.text}</span>
     // A citation points into this page's own References section, which is
     // rendered only when the docstring defines one. Where it does not, the

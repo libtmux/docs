@@ -243,7 +243,9 @@ describe('doc comments give up their examples', () => {
     expect(own / application.length, `${port} application examples tagged ${lang}`).toBeGreaterThan(0.9)
   })
 
-  it.each(['rs', 'ts', 'py'])('%s leaves no fence behind in a body', (port) => {
+  // Python narrative doctests stay in the body to preserve their prose order;
+  // python-docs and api-prose tests assert their source/HTML/Markdown parity.
+  it.each(['rs', 'ts'])('%s leaves no fence behind in a body', (port) => {
     const model = load(port)
     if (!model) return
     const stray = model.symbols.filter((s) => (s.doc?.body ?? '').includes('```'))

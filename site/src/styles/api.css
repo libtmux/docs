@@ -901,3 +901,8 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
     grid-column: 1;
   }
 }
+
+/* Narrative sessions remain separate examples without changing their code lines. */
+.api-prose-code + .api-prose-code {
+  margin-block-start: 1rem;
+}

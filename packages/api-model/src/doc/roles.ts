@@ -33,6 +33,7 @@ export type DocSpan =
   | { kind: 'code'; text: string }
   /** `**like this**`, which Markdown and reST spell the same way. */
   | { kind: 'strong'; text: string }
+  | { kind: 'emphasis'; text: string }
   /** `[server_manual]_` — points at a citation the References section defines. */
   | { kind: 'citation'; target: string; label: string }
   | {
@@ -159,18 +160,10 @@ const XML_PARAMREF_RE = /<(?:paramref|typeparamref)\s+name="([^"]+)"\s*\/?>/g
  */
 const XML_LANGWORD_RE = /<see\s+langword="([^"]+)"\s*\/?>(?:<\/see>)?/g
 const XML_CODE_RE = /<c>([^<]+)<\/c>/g
-/**
- * `**strong**`, in the one spelling Markdown and reST share.
- *
- * Only the doubled form. A single `*` is emphasis in both, and also a glob, a
- * multiplication sign and a footnote marker, so matching it would claim prose
- * that is not markup. The doubled form is unambiguous and is what the corpus
- * uses: fourteen spans across Rust and Python, every one of them a lead-in
- * label like `**Connecting.**` that read as literal asterisks.
- *
- * Not language-gated, because no port's dialect gives `**` another meaning.
- */
+/** Shared Markdown/reST strong emphasis. */
 const STRONG_RE = /\*\*(?!\s)([^*\n]+?)(?<!\s)\*\*/g
+/** Word boundaries keep globs, multiplication and escaped stars literal. */
+const EMPHASIS_RE = /(?<![\w*\\])\*(?![\s*])([^*\n]+?)(?<![\s\\])\*(?![\w*])/g
 
 /** A bare double-backtick literal, which is never a link. */
 const LITERAL_RE = /``([^`]+)``/g
@@ -239,7 +232,7 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
 export function docSummaryText(text: string, lang?: string): string {
   return tokenizeDoc(text, lang)
     .map((span) =>
-      span.kind === 'ref' ? span.label : span.kind === 'code' ? span.text : span.kind === 'text' ? span.text : '',
+      span.kind === 'ref' || span.kind === 'citation' ? span.label : span.text,
     )
     .join('')
 }
@@ -406,6 +399,14 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
     })
   }
 
+  for (const match of text.matchAll(EMPHASIS_RE)) {
+    const start = match.index
+    const end = start + match[0].length
+    if (!hits.some((hit) => hit.start < end && hit.end > start)) {
+      hits.push({ start, end, span: { kind: 'emphasis', text: match[1] } })
+    }
+  }
+
   hits.sort((a, b) => a.start - b.start)
   for (const hit of hits) {
     if (hit.start < index) continue
@@ -419,7 +420,19 @@ export function tokenizeDoc(text: string, lang?: string): DocSpan[] {
 
 /** Every reference target in a block of doc text, for index building. */
 export function referencesIn(text: string): { role: string; target: string }[] {
-  return tokenizeDoc(text)
+  // Bodies may retain narrative code blocks. Their code and delimiter ticks
+  // are literals, not cross-references or names to add to the search graph.
+  let fence: string | undefined
+  const prose = text.split('\n').map((line) => {
+    if (fence) {
+      if (new RegExp(`^\\s*${fence[0]}{${fence.length},}\\s*$`).test(line)) fence = undefined
+      return ''
+    }
+    const start = /^\s*(`{3,}|~{3,})/.exec(line)
+    if (start) { fence = start[1]; return '' }
+    return line
+  }).join('\n')
+  return tokenizeDoc(prose)
     .filter((s): s is Extract<DocSpan, { kind: 'ref' }> => s.kind === 'ref')
     .map(({ role, target }) => ({ role, target }))
 }

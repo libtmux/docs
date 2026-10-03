@@ -114,6 +114,8 @@ interface Ctx {
   file: string
   module: string
   symbols: ApiSymbol[]
+  /** Explicit typing bindings in this source scope, never a guessed alias. */
+  imports: Record<string, string>
   /** Symbols already emitted, so overloads merge instead of duplicating. */
   byId: Map<string, ApiSymbol>
   options: Required<ExtractOptions>
@@ -135,6 +137,7 @@ function isVisible(name: string, options: Required<ExtractOptions>): boolean {
 }
 
 function emit(ctx: Ctx, sym: ApiSymbol): void {
+  if (Object.keys(ctx.imports).length) sym.imports = { ...ctx.imports }
   const existing = ctx.byId.get(sym.id)
   if (!existing) {
     ctx.byId.set(sym.id, sym)
@@ -152,9 +155,26 @@ function emit(ctx: Ctx, sym: ApiSymbol): void {
   }
 }
 
+/** Follow explicit typing imports and invalidate an alias when another import binds it. */
+function importBindings(node: Node, imports: Record<string, string>): boolean {
+  if (!['import_statement', 'import_from_statement'].includes(node.type)) return false
+  const from = node.childForFieldName('module_name')?.text
+  for (const entry of node.childrenForFieldName('name')) {
+    if (!entry) continue
+    const name = entry.childForFieldName('name')?.text ?? entry.text
+    const alias = entry.childForFieldName('alias')?.text
+    const local = alias ?? (from ? name : name.split('.')[0])
+    const target = from ? `${from}.${name}` : name
+    delete imports[local]
+    if (target === 'typing' || target.startsWith('typing.')) imports[local] = target
+  }
+  return true
+}
+
 function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
   for (const child of node.namedChildren) {
     if (!child) continue
+    if (importBindings(child, ctx.imports)) continue
 
     const decorated = child.type === 'decorated_definition'
     const def = decorated ? child.childForFieldName('definition') : child
@@ -188,7 +208,8 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
         extends: bases.length ? bases : undefined,
         source: { file: ctx.file, line: def.startPosition.row + 1 },
       })
-      walk(def.childForFieldName('body') ?? def, ctx, id)
+      walk(def.childForFieldName('body') ?? def, { ...ctx, imports: { ...ctx.imports } }, id)
+      delete ctx.imports[name]
       continue
     }
 
@@ -212,6 +233,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
         doc: parsed?.doc,
         source: { file: ctx.file, line: def.startPosition.row + 1 },
       })
+      delete ctx.imports[name]
       continue
     }
 
@@ -236,6 +258,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
         const type = assign.childForFieldName('type')
         const value = assign.childForFieldName('right')
         const name = target?.text ?? ''
+        if (target?.type === 'identifier') delete ctx.imports[name]
         if (target?.type === 'identifier' && isVisible(name, ctx.options)) {
           const id = parent ? `${parent}.${name}` : `${ctx.module}.${name}`
           emit(ctx, {
@@ -272,6 +295,7 @@ export async function extractPython(
     file,
     module,
     symbols: [],
+    imports: {},
     byId: new Map(),
     options: { ...DEFAULT_EXTRACT_OPTIONS, ...options },
   }
