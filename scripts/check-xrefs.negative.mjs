@@ -30,6 +30,13 @@ function site(n) {
   return dir
 }
 
+function version(dir, port, name, count) {
+  const target = join(dir, port, name, 'reference', 'thing')
+  mkdirSync(target, { recursive: true })
+  const anchors = Array.from({ length: count }, () => '<a class="api-xref" href="/x/">x</a>').join('')
+  writeFileSync(join(target, 'index.html'), `<html><body>${anchors}</body></html>`)
+}
+
 function run(dir, floor, omit = []) {
   const f = join(dir, 'floor.json')
   const recorded = PORTS.filter((p) => !omit.includes(p))
@@ -51,11 +58,30 @@ const CASES = [
    * could not see. A renamed slug arrives exactly this way.
    */
   { name: 'port unrecorded', built: 0, floor: 10, omit: ['go'], mustFail: true, says: 'no floor recorded for go' },
+  {
+    name: 'version masks fall', built: 10, floor: 10, mustFail: true,
+    setup: (dir) => { version(dir, 'py', 'latest', 2); version(dir, 'py', 'stable', 20) },
+    says: 'resolution fell on py',
+  },
+  {
+    name: 'both versions hold', built: 10, floor: 10, mustFail: false,
+    setup: (dir) => version(dir, 'py', 'stable', 10),
+  },
+  {
+    name: 'products share version', built: 10, floor: 10, mustFail: false,
+    setup: (dir) => {
+      version(dir, 'py', 'latest', 6)
+      version(dir, 'py', 'latest/mcp', 4)
+      version(dir, 'py', 'stable', 5)
+      version(dir, 'py', 'stable/workspace', 5)
+    },
+  },
 ]
 
 for (const c of CASES) {
   const dir = site(c.built)
   try {
+    c.setup?.(dir)
     const { code, out } = run(dir, c.floor, c.omit)
     if (c.mustFail && code === 0) {
       console.error(`FAIL ${c.name} — ${c.built} resolved against a floor of ${c.floor} passed`)
@@ -93,19 +119,30 @@ function update(dir, floor, force) {
     code = err.status
     out = `${err.stdout ?? ''}${err.stderr ?? ''}`
   }
-  return { code, out, recorded: JSON.parse(readFileSync(f, 'utf8')).go }
+  return { code, out, recorded: JSON.parse(readFileSync(f, 'utf8')) }
 }
 
 const GUARDS = [
   { name: 'lowering refused', built: 2, floor: 10, wantCode: 1, wantFloor: 10, says: 'refusing to lower' },
   { name: 'lowering forced', built: 2, floor: 10, force: true, wantCode: 0, wantFloor: 2 },
   { name: 'raising allowed', built: 10, floor: 2, wantCode: 0, wantFloor: 10 },
+  {
+    name: 'version lowering refused', built: 10, floor: 10, wantCode: 1, wantFloor: 10,
+    port: 'py', says: 'refusing to lower',
+    setup: (dir) => { version(dir, 'py', 'latest', 2); version(dir, 'py', 'stable', 20) },
+  },
+  {
+    name: 'version count not added', built: 10, floor: 10, wantCode: 0, wantFloor: 10,
+    port: 'py', setup: (dir) => version(dir, 'py', 'stable', 10),
+  },
 ]
 
 for (const c of GUARDS) {
   const dir = site(c.built)
   try {
-    const { code, out, recorded } = update(dir, c.floor, c.force)
+    c.setup?.(dir)
+    const { code, out, recorded: floors } = update(dir, c.floor, c.force)
+    const recorded = floors[c.port ?? 'go']
     if (code !== c.wantCode) {
       console.error(`FAIL ${c.name} — exited ${code}, wanted ${c.wantCode}:\n${out}`)
       failures++

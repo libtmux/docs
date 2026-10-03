@@ -18,7 +18,7 @@
  * rather than an exact number, because adding symbols legitimately moves it.
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
-import { join, dirname } from 'node:path'
+import { join, dirname, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { referenceDirs } from './reference-trees.mjs'
@@ -52,9 +52,21 @@ function countIn(dir) {
   }
 }
 
-const counts = Object.fromEntries(
-  PORTS.map((p) => [p, referenceDirs(site, p, { products: true }).reduce((n, dir) => n + countIn(dir), 0)]),
-)
+// Core and companion references share one floor within a version. Count each
+// version separately: a healthy stable tree must not conceal broken latest
+// references, and building both versions must not double the recorded floor.
+const versionCounts = Object.fromEntries(PORTS.map((port) => {
+  const versions = {}
+  for (const dir of referenceDirs(site, port, { products: true })) {
+    const version = relative(join(site, port), dir).split(sep)[0]
+    versions[version] = (versions[version] ?? 0) + countIn(dir)
+  }
+  return [port, versions]
+}))
+const counts = Object.fromEntries(PORTS.map((port) => {
+  const values = Object.values(versionCounts[port])
+  return [port, values.length ? Math.min(...values) : 0]
+}))
 
 if (args.includes('--update')) {
   /*
@@ -110,7 +122,8 @@ const below = PORTS.filter((p) => counts[p] < floor[p])
 for (const p of PORTS) {
   const f = floor[p]
   const mark = counts[p] < f ? 'FELL' : counts[p] > f ? 'up' : 'ok'
-  console.log(`${p.padEnd(7)} ${String(counts[p]).padStart(7)} resolved  (floor ${f})  ${mark}`)
+  const versions = Object.entries(versionCounts[p]).map(([version, count]) => `${version}: ${count}`).join(', ')
+  console.log(`${p.padEnd(7)} ${String(counts[p]).padStart(7)} resolved  (floor ${f})  ${mark}  [${versions || 'no versions'}]`)
 }
 
 if (below.length) {
