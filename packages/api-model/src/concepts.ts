@@ -6,6 +6,10 @@ export interface Concept {
   symbols: Record<string, string>
   /** Additional APIs in the same port implementing the same operation. */
   variants?: Record<string, string[]>
+  /** The containing object returned by this relationship, nearest parent first. */
+  parentObject?: 'window' | 'session' | 'server'
+  /** Source-verified public receivers when extraction keeps only the base declaration. */
+  inheritedBy?: Record<string, string[]>
   /** Why a port is missing, when it is. */
   absent?: Record<string, string>
 }
@@ -301,7 +305,10 @@ export const CONCEPTS: Record<string, Concept> = {
   },
   'pane-window': {
     label: "Find a pane's containing window",
+    parentObject: 'window',
     symbols: {
+      kotlin: 'io.github.libtmux.kotlin.Pane.window',
+      scala: 'io.github.libtmux.scaladsl.Pane.window',
       py: 'libtmux.Pane.window',
       ts: 'pane.Pane.window',
       rs: 'pane.Pane.window',
@@ -310,13 +317,19 @@ export const CONCEPTS: Record<string, Concept> = {
       dotnet: 'LibTmux.Pane.Window',
       cxx: 'libtmux::Pane::window',
     },
+    variants: { go: ['tmux.Pane.ResolveWindow'] },
     absent: {
       swift: 'no direct accessor; match Pane.windowID against Snapshot.windows',
     },
   },
   'window-session': {
     label: "Find the session containing a window placement",
+    parentObject: 'session',
     symbols: {
+      kotlin: 'io.github.libtmux.kotlin.Window.session',
+      scala: 'io.github.libtmux.scaladsl.Window.session',
+      ruby: 'LibTmux::WindowLink#session',
+      lua: 'libtmux.SnapshotWindowLink.session',
       py: 'libtmux.Window.session',
       ts: 'window.Window.session',
       rs: 'window.Window.session',
@@ -324,6 +337,10 @@ export const CONCEPTS: Record<string, Concept> = {
       java: 'io.github.libtmux.Window.Window.session',
       dotnet: 'LibTmux.Window.Session',
       cxx: 'libtmux::Window::session',
+    },
+    variants: {
+      go: ['tmux.Window.ResolveSession'],
+      ruby: ['LibTmux::WindowLinkSnapshot#session'],
     },
     absent: {
       swift: 'a Window has no single parent; Snapshot.sessions(of:) lists every linking session',
@@ -2514,62 +2531,135 @@ export const CONCEPTS: Record<string, Concept> = {
   },
   'pane-session': {
     label: 'The session containing a pane',
+    parentObject: 'session',
     symbols: {
       py: 'libtmux.Pane.session',
       ts: 'pane.Pane.session',
+      rs: 'pane.Pane.session',
       go: 'tmux.Pane.Session',
       dotnet: 'LibTmux.Pane.Session',
       cxx: 'libtmux::Pane::session',
     },
+    variants: { go: ['tmux.Pane.ResolveSession'] },
     absent: {
-      rs: 'no equivalent on `Pane`',
       java: 'no equivalent on `Pane`',
       swift: 'no equivalent on `Pane`',
     },
   },
   'session-server': {
     label: 'The server a session lives on',
+    parentObject: 'server',
     symbols: {
+      kotlin: 'io.github.libtmux.kotlin.Session.server',
+      scala: 'io.github.libtmux.scaladsl.Session.server',
       py: 'libtmux.Session.server',
       ts: 'session.Session.server',
       go: 'tmux.Session.Server',
       java: 'io.github.libtmux.Session.Session.server',
       dotnet: 'LibTmux.Session.Server',
+      cxx: 'libtmux::detail::Row::server',
     },
+    inheritedBy: { cxx: ['libtmux::Session'] },
     absent: {
       rs: 'no equivalent on `Session`',
-      cxx: 'no equivalent on `Session`',
       swift: 'no equivalent on `Session`',
     },
   },
   'window-server': {
     label: 'The server a window lives on',
+    parentObject: 'server',
     symbols: {
+      kotlin: 'io.github.libtmux.kotlin.Window.server',
+      scala: 'io.github.libtmux.scaladsl.Window.server',
       py: 'libtmux.Window.server',
       ts: 'window.Window.server',
       go: 'tmux.Window.Server',
       java: 'io.github.libtmux.Window.Window.server',
       dotnet: 'LibTmux.Window.Server',
+      cxx: 'libtmux::detail::Row::server',
     },
+    inheritedBy: { cxx: ['libtmux::Window'] },
+    variants: { ruby: ['LibTmux::WindowLink#server'] },
     absent: {
       rs: 'no equivalent on `Window`',
-      cxx: 'no equivalent on `Window`',
       swift: 'no equivalent on `Window`',
     },
   },
   'pane-server': {
     label: 'The server a pane lives on',
+    parentObject: 'server',
     symbols: {
+      kotlin: 'io.github.libtmux.kotlin.Pane.server',
+      scala: 'io.github.libtmux.scaladsl.Pane.server',
       py: 'libtmux.Pane.server',
       ts: 'pane.Pane.server',
       go: 'tmux.Pane.Server',
       java: 'io.github.libtmux.Pane.Pane.server',
       dotnet: 'LibTmux.Pane.Server',
+      cxx: 'libtmux::detail::Row::server',
     },
+    inheritedBy: { cxx: ['libtmux::Pane'] },
     absent: {
       rs: 'no equivalent on `Pane`',
-      cxx: 'no equivalent on `Pane`',
       swift: 'no equivalent on `Pane`',
+    },
+  },
+  'client-server': {
+    label: 'The server a client is connected to',
+    parentObject: 'server',
+    symbols: {
+      py: 'libtmux.Client.server',
+      ts: 'client.Client.server',
+      go: 'tmux.Client.Server',
+      java: 'io.github.libtmux.Client.Client.server',
+      kotlin: 'io.github.libtmux.kotlin.Client.server',
+      scala: 'io.github.libtmux.scaladsl.Client.server',
+      dotnet: 'LibTmux.Client.Server',
+      cxx: 'libtmux::detail::Row::server',
+    },
+    inheritedBy: { cxx: ['libtmux::Client'] },
+    absent: {
+      rs: 'no public server accessor on `Client`',
+      swift: 'Client is a captured value without a server handle',
+    },
+  },
+  'client-session': {
+    label: 'The session a client is attached to',
+    parentObject: 'session',
+    symbols: {
+      ts: 'client.Client.session',
+      rs: 'client.Client.attached_session',
+      go: 'tmux.Client.AttachedSession',
+      java: 'io.github.libtmux.Client.Client.session',
+      kotlin: 'io.github.libtmux.kotlin.Client.session',
+      scala: 'io.github.libtmux.scaladsl.Client.session',
+      dotnet: 'LibTmux.Client.GetAttachedSessionAsync',
+      cxx: 'libtmux::Client::session',
+      ruby: 'LibTmux::ClientSnapshot#session',
+      lua: 'libtmux.SnapshotClient.session',
+    },
+    absent: {
+      py: 'client_session is a session name, not a Session object',
+      swift: 'the relationship is resolved through Snapshot.session(of:)',
+    },
+  },
+  'window-link-window': {
+    label: 'The window represented by a window placement',
+    parentObject: 'window',
+    symbols: {
+      ruby: 'LibTmux::WindowLink#window',
+      lua: 'libtmux.SnapshotWindowLink.window',
+      swift: 'WindowAppearance.window',
+    },
+    variants: { ruby: ['LibTmux::WindowLinkSnapshot#window'] },
+    absent: {
+      py: 'Window itself carries the session placement',
+      ts: 'Window itself carries the session placement',
+      rs: 'Window itself carries the session placement',
+      go: 'Window itself carries the session placement',
+      java: 'Window itself carries the session placement',
+      dotnet: 'Window itself carries the session placement',
+      cxx: 'Window itself carries the session placement',
     },
   },
   'linked-sessions': {
@@ -3598,9 +3688,14 @@ const SCALA_EFFECT_CONCEPTS: Record<string, string> = {
   'list-windows': 'Session.windows', 'list-panes': 'Window.panes',
   'list-server-windows': 'Server.windows', 'list-server-panes': 'Server.panes',
   'list-clients': 'Server.clients', snapshot: 'Server.snapshot',
+  'pane-window': 'Pane.window', 'window-session': 'Window.session',
+  'session-server': 'Session.server', 'window-server': 'Window.server',
+  'pane-server': 'Pane.server', 'client-server': 'Client.server',
+  'client-session': 'Client.session',
 }
 for (const [id, symbol] of Object.entries(SCALA_EFFECT_CONCEPTS)) {
-  CONCEPTS[id]!.variants = { scala: [`io.github.libtmux.scaladsl.cats.${symbol}`] }
+  const variants = CONCEPTS[id]!.variants ??= {}
+  variants.scala = [...(variants.scala ?? []), `io.github.libtmux.scaladsl.cats.${symbol}`]
 }
 for (const [id, symbol] of Object.entries(RUBY_CONCEPTS)) CONCEPTS[id]!.symbols.ruby = symbol
 for (const [id, symbol] of Object.entries(LUA_CONCEPTS)) CONCEPTS[id]!.symbols.lua = symbol

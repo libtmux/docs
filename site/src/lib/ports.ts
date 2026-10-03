@@ -149,6 +149,8 @@ export interface Port {
   name: string
   /** Language shown in the port switcher. */
   language: string
+  /** Project title used in browser tabs and search/social metadata. */
+  projectName: string
   /** Package name users install. */
   packageName: string
   /** Source repository, `owner/name`. */
@@ -290,6 +292,7 @@ export interface Port {
 const CORE_PORTS: readonly Port[] = [
   {
     slug: 'py',
+    projectName: 'libtmux',
     logoLanguage: 'python',
     shortName: 'Py',
     name: 'Python',
@@ -357,6 +360,7 @@ const CORE_PORTS: readonly Port[] = [
   },
   {
     slug: 'ruby',
+    projectName: 'libtmux-ruby',
     logoLanguage: 'ruby',
     shortName: 'Rb',
     name: 'Ruby',
@@ -425,6 +429,7 @@ const CORE_PORTS: readonly Port[] = [
   },
   {
     slug: 'lua',
+    projectName: 'libtmux-lua',
     logoLanguage: 'lua',
     shortName: 'Lua',
     name: 'Lua',
@@ -460,6 +465,7 @@ const CORE_PORTS: readonly Port[] = [
   },
   {
     slug: 'ts',
+    projectName: 'libtmux-ts',
     logoLanguage: 'typescript',
     shortName: 'TS',
     workspaceCli: 'tmux-workspace load',
@@ -620,6 +626,7 @@ const CORE_PORTS: readonly Port[] = [
   },
   {
     slug: 'rs',
+    projectName: 'libtmux-rs',
     packages: [
       { id: 'workspace', name: 'tmux-workspace', registry: 'https://crates.io/crates/tmux-workspace',
         source: { path: 'crates/tmux-workspace', ref: 'master' },
@@ -671,6 +678,7 @@ const CORE_PORTS: readonly Port[] = [
   },
   {
     slug: 'go',
+    projectName: 'libtmux-go',
     logoLanguage: 'go',
     shortName: 'Go',
     workspaceCli: 'tmux-workspace load',
@@ -732,6 +740,7 @@ const CORE_PORTS: readonly Port[] = [
   },
   {
     slug: 'java',
+    projectName: 'libtmux-java',
     packages: [
       { id: 'workspace', name: 'libtmux-workspace-cli', registry: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-workspace-cli',
         source: { path: 'libtmux-workspace-cli', ref: 'master' },
@@ -809,6 +818,7 @@ const CORE_PORTS: readonly Port[] = [
   },
   {
     slug: 'dotnet',
+    projectName: 'libtmux-dotnet',
     logoLanguage: 'csharp',
     shortName: '.NET',
     workspaceCli: 'tmux-workspace load',
@@ -878,6 +888,7 @@ const CORE_PORTS: readonly Port[] = [
   },
   {
     slug: 'cxx',
+    projectName: 'libtmux-cxx',
     packages: [
       { id: 'workspace', name: 'tmux-workspace', source: { path: 'apps/workspace', ref: 'master' },
         executable: 'tmux-workspace',
@@ -953,6 +964,7 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
   },
   {
     slug: 'swift',
+    projectName: 'libtmux-swift',
     packages: [
       { id: 'workspace', name: 'tmux-workspace', registry: 'https://swiftpackageindex.com/libtmux/libtmux-swift',
         source: { path: 'Sources/TmuxWorkspaceCLI', ref: 'master' },
@@ -1022,6 +1034,7 @@ type WrapperLibrary = Omit<Port, 'repo' | 'checkout' | 'worktree' | 'tagGrammar'
 const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
   {
     slug: 'kotlin', logoLanguage: 'kotlin', shortName: 'Kt', name: 'Kotlin', language: 'Kotlin',
+    projectName: 'libtmux-kotlin',
     parentLibrary: { slug: 'java', runtime: 'JVM' },
     source: { path: 'libtmux-kotlin', ref: 'master' },
     packageName: 'io.github.libtmux:libtmux-kotlin',
@@ -1040,6 +1053,7 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
   },
   {
     slug: 'scala', logoLanguage: 'scala', shortName: 'Sc', name: 'Scala', language: 'Scala',
+    projectName: 'libtmux-scala',
     parentLibrary: { slug: 'java', runtime: 'JVM' },
     source: { path: 'libtmux-scala', ref: 'master' },
     packageName: 'io.github.libtmux:libtmux-scala_3',
@@ -1059,6 +1073,7 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
   },
   {
     slug: 'fsharp', logoLanguage: 'fsharp', shortName: 'F#', name: 'F#', language: 'F#',
+    projectName: 'libtmux-fsharp',
     parentLibrary: { slug: 'dotnet', runtime: '.NET' },
     sourceReferenceDirectory: 'docs/fsharp-reference/reference',
     packageName: 'LibTmux.FSharp',

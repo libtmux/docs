@@ -209,6 +209,8 @@ const githubUrl = githubPort?.source && githubPort.repo === githubRepo
     */}
     <style is:inline>html.fonts-pending body{visibility:hidden}</style>
     <ThemeScript />
+    <link rel="stylesheet" href={withRoot('/_shell/anchors.css')} />
+    <script is:inline type="module" src={withRoot('/_shell/anchors.js')}></script>
     {/* Paints the picker in the saved language. Must precede the body. */}
     <style is:global set:html={pickerPaintRules()} />
     <Seo

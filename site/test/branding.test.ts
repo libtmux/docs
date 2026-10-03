@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { pageBrand, PORTS } from '../src/lib/ports'
-import { branding, jsonLd, palettes } from '../src/lib/branding'
+import { branding, documentationTitle, jsonLd, palettes } from '../src/lib/branding'
 import { nativeBrandHead } from '../../scripts/brand-native-pages.mjs'
 
 const publicFile = (path: string) => fileURLToPath(new URL(`../public${path}`, import.meta.url))
@@ -18,6 +18,23 @@ const contrast = (a: string, b: string) => {
 }
 
 describe('route branding', () => {
+  it('uses project titles independently of package names and shared source repositories', () => {
+    const names = {
+      py: 'libtmux', ruby: 'libtmux-ruby', lua: 'libtmux-lua', ts: 'libtmux-ts',
+      rs: 'libtmux-rs', go: 'libtmux-go', java: 'libtmux-java', kotlin: 'libtmux-kotlin',
+      scala: 'libtmux-scala', dotnet: 'libtmux-dotnet', fsharp: 'libtmux-fsharp',
+      cxx: 'libtmux-cxx', swift: 'libtmux-swift',
+    }
+    expect(Object.fromEntries(PORTS.map((port) => [port.slug, branding(port.slug).projectName]))).toEqual(names)
+    expect(branding('java', 'reference/libtmux-scala-cats').projectName).toBe('libtmux-scala')
+    expect(branding('dotnet', 'reference/LibTmux.FSharp').projectName).toBe('libtmux-fsharp')
+    expect(branding().projectName).toBe('libtmux')
+    expect(documentationTitle('Server', 'libtmux-scala')).toBe('Server | libtmux-scala')
+    expect(documentationTitle('Server | libtmux', 'libtmux-dotnet')).toBe('Server | libtmux-dotnet')
+    expect(documentationTitle('Server | libtmux-dotnet', 'libtmux-dotnet')).toBe('Server | libtmux-dotnet')
+    expect(documentationTitle('libtmux', 'libtmux')).toBe('libtmux')
+    expect(documentationTitle('libtmux-scala', 'libtmux-scala')).toBe('libtmux-scala')
+  })
   it('publishes the size and digest of every catalogued asset', () => {
     const catalog = JSON.parse(readFileSync(publicFile('/brand/catalog.json'), 'utf8')) as {
       fileCount: number
@@ -91,6 +108,32 @@ describe('route branding', () => {
 })
 
 describe('native metadata', () => {
+  it('replaces the native Sphinx suffix with one project title', () => {
+    const source = '<html><head><title>Servers - libtmux 0.62.0 documentation</title></head><body>Servers</body></html>'
+    const options = { port: 'py', pagePath: 'api/libtmux.server/', root: '/en' }
+    const html = nativeBrandHead(source, options)
+    expect(html).toContain('<title>Servers | libtmux</title>')
+    expect(html).toContain('<meta property="og:title" content="Servers | libtmux">')
+    expect(html).toContain('<meta name="twitter:title" content="Servers | libtmux">')
+    expect(nativeBrandHead(html, options)).toBe(html)
+  })
+
+  it.each(PORTS)('normalizes $slug page and social titles without changing canonical policy', (port) => {
+    const source = '<html><head><title>Server &amp; &quot;Clients&quot; | libtmux</title><meta property="og:title" content="Old"><meta property="og:site_name" content="libtmux"><meta name="twitter:title" content="Old"><link rel="canonical" href="https://libtmux.org/unchanged/"><meta name="robots" content="noindex, follow"></head><body>Server</body></html>'
+    const options = { port: port.slug, pagePath: 'reference/server/', root: '/en' }
+    const html = nativeBrandHead(source, options)
+    const title = `Server &amp; &quot;Clients&quot; | ${port.projectName}`
+    expect(html).toContain(`<title>${title}</title>`)
+    expect(html).toContain(`<meta property="og:title" content="${title}">`)
+    expect(html).toContain(`<meta name="twitter:title" content="${title}">`)
+    expect(html).toContain(`<meta property="og:site_name" content="${port.projectName}">`)
+    expect(html.match(/<title>/g)).toHaveLength(1)
+    expect(html.match(/property="og:title"/g)).toHaveLength(1)
+    expect(html).toContain('href="https://libtmux.org/unchanged/"')
+    expect(html).toContain('content="noindex, follow"')
+    expect(html).toContain(`"name":"${port.projectName}"`)
+    expect(nativeBrandHead(html, options)).toBe(html)
+  })
   it('uses current artwork for both native sidebar schemes without changing content images', () => {
     const source = '<html><head></head><body><img class="sidebar-logo only-light" src="old-light.svg"><img src="old-dark.svg" class="only-dark sidebar-logo" srcset="old-dark@2x.png 2x"/><img src="guide.png" alt="Example"></body></html>'
     const options = { port: 'py', pagePath: 'api/server/', root: '/pr-42/en' }

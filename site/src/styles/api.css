@@ -133,6 +133,11 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+/* Member declarations need the same distinct surface as type declarations. */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(:target) {
+  background: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
+}
 .api-name { font-weight: 600; }
 .api-punct, .api-type-label { opacity: 0.65; }
 .api-param-name { color: var(--api-kind-attribute-fg); }
@@ -248,9 +253,8 @@
  * The member list on a type's page.
  *
  * Every member has its own page, so the type page lists them rather than
- * inlining their entries. Name, kind and one line of prose per row, in the
- * shape learn.microsoft.com uses — enough to say what the type is for
- * without the list becoming the page.
+ * inlining their entries. The name leads, badges align at the far edge, and
+ * the description spans the row underneath.
  */
 .api-member-list {
   list-style: none;
@@ -263,7 +267,7 @@
 
 .api-member-list li {
   display: grid;
-  grid-template-columns: minmax(8rem, 18rem) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.35rem 0.75rem;
   align-items: baseline;
   padding: 0.9rem 1rem;
@@ -279,25 +283,25 @@
   font-size: 0.9375rem;
   font-weight: 600;
 }
-.api-member-group h3 span {
-  color: var(--color-muted);
-  font-size: 0.75rem;
-  font-weight: 400;
-}
 
 .api-member-link {
+  min-width: 0;
   font-family: var(--font-ibm-plex-mono, ui-monospace, monospace);
   font-weight: 600;
   text-decoration: none;
+  overflow-wrap: anywhere;
 }
 
 .api-member-link:hover {
   text-decoration: underline;
 }
 
-.api-member-kind {
-  font-size: 0.8em;
-  opacity: 0.6;
+.api-member-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  justify-self: end;
+  gap: 0.3rem;
 }
 
 .api-member-summary {
@@ -306,14 +310,6 @@
   opacity: 0.8;
   max-width: 76ch;
   line-height: 1.6;
-}
-
-/* One column below the container's own threshold, the same 36rem the entry
-   layout uses, so the name and its summary stay readable on a phone. */
-@container (max-width: 36rem) {
-  .api-member-list li {
-    grid-template-columns: 1fr;
-  }
 }
 
 /*
@@ -653,10 +649,13 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   overflow-wrap: anywhere;
 }
 .api-reference-layout { max-width: 108rem; margin-inline: auto; }
+@media (min-width: 56rem) {
+  .api-reference-layout:has(> .api-nav-column) { grid-template-columns: 16rem minmax(0, 1fr); }
+}
 .api-page-contents { display: none; }
 @media (min-width: 85rem) {
-  .api-reference-layout--symbol {
-    grid-template-columns: 18rem minmax(0, 1fr) 14rem;
+  .api-reference-layout--symbol:has(> .api-nav-column) {
+    grid-template-columns: 16rem minmax(0, 1fr) 14rem;
   }
   .api-reference-layout--symbol > .api-reference-content {
     padding-inline: 2.25rem;
@@ -738,6 +737,47 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   color: var(--color-muted);
   font-size: 0.8125rem;
 }
+.api-reference-version {
+  margin-left: auto;
+  border-radius: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  background: var(--color-surface);
+  font: 0.6875rem/1.5 var(--font-mono, monospace);
+}
+.api-reference-relationships {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 0.6rem;
+  margin-top: 0.875rem;
+  font-size: 0.8125rem;
+}
+.api-reference-relationships > span:first-child { color: var(--color-muted); }
+.page-toolbar-controls--reference :is(.page-control, select) {
+  min-height: 1.875rem;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+}
+.page-toolbar-controls--reference select { max-width: 11rem; }
+.api-section-heading { display: flex; align-items: baseline; gap: 0.75rem; }
+.api-heading-link {
+  flex: none;
+  margin-left: auto;
+  padding: 0.2rem 0.35rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-decoration: none;
+}
+.api-heading-link:hover { color: var(--color-link); }
+.api-heading-link:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+.api-related-types { margin-top: 2rem; }
+.api-related-cards { display: grid; gap: 0.75rem; margin-top: 0.75rem; }
+.api-related-card { padding: 0.875rem 1rem; border: 1px solid var(--color-edge); border-radius: 0.4rem; }
+.api-related-card:hover { background: var(--color-surface); }
+.api-related-card > a { display: flex; align-items: baseline; gap: 0.6rem; }
+.api-related-card p { margin: 0.375rem 0 0 1.7rem; color: var(--color-muted); font-size: 0.875rem; line-height: 1.6; }
+.api-example-source { white-space: nowrap; font-size: 0.8125rem; margin-left: 0.75rem; }
 .api-reference-summary {
   max-width: 76ch;
   margin-block: 1rem 0;
@@ -761,9 +801,27 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   min-width: 0;
 }
 .api-qualified-label {
+  flex: none;
   color: var(--color-muted);
   font-size: 0.75rem;
+  white-space: nowrap;
 }
+.api-namespace-full { display: none; }
+.api-qualified-name[data-expanded] .api-namespace-full { display: inline; }
+.api-qualified-name[data-expanded] .api-namespace-short { display: none; }
+.api-expand-name {
+  flex: none;
+  min-height: 1.625rem;
+  padding: 0.125rem 0.375rem;
+  border: 1px solid var(--color-edge);
+  border-radius: 0.25rem;
+  background: var(--color-surface);
+  color: var(--color-foreground-primary);
+  font-size: 0.6875rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.api-expand-name:hover { background: var(--color-surface-hover); }
 .api-copy-status:empty { display: none; }
 .api-copy-status {
   position: absolute;
@@ -790,7 +848,8 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   color: var(--color-muted);
 }
 .api-copy-name:hover { background: var(--color-surface-hover); color: var(--color-link); }
-.api-copy-name:focus-visible {
+.api-copy-name:focus-visible,
+.api-expand-name:focus-visible {
   outline: 2px solid var(--focus-ring-color);
   outline-offset: 2px;
 }
@@ -814,11 +873,15 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
 }
 .api-section-links span {
   margin-left: 0.25rem;
+}
+.api-section-links span, .api-section-count {
   padding: 0.1rem 0.3rem;
   border-radius: 0.25rem;
   background: var(--color-surface);
   color: var(--color-muted);
   font-size: 0.75rem;
+  font-weight: 400;
+  white-space: nowrap;
 }
 .api-source-details { margin-block: 1rem 1.5rem; font-size: 0.875rem; }
 .api-source-details > summary { cursor: pointer; color: var(--color-muted); }

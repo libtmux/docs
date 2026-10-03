@@ -10,6 +10,7 @@
  * holds the tree's Tab stop.
  */
 import { wordBreak } from '../../lib/word-break'
+import { kindMark } from '../../lib/api-labels'
 import { searchApi, type ApiTreeBucket as JsonBucket, type ApiTreeJson as TreeJson } from '../../lib/api-search'
 
 const ITEM = '[role="treeitem"]'
@@ -30,6 +31,15 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
   let generation = 0
   input.disabled = false
   for (const button of filters) button.disabled = false
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== '/' || event.defaultPrevented || event.isComposing || event.metaKey || event.ctrlKey || event.altKey) return
+    const target = event.target as Element
+    if (target.closest('input, textarea, select, [role="textbox"], [contenteditable]:not([contenteditable="false"])') ||
+        document.querySelector('dialog[open]')) return
+    event.preventDefault()
+    if (nav.inert) document.querySelector<HTMLButtonElement>('[data-api-nav-toggle]')?.click()
+    input.focus({ preventScroll: true })
+  }, { signal })
   const render = async () => {
     const ownGeneration = ++generation
     const query = input.value.trim()
@@ -52,6 +62,9 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
         link.href = `${nav.dataset.base}${record.slug}/`
         const name = document.createElement('strong')
         name.textContent = record.name
+        const mark = kindBadge(record.kind)
+        if (mark) name.prepend(mark, ' ')
+        link.setAttribute('aria-description', record.kind)
         const path = document.createElement('small')
         path.textContent = `${record.kind} · ${record.qualifiedName}`
         link.append(name, path)
@@ -126,7 +139,7 @@ const rows = (tree: HTMLElement) => [...tree.querySelectorAll<HTMLElement>(ITEM)
 const isBranch = (item: HTMLElement) => item.hasAttribute('aria-expanded')
 const isOpen = (item: HTMLElement) => item.getAttribute('aria-expanded') === 'true'
 const labelOf = (item: HTMLElement) =>
-  (item.matches('a') ? item : item.querySelector(':scope > .api-nav__row > .api-nav__label'))?.textContent?.trim().toLowerCase() ?? ''
+  (item.matches('a') ? item.querySelector('.api-nav__label') : item.querySelector(':scope > .api-nav__row > .api-nav__label'))?.textContent?.trim().toLowerCase() ?? ''
 
 function focusRow(tree: HTMLElement, item: HTMLElement | undefined | null) {
   if (!item) return
@@ -153,7 +166,18 @@ function label(name: string): HTMLSpanElement {
   return span
 }
 
-function leaf(name: string, href: string, level: number): HTMLLIElement {
+function kindBadge(kind?: string): HTMLSpanElement | undefined {
+  const mark = kind && kindMark(kind)
+  if (!mark) return undefined
+  const badge = document.createElement('span')
+  badge.className = `api-nav__kind api-badge--kind-${kind}`
+  badge.title = kind!
+  badge.setAttribute('aria-hidden', 'true')
+  badge.textContent = mark
+  return badge
+}
+
+function leaf(name: string, href: string, level: number, kind?: string): HTMLLIElement {
   const li = document.createElement('li')
   li.setAttribute('role', 'none')
   const a = document.createElement('a')
@@ -163,13 +187,16 @@ function leaf(name: string, href: string, level: number): HTMLLIElement {
   a.tabIndex = -1
   a.style.setProperty('--level', String(level))
   a.setAttribute('aria-level', String(level))
+  if (kind) a.setAttribute('aria-description', kind)
   if (new URL(href, location.href).pathname === location.pathname) a.setAttribute('aria-current', 'page')
+  const mark = kindBadge(kind)
+  if (mark) a.append(mark)
   a.append(label(name))
   li.append(a)
   return li
 }
 
-function branch(name: string, href: string | undefined, level: number, lazy: string, count?: number): HTMLLIElement {
+function branch(name: string, href: string | undefined, level: number, lazy: string, count?: number, kind?: string): HTMLLIElement {
   const id = `api-nav-c${++seq}`
   const li = document.createElement('li')
   li.setAttribute('role', 'treeitem')
@@ -177,6 +204,7 @@ function branch(name: string, href: string | undefined, level: number, lazy: str
   li.tabIndex = -1
   li.dataset.lazy = lazy
   li.setAttribute('aria-level', String(level))
+  if (kind) li.setAttribute('aria-description', kind)
   li.setAttribute('aria-expanded', 'false')
   li.setAttribute('aria-labelledby', count === undefined ? id : `${id} ${id}-count`)
   const row = document.createElement('div')
@@ -186,6 +214,8 @@ function branch(name: string, href: string | undefined, level: number, lazy: str
   chevron.className = 'api-nav__chevron'
   chevron.setAttribute('aria-hidden', 'true')
   row.append(chevron)
+  const mark = kindBadge(kind)
+  if (mark) row.append(mark)
   if (href) {
     const a = document.createElement('a')
     a.className = 'api-nav__label'
@@ -233,13 +263,13 @@ async function build(nav: HTMLElement, item: HTMLElement): Promise<HTMLElement |
     const bucket = findBucket(json.buckets, id)
     if (!bucket) return undefined
     for (const t of bucket.types) {
-      children.push(t.m ? branch(t.name, `${base}${t.slug}/`, level, `type:${t.id}`) : leaf(t.name, `${base}${t.slug}/`, level))
+      children.push(t.m ? branch(t.name, `${base}${t.slug}/`, level, `type:${t.id}`, undefined, t.kind) : leaf(t.name, `${base}${t.slug}/`, level, t.kind))
     }
     for (const c of bucket.children) {
       children.push(branch(c.label, c.slug ? `${base}${c.slug}/` : undefined, level, `bucket:${c.id}`, c.types.length))
     }
   } else {
-    for (const [name, slug] of json.members[id] ?? []) children.push(leaf(name, `${base}${slug}/`, level))
+    for (const [name, slug, , kind] of json.members[id] ?? []) children.push(leaf(name, `${base}${slug}/`, level, kind))
   }
   const group = document.createElement('ul')
   group.setAttribute('role', 'group')
@@ -378,7 +408,7 @@ function initDrawer(nav: HTMLElement, signal: AbortSignal) {
   const toggleButton = document.querySelector<HTMLButtonElement>('[data-api-nav-toggle]')
   const overlay = document.querySelector<HTMLElement>('[data-api-nav-overlay]')
   const closeButton = nav.querySelector<HTMLButtonElement>('[data-api-nav-close]')
-  const phone = window.matchMedia('(width < 64rem)')
+  const phone = window.matchMedia('(width < 56rem)')
   document.body.style.overflow = ''
 
   const layout = () => {

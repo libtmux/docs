@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
 import { describe, expect, it, vi } from 'vitest'
-import { compareMembers, memberSignals } from '@libtmux/api-model'
+import { compareMembers, membersOf, memberSignals } from '@libtmux/api-model'
 import mentions from '../src/data/mentions.json'
 import { API_MODELS, API_NAV, OWNER_KINDS, topLevelTypesOf } from '../src/lib/api-models'
 import { membersByType, navTree, referenceIndexSections } from '../src/lib/api-tree'
@@ -129,7 +129,7 @@ describe('major tmux object domains', () => {
       ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot'].includes(symbol.name))
     expect(owners.some((owner) => owner.name === 'Server'), port).toBe(true)
     for (const owner of owners) {
-      const displayed = model.symbols.filter((symbol) => symbol.parent === owner.id).sort(compare)
+      const displayed = membersOf(model, owner, memberSignals(port, mentions.mentions)).sort(compare)
       expect(branches.get(owner.publicId ?? owner.id)?.map((member) => member.id) ?? [], `${port}:${owner.id}`)
         .toEqual(displayed.map((member) => member.id))
     }

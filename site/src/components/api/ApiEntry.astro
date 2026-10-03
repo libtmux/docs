@@ -56,11 +56,13 @@ interface Props {
   heading?: boolean
   /** The page header already carries this summary. */
   showSummary?: boolean
+  /** A reference page may show these relationships beside its title. */
+  showBases?: boolean
   /** Keep the declaration anchor distinct from the page heading. */
   anchorId?: string
 }
 const { symbol, index, sourceUrl, port, alternativesFor, heading = false, member = false,
-  showSummary = true, anchorId } = Astro.props as Props
+  showSummary = true, showBases = true, anchorId } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
 const nativeSignatures = ['kotlin', 'scala', 'fsharp'].includes(port ?? '')
@@ -138,7 +140,7 @@ const prename = heading && qualifiedName.endsWith(symbol.name)
   ? qualifiedName.slice(0, qualifiedName.length - symbol.name.length)
   : ''
 
-const bases = heading ? ((symbol as { extends?: string[] }).extends ?? []) : []
+const bases = heading && showBases ? ((symbol as { extends?: string[] }).extends ?? []) : []
 
 const examples = symbol.doc?.examples ?? []
 const references = symbol.doc?.references ?? []
@@ -462,6 +464,7 @@ const hasBody =
     )}
     {symbol.doc?.body && (
       <div class="gp-sphinx-api-description" id={`${anchor}.description`}>
+        <h2 class="rubric api-section-heading">Description<a class="api-heading-link" href={`#${anchor}.description`} aria-label="Link to Description">#</a></h2>
         <ApiProse text={symbol.doc.body} index={index} context={symbol} />
       </div>
     )}
@@ -469,13 +472,13 @@ const hasBody =
     {
       examples.length > 0 && (
         <div class="gp-sphinx-api-examples" id={`${anchor}.examples`}>
-          <p class="rubric">Examples</p>
+          <h2 class="rubric api-section-heading">Examples<a class="api-heading-link" href={`#${anchor}.examples`} aria-label="Link to Examples">#</a></h2>
           {examples.map((ex) => (
             <>
               {(ex.intro || ex.sourceUrl) && (
                 <p class="gp-sphinx-api-example-intro">
                   {ex.intro && <ApiDoc text={ex.intro} index={index} context={symbol} />}
-                  {ex.sourceUrl && <> <a href={ex.sourceUrl}>Source example</a>.</>}
+                  {ex.sourceUrl && <a class="api-example-source" href={ex.sourceUrl}>View source</a>}
                 </p>
               )}
               <div class="gp-sphinx-api-example">
@@ -491,7 +494,7 @@ const hasBody =
     {
       references.length > 0 && (
         <div class="gp-sphinx-api-references" id={`${anchor}.references`}>
-          <p class="rubric">References</p>
+          <h2 class="rubric api-section-heading">References<a class="api-heading-link" href={`#${anchor}.references`} aria-label="Link to References">#</a></h2>
           <dl class="citation">
             {references.map((r) => (
               <>

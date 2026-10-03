@@ -232,9 +232,6 @@ html {
   scroll-margin-top: calc(var(--topnav-height, 3rem) + 1.5rem);
 }
 
-.anchored-entry:target, .prose :is(h2, h3, h4, h5, h6):is(:target, :has(> .section-anchor-alias:target)) {
-  background: color-mix(in oklab, var(--theme-primary) 12%, transparent);
-}
 .prose .row-label-link { position: relative; display: inline-block; color: inherit; text-decoration: none; }
 .prose .row-label-link:hover { text-decoration: underline; }
 .prose .row-label-link::after {
