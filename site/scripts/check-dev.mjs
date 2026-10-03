@@ -184,6 +184,58 @@ async function checkSignatureLayouts(browser, base) {
         `API signatures fit at ${width}px`)
     }
     console.log(`API signatures: ${signaturePorts.length} ports retain declarations without JavaScript at 1440/768/390px`)
+    await page.goto(`${base}/fsharp/latest/reference/libtmux-fsharp-server/`, { waitUntil: 'load' })
+    const module = page.locator('dt[data-symbol-id="LibTmux.FSharp.Server"]')
+    for (const colorScheme of apiSignaturesOnly ? ['light', 'dark'] : ['light']) {
+      await page.emulateMedia({ colorScheme })
+      for (const width of [1440, 803, 390]) {
+        await page.setViewportSize({ width, height: 900 })
+        const code = await module.locator('.gp-sphinx-api-layout-left').boundingBox()
+        const toolbar = await module.locator('.gp-sphinx-api-layout-right').boundingBox()
+        assert(Math.abs(code.y + code.height / 2 - toolbar.y - toolbar.height / 2) < 2,
+          `${colorScheme}/${width}px: module declaration and toolbar share a row`)
+        assert(code.x + code.width <= toolbar.x, `${colorScheme}/${width}px: declaration does not overlap controls`)
+        assert((await module.boundingBox()).height < 50, `${colorScheme}/${width}px: short module header stays compact`)
+      }
+    }
+    await page.goto(`${base}/fsharp/latest/reference/libtmux-fsharp-server-tryfindclient/`, { waitUntil: 'load' })
+    const declaration = page.locator('dt[data-symbol-id="LibTmux.FSharp.Server.tryFindClient"]')
+    for (const colorScheme of apiSignaturesOnly ? ['light', 'dark'] : ['light']) {
+      await page.emulateMedia({ colorScheme })
+      for (const width of [1440, 803, 390]) {
+        await page.setViewportSize({ width, height: 900 })
+        const keyword = declaration.locator('.api-keyword', { hasText: 'val' })
+        const name = declaration.locator('.api-declaration-name')
+        assert.equal(await name.innerText(), 'tryFindClient')
+        const colors = await Promise.all([keyword, name, declaration.locator('.api-parameter-name').first()]
+          .map((token) => token.evaluate((element) => getComputedStyle(element).color)))
+        assert.equal(new Set(colors).size, 3, `${colorScheme}/${width}px: keyword, function and parameters are distinct`)
+        for (const arrow of await declaration.locator('.api-operator').all()) {
+          assert.equal(await arrow.evaluate((element) => element.getClientRects().length), 1,
+            `${colorScheme}/${width}px: arrows remain intact`)
+        }
+        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+          `${colorScheme}/${width}px: F# signature fits`)
+        if (width === 803) {
+          const first = await keyword.boundingBox()
+          const parameter = await declaration.locator('.api-parameter-name').first().boundingBox()
+          assert(Math.abs(first.y - parameter.y) < 2, 'F# source indentation does not force an empty signature row')
+        }
+      }
+    }
+    assert.equal(await page.locator('.gp-sphinx-api-parameters a', { hasText: 'System.ArgumentException' })
+      .getAttribute('href'), 'https://learn.microsoft.com/dotnet/api/system.argumentexception')
+    await page.goto(`${base}/kotlin/latest/reference/`, { waitUntil: 'load' })
+    const helper = page.locator('.api-index-card[id="io.github.libtmux.kotlin.withServer"]')
+    assert.equal(await helper.count(), 1, 'Kotlin withServer has one index card')
+    assert.equal(await page.locator('.api-index-section .gp-sphinx-api-container').count(), 0,
+      'Browse pages link to declarations instead of expanding them inline')
+    await helper.locator('.api-index-card__link').click()
+    assert.match(page.url(), /\/reference\/io-github-libtmux-kotlin-withserver\/$/,
+      'The function card opens its individual reference page')
+    assert.equal(await page.locator('dt[data-symbol-id="io.github.libtmux.kotlin.withServer"]').count(), 1,
+      'The individual page retains the complete declaration')
+    console.log('Native browse layout: compact F# modules and linked Kotlin function cards work without JavaScript')
   } finally {
     await page.close()
   }

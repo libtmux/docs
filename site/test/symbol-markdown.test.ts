@@ -3,7 +3,7 @@ import { fromMarkdown } from 'mdast-util-from-markdown'
 import type { ApiSymbol } from '@libtmux/api-model'
 import { API_MODELS, OWNER_KINDS } from '../src/lib/api-models'
 import { membersByType } from '../src/lib/api-tree'
-import { PORTS } from '../src/lib/ports'
+import { PORTS, PORT_BY_SLUG, referenceUrl } from '../src/lib/ports'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 
 function inlineCodes(text: string): string[] {
@@ -18,6 +18,30 @@ function inlineCodes(text: string): string[] {
 }
 
 describe('API Markdown content parity', () => {
+  it('links the F# lookup error to its .NET API in copied Markdown', () => {
+    const model = API_MODELS.fsharp
+    const symbol = model.symbols.find((entry) => entry.id === 'LibTmux.FSharp.Server.tryFindClient')!
+    expect(symbolMarkdown({ model, symbol })).toContain(
+      '[`System.ArgumentException`](https://learn.microsoft.com/dotnet/api/system.argumentexception)',
+    )
+  })
+
+  it('prefers a library error over a same-named .NET exception in the selected version', () => {
+    const error: ApiSymbol = {
+      id: 'LibTmux.ArgumentException', name: 'ArgumentException', kind: 'class',
+      modifiers: [], signatures: [], source: { file: 'example.fs' }, slug: 'argument-exception',
+    }
+    const symbol: ApiSymbol = {
+      id: 'LibTmux.sample', name: 'sample', kind: 'function', modifiers: [],
+      signatures: [{ params: [], raises: [{ type: 'ArgumentException', doc: 'A library error.' }] }],
+      source: { file: 'example.fs' }, slug: 'sample',
+    }
+    const model = { ...API_MODELS.fsharp, symbols: [error, symbol] }
+    const text = symbolMarkdown({ model, symbol, version: 'stable' })
+    expect(text).toContain('[`ArgumentException`](' + referenceUrl(PORT_BY_SLUG.fsharp, 'stable') + 'argument-exception/)')
+    expect(text).not.toContain('learn.microsoft.com')
+  })
+
   it('keeps escaped Kotlin and Scala names literal in overload labels', () => {
     for (const [port, id, expected] of [
       ['kotlin', 'io.github.libtmux.kotlin.Hooks.`set`', '`set`(event, command) [overload 1]'],

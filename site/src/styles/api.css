@@ -623,6 +623,20 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header > .gp-sph
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphinx-api-layout-right {
   order: -1;
 }
+/* Parameterless, single-line declarations share the toolbar row when it fits. */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header--simple > .gp-sphinx-api-layout--responsive {
+  flex-flow: row wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header--simple .gp-sphinx-api-layout-left {
+  flex-basis: max-content;
+  max-width: 100%;
+}
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header--simple .gp-sphinx-api-layout-right {
+  order: 0;
+  margin-left: auto;
+}
 .api-native-signature {
   display: block;
   white-space: pre-wrap;
@@ -636,6 +650,11 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   color: var(--color-foreground-primary);
   opacity: 1;
 }
+.api-native-signature .api-keyword { color: var(--api-kind-exception-fg); }
+.api-native-signature .api-declaration-name { color: var(--api-kind-function-fg); }
+.api-native-signature .api-operator { white-space: nowrap; }
+/* F# source indentation is not a required break in a signature's type chain. */
+.api-native-signature--fsharp { white-space: normal; }
 
 .api-reference-content {
   overflow-wrap: anywhere;

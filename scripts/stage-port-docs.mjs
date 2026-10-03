@@ -143,7 +143,7 @@ export function stagedPortGuides(port, artifact) {
         href: `../${entry.route}/`, body: entry.description ?? `Read about ${titleAndBody(guides.get(path), path).title.toLowerCase()}.`,
         order: entry.sidebar?.order ?? Number.MAX_SAFE_INTEGER }))
         .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label))
-        .map(({ order, ...card }) => card)
+        .map(({ order: _order, ...card }) => card)
       if (section === 'guides') cards.splice(Math.min(1, cards.length), 0, {
         label: 'Attaching to tmux', href: '../guides/attaching-to-tmux/',
         body: 'Connect to an existing socket and leave its server running.',

@@ -59,6 +59,7 @@ export const GET: APIRoute = ({ props, site }) => {
       canonical: `${origin}${referenceUrl(PORT_BY_SLUG[port]!, buildTarget(process.env).version)}${slug}/`,
       source: sourceUrl(model, symbol, `${origin}${referenceBase}`),
       packageName: symbol.package ?? PORT_BY_SLUG[port]?.packageName,
+      version: buildTarget(process.env).version,
     }),
     { headers: { 'Content-Type': 'text/markdown; charset=utf-8' } },
   )

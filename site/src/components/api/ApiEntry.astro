@@ -64,6 +64,8 @@ const { symbol, index, sourceUrl, port, alternativesFor, heading = false, member
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
 const nativeSignatures = ['kotlin', 'scala', 'fsharp'].includes(port ?? '')
+const simpleNativeSignature = nativeSignatures && symbol.signatures.length === 1 &&
+  symbol.signatures[0].params.length === 0 && !/[\r\n]/.test(symbol.signatures[0].raw ?? '')
 
 /**
  * The Sphinx domain this port's symbols belong to.
@@ -266,7 +268,8 @@ const hasBody =
   ]}
 >
   <dt
-    class:list={['sig sig-object py gp-sphinx-api-header', nativeSignatures && 'api-native-header']}
+    class:list={['sig sig-object py gp-sphinx-api-header', nativeSignatures && 'api-native-header',
+      simpleNativeSignature && 'api-native-header--simple']}
     id={anchorId ?? anchor}
     data-symbol-id={symbol.id}
     data-domain={domain}
@@ -281,7 +284,7 @@ const hasBody =
       <div class="gp-sphinx-api-layout-left">
         <span class="gp-sphinx-api-signature">
           {nativeSignatures ? symbol.signatures.map((sig) => (
-            <span class="api-native-signature"><ApiType type={sig.raw ?? symbol.name} index={index} context={symbol} signature={sig} /></span>
+            <span class:list={['api-native-signature', port === 'fsharp' && 'api-native-signature--fsharp']}><ApiType type={sig.raw ?? symbol.name} index={index} context={symbol} signature={sig} /></span>
           )) : <>
           {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
           {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname"><span class="pre">{symbol.name}</span></span>
