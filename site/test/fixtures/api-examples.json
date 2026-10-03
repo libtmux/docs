@@ -12131,6 +12131,1835 @@
       ],
       "verificationScope": "Whole files compile independently against an installed library and public testing component; private fixture runs verify output, operation failure, and cleanup. C++20 is also checked separately.",
       "sourceFile": "examples/api/input-capture.cpp"
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/server-server",
+      "symbol": "server.Server",
+      "publicId": "server.Server",
+      "sourceProgramId": "rust-construction",
+      "sourceTargets": [
+        "libtmux::Server"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_construction.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_construction.rs",
+          "block": 4,
+          "sha256": "00e2ef2c136db11b51076eb4f62ae4d4113faf544c04ebc12e0997826f8f79e4",
+          "clipboardSha256": "ed64c0b3b7fad3d9a261fbf094d61da2412e719dae41cc7e62a6f18b75ed9a90"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "construction: private daemon started by new_session"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/server-server-builder",
+      "symbol": "server.Server.builder",
+      "publicId": "server.Server.builder",
+      "sourceProgramId": "rust-construction",
+      "sourceTargets": [
+        "libtmux::Server::builder"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_construction.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_construction.rs",
+          "block": 4,
+          "sha256": "00e2ef2c136db11b51076eb4f62ae4d4113faf544c04ebc12e0997826f8f79e4",
+          "clipboardSha256": "ed64c0b3b7fad3d9a261fbf094d61da2412e719dae41cc7e62a6f18b75ed9a90"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "construction: private daemon started by new_session"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/server-builder-serverbuilder-socket_path",
+      "symbol": "server.builder.ServerBuilder.socket_path",
+      "publicId": "server.builder.ServerBuilder.socket_path",
+      "sourceProgramId": "rust-construction",
+      "sourceTargets": [
+        "libtmux::ServerBuilder::socket_path"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_construction.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_construction.rs",
+          "block": 4,
+          "sha256": "00e2ef2c136db11b51076eb4f62ae4d4113faf544c04ebc12e0997826f8f79e4",
+          "clipboardSha256": "ed64c0b3b7fad3d9a261fbf094d61da2412e719dae41cc7e62a6f18b75ed9a90"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "construction: private daemon started by new_session"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/server-builder-serverbuilder-config_file",
+      "symbol": "server.builder.ServerBuilder.config_file",
+      "publicId": "server.builder.ServerBuilder.config_file",
+      "sourceProgramId": "rust-construction",
+      "sourceTargets": [
+        "libtmux::ServerBuilder::config_file"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_construction.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_construction.rs",
+          "block": 4,
+          "sha256": "00e2ef2c136db11b51076eb4f62ae4d4113faf544c04ebc12e0997826f8f79e4",
+          "clipboardSha256": "ed64c0b3b7fad3d9a261fbf094d61da2412e719dae41cc7e62a6f18b75ed9a90"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "construction: private daemon started by new_session"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/server-builder-serverbuilder-default_timeout",
+      "symbol": "server.builder.ServerBuilder.default_timeout",
+      "publicId": "server.builder.ServerBuilder.default_timeout",
+      "sourceProgramId": "rust-construction",
+      "sourceTargets": [
+        "libtmux::ServerBuilder::default_timeout"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_construction.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_construction.rs",
+          "block": 4,
+          "sha256": "00e2ef2c136db11b51076eb4f62ae4d4113faf544c04ebc12e0997826f8f79e4",
+          "clipboardSha256": "ed64c0b3b7fad3d9a261fbf094d61da2412e719dae41cc7e62a6f18b75ed9a90"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "construction: private daemon started by new_session"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/server-builder-serverbuilder-build",
+      "symbol": "server.builder.ServerBuilder.build",
+      "publicId": "server.builder.ServerBuilder.build",
+      "sourceProgramId": "rust-construction",
+      "sourceTargets": [
+        "libtmux::ServerBuilder::build"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_construction.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_construction.rs",
+          "block": 4,
+          "sha256": "00e2ef2c136db11b51076eb4f62ae4d4113faf544c04ebc12e0997826f8f79e4",
+          "clipboardSha256": "ed64c0b3b7fad3d9a261fbf094d61da2412e719dae41cc7e62a6f18b75ed9a90"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_construction.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "construction: private daemon started by new_session"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/server-server-sessions",
+      "symbol": "server.Server.sessions",
+      "publicId": "server.Server.sessions",
+      "sourceProgramId": "rust-listings",
+      "sourceTargets": [
+        "libtmux::Server::sessions"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_listings.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_listings.rs",
+          "block": 4,
+          "sha256": "936c9b198f0daf88c2d3b67757655cd07ff50e35edb94ba3f33b70f94c069023",
+          "clipboardSha256": "64f3c3963c9fd670798370890ad28b8dea410beb2cc0ec89c5aa77ee1f0e2090"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "listings: 1 session, 2 windows, 2 panes"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/server-server-windows",
+      "symbol": "server.Server.windows",
+      "publicId": "server.Server.windows",
+      "sourceProgramId": "rust-listings",
+      "sourceTargets": [
+        "libtmux::Server::windows"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_listings.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 1,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 2,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_listings.rs",
+          "block": 3,
+          "sha256": "936c9b198f0daf88c2d3b67757655cd07ff50e35edb94ba3f33b70f94c069023",
+          "clipboardSha256": "64f3c3963c9fd670798370890ad28b8dea410beb2cc0ec89c5aa77ee1f0e2090"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "listings: 1 session, 2 windows, 2 panes"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/server-server-panes",
+      "symbol": "server.Server.panes",
+      "publicId": "server.Server.panes",
+      "sourceProgramId": "rust-listings",
+      "sourceTargets": [
+        "libtmux::Server::panes"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_listings.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 1,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 2,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_listings.rs",
+          "block": 3,
+          "sha256": "936c9b198f0daf88c2d3b67757655cd07ff50e35edb94ba3f33b70f94c069023",
+          "clipboardSha256": "64f3c3963c9fd670798370890ad28b8dea410beb2cc0ec89c5aa77ee1f0e2090"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "listings: 1 session, 2 windows, 2 panes"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/server-server-hierarchy",
+      "symbol": "server.Server.hierarchy",
+      "publicId": "server.Server.hierarchy",
+      "sourceProgramId": "rust-listings",
+      "sourceTargets": [
+        "libtmux::Server::hierarchy"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_listings.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 1,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 2,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_listings.rs",
+          "block": 3,
+          "sha256": "936c9b198f0daf88c2d3b67757655cd07ff50e35edb94ba3f33b70f94c069023",
+          "clipboardSha256": "64f3c3963c9fd670798370890ad28b8dea410beb2cc0ec89c5aa77ee1f0e2090"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "listings: 1 session, 2 windows, 2 panes"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/session-session-windows",
+      "symbol": "session.Session.windows",
+      "publicId": "session.Session.windows",
+      "sourceProgramId": "rust-listings",
+      "sourceTargets": [
+        "libtmux::Session::windows"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_listings.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 1,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 2,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_listings.rs",
+          "block": 3,
+          "sha256": "936c9b198f0daf88c2d3b67757655cd07ff50e35edb94ba3f33b70f94c069023",
+          "clipboardSha256": "64f3c3963c9fd670798370890ad28b8dea410beb2cc0ec89c5aa77ee1f0e2090"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "listings: 1 session, 2 windows, 2 panes"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/session-session-panes",
+      "symbol": "session.Session.panes",
+      "publicId": "session.Session.panes",
+      "sourceProgramId": "rust-listings",
+      "sourceTargets": [
+        "libtmux::Session::panes"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_listings.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 1,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 2,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_listings.rs",
+          "block": 3,
+          "sha256": "936c9b198f0daf88c2d3b67757655cd07ff50e35edb94ba3f33b70f94c069023",
+          "clipboardSha256": "64f3c3963c9fd670798370890ad28b8dea410beb2cc0ec89c5aa77ee1f0e2090"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "listings: 1 session, 2 windows, 2 panes"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/window-window-panes",
+      "symbol": "window.Window.panes",
+      "publicId": "window.Window.panes",
+      "sourceProgramId": "rust-listings",
+      "sourceTargets": [
+        "libtmux::Window::panes"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_listings.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 1,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 2,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_listings.rs",
+          "block": 3,
+          "sha256": "936c9b198f0daf88c2d3b67757655cd07ff50e35edb94ba3f33b70f94c069023",
+          "clipboardSha256": "64f3c3963c9fd670798370890ad28b8dea410beb2cc0ec89c5aa77ee1f0e2090"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_listings.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "listings: 1 session, 2 windows, 2 panes"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/server-server-new_session",
+      "symbol": "server.Server.new_session",
+      "publicId": "server.Server.new_session",
+      "sourceProgramId": "rust-creation",
+      "sourceTargets": [
+        "libtmux::Server::new_session"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_creation.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 1,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 2,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_creation.rs",
+          "block": 3,
+          "sha256": "e9938a7ea4beec64066f3d790db8badb8ce5d9f75f35c14bab14a341acc197ca",
+          "clipboardSha256": "b961a2c2e5bbd89150eb20788a0d0d1871bdda83ad6cc272b7c088e74933bb2a"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "creation: 2 windows, 4 panes"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/server-newsessionoptions",
+      "symbol": "server.NewSessionOptions",
+      "publicId": "server.NewSessionOptions",
+      "sourceProgramId": "rust-creation",
+      "sourceTargets": [
+        "libtmux::NewSessionOptions"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_creation.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_creation.rs",
+          "block": 4,
+          "sha256": "e9938a7ea4beec64066f3d790db8badb8ce5d9f75f35c14bab14a341acc197ca",
+          "clipboardSha256": "b961a2c2e5bbd89150eb20788a0d0d1871bdda83ad6cc272b7c088e74933bb2a"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "creation: 2 windows, 4 panes"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/session-session-new_window",
+      "symbol": "session.Session.new_window",
+      "publicId": "session.Session.new_window",
+      "sourceProgramId": "rust-creation",
+      "sourceTargets": [
+        "libtmux::Session::new_window"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_creation.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 1,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 2,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_creation.rs",
+          "block": 3,
+          "sha256": "e9938a7ea4beec64066f3d790db8badb8ce5d9f75f35c14bab14a341acc197ca",
+          "clipboardSha256": "b961a2c2e5bbd89150eb20788a0d0d1871bdda83ad6cc272b7c088e74933bb2a"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "creation: 2 windows, 4 panes"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/session-newwindowoptions",
+      "symbol": "session.NewWindowOptions",
+      "publicId": "session.NewWindowOptions",
+      "sourceProgramId": "rust-creation",
+      "sourceTargets": [
+        "libtmux::NewWindowOptions"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_creation.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_creation.rs",
+          "block": 4,
+          "sha256": "e9938a7ea4beec64066f3d790db8badb8ce5d9f75f35c14bab14a341acc197ca",
+          "clipboardSha256": "b961a2c2e5bbd89150eb20788a0d0d1871bdda83ad6cc272b7c088e74933bb2a"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "creation: 2 windows, 4 panes"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/window-window-split",
+      "symbol": "window.Window.split",
+      "publicId": "window.Window.split",
+      "sourceProgramId": "rust-creation",
+      "sourceTargets": [
+        "libtmux::Window::split"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_creation.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 1,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 2,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_creation.rs",
+          "block": 3,
+          "sha256": "e9938a7ea4beec64066f3d790db8badb8ce5d9f75f35c14bab14a341acc197ca",
+          "clipboardSha256": "b961a2c2e5bbd89150eb20788a0d0d1871bdda83ad6cc272b7c088e74933bb2a"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "creation: 2 windows, 4 panes"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/pane-pane-split",
+      "symbol": "pane.Pane.split",
+      "publicId": "pane.Pane.split",
+      "sourceProgramId": "rust-creation",
+      "sourceTargets": [
+        "libtmux::Pane::split"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_creation.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_creation.rs",
+          "block": 4,
+          "sha256": "e9938a7ea4beec64066f3d790db8badb8ce5d9f75f35c14bab14a341acc197ca",
+          "clipboardSha256": "b961a2c2e5bbd89150eb20788a0d0d1871bdda83ad6cc272b7c088e74933bb2a"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "creation: 2 windows, 4 panes"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/window-splitoptions",
+      "symbol": "window.SplitOptions",
+      "publicId": "window.SplitOptions",
+      "sourceProgramId": "rust-creation",
+      "sourceTargets": [
+        "libtmux::SplitOptions"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_creation.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_creation.rs",
+          "block": 4,
+          "sha256": "e9938a7ea4beec64066f3d790db8badb8ce5d9f75f35c14bab14a341acc197ca",
+          "clipboardSha256": "b961a2c2e5bbd89150eb20788a0d0d1871bdda83ad6cc272b7c088e74933bb2a"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_creation.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "creation: 2 windows, 4 panes"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/query-filterable",
+      "symbol": "query.Filterable",
+      "publicId": "query.Filterable",
+      "sourceProgramId": "rust-query",
+      "sourceTargets": [
+        "libtmux::query::Filterable"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_query.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 3,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 4,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_query.rs",
+          "block": 5,
+          "sha256": "9f80a64de635516207d6dd63ceda3bbf927550d60d1bcb7192565b701990ae21",
+          "clipboardSha256": "7e1109cfa55217227e2e5a784c36c2e30792d269a2c0315119b185e4d6626cf6"
+        }
+      ],
+      "consoleBlocks": [
+        2,
+        6
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_query.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "query: prod-api"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/query-queryiteratorext-matching",
+      "symbol": "query.QueryIteratorExt.matching",
+      "publicId": "query.QueryIteratorExt.matching",
+      "sourceProgramId": "rust-query",
+      "sourceTargets": [
+        "libtmux::query::QueryIteratorExt::matching"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_query.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_query.rs",
+          "block": 4,
+          "sha256": "9f80a64de635516207d6dd63ceda3bbf927550d60d1bcb7192565b701990ae21",
+          "clipboardSha256": "7e1109cfa55217227e2e5a784c36c2e30792d269a2c0315119b185e4d6626cf6"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_query.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "query: prod-api"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/query-queryiteratorext-exactly_one",
+      "symbol": "query.QueryIteratorExt.exactly_one",
+      "publicId": "query.QueryIteratorExt.exactly_one",
+      "sourceProgramId": "rust-cardinality",
+      "sourceTargets": [
+        "libtmux::query::QueryIteratorExt::exactly_one"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
+          "block": 4,
+          "sha256": "abd96178295e9ac864a10ccdc4d156643d2efe0f0a20761cdee2840161399e7d",
+          "clipboardSha256": "6eaeb7c90d6d198e1a0db3239dbb12e7248a18171857ddce0de84c25ccd8affa"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_cardinality.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "cardinality: none, one, multiple"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/query-queryiteratorext-one_or_none",
+      "symbol": "query.QueryIteratorExt.one_or_none",
+      "publicId": "query.QueryIteratorExt.one_or_none",
+      "sourceProgramId": "rust-cardinality",
+      "sourceTargets": [
+        "libtmux::query::QueryIteratorExt::one_or_none"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
+          "block": 4,
+          "sha256": "abd96178295e9ac864a10ccdc4d156643d2efe0f0a20761cdee2840161399e7d",
+          "clipboardSha256": "6eaeb7c90d6d198e1a0db3239dbb12e7248a18171857ddce0de84c25ccd8affa"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_cardinality.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "cardinality: none, one, multiple"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/query-exactlyoneerror",
+      "symbol": "query.ExactlyOneError",
+      "publicId": "query.ExactlyOneError",
+      "sourceProgramId": "rust-cardinality",
+      "sourceTargets": [
+        "libtmux::query::ExactlyOneError"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
+          "block": 4,
+          "sha256": "abd96178295e9ac864a10ccdc4d156643d2efe0f0a20761cdee2840161399e7d",
+          "clipboardSha256": "6eaeb7c90d6d198e1a0db3239dbb12e7248a18171857ddce0de84c25ccd8affa"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_cardinality.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "cardinality: none, one, multiple"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/query-multipleitemserror",
+      "symbol": "query.MultipleItemsError",
+      "publicId": "query.MultipleItemsError",
+      "sourceProgramId": "rust-cardinality",
+      "sourceTargets": [
+        "libtmux::query::MultipleItemsError"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
+          "block": 4,
+          "sha256": "abd96178295e9ac864a10ccdc4d156643d2efe0f0a20761cdee2840161399e7d",
+          "clipboardSha256": "6eaeb7c90d6d198e1a0db3239dbb12e7248a18171857ddce0de84c25ccd8affa"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_cardinality.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "cardinality: none, one, multiple"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/pane-pane-send_keys",
+      "symbol": "pane.Pane.send_keys",
+      "publicId": "pane.Pane.send_keys",
+      "sourceProgramId": "rust-input",
+      "sourceTargets": [
+        "libtmux::Pane::send_keys"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_input.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 1,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 2,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_input.rs",
+          "block": 3,
+          "sha256": "35c0fcec3a206b94fe818724a5b1cf74fa69a3e5038b6d75549b83f5d7dbc042",
+          "clipboardSha256": "6c0e5248e30f5deab8009191dfc77827f4073a42a7b714976ec5cebb00e1ab9e"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_input.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "input: C-c is text"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/pane-pane-send_key_names",
+      "symbol": "pane.Pane.send_key_names",
+      "publicId": "pane.Pane.send_key_names",
+      "sourceProgramId": "rust-input",
+      "sourceTargets": [
+        "libtmux::Pane::send_key_names"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_input.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 1,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 2,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_input.rs",
+          "block": 3,
+          "sha256": "35c0fcec3a206b94fe818724a5b1cf74fa69a3e5038b6d75549b83f5d7dbc042",
+          "clipboardSha256": "6c0e5248e30f5deab8009191dfc77827f4073a42a7b714976ec5cebb00e1ab9e"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_input.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "input: C-c is text"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/pane-pane-send_line",
+      "symbol": "pane.Pane.send_line",
+      "publicId": "pane.Pane.send_line",
+      "sourceProgramId": "rust-capture",
+      "sourceTargets": [
+        "libtmux::Pane::send_line"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_capture.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 1,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 2,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_capture.rs",
+          "block": 3,
+          "sha256": "708e07bde432fe4b18d0c70be58b75faec988e432f1f06ede86d58e567d413af",
+          "clipboardSha256": "48d37e055d21f911a494b86d249a4521c99b31607a690abb30740d4f17c4de96"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_capture.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "capture: first line, second line"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/pane-pane-capture",
+      "symbol": "pane.Pane.capture",
+      "publicId": "pane.Pane.capture",
+      "sourceProgramId": "rust-capture",
+      "sourceTargets": [
+        "libtmux::Pane::capture"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_capture.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 1,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 2,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_capture.rs",
+          "block": 3,
+          "sha256": "708e07bde432fe4b18d0c70be58b75faec988e432f1f06ede86d58e567d413af",
+          "clipboardSha256": "48d37e055d21f911a494b86d249a4521c99b31607a690abb30740d4f17c4de96"
+        }
+      ],
+      "consoleBlocks": [
+        0,
+        4
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_capture.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "capture: first line, second line"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/reference/pane-pane-wait_for_text",
+      "symbol": "pane.Pane.wait_for_text",
+      "publicId": "pane.Pane.wait_for_text",
+      "sourceProgramId": "rust-capture",
+      "sourceTargets": [
+        "libtmux::Pane::wait_for_text"
+      ],
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceFile": "crates/libtmux/examples/api_capture.rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "path": "Cargo.toml",
+          "sourceFile": "crates/libtmux/examples/api/consumer.toml",
+          "block": 2,
+          "sha256": "eeedaa4e3c1510ab143f64f8740dbb008617258ddcf880aec41086d94a309cec",
+          "clipboardSha256": "4603646f86a4fcd9ce59f64fc7113985f34fa9c0c0a2c641df0c63decc7ca106"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "path": "rust-toolchain.toml",
+          "sourceFile": "rust-toolchain.toml",
+          "block": 3,
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        },
+        {
+          "name": "src/main.rs",
+          "path": "src/main.rs",
+          "sourceFile": "crates/libtmux/examples/api_capture.rs",
+          "block": 4,
+          "sha256": "708e07bde432fe4b18d0c70be58b75faec988e432f1f06ede86d58e567d413af",
+          "clipboardSha256": "48d37e055d21f911a494b86d249a4521c99b31607a690abb30740d4f17c4de96"
+        }
+      ],
+      "consoleBlocks": [
+        1,
+        5
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-rs.git libtmux-source &&\n  git -C libtmux-source checkout --detach a6fc2a65674177b92b17fa380757155d2ba150fd",
+        "mkdir -p src &&\n  cp libtmux-source/crates/libtmux/examples/api/consumer.toml Cargo.toml &&\n  cp libtmux-source/rust-toolchain.toml rust-toolchain.toml &&\n  cp libtmux-source/crates/libtmux/examples/api_capture.rs src/main.rs &&\n  cargo run --quiet"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "capture: first line, second line"
+        ]
+      ],
+      "runtime": "Rust 1.97.1",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "Whole Cargo, toolchain and program bytes match the public66956 native proof on tmux3.2a/3.7c; merged a6 differs only by docs workflow. The displayed mkdir -p setup is freshly replayed at a6 on3.7c. Each receipt uses one public clone and a shared warm Cargo target cache; these are not cold builds."
     }
   ]
 }
