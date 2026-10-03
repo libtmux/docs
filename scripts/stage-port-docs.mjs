@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
 import { PORTS } from '../site/src/lib/ports.ts'
+import { defaultVersionFor } from '../site/src/lib/versions.ts'
 import { sourceGuidesFor, sourceGuideRedirectsFor, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -88,6 +89,37 @@ export function rewriteLinks(content, sourcePath, route, routes, repo, revision)
   return content
 }
 
+/** Descriptor depth labels name .NET enum constants, not F# object properties. */
+export function linkSnapshotDepths(content, symbols, referenceRoot) {
+  const edits = []
+  const visit = (node) => {
+    const paragraph = node.type === 'listItem' && node.children.length === 1 ? node.children[0] : undefined
+    const children = paragraph?.type === 'paragraph' ? paragraph.children : []
+    if (children.length === 2 && children[0].type === 'text' && children[0].value === 'Required depth: '
+        && children[1].type === 'inlineCode') {
+      symbols ??= JSON.parse(readFileSync(join(root, 'site/src/data/api/dotnet.json'), 'utf8')).symbols
+      // The Markdown pipeline adds the locale and preview mount once.
+      referenceRoot ??= `/dotnet/${defaultVersionFor('dotnet')}/reference/`
+      const label = children[1]
+      const id = `LibTmux.SnapshotDepth.${label.value}`
+      const matches = symbols.filter((symbol) => (symbol.publicId ?? symbol.id) === id)
+      if (matches.length !== 1 || matches[0].parent !== 'LibTmux.SnapshotDepth'
+          || matches[0].kind !== 'constant' || matches[0].product !== 'core' || !matches[0].slug) {
+        throw new Error(`F# descriptor depth must resolve to one public .NET enum constant: ${id}`)
+      }
+      const { start, end } = label.position
+      edits.push({ start: start.offset, end: end.offset,
+        text: `[${content.slice(start.offset, end.offset)}](${referenceRoot}${matches[0].slug}/)` })
+    }
+    for (const child of node.children ?? []) visit(child)
+  }
+  visit(fromMarkdown(content))
+  for (const { start, end, text } of edits.sort((a, b) => b.start - a.start)) {
+    content = content.slice(0, start) + text + content.slice(end)
+  }
+  return content
+}
+
 export function stagedPortGuides(port, artifact) {
   const identity = PORTS.find((entry) => entry.slug === port)
   const routes = ROUTES[port]
@@ -112,7 +144,9 @@ export function stagedPortGuides(port, artifact) {
     if (typeof content !== 'string') throw new Error(`${port}: native artifact is missing guide ${sourcePath}`)
     const { title: sourceTitle, body } = titleAndBody(content, sourcePath)
     const title = guide.title ?? sourceTitle
-    const rewritten = rewriteLinks(body, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision)
+    const linked = port === 'fsharp' && sourcePath === 'docs/fsharp/supported-query-fields.md'
+      ? linkSnapshotDepths(body) : body
+    const rewritten = rewriteLinks(linked, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision)
     const data = {
       title,
       description: guide.description ?? `${title}: ${identity.packageName} documentation.`,

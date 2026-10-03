@@ -9,7 +9,8 @@ import { PORTS } from '../src/lib/ports.ts'
 const root = new URL('../../', import.meta.url).pathname
 const cachedRevision = 'a'.repeat(40)
 const files = ['scripts/stage-port-docs.mjs', 'site/src/lib/ports.ts',
-  'site/src/lib/site-root.ts', 'site/src/lib/cooldown.ts', 'site/src/lib/port-documentation.ts']
+  'site/src/lib/site-root.ts', 'site/src/lib/cooldown.ts', 'site/src/lib/port-documentation.ts',
+  'site/src/lib/versions.ts']
 const stagedPorts = ['ruby', 'lua', 'kotlin', 'scala', 'fsharp']
 
 function fixture(slug: 'ruby' | 'lua' | 'kotlin', run: (fixture: {
@@ -58,6 +59,27 @@ function invokeGenerator(directory: string, env: NodeJS.ProcessEnv, args: string
   return spawnSync(process.execPath, [join(directory, 'scripts/stage-port-docs.mjs'), ...args],
     { encoding: 'utf8', env, timeout: 10000 })
 }
+
+it('leaves the preview mount to Markdown while selecting the parent API version', () => {
+  fixture('lua', ({ directory, artifact, write }) => {
+    const guides = JSON.parse(artifact('fsharp', cachedRevision, 'cached'))
+    guides.guides.find((guide: { path: string }) => guide.path === 'docs/fsharp/supported-query-fields.md').content
+      += '\n- Required depth: `Windows`\n'
+    write(join(directory, 'site/src/data/port-guides/fsharp.json'), JSON.stringify(guides))
+    write(join(directory, 'site/src/data/api/dotnet.json'), JSON.stringify({ symbols: [{
+      id: 'LibTmux.SnapshotDepth.Windows', parent: 'LibTmux.SnapshotDepth', kind: 'constant',
+      product: 'core', slug: 'libtmux-snapshotdepth-windows',
+    }] }))
+    const run = invokeGenerator(directory, { ...process.env, LIBTMUX_DOCS_ROOT: '/pr-93/en/',
+      LIBTMUX_DOCS_PORT_ROOT: '/pr-93/en/', LIBTMUX_DOCS_PORT_DEFAULTS: '{"dotnet":"v0.0.0-alpha.18"}',
+    }, ['--wrappers'])
+    expect(run.status, run.stderr).toBe(0)
+    const guide = readFileSync(join(directory,
+      'site/src/content/docs/_staged/fsharp/guides/supported-query-fields/index.md'), 'utf8')
+    expect(guide).toContain('[`Windows`](/dotnet/v0.0.0-alpha.18/reference/libtmux-snapshotdepth-windows/)')
+    expect(guide).not.toContain('/pr-93/')
+  })
+})
 
 it.each(['ruby', 'lua', 'kotlin'] as const)('stages other caches before accepting only the selected %s source', (slug) => {
   fixture(slug, ({ directory, checkout, revision, write, artifact, invoke }) => {

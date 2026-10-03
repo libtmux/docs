@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-dotnet",
-  "revision": "77532ca62ddf3d436aa95f4dac9cd1875bcfbd98",
+  "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -32,7 +32,7 @@
     "resourceTemplates": [],
     "serverInfo": {
       "name": "tmux",
-      "version": "0.0.0-alpha.17"
+      "version": "0.0.0-alpha.18"
     },
     "tools": [
       {

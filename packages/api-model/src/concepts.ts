@@ -290,7 +290,7 @@ export const CONCEPTS: Record<string, Concept> = {
   'list-clients': {
     label: "List the server's attached clients",
     symbols: {
-      fsharp: 'LibTmux.FSharp.Server.listClients',
+      fsharp: 'LibTmux.FSharp.Server.clients',
       scala: 'io.github.libtmux.scaladsl.Server.clients',
       kotlin: 'io.github.libtmux.kotlin.Server.clients',
       py: 'libtmux.Server.clients',
@@ -394,7 +394,7 @@ export const CONCEPTS: Record<string, Concept> = {
   'list-sessions': {
     label: 'List the server’s sessions',
     symbols: {
-      fsharp: 'LibTmux.FSharp.Server.listSessions',
+      fsharp: 'LibTmux.FSharp.Server.sessions',
       scala: 'io.github.libtmux.scaladsl.Server.sessions',
       kotlin: 'io.github.libtmux.kotlin.Server.sessions',
       py: 'libtmux.Server.sessions',
@@ -577,7 +577,7 @@ export const CONCEPTS: Record<string, Concept> = {
   'list-server-windows': {
     label: "List the server's windows",
     symbols: {
-      fsharp: 'LibTmux.FSharp.Server.listWindows',
+      fsharp: 'LibTmux.FSharp.Server.windows',
       scala: 'io.github.libtmux.scaladsl.Server.windows',
       kotlin: 'io.github.libtmux.kotlin.Server.windows',
       py: 'libtmux.Server.windows',
@@ -593,7 +593,7 @@ export const CONCEPTS: Record<string, Concept> = {
   'list-server-panes': {
     label: "List the server's panes",
     symbols: {
-      fsharp: 'LibTmux.FSharp.Server.listPanes',
+      fsharp: 'LibTmux.FSharp.Server.panes',
       scala: 'io.github.libtmux.scaladsl.Server.panes',
       kotlin: 'io.github.libtmux.kotlin.Server.panes',
       py: 'libtmux.Server.panes',

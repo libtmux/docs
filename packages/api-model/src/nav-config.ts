@@ -730,7 +730,11 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     commands: ['Batch', 'Shell', 'MessageLog', 'Prompt'].map((name) => `io.github.libtmux.scaladsl.cats.${name}`),
     control: ['io.github.libtmux.scaladsl.cats.Channel', 'io.github.libtmux.scaladsl.ox.Flows'],
   },
-  fsharp: { queries: ['LibTmux.FSharp.Selection'] },
+  fsharp: {
+    queries: ['LibTmux.FSharp.Selection'],
+    commands: ['LibTmux.FSharp.Chain', 'LibTmux.FSharp.Retry'],
+    errors: ['LibTmux.FSharp.TmuxFailure'],
+  },
   cxx: {
     workspace: ['BuildEvent', 'BuildPhase', 'BuildStop'].map((name) => `libtmux::workspace::${name}`),
   },

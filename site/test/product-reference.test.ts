@@ -20,6 +20,12 @@ it('links parent APIs in native prose without replacing facade APIs', () => {
   for (const [port, name, suffix] of [
     ['fsharp', 'QueryDocument', '/dotnet/latest/reference/libtmux-query-querydocument/'],
     ['fsharp', 'Session.Name', '/dotnet/latest/reference/libtmux-session-name/'],
+    ['fsharp', 'PaneRunResult', '/dotnet/latest/reference/libtmux-panerunresult/'],
+    ['fsharp', 'PaneWaitRequest', '/dotnet/latest/reference/libtmux-panewaitrequest/'],
+    ['fsharp', 'PaneWaitResult', '/dotnet/latest/reference/libtmux-panewaitresult/'],
+    ['fsharp', 'ServerMirror', '/dotnet/latest/reference/libtmux-servermirror/'],
+    ['fsharp', 'ServerMirrorView', '/dotnet/latest/reference/libtmux-servermirrorview/'],
+    ['fsharp', 'TmuxOptionKey', '/dotnet/latest/reference/libtmux-tmuxoptionkey/'],
     ['kotlin', 'ServerConfig', '/java/latest/reference/io-github-libtmux-serverconfig-serverconfig/'],
   ]) {
     const hit = resolver.resolve(port, name)
@@ -33,6 +39,15 @@ it('links parent APIs in native prose without replacing facade APIs', () => {
   expect('symbol' in effect && effect.symbol.id).toBe('io.github.libtmux.scaladsl.cats.Session.name')
   expect(resolver.resolve('fsharp', 'LibTmux.FSharp.Filter`1').how).not.toBe('no-symbol')
   expect(resolver.resolve('go', 'ServerConfig').how).toBe('no-symbol')
+})
+
+it('links .NET listings to current F# queries without retaining removed helper targets', () => {
+  for (const member of ['Sessions', 'Windows', 'Panes', 'Clients']) {
+    const alternatives = referenceAlternatives('dotnet', `LibTmux.Server.${member}`)
+    const targets = alternatives.flatMap((group) => group.ports.filter((entry) => entry.port === 'fsharp'))
+    expect(targets).toHaveLength(1)
+    expect(targets[0].href).toBe(`/fsharp/latest/reference/libtmux-fsharp-server-${member.toLowerCase()}/`)
+  }
 })
 
 it('gives Kotlin, Scala and F# native references with parent type links', () => {

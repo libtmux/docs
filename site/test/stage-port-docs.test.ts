@@ -3,11 +3,12 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { artifactFromRevision, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
+import { artifactFromRevision, linkSnapshotDepths, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
 import { PORTS } from '../src/lib/ports'
 import { SOURCE_GUIDE_PORTS } from '../src/lib/port-documentation'
 import scalaGuides from '../src/data/port-guides/scala.json'
 import fsharpGuides from '../src/data/port-guides/fsharp.json'
+import dotnetModel from '../src/data/api/dotnet.json'
 
 describe('integrated guide inputs', () => {
   const port = PORTS.find((entry) => entry.slug === 'lua')!
@@ -141,12 +142,60 @@ describe('staged port guide links', () => {
   })
 
   it('keeps F# query API links in the owned reference', () => {
-    const files = stagedPortGuides('fsharp', fsharpGuides)
+    const artifact = structuredClone(fsharpGuides)
+    const source = artifact.guides.find((guide) => guide.path === 'docs/fsharp/queries.md')!
+    source.content += '\n[Server](../fsharp-reference/reference/libtmux-fsharp-server.md)\n'
+      + '[sessions](../fsharp-reference/reference/libtmux-fsharp-server.md#sessions)\n'
+      + '[matching](../fsharp-reference/reference/libtmux-fsharp-query.md#matching)\n'
+    const files = stagedPortGuides('fsharp', artifact)
     const queries = files.get('fsharp/guides/queries/index.md')!
     expect(queries).toContain('](../../reference/libtmux-fsharp-server/)')
+    expect(queries).toContain('](../../reference/libtmux-fsharp-server-sessions/)')
     expect(queries).toContain('](../../reference/libtmux-fsharp-query-matching/)')
     expect(files.has('fsharp/guides/api-overview/index.md')).toBe(false)
     expect(queries).not.toContain('/blob/' + fsharpGuides.source.revision + '/docs/fsharp-reference/')
+  })
+
+  it('links every native descriptor depth to its exact .NET enum constant', () => {
+    const original = fsharpGuides.guides.find((guide) => guide.path === 'docs/fsharp/supported-query-fields.md')!.content
+    const root = '/pr-93/en/dotnet/v0.0.0-alpha.18/reference/'
+    const result = linkSnapshotDepths(original, dotnetModel.symbols, root)
+    const depths = [...original.matchAll(/^- Required depth: `([^`]+)`$/gm)].map((match) => match[1])
+    expect(depths).toHaveLength(27)
+    expect(depths.filter((value) => value === 'Windows')).toHaveLength(7)
+    for (const value of new Set(depths)) {
+      const symbol = dotnetModel.symbols.find((entry) => entry.id === `LibTmux.SnapshotDepth.${value}`)!
+      expect(result.split(`- Required depth: [\`${value}\`](${root}${symbol.slug}/)`).length - 1)
+        .toBe(depths.filter((depth) => depth === value).length)
+    }
+    expect(result.replace(/\[(`[^`]+`)\]\([^\n)]+\)/g, '$1')).toBe(original)
+    const staged = stagedPortGuides('fsharp', fsharpGuides).get('fsharp/guides/supported-query-fields/index.md')!
+    expect(staged.match(/- Required depth: \[`[^`]+`\]\([^\n)]+\/reference\/libtmux-snapshotdepth-[^/]+\/\)/g))
+      .toHaveLength(27)
+    expect(staged).not.toContain('/libtmux-fsharp-sessionspec-windows/')
+  })
+
+  it.each(['missing', 'duplicate', 'wrong-owner', 'wrong-kind', 'wrong-product'])('rejects a %s depth declaration', (mode) => {
+    const actual = dotnetModel.symbols.find((entry) => entry.id === 'LibTmux.SnapshotDepth.Windows')!
+    const candidate = { ...actual }
+    if (mode === 'wrong-owner') candidate.parent = 'LibTmux.FSharp.SessionSpec'
+    if (mode === 'wrong-kind') candidate.kind = 'property'
+    if (mode === 'wrong-product') candidate.product = 'workspace'
+    const symbols = mode === 'missing' ? [] : mode === 'duplicate' ? [candidate, candidate] : [candidate]
+    expect(() => linkSnapshotDepths('- Required depth: `Windows`\n', symbols, '/dotnet/latest/reference/'))
+      .toThrow('F# descriptor depth must resolve to one public .NET enum constant: LibTmux.SnapshotDepth.Windows')
+  })
+
+  it('keeps code, existing links and unrelated bare names out of depth linking', () => {
+    const source = 'A `Windows` property.\n\n- Other property: `Windows`\n\n'
+      + '```text\n- Required depth: `Windows`\n```\n\n'
+      + '- Required depth: [`Windows`](https://example.org/depth)\n'
+    expect(linkSnapshotDepths(source, [], '/dotnet/latest/reference/')).toBe(source)
+    const artifact = structuredClone(fsharpGuides)
+    const guide = artifact.guides.find((entry) => entry.path === 'docs/fsharp/queries.md')!
+    guide.content += '\n- Required depth: `Windows`\n'
+    expect(stagedPortGuides('fsharp', artifact).get('fsharp/guides/queries/index.md'))
+      .toContain('- Required depth: `Windows`')
   })
 
   it('pins non-staged source links while preserving historical links and inline images', () => {
