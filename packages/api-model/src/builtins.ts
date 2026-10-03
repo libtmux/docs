@@ -60,10 +60,26 @@ const qualifiedScala = Object.fromEntries([
     [name, `fs2.concurrent.${name}`].map((alias) => [alias, `https://javadoc.io/static/co.fs2/fs2-core_3/3.13.0/fs2/concurrent/${name}.html`])),
 ])
 
+const qualifiedDotnetExceptions = Object.fromEntries([
+  'System.Exception',
+  'System.ArgumentException',
+  'System.ArgumentNullException',
+  'System.ArgumentOutOfRangeException',
+  'System.InvalidOperationException',
+  'System.NotSupportedException',
+  'System.ObjectDisposedException',
+  'System.TimeoutException',
+  'System.FormatException',
+  'System.OperationCanceledException',
+  'System.IO.InvalidDataException',
+  'System.Text.Json.JsonException',
+  'System.Threading.Tasks.TaskCanceledException',
+].flatMap((name) => [name, name.split('.').at(-1)!].map((alias) => [alias, dotnet(name.toLowerCase())])))
+
 export const BUILTINS: Record<string, Record<string, string>> = {
   kotlin: {
     ...qualifiedKotlin,
-    suspend: 'https://kotlinlang.org/docs/composing-suspending-functions.html',
+    suspend: 'https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions',
     finally: 'https://kotlinlang.org/docs/exceptions.html#finally-block',
     String: kotlin('kotlin/-string'), Boolean: kotlin('kotlin/-boolean'),
     Int: kotlin('kotlin/-int'), Long: kotlin('kotlin/-long'),
@@ -90,6 +106,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Resource: 'https://typelevel.org/cats-effect/api/3.x/cats/effect/kernel/Resource.html',
   },
   fsharp: {
+    ...qualifiedDotnetExceptions,
     Result: fsharp('fsharp-core-fsharpresult-2'),
     option: fsharp('fsharp-core-fsharpoption-1'),
     list: fsharp('fsharp-collections-fsharplist-1'),
@@ -107,10 +124,10 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Async: fsharp('fsharp-control-fsharpasync'),
     'Async.AwaitTask': `${fsharp('fsharp-control-fsharpasync')}#AwaitTask`,
     'Async.StartAsTask': `${fsharp('fsharp-control-fsharpasync')}#StartAsTask`,
-    TaskCanceledException: dotnet('system.threading.tasks.taskcanceledexception'),
     'Task.WhenAll': dotnet('system.threading.tasks.task.whenall'),
   },
   dotnet: {
+    ...qualifiedDotnetExceptions,
     bool: dotnet('system.boolean'),
     Boolean: dotnet('system.boolean'),
     string: dotnet('system.string'),
@@ -126,13 +143,6 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     object: dotnet('system.object'),
     byte: dotnet('system.byte'),
     Byte: dotnet('system.byte'),
-    ArgumentException: dotnet('system.argumentexception'),
-    ArgumentNullException: dotnet('system.argumentnullexception'),
-    ArgumentOutOfRangeException: dotnet('system.argumentoutofrangeexception'),
-    InvalidOperationException: dotnet('system.invalidoperationexception'),
-    NotSupportedException: dotnet('system.notsupportedexception'),
-    ObjectDisposedException: dotnet('system.objectdisposedexception'),
-    TimeoutException: dotnet('system.timeoutexception'),
     ProcessStartInfo: dotnet('system.diagnostics.processstartinfo'),
     ReadOnlySpan: dotnet('system.readonlyspan-1'),
     ReadOnlyMemory: dotnet('system.readonlymemory-1'),
@@ -140,7 +150,6 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Task: dotnet('system.threading.tasks.task'),
     ValueTask: dotnet('system.threading.tasks.valuetask'),
     CancellationToken: dotnet('system.threading.cancellationtoken'),
-    Exception: dotnet('system.exception'),
     IReadOnlyList: dotnet('system.collections.generic.ireadonlylist-1'),
     IReadOnlyDictionary: dotnet('system.collections.generic.ireadonlydictionary-2'),
     IEnumerable: dotnet('system.collections.generic.ienumerable-1'),

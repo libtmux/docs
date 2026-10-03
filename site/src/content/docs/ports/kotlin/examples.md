@@ -1,10 +1,11 @@
 ---
-title: Kotlin examples
+title: Examples
 description: Tested Kotlin examples against an isolated tmux server.
 port: kotlin
 route: examples
 sidebar:
   group: Examples
+  order: 1
 ---
 
 Start with [Capture pane output](./capture-pane-output/) for a standalone program with imports, Gradle files, and private-server cleanup.

@@ -28,6 +28,9 @@ export interface DocumentationDomain {
 /** A source-owned page with a stable reader route and legacy path aliases. */
 export interface PortSourceGuide {
   sourcePath: string
+  /** Reader-facing metadata; the native source body and citation stay intact. */
+  title?: string
+  description?: string
   route: string
   aliases: readonly string[]
   domain: string
@@ -39,6 +42,7 @@ export interface PortSourceGuide {
 interface PortDocumentation {
   domains: readonly DocumentationDomain[]
   sourceGuides: readonly PortSourceGuide[]
+  redirects?: readonly { sourcePath: string; path: string; target: string }[]
 }
 
 const guide = (
@@ -62,30 +66,49 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
   kotlin: {
     domains: [libraryDomain('Kotlin coroutine handles, builders and flows over the Java/JVM library.')],
     sourceGuides: [
-      guide('libtmux-kotlin/README.md', 'guides/getting-started', 'core'),
-      guide('docs/guide/kotlin.md', 'guides/coroutines', 'core', { aliases: ['guides/source/coroutines'] }),
+      guide('libtmux-kotlin/README.md', 'guides/getting-started', 'core', {
+        title: 'Getting started', sidebar: { group: 'Guides', order: 2 },
+      }),
+      guide('docs/guide/kotlin.md', 'guides/coroutines', 'core', {
+        title: 'Coroutines and flows', aliases: ['guides/source/coroutines'], sidebar: { group: 'Guides', order: 4 },
+      }),
     ],
   },
   scala: {
     domains: [libraryDomain('Scala 3 handles, immutable collections and effects over the Java/JVM library.')],
     sourceGuides: [
-      guide('libtmux-scala/README.md', 'guides/overview', 'core'),
-      ...['getting-started', 'query', 'ownership', 'execution', 'streaming', 'compatibility'].map((name) =>
+      guide('libtmux-scala/README.md', 'guides/overview', 'core', {
+        title: 'Installation and requirements', sidebar: { group: 'Guides', order: 4 },
+      }),
+      ...['getting-started', 'query', 'ownership', 'execution', 'streaming', 'compatibility'].map((name, index) =>
         guide(`docs/guide/scala/${name}.md`, `guides/${name}`, 'core', {
           aliases: [`guides/source/${name}`],
+          sidebar: { group: 'Guides', order: name === 'getting-started' ? 2 : index + 4 },
         })),
     ],
   },
   fsharp: {
     domains: [libraryDomain('F# sequences, task helpers and typed filters over the C#/.NET library.')],
     sourceGuides: [
-      guide('src/LibTmux.FSharp/README.md', 'guides/quickstart', 'core'),
-      ...['getting-started', 'queries', 'streams', 'interop', 'modes', 'supported-query-fields'].map((name) =>
+      guide('src/LibTmux.FSharp/README.md', 'guides/quickstart', 'core', {
+        title: 'Quick start', description: 'Install the package, capture server state, and choose a read operation.',
+        sidebar: { group: 'Guides', order: 4 },
+      }),
+      ...[
+        ['getting-started', 'Getting started', 'Create a project and connect to a tmux server.'],
+        ['queries', 'Querying and filtering', 'List objects, handle missing matches, and filter captured relations.'],
+        ['streams', 'Streams and cleanup', 'Consume events with bounded lifetimes and cancellation.'],
+        ['interop', '.NET interoperation', 'Use core operations alongside the F# helpers.'],
+        ['modes', 'Execution modes', 'Choose commands, control mode, or bounded concurrent reads.'],
+        ['supported-query-fields', 'Query fields', 'Browse the fields supported by typed filters.'],
+      ].map(([name, title, description], index) =>
         guide(`docs/fsharp/${name}.md`, `guides/${name}`, 'core', {
+          title, description,
           aliases: [`guides/source/${name}`],
+          sidebar: { group: 'Guides', order: name === 'getting-started' ? 2 : index + 4 },
         })),
-      guide('docs/fsharp/api.md', 'guides/api-overview', 'core', { aliases: [] }),
     ],
+    redirects: [{ sourcePath: 'docs/fsharp/api.md', path: 'guides/api-overview', target: 'reference' }],
   },
   ruby: {
     domains: [
@@ -107,12 +130,31 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       },
     ],
     sourceGuides: [
-      guide('README.md', 'guides/overview', 'core', { aliases: ['guides/source/overview', 'guides/getting-started'] }),
-      guide('docs/modes.md', 'guides/execution-modes', 'core', { aliases: ['guides/source/execution-modes', 'concepts/transports'] }),
-      guide('docs/ownership-errors.md', 'guides/ownership-errors', 'core', { aliases: ['guides/source/ownership-errors', 'topics/context-managers', 'topics/errors-and-exceptions'] }),
-      guide('docs/recipes.md', 'examples/recipes', 'core', { aliases: ['examples/source-recipes'] }),
-      guide('gems/libtmux/README.md', 'guides/core', 'core', { package: 'core', sidebar: { group: 'Core library' } }),
-      guide('gems/libtmux-async/README.md', 'guides/async', 'async', { package: 'async', sidebar: { group: 'Async' } }),
+      guide('README.md', 'guides/getting-started', 'core', {
+        title: 'Getting started', description: 'Install the gem, create a session, and query a snapshot.',
+        aliases: ['guides/source/overview', 'guides/overview'], sidebar: { group: 'Guides', order: 2 },
+      }),
+      guide('docs/modes.md', 'concepts/transports', 'core', {
+        title: 'Execution modes', description: 'Choose blocking commands, captured queries, control mode, or Async tasks.',
+        aliases: ['guides/source/execution-modes', 'guides/execution-modes'], sidebar: { group: 'Concepts', order: 3 },
+      }),
+      guide('docs/ownership-errors.md', 'topics/errors-and-exceptions', 'core', {
+        description: 'Understand server ownership, immutable references, and operation failures.',
+        aliases: ['guides/source/ownership-errors', 'guides/ownership-errors', 'topics/context-managers'],
+        sidebar: { group: 'Topics', order: 2 },
+      }),
+      guide('docs/recipes.md', 'examples/recipes', 'core', {
+        title: 'Recipes', description: 'Run programs for queries, linked windows, capture, and cancellation.',
+        aliases: ['examples/source-recipes'], sidebar: { group: 'Examples', order: 3 },
+      }),
+      guide('gems/libtmux/README.md', 'guides/core', 'core', {
+        title: 'Server bindings', description: 'Own a private server or connect to an existing socket.',
+        package: 'core', sidebar: { group: 'Guides', order: 4 },
+      }),
+      guide('gems/libtmux-async/README.md', 'guides/async', 'async', {
+        title: 'Async', description: 'Run concurrent commands within an owned Async scope.',
+        package: 'async', sidebar: { group: 'Companion packages' },
+      }),
       guide('gems/libtmux-mcp/README.md', 'mcp/source-guide', 'mcp', { package: 'mcp', product: 'mcp', aliases: [] }),
       guide('gems/libtmux-workspace/README.md', 'workspace/source-guide', 'workspace', { package: 'workspace', product: 'workspace', aliases: [] }),
     ],
@@ -137,7 +179,10 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       },
     ],
     sourceGuides: [
-      guide('README.md', 'guides/overview', 'core', { aliases: ['guides/source/overview', 'guides/getting-started'] }),
+      guide('README.md', 'guides/overview', 'core', {
+        title: 'Getting started', aliases: ['guides/source/overview', 'guides/getting-started'],
+        sidebar: { group: 'Guides', order: 2 },
+      }),
       guide('docs/runtime.md', 'guides/runtime', 'runtime', { sidebar: { group: 'Runtime adapters', label: 'luv and Neovim' } }),
       guide('docs/query.md', 'guides/query', 'core', { aliases: ['guides/source/query', 'concepts/queries', 'guides/querying-and-filtering'] }),
       guide('docs/snapshots.md', 'guides/snapshots', 'core'),
@@ -148,9 +193,15 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('docs/commands.md', 'guides/commands', 'core'),
       guide('docs/buffers.md', 'guides/buffers', 'core'),
       guide('docs/clients.md', 'guides/clients', 'core'),
-      guide('docs/environment.md', 'guides/environment', 'core', { aliases: ['guides/source/environment', 'topics/environment'] }),
-      guide('docs/settings.md', 'guides/settings', 'core', { aliases: ['guides/source/settings', 'topics/options-and-hooks'] }),
-      guide('docs/fields.md', 'guides/fields', 'core'),
+      guide('docs/environment.md', 'topics/environment', 'core', {
+        aliases: ['guides/source/environment', 'guides/environment'], sidebar: { group: 'Topics', order: 3 },
+      }),
+      guide('docs/settings.md', 'topics/options-and-hooks', 'core', {
+        aliases: ['guides/source/settings', 'guides/settings'], sidebar: { group: 'Topics', order: 2 },
+      }),
+      guide('docs/fields.md', 'topics/format-token-fields', 'core', {
+        aliases: ['guides/source/fields', 'guides/fields'], sidebar: { group: 'Topics', order: 4 },
+      }),
       guide('docs/options-reference.md', 'guides/options', 'core'),
       guide('docs/compatibility.md', 'guides/compatibility', 'core'),
     ],
@@ -227,6 +278,11 @@ export function sourceGuidesFor(portSlug: string): readonly PortSourceGuide[] {
   if (!config) throw new Error(`port-documentation: no source guide configuration for ${portSlug}`)
   validate(portSlug, config)
   return config.sourceGuides
+}
+
+/** Retired source pages point to the reference that now owns their content. */
+export function sourceGuideRedirectsFor(portSlug: string) {
+  return documentationFor(portSlug)?.redirects ?? []
 }
 
 export function sourceGuideFor(portSlug: string, sourcePath: string): PortSourceGuide {

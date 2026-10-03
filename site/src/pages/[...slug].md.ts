@@ -71,6 +71,7 @@ export const GET: APIRoute = ({ props, site }) => {
   const symbol = model.symbols.find((entry) => entry.id === route.id)!
   return new Response(symbolMarkdown({
     model, symbol,
+    version: route.version,
     canonical: new URL(productApiHref(model, symbol, route.version), site ?? 'https://libtmux.org').href,
     source: sourceUrl(model, symbol),
     packageName: symbol.package ?? model.sources?.find((source) => source.product === symbol.product)?.package,

@@ -218,9 +218,11 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       await inspect(domain.target, (document) => {
         const navigation = document.querySelector('nav[aria-label="Port documentation"]')
         expect(navigation, `${domain.target} port navigation`).toBeDefined()
-        const section = [...navigation!.querySelectorAll('.sidebar-section')]
-          .find((entry) => entry.querySelector('.section-label')?.textContent.trim() === domain.group)
-        expect(section, `${domain.target} ${domain.group} group`).toBeDefined()
+        const links = [...navigation!.querySelectorAll('a[href]')]
+          .filter((entry) => new URL(entry.getAttribute('href')!, urlFor(domain.target)).pathname === urlFor(domain.target).pathname)
+        expect(links, `${domain.target} one visible domain destination`).toHaveLength(1)
+        expect(links[0].textContent.trim()).toBe(domain.label)
+        expect(links[0].getAttribute('aria-current')).toBe('page')
       })
     }
     await inspect('lua/latest/', (document) => {

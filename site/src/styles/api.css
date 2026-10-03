@@ -614,14 +614,21 @@
 .api-bases-list li:not(:last-child)::after {
   content: ",\00a0";
 }
-/* Preserve native declarations, including F# currying and Scala extensions. */
+/* Keep code first; move the whole toolbar below it when both no longer fit. */
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header > .gp-sphinx-api-layout--responsive {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.75rem;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  gap: 0.375rem 1rem;
+}
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphinx-api-layout-left {
+  flex-basis: max-content;
+  max-width: 100%;
 }
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphinx-api-layout-right {
-  order: -1;
+  order: 0;
+  flex-wrap: wrap;
+  max-width: 100%;
+  margin-left: auto;
 }
 .api-native-signature {
   display: block;
@@ -636,6 +643,11 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   color: var(--color-foreground-primary);
   opacity: 1;
 }
+.api-native-signature .api-keyword { color: var(--api-kind-exception-fg); }
+.api-native-signature .api-declaration-name { color: var(--api-kind-function-fg); }
+.api-native-signature .api-operator { white-space: nowrap; }
+/* F# source indentation is not a required break in a signature's type chain. */
+.api-native-signature--fsharp { white-space: normal; }
 
 .api-reference-content {
   overflow-wrap: anywhere;

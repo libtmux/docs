@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { artifactFromRevision, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
 import { PORTS } from '../src/lib/ports'
+import { SOURCE_GUIDE_PORTS } from '../src/lib/port-documentation'
 import scalaGuides from '../src/data/port-guides/scala.json'
 import fsharpGuides from '../src/data/port-guides/fsharp.json'
 
@@ -50,6 +51,22 @@ describe('integrated guide inputs', () => {
 })
 
 describe('staged port guide links', () => {
+  it.each(SOURCE_GUIDE_PORTS)('%s follows shared guide naming and starts with setup', (port) => {
+    const artifact = JSON.parse(readFileSync(new URL(`../src/data/port-guides/${port}.json`, import.meta.url), 'utf8'))
+    const files = stagedPortGuides(port, artifact)
+    const index = files.get(`${port}/guides/index.md`)!
+    expect(index).toContain('title: "Guides"')
+    expect(index).toContain('"label":"Overview","order":1')
+    const cards = JSON.parse(/^cards: (.+)$/m.exec(index)![1])
+    expect(cards[0].label).toBe('Getting started')
+    expect(cards[1].label).toBe('Attaching to tmux')
+    for (const section of ['examples', 'topics']) {
+      const page = files.get(`${port}/${section}/index.md`)
+      if (!page) continue
+      expect(page).toContain(`title: "${section[0].toUpperCase()}${section.slice(1)}"`)
+      expect(JSON.parse(/^cards: (.+)$/m.exec(page)![1]).length).toBeGreaterThan(0)
+    }
+  })
   const routes = {
     'docs/runtime.md': ['guides/source/runtime'],
     'docs/query.md': ['guides/source/query'],
@@ -118,7 +135,7 @@ describe('staged port guide links', () => {
     for (const route of ['getting-started', 'queries', 'streams', 'supported-query-fields', 'modes', 'interop']) {
       expect(staged).toContain(`](../${route}/)`)
     }
-    expect(staged).toContain('](../api-overview/)')
+    expect(staged).toContain('](../../reference/)')
     expect(staged).not.toMatch(/https:\/\/github.com\/libtmux\/libtmux-dotnet\/blob\/master\/docs\/fsharp\//)
     expect(staged).toContain(`https://github.com/libtmux/libtmux-dotnet/blob/${fsharpGuides.source.revision}/examples/LibTmux.FSharp.Quickstart/Program.fs`)
   })
@@ -128,7 +145,7 @@ describe('staged port guide links', () => {
     const queries = files.get('fsharp/guides/queries/index.md')!
     expect(queries).toContain('](../../reference/libtmux-fsharp-server/)')
     expect(queries).toContain('](../../reference/libtmux-fsharp-query-matching/)')
-    expect(files.get('fsharp/guides/api-overview/index.md')).toContain('](../../reference/)')
+    expect(files.has('fsharp/guides/api-overview/index.md')).toBe(false)
     expect(queries).not.toContain('/blob/' + fsharpGuides.source.revision + '/docs/fsharp-reference/')
   })
 
@@ -207,13 +224,13 @@ describe('staged port guide links', () => {
       source: { repository: 'libtmux/libtmux-ruby', revision: '0123456789abcdef' },
       guides,
     })
-    const overview = files.get('ruby/guides/overview/index.md')!
+    const overview = files.get('ruby/guides/getting-started/index.md')!
     expect(files.get('ruby/examples/index.md')).toContain('../examples/recipes/')
-    expect(files.get('ruby/topics/index.md')).toContain('../guides/execution-modes/')
-    expect(overview).toContain('title: "libtmux for Ruby"')
+    expect(files.get('ruby/topics/index.md')).toContain('../topics/errors-and-exceptions/')
+    expect(overview).toContain('title: "Getting started"')
     expect(overview).not.toContain('# libtmux for Ruby')
     expect(overview).not.toContain('artwork')
-    expect(overview).toContain('Create tmux sessions from Ruby. [Guide](../execution-modes/)')
+    expect(overview).toContain('Create tmux sessions from Ruby. [Guide](../../concepts/transports/)')
     expect(overview).toContain('```ruby\nputs "hello"\n```')
     expect(overview).toContain('<div align="center">\n\nA later centered block.\n\n</div>')
   })

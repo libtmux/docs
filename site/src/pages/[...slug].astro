@@ -12,7 +12,7 @@ import { buildTarget } from '../lib/versions'
 import ToolReference from '../components/mcp/ToolReference.astro'
 import { mcpReferenceRoutes } from '../lib/mcp-reference'
 import { docsEntryAvailable } from '../lib/page-port-links'
-import { docsRedirects, docsRoutePath, workspaceRedirects } from '../lib/docs-paths'
+import { docsRedirects, docsRoutePath, sourceGuideRedirects, workspaceRedirects } from '../lib/docs-paths'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { buildLocale, localeOf, placeholderPairs, sourceIdOf } from '../i18n/resolve'
 
@@ -41,6 +41,7 @@ export async function getStaticPaths() {
     const reserved = [...global, ...reference, ...protocol].map((route) => route.params.slug)
     const redirects = [
       ...docsRedirects(prose.map((entry) => ({ ...entry, id: sourceIdOf(entry.id) })), port, defaults, reserved),
+      ...sourceGuideRedirects(port, defaults),
       ...workspaceRedirects([...real, ...reference].map((route) => route.params.slug)),
     ]
       .map(({ path, target }) => ({ params: { slug: path }, props: { redirect: target } }))

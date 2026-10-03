@@ -2,6 +2,7 @@
 import type { ApiSymbol, Signature, SymbolIndex } from '@libtmux/api-model'
 import { qualifiedNameOf } from '@libtmux/api-model'
 import SymbolName from './SymbolName.astro'
+import ApiKeyword from './ApiKeyword.astro'
 
 /**
  * A type annotation, with every name it mentions linked.
@@ -32,6 +33,9 @@ const spans = index.linkType(type, context, signature)
    the box marks "this is a type" and the colour marks "this one is a link".
    Punctuation between them stays outside the chip. */
 const NAME = /^[A-Za-z_][A-Za-z0-9_.]*$/
+// Keep compound operators intact when a native declaration wraps.
+const literalParts = (text: string) => text.split(/(->|=>|<:|:>)/).filter(Boolean)
+const isOperator = (text: string) => /^(->|=>|<:|:>)$/.test(text)
 ---
 <span class="api-type">{
   spans.map((span) =>
@@ -42,8 +46,14 @@ const NAME = /^[A-Za-z_][A-Za-z0-9_.]*$/
         rel={span.link.external ? 'nofollow noopener' : undefined}
         title={span.link.external ? `${span.text} (${span.link.project ?? "external"})` : span.link.symbol ? qualifiedNameOf(span.link.symbol) : undefined}
       ><SymbolName name={span.text} /></a>
-    ) : (
-      <span class:list={[span.declaration || span.keyword ? 'api-type-label' : 'api-punct', chip && NAME.test(span.text) && 'api-literal']}>{span.text}</span>
+    ) : span.help ? <ApiKeyword text={span.text} help={span.help} /> : (
+      <span class:list={[
+        span.declaration || span.keyword ? 'api-type-label' : 'api-punct',
+        span.keyword && 'api-keyword',
+        span.declaration && (span.text === context?.name ? 'api-declaration-name' : 'api-parameter-name'),
+        chip && NAME.test(span.text) && 'api-literal',
+      ]}>{literalParts(span.text).map((part) => isOperator(part)
+        ? <span class="api-operator">{part}</span> : part)}</span>
     ),
   )
 }</span>

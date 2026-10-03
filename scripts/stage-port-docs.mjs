@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { toMarkdown } from 'mdast-util-to-markdown'
 import { PORTS } from '../site/src/lib/ports.ts'
-import { sourceGuidesFor, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
+import { sourceGuidesFor, sourceGuideRedirectsFor, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const output = join(root, 'site/src/content/docs/_staged')
@@ -92,6 +92,7 @@ export function stagedPortGuides(port, artifact) {
   const identity = PORTS.find((entry) => entry.slug === port)
   const routes = ROUTES[port]
   const linkRoutes = Object.fromEntries(Object.entries(routes).map(([sourcePath, guide]) => [sourcePath, [guide.route]]))
+  for (const redirect of sourceGuideRedirectsFor(port)) linkRoutes[redirect.sourcePath] = [redirect.target]
   if (identity.sourceReferenceDirectory) {
     const { symbols } = JSON.parse(readFileSync(join(root, `site/src/data/api/${port}.json`), 'utf8'))
     const byId = new Map(symbols.map((symbol) => [symbol.id, symbol]))
@@ -109,11 +110,12 @@ export function stagedPortGuides(port, artifact) {
     const { route, product, package: packageId, domain, aliases, sidebar } = guide
     const content = guides.get(sourcePath)
     if (typeof content !== 'string') throw new Error(`${port}: native artifact is missing guide ${sourcePath}`)
-    const { title, body } = titleAndBody(content, sourcePath)
+    const { title: sourceTitle, body } = titleAndBody(content, sourcePath)
+    const title = guide.title ?? sourceTitle
     const rewritten = rewriteLinks(body, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision)
     const data = {
       title,
-      description: `Source-owned ${PORTS.find((entry) => entry.slug === port).name} guide at ${artifact.source.revision.slice(0, 12)}.`,
+      description: guide.description ?? `${title}: ${identity.packageName} documentation.`,
       port,
       ...(product ? { product } : {}),
       ...(packageId ? { package: packageId } : {}),
@@ -121,7 +123,8 @@ export function stagedPortGuides(port, artifact) {
       ...(aliases.length ? { aliases } : {}),
       route,
       source: { repo: artifact.source.repository, path: sourcePath, ref: artifact.source.revision },
-      sidebar: sidebar ?? { group: product ? (product === 'mcp' ? 'MCP' : 'Workspace Manager') : route === 'reference' ? 'API reference' : 'Guides' },
+      sidebar: sidebar ?? { group: product ? (product === 'mcp' ? 'MCP' : 'Workspace Manager')
+        : route === 'reference' ? 'API reference' : route.split('/')[0].replace(/^./, (letter) => letter.toUpperCase()) },
     }
     const frontmatter = Object.entries(data).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
     files.set(`${port}/${route}/index.md`, `---\n${frontmatter}\n---\n\n${rewritten.trim()}\n`)
@@ -130,17 +133,29 @@ export function stagedPortGuides(port, artifact) {
     const source = { repo: artifact.source.repository, path: Object.keys(routes)[0], ref: artifact.source.revision }
     const writeIndex = (route, title, body, cards = []) => {
       const data = { title, description: `${title} for ${identity.packageName}.`, port, route, source, cards,
-        sidebar: { group: route === 'reference' ? 'API reference' : route[0].toUpperCase() + route.slice(1), order: 0 } }
+        sidebar: { group: route === 'reference' ? 'API reference' : route[0].toUpperCase() + route.slice(1), label: 'Overview', order: 1 } }
       const frontmatter = Object.entries(data).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
       files.set(`${port}/${route}/index.md`, `---\n${frontmatter}\n---\n\n${body}\n`)
     }
     for (const section of identity.parentLibrary ? ['guides'] : ['guides', 'examples', 'topics']) {
-      const ownSection = Object.entries(routes).filter(([, entry]) => entry.route.startsWith(`${section}/`))
-      const selected = ownSection.length ? ownSection : Object.entries(routes).filter(([, entry]) => entry.domain === 'core' && entry.route.startsWith('guides/'))
-      const cards = selected.map(([path, entry]) => ({ label: titleAndBody(guides.get(path), path).title,
-        href: `../${entry.route}/`, body: `Read the ${identity.name} guide and its examples.` }))
-      writeIndex(section, `${identity.name} ${section}`,
-        `Use these ${identity.packageName} guides for the APIs and examples in this version.`, cards)
+      const selected = Object.entries(routes).filter(([, entry]) => entry.domain === 'core' && entry.route.startsWith(`${section}/`))
+      const cards = selected.map(([path, entry]) => ({ label: entry.title ?? titleAndBody(guides.get(path), path).title,
+        href: `../${entry.route}/`, body: entry.description ?? `Read about ${titleAndBody(guides.get(path), path).title.toLowerCase()}.`,
+        order: entry.sidebar?.order ?? Number.MAX_SAFE_INTEGER }))
+        .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label))
+        .map(({ order: _order, ...card }) => card)
+      if (section === 'guides') cards.splice(Math.min(1, cards.length), 0, {
+        label: 'Attaching to tmux', href: '../guides/attaching-to-tmux/',
+        body: 'Connect to an existing socket and leave its server running.',
+      })
+      if (section === 'examples') cards.unshift({
+        label: 'Capture pane output', href: '../examples/capture-pane-output/',
+        body: 'Send a command, wait for its output, and clean up the private server.',
+      })
+      writeIndex(section, section[0].toUpperCase() + section.slice(1),
+        { guides: 'Connect to tmux and work with its sessions, windows, and panes.',
+          examples: 'Run complete programs with their documented setup and cleanup.',
+          topics: 'Understand object ownership, state, and operation behavior.' }[section], cards)
     }
     if (identity.referenceKind === 'guide' && identity.ecosystemHost) writeIndex('reference', `${identity.name} API reference`,
       `Use the [${identity.ecosystemHost.name} reference](${identity.ecosystemHost.url}) for published package versions.\n\nThe [source at this documentation revision](https://github.com/${source.repo}/tree/${source.ref}/${posix.dirname(source.path)}/src/main) contains the wrapper declarations and their documentation.\n\n${identity.name} and its ${identity.parentLibrary.runtime} core share a release version.`)

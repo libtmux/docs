@@ -1,10 +1,11 @@
 ---
-title: F# examples
+title: Examples
 description: Tested F# examples against an isolated tmux server.
 port: fsharp
 route: examples
 sidebar:
   group: Examples
+  order: 1
 ---
 
 Start with [Capture pane output](./capture-pane-output/) for a standalone program with imports, a project file, and private-server cleanup.

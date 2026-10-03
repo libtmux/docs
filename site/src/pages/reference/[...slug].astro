@@ -1,12 +1,12 @@
 ---
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { compareMembers, conceptsFor, docSummaryText, memberSignals, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
+import { compareMembers, conceptsFor, docSummaryText, memberSignals, parameterId, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model'
 import mentionsData from '../../data/mentions.json'
 import ApiEntry from '../../components/api/ApiEntry.astro'
 import ApiBadge from '../../components/api/ApiBadge.astro'
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
-import { apiEntrySections, apiMemberGroups, relatedApiTypes, type ApiSection } from '../../lib/api-sections'
+import { apiEntryFields, apiEntrySections, apiMemberGroups, relatedApiTypes, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
 import { pagePortsFor } from '../../lib/page-ports-for'
 import { pageBreadcrumbs } from '../../lib/sidebar'
@@ -302,17 +302,13 @@ for (const o of owners) ownerNames.set(o.name, (ownerNames.get(o.name) ?? 0) + 1
 const namedGroups = (model ? modulesIn(model) : []).map((m) => ({
   name: m.name,
   types: m.symbols.filter((s) => paged.has(s.id)),
-  // Free functions, constants, and types too small to earn a page. They are
-  // rendered in full here because there is nowhere else for them to be.
+  // Functions, constants, and types without members still have individual pages.
   free: m.symbols
     .filter((s) => !paged.has(s.id))
     .sort((a, b) => a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name)),
 }))
 
-/**
- * Top-level symbols the index has to render itself: free functions and
- * constants, plus any type with no members and therefore no page.
- */
+/** Top-level declarations without members, listed alongside the owner types. */
 const freeSymbols = (model?.symbols ?? [])
   .filter((s) => !s.parent && !paged.has(s.id))
   .sort((a, b) => a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name))
@@ -383,6 +379,17 @@ const sections = bucketSections.length
     ? moduleGroups.map((m) => ({ ...m, id: m.name, collapsed: false }))
     : [{ id: '', name: '', collapsed: false, types: owners, free: freeSymbols }]
 
+const indexNames = new Map<string, number>()
+for (const symbol of sections.flatMap((section) => [...section.types, ...section.free])) {
+  indexNames.set(symbol.name, (indexNames.get(symbol.name) ?? 0) + 1)
+}
+
+// Existing index fragments land on the card that links to the full declaration.
+const legacyIndexAnchors = (symbol: ApiSymbol) => [...new Set([
+  ...apiEntrySections(symbol, model?.port).map((section) => section.id),
+  ...apiEntryFields(symbol, model?.port).params.map((param) => parameterId(symbol, param.name)),
+])]
+
 const declared = members.filter((m) => !m.inheritedFrom)
 const inherited = members.filter((m) => m.inheritedFrom)
 const memberGroups = apiMemberGroups(declared, signals)
@@ -402,7 +409,8 @@ const title = owner
   : model
     ? `${PORT_NAME[model.port] ?? model.port} API reference`
     : 'API reference'
-const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'reference', buildTarget(process.env).version, model?.port)
+const pageTitle = owner ? title : 'API reference'
+const breadcrumbs = await pageBreadcrumbs(pageTitle, slug ? `reference/${slug}` : 'reference', buildTarget(process.env).version, model?.port)
 ---
 
 <BaseLayout
@@ -475,7 +483,7 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
           id={owner ? (owner.publicId ?? owner.id) : undefined}
           class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight"
         >
-          <SymbolName name={owner ? (declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : title} />
+          <SymbolName name={owner ? (declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle} />
         </h1>
         {owner && <>
           <ApiQualifiedName
@@ -576,21 +584,24 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
                     `::after` in `api-index-card` keeps the whole card
                     clickable without nesting anything.
                   */}
-                  {mod.types.map((o) => (
-                    <div class="api-index-card rounded border border-slate-200 p-3 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800">
+                  {[...mod.types, ...mod.free].map((o) => (
+                    <div id={mod.free.includes(o) ? o.publicId ?? o.id : undefined}
+                      class="api-index-card scroll-mt-24 rounded border border-slate-200 p-3 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800">
+                      {mod.free.includes(o) && legacyIndexAnchors(o).map((id) => <span id={id} class="sr-only" />)}
                       <a class="api-index-card__link" href={hrefFor(o)}>
                         <span class="font-mono font-semibold">{o.name}</span>
                         <span class="ml-2 text-xs opacity-60">
                           {model.symbols.some((s) => s.parent === o.id)
                             ? `${model.symbols.filter((s) => s.parent === o.id).length} members`
-                            : o.signatures.some((sig) => /\bannotation class\b/.test(sig.raw ?? '')) ? 'annotation' : 'type'}
+                            : o.signatures.some((sig) => /\bannotation class\b/.test(sig.raw ?? '')) ? 'annotation'
+                              : o.kind === 'typealias' ? 'type alias' : o.kind}
                         </span>
                       </a>
-                      {ownerNames.get(o.name)! > 1 && (
+                      {indexNames.get(o.name)! > 1 && (
                         <p class="mt-1 text-xs opacity-70">
                           {model.port === 'scala'
                             ? o.id.includes('.cats.') ? 'Cats Effect' : o.id.includes('.ox.') ? 'Ox' : 'Direct API'
-                            : qualifiedNameOf(o).slice(0, -(o.name.length + 1))}
+                            : qualifiedNameOf(o).slice(0, -o.name.length).replace(/(?:::|[./])$/, '')}
                         </p>
                       )}
                       {o.doc?.summary && (
@@ -601,13 +612,6 @@ const breadcrumbs = await pageBreadcrumbs(title, slug ? `reference/${slug}` : 'r
                     </div>
                   ))}
                 </div>
-                {mod.free.length > 0 && (
-                  <div class="mt-4">
-                    {mod.free.map((m) => (
-                      <ApiEntry symbol={m} index={index} sourceUrl={sourceUrl} port={model?.port} member />
-                    ))}
-                  </div>
-                )}
               </details>
             ))}
 

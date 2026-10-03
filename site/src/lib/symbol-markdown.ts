@@ -4,6 +4,8 @@ import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { apiEntryFields, apiMemberGroups } from './api-sections'
 import { tmuxCommandsFor, tmuxReferenceUrl } from './tmux-reference'
+import { productApiIndex } from './product-api'
+import { defaultVersionFor } from './versions'
 
 /**
  * A symbol's page as Markdown.
@@ -25,6 +27,7 @@ export interface MarkdownContext {
   /** Repository blob URL for the declaration, when there is one. */
   source?: string
   packageName?: string
+  version?: string
 }
 
 function signatureLine(symbol: ApiSymbol, sig: Signature): string {
@@ -117,7 +120,12 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
 
   if (raises.length) {
     out.push('## Raises', '')
-    for (const r of raises) out.push(`- ${inlineCode(r.type)}${r.doc ? `: ${r.doc}` : ''}${overloads(r.overloads)}`)
+    const index = productApiIndex(model, ctx.version ?? defaultVersionFor(model.port))
+    for (const r of raises) {
+      const href = index.resolve(r.type, 'class', symbol)?.href
+      const label = inlineCode(r.type)
+      out.push(`- ${href ? `[${label}](${href})` : label}${r.doc ? `: ${r.doc}` : ''}${overloads(r.overloads)}`)
+    }
     out.push('')
   }
 

@@ -177,11 +177,16 @@ describe.skipIf(!SITE_BUILT)('rendered reference ordering', () => {
           const cards = [...section?.querySelectorAll('.api-index-card__link') ?? []]
             .map((link) => new URL(link.getAttribute('href')!, 'https://libtmux.org').pathname.split('/').filter(Boolean).at(-1))
           const types = bucket.entries.filter((entry) => cardIds.has(entry.id))
-          expect(cards, `${port}/${version}:${bucket.id}`).toEqual(types.map((entry) => entry.slug))
+          const free = bucket.entries.filter((entry) => !cardIds.has(entry.id))
+          expect(cards, `${port}/${version}:${bucket.id}`).toEqual([...types, ...free].map((entry) => entry.slug))
           const declarations = [...section?.querySelectorAll(':scope > div > dl > dt[id]') ?? []]
             .map((entry) => entry.id)
           expect(declarations, `${port}/${version}:${bucket.id} inline declarations`)
-            .toEqual(bucket.entries.filter((entry) => !cardIds.has(entry.id)).map((entry) => entry.id))
+            .toEqual([])
+          for (const entry of free) {
+            expect(section?.querySelector(`[id="${entry.id}"] .api-index-card__link`)?.getAttribute('href'),
+              `${port}/${version}:${entry.id} retains its index fragment`).toContain(`/${entry.slug}/`)
+          }
           expect(lazy.buckets.find((entry: { id: string }) => entry.id === bucket.id)?.types.map((entry: { id: string }) => entry.id))
             .toEqual(bucket.entries.map((entry) => entry.id))
         }
