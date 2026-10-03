@@ -16,6 +16,7 @@ import { extractLua } from '../packages/api-model/src/languages/lua.ts'
 import { extractRuby } from '../packages/api-model/src/languages/ruby.ts'
 import { attachCompleteGoExamples, readCompleteGoExamples } from '../packages/api-model/src/languages/go-examples.ts'
 import { attachCompleteJvmExamples } from '../packages/api-model/src/languages/jvm-examples.ts'
+import { attachCompleteSwiftExamples } from '../packages/api-model/src/languages/swift-examples.ts'
 import { mapLine, parseHunks } from '../packages/api-model/src/source-lines.ts'
 import { extractProject } from '../packages/api-model/src/project.ts'
 import { scopeProductSymbols } from '../packages/api-model/src/product-exports.ts'
@@ -292,7 +293,7 @@ const PORTS = {
       dir: 'symbolgraph',
       from: 'Sources',
       what: 'symbol graph',
-      build: 'swift build -Xswiftc -emit-symbol-graph -Xswiftc -emit-symbol-graph-dir -Xswiftc "$PWD/symbolgraph"',
+      build: 'swift build --enable-all-traits -Xswiftc -emit-symbol-graph -Xswiftc -emit-symbol-graph-dir -Xswiftc "$PWD/symbolgraph"',
     },
     repo: 'libtmux/libtmux-swift',
     options: {},
@@ -477,6 +478,18 @@ for (const [port, cfg] of Object.entries(PORTS)) {
 
   if (['java', 'kotlin', 'scala'].includes(port)) {
     attachCompleteJvmExamples(model.symbols, port, (file) => {
+      try {
+        return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
+          encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'],
+        })
+      } catch {
+        return undefined
+      }
+    }, { repo: cfg.repo, revision })
+  }
+
+  if (port === 'swift') {
+    attachCompleteSwiftExamples(model.symbols, (file) => {
       try {
         return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
           encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'],

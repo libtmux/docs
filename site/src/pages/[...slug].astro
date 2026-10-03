@@ -7,7 +7,7 @@ import McpTools from '../components/mcp/Tools.astro'
 import ProductApiPage from '../components/api/ProductApiPage.astro'
 import { API_MODELS } from '../lib/api-models'
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { productApiRoutes } from '../lib/product-api'
+import { productApiRedirects, productApiRoutes } from '../lib/product-api'
 import { buildTarget } from '../lib/versions'
 import ToolReference from '../components/mcp/ToolReference.astro'
 import { mcpReferenceRoutes } from '../lib/mcp-reference'
@@ -43,6 +43,7 @@ export async function getStaticPaths() {
       ...docsRedirects(prose.map((entry) => ({ ...entry, id: sourceIdOf(entry.id) })), port, defaults, reserved),
       ...sourceGuideRedirects(port, defaults),
       ...workspaceRedirects([...real, ...reference].map((route) => route.params.slug)),
+      ...productApiRedirects(API_MODELS, port, defaults, buildTarget(process.env).version),
     ]
       .map(({ path, target }) => ({ params: { slug: path }, props: { redirect: target } }))
     const routes = [...real, ...global, ...reference, ...protocol, ...redirects]

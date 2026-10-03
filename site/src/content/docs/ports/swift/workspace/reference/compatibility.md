@@ -27,8 +27,8 @@ with `-S` or `-L` when loading outside tmux.
 
 Set delays on panes. Command mappings support Enter overrides but reject
 per-command timing fields. Plugins and custom workspace builders are
-unsupported. The optional inspection `shell` requires tmuxp 1.74.0 in the
-interpreter selected by `TMUX_WORKSPACE_PYTHON`.
+unsupported. The optional [`tmux-workspace shell`](../../cli/shell/) command
+requires tmuxp 1.74.0 in the interpreter selected by `TMUX_WORKSPACE_PYTHON`.
 
 The `TmuxWorkspace` library has a separate model and construction API. Consult
 its reference when building sessions from Swift code.

@@ -5773,6 +5773,975 @@
         "3.7c"
       ],
       "verificationScope": "The whole program and four setup files built as an isolated minimal consumer at the pinned public source revision. The displayed launcher ran against both tmux releases, checked client ownership, and removed its private fixture. One fresh HTTPS clone supplied the 32 exact local source clones; no hidden program prelude."
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/server",
+      "symbol": "Server",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "787239668e15c7d7a14d505267ae3e8ad89f331c2286ebea0641155da48d2841",
+          "sourceFile": "Examples/Sources/ApiServer/ApiServer.swift",
+          "clipboardSha256": "f27939494a481df879c7009b45f3118edcfbc7c46ca2be42425978416c06a502"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Sessions: bootstrap"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiServer/ApiServer.swift",
+      "publicId": "Server",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/server-init(socketpath-tmuxexecutable-configurationfile-)",
+      "symbol": "Server.init(socketPath:tmuxExecutable:configurationFile:)",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "787239668e15c7d7a14d505267ae3e8ad89f331c2286ebea0641155da48d2841",
+          "sourceFile": "Examples/Sources/ApiServer/ApiServer.swift",
+          "clipboardSha256": "f27939494a481df879c7009b45f3118edcfbc7c46ca2be42425978416c06a502"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Sessions: bootstrap"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiServer/ApiServer.swift",
+      "publicId": "Server.init(socketPath:tmuxExecutable:configurationFile:)",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/server-sessions()",
+      "symbol": "Server.sessions()",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "e8f0eef4523c789dad9ac8c58511eccc9a1dce71775242575cc012cbb9185290",
+          "sourceFile": "Examples/Sources/ApiSessions/ApiSessions.swift",
+          "clipboardSha256": "8b5b120212dd2fa448eb1811b481a6a1e9afc000c78c21e9c73345a431713a3c"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "bootstrap: 1 window",
+          "build: 1 window",
+          "work: 1 window"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiSessions/ApiSessions.swift",
+      "publicId": "Server.sessions()",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/server-windows()",
+      "symbol": "Server.windows()",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "4a5ddaa8e7fcdf3df18cf8418d2d4c22b37d799091475dc076dd22c80417ba93",
+          "sourceFile": "Examples/Sources/ApiWindows/ApiWindows.swift",
+          "clipboardSha256": "67e449687cb8e39ab68de676e2c4a24cbacf39c49a9a5c60ea43d19de45cc701"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "editor: 1 pane",
+          "logs: 1 pane"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiWindows/ApiWindows.swift",
+      "publicId": "Server.windows()",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/window",
+      "symbol": "Window",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "4a5ddaa8e7fcdf3df18cf8418d2d4c22b37d799091475dc076dd22c80417ba93",
+          "sourceFile": "Examples/Sources/ApiWindows/ApiWindows.swift",
+          "clipboardSha256": "67e449687cb8e39ab68de676e2c4a24cbacf39c49a9a5c60ea43d19de45cc701"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "editor: 1 pane",
+          "logs: 1 pane"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiWindows/ApiWindows.swift",
+      "publicId": "Window",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/server-panes()",
+      "symbol": "Server.panes()",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "a921f81e7e6c1105d1f8d08ac9448a933803204048a792295702163c1cf1e743",
+          "sourceFile": "Examples/Sources/ApiPanes/ApiPanes.swift",
+          "clipboardSha256": "7198ba104b51023d9ddbe187febd5cf76cb158a784320cd87af385550cfb6671"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Log panes: 1",
+          "Active: true"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiPanes/ApiPanes.swift",
+      "publicId": "Server.panes()",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/pane",
+      "symbol": "Pane",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "a921f81e7e6c1105d1f8d08ac9448a933803204048a792295702163c1cf1e743",
+          "sourceFile": "Examples/Sources/ApiPanes/ApiPanes.swift",
+          "clipboardSha256": "7198ba104b51023d9ddbe187febd5cf76cb158a784320cd87af385550cfb6671"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Log panes: 1",
+          "Active: true"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiPanes/ApiPanes.swift",
+      "publicId": "Pane",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/server-newsession(named-startdirectory-windowname-width-height-)",
+      "symbol": "Server.newSession(named:startDirectory:windowName:width:height:environment:shell:)",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "44f5cfc0763869a11e01c9bebb0ea0a21c9b539dba48c583574d52f651de6a0f",
+          "sourceFile": "Examples/Sources/ApiNewSession/ApiNewSession.swift",
+          "clipboardSha256": "a40d1a9ae6518af913bfbfcbf2756fdd6f3a2be87127c363cf656c644306e1ef"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Created: work",
+          "Original windows: 1",
+          "Current windows: 2"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiNewSession/ApiNewSession.swift",
+      "publicId": "Server.newSession(named:startDirectory:windowName:width:height:)",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/session",
+      "symbol": "Session",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "44f5cfc0763869a11e01c9bebb0ea0a21c9b539dba48c583574d52f651de6a0f",
+          "sourceFile": "Examples/Sources/ApiNewSession/ApiNewSession.swift",
+          "clipboardSha256": "a40d1a9ae6518af913bfbfcbf2756fdd6f3a2be87127c363cf656c644306e1ef"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Created: work",
+          "Original windows: 1",
+          "Current windows: 2"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiNewSession/ApiNewSession.swift",
+      "publicId": "Session",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/server-session(_-)",
+      "symbol": "Server.session(_:)",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "44f5cfc0763869a11e01c9bebb0ea0a21c9b539dba48c583574d52f651de6a0f",
+          "sourceFile": "Examples/Sources/ApiNewSession/ApiNewSession.swift",
+          "clipboardSha256": "a40d1a9ae6518af913bfbfcbf2756fdd6f3a2be87127c363cf656c644306e1ef"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Created: work",
+          "Original windows: 1",
+          "Current windows: 2"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiNewSession/ApiNewSession.swift",
+      "publicId": "Server.session(_:)",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/server-newwindow(in-named-startdirectory-)",
+      "symbol": "Server.newWindow(in:named:startDirectory:at:environment:shell:)",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "b89b21d3b9577b88893009415f3193944c95897b88f84879c8eff3864587c007",
+          "sourceFile": "Examples/Sources/ApiNewWindow/ApiNewWindow.swift",
+          "clipboardSha256": "8d00f8af832082d7a7d4738fab27f0af4851ed9f80ddcdf6d08eee670f24a58a"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Window: logs",
+          "Index: 3",
+          "Same session: true"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiNewWindow/ApiNewWindow.swift",
+      "publicId": "Server.newWindow(in:named:startDirectory:)",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/windowappearance",
+      "symbol": "WindowAppearance",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "b89b21d3b9577b88893009415f3193944c95897b88f84879c8eff3864587c007",
+          "sourceFile": "Examples/Sources/ApiNewWindow/ApiNewWindow.swift",
+          "clipboardSha256": "8d00f8af832082d7a7d4738fab27f0af4851ed9f80ddcdf6d08eee670f24a58a"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Window: logs",
+          "Index: 3",
+          "Same session: true"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiNewWindow/ApiNewWindow.swift",
+      "publicId": "WindowAppearance",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/windowlink",
+      "symbol": "WindowLink",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "b89b21d3b9577b88893009415f3193944c95897b88f84879c8eff3864587c007",
+          "sourceFile": "Examples/Sources/ApiNewWindow/ApiNewWindow.swift",
+          "clipboardSha256": "8d00f8af832082d7a7d4738fab27f0af4851ed9f80ddcdf6d08eee670f24a58a"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Window: logs",
+          "Index: 3",
+          "Same session: true"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiNewWindow/ApiNewWindow.swift",
+      "publicId": "WindowLink",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/server-split(_-direction-size-startdirectory-)",
+      "symbol": "Server.split(_:direction:size:startDirectory:environment:shell:)",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "c0e63041e8ed5ae4426e37afde7eb88983046cfff65c748426285b2271d0a216",
+          "sourceFile": "Examples/Sources/ApiSplitPane/ApiSplitPane.swift",
+          "clipboardSha256": "1a83fdd0da7fdc93f183b1a3fdd004da7b8a6007fec6378ca606246bd86a0f8a"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Panes in window: 2",
+          "Same window: true"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiSplitPane/ApiSplitPane.swift",
+      "publicId": "Server.split(_:direction:size:startDirectory:)",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/panedirection",
+      "symbol": "PaneDirection",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "c0e63041e8ed5ae4426e37afde7eb88983046cfff65c748426285b2271d0a216",
+          "sourceFile": "Examples/Sources/ApiSplitPane/ApiSplitPane.swift",
+          "clipboardSha256": "1a83fdd0da7fdc93f183b1a3fdd004da7b8a6007fec6378ca606246bd86a0f8a"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Panes in window: 2",
+          "Same window: true"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiSplitPane/ApiSplitPane.swift",
+      "publicId": "PaneDirection",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/panesize",
+      "symbol": "PaneSize",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "c0e63041e8ed5ae4426e37afde7eb88983046cfff65c748426285b2271d0a216",
+          "sourceFile": "Examples/Sources/ApiSplitPane/ApiSplitPane.swift",
+          "clipboardSha256": "1a83fdd0da7fdc93f183b1a3fdd004da7b8a6007fec6378ca606246bd86a0f8a"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Panes in window: 2",
+          "Same window: true"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiSplitPane/ApiSplitPane.swift",
+      "publicId": "PaneSize",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/server-panes(where-)",
+      "symbol": "Server.panes(where:)",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "f36316ddb42731bb00d29a35f0370993ce9e7907a715b3abd22f2efecade8e4d",
+          "sourceFile": "Examples/Sources/ApiQueryPanes/ApiQueryPanes.swift",
+          "clipboardSha256": "630e05b7a53e9f73ce4cf92a4196c9ecb1398dd5c5246c951ea72936e380db02"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Active panes: 1",
+          "Original stays active: true"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiQueryPanes/ApiQueryPanes.swift",
+      "publicId": "Server.panes(where:)",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/filterexpr",
+      "symbol": "FilterExpr",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "f36316ddb42731bb00d29a35f0370993ce9e7907a715b3abd22f2efecade8e4d",
+          "sourceFile": "Examples/Sources/ApiQueryPanes/ApiQueryPanes.swift",
+          "clipboardSha256": "630e05b7a53e9f73ce4cf92a4196c9ecb1398dd5c5246c951ea72936e380db02"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Active panes: 1",
+          "Original stays active: true"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiQueryPanes/ApiQueryPanes.swift",
+      "publicId": "FilterExpr",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/filterexpr-where(_-_-)",
+      "symbol": "FilterExpr.where(_:_:)",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "f36316ddb42731bb00d29a35f0370993ce9e7907a715b3abd22f2efecade8e4d",
+          "sourceFile": "Examples/Sources/ApiQueryPanes/ApiQueryPanes.swift",
+          "clipboardSha256": "630e05b7a53e9f73ce4cf92a4196c9ecb1398dd5c5246c951ea72936e380db02"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Active panes: 1",
+          "Original stays active: true"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiQueryPanes/ApiQueryPanes.swift",
+      "publicId": "FilterExpr.where(_:_:)",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/server-sendkeys(_-to-literally-)",
+      "symbol": "Server.sendKeys(_:to:literally:)",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "a3937d51cfb6593449116004b0d337fe17ee3ebf6af587d69cce21ec9ff73ba3",
+          "sourceFile": "Examples/Sources/ApiCapture/ApiCapture.swift",
+          "clipboardSha256": "a3ad8c49d4aa0cbdf4287e1377b4ec35bda14670d5499c2bd1e93340c677cf4e"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "libtmux-swift-api"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiCapture/ApiCapture.swift",
+      "publicId": "Server.sendKeys(_:to:literally:)",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "ports/swift/reference/server-capture(_-includinghistory-)",
+      "symbol": "Server.capture(_:includingHistory:)",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "files": [
+        {
+          "name": "Package.swift",
+          "block": 1,
+          "sha256": "0d826afd0409f3a4edf21afb21cd0a26533def4674d0fb2b04b65c609f9472d2",
+          "sourceFile": "Examples/Standalone/Package.swift",
+          "clipboardSha256": "1c8eb4c4c65bec1a73a672e4d2c6f0c93b55b497b9c726984be97c99204e9d54"
+        },
+        {
+          "name": "Sources/Example.swift",
+          "block": 2,
+          "sha256": "a3937d51cfb6593449116004b0d337fe17ee3ebf6af587d69cce21ec9ff73ba3",
+          "sourceFile": "Examples/Sources/ApiCapture/ApiCapture.swift",
+          "clipboardSha256": "a3ad8c49d4aa0cbdf4287e1377b4ec35bda14670d5499c2bd1e93340c677cf4e"
+        }
+      ],
+      "shellRecipe": [
+        "git clone https://github.com/libtmux/libtmux-swift.git libtmux-source && \\\n  git -C libtmux-source checkout 7993e7044347629b08020e9b02ae8bcffa0e5898",
+        "swift run --jobs 5 ApiExample"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "libtmux-swift-api"
+        ]
+      ],
+      "runtime": "Swift 6.2.4 on Linux; Xcode 26 with Swift 6.3 on macOS",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ],
+      "verificationScope": "The complete package and program run as a standalone consumer of the public source revision. All nine programs passed on both tmux versions, including injected operation failures and owned-server cleanup.",
+      "sourceFile": "Examples/Sources/ApiCapture/ApiCapture.swift",
+      "publicId": "Server.capture(_:includingHistory:)",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "consoleBlocks": [
+        0,
+        3
+      ]
     }
   ]
 }

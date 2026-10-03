@@ -15,7 +15,7 @@ const tool = { name: 'list_sessions', description: 'Selected source contract', i
   type: 'object', properties: { label: { type: 'string', description: 'Selected source argument' } },
 } }
 
-function fixture(slug: 'go' | 'py' | 'ruby' | 'java', run: (fixture: {
+function fixture(slug: 'go' | 'py' | 'ruby' | 'java' | 'swift', run: (fixture: {
   directory: string; checkout: string; sha: string; model: string; snapshot: string; catalog: string;
   discovery: string; env: NodeJS.ProcessEnv;
   invoke: (script: 'protocol' | 'tools', args?: string[], env?: NodeJS.ProcessEnv) => SpawnSyncReturns<string>;
@@ -36,6 +36,9 @@ function fixture(slug: 'go' | 'py' | 'ruby' | 'java', run: (fixture: {
       write(join(directory, javaLayout === 'catalog' ? 'Catalog.java' : 'InspectTools.java'),
         `Catalog.tool("helper_only");\ntools.add(${javaLayout === 'catalog' ? 'inspect(' : 'Catalog.literalized(Catalog.tool('}"list_sessions")${javaLayout === 'catalog' ? ')' : '))'};\n`)
       write(join(directory, 'CatalogTest.java'), 'tools.add(tool("test_only"));\n')
+    } else if (slug === 'swift') {
+      write(join(checkout, 'Sources/LibTmuxMCP/ToolOperation.swift'),
+        'enum ToolOperation: String {\n\n    case listSessions = "list_sessions"\n}\n')
     } else {
       write(join(checkout, slug === 'go' ? 'mcp/manifest_catalog.go' : 'src/libtmux_mcp/tools/sessions.py'),
         slug === 'go' ? 'var catalog = []tool{{name: "list_sessions"}}\n' : 'mcp.tool()(list_sessions)\n')
@@ -90,6 +93,20 @@ createInterface({ input: process.stdin }).on('line', (line) => {
     rmSync(directory, { recursive: true, force: true })
   }
 }
+
+it('cites the Swift enum case after a blank line', () => {
+  fixture('swift', ({ catalog, invoke }) => {
+    const protocol = invoke('protocol')
+    expect(protocol.status, protocol.stderr).toBe(0)
+    const result = invoke('tools')
+    expect(result.status, result.stderr).toBe(0)
+    const registrations = JSON.parse(readFileSync(catalog, 'utf8')).ports.swift.registrations
+    expect(registrations).toHaveLength(1)
+    expect(registrations[0]).toMatchObject({ wireName: 'list_sessions', source: {
+      file: 'Sources/LibTmuxMCP/ToolOperation.swift', line: 3,
+    } })
+  })
+})
 
 it.each(['go', 'py'] as const)('binds the %s catalog to its actual MCP source and preserves unrelated catalogs', (slug) => {
   fixture(slug, ({ sha, catalog, snapshot, discovery, invoke }) => {

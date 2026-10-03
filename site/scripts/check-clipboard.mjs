@@ -58,7 +58,7 @@ export async function checkCompleteApiExamples(browser, base) {
           files: [...section.querySelectorAll('.gp-sphinx-api-example [data-code]')]
             .map((button) => button.getAttribute('data-code').replaceAll('\x7f', '\n')),
         }
-      }, { html: await response.text(), symbol: example.symbol })
+      }, { html: await response.text(), symbol: example.publicId ?? example.symbol })
       assert(rendered, `${example.symbol}: Examples section exists`)
       assertCompleteApiExample(rendered, example)
     }
