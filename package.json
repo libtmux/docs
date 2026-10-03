@@ -24,7 +24,7 @@
     "@biomejs/biome": "catalog:",
     "happy-dom": "catalog:",
     "mdast-util-from-markdown": "2.0.3",
-    "mdast-util-to-markdown": "2.1.2",
+    "mdast-util-to-markdown": "2.1.3",
     "oxlint": "catalog:",
     "typescript": "catalog:"
   }
