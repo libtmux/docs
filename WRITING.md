@@ -135,6 +135,11 @@ example per file, with its own imports, cleanup and `Output` assertion. The
 extractor reads committed source at the citation revision. Ordinary examples
 that depend on package helpers are not imported as complete programs.
 
+When one API page has several independent programs, add `--program` with the
+source program ID from `site/test/fixtures/api-examples.json`. The runner
+selects that program's files and console blocks, so each program uses its own
+empty working directory and displayed setup.
+
 Put explanatory comments on separate lines above the code they describe.
 Limit example comments to 100 columns, including indentation; prefer shorter
 lines that fit the code panel. Put long source links and attribution in prose

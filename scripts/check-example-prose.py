@@ -17,25 +17,49 @@ import subprocess
 import time
 
 
+def select_examples(manifest, kind, port, page=None, program=None):
+    """Select one complete program without combining independent setup recipes."""
+    examples = [item for item in manifest['examples'] if kind == 'guide' or item['port'] == port]
+    if page:
+        page_path = page if kind == 'guide' else f'ports/{port}/{page}'
+        examples = [item for item in examples if item['page'] == page_path]
+    if program:
+        examples = [item for item in examples if item.get('sourceProgramId') == program]
+    return examples
+
+
+def api_command_blocks(blocks, example):
+    if 'consoleBlocks' not in example:
+        return [block['code'] for block in blocks if block['lang'] == 'console']
+    indices = example['consoleBlocks']
+    if not indices or len(set(indices)) != len(indices) or any(
+        not isinstance(index, int) or isinstance(index, bool) or
+        not 0 <= index < len(blocks) or blocks[index]['lang'] != 'console'
+        for index in indices
+    ):
+        raise ValueError('Invalid API console block selection')
+    return [blocks[index]['code'] for index in indices]
+
+
 def main():
     repo = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--example', choices=['capture', 'attach', 'query', 'concept', 'guide', 'api'], default='capture')
     parser.add_argument('--port')
     parser.add_argument('--page', help='Guide path, or page within the selected port')
+    parser.add_argument('--program', help='Source program ID when an API page has several complete examples')
     parser.add_argument('--api-model', type=Path, help='Review model for an unpublished source revision')
     parser.add_argument('--output-dir', required=True, type=Path)
     args = parser.parse_args()
     manifest = json.loads((repo / f'site/test/fixtures/{args.example}-examples.json').read_text())
     if args.example != 'guide' and not args.port:
         parser.error('--port is required for language examples')
-    examples = [item for item in manifest['examples'] if args.example == 'guide' or item['port'] == args.port]
-    if args.page:
-        page_path = args.page if args.example == 'guide' else f'ports/{args.port}/{args.page}'
-        examples = [item for item in examples if item['page'] == page_path]
+    if args.program and args.example != 'api':
+        parser.error('--program is only valid for API examples')
+    examples = select_examples(manifest, args.example, args.port, args.page, args.program)
     if len(examples) != 1:
         choices = ', '.join(item['page'] for item in examples)
-        parser.error(f'Choose one example with --port and --page; matching pages: {choices or "none"}')
+        parser.error(f'Choose one example with --port, --page and optionally --program; matching pages: {choices or "none"}')
     example = examples[0]
     if args.api_model and args.example != 'api':
         parser.error('--api-model is only valid for API examples')
@@ -70,7 +94,7 @@ def main():
         if hashlib.sha256(code.encode()).hexdigest() != item['sha256']:
             raise ValueError(f'Changed example bytes: {name}; review its verification record')
         files[str(path)] = code
-    command_blocks = [block['code'] for block in api_blocks if block['lang'] == 'console'] \
+    command_blocks = api_command_blocks(api_blocks, example) \
         if args.example == 'api' else [block[3] for block in blocks if block[1] == 'console']
     commands = [re.sub(r'^\$ ', '', code, flags=re.M).strip() for code in command_blocks]
     if not commands or commands != example['shellRecipe']:
@@ -109,6 +133,8 @@ def main():
               'pageSha256': hashlib.sha256(page.read_bytes()).hexdigest(),
               'files': example['files'], 'runs': results, 'passed': passed,
               'scope': 'Exact displayed program and setup; native execution on this host.'}
+    if example.get('sourceProgramId'):
+        report['sourceProgramId'] = example['sourceProgramId']
     (output / 'result.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
     return 0 if passed else 1
