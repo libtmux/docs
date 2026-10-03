@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-rs",
-  "revision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+  "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -3220,13 +3220,13 @@
           "readOnlyHint": false,
           "title": "Arrange Window Panes"
         },
-        "description": "Rearrange a window's panes into a named layout, or into a layout string tmux gave you earlier. Use even-horizontal, even-vertical, main-horizontal, main-vertical or tiled. Change tmux state; no client-supplied executable input.",
+        "description": "Rearrange a window's panes using a saved tmux layout or a named layout and its unique abbreviation. Names follow the running daemon's version; mirrored main layouts require tmux 3.5. Invalid syntax is refused before window lookup. Return the saved layout tmux actually applied. Change tmux state; no client-supplied executable input.",
         "inputSchema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "additionalProperties": false,
           "properties": {
             "layout": {
-              "description": "A named layout, or a layout string tmux produced earlier.\n\nThe names are `even-horizontal`, `even-vertical`, `main-horizontal`,\n`main-vertical` and `tiled`.",
+              "description": "A saved tmux layout, or a named layout and its unique abbreviation.\n\nThe names are `even-horizontal`, `even-vertical`, `main-horizontal`,\n`main-vertical` and `tiled`. The running daemon determines which names\nand abbreviations are supported; mirrored main layouts require tmux 3.5.",
               "type": "string"
             },
             "window": {

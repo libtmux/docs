@@ -222,7 +222,8 @@ describe('doc comments give up their examples', () => {
     // `target::SessionName` shows a shell transcript of tmux rejecting a name,
     // which is the point of the example. So the assertion is that no doctest
     // attribute survives as a language, and that the port's own language still
-    // accounts for nearly all of the blocks.
+    // accounts for nearly all application-code blocks. Complete consumers also
+    // display their TOML setup, shell recipes and expected output.
     const attributes = new Set([
       '',
       'no_run',
@@ -236,8 +237,10 @@ describe('doc comments give up their examples', () => {
     ])
     const wrong = blocks.filter((b) => attributes.has(b.lang))
     expect(wrong.slice(0, 3).map((b) => b.lang), `${port} mis-tagged blocks`).toEqual([])
-    const own = blocks.filter((b) => b.lang === lang).length
-    expect(own / blocks.length, `${port} examples tagged ${lang}`).toBeGreaterThan(0.9)
+    const auxiliary = new Set(['console', 'text', 'toml'])
+    const application = blocks.filter((b) => !auxiliary.has(b.lang))
+    const own = application.filter((b) => b.lang === lang).length
+    expect(own / application.length, `${port} application examples tagged ${lang}`).toBeGreaterThan(0.9)
   })
 
   it.each(['rs', 'ts', 'py'])('%s leaves no fence behind in a body', (port) => {

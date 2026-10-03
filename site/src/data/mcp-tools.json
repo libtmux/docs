@@ -22635,8 +22635,8 @@
           "wireName": "call_read_tools_batch",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 1145
           },
@@ -23373,8 +23373,8 @@
           "wireName": "capture_pane",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 196
           },
@@ -23507,8 +23507,8 @@
           "wireName": "capture_since",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/observe.rs",
             "line": 434
           },
@@ -23604,10 +23604,10 @@
           "wireName": "clear_pane_scrollback",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/control.rs",
-            "line": 583
+            "line": 584
           },
           "description": "Discard a pane's scrollback, so the next capture_pane returns only what happens next. Use this before running something whose output you want to read cleanly: it is far cheaper than reading past the old output every time. The visible screen is left alone. Delete tmux state; accepts no command payload.",
           "schemaStatus": "runtime",
@@ -23668,8 +23668,8 @@
           "wireName": "create_session",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 249
           },
@@ -23758,8 +23758,8 @@
           "wireName": "create_window",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 927
           },
@@ -23871,8 +23871,8 @@
           "wireName": "find_pane_by_position",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 609
           },
@@ -23991,8 +23991,8 @@
           "wireName": "get_pane_info",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 593
           },
@@ -24106,8 +24106,8 @@
           "wireName": "get_server_info",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 149
           },
@@ -24265,8 +24265,8 @@
           "wireName": "get_session_info",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 555
           },
@@ -24345,8 +24345,8 @@
           "wireName": "get_tmux_variables",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 652
           },
@@ -24427,8 +24427,8 @@
           "wireName": "get_window_info",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 579
           },
@@ -24523,8 +24523,8 @@
           "wireName": "kill_pane",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 227
           },
@@ -24587,8 +24587,8 @@
           "wireName": "kill_session",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 299
           },
@@ -24651,8 +24651,8 @@
           "wireName": "kill_window",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 207
           },
@@ -24715,8 +24715,8 @@
           "wireName": "list_panes",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 137
           },
@@ -24838,8 +24838,8 @@
           "wireName": "list_sessions",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 110
           },
@@ -24927,8 +24927,8 @@
           "wireName": "list_windows",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 125
           },
@@ -25032,8 +25032,8 @@
           "wireName": "move_window",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 791
           },
@@ -25139,10 +25139,10 @@
           "wireName": "paste_text",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/control.rs",
-            "line": 607
+            "line": 608
           },
           "description": "Put text into a pane through a tmux paste buffer instead of typing it key by key. Use this for anything long or awkward: send_keys types the text, so a shell reading it can react to each character, and a bracketed-paste aware program treats a paste as one block. Optional Enter is appended to that same block. Empty text without Enter is a guarded buffer-free no-op. Paste targets only the named pane, even when synchronized input is enabled. A dead, input-disabled, mode-owned, terminal-attended, or inherited-caller target is refused before setup and again immediately before paste. The private buffer is deleted after setup, refusal, and paste outcomes; observations can still race with tmux. A submitted paste is remembered briefly so wait_for_text can discount its own echo. Send input to a pane's program; a shell that receives it runs it with your user's permissions.",
           "schemaStatus": "runtime",
@@ -25219,8 +25219,8 @@
           "wireName": "rename_session",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 713
           },
@@ -25306,8 +25306,8 @@
           "wireName": "rename_window",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 745
           },
@@ -25409,8 +25409,8 @@
           "wireName": "resize_pane",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 319
           },
@@ -25507,8 +25507,8 @@
           "wireName": "resize_window",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 768
           },
@@ -25615,8 +25615,8 @@
           "wireName": "respawn_pane",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 1020
           },
@@ -25736,8 +25736,8 @@
           "wireName": "run_shell_command",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/observe.rs",
             "line": 208
           },
@@ -25880,8 +25880,8 @@
           "wireName": "search_panes",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 344
           },
@@ -26020,19 +26020,19 @@
           "wireName": "select_layout",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 551
           },
-          "description": "Rearrange a window's panes into a named layout, or into a layout string tmux gave you earlier. Use even-horizontal, even-vertical, main-horizontal, main-vertical or tiled. Change tmux state; no client-supplied executable input.",
+          "description": "Rearrange a window's panes using a saved tmux layout or a named layout and its unique abbreviation. Names follow the running daemon's version; mirrored main layouts require tmux 3.5. Invalid syntax is refused before window lookup. Return the saved layout tmux actually applied. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "additionalProperties": false,
             "properties": {
               "layout": {
-                "description": "A named layout, or a layout string tmux produced earlier.\n\nThe names are `even-horizontal`, `even-vertical`, `main-horizontal`,\n`main-vertical` and `tiled`.",
+                "description": "A saved tmux layout, or a named layout and its unique abbreviation.\n\nThe names are `even-horizontal`, `even-vertical`, `main-horizontal`,\n`main-vertical` and `tiled`. The running daemon determines which names\nand abbreviations are supported; mirrored main layouts require tmux 3.5.",
                 "type": "string"
               },
               "window": {
@@ -26094,8 +26094,8 @@
           "wireName": "select_pane",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 388
           },
@@ -26234,8 +26234,8 @@
           "wireName": "select_window",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 475
           },
@@ -26369,8 +26369,8 @@
           "wireName": "send_keys",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/control.rs",
             "line": 356
           },
@@ -26463,8 +26463,8 @@
           "wireName": "send_keys_batch",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 1078
           },
@@ -26681,8 +26681,8 @@
           "wireName": "set_history_limit",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 895
           },
@@ -26763,8 +26763,8 @@
           "wireName": "set_mouse_enabled",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 864
           },
@@ -26843,8 +26843,8 @@
           "wireName": "set_pane_title",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 841
           },
@@ -26965,8 +26965,8 @@
           "wireName": "set_synchronize_panes",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 1045
           },
@@ -27043,8 +27043,8 @@
           "wireName": "show_environment",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 510
           },
@@ -27164,8 +27164,8 @@
           "wireName": "show_hooks",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 560
           },
@@ -27259,8 +27259,8 @@
           "wireName": "show_option",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 457
           },
@@ -27364,10 +27364,10 @@
           "wireName": "signal_channel",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/control.rs",
-            "line": 732
+            "line": 733
           },
           "description": "Signal a tmux wait-for channel, releasing every current waiter. With no waiter, one signal is latched; signalling the same channel again clears that latch. Change tmux state; no client-supplied executable input.",
           "schemaStatus": "runtime",
@@ -27436,8 +27436,8 @@
           "wireName": "snapshot_pane",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/inspect.rs",
             "line": 257
           },
@@ -27649,8 +27649,8 @@
           "wireName": "split_window",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 964
           },
@@ -27803,8 +27803,8 @@
           "wireName": "swap_pane",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/contract.rs",
             "line": 817
           },
@@ -27923,8 +27923,8 @@
           "wireName": "wait_for_channel",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/observe.rs",
             "line": 490
           },
@@ -28009,8 +28009,8 @@
           "wireName": "wait_for_text",
           "source": {
             "repo": "libtmux/libtmux-rs",
-            "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-            "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+            "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+            "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
             "file": "crates/tmux-mcp/src/tools/observe.rs",
             "line": 344
           },
@@ -28187,8 +28187,8 @@
       "selectable": true,
       "source": "crates/tmux-mcp/src/tools",
       "repo": "libtmux/libtmux-rs",
-      "revision": "f0e37052c232636b61d095817046e6bfc8f2ca40",
-      "extractedRevision": "7a5def5921b12f58d47327cf625c039de5fa8ea7",
+      "revision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "extractedRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },

@@ -13,6 +13,7 @@
     "type-check": "oxlint --type-aware --type-check -A all --tsconfig tsconfig.json --ignore-pattern '**/*.test.ts' src"
   },
   "dependencies": {
+    "smol-toml": "1.9.0",
     "tree-sitter-scala": "0.24.0",
     "tree-sitter-wasms": "catalog:",
     "web-tree-sitter": "catalog:"
