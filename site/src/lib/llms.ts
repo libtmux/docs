@@ -17,6 +17,7 @@ import { PORT_ROOT, SITE_ROOT } from './site-root.ts'
 import { API_MODELS } from './api-models.ts'
 import { productApiHref, productApiRoots } from './product-api.ts'
 import { buildsTmuxReference, tmuxReferenceUrl } from './tmux-reference.ts'
+import { selectPortCards } from './workspace-shared-slots.ts'
 
 export interface LlmsPage {
   title: string
@@ -84,8 +85,9 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
   const url = `${origin}${entry.data.product && !port ? `${PORT_ROOT}/` : base}${path ? `${path}/` : ''}`
   let body = resolvePortCode(entry.body ?? '', port, entryPort,
     (href: string) => new URL(proseHref(href, SITE_ROOT, entryPort ?? port, version), url).href)
-  if (entry.data.cards?.length) {
-    body += `\n\n${entry.data.cards.map((card) => `- [${card.label}](${new URL(card.href, url).href}): ${card.body}`).join('\n')}\n`
+  const cards = selectPortCards(entry.data.cards, entryPort ?? port)
+  if (cards.length) {
+    body += `\n\n${cards.map((card) => `- [${card.label}](${new URL(card.href, url).href}): ${card.body}`).join('\n')}\n`
   }
   if (entryPort && entry.data.product === 'workspace' && docsPath(entry) === 'workspace') {
     const notice = workspaceOverviewNotice(PORT_BY_SLUG[entryPort])

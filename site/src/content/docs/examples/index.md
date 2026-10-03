@@ -6,20 +6,21 @@ sidebar:
   label: Overview
   group: Examples
   order: 1
+cards:
+  - label: Attach and send keys
+    href: attach-and-send-keys/
+    body: Find a session, send a command, and read its output.
+  - label: Capture pane output
+    href: capture-pane-output/
+    body: Read a pane's screen and wait for output to appear.
+  - label: Build a workspace from a file
+    href: workspace-from-file/
+    body: Create a session, windows, and panes from configuration.
 ---
 
 Use these programs to send input, capture output, and build a workspace.
 Each example page includes its source and test coverage. Check those details
 before adapting an excerpt into a standalone program.
-
-- **[Attach and send keys](attach-and-send-keys/)**: get a session, send a
-  command, and read output. Uses the hierarchy described in [Server, session,
-  window, pane](/concepts/server-session-window-pane/).
-- **[Capture pane output](capture-pane-output/)**: read back what a
-  pane is showing, and wait for output to appear instead of guessing a
-  delay. The companion to [Capturing output](/guides/capturing-output/).
-- **[Build a workspace from a file](workspace-from-file/)**: describe a session as
-  configuration and create its windows and panes.
 
 <a id="what-verified-means-per-port"></a>
 
@@ -41,5 +42,5 @@ them:
 <!-- /port --><!-- port:swift -->| Swift | `Scripts/check_examples.py` | Each ` ```swift ` block in `README.md` and product READMEs must appear in `Examples/Sources/`, which `swift test --package-path Examples` compiles through its public products |
 <!-- /port -->
 See [Testing with libtmux](/guides/testing-with-libtmux/) for the fixture
-each of those test suites runs against, and each example page below for the
+each of those test suites runs against, and each example page for the
 exact file a given snippet was quoted from.
