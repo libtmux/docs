@@ -10163,14 +10163,14 @@
    "port": "ruby",
    "text": "LibTmux",
    "page": "/ruby/latest/guides/overview/",
-   "line": 116,
+   "line": 117,
    "why": "not defined in the stated port"
   },
   {
    "port": "ruby",
    "text": "libtmux-ruby.workspace",
    "page": "/ruby/latest/workspace/source-guide/",
-   "line": 78,
+   "line": 79,
    "why": "not defined in the stated port"
   },
   {

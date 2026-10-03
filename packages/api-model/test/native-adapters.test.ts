@@ -78,6 +78,37 @@ describe('Ruby native documentation adapter', () => {
   it('rejects an artifact from a different source revision', () => {
     expect(() => extractRuby(artifact, 'b'.repeat(40))).toThrow(/source revision/i)
   })
+
+  it('attaches source-owned complete programs to their declared API targets', () => {
+    const code = 'require "libtmux"\n\nputs :active\n'
+    const input = {
+      ...artifact,
+      examples: {
+        manifest: { programs: [{
+          id: 'pane_active', path: 'examples/api/active.rb', gem: 'libtmux',
+          api: {
+            symbols: ['LibTmux::Pane', 'LibTmux::Pane#active?'],
+            description: 'Read pane state.', output: 'active\n',
+          },
+        }] },
+        files: [{ path: 'examples/api/active.rb', content: code }],
+      },
+    }
+    const model = extractRuby(input, REVISION)
+    for (const id of input.examples.manifest.programs[0].api.symbols) {
+      const symbol = model.symbols.find((entry) => entry.id === id)!
+      expect(symbol.doc?.examples).toHaveLength(5)
+      expect(symbol.doc!.examples![2]).toMatchObject({
+        lang: 'ruby', code,
+        sourceUrl: `https://github.com/libtmux/libtmux-ruby/blob/${REVISION}/examples/api/active.rb`,
+      })
+      expect(symbol.doc!.examples![4]).toMatchObject({ lang: 'text', code: 'active\n' })
+    }
+    expect(model.symbols.find((entry) => entry.id === 'LibTmux::Pane#active?')?.doc?.summary)
+      .toBe('Whether this pane is active.')
+    expect(model.symbols.find((entry) => entry.id === 'LibTmux::Pane.active?')?.doc?.examples)
+      .toBeUndefined()
+  })
 })
 
 describe('Lua native documentation adapter', () => {

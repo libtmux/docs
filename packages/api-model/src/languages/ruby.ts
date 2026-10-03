@@ -1,4 +1,5 @@
 import type { ApiModel, ApiProduct, ApiSymbol, DocBlock, Param, Signature, SymbolKind } from '../model.ts'
+import { attachCompleteRubyExamples } from './ruby-examples.ts'
 
 interface RubyPackage {
   name: string
@@ -63,6 +64,7 @@ interface RubyArtifact {
   namespaces: RubyNamespace[]
   aliases?: RubyAlias[]
   symbols: RubyMethod[]
+  examples?: unknown
 }
 
 function assertArtifact(input: unknown, expectedRevision?: string): RubyArtifact {
@@ -218,6 +220,8 @@ export function extractRuby(input: unknown, expectedRevision?: string): ApiModel
     type: entry.type,
     source: source(entry.source, artifact),
   }))
+  const symbols = [...namespaces, ...aliases, ...methods]
+  attachCompleteRubyExamples(symbols, artifact.examples, artifact.source)
   return {
     port: 'ruby',
     repo: artifact.source.repository,
@@ -231,6 +235,6 @@ export function extractRuby(input: unknown, expectedRevision?: string): ApiModel
       revision: artifact.source.revision,
       extractedRevision: artifact.source.revision,
     })),
-    symbols: [...namespaces, ...aliases, ...methods],
+    symbols,
   }
 }
