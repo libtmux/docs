@@ -514,9 +514,7 @@ const hasBody =
     {
       symbol.doc?.deprecated && (
         <Aside type="caution" title="Deprecated">
-          <p>
-            <ApiDoc text={symbol.doc.deprecated} index={index} context={symbol} />
-          </p>
+          <ApiProse text={symbol.doc.deprecated} index={index} context={symbol} />
         </Aside>
       )
     }
@@ -524,9 +522,7 @@ const hasBody =
     {
       symbol.doc?.changed && (
         <Aside type="note" title="Changed">
-          <p>
-            <ApiDoc text={symbol.doc.changed} index={index} context={symbol} />
-          </p>
+          <ApiProse text={symbol.doc.changed} index={index} context={symbol} />
         </Aside>
       )
     }
@@ -534,9 +530,7 @@ const hasBody =
     {
       (symbol.doc?.admonitions ?? []).map((a) => (
         <Aside type={asideFor(a.kind).type} title={asideFor(a.kind).title}>
-          <p>
-            <ApiDoc text={a.text} index={index} context={symbol} />
-          </p>
+          <ApiProse text={a.text} index={index} context={symbol} />
         </Aside>
       ))
     }

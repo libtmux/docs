@@ -54,6 +54,61 @@ function sections(text: string): { intro: string; named: Map<string, string[]> }
   return { intro: intro.join('\n').trim(), named }
 }
 
+/** reST literal blocks and doctests become Markdown without moving their prose. */
+export function pythonDocBody(text: string): string {
+  const lines = text.split('\n')
+  const out: string[] = []
+  const fence = (code: string[], lang: string, indent = '') => {
+    const body = code.join('\n').replace(/\n+$/, '')
+    const ticks = '`'.repeat(Math.max(3, ...[...body.matchAll(/`+/g)].map((m) => m[0].length + 1)))
+    out.push('', `${indent}${ticks}${lang}`, body.split('\n').map((line) => `${indent}${line}`).join('\n'), `${indent}${ticks}`, '')
+  }
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    // Already-normalized fences can contain directive and prompt spellings.
+    const existing = /^\s*(`{3,}|~{3,})/.exec(line)
+    if (existing) {
+      out.push(line)
+      while (++i < lines.length) {
+        out.push(lines[i])
+        if (new RegExp(`^\\s*${existing[1][0]}{${existing[1].length},}\\s*$`).test(lines[i])) break
+      }
+      continue
+    }
+    if (/^\s*>>>/.test(line)) {
+      const code = [line]
+      while (i + 1 < lines.length && lines[i + 1].trim()) code.push(lines[++i])
+      const indent = line.length - line.trimStart().length
+      fence(code.map((entry) => entry.slice(indent)), 'python', ' '.repeat(indent))
+      continue
+    }
+    const directive = /^(\s*)\.\.\s+(?:code-block|sourcecode|code)::\s*(\S*)\s*$/.exec(line)
+    const literal = !/^\s*\.\.\s+[a-z-]+::/.test(line) && /::\s*$/.test(line)
+    if (directive || literal) {
+      const indent = line.length - line.trimStart().length
+      let start = i + 1
+      while (start < lines.length && !lines[start].trim()) start++
+      if (directive) {
+        // These are directive options, not source code (e.g. :linenos:).
+        while (/^\s+:[\w-]+:/.test(lines[start] ?? '')) start++
+        while (start < lines.length && !lines[start].trim()) start++
+      }
+      if (start < lines.length && lines[start].length - lines[start].trimStart().length > indent) {
+        let end = start
+        while (end < lines.length && (!lines[end].trim() || lines[end].length - lines[end].trimStart().length > indent)) end++
+        const code = lines.slice(start, end)
+        const margin = Math.min(...code.filter((entry) => entry.trim()).map((entry) => entry.length - entry.trimStart().length))
+        if (literal && line.trim() !== '::') out.push(line.replace(/::\s*$/, ':'))
+        fence(code.map((entry) => entry.slice(margin)), directive?.[2] || 'text', ' '.repeat(indent))
+        i = end - 1
+        continue
+      }
+    }
+    out.push(line)
+  }
+  return out.filter((entry, i) => entry !== '' || out[i - 1] !== '').join('\n').trim()
+}
+
 /**
  * `Raises` entries, which this corpus writes as Sphinx roles.
  *
@@ -221,11 +276,24 @@ function directives(text: string): {
   let open: { kind: string; arg: string; body: string[]; indent: number } | undefined
 
   const close = () => {
-    if (open) found.push({ kind: open.kind, arg: open.arg, body: open.body.join('\n').trim() })
+    if (open) {
+      const margin = Math.min(...open.body.filter((line) => line.trim()).map((line) => line.length - line.trimStart().length))
+      found.push({ kind: open.kind, arg: open.arg, body: open.body.map((line) => line.slice(margin)).join('\n').trim() })
+    }
     open = undefined
   }
 
+  let literalFence: string | undefined
   for (const line of lines) {
+    const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1]
+    if (literalFence || marker) {
+      if (!literalFence && open && line.length - line.trimStart().length <= open.indent) close()
+      if (open) open.body.push(line)
+      else keep.push(line)
+      if (!literalFence) literalFence = marker
+      else if (new RegExp(`^\\s*${literalFence[0]}{${literalFence.length},}\\s*$`).test(line)) literalFence = undefined
+      continue
+    }
     const start = /^(\s*)\.\.\s+([a-z-]+)::\s*(.*)$/.exec(line)
     if (start) {
       close()
@@ -237,7 +305,7 @@ function directives(text: string): {
       // line back at or left of that column ends it.
       const indent = line.length - line.trimStart().length
       if (!line.trim() || indent > open.indent) {
-        open.body.push(line.trim())
+        open.body.push(line)
         continue
       }
       close()
@@ -251,7 +319,12 @@ function directives(text: string): {
 export function parsePythonDoc(raw: string): ParsedDoc {
   const text = dedentDocstring(raw)
   const { intro, named } = sections(text)
-  const { rest: introText, found: dirs } = directives(intro)
+  const { rest: introText, found: dirs } = directives(pythonDocBody(intro))
+  const notes = ['Notes', 'Warnings'].flatMap((name) => {
+    const section = directives(pythonDocBody(named.get(name)?.join('\n') ?? ''))
+    dirs.push(...section.found)
+    return section.rest.trim() ? [`### ${name}\n\n${section.rest.trim()}`] : []
+  })
   const [summary, ...restIntro] = introText.split('\n\n')
 
   /**
@@ -290,24 +363,20 @@ export function parsePythonDoc(raw: string): ParsedDoc {
   }))
 
   const examplesText = (named.get('Examples') ?? []).join('\n')
-  const find = (kind: string) => dirs.find((d) => d.kind === kind)
-  const value = (kind: string) => {
-    const d = find(kind)
-    if (!d) return undefined
-    return [d.arg, d.body].filter(Boolean).join(' — ').trim() || undefined
-  }
+  const value = (kind: string) => dirs.filter((d) => d.kind === kind)
+    .map((d) => [d.arg, d.body].filter(Boolean).join(' — ').trim()).filter(Boolean).join('\n\n') || undefined
   const deprecated = value('deprecated')
   const since = value('versionadded')
   const changed = value('versionchanged')
   const admonitions = dirs
     .filter((d) => !['deprecated', 'versionadded', 'versionchanged'].includes(d.kind))
-    .map((d) => ({ kind: d.kind, text: [d.arg, d.body].filter(Boolean).join(' ').trim() }))
+    .map((d) => ({ kind: d.kind, text: [d.arg, d.body].filter(Boolean).join('\n\n').trim() }))
     .filter((a) => a.text)
 
   return {
     doc: {
       summary: (summary ?? '').replace(/\s+/g, ' ').trim(),
-      body: restIntro.join('\n\n').trim() || undefined,
+      body: [restIntro.join('\n\n').trim(), ...notes].filter(Boolean).join('\n\n') || undefined,
       changed,
       admonitions: admonitions.length ? admonitions : undefined,
       examples: examplesText ? exampleBlocks(examplesText) : undefined,

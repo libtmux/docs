@@ -66,7 +66,21 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (symbol.exportedFrom) facts.push(`- **Exported from:** ${symbol.exportedFrom}`)
   if (symbol.inheritedFrom) facts.push(`- **Inherited from:** ${symbol.inheritedFrom}`)
   if (symbol.publicOwner && symbol.publicOwner !== symbol.id) facts.push(`- **Public owner:** ${symbol.publicOwner}`)
-  if (symbol.extends?.length) facts.push(`- **Bases:** ${symbol.extends.join(', ')}`)
+  if (symbol.extends?.length) {
+    const index = productApiIndex(model, ctx.version ?? defaultVersionFor(model.port))
+    const bases = symbol.extends.map((base) => {
+      const parts: string[] = []
+      let plain = ''
+      for (const part of index.linkType(base, symbol)) {
+        if (!part.link) { plain += part.text; continue }
+        if (plain) { parts.push(inlineCode(plain)); plain = '' }
+        parts.push(`[${inlineCode(part.text)}](${part.link.href})`)
+      }
+      if (plain) parts.push(inlineCode(plain))
+      return parts.join('')
+    })
+    facts.push(`- **Bases:** ${bases.join(', ')}`)
+  }
   if (ctx.canonical) facts.push(`- **Page:** ${ctx.canonical}`)
   if (facts.length) out.push(...facts, '')
   for (const command of tmuxCommandsFor(model.port, symbol.publicId ?? symbol.id)) {

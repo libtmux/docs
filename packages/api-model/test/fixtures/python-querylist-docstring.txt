@@ -1,0 +1,146 @@
+Filter list of object/dictionaries. For small, local datasets.
+
+*Experimental, unstable*.
+
+**With dictionaries**:
+
+>>> query = QueryList(
+...     [
+...         {
+...             "place": "Largo",
+...             "city": "Tampa",
+...             "state": "Florida",
+...             "foods": {"fruit": ["banana", "orange"], "breakfast": "cereal"},
+...         },
+...         {
+...             "place": "Chicago suburbs",
+...             "city": "Elmhurst",
+...             "state": "Illinois",
+...             "foods": {"fruit": ["apple", "cantelope"], "breakfast": "waffles"},
+...         },
+...     ]
+... )
+
+>>> query.filter(place="Chicago suburbs")[0]['city']
+'Elmhurst'
+>>> query.filter(place__icontains="chicago")[0]['city']
+'Elmhurst'
+>>> query.filter(foods__breakfast="waffles")[0]['city']
+'Elmhurst'
+>>> query.filter(foods__fruit__in="cantelope")[0]['city']
+'Elmhurst'
+>>> query.filter(foods__fruit__in="orange")[0]['city']
+'Tampa'
+
+>>> query.filter(foods__fruit__in="apple")
+[{'place': 'Chicago suburbs',
+    'city': 'Elmhurst',
+    'state': 'Illinois',
+    'foods':
+        {'fruit': ['apple', 'cantelope'], 'breakfast': 'waffles'}}]
+
+>>> query.filter(foods__fruit__in="non_existent")
+[]
+
+**With objects**:
+
+>>> from typing import Any, Dict
+>>> from dataclasses import dataclass, field
+
+>>> @dataclass()
+... class Restaurant:
+...     place: str
+...     city: str
+...     state: str
+...     foods: Dict[str, Any]
+
+>>> restaurant = Restaurant(
+...     place="Largo",
+...     city="Tampa",
+...     state="Florida",
+...     foods={
+...         "fruit": ["banana", "orange"], "breakfast": "cereal"
+...     }
+... )
+
+>>> restaurant
+Restaurant(place='Largo',
+    city='Tampa',
+    state='Florida',
+    foods={'fruit': ['banana', 'orange'], 'breakfast': 'cereal'})
+
+>>> query = QueryList([restaurant])
+
+>>> query.filter(foods__fruit__in="banana")
+[Restaurant(place='Largo',
+    city='Tampa',
+    state='Florida',
+    foods={'fruit': ['banana', 'orange'], 'breakfast': 'cereal'})]
+
+>>> query.filter(foods__fruit__in="banana")[0].city
+'Tampa'
+
+>>> query.get(foods__fruit__in="banana").city
+'Tampa'
+
+**With objects (nested)**:
+
+>>> from typing import List, Optional
+>>> from dataclasses import dataclass, field
+
+>>> @dataclass()
+... class Food:
+...     fruit: List[str] = field(default_factory=list)
+...     breakfast: Optional[str] = None
+
+
+>>> @dataclass()
+... class Restaurant:
+...     place: str
+...     city: str
+...     state: str
+...     food: Food = field(default_factory=Food)
+
+
+>>> query = QueryList([
+...     Restaurant(
+...         place="Largo",
+...         city="Tampa",
+...         state="Florida",
+...         food=Food(
+...             fruit=["banana", "orange"], breakfast="cereal"
+...         )
+...     ),
+...     Restaurant(
+...         place="Chicago suburbs",
+...         city="Elmhurst",
+...         state="Illinois",
+...         food=Food(
+...             fruit=["apple", "cantelope"], breakfast="waffles"
+...         )
+...     )
+... ])
+
+>>> query.filter(food__fruit__in="banana")
+[Restaurant(place='Largo',
+    city='Tampa',
+    state='Florida',
+    food=Food(fruit=['banana', 'orange'], breakfast='cereal'))]
+
+>>> query.filter(food__fruit__in="banana")[0].city
+'Tampa'
+
+>>> query.get(food__fruit__in="banana").city
+'Tampa'
+
+>>> query.filter(food__breakfast="waffles")
+[Restaurant(place='Chicago suburbs',
+    city='Elmhurst',
+    state='Illinois',
+    food=Food(fruit=['apple', 'cantelope'], breakfast='waffles'))]
+
+>>> query.filter(food__breakfast="waffles")[0].city
+'Elmhurst'
+
+>>> query.filter(food__breakfast="non_existent")
+[]
