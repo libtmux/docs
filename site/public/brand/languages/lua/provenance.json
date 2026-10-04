@@ -1,0 +1,26 @@
+{
+  "name": "Lua",
+  "asset": "icon.svg",
+  "sourceUrl": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/lua/lua-original.svg",
+  "resolvedUrl": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/lua/lua-original.svg",
+  "sourcePage": "https://www.lua.org/images/",
+  "retrievedAt": "2026-10-04T14:52:41+00:00",
+  "sha256": "7bd82efe74ca5dc3741b8cdcf6c373c96123c638e79c42d0806b15c47e2fccb8",
+  "copyright": "Lua logo: Copyright © 1998 Lua.org. Graphic design by Alexandre Nakonechnyj. Devicon collection: Copyright (c) 2015 konpa.",
+  "license": {
+    "name": "MIT for the Devicon copy; Lua logo permission also applies",
+    "urls": [
+      "https://github.com/devicons/devicon/blob/7330accdbc47e2dc0c19789a48533c4a3c50fe58/LICENSE",
+      "https://www.lua.org/images/"
+    ],
+    "notes": "The collection license does not replace Lua logo terms. Credit the origin, preserve proportions, and link Lua.org. Only the orbiting text may be adapted under the logo permission.",
+    "localCopy": {
+      "file": "LICENSE.txt",
+      "sourceUrl": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/LICENSE",
+      "retrievedAt": "2026-10-04T14:52:42+00:00",
+      "sha256": "121194741d4a915b9f5890fdd6dd95121f9b1f816517c792358d72d7c838d664"
+    }
+  },
+  "modifications": "None. The downloaded SVG bytes are preserved.",
+  "upstreamRevision": "7330accdbc47e2dc0c19789a48533c4a3c50fe58"
+}
