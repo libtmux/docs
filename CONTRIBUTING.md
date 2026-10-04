@@ -74,6 +74,40 @@ $ python3 scripts/check_example_width.py
 The `--self-test` flag proves the check can fail on a planted wide line.
 The medium loop and the publication audit run both.
 
+The checker and the shared section of `WRITING.md` must match every other
+libtmux port. CI compares them with each port's default branch weekly, and
+on pushes to `main` and pull requests that change them or the comparison
+itself. The comparison needs the network, so it is not part of the local
+loops:
+
+```console
+$ python3 scripts/check_shared_examples.py
+```
+
+A port with no checker or shared section fails, unless the script's
+`PENDING` list names it with a reason and the date it was listed. Every
+port is pending until its example-style change merges; a pending port that
+already has both files fails until it leaves the list, and an entry older
+than 30 days fails until it is merged or given a new reason and date.
+To roll out a change to the shared text or checker, record the digests
+the ports still carry in the script's `PREVIOUS` with the last day they
+are accepted, so ports can merge one at a time.
+
+A port the script cannot read, such as a private repository, goes in
+`NOT_FETCHED` with the place it is compared instead, and the script
+prints a notice for it; every port is public, so the list is empty. The
+script also lists the public, non-archived repositories of the `libtmux`
+organisation through the GitHub REST API, and fails for any repository
+outside `PORTS` whose `WRITING.md` carries the shared section, so a new
+port cannot adopt it unseen. Set `GITHUB_TOKEN` to avoid the
+unauthenticated rate limit.
+
+The script's `--self-test` runs without the network. It plants checker
+and text drift, a missing file, a stale pending entry, an entry for an
+unknown port, a pending port with drift or with both files, a previous
+digest inside and past its window, a port it must not fetch, an unlisted
+adopter, and an unlisted repository without the markers.
+
 Run workspace type checks:
 
 ```console

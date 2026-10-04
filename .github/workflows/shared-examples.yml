@@ -1,0 +1,36 @@
+name: shared-examples
+
+# The example rules are one text and one checker in every libtmux port. This
+# job compares them with each port's default branch, so it needs the network
+# and stays out of the local test loops. It runs on a change to the shared
+# files or this gate, and weekly; a port that drifts on its own surfaces in
+# the weekly run instead of failing unrelated pull requests here.
+
+on:
+  push:
+    branches: [main]
+    paths: &shared
+      - WRITING.md
+      - scripts/check_example_width.py
+      - scripts/check_shared_examples.py
+      - .github/workflows/shared-examples.yml
+  pull_request:
+    paths: *shared
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: python3 scripts/check_shared_examples.py --self-test
+      - run: python3 scripts/check_shared_examples.py
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
