@@ -22,8 +22,10 @@ In a new directory, fetch the source revision used by this documentation:
 $ mkdir java-workspace-example
 $ cd java-workspace-example
 $ git init -q libtmux-source
-$ git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git
-$ git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6
+$ git -C libtmux-source remote add origin \
+    https://github.com/libtmux/libtmux-java.git
+$ git -C libtmux-source fetch --depth=1 origin \
+    842228310449e879ebcaa3f910597757c9dbffd6
 $ git -C libtmux-source checkout --detach FETCH_HEAD
 $ mkdir -p src/main/java
 ```
@@ -89,16 +91,20 @@ public final class WorkspaceExample {
                     panes:
                       - echo three
                 """);
+        String socket = "workspace-" + UUID.randomUUID();
         try (Server server = Server.builder()
-                .endpoint(ServerEndpoint.namedSocket("workspace-" + UUID.randomUUID()))
+                .endpoint(ServerEndpoint.namedSocket(socket))
                 .configFile(Path.of("/dev/null"))
                 .defaultTimeout(Duration.ofSeconds(10))
                 .build()) {
             try {
                 server.newSession("bootstrap");
                 Session session = WorkspaceBuilder.build(server, workspace);
-                System.out.println(session.name() + ": " + session.windows().size() + " windows");
-                System.out.println("editor: " + session.windows().getFirst().panes().size() + " panes");
+                var windows = session.windows();
+                var editor = windows.getFirst().panes();
+                String name = session.name();
+                System.out.println(name + ": " + windows.size() + " windows");
+                System.out.println("editor: " + editor.size() + " panes");
             } finally {
                 server.killServer();
             }
