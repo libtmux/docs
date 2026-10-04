@@ -36,7 +36,8 @@ import scala.util.Using
 object Connect {
   def main(args: Array[String]): Unit = {
     val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+      throw new IllegalArgumentException(
+        "Set LIBTMUX_SOCKET_PATH to an existing socket"))
     val config = ServerConfig.builder()
       .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
       .defaultTimeout(Duration.ofSeconds(5))
