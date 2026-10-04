@@ -47,11 +47,18 @@ Run lint across the workspace and build scripts:
 $ pnpm run lint
 ```
 
-The theme package retains Biome in its formatting script; it is not the
-workspace lint gate. This command writes changes, so review its diff:
+`oxfmt` formats the site's own TypeScript, JavaScript, and Astro source at
+120 columns, with no semicolons and single quotes. It is pinned in the pnpm
+catalog; `.oxfmtrc.json` lists what it skips. Markdown stays out because
+`site/test/complete-examples.test.ts` pins fenced programs by hash. Check
+formatting, or rewrite files in place and review the diff:
 
 ```console
-$ pnpm --filter @libtmux/theme format
+$ pnpm run format:check
+```
+
+```console
+$ pnpm run format
 ```
 
 ## Checks

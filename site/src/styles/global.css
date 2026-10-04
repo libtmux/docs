@@ -132,7 +132,6 @@
   ::view-transition-old(*),
   ::view-transition-new(*),
   ::view-transition-group(*) {
-    /* biome-ignore lint/complexity/noImportantStyles: layered author CSS can only beat Astro's unlayered view-transition styles with !important */
     animation: none !important;
   }
 }
