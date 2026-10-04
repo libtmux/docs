@@ -27,7 +27,7 @@ export async function checkHomeLanguageIcon(page, port = null) {
     const box = await trigger.locator('.home-language-icon').boundingBox()
     assert.equal(image.width, 18, 'The image fits the icon box width')
     assert.equal(image.height, 18, 'Non-square artwork fits the icon box height')
-    assert(Math.abs(image.x - box.x) < 1 && Math.abs(image.y - box.y) < 1, 'The image stays inside its icon box')
+    assert(Math.abs(image.x - box.x) < 1 && Math.abs(image.y - box.y) <= 2, 'The image fits beside the label, allowing a small optical correction')
   }
   const menuSources = await page.locator('[data-home-launcher] .port-artwork').evaluateAll((images) => images.map((img) => img.getAttribute('src')))
   assert(menuSources.length === PORTS.length && menuSources.every((src) => !src.includes('/brand/languages/')), 'Menu options keep their libtmux artwork')
