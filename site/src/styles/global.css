@@ -841,18 +841,32 @@ body[data-documentation-layout='reference'] {
   outline-offset: 2px;
 }
 
-/* Below the header's own wrap point the sentence needs the full width, so the
-   button moves under it rather than squeezing the text to two words a line. */
+.prerelease-notice__dismiss-icon { display: none; }
+
+/* Keep the sentence full width; the close control shares the badge's row. */
 @media (max-width: 30rem) {
   .prerelease-notice__inner {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.5rem;
+    position: relative;
+    display: block;
   }
+  .prerelease-notice--centered .prerelease-notice__inner { padding-inline: var(--site-gutter); }
 
+  .prerelease-notice__text { row-gap: .75rem; }
+  .prerelease-notice__text > span { flex-basis: 100%; }
+  .prerelease-notice__badge { margin-inline-end: 2.5rem; }
   .prerelease-notice__dismiss {
-    align-self: flex-end;
+    position: absolute;
+    top: .25rem;
+    right: var(--site-gutter);
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border-color: transparent;
+    background: transparent;
   }
+  .prerelease-notice__dismiss-label { display: none; }
+  .prerelease-notice__dismiss-icon { display: block; }
 }
 
 /*
