@@ -19,7 +19,11 @@ export async function checkHomeLanguageIcon(page, port = null) {
       centerOffset: Math.abs(icon.y + icon.height / 2 - (button.y + button.height / 2)) }
   })
   assert.equal(geometry.height, 36, `The trigger keeps the same height for every language: ${JSON.stringify(geometry)}`)
-  assert.equal(geometry.iconHeight, 18, 'Every language uses the same icon box')
+  assert.equal(geometry.iconHeight, 24, 'Every language uses the same icon box')
+  const solution = await page.locator('[data-home-launcher] .home-launcher-solution:not([hidden]) .surface-picker > summary').boundingBox()
+  const solutionIcon = await page.locator('[data-home-launcher] .home-launcher-solution:not([hidden]) .surface-picker > summary > .surface-artwork').boundingBox()
+  assert.equal(solution.height, geometry.height, 'The two launcher buttons have equal heights')
+  assert.equal(solutionIcon.height, geometry.iconHeight, 'Language and solution icons use the same size')
   assert(geometry.centerOffset < 1 && geometry.iconRight < geometry.labelLeft, 'The icon sits beside and centered with its label')
   if (port) {
     assert.equal(await icons.getAttribute('data-home-language-icon'), port)
@@ -27,8 +31,8 @@ export async function checkHomeLanguageIcon(page, port = null) {
     assert(await icons.evaluate((img) => img.complete && img.naturalWidth > 0), 'The selected language SVG is already loaded')
     const image = await icons.boundingBox()
     const box = await trigger.locator('.home-language-icon').boundingBox()
-    assert.equal(image.width, 18, 'The image fits the icon box width')
-    assert.equal(image.height, 18, 'Non-square artwork fits the icon box height')
+    assert(Math.abs(image.width - 24) < .1, 'The image fits the icon box width')
+    assert(Math.abs(image.height - 24) < .1, 'Non-square artwork fits the icon box height')
     assert(Math.abs(image.x - box.x) < 1 && Math.abs(image.y - box.y) <= 2, 'The image fits beside the label, allowing a small optical correction')
   }
   const menuSources = await page.locator('[data-home-launcher] .port-artwork').evaluateAll((images) => images.map((img) => img.getAttribute('src')))
