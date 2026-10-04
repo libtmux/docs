@@ -47,8 +47,6 @@ const descriptions: Record<string, string> = {
         {snippet && <Code code={snippet.code} lang={snippet.lang} frame="none" />}
         {snippet?.note && <p class="home-example-note">{snippet.note}</p>}
         {snippet?.complete ? <>
-          <p class="home-example-note">{snippet.code === snippet.complete.files.find((file) => file.name === snippet.complete!.program)?.code.trimEnd()
-            ? 'Complete program; setup below.' : 'Excerpt from the complete program below.'}</p>
           <details class="home-example-run">
             <summary>Run this example</summary>
             <p>{snippet.complete.prerequisites}</p>
