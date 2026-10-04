@@ -59,7 +59,7 @@
       "files": [
         {
           "name": "main.go",
-          "sha256": "fff130e7c12cd990d4e8af309a6a1e269b0ae2bf9cabfc2fbb422a90ccf2e033"
+          "sha256": "49f698d16660c42a30f3faae755980c700317c2dc157b8a95e7c462eb7cb0485"
         },
         {
           "name": "go.mod",
