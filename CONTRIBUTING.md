@@ -63,6 +63,18 @@ $ pnpm run format
 
 ## Checks
 
+Hold hand-written code fences to 80 columns. The check reads
+`.github/example-width.toml`, which lists the surfaces it covers and each
+line allowed to stay wider, with its reason:
+
+```console
+$ python3 scripts/check_example_width.py
+```
+
+The `--self-test` flag plants a failure for every rule the check enforces,
+plus clean controls.
+The medium loop and the publication audit run both.
+
 Run workspace type checks:
 
 ```console

@@ -87,6 +87,9 @@ try {
   if (loop !== 'inner')
     checks.push(
       pnpm('run', 'format:check'),
+      run('python3', ['scripts/check_example_width.py', '--self-test']).then(() =>
+        run('python3', ['scripts/check_example_width.py']),
+      ),
       pnpm('run', '--recursive', 'lint'),
       pnpm('exec', 'oxlint', 'scripts'),
       node('scripts/check-api-links.mjs'),

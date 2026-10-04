@@ -1,0 +1,49 @@
+width = 80
+markdown = ["**/*.md"]
+shared_digest = "28b74bae1f7a06731fea5a150cbde4430179b7788b7564ea1644c3951df8531b"
+checker_digest = "eb87afceb3fc8f11ef5a478cd38f901ef3950e89ff94fbe0ca281c0cfc1a0e2e"
+allow_ceiling = 8
+
+[[exclude]]
+glob = "notes/research/**"
+reason = "dated research notes with pasted tool output and probes, kept as written; no reader copies code from them"
+
+[[allow]]
+path = "site/src/content/docs/ports/py/examples/capture-pane-output.md"
+line = "    --with 'libtmux @ git+https://github.com/tmux-python/libtmux@9fdd083a8181a827889337b63cd4e6daea661a8c' \\"
+reason = "one quoted PEP 508 requirement pinning libtmux to a commit; the URL and revision cannot break"
+
+[[allow]]
+path = "site/src/content/docs/ports/py/guides/attaching-to-tmux.md"
+line = "    --with 'libtmux @ git+https://github.com/tmux-python/libtmux@9fdd083a8181a827889337b63cd4e6daea661a8c' \\"
+reason = "one quoted PEP 508 requirement pinning libtmux to a commit; the URL and revision cannot break"
+
+[[allow]]
+path = "WRITING.md"
+line = "Session session = await server.CreateSessionAsync(new NewSessionRequest(name: \"work\"));"
+reason = "the Bad example in the port block; it shows the width problem the Good example fixes"
+
+[[allow]]
+path = "site/src/content/docs/ports/julia/examples/observe-output.md"
+line = "with_server(; tmux=get(ENV, \"LIBTMUX_TEST_TMUX\", \"tmux\"), env=environment) do server"
+reason = "a copy of libtmux-julia's examples/output_stream.jl at the revision site/test/fixtures/program-examples.json pins (6f62bd7), checked by sha256; libtmux-julia#7 fits the source, and this line follows when the pin moves"
+
+[[allow]]
+path = "site/src/content/docs/ports/julia/examples/owned-capture.md"
+line = "        println(\"Captured \", string(pane.id), \": \", ncodeunits(screen), \" screen bytes\")"
+reason = "a copy of libtmux-julia's examples/owned_capture.jl at the revision site/test/fixtures/program-examples.json pins (6f62bd7), checked by sha256; libtmux-julia#7 fits the source, and this line follows when the pin moves"
+
+[[allow]]
+path = "site/src/content/docs/ports/julia/examples/shared-windows.md"
+line = "            only(windows(onlymatch(SessionWhere(name=\"ops\"), sessions(captured)))).ref"
+reason = "a copy of libtmux-julia's examples/shared_windows.jl at the revision site/test/fixtures/program-examples.json pins (6f62bd7), checked by sha256; libtmux-julia#7 fits the source, and this line follows when the pin moves"
+
+[[allow]]
+path = "site/src/content/docs/ports/julia/examples/shared-windows.md"
+line = "    selected = filter(PaneWhere(active=true, window=WindowWhere(name=\"api\")), panes(snap))"
+reason = "a copy of libtmux-julia's examples/shared_windows.jl at the revision site/test/fixtures/program-examples.json pins (6f62bd7), checked by sha256; libtmux-julia#7 fits the source, and this line follows when the pin moves"
+
+[[allow]]
+path = "site/src/content/docs/ports/julia/examples/shared-windows.md"
+line = "            only(Iterators.filter(p -> p.active && p.window.name == \"api\", panes(snap))).ref"
+reason = "a copy of libtmux-julia's examples/shared_windows.jl at the revision site/test/fixtures/program-examples.json pins (6f62bd7), checked by sha256; libtmux-julia#7 fits the source, and this line follows when the pin moves"
