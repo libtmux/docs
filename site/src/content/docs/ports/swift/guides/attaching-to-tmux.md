@@ -37,8 +37,11 @@ enum ConnectError: Error {
 @main
 struct Connect {
     static func main() async throws {
-        guard let socket = ProcessInfo.processInfo.environment["LIBTMUX_SOCKET_PATH"] else {
-            throw ConnectError.failed("Set LIBTMUX_SOCKET_PATH to an existing socket")
+        let environment = ProcessInfo.processInfo.environment
+        guard let socket = environment["LIBTMUX_SOCKET_PATH"] else {
+            throw ConnectError.failed(
+                "Set LIBTMUX_SOCKET_PATH to an existing socket"
+            )
         }
         let server = try Server(socketPath: socket)
         guard try await server.hasSession("=work") else {

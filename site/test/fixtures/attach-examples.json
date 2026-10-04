@@ -238,7 +238,7 @@
         {
           "name": "Connect.swift",
           "path": "Sources/Connect/Connect.swift",
-          "sha256": "9821b15aa0bb09ab626164f6f6a1e900f7263fafc5ff3d6297520505c8ebdc07"
+          "sha256": "384a3cf86ec4267d7e01e133eab68041e60ccaf4e43d865bb156f4e61e5e7bf0"
         },
         {
           "name": "Package.swift",
