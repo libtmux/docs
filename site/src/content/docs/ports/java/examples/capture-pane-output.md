@@ -47,10 +47,13 @@ public final class Capture {
         try (Server server = Server.open(config)) {
             try {
                 Session session = server.newSession(s -> s
-                        .named("capture").running("sh").env("ENV", "/dev/null"));
+                        .named("capture")
+                        .running("sh")
+                        .env("ENV", "/dev/null"));
                 Pane pane = session.windows().get(0).panes().get(0);
                 pane.sendLine("printf '\\nlibtmux capture ready\\n'");
-                long deadline = System.nanoTime() + Duration.ofSeconds(5).toNanos();
+                long timeout = Duration.ofSeconds(5).toNanos();
+                long deadline = System.nanoTime() + timeout;
                 while (System.nanoTime() < deadline) {
                     List<String> lines = pane.capture();
                     if (lines.contains("libtmux capture ready")) {
@@ -59,7 +62,8 @@ public final class Capture {
                     }
                     Thread.sleep(20);
                 }
-                throw new IllegalStateException("Timed out waiting for pane output");
+                throw new IllegalStateException(
+                        "Timed out waiting for pane output");
             } finally {
                 server.killServer();
             }
