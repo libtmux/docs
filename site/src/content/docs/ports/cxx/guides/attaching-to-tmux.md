@@ -36,7 +36,9 @@ the example.
 int main() {
   try {
     const char* socket = std::getenv("LIBTMUX_SOCKET_PATH");
-    if (!socket) throw std::runtime_error("Set LIBTMUX_SOCKET_PATH to an existing socket");
+    if (!socket) {
+      throw std::runtime_error("Set LIBTMUX_SOCKET_PATH to an existing socket");
+    }
     auto server = libtmux::Server::at_socket_path(socket);
     if (!server) throw std::runtime_error(server.error().diagnostic);
     auto sessions = server->sessions();
