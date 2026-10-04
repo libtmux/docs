@@ -771,9 +771,18 @@ body[data-documentation-layout='reference'] {
   padding: 0.5rem var(--site-gutter);
 }
 
+.prerelease-notice--centered {
+  --site-gutter: 1rem;
+}
+
 .prerelease-notice--centered .prerelease-notice__inner {
   max-width: 80rem;
-  padding-inline: 1rem;
+}
+
+@media (min-width: 40rem) {
+  body:has(.home-launcher) .prerelease-notice--centered {
+    --site-gutter: 1.5rem;
+  }
 }
 
 .prerelease-notice__text {
@@ -849,8 +858,6 @@ body[data-documentation-layout='reference'] {
     position: relative;
     display: block;
   }
-  .prerelease-notice--centered .prerelease-notice__inner { padding-inline: var(--site-gutter); }
-
   .prerelease-notice__text { row-gap: .75rem; }
   .prerelease-notice__text > span { flex-basis: 100%; }
   .prerelease-notice__badge { margin-inline-end: 2.5rem; }
