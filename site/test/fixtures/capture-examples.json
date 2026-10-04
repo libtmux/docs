@@ -191,7 +191,7 @@
       "files": [
         {
           "name": "Capture.swift",
-          "sha256": "4f4258a1eb646d70712559f5a4d975d1cc36fd1805a77cbb8ddc63bc812db6da",
+          "sha256": "20d96174f5de2f13b88bceccde8566bfaacd074df38671a877647c3160b96a0c",
           "path": "Sources/Capture/Capture.swift"
         },
         {
