@@ -51,7 +51,9 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.libtmux:libtmux-workspace:0.0.1-alpha.12-SNAPSHOT")
+    implementation(
+        "io.github.libtmux:libtmux-workspace:0.0.1-alpha.12-SNAPSHOT"
+    )
 }
 
 java {
