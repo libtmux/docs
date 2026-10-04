@@ -242,15 +242,15 @@
         },
         {
           "name": "run.sh",
-          "sha256": "ea8339a28da6dd07d7c71bc1e264b246b0ea4561865e11d48b3642448a251bee"
+          "sha256": "78c9734d6ca38db8174235ec6b11631c61a307e02d760fe1b154fefdd4671317"
         },
         {
           "name": "Hierarchy.scala",
-          "sha256": "bf83e9625aed62a5585f403de180f83f163de4292ae5f53d333ba9c1dd06a91f"
+          "sha256": "c88effcec5a97aa9d59b8a312296dac3d7bce2734280ac79f60e939be54e232b"
         },
         {
           "name": "Refresh.scala",
-          "sha256": "7ed6ee12473851261ef6117b57841fcc420bf22635e306b8c054795af15a75a8"
+          "sha256": "23e8304ee244fcd33c4c282d5673d8b3311ebafd84128aae85d1954ab356aade"
         }
       ],
       "shellRecipe": [
