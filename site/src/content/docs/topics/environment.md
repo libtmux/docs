@@ -358,7 +358,8 @@ await session.showEnvironment();
 ```
 
 ```go
-if err := session.SetEnvironment(ctx, "EDITOR", "hx", tmux.SetEnvironmentOptions{}); err != nil {
+opts := tmux.SetEnvironmentOptions{}
+if err := session.SetEnvironment(ctx, "EDITOR", "hx", opts); err != nil {
     return err
 }
 values, err := session.ShowEnvironment(ctx)
@@ -381,9 +382,10 @@ await session.Environment.GetAllAsync();
 ```
 
 ```swift
+let id = session.id.rawValue
 try await server.setEnvironment("EDITOR", to: "vim", in: .global)
-try await server.setEnvironment("EDITOR", to: "hx", in: .session(session.id.rawValue))
-try await server.environment(.session(session.id.rawValue))
+try await server.setEnvironment("EDITOR", to: "hx", in: .session(id))
+try await server.environment(.session(id))
 ```
 
 <!-- /port -->
