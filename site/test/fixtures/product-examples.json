@@ -246,11 +246,11 @@
       "files": [
         {
           "name": "src/main.rs",
-          "sha256": "a35348dc9fa3b8db147aa11f253324845e6dee0730c9a65dd08314fd946d171a"
+          "sha256": "e5ef8236b74141a7097eb1eabf1dbfb301698bd8a8de2abe4689474848c896ba"
         },
         {
           "name": "Cargo.toml",
-          "sha256": "1255751db8fb75290d2db99649c1be104325c31be652500df07d95ad5cd16ac4"
+          "sha256": "4e4777c6f634fffe13fc53ca7f5b0fd2cfe3a5ff6285649649e41ded90f078b3"
         },
         {
           "name": "workspace.yaml",
@@ -267,7 +267,7 @@
       "page": "ports/rs/workspace/internals/examples",
       "shellRecipe": [
         "mkdir rust-workspace-example && cd rust-workspace-example && \\\n    mkdir src",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-rs.git && \\\n    git -C libtmux-source fetch --depth=1 origin d4e08b4eaab62ef4eeedab79b47973ae9a1de310 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin \\\n      https://github.com/libtmux/libtmux-rs.git && \\\n    git -C libtmux-source fetch --depth=1 origin \\\n      d4e08b4eaab62ef4eeedab79b47973ae9a1de310 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "cargo run --quiet"
       ]
     },
