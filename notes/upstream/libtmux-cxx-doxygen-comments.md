@@ -19,7 +19,9 @@ $ python3 -c "
 import re, glob
 tot = empty = 0
 for f in glob.glob('xml/*.xml'):
-    for m in re.finditer(r'<briefdescription>(.*?)</briefdescription>', open(f).read(), re.S):
+    text = open(f).read()
+    pattern = r'<briefdescription>(.*?)</briefdescription>'
+    for m in re.finditer(pattern, text, re.S):
         tot += 1
         empty += not m.group(1).strip()
 print(tot, empty)"
