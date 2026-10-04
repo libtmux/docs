@@ -295,19 +295,19 @@
         },
         {
           "name": "run.sh",
-          "sha256": "ea8339a28da6dd07d7c71bc1e264b246b0ea4561865e11d48b3642448a251bee"
+          "sha256": "78c9734d6ca38db8174235ec6b11631c61a307e02d760fe1b154fefdd4671317"
         },
         {
           "name": "Local.scala",
-          "sha256": "7d714f11710c2a1cf613d6e9a2c2bd43547f2b6a183c758178298a1fe8f90599"
+          "sha256": "e8d398460ace7d1ab5ed293018154afd303507a32251451bac4b19e415efc07e"
         },
         {
           "name": "Cardinality.scala",
-          "sha256": "2abf4f046a9253958c1d6a25ceb0b41f2a0bbcd70b62f42242a736e5b603c60c"
+          "sha256": "2674927901c34dd1ad9ce3185aaad38cd717883afaaf9aca024bdacd530bd8c3"
         },
         {
           "name": "Relations.scala",
-          "sha256": "a197b7e27f24d7c5717cd5cd28f215977471e5791c9f4470aefcfc4d2f1048d2"
+          "sha256": "2c3da9b4d1da11839e683709b67cb010ee1472f499004c76ce9c2b1a8e154d7e"
         }
       ],
       "shellRecipe": [
