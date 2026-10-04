@@ -61,8 +61,9 @@ int main() {
 
     auto sent = pane.send_line("printf '\\nlibtmux capture ready\\n'");
     if (!sent) throw std::runtime_error(sent.error().diagnostic);
-    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds{5};
-    while (std::chrono::steady_clock::now() < deadline && !captured) {
+    using Clock = std::chrono::steady_clock;
+    const auto deadline = Clock::now() + std::chrono::seconds{5};
+    while (Clock::now() < deadline && !captured) {
       auto text = pane.capture();
       if (!text) throw std::runtime_error(text.error().diagnostic);
       std::istringstream lines{*text};
