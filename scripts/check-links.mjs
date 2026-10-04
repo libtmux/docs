@@ -130,7 +130,8 @@ for (const page of pages) {
     // A cache-busting query is not part of the path on a static site.
     const clean = path.replace(/\?.*$/, '')
     const resolved = resolveHref(page, clean)
-    const target = clean.endsWith('/') || resolved === '' ? `${resolved}/index.html`.replace(/^\//, '') : resolved
+    const target = !clean ? page
+      : clean.endsWith('/') || resolved === '' ? `${resolved}/index.html`.replace(/^\//, '') : resolved
     const targetIds = idsOf(target)
     if (targetIds === undefined) recordBrokenLink(page, path, anchor, 'no page')
     else if (anchor && !targetIds.has(anchor)) recordBrokenLink(page, path, anchor, 'no anchor')
