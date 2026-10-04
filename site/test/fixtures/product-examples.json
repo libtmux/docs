@@ -186,7 +186,7 @@
       "files": [
         {
           "name": "run-mcp.sh",
-          "sha256": "e3b697676591e62e98769a988d0002efcfa693474feb228656589a472b0744f4"
+          "sha256": "3c3246e2d5b15136e4d0b0d76150ded9baad3987e3afbd7af5805b2c3bd503aa"
         }
       ],
       "toolchain": [
@@ -200,7 +200,7 @@
       "page": "ports/java/mcp/guides",
       "shellRecipe": [
         "mkdir java-mcp-client && cd java-mcp-client",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    ./libtmux-source/gradlew --no-daemon --max-workers=2 \\\n    -p libtmux-source :libtmux-mcp:installDist",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin \\\n      https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin \\\n      842228310449e879ebcaa3f910597757c9dbffd6 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    ./libtmux-source/gradlew --no-daemon --max-workers=2 \\\n    -p libtmux-source :libtmux-mcp:installDist",
         "sh run-mcp.sh"
       ]
     },
