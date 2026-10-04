@@ -352,11 +352,11 @@
       "files": [
         {
           "name": "Program.fs",
-          "sha256": "22a62e8423aa21ecb88aba93bf1cbf0520aa84c968ce18bb0559122b314517bc"
+          "sha256": "38599c54501b92742fefb97380f327b7a13fd57e6f701a7d16d0c9304e3adc44"
         },
         {
           "name": "Connect.fsproj",
-          "sha256": "314bfb2bef111e8885728a0065943a59594721011da4ac6ef0275aebd8f14bcd"
+          "sha256": "b35f62badfd9ff1220de1cede86aa28da25029f01d36ce81db6a3b46585618fd"
         },
         {
           "name": "run.sh",
