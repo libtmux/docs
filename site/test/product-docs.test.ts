@@ -329,10 +329,24 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   it.each(PORTS.filter((port) => !port.parentLibrary))('$name distinguishes unfinished products and groups workspace internals', async (port) => {
     for (const page of pages().filter((entry) => entry.port === port.slug)) await inspect(page.path, (document) => {
       if (productInDevelopment(port, page.product)) developmentStatus(document, page.path)
+      const picker = document.querySelector('[data-surface-picker]')
+      if (!productAvailable(port, page.product)) {
+        expect(document.querySelector('article')!.textContent, `${page.path} availability`).toMatch(/not published|no published/i)
+        expect(picker?.querySelector('.surface-current strong')?.textContent, `${page.path} available app`).toBe('Core Library')
+        expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} available section`).toBe('Home')
+        const current = picker?.querySelectorAll('[aria-current="location"]')
+        expect(current, `${page.path} one available destination`).toHaveLength(1)
+        expect(current![0].getAttribute('href'), `${page.path} core overview`).toBe(urlFor(`${page.port}/${page.version}/`).pathname)
+        expect(resolves(current![0].getAttribute('href')!), `${page.path} core overview exists`).toBe(true)
+        const unavailable = urlFor(`${page.port}/${page.version}/${page.product}/`).pathname
+        const navigation = document.querySelectorAll('[data-surface-picker] a[href], [data-section-navigation] a[href], .doc-card[href]')
+        expect([...navigation].some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname.startsWith(unavailable)),
+          `${page.path} unavailable product omitted from navigation`).toBe(false)
+        return
+      }
       const surface = page.product === 'mcp' ? 'MCP' : 'Workspace Manager'
       const section = page.section.split('/')[0] || 'home'
       const sectionLabel = section[0].toUpperCase() + section.slice(1)
-      const picker = document.querySelector('[data-surface-picker]')
       expect(picker?.querySelector('.surface-current strong')?.textContent, `${page.path} current app`).toBe(surface)
       expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} current section`).toBe(sectionLabel)
       const current = picker?.querySelectorAll('[aria-current="location"]')
@@ -374,9 +388,6 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       if (page.product === 'workspace' && page.port !== 'ruby' && productAvailable(port, 'workspace')) {
         expect([...picker!.querySelectorAll('a[href]')].some((link) => link.getAttribute('href') === urlFor(`${page.port}/${page.version}/workspace/internals/`).pathname),
           `${page.path} Internals remains reachable in the picker`).toBe(true)
-      }
-      if (!productAvailable(port, page.product)) {
-        expect(document.querySelector('article')!.textContent, `${page.path} availability`).toMatch(/not published|no published/i)
       }
       if (page.product === 'workspace' && productInDevelopment(port, 'workspace') && !page.section) {
         const status = [...document.querySelectorAll('[role="note"]')]
