@@ -158,16 +158,6 @@
     brand.appendChild(logo)
     brand.appendChild(document.createTextNode('libtmux'))
     header.appendChild(brand)
-    var nav = document.createElement('nav')
-    nav.className = 'lt-shell-nav'
-    nav.setAttribute('aria-label', 'Documentation destinations')
-    var tmux = document.createElement('a')
-    tmux.href = siteRoot + '/tmux/latest/reference/'
-    tmux.className = 'lt-shell-nav-link'
-    tmux.setAttribute('aria-label', 'tmux CLI reference')
-    tmux.textContent = 'tmux'
-    nav.appendChild(tmux)
-    header.appendChild(nav)
     var controls = document.createElement('div')
     controls.className = 'lt-shell-controls'
     controls.setAttribute('data-header-controls', '')
@@ -238,17 +228,13 @@
     'padding:0.6rem 1rem;border-bottom:1px solid var(--lt-color-border,#eeebee)}' +
     '.lt-shell-brand{font-family:var(--lt-font-mono,monospace);font-weight:600;' +
     'font-size:1.05rem;color:var(--lt-color-fg,#000);text-decoration:none;letter-spacing:-0.01em}' +
-    '.lt-shell-nav{display:flex;flex-wrap:wrap;gap:0.15rem;flex:1 1 auto}' +
-    '.lt-shell-nav-link{padding:0.25rem 0.5rem;border-radius:var(--lt-radius,0.375rem);' +
-    'color:var(--lt-color-fg-secondary,#5a5c63);text-decoration:none}' +
-    '.lt-shell-nav-link:hover{background:var(--lt-color-bg-hover,#efeff4)}' +
     '.lt-shell-version select{border:1px solid var(--lt-color-border,#eeebee);' +
     'border-radius:var(--lt-radius,0.375rem);padding:0.2rem 0.4rem;font-size:0.85rem;' +
     'background:var(--lt-color-bg,#fff);color:var(--lt-color-fg,#000)}' +
     '.lt-shell-search-link{padding:0.25rem 0.6rem;border:1px solid var(--lt-color-border,#eeebee);' +
     'border-radius:var(--lt-radius,0.375rem);color:var(--lt-color-fg,#000);text-decoration:none}' +
     '.lt-shell-search-link:hover{background:var(--lt-color-bg-hover,#efeff4)}' +
-    '.lt-shell-controls{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:1rem;max-width:100%}' +
+    '.lt-shell-controls{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:1rem;max-width:100%;margin-left:auto}' +
     '.lt-shell-page-switchers{display:flex;flex-wrap:nowrap;align-items:center;flex-shrink:0;gap:1rem}' +
     '.lt-shell-dropdown summary{list-style:none;cursor:pointer;padding:.25rem .5rem;border-radius:var(--lt-radius,.375rem)}' +
     '.lt-shell-dropdown summary::-webkit-details-marker{display:none}' +

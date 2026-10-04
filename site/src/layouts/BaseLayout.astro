@@ -39,8 +39,6 @@ interface Props {
   pagePath?: string
   /** Port slug when this page belongs to one. */
   portSlug?: string
-  /** The page provides its own programming-language switcher. */
-  pagePortSwitcher?: boolean
   /** Match the header and notice to the page's documentation frame. */
   documentationLayout?: 'prose' | 'reference'
   version?: string
@@ -83,7 +81,6 @@ const {
   description,
   pagePath: requestedPagePath,
   portSlug,
-  pagePortSwitcher = false,
   documentationLayout,
   version: requestedVersion,
   noindex = false,
@@ -258,7 +255,6 @@ const githubUrl = githubPort?.source && githubPort.repo === githubRepo
       !bare && (
         <SiteHeader
           documentationContext={Astro.slots.has('context')}
-          pagePortSwitcher={pagePortSwitcher}
           portSlug={navPort}
           version={navVersion}
           pagePath={sourcePath ?? pagePath}

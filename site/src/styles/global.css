@@ -991,17 +991,6 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   height: 1.75rem;
 }
 
-/* The languages hold the middle of the bar and never wrap; below the width
-   where all ten fit they are not shown here at all. */
-.site-header__ports {
-  min-width: 0;
-  display: none;
-}
-
-.site-header__ports > nav {
-  flex-wrap: nowrap;
-}
-
 .site-header__search {
   display: inline-flex;
   align-items: center;
@@ -1042,8 +1031,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 /* Hangs from the right edge, so it can never push the document sideways the
    way the locale panel's `left-0` did — that was the horizontal scrollbar on
    every phone width. Capped against the viewport rather than the header, and
-   scrollable, because a landscape phone is 320px tall and this panel holds
-   ten languages and six controls. */
+   scrollable so its controls remain reachable on a landscape phone. */
 .site-header__panel {
   position: absolute;
   right: 0;
@@ -1072,14 +1060,6 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   gap: 0.75rem;
 }
 
-/* Two columns of languages rather than ten chips in a column: the panel
-   stays under a phone's fold in landscape, where there are 320px of height. */
-.site-header__panel-ports > nav {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.25rem;
-}
-
 .site-header__panel-row {
   display: flex;
   flex-wrap: wrap;
@@ -1099,26 +1079,10 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
  * Wide screens also show the color-scheme labels.
  */
 @media (min-width: 96rem) {
-  .site-header__ports {
-    display: block;
-  }
-
   .site-header__menu-label {
     display: none;
   }
 
-  .site-header__panel-ports {
-    display: none;
-  }
-
-  /* The separator had nothing left to separate. `:first-of-type` matched the
-     hidden ports block — also a div, and display:none does not remove an
-     element from that count — so the one remaining row kept a rule above it
-     and drew a stray line across the top of the menu. */
-  .site-header__panel-controls {
-    border-top: 0;
-    padding-top: 0;
-  }
 }
 
 /* Narrow phones: the search label goes, the icon stays. Below this the bar is
@@ -1221,18 +1185,9 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   transform: rotate(180deg);
 }
 
-/* Thirteen full names fit from 64rem with compact controls. */
-.port-abbreviation { display: none; }
 @media (min-width: 48rem) and (max-width: 95.999rem) {
-  .site-header__ports { display: block; }
-  .site-header__ports .topnav-chip { padding-inline: 0.3rem; }
-  .site-header__ports > nav { gap: 0.1rem; }
-  .site-header__panel-ports, .site-header__menu-label { display: none; }
+  .site-header__menu-label { display: none; }
   .site-header__bar { gap: 0.5rem; }
-}
-@media (min-width: 48rem) and (max-width: 63.999rem) {
-  .site-header__ports .port-name { display: none; }
-  .site-header__ports .port-abbreviation { display: inline; }
 }
 @media (min-width: 48rem) and (max-width: 69.999rem) {
   .site-header__search-label { display: none; }

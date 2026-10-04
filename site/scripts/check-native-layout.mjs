@@ -5,30 +5,26 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { normalizeNativeShell } from '../../scripts/normalize-native-shell.mjs'
 
-/** Keep the tmux destination beside one programming-language picker. */
+/** Keep one page picker and visible native header controls. */
 export async function checkNativeHeader(page) {
-  const navigation = await page.locator('.lt-shell-nav').evaluate((nav) => {
-    const links = [...nav.querySelectorAll('a')]
+  assert.equal(await page.locator('[data-lt-shell="header"] nav[aria-label="Documentation destinations"]').count(), 0)
+  assert.equal(await page.locator('[data-page-port-switcher]').count(), 1)
+  const controls = await page.locator('.lt-shell-controls').evaluate((container) => {
+    const links = [...container.querySelectorAll('select, summary, a')]
+      .filter((link) => link.checkVisibility())
     const bounds = links.map((link) => link.getBoundingClientRect())
     return {
       count: links.length,
-      ports: links.filter((link) => link.hasAttribute('data-port-home')).map((link) => link.dataset.portHome),
-      firstLabel: links[0]?.getAttribute('aria-label'),
-      rows: new Set(bounds.map((rect) => rect.top)).size,
       visible: bounds.every((rect) => rect.width > 0 && rect.height > 0 && rect.left >= 0 && rect.right <= innerWidth),
       covered: links.filter((link, i) => {
         const rect = bounds[i]
         return !link.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2))
-      }).map((link) => link.getAttribute('aria-label')),
+      }).map((link) => link.getAttribute('aria-label') ?? link.textContent.trim()),
     }
   })
-  assert.equal(navigation.count, 1, 'Native header keeps tmux without duplicate language links')
-  assert.deepEqual(navigation.ports, [], 'Native language navigation belongs to the page picker')
-  assert.equal(await page.locator('[data-page-port-switcher]').count(), 1)
-  assert.equal(navigation.firstLabel, 'tmux CLI reference')
-  assert.equal(navigation.rows, 1, 'Native destination fits on one row')
-  assert(navigation.visible, 'Native destination fits the viewport')
-  assert.deepEqual(navigation.covered, [], 'Native header controls do not cover the tmux link')
+  assert(controls.count >= 3, 'Native page, locale and search controls remain available')
+  assert(controls.visible, 'Native header controls fit the viewport')
+  assert.deepEqual(controls.covered, [], 'Native header controls are reachable')
 }
 
 /** Delay enhancement until the initial article and navigation can be inspected. */

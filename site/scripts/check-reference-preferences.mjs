@@ -103,42 +103,37 @@ export async function checkReferencePreferences(browser, base) {
   console.log('Source disclosure stays usable without JavaScript or localStorage')
 }
 
-/** The CLI is a separate destination before the registry-derived language links. */
-export async function checkTmuxHeader(browser, base) {
+/** The global header has no repeated destination strip, including without JS. */
+export async function checkGlobalHeader(browser, base) {
   for (const javaScriptEnabled of [false, true]) {
     const context = await browser.newContext({ javaScriptEnabled, reducedMotion: 'reduce' })
     const page = await context.newPage()
     try {
-      await page.goto(`${base}/tmux/latest/reference/capture-pane/`)
-      for (const width of [390, 768, 784, 1024, 1440, 1600]) {
-        await page.setViewportSize({ width, height: 900 })
-        const menu = page.locator('.site-header__menu')
-        if (width < 768) await menu.locator(':scope > summary').click()
-        const nav = page.locator('nav[aria-label="Documentation destinations"]:visible')
-        assert.equal(await nav.count(), 1)
-        const tmux = nav.locator('a').first()
-        assert.equal((await tmux.innerText()).trim(), 'tmux', `${width}px: all four letters remain visible`)
-        assert.equal(await tmux.getAttribute('href'), `${new URL(base).pathname}/tmux/latest/reference/`)
-        assert.equal(await tmux.getAttribute('aria-current'), 'page')
-        assert.equal(await nav.locator('a').nth(1).getAttribute('aria-label'), 'Python')
-        const geometry = await page.evaluate(() => {
-          const nav = [...document.querySelectorAll('.site-header nav')].find((el) => el.getBoundingClientRect().width)
-          const rect = nav.getBoundingClientRect()
-          const controls = document.querySelector('.site-header__always').getBoundingClientRect()
-          return { fits: document.documentElement.scrollWidth <= innerWidth + 1,
-            separate: innerWidth < 768 || rect.right <= controls.left }
-        })
-        assert(geometry.fits && geometry.separate, `${width}px: documentation links fit beside header controls`)
-        if (width < 768) await menu.locator(':scope > summary').click()
+      for (const path of ['/', '/tmux/latest/reference/capture-pane/']) {
+        await page.goto(`${base}${path}`)
+        for (const width of [390, 768, 784, 1024, 1440, 1600]) {
+          await page.setViewportSize({ width, height: 900 })
+          assert.equal(await page.locator('header nav[aria-label="Documentation destinations"]').count(), 0)
+          const menu = page.locator('.site-header__menu')
+          await menu.locator(':scope > summary').click()
+          assert.equal(await menu.locator('[data-port-home]').count(), 0)
+          const geometry = await page.evaluate(() => {
+            const brand = document.querySelector('.site-header__mark').getBoundingClientRect()
+            const controls = document.querySelector('.site-header__always').getBoundingClientRect()
+            const menu = document.querySelector('.site-header__menu-button').getBoundingClientRect()
+            return { fits: document.documentElement.scrollWidth <= innerWidth + 1,
+              separate: brand.right <= controls.left && controls.right <= menu.left }
+          })
+          assert(geometry.fits && geometry.separate, `${path} at ${width}px: header controls fit without overlap`)
+          await menu.locator(':scope > summary').click()
+        }
       }
-      const tmux = page.locator('nav[aria-label="Documentation destinations"]:visible').getByRole('link', { name: 'tmux CLI reference' })
-      await tmux.focus()
+      await page.locator('.site-header__mark').focus()
       await page.keyboard.press('Enter')
-      await page.waitForURL(`${base}/tmux/latest/reference/`)
-      assert(await page.getByRole('heading', { name: 'tmux CLI reference', exact: true }).isVisible())
+      await page.waitForURL(`${base}/`)
     } finally {
       await context.close()
     }
   }
-  console.log('tmux header: CLI target, full label, Python ordering, active state, keyboard and 390–1600px layout pass with/without JavaScript')
+  console.log('Global header: no destination strip, usable menu and home link, 390–1600px with/without JavaScript')
 }
