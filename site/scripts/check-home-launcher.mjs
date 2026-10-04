@@ -11,12 +11,18 @@ export async function checkHomeLauncher(browser, base) {
   const language = page.locator('[data-home-launcher] [data-page-port-switcher]')
   const solution = page.locator('.home-launcher-solution:not([hidden])')
   const prompt = page.locator('.lm-agent-prompt')
+  const reset = page.locator('[data-home-launcher] > [data-home-reset]')
+  const logo = page.locator('.site-header__mark img:visible')
   const choose = async (port) => {
     await language.locator('summary').click()
     await language.locator(`a[data-port="${port}"]`).click()
     await page.waitForFunction((port) => document.querySelector('.lm-agent-prompt')?.dataset.activePort === port, port)
     assert(await page.locator(`.home-examples [data-home-language="${port}"]`).isVisible())
     assert.equal(await solution.getAttribute('data-home-language'), port)
+    assert.equal(new URL(page.url()).searchParams.get('port'), port, 'The address carries the chosen language')
+    assert(await reset.isVisible(), 'A chosen language can be reset')
+    assert.equal(await logo.getAttribute('src'), await language.locator(`a[data-port="${port}"] img`).getAttribute('src'), 'The header logo follows the selected language')
+    assert(await logo.evaluate((img) => img.complete && img.naturalWidth > 0), 'The selected logo is already loaded')
     const cards = await page.locator(`.home-intro [data-home-language="${port}"] .home-solutions > a`).evaluateAll((links) => links.map((link) => ({
       display: getComputedStyle(link).display,
       border: getComputedStyle(link).borderTopWidth,
@@ -31,6 +37,8 @@ export async function checkHomeLauncher(browser, base) {
     await page.locator('[data-home-launcher] [data-page-port-switcher][data-enhanced]').waitFor()
     assert.equal(await prompt.locator('[role="tablist"]').count(), 0, 'Homepage has one language picker')
     assert.equal(await page.getByRole('heading', { name: /^(Language libraries|Read the docs)$/ }).count(), 0)
+    assert.equal(await reset.isVisible(), false, 'The default example is not a saved choice')
+    const defaultLogo = await logo.getAttribute('src')
     for (const { slug } of PORTS) {
       await choose(slug)
       const links = await solution.locator('a').evaluateAll((links) => links.map((link) => link.getAttribute('href')))
@@ -46,8 +54,64 @@ export async function checkHomeLauncher(browser, base) {
     await page.goto(`${base}/`)
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'ruby')
     assert.equal(await solution.getAttribute('data-home-language'), 'ruby', 'Saved language restores both controls')
+    await page.goto(`${base}/?port=fsharp&prompt=session-switcher&from=shared#example`)
+    await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'fsharp')
+    assert.equal(await language.locator('.page-port-name').textContent(), 'F#', 'The URL overrides the saved language')
+    assert.equal(await prompt.locator('[data-select="topic"]').inputValue(), 'session-switcher')
+    await choose('go')
+    assert.equal(new URL(page.url()).searchParams.get('prompt'), 'session-switcher', 'Language changes preserve the task')
+    assert.equal(new URL(page.url()).searchParams.get('from'), 'shared', 'Language changes preserve unrelated parameters')
+    assert.equal(new URL(page.url()).hash, '#example')
+    await prompt.locator('[data-action="reroll"]').click()
+    const rerolled = await prompt.locator('[data-select="topic"]').inputValue()
+    assert.notEqual(rerolled, 'session-switcher')
+    assert.equal(new URL(page.url()).searchParams.get('port'), 'go', 'Task changes preserve the language')
+    await page.reload()
+    await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'go')
+    assert.equal(await prompt.locator('[data-select="topic"]').inputValue(), rerolled, 'Reload restores the language and task')
+    await language.locator('summary').click()
+    const resetGap = await language.locator('.doc-picker-title-actions').evaluate((actions) => {
+      const button = actions.querySelector('button').getBoundingClientRect()
+      const count = actions.querySelector('.doc-picker-count').getBoundingClientRect()
+      return count.left - button.right
+    })
+    assert(resetGap >= 11.5, 'Reset is separated from the language count')
+    await language.locator('[data-home-reset]').click()
+    assert.equal(new URL(page.url()).searchParams.has('port'), false, 'The picker reset removes the port parameter')
+    assert.equal(new URL(page.url()).searchParams.get('prompt'), rerolled, 'Reset preserves the task')
+    assert.equal(new URL(page.url()).searchParams.get('from'), 'shared')
+    assert.equal(new URL(page.url()).hash, '#example')
+    assert.equal(await page.evaluate(() => localStorage.getItem('libtmux-docs.package-install.port')), null)
+    assert.equal(await reset.isVisible(), false)
+    assert.equal(await logo.getAttribute('src'), defaultLogo, 'Reset restores the default header logo')
+    assert.equal(await language.locator('[aria-current]').count(), 0, 'Reset leaves no selected language')
+    assert(await language.locator('summary').evaluate((element) => document.activeElement === element), 'Reset keeps focus on the language picker')
+    await page.reload()
+    await page.waitForFunction(() => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Choose a language')
+    assert.equal(await reset.isVisible(), false, 'The cleared choice stays cleared on reload')
+    assert.equal(await prompt.getAttribute('data-active-port'), PORTS[0].slug)
+    await choose('fsharp')
+    await reset.click()
+    assert.equal(new URL(page.url()).searchParams.has('port'), false, 'The header reset also removes the port parameter')
+    await page.goto(`${base}/?port=constructor&prompt=setup`)
+    await page.waitForFunction(() => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Choose a language')
+    assert.equal(new URL(page.url()).searchParams.has('port'), false, 'Unknown languages do not become a selection')
+    await page.goto(`${base}/?port=fsharp&prompt=setup#first`)
+    await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'fsharp')
+    await page.evaluate(() => { location.hash = 'second' })
+    await choose('go')
+    await prompt.locator('[data-select="topic"]').selectOption('session-switcher')
+    await page.goBack()
+    await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'fsharp'
+      && document.querySelector('.lm-agent-prompt [data-select="topic"]')?.value === 'setup')
+    assert.equal(new URL(page.url()).hash, '#first', 'Back restores the matching language and task')
+    await page.goForward()
+    await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'go'
+      && document.querySelector('.lm-agent-prompt [data-select="topic"]')?.value === 'session-switcher')
+    assert.equal(new URL(page.url()).hash, '#second', 'Forward restores the matching language and task')
     await choose('py')
     const topic = prompt.locator('[data-select="topic"]')
+    await topic.selectOption('setup')
     const original = await prompt.locator('[data-port="py"] [data-prompt-text]').innerText()
     const tasks = await topic.locator('option').evaluateAll((options) => options.map((option) => option.value))
     await topic.selectOption(tasks.find((value) => value !== 'setup'))
@@ -106,6 +170,28 @@ export async function checkHomeLauncher(browser, base) {
   } finally {
     await context.close()
   }
+  const blockedStorage = await browser.newContext()
+  try {
+    // Astro's development toolbar reads storage unguarded; it is absent from published pages.
+    await blockedStorage.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
+    await blockedStorage.addInitScript(() => Object.defineProperty(window, 'localStorage', {
+      get() { throw new DOMException('Storage blocked', 'SecurityError') },
+    }))
+    const page = await blockedStorage.newPage()
+    page.on('pageerror', (error) => errors.push(error.message))
+    await page.goto(`${base}/?port=fsharp&prompt=session-switcher`)
+    await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'fsharp')
+    const launcher = page.locator('[data-home-launcher]')
+    assert.equal(await launcher.locator('.page-port-name').textContent(), 'F#', 'Shared language works without storage')
+    assert.equal(await page.locator('.lm-agent-prompt [data-select="topic"]').inputValue(), 'session-switcher')
+    await launcher.locator(':scope > [data-home-reset]').click()
+    assert.equal(new URL(page.url()).searchParams.has('port'), false)
+    await page.reload()
+    await page.waitForFunction(() => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Choose a language')
+    assert.deepEqual(errors, [], 'Shared links and reset work without storage')
+  } finally {
+    await blockedStorage.close()
+  }
   const noScript = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 777 } })
   try {
     const page = await noScript.newPage()
@@ -119,5 +205,5 @@ export async function checkHomeLauncher(browser, base) {
   } finally {
     await noScript.close()
   }
-  console.log('Homepage: 13 languages, owned solutions, saved selection, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS')
+  console.log('Homepage: 13 languages, owned solutions, shared URLs, reset, blocked storage, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS')
 }

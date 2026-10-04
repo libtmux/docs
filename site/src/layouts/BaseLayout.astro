@@ -41,6 +41,8 @@ interface Props {
   portSlug?: string
   /** Match the header and notice to the page's documentation frame. */
   documentationLayout?: 'prose' | 'reference'
+  /** Resolve the homepage language choice before painting its launcher and logo. */
+  homeLauncher?: boolean
   version?: string
   noindex?: boolean
   /** Include this page in the local search index. */
@@ -82,6 +84,7 @@ const {
   pagePath: requestedPagePath,
   portSlug,
   documentationLayout,
+  homeLauncher = false,
   version: requestedVersion,
   noindex = false,
   searchable = true,
@@ -171,7 +174,8 @@ const githubUrl = githubPort?.source && githubPort.repo === githubRepo
 ---
 
 <!doctype html>
-<html lang={locale} data-theme={brand.language} data-brand={brand.language} data-brand-variant={brand.variant} data-shell-base={buildBase}>
+<html lang={locale} data-theme={brand.language} data-brand={brand.language} data-brand-variant={brand.variant} data-shell-base={buildBase}
+  data-home-ports={homeLauncher ? Object.keys(PORT_BY_SLUG).join(' ') : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -255,6 +259,7 @@ const githubUrl = githubPort?.source && githubPort.repo === githubRepo
       !bare && (
         <SiteHeader
           documentationContext={Astro.slots.has('context')}
+          homeLauncher={homeLauncher}
           portSlug={navPort}
           version={navVersion}
           pagePath={sourcePath ?? pagePath}

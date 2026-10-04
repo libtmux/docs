@@ -69,15 +69,19 @@ describeIfAssembled('switcher targets', () => {
     const window = new Window({ url: `https://libtmux.org/${page}`, settings: { disableJavaScriptEvaluation: true, disableJavaScriptFileLoading: true, disableCSSFileLoading: true } })
     try {
       window.document.write(html)
-      const menus = window.document.querySelectorAll('details[data-page-port-switcher]')
+      const allMenus = [...window.document.querySelectorAll('details[data-page-port-switcher]')]
+      const launchers = allMenus.filter((menu) => menu.closest('[data-home-launcher]'))
+      const menus = allMenus.filter((menu) => !menu.closest('[data-home-launcher]'))
       expect(menus, `${page} matching-page controls`).toHaveLength(noDocument ? 0 : 1)
+      expect(launchers, `${page} homepage language launcher`).toHaveLength(page.endsWith('en/index.html') ? 1 : 0)
       expect(window.document.querySelectorAll('header nav[aria-label="Documentation destinations"]')).toHaveLength(0)
-      if (noDocument) return
-      const counterparts = [...menus[0].querySelectorAll('a[href]')].map((link) => link.getAttribute('href')!)
-      expect(counterparts.length, `${page} has an available counterpart`).toBeGreaterThan(0)
-      expect(counterparts.filter((href) => !resolves(href)), `${page}: matching pages missing on disk`).toEqual([])
-      for (const disabled of menus[0].querySelectorAll('[aria-disabled="true"]')) {
-        expect(disabled.hasAttribute('href'), `${page} unavailable counterparts are not links`).toBe(false)
+      for (const menu of allMenus) {
+        const counterparts = [...menu.querySelectorAll('a[href]')].map((link) => link.getAttribute('href')!)
+        expect(counterparts.length, `${page} has an available destination`).toBeGreaterThan(0)
+        expect(counterparts.filter((href) => !resolves(href)), `${page}: destinations missing on disk`).toEqual([])
+        for (const disabled of menu.querySelectorAll('[aria-disabled="true"]')) {
+          expect(disabled.hasAttribute('href'), `${page} unavailable counterparts are not links`).toBe(false)
+        }
       }
     } finally {
       window.close()

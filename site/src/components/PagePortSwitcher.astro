@@ -26,7 +26,7 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
     <svg class="doc-picker-caret" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
   </summary>
   <div class="doc-picker-panel port-picker-panel" data-picker-panel>
-    <p class="doc-picker-title">Choose a port <span class="doc-picker-count">{entries.length}</span></p>
+    <p class="doc-picker-title">Choose a port <span class="doc-picker-title-actions"><slot name="title-actions" /><span class="doc-picker-count">{entries.length}</span></span></p>
     <label class="doc-picker-search" data-picker-search-label hidden>
       <span class="sr-only">Find a port</span>
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>

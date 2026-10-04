@@ -752,7 +752,7 @@ const activePortRules = items
   function hydrate() {
     let saved: string | null = null
     try {
-      saved = localStorage.getItem(STORAGE_KEY)
+      saved = document.documentElement.getAttribute('data-pkg-port') ?? localStorage.getItem(STORAGE_KEY)
     } catch {
       saved = null
     }
@@ -812,4 +812,5 @@ const activePortRules = items
     hydrate()
   }
   document.addEventListener('astro:after-swap', hydrate)
+  window.addEventListener('popstate', hydrate)
 </script>

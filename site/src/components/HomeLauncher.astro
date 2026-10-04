@@ -14,12 +14,15 @@ const { entries, solutions, locale } = Astro.props
 const initial = entries[0].port
 ---
 
-<nav class="home-launcher" aria-label="Choose language and solution" data-home-launcher>
-  <PagePortSwitcher entries={entries} portSlug={initial} label="Choose a programming language" />
+<nav class="home-launcher" aria-label="Choose language and solution" data-home-launcher data-default-port={initial}>
+  <PagePortSwitcher entries={entries} portSlug={initial} label="Choose a programming language">
+    <button slot="title-actions" class="home-launcher-reset" type="button" data-home-reset hidden aria-label="Reset language selection">Reset</button>
+  </PagePortSwitcher>
   <span class="home-launcher-next" aria-hidden="true">→</span>
   {solutions.map(({ port, version, surfaces }) => <div class="home-launcher-solution" data-home-language={port} hidden={port !== initial}>
     <SurfacePicker surfaces={surfaces} currentPath="/" port={port} version={version} locale={locale} solutionsOnly />
   </div>)}
+  <button class="home-launcher-reset" type="button" data-home-reset hidden aria-label="Reset language selection">Reset</button>
   <span class="sr-only" role="status" aria-live="polite" data-home-selection-status></span>
 </nav>
 
@@ -28,14 +31,16 @@ const initial = entries[0].port
   .home-launcher [hidden] { display: none !important; }
   .home-launcher-next { color: var(--color-muted); font-size: .8125rem; }
   .home-launcher-solution { min-width: 0; }
+  .home-launcher-reset { flex: none; padding: .2rem 0; color: var(--color-link); font-size: .75rem; font-weight: 400; text-decoration: underline; text-underline-offset: .15em; cursor: pointer; }
+  .home-launcher-reset:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
   .home-launcher :global(.surface-picker > summary) { min-height: 2.25rem; padding: .25rem .55rem; }
   .home-launcher :global(.surface-current strong) { white-space: nowrap; font-size: .8125rem; font-weight: 400; }
   .home-launcher :global(.surface-artwork) { width: 1.5rem; height: 1.5rem; }
   :global(.site-header__bar:has(.home-launcher)) { flex-wrap: wrap; }
   @media (max-width: 40rem) {
-    .home-launcher { order: 5; flex-basis: 100%; padding-block: .25rem; }
+    .home-launcher { order: 5; flex-basis: 100%; flex-wrap: wrap; padding-block: .25rem; }
     .home-launcher :global(.doc-picker:not([data-enhanced]) > .doc-picker-panel) { position: fixed; top: auto; left: .5rem; }
-    .home-launcher-solution { flex: 1; max-width: 15rem; }
+    .home-launcher-solution { flex: 1; min-width: 11rem; max-width: 15rem; }
   }
 </style>
 
@@ -50,9 +55,10 @@ const initial = entries[0].port
     if (!root) return
     const picker = root.querySelector<HTMLDetailsElement>('[data-page-port-switcher]')!
     const links = [...picker.querySelectorAll<HTMLAnchorElement>('a[data-port]')]
-    const select = (port: string, moveFocus = false, notify = false) => {
-      const chosen = links.find((link) => link.dataset.port === port)
-      if (!chosen) return
+    const select = (selection: string | null, moveFocus = false, notify = false) => {
+      const chosen = links.find((link) => link.dataset.port === selection)
+      if (selection && !chosen) return
+      const port = chosen?.dataset.port ?? root.dataset.defaultPort!
       for (const panel of document.querySelectorAll<HTMLElement>('[data-home-language]')) {
         panel.hidden = panel.dataset.homeLanguage !== port
       }
@@ -60,25 +66,45 @@ const initial = entries[0].port
         link.removeAttribute('aria-current')
         link.querySelector('.doc-picker-check')?.remove()
       }
-      chosen.setAttribute('aria-current', 'true')
-      const check = document.createElement('span')
-      check.className = 'doc-picker-check'
-      check.setAttribute('aria-hidden', 'true')
-      check.textContent = '✓'
-      chosen.append(check)
-      const name = chosen.dataset.portName!
+      if (chosen) {
+        chosen.setAttribute('aria-current', 'true')
+        const check = document.createElement('span')
+        check.className = 'doc-picker-check'
+        check.setAttribute('aria-hidden', 'true')
+        check.textContent = '✓'
+        chosen.append(check)
+      }
+      const name = chosen?.dataset.portName ?? 'Choose a language'
       picker.querySelector('.page-port-name')!.textContent = name
-      picker.querySelector('.page-port-short-name')!.textContent = chosen.dataset.portShortName!
-      picker.querySelector('summary')!.setAttribute('aria-label', `${name}: choose a programming language`)
+      picker.querySelector('.page-port-short-name')!.textContent = chosen?.dataset.portShortName ?? 'Language'
+      picker.querySelector('summary')!.setAttribute('aria-label', chosen ? `${name}: choose a programming language` : 'Choose a programming language')
       picker.open = false
       document.documentElement.setAttribute('data-pkg-port', port)
-      try { localStorage.setItem(storageKey, port) } catch { /* Selection still works without storage. */ }
-      root.querySelector('[data-home-selection-status]')!.textContent = `${name} selected. Choose a solution to open its documentation.`
-      if (moveFocus) root.querySelector<HTMLElement>(`[data-home-language="${port}"] > details > summary`)?.focus()
+      try {
+        if (chosen) localStorage.setItem(storageKey, port)
+        else localStorage.removeItem(storageKey)
+      } catch { /* The URL still carries the selection without storage. */ }
+      const url = new URL(window.location.href)
+      if (chosen) url.searchParams.set('port', port)
+      else url.searchParams.delete('port')
+      if (url.href !== window.location.href) history.replaceState(history.state, '', url)
+      for (const reset of root.querySelectorAll<HTMLButtonElement>('[data-home-reset]')) reset.hidden = !chosen
+      root.querySelector('[data-home-selection-status]')!.textContent = chosen
+        ? `${name} selected. Choose a solution to open its documentation.`
+        : 'Language selection cleared. Showing the default example.'
+      if (moveFocus) {
+        const target = chosen ? root.querySelector<HTMLElement>(`[data-home-language="${port}"] > details > summary`) : picker.querySelector('summary')
+        target?.focus()
+      }
       if (notify) window.dispatchEvent(new CustomEvent(syncEvent, { detail: { origin: root, slug: port } }))
     }
     root.addEventListener('click', (event) => {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      if (event.target instanceof Element && event.target.closest('[data-home-reset]')) {
+        event.preventDefault()
+        select(null, true, true)
+        return
+      }
       const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('[data-page-port-switcher] a[data-port]') : null
       if (!link) return
       event.preventDefault()
@@ -87,10 +113,15 @@ const initial = entries[0].port
     window.addEventListener(syncEvent, ((event: CustomEvent<{ origin: HTMLElement; slug: string }>) => {
       if (event.detail.origin !== root) select(event.detail.slug)
     }) as EventListener, { signal: controller.signal })
-    try {
-      const saved = localStorage.getItem(storageKey)
-      if (saved) select(saved, false, true)
-    } catch { /* Keep the server-rendered default. */ }
+    const restore = () => {
+      const shared = new URL(window.location.href).searchParams.get('port')
+      let saved: string | null = null
+      try { saved = localStorage.getItem(storageKey) } catch { /* Storage may be disabled. */ }
+      const port = [shared, saved].find((value) => links.some((link) => link.dataset.port === value))
+      select(port ?? null, false, true)
+    }
+    restore()
+    window.addEventListener('popstate', restore, { signal: controller.signal })
   }
   initHomeLauncher()
   document.addEventListener('astro:after-swap', initHomeLauncher)
