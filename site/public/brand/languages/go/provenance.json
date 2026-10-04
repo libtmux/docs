@@ -1,0 +1,19 @@
+{
+  "name": "Go",
+  "asset": "icon.svg",
+  "sourceUrl": "https://go.dev/images/favicon-gopher.svg",
+  "resolvedUrl": "https://go.dev/images/favicon-gopher.svg",
+  "sourcePage": "https://go.dev/blog/gopher",
+  "retrievedAt": "2026-10-04T14:52:41+00:00",
+  "sha256": "3a52a951479817c4ed3285f87b41112b5a1c21be77389f190f1bf025a41533fd",
+  "copyright": "Go gopher artwork by Renee French. The source does not specify a copyright year for this SVG.",
+  "license": {
+    "name": "CC-BY-4.0",
+    "urls": [
+      "https://creativecommons.org/licenses/by/4.0/",
+      "https://go.dev/blog/gopher"
+    ],
+    "notes": "Credit Renee French, link the license, and indicate changes. This is the favicon form supplied by the official Go website."
+  },
+  "modifications": "None. The downloaded SVG bytes are preserved."
+}
