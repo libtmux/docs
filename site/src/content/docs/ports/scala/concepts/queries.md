@@ -80,7 +80,8 @@ trap 'exit 1' HUP INT TERM
 
 unset TMUX TMUX_PANE
 export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
+"$binary" -S "$socket" -f /dev/null \
+    new-session -d -s work-one -n editor /bin/cat
 "$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
 "$@"
 "$binary" -S "$socket" has-session -t '=work-one'
@@ -111,7 +112,8 @@ import scala.jdk.CollectionConverters.*
 object Local {
   def main(args: Array[String]): Unit = {
     val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+      throw new IllegalArgumentException(
+        "Set LIBTMUX_SOCKET_PATH to an existing socket"))
     val config = ServerConfig.builder()
       .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
       .defaultTimeout(Duration.ofSeconds(5))
@@ -124,11 +126,13 @@ object Local {
       println(names.mkString(", "))
       // Filtering the captured vector makes no new tmux calls.
       assert(sessions.filter(_.name.startsWith("work-")) == matching)
-      val onlyOne = Session.name.startsWith("work-") && Session.name.endsWith("one")
+      val endsInOne = Session.name.endsWith("one")
+      val onlyOne = Session.name.startsWith("work-") && endsInOne
       assert(sessions.matching(onlyOne).head.name == "work-one")
       val either = Session.name.is("work-one") || Session.name.is("work-two")
       assert(sessions.matching(either).size == 2)
-      assert(sessions.matching(!Session.name.is("work-one")).head.name == "work-two")
+      val notOne = sessions.matching(!Session.name.is("work-one"))
+      assert(notOne.head.name == "work-two")
     }
   }
 }
@@ -161,7 +165,8 @@ import scala.jdk.CollectionConverters.*
 object Cardinality {
   def main(args: Array[String]): Unit = {
     val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+      throw new IllegalArgumentException(
+        "Set LIBTMUX_SOCKET_PATH to an existing socket"))
     val config = ServerConfig.builder()
       .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
       .defaultTimeout(Duration.ofSeconds(5))
@@ -173,7 +178,8 @@ object Cardinality {
           case Right(session) => println(s"${session.name}: selected")
           case Left(CardinalityError.NoMatch) => println(s"$name: absent")
           case Left(CardinalityError.MultipleMatches(count)) =>
-            throw new IllegalStateException(s"At least $count sessions named $name")
+            throw new IllegalStateException(
+              s"At least $count sessions named $name")
         }
       }
       val many = sessions.matching(Session.name.startsWith("work-")).atMostOne
@@ -213,7 +219,8 @@ import scala.jdk.CollectionConverters.*
 object Relations {
   def main(args: Array[String]): Unit = {
     val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+      throw new IllegalArgumentException(
+        "Set LIBTMUX_SOCKET_PATH to an existing socket"))
     val config = ServerConfig.builder()
       .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
       .defaultTimeout(Duration.ofSeconds(5))
