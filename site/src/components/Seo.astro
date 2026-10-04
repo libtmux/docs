@@ -1,6 +1,6 @@
 ---
 import type { Graph } from 'schema-dts'
-import { branding, documentationTitle, jsonLd, PYTHON_DESCRIPTION, PYTHON_SAME_AS } from '../lib/branding'
+import { branding, documentationTitle, jsonLd, PYTHON_DESCRIPTION, PYTHON_SAME_AS, TMUX_DESCRIPTION, TMUX_WEBSITE, tmuxDocumentationTitle } from '../lib/branding'
 import { DOC_PRODUCTS, PORT_BY_SLUG, type DocProduct } from '../lib/ports'
 import { canonicalUrl, robotsFor, type VersionEntry } from '../lib/versions'
 import { IS_ROOT_BUILD, SITE_ROOT } from '../lib/site-root'
@@ -85,10 +85,12 @@ const {
 const origin = (Astro.site?.origin ?? 'https://libtmux.org').replace(/\/$/, '')
 const brand = branding(brandPort ?? portSlug, pagePath, SITE_ROOT)
 const port = PORT_BY_SLUG[brandPort ?? portSlug ?? ''] ? brand.port : undefined
-const imageUrl = new URL(brand.asset('opengraph-light.png'), origin).href
-const logoUrl = new URL(brand.asset('logo-512.png'), origin).href
+const tmux = !portSlug && !brandPort && /^tmux(?:\/|$)/.test(pagePath)
+const tmuxLogo = new URL(`${SITE_ROOT}/brand/tmux/tmux-logomark.svg`, origin).href
+const imageUrl = tmux ? tmuxLogo : new URL(brand.asset('opengraph-light.png'), origin).href
+const logoUrl = tmux ? tmuxLogo : new URL(brand.asset('logo-512.png'), origin).href
 const repositoryUrl = port ? `https://github.com/${repository ?? port.repo}` : undefined
-const twitterImage = new URL(brand.asset('twitter-light.png'), origin).href
+const twitterImage = tmux ? tmuxLogo : new URL(brand.asset('twitter-light.png'), origin).href
 
 /*
  * Absolute URLs compose through the build's own site root, not the bare
@@ -137,10 +139,10 @@ const indexable = portSlug ? isDefault : isRootShellBuild
 
 const robots = noindex ? 'noindex, nofollow' : robotsFor(versionEntry, indexable)
 
-const fullTitle = documentationTitle(title, brand.projectName)
+const fullTitle = tmux ? tmuxDocumentationTitle(title, pagePath) : documentationTitle(title, brand.projectName)
 const desc =
   description ??
-  (port ? `${brand.projectName}: typed tmux control for ${port.language}.` : PYTHON_DESCRIPTION)
+  (tmux ? TMUX_DESCRIPTION : port ? `${brand.projectName}: typed tmux control for ${port.language}.` : PYTHON_DESCRIPTION)
 
 // Structured data. WebSite on the landing page, TechArticle elsewhere —
 // TechArticle is the schema.org type that actually fits API documentation,
@@ -153,22 +155,23 @@ const graph: Graph = {
       '@type': 'WebSite',
       '@id': `${origin}/#website`,
       url: `${origin}/`,
-      name: 'libtmux',
-      description: PYTHON_DESCRIPTION,
-      image: new URL(`${SITE_ROOT}/brand/python/library/opengraph-light.png`, origin).href,
-      about: { '@id': `${origin}/#libtmux` },
+      name: tmux ? 'libtmux.org' : 'libtmux',
+      description: tmux ? 'Documentation for tmux and libraries that control it.' : PYTHON_DESCRIPTION,
+      image: tmux ? tmuxLogo : new URL(`${SITE_ROOT}/brand/python/library/opengraph-light.png`, origin).href,
+      about: { '@id': `${origin}/#${tmux ? 'tmux' : 'libtmux'}` },
     },
     {
       '@type': 'SoftwareSourceCode',
-      '@id': `${origin}/#libtmux`,
-      name: 'libtmux',
-      description: PYTHON_DESCRIPTION,
-      url: 'https://libtmux.git-pull.com/',
-      codeRepository: 'https://github.com/tmux-python/libtmux',
-      programmingLanguage: 'Python',
-      sameAs: PYTHON_SAME_AS,
-      image: new URL(`${SITE_ROOT}/brand/python/library/logo-512.png`, origin).href,
-      author: { '@type': 'Person', name: 'Tony Narlock', url: 'https://tony.sh/' },
+      '@id': `${origin}/#${tmux ? 'tmux' : 'libtmux'}`,
+      name: tmux ? 'tmux' : 'libtmux',
+      description: tmux ? TMUX_DESCRIPTION : PYTHON_DESCRIPTION,
+      url: tmux ? TMUX_WEBSITE : 'https://libtmux.git-pull.com/',
+      codeRepository: tmux ? 'https://github.com/tmux/tmux' : 'https://github.com/tmux-python/libtmux',
+      programmingLanguage: tmux ? 'C' : 'Python',
+      sameAs: tmux ? [TMUX_WEBSITE, 'https://github.com/tmux/tmux'] : PYTHON_SAME_AS,
+      image: tmux ? tmuxLogo : new URL(`${SITE_ROOT}/brand/python/library/logo-512.png`, origin).href,
+      author: tmux ? { '@type': 'Person', name: 'Nicholas Marriott', url: 'https://github.com/nicm' }
+        : { '@type': 'Person', name: 'Tony Narlock', url: 'https://tony.sh/' },
     },
     ...(pagePath || port
       ? [
@@ -184,6 +187,7 @@ const graph: Graph = {
             isPartOf: { '@id': `${origin}/#website` },
             inLanguage: locale,
             ...(updated ? { dateModified: updated } : {}),
+            ...(tmux ? { about: { '@id': `${origin}/#tmux` } } : {}),
             ...(port
               ? {
                   about: { '@type': 'SoftwareSourceCode' as const, name: brand.variant === 'library' ? brand.projectName : `${brand.projectName} ${DOC_PRODUCTS[brand.variant as DocProduct].label}`, alternateName: port.packageName, programmingLanguage: brand.palette.name, codeRepository: repositoryUrl, image: logoUrl, sameAs: [repositoryUrl!] },
@@ -229,18 +233,17 @@ const graph: Graph = {
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={desc} />
 <meta property="og:url" content={canonical} />
-<meta property="og:site_name" content={brand.projectName} />
+<meta property="og:site_name" content={tmux ? 'libtmux.org' : brand.projectName} />
 <meta property="og:image" content={imageUrl} />
 <meta property="og:image:secure_url" content={imageUrl} />
-<meta property="og:image:type" content="image/png" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content={brand.label} />
+<meta property="og:image:type" content={tmux ? 'image/svg+xml' : 'image/png'} />
+{!tmux && <><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" /></>}
+<meta property="og:image:alt" content={tmux ? 'tmux' : brand.label} />
 <meta property="og:locale" content={locale === 'ja' ? 'ja_JP' : 'en_US'} />
-<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:card" content={tmux ? 'summary' : 'summary_large_image'} />
 <meta name="twitter:title" content={fullTitle} />
 <meta name="twitter:description" content={desc} />
 <meta name="twitter:image" content={twitterImage} />
-<meta name="twitter:image:alt" content={brand.label} />
+<meta name="twitter:image:alt" content={tmux ? 'tmux' : brand.label} />
 
 <script type="application/ld+json" is:inline set:html={jsonLd(graph)} />

@@ -10,6 +10,22 @@ export const PYTHON_SAME_AS = [
   'https://pypi.org/project/libtmux/',
 ]
 
+export const TMUX_DESCRIPTION = 'Terminal multiplexer: sessions, windows and panes controlled from the terminal.'
+export const TMUX_WEBSITE = 'https://github.com/tmux/tmux/wiki'
+
+/** The section disambiguates manual commands from guides and source APIs. */
+export function tmuxDocumentationTitle(title: string, pagePath: string): string {
+  const sections: Record<string, string> = {
+    guides: 'Guides', topics: 'Topics', concepts: 'Concepts', examples: 'Examples',
+    manual: 'Manual', reference: 'Reference',
+  }
+  const parts = pagePath.split('/').filter(Boolean)
+  const section = sections[parts[1]] ?? sections[parts[2]]
+  const page = title === 'Just tmux' ? '' : title
+  return [page, section && page.toLowerCase() !== section.toLowerCase() ? section : '', 'tmux', 'libtmux.org']
+    .filter(Boolean).join(' | ')
+}
+
 export function branding(portSlug?: string, pagePath = '', root = '') {
   const { language, variant } = pageBrand(portSlug, pagePath)
   const palette = palettes[language as keyof typeof palettes]

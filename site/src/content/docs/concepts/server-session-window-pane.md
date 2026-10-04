@@ -1,7 +1,7 @@
 ---
 supportedPorts: [py, ts, rs, java, dotnet, cxx, swift, ruby, lua]
 title: Server, session, window, pane
-description: The object hierarchy every libtmux port mirrors from tmux itself, and the client that sits outside it.
+description: How tmux servers, sessions, windows, panes and attached clients relate to each other.
 sidebar:
   label: Server, session, window, pane
   group: Concepts

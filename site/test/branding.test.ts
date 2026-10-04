@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { pageBrand, PORTS } from '../src/lib/ports'
-import { branding, documentationTitle, jsonLd, palettes } from '../src/lib/branding'
+import { branding, documentationTitle, jsonLd, palettes, tmuxDocumentationTitle } from '../src/lib/branding'
 import { nativeBrandHead } from '../../scripts/brand-native-pages.mjs'
 
 const publicFile = (path: string) => fileURLToPath(new URL(`../public${path}`, import.meta.url))
@@ -18,6 +18,12 @@ const contrast = (a: string, b: string) => {
 }
 
 describe('route branding', () => {
+  it('identifies tmux pages by their section and hosting site', () => {
+    expect(tmuxDocumentationTitle('Getting started', 'tmux/guides/getting-started')).toBe('Getting started | Guides | tmux | libtmux.org')
+    expect(tmuxDocumentationTitle('Guides', 'tmux/guides')).toBe('Guides | tmux | libtmux.org')
+    expect(tmuxDocumentationTitle('capture-pane', 'tmux/3.7c/manual/capture-pane')).toBe('capture-pane | Manual | tmux | libtmux.org')
+    expect(tmuxDocumentationTitle('Just tmux', 'tmux')).toBe('tmux | libtmux.org')
+  })
   it('uses project titles independently of package names and shared source repositories', () => {
     const names = {
       py: 'libtmux', ruby: 'libtmux-ruby', lua: 'libtmux-lua', ts: 'libtmux-ts',
