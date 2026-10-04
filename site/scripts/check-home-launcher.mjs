@@ -155,7 +155,25 @@ export async function checkHomeLauncher(browser, base) {
       assert.equal(hash(rendered.excerpt), proof.excerptSha256, `${proof.port}: exact excerpt copy payload`)
       assert.deepEqual(rendered.files.map((file) => ({ name: file.name, sha256: hash(file.code) })), proof.files.map((file) => ({ name: file.name, sha256: file.clipboardSha256 })), `${proof.port}: complete native-verified file copy payloads`)
       assert.deepEqual(rendered.commands, proof.shellRecipe, `${proof.port}: exact setup and run copy payloads`)
-
+      const pre = panel.locator(':scope > .expressive-code pre')
+      const width = await pre.evaluate(async (element) => {
+        // Container-query sizes settle after a previously hidden panel is painted.
+        await new Promise(requestAnimationFrame)
+        await new Promise(requestAnimationFrame)
+        await document.fonts.ready
+        await new Promise(requestAnimationFrame)
+        return { available: element.clientWidth, content: element.scrollWidth,
+          font: getComputedStyle(element.querySelector('code')).fontSize,
+          gutter: getComputedStyle(element).scrollbarGutter,
+          container: getComputedStyle(element).containerType,
+          columns: element.closest('[data-home-language]').style.getPropertyValue('--home-code-columns'),
+          lines: [...element.querySelectorAll('.code')].map((line) => {
+            const range = document.createRange(); range.selectNodeContents(line)
+            return { text: line.textContent, width: range.getBoundingClientRect().width,
+              font: getComputedStyle(line).font, padding: getComputedStyle(line).padding }
+          }).sort((a, b) => b.width - a.width).slice(0, 2) }
+      })
+      assert(width.content <= width.available + 1, `${proof.port}: no horizontal scrollbar at 1093px ${JSON.stringify(width)}`)
     }
     await choose('rs')
     const code = page.locator('.home-examples > [data-home-language="rs"] > .expressive-code pre code')
