@@ -29,8 +29,10 @@ Fetch the library revision used by this example:
 
 ```console
 $ git init libtmux-source && \
-  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \
-  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \
+  git -C libtmux-source remote add origin \
+    https://github.com/libtmux/libtmux-swift.git && \
+  git -C libtmux-source fetch --depth=1 origin \
+    254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \
   git -C libtmux-source checkout --detach FETCH_HEAD
 ```
 
@@ -109,7 +111,9 @@ struct WorkspaceExample {
         try await withPrivateTmux { server in
             let started = try await server.run([
                 TmuxCommand("set-option", ["-g", "default-shell", "/bin/sh"]),
-                TmuxCommand("set-option", ["-g", "default-command", "exec /bin/cat"]),
+                TmuxCommand("set-option", [
+                    "-g", "default-command", "exec /bin/cat",
+                ]),
                 TmuxCommand("set-environment", ["-g", "ENV", ""]),
                 TmuxCommand("set-environment", ["-g", "BASH_ENV", ""]),
                 TmuxCommand("new-session", ["-d", "-s", "bootstrap"]),
@@ -127,7 +131,9 @@ struct WorkspaceExample {
                     WindowPlan(windowName: "logs", panes: [PanePlan()]),
                 ]
             )
-            let session = try await WorkspaceBuilder.build(workspace, on: server)
+            let session = try await WorkspaceBuilder.build(
+                workspace, on: server
+            )
             let snapshot = try await server.snapshot()
             let windows = snapshot.windows(of: session)
             guard windows.count == 2,
