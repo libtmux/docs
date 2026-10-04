@@ -44,6 +44,20 @@ afterEach(async () => {
 
 describe('theme preference across Astro and native pages', () => {
   it.each([
+    ['', '', null],
+    ['', 'ruby', 'ruby'],
+    ['?port=lua', 'ruby', 'lua'],
+    ['?port=unknown', 'ruby', 'ruby'],
+    ['?port=unknown', 'missing', null],
+  ])('resolves a homepage icon before paint: URL %s, saved %s', (query, saved, expected) => {
+    const { window } = page(saved ? { 'libtmux-docs.package-install.port': saved } : {})
+    window.location.href = `https://libtmux.org/en/${query}`
+    window.document.documentElement.setAttribute('data-home-ports', 'py ruby lua')
+    astro(window)
+    expect(window.document.documentElement.getAttribute('data-home-selected-port')).toBe(expected)
+  })
+
+  it.each([
     ['dark', 'light', 'dark'], ['light', 'dark', 'light'],
     ['system', 'dark', 'dark'], ['system', 'light', 'light'],
   ])('carries Astro %s into a native page with a %s OS preference', async (choice, system, resolved) => {

@@ -28,6 +28,35 @@ The tmux logomark is by Jason Long. The site uses the unmodified
 [upstream SVG](https://github.com/tmux/tmux/blob/8f25579c5aef8d93924a20681f394e2a582fd3ad/logo/tmux-logomark.svg)
 under its [copyright and permission notice](/brand/tmux/LICENSE.txt).
 
+## Programming-language artwork
+
+The homepage language selector uses local copies of the following artwork
+to identify the selected language. Each source record includes the download
+URL, retrieval time, file hash, copyright information and usage terms.
+These marks identify their respective languages and do not imply endorsement
+of libtmux.
+
+The SVG files are copied unchanged except for Scala, whose empty surrounding
+canvas is cropped. Its paths, gradients and colors are preserved, and the
+original SVG is retained beside the cropped copy. Rust's supplied SVG includes
+its own dark-theme colors.
+
+| Language | Credit and terms | Local source record |
+|---|---|---|
+| Python | Python Software Foundation. The [PSF logo terms](https://www.python.org/psf/trademarks/) permit the unaltered mark to identify Python. | [Python provenance](/brand/languages/py/provenance.json) |
+| Ruby | Copyright © 2006, Yukihiro Matsumoto. The [Ruby logo](https://www.ruby-lang.org/en/about/logo/) is licensed under [CC BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/). | [Ruby provenance](/brand/languages/ruby/provenance.json) |
+| Lua | Copyright © 1998 Lua.org; graphic design by Alexandre Nakonechnyj. The Devicon copy carries its [MIT notice](/brand/languages/lua/LICENSE.txt); [Lua's logo terms](https://www.lua.org/images/) also apply. Visit [Lua.org](https://www.lua.org/). | [Lua provenance](/brand/languages/lua/provenance.json) |
+| TypeScript | Microsoft. The [official branding terms](https://www.typescriptlang.org/branding/) govern the mark; the website repository licenses exclude logo and trademark rights. | [TypeScript provenance](/brand/languages/ts/provenance.json) |
+| Rust | The Rust Foundation. [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) and the [Rust trademark policy](https://rustfoundation.org/policy/rust-trademark-policy/) apply. | [Rust provenance](/brand/languages/rs/provenance.json) |
+| Go | The [Go gopher](https://go.dev/blog/gopher) is by Renee French, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). | [Go provenance](/brand/languages/go/provenance.json) |
+| C++ | Created by Jeremy Kratz and licensed by the Standard C++ Foundation under its [logo-use terms](https://isocpp.org/home/terms-of-use). | [C++ provenance](/brand/languages/cxx/provenance.json) |
+| Swift | Apple Inc., under the [Swift Logo Guidelines](https://developer.apple.com/swift/downloads/swift-logo.zip). Swift and the Swift logo are trademarks of Apple Inc. | [Swift provenance](/brand/languages/swift/provenance.json) |
+| Java | Devicon collection copyright (c) 2015 konpa, with its [MIT notice](/brand/languages/java/LICENSE.txt). This does not establish unrestricted rights to the underlying Java logo; [Oracle's logo terms](https://www.oracle.com/legal/logos/) apply. | [Java provenance](/brand/languages/java/provenance.json) |
+| Kotlin | Kotlin Foundation brand guidelines preserve JetBrains copyrights. The [icon-use terms](https://kotlinfoundation.org/guidelines/) permit identifying Kotlin alongside other programming-language icons. | [Kotlin provenance](/brand/languages/kotlin/provenance.json) |
+| Scala | Copyright EPFL. [Historical permission](https://groups.google.com/g/scala-user/c/bCC-R0FQn1w) covers noncommercial Scala promotion; the [general artwork-license question](https://github.com/scala/scala-lang/issues/1040) remains unresolved. | [Scala provenance](/brand/languages/scala/provenance.json) |
+| .NET | Copyright the .NET authors. [Brand-use permission](https://github.com/dotnet/brand/issues/10#issuecomment-669465301) allows the unmodified logo to represent .NET. The repository's CC0 statement covers illustrations; no blanket CC0 claim is made for the logo. | [.NET provenance](/brand/languages/dotnet/provenance.json) |
+| F# | The F# Software Foundation. Its [logo terms](https://foundation.fsharp.org/logo) require unchanged shape, colors and proportions, without implying Foundation representation. | [F# provenance](/brand/languages/fsharp/provenance.json) |
+
 ## Documentation toolchain
 
 libtmux and this site are built with open-source software. The following

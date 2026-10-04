@@ -55,6 +55,12 @@
     } else {
       document.documentElement.removeAttribute('data-pkg-port');
     }
+    // Reset still shows a default code example, but its trigger has no choice.
+    if (homePorts.includes(port)) {
+      document.documentElement.setAttribute('data-home-selected-port', port);
+    } else {
+      document.documentElement.removeAttribute('data-home-selected-port');
+    }
     // And each port's package manager, one level down. Without this a panel
     // painted its first manager, npm, and the widget's script switched it to
     // the saved one, bun, a frame later. `picker-paint.ts` keys its rules on

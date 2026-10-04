@@ -22,5 +22,6 @@
       "sha256": "31268048ba92cdefec9bf06496f45a424c31b674d33c11f8e164eaada439141f"
     }
   },
-  "modifications": "None. The downloaded SVG bytes are preserved."
+  "modifications": "None. The downloaded SVG bytes are preserved.",
+  "displayTreatment": "Rendered proportionally in the shared 18px language-selector icon box. This compact control is below the 30px on-screen minimum specified by the linked brand guidelines; it is not a claim of full guideline compliance."
 }

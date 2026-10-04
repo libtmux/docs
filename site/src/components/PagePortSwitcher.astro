@@ -6,8 +6,15 @@ import { withRoot, withPortRoot } from '../lib/site-root'
 import TmuxLogo from './tmux/Logo.astro'
 import '../styles/documentation-picker.css'
 
-interface Props { entries: PagePortLink[]; portSlug?: string; label?: string; tmux?: boolean }
-const { entries, portSlug, label, tmux = false } = Astro.props
+interface Props {
+  entries: PagePortLink[]
+  portSlug?: string
+  label?: string
+  tmux?: boolean
+  /** Language artwork belongs only to the homepage launcher's trigger. */
+  homeLanguageIcons?: boolean
+}
+const { entries, portSlug, label, tmux = false, homeLanguageIcons = false } = Astro.props
 const current = entries.find((entry) => entry.port === portSlug)
 const name = tmux ? 'tmux CLI' : current?.name ?? PORT_BY_SLUG[portSlug ?? '']?.name ?? 'In other ports'
 const shortName = tmux ? 'tmux' : PORT_BY_SLUG[portSlug ?? '']?.shortName ?? name
@@ -22,7 +29,13 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
 ---
 <details class="doc-picker" data-page-port-switcher data-doc-picker>
   <summary aria-label={label ?? `${name}: choose a language or tmux documentation`}>
-    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="m5 4-4 4 4 4m6-8 4 4-4 4M9.5 2l-3 12" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    <span class:list={['page-port-icon', { 'home-language-icon': homeLanguageIcons }]} aria-hidden="true">
+      <svg data-home-default-icon={homeLanguageIcons || undefined} viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="m5 4-4 4 4 4m6-8 4 4-4 4M9.5 2l-3 12" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      {homeLanguageIcons && entries.map((entry) => <img
+        data-home-language-icon={entry.port}
+        src={withRoot(`/brand/languages/${entry.port}/icon.svg`)}
+        width="18" height="18" alt="" loading="eager" decoding="sync" />)}
+    </span>
     <span class="page-port-name">{name}</span><span class="page-port-short-name" aria-hidden="true">{shortName}</span>
     <svg class="doc-picker-caret" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
   </summary>
@@ -68,6 +81,7 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
   </div>
 </details>
 <style>
+  .page-port-icon { display: grid; place-items: center; flex: none; }
   .page-port-short-name { display: none; }
   .port-family + .port-family { margin-top: .65rem; }
   .port-family h3 { margin: .75rem .4rem .25rem; font-size: .6875rem; font-weight: 400; text-transform: uppercase; letter-spacing: .025em; color: var(--color-muted); }

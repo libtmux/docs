@@ -15,7 +15,7 @@ const initial = entries[0].port
 ---
 
 <nav class="home-launcher" aria-label="Choose language and solution" data-home-launcher data-default-port={initial}>
-  <PagePortSwitcher entries={entries} portSlug={initial} label="Choose a programming language">
+  <PagePortSwitcher entries={entries} portSlug={initial} label="Choose a programming language" homeLanguageIcons>
     <button slot="title-actions" class="home-launcher-reset" type="button" data-home-reset hidden aria-label="Reset language selection">Reset</button>
   </PagePortSwitcher>
   <span class="home-launcher-next" aria-hidden="true">→</span>
@@ -80,6 +80,8 @@ const initial = entries[0].port
       picker.querySelector('summary')!.setAttribute('aria-label', chosen ? `${name}: choose a programming language` : 'Choose a programming language')
       picker.open = false
       document.documentElement.setAttribute('data-pkg-port', port)
+      if (chosen) document.documentElement.setAttribute('data-home-selected-port', port)
+      else document.documentElement.removeAttribute('data-home-selected-port')
       try {
         if (chosen) localStorage.setItem(storageKey, port)
         else localStorage.removeItem(storageKey)

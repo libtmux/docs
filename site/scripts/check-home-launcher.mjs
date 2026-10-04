@@ -3,6 +3,36 @@ import { PORTS } from '../src/lib/ports.ts'
 import HOME_PROOF from '../test/fixtures/home-examples.json' with { type: 'json' }
 import { createHash } from 'node:crypto'
 
+/** Only the homepage trigger changes artwork; reset retains the code glyph. */
+export async function checkHomeLanguageIcon(page, port = null) {
+  const trigger = page.locator('[data-home-launcher] [data-page-port-switcher] > summary')
+  const icons = trigger.locator('img:visible')
+  assert.equal(await icons.count(), port ? 1 : 0, 'Only the selected language icon is visible')
+  assert.equal(await trigger.locator('[data-home-default-icon]').isVisible(), !port, 'An unset language keeps the code glyph')
+  const geometry = await trigger.evaluate((element) => {
+    const icon = element.querySelector('.home-language-icon').getBoundingClientRect()
+    const label = element.querySelector('.page-port-name').getBoundingClientRect()
+    const button = element.getBoundingClientRect()
+    return { height: button.height, iconHeight: icon.height, iconRight: icon.right, labelLeft: label.left,
+      centerOffset: Math.abs(icon.y + icon.height / 2 - (button.y + button.height / 2)) }
+  })
+  assert.equal(geometry.height, 36, `The trigger keeps the same height for every language: ${JSON.stringify(geometry)}`)
+  assert.equal(geometry.iconHeight, 18, 'Every language uses the same icon box')
+  assert(geometry.centerOffset < 1 && geometry.iconRight < geometry.labelLeft, 'The icon sits beside and centered with its label')
+  if (port) {
+    assert.equal(await icons.getAttribute('data-home-language-icon'), port)
+    assert((await icons.getAttribute('src')).endsWith(`/brand/languages/${port}/icon.svg`))
+    assert(await icons.evaluate((img) => img.complete && img.naturalWidth > 0), 'The selected language SVG is already loaded')
+    const image = await icons.boundingBox()
+    const box = await trigger.locator('.home-language-icon').boundingBox()
+    assert.equal(image.width, 18, 'The image fits the icon box width')
+    assert.equal(image.height, 18, 'Non-square artwork fits the icon box height')
+    assert(Math.abs(image.x - box.x) < 1 && Math.abs(image.y - box.y) < 1, 'The image stays inside its icon box')
+  }
+  const menuSources = await page.locator('[data-home-launcher] .port-artwork').evaluateAll((images) => images.map((img) => img.getAttribute('src')))
+  assert(menuSources.length === PORTS.length && menuSources.every((src) => !src.includes('/brand/languages/')), 'Menu options keep their libtmux artwork')
+}
+
 /** Exercise the real homepage, including the prompt controlled by its picker. */
 export async function checkHomeLauncher(browser, base) {
   const context = await browser.newContext({ reducedMotion: 'reduce' })
@@ -25,6 +55,7 @@ export async function checkHomeLauncher(browser, base) {
     assert(await reset.isVisible(), 'A chosen language can be reset')
     assert.equal(await logo.getAttribute('src'), await language.locator(`a[data-port="${port}"] img`).getAttribute('src'), 'The header logo follows the selected language')
     assert(await logo.evaluate((img) => img.complete && img.naturalWidth > 0), 'The selected logo is already loaded')
+    await checkHomeLanguageIcon(page, port)
     const cards = await page.locator(`.home-intro [data-home-language="${port}"] .home-solutions > a`).evaluateAll((links) => links.map((link) => ({
       display: getComputedStyle(link).display,
       border: getComputedStyle(link).borderTopWidth,
@@ -40,6 +71,7 @@ export async function checkHomeLauncher(browser, base) {
     assert.equal(await prompt.locator('[role="tablist"]').count(), 0, 'Homepage has one language picker')
     assert.equal(await page.getByRole('heading', { name: /^(Language libraries|Read the docs)$/ }).count(), 0)
     assert.equal(await reset.isVisible(), false, 'The default example is not a saved choice')
+    await checkHomeLanguageIcon(page)
     const defaultLogo = await logo.getAttribute('src')
     for (const { slug } of PORTS) {
       await choose(slug)
@@ -56,9 +88,11 @@ export async function checkHomeLauncher(browser, base) {
     await page.goto(`${base}/`)
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'ruby')
     assert.equal(await solution.getAttribute('data-home-language'), 'ruby', 'Saved language restores both controls')
+    await checkHomeLanguageIcon(page, 'ruby')
     await page.goto(`${base}/?port=fsharp&prompt=session-switcher&from=shared#example`)
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'fsharp')
     assert.equal(await language.locator('.page-port-name').textContent(), 'F#', 'The URL overrides the saved language')
+    await checkHomeLanguageIcon(page, 'fsharp')
     assert.equal(await prompt.locator('[data-select="topic"]').inputValue(), 'session-switcher')
     await choose('go')
     assert.equal(new URL(page.url()).searchParams.get('prompt'), 'session-switcher', 'Language changes preserve the task')
@@ -86,11 +120,13 @@ export async function checkHomeLauncher(browser, base) {
     assert.equal(await page.evaluate(() => localStorage.getItem('libtmux-docs.package-install.port')), null)
     assert.equal(await reset.isVisible(), false)
     assert.equal(await logo.getAttribute('src'), defaultLogo, 'Reset restores the default header logo')
+    await checkHomeLanguageIcon(page)
     assert.equal(await language.locator('[aria-current]').count(), 0, 'Reset leaves no selected language')
     assert(await language.locator('summary').evaluate((element) => document.activeElement === element), 'Reset keeps focus on the language picker')
     await page.reload()
     await page.waitForFunction(() => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Choose a language')
     assert.equal(await reset.isVisible(), false, 'The cleared choice stays cleared on reload')
+    await checkHomeLanguageIcon(page)
     assert.equal(await prompt.getAttribute('data-active-port'), PORTS[0].slug)
     await choose('fsharp')
     await reset.click()
@@ -107,10 +143,12 @@ export async function checkHomeLauncher(browser, base) {
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'fsharp'
       && document.querySelector('.lm-agent-prompt [data-select="topic"]')?.value === 'setup')
     assert.equal(new URL(page.url()).hash, '#first', 'Back restores the matching language and task')
+    await checkHomeLanguageIcon(page, 'fsharp')
     await page.goForward()
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'go'
       && document.querySelector('.lm-agent-prompt [data-select="topic"]')?.value === 'session-switcher')
     assert.equal(new URL(page.url()).hash, '#second', 'Forward restores the matching language and task')
+    await checkHomeLanguageIcon(page, 'go')
     await choose('py')
     const topic = prompt.locator('[data-select="topic"]')
     await topic.selectOption('setup')
@@ -222,8 +260,10 @@ export async function checkHomeLauncher(browser, base) {
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'fsharp')
     const launcher = page.locator('[data-home-launcher]')
     assert.equal(await launcher.locator('.page-port-name').textContent(), 'F#', 'Shared language works without storage')
+    await checkHomeLanguageIcon(page, 'fsharp')
     assert.equal(await page.locator('.lm-agent-prompt [data-select="topic"]').inputValue(), 'session-switcher')
     await launcher.locator(':scope > [data-home-reset]').click()
+    await checkHomeLanguageIcon(page)
     assert.equal(new URL(page.url()).searchParams.has('port'), false)
     await page.reload()
     await page.waitForFunction(() => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Choose a language')
@@ -237,7 +277,9 @@ export async function checkHomeLauncher(browser, base) {
     await page.goto(`${base}/`)
     const picker = page.locator('[data-home-launcher] [data-page-port-switcher]')
     await picker.locator('summary').click()
-    assert.equal(await picker.locator('a:visible').count(), PORTS.length, 'No-JS still exposes real language links')
+    await checkHomeLanguageIcon(page)
+    assert.equal(await picker.locator('a[data-port]:visible').count(), PORTS.length, 'No-JS still exposes real language links')
+    assert(await picker.locator('.tmux-area a').isVisible(), 'No-JS retains the separate tmux destination')
     assert(await page.locator('.lm-agent-prompt__panel[data-default] [data-prompt-text]').isVisible(), 'Default prompt remains readable without JavaScript')
     await picker.locator('a[data-port="ruby"]').click()
     await page.waitForURL('**/ruby/latest/')
