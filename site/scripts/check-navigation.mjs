@@ -2,15 +2,44 @@ import assert from 'node:assert/strict'
 import { PORTS, productAvailable } from '../src/lib/ports.ts'
 
 async function checkNoticeAlignment(page, centered = false) {
-  const { noticeLeft, contentLeft } = await page.evaluate((landing) => {
+  const { noticeLeft, contentLeft, artworkLeft } = await page.evaluate((landing) => {
     const badge = document.querySelector('.prerelease-notice__badge')
     const content = document.querySelector(landing ? 'main' : '.site-header__mark')
+    const artwork = document.querySelector('[data-documentation-context] [data-surface-picker] > summary .surface-artwork')
     return {
       noticeLeft: badge.getBoundingClientRect().left,
       contentLeft: content.getBoundingClientRect().left + (landing ? parseFloat(getComputedStyle(content).paddingLeft) : 0),
+      artworkLeft: artwork?.getBoundingClientRect().left,
     }
   }, centered)
   assert(Math.abs(noticeLeft - contentLeft) <= 1, `${page.url()}: notice at ${noticeLeft}px aligns with ${centered ? 'landing content' : 'documentation header'} at ${contentLeft}px`)
+  if (artworkLeft !== undefined) {
+    assert(Math.abs(noticeLeft - artworkLeft) <= 1, `${page.url()}: notice at ${noticeLeft}px aligns with documentation artwork at ${artworkLeft}px`)
+  }
+}
+
+async function checkContextControls(page) {
+  // Native view transitions temporarily route hit testing to the root element.
+  await page.waitForFunction(() => !document.documentElement.hasAttribute('data-astro-transition'))
+  const layout = await page.evaluate(() => {
+    const bar = document.querySelector('[data-documentation-context]')
+    const controls = [...bar.querySelectorAll('.doc-picker > summary, .documentation-context-navigation > button')]
+      .map((element) => {
+        const { x, y, width, height } = element.getBoundingClientRect()
+        const hit = document.elementFromPoint(x + width / 2, y + height / 2)
+        return { name: element.getAttribute('aria-label') ?? element.textContent.trim(), x, y, width, height,
+          reachable: element.contains(hit), coveredBy: hit?.outerHTML.slice(0, 180) }
+      }).filter(({ width, height }) => width > 0 && height > 0)
+    return { height: bar.getBoundingClientRect().height, controls }
+  })
+  for (const [index, control] of layout.controls.entries()) {
+    assert(control.reachable, `${page.url()}: context control is reachable: ${JSON.stringify(control)}`)
+    for (const other of layout.controls.slice(index + 1)) {
+      const overlap = Math.min(control.x + control.width, other.x + other.width) - Math.max(control.x, other.x)
+      assert(overlap <= 1, `${page.url()}: ${control.name} and ${other.name} do not overlap`)
+    }
+  }
+  assert(layout.height <= 58, `${page.url()}: context remains a single compact row`)
 }
 
 /** Surface selection changes the page tree without losing the port or version. */
@@ -108,10 +137,11 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
       reader.setDefaultTimeout(10000)
       try {
         if (javaScriptEnabled) await reader.addInitScript((scheme) => localStorage.setItem('color-scheme', scheme), colorScheme)
-        for (const width of [320, 390, 768, 1440, 1920]) {
+        for (const width of [320, 390, 641, 768, 1440, 1920]) {
           await reader.setViewportSize({ width, height: 900 })
           await reader.goto(`${base}/go/latest/workspace/`, { waitUntil: 'load' })
           await checkNoticeAlignment(reader)
+          await checkContextControls(reader)
           const picker = desktopPicker(reader)
           const layout = await reader.evaluate(() => {
             const bounds = (selector) => {
@@ -172,6 +202,19 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
           assert(await reader.locator('[data-surface-picker] > summary').first().getAttribute('aria-label').then((label) => label.endsWith('Workspace Manager, Guides')),
             'History restores the selected surface and section')
           assert(await reader.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${width}: page has no horizontal overflow`)
+          await openPicker(picker, javaScriptEnabled)
+          if (javaScriptEnabled) await picker.locator('[data-surface-search]').fill('')
+          const core = group(picker, 'Core Library')
+          if (!(await core.evaluate((element) => element.open))) await core.locator(':scope > summary').click()
+          await core.getByRole('link', { name: 'Reference', exact: true }).click()
+          await reader.waitForURL(`${base}/go/latest/reference/`)
+          await checkNoticeAlignment(reader)
+          await checkContextControls(reader)
+          assert(await reader.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${width}: reference has no horizontal overflow`)
+          if (width === 320 || width === 1920) {
+            await reader.goto(`${base}/`, { waitUntil: 'load' })
+            await checkNoticeAlignment(reader, true)
+          }
         }
       } finally {
         await context.close()
