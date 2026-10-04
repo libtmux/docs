@@ -1,0 +1,20 @@
+{
+  "name": ".NET",
+  "asset": "icon.svg",
+  "sourceUrl": "https://raw.githubusercontent.com/dotnet/brand/91845f6ddf2123b3bb1bfd1b6a386d9ce02b43aa/logo/dotnet-logo.svg",
+  "resolvedUrl": "https://raw.githubusercontent.com/dotnet/brand/91845f6ddf2123b3bb1bfd1b6a386d9ce02b43aa/logo/dotnet-logo.svg",
+  "sourcePage": "https://github.com/dotnet/brand/tree/91845f6ddf2123b3bb1bfd1b6a386d9ce02b43aa",
+  "retrievedAt": "2026-10-04T14:52:42+00:00",
+  "sha256": "f222062c4f59b7864163bd54d24fafc40f1e2f2513672e50bc08e5025d73e4e5",
+  "copyright": "The .NET logo and brand guidelines are copyright of the .NET authors.",
+  "license": {
+    "name": ".NET custom brand-use permission",
+    "urls": [
+      "https://github.com/dotnet/brand/blob/91845f6ddf2123b3bb1bfd1b6a386d9ce02b43aa/README.md#license",
+      "https://github.com/dotnet/brand/issues/10#issuecomment-669465301"
+    ],
+    "notes": "The README permits the logo in related content under the brand guidelines. Maintainer Beth Massi explicitly permits the unmodified logo to represent .NET itself. CC0 is stated for illustrations; this record does not extend it to the logo."
+  },
+  "modifications": "None. The downloaded SVG bytes are preserved.",
+  "upstreamRevision": "91845f6ddf2123b3bb1bfd1b6a386d9ce02b43aa"
+}
