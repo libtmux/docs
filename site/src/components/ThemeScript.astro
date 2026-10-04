@@ -47,9 +47,13 @@
    * even though a page may hold pickers with different subsets.
    */
   function applyPackagePort() {
-    const port = localStorage.getItem('libtmux-docs.package-install.port');
+    const shared = new URL(window.location.href).searchParams.get('port');
+    const homePorts = document.documentElement.getAttribute('data-home-ports')?.split(' ') || [];
+    const port = homePorts.includes(shared) ? shared : readPreference('libtmux-docs.package-install.port');
     if (port && /^[a-z]+$/.test(port)) {
       document.documentElement.setAttribute('data-pkg-port', port);
+    } else {
+      document.documentElement.removeAttribute('data-pkg-port');
     }
     // And each port's package manager, one level down. Without this a panel
     // painted its first manager, npm, and the widget's script switched it to

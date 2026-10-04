@@ -924,7 +924,7 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
 
   function applySavedState() {
     if (document.querySelector('[data-pkg-cooldown]')) paintCooldown()
-    const saved = read(STORAGE_KEY)
+    const saved = document.documentElement.getAttribute('data-pkg-port') ?? read(STORAGE_KEY)
     if (saved) {
       document.querySelectorAll<HTMLElement>('.lm-pkg-install').forEach((widget) => selectPort(widget, saved, false))
     }

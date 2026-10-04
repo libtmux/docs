@@ -6,9 +6,11 @@ import VersionSwitcher from './VersionSwitcher.astro'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import type { LocaleStatus } from '../i18n/resolve'
 import { withPortRoot, withRoot } from '../lib/site-root'
+import { PORTS } from '../lib/ports'
 
 interface Props {
   documentationContext?: boolean
+  homeLauncher?: boolean
   portSlug?: string
   version: string
   /** Current page path for the locale control. */
@@ -32,6 +34,7 @@ const {
   sourcePath,
   localeStatuses,
   documentationContext = false,
+  homeLauncher = false,
 } = Astro.props as Props
 const brand = branding(portSlug, pagePath)
 ---
@@ -41,7 +44,15 @@ const brand = branding(portSlug, pagePath)
   style="background: var(--topnav-background); backdrop-filter: blur(var(--topnav-backdrop-blur, 8px));"
 >
   <div class="site-header__bar">
-    <a href={withRoot('/')} class="site-header__mark font-mono text-lg font-semibold tracking-tight"><img src={withRoot(brand.asset('logo.svg'))} width="28" height="28" alt="" aria-hidden="true" />libtmux</a>
+    <a href={withRoot('/')} class="site-header__mark font-mono text-lg font-semibold tracking-tight">
+      {homeLauncher ? <span class="site-header__logos" aria-hidden="true">
+        <img src={withRoot(brand.asset('logo.svg'))} width="28" height="28" alt="" data-home-logo-default decoding="sync" />
+        {PORTS.map((port) => <img src={withRoot(branding(port.slug).asset('logo.svg'))} width="28" height="28" alt="" data-home-logo={port.slug} decoding="sync" />)}
+      </span> : <img src={withRoot(brand.asset('logo.svg'))} width="28" height="28" alt="" aria-hidden="true" />}
+      libtmux
+    </a>
+
+    <slot name="navigation" />
 
     <div class="site-header__spacer"></div>
 
@@ -96,3 +107,8 @@ const brand = branding(portSlug, pagePath)
     </details>
   </div>
 </header>
+
+<style>
+  .site-header__logos { display: grid; width: 28px; height: 28px; }
+  .site-header__logos img { grid-area: 1 / 1; }
+</style>

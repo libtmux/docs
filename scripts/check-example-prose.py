@@ -3,6 +3,7 @@
 
 Use --port to choose a language and --output-dir for a new evidence directory.
 Use --example guide --page guides/<name> for a shared tmux shell program.
+Use --example home --port <slug> for the homepage's complete program.
 The selected language's native tools, Git, and tmux must already be on PATH.
 This downloads and builds dependencies; it belongs outside routine site tests.
 """
@@ -21,7 +22,7 @@ def select_examples(manifest, kind, port, page=None, program=None):
     """Select one complete program without combining independent setup recipes."""
     examples = [item for item in manifest['examples'] if kind == 'guide' or item['port'] == port]
     if page:
-        page_path = page if kind == 'guide' else f'ports/{port}/{page}'
+        page_path = page if kind in ('guide', 'home') else f'ports/{port}/{page}'
         examples = [item for item in examples if item['page'] == page_path]
     if program:
         examples = [item for item in examples if item.get('sourceProgramId') == program]
@@ -44,7 +45,7 @@ def api_command_blocks(blocks, example):
 def main():
     repo = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--example', choices=['capture', 'attach', 'query', 'concept', 'guide', 'api'], default='capture')
+    parser.add_argument('--example', choices=['capture', 'attach', 'query', 'concept', 'guide', 'api', 'home'], default='capture')
     parser.add_argument('--port')
     parser.add_argument('--page', help='Guide path, or page within the selected port')
     parser.add_argument('--program', help='Source program ID when an API page has several complete examples')
@@ -63,10 +64,19 @@ def main():
     example = examples[0]
     if args.api_model and args.example != 'api':
         parser.error('--api-model is only valid for API examples')
-    page = (args.api_model or repo / 'site/src/data/api' / f'{args.port}.json') \
-        if args.example == 'api' else repo / 'site/src/content/docs' / (example['page'] + '.md')
+    if args.example == 'home':
+        page = repo / 'site/src/data/home-examples.json'
+    elif args.example == 'api':
+        page = args.api_model or repo / 'site/src/data/api' / f'{args.port}.json'
+    else:
+        page = repo / 'site/src/content/docs' / (example['page'] + '.md')
     content = page.read_text()
-    if args.example == 'api':
+    if args.example == 'home':
+        home = json.loads(content)[args.port]
+        if (home['sourceRevision'], home['sourceTree']) != (example['sourceRevision'], example['sourceTree']):
+            raise ValueError('Homepage source revision differs from the verification record')
+        blocks = []
+    elif args.example == 'api':
         model = json.loads(content)
         symbols = [symbol for symbol in model['symbols'] if symbol['id'] == example['symbol']]
         if len(symbols) != 1:
@@ -83,7 +93,9 @@ def main():
         path = Path(item.get('path', name))
         if path.is_absolute() or '..' in path.parts:
             raise ValueError(f'Invalid example filename: {name}')
-        if args.example == 'api':
+        if args.example == 'home':
+            matches = [file['code'] for file in home['files'] if file['name'] == name]
+        elif args.example == 'api':
             block_index = item['block']
             matches = [api_blocks[block_index]['code']] if 0 <= block_index < len(api_blocks) else []
         else:
@@ -94,8 +106,12 @@ def main():
         if hashlib.sha256(code.encode()).hexdigest() != item['sha256']:
             raise ValueError(f'Changed example bytes: {name}; review its verification record')
         files[str(path)] = code
-    command_blocks = api_command_blocks(api_blocks, example) \
-        if args.example == 'api' else [block[3] for block in blocks if block[1] == 'console']
+    if args.example == 'home':
+        command_blocks = home['commands']
+    elif args.example == 'api':
+        command_blocks = api_command_blocks(api_blocks, example)
+    else:
+        command_blocks = [block[3] for block in blocks if block[1] == 'console']
     commands = [re.sub(r'^\$ ', '', code, flags=re.M).strip() for code in command_blocks]
     if not commands or commands != example['shellRecipe']:
         raise ValueError('Setup commands differ from the verification record')

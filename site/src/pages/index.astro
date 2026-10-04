@@ -1,9 +1,8 @@
 ---
-import { installsFor } from '../lib/registry'
 import { ALL_TRANSLATED, buildLocale } from '../i18n/resolve'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import DocsLayout from '../layouts/DocsLayout.astro'
-import { DOC_PRODUCTS, PORTS, PORT_BY_SLUG, hasPackageInstalls, portHomeUrl, portPageUrl, primaryInstall, productAvailable, referenceUrl } from '../lib/ports'
+import { DOC_PRODUCTS, PORTS, PORT_BY_SLUG, hasPackageInstalls, portHomeUrl, portPageUrl, productAvailable } from '../lib/ports'
 import PortHero from '../components/PortHero.astro'
 import DocCard from '../components/DocCard.astro'
 import ApiReferences from '../components/ApiReferences.astro'
@@ -11,57 +10,15 @@ import { buildTarget, defaultVersionFor } from '../lib/versions'
 import PackageInstall from '../components/widgets/PackageInstall.astro'
 import McpInstall from '../components/widgets/McpInstall.astro'
 import AgentPrompt from '../components/widgets/AgentPrompt.astro'
-import { QUICKSTARTS } from '../lib/quickstarts'
+import HomeIntro from '../components/HomeIntro.astro'
+import HomeLauncher from '../components/HomeLauncher.astro'
+import { getDocumentationSurfaces } from '../lib/documentation-navigation'
 import { withPortRoot, withRoot } from '../lib/site-root'
 import { localesFor } from '../i18n/resolve'
 import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE } from '../i18n/locales'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath } from '../i18n/contribute'
-import { highlightInline } from '../lib/highlight'
 import { documentationCards } from '../lib/port-documentation'
-
-// Each library card's install block, highlighted the way the Quickstart
-// highlights the same command, prompt included.
-const libraryInstalls = new Map(
-  await Promise.all(
-    PORTS.map(async (p) => {
-      const cmd = primaryInstall({ ...p, installs: installsFor(p) })
-      return [p.slug, await highlightInline(cmd.lang === 'console' ? `$ ${cmd.code}` : cmd.code, cmd.lang)] as const
-    }),
-  ),
-)
-
-const explore = [
-  {
-    href: withRoot('/topics/'),
-    label: 'Topics',
-    body: 'Architecture, traversal, options and hooks, with examples in each language.',
-  },
-  {
-    href: withRoot('/concepts/'),
-    label: 'Concepts',
-    body: 'How servers, sessions, windows and panes relate, and how to connect to and query them.',
-  },
-  {
-    href: withRoot('/guides/'),
-    label: 'Guides',
-    body: 'Install tmux and a libtmux package, then create sessions and control panes.',
-  },
-  {
-    // Composed here rather than at the point of render: the rest of this
-    // list is shared prose and lives under this build's own root, while the
-    // reference is built in the default locale only. One list, two roots.
-    href: withPortRoot('/reference/'),
-    label: 'API reference',
-    body: 'API signatures and documentation, with links to related guides and corresponding APIs in other languages.',
-  },
-  {
-    href: withRoot('/examples/'),
-    label: 'Examples',
-    body: 'Programs for creating workspaces, sending keys and capturing output.',
-  },
-] as const
-
 
 /**
  * A port+version build mounts this route at /<port>/<version>/, so the site
@@ -73,6 +30,7 @@ const explore = [
 interface Props {
   /** Select a port when this landing page is rendered by another route. */
   port?: string
+  preview?: boolean
 }
 const buildPort = Astro.props.port ?? (process.env.LIBTMUX_DOCS_PORT || undefined)
 const versionRootPort = buildPort ? PORT_BY_SLUG[buildPort] : undefined
@@ -144,7 +102,17 @@ const LandingContent = landingEntry ? (await render(landingEntry)).Content : und
  * indexed at two URLs is worse for both. `<html lang>` says `en` there too —
  * it describes the body, not the prefix it is served under.
  */
-const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
+const noindexLanding = Astro.props.preview || (locale !== DEFAULT_LOCALE && !LandingContent)
+const homeSolutions = !versionRootPort && !LandingContent
+  ? await Promise.all(PORTS.map(async (port) => {
+      const version = defaultVersionFor(port.slug)
+      return { port: port.slug, version, surfaces: await getDocumentationSurfaces(port.slug, version, locale) }
+    }))
+  : []
+const homeEntries = PORTS.map((port) => ({
+  port: port.slug, name: port.name,
+  links: [{ href: portHomeUrl(port, defaultVersionFor(port.slug)) }],
+}))
 
 /*
  * `localeStatuses` is ALL_TRANSLATED here while `locales` stays homeLocales.
@@ -175,6 +143,8 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
       description={`libtmux for ${versionRootPort.language}, version ${buildVersion}.`}
       port={versionRootPort.slug}
       version={buildVersion}
+      noindex={Astro.props.preview}
+      searchable={!Astro.props.preview}
       bare
     >
       <PortHero port={versionRootPort} />
@@ -252,9 +222,12 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
   sourcePath="/"
   localeStatuses={ALL_TRANSLATED}
   noindex={noindexLanding}
+  searchable={!Astro.props.preview}
   pageSource={landingEntry?.filePath ? { repo: CONTRIBUTE_REPO, path: repoPath(landingEntry.filePath), ref: CONTRIBUTE_BRANCH } : undefined}
-  markdown={landingEntry ? 'source' : 'rendered'}
+  markdown={landingEntry && !Astro.props.preview ? 'source' : 'rendered'}
+  homeLauncher={!LandingContent}
 >
+  {!LandingContent && <HomeLauncher slot="header-navigation" entries={homeEntries} solutions={homeSolutions} locale={locale} />}
   {LandingContent ? (
     <main class="mx-auto max-w-7xl px-4 py-12 sm:py-16">
       <div class="prose max-w-3xl dark:prose-invert">
@@ -263,52 +236,8 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
       </div>
     </main>
   ) : (
-  <main class="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-    <!-- Hero -->
-    <section class="max-w-3xl">
-      <h1 class="text-4xl font-semibold tracking-tight sm:text-5xl">libtmux</h1>
-      <p class="mt-4 text-xl text-muted">
-        Control tmux from your application.
-      </p>
-      <p class="mt-4 max-w-2xl text-base leading-relaxed opacity-80">
-        libtmux provides objects for tmux servers, sessions, windows and panes.
-        Use them to create a workspace, send input to a terminal program, or
-        capture its output in a test.
-      </p>
-      <div class="mt-8 flex flex-wrap items-center gap-3">
-        <a
-          href={withRoot('/guides/getting-started/')}
-          class="brand-action rounded px-4 py-2 text-sm font-semibold"
-        >
-          Get started
-        </a>
-        <a
-          href={withRoot('/topics/')}
-          class="rounded border border-edge px-4 py-2 text-sm font-semibold hover:bg-surface-hover"
-        >
-          Browse topics
-        </a>
-        <a
-          href="https://github.com/libtmux"
-          class="rounded border border-edge px-4 py-2 text-sm font-semibold hover:bg-surface-hover"
-        >
-          GitHub
-        </a>
-      </div>
-    </section>
-
-    <!-- Quickstart -->
-    <section class="mt-16">
-      <h2 class="text-xl font-semibold">Quickstart</h2>
-      <p class="mt-2 max-w-2xl text-sm opacity-80">
-        Choose a language to see its install command and opening example. See
-        <a class="underline" href={withRoot('/examples/attach-and-send-keys/')}>Attach and send keys</a>
-        for examples of creating a session and sending input in each language.
-      </p>
-      <div class="mt-4">
-        <PackageInstall snippets={QUICKSTARTS} />
-      </div>
-    </section>
+  <main class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+    <HomeIntro solutions={homeSolutions} />
 
     <!-- Agent prompt -->
     <section class="mt-16">
@@ -319,10 +248,10 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
         the agent at this site's
         <a class="underline" href={withRoot('/llms.txt')}>llms.txt</a> and
         <a class="underline" href={withRoot('/docs.json')}>docs.json</a> so it
-        reads the API rather than guessing it. Pick a language and a task.
+        reads the API rather than guessing it. Use the language selected above, then pick a task.
       </p>
-      <div class="mt-4 max-w-4xl">
-        <AgentPrompt />
+      <div class="home-agent-prompt mt-4 max-w-4xl">
+        <AgentPrompt showLanguageTabs={false} />
       </div>
       <p class="mt-3 text-sm">
         <a class="hover:underline underline" href={withRoot('/prompts/')}>All prompts</a>,
@@ -330,55 +259,15 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
       </p>
     </section>
 
-    <!-- Ports -->
-    <section class="mt-16">
-      <h2 class="text-xl font-semibold">Language libraries</h2>
-      <p class="mt-2 max-w-2xl text-sm opacity-80">
-        Choose a library for installation instructions and API documentation.
-        Each reference includes links to related APIs in other languages.
-      </p>
-      {/* At least 26rem a card: an install block is often a build-file
-          fragment, and four cards across this page cut every one of them
-          off. */}
-      <div class="mt-4 grid grid-cols-[repeat(auto-fill,minmax(min(100%,26rem),1fr))] gap-4">
-        {
-          PORTS.map((p) => (
-            <article class="flex min-w-0 flex-col rounded border border-edge p-4">
-              <h3 class="font-semibold">
-                <a class="hover:underline" href={portHomeUrl(p, defaultVersionFor(p.slug))}>
-                  {p.name}
-                </a>
-              </h3>
-              <p class="mt-1 font-mono text-xs opacity-70">{p.packageName}</p>
-              <pre class="lm-highlighted mt-3 overflow-x-auto rounded bg-surface px-2 py-1.5 font-mono text-xs"><code set:html={libraryInstalls.get(p.slug)} /></pre>
-              <p class="mt-3 text-sm">
-                <a class="hover:underline" href={referenceUrl(p, defaultVersionFor(p.slug))}>API reference</a>
-              </p>
-            </article>
-          ))
-        }
-      </div>
-    </section>
-
-    <!-- Onward -->
-    <section class="mt-16">
-      <h2 class="text-xl font-semibold">Read the docs</h2>
-      <div class="mt-4 grid gap-4 sm:grid-cols-2">
-        {
-          explore.map((item) => (
-            <a
-              href={item.href}
-              class="block rounded border border-edge p-4 hover:bg-surface-hover"
-            >
-              <h3 class="font-semibold">{item.label}</h3>
-              <p class="mt-1 text-sm opacity-80">{item.body}</p>
-            </a>
-          ))
-        }
-      </div>
-    </section>
   </main>
   )}
 </BaseLayout>
   )
 }
+
+<style>
+  .home-agent-prompt { container-type: inline-size; }
+  .home-agent-prompt :global(.lm-agent-prompt__code code) {
+    font-size: clamp(.8125rem, calc((100cqi - 2rem) / (88 * .6)), .9375rem);
+  }
+</style>

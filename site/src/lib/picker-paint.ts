@@ -21,7 +21,10 @@ import { PORTS } from './ports'
  * than rendering an empty body.
  */
 export function pickerPaintRules(): string {
-  return PORTS.map((p) => paintPort(p.slug, 'lm-pkg-install') + paintPort(p.slug, 'lm-agent-prompt') + paintPortManagers(p)).join('')
+  return '.site-header__logos img{visibility:hidden}.site-header__logos img[data-home-logo-default]{visibility:inherit}'
+    + PORTS.map((p) => paintPort(p.slug, 'lm-pkg-install') + paintPort(p.slug, 'lm-agent-prompt') + paintPortManagers(p)
+      + `html[data-pkg-port="${p.slug}"] .site-header__logos img{visibility:hidden}`
+      + `html[data-pkg-port="${p.slug}"] .site-header__logos img[data-home-logo="${p.slug}"]{visibility:inherit}`).join('')
 }
 
 /** A port's library and each companion package keep their own saved manager. */

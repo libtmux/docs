@@ -127,6 +127,13 @@ cannot hide an earlier missing result.
 Use `--example guide --page guides/capturing-output` for a root guide's shell
 program. Select the tmux release through `PATH`; the result records `tmux -V`.
 
+Use `--example home --port rs` for the homepage's complete Rust program.
+The runner reads the same files and setup shown under **Run this example**,
+checks their hashes against `site/test/fixtures/home-examples.json`, and
+runs them in a new directory. The homepage excerpt combines the program's
+imports and whole task lines; changing executable files requires a new
+native run.
+
 Use `--example api --port go --page reference/tmux-newserver` for a complete
 native Go API example. The runner reads the displayed files and commands from
 the generated API model. Go source files opt in with an

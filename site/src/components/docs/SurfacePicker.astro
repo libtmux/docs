@@ -6,8 +6,8 @@ import { PORT_BY_SLUG } from '../../lib/ports'
 import { withRoot } from '../../lib/site-root'
 import type { Locale } from '../../i18n/locales'
 import '../../styles/documentation-picker.css'
-interface Props { surfaces: DocumentationSurface[]; currentPath: string; port: string; version: string; locale: Locale }
-const { surfaces, currentPath, port, version, locale } = Astro.props
+interface Props { surfaces: DocumentationSurface[]; currentPath: string; port: string; version: string; locale: Locale; solutionsOnly?: boolean }
+const { surfaces, currentPath, port, version, locale, solutionsOnly = false } = Astro.props
 const { surface, section } = currentDocumentation(surfaces, currentPath)
 const descriptions: Record<string, string> = { core: 'API reference and guides', mcp: 'Tools for connected assistants', workspace: 'Repeatable development environments' }
 const artwork = (id: string) => {
@@ -16,20 +16,25 @@ const artwork = (id: string) => {
 }
 ---
 <details class="surface-picker doc-picker" data-surface-picker data-doc-picker data-pagefind-ignore="all">
-  <summary aria-label={`Choose documentation: ${surface.label}, ${section.label}`}>
+  <summary aria-label={solutionsOnly ? 'Choose a solution' : `Choose documentation: ${surface.label}, ${section.label}`}>
     <img class="surface-artwork" src={artwork(surface.id)} width="30" height="30" alt="" />
-    <span class="surface-current"><strong>{surface.label}</strong><small>{section.label}</small></span>
+    <span class="surface-current"><strong>{solutionsOnly ? 'Choose a solution' : surface.label}</strong>{!solutionsOnly && <small>{section.label}</small>}</span>
     <svg class="doc-picker-caret" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
   </summary>
   <div class="surface-panel doc-picker-panel" data-surface-panel data-picker-panel>
-    <p class="doc-picker-title">Choose documentation <span class="doc-picker-count">{surfaces.length}</span></p>
+    <p class="doc-picker-title">{solutionsOnly ? 'Choose a solution' : 'Choose documentation'} <span class="doc-picker-count">{surfaces.length}</span></p>
     <label class="doc-picker-search" hidden data-surface-search-label data-picker-search-label>
-      <span class="sr-only">Find an app or section</span>
+      <span class="sr-only">{solutionsOnly ? 'Find a solution' : 'Find an app or section'}</span>
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>
       <input type="search" placeholder="Find documentation…" autocomplete="off" data-surface-search data-picker-search />
     </label>
-    <nav aria-label="Documentation apps and sections">
-      {surfaces.map((entry) => <details class="surface-group" data-surface-group data-picker-group open={entry.id === surface.id}>
+    <nav aria-label={solutionsOnly ? 'Documentation solutions' : 'Documentation apps and sections'}>
+      {surfaces.map((entry) => solutionsOnly ? <a class="surface-destination doc-picker-option" href={entry.href}
+        data-picker-option data-match={`${entry.label} ${descriptions[entry.id]}`}>
+        <img class="surface-artwork" src={artwork(entry.id)} width="30" height="30" alt="" />
+        <span class="surface-group-name"><strong>{entry.label}</strong>{' '}<small>{descriptions[entry.id]}</small></span>
+        <span class="surface-destination-arrow" aria-hidden="true">→</span>
+      </a> : <details class="surface-group" data-surface-group data-picker-group open={entry.id === surface.id}>
         <summary><img class="surface-artwork" src={artwork(entry.id)} width="30" height="30" alt="" />
           <span class="surface-group-name"><strong>{entry.label}</strong>{' '}<small>{descriptions[entry.id]}</small></span>
           <svg class="surface-chevron" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 4 4 4-4 4" /></svg>
@@ -71,6 +76,8 @@ const artwork = (id: string) => {
   .surface-group[open] > summary .surface-chevron { transform: rotate(90deg); }
   .surface-group { border-top: 1px solid var(--color-edge); }
   .surface-group > summary { min-height: 4rem; padding: .7rem .4rem; border-radius: .4rem; }
+  .surface-destination { min-height: 4rem; border-top: 1px solid var(--color-edge); }
+  .surface-destination-arrow { margin-left: auto; }
   .surface-group-name { min-width: 0; }
   .surface-group-name strong, .surface-group-name small { display: block; }
   .surface-group-name strong { font-weight: 500; }

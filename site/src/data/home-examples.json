@@ -1,0 +1,483 @@
+{
+  "py": {
+    "lang": "python",
+    "sourceRepository": "tmux-python/libtmux",
+    "sourceRevision": "9fdd083a8181a827889337b63cd4e6daea661a8c",
+    "sourceTree": "e96d4764638e6fcec75029a82bd11ecc638772f5",
+    "program": "quickstart.py",
+    "excerpt": {
+      "startLine": 15,
+      "endLine": 26,
+      "dedent": 4,
+      "importsEndLine": 8
+    },
+    "files": [
+      {
+        "name": "quickstart.py",
+        "lang": "python",
+        "code": "from __future__ import annotations\n\nfrom pathlib import Path\nimport shutil\nimport tempfile\nimport time\n\nimport libtmux\n\n# This program owns this socket and stops only its own server.\ndirectory = Path(tempfile.mkdtemp(prefix=\"libtmux-py-home-\"))\nsocket = directory / \"tmux.sock\"\nserver = libtmux.Server(socket_path=socket, config_file=\"/dev/null\")\ntry:\n    session = server.new_session(session_name=\"demo\")\n    window = session.active_window\n    assert window is not None\n    pane = window.split(shell=\"sh\")\n\n    pane.send_keys(\"printf '\\\\nHello world\\\\n'\", enter=True)\n    deadline = time.monotonic() + 5\n    while \"Hello world\" not in pane.capture_pane():\n        if time.monotonic() >= deadline:\n            raise TimeoutError(\"The pane did not print Hello world\")\n        time.sleep(0.02)\n    print(\"Hello world\")\nfinally:\n    if socket.exists():\n        server.kill()\n    shutil.rmtree(directory)\n"
+      }
+    ],
+    "prerequisites": "POSIX shell, Git, tmux 3.2a or newer, Python 3.14.6 and uv (tested 0.12.0).",
+    "commands": [
+      "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/tmux-python/libtmux.git \\\n  9fdd083a8181a827889337b63cd4e6daea661a8c\ngit -C source checkout -q --detach FETCH_HEAD\nuv venv .venv\nuv pip install --python .venv/bin/python ./source",
+      "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\n.venv/bin/python quickstart.py"
+    ],
+    "expectedOutput": "Hello world\n"
+  },
+  "ruby": {
+    "lang": "ruby",
+    "sourceRepository": "libtmux/libtmux-ruby",
+    "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+    "sourceTree": "61f4a53afc47b42ac9dbffcca05f704599e11d35",
+    "program": "quickstart.rb",
+    "excerpt": {
+      "startLine": 1,
+      "endLine": 17,
+      "dedent": 0,
+      "importsEndLine": 0
+    },
+    "files": [
+      {
+        "name": "quickstart.rb",
+        "lang": "ruby",
+        "code": "require \"libtmux\"\n\nsnapshot = LibTmux::Server.start do |server|\n  session = server.new_session(\n    name: \"work\", window_name: \"main\", command: [\"/bin/cat\"]\n  )\n  window = session.new_window(name: \"logs\", command: [\"/bin/cat\"])\n  window.split(\n    direction: :horizontal, size: \"40%\", command: [\"/bin/cat\"]\n  )\n  server.snapshot\nend\n\nsnapshot.windows.each do |window|\n  pane_ids = window.panes.map(&:id).join(\", \")\n  puts \"#{window.name}: #{pane_ids}\"\nend\n"
+      },
+      {
+        "name": "Gemfile",
+        "lang": "ruby",
+        "code": "source \"https://rubygems.org\"\ngem \"libtmux\", path: \"source/gems/libtmux\"\n"
+      },
+      {
+        "name": "Gemfile.lock",
+        "lang": "text",
+        "code": "PATH\n  remote: source/gems/libtmux\n  specs:\n    libtmux (0.1.0.alpha.1)\n      fiddle (~> 1.1)\n      io-console (~> 0.8)\n      json (~> 3.0.2)\n      securerandom (~> 0.4)\n      tmpdir (~> 0.3)\n\nGEM\n  remote: https://rubygems.org/\n  specs:\n    fiddle (1.1.8)\n    fileutils (1.8.0)\n    io-console (0.9.4)\n    json (3.0.2)\n    securerandom (0.4.1)\n    tmpdir (0.3.1)\n      fileutils\n\nPLATFORMS\n  ruby\n  x86_64-linux\n\nDEPENDENCIES\n  libtmux!\n\nCHECKSUMS\n  fiddle (1.1.8) sha256=7fa8ee3627271497f3add5503acdbc3f40b32f610fc1cf49634f083ef3f32eee\n  fileutils (1.8.0) sha256=8c6b1df54e2540bdb2f39258f08af78853aa70bad52b4d394bbc6424593c6e02\n  io-console (0.9.4) sha256=a403304f32928ee85e56d457b4612ca43f2703b561a3258844992bd24085fbb1\n  json (3.0.2) sha256=8e6d7e7b11384c21230430cef90b71f14849a34a1f4452796670f7c981bd19df\n  libtmux (0.1.0.alpha.1)\n  securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1\n  tmpdir (0.3.1) sha256=908e9729bb31ce104ba27fc03cfc8293a7f858a8dc9e3a1d7cfd112919a3513d\n\nBUNDLED WITH\n  4.0.20\n"
+      }
+    ],
+    "prerequisites": "POSIX shell, Git, tmux 3.2a or newer, Ruby 4.0.7, Bundler 4.0.20 and a C build toolchain for gems.",
+    "commands": [
+      "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-ruby.git \\\n  9b1545562a112353c2c893a1d3e8c0d9b4b51f8d\ngit -C source checkout -q --detach FETCH_HEAD\nbundle config set --local path vendor/bundle\nbundle install --jobs 2",
+      "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\nbundle exec ruby quickstart.rb"
+    ],
+    "expectedOutput": "main: %0\nlogs: %1, %2\n"
+  },
+  "lua": {
+    "lang": "lua",
+    "sourceRepository": "libtmux/libtmux-lua",
+    "sourceRevision": "0395620d362ef75c74cd488f9577afda68922586",
+    "sourceTree": "ce8ac2d6cbc167566b6a9d92e9fc52eb3b4092ba",
+    "program": "quickstart.lua",
+    "excerpt": {
+      "startLine": 15,
+      "endLine": 46,
+      "dedent": 4,
+      "importsEndLine": 1
+    },
+    "files": [
+      {
+        "name": "quickstart.lua",
+        "lang": "lua",
+        "code": "local adapter = require(\"libtmux.runtime.luv\")\n\nlocal function must(value, err)\n    if err ~= nil then error(err, 0) end\n    return value\nend\n\nlocal binary = assert(os.getenv(\"TMUX_BIN\"), \"Set TMUX_BIN\")\nlocal socket = assert(os.getenv(\"TMUX_SOCKET\"), \"Use run.sh\")\nlocal result = must(adapter.run(function(runtime)\n    local server = must(runtime:connect({\n        binary = binary, socket_path = socket,\n    }):await())\n\n    local created = must(server:new_session({\n        name = \"quickstart\", window_name = \"main\",\n        argv = { \"/bin/sh\" },\n    }):await())\n    local logs = must(created.session:new_window({\n        name = \"logs\", argv = { \"/bin/cat\" },\n    }):await())\n    local split = must(logs.pane:split({\n        direction = \"right\", percent = 40,\n        argv = { \"/bin/cat\" },\n    }):await())\n\n    -- Signal completion on this private server, not a fixed sleep.\n    local marker = \"libtmux-lua-quickstart\"\n    local signal = (\"printf '\\\\nlibtmux ready\\\\n'; \"\n        .. \"'%s' wait-for -S %s\"):format(binary, marker)\n    must(created.pane:send_text(signal):await())\n    must(created.pane:send_keys({ \"Enter\" }):await())\n    must(server:command(\n        { \"wait-for\", marker }, { timeout = 10000 }\n    ):await())\n    local capture = must(created.pane:capture({\n        history_lines = 20,\n    }):await())\n    assert(must(capture:text()):find(\n        \"\\nlibtmux ready\\n\", 1, true\n    ), \"pane output was not captured\")\n    print(\n        created.session:reference().id,\n        logs.window:reference().id,\n        split.pane:reference().id\n    )\n    must(created.session:kill():await())\n    must(server:close():await())\n    return true\nend))\nassert(result)\n"
+      },
+      {
+        "name": "run.sh",
+        "lang": "bash",
+        "code": "#!/bin/sh\nset -eu\n\nprogram=${1:?Pass the complete Lua example filename}\nbinary=$(command -v \"${TMUX_BIN:-tmux}\")\ncase \"$binary\" in\n    /*) ;;\n    *) printf '%s\\n' 'tmux must resolve to an absolute path' >&2; exit 1 ;;\nesac\ndirectory=$(mktemp -d \"${TMPDIR:-/tmp}/libtmux-lua-api.XXXXXX\")\nsocket=\"$directory/tmux.sock\"\n\ncleanup() {\n    status=$?\n    trap - 0 HUP INT TERM\n    if [ -S \"$socket\" ] && ! \"$binary\" -S \"$socket\" kill-server; then\n        printf 'Cannot stop tmux; kept %s\\n' \"$directory\" >&2\n        exit 1\n    fi\n    rm -rf \"$directory\" || exit 1\n    exit \"$status\"\n}\ntrap cleanup 0\ntrap 'exit 1' HUP INT TERM\n\nunset TMUX TMUX_PANE\nexport TMUX_BIN=\"$binary\" TMUX_SOCKET=\"$socket\" ENV=/dev/null BASH_ENV=/dev/null\n\"$binary\" -S \"$socket\" -f /dev/null new-session -d -s bootstrap -n bootstrap /bin/cat\n\"${LUA_BIN:-lua}\" \"$program\"\n\"$binary\" -S \"$socket\" has-session -t '=bootstrap'\n"
+      }
+    ],
+    "prerequisites": "POSIX shell, Git, tmux 3.2a or newer, Lua 5.5.1, LuaRocks 3.13.0, CMake and a C compiler; setup installs luv 1.52.1-0.",
+    "commands": [
+      "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-lua.git \\\n  0395620d362ef75c74cd488f9577afda68922586\ngit -C source checkout -q --detach FETCH_HEAD\nluarocks --tree .rocks install luv 1.52.1-0\n(cd source && luarocks --tree ../.rocks make \\\n  rockspecs/libtmux-scm-1.rockspec)",
+      "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\neval \"$(luarocks --tree .rocks path)\"\nsh run.sh quickstart.lua"
+    ],
+    "expectedOutput": "$1\t@2\t%3\n"
+  },
+  "ts": {
+    "lang": "ts",
+    "sourceRepository": "libtmux/libtmux-ts",
+    "sourceRevision": "46cccfef2a546de55ce8b308249b8c76339089a0",
+    "sourceTree": "72aa97efc1e3efc3b8658edd07928b26818869b9",
+    "program": "quickstart.ts",
+    "excerpt": {
+      "startLine": 16,
+      "endLine": 32,
+      "dedent": 2,
+      "importsEndLine": 5
+    },
+    "files": [
+      {
+        "name": "quickstart.ts",
+        "lang": "ts",
+        "code": "import { mkdtemp, readdir, rm } from \"node:fs/promises\";\nimport { tmpdir } from \"node:os\";\nimport { join } from \"node:path\";\nimport { setTimeout as delay } from \"node:timers/promises\";\nimport { Server } from \"libtmux\";\n\nconst directory = await mkdtemp(join(tmpdir(), \"ltx-home-\"));\nconst server = new Server({\n  socketPath: join(directory, \"tmux.sock\"),\n  configFile: \"/dev/null\",\n  timeoutMs: 5_000,\n});\nconst failures: unknown[] = [];\ntry {\n  const signal = AbortSignal.timeout(5_000);\n  const session = await server.newSession({ name: \"work\", signal });\n  const editor = await session.newWindow({\n    name: \"editor\", shellCommand: \"sh\", signal,\n  });\n  await editor.split({ signal });\n  const pane = editor.activePane;\n  if (!pane) throw new Error(\"The window has no active pane\");\n\n  await pane.sendKeys(\"printf '\\\\nhello\\\\n'\", { signal });\n  for (;;) {\n    const lines = await pane.capture({ signal });\n    if (lines.includes(\"hello\")) {\n      console.log(\"hello\");\n      break;\n    }\n    await delay(20, undefined, { signal });\n  }\n} catch (error) {\n  failures.push(error);\n} finally {\n  try {\n    if ((await readdir(directory)).includes(\"tmux.sock\")) {\n      await server.kill();\n    }\n    await rm(directory, { recursive: true });\n  } catch (error) {\n    failures.push(new Error(`Cleanup failed: ${directory}`, {\n      cause: error,\n    }));\n  }\n}\nif (failures.length) throw new AggregateError(failures);\n"
+      },
+      {
+        "name": "package.json",
+        "lang": "json",
+        "code": "{\"type\":\"module\",\"private\":true,\"dependencies\":{\"libtmux\":\"file:./source/packages/libtmux\"}}\n"
+      }
+    ],
+    "prerequisites": "POSIX shell, Git, tmux 3.2a or newer and Bun 1.4.2.",
+    "commands": [
+      "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-ts.git \\\n  46cccfef2a546de55ce8b308249b8c76339089a0\ngit -C source checkout -q --detach FETCH_HEAD\nbun install",
+      "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\nbun run quickstart.ts"
+    ],
+    "expectedOutput": "hello\n"
+  },
+  "rs": {
+    "lang": "rust",
+    "sourceRepository": "libtmux/libtmux-rs",
+    "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+    "sourceTree": "865aef72a40135bade83eb5d44c0b78ea018a270",
+    "program": "src/main.rs",
+    "excerpt": {
+      "startLine": 6,
+      "endLine": 26,
+      "dedent": 0,
+      "importsEndLine": 4
+    },
+    "files": [
+      {
+        "name": "src/main.rs",
+        "lang": "rust",
+        "code": "use libtmux::{PaneWait, Server};\nuse std::{error::Error, time::Duration};\n\ntype ExampleError = Box<dyn Error>;\n\nasync fn work(server: &Server) -> Result<(), ExampleError> {\n    let session = server.new_session(\"work\").await?;\n    let window = session.new_window(\"editor\").await?;\n    let pane = window.active_pane().await?.ok_or(\"missing pane\")?;\n\n    pane.send_line(\"printf '\\\\nhello\\\\n'\").await?;\n    let seen = pane\n        .wait_until(Duration::from_secs(5), |lines| {\n            lines.iter().any(|line| *line == \"hello\")\n        })\n        .await?;\n    if seen != PaneWait::Arrived {\n        return Err(\"The pane did not print hello\".into());\n    }\n    for line in pane.capture().await? {\n        if line == \"hello\" {\n            println!(\"{}\", line.to_string_lossy());\n        }\n    }\n    Ok(())\n}\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), ExampleError> {\n    let root = std::path::Path::new(\"/tmp/libtmux-rs-dev\");\n    std::fs::create_dir_all(root)?;\n    let directory =\n        tempfile::Builder::new().prefix(\"home-\").tempdir_in(root)?;\n    let server = Server::builder()\n        .socket_path(directory.path().join(\"tmux.sock\"))\n        .config_file(\"/dev/null\")\n        .default_timeout(Duration::from_secs(5))\n        .build()?;\n    let outcome =\n        tokio::time::timeout(Duration::from_secs(10), work(&server))\n            .await;\n\n    // kill stops our daemon; shutdown closes this client executor.\n    let killed = server.kill().await;\n    let closed = server.shutdown().await;\n    let cleanup_failed = killed.is_err() || closed.is_err();\n    let mut failures = Vec::new();\n    match outcome {\n        Ok(Ok(())) => {}\n        Ok(Err(error)) => failures.push(format!(\"work: {error}\")),\n        Err(error) => failures.push(format!(\"deadline: {error}\")),\n    }\n    if let Err(error) = killed {\n        failures.push(format!(\"stop owned daemon: {error}\"));\n    }\n    if let Err(error) = closed {\n        failures.push(format!(\"close executor: {error}\"));\n    }\n    if cleanup_failed {\n        let retained = directory.keep();\n        failures.push(format!(\"inspect {}\", retained.display()));\n    } else if let Err(error) = directory.close() {\n        failures.push(format!(\"remove directory: {error}\"));\n    }\n    if failures.is_empty() {\n        Ok(())\n    } else {\n        Err(failures.join(\"; \").into())\n    }\n}\n"
+      },
+      {
+        "name": "Cargo.toml",
+        "lang": "toml",
+        "code": "[package]\nname = \"libtmux-home-quickstart\"\nversion = \"0.0.0\"\nedition = \"2024\"\npublish = false\n\n[dependencies]\nlibtmux = { path = \"source/crates/libtmux\" }\ntempfile = \"3.20\"\ntokio = { version = \"1.40\", features = [\"macros\", \"rt\", \"time\"] }\n"
+      },
+      {
+        "name": "Cargo.lock",
+        "lang": "toml",
+        "code": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"aho-corasick\"\nversion = \"1.1.5\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"c982642fa9e8606056828ee9a8505737230110bb1099153c79efe865c59d12ba\"\ndependencies = [\n \"memchr\",\n]\n\n[[package]]\nname = \"bitflags\"\nversion = \"2.13.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06\"\n\n[[package]]\nname = \"bytes\"\nversion = \"1.12.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04\"\n\n[[package]]\nname = \"caseless\"\nversion = \"0.2.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"8b6fd507454086c8edfd769ca6ada439193cdb209c7681712ef6275cccbfe5d8\"\ndependencies = [\n \"unicode-normalization\",\n]\n\n[[package]]\nname = \"cfg-if\"\nversion = \"1.0.5\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600\"\n\n[[package]]\nname = \"errno\"\nversion = \"0.3.14\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb\"\ndependencies = [\n \"libc\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"fastrand\"\nversion = \"2.5.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223\"\n\n[[package]]\nname = \"getrandom\"\nversion = \"0.4.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"300e883d756b2e4ec94e02791f39b04b522276138852cfc41d9fb7e904106099\"\ndependencies = [\n \"cfg-if\",\n \"libc\",\n \"r-efi\",\n]\n\n[[package]]\nname = \"libc\"\nversion = \"0.2.190\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ce5d3ddc6d3fa000eb1536d85e147bfe31aacaba692ed6a876f95cb7c855be78\"\n\n[[package]]\nname = \"libtmux\"\nversion = \"0.1.0-alpha.15\"\ndependencies = [\n \"caseless\",\n \"regex\",\n \"rustix\",\n \"thiserror\",\n \"tokio\",\n]\n\n[[package]]\nname = \"libtmux-home-quickstart\"\nversion = \"0.0.0\"\ndependencies = [\n \"libtmux\",\n \"tempfile\",\n \"tokio\",\n]\n\n[[package]]\nname = \"linux-raw-sys\"\nversion = \"0.12.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53\"\n\n[[package]]\nname = \"memchr\"\nversion = \"2.8.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98\"\n\n[[package]]\nname = \"mio\"\nversion = \"1.2.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"4b18443e9c262bfe8fa82f51666e2642c53393f7e5c27b3e1aeab922cff5b9d8\"\ndependencies = [\n \"libc\",\n \"wasi\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"once_cell\"\nversion = \"1.21.4\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50\"\n\n[[package]]\nname = \"pin-project-lite\"\nversion = \"0.2.17\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd\"\n\n[[package]]\nname = \"proc-macro2\"\nversion = \"1.0.107\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9\"\ndependencies = [\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"quote\"\nversion = \"1.0.47\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001\"\ndependencies = [\n \"proc-macro2\",\n]\n\n[[package]]\nname = \"r-efi\"\nversion = \"6.0.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf\"\n\n[[package]]\nname = \"regex\"\nversion = \"1.13.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f020237b6c8eed93db2e2cb53c00c60a8e1bc73da7d073199a1180401450218d\"\ndependencies = [\n \"aho-corasick\",\n \"memchr\",\n \"regex-automata\",\n \"regex-syntax\",\n]\n\n[[package]]\nname = \"regex-automata\"\nversion = \"0.4.18\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ad8553b9b26413251cbf30e620595c7a41b3887f03da04579c0e6b0d6a06b4b2\"\ndependencies = [\n \"aho-corasick\",\n \"memchr\",\n \"regex-syntax\",\n]\n\n[[package]]\nname = \"regex-syntax\"\nversion = \"0.8.11\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4\"\n\n[[package]]\nname = \"rustix\"\nversion = \"1.1.5\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d\"\ndependencies = [\n \"bitflags\",\n \"errno\",\n \"libc\",\n \"linux-raw-sys\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"signal-hook-registry\"\nversion = \"1.4.8\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"c4db69cba1110affc0e9f7bcd48bbf87b3f4fc7c61fc9155afd4c469eb3d6c1b\"\ndependencies = [\n \"errno\",\n \"libc\",\n]\n\n[[package]]\nname = \"syn\"\nversion = \"3.0.6\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"8593e8e72159ed2257d083c7a454a85cbf854f37a0966d8d483aff8c8a3ebcee\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"tempfile\"\nversion = \"3.27.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd\"\ndependencies = [\n \"fastrand\",\n \"getrandom\",\n \"once_cell\",\n \"rustix\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"thiserror\"\nversion = \"2.0.21\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"09e52cb86a36cede5cb101bf8908837b3e4c6e5e59fe7fd85c23fb56200d189e\"\ndependencies = [\n \"thiserror-impl\",\n]\n\n[[package]]\nname = \"thiserror-impl\"\nversion = \"2.0.21\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"fe5197923287db20a58125f0bc85c062f7f2c892de97b18c356f9efb14b28524\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn\",\n]\n\n[[package]]\nname = \"tinyvec\"\nversion = \"1.13.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"fd3ca314f692efd6c868f8408f53fe444634a845f96c028b97d35f6a1f79f0ee\"\n\n[[package]]\nname = \"tokio\"\nversion = \"1.53.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"e95f91fcc7a621e8b030f6aa23c71fe9838ae2fb4d8118b75602a328f5144044\"\ndependencies = [\n \"bytes\",\n \"libc\",\n \"mio\",\n \"pin-project-lite\",\n \"signal-hook-registry\",\n \"tokio-macros\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"tokio-macros\"\nversion = \"2.7.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn\",\n]\n\n[[package]]\nname = \"unicode-ident\"\nversion = \"1.0.26\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"d245f478577f809a851594d02313b640fb437e0bb33866753cff937863096954\"\n\n[[package]]\nname = \"unicode-normalization\"\nversion = \"0.1.25\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"5fd4f6878c9cb28d874b009da9e8d183b5abc80117c40bbd187a1fde336be6e8\"\ndependencies = [\n \"tinyvec\",\n]\n\n[[package]]\nname = \"wasi\"\nversion = \"0.11.1+wasi-snapshot-preview1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b\"\n\n[[package]]\nname = \"windows-link\"\nversion = \"0.2.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5\"\n\n[[package]]\nname = \"windows-sys\"\nversion = \"0.61.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc\"\ndependencies = [\n \"windows-link\",\n]\n"
+      },
+      {
+        "name": "rust-toolchain.toml",
+        "lang": "toml",
+        "code": "[toolchain]\nchannel = \"1.97.1\"\ncomponents = [\"clippy\", \"rust-src\", \"rustfmt\"]\nprofile = \"minimal\"\n"
+      }
+    ],
+    "prerequisites": "POSIX shell, Git, tmux 3.2a or newer, rustup with Rust 1.97.1 (rust-toolchain.toml), and a C linker.",
+    "commands": [
+      "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-rs.git \\\n  a6fc2a65674177b92b17fa380757155d2ba150fd\ngit -C source checkout -q --detach FETCH_HEAD\ncargo build --locked --jobs 2",
+      "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\ncargo run --quiet --locked"
+    ],
+    "expectedOutput": "hello\n"
+  },
+  "go": {
+    "lang": "go",
+    "sourceRepository": "libtmux/libtmux-go",
+    "sourceRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+    "sourceTree": "96e6d6d4f688bf26503e46a541a88d6fce71663c",
+    "program": "quickstart.go",
+    "excerpt": {
+      "startLine": 59,
+      "endLine": 76,
+      "dedent": 1,
+      "importsEndLine": 15
+    },
+    "files": [
+      {
+        "name": "quickstart.go",
+        "lang": "go",
+        "code": "package main\n\nimport (\n\t\"bufio\"\n\t\"context\"\n\t\"errors\"\n\t\"fmt\"\n\t\"io\"\n\t\"log\"\n\t\"os\"\n\t\"path/filepath\"\n\t\"time\"\n\n\t\"github.com/libtmux/libtmux-go/tmux\"\n)\n\nfunc main() {\n\tif err := start(); err != nil {\n\t\tlog.Fatal(err)\n\t}\n}\n\nfunc start() (err error) {\n\troot := \"/tmp/libtmux-go-test\"\n\tif err := os.MkdirAll(root, 0700); err != nil {\n\t\treturn err\n\t}\n\tdirectory, err := os.MkdirTemp(root, \"home-\")\n\tif err != nil {\n\t\treturn err\n\t}\n\tserver, err := tmux.NewServer(tmux.ServerOptions{\n\t\tBinary:     os.Getenv(\"TMUX_BIN\"),\n\t\tSocketPath: filepath.Join(directory, \"tmux.sock\"),\n\t\tConfigFile: \"/dev/null\",\n\t})\n\tif err != nil {\n\t\treturn errors.Join(err, os.RemoveAll(directory))\n\t}\n\tdefer func() {\n\t\tcleanup, cancel := context.WithTimeout(\n\t\t\tcontext.Background(), 3*time.Second,\n\t\t)\n\t\tdefer cancel()\n\t\tif stopErr := server.Kill(cleanup); stopErr != nil {\n\t\t\terr = errors.Join(err, stopErr)\n\t\t\treturn // Keep the directory if cleanup fails.\n\t\t}\n\t\terr = errors.Join(err, os.RemoveAll(directory))\n\t}()\n\tctx, cancel := context.WithTimeout(\n\t\tcontext.Background(), 10*time.Second,\n\t)\n\tdefer cancel()\n\treturn run(ctx, server)\n}\n\nfunc run(ctx context.Context, server tmux.Server) (err error) {\n\tsession, err := server.NewSession(ctx, tmux.NewSessionRequest{\n\t\tName: \"libtmux-go-quickstart\", WindowName: \"start\",\n\t})\n\tif err != nil {\n\t\treturn fmt.Errorf(\"create session: %w\", err)\n\t}\n\twindow, err := session.NewWindow(ctx, tmux.NewWindowRequest{\n\t\tName: new(\"work\"),\n\t})\n\tif err != nil {\n\t\treturn fmt.Errorf(\"create window: %w\", err)\n\t}\n\tpane, err := window.SplitPane(ctx, tmux.SplitPaneRequest{\n\t\tDirection: tmux.PaneDirectionRight, Command: \"sh\",\n\t})\n\tif err != nil {\n\t\treturn fmt.Errorf(\"split window: %w\", err)\n\t}\n\toutput, err := pane.OpenObservation(ctx)\n\tif err != nil {\n\t\treturn fmt.Errorf(\"watch pane: %w\", err)\n\t}\n\tdefer func() { err = errors.Join(err, output.Close()) }()\n\t_, err = fmt.Fprintln(\n\t\tpane.Writer(ctx), \"printf 'libtmux ready\\\\n'\",\n\t)\n\tif err != nil {\n\t\treturn fmt.Errorf(\"send command: %w\", err)\n\t}\n\tscanner := bufio.NewScanner(output.Reader(ctx))\n\tfor scanner.Scan() {\n\t\tif scanner.Text() == \"libtmux ready\" {\n\t\t\tfmt.Println(\"libtmux ready\")\n\t\t\treturn nil\n\t\t}\n\t}\n\tif err := scanner.Err(); err != nil {\n\t\treturn fmt.Errorf(\"read pane: %w\", err)\n\t}\n\treturn io.ErrUnexpectedEOF\n}\n"
+      },
+      {
+        "name": "go.mod",
+        "lang": "text",
+        "code": "module example.com/libtmux-home\n\ngo 1.26.0\n\nrequire github.com/libtmux/libtmux-go v0.0.0\n\nreplace github.com/libtmux/libtmux-go => ./source\n"
+      }
+    ],
+    "prerequisites": "POSIX shell, Git, tmux 3.2a or newer and Go 1.26.5.",
+    "commands": [
+      "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-go.git \\\n  6f3df55f8a41999e41225eefb3940545b834e6a2\ngit -C source checkout -q --detach FETCH_HEAD\ngo build -p 2 -o quickstart quickstart.go",
+      "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\n./quickstart"
+    ],
+    "expectedOutput": "libtmux ready\n"
+  },
+  "java": {
+    "lang": "java",
+    "sourceRepository": "libtmux/libtmux-java",
+    "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+    "sourceTree": "342c76ca1ad7257b3655c7a47d7258b486b26975",
+    "program": "src/main/java/Main.java",
+    "excerpt": {
+      "startLine": 20,
+      "endLine": 37,
+      "dedent": 8,
+      "importsEndLine": 6
+    },
+    "files": [
+      {
+        "name": "build.gradle.kts",
+        "lang": "kotlin",
+        "code": "plugins {\n    application\n}\n\nrepositories { mavenCentral() }\n\ndependencies {\n    implementation(\"io.github.libtmux:libtmux:0.0.1-alpha.17-SNAPSHOT\")\n}\n\njava { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }\n\napplication { mainClass.set(providers.gradleProperty(\"exampleMain\")) }\n"
+      },
+      {
+        "name": "settings.gradle.kts",
+        "lang": "kotlin",
+        "code": "rootProject.name = \"api-example\"\n\nincludeBuild(\"libtmux-source\")\n"
+      },
+      {
+        "name": "gradle.properties",
+        "lang": "properties",
+        "code": "org.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8\nkotlin.daemon.jvmargs=-Xmx2g\norg.gradle.workers.max=2\n"
+      },
+      {
+        "name": "run.sh",
+        "lang": "bash",
+        "code": "#!/bin/sh\nset -eu\n\nif [ \"$#\" -eq 0 ]; then\n    printf 'Usage: sh run.sh program [arguments...]\\n' >&2\n    exit 2\nfi\nbinary=$(command -v \"${TMUX_BIN:-tmux}\")\nmkdir -p /tmp/libtmux-java-dev\ndirectory=$(mktemp -d /tmp/libtmux-java-dev/api.XXXXXX)\nsocket=\"$directory/tmux.sock\"\nconfig=\"$directory/tmux.conf\"\n\nalive() {\n    \"$binary\" -S \"$socket\" display-message -p '#{pid}' >/dev/null 2>&1\n}\n\ncleanup() {\n    status=$?\n    trap - 0 HUP INT TERM\n    if alive; then\n        if ! \"$binary\" -S \"$socket\" kill-server; then\n            printf 'Cannot stop tmux; kept %s\\n' \"$directory\" >&2\n            exit 1\n        fi\n        attempts=0\n        while alive && [ \"$attempts\" -lt 100 ]; do\n            sleep 0.05\n            attempts=$((attempts + 1))\n        done\n        if alive; then\n            printf 'tmux is still responding; kept %s\\n' \"$directory\" >&2\n            exit 1\n        fi\n    fi\n    rm -rf \"$directory\" || exit 1\n    exit \"$status\"\n}\ntrap cleanup 0\ntrap 'exit 1' HUP INT TERM\n\nunset TMUX TMUX_PANE\nprintf 'set-option -g default-shell /bin/sh\\n' > \"$config\"\n\"$binary\" -S \"$socket\" -f \"$config\" new-session -d -s work-one -n editor /bin/cat\n\"$binary\" -S \"$socket\" split-window -h -t '=work-one:editor' /bin/cat\n\"$binary\" -S \"$socket\" new-window -d -t '=work-one' -n logs /bin/cat\n\"$binary\" -S \"$socket\" new-session -d -s work-two -n editor /bin/cat\n\"$@\" \"$binary\" \"$socket\" \"$config\"\n\"$binary\" -S \"$socket\" has-session -t '=work-one'\n\"$binary\" -S \"$socket\" has-session -t '=work-two'\n"
+      },
+      {
+        "name": "src/main/java/Main.java",
+        "lang": "java",
+        "code": "import io.github.libtmux.Server;\nimport io.github.libtmux.ServerConfig;\nimport io.github.libtmux.ServerEndpoint;\nimport io.github.libtmux.TextOutcome;\nimport java.nio.file.Path;\nimport java.time.Duration;\n\npublic final class Main {\n    public static void main(String[] args) throws Exception {\n        if (args.length != 3) {\n            throw new IllegalArgumentException(\n                    \"expected tmux, socket and config paths\");\n        }\n        var config = ServerConfig.builder()\n                .binary(args[0])\n                .endpoint(ServerEndpoint.socketPath(Path.of(args[1])))\n                .configFile(Path.of(args[2]))\n                .build();\n\n        try (Server server = Server.open(config)) {\n            var session = server.newSession(\"demo\");\n            var window = session.newWindow(\"build\");\n            var pane = window.split();\n\n            pane.sendLine(\"printf 'hello from %s\\\\n' libtmux\");\n            if (pane.awaitText(\"hello from libtmux\", Duration.ofSeconds(5))\n                    == TextOutcome.TIMED_OUT) {\n                throw new IllegalStateException(\"output did not arrive\");\n            }\n            var lines = pane.capture();\n            if (lines.stream().noneMatch(\n                    line -> line.strip().equals(\"hello from libtmux\"))) {\n                throw new IllegalStateException(\n                        \"capture is missing the output line\");\n            }\n            System.out.println(\"hello from libtmux\");\n        }\n    }\n}\n"
+      }
+    ],
+    "prerequisites": "JDK 25 and tmux on Linux/macOS",
+    "commands": [
+      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach a0ecbc16da00140e2520462d478a2af470878272\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nsh run.sh build/install/api-example/bin/api-example"
+    ],
+    "expectedOutput": "hello from libtmux\n"
+  },
+  "kotlin": {
+    "lang": "kotlin",
+    "sourceRepository": "libtmux/libtmux-java",
+    "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+    "sourceTree": "342c76ca1ad7257b3655c7a47d7258b486b26975",
+    "program": "src/main/kotlin/Main.kt",
+    "excerpt": {
+      "startLine": 17,
+      "endLine": 31,
+      "dedent": 4,
+      "importsEndLine": 7
+    },
+    "files": [
+      {
+        "name": "build.gradle.kts",
+        "lang": "kotlin",
+        "code": "plugins {\n    kotlin(\"jvm\") version \"2.4.10\"\n    application\n}\n\nrepositories { mavenCentral() }\n\ndependencies {\n    implementation(\"io.github.libtmux:libtmux-kotlin:0.0.1-alpha.17-SNAPSHOT\")\n}\n\njava { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }\nkotlin { jvmToolchain(25) }\n\napplication { mainClass.set(providers.gradleProperty(\"exampleMain\")) }\n"
+      },
+      {
+        "name": "settings.gradle.kts",
+        "lang": "kotlin",
+        "code": "rootProject.name = \"api-example\"\n\nincludeBuild(\"libtmux-source\")\n"
+      },
+      {
+        "name": "gradle.properties",
+        "lang": "properties",
+        "code": "org.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8\nkotlin.daemon.jvmargs=-Xmx2g\norg.gradle.workers.max=2\n"
+      },
+      {
+        "name": "run.sh",
+        "lang": "bash",
+        "code": "#!/bin/sh\nset -eu\n\nif [ \"$#\" -eq 0 ]; then\n    printf 'Usage: sh run.sh program [arguments...]\\n' >&2\n    exit 2\nfi\nbinary=$(command -v \"${TMUX_BIN:-tmux}\")\nmkdir -p /tmp/libtmux-java-dev\ndirectory=$(mktemp -d /tmp/libtmux-java-dev/api.XXXXXX)\nsocket=\"$directory/tmux.sock\"\nconfig=\"$directory/tmux.conf\"\n\nalive() {\n    \"$binary\" -S \"$socket\" display-message -p '#{pid}' >/dev/null 2>&1\n}\n\ncleanup() {\n    status=$?\n    trap - 0 HUP INT TERM\n    if alive; then\n        if ! \"$binary\" -S \"$socket\" kill-server; then\n            printf 'Cannot stop tmux; kept %s\\n' \"$directory\" >&2\n            exit 1\n        fi\n        attempts=0\n        while alive && [ \"$attempts\" -lt 100 ]; do\n            sleep 0.05\n            attempts=$((attempts + 1))\n        done\n        if alive; then\n            printf 'tmux is still responding; kept %s\\n' \"$directory\" >&2\n            exit 1\n        fi\n    fi\n    rm -rf \"$directory\" || exit 1\n    exit \"$status\"\n}\ntrap cleanup 0\ntrap 'exit 1' HUP INT TERM\n\nunset TMUX TMUX_PANE\nprintf 'set-option -g default-shell /bin/sh\\n' > \"$config\"\n\"$binary\" -S \"$socket\" -f \"$config\" new-session -d -s work-one -n editor /bin/cat\n\"$binary\" -S \"$socket\" split-window -h -t '=work-one:editor' /bin/cat\n\"$binary\" -S \"$socket\" new-window -d -t '=work-one' -n logs /bin/cat\n\"$binary\" -S \"$socket\" new-session -d -s work-two -n editor /bin/cat\n\"$@\" \"$binary\" \"$socket\" \"$config\"\n\"$binary\" -S \"$socket\" has-session -t '=work-one'\n\"$binary\" -S \"$socket\" has-session -t '=work-two'\n"
+      },
+      {
+        "name": "src/main/kotlin/Main.kt",
+        "lang": "kotlin",
+        "code": "import io.github.libtmux.ServerConfig\nimport io.github.libtmux.ServerEndpoint\nimport io.github.libtmux.TextOutcome\nimport io.github.libtmux.kotlin.*\nimport java.nio.file.Path\nimport kotlinx.coroutines.runBlocking\nimport kotlin.time.Duration.Companion.seconds\n\nfun main(args: Array<String>) = runBlocking {\n    require(args.size == 3) { \"expected tmux, socket and config paths\" }\n    val config = ServerConfig.builder()\n        .binary(args[0])\n        .endpoint(ServerEndpoint.socketPath(Path.of(args[1])))\n        .configFile(Path.of(args[2]))\n        .build()\n\n    withServer(config) { server ->\n        val session = server.newSession(\"keys-demo\")\n        val pane = session.activeWindow?.activePane\n            ?: error(\"no active pane\")\n\n        pane.sendLine(\"printf 'rea%s\\\\n' dy\")\n        val outcome = pane.awaitText(\"ready\", timeout = 5.seconds)\n        check(outcome != TextOutcome.TIMED_OUT)\n        val lines = pane.capture()\n        check(lines.any { it.trim() == \"ready\" })\n\n        val run = pane.run(\"echo hi && exit 3\", timeout = 5.seconds)\n        check(run.exitStatus.orNull() == 3)\n        println(\"ready; exit ${run.exitStatus.orNull()}\")\n    }\n}\n"
+      }
+    ],
+    "prerequisites": "JDK 25 and tmux on Linux/macOS; Gradle resolves Kotlin 2.4.10",
+    "commands": [
+      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach a0ecbc16da00140e2520462d478a2af470878272\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=MainKt\nsh run.sh build/install/api-example/bin/api-example"
+    ],
+    "expectedOutput": "ready; exit 3\n"
+  },
+  "scala": {
+    "lang": "scala",
+    "sourceRepository": "libtmux/libtmux-java",
+    "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+    "sourceTree": "342c76ca1ad7257b3655c7a47d7258b486b26975",
+    "program": "src/main/scala/Main.scala",
+    "excerpt": {
+      "startLine": 15,
+      "endLine": 25,
+      "dedent": 4,
+      "importsEndLine": 4
+    },
+    "files": [
+      {
+        "name": "build.gradle.kts",
+        "lang": "kotlin",
+        "code": "plugins {\n    scala\n    application\n}\n\nrepositories { mavenCentral() }\n\ndependencies {\n    implementation(\"io.github.libtmux:libtmux-scala_3:0.0.1-alpha.17-SNAPSHOT\")\n    implementation(\"org.scala-lang:scala3-library_3:3.9.0\")\n}\n\njava { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }\n\napplication { mainClass.set(providers.gradleProperty(\"exampleMain\")) }\n"
+      },
+      {
+        "name": "settings.gradle.kts",
+        "lang": "kotlin",
+        "code": "rootProject.name = \"api-example\"\n\nincludeBuild(\"libtmux-source\") {\n    dependencySubstitution {\n        substitute(module(\"io.github.libtmux:libtmux-scala_3\"))\n            .using(project(\":libtmux-scala\"))\n    }\n}\n"
+      },
+      {
+        "name": "gradle.properties",
+        "lang": "properties",
+        "code": "org.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8\nkotlin.daemon.jvmargs=-Xmx2g\norg.gradle.workers.max=2\n"
+      },
+      {
+        "name": "run.sh",
+        "lang": "bash",
+        "code": "#!/bin/sh\nset -eu\n\nif [ \"$#\" -eq 0 ]; then\n    printf 'Usage: sh run.sh program [arguments...]\\n' >&2\n    exit 2\nfi\nbinary=$(command -v \"${TMUX_BIN:-tmux}\")\nmkdir -p /tmp/libtmux-java-dev\ndirectory=$(mktemp -d /tmp/libtmux-java-dev/api.XXXXXX)\nsocket=\"$directory/tmux.sock\"\nconfig=\"$directory/tmux.conf\"\n\nalive() {\n    \"$binary\" -S \"$socket\" display-message -p '#{pid}' >/dev/null 2>&1\n}\n\ncleanup() {\n    status=$?\n    trap - 0 HUP INT TERM\n    if alive; then\n        if ! \"$binary\" -S \"$socket\" kill-server; then\n            printf 'Cannot stop tmux; kept %s\\n' \"$directory\" >&2\n            exit 1\n        fi\n        attempts=0\n        while alive && [ \"$attempts\" -lt 100 ]; do\n            sleep 0.05\n            attempts=$((attempts + 1))\n        done\n        if alive; then\n            printf 'tmux is still responding; kept %s\\n' \"$directory\" >&2\n            exit 1\n        fi\n    fi\n    rm -rf \"$directory\" || exit 1\n    exit \"$status\"\n}\ntrap cleanup 0\ntrap 'exit 1' HUP INT TERM\n\nunset TMUX TMUX_PANE\nprintf 'set-option -g default-shell /bin/sh\\n' > \"$config\"\n\"$binary\" -S \"$socket\" -f \"$config\" new-session -d -s work-one -n editor /bin/cat\n\"$binary\" -S \"$socket\" split-window -h -t '=work-one:editor' /bin/cat\n\"$binary\" -S \"$socket\" new-window -d -t '=work-one' -n logs /bin/cat\n\"$binary\" -S \"$socket\" new-session -d -s work-two -n editor /bin/cat\n\"$@\" \"$binary\" \"$socket\" \"$config\"\n\"$binary\" -S \"$socket\" has-session -t '=work-one'\n\"$binary\" -S \"$socket\" has-session -t '=work-two'\n"
+      },
+      {
+        "name": "src/main/scala/Main.scala",
+        "lang": "scala",
+        "code": "import io.github.libtmux.{ServerConfig, ServerEndpoint}\nimport io.github.libtmux.scaladsl.{config => _, *}\nimport java.nio.file.Path\nimport scala.util.Using\n\nobject Main {\n  def main(args: Array[String]): Unit = {\n    require(args.length == 3, \"expected tmux, socket and config paths\")\n    val config = ServerConfig.builder()\n      .binary(args(0))\n      .endpoint(ServerEndpoint.socketPath(Path.of(args(1))))\n      .configFile(Path.of(args(2)))\n      .build()\n\n    Using.resource(Server.open(config)) { server =>\n      val panes = server.panes()\n      val named = panes.filter(_.info.title().nonEmpty)\n      val commands = named.map(_.info.currentCommand())\n      assert(panes.nonEmpty)\n      assert(commands.size <= panes.size)\n      assert(panes.forall { pane =>\n        pane.window.info.context().equals(pane.info.context())\n      })\n      println(s\"panes=${panes.size}; related windows verified\")\n    }\n  }\n}\n"
+      }
+    ],
+    "prerequisites": "JDK 25 and tmux on Linux/macOS; Scala 3.9.0 Direct facade",
+    "commands": [
+      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach a0ecbc16da00140e2520462d478a2af470878272\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nsh run.sh build/install/api-example/bin/api-example"
+    ],
+    "expectedOutput": "panes=4; related windows verified\n"
+  },
+  "dotnet": {
+    "lang": "csharp",
+    "sourceRepository": "libtmux/libtmux-dotnet",
+    "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+    "sourceTree": "2bed2dca445fd23ad3f627f0c8f8eba76436aeb4",
+    "program": "app/Program.cs",
+    "excerpt": {
+      "startLine": 26,
+      "endLine": 47,
+      "dedent": 0,
+      "importsEndLine": 5
+    },
+    "files": [
+      {
+        "name": "app/Program.cs",
+        "lang": "csharp",
+        "code": "using System;\nusing System.Linq;\nusing System.Threading;\nusing System.Runtime.Versioning;\nusing LibTmux;\n\n[assembly: UnsupportedOSPlatform(\"windows\")]\n\nif (OperatingSystem.IsWindows())\n{\n    throw new PlatformNotSupportedException(\n        \"This example requires tmux on Unix.\");\n}\n\nusing var deadline = new CancellationTokenSource(\n    TimeSpan.FromSeconds(30));\nvar token = deadline.Token;\nvar options = new ServerConnectionOptions\n{\n    SocketName = \"quickstart-\" + Guid.NewGuid().ToString(\"N\"),\n    ConfigurationFile = \"/dev/null\",\n    TmuxBinaryPath = Environment.GetEnvironmentVariable(\"LIBTMUX_TMUX\")\n        ?? \"tmux\",\n};\n\nawait using var owned = await Server.CreateOwnedAsync(options, token);\nServer server = owned.Value;\nSession session = await server.CreateSessionAsync(\n    new NewSessionRequest { Name = \"build\", Command = \"/bin/sh\" },\n    token);\nWindow window = await session.CreateWindowAsync(\n    new NewWindowRequest { Name = \"tests\", Command = \"/bin/sh\" },\n    token);\nPane pane = (await window.GetPanesAsync(token))[0];\n\nawait pane.SendTextAsync(\n    \"printf 'hello-from-%s\\\\n' libtmux\",\n    enter: false, cancellationToken: token);\nawait pane.EnterAsync(token);\nvar lines = await TmuxWait.UntilAsync(\n    async cancellation => await pane.CaptureAsync(\n        cancellationToken: cancellation),\n    output => output.Any(line => line.TrimEnd() == \"hello-from-libtmux\"),\n    TimeSpan.FromSeconds(10),\n    TimeSpan.FromMilliseconds(20),\n    token);\nConsole.WriteLine(\"hello-from-libtmux\");\n"
+      },
+      {
+        "name": "app/Example.csproj",
+        "lang": "xml",
+        "code": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>\n    <LangVersion>12.0</LangVersion>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>disable</ImplicitUsings>\n    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>\n    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>\n    <AnalysisLevel>10-recommended</AnalysisLevel>\n  </PropertyGroup>\n  <ItemGroup>\n    <Compile Include=\"Program.cs\" />\n    <PackageReference Include=\"LibTmux\" Version=\"[0.0.0-alpha.18]\" />\n  </ItemGroup>\n</Project>\n"
+      },
+      {
+        "name": "app/global.json",
+        "lang": "json",
+        "code": "{\n  \"sdk\": {\n    \"version\": \"10.0.302\",\n    \"rollForward\": \"disable\",\n    \"allowPrerelease\": false\n  },\n  \"test\": {\n    \"runner\": \"Microsoft.Testing.Platform\"\n  }\n}\n"
+      },
+      {
+        "name": "app/NuGet.config",
+        "lang": "xml",
+        "code": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<configuration>\n  <packageSources>\n    <clear />\n    <add key=\"libtmux-source\" value=\"../libtmux-source/artifacts/api-example-packages\" />\n    <add key=\"nuget.org\" value=\"https://api.nuget.org/v3/index.json\" />\n  </packageSources>\n  <packageSourceMapping>\n    <clear />\n    <packageSource key=\"libtmux-source\">\n      <package pattern=\"LibTmux\" />\n      <package pattern=\"LibTmux.*\" />\n    </packageSource>\n    <packageSource key=\"nuget.org\">\n      <package pattern=\"*\" />\n    </packageSource>\n  </packageSourceMapping>\n</configuration>\n"
+      }
+    ],
+    "prerequisites": ".NET SDK 10.0.302, .NET 8 and 10 runtimes, tmux on Linux/macOS",
+    "commands": [
+      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source\ngit -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef\nexport NUGET_PACKAGES=\"$PWD/packages\"\ncd libtmux-source\ndotnet restore src/LibTmux.FSharp/LibTmux.FSharp.fsproj --locked-mode\ndotnet pack src/LibTmux/LibTmux.csproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ncd ../app\ndotnet restore Example.csproj --configfile NuGet.config\ndotnet build Example.csproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
+    ],
+    "expectedOutput": "hello-from-libtmux\n"
+  },
+  "fsharp": {
+    "lang": "fsharp",
+    "sourceRepository": "libtmux/libtmux-dotnet",
+    "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+    "sourceTree": "2bed2dca445fd23ad3f627f0c8f8eba76436aeb4",
+    "program": "app/Program.fs",
+    "excerpt": {
+      "startLine": 34,
+      "endLine": 80,
+      "dedent": 8,
+      "importsEndLine": 4
+    },
+    "files": [
+      {
+        "name": "app/Program.fs",
+        "lang": "fsharp",
+        "code": "open System\nopen System.Threading\nopen LibTmux\nopen LibTmux.FSharp\n\nlet runAsync () =\n    task {\n        use deadline = new CancellationTokenSource(TimeSpan.FromSeconds 30.)\n        let token = deadline.Token\n\n        let options =\n            ServerConnectionOptions(\n                SocketName = \"fsharp-\" + Guid.NewGuid().ToString(\"N\"),\n                ConfigurationFile = \"/dev/null\",\n                TmuxBinaryPath =\n                    (Environment.GetEnvironmentVariable \"LIBTMUX_TMUX\"\n                     |> Option.ofObj\n                     |> Option.defaultValue \"tmux\")\n            )\n\n        use! owned = LibTmux.Server.CreateOwnedAsync(options, token)\n\n        for name in [ \"build\"; \"web\"; \"worker\" ] do\n            let! _ =\n                owned.Value.CreateSessionAsync(\n                    NewSessionRequest(Name = name, Command = \"/bin/sh\"),\n                    token\n                )\n\n            ()\n\n        let! server = LibTmux.Server.ConnectAsync(options, token)\n\n        // List and filter: tmux narrows the listing, then every row is rechecked.\n        // atMostOne is None when nothing matches and raises when several do.\n        let! build =\n            server\n            |> Server.sessions\n            |> Query.where (SessionFields.name |> Filter.eq \"build\")\n            |> Query.atMostOne token\n\n        let! others =\n            server\n            |> Server.sessions\n            |> Query.where (SessionFields.name |> Filter.ne \"build\")\n            |> Query.list token\n\n        printfn\n            \"other sessions: %s\"\n            (String.Join(\", \", [ for session in others -> session.Name ]))\n\n        match build with\n        | None -> printfn \"no build session\"\n        | Some session ->\n            let! panes = session |> Session.panes |> Query.list token\n            let pane = panes[0]\n\n            // Type a command and wait for what it prints, not for its echo.\n            let! started =\n                pane\n                |> Pane.sendAndWait\n                    token\n                    (TimeSpan.FromSeconds 10.)\n                    \"echo build started\"\n                    \"build started\"\n\n            // Run a command to its exit status and read what it printed.\n            let! result =\n                pane\n                |> Pane.run\n                    token\n                    (TimeSpan.FromSeconds 10.)\n                    \"printf 'ok\\\\n'; exit 3\"\n\n            printfn \"wait found: %b\" started.Found\n\n            printfn\n                \"run: exit %d, output %A\"\n                result.ExitStatus.Value\n                (List.ofSeq result.Output)\n    }\n\nrunAsync().GetAwaiter().GetResult()\n"
+      },
+      {
+        "name": "app/Example.fsproj",
+        "lang": "xml",
+        "code": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>\n    <LangVersion>10.0</LangVersion>\n    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>\n    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>\n    <DisableImplicitLibraryPacksFolder>true</DisableImplicitLibraryPacksFolder>\n  </PropertyGroup>\n  <ItemGroup>\n    <Compile Include=\"Program.fs\" />\n    <PackageReference Include=\"FSharp.Core\" Version=\"[10.1.302]\" />\n    <PackageReference Include=\"LibTmux.FSharp\" Version=\"[0.0.0-alpha.18]\" />\n  </ItemGroup>\n</Project>\n"
+      },
+      {
+        "name": "app/global.json",
+        "lang": "json",
+        "code": "{\n  \"sdk\": {\n    \"version\": \"10.0.302\",\n    \"rollForward\": \"disable\",\n    \"allowPrerelease\": false\n  },\n  \"test\": {\n    \"runner\": \"Microsoft.Testing.Platform\"\n  }\n}\n"
+      },
+      {
+        "name": "app/NuGet.config",
+        "lang": "xml",
+        "code": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<configuration>\n  <packageSources>\n    <clear />\n    <add key=\"libtmux-source\" value=\"../libtmux-source/artifacts/api-example-packages\" />\n    <add key=\"nuget.org\" value=\"https://api.nuget.org/v3/index.json\" />\n  </packageSources>\n  <packageSourceMapping>\n    <clear />\n    <packageSource key=\"libtmux-source\">\n      <package pattern=\"LibTmux\" />\n      <package pattern=\"LibTmux.*\" />\n    </packageSource>\n    <packageSource key=\"nuget.org\">\n      <package pattern=\"*\" />\n    </packageSource>\n  </packageSourceMapping>\n</configuration>\n"
+      }
+    ],
+    "prerequisites": ".NET SDK 10.0.302, .NET 8 and 10 runtimes, tmux on Linux/macOS",
+    "commands": [
+      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source\ngit -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef\nexport NUGET_PACKAGES=\"$PWD/packages\"\ncd libtmux-source\ndotnet restore src/LibTmux.FSharp/LibTmux.FSharp.fsproj --locked-mode\ndotnet pack src/LibTmux/LibTmux.csproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ndotnet pack src/LibTmux.FSharp/LibTmux.FSharp.fsproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ncd ../app\ndotnet restore Example.fsproj --configfile NuGet.config\ndotnet build Example.fsproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
+    ],
+    "expectedOutput": "other sessions: web, worker\nwait found: true\nrun: exit 3, output [\"ok\"]\n"
+  },
+  "cxx": {
+    "lang": "cpp",
+    "sourceRepository": "libtmux/libtmux-cxx",
+    "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+    "sourceTree": "f6bc4187d0f44ae265e2937f4a6072572d4c5f58",
+    "program": "main.cpp",
+    "excerpt": {
+      "startLine": 16,
+      "endLine": 65,
+      "dedent": 2,
+      "importsEndLine": 3
+    },
+    "files": [
+      {
+        "name": "main.cpp",
+        "lang": "cpp",
+        "code": "#include <chrono>\n#include <cstdio>\n#include <libtmux/libtmux.hpp>\n\nint main(int argc, char** argv) {\n  if (argc != 4) {\n    std::fputs(\"expected tmux, socket and config paths\\n\", stderr);\n    return 1;\n  }\n  const auto server = libtmux::Server::at_socket_path(\n      argv[2], {}, {.tmux_binary = argv[1]});\n  if (!server) {\n    std::fprintf(stderr, \"%s\\n\", server.error().diagnostic.c_str());\n    return 1;\n  }\n  const auto sessions = server->sessions();\n  if (!sessions) {\n    std::fprintf(stderr, \"%s\\n\", sessions.error().diagnostic.c_str());\n    return 1;\n  }\n  if (sessions->empty()) {\n    std::fputs(\"expected the owned demo session\\n\", stderr);\n    return 1;\n  }\n  const auto editor = sessions->front().new_window({.name = \"editor\"});\n  if (!editor) {\n    std::fprintf(stderr, \"%s\\n\", editor.error().diagnostic.c_str());\n    return 1;\n  }\n  const auto logs = editor->split({\n      .horizontal = true, .shell_command = \"/bin/sh\", .percentage = 30,\n  });\n  if (!logs) {\n    std::fprintf(stderr, \"%s\\n\", logs.error().diagnostic.c_str());\n    return 1;\n  }\n  const auto sent = logs->send_text(\"printf 'hello from %s\\\\n' libtmux\");\n  if (!sent) {\n    std::fprintf(stderr, \"%s\\n\", sent.error().diagnostic.c_str());\n    return 1;\n  }\n  const auto entered = logs->send_key(\"Enter\");\n  if (!entered) {\n    std::fprintf(stderr, \"%s\\n\", entered.error().diagnostic.c_str());\n    return 1;\n  }\n  const auto ready = logs->wait_for_text(\n      \"hello from libtmux\", {.timeout = std::chrono::seconds{5}});\n  if (!ready || !ready->matched) {\n    std::fputs(\"output did not arrive\\n\", stderr);\n    return 1;\n  }\n  const auto visible = logs->capture();\n  if (!visible) {\n    std::fprintf(stderr, \"%s\\n\", visible.error().diagnostic.c_str());\n    return 1;\n  }\n  for (const auto line : libtmux::capture_lines(*visible)) {\n    if (line == \"hello from libtmux\") {\n      std::puts(\"hello from libtmux\");\n      return 0;\n    }\n  }\n  std::fputs(\"capture is missing the complete output line\\n\", stderr);\n  return 1;\n}\n"
+      },
+      {
+        "name": "CMakeLists.txt",
+        "lang": "cmake",
+        "code": "cmake_minimum_required(VERSION 3.25)\nproject(libtmux_api_example LANGUAGES CXX)\n\nfind_package(libtmux REQUIRED)\n\nadd_executable(api_example main.cpp)\ntarget_link_libraries(api_example PRIVATE libtmux::libtmux)\n"
+      },
+      {
+        "name": "run.sh",
+        "lang": "bash",
+        "code": "#!/bin/sh\nset -eu\n\nif [ \"$#\" -eq 0 ]; then\n    printf 'Usage: sh run.sh program [arguments...]\\n' >&2\n    exit 2\nfi\nbinary=$(command -v \"${TMUX_BIN:-tmux}\")\nmkdir -p /tmp/libtmux-cxx-dev\ndirectory=$(mktemp -d /tmp/libtmux-cxx-dev/home.XXXXXX)\nsocket=\"$directory/tmux.sock\"\nconfig=\"$directory/tmux.conf\"\n\nalive() {\n    \"$binary\" -S \"$socket\" display-message -p '#{pid}' >/dev/null 2>&1\n}\n\ncleanup() {\n    status=$?\n    trap - 0 HUP INT TERM\n    if alive; then\n        if ! \"$binary\" -S \"$socket\" kill-server; then\n            printf 'Cannot stop tmux; kept %s\\n' \"$directory\" >&2\n            exit 1\n        fi\n        attempts=0\n        while alive && [ \"$attempts\" -lt 100 ]; do\n            sleep 0.05\n            attempts=$((attempts + 1))\n        done\n        if alive; then\n            printf 'tmux is still responding; kept %s\\n' \"$directory\" >&2\n            exit 1\n        fi\n    fi\n    rm -rf \"$directory\" || exit 1\n    exit \"$status\"\n}\ntrap cleanup 0\ntrap 'exit 1' HUP INT TERM\n\nunset TMUX TMUX_PANE\nprintf 'set-option -g default-shell /bin/sh\\n' > \"$config\"\n\"$binary\" -S \"$socket\" -f \"$config\" new-session -d -s quickstart-bootstrap -n editor /bin/sh\n\"$@\" \"$binary\" \"$socket\" \"$config\"\n\"$binary\" -S \"$socket\" has-session -t '=quickstart-bootstrap'\n"
+      }
+    ],
+    "prerequisites": "CMake 3.25+, Clang 18 with matching libc++ development files, C++23, tmux on Linux/macOS",
+    "commands": [
+      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-cxx.git libtmux-source\ngit -C libtmux-source checkout --detach 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f\ncmake -S libtmux-source -B library \\\n  -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n  -DCMAKE_BUILD_TYPE=Release -DLIBTMUX_BUILD_TESTS=OFF -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n  -DLIBTMUX_BUILD_TESTING_LIBRARY=OFF -DLIBTMUX_CXX_STANDARD=23 \\\n  -DCMAKE_CXX_COMPILER=clang++\ncmake --build library -j 2\ncmake --install library --prefix \"$PWD/prefix\"\ncmake -S . -B build -DCMAKE_PREFIX_PATH=\"$PWD/prefix\" -DCMAKE_CXX_COMPILER=clang++ \\\n  -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_CXX_STANDARD=23\ncmake --build build -j 2\nsh run.sh build/api_example"
+    ],
+    "expectedOutput": "hello from libtmux\n"
+  },
+  "swift": {
+    "lang": "swift",
+    "sourceRepository": "libtmux/libtmux-swift",
+    "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+    "sourceTree": "2b5161e4fb6850163cdde957602aa75524abe315",
+    "program": "Sources/Main.swift",
+    "excerpt": {
+      "startLine": 13,
+      "endLine": 30,
+      "dedent": 8,
+      "importsEndLine": 2
+    },
+    "files": [
+      {
+        "name": "Package.swift",
+        "lang": "swift",
+        "code": "// swift-tools-version: 6.2\nimport PackageDescription\n\nlet package = Package(\n    name: \"ApiExample\",\n    platforms: [.macOS(.v13)],\n    dependencies: [\n        .package(name: \"libtmux\", path: \"libtmux-source\")\n    ],\n    targets: [\n        .executableTarget(\n            name: \"ApiExample\",\n            dependencies: [\n                .product(name: \"LibTmux\", package: \"libtmux\"),\n            ],\n            path: \"Sources\"\n        )\n    ]\n)\n"
+      },
+      {
+        "name": "Sources/Main.swift",
+        "lang": "swift",
+        "code": "import Foundation\nimport LibTmux\n\n@main\nstruct Quickstart {\n    static func main() async throws {\n        guard CommandLine.arguments.count == 4 else {\n            throw QuickstartError.argumentsMissing\n        }\n        let server = try Server(\n            socketPath: CommandLine.arguments[2],\n            tmuxExecutable: CommandLine.arguments[1])\n        let session = try await server.newSession(\n            named: \"work\", windowName: \"editor\")\n        let logs = try await server.newWindow(\n            in: session, named: \"logs\").window\n        let pane = try await server.splitWindow(logs, direction: .right)\n        try await server.run(\"printf 'hello from %s\\\\n' libtmux\", in: pane)\n\n        let clock = ContinuousClock()\n        let deadline = clock.now.advanced(by: .seconds(5))\n        while clock.now < deadline {\n            let lines = try await server.capture(pane)\n            if lines.contains(\"hello from libtmux\") {\n                print(\"hello from libtmux\")\n                return\n            }\n            try await Task.sleep(for: .milliseconds(25))\n        }\n        throw QuickstartError.outputTimedOut\n    }\n\n    enum QuickstartError: Error {\n        case argumentsMissing\n        case outputTimedOut\n    }\n}\n"
+      },
+      {
+        "name": "run.sh",
+        "lang": "bash",
+        "code": "#!/bin/sh\nset -eu\n\nif [ \"$#\" -eq 0 ]; then\n    printf 'Usage: sh run.sh program [arguments...]\\n' >&2\n    exit 2\nfi\nbinary=$(command -v \"${TMUX_BIN:-tmux}\")\nmkdir -p /tmp/libtmux-swift-dev\ndirectory=$(mktemp -d /tmp/libtmux-swift-dev/home.XXXXXX)\nsocket=\"$directory/tmux.sock\"\nconfig=\"$directory/tmux.conf\"\n\nalive() {\n    \"$binary\" -S \"$socket\" display-message -p '#{pid}' >/dev/null 2>&1\n}\n\ncleanup() {\n    status=$?\n    trap - 0 HUP INT TERM\n    if alive; then\n        if ! \"$binary\" -S \"$socket\" kill-server; then\n            printf 'Cannot stop tmux; kept %s\\n' \"$directory\" >&2\n            exit 1\n        fi\n        attempts=0\n        while alive && [ \"$attempts\" -lt 100 ]; do\n            sleep 0.05\n            attempts=$((attempts + 1))\n        done\n        if alive; then\n            printf 'tmux is still responding; kept %s\\n' \"$directory\" >&2\n            exit 1\n        fi\n    fi\n    rm -rf \"$directory\" || exit 1\n    exit \"$status\"\n}\ntrap cleanup 0\ntrap 'exit 1' HUP INT TERM\n\nunset TMUX TMUX_PANE\nprintf 'set-option -g default-shell /bin/sh\\n' > \"$config\"\n\"$binary\" -S \"$socket\" -f \"$config\" new-session -d -s quickstart-bootstrap -n editor /bin/sh\n\"$@\" \"$binary\" \"$socket\" \"$config\"\n\"$binary\" -S \"$socket\" has-session -t '=quickstart-bootstrap'\n"
+      }
+    ],
+    "prerequisites": "Swift 6.2+, tmux on Linux/macOS",
+    "commands": [
+      "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-swift.git libtmux-source\ngit -C libtmux-source checkout --detach 7993e7044347629b08020e9b02ae8bcffa0e5898\nswift build --jobs 2 --product ApiExample\nsh run.sh .build/debug/ApiExample"
+    ],
+    "expectedOutput": "hello from libtmux\n"
+  }
+}

@@ -3,6 +3,9 @@ import { PORTS, PORT_BY_SLUG, portSourceUrl, productAvailable } from '../src/lib
 import { documentationAreas } from '../src/lib/port-documentation'
 import { LANG_TO_PORT, remarkPortCode } from '../src/plugins/remark-port-code.mjs'
 import { QUICKSTARTS } from '../src/lib/quickstarts'
+import HOME_EXAMPLES from '../src/data/home-examples.json'
+import HOME_PROOF from './fixtures/home-examples.json'
+import { createHash } from 'node:crypto'
 import { installsFor, registryFor } from '../src/lib/registry'
 import { docsEntryAvailable } from '../src/lib/page-port-links'
 import { SITE_BUILT, SITE_PREFIX, sitePath, publishedPath } from './site-root'
@@ -99,6 +102,39 @@ describe('wrapper library identities', () => {
     expect(docsEntryAvailable({ id: 'ja/concepts/model', data: {} }, 'fsharp')).toBe(true)
     expect(docsEntryAvailable({ id: 'ja/topics/control', data: {} }, 'fsharp')).toBe(false)
     expect(docsEntryAvailable({ id: 'guides', data: { port: 'scala', route: 'guides' } }, 'scala')).toBe(true)
+  })
+})
+
+describe('quickstart display formatting', () => {
+  const columns = (line: string) => [...line].reduce(
+    (column, char) => column + (char === '\t' ? 8 - column % 8 : 1), 0,
+  )
+  it('provides a complete verified program for every registered language', () => {
+    expect(Object.keys(HOME_EXAMPLES).sort()).toEqual(PORTS.map((port) => port.slug).sort())
+    expect(HOME_PROOF.examples.map((example) => example.port).sort()).toEqual(Object.keys(HOME_EXAMPLES).sort())
+  })
+
+  it.each(PORTS)('$slug fits 88 columns, including expanded tabs', ({ slug }) => {
+    const code = QUICKSTARTS[slug]?.code
+    expect(code, slug).toBeTruthy()
+    for (const [index, line] of code!.split('\n').entries()) {
+      expect(columns(line), `${slug}:${index + 1} ${line}`).toBeLessThanOrEqual(88)
+    }
+  })
+
+  it.each(HOME_PROOF.examples)('$port keeps the exact native-verified files, recipe and excerpt', (proof) => {
+    const complete = HOME_EXAMPLES[proof.port as keyof typeof HOME_EXAMPLES]
+    const hash = (text: string) => createHash('sha256').update(text).digest('hex')
+    expect(complete.sourceRevision).toBe(proof.sourceRevision)
+    expect(complete.sourceTree).toBe(proof.sourceTree)
+    expect(complete.commands).toEqual(proof.shellRecipe)
+    expect(complete.files.map((file) => ({ name: file.name, sha256: hash(file.code), clipboardSha256: hash(file.code.replace(/\n$/, '')) }))).toEqual(proof.files)
+    expect(hash(QUICKSTARTS[proof.port]!.code)).toBe(proof.excerptSha256)
+  })
+
+  it('counts tab stops rather than treating tabs as one character', () => {
+    expect(columns('\t' + 'x'.repeat(81))).toBe(89)
+    expect(columns('x\t' + 'y'.repeat(80))).toBe(88)
   })
 })
 
