@@ -69,7 +69,7 @@
       "files": [
         {
           "name": "Sources/WorkspaceExample/WorkspaceExample.swift",
-          "sha256": "17787f2ccf5e5d1bca44e113c2608810b8787caa6da9ecd65f371b5ba57c72b1"
+          "sha256": "50cf7f39f7c387e24d88678134b538c2c081f6c0efdefd51d779efa9bfb14f44"
         },
         {
           "name": "Package.swift",
@@ -86,7 +86,7 @@
       "page": "ports/swift/workspace/internals/examples",
       "shellRecipe": [
         "mkdir swift-workspace-example && cd swift-workspace-example && \\\n  mkdir -p Sources/WorkspaceExample",
-        "git init libtmux-source && \\\n  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD",
+        "git init libtmux-source && \\\n  git -C libtmux-source remote add origin \\\n    https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin \\\n    254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD",
         "swift run --jobs 2 WorkspaceExample"
       ]
     },
