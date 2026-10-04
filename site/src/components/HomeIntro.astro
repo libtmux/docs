@@ -89,8 +89,8 @@ const descriptions: Record<string, string> = {
   .home-solution-arrow { margin-left: auto; color: var(--color-link); }
   .home-examples { container-type: inline-size; }
   .home-examples > [data-home-language] > :global(.expressive-code) {
-    /* IBM Plex Mono advances .6em per column; rem bounds preserve zoom. */
-    --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * .6)), .9375rem);
+    /* Allow for rounded glyph advances; rem bounds preserve readable zoom. */
+    --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * .625)), .9375rem);
   }
   .home-examples h2 { margin-bottom: .85rem; font-size: 1rem; font-weight: 600; }
   .home-example-link { margin-block: .8rem 1.2rem; font-size: .8125rem; color: var(--color-muted); }
