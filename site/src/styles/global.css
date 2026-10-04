@@ -228,6 +228,12 @@ html {
   scroll-padding-top: calc(var(--topnav-height, 3rem) + 1.5rem);
 }
 
+/* Header controls are already visible above the reserved reading area. Do not
+   scroll the document to bring a focused control out from behind the header. */
+html:has(.site-header :focus) {
+  scroll-padding-top: 0;
+}
+
 :target {
   scroll-margin-top: calc(var(--topnav-height, 3rem) + 1.5rem);
 }

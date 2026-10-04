@@ -58,6 +58,44 @@ export async function checkColorScheme(browser, base) {
       await context.close()
     }
   }
+  const reader = await browser.newContext({ viewport: { width: 1062, height: 789 }, colorScheme: 'light', reducedMotion: 'reduce' })
+  try {
+    const page = await reader.newPage()
+    await page.goto(`${base}/tmux/concepts/server-session-window-pane/`)
+    await page.locator('[data-scheme-cycle]').waitFor({ state: 'attached' })
+    await page.waitForFunction(() => customElements.get('libtmux-code-tabs'))
+    await page.locator('.code-tab[data-port="cxx"]').first().click()
+    await page.evaluate(() => window.scrollTo({ top: 1200, behavior: 'instant' }))
+    const position = await page.evaluate(() => scrollY)
+    assert(position > 500, 'Exercise the sticky scheme controls while reading down the page')
+    const checkPosition = async () => {
+      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+      assert.equal(await page.evaluate(() => scrollY), position, 'Changing colour scheme preserves the reading position')
+    }
+    for (const scheme of ['dark', 'system', 'light']) {
+      // Click the visible label: focusing the visually hidden radio directly
+      // would let the automation scroll it first and conceal a focus jump.
+      const box = await page.locator(`[data-scheme="${scheme}"]`).boundingBox()
+      assert(box)
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
+      await checkPosition()
+      assert.equal(await page.locator('html').getAttribute('data-color-scheme'), scheme)
+      assert.equal(await page.evaluate(() => document.activeElement?.value), scheme)
+    }
+    await page.keyboard.press('ArrowRight')
+    await checkPosition()
+    assert.equal(await page.locator('html').getAttribute('data-color-scheme'), 'dark')
+    assert(await page.locator('[data-scheme="dark"]').evaluate((element) => parseFloat(getComputedStyle(element).outlineWidth) > 0), 'The radios retain visible keyboard focus')
+    await page.setViewportSize({ width: 596, height: 789 })
+    await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), position)
+    const compact = await page.locator('[data-scheme-cycle]').boundingBox()
+    assert(compact)
+    await page.mouse.click(compact.x + compact.width / 2, compact.y + compact.height / 2)
+    await checkPosition()
+    assert.equal(await page.locator('html').getAttribute('data-color-scheme'), 'system')
+  } finally {
+    await reader.close()
+  }
   const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 596, height: 777 } })
   try {
     const page = await context.newPage()
@@ -67,5 +105,5 @@ export async function checkColorScheme(browser, base) {
   } finally {
     await context.close()
   }
-  console.log('Colour scheme: compact cycling, keyboard, accessible names, Auto, persistence, blocked storage, resize and no-JS fallback PASS')
+  console.log('Colour scheme: compact cycling, keyboard, accessible names, Auto, persistence, blocked storage, resize, reading position and no-JS fallback PASS')
 }
