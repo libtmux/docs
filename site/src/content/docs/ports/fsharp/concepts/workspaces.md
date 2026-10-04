@@ -25,7 +25,8 @@ Use an empty directory on Linux with Git, tmux 3.2a or newer, and .NET SDK 10.0.
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(Example).fs" />
-    <ProjectReference Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
+    <ProjectReference
+      Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
   </ItemGroup>
 </Project>
 ```
@@ -56,7 +57,8 @@ trap 'exit 1' HUP INT TERM
 
 unset TMUX TMUX_PANE
 export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
+"$binary" -S "$socket" -f /dev/null \
+    new-session -d -s work-one -n editor /bin/cat
 "$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
 "$@"
 "$binary" -S "$socket" has-session -t '=work-one'
@@ -95,9 +97,11 @@ let run () = task {
     let request = NewWindowRequest(Name = "tools", Command = "/bin/cat")
     let! window = session.CreateWindowAsync(request, token)
     let! panes = window.GetPanesAsync(token)
-    let split = SplitPaneRequest(Direction = PaneDirection.Right, Command = "/bin/cat")
+    let split =
+        SplitPaneRequest(Direction = PaneDirection.Right, Command = "/bin/cat")
     let! _ = panes[0] |> Pane.split token split
-    let! _ = window.SelectLayoutAsync(SelectLayoutRequest(Layout = "even-horizontal"), token)
+    let layout = SelectLayoutRequest(Layout = "even-horizontal")
+    let! _ = window.SelectLayoutAsync(layout, token)
     let! refreshed = window.GetPanesAsync(token)
     if refreshed.Count <> 2 then failwith "Expected two panes"
     printfn "tools: 2 panes"
@@ -115,7 +119,8 @@ let main _ =
 
 ```console
 $ dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout \
-  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath="$PWD/.packages" &&
+    -p:DisableImplicitLibraryPacksFolder=true \
+    -p:RestorePackagesPath="$PWD/.packages" &&
   sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Layout
 ```
 
@@ -146,8 +151,10 @@ let run () = task {
         ServerConnectionOptions(SocketPath = socket), token)
     let ensureTools () = task {
         let! captured = server |> Server.capture token SnapshotDepth.Windows
-        let session = captured.Sessions |> Seq.find (fun s -> s.Name = "work-one")
-        match session.Windows |> Seq.tryFind (fun window -> window.Name = "tools") with
+        let session =
+            captured.Sessions |> Seq.find (fun s -> s.Name = "work-one")
+        let tools = session.Windows |> Seq.tryFind (fun w -> w.Name = "tools")
+        match tools with
         | Some window -> return window
         | None ->
             return! session.CreateWindowAsync(
@@ -158,7 +165,8 @@ let run () = task {
     if first.Id <> second.Id then failwith "Created duplicate windows"
     let! captured = server |> Server.capture token SnapshotDepth.Windows
     let session = captured.Sessions |> Seq.find (fun s -> s.Name = "work-one")
-    if session.Windows.Count <> 2 then failwith "Expected editor and tools windows"
+    if session.Windows.Count <> 2 then
+        failwith "Expected editor and tools windows"
     printfn "one tools window after two calls"
 }
 
@@ -174,7 +182,8 @@ let main _ =
 
 ```console
 $ dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout \
-  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath="$PWD/.packages" &&
+    -p:DisableImplicitLibraryPacksFolder=true \
+    -p:RestorePackagesPath="$PWD/.packages" &&
   sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=ReuseLayout
 ```
 
