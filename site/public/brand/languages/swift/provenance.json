@@ -1,24 +1,25 @@
 {
   "name": "Swift",
   "asset": "icon.svg",
-  "sourceUrl": "https://www.swift.org/favicon.svg",
-  "resolvedUrl": "https://www.swift.org/favicon.svg",
-  "sourcePage": "https://www.swift.org/",
-  "retrievedAt": "2026-10-04T14:52:42+00:00",
-  "sha256": "ab81368efb576355a6fa63f893cacf5be088804ed9c6db1855714c75cf0614b3",
-  "copyright": "Copyright (c) 2021 Apple Inc. and the Swift project authors.",
+  "sourceUrl": "https://developer.apple.com/swift/resources/images/swift_logo_color.svg",
+  "resolvedUrl": "https://developer.apple.com/swift/resources/images/swift_logo_color.svg",
+  "sourcePage": "https://developer.apple.com/swift/resources/",
+  "retrievedAt": "2026-10-04T15:02:19+00:00",
+  "sha256": "6628c4f6c3cd07ead5c55d309e648eed7226a1dd1183ce09f5f59c7e48b227aa",
+  "copyright": "Apple Inc. The Swift Logo Guidelines carry © 2018 Apple Inc. All rights reserved. The downloaded SVG contains no separate copyright year.",
   "license": {
-    "name": "Apache-2.0 with Swift Runtime Library Exception; Apple branding terms also apply",
+    "name": "Apple Swift Logo Guidelines (custom artwork and trademark usage terms)",
     "urls": [
-      "https://www.swift.org/LICENSE.txt",
-      "https://developer.apple.com/swift/resources/"
+      "https://developer.apple.com/swift/resources/",
+      "https://developer.apple.com/swift/downloads/swift-logo.zip"
     ],
-    "notes": "The SVG header states the source license and copyright. Preserve that header and the accompanying license. Apple permits the Swift logo in technical publications describing the language; this is not a libtmux product logo.",
-    "localCopy": {
-      "file": "LICENSE.txt",
-      "sourceUrl": "https://www.swift.org/LICENSE.txt",
-      "retrievedAt": "2026-10-04T14:52:42+00:00",
-      "sha256": "167beb36f181bd163c93c6feb45c68e5f9462fe1af55b278f7bfd1df20e673a3"
+    "notes": "Apple supplies this logo for technical publications describing Swift. Preserve its artwork and proportions, keep the bird white, provide the trademark credit, and do not imply affiliation. The guidelines specify a 30px minimum on-screen height and clear space of one quarter of the logo height. No open-source artwork license is asserted for this SVG.",
+    "guidelines": {
+      "archiveUrl": "https://developer.apple.com/swift/downloads/swift-logo.zip",
+      "retrievedAt": "2026-10-04T15:02:20+00:00",
+      "archiveSha256": "f34019ad87db608aee74106fa1adb3b45b950ee0498c783230a5d557c3223cd0",
+      "pathInArchive": "Swift Logo/Swift Logo Guidelines.pdf",
+      "sha256": "31268048ba92cdefec9bf06496f45a424c31b674d33c11f8e164eaada439141f"
     }
   },
   "modifications": "None. The downloaded SVG bytes are preserved."
