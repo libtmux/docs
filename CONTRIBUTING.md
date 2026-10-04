@@ -169,6 +169,12 @@ Install the pinned Chromium build for local browser checks with
 `pnpm --filter @libtmux/site exec playwright install chromium`. CI installs
 that build and its system dependencies before the publication audit.
 
+`site/test/code-block-width.outer.test.ts` opens a built page at 1024 and
+1280 pixels and checks that its code blocks fit 80 columns. It measures in
+Chrome, because the bundled Chromium draws the code font narrower than the
+browsers readers use. It reads the assembled `_site`, so only the
+publication audit runs it; the loops skip it.
+
 Keep the complete assembly, all output suites, link audits, source/model
 freshness, and full browser matrix in the publication audit:
 
