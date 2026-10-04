@@ -91,7 +91,8 @@ the full API catalog or exercise subprocess shutdown. It also adds type
 checks and starts its own Astro development server
 from current source. Browser checks cover prose, an MCP table, API equivalents,
 and phone dropdown placement at 1440, 768, and 390 pixels. The sampled renderer
-does not reuse `_site`. The runtime budgets are under 2, 10, and 60 seconds for inner,
+also checks homepage choices and uses `node site/scripts/check-dev.mjs --sample`.
+It does not reuse `_site`. The runtime budgets are under 2, 10, and 60 seconds for inner,
 medium, and outer respectively; measure the complete pnpm command when
 changing a loop. `test:fast` aliases medium. The runner stops an over-budget
 loop and fails.
@@ -112,6 +113,10 @@ Chrome:
 $ LIBTMUX_DOCS_BROWSER_CHANNEL=chrome pnpm test
 ```
 
+Install the pinned Chromium build for local browser checks with
+`pnpm --filter @libtmux/site exec playwright install chromium`. CI installs
+that build and its system dependencies before the publication audit.
+
 Keep the complete assembly, all output suites, link audits, source/model
 freshness, and full browser matrix in the publication audit:
 
@@ -121,6 +126,9 @@ $ pnpm test:publication
 
 This audit is not limited to 60 seconds. `scripts/test-all.sh` defines it;
 `.github/workflows/test.yml` runs it in CI. Report skipped checks explicitly.
+It runs the complete fresh-source browser matrix with
+`node site/scripts/check-dev.mjs`, including every homepage language and detail
+level, before assembly. The outer loop keeps only its bounded rendering sample.
 Missing port checkouts, a missing local server, or a missing `shellcheck`
 can leave publication checks unexercised. Development loops deliberately exclude assembled-output
 suites; they do not establish publication readiness.

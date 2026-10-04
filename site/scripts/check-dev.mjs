@@ -14,6 +14,7 @@ import { checkHomeLauncher } from './check-home-launcher.mjs'
 import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
+import { checkDevSample } from './check-dev-sample.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
@@ -25,6 +26,7 @@ const referencePreferencesOnly = process.argv.includes('--reference-preferences'
 const globalHeaderOnly = process.argv.includes('--global-header')
 const homeLauncherOnly = process.argv.includes('--home-launcher')
 const homeControlsOnly = process.argv.includes('--home-controls')
+const sampleOnly = process.argv.includes('--sample')
 const documentationNavigationOnly = process.argv.includes('--documentation-navigation')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 
@@ -559,7 +561,9 @@ try {
   if (!driver) throw new Error(`Unknown browser: ${engine}`)
   browser = await driver.launch(engine === 'chromium' ? { channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL } : {})
   await ready
-  if (homeLauncherOnly) {
+  if (sampleOnly) {
+    await checkDevSample(browser, base)
+  } else if (homeLauncherOnly) {
     await checkHomeLauncher(browser, base)
   } else if (homeControlsOnly) {
     await checkHomeTaskReset(browser, base)
@@ -586,8 +590,16 @@ try {
     page.setDefaultTimeout(10000)
     await retryReload(() => checkApiNavigation(page, base))
   } else {
-    const nativeLayout = checkNativeLayout(browser).then(() => null, (error) => error)
-    const apiExamples = checkCompleteApiExamples(browser, base).then(() => null, (error) => error)
+    // Keep one auxiliary check beside the main page walk. Starting every
+    // matrix at once saturates the compiler and times out unrelated pages.
+    let previous = Promise.resolve()
+    const schedule = (check) => {
+      const pending = previous.then(check).then(() => null, (error) => error)
+      previous = pending
+      return pending
+    }
+    const nativeLayout = schedule(() => checkNativeLayout(browser))
+    const apiExamples = schedule(() => checkCompleteApiExamples(browser, base))
     const page = await browser.newPage({ reducedMotion: 'reduce' })
     page.setDefaultTimeout(10000)
     const manifest = await page.request.get(`${base}/page-links.json`)
@@ -595,20 +607,20 @@ try {
     assert.equal((await manifest.json()).schema, 1)
     const clipboardPage = await browser.newPage()
     clipboardPage.setDefaultTimeout(10000)
-    const clipboard = checkClipboard(clipboardPage, base).then(() => null, (error) => error)
+    const clipboard = schedule(() => checkClipboard(clipboardPage, base).finally(() => clipboardPage.close()))
     const navigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     navigationPage.setDefaultTimeout(10000)
-    const navigation = retryReload(() => checkNavigation(navigationPage, base)).then(() => null, (error) => error)
-    const reference = checkReferenceAndHeroes(browser, base).then(() => checkSignatureLayouts(browser, base))
+    const navigation = schedule(() => retryReload(() => checkNavigation(navigationPage, base)).finally(() => navigationPage.close()))
+    const reference = schedule(() => checkReferenceAndHeroes(browser, base).then(() => checkSignatureLayouts(browser, base))
       .then(() => retryReload(() => checkKeywordHelp(browser, base)))
-      .then(() => null, (error) => error)
-    const preferences = checkReferencePreferences(browser, base).then(() => null, (error) => error)
-    const globalHeader = checkGlobalHeader(browser, base).then(() => null, (error) => error)
-    const homeLauncher = checkHomeLauncher(browser, base).then(() => null, (error) => error)
-    const documentationNavigation = retryReload(() => checkDocumentationNavigation(browser, base)).then(() => null, (error) => error)
+    )
+    const preferences = schedule(() => checkReferencePreferences(browser, base))
+    const globalHeader = schedule(() => checkGlobalHeader(browser, base))
+    const homeLauncher = schedule(() => checkHomeLauncher(browser, base))
+    const documentationNavigation = schedule(() => retryReload(() => checkDocumentationNavigation(browser, base)))
     const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     apiNavigationPage.setDefaultTimeout(10000)
-    const apiNavigation = retryReload(() => checkApiNavigation(apiNavigationPage, base)).then(() => null, (error) => error)
+    const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).finally(() => apiNavigationPage.close()))
     const paths = ['tmux/concepts/server-session-window-pane', 'tmux/examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
       'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
       'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/capture_pane']
@@ -868,14 +880,12 @@ try {
       await context.close()
     }
     console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
+    await page.close()
     const failures = (await Promise.all([
       navigation, apiExamples, reference, preferences, globalHeader, apiNavigation,
       clipboard, nativeLayout, documentationNavigation, homeLauncher,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
-    await navigationPage.close()
-    await apiNavigationPage.close()
-    await clipboardPage.close()
   }
 } finally {
   await browser?.close()

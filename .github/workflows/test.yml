@@ -39,6 +39,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Install browser for the rendering audit
+        run: pnpm --filter @libtmux/site exec playwright install --with-deps chromium
+
       - name: Resolve integrated Ruby and Lua sources
         id: integrated-sources
         run: |

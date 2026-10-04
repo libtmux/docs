@@ -178,6 +178,9 @@ pnpm run lint
 step 'type-check'
 pnpm run type-check
 
+step 'fresh browser matrix'
+node site/scripts/check-dev.mjs
+
 if [[ "$skip_build" == true ]]; then
   printf '\nskipped the build; link and reference checks did not run\n'
   exit 0

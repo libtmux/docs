@@ -205,11 +205,12 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
           const picker = desktopPicker(reader)
           const layout = await reader.evaluate(() => {
             const bounds = (selector) => {
-              const { top, bottom, height, width } = document.querySelector(selector).getBoundingClientRect()
+              const visible = [...document.querySelectorAll(selector)].find((node) => node.checkVisibility())
+              const { top, bottom, height, width } = visible.getBoundingClientRect()
               return { top, bottom, height, width }
             }
             return { bar: bounds('[data-documentation-context]'), surface: bounds('[data-surface-picker] > summary'),
-              port: bounds('[data-page-port-switcher] > summary'), header: ['.site-header__search', '.scheme-switch', '.site-header__menu-button'].map(bounds) }
+              port: bounds('[data-page-port-switcher] > summary'), header: ['.site-header__search', '.scheme-switch, .scheme-cycle', '.site-header__menu-button'].map(bounds) }
           })
           assert(layout.bar.height <= 58, `${width}: context remains a single compact row`)
           assert(Math.abs((layout.surface.top + layout.surface.bottom) - (layout.port.top + layout.port.bottom)) <= 1,
