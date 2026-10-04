@@ -544,7 +544,7 @@ try {
   // the running app. The outer loop still budgets this initial compilation.
   const firstPage = keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : documentationNavigationOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
-    : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/concepts/server-session-window-pane/'
+    : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/tmux/concepts/server-session-window-pane/'
   const ready = fetch(`${base}${firstPage}`).then(async (response) => {
     assert(response.ok, `Browser setup: HTTP ${response.status} at ${firstPage}`)
     await response.text()
@@ -600,7 +600,7 @@ try {
     const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     apiNavigationPage.setDefaultTimeout(10000)
     const apiNavigation = retryReload(() => checkApiNavigation(apiNavigationPage, base)).then(() => null, (error) => error)
-    const paths = ['concepts/server-session-window-pane', 'examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
+    const paths = ['tmux/concepts/server-session-window-pane', 'tmux/examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
       'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
       'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/capture_pane']
     for (const path of paths) await retryReload(async () => {
@@ -610,6 +610,7 @@ try {
       await page.evaluate(() => document.fonts.ready)
       assert.equal(await page.locator('header nav[aria-label="Documentation destinations"]').count(), 0)
       const switcher = page.locator('[data-page-port-switcher]')
+      const portLinks = switcher.locator('a[data-port]')
       const hasSwitcher = path !== 'mcp/tools'
       assert.equal(await switcher.count(), hasSwitcher ? 1 : 0, `${path}: one page language switcher when available`)
       const isReference = path.includes('/reference/')
@@ -626,10 +627,13 @@ try {
         assert(geometry.above && geometry.contextAbove, `${path}: context controls precede the breadcrumb and heading`)
       }
       const expected = isReference ? '/en/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/' : path.includes('workspace/') ? `/en/${path}/`
-        : path === 'dotnet/latest/mcp/tools/capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : `/en/py/stable/${path.replace(/^ts\/latest\//, '')}/`
-      if (hasSwitcher) assert.equal(await switcher.locator('a').first().getAttribute('href'), expected)
+        : path === 'dotnet/latest/mcp/tools/capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : `/en/py/stable/${path.replace(/^(?:ts\/latest\/|tmux\/)/, '')}/`
+      if (hasSwitcher) {
+        assert.equal(await portLinks.first().getAttribute('href'), expected)
+        assert.equal(await switcher.locator('.tmux-area a').getAttribute('href'), '/en/tmux/')
+      }
       if (path === 'py/stable/workspace/guides') {
-        assert.equal(await switcher.locator('a').count(), workspacePortCount)
+        assert.equal(await portLinks.count(), workspacePortCount)
         assert.equal(
           await switcher.locator('[aria-disabled="true"]').count(),
           PORTS.length - workspacePortCount,
@@ -640,12 +644,12 @@ try {
         assert(unavailable.some((label) => /Python/.test(label)), 'Python internals guide stays unavailable')
       }
       if (path === 'dotnet/latest/mcp/tools/capture_pane') {
-        assert.equal(await switcher.locator('a').count(), 8)
+        assert.equal(await portLinks.count(), 8)
         assert.equal(await switcher.locator('a[aria-current="page"]').getAttribute('href'), `/en/${path}/`)
       }
       if (isReference) {
         assert.equal(
-          await switcher.locator('a').count(),
+          await portLinks.count(),
           workspacePortCount,
           'Workspace construction has an equivalent in every published workspace product',
         )
@@ -786,7 +790,7 @@ try {
     for (const colorScheme of ['light', 'dark']) {
       await page.setViewportSize({ width: 390, height: 844 })
       await page.emulateMedia({ colorScheme })
-      await page.goto(`${base}/concepts/server-session-window-pane/`, { waitUntil: 'load' })
+      await page.goto(`${base}/sidebar-free-layout/`, { waitUntil: 'load' })
       const toolbar = await page.evaluate(() => {
         delete document.documentElement.dataset.themeMode
         const style = (selector) => getComputedStyle(document.querySelector(selector))
@@ -797,7 +801,7 @@ try {
       assert.equal(toolbar.icon, toolbar.text, `${colorScheme}: toolbar icons use the page text color`)
       const context = await browser.newContext({ javaScriptEnabled: false, colorScheme, viewport: { width: 390, height: 844 } })
       const noScript = await context.newPage()
-      await noScript.goto(`${base}/concepts/server-session-window-pane/`, { waitUntil: 'load' })
+      await noScript.goto(`${base}/tmux/concepts/server-session-window-pane/`, { waitUntil: 'load' })
       const checkContrast = async (scheme, selectors = ['h1', '.prose h2', '.prose p']) => {
         const samples = await noScript.evaluate((selectors) => {
           const context = document.createElement('canvas').getContext('2d')
@@ -832,9 +836,9 @@ try {
         }
       }
       await checkContrast(colorScheme)
-      assert.equal(await noScript.locator('.mobile-toolbar').isVisible(), false, 'No-JS hides inactive drawer buttons')
+      assert.equal(await noScript.locator('.documentation-context-navigation').isVisible(), false, 'No-JS hides inactive context drawer buttons')
       assert.equal(await noScript.locator('.mobile-fallback').isVisible(), true, 'No-JS has usable mobile navigation')
-      await checkContrast(colorScheme, ['.mobile-fallback summary'])
+      await checkContrast(colorScheme, ['.mobile-fallback summary', '.documentation-context .surface-current strong', '.documentation-context [data-page-port-switcher] > summary'])
       const browse = noScript.locator('.mobile-fallback > details').first()
       await browse.locator('summary').first().focus()
       await noScript.keyboard.press('Enter')

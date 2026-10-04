@@ -15,6 +15,11 @@ const docs = [
 const options = { version: 'v1.2.3', defaults: { py: 'stable', ts: 'latest' }, docs }
 
 describe('matching pages in another port', () => {
+  it('finds library counterparts from the tmux prose namespace', () => {
+    const links = pagePortLinks({ ...options, pagePath: 'tmux/concepts/model' })
+    expect(links.find((p) => p.port === 'go')?.links[0].href).toBe('/pr-42/en/go/latest/concepts/model/')
+    expect(links.every((entry) => entry.links.every((link) => !link.href.includes('/latest/tmux/')))).toBe(true)
+  })
   it('uses native equivalents when a shared article does not cover a port', () => {
     const shared = { id: 'topics/pane-interaction', data: { supportedPorts: ['go', 'py'] } }
     const native = { id: '_staged/lua/guides/panes', data: { port: 'lua', route: 'guides/panes', aliases: ['topics/pane-interaction'] } }

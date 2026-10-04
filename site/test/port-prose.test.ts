@@ -195,7 +195,7 @@ describe('port prose ownership', () => {
     expect(markdown).toContain('[Task](/pr-42/en/go/v0.1/guides/sending-keys/)')
     expect(markdown).toContain('`[literal](/guides/x/)`')
     expect(markdown).toContain('// [literal](/guides/x/)')
-    expect(proseHref('/guides/sending-keys/', '/en')).toBe('/en/guides/sending-keys/')
+    expect(proseHref('/guides/sending-keys/', '/en')).toBe('/en/tmux/guides/sending-keys/')
     expect(proseHref('/py/latest/', '/en', 'go')).toBe('/en/py/latest/')
   })
 

@@ -76,7 +76,7 @@ const guides = [
 
 export function tmuxGuidesFor(command: string) {
   return guides.filter((guide) => guide.commands.includes(command))
-    .map((guide) => ({ title: guide.title, href: withPortRoot(`/${guide.path}/`) }))
+    .map((guide) => ({ title: guide.title, href: withPortRoot(`/tmux/${guide.path}/`) }))
 }
 
 /** Link only declarations present in the integrated library models. */

@@ -108,9 +108,10 @@ export function getDocumentationSurfaces(port: string | undefined, version: stri
   const build = async () => {
     if (!port) {
       const menus = await getSidebar(undefined, version, locale)
+      const current = version === 'latest'
       const sections: DocumentationSection[] = [
-        { id: 'home', label: 'Home', href: withPortRoot('/tmux/'), items: [] },
-        ...menus.flatMap((item) => item.type === 'group' && item.href
+        { id: 'home', label: current ? 'Home' : 'Current docs →', href: withPortRoot('/tmux/'), items: [] },
+        ...(current ? menus : []).flatMap((item) => item.type === 'group' && item.href
           ? [{ id: item.label.toLowerCase(), label: item.label, href: item.href, items: item.items }] : []),
         { id: 'manual', label: 'Manual', href: tmuxReferenceUrl(version), items: [] },
       ]

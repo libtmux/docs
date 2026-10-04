@@ -126,7 +126,7 @@ describe('versioned tmux reference', () => {
     expect(tmuxPageHeadings('latest', 'server-access').map((heading) => heading.slug))
       .toEqual(['server-access-syntax', 'server-access-behavior'])
     expect(tmuxGuidesFor('capture-pane').map((guide) => guide.href))
-      .toEqual([tmuxReferenceUrl().replace('/tmux/latest/reference/', '/guides/capturing-output/')])
+      .toEqual([tmuxReferenceUrl().replace('/tmux/latest/reference/', '/tmux/guides/capturing-output/')])
     expect(tmuxPageHeadings('3.2a', 'manual').some((heading) => heading.slug === 'COMMANDS')).toBe(true)
   })
 })

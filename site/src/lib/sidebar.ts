@@ -48,18 +48,19 @@ export type SidebarItem = SidebarLinkItem | SidebarGroupItem
 export async function pageBreadcrumbs(title: string, path: string, version: string, port?: string, locale: Locale = DEFAULT_LOCALE) {
   const language = port ? PORT_BY_SLUG[port] : undefined
   const url = (route: string) => language ? portPageUrl(language, version, route) : withRoot(`/${route}${route ? '/' : ''}`)
-  const items = [{ name: language?.name ?? 'Documentation', url: url('') }]
+  const tmux = !port && /^tmux(?:\/|$)/.test(path)
+  const items = [{ name: language?.name ?? (tmux ? 'tmux' : 'Documentation'), url: url(tmux ? 'tmux' : '') }]
   const entries = await getCollection('docs', (entry) => !entry.data.port || entry.data.port === port)
   const parts = path.split('/').filter(Boolean)
-  for (let i = 1; i < parts.length; i++) {
+  for (let i = tmux ? 2 : 1; i < parts.length; i++) {
     const route = parts.slice(0, i).join('/')
-    const matching = entries.filter((entry) => docsPath({ ...entry, id: sourceIdOf(entry.id) }) === route)
+    const matching = entries.filter((entry) => (port ? docsPath : docsRoutePath)({ ...entry, id: sourceIdOf(entry.id) }) === route)
     const entry = matching.find((entry) => localeOf(entry.id) === locale)
       ?? matching.find((entry) => localeOf(entry.id) === DEFAULT_LOCALE)
     if (entry) items.push({ name: entry.data.title, url: url(route) })
     else if (route === 'reference') items.push({ name: 'API reference', url: url(route) })
   }
-  if (path) items.push({ name: title, url: url(path) })
+  if (path && path !== 'tmux') items.push({ name: title, url: url(path) })
   return items
 }
 

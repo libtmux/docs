@@ -20,7 +20,7 @@ import { inventory } from './src/integrations/inventory'
 import { rehypeApiLinks } from './src/plugins/rehype-api-links'
 import { rehypeRowAnchors } from './src/plugins/rehype-row-anchors'
 import { PORT_BY_SLUG, PORTS } from './src/lib/ports.ts'
-import { workspaceRedirectPath } from './src/lib/docs-paths.ts'
+import { tmuxProsePath, workspaceRedirectPath } from './src/lib/docs-paths.ts'
 import { KNOWN_PORTS } from './src/lib/workspace-shared-slots.ts'
 
 /**
@@ -69,7 +69,10 @@ for (const locale of LOCALES.filter((l) => l !== DEFAULT_LOCALE)) {
     for (const name of readdirSync(base)) {
       const child = join(base, name)
       if (statSync(child).isDirectory()) walk(child, `${prefix}${name}/`)
-      else translated.add(`${locale}/${prefix}${name}`.replace(/\.mdx?$/, '').replace(/\/index$/, ''))
+      else {
+        const sourcePath = `${prefix}${name}`.replace(/\.mdx?$/, '').replace(/(^|\/)index$/, '')
+        translated.add([locale, tmuxProsePath(sourcePath)].filter(Boolean).join('/'))
+      }
     }
   }
   walk(dir, '')

@@ -406,7 +406,7 @@ export async function checkApiNavigation(page, base) {
 /** Check the controls attached to a document after its content is replaced. */
 export async function checkNavigation(page, base) {
   await observeInitialPageLoad(page)
-  await page.goto(`${base}/examples/attach-and-send-keys/`, { waitUntil: 'load' })
+  await page.goto(`${base}/tmux/examples/attach-and-send-keys/`, { waitUntil: 'load' })
   await page.waitForFunction(() => window.__docsPageLoaded)
   await page.evaluate(() => {
     localStorage.setItem('color-scheme', 'dark')

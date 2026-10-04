@@ -25,12 +25,21 @@ describe('documentation surface navigation', () => {
     expect(PORTS.some((port) => port.slug === 'tmux')).toBe(false)
   })
 
-  it('selects a shared section while it lives outside the tmux hub', () => {
+  it('selects shared sections inside the tmux hub', () => {
     const surfaces = [{ id: 'tmux', label: 'Just tmux', href: '/tmux/', sections: [
       { id: 'home', label: 'Home', href: '/tmux/', items: [] },
-      { id: 'guides', label: 'Guides', href: '/guides/', items: [] },
+      { id: 'guides', label: 'Guides', href: '/tmux/guides/', items: [] },
     ] }]
-    expect(currentDocumentation(surfaces, '/guides/getting-started/').section.id).toBe('guides')
+    expect(currentDocumentation(surfaces, '/tmux/guides/getting-started/').section.id).toBe('guides')
+  })
+
+  it('offers a current-docs exit instead of implying versioned prose on older manuals', async () => {
+    const surfaces = await getDocumentationSurfaces(undefined, '3.2a')
+    expect(surfaces[0].sections.map(({ label, href }) => ({ label, href }))).toEqual([
+      { label: 'Current docs →', href: '/tmux/' },
+      { label: 'Manual', href: '/tmux/3.2a/reference/' },
+    ])
+    expect(currentDocumentation(surfaces, '/tmux/3.2a/reference/capture-pane/').section.id).toBe('manual')
   })
 
   it.each(PORTS)('keeps $slug nested app selection and destinations inside the current version', (port) => {

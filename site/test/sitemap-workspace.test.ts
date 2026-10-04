@@ -36,6 +36,18 @@ afterAll(() => vi.unstubAllEnvs())
 const includes = (port: string, path: string) =>
   sitemapOptions.filter!(`https://libtmux.org/en/${port}/latest/workspace/${path}/`)
 
+describe('translated tmux sitemap routes', () => {
+  it('includes a real translation at its public tmux path', () => {
+    expect(sitemapOptions.filter!('https://libtmux.org/ja/')).toBe(true)
+    expect(sitemapOptions.filter!('https://libtmux.org/ja/tmux/concepts/')).toBe(true)
+  })
+
+  it('excludes an untranslated placeholder and the retired root path', () => {
+    expect(sitemapOptions.filter!('https://libtmux.org/ja/tmux/topics/traversal/')).toBe(false)
+    expect(sitemapOptions.filter!('https://libtmux.org/ja/concepts/')).toBe(false)
+  })
+})
+
 describe('canonical workspace sitemap routes', () => {
   it.each(['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift', 'ruby'])(
     'includes real %s Guides and Examples pages', (port) => {

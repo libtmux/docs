@@ -128,7 +128,9 @@ const versionEntry: VersionEntry = {
  * `concepts`, `examples`, `reference`. A reader searching for `capture`
  * usually wants one of those, not all five.
  */
-const section = (pagePath.split('/').filter(Boolean)[0] ?? 'home').toLowerCase()
+const sectionPath = pagePath.startsWith('tmux/')
+  ? pagePath.slice(5).replace(/^[^/]+\/(?=manual|reference)/, '') : pagePath
+const section = (sectionPath.split('/').filter(Boolean)[0] ?? 'home').toLowerCase()
 
 const routePort = portSlug ?? (process.env.LIBTMUX_DOCS_PORT || undefined) ?? (pagePath.startsWith('reference/') ? pagePath.split('/')[1] : undefined)
 const navPort = routePort ? PORT_BY_SLUG[routePort]?.slug : undefined

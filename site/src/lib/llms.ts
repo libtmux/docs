@@ -87,7 +87,7 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
     (href: string) => new URL(proseHref(href, SITE_ROOT, entryPort ?? port, version), url).href)
   const cards = selectPortCards(entry.data.cards, entryPort ?? port)
   if (cards.length) {
-    body += `\n\n${cards.map((card) => `- [${card.label}](${new URL(card.href, url).href}): ${card.body}`).join('\n')}\n`
+    body += `\n\n${cards.map((card) => `- [${card.label}](${new URL(proseHref(card.href, SITE_ROOT, entryPort ?? port, version), url).href}): ${card.body}`).join('\n')}\n`
   }
   if (entryPort && entry.data.product === 'workspace' && docsPath(entry) === 'workspace') {
     const notice = workspaceOverviewNotice(PORT_BY_SLUG[entryPort])

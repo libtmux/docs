@@ -19,7 +19,7 @@ interface MockPage {
 
 const PAGES: MockPage[] = [
   {
-    path: 'guides/getting-started/',
+    path: 'tmux/guides/getting-started/',
     title: 'Getting started',
     excerpt: 'Install a libtmux port, start a tmux server and create a session from code.',
     sections: [
@@ -28,7 +28,7 @@ const PAGES: MockPage[] = [
     ],
   },
   {
-    path: 'concepts/server-session-window-pane/',
+    path: 'tmux/concepts/server-session-window-pane/',
     title: 'Server, session, window, pane',
     excerpt: 'tmux nests panes in windows, windows in sessions, and sessions in a server; every port models the same tree.',
     sections: [
@@ -39,7 +39,7 @@ const PAGES: MockPage[] = [
     ],
   },
   {
-    path: 'concepts/transports/',
+    path: 'tmux/concepts/transports/',
     title: 'Control mode vs one-shot',
     excerpt: 'A port talks to tmux through one long-lived control mode client, or runs a tmux command for each call.',
     sections: [

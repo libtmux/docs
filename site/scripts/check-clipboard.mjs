@@ -142,7 +142,7 @@ export async function checkClipboard(page, base) {
   }
   console.log('Clipboard: 15 widget cases pass, including refusal, literal text and focus restoration')
 
-  await page.goto(`${base}/examples/attach-and-send-keys/`, { waitUntil: 'load' })
+  await page.goto(`${base}/tmux/examples/attach-and-send-keys/`, { waitUntil: 'load' })
   const actions = page.locator('[data-page-actions]')
   await actions.locator('summary').click()
   const edit = actions.getByRole('link', { name: 'Edit this page on GitHub' })

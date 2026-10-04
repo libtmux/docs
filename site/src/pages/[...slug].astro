@@ -57,7 +57,7 @@ export async function getStaticPaths() {
   const placeholders = (await placeholderPairs())
     .filter((pair) => pair.locale === locale)
     .map(({ sourceId }) => ({
-      params: { slug: sourceId },
+      params: { slug: docsRoutePath({ ...entries.find((entry) => entry.id === sourceId)!, id: sourceId }, port, defaults) },
       props: { entry: entries.find((entry) => entry.id === sourceId)!, placeholderLocale: locale },
     }))
   return [...real, ...global, ...placeholders]

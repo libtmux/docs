@@ -53,8 +53,8 @@ const ARCHETYPES = [
   ['reference entry', '/py/stable/reference/libtmux-server/', true],
   ['reference index', '/go/latest/reference/', true],
   ['symbol index', '/reference/symbols/p/', true],
-  ['topic', '/topics/traversal/', true],
-  ['example', '/examples/attach-and-send-keys/', true],
+  ['topic', '/tmux/topics/traversal/', true],
+  ['example', '/tmux/examples/attach-and-send-keys/', true],
   // Sphinx builds this one and emits its own preloads. It is checked — a
   // vendored page still has to open with the type it declares — but its
   // preload list is gp-sphinx's to choose, so it does not vote on ours.
