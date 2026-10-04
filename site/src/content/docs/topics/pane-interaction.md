@@ -196,8 +196,10 @@ pane->send_key("Enter"); // separate command: no combined convenience exists
 ```
 
 ```swift
-try await server.sendKeys(["echo hi"], to: pane) // no Enter
-try await server.run("echo hi", in: pane)        // sugar for sendKeys([text, "Enter"])
+// no Enter
+try await server.sendKeys(["echo hi"], to: pane)
+// sugar for sendKeys([text, "Enter"])
+try await server.run("echo hi", in: pane)
 ```
 
 ## Reading a pane back
