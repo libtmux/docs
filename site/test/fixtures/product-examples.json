@@ -9,7 +9,7 @@
       "files": [
         {
           "name": "workspace.ts",
-          "sha256": "20905548b12c76a93a0c6c0e6f939ade736bcc1b753dbd767125a71bf26b87ca"
+          "sha256": "48f427838a8a24fffce10f32056c6e66cb5de168753b31430456d1aa4f60012d"
         },
         {
           "name": "package.json",
@@ -26,7 +26,7 @@
       "page": "ports/ts/workspace/internals/examples",
       "shellRecipe": [
         "mkdir workspace-example && cd workspace-example",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-ts.git && \\\n    git -C libtmux-source fetch --depth 1 origin 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin \\\n      https://github.com/libtmux/libtmux-ts.git && \\\n    git -C libtmux-source fetch --depth 1 origin \\\n      3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "bun install --production",
         "bun run workspace.ts"
       ]
