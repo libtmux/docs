@@ -2,7 +2,6 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
-import { PORTS } from '../src/lib/ports'
 import { SITE_BUILT, BUCKET_ROOT, SITE_PREFIX, PREVIEW_PREFIX } from './site-root'
 
 /** Built switcher links must resolve within the assembled site. */
@@ -62,20 +61,9 @@ describeIfAssembled('switcher targets', () => {
     expect(pages.length).toBeGreaterThan(3)
   })
 
-  it.each(pages.map((p) => [p]))('%s: port homes and page counterparts resolve', (page) => {
+  it.each(pages.map((p) => [p]))('%s: page counterparts resolve without a header destination strip', (page) => {
     const html = readFileSync(join(SITE, page), 'utf8')
-    const nav = /<nav[^>]*aria-label="Documentation destinations"[^>]*>([\s\S]*?)<\/nav>/.exec(html)
-    if (!nav) return // not every page carries the switcher
-
     const noDocument = NO_PAGE_COUNTERPART.some((suffix) => page.endsWith(suffix))
-    const hrefs = [...nav[1].matchAll(/href="([^"]+)"/g)].map((m) => m[1])
-    expect(hrefs).toHaveLength(noDocument ? PORTS.length + 1 : 1)
-    expect(hrefs[0]).toBe(`/${SITE_PREFIX}tmux/latest/reference/`)
-    expect(hrefs.filter((h) => !resolves(h)), `${page}: port links with no page`).toEqual([])
-    for (const port of noDocument ? PORTS : []) {
-      const pattern = new RegExp(`/${port.slug}/${port.versionedDocs ? '[^/]+/' : ''}$`)
-      expect(hrefs.some((href) => pattern.test(href)), `${page}: ${port.slug} root`).toBe(true)
-    }
     // The counterpart picker is distinct from the app/section picker. Keep
     // explicit exceptions so losing a document's control remains a failure.
     const window = new Window({ url: `https://libtmux.org/${page}`, settings: { disableJavaScriptEvaluation: true, disableJavaScriptFileLoading: true, disableCSSFileLoading: true } })
@@ -83,9 +71,7 @@ describeIfAssembled('switcher targets', () => {
       window.document.write(html)
       const menus = window.document.querySelectorAll('details[data-page-port-switcher]')
       expect(menus, `${page} matching-page controls`).toHaveLength(noDocument ? 0 : 1)
-      for (const navigation of window.document.querySelectorAll('header nav[aria-label="Documentation destinations"]')) {
-        expect([...navigation.querySelectorAll('a')].map((link) => link.getAttribute('href'))).toEqual(hrefs)
-      }
+      expect(window.document.querySelectorAll('header nav[aria-label="Documentation destinations"]')).toHaveLength(0)
       if (noDocument) return
       const counterparts = [...menus[0].querySelectorAll('a[href]')].map((link) => link.getAttribute('href')!)
       expect(counterparts.length, `${page} has an available counterpart`).toBeGreaterThan(0)
@@ -104,21 +90,4 @@ describeIfAssembled('switcher targets', () => {
     expect(hrefs.filter((h) => !resolves(h)), `${page}: alternates with no page`).toEqual([])
   })
 
-  it('offers each port its own root, never a transplanted path', () => {
-    // Bug 2, restated for a reference that now lives under a port. The
-    // language switcher answers "the same library, in another language",
-    // which is that port's root — not this page's path wearing another
-    // port's prefix, and least of all a reference path that only the port
-    // being read has.
-    for (const page of pages) {
-      const html = readFileSync(join(SITE, page), 'utf8')
-      const nav = /<nav[^>]*aria-label="Documentation destinations"[^>]*>([\s\S]*?)<\/nav>/.exec(html)
-      if (!nav) continue
-      const bad = [...nav[1].matchAll(/href="([^"]+)"/g)]
-        .map((m) => m[1])
-        .slice(1) // The separate tmux link opens its command reference.
-        .filter((h) => !/\/[a-z]+(?:\/[^/]+)?\/$/.test(h))
-      expect(bad, `${page}: port link deeper than that port's root`).toEqual([])
-    }
-  })
 })

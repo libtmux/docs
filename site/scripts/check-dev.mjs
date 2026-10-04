@@ -9,7 +9,7 @@ import { API_MODEL_PORTS, PORTS, productAvailable } from '../src/lib/ports.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
 import { checkApiExampleOwnership, checkApiNavigation, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkNativeLayout } from './check-native-layout.mjs'
-import { checkReferencePreferences, checkTmuxHeader } from './check-reference-preferences.mjs'
+import { checkReferencePreferences, checkGlobalHeader } from './check-reference-preferences.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
@@ -18,7 +18,7 @@ const keywordHelpOnly = process.argv.includes('--keyword-help')
 const signaturePorts = apiSignaturesOnly ? API_MODEL_PORTS
   : API_MODEL_PORTS.filter((port) => ['py', 'ts'].includes(port.slug))
 const referencePreferencesOnly = process.argv.includes('--reference-preferences')
-const tmuxHeaderOnly = process.argv.includes('--tmux-header')
+const globalHeaderOnly = process.argv.includes('--global-header')
 const documentationNavigationOnly = process.argv.includes('--documentation-navigation')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 
@@ -561,11 +561,11 @@ try {
     await retryReload(() => checkReferenceAndHeroes(browser, base))
     await checkSignatureLayouts(browser, base)
     await retryReload(() => checkKeywordHelp(browser, base))
-  } else if (tmuxHeaderOnly) {
-    await retryReload(() => checkTmuxHeader(browser, base))
+  } else if (globalHeaderOnly) {
+    await retryReload(() => checkGlobalHeader(browser, base))
   } else if (referencePreferencesOnly) {
     await retryReload(() => checkReferencePreferences(browser, base))
-    await retryReload(() => checkTmuxHeader(browser, base))
+    await retryReload(() => checkGlobalHeader(browser, base))
   } else if (documentationNavigationOnly) {
     await retryReload(() => checkDocumentationNavigation(browser, base, true))
   } else if (apiNavigationOnly) {
@@ -590,7 +590,7 @@ try {
       .then(() => retryReload(() => checkKeywordHelp(browser, base)))
       .then(() => null, (error) => error)
     const preferences = checkReferencePreferences(browser, base).then(() => null, (error) => error)
-    const tmuxHeader = checkTmuxHeader(browser, base).then(() => null, (error) => error)
+    const globalHeader = checkGlobalHeader(browser, base).then(() => null, (error) => error)
     const documentationNavigation = retryReload(() => checkDocumentationNavigation(browser, base)).then(() => null, (error) => error)
     const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     apiNavigationPage.setDefaultTimeout(10000)
@@ -603,16 +603,10 @@ try {
       const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
       assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
       await page.evaluate(() => document.fonts.ready)
-      const documentation = page.locator('nav[aria-label="Documentation destinations"]').first()
-      assert.equal(await documentation.locator('a').nth(0).getAttribute('href'), '/en/tmux/latest/reference/')
+      assert.equal(await page.locator('header nav[aria-label="Documentation destinations"]').count(), 0)
       const switcher = page.locator('[data-page-port-switcher]')
       const hasSwitcher = path !== 'mcp/tools'
       assert.equal(await switcher.count(), hasSwitcher ? 1 : 0, `${path}: one page language switcher when available`)
-      for (const nav of await page.locator('header nav[aria-label="Documentation destinations"]').all()) {
-        assert.equal(await nav.locator('a').count(), hasSwitcher ? 1 : PORTS.length + 1,
-          `${path}: header and overflow menu only include language links without a page switcher`)
-      }
-      if (!hasSwitcher) assert.equal(await documentation.locator('a').nth(1).getAttribute('href'), '/en/py/stable/')
       const isReference = path.includes('/reference/')
       if (hasSwitcher) {
         assert.equal(await page.locator('[data-page-toolbar] nav[aria-label="Breadcrumb"]').count(), 1, `${path}: breadcrumbs above the heading`)
@@ -660,11 +654,6 @@ try {
           overflow: document.documentElement.scrollWidth - innerWidth,
           headerHeight: document.querySelector('.site-header__bar').getBoundingClientRect().height,
           badgeForeground: getComputedStyle(document.querySelector('.prerelease-notice__badge')).color,
-          portVisibility: getComputedStyle(document.querySelector('.site-header__ports')).display,
-          shortLabel: document.querySelector('.site-header__ports .port-abbreviation')
-            ? getComputedStyle(document.querySelector('.site-header__ports .port-abbreviation')).display : null,
-          languageEnd: document.querySelector('.site-header__ports nav a:last-child').getBoundingClientRect().right,
-          controlsStart: document.querySelector('.site-header__always').getBoundingClientRect().left,
           schemeLabelWidth: document.querySelector('.scheme-switch__label').getBoundingClientRect().width,
           headerControls: ['.site-header__search', '.scheme-switch', '.site-header__menu-button'].map((selector) => {
             const { top, height } = document.querySelector(selector).getBoundingClientRect()
@@ -683,12 +672,6 @@ try {
         assert(result.headerControls.every((control) => Math.abs(control.height - result.headerControls[0].height) < 0.1
           && Math.abs(control.top - result.headerControls[0].top) < 0.1), `${path} at ${width}px: header controls align at equal heights`)
         assert.equal(result.badgeForeground, 'rgb(255, 255, 255)', 'Filled badge uses white foreground')
-        if (width === 768) {
-          assert.notEqual(result.portVisibility, 'none', 'Documentation destinations remain visible on tablets')
-          if (!hasSwitcher) assert.notEqual(result.shortLabel, 'none', 'Tablet navigation uses abbreviated language names')
-        }
-        if (width >= 1024 && !hasSwitcher) assert.equal(result.shortLabel, 'none', 'Full language names fit with compact scheme controls')
-        if (width >= 768) assert(result.languageEnd <= result.controlsStart, 'Language links do not overlap controls')
         if (width < 1536) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
         assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
         assert(result.columns.every((delta) => delta <= 1), `${path} at ${width}px: table columns misaligned`)
@@ -867,7 +850,7 @@ try {
     }
     console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
     const failures = (await Promise.all([
-      navigation, apiExamples, reference, preferences, tmuxHeader, apiNavigation,
+      navigation, apiExamples, reference, preferences, globalHeader, apiNavigation,
       clipboard, nativeLayout, documentationNavigation,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')

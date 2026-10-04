@@ -2,7 +2,6 @@
 import { branding } from '../lib/branding'
 import ColorSchemeSwitcher from './ColorSchemeSwitcher.astro'
 import LocaleSwitcher from './LocaleSwitcher.astro'
-import PortSwitcher from './PortSwitcher.astro'
 import VersionSwitcher from './VersionSwitcher.astro'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import type { LocaleStatus } from '../i18n/resolve'
@@ -10,8 +9,6 @@ import { withPortRoot, withRoot } from '../lib/site-root'
 
 interface Props {
   documentationContext?: boolean
-  /** The page already provides its programming-language switcher. */
-  pagePortSwitcher?: boolean
   portSlug?: string
   version: string
   /** Current page path for the locale control. */
@@ -35,7 +32,6 @@ const {
   sourcePath,
   localeStatuses,
   documentationContext = false,
-  pagePortSwitcher = false,
 } = Astro.props as Props
 const brand = branding(portSlug, pagePath)
 ---
@@ -47,20 +43,9 @@ const brand = branding(portSlug, pagePath)
   <div class="site-header__bar">
     <a href={withRoot('/')} class="site-header__mark font-mono text-lg font-semibold tracking-tight"><img src={withRoot(brand.asset('logo.svg'))} width="28" height="28" alt="" aria-hidden="true" />libtmux</a>
 
-    {/*
-      Keep language navigation on one line. On phones, move it into the menu
-      so the header leaves room for the page and its documentation toolbar.
-    */}
-    <div class="site-header__ports"><PortSwitcher portSlug={portSlug} version={version} showPorts={!pagePortSwitcher} /></div>
-
     <div class="site-header__spacer"></div>
 
-    {/*
-      Always visible, at every width. Reading in the wrong colour scheme is
-      uncomfortable in a way that reaching one menu deeper for the language
-      list is not, and search is the control a reader wants when the page they
-      landed on is the wrong one.
-    */}
+    {/* Keep search and colour controls visible at every width. */}
     <div class="site-header__always">
       <a
         href={portSlug ? withPortRoot(`/${portSlug}/${version}/search/`) : withRoot('/search/')}
@@ -91,10 +76,6 @@ const brand = branding(portSlug, pagePath)
       </summary>
 
       <div class="site-header__panel">
-        {/* Hidden while the language navigation fits in the bar. */}
-        <div class="site-header__panel-ports">
-          <PortSwitcher portSlug={portSlug} version={version} showPorts={!pagePortSwitcher} />
-        </div>
         {!documentationContext && <div class="site-header__panel-row site-header__panel-controls">
           <VersionSwitcher portSlug={pagePath.startsWith('reference') ? undefined : portSlug} version={version} />
           {

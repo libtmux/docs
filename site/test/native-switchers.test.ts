@@ -55,21 +55,15 @@ describe('native API page switchers', () => {
     expect(header).toBe(initialHeader)
     expect(window.customElements.get('libtmux-version-switcher')).toBeTruthy()
     expect(header.querySelector('select option')?.getAttribute('value')).toBe('latest')
-    expect(header.querySelectorAll('.lt-shell-nav a')).toHaveLength(1)
+    expect(header.querySelector('nav[aria-label="Documentation destinations"]')).toBeNull()
     expect(document.querySelector('[data-lt-shell="footer"] [data-port-home="ts"]')?.getAttribute('href'))
       .toBe(`${base}/ts/stable/`)
     expect(header.querySelector('[data-page-port-switcher] a[href$="session-session/"]')).not.toBeNull()
   })
 
-  it('keeps tmux and the page picker without duplicate language links', async () => {
+  it('keeps the page picker without duplicate header destinations', async () => {
     const { document, requests } = await load('api/libtmux.session/')
-    const nav = document.querySelector('nav[aria-label="Documentation destinations"]')!
-    const tmux = nav.querySelector('a')!
-    expect(tmux.textContent).toBe('tmux')
-    expect(tmux.getAttribute('href')).toBe(`${base}/tmux/latest/reference/`)
-    expect(tmux.getAttribute('aria-label')).toBe('tmux CLI reference')
-    expect(tmux.hasAttribute('data-port-home')).toBe(false)
-    expect(nav.querySelectorAll('a')).toHaveLength(1)
+    expect(document.querySelector('nav[aria-label="Documentation destinations"]')).toBeNull()
     expect(document.querySelectorAll('[data-page-port-switcher]')).toHaveLength(1)
     expect(document.querySelector('[data-page-port-switcher] a[aria-current]')?.getAttribute('href'))
       .toBe(`${base}/py/latest/api/libtmux.session/`)
