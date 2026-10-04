@@ -23,8 +23,10 @@ In a new directory, fetch the source revision used by this documentation:
 $ mkdir cxx-workspace-example
 $ cd cxx-workspace-example
 $ git init -q libtmux-source
-$ git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-cxx.git
-$ git -C libtmux-source fetch --depth=1 origin 393d4b0ad666f18a6581f1eb281741a75a7503f0
+$ git -C libtmux-source remote add origin \
+    https://github.com/libtmux/libtmux-cxx.git
+$ git -C libtmux-source fetch --depth=1 origin \
+    393d4b0ad666f18a6581f1eb281741a75a7503f0
 $ git -C libtmux-source checkout --detach FETCH_HEAD
 ```
 
@@ -70,16 +72,20 @@ int main() {
     auto cleanup = std::make_shared<libtmux::test::TeardownReport>();
     bool complete = false;
     try {
-        auto owned = libtmux::test::ScopedTmuxServer::start({.teardown_report = cleanup});
+        auto owned = libtmux::test::ScopedTmuxServer::start(
+            {.teardown_report = cleanup});
         if (!owned) throw std::runtime_error(owned.error());
-        auto server = libtmux::Server::at_socket_path(owned->socket_path().string());
+        auto socket = owned->socket_path().string();
+        auto server = libtmux::Server::at_socket_path(socket);
         if (!server) throw std::runtime_error(server.error().diagnostic);
 
         namespace workspace = libtmux::workspace;
         const workspace::Workspace description{
             .session_name = "built",
-            .windows = {{.name = "editor", .panes = {{.shell = "/bin/cat"}, {.shell = "/bin/cat"}}},
-                        {.name = "logs", .panes = {{.shell = "/bin/cat"}}}}};
+            .windows = {
+                {.name = "editor",
+                 .panes = {{.shell = "/bin/cat"}, {.shell = "/bin/cat"}}},
+                {.name = "logs", .panes = {{.shell = "/bin/cat"}}}}};
         const auto built = workspace::build(*server, description);
         if (!built) throw std::runtime_error(built.error().reason);
         const auto windows = built->windows();
