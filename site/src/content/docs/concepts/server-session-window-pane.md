@@ -110,7 +110,8 @@ for (Session session : server.sessions()) {
     for (Window window : session.windows()) {
         System.out.println("  " + window.index() + " " + window.name());
         for (Pane pane : window.panes()) {
-            System.out.println("    " + pane.id().value() + " " + pane.currentCommand());
+            String line = pane.id().value() + " " + pane.currentCommand();
+            System.out.println("    " + line);
         }
     }
 }
