@@ -1,0 +1,19 @@
+{
+  "name": "TypeScript",
+  "asset": "icon.svg",
+  "sourceUrl": "https://www.typescriptlang.org/branding/ts-logo-128.svg",
+  "resolvedUrl": "https://www.typescriptlang.org/branding/ts-logo-128.svg",
+  "sourcePage": "https://www.typescriptlang.org/branding/",
+  "retrievedAt": "2026-10-04T14:52:41+00:00",
+  "sha256": "25e995fa85ae9ff6b5749f4ffeb21b2fe71d74e9b8d8db8eac4b9732cd9ef287",
+  "copyright": "Microsoft and contributors retain their rights. Microsoft owns the TypeScript brand; the supplied SVG contains no separate artwork copyright notice or year.",
+  "license": {
+    "name": "TypeScript branding terms",
+    "urls": [
+      "https://www.typescriptlang.org/branding/",
+      "https://github.com/microsoft/TypeScript-Website#legal-notices"
+    ],
+    "notes": "Use the official blue mark to identify TypeScript. Preserve its shape; do not incorporate it into the libtmux logo or imply endorsement. The website repository licenses do not grant Microsoft logo or trademark rights."
+  },
+  "modifications": "None. The downloaded SVG bytes are preserved."
+}
