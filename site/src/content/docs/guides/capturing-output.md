@@ -41,8 +41,13 @@ cleanup() {
 trap cleanup 0
 trap 'exit 1' HUP INT TERM
 
-tmux -S "$socket" -f /dev/null new-session -d -s capture -x 80 -y 10 \
-    'i=1; while [ "$i" -le 40 ]; do printf "row-%s\n" "$i"; i=$((i + 1)); done; exec cat'
+tmux -S "$socket" -f /dev/null new-session -d -s capture -x 80 -y 10 '
+    i=1
+    while [ "$i" -le 40 ]; do
+        printf "row-%s\n" "$i"
+        i=$((i + 1))
+    done
+    exec cat'
 tmux -S "$socket" resize-window -t capture:0 -x 80 -y 10
 
 attempt=0
