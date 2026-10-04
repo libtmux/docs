@@ -35,7 +35,8 @@ using System.Threading.Tasks;
 using LibTmux;
 
 if (OperatingSystem.IsWindows())
-    throw new PlatformNotSupportedException("Run this example on Linux or macOS");
+    throw new PlatformNotSupportedException(
+        "Run this example on Linux or macOS");
 
 string directory = Path.Combine(
     "/tmp/libtmux-dotnet-dev", Guid.NewGuid().ToString("N"));
