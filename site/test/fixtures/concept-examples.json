@@ -493,30 +493,30 @@
       "files": [
         {
           "name": "Query.fsproj",
-          "sha256": "cede2d70f84c645ef1e609e648d1794abdd8d96fb8f0f957a274d11ea2aec212"
+          "sha256": "49978bf3f6e23f7d93cebd7be496f1210a8b6ae507a4a72c72fa5dc185087309"
         },
         {
           "name": "run.sh",
-          "sha256": "dacfb3ef36d757bb66b1c97bacc575348e2466866dee63d53b95895932f8e40b"
+          "sha256": "539612132bce53a3340847989cdb414e4661d5285ff9ea7ba1da2de53c7f4d51"
         },
         {
           "name": "Local.fs",
-          "sha256": "367291c85b89affaddbd6104932c4ab5e14b49fc01e339f2eb82ff67f0adbd15"
+          "sha256": "841dd1ab2a084d49a9801a0e96d3eafe5b4770568120a710fb9d47a8ece30e15"
         },
         {
           "name": "Cardinality.fs",
-          "sha256": "705ca5f30a953763a11d3bc206ffe647616d8537e4a15373f1da48c1bf1a88d9"
+          "sha256": "004dc67372e01216be2d3506bbb79f720aa6be8f96d6182580d4457b77c0c8bc"
         },
         {
           "name": "Relations.fs",
-          "sha256": "19d95e24c7a274257ba65e15fae9b773e0418e5266ef0436f5ba78c16e7d8040"
+          "sha256": "6b6e6b635f5b356a4d50d2ee9b72496c2bc1fc7bcf08696c5c2cf4fe33a757ef"
         }
       ],
       "shellRecipe": [
         "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Cardinality \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Cardinality",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Relations \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Relations"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local \\\n    -p:DisableImplicitLibraryPacksFolder=true \\\n    -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Cardinality \\\n    -p:DisableImplicitLibraryPacksFolder=true \\\n    -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Cardinality",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Relations \\\n    -p:DisableImplicitLibraryPacksFolder=true \\\n    -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Relations"
       ],
       "expectedOutputs": [
         [],
