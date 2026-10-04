@@ -1,0 +1,21 @@
+{
+  "semi": false,
+  "singleQuote": true,
+  "printWidth": 120,
+  "ignorePatterns": [
+    "pnpm-lock.yaml",
+    "site/src/data/**",
+    "site/public/**",
+    "_site/**",
+    "dist/**",
+    ".port-sources/**",
+    "infra/**",
+    "**/*.json",
+    "**/*.yml",
+    "**/*.yaml",
+    "**/*.cff",
+    "**/*.css",
+    "**/*.md",
+    "**/*.mdx"
+  ]
+}
