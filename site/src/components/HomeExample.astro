@@ -55,6 +55,73 @@ const { port, language, example } = Astro.props
   </details>
 </div>
 
+<script>
+  const OPTIONS = ['errors', 'cleanup'] as const
+  const storageKey = (option: typeof OPTIONS[number]) => `libtmux-docs.home-example.${option}`
+  let controller: AbortController | undefined
+
+  function bindExampleOptions() {
+    controller?.abort()
+    if (!document.querySelector('[data-home-example]')) return
+    const homepagePath = location.pathname
+    controller = new AbortController()
+    const { signal } = controller
+    const apply = (option: typeof OPTIONS[number], enabled: boolean) => {
+      for (const input of document.querySelectorAll<HTMLInputElement>(`[data-home-example] [data-example-${option}]`)) {
+        input.checked = enabled
+      }
+      try {
+        if (enabled) localStorage.setItem(storageKey(option), '1')
+        else localStorage.removeItem(storageKey(option))
+      } catch { /* The current page and URL still work without storage. */ }
+    }
+    const replaceUrl = (url: URL) => {
+      const choices = Object.fromEntries(OPTIONS.map((option) => [
+        option, document.querySelector<HTMLInputElement>(`[data-example-${option}]`)!.checked,
+      ]))
+      const previous = history.state?.libtmuxHomeExamples
+      if (url.href !== location.href || OPTIONS.some((option) => previous?.[option] !== choices[option])) {
+        history.replaceState({ ...history.state, libtmuxHomeExamples: choices }, '', url)
+      }
+    }
+    const restore = () => {
+      if (location.pathname !== homepagePath) return
+      const url = new URL(location.href)
+      for (const option of OPTIONS) {
+        const shared = url.searchParams.get(option)
+        let enabled = shared === '1'
+        if (shared !== '0' && shared !== '1') {
+          const previous = history.state?.libtmuxHomeExamples?.[option]
+          if (typeof previous === 'boolean') enabled = previous
+          else {
+            try { enabled = localStorage.getItem(storageKey(option)) === '1' } catch { /* Default off. */ }
+          }
+        }
+        apply(option, enabled)
+        if (enabled) url.searchParams.set(option, '1')
+        else if (shared !== '0') url.searchParams.delete(option)
+      }
+      replaceUrl(url)
+    }
+    document.addEventListener('change', (event) => {
+      const input = event.target
+      if (!(input instanceof HTMLInputElement) || !input.closest('[data-home-example]')) return
+      const option = OPTIONS.find((name) => input.hasAttribute(`data-example-${name}`))
+      if (!option) return
+      apply(option, input.checked)
+      const url = new URL(location.href)
+      if (input.checked) url.searchParams.set(option, '1')
+      else url.searchParams.delete(option)
+      replaceUrl(url)
+    }, { signal })
+    window.addEventListener('popstate', restore, { signal })
+    restore()
+  }
+
+  bindExampleOptions()
+  document.addEventListener('astro:after-swap', bindExampleOptions)
+</script>
+
 <style>
   .home-example-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem; margin-bottom: .85rem; }
   h2 { font-size: 1rem; font-weight: 600; }

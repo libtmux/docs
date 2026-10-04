@@ -13,6 +13,7 @@ import { checkReferencePreferences, checkGlobalHeader } from './check-reference-
 import { checkHomeLauncher } from './check-home-launcher.mjs'
 import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
+import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
@@ -563,6 +564,7 @@ try {
   } else if (homeControlsOnly) {
     await checkHomeTaskReset(browser, base)
     await checkColorScheme(browser, base)
+    await checkHomeExampleOptions(browser, base)
   } else if (keywordHelpOnly) {
     await retryReload(() => checkKeywordHelp(browser, base))
   } else if (apiSignaturesOnly) {

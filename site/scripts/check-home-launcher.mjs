@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto'
 import { checkHomeHover } from './check-home-hover.mjs'
 import { checkHomeTaskReset, chooseHomeTask } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
+import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 
 /** Only the homepage trigger changes artwork; reset retains the code glyph. */
 export async function checkHomeLanguageIcon(page, port = null) {
@@ -374,5 +375,6 @@ export async function checkHomeLauncher(browser, base) {
   await checkHomeHover(browser, base)
   await checkHomeTaskReset(browser, base)
   await checkColorScheme(browser, base)
+  await checkHomeExampleOptions(browser, base)
   console.log('Homepage: 13 languages, 52 complete selectable programs/copy, owned solutions, shared URLs, reset, blocked storage, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS')
 }
