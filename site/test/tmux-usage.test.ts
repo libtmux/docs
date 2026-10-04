@@ -9,6 +9,7 @@ import catalog37 from '../src/data/tmux/3.7c.json'
 import { codeLang, highlightInline } from '../src/lib/highlight'
 import { tmuxUsage } from '../src/lib/tmux-usage.mjs'
 import { tmuxShell } from '../src/lib/tmux-shell.mjs'
+import { tmuxConfig } from '../src/lib/tmux-config.mjs'
 import { shellThemes } from '../src/plugins/ec-shell-prompt.mjs'
 
 function contrast(foreground: string, background: string) {
@@ -32,7 +33,7 @@ describe('tmux usage highlighting', () => {
   let highlighter: HighlighterCore
   beforeAll(async () => {
     highlighter = await createHighlighterCore({
-      themes: shellThemes(), langs: [tmuxUsage, tmuxShell, ...bash],
+      themes: shellThemes(), langs: [tmuxUsage, tmuxShell, tmuxConfig, ...bash],
       engine: createOnigurumaEngine(import('shiki/wasm')),
     })
   })
@@ -153,5 +154,34 @@ describe('tmux usage highlighting', () => {
     expect(expanded.map((token) => token.content)).toEqual(['$TMUX_PANE'])
     expect(scopeOf(result.find((token) => token.content.includes("'$TMUX_PANE'")))).toContain('string.quoted.single.shell')
     expect(result.some((token) => scopeOf(token).includes('constant.character.escape.shell'))).toBe(true)
+  })
+
+  it.each(['github-light', 'github-dark'])('highlights tmux directives and nested formats in %s', async (theme) => {
+    const code = '%if "#{==:#{host},myhost}"\nset -g status-style bg=red\n%else\nset -g status-style bg=blue\n%endif'
+    const result = highlighter.codeToTokens(code, { lang: 'tmux-config', theme, includeExplanation: true })
+    expect(result.tokens.map((line) => line.map((part) => part.content).join('')).join('\n')).toBe(code)
+    for (const [value, scope] of [['%if', 'keyword.control'], ['host', 'variable.other'], ['set', 'entity.name.function'], ['-g', 'constant.other.option']]) {
+      const token = result.tokens.flat().find((part) => part.content === value)!
+      expect(scopeOf(token)).toContain(`${scope}.tmux-config`)
+      expect(contrast(token.color!, result.bg!)).toBeGreaterThanOrEqual(4.5)
+    }
+    expect(scopeOf(result.tokens[1].find((part) => part.content === 'set'))).not.toContain('string.quoted.double.tmux-config')
+    const renderer = await createRenderer(config)
+    const rendered = await renderer.ec.render({ code, language: 'tmux-config' })
+    expect(select('[data-code]', rendered.renderedGroupAst)?.properties.dataCode).toBe(code.replaceAll('\n', '\x7f'))
+    expect(codeLang('tmux')).toBe('tmux-config')
+  })
+
+  it('recognizes runtime formats inside both quotes while leaving single-quoted environment variables literal', () => {
+    const result = highlighter.codeToTokens("# a comment\nset -g status-left '#{host} #[fg=red]#S $HOME'\nset -g status-right \"#{?pane_in_mode,#[fg=red],#[fg=green]}#W\"", {
+      lang: 'tmux-config', theme: 'github-dark', includeExplanation: true,
+    }).tokens
+    expect(scopeOf(result[0][0])).toContain('comment.line.number-sign.tmux-config')
+    expect(result[1].some((token) => scopeOf(token).includes('meta.interpolation.tmux-config'))).toBe(true)
+    expect(result[1].some((token) => scopeOf(token).includes('meta.style.tmux-config'))).toBe(true)
+    expect(scopeOf(result[1].find((token) => token.content === '#S'))).toContain('variable.other.tmux-config')
+    expect(scopeOf(result[1].find((token) => token.content.includes('$HOME')))).not.toContain('variable.other.tmux-config')
+    expect(result[2].some((token) => scopeOf(token).includes('meta.interpolation.tmux-config'))).toBe(true)
+    expect(result[2].some((token) => scopeOf(token).includes('meta.style.tmux-config'))).toBe(true)
   })
 })

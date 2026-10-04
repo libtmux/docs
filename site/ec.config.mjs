@@ -2,6 +2,7 @@ import { defineEcConfig } from 'astro-expressive-code'
 import { shellPrompt, shellThemes } from './src/plugins/ec-shell-prompt.mjs'
 import { tmuxUsage } from './src/lib/tmux-usage.mjs'
 import { tmuxShell } from './src/lib/tmux-shell.mjs'
+import { tmuxConfig } from './src/lib/tmux-config.mjs'
 import bash from 'shiki/langs/bash.mjs'
 
 /**
@@ -17,7 +18,7 @@ export default defineEcConfig({
   tabWidth: 0,
   themes: shellThemes(),
   plugins: [shellPrompt()],
-  shiki: { langs: [tmuxUsage, ...bash, tmuxShell], langAlias: { sbt: 'scala' } },
+  shiki: { langs: [tmuxUsage, ...bash, tmuxShell, tmuxConfig], langAlias: { sbt: 'scala', tmux: 'tmux-config' } },
   useDarkModeMediaQuery: false,
   themeCssSelector: (theme) =>
     theme.name === 'github-light'

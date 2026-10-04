@@ -3,6 +3,7 @@ import githubDark from 'shiki/themes/github-dark.mjs'
 import githubLight from 'shiki/themes/github-light.mjs'
 import { tmuxUsageColors } from '../lib/tmux-usage.mjs'
 import { tmuxShellColors } from '../lib/tmux-shell.mjs'
+import { tmuxConfigColors } from '../lib/tmux-config.mjs'
 
 /**
  * Shell session prompts: coloured, unselectable, and left out of copied text.
@@ -124,6 +125,7 @@ export function shellThemes() {
       ...theme.tokenColors,
       ...tmuxUsageColors(theme.type === 'dark'),
       ...tmuxShellColors(theme.type === 'dark'),
+      ...tmuxConfigColors(theme.type === 'dark'),
       {
         scope: [
           'source.shell entity.name.command',
