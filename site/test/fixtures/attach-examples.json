@@ -385,7 +385,7 @@
       "files": [
         {
           "name": "connect.rb",
-          "sha256": "b683160fe4caefea0e65c4670519a2bfaa6c4f16f402fc86c730a42df2943f5d"
+          "sha256": "4779f7d61e2dc4c690da75e1c66e1e97fb414fcbd3a419cb673d2d17e4d141a0"
         },
         {
           "name": "Gemfile",
