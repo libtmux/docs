@@ -3,6 +3,7 @@ import { PORTS, PORT_BY_SLUG, portSourceUrl, productAvailable } from '../src/lib
 import { documentationAreas } from '../src/lib/port-documentation'
 import { LANG_TO_PORT, remarkPortCode } from '../src/plugins/remark-port-code.mjs'
 import { QUICKSTARTS } from '../src/lib/quickstarts'
+import EXAMPLE_SOURCES from '../src/data/example-sources.json'
 import { installsFor, registryFor } from '../src/lib/registry'
 import { docsEntryAvailable } from '../src/lib/page-port-links'
 import { SITE_BUILT, SITE_PREFIX, sitePath, publishedPath } from './site-root'
@@ -99,6 +100,44 @@ describe('wrapper library identities', () => {
     expect(docsEntryAvailable({ id: 'ja/concepts/model', data: {} }, 'fsharp')).toBe(true)
     expect(docsEntryAvailable({ id: 'ja/topics/control', data: {} }, 'fsharp')).toBe(false)
     expect(docsEntryAvailable({ id: 'guides', data: { port: 'scala', route: 'guides' } }, 'scala')).toBe(true)
+  })
+})
+
+describe('quickstart display formatting', () => {
+  const columns = (line: string) => [...line].reduce(
+    (column, char) => column + (char === '\t' ? 8 - column % 8 : 1), 0,
+  )
+  // Keep quoted literals whole: ignoring all whitespace would also hide changed strings.
+  const tokens = (code: string) => code.match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[A-Za-z_][A-Za-z0-9_']*|\d+(?:\.\d*)?|[^\s]/g)
+  const luaSource = EXAMPLE_SOURCES['lua:examples/quickstart.lua'].content
+    .split('-- docs:begin main\n')[1].split('-- docs:end main')[0]
+  const fsharpSource = EXAMPLE_SOURCES['fsharp:examples/LibTmux.FSharp.Quickstart/Program.fs'].content
+    .replace(/^\/\/ fsharp-snippet: Quickstart\n/, '').replace(/\n\/\/ endfsharp-snippet\n?$/, '')
+
+  it.each(PORTS)('$slug fits 88 columns, including expanded tabs', ({ slug }) => {
+    const code = QUICKSTARTS[slug]?.code
+    expect(code, slug).toBeTruthy()
+    for (const [index, line] of code!.split('\n').entries()) {
+      expect(columns(line), `${slug}:${index + 1} ${line}`).toBeLessThanOrEqual(88)
+    }
+  })
+
+  it.each([
+    { slug: 'lua', source: luaSource },
+    { slug: 'fsharp', source: fsharpSource },
+  ])('$slug reflows its source without changing tokens or string contents', ({ slug, source }) => {
+    expect(tokens(QUICKSTARTS[slug]!.code)).toEqual(tokens(source))
+    expect(QUICKSTARTS[slug]!.source).toContain('Line breaks adjusted for display.')
+  })
+
+  it('counts tab stops and keeps whitespace inside quoted literals significant', () => {
+    expect(columns('\t' + 'x'.repeat(81))).toBe(89)
+    expect(columns('x\t' + 'y'.repeat(80))).toBe(88)
+    expect(tokens('let value')).not.toEqual(tokens('letvalue'))
+    expect(tokens('print(\n  "two words"\n)')).toEqual(tokens('print("two words")'))
+    expect(tokens('print("two words")')).not.toEqual(tokens('print("twowords")'))
+    expect(tokens('print("two words")')).not.toEqual(tokens('other("two words")'))
+    expect(tokens('print("two words")')).not.toEqual(tokens('print("two words", 1)'))
   })
 })
 

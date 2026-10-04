@@ -27,7 +27,76 @@ function documentedRegion(source: string, name: string): string {
 }
 
 const rubyQuickstart = documentedRegion(EXAMPLE_SOURCES['ruby:examples/quickstart.rb'].content, 'main')
+// Only line breaks change; token and string preservation is checked against the source cache.
 const luaQuickstart = documentedRegion(EXAMPLE_SOURCES['lua:examples/quickstart.lua'].content, 'main')
+  .replace(
+    `        :new_session({ name = "quickstart", window_name = "main", argv = { "/bin/sh" } })`,
+    `        :new_session(
+            { name = "quickstart", window_name = "main", argv = { "/bin/sh" } }
+        )`,
+  )
+  .replace(
+    `local logs = must(created.session:new_window({ name = "logs", argv = { "/bin/cat" } }):await())
+local split =
+    must(logs.pane:split({ direction = "right", percent = 40, argv = { "/bin/cat" } }):await())`,
+    `local logs =
+    must(created.session:new_window({ name = "logs", argv = { "/bin/cat" } }):await())
+local split = must(
+    logs.pane
+        :split({ direction = "right", percent = 40, argv = { "/bin/cat" } })
+        :await()
+)`,
+  )
+  .replace(
+    `assert(must(capture:text()):find("libtmux ready", 1, true), "pane output was not captured")
+print(created.session:reference().id, logs.window:reference().id, split.pane:reference().id)`,
+    `assert(
+    must(capture:text()):find("libtmux ready", 1, true),
+    "pane output was not captured"
+)
+print(
+    created.session:reference().id,
+    logs.window:reference().id,
+    split.pane:reference().id
+)`,
+  )
+
+const fsharpQuickstart = EXAMPLE_SOURCES['fsharp:examples/LibTmux.FSharp.Quickstart/Program.fs'].content
+  .replace(/^\/\/ fsharp-snippet: Quickstart\n/, '').replace(/\n\/\/ endfsharp-snippet\n?$/, '')
+  .replace(
+    `                owned.Value.CreateSessionAsync(NewSessionRequest(Name = name, Command = "/bin/sh"), token)`,
+    `                owned.Value.CreateSessionAsync(
+                    NewSessionRequest(Name = name, Command = "/bin/sh"),
+                    token
+                )`,
+  )
+  .replace(
+    `        printfn "other sessions: %s" (String.Join(", ", [ for session in others -> session.Name ]))`,
+    `        printfn
+            "other sessions: %s"
+            (String.Join(", ", [ for session in others -> session.Name ]))`,
+  )
+  .replace(
+    `                |> Pane.sendAndWait token (TimeSpan.FromSeconds 10.) "echo build started" "build started"`,
+    `                |> Pane.sendAndWait
+                    token
+                    (TimeSpan.FromSeconds 10.)
+                    "echo build started"
+                    "build started"`,
+  )
+  .replace(
+    `                pane |> Pane.run token (TimeSpan.FromSeconds 10.) "printf 'ok\\\\n'; exit 3"`,
+    `                pane
+                |> Pane.run token (TimeSpan.FromSeconds 10.) "printf 'ok\\\\n'; exit 3"`,
+  )
+  .replace(
+    `            printfn "run: exit %d, output %A" result.ExitStatus.Value (List.ofSeq result.Output)`,
+    `
+            printfn
+                "run: exit %d, output %A"
+                result.ExitStatus.Value
+                (List.ofSeq result.Output)`,
+  )
 
 /** Quote a block checked by the parent repository's documentation tests. */
 function guideExample(artifact: typeof KOTLIN_GUIDES, path: string, heading: string, lang: string): Quickstart {
@@ -59,9 +128,8 @@ export const QUICKSTARTS: Partial<Record<string, Quickstart>> = {
   },
   fsharp: {
     lang: 'fsharp',
-    code: EXAMPLE_SOURCES['fsharp:examples/LibTmux.FSharp.Quickstart/Program.fs'].content
-      .replace(/^\/\/ fsharp-snippet: Quickstart\n/, '').replace(/\n\/\/ endfsharp-snippet\n?$/, ''),
-    source: 'From examples/LibTmux.FSharp.Quickstart/Program.fs. The package consumer check runs this exact program against the packed LibTmux.FSharp artifact on .NET 8 and 10.',
+    code: fsharpQuickstart,
+    source: 'From examples/LibTmux.FSharp.Quickstart/Program.fs. Line breaks adjusted for display. The package consumer check runs the source program against the packed LibTmux.FSharp artifact on .NET 8 and 10.',
   },
   py: {
     lang: 'python',
@@ -84,7 +152,7 @@ print(pane.capture_pane())`,
   lua: {
     lang: 'lua',
     code: luaQuickstart,
-    source: 'From examples/quickstart.lua at the selected source revision. The installed-rock check runs it against an owned socket and verifies that its session is removed.',
+    source: 'From examples/quickstart.lua at the selected source revision. Line breaks adjusted for display. The installed-rock check runs the source file against an owned socket and verifies that its session is removed.',
     note: 'Run the complete file inside `libtmux.runtime.luv`; standalone live use also requires the `luv` rock. Requests return `value, err`, and send completion does not claim shell completion, so the example uses a tmux wait-for barrier.',
   },
   ts: {

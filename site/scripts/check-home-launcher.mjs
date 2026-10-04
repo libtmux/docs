@@ -66,12 +66,36 @@ export async function checkHomeLauncher(browser, base) {
         return [getComputedStyle(code).backgroundColor, getComputedStyle(prompt).backgroundColor]
       })
       assert.equal(colors[0], colors[1], `${theme}: code and prompt use the same background`)
-      for (const width of [1440, 906, 390, 320]) {
+      for (const width of [1920, 1440, 1135, 906, 390, 320]) {
         await page.setViewportSize({ width, height: 777 })
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${theme}/${width}: no page overflow`)
         assert(await language.isVisible() && await solution.isVisible(), `${theme}/${width}: both header pickers visible`)
       }
     }
+    await choose('rs')
+    const code = page.locator('.home-examples > [data-home-language="rs"] > .expressive-code pre code')
+    const fontSizes = []
+    for (const width of [906, 1135, 1920]) {
+      await page.setViewportSize({ width, height: 777 })
+      const layout = await page.evaluate(() => {
+        const intro = document.querySelector('.home-intro').getBoundingClientRect()
+        const examples = document.querySelector('.home-examples').getBoundingClientRect()
+        const font = getComputedStyle(document.querySelector('.home-examples [data-home-language="rs"] pre code')).fontSize
+        return { intro: intro.width, examples: examples.width, font: parseFloat(font) }
+      })
+      assert(layout.intro <= 320.5, `${width}: intro stops at 20rem`)
+      assert(layout.examples > layout.intro, `${width}: code receives remaining width`)
+      assert(layout.font >= 13 && layout.font <= 15, `${width}: readable font bounds`)
+      fontSizes.push(layout.font)
+    }
+    assert(fontSizes[0] < fontSizes[2], 'Code grows with its container')
+    await page.locator('.home-examples').evaluate((element) => { element.style.width = '360px' })
+    assert.equal(await code.evaluate((element) => getComputedStyle(element).fontSize), '13px', 'Sizing follows the container at the same viewport')
+    await code.locator('.ec-line').first().evaluate((line) => { line.textContent = 'unusuallyLongSymbol'.repeat(12) })
+    assert(await code.locator('..').evaluate((pre) => pre.scrollWidth > pre.clientWidth), 'An indivisible symbol remains scrollable')
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Long symbols do not widen the page')
+    await page.reload()
+    await language.locator('[data-port="rs"]').waitFor({ state: 'attached' })
     await page.setViewportSize({ width: 906, height: 777 })
     await language.locator('summary').focus()
     await page.keyboard.press('Enter')
@@ -95,5 +119,5 @@ export async function checkHomeLauncher(browser, base) {
   } finally {
     await noScript.close()
   }
-  console.log('Homepage: 13 languages, owned solutions, saved selection, prompt tasks/copy, shared themes, keyboard and no-JS PASS')
+  console.log('Homepage: 13 languages, owned solutions, saved selection, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS')
 }

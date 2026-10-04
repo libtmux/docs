@@ -40,7 +40,9 @@ const descriptions: Record<string, string> = {
     <section class="home-examples" aria-label="Language quickstart">
       {PORTS.map((port, index) => {
         const snippet = QUICKSTARTS[port.slug]
-        return <div data-home-language={port.slug} hidden={index !== 0}>
+        const columns = snippet ? Math.min(88, Math.max(...snippet.code.split('\n')
+          .map((line) => line.replace(/\t/g, '    ').length))) : 88
+        return <div data-home-language={port.slug} hidden={index !== 0} style={`--home-code-columns: ${columns}`}>
         <h2>Start with {port.name}</h2>
         {snippet && <Code code={snippet.code} lang={snippet.lang} />}
         {snippet?.note && <p class="home-example-note">{snippet.note}</p>}
@@ -52,7 +54,7 @@ const descriptions: Record<string, string> = {
 </section>
 
 <style>
-  .home-preview { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.25fr); gap: 2.5rem; }
+  .home-preview { display: grid; grid-template-columns: minmax(0, min(20rem, 32%)) minmax(0, 1fr); gap: 2rem; }
   .home-preview [hidden] { display: none !important; }
   .home-preview > * { min-width: 0; }
   .home-eyebrow { margin-bottom: .85rem; font-family: var(--font-ibm-plex-mono); font-size: .8125rem; color: var(--color-muted); }
@@ -68,12 +70,17 @@ const descriptions: Record<string, string> = {
   .home-solutions strong { font-size: .875rem; font-weight: 600; }
   .home-solutions small { margin-top: .2rem; font-size: .8125rem; color: var(--color-muted); }
   .home-solution-arrow { margin-left: auto; color: var(--color-link); }
+  .home-examples { container-type: inline-size; }
+  .home-examples > [data-home-language] > :global(.expressive-code) {
+    /* IBM Plex Mono advances .6em per column; rem bounds preserve zoom. */
+    --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * .6)), .9375rem);
+  }
   .home-examples h2 { margin-bottom: .85rem; font-size: 1rem; font-weight: 600; }
   .home-example-link { margin-block: .8rem 1.2rem; font-size: .8125rem; color: var(--color-muted); }
   .home-example-link a { color: var(--color-link); }
-  .home-examples :global(.expressive-code pre) { max-height: 34rem; overflow: auto; }
+  .home-examples :global(.expressive-code pre) { max-height: 34rem; overflow: auto; tab-size: 4; }
   @media (max-width: 48rem) {
-    .home-preview { grid-template-columns: 1fr; gap: 2rem; }
+    .home-preview { grid-template-columns: 1fr; }
     h1 { max-width: 18ch; }
     .home-solutions { margin-top: 1rem; }
   }

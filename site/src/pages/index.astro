@@ -249,7 +249,7 @@ const homeEntries = PORTS.map((port) => ({
         <a class="underline" href={withRoot('/docs.json')}>docs.json</a> so it
         reads the API rather than guessing it. Use the language selected above, then pick a task.
       </p>
-      <div class="mt-4 max-w-4xl">
+      <div class="home-agent-prompt mt-4 max-w-4xl">
         <AgentPrompt showLanguageTabs={false} />
       </div>
       <p class="mt-3 text-sm">
@@ -263,3 +263,10 @@ const homeEntries = PORTS.map((port) => ({
 </BaseLayout>
   )
 }
+
+<style>
+  .home-agent-prompt { container-type: inline-size; }
+  .home-agent-prompt :global(.lm-agent-prompt__code code) {
+    font-size: clamp(.8125rem, calc((100cqi - 2rem) / (88 * .6)), .9375rem);
+  }
+</style>
