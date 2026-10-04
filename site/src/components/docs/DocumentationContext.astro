@@ -7,9 +7,10 @@ import { getDocumentationSurfaces } from '../../lib/documentation-navigation'
 import type { PagePortLink } from '../../lib/page-port-links'
 import type { Locale } from '../../i18n/locales'
 import type { LocaleStatus } from '../../i18n/resolve'
+import { TMUX_VERSIONS, tmuxReference, tmuxReferenceUrl } from '../../lib/tmux-reference'
 
 interface Props {
-  port: string
+  port?: string
   version: string
   locale: Locale
   sourcePath: string
@@ -19,6 +20,12 @@ interface Props {
 }
 const { port, version, locale, sourcePath, pagePorts, localeStatuses, reference = false } = Astro.props
 const surfaces = await getDocumentationSurfaces(port, version, locale)
+const command = sourcePath.match(/^tmux\/[^/]+\/reference\/(.+?)\/?$/)?.[1]
+const tmuxVersions = !port ? TMUX_VERSIONS.map((entry) => ({
+  label: entry === 'latest' ? `Latest (${tmuxReference(entry).version})` : entry,
+  href: tmuxReferenceUrl(entry, command === 'manual' || tmuxReference(entry).commands.some((item) => item.name === command) ? command : undefined),
+  current: entry === version,
+})) : undefined
 ---
 <div class:list={['documentation-context', reference && 'documentation-context--reference']} data-documentation-context data-pagefind-ignore="all">
   <div class="documentation-context-inner">
@@ -26,8 +33,8 @@ const surfaces = await getDocumentationSurfaces(port, version, locale)
       <SurfacePicker surfaces={surfaces} currentPath={Astro.url.pathname} port={port} version={version} locale={locale} />
     </div>
     <div class="documentation-context-selectors" aria-label="Documentation context">
-      <PagePortSwitcher entries={pagePorts} portSlug={port} />
-      <VersionSwitcher portSlug={port} version={version} />
+      <PagePortSwitcher entries={pagePorts} portSlug={port} tmux={!port} />
+      <VersionSwitcher portSlug={port} version={version} entries={tmuxVersions} />
       <LocaleSwitcher locale={locale} sourcePath={sourcePath} localeStatuses={localeStatuses ?? { [locale]: 'translated' }} />
     </div>
     <div class="documentation-context-navigation"><slot name="navigation" /></div>
@@ -46,6 +53,7 @@ const surfaces = await getDocumentationSurfaces(port, version, locale)
   @media (min-width: 56rem) { .documentation-context--reference .documentation-context-navigation { display: none; } }
   .documentation-context :global(.doc-picker) { position: static; }
   .documentation-context :global(.doc-picker-panel) { left: .5rem; }
+  .documentation-context :global(.doc-picker:not([data-enhanced]) > .doc-picker-panel) { width: min(var(--picker-width), calc(100% - 1rem)); }
   .documentation-context :global(.surface-picker > summary) { border-color: transparent; background: transparent; padding-inline-start: calc(var(--site-gutter) - .75rem - 1px); }
   .documentation-context :global(.surface-picker > summary:hover), .documentation-context :global(.surface-picker[open] > summary) { border-color: var(--color-edge); background: var(--background-color); }
   .documentation-context :global(.surface-current strong), .documentation-context :global(.surface-current small) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

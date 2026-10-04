@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
-import { buildDocumentationSurfaces, currentDocumentation } from '../src/lib/documentation-navigation'
+import { buildDocumentationSurfaces, currentDocumentation, getDocumentationSurfaces } from '../src/lib/documentation-navigation'
 import { PORTS, portPageUrl, type DocProduct } from '../src/lib/ports'
 import type { SidebarItem } from '../src/lib/sidebar'
 
@@ -17,6 +17,22 @@ const menus = (port: typeof PORTS[number], version: string) => Object.fromEntrie
 })) as Record<'core' | DocProduct, SidebarItem[]>
 
 describe('documentation surface navigation', () => {
+  it('offers the tmux area without inventing a library port or empty prose sections', async () => {
+    const surfaces = await getDocumentationSurfaces(undefined, 'latest')
+    expect(surfaces.map((surface) => surface.id)).toEqual(['tmux'])
+    expect(surfaces[0].sections.map((section) => section.id)).toEqual(['home', 'manual'])
+    expect(currentDocumentation(surfaces, '/tmux/latest/reference/capture-pane/').section.id).toBe('manual')
+    expect(PORTS.some((port) => port.slug === 'tmux')).toBe(false)
+  })
+
+  it('selects a shared section while it lives outside the tmux hub', () => {
+    const surfaces = [{ id: 'tmux', label: 'Just tmux', href: '/tmux/', sections: [
+      { id: 'home', label: 'Home', href: '/tmux/', items: [] },
+      { id: 'guides', label: 'Guides', href: '/guides/', items: [] },
+    ] }]
+    expect(currentDocumentation(surfaces, '/guides/getting-started/').section.id).toBe('guides')
+  })
+
   it.each(PORTS)('keeps $slug nested app selection and destinations inside the current version', (port) => {
     const version = 'v1.2.3'
     const surfaces = buildDocumentationSurfaces(port.slug, version, menus(port, version))

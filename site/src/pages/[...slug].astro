@@ -10,6 +10,7 @@ import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
 import { productApiRedirects, productApiRoutes } from '../lib/product-api'
 import { buildTarget } from '../lib/versions'
 import ToolReference from '../components/mcp/ToolReference.astro'
+import TmuxOverview from '../components/tmux/Overview.astro'
 import { mcpReferenceRoutes } from '../lib/mcp-reference'
 import { docsEntryAvailable } from '../lib/page-port-links'
 import { docsRedirects, docsRoutePath, sourceGuideRedirects, workspaceRedirects } from '../lib/docs-paths'
@@ -30,6 +31,7 @@ export async function getStaticPaths() {
       props: { entry, version: entry.data.port && !port ? (defaults[entry.data.port] ?? 'latest') : undefined },
     }))
   const global = !port ? [
+    ...(locale === DEFAULT_LOCALE ? [{ params: { slug: 'tmux' }, props: { globalPage: 'tmux' } }] : []),
     { params: { slug: 'mcp' }, props: { globalPage: 'mcp' } },
     { params: { slug: 'mcp/tools' }, props: { globalPage: 'tools' } },
   ] : []
@@ -76,4 +78,4 @@ const { entry, placeholderLocale, globalPage, version, model, symbol, mcpPort, t
 const destination = redirect ? `${import.meta.env.BASE_URL.replace(/\/$/, '')}/${redirect}/` : undefined
 ---
 
-{destination ? <RedirectPage destination={destination} title="the documentation" /> : globalPage === 'mcp' ? <McpOverview /> : globalPage === 'tools' ? <McpTools /> : mcpPort ? <ToolReference port={mcpPort} toolName={toolName} version={version!} /> : model && symbol ? <ProductApiPage model={model} symbol={symbol} version={version!} /> : entry && <DocPage entry={entry} version={version} placeholderLocale={placeholderLocale} />}
+{destination ? <RedirectPage destination={destination} title="the documentation" /> : globalPage === 'tmux' ? <TmuxOverview /> : globalPage === 'mcp' ? <McpOverview /> : globalPage === 'tools' ? <McpTools /> : mcpPort ? <ToolReference port={mcpPort} toolName={toolName} version={version!} /> : model && symbol ? <ProductApiPage model={model} symbol={symbol} version={version!} /> : entry && <DocPage entry={entry} version={version} placeholderLocale={placeholderLocale} />}

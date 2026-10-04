@@ -175,7 +175,8 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
             await search.fill('workspace guides')
           }
           const panel = await picker.locator('[data-surface-panel]').boundingBox()
-          assert(panel.x >= 0 && panel.x + panel.width <= width + 1, `${width}/${colorScheme}: picker fits the viewport`)
+          const usableWidth = await reader.evaluate(() => document.documentElement.clientWidth)
+          assert(panel.x >= 0 && panel.x + panel.width <= usableWidth + 1, `${width}/${colorScheme}: picker fits beside the scrollbar`)
           if (javaScriptEnabled) assert(panel.y >= 0 && panel.y + panel.height <= 901, `${width}: floating picker fits vertically`)
           const target = group(picker, 'Workspace Manager').getByRole('link', { name: 'Guides', exact: true })
           if (javaScriptEnabled) await picker.locator('[data-surface-search]').press('Enter')
@@ -201,7 +202,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
           await reader.waitForURL(`${base}/go/latest/workspace/guides/`)
           assert(await reader.locator('[data-surface-picker] > summary').first().getAttribute('aria-label').then((label) => label.endsWith('Workspace Manager, Guides')),
             'History restores the selected surface and section')
-          assert(await reader.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${width}: page has no horizontal overflow`)
+          assert(await reader.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), `${width}: page has no horizontal overflow`)
           await openPicker(picker, javaScriptEnabled)
           if (javaScriptEnabled) await picker.locator('[data-surface-search]').fill('')
           const core = group(picker, 'Core Library')
@@ -210,7 +211,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
           await reader.waitForURL(`${base}/go/latest/reference/`)
           await checkNoticeAlignment(reader)
           await checkContextControls(reader)
-          assert(await reader.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${width}: reference has no horizontal overflow`)
+          assert(await reader.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), `${width}: reference has no horizontal overflow`)
           if (width === 320 || width === 1920) {
             await reader.goto(`${base}/`, { waitUntil: 'load' })
             await checkNoticeAlignment(reader, true)

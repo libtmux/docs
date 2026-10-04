@@ -39,7 +39,7 @@ const initial = entries[0].port
   :global(.site-header__bar:has(.home-launcher)) { flex-wrap: wrap; }
   @media (max-width: 40rem) {
     .home-launcher { order: 5; flex-basis: 100%; flex-wrap: wrap; padding-block: .25rem; }
-    .home-launcher :global(.doc-picker:not([data-enhanced]) > .doc-picker-panel) { position: fixed; top: auto; left: .5rem; }
+    .home-launcher :global(.doc-picker:not([data-enhanced]) > .doc-picker-panel) { position: fixed; top: auto; left: .5rem; width: min(var(--picker-width), calc(100% - 1rem)); }
     .home-launcher-solution { flex: 1; min-width: 11rem; max-width: 15rem; }
   }
 </style>

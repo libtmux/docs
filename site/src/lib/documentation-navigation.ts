@@ -4,6 +4,8 @@ import { PORT_BY_SLUG, portPageUrl, referenceUrl, type DocProduct } from './port
 import { API_MODELS } from './api-models'
 import { productApiHref, productApiRoots } from './product-api'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
+import { withPortRoot } from './site-root'
+import { tmuxReferenceUrl } from './tmux-reference'
 
 export interface DocumentationSection {
   id: string
@@ -101,9 +103,22 @@ export function buildDocumentationSurfaces(
 const cache = new Map<string, Promise<DocumentationSurface[]>>()
 
 /** Reuse collection queries across every declaration in a static port build. */
-export function getDocumentationSurfaces(port: string, version: string, locale: Locale = DEFAULT_LOCALE) {
+export function getDocumentationSurfaces(port: string | undefined, version: string, locale: Locale = DEFAULT_LOCALE) {
   const key = `${port}/${version}/${locale}`
   const build = async () => {
+    if (!port) {
+      const menus = await getSidebar(undefined, version, locale)
+      const sections: DocumentationSection[] = [
+        { id: 'home', label: 'Home', href: withPortRoot('/tmux/'), items: [] },
+        ...menus.flatMap((item) => item.type === 'group' && item.href
+          ? [{ id: item.label.toLowerCase(), label: item.label, href: item.href, items: item.items }] : []),
+        { id: 'manual', label: 'Manual', href: tmuxReferenceUrl(version), items: [] },
+      ]
+      sections[0].items = sections.filter((section) => section.href).map((section) => ({
+        type: 'link', label: section.label, href: section.href!,
+      }))
+      return [{ id: 'tmux', label: 'Just tmux', href: withPortRoot('/tmux/'), sections }]
+    }
     const products = documentationAreas(port).flatMap((domain) => domain.kind !== 'unavailable' && domain.product ? [domain.product] : [])
     const menus = await Promise.all(['core' as const, ...products].map(async (product) =>
       [product, await getSidebar(port, version, locale, product === 'core' ? undefined : product)] as const))
@@ -120,6 +135,8 @@ export function currentDocumentation(surfaces: DocumentationSurface[], currentPa
     .sort((a, b) => b.href.length - a.href.length)[0] ?? surfaces[0]
   const path = currentPath.slice(surface.href.length).split('/')[0] || 'home'
   const key = path === 'cli' || path === 'tools' || path === 'api' ? 'reference' : path
-  const section = surface.sections.find((entry) => entry.id === key) ?? surface.sections[0]
+  const section = surface.sections.filter((entry) => entry.id !== 'home' && entry.href && currentPath.startsWith(entry.href))
+    .sort((a, b) => b.href!.length - a.href!.length)[0]
+    ?? surface.sections.find((entry) => entry.id === key) ?? surface.sections[0]
   return { surface, section }
 }

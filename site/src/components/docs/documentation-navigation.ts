@@ -25,8 +25,10 @@ export function initDocumentationNavigation() {
         if (topLayer && panel.matches(':popover-open')) panel.hidePopover()
         return
       }
+      const viewportWidth = document.documentElement.clientWidth
+      panel.style.maxWidth = `${Math.max(0, viewportWidth - 16)}px`
       const width = panel.getBoundingClientRect().width
-      panel.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - width - 8))}px`
+      panel.style.left = `${Math.max(8, Math.min(rect.left, viewportWidth - width - 8))}px`
       const below = window.innerHeight - rect.bottom - 14
       const above = rect.top - 14
       const upward = below < 220 && above > below

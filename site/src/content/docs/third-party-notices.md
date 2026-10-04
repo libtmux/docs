@@ -1,17 +1,37 @@
 ---
 title: Third-party notices
-description: Licences and attribution for the tools that build libtmux.org and the software libtmux depends on.
+description: Thanks to tmux's creator and contributors, with licences and attribution for the software behind libtmux.org.
 sidebar:
   label: Third-party notices
   order: 99
 tableOfContents: true
 ---
 
-libtmux and this site are built with open-source software. Several of those
-licences ask that their notice text travel with the work, so it is reproduced
-here.
+## tmux
+
+First and foremost, thank you to **[Nicholas Marriott (nicm)](https://github.com/nicm)**,
+the creator of tmux, and to the many
+[tmux contributors](https://github.com/tmux/tmux/graphs/contributors).
+We are grateful for the work that makes tmux possible.
+
+libtmux is a separate project. Our libraries and supporting tools control a
+real tmux server; tmux itself provides the terminal multiplexer. This is the
+libtmux website. Visit the [official tmux website](https://github.com/tmux/tmux/wiki)
+for the upstream project and its documentation.
+
+See tmux's [COPYING file](https://github.com/tmux/tmux/blob/master/COPYING)
+and the copyright and permission notices in its source files for its licensing.
+
+### tmux artwork
+
+The tmux logomark is by Jason Long. The site uses the unmodified
+[upstream SVG](https://github.com/tmux/tmux/blob/8f25579c5aef8d93924a20681f394e2a582fd3ad/logo/tmux-logomark.svg)
+under its [copyright and permission notice](/brand/tmux/LICENSE.txt).
 
 ## Documentation toolchain
+
+libtmux and this site are built with open-source software. The following
+tools have their own licences and attribution requirements.
 
 | Tool | Licence | Role |
 |---|---|---|

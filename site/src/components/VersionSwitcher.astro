@@ -3,13 +3,25 @@ import { PORT_BY_SLUG } from '../lib/ports'
 import { withRoot } from '../lib/site-root'
 import '../styles/documentation-picker.css'
 
-interface Props { portSlug?: string; version: string }
-const { portSlug, version } = Astro.props
+interface Props { portSlug?: string; version: string; entries?: { label: string; href: string; current: boolean }[]; label?: string }
+const { portSlug, version, entries, label = 'tmux manual version' } = Astro.props
 const candidate = portSlug ? PORT_BY_SLUG[portSlug] : undefined
 const port = candidate?.versionedDocs ? candidate : undefined
 // Astro emits the not-found page as a file even with directory-style URLs.
 const currentHref = Astro.url.pathname.replace(/\/404\/?$/, '/404.html') + Astro.url.search
 ---
+{entries && <details class="doc-picker" data-doc-picker data-version-picker>
+  <summary aria-label={label}>
+    <span class="version-label">{version}</span>
+    <svg class="doc-picker-caret" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
+  </summary>
+  <div class="doc-picker-panel version-picker-panel" data-picker-panel>
+    <p class="doc-picker-title">{label}</p>
+    {entries.map((entry) => <a class="doc-picker-option" data-picker-option data-preserve-fragment href={entry.href} aria-current={entry.current ? 'page' : undefined}>
+      <span>{entry.label}</span>{entry.current && <span class="doc-picker-check" aria-hidden="true">✓</span>}
+    </a>)}
+  </div>
+</details>}
 {port && <libtmux-version-switcher data-port={port.slug} data-current={version}
   data-grammar={port.tagGrammar} data-root={withRoot('/')}>
   <details class="doc-picker" data-doc-picker data-version-picker>
