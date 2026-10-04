@@ -226,7 +226,10 @@ if err != nil {
 	return err
 }
 command := "echo hello"
-return pane.SendKeys(ctx, tmux.SendKeysRequest{Command: &command, Literal: true})
+return pane.SendKeys(ctx, tmux.SendKeysRequest{
+	Command: &command,
+	Literal: true,
+})
 ```
 
 ```java
