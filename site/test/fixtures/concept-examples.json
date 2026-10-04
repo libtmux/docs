@@ -591,25 +591,25 @@
       "files": [
         {
           "name": "Query.fsproj",
-          "sha256": "cede2d70f84c645ef1e609e648d1794abdd8d96fb8f0f957a274d11ea2aec212"
+          "sha256": "49978bf3f6e23f7d93cebd7be496f1210a8b6ae507a4a72c72fa5dc185087309"
         },
         {
           "name": "run.sh",
-          "sha256": "dacfb3ef36d757bb66b1c97bacc575348e2466866dee63d53b95895932f8e40b"
+          "sha256": "539612132bce53a3340847989cdb414e4661d5285ff9ea7ba1da2de53c7f4d51"
         },
         {
           "name": "Layout.fs",
-          "sha256": "bb000c5be099288ee305204d32533c6296c498225654968698db282a4859ddc7"
+          "sha256": "8e979ee22c24dd0e26d66a3be41e1b8ad494e4c64df5c3b910347eab822f3c36"
         },
         {
           "name": "ReuseLayout.fs",
-          "sha256": "1b81e1fdf0b1a8346c9c5cf10add566798dc07c5418fed049d0a291c03d7b313"
+          "sha256": "abc68b09c62e636380196ed613f8672213bf84a5975a5e3ea782ca74fd1e51ba"
         }
       ],
       "shellRecipe": [
         "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Layout",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=ReuseLayout"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout \\\n    -p:DisableImplicitLibraryPacksFolder=true \\\n    -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Layout",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout \\\n    -p:DisableImplicitLibraryPacksFolder=true \\\n    -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=ReuseLayout"
       ],
       "expectedOutputs": [
         [],
