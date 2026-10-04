@@ -34,11 +34,20 @@ local function must(value, err)
     return value
 end
 
-local socket = assert(os.getenv("LIBTMUX_SOCKET_PATH"), "set LIBTMUX_SOCKET_PATH")
-local binary = assert(os.getenv("TMUX_BIN"), "set TMUX_BIN to the absolute tmux path")
+local socket = assert(
+    os.getenv("LIBTMUX_SOCKET_PATH"),
+    "set LIBTMUX_SOCKET_PATH"
+)
+local binary = assert(
+    os.getenv("TMUX_BIN"),
+    "set TMUX_BIN to the absolute tmux path"
+)
 
 must(adapter.run(function(runtime)
-    local server = must(runtime:connect({ binary = binary, socket_path = socket }):await())
+    local server = must(runtime:connect({
+        binary = binary,
+        socket_path = socket,
+    }):await())
     local snapshot, capture_error = server:snapshot({ strict = true }):await()
     local closed, close_error = server:close():await()
     must(snapshot, capture_error)
