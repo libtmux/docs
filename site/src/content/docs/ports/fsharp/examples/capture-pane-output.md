@@ -30,7 +30,8 @@ open LibTmux
 open LibTmux.FSharp
 
 let capture () = task {
-    let directory = Path.Combine("/tmp/libtmux-dotnet-dev", Guid.NewGuid().ToString("N"))
+    let root = "/tmp/libtmux-dotnet-dev"
+    let directory = Path.Combine(root, Guid.NewGuid().ToString("N"))
     Directory.CreateDirectory(directory) |> ignore
     let errors = ResizeArray<exn>()
     let mutable owned: OwnedServerScope option = None
@@ -51,8 +52,11 @@ let capture () = task {
             NewSessionRequest(Name = "capture", Command = "/bin/sh"), token)
         let! panes = session.GetPanesAsync(token)
         let pane = panes[0]
-        do! pane |> Pane.sendKeys token (SendKeysRequest(
-            Text = "printf '\\nlibtmux capture ready\\n'", Literal = true, Enter = true))
+        let keys = SendKeysRequest(
+            Text = "printf '\\nlibtmux capture ready\\n'",
+            Literal = true,
+            Enter = true)
+        do! pane |> Pane.sendKeys token keys
 
         let elapsed = Stopwatch.StartNew()
         let mutable captured = false
@@ -61,7 +65,8 @@ let capture () = task {
             captured <- Seq.contains "libtmux capture ready" lines
             if not captured then do! Task.Delay(25, token)
         if not captured then
-            raise (TimeoutException("Output did not arrive within five seconds"))
+            let message = "Output did not arrive within five seconds"
+            raise (TimeoutException(message))
         printfn "libtmux capture ready"
     with error -> errors.Add(error)
 
@@ -114,7 +119,8 @@ Save `Capture.fsproj` beside `Program.fs`.
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.fs" />
-    <ProjectReference Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
+    <ProjectReference
+      Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
   </ItemGroup>
 </Project>
 ```
