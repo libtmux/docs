@@ -8,7 +8,7 @@ import type { PagePortLink } from '../../lib/page-port-links'
 import type { Locale } from '../../i18n/locales'
 import type { LocaleStatus } from '../../i18n/resolve'
 import { t } from '../../i18n/ui'
-import { TMUX_VERSIONS, tmuxReference, tmuxReferenceUrl } from '../../lib/tmux-reference'
+import { TMUX_VERSIONS, tmuxManual, tmuxManualVersionUrl } from '../../lib/tmux-manual-data'
 
 interface Props {
   port?: string
@@ -21,10 +21,10 @@ interface Props {
 }
 const { port, version, locale, sourcePath, pagePorts, localeStatuses, reference = false } = Astro.props
 const surfaces = await getDocumentationSurfaces(port, version, locale)
-const command = sourcePath.match(/^tmux\/[^/]+\/reference\/(.+?)\/?$/)?.[1]
+const command = sourcePath.match(/^tmux\/[^/]+\/manual\/(.+?)\/?$/)?.[1]
 const tmuxVersions = !port ? TMUX_VERSIONS.map((entry) => ({
-  label: entry === 'latest' ? `Latest (${tmuxReference(entry).version})` : entry,
-  href: tmuxReferenceUrl(entry, command === 'manual' || tmuxReference(entry).commands.some((item) => item.name === command) ? command : undefined),
+  label: entry === 'latest' ? `Latest (${tmuxManual(entry).version})` : entry,
+  href: tmuxManualVersionUrl(entry, command),
   current: entry === version,
 })) : undefined
 ---

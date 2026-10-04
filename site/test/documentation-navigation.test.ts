@@ -21,7 +21,7 @@ describe('documentation surface navigation', () => {
     const surfaces = await getDocumentationSurfaces(undefined, 'latest')
     expect(surfaces.map((surface) => surface.id)).toEqual(['tmux'])
     expect(surfaces[0].sections.map((section) => section.id)).toEqual(['home', 'manual'])
-    expect(currentDocumentation(surfaces, '/tmux/latest/reference/capture-pane/').section.id).toBe('manual')
+    expect(currentDocumentation(surfaces, '/tmux/latest/manual/capture-pane/').section.id).toBe('manual')
     expect(PORTS.some((port) => port.slug === 'tmux')).toBe(false)
   })
 
@@ -37,9 +37,9 @@ describe('documentation surface navigation', () => {
     const surfaces = await getDocumentationSurfaces(undefined, '3.2a')
     expect(surfaces[0].sections.map(({ label, href }) => ({ label, href }))).toEqual([
       { label: 'Current docs →', href: '/tmux/' },
-      { label: 'Manual', href: '/tmux/3.2a/reference/' },
+      { label: 'Manual', href: '/tmux/3.2a/manual/' },
     ])
-    expect(currentDocumentation(surfaces, '/tmux/3.2a/reference/capture-pane/').section.id).toBe('manual')
+    expect(currentDocumentation(surfaces, '/tmux/3.2a/manual/capture-pane/').section.id).toBe('manual')
   })
 
   it.each(PORTS)('keeps $slug nested app selection and destinations inside the current version', (port) => {

@@ -27,7 +27,7 @@ import { navTree, referenceIndexSections } from '../../lib/api-tree'
 import SymbolName from '../../components/api/SymbolName.astro'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
-import { tmuxReferenceUrl } from '../../lib/tmux-reference'
+import { tmuxManualUrl } from '../../lib/tmux-manual-data'
 
 /**
  * The tree-sitter-extracted reference, rendered through this site's own
@@ -490,7 +490,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
       {
         !owner && !model && (
           <>
-            <p class="mt-3"><a href={tmuxReferenceUrl()}>tmux CLI reference</a>: command flags and behavior by tmux version.</p>
+            <p class="mt-3"><a href={tmuxManualUrl()}>tmux manual</a>: command flags and behavior by tmux version.</p>
             <p class="mt-3 max-w-2xl">
               Choose a language to browse its public types, functions, and
               members, with signatures, examples, and links to related guides.

@@ -3,7 +3,7 @@ import { membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf } from 
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { apiEntryFields, apiMemberGroups } from './api-sections'
-import { tmuxCommandsFor, tmuxReferenceUrl } from './tmux-reference'
+import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
 import { productApiIndex } from './product-api'
 import { defaultVersionFor } from './versions'
 
@@ -84,7 +84,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (ctx.canonical) facts.push(`- **Page:** ${ctx.canonical}`)
   if (facts.length) out.push(...facts, '')
   for (const command of tmuxCommandsFor(model.port, symbol.publicId ?? symbol.id)) {
-    out.push(`tmux command: [\`${command.name}\`](${tmuxReferenceUrl('latest', command.name)})`, '')
+    out.push(`tmux command: [\`${command.name}\`](${tmuxManualUrl('latest', command.name)})`, '')
   }
   if (symbol.apiScope === 'supporting') {
     out.push('This type appears in public signatures. It is not a package entry point.', '')

@@ -1,6 +1,6 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { parseManual } from '../../scripts/gen-tmux-reference.mjs'
-import { buildsTmuxReference, tmuxCommandNotes, tmuxCommandsFor, tmuxGuidesFor, tmuxManualHtml, tmuxPageHeadings, tmuxReference, tmuxReferenceUrl } from '../src/lib/tmux-reference'
+import { parseManual } from '../../scripts/gen-tmux-manual.mjs'
+import { buildsTmuxDocumentation, tmuxCommandNotes, tmuxCommandsFor, tmuxGuidesFor, tmuxManualHtml, tmuxManualHeadings, tmuxManual, tmuxManualUrl, tmuxManualVersionUrl } from '../src/lib/tmux-manual-data'
 import { highlightTmuxManual, linkTmuxManualEntries } from '../src/lib/tmux-manual'
 import { fromHtml } from 'hast-util-from-html'
 import { select, selectAll, type Nodes } from 'astro-expressive-code/hast'
@@ -10,11 +10,11 @@ const contents = (node: Nodes): string => node.type === 'text' ? node.value
 
 afterEach(() => { vi.unstubAllEnvs(); vi.resetModules() })
 
-describe('versioned tmux reference', () => {
+describe('versioned tmux manual', () => {
   beforeAll(async () => { await highlightTmuxManual('<pre>set -g status off</pre>') })
   it.each(['3.2a', '3.7c'])('links every %s definition without colliding keys or losing old targets', (version) => {
-    const original = fromHtml(tmuxReference(version).manual, { fragment: true })
-    const linked = fromHtml(linkTmuxManualEntries(tmuxReference(version).manual), { fragment: true })
+    const original = fromHtml(tmuxManual(version).manual, { fragment: true })
+    const linked = fromHtml(linkTmuxManualEntries(tmuxManual(version).manual), { fragment: true })
     const ids = selectAll('[id]', linked).map((node) => node.properties.id)
     expect(new Set(ids).size).toBe(ids.length)
     for (const node of selectAll('[id]', original)) expect(ids).toContain(node.properties.id)
@@ -30,7 +30,7 @@ describe('versioned tmux reference', () => {
   })
 
   it.each(['3.2a', '3.7c'])('highlights the %s manual without changing example text or destinations', async (version) => {
-    const html = tmuxManualHtml(tmuxReference(version).manual, version)
+    const html = tmuxManualHtml(tmuxManual(version).manual, version)
     const original = fromHtml(html, { fragment: true })
     const rendered = fromHtml(await highlightTmuxManual(html), { fragment: true })
     expect(selectAll('pre:not([data-language="tmux-usage"])', rendered).map(contents))
@@ -58,26 +58,33 @@ describe('versioned tmux reference', () => {
   })
 
   it('keeps version-specific commands and flags separate', () => {
-    const old = tmuxReference('3.2a')
-    const current = tmuxReference('latest')
+    const old = tmuxManual('3.2a')
+    const current = tmuxManual('latest')
     expect(old.commands).toHaveLength(87)
     expect(current.commands).toHaveLength(91)
-    expect(current).toBe(tmuxReference('3.7c'))
+    expect(current).toBe(tmuxManual('3.7c'))
     expect(old.commands.some((command) => command.name === 'new-pane')).toBe(false)
     expect(current.commands.some((command) => command.name === 'new-pane')).toBe(true)
-    const capture = (version: string) => tmuxReference(version).commands.find((command) => command.name === 'capture-pane')!
+    const capture = (version: string) => tmuxManual(version).commands.find((command) => command.name === 'capture-pane')!
     expect(capture('3.2a').usage.split(']')[0]).not.toContain('F')
     expect(capture('3.7c').usage.split(']')[0]).toContain('F')
-    expect(() => tmuxReference('3.99')).toThrow('Unknown tmux reference version')
+    expect(() => tmuxManual('3.99')).toThrow('Unknown tmux manual version')
   })
 
   it('stays in the selected version and the root build', () => {
-    expect(buildsTmuxReference({})).toBe(true)
-    expect(buildsTmuxReference({ LIBTMUX_DOCS_PORT: 'go' })).toBe(false)
-    expect(buildsTmuxReference({ LIBTMUX_DOCS_LOCALE: 'ja' })).toBe(false)
-    const html = tmuxManualHtml(tmuxReference('latest').manual, 'latest')
-    expect(html).toContain(`href="${tmuxReferenceUrl('latest', 'capture-pane')}"`)
+    expect(buildsTmuxDocumentation({})).toBe(true)
+    expect(buildsTmuxDocumentation({ LIBTMUX_DOCS_PORT: 'go' })).toBe(false)
+    expect(buildsTmuxDocumentation({ LIBTMUX_DOCS_LOCALE: 'ja' })).toBe(false)
+    const html = tmuxManualHtml(tmuxManual('latest').manual, 'latest')
+    expect(html).toContain(`href="${tmuxManualUrl('latest', 'capture-pane')}"`)
     expect(html).not.toContain('/tmux/3.7c/')
+  })
+
+  it('preserves real command counterparts and falls back for newer commands', () => {
+    expect(tmuxManualVersionUrl('3.2a', 'capture-pane')).toBe(tmuxManualUrl('3.2a', 'capture-pane'))
+    expect(tmuxManualVersionUrl('3.2a', 'new-pane')).toBe(tmuxManualUrl('3.2a'))
+    expect(tmuxManualVersionUrl('3.7c', 'new-pane')).toBe(tmuxManualUrl('3.7c', 'new-pane'))
+    expect(tmuxManualVersionUrl('3.2a', 'full')).toBe(tmuxManualUrl('3.2a', 'full'))
   })
 
   it('links commands and retains upstream descriptions and license', () => {
@@ -86,11 +93,11 @@ describe('versioned tmux reference', () => {
     const result = parseManual(html, commands, '3.7c')
     expect(result.commands[0].summary).toBe('Capture visible lines.')
     expect(result.commands[0].html).not.toContain('(alias:')
-    expect(result.commands[0].html).toContain('/tmux/3.7c/reference/manual/#FORMATS')
-    expect(result.commands[0].html).toContain('/tmux/3.7c/reference/capture-pane/')
+    expect(result.commands[0].html).toContain('/tmux/3.7c/manual/full/#FORMATS')
+    expect(result.commands[0].html).toContain('/tmux/3.7c/manual/capture-pane/')
     const older = html.replace('(alias: capturep)</div>', '(alias: capturep</div>\n    ) ')
     expect(parseManual(older, commands, '3.2a').commands[0].summary).toBe('Capture visible lines.')
-    expect(tmuxReference('latest').license).toContain('Permission to use, copy, modify, and distribute')
+    expect(tmuxManual('latest').license).toContain('Permission to use, copy, modify, and distribute')
     expect(() => parseManual(html.replace('capture-pane</code>', 'unknown</code>'), commands, '3.7c')).toThrow('Command absent from the manual')
   })
 
@@ -106,8 +113,8 @@ describe('versioned tmux reference', () => {
     vi.stubEnv('LIBTMUX_DOCS_ROOT', '/pr-42/ja')
     vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-42/en')
     vi.resetModules()
-    const { tmuxReferenceUrl: referenceUrl } = await import('../src/lib/tmux-reference')
-    expect(referenceUrl('3.2a', 'capture-pane')).toBe('/pr-42/en/tmux/3.2a/reference/capture-pane/')
+    const { tmuxManualUrl: referenceUrl } = await import('../src/lib/tmux-manual-data')
+    expect(referenceUrl('3.2a', 'capture-pane')).toBe('/pr-42/en/tmux/3.2a/manual/capture-pane/')
   })
 
   it('links verified API concepts without inferring behavior from similar names', () => {
@@ -119,14 +126,14 @@ describe('versioned tmux reference', () => {
   })
 
   it('exports the same command sections and related guides as the page', () => {
-    expect(tmuxPageHeadings('latest', 'capture-pane').map((heading) => heading.slug))
+    expect(tmuxManualHeadings('latest', 'capture-pane').map((heading) => heading.slug))
       .toEqual(['capture-pane-common-uses', 'capture-pane-syntax', 'capture-pane-options',
         'capture-pane-options-output-and-line-range', 'capture-pane-options-text-formatting',
         'capture-pane-options-screens-and-pending-output', 'capture-pane-guides', 'capture-pane-use-from-a-library'])
-    expect(tmuxPageHeadings('latest', 'server-access').map((heading) => heading.slug))
+    expect(tmuxManualHeadings('latest', 'server-access').map((heading) => heading.slug))
       .toEqual(['server-access-syntax', 'server-access-behavior'])
     expect(tmuxGuidesFor('capture-pane').map((guide) => guide.href))
-      .toEqual([tmuxReferenceUrl().replace('/tmux/latest/reference/', '/tmux/guides/capturing-output/')])
-    expect(tmuxPageHeadings('3.2a', 'manual').some((heading) => heading.slug === 'COMMANDS')).toBe(true)
+      .toEqual([tmuxManualUrl().replace('/tmux/latest/manual/', '/tmux/guides/capturing-output/')])
+    expect(tmuxManualHeadings('3.2a', 'full').some((heading) => heading.slug === 'COMMANDS')).toBe(true)
   })
 })

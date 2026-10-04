@@ -5,7 +5,7 @@ import { API_MODELS } from './api-models'
 import { productApiHref, productApiRoots } from './product-api'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { withPortRoot } from './site-root'
-import { tmuxReferenceUrl } from './tmux-reference'
+import { tmuxManualUrl } from './tmux-manual-data'
 
 export interface DocumentationSection {
   id: string
@@ -113,7 +113,7 @@ export function getDocumentationSurfaces(port: string | undefined, version: stri
         { id: 'home', label: current ? 'Home' : 'Current docs →', href: withPortRoot('/tmux/'), items: [] },
         ...(current ? menus : []).flatMap((item) => item.type === 'group' && item.href
           ? [{ id: item.label.toLowerCase(), label: item.label, href: item.href, items: item.items }] : []),
-        { id: 'manual', label: 'Manual', href: tmuxReferenceUrl(version), items: [] },
+        { id: 'manual', label: 'Manual', href: tmuxManualUrl(version), items: [] },
       ]
       sections[0].items = sections.filter((section) => section.href).map((section) => ({
         type: 'link', label: section.label, href: section.href!,

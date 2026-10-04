@@ -9,7 +9,7 @@ afterEach(async () => {
 })
 
 async function contents() {
-  win = new Window({ url: 'https://libtmux.org/en/tmux/latest/reference/capture-pane/#option-h' })
+  win = new Window({ url: 'https://libtmux.org/en/tmux/latest/manual/capture-pane/#option-h' })
   for (const key of ['window', 'document', 'HTMLElement', 'HTMLHeadingElement', 'customElements', 'IntersectionObserver'] as const) {
     vi.stubGlobal(key, key === 'window' ? win : win[key])
   }

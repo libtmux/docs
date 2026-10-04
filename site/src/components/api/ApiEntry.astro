@@ -12,7 +12,7 @@ import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
 import type { AsideType } from '../../lib/aside'
 import { apiEntryFields } from '../../lib/api-sections'
-import { tmuxCommandsFor, tmuxReferenceUrl } from '../../lib/tmux-reference'
+import { tmuxCommandsFor, tmuxManualUrl } from '../../lib/tmux-manual-data'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
 
 /**
@@ -616,7 +616,7 @@ const hasBody =
       <span class="gp-sphinx-api-mentions-label">tmux command</span>
       {tmuxCommands.map((command, i) => <>
         {i > 0 && ', '}
-        <a href={tmuxReferenceUrl('latest', command.name)}><code>{command.name}</code></a>
+        <a href={tmuxManualUrl('latest', command.name)}><code>{command.name}</code></a>
       </>)}
     </p>}
     {

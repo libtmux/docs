@@ -13,7 +13,7 @@ import { localeProse } from '../lib/llms.ts'
 import { documentationAreas } from '../lib/port-documentation.ts'
 import { buildTarget } from '../lib/versions.ts'
 import { referenceIndexSections } from '../lib/api-tree.ts'
-import { tmuxPageDescription, tmuxPageHeadings, tmuxPageTitle, tmuxReferenceRoutes, tmuxReferenceUrl } from '../lib/tmux-reference.ts'
+import { tmuxManualDescription, tmuxManualHeadings, tmuxManualTitle, tmuxManualRoutes, tmuxManualUrl } from '../lib/tmux-manual-data.ts'
 
 /**
  * `/docs.json` — the agent manifest.
@@ -107,11 +107,11 @@ export const GET: APIRoute = async ({ site }) => {
     })
   }
 
-  for (const { version, slug } of tmuxReferenceRoutes()) {
-    const url = `${origin}${tmuxReferenceUrl(version, slug)}`
-    pages.push({ title: tmuxPageTitle(version, slug), description: tmuxPageDescription(version, slug),
-      section: 'tmux CLI reference', url, markdownUrl: markdownPath(url, !slug),
-      headings: tmuxPageHeadings(version, slug).map((heading) => ({ id: heading.slug, level: heading.depth, text: heading.text })) })
+  for (const { version, slug } of tmuxManualRoutes()) {
+    const url = `${origin}${tmuxManualUrl(version, slug)}`
+    pages.push({ title: tmuxManualTitle(version, slug), description: tmuxManualDescription(version, slug),
+      section: 'tmux manual', url, markdownUrl: markdownPath(url, !slug),
+      headings: tmuxManualHeadings(version, slug).map((heading) => ({ id: heading.slug, level: heading.depth, text: heading.text })) })
   }
 
   const manifest = {

@@ -254,7 +254,7 @@ Use a channel name specific to the task. A remembered signal can otherwise
 satisfy an unrelated later wait.
 
 <!-- port:root -->
-The [wait-for reference](/tmux/latest/reference/wait-for/) describes completion
+The [wait-for reference](/tmux/latest/manual/wait-for/) describes completion
 signals and locks for each supported tmux version.
 <!-- /port -->
 

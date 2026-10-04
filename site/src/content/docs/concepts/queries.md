@@ -207,8 +207,8 @@ operation has established that a match exists.
 <!-- port:root -->
 ## tmux command reference
 
-The tmux [list-panes](/tmux/latest/reference/list-panes/) and
-[list-windows](/tmux/latest/reference/list-windows/) references describe native
-format filters. See [formats](/tmux/latest/reference/manual/#FORMATS) for
+The tmux [list-panes](/tmux/latest/manual/list-panes/) and
+[list-windows](/tmux/latest/manual/list-windows/) references describe native
+format filters. See [formats](/tmux/latest/manual/full/#FORMATS) for
 expressions and available variables.
 <!-- /port -->
