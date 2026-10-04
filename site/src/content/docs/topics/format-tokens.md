@@ -120,9 +120,11 @@ not request those fields. A handle resolved by ID alone may therefore lack
 enough data to answer:
 
 ```csharp
-string? title = pane.Title;   // nullable: the ordinary absence case
-int height = pane.Height;     // throws IncompleteSnapshotException instead,
-                               // if this Pane wasn't captured with a full listing
+// nullable: the ordinary absence case
+string? title = pane.Title;
+// throws IncompleteSnapshotException instead, if this Pane wasn't
+// captured with a full listing
+int height = pane.Height;
 ```
 <!-- /port -->
 
