@@ -33,7 +33,8 @@ using System.Threading.Tasks;
 using LibTmux;
 
 string socket = Environment.GetEnvironmentVariable("LIBTMUX_SOCKET_PATH")
-    ?? throw new InvalidOperationException("Set LIBTMUX_SOCKET_PATH to an existing socket");
+    ?? throw new InvalidOperationException(
+        "Set LIBTMUX_SOCKET_PATH to an existing socket");
 using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 Server server = await Server.ConnectAsync(
     new ServerConnectionOptions { SocketPath = socket }, timeout.Token);
