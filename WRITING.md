@@ -130,9 +130,16 @@ program. Select the tmux release through `PATH`; the result records `tmux -V`.
 Use `--example home --port rs` for the homepage's complete Rust program.
 The runner reads the same files and setup shown under **Run this example**,
 checks their hashes against `site/test/fixtures/home-examples.json`, and
-runs them in a new directory. The homepage excerpt combines the program's
-imports and whole task lines; changing executable files requires a new
-native run.
+runs them in a new directory. Add `--view concise`, `--view errors`, or
+`--view cleanup` to verify each checkbox combination; the default is `full`.
+Every view is a complete program, and Copy preserves the selected view.
+Changing executable files requires new native runs for the changed views.
+
+The homepage runner records the private sockets selected by the program.
+It checks automatic cleanup when selected, then stops any surviving owned
+servers so versions without cleanup can also be tested. It never retires
+a pre-existing server. The receipt distinguishes application cleanup from
+the harness's retirement and records the exact files, recipe and view.
 
 Use `--example api --port go --page reference/tmux-newserver` for a complete
 native Go API example. The runner reads the displayed files and commands from

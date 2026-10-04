@@ -1,0 +1,82 @@
+---
+import { Code } from 'astro-expressive-code/components'
+import { HOME_VIEWS, homeCodeColumns, homeProgram } from '../lib/quickstarts'
+import type { HomeExample } from '../lib/quickstarts'
+
+interface Props {
+  port: string
+  language: string
+  example: HomeExample
+}
+const { port, language, example } = Astro.props
+---
+<div class="home-example" data-home-example={port}>
+  <div class="home-example-heading">
+    <h2>Start with {language}</h2>
+    <fieldset class="home-example-options">
+      <legend class="sr-only">Example details</legend>
+      <label><input type="checkbox" data-example-errors /> + Error handling</label>
+      <label><input type="checkbox" data-example-cleanup /> + Cleanup</label>
+    </fieldset>
+  </div>
+  {HOME_VIEWS.map((view) => {
+    const code = homeProgram(example, view).replace(/\n$/, '')
+    return <div
+      class="home-example-view"
+      data-home-view={view}
+      data-home-file={example.program}
+      style={`--home-code-columns: ${homeCodeColumns(code)}`}
+    >
+      <Code code={code} lang={example.lang} frame="none" />
+    </div>
+  })}
+  <details class="home-example-run">
+    <summary>Run this example</summary>
+    <p>{example.prerequisites}</p>
+    <p>Save the program above as <code>{example.program}</code> in a new directory, along with the files below.</p>
+    <p class="home-example-lifetime">
+      <span data-without-cleanup>{example.automaticCleanup ?? 'Cleanup is omitted; the private tmux server may remain running. Select Cleanup to stop it when the program finishes.'}</span>
+      <span data-with-cleanup>The program stops its private tmux server when it finishes.</span>
+      {' '}Error handling adds diagnostics; every version checks required results and deadlines.
+    </p>
+    {example.files.filter((file) => file.name !== example.program).map((file) =>
+      <details class="home-example-file" data-home-file={file.name}>
+        <summary>{file.name}</summary>
+        <Code code={file.code.replace(/\n$/, '')} lang={file.lang} frame="none" />
+      </details>
+    )}
+    <h3>Setup and run</h3>
+    {example.commands.map((command, index) => <div data-home-command={index}>
+      <Code code={command} lang="bash" frame="none" />
+    </div>)}
+    <h3>Expected output</h3>
+    <Code code={example.expectedOutput.replace(/\n$/, '')} lang="text" />
+    <p>Library revision: <a href={`https://github.com/${example.sourceRepository}/tree/${example.sourceRevision}`}>{example.sourceRevision.slice(0, 12)}</a>.</p>
+  </details>
+</div>
+
+<style>
+  .home-example-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem; margin-bottom: .85rem; }
+  h2 { font-size: 1rem; font-weight: 600; }
+  .home-example-options { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem 1rem; margin: 0; padding: 0; border: 0; font-size: .8125rem; }
+  .home-example-options label { display: inline-flex; align-items: center; gap: .375rem; white-space: nowrap; cursor: pointer; }
+  .home-example-options input { accent-color: var(--color-link); }
+  .home-example-view { display: none; }
+  .home-example:not(:has([data-example-errors]:checked)):not(:has([data-example-cleanup]:checked)) [data-home-view="concise"],
+  .home-example:has([data-example-errors]:checked):not(:has([data-example-cleanup]:checked)) [data-home-view="errors"],
+  .home-example:not(:has([data-example-errors]:checked)):has([data-example-cleanup]:checked) [data-home-view="cleanup"],
+  .home-example:has([data-example-errors]:checked):has([data-example-cleanup]:checked) [data-home-view="full"] { display: block; }
+  .home-example-view :global(.expressive-code) {
+    --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * .625)), .9375rem);
+  }
+  [data-with-cleanup] { display: none; }
+  .home-example:has([data-example-cleanup]:checked) [data-with-cleanup] { display: inline; }
+  .home-example:has([data-example-cleanup]:checked) [data-without-cleanup] { display: none; }
+  .home-example-run { margin-top: .8rem; font-size: .8125rem; color: var(--color-muted); }
+  summary { cursor: pointer; }
+  p { margin-top: .75rem; }
+  .home-example-file, h3 { margin-top: 1rem; }
+  .home-example-file > summary { margin-bottom: .5rem; font-family: var(--font-ibm-plex-mono); }
+  h3 { margin-bottom: .5rem; font-weight: 600; }
+  [data-home-command] + [data-home-command] { margin-top: .75rem; }
+</style>

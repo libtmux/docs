@@ -1,6 +1,6 @@
 import HOME_EXAMPLES from '../data/home-examples.json'
 
-/** Homepage excerpts and their complete, native-verified programs. */
+/** Complete homepage programs and their selectable detail levels. */
 export interface Quickstart {
   /** Shiki language id for the block. */
   lang: string
@@ -22,24 +22,30 @@ export interface HomeExample {
   prerequisites: string
   commands: string[]
   expectedOutput: string
+  variants: Record<Exclude<HomeView, 'full'>, string>
+  automaticCleanup?: string
 }
 
-/** Select only complete source lines; the full executable files stay available. */
-export function homeExcerpt(example: HomeExample): string {
+export const HOME_VIEWS = ['concise', 'errors', 'cleanup', 'full'] as const
+export type HomeView = typeof HOME_VIEWS[number]
+
+/** Each view is a complete program, including its imports and initialization. */
+export function homeProgram(example: HomeExample, view: HomeView): string {
   const program = example.files.find((file) => file.name === example.program)
   if (!program) throw new Error(`Missing homepage program ${example.program}`)
-  const { startLine, endLine, dedent, importsEndLine } = example.excerpt
-  const lines = program.code.split('\n')
-  const imports = lines.slice(0, importsEndLine).join('\n')
-  const task = lines.slice(startLine - 1, endLine)
-    .map((line) => line.trim() ? line.slice(dedent) : '').join('\n')
-  return imports ? `${imports}\n\n${task}` : task
+  return view === 'full' ? program.code : example.variants[view]
+}
+
+export function homeCodeColumns(code: string): number {
+  return Math.max(...code.split('\n').map((line) => Array.from(line).reduce(
+    (column, char) => column + (char === '\t' ? 8 - column % 8 : 1), 0,
+  )))
 }
 
 export const QUICKSTARTS: Partial<Record<string, Quickstart>> = Object.fromEntries(
   Object.entries(HOME_EXAMPLES).map(([port, complete]) => [port, {
     lang: complete.lang,
-    code: homeExcerpt(complete),
+    code: homeProgram(complete, 'concise').replace(/\n$/, ''),
     source: `Verified against ${complete.sourceRepository} at ${complete.sourceRevision.slice(0, 12)}.`,
     complete,
   }]),

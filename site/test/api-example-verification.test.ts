@@ -69,6 +69,111 @@ print(json.dumps(runner.api_command_blocks(blocks, {})))`)).toEqual(['setup'])
   })
 })
 
+describe('homepage native verification ownership', () => {
+  it('preserves an existing parent when a probed socket was never created', () => {
+    expect(python(`
+import os, sys, tempfile
+from unittest.mock import patch
+sys.path.insert(0, str(pathlib.Path('scripts').resolve()))
+from example_tmux_sandbox import ExampleTmuxSandbox
+with tempfile.TemporaryDirectory(prefix='home-parent-test-') as directory:
+    output = pathlib.Path(directory)
+    parent = output / 'pre-existing'
+    parent.mkdir()
+    with patch('example_tmux_sandbox.shutil.which', return_value='/bin/true'):
+        sandbox = ExampleTmuxSandbox(output, dict(os.environ))
+    sandbox.trace.write_text(json.dumps(dict(socket=str(parent / 'absent.sock'), existed=False)) + '\\n')
+    sandbox.finish(True)
+    print(json.dumps(parent.is_dir()))`)).toBe(true)
+  })
+
+  it('does not treat permission errors and timeouts as proof of socket exit', () => {
+    expect(python(`
+import errno, sys
+from unittest.mock import patch
+sys.path.insert(0, str(pathlib.Path('scripts').resolve()))
+from example_tmux_sandbox import socket_running
+with patch('example_tmux_sandbox.socket.socket') as socket:
+    connect = socket.return_value.__enter__.return_value.connect
+    for failure in [PermissionError(errno.EACCES, 'denied'), TimeoutError()]:
+        connect.side_effect = failure
+        try:
+            socket_running('/private/unverified.sock')
+        except type(failure):
+            pass
+        else:
+            raise AssertionError('ambiguous socket reported stopped')
+    for number in [errno.ENOENT, errno.ECONNREFUSED]:
+        connect.side_effect = OSError(number, 'stopped')
+        assert not socket_running('/private/stopped.sock')
+print(json.dumps(True))`)).toBe(true)
+  })
+
+  it('kills surviving descendants even when their shell already exited', () => {
+    expect(python(`
+import signal
+from unittest.mock import Mock, call, patch
+process = Mock(pid=12345)
+process.wait.return_value = 0
+with patch.object(runner.os, 'killpg') as kill:
+    runner.stop_process_group(process)
+    assert kill.call_args_list == [call(12345, signal.SIGTERM), call(12345, signal.SIGKILL)]
+print(json.dumps(True))`)).toBe(true)
+  })
+
+  it('records joined socket flags without changing the tmux arguments', () => {
+    expect(python(`
+import os, sys, tempfile
+from unittest.mock import patch
+sys.path.insert(0, str(pathlib.Path('scripts').resolve()))
+from example_tmux_sandbox import ExampleTmuxSandbox
+with tempfile.TemporaryDirectory(prefix='home-native-test-') as directory:
+    output = pathlib.Path(directory)
+    with patch('example_tmux_sandbox.shutil.which', return_value='/bin/true'):
+        sandbox = ExampleTmuxSandbox(output, dict(os.environ))
+    recorded = output / 'argv.json'
+    fake = output / 'fake-tmux'
+    fake.write_text('#!' + sys.executable + '\\nimport json, sys\\n' +
+                   'open(' + repr(str(recorded)) + ', "w").write(json.dumps(sys.argv[1:]))\\n')
+    fake.chmod(0o700)
+    wrapper = output / 'native-tools/tmux'
+    wrapper.write_text(wrapper.read_text().replace(repr(sandbox.binary), repr(str(fake))))
+    socket = output / 'owned.sock'
+    args = ['-S' + str(socket), '-f', '/dev/null', 'list-sessions']
+    import subprocess
+    subprocess.run([str(wrapper), *args], env=sandbox.env, check=True)
+    assert json.loads(recorded.read_text()) == args
+    trace = json.loads(sandbox.trace.read_text())
+    assert trace['socket'] == str(socket) and not trace['existed']
+    report = sandbox.finish(True)
+    assert report['passed']
+    print(json.dumps(report['endpoints'][0]['runningAfterHarness']))`)).toBe(false)
+  })
+
+  it('fails verification without stopping or unlinking a pre-existing socket', () => {
+    expect(python(`
+import os, socket, sys, tempfile
+from unittest.mock import patch
+sys.path.insert(0, str(pathlib.Path('scripts').resolve()))
+from example_tmux_sandbox import ExampleTmuxSandbox
+with tempfile.TemporaryDirectory(prefix='home-foreign-test-') as directory:
+    output = pathlib.Path(directory)
+    path = output / 'foreign.sock'
+    with patch('example_tmux_sandbox.shutil.which', return_value='/bin/true'):
+        sandbox = ExampleTmuxSandbox(output, dict(os.environ))
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+        listener.bind(str(path))
+        listener.listen()
+        sandbox.trace.write_text(json.dumps(dict(socket=str(path), existed=True)) + '\\n')
+        with patch('example_tmux_sandbox.subprocess.run') as stop:
+            report = sandbox.finish(False)
+            stop.assert_not_called()
+        assert path.exists()
+        assert report['endpoints'][0]['runningAfterHarness']
+        print(json.dumps(report['passed']))`)).toBe(false)
+  })
+})
+
 describe('API example source and clipboard receipts', () => {
   const fixture = () => {
     const revision = 'a'.repeat(40)

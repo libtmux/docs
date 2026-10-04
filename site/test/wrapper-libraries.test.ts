@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PORTS, PORT_BY_SLUG, portSourceUrl, productAvailable } from '../src/lib/ports'
 import { documentationAreas } from '../src/lib/port-documentation'
 import { LANG_TO_PORT, remarkPortCode } from '../src/plugins/remark-port-code.mjs'
-import { QUICKSTARTS } from '../src/lib/quickstarts'
+import { HOME_VIEWS, homeProgram, QUICKSTARTS } from '../src/lib/quickstarts'
 import HOME_EXAMPLES from '../src/data/home-examples.json'
 import HOME_PROOF from './fixtures/home-examples.json'
 import { createHash } from 'node:crypto'
@@ -106,6 +106,7 @@ describe('wrapper library identities', () => {
 })
 
 describe('quickstart display formatting', () => {
+  const views = PORTS.flatMap((port) => HOME_VIEWS.map((view) => ({ ...port, view })))
   const columns = (line: string) => [...line].reduce(
     (column, char) => column + (char === '\t' ? 8 - column % 8 : 1), 0,
   )
@@ -114,22 +115,20 @@ describe('quickstart display formatting', () => {
     expect(HOME_PROOF.examples.map((example) => example.port).sort()).toEqual(Object.keys(HOME_EXAMPLES).sort())
   })
 
-  it.each(PORTS)('$slug displays its setup and cleanup along with the task', ({ slug }) => {
+  it.each(PORTS)('$slug defaults to its complete concise program', ({ slug }) => {
     const example = HOME_EXAMPLES[slug as keyof typeof HOME_EXAMPLES]
-    const program = example.files.find((file) => file.name === example.program)!
-    expect(QUICKSTARTS[slug]!.code).toBe(program.code.trimEnd())
+    expect(QUICKSTARTS[slug]!.code).toBe(example.variants.concise.replace(/\n$/, ''))
   })
 
-  it.each(PORTS)('$slug runs without a bootstrap script or positional inputs', ({ slug }) => {
+  it.each(views)('$slug/$view runs without a bootstrap script or positional inputs', ({ slug, view }) => {
     const example = HOME_EXAMPLES[slug as keyof typeof HOME_EXAMPLES]
-    const program = example.files.find((file) => file.name === example.program)!
     expect(example.files.map((file) => file.name)).not.toContain('run.sh')
     expect(example.commands.join('\n')).not.toContain('sh run.sh')
-    expect(program.code).not.toMatch(/\b(?:args|argv)\s*(?:\[\d+\]|\(\d+\))|CommandLine\.arguments|TMUX_SOCKET/)
+    expect(homeProgram(example, view)).not.toMatch(/\b(?:args|argv)\s*(?:\[\d+\]|\(\d+\))|CommandLine\.arguments|TMUX_SOCKET/)
   })
 
-  it.each(PORTS)('$slug fits 80 columns, including expanded tabs', ({ slug }) => {
-    const code = QUICKSTARTS[slug]?.code
+  it.each(views)('$slug/$view fits 80 columns, including expanded tabs', ({ slug, view }) => {
+    const code = homeProgram(HOME_EXAMPLES[slug as keyof typeof HOME_EXAMPLES], view)
     expect(code, slug).toBeTruthy()
     for (const [index, line] of code!.split('\n').entries()) {
       expect(columns(line), `${slug}:${index + 1} ${line}`).toBeLessThanOrEqual(80)
@@ -143,7 +142,14 @@ describe('quickstart display formatting', () => {
     expect(complete.sourceTree).toBe(proof.sourceTree)
     expect(complete.commands).toEqual(proof.shellRecipe)
     expect(complete.files.map((file) => ({ name: file.name, sha256: hash(file.code), clipboardSha256: hash(file.code.replace(/\n$/, '')) }))).toEqual(proof.files)
-    expect(hash(QUICKSTARTS[proof.port]!.code)).toBe(proof.excerptSha256)
+    expect(hash(homeProgram(complete, 'full').replace(/\n$/, ''))).toBe(proof.excerptSha256)
+    for (const view of HOME_VIEWS.filter((item) => item !== 'full')) {
+      const code = homeProgram(complete, view)
+      const files = complete.files.map((file) => file.name === complete.program ? { ...file, code } : file)
+      expect(files.map((file) => ({ name: file.name, sha256: hash(file.code), clipboardSha256: hash(file.code.replace(/\n$/, '')) }))).toEqual(proof.variants[view].files)
+      expect(hash(code.replace(/\n$/, ''))).toBe(proof.variants[view].excerptSha256)
+      expect(code, `${proof.port}/${view} must offer a distinct program`).not.toBe(homeProgram(complete, 'full'))
+    }
   })
 
   it('counts tab stops rather than treating tabs as one character', () => {

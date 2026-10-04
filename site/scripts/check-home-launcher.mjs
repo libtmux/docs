@@ -188,46 +188,60 @@ export async function checkHomeLauncher(browser, base) {
       await choose(proof.port)
       const panel = page.locator(`.home-examples > [data-home-language="${proof.port}"]`)
       const rendered = await panel.evaluate((element) => ({
-        excerpt: element.querySelector(':scope > .expressive-code [data-code]').getAttribute('data-code').replaceAll('\x7f', '\n'),
-        files: [...element.querySelectorAll('[data-home-file]')].map((file) => ({
+        files: [...element.querySelectorAll('.home-example-run [data-home-file]')].map((file) => ({
           name: file.dataset.homeFile,
           code: file.querySelector('[data-code]').getAttribute('data-code').replaceAll('\x7f', '\n'),
         })),
         commands: [...element.querySelectorAll('[data-home-command] [data-code]')].map((button) => button.getAttribute('data-code').replaceAll('\x7f', '\n')),
       }))
       const hash = (text) => createHash('sha256').update(text).digest('hex')
-      assert.equal(hash(rendered.excerpt), proof.excerptSha256, `${proof.port}: exact excerpt copy payload`)
-      assert.deepEqual(rendered.files.map((file) => ({ name: file.name, sha256: hash(file.code) })), proof.files.map((file) => ({ name: file.name, sha256: file.clipboardSha256 })), `${proof.port}: complete native-verified file copy payloads`)
       assert.deepEqual(rendered.commands, proof.shellRecipe, `${proof.port}: exact setup and run copy payloads`)
-      const pre = panel.locator(':scope > .expressive-code pre')
-      const width = await pre.evaluate(async (element) => {
-        // Container-query sizes settle after a previously hidden panel is painted.
-        await new Promise(requestAnimationFrame)
-        await new Promise(requestAnimationFrame)
-        await document.fonts.ready
-        await new Promise(requestAnimationFrame)
-        return { available: element.clientWidth, content: element.scrollWidth,
-          font: getComputedStyle(element.querySelector('code')).fontSize,
-          gutter: getComputedStyle(element).scrollbarGutter,
-          container: getComputedStyle(element).containerType,
-          columns: element.closest('[data-home-language]').style.getPropertyValue('--home-code-columns'),
-          lines: [...element.querySelectorAll('.code')].map((line) => {
-            const range = document.createRange(); range.selectNodeContents(line)
-            return { text: line.textContent, width: range.getBoundingClientRect().width,
-              font: getComputedStyle(line).font, padding: getComputedStyle(line).padding }
-          }).sort((a, b) => b.width - a.width).slice(0, 2) }
-      })
-      assert(width.content <= width.available + 1, `${proof.port}: no horizontal scrollbar at 1093px ${JSON.stringify(width)}`)
+      for (const view of ['concise', 'errors', 'cleanup', 'full']) {
+        await panel.locator('[data-example-errors]').setChecked(view === 'errors' || view === 'full')
+        await panel.locator('[data-example-cleanup]').setChecked(view === 'cleanup' || view === 'full')
+        const selected = panel.locator(`[data-home-view="${view}"]`)
+        assert.equal(await panel.locator('[data-home-view]:visible').count(), 1, `${proof.port}/${view}: exactly one complete program is shown`)
+        assert(await selected.isVisible(), `${proof.port}/${view}: the selected program is shown`)
+        const binding = view === 'full' ? proof : proof.variants[view]
+        const main = await selected.locator('[data-code]').getAttribute('data-code')
+        const codeText = main.replaceAll('\x7f', '\n')
+        assert.equal(hash(codeText), binding.excerptSha256, `${proof.port}/${view}: exact visible program`)
+        await page.evaluate(() => { window.__homeCopiedPrompt = null })
+        await selected.locator('[data-code]').click()
+        assert.equal(await page.evaluate(() => window.__homeCopiedPrompt), codeText, `${proof.port}/${view}: Copy matches the visible program`)
+        const files = [{ name: await selected.getAttribute('data-home-file'), code: codeText }, ...rendered.files]
+        const byName = (a, b) => a.name.localeCompare(b.name)
+        assert.deepEqual(files.map((file) => ({ name: file.name, sha256: hash(file.code) })).sort(byName), binding.files.map((file) => ({ name: file.name, sha256: file.clipboardSha256 })).sort(byName), `${proof.port}/${view}: complete native-verified file copy payloads`)
+        const pre = selected.locator('pre')
+        const width = await pre.evaluate(async (element) => {
+          // Container-query sizes settle after a previously hidden panel is painted.
+          await new Promise(requestAnimationFrame)
+          await new Promise(requestAnimationFrame)
+          await document.fonts.ready
+          await new Promise(requestAnimationFrame)
+          return { available: element.clientWidth, content: element.scrollWidth,
+            font: getComputedStyle(element.querySelector('code')).fontSize,
+            gutter: getComputedStyle(element).scrollbarGutter,
+            container: getComputedStyle(element).containerType,
+            columns: element.closest('[data-home-view]').style.getPropertyValue('--home-code-columns'),
+            lines: [...element.querySelectorAll('.code')].map((line) => {
+              const range = document.createRange(); range.selectNodeContents(line)
+              return { text: line.textContent, width: range.getBoundingClientRect().width,
+                font: getComputedStyle(line).font, padding: getComputedStyle(line).padding }
+            }).sort((a, b) => b.width - a.width).slice(0, 2) }
+        })
+        assert(width.content <= width.available + 1, `${proof.port}/${view}: no horizontal scrollbar at 1093px ${JSON.stringify(width)}`)
+      }
     }
     await choose('rs')
-    const code = page.locator('.home-examples > [data-home-language="rs"] > .expressive-code pre code')
+    const code = page.locator('.home-examples > [data-home-language="rs"] [data-home-view="full"] pre code')
     const fontSizes = []
     for (const width of [906, 1135, 1920]) {
       await page.setViewportSize({ width, height: 777 })
       const layout = await page.evaluate(() => {
         const intro = document.querySelector('.home-intro').getBoundingClientRect()
         const examples = document.querySelector('.home-examples').getBoundingClientRect()
-        const font = getComputedStyle(document.querySelector('.home-examples [data-home-language="rs"] pre code')).fontSize
+        const font = getComputedStyle(document.querySelector('.home-examples [data-home-language="rs"] [data-home-view="full"] pre code')).fontSize
         return { intro: intro.width, examples: examples.width, font: parseFloat(font) }
       })
       assert(layout.intro <= 320.5, `${width}: intro stops at 20rem`)
@@ -282,6 +296,13 @@ export async function checkHomeLauncher(browser, base) {
     const page = await noScript.newPage()
     await page.goto(`${base}/`)
     const picker = page.locator('[data-home-launcher] [data-page-port-switcher]')
+    const example = page.locator('[data-home-example="py"]')
+    for (const view of ['concise', 'errors', 'cleanup', 'full']) {
+      await example.locator('[data-example-errors]').setChecked(view === 'errors' || view === 'full')
+      await example.locator('[data-example-cleanup]').setChecked(view === 'cleanup' || view === 'full')
+      assert.equal(await example.locator('[data-home-view]:visible').count(), 1, 'No-JS shows one selected program')
+      assert(await example.locator(`[data-home-view="${view}"]`).isVisible(), `No-JS supports ${view}`)
+    }
     await picker.locator('summary').click()
     await checkHomeLanguageIcon(page)
     assert.equal(await picker.locator('a[data-port]:visible').count(), PORTS.length, 'No-JS still exposes real language links')
@@ -294,5 +315,5 @@ export async function checkHomeLauncher(browser, base) {
   }
   await checkHomeHover(browser, base)
   await checkHomeTaskReset(browser, base)
-  console.log('Homepage: 13 languages, owned solutions, shared URLs, reset, blocked storage, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS')
+  console.log('Homepage: 13 languages, 52 complete selectable programs/copy, owned solutions, shared URLs, reset, blocked storage, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS')
 }

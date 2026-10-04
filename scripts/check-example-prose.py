@@ -14,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import re
+import signal
 import subprocess
 import time
 
@@ -42,6 +43,23 @@ def api_command_blocks(blocks, example):
     return [blocks[index]['code'] for index in indices]
 
 
+def stop_process_group(process):
+    """Stop a timed-out command and descendants, even if its shell exits first."""
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        pass
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    process.wait()
+
+
 def main():
     repo = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description=__doc__)
@@ -49,19 +67,30 @@ def main():
     parser.add_argument('--port')
     parser.add_argument('--page', help='Guide path, or page within the selected port')
     parser.add_argument('--program', help='Source program ID when an API page has several complete examples')
+    parser.add_argument('--view', choices=['concise', 'errors', 'cleanup', 'full'],
+                        help='Homepage detail selection (default: full)')
     parser.add_argument('--api-model', type=Path, help='Review model for an unpublished source revision')
     parser.add_argument('--output-dir', required=True, type=Path)
+    parser.add_argument('--timeout', type=float, default=600,
+                        help='Maximum seconds per setup/run command (default: 600)')
     args = parser.parse_args()
+    if args.timeout <= 0:
+        parser.error('--timeout must be positive')
     manifest = json.loads((repo / f'site/test/fixtures/{args.example}-examples.json').read_text())
     if args.example != 'guide' and not args.port:
         parser.error('--port is required for language examples')
     if args.program and args.example != 'api':
         parser.error('--program is only valid for API examples')
+    if args.view and args.example != 'home':
+        parser.error('--view is only valid for homepage examples')
     examples = select_examples(manifest, args.example, args.port, args.page, args.program)
     if len(examples) != 1:
         choices = ', '.join(item['page'] for item in examples)
         parser.error(f'Choose one example with --port, --page and optionally --program; matching pages: {choices or "none"}')
     example = examples[0]
+    view = args.view or 'full'
+    if args.example == 'home' and view != 'full':
+        example = dict(example, **example['variants'][view])
     if args.api_model and args.example != 'api':
         parser.error('--api-model is only valid for API examples')
     if args.example == 'home':
@@ -94,7 +123,8 @@ def main():
         if path.is_absolute() or '..' in path.parts:
             raise ValueError(f'Invalid example filename: {name}')
         if args.example == 'home':
-            matches = [file['code'] for file in home['files'] if file['name'] == name]
+            matches = [home['variants'][view] if view != 'full' and name == home['program']
+                       else file['code'] for file in home['files'] if file['name'] == name]
         elif args.example == 'api':
             block_index = item['block']
             matches = [api_blocks[block_index]['code']] if 0 <= block_index < len(api_blocks) else []
@@ -129,19 +159,37 @@ def main():
     env = dict(os.environ)
     env.pop('TMUX', None)
     env.pop('TMUX_PANE', None)
+    sandbox = None
+    if args.example == 'home':
+        from example_tmux_sandbox import ExampleTmuxSandbox
+        sandbox = ExampleTmuxSandbox(output, env)
+    if sandbox:
+        env = sandbox.env
     results = []
-    for index, command in enumerate(commands):
-        start = time.monotonic()
-        log = output / f'run-{index + 1}.log'
-        print(f'Running {example["page"]}; log: {log}', flush=True)
-        with log.open('w') as stream:
-            result = subprocess.run(['sh', '-eu', '-c', command], cwd=output,
-                                    env=env, stdout=stream, stderr=subprocess.STDOUT)
-        missing = [line for line in expected[index] if line not in log.read_text().splitlines()]
-        results.append({'command': command, 'exit': result.returncode,
-                        'seconds': round(time.monotonic() - start, 3), 'missingOutput': missing})
-        if result.returncode or missing:
-            break
+    try:
+        for index, command in enumerate(commands):
+            start = time.monotonic()
+            log = output / f'run-{index + 1}.log'
+            print(f'Running {example["page"]}; log: {log}', flush=True)
+            timed_out = False
+            with log.open('w') as stream:
+                process = subprocess.Popen(
+                    ['sh', '-eu', '-c', command], cwd=output, env=env,
+                    stdout=stream, stderr=subprocess.STDOUT, start_new_session=True,
+                )
+                try:
+                    exit_code = process.wait(timeout=args.timeout)
+                except subprocess.TimeoutExpired:
+                    timed_out = True
+                    stop_process_group(process)
+                    exit_code = 124
+            missing = [line for line in expected[index] if line not in log.read_text().splitlines()]
+            results.append({'command': command, 'exit': exit_code, 'timedOut': timed_out,
+                            'seconds': round(time.monotonic() - start, 3), 'missingOutput': missing})
+            if exit_code or missing:
+                break
+    finally:
+        cleanup = sandbox.finish(view in ('cleanup', 'full')) if sandbox else None
     passed = len(results) == len(commands) and all(
         row['exit'] == 0 and not row['missingOutput'] for row in results)
     report = {'port': example['port'], 'page': example['page'], 'sourceRevision': example['sourceRevision'],
@@ -151,6 +199,10 @@ def main():
               'scope': 'Exact displayed program and setup; native execution on this host.'}
     if example.get('sourceProgramId'):
         report['sourceProgramId'] = example['sourceProgramId']
+    if sandbox:
+        report['view'] = view
+        report['cleanup'] = cleanup
+        report['passed'] = passed = passed and cleanup['passed']
     (output / 'result.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
     return 0 if passed else 1
