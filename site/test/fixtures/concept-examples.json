@@ -684,19 +684,19 @@
         },
         {
           "name": "run.sh",
-          "sha256": "c198606b019bc0d077c83c90032b6e690ed1901c718ddd0cbe8f88e0a077ec40"
+          "sha256": "212bee33d44fad20f36118e2f0e50611736c1bc18dea88281e07ff15a88a3031"
         },
         {
           "name": "Local.go",
-          "sha256": "cdc231b445cf0ed10e74ddc80c486da7beaf46fe115f3b9072edef27a09c5305"
+          "sha256": "f987027fd532bbbf41ea4422a42411cb96019d69033d9552aee2e003ac19ce68"
         },
         {
           "name": "Cardinality.go",
-          "sha256": "6ccab5e42c7b50a29147d0066d0d3b3a113a9531449a17bf8dcb4913b63e4f5f"
+          "sha256": "69b6a6e1cabaa510b6ca438cad16704053c7d7b9995f6510a805fc558ba3ff85"
         },
         {
           "name": "Relations.go",
-          "sha256": "b68f5614cdd02bb8a9835c94fa00c588e2cfe412248a30be9ef1d7f298b3c9a8"
+          "sha256": "22fba1cfedbb44c91e4f79ffdf559ebf6e3245b7c619df70ed4270edabeea8c9"
         }
       ],
       "shellRecipe": [
