@@ -41,7 +41,10 @@ object Capture {
       Using.resource(Server.open(config)) { server =>
         try {
           val session = server.newSession(SessionSpec.builder()
-            .named("capture").running("/bin/sh").env("ENV", "/dev/null").build())
+            .named("capture")
+            .running("/bin/sh")
+            .env("ENV", "/dev/null")
+            .build())
           val pane = session.windows.head.panes.head
           pane.sendLine("printf '\\nlibtmux capture ready\\n'")
           val deadline = System.nanoTime() + Duration.ofSeconds(5).toNanos
@@ -51,7 +54,8 @@ object Capture {
             if (!captured) Thread.sleep(25)
           }
           if (!captured)
-            throw new IllegalStateException("Output did not arrive within five seconds")
+            throw new IllegalStateException(
+              "Output did not arrive within five seconds")
           println("libtmux capture ready")
         } catch {
           case error: Throwable =>
