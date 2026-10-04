@@ -520,7 +520,7 @@
       "files": [
         {
           "name": "capture.lua",
-          "sha256": "a557a96fa3513a318cf6c17ac286d5629b1ffc05c53a466658a22a41891da89f"
+          "sha256": "5ab26d6084e67ba36d9b20cc0c8e72640ad23b0117ac1fa6e0d0b49098715307"
         },
         {
           "name": "run.sh",
