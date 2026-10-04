@@ -23,8 +23,9 @@ export function rehypeRowAnchors() {
         const depth = Number(node.tagName[1])
         sections.length = depth
         sections[depth - 1] = String(node.properties.id ?? textOf(node))
-        section = sections.filter(Boolean).reduce((path, id) =>
-          !path || id.startsWith(`${path}-`) ? id : `${path}-${id}`, '')
+        section = sections
+          .filter(Boolean)
+          .reduce((path, id) => (!path || id.startsWith(`${path}-`) ? id : `${path}-${id}`), '')
         sectionName = textOf(node)
       }
       if (node.tagName !== 'tr' || (parent as Element)?.tagName === 'thead') return
@@ -41,13 +42,23 @@ export function rehypeRowAnchors() {
       }
       used.add(id)
       node.properties.id = id
-      node.properties.className = [...(Array.isArray(node.properties.className) ? node.properties.className : []), 'anchored-entry']
-      cell.properties.className = [...(Array.isArray(cell.properties.className) ? cell.properties.className : []), 'row-anchor-cell']
+      node.properties.className = [
+        ...(Array.isArray(node.properties.className) ? node.properties.className : []),
+        'anchored-entry',
+      ]
+      cell.properties.className = [
+        ...(Array.isArray(cell.properties.className) ? cell.properties.className : []),
+        'row-anchor-cell',
+      ]
       cell.children.push({
-        type: 'element', tagName: 'a',
+        type: 'element',
+        tagName: 'a',
         properties: {
-          href: `#${id}`, className: ['row-anchor-link'], dataRowPermalink: true,
-          dataPagefindIgnore: 'all', ariaLabel: `Link to ${label} in ${sectionName}`,
+          href: `#${id}`,
+          className: ['row-anchor-link'],
+          dataRowPermalink: true,
+          dataPagefindIgnore: 'all',
+          ariaLabel: `Link to ${label} in ${sectionName}`,
         },
         children: [{ type: 'text', value: '¶' }],
       })

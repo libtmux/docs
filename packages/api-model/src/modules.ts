@@ -50,9 +50,5 @@ export function modulesIn(model: ApiModelBase): { name: string; symbols: ApiSymb
       name,
       symbols: symbols.sort((a, b) => a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name)),
     }))
-    .sort(
-      (a, b) =>
-        a.name.split(/[.:]+/).length - b.name.split(/[.:]+/).length ||
-        a.name.localeCompare(b.name),
-    )
+    .sort((a, b) => a.name.split(/[.:]+/).length - b.name.split(/[.:]+/).length || a.name.localeCompare(b.name))
 }

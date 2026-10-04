@@ -17,18 +17,27 @@ func ExampleServer_Sessions_complete() {
 }
 `
 const symbol = (): ApiSymbol => ({
-  id: 'tmux.Server.Sessions', name: 'Sessions', kind: 'method', parent: 'tmux.Server',
-  source: { file: 'tmux/hierarchy.go', line: 7 }, signatures: [],
+  id: 'tmux.Server.Sessions',
+  name: 'Sessions',
+  kind: 'method',
+  parent: 'tmux.Server',
+  source: { file: 'tmux/hierarchy.go', line: 7 },
+  signatures: [],
   doc: { summary: 'Original contract.', examples: [{ lang: 'go', code: 'existing' }] },
 })
 
 describe('complete native Go examples', () => {
   it('attaches exact file bytes, description, dependency pin, and native run command', async () => {
     const examples = await readCompleteGoExamples([{ file, code }])
-    expect(examples).toEqual([{
-      symbol: 'tmux.Server.Sessions', file, code, output: 'sessions: 2',
-      intro: 'List sessions from the server.\nKeep the returned records for later inspection.',
-    }])
+    expect(examples).toEqual([
+      {
+        symbol: 'tmux.Server.Sessions',
+        file,
+        code,
+        output: 'sessions: 2',
+        intro: 'List sessions from the server.\nKeep the returned records for later inspection.',
+      },
+    ])
     const target = symbol()
     attachCompleteGoExamples([target], examples, source)
     expect(target.id).toBe('tmux.Server.Sessions')
@@ -36,7 +45,9 @@ describe('complete native Go examples', () => {
     const blocks = target.doc!.examples!
     expect(blocks.map((block) => block.lang)).toEqual(['go', 'console', 'go', 'go', 'console'])
     expect(blocks[0].code).toBe('existing')
-    expect(blocks[1].code).toBe(`$ git clone https://github.com/libtmux/libtmux-go.git libtmux-source && \\\n  git -C libtmux-source checkout ${source.revision}\n`)
+    expect(blocks[1].code).toBe(
+      `$ git clone https://github.com/libtmux/libtmux-go.git libtmux-source && \\\n  git -C libtmux-source checkout ${source.revision}\n`,
+    )
     expect(blocks[2].code).toContain('replace github.com/libtmux/libtmux-go => ./libtmux-source')
     expect(blocks[3].code).toBe(code)
     expect(blocks[3].sourceUrl).toBe(`https://github.com/${source.repo}/blob/${source.revision}/${file}`)
@@ -45,18 +56,18 @@ describe('complete native Go examples', () => {
   })
 
   it('uses native function and receiver-method names for attachment', async () => {
-    const examples = await readCompleteGoExamples([
-      { file, code: code.replace('Server_Sessions', 'NewServer') },
-    ])
+    const examples = await readCompleteGoExamples([{ file, code: code.replace('Server_Sessions', 'NewServer') }])
     expect(examples[0].symbol).toBe('tmux.NewServer')
   })
 
   it('omits ordinary examples, tests, and non-test source files', async () => {
-    expect(await readCompleteGoExamples([
-      { file, code: code.replace('_complete', '') },
-      { file, code: code.replace('ExampleServer_Sessions_complete', 'TestServer') },
-      { file: 'tmux/server.go', code },
-    ])).toEqual([])
+    expect(
+      await readCompleteGoExamples([
+        { file, code: code.replace('_complete', '') },
+        { file, code: code.replace('ExampleServer_Sessions_complete', 'TestServer') },
+        { file: 'tmux/server.go', code },
+      ]),
+    ).toEqual([])
   })
 
   it.each([
@@ -74,8 +85,12 @@ describe('complete native Go examples', () => {
   })
 
   it('rejects duplicate examples and missing or ambiguous API targets', async () => {
-    await expect(readCompleteGoExamples([{ file, code }, { file: 'tmux/other_test.go', code }]))
-      .rejects.toThrow(/duplicate example/)
+    await expect(
+      readCompleteGoExamples([
+        { file, code },
+        { file: 'tmux/other_test.go', code },
+      ]),
+    ).rejects.toThrow(/duplicate example/)
     const examples = await readCompleteGoExamples([{ file, code }])
     expect(() => attachCompleteGoExamples([], examples, source)).toThrow(/resolve once/)
     expect(() => attachCompleteGoExamples([symbol(), symbol()], examples, source)).toThrow(/resolve once/)
@@ -83,9 +98,11 @@ describe('complete native Go examples', () => {
 
   it('rejects mutable refs or missing dependency floors', async () => {
     const examples = await readCompleteGoExamples([{ file, code }])
-    expect(() => attachCompleteGoExamples([symbol()], examples, { ...source, revision: 'main' }))
-      .toThrow(/full source revision/)
-    expect(() => attachCompleteGoExamples([symbol()], examples, { ...source, goVersion: '' }))
-      .toThrow(/module Go version/)
+    expect(() => attachCompleteGoExamples([symbol()], examples, { ...source, revision: 'main' })).toThrow(
+      /full source revision/,
+    )
+    expect(() => attachCompleteGoExamples([symbol()], examples, { ...source, goVersion: '' })).toThrow(
+      /module Go version/,
+    )
   })
 })

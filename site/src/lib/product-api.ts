@@ -12,17 +12,27 @@ export function productApiHref(model: ApiModel, symbol: ApiSymbol, version: stri
 }
 
 /** Equivalent declarations stay in their product and target port's version. */
-export function productApiAlternatives(model: ApiModel, symbol: ApiSymbol, version: string, defaults: Record<string, string>) {
+export function productApiAlternatives(
+  model: ApiModel,
+  symbol: ApiSymbol,
+  version: string,
+  defaults: Record<string, string>,
+) {
   return referenceAlternatives(model.port, symbol.publicId ?? symbol.id).map((group) => ({
     ...group,
     ports: group.ports.map((entry) => {
       const target = API_MODELS[entry.port]
       const declaration = entry.publicId
-        ? target?.symbols.find((candidate) => (candidate.publicId ?? candidate.id) === entry.publicId) : undefined
+        ? target?.symbols.find((candidate) => (candidate.publicId ?? candidate.id) === entry.publicId)
+        : undefined
       return {
         ...entry,
         href: declaration
-          ? productApiHref(target, declaration, entry.port === model.port ? version : (defaults[entry.port] ?? 'latest'))
+          ? productApiHref(
+              target,
+              declaration,
+              entry.port === model.port ? version : (defaults[entry.port] ?? 'latest'),
+            )
           : entry.href,
       }
     }),
@@ -36,12 +46,15 @@ export function productApiRoutes(
   defaults: Record<string, string>,
   buildVersion: string,
 ): { path: string; model: ApiModel; symbol: ApiSymbol; version: string }[] {
-  return Object.entries(models).filter(([port]) => !buildPort || port === buildPort)
+  return Object.entries(models)
+    .filter(([port]) => !buildPort || port === buildPort)
     .flatMap(([port, model]) => {
       const version = buildPort ? buildVersion : (defaults[port] ?? 'latest')
       return [...symbolsForProduct(model, 'mcp'), ...symbolsForProduct(model, 'workspace')].map((symbol) => ({
         path: `${buildPort ? '' : `${port}/${version}/`}${productApiPath(symbol.product as DocProduct)}/${symbol.slug}`,
-        model, symbol, version,
+        model,
+        symbol,
+        version,
       }))
     })
 }
@@ -55,20 +68,31 @@ export function productApiRedirects(
 ) {
   // WorkspaceBuilderError now carries arbitrary callback errors and is no longer Equatable.
   const model = models.swift
-  if (!model || (buildPort && buildPort !== 'swift') ||
-      model.symbols.some((symbol) => symbol.id === 'WorkspaceBuilderError.!=(_:_:)')) return []
-  const owner = productApiRoutes({ swift: model }, buildPort, defaults, buildVersion)
-    .find((route) => route.symbol.id === 'WorkspaceBuilderError')
+  if (
+    !model ||
+    (buildPort && buildPort !== 'swift') ||
+    model.symbols.some((symbol) => symbol.id === 'WorkspaceBuilderError.!=(_:_:)')
+  )
+    return []
+  const owner = productApiRoutes({ swift: model }, buildPort, defaults, buildVersion).find(
+    (route) => route.symbol.id === 'WorkspaceBuilderError',
+  )
   if (!owner) return []
-  return [{ ...owner, target: owner.path,
-    path: owner.path.replace(/workspacebuildererror$/, 'workspacebuildererror-(_-_-)') }]
+  return [
+    {
+      ...owner,
+      target: owner.path,
+      path: owner.path.replace(/workspacebuildererror$/, 'workspacebuildererror-(_-_-)'),
+    },
+  ]
 }
 
 /** Public declarations listed on a product's reference landing page. */
 export function productApiRoots(model: ApiModel, product: DocProduct): ApiSymbol[] {
   const symbols = symbolsForProduct(model, product)
   const ids = new Set(symbols.map((symbol) => symbol.id))
-  return symbols.filter((symbol) => !symbol.parent || !ids.has(symbol.parent))
+  return symbols
+    .filter((symbol) => !symbol.parent || !ids.has(symbol.parent))
     .sort((a, b) => a.name.localeCompare(b.name))
 }
 
@@ -76,15 +100,17 @@ export function productApiRoots(model: ApiModel, product: DocProduct): ApiSymbol
 export function productApiNavigation(model: ApiModel, product: DocProduct, version: string): SidebarItem[] {
   const symbols = symbolsForProduct(model, product)
   const children = new Map<string, ApiSymbol[]>()
-  for (const symbol of symbols) if (symbol.parent) {
-    const entries = children.get(symbol.parent) ?? []
-    entries.push(symbol)
-    children.set(symbol.parent, entries)
-  }
+  for (const symbol of symbols)
+    if (symbol.parent) {
+      const entries = children.get(symbol.parent) ?? []
+      entries.push(symbol)
+      children.set(symbol.parent, entries)
+    }
   const entry = (symbol: ApiSymbol, label = symbol.name): SidebarItem => {
     const members = children.get(symbol.id) ?? []
     const link = { label, kind: symbol.command?.kind ?? symbol.kind, href: productApiHref(model, symbol, version) }
-    return members.length ? { type: 'group', ...link, items: members.map((member) => entry(member)) }
+    return members.length
+      ? { type: 'group', ...link, items: members.map((member) => entry(member)) }
       : { type: 'link', ...link }
   }
   const rows: SidebarItem[] = []
@@ -113,7 +139,10 @@ const indexes = new WeakMap<ApiModel, Map<string, SymbolIndex>>()
 /** Reuse a symbol index without mixing core and product URL builders. */
 export function productApiIndex(model: ApiModel, version: string): SymbolIndex {
   let versions = indexes.get(model)
-  if (!versions) { versions = new Map(); indexes.set(model, versions) }
+  if (!versions) {
+    versions = new Map()
+    indexes.set(model, versions)
+  }
   let index = versions.get(version)
   if (!index) {
     index = createApiIndex(model, (symbol) => productApiHref(model, symbol, version))

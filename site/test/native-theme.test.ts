@@ -17,15 +17,20 @@ function page(storage: Record<string, string> = {}, system = 'light') {
   for (const [key, value] of Object.entries(storage)) window.localStorage.setItem(key, value)
   const media = window.matchMedia('(prefers-color-scheme: dark)')
   window.matchMedia = () => media
-  window.fetch = (async () => ({ ok: true, json: async () => ({ schema: 1, ports: {}, defaultVersion: {} }) })) as unknown as typeof window.fetch
+  window.fetch = (async () => ({
+    ok: true,
+    json: async () => ({ schema: 1, ports: {}, defaultVersion: {} }),
+  })) as unknown as typeof window.fetch
   return { window, media }
 }
 
 function preferences(window: Window) {
-  return Object.fromEntries(keys.flatMap((key) => {
-    const value = window.localStorage.getItem(key)
-    return value === null ? [] : [[key, value]]
-  }))
+  return Object.fromEntries(
+    keys.flatMap((key) => {
+      const value = window.localStorage.getItem(key)
+      return value === null ? [] : [[key, value]]
+    }),
+  )
 }
 
 async function native(window: Window) {
@@ -47,7 +52,9 @@ describe('theme preference across Astro and native pages', () => {
     const { window } = page({ 'color-scheme': 'dark' }, 'light')
     window.document.documentElement.setAttribute('data-home-scheme-preview', preview)
     astro(window)
-    expect(window.document.documentElement.getAttribute('data-theme-mode')).toBe(preview === 'system' ? 'light' : preview)
+    expect(window.document.documentElement.getAttribute('data-theme-mode')).toBe(
+      preview === 'system' ? 'light' : preview,
+    )
     expect(window.document.documentElement.getAttribute('data-color-scheme')).toBe('dark')
     expect(window.localStorage.getItem('color-scheme')).toBe('dark')
     window.document.documentElement.removeAttribute('data-home-scheme-preview')
@@ -70,8 +77,10 @@ describe('theme preference across Astro and native pages', () => {
   })
 
   it.each([
-    ['dark', 'light', 'dark'], ['light', 'dark', 'light'],
-    ['system', 'dark', 'dark'], ['system', 'light', 'light'],
+    ['dark', 'light', 'dark'],
+    ['light', 'dark', 'light'],
+    ['system', 'dark', 'dark'],
+    ['system', 'light', 'light'],
   ])('carries Astro %s into a native page with a %s OS preference', async (choice, system, resolved) => {
     const first = page({ 'color-scheme': choice, theme: 'light', 'libtmux-theme': 'dark' }, system).window
     astro(first)
@@ -139,7 +148,11 @@ describe('theme preference across Astro and native pages', () => {
 
   it('keeps the native toggle usable when storage is blocked', async () => {
     const { window } = page()
-    Object.defineProperty(window, 'localStorage', { get() { throw new Error('Storage blocked') } })
+    Object.defineProperty(window, 'localStorage', {
+      get() {
+        throw new Error('Storage blocked')
+      },
+    })
     await native(window)
     window.document.body.setAttribute('data-theme', 'dark')
     await window.happyDOM.waitUntilComplete()

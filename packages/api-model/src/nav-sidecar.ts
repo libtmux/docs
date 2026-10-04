@@ -49,7 +49,9 @@ export function navSidecarFor(scope: string, model: ApiModelBase, nav: NavConfig
   // type alias has a page, and a sidebar that placed only types gave 1,282 of
   // those pages no row.
   const moduleIds = new Set(model.symbols.filter((symbol) => symbol.kind === 'module').map((symbol) => symbol.id))
-  const topLevel = model.symbols.filter((s) => !s.parent || (['powershell', 'julia'].includes(scope) && moduleIds.has(s.parent)))
+  const topLevel = model.symbols.filter(
+    (s) => !s.parent || (['powershell', 'julia'].includes(scope) && moduleIds.has(s.parent)),
+  )
   const conceptIds = Object.fromEntries(
     Object.entries(CONCEPTS)
       .map(([k, c]) => [k, c.symbols[scope]] as const)
@@ -74,7 +76,8 @@ export function navSidecarFor(scope: string, model: ApiModelBase, nav: NavConfig
   const entries = (ids: string[], order: string[] = []) => {
     const symbols = [...new Set(ids)].map((id) => byId.get(id)).filter((sym): sym is ApiSymbol => sym !== undefined)
     const ranks = new Map([...new Set(order)].map((id, rank) => [id, rank]))
-    const ordered = symbols.filter((sym) => ranks.has(sym.publicId ?? sym.id))
+    const ordered = symbols
+      .filter((sym) => ranks.has(sym.publicId ?? sym.id))
       .sort((a, b) => ranks.get(a.publicId ?? a.id)! - ranks.get(b.publicId ?? b.id)!)
     const remaining = symbols.filter((sym) => !ranks.has(sym.publicId ?? sym.id))
     const free = remaining
@@ -93,8 +96,8 @@ export function navSidecarFor(scope: string, model: ApiModelBase, nav: NavConfig
       if (shortcuts.length !== new Set(b.shortcuts ?? []).size) {
         throw new Error(`${scope}: ${b.id} contains an unknown navigation shortcut`)
       }
-      const target = b.order && entries(compiled.assignments[b.id] ?? [], b.order)
-        .find((entry) => b.order!.includes(entry.id))
+      const target =
+        b.order && entries(compiled.assignments[b.id] ?? [], b.order).find((entry) => b.order!.includes(entry.id))
       return {
         id: b.id,
         label: b.label,

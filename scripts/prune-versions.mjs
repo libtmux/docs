@@ -79,7 +79,6 @@ export function toPrune(kept, present) {
   return out.sort()
 }
 
-
 /**
  * The CLI, run only when this file is the entry point.
  *
@@ -135,5 +134,4 @@ if (fileURLToPath(import.meta.url) === argv[1]) {
     console.log(`deleting s3://${bucket}/${prefix}/`)
     execFileSync('aws', ['s3', 'rm', `s3://${bucket}/${prefix}/`, '--recursive'], { stdio: 'inherit' })
   }
-
 }

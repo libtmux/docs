@@ -16,8 +16,7 @@ export const ui = {
     'i18n.contribute': 'Help translate it',
     'i18n.translated': 'Japanese translation available',
     'i18n.stale': 'This translation is out of date',
-    'i18n.staleBody':
-      'The English page has changed since this was translated. The English original is authoritative.',
+    'i18n.staleBody': 'The English page has changed since this was translated. The English original is authoritative.',
     'i18n.unreviewed': 'Machine translation, not yet reviewed by a native speaker.',
     'i18n.readEnglish': 'Read the English original',
     'i18n.available': 'Available translations',
@@ -45,8 +44,7 @@ export const ui = {
     'i18n.contribute': '翻訳に協力する',
     'i18n.translated': '日本語版があります',
     'i18n.stale': 'この翻訳は最新ではありません',
-    'i18n.staleBody':
-      '翻訳後に英語版が更新されています。正本は英語版です。',
+    'i18n.staleBody': '翻訳後に英語版が更新されています。正本は英語版です。',
     'i18n.unreviewed': '機械翻訳です。ネイティブによるレビューは未了です。',
     'i18n.readEnglish': '英語の原文を読む',
     'i18n.available': '利用できる言語',

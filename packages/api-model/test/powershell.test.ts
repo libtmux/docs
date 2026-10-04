@@ -10,7 +10,8 @@ describe('PowerShell native command adapter', () => {
   it('preserves both module inventories without publishing implementation classes', () => {
     expect(model.symbols.filter((symbol) => symbol.kind === 'function')).toHaveLength(6)
     expect(model.sources?.map((source) => [source.package, source.product])).toEqual([
-      ['LibTmux', 'core'], ['LibTmux.Workspace', 'workspace'],
+      ['LibTmux', 'core'],
+      ['LibTmux.Workspace', 'workspace'],
     ])
     expect(model.symbols.every((symbol) => !symbol.id.includes('PowerShell.Commands'))).toBe(true)
     expect(command('Get-TmuxWorkspace')).toMatchObject({ package: 'LibTmux.Workspace', product: 'workspace' })
@@ -21,7 +22,11 @@ describe('PowerShell native command adapter', () => {
     expect(pane.signatures.map((signature) => signature.label)).toEqual(['Server', 'Session', 'Window'])
     for (const signature of pane.signatures) {
       const owner = signature.params.find((param) => param.name === signature.label)!
-      expect(owner.binding).toMatchObject({ mandatory: true, position: 0, pipeline: { byValue: true, byPropertyName: false } })
+      expect(owner.binding).toMatchObject({
+        mandatory: true,
+        position: 0,
+        pipeline: { byValue: true, byPropertyName: false },
+      })
       expect(signature.raw).toContain(`[<CommonParameters>]`)
       expect(signature.returns).toBe('LibTmux.Pane')
     }
@@ -31,12 +36,21 @@ describe('PowerShell native command adapter', () => {
     const control = command('Connect-TmuxControl')
     expect(control.command).toMatchObject({ kind: 'cmdlet', supportsShouldProcess: true })
     expect(control.signatures[0]!.params.map((parameter) => parameter.name)).toContain('WhatIf')
-    expect(control.signatures[0]!.params.find((parameter) => parameter.name === 'ErrorAction')?.binding?.common).toBe(true)
-    const timeout = command('Invoke-TmuxPaneCommand').signatures[0]!.params.find((parameter) => parameter.name === 'Timeout')!
+    expect(control.signatures[0]!.params.find((parameter) => parameter.name === 'ErrorAction')?.binding?.common).toBe(
+      true,
+    )
+    const timeout = command('Invoke-TmuxPaneCommand').signatures[0]!.params.find(
+      (parameter) => parameter.name === 'Timeout',
+    )!
     expect(timeout.default).toBe('30')
     const id = command('Get-TmuxPane').signatures[0]!.params.find((parameter) => parameter.name === 'Id')!
-    expect(id.binding?.attributes.some((attribute) => attribute.type.endsWith('ValidateNotNullOrEmptyAttribute'))).toBe(true)
-    expect(command('New-TmuxServer').signatures[0]!.params.find((parameter) => parameter.name === 'TmuxBinaryPath')?.binding?.declaration?.initializer).toBe('"tmux"')
+    expect(id.binding?.attributes.some((attribute) => attribute.type.endsWith('ValidateNotNullOrEmptyAttribute'))).toBe(
+      true,
+    )
+    expect(
+      command('New-TmuxServer').signatures[0]!.params.find((parameter) => parameter.name === 'TmuxBinaryPath')?.binding
+        ?.declaration?.initializer,
+    ).toBe('"tmux"')
   })
 
   it('describes engine-supplied common parameters without replacing authored help', () => {
@@ -50,11 +64,16 @@ describe('PowerShell native command adapter', () => {
     const parameters = authored.commands[0].parameterSets[0].parameters
     parameters.find((param: { name: string }) => param.name === 'Verbose').description = 'Authored verbose behavior.'
     const normalized = extractPowerShell(authored).symbols.find((symbol) => symbol.id === authored.commands[0].id)!
-    expect(normalized.signatures[0]!.params.find((param) => param.name === 'Verbose')?.doc).toBe('Authored verbose behavior.')
+    expect(normalized.signatures[0]!.params.find((param) => param.name === 'Verbose')?.doc).toBe(
+      'Authored verbose behavior.',
+    )
     parameters.find((param: { name: string }) => param.name === 'Verbose').description = ''
     parameters.find((param: { name: string }) => param.name === 'Verbose').common = false
-    expect(extractPowerShell(authored).symbols.find((symbol) => symbol.id === authored.commands[0].id)!
-      .signatures[0]!.params.find((param) => param.name === 'Verbose')?.doc).toBeUndefined()
+    expect(
+      extractPowerShell(authored)
+        .symbols.find((symbol) => symbol.id === authored.commands[0].id)!
+        .signatures[0]!.params.find((param) => param.name === 'Verbose')?.doc,
+    ).toBeUndefined()
   })
 
   it('keeps executable example code, following prose, errors and source provenance', () => {
@@ -68,8 +87,11 @@ describe('PowerShell native command adapter', () => {
   })
 
   it('renders nested reflected generic and array types without assembly metadata', () => {
-    expect(powerShellType('System.Collections.Generic.Dictionary`2[[System.String, System.Private.CoreLib, Version=8.0.0.0],[System.Collections.Generic.List`1[[LibTmux.Pane, LibTmux, Version=0.0.0.0]], System.Private.CoreLib]][]'))
-      .toBe('System.Collections.Generic.Dictionary[System.String, System.Collections.Generic.List[LibTmux.Pane]][]')
+    expect(
+      powerShellType(
+        'System.Collections.Generic.Dictionary`2[[System.String, System.Private.CoreLib, Version=8.0.0.0],[System.Collections.Generic.List`1[[LibTmux.Pane, LibTmux, Version=0.0.0.0]], System.Private.CoreLib]][]',
+      ),
+    ).toBe('System.Collections.Generic.Dictionary[System.String, System.Collections.Generic.List[LibTmux.Pane]][]')
     expect(powerShellType('System.String[]')).toBe('System.String[]')
   })
 

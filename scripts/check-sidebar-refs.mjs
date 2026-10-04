@@ -54,13 +54,19 @@ function pageUnder(portDir) {
   return undefined
 }
 
-const window = new Window({ settings: { enableJavaScriptEvaluation: false, disableCSSFileLoading: true, disableJavaScriptFileLoading: true } })
+const window = new Window({
+  settings: { enableJavaScriptEvaluation: false, disableCSSFileLoading: true, disableJavaScriptFileLoading: true },
+})
 const template = window.document.createElement('template')
 const labelOf = (element) => element.textContent.replace(/\s+/g, ' ').trim()
 const hrefOf = (link) => link.getAttribute('href') ?? ''
 const owned = (link) => hrefOf(link).startsWith(servedRoot)
 const hostOf = (href) => {
-  try { return new URL(href).hostname } catch { return undefined }
+  try {
+    return new URL(href).hostname
+  } catch {
+    return undefined
+  }
 }
 
 const failures = []
@@ -78,8 +84,9 @@ for (const port of PORTS) {
     failures.push(`${port}: expected one shared documentation picker, found ${pickers.length}`)
     continue
   }
-  const cores = [...pickers[0].querySelectorAll('[data-surface-group]')].filter((group) =>
-    group.querySelector(':scope > summary strong')?.textContent.trim() === 'Core Library')
+  const cores = [...pickers[0].querySelectorAll('[data-surface-group]')].filter(
+    (group) => group.querySelector(':scope > summary strong')?.textContent.trim() === 'Core Library',
+  )
   if (cores.length !== 1) {
     failures.push(`${port}: expected one Core Library group, found ${cores.length}`)
     continue
@@ -91,11 +98,14 @@ for (const port of PORTS) {
   // The sampled page supplies the version; a valid link to another version
   // must not satisfy the current context's native-reference contract.
   const version = relative(join(SITE, port), file).split('/')[0]
-  const expected = version === 'concepts' ? new RegExp(`^/${port}/[^/]+/reference/$`)
-    : new RegExp(`^/${port}/${version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/reference/$`)
+  const expected =
+    version === 'concepts'
+      ? new RegExp(`^/${port}/[^/]+/reference/$`)
+      : new RegExp(`^/${port}/${version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/reference/$`)
   const ours = sections.filter((link) => owned(link) && expected.test(pathOf(hrefOf(link))))
   if (ours.length !== 1) failures.push(`${port}: Core Library does not offer exactly one current native reference`)
-  else if (labelOf(ours[0]) !== 'API Reference') failures.push(`${port}: native reference is not labelled API Reference`)
+  else if (labelOf(ours[0]) !== 'API Reference')
+    failures.push(`${port}: native reference is not labelled API Reference`)
 
   const host = ECOSYSTEM[port]
   if (host) {
@@ -126,15 +136,22 @@ for (const port of PORTS) {
     const path = pathOf(href).replace(/^\//, '')
     if (!existsSync(join(SITE, path, 'index.html'))) failures.push(`${port}: ${href} is linked but not built`)
   }
-  const refs = links.filter((link) => hrefOf(link).includes('/reference/') ||
-    Object.values(ECOSYSTEM).includes(hostOf(hrefOf(link))) || /\/py\/[^/]+\/api\//.test(hrefOf(link)))
+  const refs = links
+    .filter(
+      (link) =>
+        hrefOf(link).includes('/reference/') ||
+        Object.values(ECOSYSTEM).includes(hostOf(hrefOf(link))) ||
+        /\/py\/[^/]+\/api\//.test(hrefOf(link)),
+    )
     .map((link) => ({ label: labelOf(link), external: Boolean(hostOf(hrefOf(link))) }))
 
   rows.push({ port, refs })
 }
 
 for (const { port, refs } of rows) {
-  console.log(`check-sidebar-refs: ${port.padEnd(7)} ${refs.map((r) => `${r.label}${r.external ? ' ↗' : ''}`).join('  |  ')}`)
+  console.log(
+    `check-sidebar-refs: ${port.padEnd(7)} ${refs.map((r) => `${r.label}${r.external ? ' ↗' : ''}`).join('  |  ')}`,
+  )
 }
 if (failures.length) {
   console.error(`\ncheck-sidebar-refs: ${failures.length} problem(s):`)

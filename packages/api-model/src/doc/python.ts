@@ -17,12 +17,8 @@ export function dedentDocstring(raw: string): string {
   s = s.replace(/("""|'''|"|')\s*$/, '')
   const lines = s.split('\n')
   const rest = lines.slice(1).filter((l) => l.trim())
-  const indent = rest.length
-    ? Math.min(...rest.map((l) => l.length - l.trimStart().length))
-    : 0
-  return [lines[0]?.trim() ?? '', ...lines.slice(1).map((l) => l.slice(indent))]
-    .join('\n')
-    .trim()
+  const indent = rest.length ? Math.min(...rest.map((l) => l.length - l.trimStart().length)) : 0
+  return [lines[0]?.trim() ?? '', ...lines.slice(1).map((l) => l.slice(indent))].join('\n').trim()
 }
 
 const SECTION =
@@ -61,7 +57,16 @@ export function pythonDocBody(text: string): string {
   const fence = (code: string[], lang: string, indent = '') => {
     const body = code.join('\n').replace(/\n+$/, '')
     const ticks = '`'.repeat(Math.max(3, ...[...body.matchAll(/`+/g)].map((m) => m[0].length + 1)))
-    out.push('', `${indent}${ticks}${lang}`, body.split('\n').map((line) => `${indent}${line}`).join('\n'), `${indent}${ticks}`, '')
+    out.push(
+      '',
+      `${indent}${ticks}${lang}`,
+      body
+        .split('\n')
+        .map((line) => `${indent}${line}`)
+        .join('\n'),
+      `${indent}${ticks}`,
+      '',
+    )
   }
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
@@ -79,7 +84,11 @@ export function pythonDocBody(text: string): string {
       const code = [line]
       while (i + 1 < lines.length && lines[i + 1].trim()) code.push(lines[++i])
       const indent = line.length - line.trimStart().length
-      fence(code.map((entry) => entry.slice(indent)), 'python', ' '.repeat(indent))
+      fence(
+        code.map((entry) => entry.slice(indent)),
+        'python',
+        ' '.repeat(indent),
+      )
       continue
     }
     const directive = /^(\s*)\.\.\s+(?:code-block|sourcecode|code)::\s*(\S*)\s*$/.exec(line)
@@ -95,18 +104,28 @@ export function pythonDocBody(text: string): string {
       }
       if (start < lines.length && lines[start].length - lines[start].trimStart().length > indent) {
         let end = start
-        while (end < lines.length && (!lines[end].trim() || lines[end].length - lines[end].trimStart().length > indent)) end++
+        while (end < lines.length && (!lines[end].trim() || lines[end].length - lines[end].trimStart().length > indent))
+          end++
         const code = lines.slice(start, end)
-        const margin = Math.min(...code.filter((entry) => entry.trim()).map((entry) => entry.length - entry.trimStart().length))
+        const margin = Math.min(
+          ...code.filter((entry) => entry.trim()).map((entry) => entry.length - entry.trimStart().length),
+        )
         if (literal && line.trim() !== '::') out.push(line.replace(/::\s*$/, ':'))
-        fence(code.map((entry) => entry.slice(margin)), directive?.[2] || 'text', ' '.repeat(indent))
+        fence(
+          code.map((entry) => entry.slice(margin)),
+          directive?.[2] || 'text',
+          ' '.repeat(indent),
+        )
         i = end - 1
         continue
       }
     }
     out.push(line)
   }
-  return out.filter((entry, i) => entry !== '' || out[i - 1] !== '').join('\n').trim()
+  return out
+    .filter((entry, i) => entry !== '' || out[i - 1] !== '')
+    .join('\n')
+    .trim()
 }
 
 /**
@@ -277,8 +296,17 @@ function directives(text: string): {
 
   const close = () => {
     if (open) {
-      const margin = Math.min(...open.body.filter((line) => line.trim()).map((line) => line.length - line.trimStart().length))
-      found.push({ kind: open.kind, arg: open.arg, body: open.body.map((line) => line.slice(margin)).join('\n').trim() })
+      const margin = Math.min(
+        ...open.body.filter((line) => line.trim()).map((line) => line.length - line.trimStart().length),
+      )
+      found.push({
+        kind: open.kind,
+        arg: open.arg,
+        body: open.body
+          .map((line) => line.slice(margin))
+          .join('\n')
+          .trim(),
+      })
     }
     open = undefined
   }
@@ -363,8 +391,12 @@ export function parsePythonDoc(raw: string): ParsedDoc {
   }))
 
   const examplesText = (named.get('Examples') ?? []).join('\n')
-  const value = (kind: string) => dirs.filter((d) => d.kind === kind)
-    .map((d) => [d.arg, d.body].filter(Boolean).join(' — ').trim()).filter(Boolean).join('\n\n') || undefined
+  const value = (kind: string) =>
+    dirs
+      .filter((d) => d.kind === kind)
+      .map((d) => [d.arg, d.body].filter(Boolean).join(' — ').trim())
+      .filter(Boolean)
+      .join('\n\n') || undefined
   const deprecated = value('deprecated')
   const since = value('versionadded')
   const changed = value('versionchanged')

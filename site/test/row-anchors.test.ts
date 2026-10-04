@@ -14,9 +14,12 @@ const render = (html: string) => {
   visit(tree, 'element', (node) => {
     if (node.tagName !== 'tr' || !node.properties.id) return
     visit(node, 'element', (child) => {
-      if (child.properties.dataRowPermalink) rows.push({
-        id: node.properties.id, href: child.properties.href, label: child.properties.ariaLabel,
-      })
+      if (child.properties.dataRowPermalink)
+        rows.push({
+          id: node.properties.id,
+          href: child.properties.href,
+          label: child.properties.ariaLabel,
+        })
     })
   })
   return { tree, rows }
@@ -24,8 +27,8 @@ const render = (html: string) => {
 
 describe('section and item permalinks', () => {
   it('names option rows consistently across tmux versions', () => {
-    const rows = (version: string) => tmuxCommandNotes(version, 'capture-pane')!.groups
-      .flatMap((group) => group.options)
+    const rows = (version: string) =>
+      tmuxCommandNotes(version, 'capture-pane')!.groups.flatMap((group) => group.options)
     const current = rows('latest')
     expect(current.find((row) => row.flag === 'p')!.id).toBe('capture-pane-options-output-and-line-range-p')
     expect(current.find((row) => row.flag === 'S')!.id).toBe('capture-pane-options-output-and-line-range-s')
@@ -41,24 +44,33 @@ describe('section and item permalinks', () => {
   })
 
   it('links data rows using their section without changing existing links or header rows', () => {
-    const { tree, rows } = render('<h2 id="filters">Filters</h2><table><thead><tr><th>Name</th><th>Meaning</th></tr></thead><tbody><tr><td><a href="/api/">Server</a></td><td>Owner</td></tr></tbody></table>')
+    const { tree, rows } = render(
+      '<h2 id="filters">Filters</h2><table><thead><tr><th>Name</th><th>Meaning</th></tr></thead><tbody><tr><td><a href="/api/">Server</a></td><td>Owner</td></tr></tbody></table>',
+    )
     expect(rows).toEqual([{ id: 'filters-server', href: '#filters-server', label: 'Link to Server in Filters' }])
     const links: unknown[] = []
-    visit(tree, 'element', (node) => { if (node.tagName === 'a') links.push(node.properties.href) })
+    visit(tree, 'element', (node) => {
+      if (node.tagName === 'a') links.push(node.properties.href)
+    })
     expect(links).toEqual(['/api/', '#filters-server'])
     rehypeRowAnchors()(tree)
     const permalinks: unknown[] = []
-    visit(tree, 'element', (node) => { if (node.properties.dataRowPermalink) permalinks.push(node.properties.href) })
+    visit(tree, 'element', (node) => {
+      if (node.properties.dataRowPermalink) permalinks.push(node.properties.href)
+    })
     expect(permalinks).toEqual(['#filters-server'])
   })
 
   it('preserves explicit IDs and avoids collisions with headings and repeated rows', () => {
-    const { rows } = render('<h2 id="flags">Flags</h2><span id="flags-p"></span><table><tr><td>-p</td><td>First</td></tr><tr><td>-p</td><td>Second</td></tr><tr id="stable-option"><td>-q</td><td>Third</td></tr></table>')
+    const { rows } = render(
+      '<h2 id="flags">Flags</h2><span id="flags-p"></span><table><tr><td>-p</td><td>First</td></tr><tr><td>-p</td><td>Second</td></tr><tr id="stable-option"><td>-q</td><td>Third</td></tr></table>',
+    )
     expect(rows.map((row) => row.id)).toEqual(['flags-p-2', 'flags-p-3', 'stable-option'])
   })
 
   it('keeps distinct row identities stable when rows are reordered or inserted', () => {
-    const table = (labels: string[]) => `<h3 id="capture-options">Capture options</h3><table>${labels.map((label) => `<tr><td>${label}</td><td>Description</td></tr>`).join('')}</table>`
+    const table = (labels: string[]) =>
+      `<h3 id="capture-options">Capture options</h3><table>${labels.map((label) => `<tr><td>${label}</td><td>Description</td></tr>`).join('')}</table>`
     const first = render(table(['-p', '-J'])).rows.map((row) => row.id)
     const changed = render(table(['-S start', '-J', '-p'])).rows.map((row) => row.id)
     expect(changed).toEqual(['capture-options-s-start', first[1], first[0]])
@@ -66,10 +78,11 @@ describe('section and item permalinks', () => {
 
   it('includes ancestor sections and resets the path at a sibling heading', () => {
     const row = '<table><tr><td>--json</td><td>Output JSON</td></tr></table>'
-    const { rows } = render(`<h1 id="ls">ls</h1><h2 id="options">Options</h2>${row}<h3 id="formatting">Formatting</h3>${row}<h2 id="examples">Examples</h2>${row}`)
+    const { rows } = render(
+      `<h1 id="ls">ls</h1><h2 id="options">Options</h2>${row}<h3 id="formatting">Formatting</h3>${row}<h2 id="examples">Examples</h2>${row}`,
+    )
     expect(rows.map((entry) => entry.id)).toEqual(['ls-options-json', 'ls-options-formatting-json', 'ls-examples-json'])
-    expect(render(`<h1 id="ls">ls</h1><h2 id="ls-options">Options</h2>${row}`).rows[0].id)
-      .toBe('ls-options-json')
+    expect(render(`<h1 id="ls">ls</h1><h2 id="ls-options">Options</h2>${row}`).rows[0].id).toBe('ls-options-json')
   })
 })
 

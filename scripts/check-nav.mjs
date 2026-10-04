@@ -94,8 +94,7 @@ const failures = []
 const label = (nav, id) => nav.unplaced.find((s) => s.id === id)?.name ?? id
 
 /** Every bucket id in the tree, children included — what a page can render. */
-const renderable = (buckets) =>
-  buckets.flatMap((b) => [b.id, ...renderable(b.children ?? [])])
+const renderable = (buckets) => buckets.flatMap((b) => [b.id, ...renderable(b.children ?? [])])
 
 for (const nav of navs) {
   const d = nav.diagnostics

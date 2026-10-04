@@ -3,7 +3,16 @@
 import { existsSync, globSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Resolver, parentInventory, decideMention, isLikelyReference, notASymbol, notApiReason, proseMentions, pageSlug } from '../packages/api-model/src/index.ts'
+import {
+  Resolver,
+  parentInventory,
+  decideMention,
+  isLikelyReference,
+  notASymbol,
+  notApiReason,
+  proseMentions,
+  pageSlug,
+} from '../packages/api-model/src/index.ts'
 import { isLocale } from '../site/src/i18n/locales.ts'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -15,7 +24,9 @@ const check = process.argv.includes('--check')
 
 const { PORTS: PORT_DEFS } = await import(`file://${resolve(root, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
-const { KNOWN_PORTS, resolvePortBody, resolvePortContent } = await import(`file://${resolve(root, 'site/src/lib/workspace-shared-slots.ts')}`)
+const { KNOWN_PORTS, resolvePortBody, resolvePortContent } = await import(
+  `file://${resolve(root, 'site/src/lib/workspace-shared-slots.ts')}`
+)
 
 /** The first column's label, as the prose writes it. */
 const PORT_BY_LABEL = Object.fromEntries(PORT_DEFS.map((port) => [port.name, port.slug]))
@@ -32,8 +43,13 @@ const models = Object.fromEntries(modelList.map((model) => [model.port, model]))
 const resolver = new Resolver(modelList)
 for (const port of PORT_DEFS) {
   const dependencies = [...(port.parentLibrary ? [port.parentLibrary.slug] : []), ...(port.apiDependencies ?? [])]
-  for (const dependency of dependencies) resolver.addInventory('Library API', '', parentInventory(models[dependency],
-    (symbol) => `/reference/${dependency}/${symbol.slug}/`), [port.slug])
+  for (const dependency of dependencies)
+    resolver.addInventory(
+      'Library API',
+      '',
+      parentInventory(models[dependency], (symbol) => `/reference/${dependency}/${symbol.slug}/`),
+      [port.slug],
+    )
 }
 // Match the renderer's external names before considering a cross-port fallback.
 for (const [file, project, baseUrl, langs] of [
@@ -43,21 +59,38 @@ for (const [file, project, baseUrl, langs] of [
   ['julia', 'Julia', 'https://docs.julialang.org/en/v1/', ['julia']],
 ]) {
   const inventory = JSON.parse(readFileSync(join(root, `site/src/data/inventories/${file}.entries.json`), 'utf8'))
-  resolver.addInventory(project, baseUrl, inventory.e.map(([name, uri]) => ({
-    name, uri, type: 'std:label', priority: 1, dispname: '-',
-  })), langs)
+  resolver.addInventory(
+    project,
+    baseUrl,
+    inventory.e.map(([name, uri]) => ({
+      name,
+      uri,
+      type: 'std:label',
+      priority: 1,
+      dispname: '-',
+    })),
+    langs,
+  )
 }
 
 function frontmatterValue(source, key) {
   const front = /^---\n([\s\S]*?)\n---/.exec(source)?.[1]
   const value = front && new RegExp(`^${key}:\\s*(.+)$`, 'm').exec(front)?.[1]
   if (!value) return undefined
-  try { return JSON.parse(value) } catch { return value.replace(/^['"]|['"]$/g, '') }
+  try {
+    return JSON.parse(value)
+  } catch {
+    return value.replace(/^['"]|['"]$/g, '')
+  }
 }
 
 function versionOf(port) {
   if (port === process.env.LIBTMUX_DOCS_PORT) return process.env.LIBTMUX_DOCS_VERSION || 'latest'
-  try { return JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')[port] ?? 'latest' } catch { return 'latest' }
+  try {
+    return JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')[port] ?? 'latest'
+  } catch {
+    return 'latest'
+  }
 }
 
 // Authored destinations carry ownership even when their labels are ambiguous.
@@ -66,8 +99,8 @@ const authoredTargets = new Map()
 for (const model of modelList) {
   for (const symbol of model.symbols) {
     const slug = symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)
-    const product = symbol.product && symbol.product !== 'core' && symbol.apiScope !== 'internal'
-      ? `${symbol.product}/` : ''
+    const product =
+      symbol.product && symbol.product !== 'core' && symbol.apiScope !== 'internal' ? `${symbol.product}/` : ''
     const target = { port: model.port, symbol: symbol.id }
     authoredTargets.set(`/${model.port}/${versionOf(model.port)}/${product}reference/${slug}/`, target)
     if (!product) authoredTargets.set(`/reference/${model.port}/${slug}/`, target)
@@ -82,7 +115,9 @@ function authoredTarget(href, page) {
     const parts = decodeURIComponent(url.pathname).split('/').filter(Boolean)
     if (isLocale(parts[0])) parts.shift()
     return authoredTargets.get(`/${parts.join('/')}/`)
-  } catch { return undefined }
+  } catch {
+    return undefined
+  }
 }
 
 /** `site/src/content/docs/topics/traversal.md` becomes `/topics/traversal/`. */
@@ -181,7 +216,11 @@ for (const { file, source } of [...realEntries, ...sharedWorkspaceEntries(realFi
   const product = frontmatterValue(source, 'product') ?? /^ports\/[^/]+\/(workspace|mcp)\//.exec(file)?.[1]
 
   const selected = resolvePortContent(source, authoredPort)
-  for (const { port: contextPort, text, line, before, linked, href } of proseMentions(selected.body, PORT_BY_LABEL, selected.portAt)) {
+  for (const { port: contextPort, text, line, before, linked, href } of proseMentions(
+    selected.body,
+    PORT_BY_LABEL,
+    selected.portAt,
+  )) {
     const pagePort = authoredPort ?? contextPort
     if (notASymbol(text)) continue
     let target
@@ -210,15 +249,15 @@ for (const { file, source } of [...realEntries, ...sharedWorkspaceEntries(realFi
 }
 
 mentions.sort(
-  (a, b) =>
-    a.port.localeCompare(b.port) ||
-    a.symbol.localeCompare(b.symbol) ||
-    a.page.localeCompare(b.page),
+  (a, b) => a.port.localeCompare(b.port) || a.symbol.localeCompare(b.symbol) || a.page.localeCompare(b.page),
 )
 
 if (check) {
   const existing = existsSync(out) ? JSON.parse(readFileSync(out, 'utf8')) : undefined
-  if (JSON.stringify(existing?.mentions) !== JSON.stringify(mentions) || JSON.stringify(existing?.dangling) !== JSON.stringify(dangling)) {
+  if (
+    JSON.stringify(existing?.mentions) !== JSON.stringify(mentions) ||
+    JSON.stringify(existing?.dangling) !== JSON.stringify(dangling)
+  ) {
     console.error('gen-mentions: index missing or stale; run node scripts/gen-mentions.mjs')
     process.exit(1)
   }

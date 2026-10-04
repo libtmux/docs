@@ -2,21 +2,36 @@
 export function createLinkPreviewPolicy() {
   function target(href: string, origin: string) {
     let url: URL
-    try { url = new URL(href, origin) } catch { return undefined }
+    try {
+      url = new URL(href, origin)
+    } catch {
+      return undefined
+    }
     const reference = /\/reference\/[^/]+\/$/.test(url.pathname)
-    const protocolObject = /\/mcp\/(?:tools\/[^/]+|prompts\/[^/]+|resources\/(?:templates\/)?[^/]+)\/$/.test(url.pathname)
-      && !url.pathname.endsWith('/mcp/resources/templates/')
+    const protocolObject =
+      /\/mcp\/(?:tools\/[^/]+|prompts\/[^/]+|resources\/(?:templates\/)?[^/]+)\/$/.test(url.pathname) &&
+      !url.pathname.endsWith('/mcp/resources/templates/')
     if (url.origin !== origin || url.search || (!reference && !protocolObject)) return undefined
-    return { url, endpoint: `${url.pathname.slice(0, -1)}.preview.json`, glossary: url.pathname.endsWith('/reference/glossary/') }
+    return {
+      url,
+      endpoint: `${url.pathname.slice(0, -1)}.preview.json`,
+      glossary: url.pathname.endsWith('/reference/glossary/'),
+    }
   }
   function candidate(eventTarget: EventTarget | null, base: string): HTMLAnchorElement | undefined {
     const link = eventTarget instanceof Element ? eventTarget.closest<HTMLAnchorElement>('a[href]') : null
-    if (!link || link.matches('[data-preview-skip], [href^="#"], .api-heading-link, .api-index-card__link, .headerlink')
-      || link.closest('nav, footer, [data-doc-picker], .api-index-card, .reference-link-preview')) return undefined
+    if (
+      !link ||
+      link.matches('[data-preview-skip], [href^="#"], .api-heading-link, .api-index-card__link, .headerlink') ||
+      link.closest('nav, footer, [data-doc-picker], .api-index-card, .reference-link-preview')
+    )
+      return undefined
     try {
       const url = new URL(link.getAttribute('href')!, base)
       return target(url.href, new URL(base).origin) ? link : undefined
-    } catch { return undefined }
+    } catch {
+      return undefined
+    }
   }
   function mark(link: HTMLAnchorElement) {
     link.dataset.linkPreview = ''
@@ -28,7 +43,11 @@ export function createLinkPreviewPolicy() {
   return { target, candidate, mark }
 }
 
-export const { target: linkPreviewTarget, candidate: linkPreviewCandidate, mark: markLinkPreview } = createLinkPreviewPolicy()
+export const {
+  target: linkPreviewTarget,
+  candidate: linkPreviewCandidate,
+  mark: markLinkPreview,
+} = createLinkPreviewPolicy()
 
 /** Serialized into the shared head; keep dependencies in the supplied policy. */
 export function initializeLinkPreviewPaint(policy: ReturnType<typeof createLinkPreviewPolicy>) {
@@ -49,9 +68,10 @@ export function initializeLinkPreviewPaint(policy: ReturnType<typeof createLinkP
       // Observe parsed subtrees, without rescanning anchors already encountered.
       const observe = (records: MutationRecord[]) => {
         const added = new Set<Element>()
-        for (const record of records) for (const node of record.addedNodes) {
-          if (node instanceof Element) added.add(node)
-        }
+        for (const record of records)
+          for (const node of record.addedNodes) {
+            if (node instanceof Element) added.add(node)
+          }
         for (const node of added) {
           let ancestor = node.parentElement
           while (ancestor && !added.has(ancestor)) ancestor = ancestor.parentElement
@@ -60,10 +80,14 @@ export function initializeLinkPreviewPaint(policy: ReturnType<typeof createLinkP
       }
       const observer = new MutationObserver(observe)
       observer.observe(document.documentElement, { childList: true, subtree: true })
-      document.addEventListener('DOMContentLoaded', () => {
-        observe(observer.takeRecords())
-        observer.disconnect()
-      }, { once: true })
+      document.addEventListener(
+        'DOMContentLoaded',
+        () => {
+          observe(observer.takeRecords())
+          observer.disconnect()
+        },
+        { once: true },
+      )
     }
   }
   // NativeShell shares this startup script but does not enable previews itself.

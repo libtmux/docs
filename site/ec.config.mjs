@@ -23,16 +23,17 @@ export default defineEcConfig({
     theme.settings.push(
       { scope: ['support.type.property-name.json'], settings: { foreground: dark ? '#f0a0c0' : '#963b63' } },
       { scope: ['string.quoted.double.json'], settings: { foreground: dark ? '#e6c86e' : '#755400' } },
-      { scope: ['constant.language.json', 'constant.numeric.json'], settings: { foreground: dark ? '#c3a6f4' : '#6840a0' } },
+      {
+        scope: ['constant.language.json', 'constant.numeric.json'],
+        settings: { foreground: dark ? '#c3a6f4' : '#6840a0' },
+      },
     )
   },
   plugins: [shellPrompt(), copyReadiness()],
   shiki: { langs: [tmuxUsage, ...bash, tmuxShell, tmuxConfig], langAlias: { sbt: 'scala', tmux: 'tmux-config' } },
   useDarkModeMediaQuery: false,
   themeCssSelector: (theme) =>
-    theme.name === 'github-light'
-      ? '[data-theme-mode]:not([data-theme-mode="dark"])'
-      : '[data-theme-mode="dark"]',
+    theme.name === 'github-light' ? '[data-theme-mode]:not([data-theme-mode="dark"])' : '[data-theme-mode="dark"]',
   styleOverrides: {
     borderRadius: '0.375rem',
     borderWidth: '1px',

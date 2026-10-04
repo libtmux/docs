@@ -42,10 +42,15 @@ describe('concept map', () => {
     expect(concept.symbols.powershell).toBe(id)
     const symbol = models.get('powershell')!.symbols.find((entry) => entry.id === id)!
     expect(symbol.product).toBe('workspace')
-    expect(symbol.command).toMatchObject({ kind: 'cmdlet', supportsShouldProcess: true, confirmImpact: 'High',
-      outputTypes: ['LibTmux.Workspace.WorkspaceResult'] })
+    expect(symbol.command).toMatchObject({
+      kind: 'cmdlet',
+      supportsShouldProcess: true,
+      confirmImpact: 'High',
+      outputTypes: ['LibTmux.Workspace.WorkspaceResult'],
+    })
     expect(symbol.signatures[0].params.find((param) => param.name === 'Plan')).toMatchObject({
-      type: 'LibTmux.Workspace.WorkspacePlan', binding: { mandatory: true, pipeline: { byValue: true } },
+      type: 'LibTmux.Workspace.WorkspacePlan',
+      binding: { mandatory: true, pipeline: { byValue: true } },
     })
     expect(conceptsFor('powershell', id)).toContain(concept)
     expect(conceptsFor('powershell', 'LibTmux.Workspace\\Get-TmuxWorkspacePlan')).not.toContain(concept)
@@ -75,9 +80,12 @@ describe('concept map', () => {
       const model = models.get(port)
       if (!model) continue
       const symbol = model.symbols.find((entry) => (entry.publicId ?? entry.id) === publicId)
-      expect(symbol?.signatures.some((signature) =>
-        signature.params.some((parameter) => /\bSession\b/.test(parameter.type ?? '')),
-      ), `${port}: ${publicId}`).toBe(true)
+      expect(
+        symbol?.signatures.some((signature) =>
+          signature.params.some((parameter) => /\bSession\b/.test(parameter.type ?? '')),
+        ),
+        `${port}: ${publicId}`,
+      ).toBe(true)
     }
     expect(CONCEPTS['freeze-workspace'].symbols.swift).toBeUndefined()
   })
@@ -124,7 +132,9 @@ describe('concept map', () => {
       expect(conceptsFor('julia', `LibTmux.${name}Ref`)).toContain(concept)
     }
     const windows = model.symbols.find((symbol) => symbol.id === CONCEPTS['list-windows'].symbols.julia)!
-    expect(windows.signatures.some((signature) => signature.raw?.includes('parent::LibTmux.SessionSnapshot'))).toBe(true)
+    expect(windows.signatures.some((signature) => signature.raw?.includes('parent::LibTmux.SessionSnapshot'))).toBe(
+      true,
+    )
     expect(windows.signatures.some((signature) => signature.raw?.includes('snap::LibTmux.Snapshot'))).toBe(true)
     const panes = model.symbols.find((symbol) => symbol.id === CONCEPTS['list-panes'].symbols.julia)!
     expect(panes.signatures.some((signature) => signature.raw?.includes('win::LibTmux.WindowSnapshot'))).toBe(true)
@@ -137,12 +147,18 @@ describe('concept map', () => {
   it.runIf(models.size)('maps PowerShell listing scopes to declared parameter sets', () => {
     const model = models.get('powershell')!
     for (const [concept, receiver] of [
-      ['list-sessions', 'Server'], ['list-server-windows', 'Server'],
-      ['list-windows', 'Session'], ['list-server-panes', 'Server'],
-      ['list-session-panes', 'Session'], ['list-panes', 'Window'],
+      ['list-sessions', 'Server'],
+      ['list-server-windows', 'Server'],
+      ['list-windows', 'Session'],
+      ['list-server-panes', 'Server'],
+      ['list-session-panes', 'Session'],
+      ['list-panes', 'Window'],
     ]) {
       const symbol = model.symbols.find((symbol) => symbol.id === CONCEPTS[concept].symbols.powershell)!
-      expect(symbol.signatures.some((signature) => signature.raw?.includes(`[-${receiver}] <LibTmux.${receiver}>`)), concept).toBe(true)
+      expect(
+        symbol.signatures.some((signature) => signature.raw?.includes(`[-${receiver}] <LibTmux.${receiver}>`)),
+        concept,
+      ).toBe(true)
       expect(CONCEPTS[concept].notes?.powershell, concept).toContain(`\`-${receiver}\``)
     }
   })
@@ -174,11 +190,16 @@ describe('concept map', () => {
   it('preserves native handle scopes and recognises Cats Effect operations', () => {
     for (const port of ['kotlin', 'scala']) {
       for (const [concept, member] of Object.entries({
-        'split-pane': 'Pane.split', 'split-window': 'Window.split',
-        'list-windows': 'Session.windows', 'list-panes': 'Window.panes',
-        'list-server-windows': 'Server.windows', 'list-server-panes': 'Server.panes',
+        'split-pane': 'Pane.split',
+        'split-window': 'Window.split',
+        'list-windows': 'Session.windows',
+        'list-panes': 'Window.panes',
+        'list-server-windows': 'Server.windows',
+        'list-server-panes': 'Server.panes',
       })) {
-        expect(CONCEPTS[concept].symbols[port]).toBe(`io.github.libtmux.${port === 'scala' ? 'scaladsl' : port}.${member}`)
+        expect(CONCEPTS[concept].symbols[port]).toBe(
+          `io.github.libtmux.${port === 'scala' ? 'scaladsl' : port}.${member}`,
+        )
       }
     }
     expect(conceptsFor('scala', 'io.github.libtmux.scaladsl.cats.Server.newSession')).toContain(CONCEPTS['new-session'])

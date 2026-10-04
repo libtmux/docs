@@ -5,9 +5,27 @@
  * Buckets and their contents are decided once per port in
  * `scripts/gen-api-model.mjs`; this only shapes them for a tree.
  */
-import { membersOf, memberSignals, qualifiedNameOf, symbolsForProduct, type ApiModel, type ApiModelBase, type ApiSymbol } from '@libtmux/api-model'
+import {
+  membersOf,
+  memberSignals,
+  qualifiedNameOf,
+  symbolsForProduct,
+  type ApiModel,
+  type ApiModelBase,
+  type ApiSymbol,
+} from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
-import { API_MODELS, API_NAV, OWNER_KINDS, pageSlug, referenceHref, topLevelTypesOf, type NavEntry, type PortNavData, type NavBucket } from './api-models'
+import {
+  API_MODELS,
+  API_NAV,
+  OWNER_KINDS,
+  pageSlug,
+  referenceHref,
+  topLevelTypesOf,
+  type NavEntry,
+  type PortNavData,
+  type NavBucket,
+} from './api-models'
 import type { ApiTreeBucket, ApiTreeJson } from './api-search'
 import { createHash } from 'node:crypto'
 import { PORT_BY_SLUG, type ApiDependencyNavigation } from './ports'
@@ -33,7 +51,10 @@ const treeVersions = new WeakMap<ApiModelBase, string>()
 export function apiTreeVersion(model: ApiModelBase, tree: TreeBucket[], hrefs?: Record<string, string>): string {
   let version = treeVersions.get(model)
   if (!version) {
-    version = `2:${createHash('sha256').update(JSON.stringify([model, tree, hrefs, mentions])).digest('hex').slice(0, 20)}`
+    version = `2:${createHash('sha256')
+      .update(JSON.stringify([model, tree, hrefs, mentions]))
+      .digest('hex')
+      .slice(0, 20)}`
     treeVersions.set(model, version)
   }
   return version
@@ -47,7 +68,11 @@ export interface NavTreeOptions {
 }
 
 /** Use a declaration's curated bucket before falling back to its nearest owner. */
-export function bucketForSymbol(model: ApiModelBase | undefined, nav: PortNavData | undefined, symbol: ApiSymbol | undefined): string | undefined {
+export function bucketForSymbol(
+  model: ApiModelBase | undefined,
+  nav: PortNavData | undefined,
+  symbol: ApiSymbol | undefined,
+): string | undefined {
   const seen = new Set<string>()
   while (symbol && !seen.has(symbol.id)) {
     seen.add(symbol.id)
@@ -59,8 +84,10 @@ export function bucketForSymbol(model: ApiModelBase | undefined, nav: PortNavDat
   return undefined
 }
 
-const productSymbols = (model: ApiModelBase) =>
-  [...symbolsForProduct(model, 'mcp'), ...symbolsForProduct(model, 'workspace')]
+const productSymbols = (model: ApiModelBase) => [
+  ...symbolsForProduct(model, 'mcp'),
+  ...symbolsForProduct(model, 'workspace'),
+]
 
 /**
  * A bucket's rows, with a name that repeats among them shown as its id.
@@ -74,9 +101,10 @@ const distinct = (entries: NavEntry[], model: ApiModelBase, scope: string): NavE
   for (const e of entries) count.set(e.name, (count.get(e.name) ?? 0) + 1)
   return entries.map((entry) => {
     if ((count.get(entry.name) ?? 0) < 2) return entry
-    const label = scope === 'scala'
-      ? `${entry.name} (${entry.id.includes('.cats.') ? 'Cats Effect' : entry.id.includes('.ox.') ? 'Ox' : 'Direct API'})`
-      : model.symbols.find((symbol) => (symbol.publicId ?? symbol.id) === entry.id)?.qualifiedName ?? entry.id
+    const label =
+      scope === 'scala'
+        ? `${entry.name} (${entry.id.includes('.cats.') ? 'Cats Effect' : entry.id.includes('.ox.') ? 'Ox' : 'Direct API'})`
+        : (model.symbols.find((symbol) => (symbol.publicId ?? symbol.id) === entry.id)?.qualifiedName ?? entry.id)
     return { ...entry, name: label }
   })
 }
@@ -131,9 +159,7 @@ export function navTreeFor(model: ApiModelBase, nav: PortNavData, options: NavTr
   // MCP declaration has a page in its own package's reference, so a row for
   // it here would point out of this tree — and did, at a URL that no longer
   // exists.
-  const products = new Set(options.excludeProducts
-    ? productSymbols(model).map((s) => s.publicId ?? s.id)
-    : [])
+  const products = new Set(options.excludeProducts ? productSymbols(model).map((s) => s.publicId ?? s.id) : [])
   const core = (entries: NavEntry[]) => entries.filter((e) => !products.has(e.id))
   const displayEntries = (bucket: { id: string; label: string }, entries: NavEntry[]) => {
     const distinctEntries = distinct(core(entries), model, options.scope ?? '')
@@ -151,10 +177,17 @@ export function navTreeFor(model: ApiModelBase, nav: PortNavData, options: NavTr
     children: (b.children ?? []).map(bucket).filter((child) => child.entries.length > 0 || child.children.length > 0),
   })
   return [
-    ...nav.buckets.map(bucket)
-      .filter((b) => b.entries.length > 0 || b.children.length > 0),
+    ...nav.buckets.map(bucket).filter((b) => b.entries.length > 0 || b.children.length > 0),
     ...(nav.unplaced.length > 0
-      ? [{ id: '__unplaced', label: 'Other', collapsed: true, entries: displayEntries({ id: '__unplaced', label: 'Other' }, nav.unplaced), children: [] }]
+      ? [
+          {
+            id: '__unplaced',
+            label: 'Other',
+            collapsed: true,
+            entries: displayEntries({ id: '__unplaced', label: 'Other' }, nav.unplaced),
+            children: [],
+          },
+        ]
       : []),
   ]
 }
@@ -170,13 +203,20 @@ export function referenceIndexSections(port: string) {
 export function referenceIndexSectionsFor(model: ApiModelBase, tree: TreeBucket[]) {
   const cards = new Set(topLevelTypesOf(model).map((symbol) => symbol.id))
   const modules = new Set(model.symbols.filter((symbol) => symbol.kind === 'module').map((symbol) => symbol.id))
-  const symbols = new Map(model.symbols.filter((symbol) => !symbol.parent || modules.has(symbol.parent))
-    .map((symbol) => [symbol.publicId ?? symbol.id, symbol]))
+  const symbols = new Map(
+    model.symbols
+      .filter((symbol) => !symbol.parent || modules.has(symbol.parent))
+      .map((symbol) => [symbol.publicId ?? symbol.id, symbol]),
+  )
   const section = (bucket: TreeBucket, name: string, collapsed: boolean) => {
-    const entries = bucket.entries.filter((entry) => !entry.shortcut).map((entry) => symbols.get(entry.id))
+    const entries = bucket.entries
+      .filter((entry) => !entry.shortcut)
+      .map((entry) => symbols.get(entry.id))
       .filter((symbol): symbol is NonNullable<typeof symbol> => symbol !== undefined)
     return {
-      id: bucket.id, name, collapsed,
+      id: bucket.id,
+      name,
+      collapsed,
       types: entries.filter((symbol) => cards.has(symbol.id)),
       free: entries.filter((symbol) => !cards.has(symbol.id)),
     }
@@ -185,7 +225,8 @@ export function referenceIndexSectionsFor(model: ApiModelBase, tree: TreeBucket[
     section(bucket, label, collapsed),
     ...bucket.children.flatMap((child) => sections(child, `${label} — ${child.label}`, collapsed || child.collapsed)),
   ]
-  return tree.flatMap((bucket) => sections(bucket, bucket.label, bucket.collapsed))
+  return tree
+    .flatMap((bucket) => sections(bucket, bucket.label, bucket.collapsed))
     .filter((entry) => entry.types.length || entry.free.length)
 }
 
@@ -200,7 +241,13 @@ export const bucketTotal = (b: TreeBucket): number =>
  * still counts, so Go's Window opens `tmux.Window` before `workspace.Window`.
  */
 export const bucketTarget = <T extends { name: string; slug: string }>(label: string, entries: T[]) =>
-  entries.find((e) => e.name.split(/[.:/]+/).pop()?.toLowerCase() === label.toLowerCase()) ?? entries[0]
+  entries.find(
+    (e) =>
+      e.name
+        .split(/[.:/]+/)
+        .pop()
+        ?.toLowerCase() === label.toLowerCase(),
+  ) ?? entries[0]
 
 /**
  * The entry a bucket's link lands on: a type, from the bucket itself or else
@@ -212,7 +259,9 @@ export const firstEntry = (b: TreeBucket) => {
   if (b.target) return b.target
   const lists = (bucket: TreeBucket): NavEntry[][] => [bucket.entries, ...bucket.children.flatMap(lists)]
   const entries = lists(b)
-  const types = entries.map((list) => list.filter((entry) => OWNER_KINDS.has(entry.kind))).find((list) => list.length > 0)
+  const types = entries
+    .map((list) => list.filter((entry) => OWNER_KINDS.has(entry.kind)))
+    .find((list) => list.length > 0)
   return bucketTarget(b.label, types ?? entries.find((list) => list.length > 0) ?? [])
 }
 
@@ -234,9 +283,15 @@ export function membersByTypeFor(scope: string, model: ApiModelBase): Map<string
   const signals = memberSignals(scope, mentions.mentions)
   for (const owner of model.symbols.filter((symbol) => OWNER_KINDS.has(symbol.kind))) {
     const members = membersOf(model, owner, signals)
-    if (members.length) out.set(owner.publicId ?? owner.id, members.map((symbol) => ({
-      id: symbol.id, name: symbol.name, slug: symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id),
-    })))
+    if (members.length)
+      out.set(
+        owner.publicId ?? owner.id,
+        members.map((symbol) => ({
+          id: symbol.id,
+          name: symbol.name,
+          slug: symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id),
+        })),
+      )
   }
   return out
 }
@@ -255,15 +310,27 @@ export interface ReferenceNavigation {
 }
 
 /** Reject dependency navigation when its reviewed package or source changes. */
-export function validateNavigationDependency(consumer: ApiModel, dependency: ApiModel, selection: ApiDependencyNavigation): void {
+export function validateNavigationDependency(
+  consumer: ApiModel,
+  dependency: ApiModel,
+  selection: ApiDependencyNavigation,
+): void {
   const declaration = consumer.nativeProvenance?.files.find((file) => file.path === selection.declaration.path)
   const source = dependency.sources?.find((entry) => entry.product === 'core' && entry.package === selection.package)
   if (declaration?.sha256 !== selection.declaration.sha256) {
-    throw new Error(`${consumer.port} navigation: review the changed ${selection.declaration.path} dependency declaration`)
+    throw new Error(
+      `${consumer.port} navigation: review the changed ${selection.declaration.path} dependency declaration`,
+    )
   }
-  if (dependency.port !== selection.port || source?.version !== selection.version ||
-    dependency.revision !== selection.revision || (source?.extractedRevision ?? source?.revision) !== selection.revision) {
-    throw new Error(`${consumer.port} navigation requires ${selection.package} ${selection.version} from ${selection.revision}`)
+  if (
+    dependency.port !== selection.port ||
+    source?.version !== selection.version ||
+    dependency.revision !== selection.revision ||
+    (source?.extractedRevision ?? source?.revision) !== selection.revision
+  ) {
+    throw new Error(
+      `${consumer.port} navigation requires ${selection.package} ${selection.version} from ${selection.revision}`,
+    )
   }
 }
 
@@ -279,7 +346,10 @@ export function referenceNavigation(port: string): ReferenceNavigation | undefin
   const symbols = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
   const buckets = new Map<string, TreeBucket>()
   const visit = (entries: TreeBucket[]) => {
-    for (const bucket of entries) { buckets.set(bucket.id, bucket); visit(bucket.children) }
+    for (const bucket of entries) {
+      buckets.set(bucket.id, bucket)
+      visit(bucket.children)
+    }
   }
   visit(tree)
   for (const selection of metadata?.apiDependencyNavigation ?? []) {
@@ -300,7 +370,14 @@ export function referenceNavigation(port: string): ReferenceNavigation | undefin
       if (OWNER_KINDS.has(symbol.kind)) {
         const children = membersOf(dependency, symbol, signals)
         if (children.length) {
-          members.set(id, children.map((child) => ({ id: child.id, name: child.name, slug: child.slug ?? pageSlug(child.publicId ?? child.id) })))
+          members.set(
+            id,
+            children.map((child) => ({
+              id: child.id,
+              name: child.name,
+              slug: child.slug ?? pageSlug(child.publicId ?? child.id),
+            })),
+          )
           for (const child of children) add(child)
         }
       }
@@ -327,46 +404,88 @@ export function referenceNavigation(port: string): ReferenceNavigation | undefin
 export function referenceTree(port: string): ApiTreeJson {
   const navigation = referenceNavigation(port)
   if (!navigation) return { port, buckets: [], members: {} }
-  return referenceTreeFor(port, navigation.model, navigation.tree, { excludeProducts: true, members: navigation.members, hrefs: navigation.hrefs })
+  return referenceTreeFor(port, navigation.model, navigation.tree, {
+    excludeProducts: true,
+    members: navigation.members,
+    hrefs: navigation.hrefs,
+  })
 }
 
 /** Serialize the same tree consumed by initial HTML, without registry lookups. */
-export function referenceTreeFor(scope: string, model: ApiModelBase, tree: TreeBucket[], options: ReferenceTreeOptions = {}): ApiTreeJson {
+export function referenceTreeFor(
+  scope: string,
+  model: ApiModelBase,
+  tree: TreeBucket[],
+  options: ReferenceTreeOptions = {},
+): ApiTreeJson {
   const products = new Set(options.excludeProducts ? productSymbols(model).map((symbol) => symbol.id) : [])
-  const symbols = new Map(model.symbols.filter((symbol) => !products.has(symbol.id)).flatMap((symbol) =>
-    [[symbol.id, symbol], [symbol.publicId ?? symbol.id, symbol]] as const))
+  const symbols = new Map(
+    model.symbols
+      .filter((symbol) => !products.has(symbol.id))
+      .flatMap(
+        (symbol) =>
+          [
+            [symbol.id, symbol],
+            [symbol.publicId ?? symbol.id, symbol],
+          ] as const,
+      ),
+  )
   // The shared cache includes product declarations; scope only this core inventory.
-  const members = new Map([...(options.members ?? membersByTypeFor(scope, model))].flatMap(([id, list]) => {
-    if (!symbols.has(id)) return []
-    const core = list.filter((member) => symbols.has(member.id))
-    return core.length ? [[id, core] as const] : []
-  }))
-  const category = (kind: string) => OWNER_KINDS.has(kind) ? 'types' as const : 'members' as const
+  const members = new Map(
+    [...(options.members ?? membersByTypeFor(scope, model))].flatMap(([id, list]) => {
+      if (!symbols.has(id)) return []
+      const core = list.filter((member) => symbols.has(member.id))
+      return core.length ? [[id, core] as const] : []
+    }),
+  )
+  const category = (kind: string) => (OWNER_KINDS.has(kind) ? ('types' as const) : ('members' as const))
   const bucket = (b: TreeBucket): ApiTreeBucket => ({
     id: b.id,
     label: b.label,
     count: bucketTotal(b),
     slug: firstEntry(b)?.slug ?? null,
-    types: b.entries.map((t) => ({ id: t.id, name: t.name, symbolName: symbols.get(t.id)?.name ?? t.name,
+    types: b.entries.map((t) => ({
+      id: t.id,
+      name: t.name,
+      symbolName: symbols.get(t.id)?.name ?? t.name,
       qualifiedName: symbols.get(t.id) ? qualifiedNameOf(symbols.get(t.id)!) : t.id,
-      slug: t.slug, m: members.has(t.id) ? 1 : 0,
+      slug: t.slug,
+      m: members.has(t.id) ? 1 : 0,
       ...(t.shortcut ? { shortcut: true } : {}),
-      kind: t.kind, category: category(t.kind), summary: symbols.get(t.id)?.doc?.summary ?? '' })),
+      kind: t.kind,
+      category: category(t.kind),
+      summary: symbols.get(t.id)?.doc?.summary ?? '',
+    })),
     children: b.children.map(bucket),
   })
-  const relationships = Object.fromEntries(model.symbols.flatMap((symbol) => {
-    const edges = symbol.references?.filter((edge) => symbols.has(edge.target)) ?? []
-    return symbols.has(symbol.id) && edges.length ? [[symbol.id, edges]] : []
-  }))
+  const relationships = Object.fromEntries(
+    model.symbols.flatMap((symbol) => {
+      const edges = symbol.references?.filter((edge) => symbols.has(edge.target)) ?? []
+      return symbols.has(symbol.id) && edges.length ? [[symbol.id, edges]] : []
+    }),
+  )
   return {
     port: scope,
     buckets: tree.map(bucket),
     ...(Object.keys(options.hrefs ?? {}).length ? { hrefs: options.hrefs } : {}),
     ...(Object.keys(relationships).length ? { relationships } : {}),
-    members: Object.fromEntries([...members].map(([id, list]) => [id, list.map((m) => {
-      const symbol = symbols.get(m.id)
-      const kind = symbol?.kind ?? 'member'
-      return [m.name, m.slug, m.id, kind, category(kind), symbol?.doc?.summary ?? '', symbol ? qualifiedNameOf(symbol) : m.id]
-    })])),
+    members: Object.fromEntries(
+      [...members].map(([id, list]) => [
+        id,
+        list.map((m) => {
+          const symbol = symbols.get(m.id)
+          const kind = symbol?.kind ?? 'member'
+          return [
+            m.name,
+            m.slug,
+            m.id,
+            kind,
+            category(kind),
+            symbol?.doc?.summary ?? '',
+            symbol ? qualifiedNameOf(symbol) : m.id,
+          ]
+        }),
+      ]),
+    ),
   }
 }

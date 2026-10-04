@@ -56,9 +56,7 @@ function commandContinuation(text, quote, inWord) {
       syntax += character
     }
   }
-  const continuation = quote ? 'quote'
-    : escaped ? 'backslash'
-      : /(?:&&|\|\||\|)\s*$/.test(syntax) ? 'operator' : ''
+  const continuation = quote ? 'quote' : escaped ? 'backslash' : /(?:&&|\|\||\|)\s*$/.test(syntax) ? 'operator' : ''
   // Backslash-newline joins the next line without creating a word boundary.
   const joinedWord = escaped && /[^\s;&|()]$/.test(syntax.slice(0, -1))
   return { quote, continuation, inWord: joinedWord }
@@ -89,9 +87,8 @@ export function sessionLines(lines) {
     const text = kind === 'prompt' ? line.slice(PROMPT.length) : line
     const awaitingOperand = continuation === 'operator' && /^\s*(?:#.*)?$/.test(text)
     if (!awaitingOperand) {
-      ({ quote, continuation, inWord } = kind !== 'output'
-        ? commandContinuation(text, quote, inWord)
-        : { quote: '', continuation: '', inWord: false })
+      ;({ quote, continuation, inWord } =
+        kind !== 'output' ? commandContinuation(text, quote, inWord) : { quote: '', continuation: '', inWord: false })
     }
     return { kind, text }
   })

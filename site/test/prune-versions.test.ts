@@ -27,7 +27,11 @@ describe('deployed version pruning', () => {
   }
 
   it('reads the directory prefixes out of an s3 listing', () => {
-    const listing = ['                           PRE latest/', '                           PRE v0.9/', '2026-01-01 12:00:00  1024 index.html'].join('\n')
+    const listing = [
+      '                           PRE latest/',
+      '                           PRE v0.9/',
+      '2026-01-01 12:00:00  1024 index.html',
+    ].join('\n')
     expect(prefixesFrom(listing)).toEqual(['latest', 'v0.9'])
   })
 

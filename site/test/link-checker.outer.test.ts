@@ -7,7 +7,10 @@ import { expect, it } from 'vitest'
 
 const checker = fileURLToPath(new URL('../../scripts/check-links.mjs', import.meta.url))
 
-it.each([{ mode: 'mentions', flags: [] }, { mode: 'all', flags: ['--all'] }])('resolves encoded fragments without excusing missing targets ($mode)', ({ flags }) => {
+it.each([
+  { mode: 'mentions', flags: [] },
+  { mode: 'all', flags: ['--all'] },
+])('resolves encoded fragments without excusing missing targets ($mode)', ({ flags }) => {
   const root = mkdtempSync(join(tmpdir(), 'libtmux-link-fragment-'))
   const anchors = [
     ['LibTmux%5CGet-TmuxWindow.parameter.Server', 'LibTmux\\Get-TmuxWindow.parameter.Server'],
@@ -27,8 +30,8 @@ it.each([{ mode: 'mentions', flags: [] }, { mode: 'all', flags: ['--all'] }])('r
     ['numeric%26%22%27', 'numeric&#38;&#x22;&#39;'],
   ]
   const check = () => spawnSync(process.execPath, [checker, root, ...flags], { encoding: 'utf8' })
-  const links = (path: string) => anchors.map(([fragment]) =>
-    `<a href="${path}#${fragment}" class="api-mention">Target</a>`).join('')
+  const links = (path: string) =>
+    anchors.map(([fragment]) => `<a href="${path}#${fragment}" class="api-mention">Target</a>`).join('')
   try {
     writeFileSync(join(root, 'target.html'), anchors.map(([, id]) => `<p id="${id}">Target</p>`).join('') + links(''))
     writeFileSync(join(root, 'index.html'), links('/target.html'))
@@ -36,21 +39,27 @@ it.each([{ mode: 'mentions', flags: [] }, { mode: 'all', flags: ['--all'] }])('r
     expect(valid.status, valid.stderr).toBe(0)
     expect(valid.stdout).toContain('2 pages, 30 links checked, 0 broken')
 
-    writeFileSync(join(root, 'index.html'), [
-      '<a href="/target.html#missing%3Aanchor" class="api-mention">Missing anchor</a>',
-      '<a href="/missing.html#C++" class="api-mention">Missing page</a>',
-      '<a href="/target.html#once%25252F" class="api-mention">Must not decode twice</a>',
-      '<a href="/target.html#C+%2B+" class="api-mention">Plus is not a space</a>',
-      '<a href="#missing%3Aanchor" class="api-mention">Missing local anchor</a>',
-      '<a href="/target.html#日%FF%FF" class="api-mention">Must retain Unicode</a>',
-    ].join(''))
+    writeFileSync(
+      join(root, 'index.html'),
+      [
+        '<a href="/target.html#missing%3Aanchor" class="api-mention">Missing anchor</a>',
+        '<a href="/missing.html#C++" class="api-mention">Missing page</a>',
+        '<a href="/target.html#once%25252F" class="api-mention">Must not decode twice</a>',
+        '<a href="/target.html#C+%2B+" class="api-mention">Plus is not a space</a>',
+        '<a href="#missing%3Aanchor" class="api-mention">Missing local anchor</a>',
+        '<a href="/target.html#日%FF%FF" class="api-mention">Must retain Unicode</a>',
+      ].join(''),
+    )
     const invalid = check()
     expect(invalid.status, invalid.stderr).toBe(1)
     expect(invalid.stdout).toContain('2 pages, 21 links checked, 6 broken')
     expect(invalid.stdout).toContain('no anchor')
     expect(invalid.stdout).toContain('no page')
 
-    writeFileSync(join(root, 'target.html'), '<p id="��">Wrong Unicode</p><a href="#日%FF" class="api-mention">Missing</a>')
+    writeFileSync(
+      join(root, 'target.html'),
+      '<p id="��">Wrong Unicode</p><a href="#日%FF" class="api-mention">Missing</a>',
+    )
     writeFileSync(join(root, 'index.html'), '<a href="/target.html#日%FF" class="api-mention">Missing</a>')
     const wrongUnicode = check()
     expect(wrongUnicode.status, wrongUnicode.stderr).toBe(1)
@@ -88,12 +97,17 @@ it('checks a large corpus in a small heap and still rejects missing pages and an
   const anchor = 'long-anchor-for-memory-regression'
   const target = 'long-target-for-memory-regression'
   const padding = 'x'.repeat(2 * 1024 * 1024)
-  const check = () => spawnSync(process.execPath, ['--max-old-space-size=64', checker, root, '--all'], {
-    encoding: 'utf8', timeout: 10_000,
-  })
+  const check = () =>
+    spawnSync(process.execPath, ['--max-old-space-size=64', checker, root, '--all'], {
+      encoding: 'utf8',
+      timeout: 10_000,
+    })
   try {
-    for (let i = 0; i < 48; i++) writeFileSync(join(root, `large-corpus-page-${i}.html`),
-      `<h1 id="${anchor}">${padding}</h1><a href="/large-corpus-page-${(i + 1) % 48}.html#${anchor}">Next</a><a href="/${target}/#${anchor}">There</a>`)
+    for (let i = 0; i < 48; i++)
+      writeFileSync(
+        join(root, `large-corpus-page-${i}.html`),
+        `<h1 id="${anchor}">${padding}</h1><a href="/large-corpus-page-${(i + 1) % 48}.html#${anchor}">Next</a><a href="/${target}/#${anchor}">There</a>`,
+      )
     const missingPage = check()
     expect(missingPage.status, missingPage.stderr).toBe(1)
     expect(missingPage.stdout).toContain('48 pages, 96 links checked, 48 broken')

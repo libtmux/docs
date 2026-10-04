@@ -24,9 +24,6 @@ export const MODEL_DIR = join(SITE_ROOT, 'src/data/api')
  * than as the collision it is. A build sets nothing and keeps the plain name.
  */
 const worker = process.env.VITEST_WORKER_ID
-export const DB_PATH = join(
-  SITE_ROOT,
-  `node_modules/.cache/libtmux-api${worker ? `-w${worker}` : ''}.sqlite`,
-)
+export const DB_PATH = join(SITE_ROOT, `node_modules/.cache/libtmux-api${worker ? `-w${worker}` : ''}.sqlite`)
 
 export const SCHEMA_PATH = join(here, 'schema.sql')

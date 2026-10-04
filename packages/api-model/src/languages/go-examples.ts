@@ -11,9 +11,7 @@ export interface CompleteGoExample {
 }
 
 /** Read opt-in native examples without turning ordinary test helpers into API pages. */
-export async function readCompleteGoExamples(
-  files: { file: string; code: string }[],
-): Promise<CompleteGoExample[]> {
+export async function readCompleteGoExamples(files: { file: string; code: string }[]): Promise<CompleteGoExample[]> {
   const parser = await parserFor('go')
   const examples: CompleteGoExample[] = []
   const seen = new Set<string>()
@@ -34,13 +32,15 @@ export async function readCompleteGoExamples(
         const name = declaration.childForFieldName('name')?.text ?? ''
         const match = /^Example([A-Z][A-Za-z0-9]*)(?:_([A-Z][A-Za-z0-9]*))?_complete$/.exec(name)
         if (!match) fail('expected ExampleName_complete or ExampleType_Method_complete')
-        if (declaration.childForFieldName('parameters')?.namedChildCount ||
-            declaration.childForFieldName('result') || declaration.childForFieldName('type_parameters')) {
+        if (
+          declaration.childForFieldName('parameters')?.namedChildCount ||
+          declaration.childForFieldName('result') ||
+          declaration.childForFieldName('type_parameters')
+        ) {
           fail('Example functions cannot have parameters, results, or type parameters')
         }
         const scope = basename(dirname(file))
-        const packageName = root.namedChildren.find((node) => node?.type === 'package_clause')
-          ?.namedChildren[0]?.text
+        const packageName = root.namedChildren.find((node) => node?.type === 'package_clause')?.namedChildren[0]?.text
         if (packageName !== `${scope}_test`) fail('use an external test package beside its API')
         const symbol = `${scope}.${match![1]}${match![2] ? `.${match![2]}` : ''}`
         if (seen.has(symbol)) fail(`duplicate example for ${symbol}`)
@@ -58,8 +58,15 @@ export async function readCompleteGoExamples(
         if (!intro) fail('a task description is required')
         const output = /\/\/ Output:([^\n]*)\n((?:[\t ]*\/\/[^\n]*\n)*)[\t ]*\}$/.exec(declaration.text)
         if (!output) fail('a final Output assertion is required')
-        const expected = [output![1].trim(), ...output![2].trimEnd().split('\n')
-          .map((line) => line.replace(/^[\t ]*\/\/ ?/, ''))].join('\n').trim()
+        const expected = [
+          output![1].trim(),
+          ...output![2]
+            .trimEnd()
+            .split('\n')
+            .map((line) => line.replace(/^[\t ]*\/\/ ?/, '')),
+        ]
+          .join('\n')
+          .trim()
         if (!expected) fail('the Output assertion must describe an observable result')
         seen.add(symbol)
         examples.push({ symbol, file, code, intro, output: expected })
@@ -98,13 +105,15 @@ export function attachCompleteGoExamples(
       },
       {
         lang: 'go',
-        intro: 'Save this complete example as example_test.go. It creates a private temporary socket and stops its server before removing the directory. Cleanup failure fails the example and retains the socket directory.',
+        intro:
+          'Save this complete example as example_test.go. It creates a private temporary socket and stops its server before removing the directory. Cleanup failure fails the example and retains the socket directory.',
         sourceUrl: `https://github.com/${source.repo}/blob/${source.revision}/${example.file}`,
         code: example.code,
       },
       {
         lang: 'console',
-        intro: 'Run the saved file. Go checks the Output comment and fails on different output or an operation or cleanup error:',
+        intro:
+          'Run the saved file. Go checks the Output comment and fails on different output or an operation or cleanup error:',
         code: '$ GOWORK=off go test -count=1 -v example_test.go\n',
       },
     ]

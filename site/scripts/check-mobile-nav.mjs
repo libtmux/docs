@@ -25,9 +25,11 @@ import { chromium } from 'playwright'
 import { checkApiNavigation } from './check-navigation.mjs'
 const BASE = (process.argv[2] ?? 'http://localhost:8080').replace(/\/$/, '')
 const b = await chromium.launch()
-const fails = [], ok = []
+const fails = [],
+  ok = []
 const note = (pass, msg) => (pass ? ok : fails).push(msg)
-const WITH_TOC = '/tmux/topics/traversal/', NO_TOC = '/tmux/concepts/'
+const WITH_TOC = '/tmux/topics/traversal/',
+  NO_TOC = '/tmux/concepts/'
 const ctx = await b.newContext()
 const apiPage = await ctx.newPage()
 try {
@@ -43,29 +45,38 @@ async function page(path, w = 390) {
   await p.goto(BASE + path, { waitUntil: 'networkidle' })
   return p
 }
-const openState = (p, id, closedClass) => p.evaluate(([i, c]) => {
-  const el = document.getElementById(i)
-  return !!el && !el.classList.contains(c)
-}, [id, closedClass])
+const openState = (p, id, closedClass) =>
+  p.evaluate(
+    ([i, c]) => {
+      const el = document.getElementById(i)
+      return !!el && !el.classList.contains(c)
+    },
+    [id, closedClass],
+  )
 
 // aria-expanded
 {
-  const p = await page(WITH_TOC), t = p.locator('#mobile-sidebar-toggle')
+  const p = await page(WITH_TOC),
+    t = p.locator('#mobile-sidebar-toggle')
   note((await t.getAttribute('aria-expanded')) === 'false', 'aria-expanded=false when closed')
-  await t.click(); await p.waitForTimeout(250)
+  await t.click()
+  await p.waitForTimeout(250)
   note((await t.getAttribute('aria-expanded')) === 'true', 'aria-expanded=true when open')
-  await p.keyboard.press('Escape'); await p.waitForTimeout(250)
+  await p.keyboard.press('Escape')
+  await p.waitForTimeout(250)
   note((await t.getAttribute('aria-expanded')) === 'false', 'aria-expanded back to false after Escape')
   await p.close()
 }
 // focus in, and back — asserted only after confirming it actually entered
 {
   const p = await page(WITH_TOC)
-  await p.locator('#mobile-sidebar-toggle').click(); await p.waitForTimeout(300)
+  await p.locator('#mobile-sidebar-toggle').click()
+  await p.waitForTimeout(300)
   const inside = await p.evaluate(() => !!document.getElementById('mobile-sidebar')?.contains(document.activeElement))
   note(inside, 'focus moves into the sidebar drawer on open')
   if (inside) {
-    await p.keyboard.press('Escape'); await p.waitForTimeout(300)
+    await p.keyboard.press('Escape')
+    await p.waitForTimeout(300)
     note(await p.evaluate(() => document.activeElement?.id === 'mobile-sidebar-toggle'), 'focus returns to the toggle')
   } else fails.push('focus return untestable — focus never entered')
   await p.close()
@@ -76,7 +87,8 @@ const openState = (p, id, closedClass) => p.evaluate(([i, c]) => {
   const reachable = await p.evaluate(() => {
     const a = document.getElementById('mobile-sidebar')?.querySelector('a')
     if (!a) return false
-    a.focus(); return document.activeElement === a
+    a.focus()
+    return document.activeElement === a
   })
   note(!reachable, 'closed drawer is not focusable')
   await p.close()
@@ -84,15 +96,21 @@ const openState = (p, id, closedClass) => p.evaluate(([i, c]) => {
 // scroll lock released across the breakpoint
 {
   const p = await page(WITH_TOC)
-  await p.locator('#mobile-sidebar-toggle').click(); await p.waitForTimeout(250)
-  await p.setViewportSize({ width: 1440, height: 900 }); await p.waitForTimeout(400)
-  note(!(await p.evaluate(() => document.body.style.overflow === 'hidden')), 'scroll lock released when resized to desktop')
+  await p.locator('#mobile-sidebar-toggle').click()
+  await p.waitForTimeout(250)
+  await p.setViewportSize({ width: 1440, height: 900 })
+  await p.waitForTimeout(400)
+  note(
+    !(await p.evaluate(() => document.body.style.overflow === 'hidden')),
+    'scroll lock released when resized to desktop',
+  )
   await p.close()
 }
 // with one drawer open, the toolbar behind it is not reachable
 {
   const p = await page(WITH_TOC)
-  await p.locator('#mobile-sidebar-toggle').click(); await p.waitForTimeout(300)
+  await p.locator('#mobile-sidebar-toggle').click()
+  await p.waitForTimeout(300)
   note(await openState(p, 'mobile-sidebar', '-translate-x-full'), 'sidebar opened (precondition)')
   const covered = await p.evaluate(() => {
     const btn = document.getElementById('mobile-toc-toggle')
@@ -106,7 +124,8 @@ const openState = (p, id, closedClass) => p.evaluate(([i, c]) => {
 // and if both are ever opened programmatically, the first closes
 {
   const p = await page(WITH_TOC)
-  await p.locator('#mobile-sidebar-toggle').click(); await p.waitForTimeout(250)
+  await p.locator('#mobile-sidebar-toggle').click()
+  await p.waitForTimeout(250)
   note(await openState(p, 'mobile-sidebar', '-translate-x-full'), 'sidebar opened (precondition)')
   await p.evaluate(() => document.getElementById('mobile-toc-toggle').click())
   await p.waitForTimeout(300)
@@ -120,12 +139,20 @@ const openState = (p, id, closedClass) => p.evaluate(([i, c]) => {
 {
   const p = await page(NO_TOC)
   note((await p.locator('#mobile-toc-toggle').count()) === 0, 'no contents button without headings')
-  await p.locator('#mobile-sidebar-toggle').click(); await p.waitForTimeout(250)
+  await p.locator('#mobile-sidebar-toggle').click()
+  await p.waitForTimeout(250)
   note(await openState(p, 'mobile-sidebar', '-translate-x-full'), 'sidebar opens on a page with no contents')
   await p.close()
 }
 // breakpoint
-for (const [w, want] of [[360, true], [390, true], [768, true], [1023, true], [1024, false], [1440, false]]) {
+for (const [w, want] of [
+  [360, true],
+  [390, true],
+  [768, true],
+  [1023, true],
+  [1024, false],
+  [1440, false],
+]) {
   const p = await page(WITH_TOC, w)
   const settings = p.locator('[data-context-settings-toggle]')
   if (await settings.isVisible()) await settings.click()
@@ -141,19 +168,29 @@ for (const path of ['/go/latest/reference/', '/py/stable/reference/libtmux-serve
   const contents = p.locator('#api-nav')
   note(await trigger.isVisible(), `${path}: phone product picker is outside the closed drawer`)
   const headingBefore = await p.locator('main h1').first().boundingBox()
-  note(headingBefore && headingBefore.y >= 0 && headingBefore.y + headingBefore.height <= p.viewportSize().height,
-    `${path}: phone heading is fully visible above the fold`)
-  note((await p.locator('[data-documentation-context]').boundingBox())?.height <= 58,
-    `${path}: documentation context stays compact`)
+  note(
+    headingBefore && headingBefore.y >= 0 && headingBefore.y + headingBefore.height <= p.viewportSize().height,
+    `${path}: phone heading is fully visible above the fold`,
+  )
+  note(
+    (await p.locator('[data-documentation-context]').boundingBox())?.height <= 58,
+    `${path}: documentation context stays compact`,
+  )
   await trigger.click()
-  note((await p.locator('main h1').first().boundingBox())?.y === headingBefore?.y,
-    `${path}: opening the picker does not move the heading`)
-  const workspace = menu.locator('[data-surface-group]').filter({ has: p.locator('summary strong', { hasText: /^Workspace Manager$/ }) })
+  note(
+    (await p.locator('main h1').first().boundingBox())?.y === headingBefore?.y,
+    `${path}: opening the picker does not move the heading`,
+  )
+  const workspace = menu
+    .locator('[data-surface-group]')
+    .filter({ has: p.locator('summary strong', { hasText: /^Workspace Manager$/ }) })
   await workspace.locator(':scope > summary').click()
   const home = workspace.getByRole('link', { name: 'Home', exact: true })
   note(await home.isVisible(), `${path}: workspace remains reachable from the product picker`)
-  note(await home.getAttribute('href') === new URL(`${BASE}${path.replace(/reference\/.*$/, 'workspace/')}`).pathname,
-    `${path}: workspace keeps the current port and version`)
+  note(
+    (await home.getAttribute('href')) === new URL(`${BASE}${path.replace(/reference\/.*$/, 'workspace/')}`).pathname,
+    `${path}: workspace keeps the current port and version`,
+  )
   await p.keyboard.press('Escape')
   note(!(await menu.evaluate((el) => el.open)), `${path}: Escape closes the picker`)
   await p.locator('[data-api-nav-toggle]').click()
@@ -168,15 +205,22 @@ for (const path of ['/go/latest/reference/', '/py/stable/reference/libtmux-serve
   await p.setViewportSize({ width: 390, height: 800 })
   await contents.waitFor({ state: 'hidden' })
   note(await trigger.isVisible(), `${path}: narrowing keeps the product picker`)
-  note(await p.locator('[data-api-nav-toggle]').evaluate((element) => document.activeElement === element),
-    `${path}: narrowing focused navigation returns focus to its toggle`)
+  note(
+    await p.locator('[data-api-nav-toggle]').evaluate((element) => document.activeElement === element),
+    `${path}: narrowing focused navigation returns focus to its toggle`,
+  )
   const heading = p.locator('main h1').first()
-  await heading.evaluate((element) => { element.tabIndex = -1; element.focus() })
+  await heading.evaluate((element) => {
+    element.tabIndex = -1
+    element.focus()
+  })
   for (const width of [1440, 768, 390]) {
     await p.setViewportSize({ width, height: 900 })
     await p.waitForFunction((narrow) => document.querySelector('#api-nav').inert === narrow, width < 896)
-    note(await heading.evaluate((element) => document.activeElement === element),
-      `${path}: resizing to ${width}px preserves focus in the content`)
+    note(
+      await heading.evaluate((element) => document.activeElement === element),
+      `${path}: resizing to ${width}px preserves focus in the content`,
+    )
   }
   await p.close()
 }
@@ -188,8 +232,10 @@ for (const width of [390, 1440]) {
   await results.locator('a').first().waitFor()
   const box = await results.boundingBox()
   const dialog = await p.locator('#search-modal').boundingBox()
-  note(box && dialog && box.y + box.height <= dialog.y + dialog.height,
-    `search results fit inside the dialog at ${width}px`)
+  note(
+    box && dialog && box.y + box.height <= dialog.y + dialog.height,
+    `search results fit inside the dialog at ${width}px`,
+  )
   if (box) {
     await p.mouse.move(box.x + box.width / 2, box.y + Math.min(50, box.height / 2))
     await p.mouse.wheel(0, 500)

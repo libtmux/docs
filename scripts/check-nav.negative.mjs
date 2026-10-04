@@ -44,10 +44,7 @@ const CASES = {
         // No `not` clauses: exactly the CapturePaneRequest case, where two
         // unrelated buckets both claim and declaration order decides.
         symbols: [sym('FooBar')],
-        buckets: [
-          bucket('foo', { kind: 'name', prefix: 'Foo' }),
-          bucket('bar', { kind: 'name', suffix: 'Bar' }),
-        ],
+        buckets: [bucket('foo', { kind: 'name', prefix: 'Foo' }), bucket('bar', { kind: 'name', suffix: 'Bar' })],
       },
     },
   },
@@ -128,16 +125,12 @@ let failures = 0
 for (const [name, spec] of Object.entries(CASES)) {
   const dir = mkdtempSync(join(tmpdir(), `check-nav-${name}-`))
   try {
-    for (const [port, { symbols, buckets, unsettled, hideChildren, extraChild, model }] of Object.entries(
-      spec.ports,
-    )) {
+    for (const [port, { symbols, buckets, unsettled, hideChildren, extraChild, model }] of Object.entries(spec.ports)) {
       if (model) writeFileSync(join(dir, `${port}.json`), JSON.stringify({ port, symbols: model }))
       // The compiled nav knows about the child; the written tree will not.
       const withChild = extraChild
         ? buckets.map((b, i) =>
-            i === 0
-              ? { ...b, children: [{ id: extraChild.id, label: extraChild.id, match: extraChild.match }] }
-              : b,
+            i === 0 ? { ...b, children: [{ id: extraChild.id, label: extraChild.id, match: extraChild.match }] } : b,
           )
         : buckets
       const nav = compileNav({ port, buckets: withChild, unsettled }, symbols, ctx)

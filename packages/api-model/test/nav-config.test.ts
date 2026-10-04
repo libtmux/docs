@@ -5,12 +5,7 @@ import { compileNav } from '../src/nav.ts'
 import { navSidecar } from '../src/nav-sidecar.ts'
 import type { ApiModel, ApiSymbol } from '../src/model.ts'
 
-const symbol = (
-  id: string,
-  name: string,
-  file: string,
-  apiScope: ApiSymbol['apiScope'] = 'exported',
-): ApiSymbol => ({
+const symbol = (id: string, name: string, file: string, apiScope: ApiSymbol['apiScope'] = 'exported'): ApiSymbol => ({
   id,
   name,
   kind: 'class',
@@ -39,7 +34,14 @@ it('keeps explicit workspace helpers out of unrelated naming buckets', () => {
   const compiled = compileNav(
     NAV.cxx,
     [
-      { ...symbol('libtmux::workspace::BuildEvent', 'BuildEvent', 'examples/workspace/include/libtmux_consumers/workspace.hpp'), kind: 'struct' },
+      {
+        ...symbol(
+          'libtmux::workspace::BuildEvent',
+          'BuildEvent',
+          'examples/workspace/include/libtmux_consumers/workspace.hpp',
+        ),
+        kind: 'struct',
+      },
       symbol('libtmux::OtherEvent', 'OtherEvent', 'include/libtmux/events.hpp'),
     ],
     { conceptIds: {}, moduleOf: () => 'libtmux' },
@@ -65,18 +67,21 @@ it('groups F# command composition and dispatch failures by their task', () => {
 })
 
 describe('native PowerShell and Julia navigation', () => {
-  const model = (port: string): ApiModel => JSON.parse(
-    readFileSync(new URL(`../../../site/src/data/api/${port}.json`, import.meta.url), 'utf8'),
-  )
+  const model = (port: string): ApiModel =>
+    JSON.parse(readFileSync(new URL(`../../../site/src/data/api/${port}.json`, import.meta.url), 'utf8'))
 
   it('places PowerShell command chains, literal pane input and owned event operations by task', () => {
     const nav = navSidecar('powershell', model('powershell'))!
     expect(nav.placement).toMatchObject({
-      'LibTmux\\Invoke-TmuxChain': 'commands', 'LibTmux\\Send-TmuxText': 'pane',
-      'LibTmux\\Wait-TmuxChannel': 'control', 'LibTmux\\Watch-TmuxEvent': 'control',
+      'LibTmux\\Invoke-TmuxChain': 'commands',
+      'LibTmux\\Send-TmuxText': 'pane',
+      'LibTmux\\Wait-TmuxChannel': 'control',
+      'LibTmux\\Watch-TmuxEvent': 'control',
     })
     expect(nav.assignments.server.slice(0, 3).map((entry) => entry.id)).toEqual([
-      'LibTmux\\New-TmuxServer', 'LibTmux\\Get-TmuxServer', 'LibTmux\\Connect-TmuxServer',
+      'LibTmux\\New-TmuxServer',
+      'LibTmux\\Get-TmuxServer',
+      'LibTmux\\Connect-TmuxServer',
     ])
     expect(nav.unplaced.map((entry) => entry.id)).toEqual(['LibTmux'])
     expect(nav.diagnostics.unmatched).toEqual([])
@@ -87,8 +92,18 @@ describe('native PowerShell and Julia navigation', () => {
   it('keeps Julia predicates, native interface extensions and workspace functions with their operations', () => {
     const nav = navSidecar('julia', model('julia'))!
     const expected = {
-      queries: ['Criterion', 'Selection', 'WireObject', 'Filters.OneOf', 'Filters.AllRelated',
-        'RowProjection', 'Base.IndexStyle', 'Base.getindex', 'Tables.schema', 'Tables.rows'],
+      queries: [
+        'Criterion',
+        'Selection',
+        'WireObject',
+        'Filters.OneOf',
+        'Filters.AllRelated',
+        'RowProjection',
+        'Base.IndexStyle',
+        'Base.getindex',
+        'Tables.schema',
+        'Tables.rows',
+      ],
       control: ['ObservationCursor', 'ObservationStream', 'observe_output', 'Base.iterate', 'Base.take!'],
       snapshots: ['snapshotof', 'hascoverage', 'Base.propertynames'],
       commands: ['run_batch', 'run_group'],
@@ -106,14 +121,25 @@ describe('native PowerShell and Julia navigation', () => {
     expect(nav.placement['LibTmuxWorkspace.Base.showerror']).toBe('errors')
     expect(nav.assignments.server[0].id).toBe('LibTmux.Server')
     expect(nav.assignments.session[0].id).toBe('LibTmux.sessions')
-    expect(nav.buckets.slice(0, 5).map((bucket) => bucket.id)).toEqual(['server', 'session', 'window', 'pane', 'client'])
+    expect(nav.buckets.slice(0, 5).map((bucket) => bucket.id)).toEqual([
+      'server',
+      'session',
+      'window',
+      'pane',
+      'client',
+    ])
     expect(nav.diagnostics.unmatched).toEqual([])
     expect(nav.diagnostics.ambiguous).toEqual([])
     expect(nav.diagnostics.staleUnsettled).toEqual([])
-    expect(nav.unplaced.map((entry) => entry.id).sort()).toEqual([
-      'LibTmux', 'LibTmux.EntityRef', 'LibTmux.TmuxID', 'LibTmux.entitykey',
-      ...['==', 'hash', 'isequal', 'string', 'show'].map((name) => `LibTmux.Base.${name}`),
-    ].sort())
+    expect(nav.unplaced.map((entry) => entry.id).sort()).toEqual(
+      [
+        'LibTmux',
+        'LibTmux.EntityRef',
+        'LibTmux.TmuxID',
+        'LibTmux.entitykey',
+        ...['==', 'hash', 'isequal', 'string', 'show'].map((name) => `LibTmux.Base.${name}`),
+      ].sort(),
+    )
   })
 
   it.each(['powershell', 'julia'])('still reports a new unrelated public declaration in %s', (port) => {

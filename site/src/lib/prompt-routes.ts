@@ -38,5 +38,4 @@ export const PROMPT_PAIRS = PORTS.flatMap((port) => TOPICS.map((topic) => ({ por
 export const topicPath = (topicId: string): string => `prompts/${topicId}`
 
 /** Site-relative path of one prompt's plain-text file, without the locale. */
-export const textPath = (portSlug: string, topicId: string): string =>
-  `prompts/${portSlug}/${topicId}.txt`
+export const textPath = (portSlug: string, topicId: string): string => `prompts/${portSlug}/${topicId}.txt`

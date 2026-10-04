@@ -33,14 +33,7 @@ import {
  */
 
 /** Kinds an extension block can attach members to. */
-const EXTENDABLE: ReadonlySet<SymbolKind> = new Set([
-  'class',
-  'interface',
-  'struct',
-  'enum',
-  'trait',
-  'exception',
-])
+const EXTENDABLE: ReadonlySet<SymbolKind> = new Set(['class', 'interface', 'struct', 'enum', 'trait', 'exception'])
 
 /**
  * Fold an extension block onto the type it extends.
@@ -137,8 +130,7 @@ function mergePartials(symbols: ApiSymbol[]): ApiSymbol[] {
       out.push(s)
       continue
     }
-    const union = (a?: string[], b?: string[]) =>
-      a || b ? [...new Set([...(a ?? []), ...(b ?? [])])] : undefined
+    const union = (a?: string[], b?: string[]) => (a || b ? [...new Set([...(a ?? []), ...(b ?? [])])] : undefined)
     seen.extends = union(seen.extends, s.extends)
     seen.modifiers = union(seen.modifiers, s.modifiers) as ApiSymbol['modifiers']
 
@@ -147,8 +139,10 @@ function mergePartials(symbols: ApiSymbol[]): ApiSymbol[] {
     // a `partial class` is one scope however many files it is written across.
     // Keeping only the first signature would drop the others invisibly.
     const fresh = s.signatures.filter(
-      (sig) => !seen.signatures.some((k) => k.params.length === sig.params.length &&
-        k.params.every((p, i) => p.type === sig.params[i]?.type)),
+      (sig) =>
+        !seen.signatures.some(
+          (k) => k.params.length === sig.params.length && k.params.every((p, i) => p.type === sig.params[i]?.type),
+        ),
     )
     if (fresh.length) {
       seen.signatures.push(...fresh)
@@ -173,10 +167,7 @@ function mergePartials(symbols: ApiSymbol[]): ApiSymbol[] {
  * eight ports put them in four different places — `_test.go` beside the
  * source, `src/test/java`, `*.test.ts`, and a sibling `Tests/` project.
  */
-const LAYOUT: Record<
-  string,
-  { ext: string; skip: RegExp; moduleFrom?: 'file' | 'dir' | 'namespace' }
-> = {
+const LAYOUT: Record<string, { ext: string; skip: RegExp; moduleFrom?: 'file' | 'dir' | 'namespace' }> = {
   py: { ext: 'py', skip: /(^|\/)(tests?|conftest)\b|_test\.py$|^test_/ },
   ts: { ext: 'ts', skip: /\.test\.ts$|\.spec\.ts$|(^|\/)__tests__\// },
   rs: { ext: 'rs', skip: /(^|\/)tests?\// },
@@ -270,7 +261,7 @@ function sourceFiles(root: string, port: string): { file: string; module: string
  * its own docstring, not its parent's.
  */
 function resolveInheritance(symbols: ApiSymbol[], stopList: string[]): ApiSymbol[] {
-  const byId = new Map(symbols.map((s) => [s.id, s]));
+  const byId = new Map(symbols.map((s) => [s.id, s]))
   // Classes are addressable by bare name as well as by id: a base is written
   // `class Pane(Obj)`, not `class Pane(libtmux.neo.Obj)`.
   const byName = new Map<string, ApiSymbol>()
@@ -315,10 +306,12 @@ function resolveInheritance(symbols: ApiSymbol[], stopList: string[]): ApiSymbol
           ...member,
           id: `${cls.id}.${member.name}`,
           parent: cls.id,
-          ...(cls.qualifiedName === undefined ? {} : {
-            qualifiedName: `${cls.qualifiedName}.${member.name}`,
-            namespace: cls.namespace,
-          }),
+          ...(cls.qualifiedName === undefined
+            ? {}
+            : {
+                qualifiedName: `${cls.qualifiedName}.${member.name}`,
+                namespace: cls.namespace,
+              }),
           inheritedFrom: member.inheritedFrom ?? baseSym.id,
         })
       }
@@ -443,9 +436,7 @@ export async function extractProject(opts: {
   // Before inheritance, so a base class is one type rather than several.
   const merged = mergePartials(mergeExtensions(symbols, spec?.extensionKind))
 
-  const resolved = options.inheritedMembers
-    ? resolveInheritance(merged, options.inheritanceStopList)
-    : merged
+  const resolved = options.inheritedMembers ? resolveInheritance(merged, options.inheritanceStopList) : merged
   // Public paths last: inherited members need their owner to exist first, and
   // an inherited member's public path comes from the class it landed on, not
   // from the base it was declared in. Only Python re-exports through
@@ -458,9 +449,7 @@ export async function extractProject(opts: {
   // Pruning happens after public ids resolve: the rule names the path a
   // consumer would import by, which is `publicId`, not the declaration path.
   const rules = options.excludePaths
-  const kept = rules.length
-    ? withPublic.filter((s) => !rules.some((re) => re.test(s.publicId ?? s.id)))
-    : withPublic
+  const kept = rules.length ? withPublic.filter((s) => !rules.some((re) => re.test(s.publicId ?? s.id))) : withPublic
   const owned = rehomeOrphans(kept)
 
   return {

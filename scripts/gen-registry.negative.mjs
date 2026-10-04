@@ -21,7 +21,10 @@ const real = join(here, '..', 'site/src/data/registry.json')
 
 function run(file) {
   try {
-    const out = execFileSync('node', [script, '--check', '--offline', '--out', file], { encoding: 'utf8', stdio: 'pipe' })
+    const out = execFileSync('node', [script, '--check', '--offline', '--out', file], {
+      encoding: 'utf8',
+      stdio: 'pipe',
+    })
     return { code: 0, out }
   } catch (err) {
     return { code: err.status, out: `${err.stdout ?? ''}${err.stderr ?? ''}` }
@@ -53,12 +56,18 @@ const check = (name, ok, detail) => {
 }
 
 const mutations = [
-  ['a dropped port is caught', (s) => {
-    const data = JSON.parse(s)
-    delete data.ports.rs
-    return `${JSON.stringify(data, null, 2)}\n`
-  }],
-  ['a hand-edited version is caught', (s) => s.replace(/("rs": \{\n\s+"status": "\w+",\n\s+"version": ")([^"]+)"/, '$10.0.0-edited"')],
+  [
+    'a dropped port is caught',
+    (s) => {
+      const data = JSON.parse(s)
+      delete data.ports.rs
+      return `${JSON.stringify(data, null, 2)}\n`
+    },
+  ],
+  [
+    'a hand-edited version is caught',
+    (s) => s.replace(/("rs": \{\n\s+"status": "\w+",\n\s+"version": ")([^"]+)"/, '$10.0.0-edited"'),
+  ],
   ['a file the generator would not write is caught', (s) => `${JSON.stringify(JSON.parse(s))}\n`],
 ]
 

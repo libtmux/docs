@@ -111,9 +111,7 @@ function connect(): { db: DatabaseSync; statements: Statements } {
       `SELECT port, id, public_id, kind, summary FROM symbol
        WHERE name = ? AND version = ? AND port != ? ORDER BY port`,
     ),
-    mentionsOfSymbol: opened.prepare(
-      'SELECT * FROM mention WHERE port = ? AND symbol_id = ? ORDER BY section, page',
-    ),
+    mentionsOfSymbol: opened.prepare('SELECT * FROM mention WHERE port = ? AND symbol_id = ? ORDER BY section, page'),
     mentionsOnPage: opened.prepare('SELECT * FROM mention WHERE page = ? ORDER BY port, symbol_id'),
     conceptOfSymbol: opened.prepare(
       `SELECT b.concept, c.label FROM concept_binding b
@@ -166,11 +164,7 @@ export function symbolById(port: string, version: string, id: string): SymbolRow
 }
 
 /** One symbol by the path it is imported and anchored by. */
-export function symbolByPublicId(
-  port: string,
-  version: string,
-  publicId: string,
-): SymbolRow | undefined {
+export function symbolByPublicId(port: string, version: string, publicId: string): SymbolRow | undefined {
   return row<SymbolRow>(connect().statements.byPublicId, port, version, publicId)
 }
 
@@ -231,10 +225,7 @@ export function mentionsOn(page: string): MentionRow[] {
  * This is the question a reference page asks once per rendered symbol, which
  * is why it is a seek rather than a scan over every concept's bindings.
  */
-export function conceptOf(
-  port: string,
-  symbolId: string,
-): { concept: string; label: string } | undefined {
+export function conceptOf(port: string, symbolId: string): { concept: string; label: string } | undefined {
   return row<{ concept: string; label: string }>(connect().statements.conceptOfSymbol, port, symbolId)
 }
 

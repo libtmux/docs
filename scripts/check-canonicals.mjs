@@ -24,9 +24,10 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { referenceDirs } from './reference-trees.mjs'
 
-const { PORTS: PORT_DEFS } = await import(`file://${join(dirname(fileURLToPath(import.meta.url)), '../site/src/lib/ports.ts')}`)
+const { PORTS: PORT_DEFS } = await import(
+  `file://${join(dirname(fileURLToPath(import.meta.url)), '../site/src/lib/ports.ts')}`
+)
 const PORTS = PORT_DEFS.map((p) => p.slug)
-
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const defaultSite = join(repoRoot, '_site')
@@ -61,10 +62,12 @@ if (siteDir === defaultSite && existsSync(lock)) {
  * publishing one prefix is its own default, and Python's two make `stable`
  * the canonical one.
  */
-const DEFAULTS = Object.fromEntries(PORTS.map((port) => {
-  const built = referenceDirs(siteDir, port).map((dir) => dir.split('/').at(-2))
-  return [port, built.includes('stable') ? 'stable' : built[0]]
-}).filter(([, version]) => version))
+const DEFAULTS = Object.fromEntries(
+  PORTS.map((port) => {
+    const built = referenceDirs(siteDir, port).map((dir) => dir.split('/').at(-2))
+    return [port, built.includes('stable') ? 'stable' : built[0]]
+  }).filter(([, version]) => version),
+)
 
 const roots = PORTS.flatMap((port) => referenceDirs(siteDir, port, { products: true }))
 if (!roots.length) {
@@ -111,8 +114,9 @@ for (const file of pages) {
   const refresh = html.match(REFRESH)
   // Contextual glossaries render the shared definitions inside each sidebar.
   // Only these exact routes may use the existing shared glossary canonical.
-  const contextualGlossary = ['', 'workspace/', 'mcp/'].some((product) =>
-    own === `/${port}/${version}/${product}reference/glossary/`)
+  const contextualGlossary = ['', 'workspace/', 'mcp/'].some(
+    (product) => own === `/${port}/${version}/${product}reference/glossary/`,
+  )
   if (contextualGlossary && declared === '/reference/glossary/') {
     checked += 1
     if (!glossaryCanonical || glossaryCanonical !== found[1] || refresh || REFRESH.test(glossaryHtml)) {
@@ -129,19 +133,25 @@ for (const file of pages) {
     const targetFile = join(siteDir, declared, 'index.html')
     const target = existsSync(targetFile) ? readFileSync(targetFile, 'utf8') : ''
     const targetCanonical = target.match(CANONICAL)
-    const valid = /<meta\s+name="robots"\s+content="noindex"/i.test(html) &&
+    const valid =
+      /<meta\s+name="robots"\s+content="noindex"/i.test(html) &&
       destination.href === new URL(found[1]).href &&
-      fallback && new URL(fallback[1], found[1]).href === destination.href &&
-      declared !== own && declared.startsWith(prefix) && targetCanonical &&
-      new URL(targetCanonical[1]).origin === destination.origin && !REFRESH.test(target)
+      fallback &&
+      new URL(fallback[1], found[1]).href === destination.href &&
+      declared !== own &&
+      declared.startsWith(prefix) &&
+      targetCanonical &&
+      new URL(targetCanonical[1]).origin === destination.origin &&
+      !REFRESH.test(target)
     checked += 1
     if (valid) redirects += 1
     else wrong.push({ file, want: `${own} (a noindex redirect within ${prefix})`, got: declared })
     continue
   }
-  const want = DEFAULTS[port] && DEFAULTS[port] !== version
-    ? own.replace(`/${port}/${version}/`, `/${port}/${DEFAULTS[port]}/`)
-    : own
+  const want =
+    DEFAULTS[port] && DEFAULTS[port] !== version
+      ? own.replace(`/${port}/${version}/`, `/${port}/${DEFAULTS[port]}/`)
+      : own
   checked += 1
   if (declared !== want) wrong.push({ file, want, got: declared })
 }

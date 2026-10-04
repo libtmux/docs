@@ -30,7 +30,7 @@ export function rehypeSiteRoot() {
       // Only single-leading-slash paths: '//host' is protocol-relative.
       if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return
       const owner = typeof node.properties.dataDocPort === 'string' ? node.properties.dataDocPort : port
-      const version = owner === buildPort ? buildTarget(process.env).version : (defaults[owner] || 'latest')
+      const version = owner === buildPort ? buildTarget(process.env).version : defaults[owner] || 'latest'
       node.properties[attr] = attr === 'href' ? proseHref(value, root, owner, version, portRoot) : `${root}${value}`
     })
   }

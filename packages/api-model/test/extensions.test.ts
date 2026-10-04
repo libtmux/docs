@@ -51,12 +51,7 @@ describe('an extension block belongs to the type it extends', () => {
   it('leaves a block alone when the name is ambiguous', () => {
     // Rust lets two modules declare different types called `Error`. Attaching
     // the block to either would be a guess.
-    const symbols = [
-      sym('a.Error', 'enum'),
-      sym('b.Error', 'struct'),
-      sym('c.Error', 'class'),
-      member('c.Error.code'),
-    ]
+    const symbols = [sym('a.Error', 'enum'), sym('b.Error', 'struct'), sym('c.Error', 'class'), member('c.Error.code')]
     expect(mergeExtensions(symbols, 'class').map((s) => s.id)).toEqual(symbols.map((s) => s.id))
   })
 
@@ -71,12 +66,7 @@ describe('an extension block belongs to the type it extends', () => {
   it('still leaves one alone when the name is ambiguous rather than absent', () => {
     // Absent and ambiguous are different: nothing to attach to versus more
     // than one candidate. Dropping the second would lose real members.
-    const symbols = [
-      sym('a.Error', 'enum'),
-      sym('b.Error', 'struct'),
-      sym('c.Error', 'class'),
-      member('c.Error.code'),
-    ]
+    const symbols = [sym('a.Error', 'enum'), sym('b.Error', 'struct'), sym('c.Error', 'class'), member('c.Error.code')]
     expect(mergeExtensions(symbols, 'class').map((s) => s.id)).toEqual(symbols.map((s) => s.id))
   })
 

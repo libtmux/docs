@@ -31,8 +31,10 @@ const isJs = (el: Element) => {
   return !type || type === 'module' || type === 'text/javascript'
 }
 const isModuleOnly = (source: string) =>
-  /\bimport\.meta\b/.test(source) || /\bimport\s*\(/.test(source) ||
-  /\bimport\b\s*(?:[\w*{]|['"])/.test(source) || /\bexport\s/.test(source)
+  /\bimport\.meta\b/.test(source) ||
+  /\bimport\s*\(/.test(source) ||
+  /\bimport\b\s*(?:[\w*{]|['"])/.test(source) ||
+  /\bexport\s/.test(source)
 
 interface Loaded {
   window: Window
@@ -133,7 +135,9 @@ const precedes = (first: Element, second: Element) =>
 describe('saved package manager paint', () => {
   it('keys a companion package apart from its library', () => {
     const rules = pickerPaintRules()
-    expect(rules).toContain('html[data-pkg-manager-ts-workspace="6"] .lm-pkg-install__panel[data-manager-scope="ts-workspace"]')
+    expect(rules).toContain(
+      'html[data-pkg-manager-ts-workspace="6"] .lm-pkg-install__panel[data-manager-scope="ts-workspace"]',
+    )
     expect(rules).toContain('html[data-pkg-manager-ts="3"] .lm-pkg-install__panel[data-manager-scope="ts"]')
     // The library lists four managers; a seventh is the CLI's alone.
     expect(rules).not.toContain('html[data-pkg-manager-ts="6"]')
@@ -141,8 +145,9 @@ describe('saved package manager paint', () => {
 })
 
 describe('homepage preference before body parsing', () => {
-  const themeScript = readFileSync(new URL('../src/components/ThemeScript.astro', import.meta.url), 'utf8')
-    .match(/<script is:inline>([\s\S]*?)<\/script>/)![1]
+  const themeScript = readFileSync(new URL('../src/components/ThemeScript.astro', import.meta.url), 'utf8').match(
+    /<script is:inline>([\s\S]*?)<\/script>/,
+  )![1]
 
   it.each([
     ['?port=rs', 'py', 'rs'],
@@ -154,7 +159,10 @@ describe('homepage preference before body parsing', () => {
     const window = new Window({ url: `https://libtmux.org/en/${query}` })
     const { document } = window
     document.documentElement.setAttribute('data-home-ports', PORTS.map((port) => port.slug).join(' '))
-    document.documentElement.setAttribute('data-home-brands', JSON.stringify(Object.fromEntries(PORTS.map((port) => [port.slug, port.logoLanguage]))))
+    document.documentElement.setAttribute(
+      'data-home-brands',
+      JSON.stringify(Object.fromEntries(PORTS.map((port) => [port.slug, port.logoLanguage]))),
+    )
     if (saved) window.localStorage.setItem('libtmux-docs.package-install.port', saved)
     window.eval(themeScript)
     // Happy DOM does not model CSS cascade layers. Actual first-paint
@@ -177,9 +185,7 @@ describeIfBuilt('package install picker', () => {
     const { document } = load(PORT_HOME, url)
     const managers = document.querySelectorAll(`${CORE} .lm-pkg-install__manager`)
     expect(managers.length).toBe(4)
-    expect(visibleCommand(document, CORE)).toBe(
-      '$ npm install libtmux',
-    )
+    expect(visibleCommand(document, CORE)).toBe('$ npm install libtmux')
   })
 
   it('switches the command when a manager is clicked', () => {
@@ -187,9 +193,7 @@ describeIfBuilt('package install picker', () => {
     const pnpm = document.querySelector<HTMLElement>(`${CORE} .lm-pkg-install__manager[data-manager-value="1"]`)!
     pnpm.click()
     expect(pnpm.getAttribute('aria-selected')).toBe('true')
-    expect(visibleCommand(document, CORE)).toBe(
-      '$ pnpm add libtmux',
-    )
+    expect(visibleCommand(document, CORE)).toBe('$ pnpm add libtmux')
   })
 
   it('remembers the manager per port, and ignores one the port does not have', () => {
@@ -199,17 +203,13 @@ describeIfBuilt('package install picker', () => {
 
     // Restored on the next page.
     const next = load(PORT_HOME, url, { 'libtmux-docs.package-install.manager.ts': '3' })
-    expect(visibleCommand(next.document, CORE)).toBe(
-      '$ bun add libtmux',
-    )
+    expect(visibleCommand(next.document, CORE)).toBe('$ bun add libtmux')
 
     // Rust has one command; a saved index of 3 must not blank it. The key is
     // per port precisely so this cannot happen, but the guard is what makes a
     // hand-edited or stale value harmless too.
     const stale = load(PORT_HOME, url, { 'libtmux-docs.package-install.manager.ts': '99' })
-    expect(visibleCommand(stale.document, CORE)).toBe(
-      '$ npm install libtmux',
-    )
+    expect(visibleCommand(stale.document, CORE)).toBe('$ npm install libtmux')
   })
 
   it('moves between managers with the arrow keys', () => {
@@ -231,17 +231,13 @@ describeIfBuilt('package install picker', () => {
 
     const right = load(PORT_HOME, url)
     arrow(right, 'ArrowRight')
-    expect(visibleCommand(right.document, CORE)).toBe(
-      '$ pnpm add libtmux',
-    )
+    expect(visibleCommand(right.document, CORE)).toBe('$ pnpm add libtmux')
 
     // And wraps backwards off the first tab, so the strip is a loop rather
     // than a dead end at either edge.
     const left = load(PORT_HOME, url)
     arrow(left, 'ArrowLeft')
-    expect(visibleCommand(left.document, CORE)).toBe(
-      '$ bun add libtmux',
-    )
+    expect(visibleCommand(left.document, CORE)).toBe('$ bun add libtmux')
   })
 
   it('drops the language strip when the page shows one language', () => {
@@ -256,7 +252,7 @@ describeIfBuilt('package install picker', () => {
     expect(document.querySelector('.lm-mcp-install')?.getAttribute('data-port')).toBe('ts')
   })
 
-  it('keeps the workspace CLI\'s manager apart from the library\'s', () => {
+  it("keeps the workspace CLI's manager apart from the library's", () => {
     // Both panels belong to TypeScript. Keyed by port alone, choosing bunx,
     // the CLI's second tab, chose pnpm, the library's second.
     const { window, document } = load(PORT_HOME, url)
@@ -275,7 +271,8 @@ describeIfBuilt('package install picker', () => {
 
   /** The code of one command's cooldown variant, as the page would show it. */
   const variantCode = (document: Document, panel: string, manager: number, mode: string) =>
-    document.querySelector(`${panel} .lm-pkg-install__cmd[data-manager="${manager}"] [data-cooldown-variant="${mode}"] code`)
+    document
+      .querySelector(`${panel} .lm-pkg-install__cmd[data-manager="${manager}"] [data-cooldown-variant="${mode}"] code`)
       ?.textContent?.trim() ?? ''
 
   /** Drive a cooldown control the way a reader's change does. */
@@ -293,10 +290,12 @@ describeIfBuilt('package install picker', () => {
     expect(window.localStorage.getItem('libtmux-docs.mcp-install.cooldown.enabled')).toBe('1')
     expect(document.querySelector<HTMLInputElement>(`${CLI} [data-pkg-cooldown="toggle"]`)!.checked).toBe(true)
     expect(document.querySelector<HTMLInputElement>('.lm-mcp-install__cooldown-toggle')!.checked).toBe(true)
-    expect(variantCode(document, CORE, 0, 'days')).toBe('$ npm install \\\n    --min-release-age=7 \\\n    --min-release-age-exclude=libtmux \\\n    libtmux')
+    expect(variantCode(document, CORE, 0, 'days')).toBe(
+      '$ npm install \\\n    --min-release-age=7 \\\n    --min-release-age-exclude=libtmux \\\n    libtmux',
+    )
   })
 
-  it('writes the day count in each tool\'s unit', () => {
+  it("writes the day count in each tool's unit", () => {
     const loaded = load(PORT_HOME, url, { 'libtmux-docs.mcp-install.cooldown.enabled': '1' })
     const { window, document } = loaded
     change(loaded, document.querySelector<HTMLInputElement>(`${CLI} [data-pkg-cooldown="days"]`)!, '14')
@@ -316,8 +315,11 @@ describeIfBuilt('package install picker', () => {
     expect(variantCode(document, CLI, 0, 'bypass')).toBe('$ npx -y --min-release-age=0 @libtmux/workspace-cli --help')
     // Bun: the cooldown variant is the plain command, with the reason beside it.
     expect(variantCode(document, CORE, 3, 'days')).toBe('$ bun add libtmux')
-    expect(document.querySelector(`${CORE} .lm-pkg-install__cmd[data-manager="3"] [data-cooldown-variant="days"] .lm-pkg-install__note--cooldown`)?.textContent)
-      .toContain('cannot exempt libtmux')
+    expect(
+      document.querySelector(
+        `${CORE} .lm-pkg-install__cmd[data-manager="3"] [data-cooldown-variant="days"] .lm-pkg-install__note--cooldown`,
+      )?.textContent,
+    ).toContain('cannot exempt libtmux')
   })
 
   it('offers the workspace CLI picker on the workspace overview', () => {
@@ -335,7 +337,9 @@ describeIfGo('workspace install picker, Go', () => {
     expect(visibleCommand(document, panel)).toBe(
       '$ go install github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace@latest',
     )
-    expect(precedes(document.getElementById('install')!, document.getElementById('load-a-workspace-from-the-terminal')!)).toBe(true)
+    expect(
+      precedes(document.getElementById('install')!, document.getElementById('load-a-workspace-from-the-terminal')!),
+    ).toBe(true)
   })
 })
 
@@ -359,28 +363,32 @@ describeIfMcp('MCP install picker', () => {
     const client = html.getAttribute('data-mcp-install-client')
     const method = html.getAttribute('data-mcp-install-method')
     const scope = html.getAttribute('data-mcp-install-scope')
-    const cooldown = html.getAttribute('data-mcp-install-cooldown-enabled') === '1'
-      ? (html.getAttribute('data-mcp-install-cooldown-type') ?? 'days')
-      : 'off'
-    const panel = (mode: string) => document.querySelector<HTMLElement>(
-      `.lm-mcp-install__panel[data-client="${client}"][data-method="${method}"]` +
-        `[data-scope="${scope}"][data-cooldown="${mode}"]`,
-    )
+    const cooldown =
+      html.getAttribute('data-mcp-install-cooldown-enabled') === '1'
+        ? (html.getAttribute('data-mcp-install-cooldown-type') ?? 'days')
+        : 'off'
+    const panel = (mode: string) =>
+      document.querySelector<HTMLElement>(
+        `.lm-mcp-install__panel[data-client="${client}"][data-method="${method}"]` +
+          `[data-scope="${scope}"][data-cooldown="${mode}"]`,
+      )
     // A port without a cooldown axis renders only its `off` panels.
     return panel(cooldown) ?? panel('off')
   }
 
-  it('installs this port\'s server, not Python\'s', () => {
+  it("installs this port's server, not Python's", () => {
     const { document } = load(TS_MCP, url)
     expect(document.querySelector('.lm-mcp-install')?.getAttribute('data-port')).toBe('ts')
     expect(selectedPanel(document)?.textContent).toContain('npx -y @libtmux/mcp')
   })
 
-  it('offers npm\'s cooldown and bypass', () => {
+  it("offers npm's cooldown and bypass", () => {
     const { document } = load(TS_MCP, url)
     expect(document.querySelectorAll('.lm-mcp-install__cooldown-control').length).toBe(1)
     const cell = (method: string, cooldown: string) =>
-      document.querySelector(`.lm-mcp-install__panel[data-client="claude-code"][data-method="${method}"][data-scope="local"][data-cooldown="${cooldown}"]`)?.textContent ?? ''
+      document.querySelector(
+        `.lm-mcp-install__panel[data-client="claude-code"][data-method="${method}"][data-scope="local"][data-cooldown="${cooldown}"]`,
+      )?.textContent ?? ''
     expect(cell('npx', 'bypass')).toContain('npx -y --min-release-age=0 @libtmux/mcp')
     expect(cell('global', 'days')).toContain('--min-release-age=7 \\')
     expect(cell('global', 'days')).toContain('--min-release-age-exclude=@libtmux/mcp \\')
@@ -445,9 +453,9 @@ describeIfPyMcp('MCP install picker, Python', () => {
   it('still offers uvx and its cooldown control', () => {
     const { document } = load(PY_MCP, `https://libtmux.org/${SITE_PREFIX}mcp/`)
     expect(document.querySelector('.lm-mcp-install')?.getAttribute('data-port')).toBe('py')
-    const methods = [
-      ...document.querySelectorAll('.lm-mcp-install__tab[data-tab-kind="method"]'),
-    ].map((t) => t.getAttribute('data-tab-value'))
+    const methods = [...document.querySelectorAll('.lm-mcp-install__tab[data-tab-kind="method"]')].map((t) =>
+      t.getAttribute('data-tab-value'),
+    )
     expect(methods).toEqual(['uvx', 'pipx', 'pip'])
     expect(document.querySelectorAll('.lm-mcp-install__cooldown-control').length).toBe(1)
   })

@@ -41,19 +41,20 @@ try {
         tables: [...document.querySelectorAll('table')].map((table) => {
           const head = [...(table.tHead?.rows[0]?.cells ?? [])]
           const body = [...(table.tBodies[0]?.rows[0]?.cells ?? [])]
-          const comparable = head.length === body.length &&
-            [...head, ...body].every((cell) => cell.colSpan === 1)
+          const comparable = head.length === body.length && [...head, ...body].every((cell) => cell.colSpan === 1)
           return {
-            columns: comparable ? head.map((cell, i) =>
-              Math.abs(cell.getBoundingClientRect().x - body[i].getBoundingClientRect().x),
-            ) : [],
+            columns: comparable
+              ? head.map((cell, i) => Math.abs(cell.getBoundingClientRect().x - body[i].getBoundingClientRect().x))
+              : [],
           }
         }),
       }))
       assert(result.pageOverflow <= 1, `${path} at ${width}px: page overflows by ${result.pageOverflow}px`)
       for (const table of result.tables) {
-        assert(table.columns.every((offset) => offset <= 1),
-          `${path} at ${width}px: header/body columns differ by ${table.columns.join(', ')}px`)
+        assert(
+          table.columns.every((offset) => offset <= 1),
+          `${path} at ${width}px: header/body columns differ by ${table.columns.join(', ')}px`,
+        )
         checked++
       }
     }

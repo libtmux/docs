@@ -179,14 +179,7 @@ export function seed(options: SeedOptions = {}): SeedResult {
       ports += 1
 
       for (const version of versionsFor(port, manifestPath)) {
-        insertExtraction.run(
-          port,
-          version,
-          model.revision ?? null,
-          model.extractor,
-          model.symbols.length,
-          builtAt,
-        )
+        insertExtraction.run(port, version, model.revision ?? null, model.extractor, model.symbols.length, builtAt)
         for (const s of model.symbols) {
           const result = insertSymbol.run(
             port,

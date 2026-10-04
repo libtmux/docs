@@ -33,9 +33,7 @@ function site({ n = 0, mangled = false } = {}) {
     const d = join(dir, p, 'latest', 'reference', 'thing')
     mkdirSync(d, { recursive: true })
     const body =
-      linked('Server') +
-      Array.from({ length: n }, (_, i) => plain(`Plain${i}`)).join('') +
-      (mangled ? usr() : '')
+      linked('Server') + Array.from({ length: n }, (_, i) => plain(`Plain${i}`)).join('') + (mangled ? usr() : '')
     writeFileSync(join(d, 'index.html'), `<html><body>${body}</body></html>`)
   }
   return dir

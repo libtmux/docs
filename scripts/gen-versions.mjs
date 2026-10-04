@@ -122,8 +122,20 @@ function deriveEntries(port) {
     // engine — the opposite of the truth.
     ...(stableTag ? [{ slug: 'stable', label: 'stable', kind: 'alias', resolvesTo: stableTag, supported: true }] : []),
     ...(preTag ? [{ slug: 'next', label: 'next', kind: 'alias', resolvesTo: preTag, supported: true }] : []),
-    ...tags.map((t) => ({ slug: t.name, label: t.name, kind: 'tag', supported: true, ...(t.date ? { published: t.date } : {}) })),
-    ...branches.map((b) => ({ slug: b.name, label: b.name, kind: 'branch', supported: true, ...(b.date ? { published: b.date } : {}) })),
+    ...tags.map((t) => ({
+      slug: t.name,
+      label: t.name,
+      kind: 'tag',
+      supported: true,
+      ...(t.date ? { published: t.date } : {}),
+    })),
+    ...branches.map((b) => ({
+      slug: b.name,
+      label: b.name,
+      kind: 'branch',
+      supported: true,
+      ...(b.date ? { published: b.date } : {}),
+    })),
   ]
   return { entries, defaultVersion: stableTag ? 'stable' : 'latest', note: undefined }
 }
@@ -146,18 +158,14 @@ function mergeOverrides(manifest, overridesPath) {
 function main() {
   const opts = parseArgs(process.argv.slice(2))
   if (opts.help) {
-    process.stdout.write(
-      'Usage: node scripts/gen-versions.mjs [--out <path>] [--seed] [--overrides <path>]\n',
-    )
+    process.stdout.write('Usage: node scripts/gen-versions.mjs [--out <path>] [--seed] [--overrides <path>]\n')
     return
   }
 
   const manifest = { schema: 1, ports: {}, defaultVersion: {} }
 
   for (const port of PORTS) {
-    const derived = opts.seed
-      ? { entries: seedEntries(), defaultVersion: 'latest' }
-      : deriveEntries(port)
+    const derived = opts.seed ? { entries: seedEntries(), defaultVersion: 'latest' } : deriveEntries(port)
     if (derived.note) process.stderr.write(`gen-versions: ${port.slug}: ${derived.note}\n`)
     manifest.ports[port.slug] = sortVersions(derived.entries, port.tagGrammar, port.tagPrefix)
     // Not unconditionally 'stable' any more: a port with no release has no

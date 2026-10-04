@@ -30,7 +30,7 @@ export function stagedRoutesFor(port) {
 
 const ROUTES = Object.fromEntries(SOURCE_GUIDE_PORTS.map((slug) => [slug, stagedRoutesFor(slug)]))
 
-const expand = (value) => value.startsWith('~/') ? join(homedir(), value.slice(2)) : value
+const expand = (value) => (value.startsWith('~/') ? join(homedir(), value.slice(2)) : value)
 
 function titleAndBody(content, sourcePath) {
   content = content.replace(/<!-- libtmux-logo -->[\s\S]*?<!-- \/libtmux-logo -->\s*/g, '')
@@ -90,8 +90,7 @@ export function rewriteLinks(content, sourcePath, route, routes, repo, revision,
     const url = targetUrl(node.url, node.type === 'image')
     if (url === node.url) return children
     node.url = url
-    return [{ start: node.position.start.offset, end: node.position.end.offset,
-      text: toMarkdown(node).trimEnd() }]
+    return [{ start: node.position.start.offset, end: node.position.end.offset, text: toMarkdown(node).trimEnd() }]
   }
   const edits = editsFor(fromMarkdown(content)).sort((a, b) => b.start - a.start)
   for (const { start, end, text } of edits) content = content.slice(0, start) + text + content.slice(end)
@@ -104,21 +103,33 @@ export function linkSnapshotDepths(content, symbols, referenceRoot) {
   const visit = (node) => {
     const paragraph = node.type === 'listItem' && node.children.length === 1 ? node.children[0] : undefined
     const children = paragraph?.type === 'paragraph' ? paragraph.children : []
-    if (children.length === 2 && children[0].type === 'text' && children[0].value === 'Required depth: '
-        && children[1].type === 'inlineCode') {
+    if (
+      children.length === 2 &&
+      children[0].type === 'text' &&
+      children[0].value === 'Required depth: ' &&
+      children[1].type === 'inlineCode'
+    ) {
       symbols ??= JSON.parse(readFileSync(join(root, 'site/src/data/api/csharp.json'), 'utf8')).symbols
       // The Markdown pipeline adds the locale and preview mount once.
       referenceRoot ??= `/csharp/${defaultVersionFor('csharp')}/reference/`
       const label = children[1]
       const id = `LibTmux.SnapshotDepth.${label.value}`
       const matches = symbols.filter((symbol) => (symbol.publicId ?? symbol.id) === id)
-      if (matches.length !== 1 || matches[0].parent !== 'LibTmux.SnapshotDepth'
-          || matches[0].kind !== 'constant' || matches[0].product !== 'core' || !matches[0].slug) {
+      if (
+        matches.length !== 1 ||
+        matches[0].parent !== 'LibTmux.SnapshotDepth' ||
+        matches[0].kind !== 'constant' ||
+        matches[0].product !== 'core' ||
+        !matches[0].slug
+      ) {
         throw new Error(`F# descriptor depth must resolve to one public .NET enum constant: ${id}`)
       }
       const { start, end } = label.position
-      edits.push({ start: start.offset, end: end.offset,
-        text: `[${content.slice(start.offset, end.offset)}](${referenceRoot}${matches[0].slug}/)` })
+      edits.push({
+        start: start.offset,
+        end: end.offset,
+        text: `[${content.slice(start.offset, end.offset)}](${referenceRoot}${matches[0].slug}/)`,
+      })
     }
     for (const child of node.children ?? []) visit(child)
   }
@@ -132,7 +143,9 @@ export function linkSnapshotDepths(content, symbols, referenceRoot) {
 export function stagedPortGuides(port, artifact) {
   const identity = PORTS.find((entry) => entry.slug === port)
   const routes = ROUTES[port]
-  const linkRoutes = Object.fromEntries(Object.entries(routes).map(([sourcePath, guide]) => [sourcePath, [guide.route]]))
+  const linkRoutes = Object.fromEntries(
+    Object.entries(routes).map(([sourcePath, guide]) => [sourcePath, [guide.route]]),
+  )
   const nativeReferenceFiles = new Set()
   for (const redirect of sourceGuideRedirectsFor(port)) linkRoutes[redirect.sourcePath] = [redirect.target]
   if (port === 'powershell') {
@@ -146,7 +159,10 @@ export function stagedPortGuides(port, artifact) {
       nativeReferenceFiles.add(help)
       for (const parameter of symbol.signatures.flatMap((signature) => signature.params)) {
         if (parameter.binding?.common) continue
-        linkRoutes[`${help}#-${parameter.name.toLowerCase()}`] = [reference, encodeURIComponent(parameterId(symbol, parameter.name))]
+        linkRoutes[`${help}#-${parameter.name.toLowerCase()}`] = [
+          reference,
+          encodeURIComponent(parameterId(symbol, parameter.name)),
+        ]
       }
     }
   }
@@ -169,10 +185,18 @@ export function stagedPortGuides(port, artifact) {
     if (typeof content !== 'string') throw new Error(`${port}: native artifact is missing guide ${sourcePath}`)
     const { title: sourceTitle, body } = titleAndBody(content, sourcePath)
     const title = guide.title ?? sourceTitle
-    const linked = port === 'fsharp' && sourcePath === 'docs/fsharp/supported-query-fields.md'
-      ? linkSnapshotDepths(body) : body
+    const linked =
+      port === 'fsharp' && sourcePath === 'docs/fsharp/supported-query-fields.md' ? linkSnapshotDepths(body) : body
     const nativeLinked = port === 'julia' ? linkDocumenter(linked) : linked
-    const rewritten = rewriteLinks(nativeLinked, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision, nativeReferenceFiles)
+    const rewritten = rewriteLinks(
+      nativeLinked,
+      sourcePath,
+      route,
+      linkRoutes,
+      artifact.source.repository,
+      artifact.source.revision,
+      nativeReferenceFiles,
+    )
     const data = {
       title,
       description: guide.description ?? `${title}: ${identity.packageName} documentation.`,
@@ -184,45 +208,93 @@ export function stagedPortGuides(port, artifact) {
       ...(equivalence ? { equivalence } : {}),
       route,
       source: { repo: artifact.source.repository, path: sourcePath, ref: artifact.source.revision },
-      sidebar: sidebar ?? { group: product ? (product === 'mcp' ? 'MCP' : 'Workspace Manager')
-        : route === 'reference' ? 'API reference' : route.split('/')[0].replace(/^./, (letter) => letter.toUpperCase()) },
+      sidebar: sidebar ?? {
+        group: product
+          ? product === 'mcp'
+            ? 'MCP'
+            : 'Workspace Manager'
+          : route === 'reference'
+            ? 'API reference'
+            : route.split('/')[0].replace(/^./, (letter) => letter.toUpperCase()),
+      },
     }
-    const frontmatter = Object.entries(data).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
+    const frontmatter = Object.entries(data)
+      .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+      .join('\n')
     files.set(`${port}/${route}/index.md`, `---\n${frontmatter}\n---\n\n${rewritten.trim()}\n`)
   }
   {
     const source = { repo: artifact.source.repository, path: Object.keys(routes)[0], ref: artifact.source.revision }
     const writeIndex = (route, title, body, cards = []) => {
-      const data = { title, description: `${title} for ${identity.packageName}.`, port, route, source, cards,
-        sidebar: { group: route === 'reference' ? 'API reference' : route[0].toUpperCase() + route.slice(1), label: 'Overview', order: 1 } }
-      const frontmatter = Object.entries(data).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
+      const data = {
+        title,
+        description: `${title} for ${identity.packageName}.`,
+        port,
+        route,
+        source,
+        cards,
+        sidebar: {
+          group: route === 'reference' ? 'API reference' : route[0].toUpperCase() + route.slice(1),
+          label: 'Overview',
+          order: 1,
+        },
+      }
+      const frontmatter = Object.entries(data)
+        .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+        .join('\n')
       files.set(`${port}/${route}/index.md`, `---\n${frontmatter}\n---\n\n${body}\n`)
     }
     for (const section of identity.parentLibrary ? ['guides'] : ['guides', 'examples', 'topics', 'concepts']) {
       // Authored overviews own their cards and must keep one public route.
       if (existsSync(join(root, `site/src/content/docs/ports/${port}/${section}/index.md`))) continue
-      const selected = Object.entries(routes).filter(([, entry]) => entry.domain === 'core' && entry.route.startsWith(`${section}/`))
-      const cards = selected.map(([path, entry]) => ({ label: entry.title ?? titleAndBody(guides.get(path), path).title,
-        href: `../${entry.route}/`, body: entry.description ?? `Read about ${titleAndBody(guides.get(path), path).title.toLowerCase()}.`,
-        order: entry.sidebar?.order ?? Number.MAX_SAFE_INTEGER }))
+      const selected = Object.entries(routes).filter(
+        ([, entry]) => entry.domain === 'core' && entry.route.startsWith(`${section}/`),
+      )
+      const cards = selected
+        .map(([path, entry]) => ({
+          label: entry.title ?? titleAndBody(guides.get(path), path).title,
+          href: `../${entry.route}/`,
+          body: entry.description ?? `Read about ${titleAndBody(guides.get(path), path).title.toLowerCase()}.`,
+          order: entry.sidebar?.order ?? Number.MAX_SAFE_INTEGER,
+        }))
         .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label))
         .map(({ order: _order, ...card }) => card)
-      if (section === 'guides' && existsSync(join(root, `site/src/content/docs/ports/${port}/guides/attaching-to-tmux.md`))) cards.splice(Math.min(1, cards.length), 0, {
-        label: 'Attaching to tmux', href: '../guides/attaching-to-tmux/',
-        body: 'Connect to an existing socket and leave its server running.',
-      })
-      if (section === 'examples' && existsSync(join(root, `site/src/content/docs/ports/${port}/examples/capture-pane-output.md`))) cards.unshift({
-        label: 'Capture pane output', href: '../examples/capture-pane-output/',
-        body: 'Send a command, wait for its output, and clean up the private server.',
-      })
-      writeIndex(section, section[0].toUpperCase() + section.slice(1),
-        { guides: 'Connect to tmux and work with its sessions, windows, and panes.',
+      if (
+        section === 'guides' &&
+        existsSync(join(root, `site/src/content/docs/ports/${port}/guides/attaching-to-tmux.md`))
+      )
+        cards.splice(Math.min(1, cards.length), 0, {
+          label: 'Attaching to tmux',
+          href: '../guides/attaching-to-tmux/',
+          body: 'Connect to an existing socket and leave its server running.',
+        })
+      if (
+        section === 'examples' &&
+        existsSync(join(root, `site/src/content/docs/ports/${port}/examples/capture-pane-output.md`))
+      )
+        cards.unshift({
+          label: 'Capture pane output',
+          href: '../examples/capture-pane-output/',
+          body: 'Send a command, wait for its output, and clean up the private server.',
+        })
+      writeIndex(
+        section,
+        section[0].toUpperCase() + section.slice(1),
+        {
+          guides: 'Connect to tmux and work with its sessions, windows, and panes.',
           examples: 'Run complete programs with their documented setup and cleanup.',
           topics: 'Understand object ownership, state, and operation behavior.',
-          concepts: 'Understand captured queries, object identities, and operations.' }[section], cards)
+          concepts: 'Understand captured queries, object identities, and operations.',
+        }[section],
+        cards,
+      )
     }
-    if (identity.referenceKind === 'guide' && identity.ecosystemHost) writeIndex('reference', `${identity.name} API reference`,
-      `Use the [${identity.ecosystemHost.name} reference](${identity.ecosystemHost.url}) for published package versions.\n\nThe [source at this documentation revision](https://github.com/${source.repo}/tree/${source.ref}/${posix.dirname(source.path)}/src/main) contains the wrapper declarations and their documentation.\n\n${identity.name} and its ${identity.parentLibrary.runtime} core share a release version.`)
+    if (identity.referenceKind === 'guide' && identity.ecosystemHost)
+      writeIndex(
+        'reference',
+        `${identity.name} API reference`,
+        `Use the [${identity.ecosystemHost.name} reference](${identity.ecosystemHost.url}) for published package versions.\n\nThe [source at this documentation revision](https://github.com/${source.repo}/tree/${source.ref}/${posix.dirname(source.path)}/src/main) contains the wrapper declarations and their documentation.\n\n${identity.name} and its ${identity.parentLibrary.runtime} core share a release version.`,
+      )
   }
   return files
 }
@@ -230,35 +302,46 @@ export function stagedPortGuides(port, artifact) {
 function artifactFromSource(port, checkout) {
   const modelPath = join(root, `site/src/data/api/${port.slug}.json`)
   const model = port.parentLibrary ? undefined : JSON.parse(readFileSync(modelPath, 'utf8'))
-  const revision = model?.revision ?? execFileSync('git', ['-C', checkout, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+  const revision =
+    model?.revision ?? execFileSync('git', ['-C', checkout, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
   return artifactFromRevision(port, checkout, revision)
 }
 
 /** Expand the native manual's literal source includes without evaluating Julia. */
 export function expandDocumenter(content, sourcePath, readSource) {
-  return content.replace(/^```jldoctest(?:[^\n]*)$/gm, '```julia').replace(/^```@(eval|autodocs)\n([\s\S]*?)^```/gm, (_block, directive, code) => {
-    if (directive === 'autodocs') {
-      const module = /Modules = \[(LibTmux(?:MCP|Workspace)?)\]/.exec(code)?.[1]
-      if (!module) throw new Error(`Unsupported Documenter module in ${sourcePath}`)
-      const product = module === 'LibTmuxMCP' ? 'mcp/' : module === 'LibTmuxWorkspace' ? 'workspace/' : ''
-      return `Browse the [${module} API reference](/julia/${defaultVersionFor('julia')}/${product}reference/).`
-    }
-    const match = /^using Markdown\s+Markdown\.parse\("```julia\\n" \* read\(joinpath\(@__DIR__, ((?:"[^"\n]+"(?:, )?)+)\), String\) \* "\\n```"\)\s*$/.exec(code)
-    if (!match) throw new Error(`Unsupported Documenter source include in ${sourcePath}`)
-    const parts = [...match[1].matchAll(/"([^"\n]+)"/g)].map((entry) => entry[1])
-    const file = posix.normalize(posix.join(posix.dirname(sourcePath), ...parts))
-    if (file.startsWith('../') || posix.isAbsolute(file)) throw new Error(`Documenter include escapes its checkout: ${file}`)
-    const source = readSource(file)
-    const fence = '`'.repeat(Math.max(3, ...[...source.matchAll(/`+/g)].map((entry) => entry[0].length + 1)))
-    return `${fence}julia title="${posix.basename(file)}"\n${source.trimEnd()}\n${fence}`
-  })
+  return content
+    .replace(/^```jldoctest(?:[^\n]*)$/gm, '```julia')
+    .replace(/^```@(eval|autodocs)\n([\s\S]*?)^```/gm, (_block, directive, code) => {
+      if (directive === 'autodocs') {
+        const module = /Modules = \[(LibTmux(?:MCP|Workspace)?)\]/.exec(code)?.[1]
+        if (!module) throw new Error(`Unsupported Documenter module in ${sourcePath}`)
+        const product = module === 'LibTmuxMCP' ? 'mcp/' : module === 'LibTmuxWorkspace' ? 'workspace/' : ''
+        return `Browse the [${module} API reference](/julia/${defaultVersionFor('julia')}/${product}reference/).`
+      }
+      const match =
+        /^using Markdown\s+Markdown\.parse\("```julia\\n" \* read\(joinpath\(@__DIR__, ((?:"[^"\n]+"(?:, )?)+)\), String\) \* "\\n```"\)\s*$/.exec(
+          code,
+        )
+      if (!match) throw new Error(`Unsupported Documenter source include in ${sourcePath}`)
+      const parts = [...match[1].matchAll(/"([^"\n]+)"/g)].map((entry) => entry[1])
+      const file = posix.normalize(posix.join(posix.dirname(sourcePath), ...parts))
+      if (file.startsWith('../') || posix.isAbsolute(file))
+        throw new Error(`Documenter include escapes its checkout: ${file}`)
+      const source = readSource(file)
+      const fence = '`'.repeat(Math.max(3, ...[...source.matchAll(/`+/g)].map((entry) => entry[0].length + 1)))
+      return `${fence}julia title="${posix.basename(file)}"\n${source.trimEnd()}\n${fence}`
+    })
 }
 
 /** Resolve Documenter references against the same catalog the site renders. */
 function linkDocumenter(content) {
   const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/julia.json'), 'utf8'))
-  const index = new SymbolIndex(model.symbols, (symbol) =>
-    `/julia/${defaultVersionFor('julia')}/${symbol.product && symbol.product !== 'core' ? `${symbol.product}/` : ''}reference/${symbol.slug}/`, 'julia')
+  const index = new SymbolIndex(
+    model.symbols,
+    (symbol) =>
+      `/julia/${defaultVersionFor('julia')}/${symbol.product && symbol.product !== 'core' ? `${symbol.product}/` : ''}reference/${symbol.slug}/`,
+    'julia',
+  )
   const edits = []
   const walk = (node) => {
     if (node.type === 'link' && node.url === '@ref') {
@@ -270,7 +353,8 @@ function linkDocumenter(content) {
     } else for (const child of node.children ?? []) walk(child)
   }
   walk(fromMarkdown(content))
-  for (const edit of edits.sort((a, b) => b.start - a.start)) content = content.slice(0, edit.start) + edit.text + content.slice(edit.end)
+  for (const edit of edits.sort((a, b) => b.start - a.start))
+    content = content.slice(0, edit.start) + edit.text + content.slice(edit.end)
   return content
 }
 
@@ -281,7 +365,10 @@ export function artifactFromRevision(port, checkout, revision) {
   try {
     git('cat-file', '-e', `${revision}^{commit}`)
   } catch (cause) {
-    throw new Error(`${port.slug}: integrated guides need ${port.repo}@${revision} in ${checkout}. Set LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()} to a local checkout containing that commit; this check does not fetch.`, { cause })
+    throw new Error(
+      `${port.slug}: integrated guides need ${port.repo}@${revision} in ${checkout}. Set LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()} to a local checkout containing that commit; this check does not fetch.`,
+      { cause },
+    )
   }
   return {
     source: { repository: port.repo, revision },
@@ -300,30 +387,50 @@ export function run() {
   }
   const publicationPort = process.env.LIBTMUX_DOCS_SOURCE_SHA && process.env.LIBTMUX_DOCS_PORT
   if (cached && selectedPort && selectedPort === publicationPort) {
-    throw new Error(`--cached cannot stage selected publication port ${selectedPort}; regenerate its source guides first`)
+    throw new Error(
+      `--cached cannot stage selected publication port ${selectedPort}; regenerate its source guides first`,
+    )
   }
   const generated = new Map()
-  const selected = PORTS.filter((entry) => entry.slug in ROUTES && (!selectedPort || entry.slug === selectedPort)
-    && (!wrappersOnly || entry.parentLibrary) && !(cached && entry.slug === publicationPort))
+  const selected = PORTS.filter(
+    (entry) =>
+      entry.slug in ROUTES &&
+      (!selectedPort || entry.slug === selectedPort) &&
+      (!wrappersOnly || entry.parentLibrary) &&
+      !(cached && entry.slug === publicationPort),
+  )
   if (refreshCache && !selectedPort) throw new Error('--refresh-cache requires one --port')
   for (const port of selected) {
-    const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || (integrated ? port.checkout : port.worktree))
+    const checkout = expand(
+      process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || (integrated ? port.checkout : port.worktree),
+    )
     const artifactPath = join(checkout, 'docs/_build/api.json')
     const selectedSource = process.env.LIBTMUX_DOCS_PORT === port.slug && process.env.LIBTMUX_DOCS_SOURCE_SHA
     const cachePath = join(cacheRoot, `${port.slug}.json`)
     const liveWrapper = port.parentLibrary && (refreshCache || selectedSource || (selectedPort && fromSource))
-    if (!cached && !port.parentLibrary && !fromSource && !integrated && !existsSync(artifactPath)) throw new Error(`${port.slug}: native artifact missing at ${artifactPath}`)
-    const artifact = cached || (port.parentLibrary && !liveWrapper)
-      ? JSON.parse(readFileSync(cachePath, 'utf8'))
-      : integrated ? artifactFromRevision(port, checkout, JSON.parse(readFileSync(join(root, `site/src/data/api/${port.slug}.json`), 'utf8')).revision)
-      : fromSource || liveWrapper ? artifactFromSource(port, checkout)
-      : JSON.parse(readFileSync(artifactPath, 'utf8'))
+    if (!cached && !port.parentLibrary && !fromSource && !integrated && !existsSync(artifactPath))
+      throw new Error(`${port.slug}: native artifact missing at ${artifactPath}`)
+    const artifact =
+      cached || (port.parentLibrary && !liveWrapper)
+        ? JSON.parse(readFileSync(cachePath, 'utf8'))
+        : integrated
+          ? artifactFromRevision(
+              port,
+              checkout,
+              JSON.parse(readFileSync(join(root, `site/src/data/api/${port.slug}.json`), 'utf8')).revision,
+            )
+          : fromSource || liveWrapper
+            ? artifactFromSource(port, checkout)
+            : JSON.parse(readFileSync(artifactPath, 'utf8'))
     if (artifact.source.repository !== port.repo || !/^[a-f0-9]{40}$/.test(artifact.source.revision)) {
       throw new Error(`${port.slug}: invalid source guide provenance`)
     }
     if (!port.parentLibrary) {
       const model = JSON.parse(readFileSync(join(root, `site/src/data/api/${port.slug}.json`), 'utf8'))
-      if (artifact.source.revision !== model.revision) throw new Error(`${port.slug}: guide source ${artifact.source.revision} differs from integrated model ${model.revision}`)
+      if (artifact.source.revision !== model.revision)
+        throw new Error(
+          `${port.slug}: guide source ${artifact.source.revision} differs from integrated model ${model.revision}`,
+        )
     }
     const expected = selectedSource
     if (expected && artifact.source?.revision !== expected) {
@@ -343,11 +450,13 @@ export function run() {
       for (const entry of readdirSync(directory, { withFileTypes: true })) {
         const relative = posix.join(prefix, entry.name)
         if (entry.isDirectory()) walk(join(directory, entry.name), relative)
-        else if (selected.some((port) => relative.startsWith(`${port.slug}/`))) actual.set(relative, readFileSync(join(directory, entry.name), 'utf8'))
+        else if (selected.some((port) => relative.startsWith(`${port.slug}/`)))
+          actual.set(relative, readFileSync(join(directory, entry.name), 'utf8'))
       }
     }
     walk(output)
-    const stale = generated.size !== actual.size || [...generated].some(([file, content]) => actual.get(file) !== content)
+    const stale =
+      generated.size !== actual.size || [...generated].some(([file, content]) => actual.get(file) !== content)
     if (stale) throw new Error('staged port guides are missing or stale; rerun without --check')
   } else {
     if (selectedPort || wrappersOnly) {

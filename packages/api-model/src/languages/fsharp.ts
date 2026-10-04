@@ -29,9 +29,13 @@ interface FSharpArtifact {
 /** Convert the native compiler's public signature tree to the shared reference model. */
 export function extractFSharpArtifact(input: unknown, revision?: string): ApiModel {
   const artifact = input as FSharpArtifact
-  if (artifact?.schema !== 1 || artifact.port !== 'fsharp' ||
-      typeof artifact.compiler !== 'string' || !Array.isArray(artifact.declarations) ||
-      !artifact.declarations.length) {
+  if (
+    artifact?.schema !== 1 ||
+    artifact.port !== 'fsharp' ||
+    typeof artifact.compiler !== 'string' ||
+    !Array.isArray(artifact.declarations) ||
+    !artifact.declarations.length
+  ) {
     throw new Error('F# compiler artifact has an unsupported schema or no declarations')
   }
   const ids = new Set(artifact.declarations.map((item) => item.id))
@@ -70,7 +74,10 @@ export function extractFSharpArtifact(input: unknown, revision?: string): ApiMod
   const merged = new Map<string, ApiSymbol>()
   for (const symbol of symbols) {
     const previous = merged.get(symbol.id)
-    if (!previous) { merged.set(symbol.id, symbol); continue }
+    if (!previous) {
+      merged.set(symbol.id, symbol)
+      continue
+    }
     // F# permits a type and its companion module to share a public name.
     if (previous.kind !== 'module' && symbol.kind !== 'module') {
       throw new Error(`Duplicate F# public declaration: ${symbol.id}`)
@@ -80,7 +87,8 @@ export function extractFSharpArtifact(input: unknown, revision?: string): ApiMod
     previous.doc ??= symbol.doc
   }
   return {
-    port: 'fsharp', revision,
+    port: 'fsharp',
+    revision,
     extractor: `FSharp.Compiler.Service ${artifact.compiler} (public .fsi syntax)`,
     symbols: [...merged.values()],
   }
@@ -92,7 +100,9 @@ export function extractFSharp(root: string, revision?: string): ApiModel {
   if (projects.length !== 1) throw new Error(`Expected one F# project in ${root}`)
   const script = fileURLToPath(new URL('../../scripts/extract-fsharp.fsx', import.meta.url))
   const output = execFileSync('dotnet', ['fsi', '--warnaserror', '--exec', script, join(root, projects[0])], {
-    cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024,
+    cwd: root,
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
     stdio: ['ignore', 'pipe', 'inherit'],
   })
   return extractFSharpArtifact(JSON.parse(output), revision)

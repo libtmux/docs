@@ -40,8 +40,7 @@ function sections(xml: string, tag: string): { attrs: string; body: string }[] {
   return out
 }
 
-const attr = (attrs: string, name: string): string | undefined =>
-  new RegExp(`${name}="([^"]*)"`).exec(attrs)?.[1]
+const attr = (attrs: string, name: string): string | undefined => new RegExp(`${name}="([^"]*)"`).exec(attrs)?.[1]
 
 /**
  * Tag soup to prose, keeping the marks a reader sees.

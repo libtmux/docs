@@ -21,12 +21,19 @@ async function component() {
   const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
   async function compile(url: URL, imports: Record<string, string>) {
     const source = readFileSync(url, 'utf8').replace(/<script>[\s\S]*?<\/script>/g, '')
-    const result = await transform(source, { filename: url.pathname,
-      internalURL: 'astro/compiler-runtime', resultScopedSlot: true,
-      resolvePath: (specifier: string) => specifier })
+    const result = await transform(source, {
+      filename: url.pathname,
+      internalURL: 'astro/compiler-runtime',
+      resultScopedSlot: true,
+      resolvePath: (specifier: string) => specifier,
+    })
     expect(result.diagnostics.filter((item: { severity: string }) => item.severity === 'error')).toEqual([])
-    let code = result.code.replaceAll('"astro/compiler-runtime"', JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href))
-    for (const [specifier, href] of Object.entries(imports)) code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(href))
+    let code = result.code.replaceAll(
+      '"astro/compiler-runtime"',
+      JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href),
+    )
+    for (const [specifier, href] of Object.entries(imports))
+      code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(href))
     return `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
   }
   const symbolName = await compile(new URL('../src/components/api/SymbolName.astro', import.meta.url), {
@@ -49,9 +56,15 @@ async function render(props: { name: string; namespace?: string; href?: string }
 
 describe('qualified namespace labels', () => {
   it.each([
-    '', 'libtmux', 'libtmux.common', 'libtmux._internal.constants',
-    'LibTmux.Query.Json', 'LibTmux.Workspace', 'LibTmux\\Workspace',
-    'libtmux::workspace', 'github.com/libtmux/libtmux-go/tmux',
+    '',
+    'libtmux',
+    'libtmux.common',
+    'libtmux._internal.constants',
+    'LibTmux.Query.Json',
+    'LibTmux.Workspace',
+    'LibTmux\\Workspace',
+    'libtmux::workspace',
+    'github.com/libtmux/libtmux-go/tmux',
     'io.github.libtmux.scaladsl.streaming',
   ])('keeps an ordinary namespace fully spelled: %s', (namespace) => {
     expect(abbreviateNamespace(namespace)).toBe(namespace)
@@ -109,7 +122,13 @@ describe('qualified namespace labels', () => {
     expect(expand.getAttribute('aria-controls')).toBe('api-namespace-path')
     expect(expand.getAttribute('aria-expanded')).toBe('false')
     const copied: string[] = []
-    Object.defineProperty(win.navigator, 'clipboard', { value: { writeText: async (text: string) => { copied.push(text) } } })
+    Object.defineProperty(win.navigator, 'clipboard', {
+      value: {
+        writeText: async (text: string) => {
+          copied.push(text)
+        },
+      },
+    })
     const script = /<script>([\s\S]*?)<\/script>/.exec(componentSource)?.[1]
     if (!script) throw new Error('Qualified-name client script is missing')
     win.eval(ts.transpileModule(script, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
@@ -120,7 +139,9 @@ describe('qualified namespace labels', () => {
     win.document.querySelector<HTMLButtonElement>('[data-api-copy-name]')!.click()
     await Promise.resolve()
     expect(copied).toEqual([name])
-    await expect.poll(() => win.document.querySelector('[role="status"]')?.textContent, { timeout: 1000 }).toBe('Name copied')
+    await expect
+      .poll(() => win.document.querySelector('[role="status"]')?.textContent, { timeout: 1000 })
+      .toBe('Name copied')
     expand.click()
     expect(expand.getAttribute('aria-expanded')).toBe('false')
     expect(expand.textContent).toBe('Show full name')

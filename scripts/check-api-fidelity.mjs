@@ -73,9 +73,7 @@ function entriesIn(html) {
     }
     const raw = html.slice(i, end)
     if (raw.includes('gp-sphinx-api-header')) {
-      out.push(
-        Object.fromEntries([...raw.matchAll(/([a-z-]+)="([^"]*)"/g)].map((a) => [a[1], a[2]])),
-      )
+      out.push(Object.fromEntries([...raw.matchAll(/([a-z-]+)="([^"]*)"/g)].map((a) => [a[1], a[2]])))
     }
     i = end
   }
@@ -84,16 +82,23 @@ function entriesIn(html) {
 
 const failures = []
 const summary = []
-const decode = (value) => value?.replace(/&(amp|lt|gt|quot|#39);/g, (_, entity) =>
-  ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" })[entity])
+const decode = (value) =>
+  value?.replace(
+    /&(amp|lt|gt|quot|#39);/g,
+    (_, entity) => ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" })[entity],
+  )
 
 for (const port of PORTS) {
   const model = JSON.parse(readFileSync(join(repoRoot, `site/src/data/api/${port}.json`), 'utf8'))
-  const symbols = new Map(model.symbols.flatMap((symbol) => [
-    [symbol.id, symbol], [symbol.publicId ?? symbol.id, symbol],
-  ]))
-  const pages = referenceDirs(root, port, { products: true })
-    .flatMap((dir) => globSync('**/index.html', { cwd: dir }).map((page) => join(dir.slice(root.length + 1), page)))
+  const symbols = new Map(
+    model.symbols.flatMap((symbol) => [
+      [symbol.id, symbol],
+      [symbol.publicId ?? symbol.id, symbol],
+    ]),
+  )
+  const pages = referenceDirs(root, port, { products: true }).flatMap((dir) =>
+    globSync('**/index.html', { cwd: dir }).map((page) => join(dir.slice(root.length + 1), page)),
+  )
   if (!pages.length) {
     failures.push(`${port}: no reference pages built`)
     continue

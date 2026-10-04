@@ -20,10 +20,14 @@ function fixture(initialPort?: string) {
   // Happy DOM implements the browser API with its own element types.
   const root = window.document.querySelector('.search-panel')! as unknown as HTMLElement
   const input = root.querySelector<HTMLInputElement>('input')!
-  const pages = ['Go', 'Rust'].map((port) => ({ port, data: {
-    url: `/en/${port === 'Go' ? 'go' : 'rs'}/latest/topics/capture/`,
-    excerpt: `${port} capture`, meta: { title: `${port} capture` },
-  } }))
+  const pages = ['Go', 'Rust'].map((port) => ({
+    port,
+    data: {
+      url: `/en/${port === 'Go' ? 'go' : 'rs'}/latest/topics/capture/`,
+      excerpt: `${port} capture`,
+      meta: { title: `${port} capture` },
+    },
+  }))
   const search = vi.fn<PagefindApi['search']>(async (query, options) => {
     const ports = (options?.filters as { port?: string[] } | undefined)?.port
     const hits = query === 'capture' ? pages.filter((page) => !ports || ports.includes(page.port)) : []
@@ -35,13 +39,16 @@ function fixture(initialPort?: string) {
   })
   const filters = vi.fn<PagefindApi['filters']>(async () => ({ port: { Go: 1, Rust: 1 } }))
   const handle = mountSearchPanel(root, '/en/pagefind/', {
-    initialPort, initialQuery: 'capture', mock: { search, filters },
+    initialPort,
+    initialQuery: 'capture',
+    mock: { search, filters },
   })
   const query = (value: string) => {
     input.value = value
     input.dispatchEvent(new Event('input', { bubbles: true }))
   }
-  const results = () => [...root.querySelectorAll<HTMLAnchorElement>('.search-panel__result')].map((link) => link.getAttribute('href'))
+  const results = () =>
+    [...root.querySelectorAll<HTMLAnchorElement>('.search-panel__result')].map((link) => link.getAttribute('href'))
   const filter = (port: string) => root.querySelector<HTMLInputElement>(`input[value="${port}"]`)!
   return { root, search, filters, handle, query, results, filter }
 }
@@ -86,7 +93,11 @@ describe('port search defaults', () => {
     const { root, filters, handle, query, results, filter } = fixture('Go')
     await vi.waitFor(() => expect(results()).toHaveLength(1))
     let release: (counts: Record<string, Record<string, number>>) => void = () => {}
-    filters.mockReturnValueOnce(new Promise((resolve) => { release = resolve }))
+    filters.mockReturnValueOnce(
+      new Promise((resolve) => {
+        release = resolve
+      }),
+    )
     handle.clear()
     await vi.waitFor(() => expect(filters).toHaveBeenCalledOnce())
     query('capture')
@@ -104,7 +115,12 @@ describe('port search defaults', () => {
     const { search, query, results, root } = fixture('Go')
     await vi.waitFor(() => expect(results()).toHaveLength(1))
     let release: (data: PagefindResultData) => void = () => {}
-    const data = vi.fn(() => new Promise<PagefindResultData>((resolve) => { release = resolve }))
+    const data = vi.fn(
+      () =>
+        new Promise<PagefindResultData>((resolve) => {
+          release = resolve
+        }),
+    )
     search.mockResolvedValueOnce({ results: [{ id: 'slow', data }] })
     query('slow')
     await vi.waitFor(() => expect(data).toHaveBeenCalled())

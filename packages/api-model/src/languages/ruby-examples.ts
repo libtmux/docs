@@ -36,12 +36,19 @@ export function attachCompleteRubyExamples(
   const targets = new Set<string>()
   for (const program of selected) {
     const api = program.api
-    if (!/^examples\/(?:[\w-]+\/)*[\w-]+\.rb$/.test(program.path) ||
-        !/^libtmux(?:-[a-z]+)*$/.test(program.gem) ||
-        !api || !Array.isArray(api.symbols) || !api.symbols.length ||
-        !api.symbols.every((id) => typeof id === 'string' && id.length && !/\s/.test(id)) ||
-        typeof api.description !== 'string' || !api.description.trim() ||
-        typeof api.output !== 'string' || !api.output.trim() || !api.output.endsWith('\n')) {
+    if (
+      !/^examples\/(?:[\w-]+\/)*[\w-]+\.rb$/.test(program.path) ||
+      !/^libtmux(?:-[a-z]+)*$/.test(program.gem) ||
+      !api ||
+      !Array.isArray(api.symbols) ||
+      !api.symbols.length ||
+      !api.symbols.every((id) => typeof id === 'string' && id.length && !/\s/.test(id)) ||
+      typeof api.description !== 'string' ||
+      !api.description.trim() ||
+      typeof api.output !== 'string' ||
+      !api.output.trim() ||
+      !api.output.endsWith('\n')
+    ) {
       throw new Error(`Invalid Ruby API example metadata: ${program.path}`)
     }
     const code = files.get(program.path)
@@ -66,7 +73,8 @@ export function attachCompleteRubyExamples(
       },
       {
         lang: 'console',
-        intro: 'Install the runtime dependencies and run the saved program. An operation or cleanup error makes it exit unsuccessfully:',
+        intro:
+          'Install the runtime dependencies and run the saved program. An operation or cleanup error makes it exit unsuccessfully:',
         code: `$ bundle config set --local path vendor/bundle && \\\n  bundle install --jobs 2 && \\\n  bundle exec ruby ${filename}\n`,
       },
       { lang: 'text', intro: 'Expected output:', code: api.output },

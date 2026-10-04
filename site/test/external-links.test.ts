@@ -12,7 +12,9 @@ function page() {
     <a id="fragment" href="#parameter">Parameter</a><a id="mail" href="mailto:example@example.com">Mail</a>
     <a id="protocol" href="//docs.python.org/3/" title="Python reference" aria-description="More detail">Python</a>`
   const dispose = installExternalLinks(win as unknown as typeof window)
-  disposals.push(dispose, () => { void win.happyDOM.abort() })
+  disposals.push(dispose, () => {
+    void win.happyDOM.abort()
+  })
   return { win, doc: win.document, dispose }
 }
 describe('shared external link hints', () => {
@@ -23,7 +25,8 @@ describe('shared external link hints', () => {
     expect(link.getAttribute('aria-description')).toBe('External site: learn.microsoft.com')
     expect(link.innerHTML).toBe('<code>Example</code>')
     expect(link.hasAttribute('target')).toBe(false)
-    for (const id of ['relative', 'absolute', 'fragment', 'mail']) expect(doc.getElementById(id)!.hasAttribute('data-external-link')).toBe(false)
+    for (const id of ['relative', 'absolute', 'fragment', 'mail'])
+      expect(doc.getElementById(id)!.hasAttribute('data-external-link')).toBe(false)
     expect(doc.getElementById('protocol')!.getAttribute('title')).toBe('View on docs.python.org — Python reference')
   })
   it('handles changed hrefs and dynamically inserted links, and restores original metadata', async () => {
@@ -49,6 +52,8 @@ describe('shared external link hints', () => {
     const cleanup = installExternalLinks(win as unknown as typeof window)
     disposals.push(cleanup)
     expect(doc.getElementById('protocol')!.getAttribute('title')).toBe('View on docs.python.org — Python reference')
-    expect(doc.getElementById('protocol')!.getAttribute('aria-description')).toBe('More detail. External site: docs.python.org')
+    expect(doc.getElementById('protocol')!.getAttribute('aria-description')).toBe(
+      'More detail. External site: docs.python.org',
+    )
   })
 })

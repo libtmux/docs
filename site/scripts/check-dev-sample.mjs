@@ -25,7 +25,10 @@ export async function checkDevSample(browser, base) {
         const layout = await page.evaluate(() => {
           const controls = ['.site-header__search', '.scheme-switch, .scheme-cycle', '.site-header__menu-button']
             .map((selector) => [...document.querySelectorAll(selector)].find((node) => node.checkVisibility()))
-            .map((node) => { const { top, height } = node.getBoundingClientRect(); return { top, height } })
+            .map((node) => {
+              const { top, height } = node.getBoundingClientRect()
+              return { top, height }
+            })
           const table = document.querySelector('table')
           const head = [...(table?.tHead?.rows[0]?.cells ?? [])]
           const body = [...(table?.tBodies[0]?.rows[0]?.cells ?? [])]
@@ -35,24 +38,45 @@ export async function checkDevSample(browser, base) {
             headerPicker: Boolean(document.querySelector('.site-header-language [data-page-port-switcher]')),
             controls,
             tableColumns: head.length,
-            columns: head.length === body.length ? head.map((cell, index) =>
-              Math.abs(cell.getBoundingClientRect().x - body[index].getBoundingClientRect().x)) : null,
+            columns:
+              head.length === body.length
+                ? head.map((cell, index) =>
+                    Math.abs(cell.getBoundingClientRect().x - body[index].getBoundingClientRect().x),
+                  )
+                : null,
           }
         })
         const headerLimit = layout.headerPicker && width <= 560 ? 97 : 53
         assert(layout.overflow <= 1 && layout.header <= headerLimit, `${path}/${width}: page and responsive header fit`)
-        assert(layout.controls.every((control) => control.height > 0
-          && Math.abs(control.height - layout.controls[0].height) < .1
-          && Math.abs(control.top - layout.controls[0].top) < .1), `${path}/${width}: visible controls align`)
+        assert(
+          layout.controls.every(
+            (control) =>
+              control.height > 0 &&
+              Math.abs(control.height - layout.controls[0].height) < 0.1 &&
+              Math.abs(control.top - layout.controls[0].top) < 0.1,
+          ),
+          `${path}/${width}: visible controls align`,
+        )
         if (path === 'mcp/tools/') {
-          assert(layout.tableColumns > 1 && layout.columns?.every((delta) => delta <= 1), `${width}: MCP table columns align`)
+          assert(
+            layout.tableColumns > 1 && layout.columns?.every((delta) => delta <= 1),
+            `${width}: MCP table columns align`,
+          )
         }
       }
       if (path.startsWith('tmux/')) {
         assert.match(await page.title(), /\| tmux \| libtmux\.org$/)
         const picker = page.locator('[data-page-port-switcher]')
-        assert.equal(await page.locator('.site-header-language [data-page-port-switcher]').count(), 1, 'Language selection is in the top bar')
-        assert.equal(await page.locator('[data-documentation-context] [data-page-port-switcher]').count(), 0, 'The subbar has no duplicate language picker')
+        assert.equal(
+          await page.locator('.site-header-language [data-page-port-switcher]').count(),
+          1,
+          'Language selection is in the top bar',
+        )
+        assert.equal(
+          await page.locator('[data-documentation-context] [data-page-port-switcher]').count(),
+          0,
+          'The subbar has no duplicate language picker',
+        )
         await picker.locator('summary').click()
         const panel = picker.locator('[data-picker-panel]')
         await panel.waitFor({ state: 'visible' })
@@ -60,22 +84,34 @@ export async function checkDevSample(browser, base) {
         assert(bounds && bounds.x >= 0 && bounds.x + bounds.width <= 391, 'Phone language menu fits the viewport')
         await page.keyboard.press('Escape')
         assert.equal(await picker.getAttribute('open'), null)
-        assert(await picker.locator('summary').evaluate((node) => node === document.activeElement), 'Escape restores focus')
+        assert(
+          await picker.locator('summary').evaluate((node) => node === document.activeElement),
+          'Escape restores focus',
+        )
       }
       if (path === 'api-example-probe/') {
         const declaration = page.locator('dt.gp-sphinx-api-header').first()
         const identity = await declaration.getAttribute('id')
-        assert.equal(await declaration.locator('a.headerlink').getAttribute('href'), `#${identity}`,
-          'A declaration permalink lands on its signature bar')
-        assert.equal(await declaration.locator('.section-anchor-alias').getAttribute('id'), `${identity}.declaration`,
-          'The previous declaration fragment remains available')
+        assert.equal(
+          await declaration.locator('a.headerlink').getAttribute('href'),
+          `#${identity}`,
+          'A declaration permalink lands on its signature bar',
+        )
+        assert.equal(
+          await declaration.locator('.section-anchor-alias').getAttribute('id'),
+          `${identity}.declaration`,
+          'The previous declaration fragment remains available',
+        )
         const equivalents = page.locator('.api-elsewhere a')
         const hrefs = await equivalents.evaluateAll((links) => links.map((link) => link.getAttribute('href')))
         const java = hrefs.find((href) => /\/java\/latest\/reference\/.*capture/.test(href))
         assert(java, 'Pane.capture has its verified Java equivalent')
         const equivalent = await page.request.get(new URL(java, base).href)
         assert(equivalent.ok(), `${java}: equivalent declaration HTTP ${equivalent.status()}`)
-        assert(await page.locator('.gp-sphinx-api-example [data-code]').count() > 0, 'API example has a copyable program')
+        assert(
+          (await page.locator('.gp-sphinx-api-example [data-code]').count()) > 0,
+          'API example has a copyable program',
+        )
       }
     }
     await page.goto(`${base}/?port=rs&prompt=eval-sweep&errors=1&cleanup=0`)

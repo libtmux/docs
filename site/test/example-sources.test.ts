@@ -39,10 +39,7 @@ interface Fence {
 }
 
 function fences(): Fence[] {
-  const files = execFileSync('fd', ['-e', 'md', '.', CONTENT], { encoding: 'utf8' })
-    .trim()
-    .split('\n')
-    .filter(Boolean)
+  const files = execFileSync('fd', ['-e', 'md', '.', CONTENT], { encoding: 'utf8' }).trim().split('\n').filter(Boolean)
 
   const out: Fence[] = []
   for (const path of files) {
@@ -90,9 +87,7 @@ describe('documented examples', () => {
 
   it('retains the expected coverage of revision-bound source inclusions', () => {
     const share = `${sourced.length}/${all.length}`
-    expect(sourced.length, `examples sourced from a port checkout (${share})`).toBeGreaterThanOrEqual(
-      SOURCED_FLOOR,
-    )
+    expect(sourced.length, `examples sourced from a port checkout (${share})`).toBeGreaterThanOrEqual(SOURCED_FLOOR)
   })
 
   it('reports source inclusion by port without claiming native execution', () => {
@@ -107,7 +102,10 @@ describe('documented examples', () => {
 
     const lines = [...byPort]
       .sort((a, b) => b[1].inline - a[1].inline)
-      .map(([port, r]) => `  ${port.padEnd(7)} ${String(r.sourced).padStart(3)} sourced, ${String(r.inline).padStart(3)} inline`)
+      .map(
+        ([port, r]) =>
+          `  ${port.padEnd(7)} ${String(r.sourced).padStart(3)} sourced, ${String(r.inline).padStart(3)} inline`,
+      )
 
     console.info(
       `example sources: ${sourced.length} of ${all.length} included from port source (execution coverage not inferred)\n` +

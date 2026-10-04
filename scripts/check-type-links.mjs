@@ -28,10 +28,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 /* `--ceiling` points at a different record so the negative test can drive this
  * script rather than a copy of its logic. */
 const ceilingArg = process.argv.indexOf('--ceiling')
-const CEILING_FILE =
-  ceilingArg === -1
-    ? join(root, 'scripts/type-links-ceiling.json')
-    : process.argv[ceilingArg + 1]
+const CEILING_FILE = ceilingArg === -1 ? join(root, 'scripts/type-links-ceiling.json') : process.argv[ceilingArg + 1]
 const { API_MODEL_PORTS: PORT_DEFS } = await import(`file://${join(root, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
 
@@ -124,7 +121,9 @@ if (args.includes('--list')) {
       .slice(0, 8)
       .map(([n, c]) => `${n}(${c})`)
       .join(' ')
-    console.log(`${p.padEnd(7)} ${String(resolved).padStart(6)} linked  ${String(unresolved).padStart(5)} plain  ${share.padStart(5)}% linked`)
+    console.log(
+      `${p.padEnd(7)} ${String(resolved).padStart(6)} linked  ${String(unresolved).padStart(5)} plain  ${share.padStart(5)}% linked`,
+    )
     console.log(`        ${top}`)
   }
   process.exit(0)
@@ -192,7 +191,9 @@ if (over.length) {
   console.error('check-type-links: more type names render plain than the ceiling allows.')
   for (const p of over) {
     const top = [...results[p].names.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5)
-    console.error(`  ${p.padEnd(7)} ${ceiling[p]} -> ${results[p].unresolved}   ${top.map(([n, c]) => `${n}(${c})`).join(' ')}`)
+    console.error(
+      `  ${p.padEnd(7)} ${ceiling[p]} -> ${results[p].unresolved}   ${top.map(([n, c]) => `${n}(${c})`).join(' ')}`,
+    )
   }
   console.error('\nSee them all: node scripts/check-type-links.mjs --list')
   process.exit(1)

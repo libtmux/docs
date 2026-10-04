@@ -16,12 +16,19 @@ export function getStaticPaths() {
   const buildBase = process.env.LIBTMUX_DOCS_BASE ?? '/'
   const buildVersion = buildTarget(process.env).version
   let defaults: Record<string, string> = {}
-  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults use latest. */ }
-  const route = (href: string, preview: LinkPreview) => ({ params: { slug: href.slice(buildBase.length).replace(/\/$/, '') }, props: { preview } })
+  try {
+    defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
+  } catch {
+    /* Local defaults use latest. */
+  }
+  const route = (href: string, preview: LinkPreview) => ({
+    params: { slug: href.slice(buildBase.length).replace(/\/$/, '') },
+    props: { preview },
+  })
   const paths = !buildPort ? [route(API_GLOSSARY_PATH, glossaryPreview(API_GLOSSARY_PATH))] : []
   for (const [port, model] of Object.entries(API_MODELS)) {
     if (buildPort && port !== buildPort) continue
-    const version = buildPort ? buildVersion : defaults[port] ?? 'latest'
+    const version = buildPort ? buildVersion : (defaults[port] ?? 'latest')
     const info = PORT_BY_SLUG[port]
     for (const symbol of model.symbols) {
       if (!buildPort && (!symbol.product || symbol.product === 'core' || symbol.apiScope === 'internal')) continue
@@ -40,6 +47,7 @@ export function getStaticPaths() {
   }
   return paths
 }
-export const GET: APIRoute = ({ props }) => new Response(JSON.stringify(props.preview), {
-  headers: { 'Content-Type': 'application/json; charset=utf-8' },
-})
+export const GET: APIRoute = ({ props }) =>
+  new Response(JSON.stringify(props.preview), {
+    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+  })

@@ -47,10 +47,7 @@ function splitRow(line: string): string[] {
   return cells
 }
 
-export function tableMentions(
-  markdown: string,
-  portByLabel: Record<string, string>,
-): TableMention[] {
+export function tableMentions(markdown: string, portByLabel: Record<string, string>): TableMention[] {
   const out: TableMention[] = []
   const lines = markdown.split('\n')
 
@@ -87,14 +84,33 @@ export interface ProseMention {
 }
 
 const FENCE_PORT: Record<string, string> = {
-  python: 'py', py: 'py', typescript: 'ts', ts: 'ts', javascript: 'ts', js: 'ts',
-  rust: 'rs', rs: 'rs', go: 'go', java: 'java', csharp: 'csharp', cs: 'csharp',
-  cpp: 'cxx', 'c++': 'cxx', swift: 'swift',
-  powershell: 'powershell', pwsh: 'powershell', ps1: 'powershell', julia: 'julia',
+  python: 'py',
+  py: 'py',
+  typescript: 'ts',
+  ts: 'ts',
+  javascript: 'ts',
+  js: 'ts',
+  rust: 'rs',
+  rs: 'rs',
+  go: 'go',
+  java: 'java',
+  csharp: 'csharp',
+  cs: 'csharp',
+  cpp: 'cxx',
+  'c++': 'cxx',
+  swift: 'swift',
+  powershell: 'powershell',
+  pwsh: 'powershell',
+  ps1: 'powershell',
+  julia: 'julia',
 }
 
 /** Inline references in prose, including port sections, tables, and existing links. */
-export function proseMentions(markdown: string, portByLabel: Record<string, string>, portAt?: (offset: number) => string | undefined): ProseMention[] {
+export function proseMentions(
+  markdown: string,
+  portByLabel: Record<string, string>,
+  portAt?: (offset: number) => string | undefined,
+): ProseMention[] {
   const out: ProseMention[] = []
   const lines = markdown.split('\n')
   const context: { port?: string; before: string }[] = []
@@ -107,7 +123,10 @@ export function proseMentions(markdown: string, portByLabel: Record<string, stri
   let frontmatter = false
 
   for (const [i, line] of lines.entries()) {
-    if (i === 0 && line.trim() === '---') { frontmatter = true; continue }
+    if (i === 0 && line.trim() === '---') {
+      frontmatter = true
+      continue
+    }
     if (frontmatter) {
       if (line.trim() === '---') frontmatter = false
       continue
@@ -132,7 +151,10 @@ export function proseMentions(markdown: string, portByLabel: Record<string, stri
       paragraph = ''
       continue
     }
-    if (!line.trim()) { paragraph = ''; continue }
+    if (!line.trim()) {
+      paragraph = ''
+      continue
+    }
     const row = line.trim().startsWith('|') ? splitRow(line.trim()) : undefined
     const port = (row && portByLabel[row[0]]) ?? fencePort ?? sections.at(-1)?.port
     context[i] = { port, before: paragraph }
@@ -180,9 +202,15 @@ export function proseMentions(markdown: string, portByLabel: Record<string, stri
     const ctx = context[line - 1]
     if (!ctx) continue
     const before = ctx.before + beforeMatch.slice(beforeMatch.lastIndexOf('\n') + 1)
-    out.push({ text, port: portAt?.(span.start) ?? ctx.port, before, line,
-      start: span.start, end: span.end,
-      ...(span.href !== undefined ? { linked: true, href: span.href } : {}) })
+    out.push({
+      text,
+      port: portAt?.(span.start) ?? ctx.port,
+      before,
+      line,
+      start: span.start,
+      end: span.end,
+      ...(span.href !== undefined ? { linked: true, href: span.href } : {}),
+    })
   }
   return out
 }

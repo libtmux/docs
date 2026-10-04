@@ -9,26 +9,50 @@ import { publicationMatrix } from '../../scripts/port-docs-matrix.mjs'
 const script = fileURLToPath(new URL('../../scripts/port-docs-identity.sh', import.meta.url))
 const workflow = readFileSync(new URL('../../.github/workflows/port-docs.yml', import.meta.url), 'utf8')
 
-interface Entry { version: string; kind: string; isDefault: boolean; resolvesTo: string; publish: boolean }
+interface Entry {
+  version: string
+  kind: string
+  isDefault: boolean
+  resolvesTo: string
+  publish: boolean
+}
 
 function identity(env: Record<string, string>) {
   const directory = mkdtempSync(join(tmpdir(), 'libtmux-port-docs-identity-'))
   const output = join(directory, 'output')
   try {
     const result = spawnSync('bash', [script], {
-      encoding: 'utf8', timeout: 10000,
+      encoding: 'utf8',
+      timeout: 10000,
       env: {
-        PATH: process.env.PATH ?? '', GITHUB_OUTPUT: output, SHA: 'abc123', DEFAULT_BRANCH: 'master',
-        REF_NAME: '', REF_TYPE: 'branch', TAG_PREFIX: '', INPUT_SOURCE_REF: '', INPUT_VERSION: '',
-        INPUT_KIND: '', INPUT_DEFAULT: 'false', INPUT_RESOLVES_TO: '', INPUT_PUBLISH: 'false', ...env,
+        PATH: process.env.PATH ?? '',
+        GITHUB_OUTPUT: output,
+        SHA: 'abc123',
+        DEFAULT_BRANCH: 'master',
+        REF_NAME: '',
+        REF_TYPE: 'branch',
+        TAG_PREFIX: '',
+        INPUT_SOURCE_REF: '',
+        INPUT_VERSION: '',
+        INPUT_KIND: '',
+        INPUT_DEFAULT: 'false',
+        INPUT_RESOLVES_TO: '',
+        INPUT_PUBLISH: 'false',
+        ...env,
       },
     })
-    const outputs = result.status === 0
-      ? Object.fromEntries(readFileSync(output, 'utf8').trim().split('\n').map((line) => {
-        const at = line.indexOf('=')
-        return [line.slice(0, at), line.slice(at + 1)]
-      }))
-      : {}
+    const outputs =
+      result.status === 0
+        ? Object.fromEntries(
+            readFileSync(output, 'utf8')
+              .trim()
+              .split('\n')
+              .map((line) => {
+                const at = line.indexOf('=')
+                return [line.slice(0, at), line.slice(at + 1)]
+              }),
+          )
+        : {}
     const entries: Entry[] = outputs.matrix ? JSON.parse(outputs.matrix).include : []
     return { status: result.status, stderr: result.stderr, outputs, entries }
   } finally {
@@ -36,8 +60,10 @@ function identity(env: Record<string, string>) {
   }
 }
 
-const tag = (name: string, prefix = '') => identity({ EVENT: 'push', REF_TYPE: 'tag', REF_NAME: name, TAG_PREFIX: prefix })
-const versions = (entries: Entry[]) => entries.map(({ version, kind, isDefault, resolvesTo }) => [version, kind, isDefault, resolvesTo])
+const tag = (name: string, prefix = '') =>
+  identity({ EVENT: 'push', REF_TYPE: 'tag', REF_NAME: name, TAG_PREFIX: prefix })
+const versions = (entries: Entry[]) =>
+  entries.map(({ version, kind, isDefault, resolvesTo }) => [version, kind, isDefault, resolvesTo])
 
 describe('port docs identity', () => {
   it('builds a pull request at the merge commit and publishes nothing', () => {
@@ -48,8 +74,12 @@ describe('port docs identity', () => {
   })
 
   it('publishes an opted-in same-repository preview from the tested merge commit', () => {
-    const result = identity({ EVENT: 'pull_request', PUBLISH_PREVIEWS: 'true',
-      PR_NUMBER: '37', SAME_REPOSITORY_PR: 'true' })
+    const result = identity({
+      EVENT: 'pull_request',
+      PUBLISH_PREVIEWS: 'true',
+      PR_NUMBER: '37',
+      SAME_REPOSITORY_PR: 'true',
+    })
     expect(result.status).toBe(0)
     expect(result.outputs.source_ref).toBe('abc123')
     expect(versions(result.entries)).toEqual([['pr-37', 'pr', false, '']])
@@ -61,16 +91,24 @@ describe('port docs identity', () => {
   })
 
   it.each(['false', ''])('keeps fork or missing-identity previews unpublishable (%s)', (sameRepository) => {
-    const result = identity({ EVENT: 'pull_request', PUBLISH_PREVIEWS: 'true',
-      PR_NUMBER: '37', SAME_REPOSITORY_PR: sameRepository })
+    const result = identity({
+      EVENT: 'pull_request',
+      PUBLISH_PREVIEWS: 'true',
+      PR_NUMBER: '37',
+      SAME_REPOSITORY_PR: sameRepository,
+    })
     expect(result.status).toBe(0)
     expect(versions(result.entries)).toEqual([['pr-37', 'pr', false, '']])
     expect(result.outputs.should_publish).toBe('false')
   })
 
   it.each(['', '../latest', '37/../../latest'])('rejects an invalid opted-in preview number: %s', (number) => {
-    const result = identity({ EVENT: 'pull_request', PUBLISH_PREVIEWS: 'true',
-      PR_NUMBER: number, SAME_REPOSITORY_PR: 'true' })
+    const result = identity({
+      EVENT: 'pull_request',
+      PUBLISH_PREVIEWS: 'true',
+      PR_NUMBER: number,
+      SAME_REPOSITORY_PR: 'true',
+    })
     expect(result.status).toBe(1)
     expect(result.stderr).toContain('preview requires a numeric pull request number')
   })
@@ -79,11 +117,19 @@ describe('port docs identity', () => {
     const trunk = identity({ EVENT: 'push', REF_NAME: 'master' })
     expect(versions(trunk.entries)).toEqual([['latest', 'trunk', true, '']])
     expect(trunk.outputs.should_publish).toBe('true')
-    const prerelease = identity({ EVENT: 'push', REF_NAME: 'master', TAG_PREFIX: 'libtmux@',
-      TAGS: 'libtmux@v0.1.0-alpha.14\ntmux-mcp@v1.0.0\nv2.0.0' })
-    expect(versions(prerelease.entries), 'another package\'s release').toEqual([['latest', 'trunk', true, '']])
-    const released = identity({ EVENT: 'push', REF_NAME: 'master', TAG_PREFIX: 'libtmux@',
-      TAGS: 'libtmux@v0.1.0-alpha.14\nlibtmux@v0.1.0' })
+    const prerelease = identity({
+      EVENT: 'push',
+      REF_NAME: 'master',
+      TAG_PREFIX: 'libtmux@',
+      TAGS: 'libtmux@v0.1.0-alpha.14\ntmux-mcp@v1.0.0\nv2.0.0',
+    })
+    expect(versions(prerelease.entries), "another package's release").toEqual([['latest', 'trunk', true, '']])
+    const released = identity({
+      EVENT: 'push',
+      REF_NAME: 'master',
+      TAG_PREFIX: 'libtmux@',
+      TAGS: 'libtmux@v0.1.0-alpha.14\nlibtmux@v0.1.0',
+    })
     expect(versions(released.entries), 'after a stable release').toEqual([['latest', 'trunk', false, '']])
     const other = identity({ EVENT: 'push', REF_NAME: 'docs-site' })
     expect(other.status).toBe(1)
@@ -110,16 +156,21 @@ describe('port docs identity', () => {
     }
   })
 
-  it('refuses a tag that is not this package\'s release', () => {
+  it("refuses a tag that is not this package's release", () => {
     expect(tag('tmux-mcp@v0.1.0', 'libtmux@').stderr).toContain('does not start with libtmux@')
     expect(tag('libtmux@nightly', 'libtmux@').stderr).toContain('unsupported release tag')
   })
 
   it('publishes exactly what a dispatch names, and refuses what cannot be published', () => {
-    const dispatch = (inputs: Record<string, string>) => identity({
-      EVENT: 'workflow_dispatch', INPUT_SOURCE_REF: 'libtmux@v0.1.0-alpha.14', INPUT_VERSION: 'v0.1.0-alpha.14',
-      INPUT_KIND: 'tag', INPUT_PUBLISH: 'true', ...inputs,
-    })
+    const dispatch = (inputs: Record<string, string>) =>
+      identity({
+        EVENT: 'workflow_dispatch',
+        INPUT_SOURCE_REF: 'libtmux@v0.1.0-alpha.14',
+        INPUT_VERSION: 'v0.1.0-alpha.14',
+        INPUT_KIND: 'tag',
+        INPUT_PUBLISH: 'true',
+        ...inputs,
+      })
     const ok = dispatch({})
     expect(ok.outputs.source_ref).toBe('libtmux@v0.1.0-alpha.14')
     expect(versions(ok.entries)).toEqual([['v0.1.0-alpha.14', 'tag', false, '']])
@@ -137,18 +188,32 @@ describe('port docs workflow', () => {
     const entries = tag('v0.0.1-alpha.17').entries
     const matrix = publicationMatrix({ include: entries }, 'java', 'libtmux/libtmux-java', true)
     expect(matrix.include.map(({ port, version }) => `${port}/${version}`)).toEqual([
-      'java/v0.0.1-alpha.17', 'kotlin/v0.0.1-alpha.17', 'scala/v0.0.1-alpha.17',
-      'java/next', 'kotlin/next', 'scala/next',
+      'java/v0.0.1-alpha.17',
+      'kotlin/v0.0.1-alpha.17',
+      'scala/v0.0.1-alpha.17',
+      'java/next',
+      'kotlin/next',
+      'scala/next',
     ])
     expect(publicationMatrix({ include: entries }, 'java', 'libtmux/libtmux-java').include).toHaveLength(2)
-    expect(publicationMatrix({ include: entries }, 'fsharp', 'libtmux/libtmux-dotnet').include.every((entry) => entry.port === 'fsharp')).toBe(true)
-    expect(() => publicationMatrix({ include: entries }, 'java', 'libtmux/libtmux-dotnet', true)).toThrow('cannot build java')
+    expect(
+      publicationMatrix({ include: entries }, 'fsharp', 'libtmux/libtmux-dotnet').include.every(
+        (entry) => entry.port === 'fsharp',
+      ),
+    ).toBe(true)
+    expect(() => publicationMatrix({ include: entries }, 'java', 'libtmux/libtmux-dotnet', true)).toThrow(
+      'cannot build java',
+    )
     expect(() => publicationMatrix({ include: entries }, 'scala', 'libtmux/libtmux-ts')).toThrow('cannot build scala')
-    expect(() => publicationMatrix({ include: entries }, 'unknown', 'libtmux/docs')).toThrow('unknown documentation port')
+    expect(() => publicationMatrix({ include: entries }, 'unknown', 'libtmux/docs')).toThrow(
+      'unknown documentation port',
+    )
   })
 
   it('builds with the scripts of its own commit, not a second pin', () => {
-    const docsCheckouts = workflow.match(/repository: \$\{\{ job\.workflow_repository \}\}\n\s+ref: \$\{\{ job\.workflow_sha \}\}/g)
+    const docsCheckouts = workflow.match(
+      /repository: \$\{\{ job\.workflow_repository \}\}\n\s+ref: \$\{\{ job\.workflow_sha \}\}/g,
+    )
     expect(docsCheckouts).toHaveLength(2)
     expect(workflow).not.toMatch(/ref: [0-9a-f]{40}/)
   })

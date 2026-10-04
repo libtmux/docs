@@ -70,11 +70,14 @@ export function inventory(): AstroIntegration {
           const uri = uriForModel(model, false)
           const path = join(dir.pathname, 'reference', 'objects.inv')
           mkdirSync(dirname(path), { recursive: true })
-          writeFileSync(path, writeInventory(model, {
-            project: `libtmux for ${PORT_NAME[buildPort] ?? buildPort}`,
-            version: model.revision?.slice(0, 7) ?? 'latest',
-            uriFor: uri,
-          }))
+          writeFileSync(
+            path,
+            writeInventory(model, {
+              project: `libtmux for ${PORT_NAME[buildPort] ?? buildPort}`,
+              version: model.revision?.slice(0, 7) ?? 'latest',
+              uriFor: uri,
+            }),
+          )
           logger.info(`objects.inv written for ${buildPort} (${model.symbols.length} symbols)`)
           return
         }
@@ -88,10 +91,14 @@ export function inventory(): AstroIntegration {
           const model = tmuxSourceModel(version)
           const path = join(out, 'tmux', version, 'reference', 'objects.inv')
           mkdirSync(dirname(path), { recursive: true })
-          writeFileSync(path, writeInventory(model, {
-            project: 'tmux C source', version: model.version,
-            uriFor: (symbol) => `${symbol.slug}/`,
-          }))
+          writeFileSync(
+            path,
+            writeInventory(model, {
+              project: 'tmux C source',
+              version: model.version,
+              uriFor: (symbol) => `${symbol.slug}/`,
+            }),
+          )
         }
 
         const uriFor = uriForModel

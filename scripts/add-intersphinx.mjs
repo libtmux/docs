@@ -50,7 +50,11 @@ for (const port of PORTS) {
   for (const dir of referenceDirs(siteDir, port)) {
     const inv = join(dir, 'objects.inv')
     if (!existsSync(inv)) continue
-    entries.push([`libtmux-${port}`, `${baseUrl.replace(/\/*$/, '')}/${dir.slice(siteDir.length).replace(/^\/+/, '')}/`, inv])
+    entries.push([
+      `libtmux-${port}`,
+      `${baseUrl.replace(/\/*$/, '')}/${dir.slice(siteDir.length).replace(/^\/+/, '')}/`,
+      inv,
+    ])
     break
   }
 }

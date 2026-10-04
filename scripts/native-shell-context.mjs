@@ -16,7 +16,8 @@ export function nativeArticle(html) {
 }
 
 function artifactFiles(directory, path = '') {
-  return readdirSync(join(directory, path), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))
+  return readdirSync(join(directory, path), { withFileTypes: true })
+    .sort((a, b) => a.name.localeCompare(b.name))
     .flatMap((entry) => {
       const name = path ? `${path}/${entry.name}` : entry.name
       if (entry.isDirectory()) return artifactFiles(directory, name)
@@ -26,8 +27,13 @@ function artifactFiles(directory, path = '') {
 }
 
 function localPath(value, field) {
-  if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') ||
-      /[?#\\]/.test(value) || value.split('/').some((part) => ['.', '..'].includes(decodeURIComponent(part)))) {
+  if (
+    typeof value !== 'string' ||
+    !value.startsWith('/') ||
+    value.startsWith('//') ||
+    /[?#\\]/.test(value) ||
+    value.split('/').some((part) => ['.', '..'].includes(decodeURIComponent(part)))
+  ) {
     throw new Error(`Native ${field} is not a local absolute path: ${value}`)
   }
   return value
@@ -40,7 +46,8 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
   const git = (...args) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8' }).trim()
   const sha = git('rev-parse', 'HEAD')
   if (sourceSha && sourceSha !== sha) throw new Error(`Native source revision mismatch: ${sourceSha} != ${sha}`)
-  if (git('status', '--porcelain', '--untracked-files=no')) throw new Error(`Native source has tracked changes: ${checkout}`)
+  if (git('status', '--porcelain', '--untracked-files=no'))
+    throw new Error(`Native source has tracked changes: ${checkout}`)
   const root = localPath(`${prefix.replace(/\/+$/, '')}/`, 'prefix')
   if (!/^[\w.-]+$/.test(version)) throw new Error(`Invalid native version: ${version}`)
   const locale = root.split('/').filter(Boolean).at(-1)
@@ -56,7 +63,9 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
   }
   const pages = []
   const redirects = []
-  const window = new Window({ settings: { disableJavaScriptEvaluation: true, disableCSSFileLoading: true, disableJavaScriptFileLoading: true } })
+  const window = new Window({
+    settings: { disableJavaScriptEvaluation: true, disableCSSFileLoading: true, disableJavaScriptFileLoading: true },
+  })
   try {
     for (const file of files.filter((path) => path.endsWith('.html') && !path.startsWith('_sources/'))) {
       const html = readFileSync(join(directory, file), 'utf8')
@@ -73,7 +82,12 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
       let markdownHref
       let markdownSha256
       if (entry) {
-        if (!sourcePath || sourcePath.startsWith('/') || /[\\\r\n]/.test(sourcePath) || sourcePath.split('/').some((part) => part === '..')) {
+        if (
+          !sourcePath ||
+          sourcePath.startsWith('/') ||
+          /[\\\r\n]/.test(sourcePath) ||
+          sourcePath.split('/').some((part) => part === '..')
+        ) {
           throw new Error(`Native page has no valid source path: ${file}`)
         }
         const committed = execFileSync('git', ['-C', checkout, 'show', `${sha}:${sourcePath}`])
@@ -89,12 +103,22 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
         throw new Error(`Native page has no docs.json entry: ${file}`)
       }
       pages.push({
-        file, path, url: `${base}${path}`, sourcePath: `${port.slug}/${version}/api/${path}`,
-        source, markdownHref, markdownSha256,
-        htmlSha256: hashes[file], articleSha256: nativeHash(nativeArticle(html)),
+        file,
+        path,
+        url: `${base}${path}`,
+        sourcePath: `${port.slug}/${version}/api/${path}`,
+        source,
+        markdownHref,
+        markdownSha256,
+        htmlSha256: hashes[file],
+        articleSha256: nativeHash(nativeArticle(html)),
         hasTableOfContents: [...window.document.querySelectorAll('.toc-tree a[href^="#"]')].some((link) => {
           let id
-          try { id = decodeURIComponent(link.getAttribute('href').slice(1)) } catch { return false }
+          try {
+            id = decodeURIComponent(link.getAttribute('href').slice(1))
+          } catch {
+            return false
+          }
           const target = id ? window.document.getElementById(id) : null
           return Boolean(target?.closest('article') && !target.matches('h1') && !target.querySelector(':scope > h1'))
         }),
@@ -106,15 +130,23 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
   }
   if (metadata.size) throw new Error(`Native docs.json names missing pages: ${[...metadata.keys()].join(', ')}`)
   return {
-    schema: 1, port: port.slug, version, locale, root, base,
+    schema: 1,
+    port: port.slug,
+    version,
+    locale,
+    root,
+    base,
     source: { repository: port.repo, sha },
-    artifactSha256: nativeHash(JSON.stringify(hashes)), pages, redirects,
+    artifactSha256: nativeHash(JSON.stringify(hashes)),
+    pages,
+    redirects,
   }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [directory, prefix, sphinxPort, version, checkout, output, sourceSha] = process.argv.slice(2)
-  if (!output) throw new Error('Usage: native-shell-context.mjs DIRECTORY PREFIX PORT VERSION CHECKOUT OUTPUT [SOURCE_SHA]')
+  if (!output)
+    throw new Error('Usage: native-shell-context.mjs DIRECTORY PREFIX PORT VERSION CHECKOUT OUTPUT [SOURCE_SHA]')
   const manifest = await collectNativeContext(directory, { prefix, sphinxPort, version, checkout, sourceSha })
   writeFileSync(output, `${JSON.stringify(manifest, null, 2)}\n`)
   console.log(`Native context: ${manifest.pages.length} pages at ${manifest.base} from ${manifest.source.sha}`)

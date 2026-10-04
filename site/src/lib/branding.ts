@@ -16,14 +16,19 @@ export const TMUX_WEBSITE = 'https://github.com/tmux/tmux/wiki'
 /** The section disambiguates manual commands from guides and source APIs. */
 export function tmuxDocumentationTitle(title: string, pagePath: string): string {
   const sections: Record<string, string> = {
-    guides: 'Guides', topics: 'Topics', concepts: 'Concepts', examples: 'Examples',
-    manual: 'Manual', reference: 'Reference',
+    guides: 'Guides',
+    topics: 'Topics',
+    concepts: 'Concepts',
+    examples: 'Examples',
+    manual: 'Manual',
+    reference: 'Reference',
   }
   const parts = pagePath.split('/').filter(Boolean)
   const section = sections[parts[1]] ?? sections[parts[2]]
   const page = title === 'tmux' ? '' : title
   return [page, section && page.toLowerCase() !== section.toLowerCase() ? section : '', 'tmux', 'libtmux.org']
-    .filter(Boolean).join(' | ')
+    .filter(Boolean)
+    .join(' | ')
 }
 
 export function branding(portSlug?: string, pagePath = '', root = '') {
@@ -42,7 +47,8 @@ export function documentationTitle(title: string, projectName: string): string {
   const suffix = ` | ${projectName}`
   let page = title
   while (page.endsWith(suffix)) page = page.slice(0, -suffix.length)
-  page = page.replace(/ \| libtmux(?:-[a-z]+)?$/, '')
+  page = page
+    .replace(/ \| libtmux(?:-[a-z]+)?$/, '')
     .replace(/ [-–—] libtmux(?:-[a-z]+)?(?: v?\d[\w.+-]*)? documentation$/, '')
   return page === projectName ? page : `${page} | ${projectName}`
 }

@@ -67,8 +67,7 @@ function source(node: LuaNode, artifact: LuaArtifact) {
   }
 }
 
-const argName = (argument?: LuaArg) =>
-  typeof argument?.name === 'string' ? argument.name : argument?.name?.view
+const argName = (argument?: LuaArg) => (typeof argument?.name === 'string' ? argument.name : argument?.name?.view)
 
 /** LuaLS prints an optional class as `(libtmux.PaneOptions)?`; the reference writes `libtmux.PaneOptions?`. */
 const typeView = (view?: string) => view?.replace(/\(([^()]*)\)\?/g, '$1?')
@@ -103,7 +102,10 @@ function signature(fn: LuaNode, receiver: boolean, raw: string | undefined): Sig
       ...(argument.rawdesc || argument.desc ? { doc: argument.rawdesc ?? argument.desc } : {}),
     }
   })
-  const returns = fn.returns?.map((entry) => typeView(entry.view)).filter(Boolean).join(', ')
+  const returns = fn.returns
+    ?.map((entry) => typeView(entry.view))
+    .filter(Boolean)
+    .join(', ')
   const written = `fun(${args.map((a) => `${argName(a)}: ${a.view}`).join(', ')})${returns ? `:${returns}` : ''}`
   return {
     raw: typeView(raw ?? fn.view ?? written),
@@ -201,14 +203,16 @@ export function extractLua(input: unknown, expectedRevision?: string): ApiModel 
     repo: artifact.source.repository,
     revision: artifact.source.revision,
     extractor: `@libtmux/api-model@0.0.1 (${artifact.exporter.name} v${artifact.exporter.version}; LuaLS ${artifact.exporter.luals})`,
-    sources: [{
-      product: 'core',
-      package: artifact.package.name,
-      version: artifact.package.version,
-      repo: artifact.source.repository,
-      revision: artifact.source.revision,
-      extractedRevision: artifact.source.revision,
-    }],
+    sources: [
+      {
+        product: 'core',
+        package: artifact.package.name,
+        version: artifact.package.version,
+        repo: artifact.source.repository,
+        revision: artifact.source.revision,
+        extractedRevision: artifact.source.revision,
+      },
+    ],
     symbols,
   }
 }

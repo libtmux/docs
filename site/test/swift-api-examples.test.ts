@@ -14,9 +14,19 @@ describe('complete Swift API programs', () => {
   it('covers construction, listing, creation, query, input and capture', () => {
     expect(examples).toHaveLength(21)
     expect(new Set(examples.map((example) => example.sourceFile)).size).toBe(9)
-    for (const id of ['Server', 'Server.sessions()', 'Server.windows()', 'Server.panes()',
-      'Server.panes(where:)', 'Server.sendKeys(_:to:literally:)', 'Server.capture(_:includingHistory:)']) {
-      expect(examples.some((example) => example.symbol === id), id).toBe(true)
+    for (const id of [
+      'Server',
+      'Server.sessions()',
+      'Server.windows()',
+      'Server.panes()',
+      'Server.panes(where:)',
+      'Server.sendKeys(_:to:literally:)',
+      'Server.capture(_:includingHistory:)',
+    ]) {
+      expect(
+        examples.some((example) => example.symbol === id),
+        id,
+      ).toBe(true)
     }
   })
 
@@ -34,10 +44,15 @@ describe('complete Swift API programs', () => {
       const block = blocks[file.block]
       expect(hash(block.code), file.name).toBe(file.sha256)
       expect(file).toHaveProperty('clipboardSha256', hash(block.code.replace(/\n$/, '')))
-      expect(exported.some((block) => hash(block.value + '\n') === file.sha256),
-        `${file.name} Markdown`).toBe(true)
-      expect(block.sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${
-        file.name === 'Package.swift' ? 'Examples/Standalone/Package.swift' : example.sourceFile}`)
+      expect(
+        exported.some((block) => hash(block.value + '\n') === file.sha256),
+        `${file.name} Markdown`,
+      ).toBe(true)
+      expect(block.sourceUrl).toBe(
+        `https://github.com/${model.repo}/blob/${example.sourceRevision}/${
+          file.name === 'Package.swift' ? 'Examples/Standalone/Package.swift' : example.sourceFile
+        }`,
+      )
       for (const line of block.code.split('\n').filter((line) => /^\s*\/\//.test(line))) {
         expect(line.length).toBeLessThanOrEqual(100)
       }
@@ -47,10 +62,12 @@ describe('complete Swift API programs', () => {
     expect(program.code).toContain('import TmuxFixture')
     expect(program.code).toContain('@main')
     expect(program.intro).toContain('`Server`')
-    expect(blocks.filter((block) => block.lang === 'console')
-      .map((block) => block.code.replace(/^\$ /gm, '').trim())).toEqual(example.shellRecipe)
-    expect(example.consoleBlocks?.map((index) => blocks[index].code.replace(/^\$ /gm, '').trim()))
-      .toEqual(example.shellRecipe)
+    expect(
+      blocks.filter((block) => block.lang === 'console').map((block) => block.code.replace(/^\$ /gm, '').trim()),
+    ).toEqual(example.shellRecipe)
+    expect(example.consoleBlocks?.map((index) => blocks[index].code.replace(/^\$ /gm, '').trim())).toEqual(
+      example.shellRecipe,
+    )
     expect(example.expectedOutputs.at(-1)).toEqual(blocks.at(-1)!.code.trimEnd().split('\n'))
   })
 })

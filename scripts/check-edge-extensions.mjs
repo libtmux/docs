@@ -104,7 +104,8 @@ if (missing.length || extensionless.length) {
   console.error(`check-edge-extensions: the edge function would redirect these away from their own files.`)
   for (const ext of missing) console.error(`  .${ext.padEnd(12)} e.g. ${found.get(ext)}`)
   for (const path of extensionless) console.error(`  no extension   ${path}`)
-  if (missing.length) console.error(`\nAdd the missing extensions to ASSET_EXTENSIONS in ${fnPath.slice(repoRoot.length + 1)}.`)
+  if (missing.length)
+    console.error(`\nAdd the missing extensions to ASSET_EXTENSIONS in ${fnPath.slice(repoRoot.length + 1)}.`)
   if (extensionless.length) console.error(`\nRename extensionless files and their links to use an allowed extension.`)
   process.exit(1)
 }

@@ -14,11 +14,23 @@ describe('complete C++ API programs', () => {
   it('covers construction, listing, creation, queries, input and capture', () => {
     expect(examples).toHaveLength(29)
     expect(new Set(examples.map((example) => example.sourceFile)).size).toBe(7)
-    for (const id of ['libtmux::Server', 'libtmux::Server::sessions', 'libtmux::Server::windows',
-      'libtmux::Server::panes', 'libtmux::Server::clients', 'libtmux::Server::new_session',
-      'libtmux::Session::new_window', 'libtmux::Pane::split', 'libtmux::matching',
-      'libtmux::Pane::send_line', 'libtmux::Pane::capture']) {
-      expect(examples.some((example) => example.symbol === id), id).toBe(true)
+    for (const id of [
+      'libtmux::Server',
+      'libtmux::Server::sessions',
+      'libtmux::Server::windows',
+      'libtmux::Server::panes',
+      'libtmux::Server::clients',
+      'libtmux::Server::new_session',
+      'libtmux::Session::new_window',
+      'libtmux::Pane::split',
+      'libtmux::matching',
+      'libtmux::Pane::send_line',
+      'libtmux::Pane::capture',
+    ]) {
+      expect(
+        examples.some((example) => example.symbol === id),
+        id,
+      ).toBe(true)
     }
     expect(model.symbols.some((symbol) => symbol.id.startsWith('libtmux::workspace::detail::'))).toBe(false)
   })
@@ -40,8 +52,10 @@ describe('complete C++ API programs', () => {
       const block = blocks[file.block]
       expect(hash(block.code), file.name).toBe(file.sha256)
       expect(file).toHaveProperty('clipboardSha256', hash(block.code.replace(/\n$/, '')))
-      expect(exported.some((block) => hash(block.value + '\n') === file.sha256),
-        `${file.name} Markdown`).toBe(true)
+      expect(
+        exported.some((block) => hash(block.value + '\n') === file.sha256),
+        `${file.name} Markdown`,
+      ).toBe(true)
       expect(block.sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${file.sourceFile}`)
       for (const line of block.code.split('\n').filter((line) => /^\s*\/\//.test(line))) {
         expect(line.length).toBeLessThanOrEqual(100)
@@ -52,11 +66,13 @@ describe('complete C++ API programs', () => {
     expect(program.code).toContain('#include <libtmux/testing/scoped_server.hpp>')
     expect(program.code).toContain('int main()')
     expect(program.intro).toContain('`Server`')
-    const commands = blocks.filter((block) => block.lang === 'console')
+    const commands = blocks
+      .filter((block) => block.lang === 'console')
       .map((block) => block.code.replace(/^\$ /gm, '').trim())
     expect(commands).toEqual(example.shellRecipe)
-    expect(example.consoleBlocks?.map((index) => blocks[index].code.replace(/^\$ /gm, '').trim()))
-      .toEqual(example.shellRecipe)
+    expect(example.consoleBlocks?.map((index) => blocks[index].code.replace(/^\$ /gm, '').trim())).toEqual(
+      example.shellRecipe,
+    )
     expect(commands[1]).toContain('-DLIBTMUX_BUILD_TESTING_LIBRARY=ON')
     expect(commands[2]).toContain('-DCMAKE_PREFIX_PATH="$PWD/libtmux-prefix"')
     expect(example.expectedOutputs.at(-1)).toEqual(blocks.at(-1)!.code.trimEnd().split('\n'))

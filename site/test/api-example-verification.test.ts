@@ -7,13 +7,24 @@ import { describe, expect, it } from 'vitest'
 import { assertCompleteApiExample } from '../scripts/check-clipboard.mjs'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))
-const python = (code: string) => JSON.parse(execFileSync('python3', ['-B', '-c', `
+const python = (code: string) =>
+  JSON.parse(
+    execFileSync(
+      'python3',
+      [
+        '-B',
+        '-c',
+        `
 import importlib.util, json, pathlib, re
 spec = importlib.util.spec_from_file_location('runner', 'scripts/check-example-prose.py')
 runner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(runner)
 ${code}
-`], { cwd: root, encoding: 'utf8' }))
+`,
+      ],
+      { cwd: root, encoding: 'utf8' },
+    ),
+  )
 const hash = (code: string) => createHash('sha256').update(code).digest('hex')
 
 describe('complete API example selection', () => {
@@ -40,7 +51,8 @@ print(json.dumps(results))`)
   })
 
   it('selects one program on a shared page without including another setup', () => {
-    expect(python(`
+    expect(
+      python(`
 examples = [{'port': 'java', 'page': 'ports/java/reference/server-sessions', 'sourceProgramId': name}
             for name in ['java-ListSessions', 'java-Query']]
 manifest = {'examples': examples}
@@ -52,12 +64,13 @@ assert selected == [examples[1]]
 blocks = [{'lang': 'console', 'code': 'first setup'}, {'lang': 'java', 'code': 'first program'},
           {'lang': 'console', 'code': 'first run'}, {'lang': 'console', 'code': 'second setup'},
           {'lang': 'java', 'code': 'second program'}, {'lang': 'console', 'code': 'second run'}]
-print(json.dumps(runner.api_command_blocks(blocks, {'consoleBlocks': [3, 5]})))`))
-      .toEqual(['second setup', 'second run'])
+print(json.dumps(runner.api_command_blocks(blocks, {'consoleBlocks': [3, 5]})))`),
+    ).toEqual(['second setup', 'second run'])
   })
 
   it('rejects duplicate, non-console, invalid and empty command selections', () => {
-    expect(python(`
+    expect(
+      python(`
 blocks = [{'lang': 'console', 'code': 'setup'}, {'lang': 'java', 'code': 'program'}]
 for indices in [[0, 0], [1], [-1], [2], [True], []]:
     try:
@@ -65,13 +78,15 @@ for indices in [[0, 0], [1], [-1], [2], [True], []]:
     except ValueError:
         continue
     raise AssertionError(indices)
-print(json.dumps(runner.api_command_blocks(blocks, {})))`)).toEqual(['setup'])
+print(json.dumps(runner.api_command_blocks(blocks, {})))`),
+    ).toEqual(['setup'])
   })
 })
 
 describe('homepage native verification ownership', () => {
   it('preserves an existing parent when a probed socket was never created', () => {
-    expect(python(`
+    expect(
+      python(`
 import os, sys, tempfile
 from unittest.mock import patch
 sys.path.insert(0, str(pathlib.Path('scripts').resolve()))
@@ -84,11 +99,13 @@ with tempfile.TemporaryDirectory(prefix='home-parent-test-') as directory:
         sandbox = ExampleTmuxSandbox(output, dict(os.environ))
     sandbox.trace.write_text(json.dumps(dict(socket=str(parent / 'absent.sock'), existed=False)) + '\\n')
     sandbox.finish(True)
-    print(json.dumps(parent.is_dir()))`)).toBe(true)
+    print(json.dumps(parent.is_dir()))`),
+    ).toBe(true)
   })
 
   it('does not treat permission errors and timeouts as proof of socket exit', () => {
-    expect(python(`
+    expect(
+      python(`
 import errno, sys
 from unittest.mock import patch
 sys.path.insert(0, str(pathlib.Path('scripts').resolve()))
@@ -106,11 +123,13 @@ with patch('example_tmux_sandbox.socket.socket') as socket:
     for number in [errno.ENOENT, errno.ECONNREFUSED]:
         connect.side_effect = OSError(number, 'stopped')
         assert not socket_running('/private/stopped.sock')
-print(json.dumps(True))`)).toBe(true)
+print(json.dumps(True))`),
+    ).toBe(true)
   })
 
   it('kills surviving descendants even when their shell already exited', () => {
-    expect(python(`
+    expect(
+      python(`
 import signal
 from unittest.mock import Mock, call, patch
 process = Mock(pid=12345)
@@ -118,11 +137,13 @@ process.wait.return_value = 0
 with patch.object(runner.os, 'killpg') as kill:
     runner.stop_process_group(process)
     assert kill.call_args_list == [call(12345, signal.SIGTERM), call(12345, signal.SIGKILL)]
-print(json.dumps(True))`)).toBe(true)
+print(json.dumps(True))`),
+    ).toBe(true)
   })
 
   it('records joined socket flags without changing the tmux arguments', () => {
-    expect(python(`
+    expect(
+      python(`
 import os, sys, tempfile
 from unittest.mock import patch
 sys.path.insert(0, str(pathlib.Path('scripts').resolve()))
@@ -147,11 +168,13 @@ with tempfile.TemporaryDirectory(prefix='home-native-test-') as directory:
     assert trace['socket'] == str(socket) and not trace['existed']
     report = sandbox.finish(True)
     assert report['passed']
-    print(json.dumps(report['endpoints'][0]['runningAfterHarness']))`)).toBe(false)
+    print(json.dumps(report['endpoints'][0]['runningAfterHarness']))`),
+    ).toBe(false)
   })
 
   it('fails verification without stopping or unlinking a pre-existing socket', () => {
-    expect(python(`
+    expect(
+      python(`
 import os, socket, sys, tempfile
 from unittest.mock import patch
 sys.path.insert(0, str(pathlib.Path('scripts').resolve()))
@@ -170,7 +193,8 @@ with tempfile.TemporaryDirectory(prefix='home-foreign-test-') as directory:
             stop.assert_not_called()
         assert path.exists()
         assert report['endpoints'][0]['runningAfterHarness']
-        print(json.dumps(report['passed']))`)).toBe(false)
+        print(json.dumps(report['passed']))`),
+    ).toBe(false)
   })
 })
 
@@ -179,13 +203,29 @@ describe('API example source and clipboard receipts', () => {
     const revision = 'a'.repeat(40)
     const href = `https://github.com/libtmux/libtmux-java/blob/${revision}/examples/api/run.sh`
     const link = { href, label: 'View source' }
-    const rendered = { text: '', links: [link, link], sourceLinks: [[link], [], [link], []],
-      files: ['whole launcher', 'first recipe', 'whole launcher', 'second recipe'] }
-    const example = { symbol: 'Server.sessions', sourceRepository: 'libtmux/libtmux-java',
-      sourceRevision: revision, sourceFile: 'examples/api/run.sh', consoleBlocks: [3],
-      shellRecipe: ['second recipe'], files: [{ block: 2, name: 'run.sh',
-        sourceFile: 'examples/api/run.sh', sha256: hash('whole launcher\n'),
-        clipboardSha256: hash('whole launcher') }] }
+    const rendered = {
+      text: '',
+      links: [link, link],
+      sourceLinks: [[link], [], [link], []],
+      files: ['whole launcher', 'first recipe', 'whole launcher', 'second recipe'],
+    }
+    const example = {
+      symbol: 'Server.sessions',
+      sourceRepository: 'libtmux/libtmux-java',
+      sourceRevision: revision,
+      sourceFile: 'examples/api/run.sh',
+      consoleBlocks: [3],
+      shellRecipe: ['second recipe'],
+      files: [
+        {
+          block: 2,
+          name: 'run.sh',
+          sourceFile: 'examples/api/run.sh',
+          sha256: hash('whole launcher\n'),
+          clipboardSha256: hash('whole launcher'),
+        },
+      ],
+    }
     return { rendered, example }
   }
 
@@ -195,16 +235,24 @@ describe('API example source and clipboard receipts', () => {
     for (const example of manifest.examples) {
       let model = models.get(example.port)
       if (!model) {
-        model = JSON.parse(readFileSync(new URL(`../src/data/api/${example.port}.json`, import.meta.url), 'utf8')) as ApiModel
+        model = JSON.parse(
+          readFileSync(new URL(`../src/data/api/${example.port}.json`, import.meta.url), 'utf8'),
+        ) as ApiModel
         models.set(example.port, model)
       }
       const symbol = model.symbols.find((entry) => entry.id === example.symbol)!
       const blocks = symbol.doc!.examples as { sourceUrl?: string; code: string; lang: string }[]
-      const sourceLinks = blocks.map((block) => block.sourceUrl
-        ? [{ href: block.sourceUrl, label: 'View source' }] : [])
-      const rendered = { text: '', links: sourceLinks.flat(), sourceLinks,
-        files: blocks.map((block) => block.lang === 'console'
-          ? block.code.replace(/^\$ /gm, '').trim() : block.code.replace(/\n$/, '')) }
+      const sourceLinks = blocks.map((block) =>
+        block.sourceUrl ? [{ href: block.sourceUrl, label: 'View source' }] : [],
+      )
+      const rendered = {
+        text: '',
+        links: sourceLinks.flat(),
+        sourceLinks,
+        files: blocks.map((block) =>
+          block.lang === 'console' ? block.code.replace(/^\$ /gm, '').trim() : block.code.replace(/\n$/, ''),
+        ),
+      }
       expect(() => assertCompleteApiExample(rendered, example), example.symbol).not.toThrow()
     }
   })
@@ -225,7 +273,9 @@ describe('API example source and clipboard receipts', () => {
     duplicate.rendered.sourceLinks[2].push(duplicate.rendered.sourceLinks[2][0])
     expect(() => assertCompleteApiExample(duplicate.rendered, duplicate.example)).toThrow('exact pinned source')
     const wrong = fixture()
-    wrong.rendered.sourceLinks[2] = [{ href: 'https://github.com/libtmux/libtmux-java/blob/main/run.sh', label: 'View source' }]
+    wrong.rendered.sourceLinks[2] = [
+      { href: 'https://github.com/libtmux/libtmux-java/blob/main/run.sh', label: 'View source' },
+    ]
     expect(() => assertCompleteApiExample(wrong.rendered, wrong.example)).toThrow('exact pinned source')
   })
 

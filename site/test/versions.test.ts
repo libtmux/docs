@@ -18,9 +18,11 @@ import {
 } from '../src/lib/versions'
 
 it('keeps the production fallback manifest in sync with the seed generator', () => {
-  const generated = execFileSync(process.execPath, [
-    new URL('../../scripts/gen-versions.mjs', import.meta.url).pathname, '--seed',
-  ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  const generated = execFileSync(
+    process.execPath,
+    [new URL('../../scripts/gen-versions.mjs', import.meta.url).pathname, '--seed'],
+    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+  )
   const fallback = readFileSync(new URL('../public/versions.json', import.meta.url), 'utf8')
   expect(JSON.parse(fallback)).toEqual(JSON.parse(generated))
 })
@@ -36,12 +38,14 @@ it('derives refs from an explicit source checkout instead of a local docs worktr
     execFileSync('git', ['-C', directory, 'commit', '-qm', 'fixture'])
     execFileSync('git', ['-C', directory, 'tag', 'v9.8.7.rc.1'])
 
-    const generated = execFileSync(process.execPath, [
-      new URL('../../scripts/gen-versions.mjs', import.meta.url).pathname,
-    ], {
-      encoding: 'utf8',
-      env: { ...process.env, LIBTMUX_DOCS_CHECKOUT_RUBY: directory },
-    })
+    const generated = execFileSync(
+      process.execPath,
+      [new URL('../../scripts/gen-versions.mjs', import.meta.url).pathname],
+      {
+        encoding: 'utf8',
+        env: { ...process.env, LIBTMUX_DOCS_CHECKOUT_RUBY: directory },
+      },
+    )
     const manifest = JSON.parse(generated) as VersionManifest
     expect(manifest.ports.ruby.map((entry) => entry.slug)).toContain('v9.8.7.rc.1')
     expect(manifest.defaultVersion.ruby).toBe('latest')
@@ -82,21 +86,32 @@ describe('assembly version selection', () => {
   ])('sets rendered defaults from --versions %s before building', (selected, pythonDefault) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-build-versions-'))
     try {
-      writeFileSync(join(directory, 'gen-versions.mjs'),
-        "import { writeFileSync } from 'node:fs'; writeFileSync(process.argv[3], process.env.TEST_VERSION_MANIFEST);\n")
-      const output = execFileSync('bash', ['-euc', `. ${bookkeeping}\nnode -e 'console.log(process.env.LIBTMUX_DOCS_PORT_DEFAULTS)'`], {
-        encoding: 'utf8',
-        env: {
-          ...process.env, scratch: directory, script_dir: directory,
-          repo_root: new URL('../../', import.meta.url).pathname,
-          site_dir: new URL('../', import.meta.url).pathname,
-          locale: 'en', versions_arg: selected,
-          TEST_VERSION_MANIFEST: JSON.stringify(candidate),
+      writeFileSync(
+        join(directory, 'gen-versions.mjs'),
+        "import { writeFileSync } from 'node:fs'; writeFileSync(process.argv[3], process.env.TEST_VERSION_MANIFEST);\n",
+      )
+      const output = execFileSync(
+        'bash',
+        ['-euc', `. ${bookkeeping}\nnode -e 'console.log(process.env.LIBTMUX_DOCS_PORT_DEFAULTS)'`],
+        {
+          encoding: 'utf8',
+          env: {
+            ...process.env,
+            scratch: directory,
+            script_dir: directory,
+            repo_root: new URL('../../', import.meta.url).pathname,
+            site_dir: new URL('../', import.meta.url).pathname,
+            locale: 'en',
+            versions_arg: selected,
+            TEST_VERSION_MANIFEST: JSON.stringify(candidate),
+          },
         },
-      })
+      )
       expect(JSON.parse(output)).toEqual({ py: pythonDefault, go: 'latest' })
       const manifest = JSON.parse(readFileSync(join(directory, 'versions.json'), 'utf8')) as VersionManifest
-      expect(manifest.ports.py.map((entry) => entry.slug)).toEqual(selected === 'latest' ? ['latest'] : ['stable', 'latest'])
+      expect(manifest.ports.py.map((entry) => entry.slug)).toEqual(
+        selected === 'latest' ? ['latest'] : ['stable', 'latest'],
+      )
       expect(manifest.defaultVersion).toEqual({ py: pythonDefault, go: 'latest' })
     } finally {
       rmSync(directory, { recursive: true, force: true })
@@ -108,15 +123,20 @@ describe('assembly version selection', () => {
   it('refuses a default version for a port this build kept nothing of', () => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-build-versions-'))
     try {
-      writeFileSync(join(directory, 'gen-versions.mjs'),
-        "import { writeFileSync } from 'node:fs'; writeFileSync(process.argv[3], process.env.TEST_VERSION_MANIFEST);\n")
+      writeFileSync(
+        join(directory, 'gen-versions.mjs'),
+        "import { writeFileSync } from 'node:fs'; writeFileSync(process.argv[3], process.env.TEST_VERSION_MANIFEST);\n",
+      )
       const result = spawnSync('bash', ['-euc', `. ${bookkeeping}\ndefault_version_for go`], {
         encoding: 'utf8',
         env: {
-          ...process.env, scratch: directory, script_dir: directory,
+          ...process.env,
+          scratch: directory,
+          script_dir: directory,
           repo_root: new URL('../../', import.meta.url).pathname,
           site_dir: new URL('../', import.meta.url).pathname,
-          locale: 'en', versions_arg: 'stable',
+          locale: 'en',
+          versions_arg: 'stable',
           TEST_VERSION_MANIFEST: JSON.stringify(candidate),
         },
       })
@@ -130,8 +150,10 @@ describe('assembly version selection', () => {
   it('binds an alias to the exact source artifact it resolves to', () => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-build-alias-'))
     try {
-      writeFileSync(join(directory, 'gen-versions.mjs'),
-        "import { writeFileSync } from 'node:fs'; writeFileSync(process.argv[3], process.env.TEST_VERSION_MANIFEST);\n")
+      writeFileSync(
+        join(directory, 'gen-versions.mjs'),
+        "import { writeFileSync } from 'node:fs'; writeFileSync(process.argv[3], process.env.TEST_VERSION_MANIFEST);\n",
+      )
       execFileSync('bash', ['-euc', `. ${bookkeeping}`], {
         env: {
           ...process.env,
@@ -150,12 +172,14 @@ describe('assembly version selection', () => {
         },
       })
       const manifest = JSON.parse(readFileSync(join(directory, 'versions.json'), 'utf8')) as VersionManifest
-      expect(manifest.ports.ruby).toEqual([expect.objectContaining({
-        slug: 'next',
-        kind: 'alias',
-        resolvesTo: 'v0.1.0.alpha.1',
-        source: 'a'.repeat(40),
-      })])
+      expect(manifest.ports.ruby).toEqual([
+        expect.objectContaining({
+          slug: 'next',
+          kind: 'alias',
+          resolvesTo: 'v0.1.0.alpha.1',
+          source: 'a'.repeat(40),
+        }),
+      ])
     } finally {
       rmSync(directory, { recursive: true, force: true })
     }
@@ -173,12 +197,7 @@ describe('compareTags', () => {
 
   it('orders prerelease identifiers numerically', () => {
     const tags = ['v0.0.0-alpha.1', 'v0.0.0-alpha.2', 'v0.0.0-alpha.9', 'v0.0.0-alpha.10']
-    expect(newestFirst(tags)).toEqual([
-      'v0.0.0-alpha.10',
-      'v0.0.0-alpha.9',
-      'v0.0.0-alpha.2',
-      'v0.0.0-alpha.1',
-    ])
+    expect(newestFirst(tags)).toEqual(['v0.0.0-alpha.10', 'v0.0.0-alpha.9', 'v0.0.0-alpha.2', 'v0.0.0-alpha.1'])
   })
 
   it('puts a release ahead of its own prereleases', () => {
@@ -200,10 +219,13 @@ describe('sortVersions', () => {
     slugs.map((slug) => ({ slug, label: slug, kind: 'tag', supported: true }))
 
   it('orders crate-prefixed and bare tags without changing their source names', () => {
-    expect(sortVersions(tags(['libtmux@v1.0.0-alpha.10', 'libtmux@v1.0.0']), 'semver', 'libtmux@').map((e) => e.slug))
-      .toEqual(['libtmux@v1.0.0', 'libtmux@v1.0.0-alpha.10'])
-    expect(sortVersions(tags(['0.1.0-alpha.9', '0.1.0-alpha.10'])).map((e) => e.slug))
-      .toEqual(['0.1.0-alpha.10', '0.1.0-alpha.9'])
+    expect(
+      sortVersions(tags(['libtmux@v1.0.0-alpha.10', 'libtmux@v1.0.0']), 'semver', 'libtmux@').map((e) => e.slug),
+    ).toEqual(['libtmux@v1.0.0', 'libtmux@v1.0.0-alpha.10'])
+    expect(sortVersions(tags(['0.1.0-alpha.9', '0.1.0-alpha.10'])).map((e) => e.slug)).toEqual([
+      '0.1.0-alpha.10',
+      '0.1.0-alpha.9',
+    ])
   })
 
   it('puts a release above its own prereleases', () => {

@@ -26,7 +26,7 @@ function run(args) {
 const dir = mkdtempSync(join(tmpdir(), 'edge-function-copy-'))
 const ours = join(dir, 'ours.js')
 const theirs = join(dir, 'theirs.js')
-const BODY = "function handler(event) {\n    var uri = event.request.uri\n    return event.request\n}\n"
+const BODY = 'function handler(event) {\n    var uri = event.request.uri\n    return event.request\n}\n'
 
 let failures = 0
 const check = (name, ok, detail) => {
@@ -49,11 +49,7 @@ writeFileSync(theirs, BODY)
 writeFileSync(theirs, BODY.replace('var uri = event.request.uri', 'var uri = event.request.uri // stale'))
 {
   const res = run(['--ours', ours, '--theirs', theirs])
-  check(
-    'a drifted copy is caught',
-    res.code === 1 && /drifted/.test(res.out),
-    `exit ${res.code}: ${res.out.trim()}`,
-  )
+  check('a drifted copy is caught', res.code === 1 && /drifted/.test(res.out), `exit ${res.code}: ${res.out.trim()}`)
   check(
     'the report names the first differing line',
     /first difference at line 2/.test(res.out),

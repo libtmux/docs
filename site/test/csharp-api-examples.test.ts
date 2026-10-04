@@ -15,18 +15,26 @@ describe('verified complete C# API programs', () => {
     expect(examples).toHaveLength(30)
     expect(new Set(examples.map((example) => 'sourceProgramId' in example && example.sourceProgramId)).size).toBe(7)
     expect(new Set(examples.map((example) => example.page)).size).toBe(30)
-    const covered = model.symbols.filter((symbol) => symbol.doc?.examples?.some(
-      (block) => block.sourceUrl?.includes('/examples/LibTmux.Examples/Programs/'))).map((symbol) => symbol.id)
+    const covered = model.symbols
+      .filter((symbol) =>
+        symbol.doc?.examples?.some((block) => block.sourceUrl?.includes('/examples/LibTmux.Examples/Programs/')),
+      )
+      .map((symbol) => symbol.id)
     expect([...new Set(examples.map((example) => example.symbol))].sort()).toEqual(covered.sort())
-    const targets = examples.flatMap((example) => 'sourceCompilerIds' in example ? example.sourceCompilerIds : [])
+    const targets = examples.flatMap((example) => ('sourceCompilerIds' in example ? example.sourceCompilerIds : []))
     expect(targets).toHaveLength(33)
     expect(new Set(targets).size).toBe(33)
   })
 
   it.each(examples)('keeps complete $sourceProgramId bytes on $symbol in Markdown and copy payloads', (example) => {
-    if (!('sourceProgramId' in example) || typeof example.sourceProgramId !== 'string' ||
-        !('sourceCompilerIds' in example) || !Array.isArray(example.sourceCompilerIds) ||
-        !('consoleBlocks' in example) || !example.consoleBlocks) {
+    if (
+      !('sourceProgramId' in example) ||
+      typeof example.sourceProgramId !== 'string' ||
+      !('sourceCompilerIds' in example) ||
+      !Array.isArray(example.sourceCompilerIds) ||
+      !('consoleBlocks' in example) ||
+      !example.consoleBlocks
+    ) {
       throw new Error(`${example.symbol}: missing source program receipt`)
     }
     const symbols = model.symbols.filter((symbol) => symbol.id === example.symbol)
@@ -38,7 +46,12 @@ describe('verified complete C# API programs', () => {
     expect(symbol.source.revision).toBe(example.sourceRevision)
     expect(example.page).toBe(`ports/csharp/reference/${symbol.slug}`)
     for (const target of example.sourceCompilerIds) {
-      expect(target.slice(2).replace(/\(.*$/, '').replace(/`{1,2}\d+/g, '')).toBe(symbol.id)
+      expect(
+        target
+          .slice(2)
+          .replace(/\(.*$/, '')
+          .replace(/`{1,2}\d+/g, ''),
+      ).toBe(symbol.id)
     }
     expect(example.files).toHaveLength(4)
     for (const file of example.files) {
@@ -57,8 +70,9 @@ describe('verified complete C# API programs', () => {
         expect(line.length).toBeLessThanOrEqual(100)
       }
     }
-    expect(example.consoleBlocks.map((index) => blocks[index].code.replace(/^\$ /gm, '').trim()))
-      .toEqual(example.shellRecipe)
+    expect(example.consoleBlocks.map((index) => blocks[index].code.replace(/^\$ /gm, '').trim())).toEqual(
+      example.shellRecipe,
+    )
     const output = blocks[example.consoleBlocks[1] + 1].code.trimEnd().split('\n')
     expect(example.expectedOutputs[1]).toEqual([...output, ...output])
     for (const index of example.consoleBlocks) {

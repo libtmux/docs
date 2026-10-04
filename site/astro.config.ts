@@ -88,15 +88,25 @@ const isPlaceholder = (page: string): boolean => {
 }
 
 const sharedWorkspaceFiles = readdirSync(join(contentRoot, '../_workspace-shared'), { recursive: true })
-const workspacePages = new Map(PORTS.map((port) => [port.slug, new Set(
-  [
-    ...readdirSync(join(contentRoot, 'ports', port.slug), { recursive: true }),
-    // Include the same synthetic pages and ports as workspaceDocsLoader.
-    ...(KNOWN_PORTS.has(port.slug) ? sharedWorkspaceFiles : []),
-  ]
-    .filter((path): path is string => typeof path === 'string' && /\.mdx?$/.test(path))
-    .map((path) => path.replaceAll('\\', '/').replace(/\.mdx?$/, '').replace(/\/index$/, '')),
-)]))
+const workspacePages = new Map(
+  PORTS.map((port) => [
+    port.slug,
+    new Set(
+      [
+        ...readdirSync(join(contentRoot, 'ports', port.slug), { recursive: true }),
+        // Include the same synthetic pages and ports as workspaceDocsLoader.
+        ...(KNOWN_PORTS.has(port.slug) ? sharedWorkspaceFiles : []),
+      ]
+        .filter((path): path is string => typeof path === 'string' && /\.mdx?$/.test(path))
+        .map((path) =>
+          path
+            .replaceAll('\\', '/')
+            .replace(/\.mdx?$/, '')
+            .replace(/\/index$/, ''),
+        ),
+    ),
+  ]),
+)
 
 const isWorkspaceRedirect = (page: string): boolean => {
   const match = new URL(page).pathname.match(/\/([^/]+)\/[^/]+\/(workspace\/.*)$/)
@@ -104,10 +114,15 @@ const isWorkspaceRedirect = (page: string): boolean => {
   return Boolean(published && workspaceRedirectPath(match![2], published))
 }
 
-const sourceGuideAliases = new Map(SOURCE_GUIDE_PORTS.map((port) => [port, new Set([
-  ...sourceGuidesFor(port).flatMap((guide) => guide.aliases),
-  ...sourceGuideRedirectsFor(port).map((redirect) => redirect.path),
-])]))
+const sourceGuideAliases = new Map(
+  SOURCE_GUIDE_PORTS.map((port) => [
+    port,
+    new Set([
+      ...sourceGuidesFor(port).flatMap((guide) => guide.aliases),
+      ...sourceGuideRedirectsFor(port).map((redirect) => redirect.path),
+    ]),
+  ]),
+)
 
 const isSourceGuideRedirect = (page: string): boolean => {
   const [, port, , ...route] = new URL(page).pathname.split('/').filter(Boolean)
@@ -144,8 +159,12 @@ export default defineConfig({
       ? [
           sitemap({
             filter: (page) =>
-              !page.includes('/pr-') && !page.includes('/demo') && !isPlaceholder(page) &&
-              !isWorkspaceRedirect(page) && !isSourceGuideRedirect(page) && !isPortRoot(page) &&
+              !page.includes('/pr-') &&
+              !page.includes('/demo') &&
+              !isPlaceholder(page) &&
+              !isWorkspaceRedirect(page) &&
+              !isSourceGuideRedirect(page) &&
+              !isPortRoot(page) &&
               !isLegacyTmuxManualPath(new URL(page).pathname) &&
               !/\/tmux\/(?!latest\/)[^/]+\/(?:manual|reference)\//.test(new URL(page).pathname),
           }),
@@ -352,27 +371,35 @@ export default defineConfig({
 
   vite: {
     resolve: { tsconfigPaths: false, noExternal: ['@tailwindcss/typography'] },
-    plugins: [tailwindcss() as never, {
-      name: 'libtmux-shared-assets-dev',
-      apply: 'serve',
-      configureServer(server) {
-        // Port builds use a nested base, while their shell assets belong to
-        // the locale root. Serve the same public files at that root in dev.
-        const root = (env.LIBTMUX_DOCS_ROOT ?? '/').replace(/\/+$/, '')
-        if (base.replace(/\/+$/, '') === root) return
-        server.middlewares.use((request, response, next) => {
-          const pathname = new URL(request.url ?? '/', 'http://localhost').pathname
-          if (!pathname.startsWith(`${root}/`)) return next()
-          const asset = pathname.slice(root.length + 1)
-          if (!/^(?:brand\/|_shell\/|versions\.json$)/.test(asset) || asset.includes('..')) return next()
-          const file = fileURLToPath(new URL(`./public/${asset}`, import.meta.url))
-          if (!existsSync(file) || !statSync(file).isFile()) return next()
-          const contentType = asset.endsWith('.svg') ? 'image/svg+xml' : asset.endsWith('.css') ? 'text/css'
-            : asset.endsWith('.js') ? 'text/javascript' : 'application/json'
-          response.setHeader('Content-Type', contentType)
-          createReadStream(file).pipe(response)
-        })
+    plugins: [
+      tailwindcss() as never,
+      {
+        name: 'libtmux-shared-assets-dev',
+        apply: 'serve',
+        configureServer(server) {
+          // Port builds use a nested base, while their shell assets belong to
+          // the locale root. Serve the same public files at that root in dev.
+          const root = (env.LIBTMUX_DOCS_ROOT ?? '/').replace(/\/+$/, '')
+          if (base.replace(/\/+$/, '') === root) return
+          server.middlewares.use((request, response, next) => {
+            const pathname = new URL(request.url ?? '/', 'http://localhost').pathname
+            if (!pathname.startsWith(`${root}/`)) return next()
+            const asset = pathname.slice(root.length + 1)
+            if (!/^(?:brand\/|_shell\/|versions\.json$)/.test(asset) || asset.includes('..')) return next()
+            const file = fileURLToPath(new URL(`./public/${asset}`, import.meta.url))
+            if (!existsSync(file) || !statSync(file).isFile()) return next()
+            const contentType = asset.endsWith('.svg')
+              ? 'image/svg+xml'
+              : asset.endsWith('.css')
+                ? 'text/css'
+                : asset.endsWith('.js')
+                  ? 'text/javascript'
+                  : 'application/json'
+            response.setHeader('Content-Type', contentType)
+            createReadStream(file).pipe(response)
+          })
+        },
       },
-    }],
+    ],
   },
 })

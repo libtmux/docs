@@ -241,20 +241,23 @@ export function newestPublishedTag(
   const releases = tags
     .map((name) => ({ name, version: releaseTag(name, port) }))
     .filter((entry): entry is { name: string; version: string } => entry.version !== null)
-  const candidates = published && published.length > 0
-    ? releases.filter((entry) => {
-        const tag = packageVersion(entry.version, port.tagGrammar).tag
-        return published.some(
-          (version) => compareTags(packageVersion(version, port.tagGrammar).tag, tag, port.tagGrammar) === 0,
-        )
-      })
-    : releases
+  const candidates =
+    published && published.length > 0
+      ? releases.filter((entry) => {
+          const tag = packageVersion(entry.version, port.tagGrammar).tag
+          return published.some(
+            (version) => compareTags(packageVersion(version, port.tagGrammar).tag, tag, port.tagGrammar) === 0,
+          )
+        })
+      : releases
   if (candidates.length === 0) return null
-  const newest = [...candidates].sort((a, b) => compareTags(
-    packageVersion(a.version, port.tagGrammar).tag,
-    packageVersion(b.version, port.tagGrammar).tag,
-    port.tagGrammar,
-  ))[0]
+  const newest = [...candidates].sort((a, b) =>
+    compareTags(
+      packageVersion(a.version, port.tagGrammar).tag,
+      packageVersion(b.version, port.tagGrammar).tag,
+      port.tagGrammar,
+    ),
+  )[0]
   return newest.name
 }
 
@@ -275,7 +278,11 @@ export function packageVersionIsPrerelease(version: string, grammar: TagGrammar)
  * prerelease above the release it precedes. This function is what the
  * switcher renders, so it is the ordering that has to be right.
  */
-export function sortVersions(entries: VersionEntry[], grammar: TagGrammar = 'semver', tagPrefix?: string): VersionEntry[] {
+export function sortVersions(
+  entries: VersionEntry[],
+  grammar: TagGrammar = 'semver',
+  tagPrefix?: string,
+): VersionEntry[] {
   const rank: Record<VersionKind, number> = { alias: 0, trunk: 1, tag: 2, branch: 3, pr: 4 }
   const tagName = (slug: string) => {
     const version = releaseTag(slug, { tagGrammar: grammar, tagPrefix }) ?? slug

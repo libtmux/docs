@@ -45,11 +45,13 @@ describe('Rust trait member visibility', () => {
     expect(symbols.map(({ id, kind, parent }) => ({ id, kind, parent }))).toEqual([
       { id: 'query.QueryIteratorExt', kind: 'trait', parent: undefined },
       {
-        id: 'query.QueryIteratorExt.one_or_none', kind: 'method',
+        id: 'query.QueryIteratorExt.one_or_none',
+        kind: 'method',
         parent: 'query.QueryIteratorExt',
       },
       {
-        id: 'query.QueryIteratorExt.matching', kind: 'method',
+        id: 'query.QueryIteratorExt.matching',
+        kind: 'method',
         parent: 'query.QueryIteratorExt',
       },
     ])
@@ -60,10 +62,13 @@ describe('Rust trait member visibility', () => {
     })
     expect(symbols[2]).toMatchObject({
       doc: { summary: 'Keep matching items.' },
-      signatures: [{
-        params: [{ name: 'self' }, { name: 'predicate', type: 'P' }],
-        typeParams: ['P'], returns: 'Vec<Self::Item>',
-      }],
+      signatures: [
+        {
+          params: [{ name: 'self' }, { name: 'predicate', type: 'P' }],
+          typeParams: ['P'],
+          returns: 'Vec<Self::Item>',
+        },
+      ],
       source: { line: 6 },
     })
   })
@@ -83,15 +88,18 @@ describe('Rust trait member visibility', () => {
       pub fn public_free() {}
     `
     const symbols = await extract(source)
-    expect(symbols.map((symbol) => symbol.id)).toEqual([
-      'query.Server', 'query.Server.visible', 'query.public_free',
-    ])
+    expect(symbols.map((symbol) => symbol.id)).toEqual(['query.Server', 'query.Server.visible', 'query.public_free'])
     const all = await extract(source, true)
     for (const id of [
-      'query.Internal.hidden', 'query.Internal.default_hidden',
-      'query.CrateInternal.hidden', 'query.ParentInternal.hidden',
-      'query.Server.hidden', 'query.Server.crate_hidden', 'query.private_free',
-    ]) expect(all.some((symbol) => symbol.id === id)).toBe(true)
+      'query.Internal.hidden',
+      'query.Internal.default_hidden',
+      'query.CrateInternal.hidden',
+      'query.ParentInternal.hidden',
+      'query.Server.hidden',
+      'query.Server.crate_hidden',
+      'query.private_free',
+    ])
+      expect(all.some((symbol) => symbol.id === id)).toBe(true)
   })
 
   it('omits explicitly hidden trait hooks without hiding adjacent documented methods', async () => {
@@ -119,12 +127,19 @@ describe('Rust trait member visibility', () => {
       pub trait HiddenCombinedOwner { fn required(); }
     `
     expect((await extract(source)).map((symbol) => symbol.id)).toEqual([
-      'query.Contract', 'query.Contract.visible_required', 'query.Contract.visible_default',
+      'query.Contract',
+      'query.Contract.visible_required',
+      'query.Contract.visible_default',
     ])
-    expect((await extract(source, true)).filter((symbol) => symbol.parent === 'query.Contract')
-      .map((symbol) => symbol.name)).toEqual([
-      'hidden_required', 'hidden_default', 'hidden_combined', 'hidden_last',
-      'visible_required', 'visible_default',
+    expect(
+      (await extract(source, true)).filter((symbol) => symbol.parent === 'query.Contract').map((symbol) => symbol.name),
+    ).toEqual([
+      'hidden_required',
+      'hidden_default',
+      'hidden_combined',
+      'hidden_last',
+      'visible_required',
+      'visible_default',
     ])
   })
 
@@ -150,10 +165,12 @@ describe('Rust trait member visibility', () => {
     expect(params('typed')).toEqual([{ name: 'self', type: 'Box<Self>', default: undefined }])
     expect(params('consume')).toEqual([{ name: 'mut self' }])
     expect(params('borrow')).toEqual([{ name: '&mut self' }])
-    expect(symbols.find((symbol) => symbol.name === 'exactly_one')?.signatures[0].returns)
-      .toBe('Result<Self::Item, ExactlyOneError>')
-    expect(symbols.find((symbol) => symbol.name === 'one_or_none')?.signatures[0].returns)
-      .toBe('Result<Option<Self::Item>, MultipleItemsError>')
+    expect(symbols.find((symbol) => symbol.name === 'exactly_one')?.signatures[0].returns).toBe(
+      'Result<Self::Item, ExactlyOneError>',
+    )
+    expect(symbols.find((symbol) => symbol.name === 'one_or_none')?.signatures[0].returns).toBe(
+      'Result<Option<Self::Item>, MultipleItemsError>',
+    )
   })
 
   it('keeps fully qualified trait method identities and public links distinct', async () => {
@@ -165,36 +182,46 @@ describe('Rust trait member visibility', () => {
     })
     const model = await extractProject({ port: 'rs', root, revision: 'fixture-revision' })
     expect(model.revision).toBe('fixture-revision')
-    const hrefFor = (symbol: typeof model.symbols[number]) =>
+    const hrefFor = (symbol: (typeof model.symbols)[number]) =>
       `/reference/${pageSlug(symbol.publicId ?? symbol.id)}/#${symbol.publicId}`
     const resolver = new Resolver([model])
     const index = new SymbolIndex(model.symbols, hrefFor, 'rs')
     const parents = parentInventory(model, hrefFor)
-    const inventory = readInventory(writeInventory(model, {
-      project: 'rs', version: 'test', uriFor: hrefFor,
-    }))
+    const inventory = readInventory(
+      writeInventory(model, {
+        project: 'rs',
+        version: 'test',
+        uriFor: hrefFor,
+      }),
+    )
     for (const id of [
-      'query.QueryIteratorExt.matching', 'query.QueryIteratorExt.exactly_one',
+      'query.QueryIteratorExt.matching',
+      'query.QueryIteratorExt.exactly_one',
       'other.QueryIteratorExt.matching',
     ]) {
       const symbol = model.symbols.find((candidate) => candidate.id === id)
       expect(symbol).toMatchObject({
-        id, publicId: id, parent: id.slice(0, id.lastIndexOf('.')), kind: 'method',
+        id,
+        publicId: id,
+        parent: id.slice(0, id.lastIndexOf('.')),
+        kind: 'method',
       })
       expect(resolver.resolve('rs', id.replaceAll('.', '::'))?.symbol.id).toBe(id)
       expect(index.resolve(id)?.symbol?.id).toBe(id)
-      expect(index.linkText('[`crate::' + id.replaceAll('.', '::') + '`]')[0].link?.href)
-        .toBe(hrefFor(symbol!))
+      expect(index.linkText('[`crate::' + id.replaceAll('.', '::') + '`]')[0].link?.href).toBe(hrefFor(symbol!))
       expect(parents.find((entry) => entry.name === id)?.uri).toBe(hrefFor(symbol!).slice(1))
       expect(inventory.entries.find((entry) => entry.name === id)?.uri).toBe(hrefFor(symbol!))
     }
     expect(resolver.resolve('rs', 'Server')?.symbol.id).toBe('server.Server')
     expect(index.resolve('Server', 'class')?.symbol?.id).toBe('server.Server')
-    expect(parents.find((entry) => entry.name === 'Server')?.uri)
-      .toBe('reference/server-server/#server.Server')
-    expect(model.symbols.find((symbol) => symbol.id === 'server.Server.builder'))
-      .toMatchObject({ parent: 'server.Server', kind: 'method' })
-    expect(model.symbols.find((symbol) => symbol.id === 'options.OptionScope.Server'))
-      .toMatchObject({ parent: 'options.OptionScope', kind: 'constant' })
+    expect(parents.find((entry) => entry.name === 'Server')?.uri).toBe('reference/server-server/#server.Server')
+    expect(model.symbols.find((symbol) => symbol.id === 'server.Server.builder')).toMatchObject({
+      parent: 'server.Server',
+      kind: 'method',
+    })
+    expect(model.symbols.find((symbol) => symbol.id === 'options.OptionScope.Server')).toMatchObject({
+      parent: 'options.OptionScope',
+      kind: 'constant',
+    })
   })
 })

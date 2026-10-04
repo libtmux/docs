@@ -15,8 +15,12 @@ describe('verified complete Lua API programs', () => {
     expect(examples).toHaveLength(11)
     expect(new Set(examples.map((example) => example.sourceFile)).size).toBe(7)
     expect(new Set(examples.map((example) => example.symbol)).size).toBe(examples.length)
-    expect(model.symbols.filter((symbol) => symbol.doc?.examples?.length)
-      .map((symbol) => symbol.id).sort()).toEqual(examples.map((example) => example.symbol).sort())
+    expect(
+      model.symbols
+        .filter((symbol) => symbol.doc?.examples?.length)
+        .map((symbol) => symbol.id)
+        .sort(),
+    ).toEqual(examples.map((example) => example.symbol).sort())
   })
 
   it.each(examples)('preserves the executed $symbol files and setup', (example) => {
@@ -40,8 +44,10 @@ describe('verified complete Lua API programs', () => {
       expect(block.code).not.toContain('\r')
       expect(hash(block.code), `${example.symbol}/${file.name}`).toBe(file.sha256)
       expect(hash(block.code.slice(0, -1))).toBe(file.clipboardSha256)
-      expect(exported.some((entry) => hash(entry.value + '\n') === file.sha256),
-        `${example.symbol}/${file.name} Markdown`).toBe(true)
+      expect(
+        exported.some((entry) => hash(entry.value + '\n') === file.sha256),
+        `${example.symbol}/${file.name} Markdown`,
+      ).toBe(true)
       expect(block.sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${file.sourceFile}`)
       expect(markdown).toContain(`[Source example](${block.sourceUrl}).`)
       expect(block.intro).toContain(file.name)
@@ -49,8 +55,9 @@ describe('verified complete Lua API programs', () => {
         expect(line.length).toBeLessThanOrEqual(100)
       }
     }
-    expect(blocks.filter((block) => block.lang === 'console')
-      .map((block) => block.code.replace(/^\$ /gm, '').trim())).toEqual(example.shellRecipe)
+    expect(
+      blocks.filter((block) => block.lang === 'console').map((block) => block.code.replace(/^\$ /gm, '').trim()),
+    ).toEqual(example.shellRecipe)
     for (const index of example.consoleBlocks ?? []) {
       expect(exported.some((entry) => entry.value + '\n' === blocks[index].code)).toBe(true)
     }

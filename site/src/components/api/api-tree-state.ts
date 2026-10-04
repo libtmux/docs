@@ -51,11 +51,15 @@ export function captureApiTree(nav: HTMLElement, tree: HTMLElement): ApiTreeStat
       }
       const link = row.matches('a') ? row : row.querySelector('a')
       const mark = row.querySelector<HTMLElement>('.api-nav__kind')
-      return { label: text, href: link?.getAttribute('href') ?? undefined,
+      return {
+        label: text,
+        href: link?.getAttribute('href') ?? undefined,
         kind: entry.getAttribute('aria-description') ?? row.getAttribute('aria-description') ?? undefined,
-        mark: mark?.textContent?.trim(), lazy: (entry as HTMLElement).dataset.lazy,
+        mark: mark?.textContent?.trim(),
+        lazy: (entry as HTMLElement).dataset.lazy,
         count: row.querySelector('.api-nav__count')?.textContent?.trim(),
-        ...(link?.hasAttribute('data-api-shortcut') ? { shortcut: true } : {}) }
+        ...(link?.hasAttribute('data-api-shortcut') ? { shortcut: true } : {}),
+      }
     })
   }
   return { top: tree.scrollTop, branches, version: nav.dataset.version, groups }
@@ -71,16 +75,27 @@ export function initializeApiTree(nav: HTMLElement | null, restoreState = true):
   let saved: ApiTreeState | undefined
   try {
     const value = JSON.parse(window.sessionStorage.getItem(`libtmux:api-tree:${nav.dataset.base}`) ?? 'null')
-    if (Number.isFinite(value?.top) && value.top >= 0 && value.branches && typeof value.branches === 'object') saved = value
-  } catch { /* Navigation remains usable without session storage. */ }
+    if (Number.isFinite(value?.top) && value.top >= 0 && value.branches && typeof value.branches === 'object')
+      saved = value
+  } catch {
+    /* Navigation remains usable without session storage. */
+  }
   let selection: ApiTreeSelection | undefined
   try {
     const incoming = nav.hasAttribute('data-api-tree-arrival')
     const value = incoming ? JSON.parse(nav.dataset.apiTreeArrival!) : window.history.state?.libtmuxApiTree
-    if (value?.base === nav.dataset.base && value.version === nav.dataset.version &&
-        typeof value.version === 'string' && value.href === window.location.pathname + window.location.search &&
-        Array.isArray(value.path) && value.path.length <= 32 && value.path.every((part: unknown) => typeof part === 'string') &&
-        Number.isFinite(value.top) && value.top >= 0) selection = value
+    if (
+      value?.base === nav.dataset.base &&
+      value.version === nav.dataset.version &&
+      typeof value.version === 'string' &&
+      value.href === window.location.pathname + window.location.search &&
+      Array.isArray(value.path) &&
+      value.path.length <= 32 &&
+      value.path.every((part: unknown) => typeof part === 'string') &&
+      Number.isFinite(value.top) &&
+      value.top >= 0
+    )
+      selection = value
     if (incoming) {
       const state = { ...window.history.state }
       delete state.libtmuxApiTree
@@ -88,7 +103,9 @@ export function initializeApiTree(nav: HTMLElement | null, restoreState = true):
       window.history.replaceState(state, '')
       delete nav.dataset.apiTreeArrival
     }
-  } catch { /* A direct arrival retains its canonical selection. */ }
+  } catch {
+    /* A direct arrival retains its canonical selection. */
+  }
   // A new model, nav ordering, or renderer must not resurrect stale links.
   const groups = saved?.version && saved.version === nav.dataset.version ? saved.groups : undefined
   let seq = 0
@@ -132,7 +149,10 @@ export function initializeApiTree(nav: HTMLElement | null, restoreState = true):
         }
       }
       // Saved labels are text, never HTML; links remain local HTTP paths.
-      const href = typeof entry.href === 'string' && /^\/(?!\/)/.test(entry.href) && !entry.href.includes('\\') ? entry.href : undefined
+      const href =
+        typeof entry.href === 'string' && /^\/(?!\/)/.test(entry.href) && !entry.href.includes('\\')
+          ? entry.href
+          : undefined
       const label = element(entry.lazy && href ? 'a' : 'span', 'api-nav__label')
       for (const [j, part] of entry.label.entries()) {
         if (j) label.append(document.createElement('wbr'))
@@ -165,7 +185,8 @@ export function initializeApiTree(nav: HTMLElement | null, restoreState = true):
     if (depth > 32) return
     for (const item of root.querySelectorAll<HTMLElement>(':scope > [role="treeitem"][data-lazy]')) {
       const current = Boolean(item.querySelector('[aria-current="page"]'))
-      const open = current || selection?.path.includes(item.dataset.lazy!) || saved?.branches[item.dataset.lazy!] === true
+      const open =
+        current || selection?.path.includes(item.dataset.lazy!) || saved?.branches[item.dataset.lazy!] === true
       let group = item.querySelector<HTMLElement>(':scope > [role="group"]')
       const cached = groups?.[item.dataset.lazy!]
       if (open && !group && Array.isArray(cached)) {
@@ -177,15 +198,17 @@ export function initializeApiTree(nav: HTMLElement | null, restoreState = true):
     }
   }
   if (restoreState && (saved || selection)) restore(tree)
-  const selected = selection && [...tree.querySelectorAll<HTMLElement>('a[data-api-shortcut]')].find((link) => {
-    const href = new URL(link.getAttribute('href')!, window.location.href)
-    if (href.origin !== window.location.origin || href.pathname + href.search !== selection!.href) return false
-    const path: string[] = []
-    for (let node = link.parentElement; node && node !== tree; node = node.parentElement) {
-      if (node.dataset.lazy) path.unshift(node.dataset.lazy)
-    }
-    return JSON.stringify(path) === JSON.stringify(selection!.path)
-  })
+  const selected =
+    selection &&
+    [...tree.querySelectorAll<HTMLElement>('a[data-api-shortcut]')].find((link) => {
+      const href = new URL(link.getAttribute('href')!, window.location.href)
+      if (href.origin !== window.location.origin || href.pathname + href.search !== selection!.href) return false
+      const path: string[] = []
+      for (let node = link.parentElement; node && node !== tree; node = node.parentElement) {
+        if (node.dataset.lazy) path.unshift(node.dataset.lazy)
+      }
+      return JSON.stringify(path) === JSON.stringify(selection!.path)
+    })
   if (selected) {
     for (const link of tree.querySelectorAll('[aria-current="page"]')) link.removeAttribute('aria-current')
     selected.setAttribute('aria-current', 'page')
@@ -209,7 +232,13 @@ export function initializeApiTree(nav: HTMLElement | null, restoreState = true):
     }
   }
   for (const event of ['wheel', 'pointerdown', 'keydown']) {
-    tree.addEventListener(event, () => { nav.dataset.apiTreeInteracted = 'true' }, { once: true })
+    tree.addEventListener(
+      event,
+      () => {
+        nav.dataset.apiTreeInteracted = 'true'
+      },
+      { once: true },
+    )
   }
   nav.dataset.apiTreeInitialized = 'true'
   return selection

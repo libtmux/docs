@@ -13,8 +13,28 @@ import { initDocumentationNavigation } from '../src/components/docs/documentatio
 let win: Window
 beforeEach(() => {
   win = new Window({ url: 'https://libtmux.org/en/cxx/latest/mcp/reference/arguments/' })
-  for (const name of ['window', 'document', 'location', 'HTMLElement', 'HTMLAnchorElement', 'HTMLDetailsElement', 'Element', 'Node', 'AbortController', 'Event']) {
-    vi.stubGlobal(name, name === 'window' ? win : name === 'document' ? win.document : name === 'location' ? win.location : win[name as keyof Window])
+  for (const name of [
+    'window',
+    'document',
+    'location',
+    'HTMLElement',
+    'HTMLAnchorElement',
+    'HTMLDetailsElement',
+    'Element',
+    'Node',
+    'AbortController',
+    'Event',
+  ]) {
+    vi.stubGlobal(
+      name,
+      name === 'window'
+        ? win
+        : name === 'document'
+          ? win.document
+          : name === 'location'
+            ? win.location
+            : win[name as keyof Window],
+    )
   }
   vi.spyOn(win.HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue(new win.DOMRect(20, 10, 160, 30))
   vi.spyOn(win.HTMLElement.prototype, 'getClientRects').mockImplementation(function (this: HTMLElement) {
@@ -49,7 +69,10 @@ it('includes unmatched home exits in keyboard search without inventing an equiva
   expect(win.document.querySelector<HTMLElement>('#matched')!.hidden).toBe(true)
   expect(win.document.querySelector('[data-picker-status]')!.textContent).toBe('1 matching entries')
   let clicked = false
-  win.document.getElementById('home')!.addEventListener('click', (event) => { event.preventDefault(); clicked = true })
+  win.document.getElementById('home')!.addEventListener('click', (event) => {
+    event.preventDefault()
+    clicked = true
+  })
   input.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
   expect(clicked).toBe(true)
   // happy-dom does not give summary its browser-native focusability.
@@ -74,11 +97,22 @@ it('retains separate native-page home exits when fragment equivalents change', (
   const stale = win.document.querySelector('[data-picker-option][data-port="rs"]')!
   stale.setAttribute('title', 'Old destination')
   stale.setAttribute('aria-label', 'Old destination')
-  const context = { port: 'cxx', primary: 'native-one', symbols: {
-    'native-one': [], 'native-two': [{ port: 'rs', href: '/en/rs/latest/reference/server/', label: 'Server' }],
-  } }
-  win.document.body.insertAdjacentHTML('beforeend', `<script type="application/json" data-native-page-ports>${JSON.stringify(context)}</script>`)
-  const source = readFileSync(new URL('../src/components/docs/NativeSphinxScript.astro', import.meta.url), 'utf8').match(/<script>([\s\S]*?)<\/script>/)![1]
+  const context = {
+    port: 'cxx',
+    primary: 'native-one',
+    symbols: {
+      'native-one': [],
+      'native-two': [{ port: 'rs', href: '/en/rs/latest/reference/server/', label: 'Server' }],
+    },
+  }
+  win.document.body.insertAdjacentHTML(
+    'beforeend',
+    `<script type="application/json" data-native-page-ports>${JSON.stringify(context)}</script>`,
+  )
+  const source = readFileSync(
+    new URL('../src/components/docs/NativeSphinxScript.astro', import.meta.url),
+    'utf8',
+  ).match(/<script>([\s\S]*?)<\/script>/)![1]
   win.eval(ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
   const option = () => win.document.querySelector('[data-picker-option][data-port="rs"]')!
   expect(option().tagName).toBe('DIV')
@@ -102,22 +136,32 @@ it('retains separate native-page home exits when fragment equivalents change', (
   expect(option().hasAttribute('aria-label')).toBe(false)
 })
 
-
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
-let pickerComponent: Promise<Parameters<Awaited<ReturnType<typeof experimental_AstroContainer.create>>['renderToString']>[0]> | undefined
+let pickerComponent:
+  | Promise<Parameters<Awaited<ReturnType<typeof experimental_AstroContainer.create>>['renderToString']>[0]>
+  | undefined
 
 async function renderPicker(entries: PagePortLink[], portSlug = 'julia') {
   pickerComponent ??= (async () => {
     const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
     async function compile(relative: string, imports: Record<string, string>) {
       const file = new URL(relative, import.meta.url)
-      const source = readFileSync(file, 'utf8').replace(/<style[\s\S]*?<\/style>/g, '')
+      const source = readFileSync(file, 'utf8')
+        .replace(/<style[\s\S]*?<\/style>/g, '')
         .replace(/^import ['"][^'"]+\.css['"]\s*$/gm, '')
-      const result = await transform(source, { filename: file.pathname, internalURL: 'astro/compiler-runtime',
-        resultScopedSlot: true, resolvePath: (specifier: string) => specifier })
+      const result = await transform(source, {
+        filename: file.pathname,
+        internalURL: 'astro/compiler-runtime',
+        resultScopedSlot: true,
+        resolvePath: (specifier: string) => specifier,
+      })
       expect(result.diagnostics.filter((item: { severity: string }) => item.severity === 'error')).toEqual([])
-      let code = result.code.replaceAll('"astro/compiler-runtime"', JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href))
-      for (const [specifier, href] of Object.entries(imports)) code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(href))
+      let code = result.code.replaceAll(
+        '"astro/compiler-runtime"',
+        JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href),
+      )
+      for (const [specifier, href] of Object.entries(imports))
+        code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(href))
       return `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
     }
     const root = new URL('../src/lib/site-root.ts', import.meta.url).href
@@ -125,7 +169,8 @@ async function renderPicker(entries: PagePortLink[], portSlug = 'julia') {
     const component = await compile('../src/components/PagePortSwitcher.astro', {
       '../lib/ports': new URL('../src/lib/ports.ts', import.meta.url).href,
       '../lib/branding': new URL('../src/lib/branding.ts', import.meta.url).href,
-      '../lib/site-root': root, './tmux/Logo.astro': logo,
+      '../lib/site-root': root,
+      './tmux/Logo.astro': logo,
     })
     return (await import(/* @vite-ignore */ component)).default
   })()
@@ -136,8 +181,12 @@ async function renderPicker(entries: PagePortLink[], portSlug = 'julia') {
 it('renders section fallbacks as truthful overview exits without repeated destination titles', async () => {
   const entries: PagePortLink[] = [
     { port: 'julia', name: 'Julia', links: [{ href: '/pr-42/en/julia/v1.2.3/topics/ownership/' }] },
-    { port: 'py', name: 'Python', links: [{ href: '/pr-42/en/py/stable/topics/', label: 'Topics overview', fallback: 'section' }],
-      home: { href: '/pr-42/en/py/stable/', label: 'Go to Python home' } },
+    {
+      port: 'py',
+      name: 'Python',
+      links: [{ href: '/pr-42/en/py/stable/topics/', label: 'Topics overview', fallback: 'section' }],
+      home: { href: '/pr-42/en/py/stable/', label: 'Go to Python home' },
+    },
     { port: 'lua', name: 'Lua', links: [], home: { href: '/pr-42/en/lua/latest/', label: 'Go to Lua home' } },
   ]
   await renderPicker(entries)
@@ -172,19 +221,34 @@ it('renders section fallbacks as truthful overview exits without repeated destin
   input.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }))
   expect(win.document.activeElement).toBe(exit)
   let clicked = false
-  exit.addEventListener('click', (event) => { event.preventDefault(); clicked = true })
+  exit.addEventListener('click', (event) => {
+    event.preventDefault()
+    clicked = true
+  })
   input.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
   expect(clicked).toBe(true)
 })
 
 it('keeps single native distinctions accessible and genuine multiple choices visible', async () => {
   const entries: PagePortLink[] = [
-    { port: 'julia', name: 'Julia', links: [{ href: '/en/julia/latest/reference/libtmux-sessions/', label: 'sessions (function)' }] },
-    { port: 'powershell', name: 'PowerShell', links: [{ href: '/en/powershell/latest/reference/libtmux-get-tmuxsession/', label: 'Get-TmuxSession (cmdlet)' }] },
-    { port: 'ruby', name: 'Ruby', links: [
-      { href: '/en/ruby/latest/mcp/guides/connect-client/', label: 'Connect a client' },
-      { href: '/en/ruby/latest/mcp/source-guide/', label: 'MCP server guide' },
-    ] },
+    {
+      port: 'julia',
+      name: 'Julia',
+      links: [{ href: '/en/julia/latest/reference/libtmux-sessions/', label: 'sessions (function)' }],
+    },
+    {
+      port: 'powershell',
+      name: 'PowerShell',
+      links: [{ href: '/en/powershell/latest/reference/libtmux-get-tmuxsession/', label: 'Get-TmuxSession (cmdlet)' }],
+    },
+    {
+      port: 'ruby',
+      name: 'Ruby',
+      links: [
+        { href: '/en/ruby/latest/mcp/guides/connect-client/', label: 'Connect a client' },
+        { href: '/en/ruby/latest/mcp/source-guide/', label: 'MCP server guide' },
+      ],
+    },
   ]
   await renderPicker(entries)
   for (const entry of entries.slice(0, 2)) {
@@ -195,10 +259,12 @@ it('keeps single native distinctions accessible and genuine multiple choices vis
     expect(link.getAttribute('title')).toBe(`${entry.name}: ${entry.links[0].label}`)
   }
   const choices = [...win.document.querySelectorAll('[data-picker-option][data-port="ruby"]')]
-  expect(choices.map((choice) => choice.querySelector('small')?.textContent)).toEqual(['Connect a client', 'MCP server guide'])
+  expect(choices.map((choice) => choice.querySelector('small')?.textContent)).toEqual([
+    'Connect a client',
+    'MCP server guide',
+  ])
   expect(choices.map((choice) => choice.getAttribute('href'))).toEqual(entries[2].links.map((link) => link.href))
 })
-
 
 it.each([
   ['ts', 'builder.applyWorkspace'],
@@ -206,12 +272,19 @@ it.each([
   ['julia', 'LibTmuxWorkspace.apply'],
 ])('renders source-verified workspace construction equivalents from %s', async (port, id) => {
   const symbol = API_MODELS[port].symbols.find((entry) => entry.id === id)!
-  const entries = pagePortLinks({ pagePath: `workspace/reference/${symbol.slug}`, portSlug: port,
-    version: 'latest', defaults: { py: 'stable' }, docs: [] })
+  const entries = pagePortLinks({
+    pagePath: `workspace/reference/${symbol.slug}`,
+    portSlug: port,
+    version: 'latest',
+    defaults: { py: 'stable' },
+    docs: [],
+  })
   await renderPicker(entries, port)
   const links = Array.from(win.document.querySelectorAll('a[data-port]'))
   const published = PORTS.filter((target) => productAvailable(target, 'workspace'))
-  expect(links.map((link) => link.getAttribute('data-port')).sort()).toEqual(published.map((target) => target.slug).sort())
+  expect(links.map((link) => link.getAttribute('data-port')).sort()).toEqual(
+    published.map((target) => target.slug).sort(),
+  )
   for (const [target, slug, kind] of [
     ['powershell', 'libtmux-workspace-invoke-tmuxworkspace', 'Invoke-TmuxWorkspace (cmdlet)'],
     ['julia', 'libtmuxworkspace-apply', 'apply (function)'],
@@ -220,8 +293,9 @@ it.each([
     expect(link.getAttribute('href')).toBe(`/${target}/latest/workspace/reference/${slug}/`)
     if (target !== port) expect(link.getAttribute('aria-label')).toContain(kind)
   }
-  expect(win.document.querySelector('a[data-port="py"]')!.getAttribute('href'))
-    .toBe('/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/')
+  expect(win.document.querySelector('a[data-port="py"]')!.getAttribute('href')).toBe(
+    '/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/',
+  )
   expect(win.document.querySelectorAll('a[data-port][aria-current="page"]')).toHaveLength(1)
   expect(win.document.querySelector('a[data-port][aria-current="page"]')!.getAttribute('data-port')).toBe(port)
   const unmatched = Array.from(win.document.querySelectorAll('.doc-picker-option--unmatched'))
@@ -229,41 +303,60 @@ it.each([
   for (const row of unmatched) {
     expect(row.tagName).toBe('DIV')
     expect(row.querySelector('a[data-port]')).toBeNull()
-    expect(row.querySelector('[data-picker-home]')?.getAttribute('href')).toBe(`/${row.getAttribute('data-port')}/latest/`)
+    expect(row.querySelector('[data-picker-home]')?.getAttribute('href')).toBe(
+      `/${row.getAttribute('data-port')}/latest/`,
+    )
     expect(row.hasAttribute('aria-disabled')).toBe(false)
   }
 })
 
-
-it.each(['workspace/guides', 'workspace/internals/guides'])('keeps %s counterparts separate from detailed native source articles', async (pagePath) => {
-  const guidePorts = ['py', 'ruby', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']
-  const builderPorts = ['ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']
-  const docs = [
-    ...guidePorts.map((port) => ({ id: `ports/${port}/workspace/guides`, data: { port, product: 'workspace' } })),
-    ...builderPorts.map((port) => ({ id: `ports/${port}/workspace/internals/guides`, data: { port, product: 'workspace' } })),
-    ...['powershell', 'julia'].map((port) => ({ id: `_staged/${port}/workspace/source-guide`,
-      data: { port, product: 'workspace', route: 'workspace/source-guide', aliases: [] } })),
-  ]
-  const portSlug = pagePath === 'workspace/guides' ? 'py' : 'ts'
-  const entries = pagePortLinks({ pagePath, portSlug, version: portSlug === 'py' ? 'stable' : 'latest',
-    defaults: { py: 'stable' }, docs })
-  await renderPicker(entries, portSlug)
-  const matched = pagePath === 'workspace/guides' ? guidePorts : builderPorts
-  expect(Array.from(win.document.querySelectorAll('a[data-port]')).map((link) => link.getAttribute('data-port')).sort())
-    .toEqual([...matched].sort())
-  const unmatched = Array.from(win.document.querySelectorAll('.doc-picker-option--unmatched'))
-  expect(unmatched).toHaveLength(PORTS.length - matched.length)
-  for (const row of unmatched) {
-    const port = PORTS.find((target) => target.slug === row.getAttribute('data-port'))!
-    const workspace = productAvailable(port, 'workspace')
-    const version = port.slug === 'py' ? 'stable' : 'latest'
-    expect(row.tagName).toBe('DIV')
-    expect(row.hasAttribute('aria-disabled')).toBe(false)
-    expect(row.querySelector('a[data-port]')).toBeNull()
-    expect(row.textContent).toContain('No matching page')
-    expect(row.querySelector('[data-picker-home]')?.getAttribute('href'))
-      .toBe(`/${port.slug}/${version}/${workspace ? 'workspace/' : ''}`)
-    expect(row.querySelector('[data-picker-home]')?.getAttribute('aria-label'))
-      .toBe(`Go to ${port.name}${workspace ? ' Workspace Manager' : ''} home`)
-  }
-})
+it.each(['workspace/guides', 'workspace/internals/guides'])(
+  'keeps %s counterparts separate from detailed native source articles',
+  async (pagePath) => {
+    const guidePorts = ['py', 'ruby', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']
+    const builderPorts = ['ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']
+    const docs = [
+      ...guidePorts.map((port) => ({ id: `ports/${port}/workspace/guides`, data: { port, product: 'workspace' } })),
+      ...builderPorts.map((port) => ({
+        id: `ports/${port}/workspace/internals/guides`,
+        data: { port, product: 'workspace' },
+      })),
+      ...['powershell', 'julia'].map((port) => ({
+        id: `_staged/${port}/workspace/source-guide`,
+        data: { port, product: 'workspace', route: 'workspace/source-guide', aliases: [] },
+      })),
+    ]
+    const portSlug = pagePath === 'workspace/guides' ? 'py' : 'ts'
+    const entries = pagePortLinks({
+      pagePath,
+      portSlug,
+      version: portSlug === 'py' ? 'stable' : 'latest',
+      defaults: { py: 'stable' },
+      docs,
+    })
+    await renderPicker(entries, portSlug)
+    const matched = pagePath === 'workspace/guides' ? guidePorts : builderPorts
+    expect(
+      Array.from(win.document.querySelectorAll('a[data-port]'))
+        .map((link) => link.getAttribute('data-port'))
+        .sort(),
+    ).toEqual([...matched].sort())
+    const unmatched = Array.from(win.document.querySelectorAll('.doc-picker-option--unmatched'))
+    expect(unmatched).toHaveLength(PORTS.length - matched.length)
+    for (const row of unmatched) {
+      const port = PORTS.find((target) => target.slug === row.getAttribute('data-port'))!
+      const workspace = productAvailable(port, 'workspace')
+      const version = port.slug === 'py' ? 'stable' : 'latest'
+      expect(row.tagName).toBe('DIV')
+      expect(row.hasAttribute('aria-disabled')).toBe(false)
+      expect(row.querySelector('a[data-port]')).toBeNull()
+      expect(row.textContent).toContain('No matching page')
+      expect(row.querySelector('[data-picker-home]')?.getAttribute('href')).toBe(
+        `/${port.slug}/${version}/${workspace ? 'workspace/' : ''}`,
+      )
+      expect(row.querySelector('[data-picker-home]')?.getAttribute('aria-label')).toBe(
+        `Go to ${port.name}${workspace ? ' Workspace Manager' : ''} home`,
+      )
+    }
+  },
+)
