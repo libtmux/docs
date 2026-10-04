@@ -14,7 +14,7 @@ import TmuxOverview from '../components/tmux/Overview.astro'
 import { mcpReferenceRoutes } from '../lib/mcp-reference'
 import { docsEntryAvailable } from '../lib/page-port-links'
 import { docsRedirects, docsRoutePath, sourceGuideRedirects, workspaceRedirects } from '../lib/docs-paths'
-import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
+import { DEFAULT_LOCALE, localeRoot, type Locale } from '../i18n/locales'
 import { buildLocale, localeOf, placeholderPairs, sourceIdOf } from '../i18n/resolve'
 
 export async function getStaticPaths() {
@@ -31,7 +31,7 @@ export async function getStaticPaths() {
       props: { entry, version: entry.data.port && !port ? (defaults[entry.data.port] ?? 'latest') : undefined },
     }))
   const global = !port ? [
-    ...(locale === DEFAULT_LOCALE ? [{ params: { slug: 'tmux' }, props: { globalPage: 'tmux' } }] : []),
+    { params: { slug: 'tmux' }, props: { globalPage: 'tmux' } },
     { params: { slug: 'mcp' }, props: { globalPage: 'mcp' } },
     { params: { slug: 'mcp/tools' }, props: { globalPage: 'tools' } },
   ] : []
@@ -75,7 +75,9 @@ interface Props {
   toolName?: string
 }
 const { entry, placeholderLocale, globalPage, version, model, symbol, mcpPort, toolName, redirect } = Astro.props
-const destination = redirect ? `${import.meta.env.BASE_URL.replace(/\/$/, '')}/${redirect}/` : undefined
+const destination = globalPage === 'tmux' && buildLocale() !== DEFAULT_LOCALE
+  ? `${localeRoot(DEFAULT_LOCALE)}tmux/`
+  : redirect ? `${import.meta.env.BASE_URL.replace(/\/$/, '')}/${redirect}/` : undefined
 ---
 
 {destination ? <RedirectPage destination={destination} title="the documentation" /> : globalPage === 'tmux' ? <TmuxOverview /> : globalPage === 'mcp' ? <McpOverview /> : globalPage === 'tools' ? <McpTools /> : mcpPort ? <ToolReference port={mcpPort} toolName={toolName} version={version!} /> : model && symbol ? <ProductApiPage model={model} symbol={symbol} version={version!} /> : entry && <DocPage entry={entry} version={version} placeholderLocale={placeholderLocale} />}

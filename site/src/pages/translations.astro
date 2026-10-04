@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import PageToolbar from '../components/PageToolbar.astro'
 import { withRoot } from '../lib/site-root'
+import { docsRoutePath } from '../lib/docs-paths'
 import { LOCALES, LOCALE_LABEL, DEFAULT_LOCALE, localeRoot } from '../i18n/locales'
 import { ALL_TRANSLATED, buildLocale, localeOf, localeStatusesFor, type LocaleStatus } from '../i18n/resolve'
 import { t } from '../i18n/ui'
@@ -37,6 +38,7 @@ const sources = entries
   .filter((e) => localeOf(e.id) === DEFAULT_LOCALE && !e.data.product && !e.data.port)
   .map((e) => ({
     sourceId: e.id,
+    path: docsRoutePath(e),
     title: e.data.title,
     description: e.data.description,
     filePath: e.filePath,
@@ -120,7 +122,7 @@ const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').l
                       served per locale, so a Japanese reader following a row
                       should land on the Japanese page — a translation where
                       there is one, its placeholder where there is not. */}
-                  <a class="underline" href={`${localeRoot(locale)}${row.sourceId}/`}>
+                  <a class="underline" href={`${localeRoot(locale)}${row.path}/`}>
                     {row.title}
                   </a>
                 </th>
