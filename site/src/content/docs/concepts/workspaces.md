@@ -48,7 +48,9 @@ window.select_layout(Layout::MainVertical).await?;
 ```
 
 ```go
-window, err := session.NewWindow(ctx, tmux.NewWindowRequest{Name: tmux.Ptr("dev")})
+window, err := session.NewWindow(ctx, tmux.NewWindowRequest{
+	Name: tmux.Ptr("dev"),
+})
 if err != nil {
 	return err
 }
@@ -60,11 +62,14 @@ terminal, err := window.SplitPane(ctx, tmux.SplitPaneRequest{
 if err != nil {
 	return err
 }
-if _, err := window.SplitPane(ctx, tmux.SplitPaneRequest{Direction: tmux.PaneDirectionRight}); err != nil {
+right := tmux.SplitPaneRequest{Direction: tmux.PaneDirectionRight}
+if _, err := window.SplitPane(ctx, right); err != nil {
 	return err
 }
 _ = terminal
-return window.SelectLayout(ctx, tmux.SelectLayoutRequest{Layout: "main-vertical"})
+return window.SelectLayout(ctx, tmux.SelectLayoutRequest{
+	Layout: "main-vertical",
+})
 ```
 
 ```java
@@ -76,11 +81,13 @@ window.selectLayout(Layout.MAIN_VERTICAL);
 ```
 
 ```csharp
-Window window = await session.CreateWindowAsync(new NewWindowRequest(name: "dev"));
+NewWindowRequest dev = new(name: "dev");
+Window window = await session.CreateWindowAsync(dev);
 Pane main = (await window.GetPanesAsync())[0];
 
 Pane terminal = await main.SplitAsync(new SplitPaneRequest(percentage: 30));
-Pane logs = await terminal.SplitAsync(new SplitPaneRequest(direction: PaneDirection.Right));
+SplitPaneRequest right = new(direction: PaneDirection.Right);
+Pane logs = await terminal.SplitAsync(right);
 
 await window.SelectLayoutAsync(new SelectLayoutRequest("main-vertical"));
 ```
@@ -195,7 +202,10 @@ await applyWorkspace(server, {
   session_name: "api",
   windows: [
     { window_name: "editor", panes: ["vim", "git status"] },
-    { window_name: "server", panes: [{ shell_command: "bun dev", focus: true }] },
+    {
+      window_name: "server",
+      panes: [{ shell_command: "bun dev", focus: true }],
+    },
   ],
 });
 ```
@@ -226,7 +236,8 @@ Session session = WorkspaceBuilder.build(server, workspace);
 
 ```csharp
 WorkspaceFile workspace = WorkspaceFile.Parse(yaml);
-WorkspaceResult result = await new WorkspaceBuilder(server).BuildAsync(workspace, ct);
+WorkspaceBuilder builder = new(server);
+WorkspaceResult result = await builder.BuildAsync(workspace, ct);
 ```
 
 ```swift
@@ -278,7 +289,9 @@ with session.new_window(window_name='temp-window') as temp_win:
 ```go
 // No context manager: defer runs the cleanup at the end of the enclosing
 // function instead of the end of a block.
-session, err := server.NewSession(ctx, tmux.NewSessionRequest{Name: "temp-session"})
+session, err := server.NewSession(ctx, tmux.NewSessionRequest{
+	Name: "temp-session",
+})
 if err != nil {
 	return err
 }
