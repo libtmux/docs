@@ -256,8 +256,11 @@ const noindexLanding = locale !== DEFAULT_LOCALE && !LandingContent
   markdown={landingEntry ? 'source' : 'rendered'}
 >
   {LandingContent ? (
-    <main class="mx-auto max-w-3xl px-4 py-12 sm:py-16">
-      <LandingContent />
+    <main class="mx-auto max-w-7xl px-4 py-12 sm:py-16">
+      <div class="prose max-w-3xl dark:prose-invert">
+        <h1>{landingEntry?.data.title ?? 'libtmux'}</h1>
+        <LandingContent />
+      </div>
     </main>
   ) : (
   <main class="mx-auto max-w-7xl px-4 py-12 sm:py-16">
