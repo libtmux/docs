@@ -185,7 +185,10 @@ if (const auto only = libtmux::exactly_one(logs); only.has_value()) {
 let editors = try await server.panes().filter { $0.currentCommand == "nvim" }
 
 // Or build a filter that travels: stored, sent, replayed elsewhere:
-let expression = try FilterExpr<Pane>.where(\.currentCommand, .isIn(["nvim", "vim"]))
+let expression = try FilterExpr<Pane>.where(
+    \.currentCommand,
+    .isIn(["nvim", "vim"])
+)
 let matching = try await server.panes().filter(expression)
 ```
 <!-- /port -->
