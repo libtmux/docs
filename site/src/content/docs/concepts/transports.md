@@ -197,7 +197,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // One-shot: every call underneath this handle spawns a `tmux` process.
     let server = Server::new()?;
     let session = server.new_session("work").await?;
-    let window = session.active_window().await?.expect("a session has a window");
+    let window = session.active_window().await?.expect("session has a window");
     let pane = window.active_pane().await?.expect("a window has a pane");
     pane.send_line("echo hello").await?;
     Ok(())
