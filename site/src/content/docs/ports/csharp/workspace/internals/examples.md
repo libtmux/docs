@@ -22,8 +22,10 @@ In a new directory, fetch the source revision used by this documentation:
 $ mkdir dotnet-workspace-example
 $ cd dotnet-workspace-example
 $ git init -q libtmux-source
-$ git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-dotnet.git
-$ git -C libtmux-source fetch --depth=1 origin 320dc64f4b8b7815842471327a5e6b84a1499bf8
+$ git -C libtmux-source remote add origin \
+    https://github.com/libtmux/libtmux-dotnet.git
+$ git -C libtmux-source fetch --depth=1 origin \
+    320dc64f4b8b7815842471327a5e6b84a1499bf8
 $ git -C libtmux-source checkout --detach FETCH_HEAD
 ```
 
@@ -42,7 +44,9 @@ package and its core dependency from that checkout.
   <ItemGroup>
     <Compile Include="Program.cs" />
     <ProjectReference Include="libtmux-source/src/LibTmux/LibTmux.csproj" />
-    <ProjectReference Include="libtmux-source/src/LibTmux.Workspace/LibTmux.Workspace.csproj" />
+    <ProjectReference
+        Include="libtmux-source/src/LibTmux.Workspace/LibTmux.Workspace.csproj"
+    />
   </ItemGroup>
 </Project>
 ```
@@ -63,9 +67,10 @@ internal static class Program
     private static async Task Main()
     {
         if (OperatingSystem.IsWindows())
-            throw new PlatformNotSupportedException("This example requires POSIX tmux.");
+            throw new PlatformNotSupportedException("Requires POSIX tmux.");
 
-        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        TimeSpan limit = TimeSpan.FromSeconds(30);
+        using var deadline = new CancellationTokenSource(limit);
         WorkspaceFile workspace = WorkspaceFile.Parse("""
             session_name: built
             options:
@@ -89,7 +94,8 @@ internal static class Program
             deadline.Token);
         WorkspaceResult result = await new WorkspaceBuilder(owned.Value)
             .BuildAsync(workspace, deadline.Token);
-        Console.WriteLine($"{result.Session.Name}: {result.Windows.Count} windows");
+        int windows = result.Windows.Count;
+        Console.WriteLine($"{result.Session.Name}: {windows} windows");
         foreach (string unsupported in result.Unsupported)
             Console.WriteLine(unsupported);
     }
