@@ -21,7 +21,7 @@ const artwork = (id: string) => {
     {port ? <img class="surface-artwork" src={artwork(surface.id)} width="30" height="30" alt="" /> : <TmuxLogo />}
     <span class="surface-current"><strong>{!solutionsOnly && surface.id === 'tmux'
       ? <><span class="surface-name-full">{surface.label}</span><span class="surface-name-short">tmux</span></>
-      : solutionsOnly ? 'Choose a solution' : surface.label}</strong>{!solutionsOnly && <small>{section.label}</small>}</span>
+      : solutionsOnly ? <><span class="home-solution-name-full">Choose a solution</span><span class="home-solution-name-short" aria-hidden="true">Solution</span></> : surface.label}</strong>{!solutionsOnly && <small>{section.label}</small>}</span>
     <svg class="doc-picker-caret" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
   </summary>
   <div class="surface-panel doc-picker-panel" data-surface-panel data-picker-panel>
@@ -74,6 +74,7 @@ const artwork = (id: string) => {
   .surface-current { min-width: 0; line-height: 1.35; }
   .surface-current strong, .surface-current small { display: block; }
   .surface-name-short { display: none; }
+  .home-solution-name-short { display: none; }
   @media (max-width: 24rem) {
     .surface-name-full { display: none; }
     .surface-name-short { display: inline; }

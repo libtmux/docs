@@ -1,0 +1,60 @@
+---
+import { TOPICS } from '../../lib/prompts'
+import '../../styles/documentation-picker.css'
+interface Props { defaultTopic: string }
+const { defaultTopic } = Astro.props
+const current = TOPICS.find((topic) => topic.id === defaultTopic)!
+---
+<div class="task-picker">
+  <label class="task-native" data-task-native>
+    <span>Task</span>
+    <select class="lm-agent-prompt__select" data-select="topic">
+      {TOPICS.map((topic) => <option value={topic.id} selected={topic.id === defaultTopic}>{topic.label}</option>)}
+    </select>
+  </label>
+  <div class="task-enhanced" data-task-enhanced hidden>
+    <span class="task-label" aria-hidden="true">Task</span>
+    <div class="clearable-picker">
+      <details class="doc-picker" data-doc-picker data-task-menu>
+        <summary aria-label={`Task: ${current.label}`}>
+          <span data-task-current>{current.label}</span>
+          <svg class="doc-picker-caret" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
+        </summary>
+        <div class="doc-picker-panel" data-picker-panel>
+          <p class="doc-picker-title">Choose a task <span class="doc-picker-count">{TOPICS.length}</span></p>
+          <label class="doc-picker-search" data-picker-search-label hidden>
+            <span class="sr-only">Find a task</span>
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>
+            <input type="search" placeholder="Find a task…" autocomplete="off" data-picker-search />
+          </label>
+          <nav aria-label="Agent tasks">
+            {TOPICS.map((topic) => <a class="doc-picker-option" href={`?prompt=${topic.id}`} data-task-option={topic.id}
+              data-picker-option data-match={`${topic.label} ${topic.summary}`} aria-current={topic.id === defaultTopic ? 'true' : undefined}>
+              <span>{topic.label}<small>{topic.summary}</small></span>
+              <span class="doc-picker-check" aria-hidden="true" hidden={topic.id !== defaultTopic}>✓</span>
+            </a>)}
+          </nav>
+          <p class="doc-picker-empty" data-picker-empty hidden>No matching tasks.</p>
+          <p class="sr-only" role="status" data-picker-status></p>
+        </div>
+      </details>
+      <button type="button" class="picker-clear" data-action="reset-topic" hidden aria-label="Clear task selection" title="Clear task selection">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" /></svg>
+      </button>
+    </div>
+  </div>
+</div>
+<style>
+  [hidden] { display: none !important; }
+  .task-picker, .task-enhanced, .task-native { min-width: 0; }
+  .task-enhanced, .task-native { display: flex; align-items: center; gap: .4rem; }
+  .task-label, .task-native > span { font-size: .8rem; color: var(--color-muted); }
+  .clearable-picker { width: 14rem; flex: 0 1 14rem; }
+  .doc-picker > summary { min-height: 2.25rem; padding: .25rem .55rem; }
+  [data-task-current] { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .task-native select { width: 14rem; min-width: 0; font: inherit; font-size: .85rem; padding: .2rem .4rem; border: 1px solid var(--color-edge); border-radius: .25rem; background: var(--background-color); color: var(--text-color); }
+  .task-native select:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 1px; }
+  @container (max-width: 36rem) {
+    .clearable-picker { width: auto; flex: 1; }
+  }
+</style>

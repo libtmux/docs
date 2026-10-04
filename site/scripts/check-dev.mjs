@@ -11,6 +11,8 @@ import { checkApiExampleOwnership, checkApiNavigation, checkDocumentationNavigat
 import { checkNativeLayout } from './check-native-layout.mjs'
 import { checkReferencePreferences, checkGlobalHeader } from './check-reference-preferences.mjs'
 import { checkHomeLauncher } from './check-home-launcher.mjs'
+import { checkHomeTaskReset } from './check-home-task-reset.mjs'
+import { checkColorScheme } from './check-color-scheme.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
@@ -21,6 +23,7 @@ const signaturePorts = apiSignaturesOnly ? API_MODEL_PORTS
 const referencePreferencesOnly = process.argv.includes('--reference-preferences')
 const globalHeaderOnly = process.argv.includes('--global-header')
 const homeLauncherOnly = process.argv.includes('--home-launcher')
+const homeControlsOnly = process.argv.includes('--home-controls')
 const documentationNavigationOnly = process.argv.includes('--documentation-navigation')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 
@@ -542,7 +545,8 @@ async function checkReferenceAndHeroes(browser, base) {
 try {
   // Compile the first page during setup; navigation assertions measure
   // the running app. The outer loop still budgets this initial compilation.
-  const firstPage = keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
+  const firstPage = homeLauncherOnly || homeControlsOnly ? '/'
+    : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : documentationNavigationOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/tmux/concepts/server-session-window-pane/'
   const ready = fetch(`${base}${firstPage}`).then(async (response) => {
@@ -556,6 +560,9 @@ try {
   await ready
   if (homeLauncherOnly) {
     await checkHomeLauncher(browser, base)
+  } else if (homeControlsOnly) {
+    await checkHomeTaskReset(browser, base)
+    await checkColorScheme(browser, base)
   } else if (keywordHelpOnly) {
     await retryReload(() => checkKeywordHelp(browser, base))
   } else if (apiSignaturesOnly) {

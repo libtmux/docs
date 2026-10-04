@@ -15,14 +15,18 @@ const initial = entries[0].port
 ---
 
 <nav class="home-launcher" aria-label="Choose language and solution" data-home-launcher data-default-port={initial}>
-  <PagePortSwitcher entries={entries} portSlug={initial} label="Choose a programming language" homeLanguageIcons>
-    <button slot="title-actions" class="home-launcher-reset" type="button" data-home-reset hidden aria-label="Reset language selection">Reset</button>
-  </PagePortSwitcher>
+  <div class="clearable-picker home-language-control">
+    <PagePortSwitcher entries={entries} portSlug={initial} label="Choose a programming language" homeLanguageIcons>
+      <button slot="title-actions" class="home-launcher-reset" type="button" data-home-reset hidden aria-label="Reset language selection">Reset</button>
+    </PagePortSwitcher>
+    <button class="picker-clear" type="button" data-home-reset hidden aria-label="Clear language selection" title="Clear language selection">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" /></svg>
+    </button>
+  </div>
   <span class="home-launcher-next" aria-hidden="true">→</span>
   {solutions.map(({ port, version, surfaces }) => <div class="home-launcher-solution" data-home-language={port} hidden={port !== initial}>
     <SurfacePicker surfaces={surfaces} currentPath="/" port={port} version={version} locale={locale} solutionsOnly />
   </div>)}
-  <button class="home-launcher-reset" type="button" data-home-reset hidden aria-label="Reset language selection">Reset</button>
   <span class="sr-only" role="status" aria-live="polite" data-home-selection-status></span>
 </nav>
 
@@ -30,18 +34,31 @@ const initial = entries[0].port
   .home-launcher { --home-launcher-icon-size: 1.5rem; display: flex; align-items: center; gap: .5rem; min-width: 0; }
   .home-launcher [hidden] { display: none !important; }
   .home-launcher-next { color: var(--color-muted); font-size: .8125rem; }
-  .home-launcher-solution { min-width: 0; }
+  .home-launcher-solution { flex: none; }
+  .home-launcher :global(.page-port-name),
+  .home-launcher :global(.page-port-short-name) { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .home-launcher-reset { flex: none; padding: .2rem 0; color: var(--color-link); font-size: .75rem; font-weight: 400; text-decoration: underline; text-underline-offset: .15em; cursor: pointer; }
   .home-launcher-reset:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
   .home-launcher :global([data-page-port-switcher] > summary),
   .home-launcher :global(.surface-picker > summary) { min-height: 2.25rem; padding: .25rem .55rem; }
   .home-launcher :global(.surface-current strong) { white-space: nowrap; font-size: .8125rem; font-weight: 400; }
   .home-launcher :global(.surface-artwork) { width: var(--home-launcher-icon-size); height: var(--home-launcher-icon-size); }
-  :global(.site-header__bar:has(.home-launcher)) { flex-wrap: wrap; }
-  @media (max-width: 40rem) {
-    .home-launcher { order: 5; flex-basis: 100%; flex-wrap: wrap; padding-block: .25rem; }
+  :global(.site-header__bar:has(.home-launcher)) { flex-wrap: nowrap; }
+  @media (max-width: 46rem) {
     .home-launcher :global(.doc-picker:not([data-enhanced]) > .doc-picker-panel) { position: fixed; top: auto; left: .5rem; width: min(var(--picker-width), calc(100% - 1rem)); }
-    .home-launcher-solution { flex: 1; min-width: 11rem; max-width: 15rem; }
+    .home-launcher :global(.page-port-name),
+    .home-launcher :global(.home-solution-name-full) { display: none; }
+    .home-launcher :global(.page-port-short-name),
+    .home-launcher :global(.home-solution-name-short) { display: inline; }
+  }
+  @media (max-width: 35rem) {
+    :global(.site-header__bar:has(.home-launcher)) { flex-wrap: wrap; }
+    .home-launcher { order: 5; flex-basis: 100%; padding-block: .25rem; }
+  }
+  @media (max-width: 24rem) {
+    .home-launcher { gap: .3rem; }
+    .home-launcher :global([data-page-port-switcher] > summary),
+    .home-launcher :global(.surface-picker > summary) { gap: .3rem; padding-inline: .35rem; }
   }
 </style>
 
@@ -56,6 +73,7 @@ const initial = entries[0].port
     controller = new AbortController()
     const root = document.querySelector<HTMLElement>('[data-home-launcher]')
     if (!root) return
+    const homepagePath = window.location.pathname
     const picker = root.querySelector<HTMLDetailsElement>('[data-page-port-switcher]')!
     const links = [...picker.querySelectorAll<HTMLAnchorElement>('a[data-port]')]
     let selected: string | null = null
@@ -78,7 +96,7 @@ const initial = entries[0].port
       }
       const name = chosen?.dataset.portName ?? 'Choose a language'
       picker.querySelector('.page-port-name')!.textContent = name
-      picker.querySelector('.page-port-short-name')!.textContent = chosen?.dataset.portShortName ?? 'Language'
+      picker.querySelector('.page-port-short-name')!.textContent = chosen?.dataset.portName ?? 'Port'
       picker.querySelector('summary')!.setAttribute('aria-label', chosen ? `${name}: choose a programming language` : 'Choose a programming language')
       document.documentElement.setAttribute('data-pkg-port', port)
       if (chosen) document.documentElement.setAttribute('data-home-selected-port', port)
@@ -151,6 +169,7 @@ const initial = entries[0].port
       if (event.detail.origin !== root) select(event.detail.slug)
     }) as EventListener, { signal: controller.signal })
     const restore = () => {
+      if (window.location.pathname !== homepagePath) return
       const shared = new URL(window.location.href).searchParams.get('port')
       let saved: string | null = null
       try { saved = localStorage.getItem(storageKey) } catch { /* Storage may be disabled. */ }

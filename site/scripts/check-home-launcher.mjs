@@ -3,7 +3,8 @@ import { PORTS } from '../src/lib/ports.ts'
 import HOME_PROOF from '../test/fixtures/home-examples.json' with { type: 'json' }
 import { createHash } from 'node:crypto'
 import { checkHomeHover } from './check-home-hover.mjs'
-import { checkHomeTaskReset } from './check-home-task-reset.mjs'
+import { checkHomeTaskReset, chooseHomeTask } from './check-home-task-reset.mjs'
+import { checkColorScheme } from './check-color-scheme.mjs'
 
 /** Only the homepage trigger changes artwork; reset retains the code glyph. */
 export async function checkHomeLanguageIcon(page, port = null) {
@@ -13,13 +14,18 @@ export async function checkHomeLanguageIcon(page, port = null) {
   assert.equal(await trigger.locator('[data-home-default-icon]').isVisible(), !port, 'An unset language keeps the code glyph')
   const geometry = await trigger.evaluate((element) => {
     const icon = element.querySelector('.home-language-icon').getBoundingClientRect()
-    const label = element.querySelector('.page-port-name').getBoundingClientRect()
+    const label = [...element.querySelectorAll('.page-port-name, .page-port-short-name')]
+      .find((node) => node.checkVisibility()).getBoundingClientRect()
     const button = element.getBoundingClientRect()
+    const clear = element.closest('.clearable-picker').querySelector('.picker-clear')
+    const caret = element.querySelector('.doc-picker-caret').getBoundingClientRect()
     return { height: button.height, iconHeight: icon.height, iconRight: icon.right, labelLeft: label.left,
+      clearFits: clear.hidden || (label.right < clear.getBoundingClientRect().left && clear.getBoundingClientRect().right <= caret.left),
       centerOffset: Math.abs(icon.y + icon.height / 2 - (button.y + button.height / 2)) }
   })
   assert.equal(geometry.height, 36, `The trigger keeps the same height for every language: ${JSON.stringify(geometry)}`)
   assert.equal(geometry.iconHeight, 24, 'Every language uses the same icon box')
+  assert(geometry.clearFits, 'Clear sits between the language label and chevron without covering either')
   const solution = await page.locator('[data-home-launcher] .home-launcher-solution:not([hidden]) .surface-picker > summary').boundingBox()
   const solutionIcon = await page.locator('[data-home-launcher] .home-launcher-solution:not([hidden]) .surface-picker > summary > .surface-artwork').boundingBox()
   assert.equal(solution.height, geometry.height, 'The two launcher buttons have equal heights')
@@ -39,6 +45,51 @@ export async function checkHomeLanguageIcon(page, port = null) {
   assert(menuSources.length === PORTS.length && menuSources.every((src) => !src.includes('/brand/languages/')), 'Menu options keep their libtmux artwork')
 }
 
+/** Keep compact labels and example options inside their available row. */
+export async function checkHomeResponsiveLayout(page, width, port = null) {
+  await page.setViewportSize({ width, height: 789 })
+  await page.evaluate(async () => {
+    await document.fonts.ready
+    await new Promise(requestAnimationFrame)
+    await new Promise(requestAnimationFrame)
+  })
+  const launcher = page.locator('[data-home-launcher]')
+  const compact = width <= 736
+  assert.equal(await launcher.locator('.page-port-name').isVisible(), !compact)
+  assert.equal(await launcher.locator('.page-port-short-name').isVisible(), compact)
+  if (!port && compact) assert.equal(await launcher.locator('.page-port-short-name').innerText(), 'Port')
+  if (port && compact) assert.equal(await launcher.locator('.page-port-short-name').innerText(), PORTS.find((entry) => entry.slug === port).name, 'Compact layouts retain the full language name')
+  const solution = launcher.locator('.home-launcher-solution:not([hidden])')
+  assert.equal(await solution.locator('.home-solution-name-full').isVisible(), !compact)
+  assert.equal(await solution.locator('.home-solution-name-short').isVisible(), compact)
+  assert.equal(await solution.locator('.surface-current').innerText(), compact ? 'Solution' : 'Choose a solution')
+  await checkHomeLanguageIcon(page, port)
+  const layout = await page.evaluate(() => {
+    const bounds = (node) => node.getBoundingClientRect()
+    const launcher = document.querySelector('[data-home-launcher]')
+    const language = bounds(launcher.querySelector('[data-page-port-switcher] > summary'))
+    const solution = bounds(launcher.querySelector('.home-launcher-solution:not([hidden]) summary'))
+    const heading = document.querySelector('.home-examples > [data-home-language]:not([hidden]) .home-example-heading')
+    const title = bounds(heading.querySelector('h2'))
+    const options = bounds(heading.querySelector('fieldset'))
+    return {
+      overflow: document.documentElement.scrollWidth > innerWidth + 1,
+      pickerRow: Math.abs(language.y - solution.y) < 1,
+      pickerRight: solution.right,
+      headerHeight: bounds(document.querySelector('.site-header__bar')).height,
+      available: heading.clientWidth,
+      required: title.width + options.width + parseFloat(getComputedStyle(heading).columnGap),
+      headingInline: Math.abs(title.y + title.height / 2 - options.y - options.height / 2) < 1,
+    }
+  })
+  assert(!layout.overflow && layout.pickerRight <= width, `${width}: the header fits without page overflow`)
+  assert(layout.pickerRow, `${width}: Port and Solution stay on the same row`)
+  if (width >= 561) assert(layout.headerHeight <= 53, `${width}: the entire header fits on one row`)
+  if (layout.required <= layout.available) {
+    assert(layout.headingInline, `${width}: example title and options share a row when they fit`)
+  }
+}
+
 /** Exercise the real homepage, including the prompt controlled by its picker. */
 export async function checkHomeLauncher(browser, base) {
   const context = await browser.newContext({ reducedMotion: 'reduce' })
@@ -49,10 +100,10 @@ export async function checkHomeLauncher(browser, base) {
   const language = page.locator('[data-home-launcher] [data-page-port-switcher]')
   const solution = page.locator('.home-launcher-solution:not([hidden])')
   const prompt = page.locator('.lm-agent-prompt')
-  const reset = page.locator('[data-home-launcher] > [data-home-reset]')
+  const reset = page.locator('[data-home-launcher] .picker-clear[data-home-reset]')
   const logo = page.locator('.site-header__mark img:visible')
   const choose = async (port) => {
-    await language.locator('summary').click()
+    await language.locator('summary .doc-picker-caret').click()
     await language.locator(`a[data-port="${port}"]`).click()
     await page.waitForFunction((port) => document.querySelector('.lm-agent-prompt')?.dataset.activePort === port, port)
     assert(await page.locator(`.home-examples [data-home-language="${port}"]`).isVisible())
@@ -78,6 +129,10 @@ export async function checkHomeLauncher(browser, base) {
     assert.equal(await page.getByRole('heading', { name: /^(Language libraries|Read the docs)$/ }).count(), 0)
     assert.equal(await reset.isVisible(), false, 'The default example is not a saved choice')
     await checkHomeLanguageIcon(page)
+    for (const width of [944, 840, 778, 763, 736, 659, 628, 596, 561, 560, 518, 390, 320, 280]) {
+      await checkHomeResponsiveLayout(page, width)
+    }
+    await page.setViewportSize({ width: 1280, height: 777 })
     const defaultLogo = await logo.getAttribute('src')
     for (const { slug } of PORTS) {
       await choose(slug)
@@ -85,6 +140,9 @@ export async function checkHomeLauncher(browser, base) {
       assert(links.length > 0 && links.every((href) => href.startsWith(`${new URL(base).pathname}/${slug}/`)), `${slug}: owned solution destinations`)
       if (['kotlin', 'scala', 'fsharp'].includes(slug)) assert.equal(links.length, 1, `${slug}: core library only`)
       assert.match(await prompt.locator(`[data-port="${slug}"] [data-prompt-text]`).innerText(), new RegExp(`/en/${slug}/`))
+      await checkHomeResponsiveLayout(page, 840, slug)
+      await checkHomeResponsiveLayout(page, 280, slug)
+      await page.setViewportSize({ width: 1280, height: 777 })
     }
     await choose('ruby')
     const rubyLink = solution.locator('a[href$="/ruby/latest/mcp/"]')
@@ -111,7 +169,7 @@ export async function checkHomeLauncher(browser, base) {
     await page.reload()
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'go')
     assert.equal(await prompt.locator('[data-select="topic"]').inputValue(), rerolled, 'Reload restores the language and task')
-    await language.locator('summary').click()
+    await language.locator('summary .doc-picker-caret').click()
     const resetGap = await language.locator('.doc-picker-title-actions').evaluate((actions) => {
       const button = actions.querySelector('button').getBoundingClientRect()
       const count = actions.querySelector('.doc-picker-count').getBoundingClientRect()
@@ -144,7 +202,7 @@ export async function checkHomeLauncher(browser, base) {
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'fsharp')
     await page.evaluate(() => { location.hash = 'second' })
     await choose('go')
-    await prompt.locator('[data-select="topic"]').selectOption('session-switcher')
+    await chooseHomeTask(page, 'session-switcher')
     await page.goBack()
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'fsharp'
       && document.querySelector('.lm-agent-prompt [data-select="topic"]')?.value === 'setup')
@@ -157,10 +215,10 @@ export async function checkHomeLauncher(browser, base) {
     await checkHomeLanguageIcon(page, 'go')
     await choose('py')
     const topic = prompt.locator('[data-select="topic"]')
-    await topic.selectOption('setup')
+    await chooseHomeTask(page, 'setup')
     const original = await prompt.locator('[data-port="py"] [data-prompt-text]').innerText()
     const tasks = await topic.locator('option').evaluateAll((options) => options.map((option) => option.value))
-    await topic.selectOption(tasks.find((value) => value !== 'setup'))
+    await chooseHomeTask(page, tasks.find((value) => value !== 'setup'))
     const text = await prompt.locator('[data-port="py"] [data-prompt-text]').innerText()
     assert.notEqual(text, original, 'Task selection still recomposes the prompt')
     await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
@@ -282,7 +340,7 @@ export async function checkHomeLauncher(browser, base) {
     assert.equal(await launcher.locator('.page-port-name').textContent(), 'F#', 'Shared language works without storage')
     await checkHomeLanguageIcon(page, 'fsharp')
     assert.equal(await page.locator('.lm-agent-prompt [data-select="topic"]').inputValue(), 'session-switcher')
-    await launcher.locator(':scope > [data-home-reset]').click()
+    await launcher.locator('.picker-clear[data-home-reset]').click()
     await checkHomeLanguageIcon(page)
     assert.equal(new URL(page.url()).searchParams.has('port'), false)
     await page.reload()
@@ -315,5 +373,6 @@ export async function checkHomeLauncher(browser, base) {
   }
   await checkHomeHover(browser, base)
   await checkHomeTaskReset(browser, base)
+  await checkColorScheme(browser, base)
   console.log('Homepage: 13 languages, 52 complete selectable programs/copy, owned solutions, shared URLs, reset, blocked storage, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS')
 }

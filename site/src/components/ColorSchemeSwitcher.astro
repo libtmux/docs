@@ -19,10 +19,9 @@
  * painted highlighted rather than corrected afterwards — the same reason the
  * package picker resolves its language in <head>, written up there.
  *
- * Radio inputs, not buttons: a group where exactly one is chosen is what a
- * radio group is, and it arrives with roving focus, arrow-key movement and a
- * name announced once for the set. `aria-pressed` on three buttons is the
- * same thing rebuilt by hand and worse.
+ * Wide layouts use native radios with arrow-key navigation. Compact layouts
+ * use one button to cycle through Auto, Light, and Dark. Its accessible name
+ * identifies the current preference and the next choice.
  */
 const OPTIONS = [
   { id: 'system', label: 'Auto', title: 'Match the operating system' },
@@ -74,12 +73,21 @@ const OPTIONS = [
     ))
   }
 </fieldset>
+<button type="button" class="scheme-cycle" data-scheme-cycle hidden
+  aria-label="Colour scheme: Auto. Switch to Light" title="Colour scheme: Auto. Switch to Light">
+  <span data-scheme-cycle-icon aria-hidden="true"></span>
+</button>
 
 <script>
   import { bindHomeHoverPreview, HOME_PREVIEW_FADE } from '../lib/home-hover-preview'
 
   const STORAGE_KEY = 'color-scheme'
   let controller: AbortController | undefined
+
+  function currentScheme() {
+    const value = document.documentElement.getAttribute('data-color-scheme')
+    return value === 'light' || value === 'dark' ? value : 'system'
+  }
 
   /**
    * Write the choice, then let the script that owns the resolution apply it.
@@ -99,12 +107,38 @@ const OPTIONS = [
       document.documentElement.setAttribute('data-color-scheme', value)
     }
     window.__applyTheme?.()
+    syncControls()
+  }
+
+  function syncControls() {
+    const preference = currentScheme()
+    const label = { system: 'Auto', light: 'Light', dark: 'Dark' }[preference] ?? 'Auto'
+    const next = { system: 'Light', light: 'Dark', dark: 'Auto' }[preference] ?? 'Light'
+    for (const input of document.querySelectorAll<HTMLInputElement>('[data-scheme-switch] input')) {
+      input.checked = input.value === preference
+    }
+    for (const button of document.querySelectorAll<HTMLButtonElement>('[data-scheme-cycle]')) {
+      const description = `Colour scheme: ${label}. Switch to ${next}`
+      button.setAttribute('aria-label', description)
+      button.title = description
+      const icon = document.querySelector(`[data-scheme-switch] [data-scheme="${preference}"] svg`)
+      if (icon) button.querySelector('[data-scheme-cycle-icon]')!.replaceChildren(icon.cloneNode(true))
+    }
   }
 
   function bind() {
     controller?.abort()
     controller = new AbortController()
     const { signal } = controller
+    for (const button of document.querySelectorAll<HTMLButtonElement>('[data-scheme-cycle]')) {
+      button.hidden = false
+      button.addEventListener('click', () => {
+        preview?.commit()
+        const preference = currentScheme()
+        choose({ system: 'light', light: 'dark', dark: 'system' }[preference] ?? 'system')
+      }, { signal })
+    }
+    syncControls()
     const home = document.querySelector('[data-home-launcher]')
     let fadeTimer: ReturnType<typeof setTimeout> | undefined
     const paintPreview = (value: string | null) => {
