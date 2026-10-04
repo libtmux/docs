@@ -120,6 +120,14 @@ describe('quickstart display formatting', () => {
     expect(QUICKSTARTS[slug]!.code).toBe(program.code.trimEnd())
   })
 
+  it.each(PORTS)('$slug runs without a bootstrap script or positional inputs', ({ slug }) => {
+    const example = HOME_EXAMPLES[slug as keyof typeof HOME_EXAMPLES]
+    const program = example.files.find((file) => file.name === example.program)!
+    expect(example.files.map((file) => file.name)).not.toContain('run.sh')
+    expect(example.commands.join('\n')).not.toContain('sh run.sh')
+    expect(program.code).not.toMatch(/\b(?:args|argv)\s*(?:\[\d+\]|\(\d+\))|CommandLine\.arguments|TMUX_SOCKET/)
+  })
+
   it.each(PORTS)('$slug fits 80 columns, including expanded tabs', ({ slug }) => {
     const code = QUICKSTARTS[slug]?.code
     expect(code, slug).toBeTruthy()
