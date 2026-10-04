@@ -22,9 +22,10 @@ describe('documentation surface navigation', () => {
     const surfaces = buildDocumentationSurfaces(port.slug, version, menus(port, version))
     for (const surface of surfaces) {
       for (const section of surface.sections) {
-        if (section.href) expect(section.href).toMatch(`/` + port.slug + `/${version}/`)
+        expect(section.href).toMatch(`/` + port.slug + `/${version}/`)
       }
-      if (surface.id === 'core' || surface.unavailable) continue
+      expect(surface.sections.map((section) => section.id)).not.toContain('tutorials')
+      if (surface.id === 'core') continue
       const selected = currentDocumentation(surfaces, `${surface.href}guides/installation/`)
       expect(selected.surface.id).toBe(surface.id)
       expect(selected.section.id).toBe('guides')
@@ -37,21 +38,33 @@ describe('documentation surface navigation', () => {
     for (const port of PORTS.filter((entry) => entry.parentLibrary)) {
       const surfaces = buildDocumentationSurfaces(port.slug, 'latest', menus(port, 'latest'))
       expect(surfaces.map((surface) => surface.id)).toEqual(['core'])
-      expect(surfaces[0].sections.find((section) => section.id === 'tutorials')?.href).toBeUndefined()
-      expect(surfaces[0].sections.find((section) => section.id === 'topics')?.href).toBeUndefined()
+      expect(surfaces[0].sections.map((section) => section.id)).not.toContain('tutorials')
+      expect(surfaces[0].sections.map((section) => section.id)).not.toContain('topics')
     }
   })
 
-  it('keeps Lua app availability separate from usable documentation', () => {
+  it('omits unavailable Lua apps even when their availability pages exist', () => {
     const port = PORTS.find((entry) => entry.slug === 'lua')!
     const surfaces = buildDocumentationSurfaces('lua', 'latest', { core: [],
       mcp: [link('Availability', portPageUrl(port, 'latest', 'mcp'))],
       workspace: [link('Availability', portPageUrl(port, 'latest', 'workspace'))],
     })
-    for (const surface of surfaces.filter((entry) => entry.id !== 'core')) {
-      expect(surface.unavailable).toBe(true)
-      expect(surface.sections.map((section) => section.id)).toEqual(['home'])
-    }
+    expect(surfaces.map((surface) => surface.id)).toEqual(['core'])
+  })
+
+  it('offers a section when a real child exists, without requiring an overview or adding empty sections', () => {
+    const surfaces = buildDocumentationSurfaces('dotnet', 'latest', { core: [
+      link('First session', '/dotnet/latest/tutorials/first-session/'),
+      link('Installation', '/dotnet/latest/guides/installation/'),
+    ] })
+    const core = surfaces.find((surface) => surface.id === 'core')!
+    expect(core.sections.map((section) => [section.id, section.href])).toEqual([
+      ['home', '/dotnet/latest/'],
+      ['guides', '/dotnet/latest/guides/installation/'],
+      ['tutorials', '/dotnet/latest/tutorials/first-session/'],
+      ['reference', '/dotnet/latest/reference/'],
+    ])
+    expect(core.sections[0].items.map((item) => item.label)).toEqual(['Overview', 'Guides', 'Tutorials', 'Reference'])
   })
 
   it('separates CLI and protocol references from the language API', () => {

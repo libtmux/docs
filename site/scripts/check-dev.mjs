@@ -39,12 +39,12 @@ process.on('exit', () => rmSync(mirror, { recursive: true, force: true }))
 const root = join(mirror, 'site')
 mkdirSync(root)
 cpSync(join(source, 'src'), join(root, 'src'), { recursive: true })
-writeFileSync(join(root, 'src/content/docs/sidebar-free-layout.md'), `---
-title: Empty table of contents
-description: A reading page without section headings.
+writeFileSync(join(root, 'src/pages/sidebar-free-layout.astro'), `---
+import DocsLayout from '../layouts/DocsLayout.astro'
 ---
-
-This article has no sections, so its content should fill the available column.
+<DocsLayout title="Empty table of contents" description="A reading page without section headings." pagePath="sidebar-free-layout">
+  <p>This article has no sections, so its content should fill the available column.</p>
+</DocsLayout>
 `)
 for (const file of ['astro.config.ts', 'ec.config.mjs', 'package.json', 'tsconfig.json']) cpSync(join(source, file), join(root, file))
 for (const file of ['public', 'node_modules']) symlinkSync(join(source, file), join(root, file), 'dir')

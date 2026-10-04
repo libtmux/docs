@@ -18,9 +18,14 @@
  * showing it twice is better than a dismiss button that silently does
  * nothing.
  */
+interface Props {
+  /** Match the root landing page's centered content column. */
+  centered?: boolean
+}
+const { centered = false } = Astro.props
 ---
 
-<div class="prerelease-notice" data-prerelease-notice>
+<div class:list={['prerelease-notice', { 'prerelease-notice--centered': centered }]} data-prerelease-notice>
   <div class="prerelease-notice__inner">
     <p class="prerelease-notice__text">
       <strong class="prerelease-notice__badge">Prerelease</strong>

@@ -180,7 +180,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it.each(PORTS.filter((port) => !port.parentLibrary).map((port) => port.slug))('%s exposes products from latest homes and core navigation', async (port) => {
+  it.each(PORTS.filter((port) => !port.parentLibrary).map((port) => port.slug))('%s exposes supported products from latest homes and core navigation', async (port) => {
     for (const section of ['', 'guides/', 'topics/']) {
       const path = `${port}/latest/${section}`
       await inspect(path, (document) => {
@@ -191,12 +191,13 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
             const expected = urlFor(`${port}/latest/${product}/`).pathname
             const link = [...container.querySelectorAll('a[href]')]
               .find((entry) => new URL(entry.getAttribute('href')!, urlFor(path)).pathname === expected)
+            if (!productAvailable(PORTS.find((entry) => entry.slug === port)!, product)) {
+              expect(link, `${path} omits unavailable ${product}`).toBeUndefined()
+              continue
+            }
             expect(link, `${path} links to ${expected}`).toBeDefined()
             const label = section ? link!.closest('[data-surface-group]')!.textContent : link!.textContent
             expect(label, `${path} product label`).toContain(product === 'workspace' ? 'Workspace Manager' : 'MCP')
-            if (!productAvailable(PORTS.find((entry) => entry.slug === port)!, product)) {
-              expect(label, `${path} unavailable product label`).toMatch(/not available/i)
-            }
             expect(resolves(link!.getAttribute('href')!, urlFor(path).href), `${path} resolves ${expected}`).toBe(true)
           }
         }
@@ -240,8 +241,9 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       })
     }
     await inspect('lua/latest/', (document) => {
-      for (const label of ['MCP (not available)', 'Workspace Manager (not available)']) {
-        expect(document.querySelector('main')!.textContent, `Lua landing ${label}`).toContain(label)
+      for (const product of products) {
+        expect(document.querySelector(`main a[href="${urlFor(`lua/latest/${product}/`).pathname}"]`),
+          `Lua landing omits unavailable ${product}`).toBeNull()
       }
     })
   })
@@ -327,10 +329,24 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   it.each(PORTS.filter((port) => !port.parentLibrary))('$name distinguishes unfinished products and groups workspace internals', async (port) => {
     for (const page of pages().filter((entry) => entry.port === port.slug)) await inspect(page.path, (document) => {
       if (productInDevelopment(port, page.product)) developmentStatus(document, page.path)
+      const picker = document.querySelector('[data-surface-picker]')
+      if (!productAvailable(port, page.product)) {
+        expect(document.querySelector('article')!.textContent, `${page.path} availability`).toMatch(/not published|no published/i)
+        expect(picker?.querySelector('.surface-current strong')?.textContent, `${page.path} available app`).toBe('Core Library')
+        expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} available section`).toBe('Home')
+        const current = picker?.querySelectorAll('[aria-current="location"]')
+        expect(current, `${page.path} one available destination`).toHaveLength(1)
+        expect(current![0].getAttribute('href'), `${page.path} core overview`).toBe(urlFor(`${page.port}/${page.version}/`).pathname)
+        expect(resolves(current![0].getAttribute('href')!), `${page.path} core overview exists`).toBe(true)
+        const unavailable = urlFor(`${page.port}/${page.version}/${page.product}/`).pathname
+        const navigation = document.querySelectorAll('[data-surface-picker] a[href], [data-section-navigation] a[href], .doc-card[href]')
+        expect([...navigation].some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname.startsWith(unavailable)),
+          `${page.path} unavailable product omitted from navigation`).toBe(false)
+        return
+      }
       const surface = page.product === 'mcp' ? 'MCP' : 'Workspace Manager'
       const section = page.section.split('/')[0] || 'home'
       const sectionLabel = section[0].toUpperCase() + section.slice(1)
-      const picker = document.querySelector('[data-surface-picker]')
       expect(picker?.querySelector('.surface-current strong')?.textContent, `${page.path} current app`).toBe(surface)
       expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} current section`).toBe(sectionLabel)
       const current = picker?.querySelectorAll('[aria-current="location"]')
@@ -372,9 +388,6 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       if (page.product === 'workspace' && page.port !== 'ruby' && productAvailable(port, 'workspace')) {
         expect([...picker!.querySelectorAll('a[href]')].some((link) => link.getAttribute('href') === urlFor(`${page.port}/${page.version}/workspace/internals/`).pathname),
           `${page.path} Internals remains reachable in the picker`).toBe(true)
-      }
-      if (!productAvailable(port, page.product)) {
-        expect(document.querySelector('article')!.textContent, `${page.path} availability`).toMatch(/not published|no published/i)
       }
       if (page.product === 'workspace' && productInDevelopment(port, 'workspace') && !page.section) {
         const status = [...document.querySelectorAll('[role="note"]')]

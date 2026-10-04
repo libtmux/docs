@@ -268,7 +268,7 @@ const githubUrl = githubPort?.source && githubPort.repo === githubRepo
     {/* Under the header and inside the same `bare` guard: a page without the
         top bar is an embedded or vendored one, and a notice about this site's
         stability has no business appearing there. */}
-    {!bare && <PrereleaseNotice />}
+    {!bare && <PrereleaseNotice centered={!navPort && !pagePath} />}
     <slot name="context" />
     <!-- `data-pagefind-body` scopes the index to the page's own content.
          Without it Pagefind indexed the header and footer on all 1,066
