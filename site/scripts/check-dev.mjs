@@ -673,8 +673,9 @@ try {
           headerHeight: document.querySelector('.site-header__bar').getBoundingClientRect().height,
           badgeForeground: getComputedStyle(document.querySelector('.prerelease-notice__badge')).color,
           schemeLabelWidth: document.querySelector('.scheme-switch__label').getBoundingClientRect().width,
-          headerControls: ['.site-header__search', '.scheme-switch', '.site-header__menu-button'].map((selector) => {
-            const { top, height } = document.querySelector(selector).getBoundingClientRect()
+          headerControls: ['.site-header__search', '.scheme-switch, .scheme-cycle', '.site-header__menu-button'].map((selector) => {
+            const control = [...document.querySelectorAll(selector)].find((node) => node.checkVisibility())
+            const { top, height } = control.getBoundingClientRect()
             return { top, height }
           }),
           redundantHeaderLinks: document.querySelectorAll('.site-header__wide-link').length,
