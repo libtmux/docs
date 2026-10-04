@@ -1,0 +1,18 @@
+{
+  "name": "Kotlin",
+  "asset": "icon.svg",
+  "sourceUrl": "https://kotlinlang.org/assets/images/favicon.svg",
+  "resolvedUrl": "https://kotlinlang.org/assets/images/favicon.svg",
+  "sourcePage": "https://kotlinlang.org/docs/kotlin-brand-assets.html",
+  "retrievedAt": "2026-10-04T14:52:42+00:00",
+  "sha256": "275ff90601e51cb193ced27b025a62772bb04d563bf1d6a4bc5ec484da195b79",
+  "copyright": "Kotlin brand assets are governed by the Kotlin Foundation guidelines, which also preserve JetBrains copyrights. The supplied SVG contains no separate copyright notice or year.",
+  "license": {
+    "name": "Kotlin Foundation icon-use terms",
+    "urls": [
+      "https://kotlinfoundation.org/guidelines/"
+    ],
+    "notes": "The icon terms permit identifying Kotlin alongside other programming-language icons. This is the icon, not the wordmark or Kodee mascot. Do not imply Foundation endorsement or use it as the libtmux product icon."
+  },
+  "modifications": "None. The downloaded SVG bytes are preserved."
+}
