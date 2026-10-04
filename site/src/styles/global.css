@@ -371,6 +371,19 @@ html[data-theme-mode="dark"] {
   margin-block-start: 1.5rem;
 }
 
+/*
+ * WRITING.md holds examples to 80 columns. Below the width where 80 fit at
+ * the default size, shrink the code font, to the homepage's floor, until 80
+ * fit beside the copy button's gutter: 4.0625rem is the line's inline
+ * padding and the frame's border.
+ */
+.prose .expressive-code {
+  container-type: inline-size;
+}
+.prose .expressive-code .frame {
+  --ec-codeFontSize: clamp(0.8125rem, calc((100cqi - 4.0625rem) / (80 * 0.6)), 0.875rem);
+}
+
 /* Preserve literal tabs while keeping compact indentation. */
 .expressive-code .code {
   tab-size: 2;
