@@ -418,7 +418,7 @@
       "files": [
         {
           "name": "connect.lua",
-          "sha256": "4941e3f804521ec54e8692d83f6f3f22a0badb56affe4c24232ea28973fed2d6"
+          "sha256": "7ba7e904fce0a90788b82b515ca5f3a636ec59aae05c31e0cdea3e39ffc84dfd"
         },
         {
           "name": "run.sh",
