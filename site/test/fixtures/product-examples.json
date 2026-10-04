@@ -212,7 +212,7 @@
       "files": [
         {
           "name": "main.go",
-          "sha256": "8212bcec780cf5c69da03f90c9621318fc4f54e4f63d1b0147a32618173a60c5"
+          "sha256": "00cb53b40d67d587fe05489117bf84734682c0cd75db4d81782c1d7c9d1d5433"
         },
         {
           "name": "go.mod",
@@ -233,7 +233,7 @@
       "page": "ports/go/workspace/internals/examples",
       "shellRecipe": [
         "mkdir go-workspace-example && cd go-workspace-example",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-go.git && \\\n    git -C libtmux-source fetch --depth=1 origin bb06e26e116e941813ca40bf45e7e3a47d38f52a && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin \\\n      https://github.com/libtmux/libtmux-go.git && \\\n    git -C libtmux-source fetch --depth=1 origin \\\n      bb06e26e116e941813ca40bf45e7e3a47d38f52a && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "go mod tidy",
         "go run ."
       ]
