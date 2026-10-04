@@ -228,7 +228,8 @@ jobs:
     uses: libtmux/docs/.github/workflows/port-docs.yml@<sha>
     with:
       port: rs
-      tag-prefix: libtmux@  # stripped from a release tag; omit when tags are bare
+      # stripped from a release tag; omit when tags are bare
+      tag-prefix: libtmux@
       source-ref: ${{ inputs.source-ref }}
       version: ${{ inputs.version }}
       version-kind: ${{ inputs.version-kind }}
