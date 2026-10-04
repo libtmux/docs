@@ -147,8 +147,10 @@ List<Window> editors = server.windows().stream()
         .toList();
 
 // Selections.exactlyOne() is the `.get()`-shaped call.
-Session build = Selections.exactlyOne(
-        server.sessions().stream().filter(Session_.name().is("build")).toList());
+List<Session> builds = server.sessions().stream()
+        .filter(Session_.name().is("build"))
+        .toList();
+Session build = Selections.exactlyOne(builds);
 ```
 
 ```csharp
