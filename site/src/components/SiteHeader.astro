@@ -50,7 +50,7 @@ const brand = branding(portSlug, pagePath)
         <img src={withRoot(brand.asset('logo.svg'))} width="28" height="28" alt="" data-home-logo-default decoding="sync" />
         {PORTS.map((port) => <img src={withRoot(branding(port.slug).asset('logo.svg'))} width="28" height="28" alt="" data-home-logo={port.slug} decoding="sync" />)}
       </span> : !portSlug && /^tmux(?:\/|$)/.test(pagePath) ? <TmuxLogo size={28} /> : <img src={withRoot(brand.asset('logo.svg'))} width="28" height="28" alt="" aria-hidden="true" />}
-      libtmux
+      <span class="site-header__wordmark">libtmux</span>
     </a>
 
     <slot name="navigation" />

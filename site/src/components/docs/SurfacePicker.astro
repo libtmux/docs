@@ -19,7 +19,9 @@ const artwork = (id: string) => {
 <details class="surface-picker doc-picker" data-surface-picker data-doc-picker data-pagefind-ignore="all">
   <summary aria-label={solutionsOnly ? 'Choose a solution' : `Choose documentation: ${surface.label}, ${section.label}`}>
     {port ? <img class="surface-artwork" src={artwork(surface.id)} width="30" height="30" alt="" /> : <TmuxLogo />}
-    <span class="surface-current"><strong>{solutionsOnly ? 'Choose a solution' : surface.label}</strong>{!solutionsOnly && <small>{section.label}</small>}</span>
+    <span class="surface-current"><strong>{!solutionsOnly && surface.id === 'tmux'
+      ? <><span class="surface-name-full">{surface.label}</span><span class="surface-name-short">tmux</span></>
+      : solutionsOnly ? 'Choose a solution' : surface.label}</strong>{!solutionsOnly && <small>{section.label}</small>}</span>
     <svg class="doc-picker-caret" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
   </summary>
   <div class="surface-panel doc-picker-panel" data-surface-panel data-picker-panel>
@@ -71,6 +73,11 @@ const artwork = (id: string) => {
   .surface-picker > summary { min-height: 2.5rem; padding: .2rem .4rem; }
   .surface-current { min-width: 0; line-height: 1.35; }
   .surface-current strong, .surface-current small { display: block; }
+  .surface-name-short { display: none; }
+  @media (max-width: 24rem) {
+    .surface-name-full { display: none; }
+    .surface-name-short { display: inline; }
+  }
   small { font-size: .6875rem; color: var(--color-muted); }
   .surface-artwork { flex: none; width: 1.875rem; height: 1.875rem; object-fit: contain; }
   .surface-chevron { flex: none; margin-left: auto; color: var(--color-muted); }
