@@ -152,7 +152,7 @@
       "files": [
         {
           "name": "src/main/java/McpExample.java",
-          "sha256": "784f78db838619a9cdbc4507fa0abbabf262fa43f975819519f785275bddc7c8"
+          "sha256": "8728c8529fcd10fc986639368a652e426916be659cacc369eabdb25c20d19171"
         },
         {
           "name": "settings.gradle.kts",
@@ -173,7 +173,7 @@
       ],
       "page": "ports/java/mcp/examples",
       "shellRecipe": [
-        "mkdir java-mcp-example && cd java-mcp-example && \\\n    git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    mkdir -p src/main/java",
+        "mkdir java-mcp-example && cd java-mcp-example && \\\n    git init libtmux-source && \\\n    git -C libtmux-source remote add origin \\\n      https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin \\\n      842228310449e879ebcaa3f910597757c9dbffd6 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    mkdir -p src/main/java",
         "./libtmux-source/gradlew --no-daemon --max-workers=2 -p . installDist",
         "./build/install/mcp-example/bin/mcp-example"
       ]
