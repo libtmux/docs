@@ -1,0 +1,19 @@
+{
+  "name": "C++",
+  "asset": "icon.svg",
+  "sourceUrl": "https://raw.githubusercontent.com/isocpp/logos/64ef037049f87ac74875dbe72695e59118b52186/cpp_logo.svg",
+  "resolvedUrl": "https://raw.githubusercontent.com/isocpp/logos/64ef037049f87ac74875dbe72695e59118b52186/cpp_logo.svg",
+  "sourcePage": "https://github.com/isocpp/logos",
+  "retrievedAt": "2026-10-04T14:52:41+00:00",
+  "sha256": "7a16311bf5df3b6ec7e4f307d8a2ea339fbf8f03b68590a5372e4de72fc587c6",
+  "copyright": "Artwork created by Jeremy Kratz and licensed by the Standard C++ Foundation. The SVG and repository README do not supply a separate artwork copyright notice or year.",
+  "license": {
+    "name": "Standard C++ Foundation logo permission",
+    "urls": [
+      "https://isocpp.org/home/terms-of-use"
+    ],
+    "notes": "Use the unaltered logo for material related to standardized C++, without implying affiliation or endorsement. Keep it separate from the libtmux identity."
+  },
+  "modifications": "None. The downloaded SVG bytes are preserved.",
+  "upstreamRevision": "64ef037049f87ac74875dbe72695e59118b52186"
+}
