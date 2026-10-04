@@ -29,7 +29,8 @@ Use an empty directory on Linux with Git, tmux 3.2a or newer, and .NET SDK 10.0.
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(Example).fs" />
-    <ProjectReference Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
+    <ProjectReference
+      Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
   </ItemGroup>
 </Project>
 ```
@@ -60,7 +61,8 @@ trap 'exit 1' HUP INT TERM
 
 unset TMUX TMUX_PANE
 export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
+"$binary" -S "$socket" -f /dev/null \
+    new-session -d -s work-one -n editor /bin/cat
 "$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
 "$@"
 "$binary" -S "$socket" has-session -t '=work-one'
@@ -96,8 +98,14 @@ let run () = task {
         ServerConnectionOptions(SocketPath = socket), token)
     let! captured = server |> Server.capture token SnapshotDepth.Panes
     let sessions = captured.Sessions
-    let windows = sessions |> Seq.collect (fun session -> session.Windows) |> Seq.toList
-    let panes = windows |> Seq.collect (fun window -> window.Panes) |> Seq.toList
+    let windows =
+        sessions
+        |> Seq.collect (fun session -> session.Windows)
+        |> Seq.toList
+    let panes =
+        windows
+        |> Seq.collect (fun window -> window.Panes)
+        |> Seq.toList
     if sessions.Count <> 2 || windows.Length <> 2 || panes.Length <> 2 then
         failwith "Unexpected hierarchy"
     for session in sessions do
@@ -117,7 +125,8 @@ let main _ =
 
 ```console
 $ dotnet build Query.fsproj --maxcpucount:1 -p:Example=Hierarchy \
-  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath="$PWD/.packages" &&
+    -p:DisableImplicitLibraryPacksFolder=true \
+    -p:RestorePackagesPath="$PWD/.packages" &&
   sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Hierarchy
 ```
 
@@ -149,14 +158,16 @@ let run () = task {
     let! server = LibTmux.Server.ConnectAsync(
         ServerConnectionOptions(SocketPath = socket), token)
     let! captured = server |> Server.capture token SnapshotDepth.Windows
-    let session = captured.Sessions |> Seq.find (fun session -> session.Name = "work-one")
+    let session = captured.Sessions |> Seq.find (fun s -> s.Name = "work-one")
     let before = session.Windows[0]
     let! after = before.RenameAsync("renamed", token)
-    if before.Name <> "editor" || after.Name <> "renamed" then failwith "Unexpected rename state"
+    if before.Name <> "editor" || after.Name <> "renamed" then
+        failwith "Unexpected rename state"
     let! refreshed = server |> Server.capture token SnapshotDepth.Windows
     let session = refreshed.Sessions |> Seq.find (fun s -> s.Name = "work-one")
     let window = session.Windows[0]
-    if window.Name <> "renamed" then failwith "Fresh read did not see the rename"
+    if window.Name <> "renamed" then
+        failwith "Fresh read did not see the rename"
     printfn "%s -> %s" before.Name window.Name
 }
 
@@ -172,7 +183,8 @@ let main _ =
 
 ```console
 $ dotnet build Query.fsproj --maxcpucount:1 -p:Example=Refresh \
-  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath="$PWD/.packages" &&
+    -p:DisableImplicitLibraryPacksFolder=true \
+    -p:RestorePackagesPath="$PWD/.packages" &&
   sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Refresh
 ```
 

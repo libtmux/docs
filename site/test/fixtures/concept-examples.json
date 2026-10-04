@@ -448,25 +448,25 @@
       "files": [
         {
           "name": "Query.fsproj",
-          "sha256": "cede2d70f84c645ef1e609e648d1794abdd8d96fb8f0f957a274d11ea2aec212"
+          "sha256": "49978bf3f6e23f7d93cebd7be496f1210a8b6ae507a4a72c72fa5dc185087309"
         },
         {
           "name": "run.sh",
-          "sha256": "dacfb3ef36d757bb66b1c97bacc575348e2466866dee63d53b95895932f8e40b"
+          "sha256": "539612132bce53a3340847989cdb414e4661d5285ff9ea7ba1da2de53c7f4d51"
         },
         {
           "name": "Hierarchy.fs",
-          "sha256": "1b2b94d47c06e1f2ce86e46b3d55eb0576414e2f2e59d8d0328e94e206506046"
+          "sha256": "2ac5c1ec73d5530ebf97f2c2585d73caa74e2ec857667dde339fc2951e9023e3"
         },
         {
           "name": "Refresh.fs",
-          "sha256": "55e801b201571844a295b9b6f002632d0b34c45212773e998d251ac4fc4eaedf"
+          "sha256": "e73567aeb196e14d34a55c0cceef57893a2610aea3966243abfaea98bde85159"
         }
       ],
       "shellRecipe": [
         "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Hierarchy \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Hierarchy",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Refresh \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Refresh"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Hierarchy \\\n    -p:DisableImplicitLibraryPacksFolder=true \\\n    -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Hierarchy",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Refresh \\\n    -p:DisableImplicitLibraryPacksFolder=true \\\n    -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Refresh"
       ],
       "expectedOutputs": [
         [],
