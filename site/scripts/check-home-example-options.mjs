@@ -76,19 +76,6 @@ export async function checkHomeExampleOptions(browser, base) {
       await page.waitForSelector('[data-task-enhanced]:not([hidden])')
       await check(false, false)
 
-      await page.goto(`${base}/?port=rs&errors=1&cleanup=0#first`)
-      await page.waitForSelector('[data-task-enhanced]:not([hidden])')
-      await page.evaluate(() => { location.hash = 'second' })
-      await errors.uncheck()
-      await cleanup.check()
-      await check(false, true)
-      await page.goBack()
-      await page.waitForFunction(() => location.hash === '#first')
-      await check(true, false)
-      await page.goForward()
-      await page.waitForFunction(() => location.hash === '#second')
-      await check(false, true)
-
       const transition = async (navigate) => {
         await page.evaluate(() => {
           window.__homeOptionsPageLoaded = false
@@ -99,6 +86,20 @@ export async function checkHomeExampleOptions(browser, base) {
         await navigate()
         await page.waitForFunction(() => window.__homeOptionsPageLoaded)
       }
+      await page.goto(`${base}/?port=rs&errors=1&cleanup=0#first`)
+      await page.waitForSelector('[data-task-enhanced]:not([hidden])')
+      await page.evaluate(() => { location.hash = 'second' })
+      await errors.uncheck()
+      await cleanup.check()
+      await check(false, true)
+      await page.goBack()
+      await page.waitForFunction(() => location.hash === '#first')
+      await check(true, false)
+      // Query restoration is synchronous; the router's page swap is not.
+      await transition(() => page.goForward())
+      await page.waitForFunction(() => location.hash === '#second')
+      await check(false, true)
+
       const documentation = `${base}/tmux/?from=doc#start`
       await page.goto(documentation)
       // The incoming default panel is visible before scripts restore the port.

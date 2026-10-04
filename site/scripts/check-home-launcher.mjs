@@ -209,7 +209,15 @@ export async function checkHomeLauncher(browser, base) {
       && document.querySelector('.lm-agent-prompt [data-select="topic"]')?.value === 'setup')
     assert.equal(new URL(page.url()).hash, '#first', 'Back restores the matching language and task')
     await checkHomeLanguageIcon(page, 'fsharp')
+    // The popstate handlers restore choices before Astro swaps this page.
+    await page.evaluate(() => {
+      window.__homeNavigationComplete = false
+      document.addEventListener('astro:page-load', () => {
+        window.__homeNavigationComplete = true
+      }, { once: true })
+    })
     await page.goForward()
+    await page.waitForFunction(() => window.__homeNavigationComplete)
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'go'
       && document.querySelector('.lm-agent-prompt [data-select="topic"]')?.value === 'session-switcher')
     assert.equal(new URL(page.url()).hash, '#second', 'Forward restores the matching language and task')
