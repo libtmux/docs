@@ -39,7 +39,7 @@
       "files": [
         {
           "name": "mcp.ts",
-          "sha256": "982f01a2d52160b6fbc0ed982c98542c4c8341022c1dac9da10809083a1124f7"
+          "sha256": "417db454b49ea128e354223edb9d7e26ffd592051b1513238e7066612b7edcf1"
         },
         {
           "name": "package.json",
@@ -56,7 +56,7 @@
       "page": "ports/ts/mcp/examples",
       "shellRecipe": [
         "mkdir mcp-example && cd mcp-example",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-ts.git && \\\n    git -C libtmux-source fetch --depth 1 origin 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
+        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin \\\n      https://github.com/libtmux/libtmux-ts.git && \\\n    git -C libtmux-source fetch --depth 1 origin \\\n      3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "bun install --production",
         "bun run mcp.ts"
       ]
