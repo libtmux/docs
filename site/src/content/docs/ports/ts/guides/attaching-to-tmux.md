@@ -30,7 +30,9 @@ the example.
 import { Server } from "libtmux";
 
 const socketPath = process.env.LIBTMUX_SOCKET_PATH;
-if (!socketPath) throw new Error("Set LIBTMUX_SOCKET_PATH to an existing socket");
+if (!socketPath) {
+  throw new Error("Set LIBTMUX_SOCKET_PATH to an existing socket");
+}
 const server = new Server({ socketPath, timeoutMs: 5_000 });
 const snapshot = await server.snapshot({ signal: AbortSignal.timeout(5_000) });
 const session = snapshot.sessions.one({ name: "work" });
