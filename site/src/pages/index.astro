@@ -224,7 +224,7 @@ const homeEntries = PORTS.map((port) => ({
   noindex={noindexLanding}
   searchable={!Astro.props.preview}
   pageSource={landingEntry?.filePath ? { repo: CONTRIBUTE_REPO, path: repoPath(landingEntry.filePath), ref: CONTRIBUTE_BRANCH } : undefined}
-  markdown={landingEntry ? 'source' : 'rendered'}
+  markdown={landingEntry && !Astro.props.preview ? 'source' : 'rendered'}
 >
   {!LandingContent && <HomeLauncher slot="header-navigation" entries={homeEntries} solutions={homeSolutions} locale={locale} />}
   {LandingContent ? (
