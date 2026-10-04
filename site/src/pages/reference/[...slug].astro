@@ -428,7 +428,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
           <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
             <path stroke-linecap="round" d="M2 4h12M2 8h12M2 12h8" />
           </svg>
-          {PORT_NAME[model.port] ?? model.port} API contents
+          <span class="sr-only">{PORT_NAME[model.port] ?? model.port} API contents</span>
         </button>
   </DocumentationContext>}
   <!-- Flush: the tree's column runs from the header to the footer against the
