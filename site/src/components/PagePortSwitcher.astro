@@ -58,7 +58,9 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
         data-match="just tmux cli terminal manual commands guides topics reference"
         aria-current={tmux ? 'location' : undefined}>
         <TmuxLogo size={26} /><span>tmux CLI</span>
-        {tmux && <span class="doc-picker-check" aria-hidden="true">✓</span>}
+        <span class="tmux-destination" aria-hidden="true">
+          {tmux && <span class="doc-picker-check">✓</span>}<span>→</span>
+        </span>
       </a>
     </section>
     <p class="doc-picker-empty" data-picker-empty hidden>No matching ports.</p>
@@ -71,4 +73,5 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
   .port-family h3 { margin: .75rem .4rem .25rem; font-size: .6875rem; font-weight: 400; text-transform: uppercase; letter-spacing: .025em; color: var(--color-muted); }
   .port-artwork { flex: none; width: 1.625rem; height: 1.625rem; object-fit: contain; }
   .tmux-area { margin-top: .75rem; padding-top: .5rem; border-top: 1px solid var(--color-edge); }
+  .tmux-destination { display: inline-flex; align-items: center; gap: .5rem; margin-left: auto; }
 </style>
