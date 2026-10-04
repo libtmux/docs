@@ -165,8 +165,9 @@ IReadOnlyList<Session> matched = sessions.Matching<Session>(
 ```
 
 ```cpp
-// A filter is a value built from typed fields; `window::active.starts_with(...)`
-// would not compile: a flag has no string operations.
+// A filter is a value built from typed fields;
+// `window::active.starts_with(...)` would not compile: a flag has no
+// string operations.
 const auto interesting =
     libtmux::window::name.starts_with("e") || libtmux::window::name == "logs";
 
