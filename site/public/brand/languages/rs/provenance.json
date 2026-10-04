@@ -1,0 +1,19 @@
+{
+  "name": "Rust",
+  "asset": "icon.svg",
+  "sourceUrl": "https://rust-lang.org/static/images/favicon.svg",
+  "resolvedUrl": "https://rust-lang.org/static/images/favicon.svg",
+  "sourcePage": "https://rust-lang.org/",
+  "retrievedAt": "2026-10-04T14:52:41+00:00",
+  "sha256": "044be39144ab304cf9ea0e9014c3f476e0c5194c62aa525b3669caf5db5ac088",
+  "copyright": "The Rust Foundation owns the Rust and Cargo logos. The supplied SVG contains no copyright year.",
+  "license": {
+    "name": "CC-BY-4.0 with Rust trademark policy",
+    "urls": [
+      "https://creativecommons.org/licenses/by/4.0/",
+      "https://rustfoundation.org/policy/rust-trademark-policy/"
+    ],
+    "notes": "Credit the Rust Foundation, link CC BY 4.0, and disclose modifications. The unmodified mark identifies Rust in documentation; it does not indicate endorsement. The upstream SVG includes its own dark color-scheme rendering."
+  },
+  "modifications": "None. The downloaded SVG bytes are preserved."
+}
