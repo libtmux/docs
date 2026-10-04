@@ -172,6 +172,9 @@ node scripts/check-source-links.mjs
 step 'unit tests'
 LIBTMUX_DOCS_TEST_SOURCE_ONLY=1 pnpm run --recursive --if-present test
 
+step 'format'
+pnpm run format:check
+
 step 'lint'
 pnpm run lint
 

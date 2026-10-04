@@ -86,6 +86,7 @@ try {
       : ['packages/api-model', 'packages/theme', 'site'].map((directory) => tests(directory))
   if (loop !== 'inner')
     checks.push(
+      pnpm('run', 'format:check'),
       pnpm('run', '--recursive', 'lint'),
       pnpm('exec', 'oxlint', 'scripts'),
       node('scripts/check-api-links.mjs'),
