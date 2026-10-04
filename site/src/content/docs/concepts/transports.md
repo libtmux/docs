@@ -250,7 +250,8 @@ using LibTmux;
 
 // One-shot: every call underneath this handle spawns a `tmux` process.
 Server server = await Server.ConnectAsync();
-Session session = await server.CreateSessionAsync(new NewSessionRequest(name: "work"));
+NewSessionRequest request = new(name: "work");
+Session session = await server.CreateSessionAsync(request);
 Window window = (await session.GetWindowsAsync())[0];
 Pane pane = (await window.GetPanesAsync())[0];
 
