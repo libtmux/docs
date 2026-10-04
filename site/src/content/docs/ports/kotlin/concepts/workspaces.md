@@ -74,7 +74,8 @@ trap 'exit 1' HUP INT TERM
 
 unset TMUX TMUX_PANE
 export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
+"$binary" -S "$socket" -f /dev/null \
+    new-session -d -s work-one -n editor /bin/cat
 "$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
 "$@"
 "$binary" -S "$socket" has-session -t '=work-one'
@@ -115,7 +116,11 @@ fun main() = runBlocking {
         val window = session.newWindow(io.github.libtmux.WindowSpec.builder()
             .named("tools").running("/bin/cat").build())
         val original = window.panes.single()
-        original.split(io.github.libtmux.SplitSpec.builder().toRight().running("/bin/cat").build())
+        val right = io.github.libtmux.SplitSpec.builder()
+            .toRight()
+            .running("/bin/cat")
+            .build()
+        original.split(right)
         window.selectLayout(io.github.libtmux.Layout.EVEN_HORIZONTAL)
         val refreshed = server.sessions().single { it.name == "work-one" }
         val tools = refreshed.windows.single { it.name == "tools" }
@@ -168,7 +173,8 @@ fun main() = runBlocking {
         val first = ensureTools()
         val second = ensureTools()
         check(first.id == second.id)
-        check(server.sessions().single { it.name == "work-one" }.windows.size == 2)
+        val one = server.sessions().single { it.name == "work-one" }
+        check(one.windows.size == 2)
         println("one tools window after two calls")
     }
 }
