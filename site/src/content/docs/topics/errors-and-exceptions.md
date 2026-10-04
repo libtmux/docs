@@ -208,7 +208,8 @@ try
 {
     await session.CreateWindowAsync(new NewWindowRequest(name: "build"));
 }
-catch (LibTmuxException error) when (error.Dispatch == TmuxDispatchState.NotDispatched)
+catch (LibTmuxException error)
+    when (error.Dispatch == TmuxDispatchState.NotDispatched)
 {
     // safe to retry
 }
@@ -216,7 +217,8 @@ catch (LibTmuxException error) when (error.Dispatch == TmuxDispatchState.NotDisp
 
 ```cpp
 auto result = session.new_window({.name = "build"});
-if (!result.has_value() && result.error().delivery == libtmux::DeliveryStatus::not_started) {
+constexpr auto retryable = libtmux::DeliveryStatus::not_started;
+if (!result.has_value() && result.error().delivery == retryable) {
   // safe to retry
 }
 ```
