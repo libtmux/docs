@@ -86,6 +86,7 @@
       "files": [
         {
           "name": "main.rs",
+          "path": "src/main.rs",
           "sha256": "3303baed2644ed87b94cd3da01645a082e2888571ea428b0b54a306fc60e3271"
         },
         {
