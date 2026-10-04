@@ -140,7 +140,7 @@
       "page": "ports/swift/mcp/guides",
       "shellRecipe": [
         "mkdir swift-mcp-client && cd swift-mcp-client",
-        "git init libtmux-source && \\\n  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD && \\\n  swift build --package-path libtmux-source --product libtmux-mcp --jobs 2",
+        "git init libtmux-source && \\\n  git -C libtmux-source remote add origin \\\n    https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin \\\n    254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD && \\\n  swift build --package-path libtmux-source --product libtmux-mcp --jobs 2",
         "sh run-mcp.sh"
       ]
     },
