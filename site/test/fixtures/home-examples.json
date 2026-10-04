@@ -1,0 +1,520 @@
+{
+  "examples": [
+    {
+      "port": "py",
+      "page": "home",
+      "sourceRepository": "tmux-python/libtmux",
+      "sourceRevision": "9fdd083a8181a827889337b63cd4e6daea661a8c",
+      "sourceTree": "e96d4764638e6fcec75029a82bd11ecc638772f5",
+      "files": [
+        {
+          "name": "quickstart.py",
+          "sha256": "d6522fdf01a9995875c90c4a1a8060c4137352ab7800a93b6411963ada3e3a27",
+          "clipboardSha256": "b6cbec0ee5aef503611f1b69ef71d167a5c00d6aa44333c0f4ff327b1278007c"
+        }
+      ],
+      "shellRecipe": [
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/tmux-python/libtmux.git \\\n  9fdd083a8181a827889337b63cd4e6daea661a8c\ngit -C source checkout -q --detach FETCH_HEAD\nuv venv .venv\nuv pip install --python .venv/bin/python ./source",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\n.venv/bin/python quickstart.py"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "Hello world"
+        ]
+      ],
+      "excerptSha256": "4ed085233b07406645834a128fb636bc5e4129f0b78af2df8db8930c882be86f",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ]
+    },
+    {
+      "port": "ruby",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceTree": "61f4a53afc47b42ac9dbffcca05f704599e11d35",
+      "files": [
+        {
+          "name": "quickstart.rb",
+          "sha256": "e9c8f47ee9e35780d9ce7857894758ebff539a265344181fc7e0b99f20324ed8",
+          "clipboardSha256": "3aec79748fcc47cd20995e67ca00a93b0c6c318aa995b6ed8864ad77f886b540"
+        },
+        {
+          "name": "Gemfile",
+          "sha256": "5d2222a5c0820dbcae11867dcd9678440e8ddfbc49eb7db9fe7bdb9366dac019",
+          "clipboardSha256": "0304eb8570960bb3f198032b4ef806e1cd690a72a136ec617bb7b2023d200e9e"
+        },
+        {
+          "name": "Gemfile.lock",
+          "sha256": "ae6b8472c320b8eafede9c07daa10e1f4132a501f116ccdfd694c2a95fda2c31",
+          "clipboardSha256": "309689fd2e789e91b0d1a25b287d3d4a65cb2d7337ceb38ef6ef0a0db9f57717"
+        }
+      ],
+      "shellRecipe": [
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-ruby.git \\\n  9b1545562a112353c2c893a1d3e8c0d9b4b51f8d\ngit -C source checkout -q --detach FETCH_HEAD\nbundle config set --local path vendor/bundle\nbundle install --jobs 2",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\nbundle exec ruby quickstart.rb"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "main: %0",
+          "logs: %1, %2"
+        ]
+      ],
+      "excerptSha256": "3aec79748fcc47cd20995e67ca00a93b0c6c318aa995b6ed8864ad77f886b540",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ]
+    },
+    {
+      "port": "lua",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-lua",
+      "sourceRevision": "0395620d362ef75c74cd488f9577afda68922586",
+      "sourceTree": "ce8ac2d6cbc167566b6a9d92e9fc52eb3b4092ba",
+      "files": [
+        {
+          "name": "quickstart.lua",
+          "sha256": "47f52d2ea517af5f05d15f91171b214ce251e049dcbe2ba95a59323a075d9bfd",
+          "clipboardSha256": "3ada23e3798cc4511870831228d2af7fe88d22e3c92d9ff5094ed125e8760282"
+        },
+        {
+          "name": "run.sh",
+          "sha256": "d11e8fe41d66e134b1a4e4c533d1757b572f6352eac14ed04d177cd5c035513c",
+          "clipboardSha256": "b6dbf9c892c337b97b91a7e8dcbb12b770e452701ec52896dff883b609c5fb78"
+        }
+      ],
+      "shellRecipe": [
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-lua.git \\\n  0395620d362ef75c74cd488f9577afda68922586\ngit -C source checkout -q --detach FETCH_HEAD\nluarocks --tree .rocks install luv 1.52.1-0\n(cd source && luarocks --tree ../.rocks make \\\n  rockspecs/libtmux-scm-1.rockspec)",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\neval \"$(luarocks --tree .rocks path)\"\nsh run.sh quickstart.lua"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "$1\t@2\t%3"
+        ]
+      ],
+      "excerptSha256": "6b753b8268b825024243484d1113df2c49720ebd9f4e313fec4284790e356858",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ]
+    },
+    {
+      "port": "ts",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-ts",
+      "sourceRevision": "46cccfef2a546de55ce8b308249b8c76339089a0",
+      "sourceTree": "72aa97efc1e3efc3b8658edd07928b26818869b9",
+      "files": [
+        {
+          "name": "quickstart.ts",
+          "sha256": "1c5315ecf43ef65ffc1a96074c8db5efb2c217d9a7ce54c0f66cb7dae1ce3123",
+          "clipboardSha256": "b22fe15fd9c46688a3f3aaa151d6a626158998b19c609383d9170589873b4b49"
+        },
+        {
+          "name": "package.json",
+          "sha256": "e6d914f254f053adec9ce12fb22aae65c21ab678d0251bd009ea4f063cf56297",
+          "clipboardSha256": "3f09ad4e491a69a688cfbff987db7c288f96188ac0b0def0d1a481d264bd68b4"
+        }
+      ],
+      "shellRecipe": [
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-ts.git \\\n  46cccfef2a546de55ce8b308249b8c76339089a0\ngit -C source checkout -q --detach FETCH_HEAD\nbun install",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\nbun run quickstart.ts"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "hello"
+        ]
+      ],
+      "excerptSha256": "f93a1f699e704a28ef36eb14124e9faefefae9de530db62271bf904e68c5eaae",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ]
+    },
+    {
+      "port": "rs",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceTree": "865aef72a40135bade83eb5d44c0b78ea018a270",
+      "files": [
+        {
+          "name": "src/main.rs",
+          "sha256": "962a370ccf38a47b6551cd0cd93be97385dbc6194c32d8716f902c881fd6dfa9",
+          "clipboardSha256": "24137ea1f0d9cfe5895fb7f4e90dcd5c4ccf84eff8732af5d45a84bb8b00a2ef"
+        },
+        {
+          "name": "Cargo.toml",
+          "sha256": "25770faf80da67fd495e9e7a5d525bcdc055b94cab33549739a5159a01dd037a",
+          "clipboardSha256": "87a03c24caaeb6c8957f624b5465633b4794908ad16719a9d4063cca08168f11"
+        },
+        {
+          "name": "Cargo.lock",
+          "sha256": "891b66eec409ff90621097ed80f476ecd0f8f6907776ce6973465f85373e5a43",
+          "clipboardSha256": "9df8639553925b9a72d291720bf12e747378dc75a9348811d9a47c2acabe3b3a"
+        },
+        {
+          "name": "rust-toolchain.toml",
+          "sha256": "5a9ab08af31a03d83979f8227d2638a8c610e1128a307108fa78f40e37e41c9f",
+          "clipboardSha256": "7ba2c0357ad9c7c21b584d4cd0a002740a350a64362323ed61feb8268435d9c6"
+        }
+      ],
+      "shellRecipe": [
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-rs.git \\\n  a6fc2a65674177b92b17fa380757155d2ba150fd\ngit -C source checkout -q --detach FETCH_HEAD\ncargo build --locked --jobs 2",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\ncargo run --quiet --locked"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "hello"
+        ]
+      ],
+      "excerptSha256": "5956c4a7bc0d5622d11ff2ac9e679a647dcec80c77c585c9a7fdca1fd3514a96",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ]
+    },
+    {
+      "port": "go",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-go",
+      "sourceRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+      "sourceTree": "96e6d6d4f688bf26503e46a541a88d6fce71663c",
+      "files": [
+        {
+          "name": "quickstart.go",
+          "sha256": "425b819505b3cd1d7d49ce49d8e01439f31c1c97ba6aaaae5a482c32e8a24e71",
+          "clipboardSha256": "fed206c98e6905bda2b243e2304705a13e2f47882932daa19a082df265bc03bd"
+        },
+        {
+          "name": "go.mod",
+          "sha256": "c26c608d0f6c9df7d32357b0596e66ee5129f70ddacb6b85208c3c8afb2715bc",
+          "clipboardSha256": "89f4e696c56b6072d58a587880e7bd471cc8d35fd88f0cb61b2132896c88d83a"
+        }
+      ],
+      "shellRecipe": [
+        "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-go.git \\\n  6f3df55f8a41999e41225eefb3940545b834e6a2\ngit -C source checkout -q --detach FETCH_HEAD\ngo build -p 2 -o quickstart quickstart.go",
+        "unset TMUX TMUX_PANE\nexport ENV=/dev/null BASH_ENV=/dev/null SHELL=/bin/sh\n./quickstart"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "libtmux ready"
+        ]
+      ],
+      "excerptSha256": "925331b9b9cc3c058cb268aca663fc6c3f3f476d1e57d984b346e41544e02801",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ]
+    },
+    {
+      "port": "java",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceTree": "342c76ca1ad7257b3655c7a47d7258b486b26975",
+      "files": [
+        {
+          "name": "build.gradle.kts",
+          "sha256": "f3f500e407228401953bceed9654c86a9353c650991c376a7a2d8ee62e6184c7",
+          "clipboardSha256": "78ca5bc35da4ba7a04e60fa5b7303b4a46158c32e2c94c0133cf9e39441e1b3d"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "src/main/java/Main.java",
+          "sha256": "6e6abf77a30071edca1de2754e08d2bc11c3856cce210f61e9f1efdccf4ade67",
+          "clipboardSha256": "5a14ee9155b18905b86f049cee0f03505869bc57d93466f2333875b35e150f51"
+        }
+      ],
+      "shellRecipe": [
+        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach a0ecbc16da00140e2520462d478a2af470878272\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nsh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [
+          "hello from libtmux"
+        ]
+      ],
+      "excerptSha256": "81f36a06765989c2c44d78d81208a8121f304e293984b1075ed7b68ce1da056d",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ]
+    },
+    {
+      "port": "kotlin",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceTree": "342c76ca1ad7257b3655c7a47d7258b486b26975",
+      "files": [
+        {
+          "name": "build.gradle.kts",
+          "sha256": "6fc1e9a705742429f068305926f9c2ecc7f8679a911df956e21a2d07cec05434",
+          "clipboardSha256": "cd331df371e395de0c3cebbc92b8550dc4949f7c281c3c2cedcf57bb325d25c1"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "86d4d5effb8203cba4aee51a2904b60e343598f4dde31b98d3f5837f99560ed2",
+          "clipboardSha256": "beac5d3b44bdc3bf1d83f435ca9169794dc7dc42f685d9feffb509adf7c807a7"
+        },
+        {
+          "name": "gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "src/main/kotlin/Main.kt",
+          "sha256": "58eec16041a1c8d580c8648c1fd6246c34fc9355819930edfb65123cd61c2295",
+          "clipboardSha256": "818e48fb4ddeefc061b00fb855253fcb771f9d6a7df531826679a730559bbb1a"
+        }
+      ],
+      "shellRecipe": [
+        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach a0ecbc16da00140e2520462d478a2af470878272\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=MainKt\nsh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [
+          "ready; exit 3"
+        ]
+      ],
+      "excerptSha256": "e4ca298b1ce89c8277cb4df2f0aaf5ed7e3ba412143c369eed60d4cba196fbd4",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ]
+    },
+    {
+      "port": "scala",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "sourceTree": "342c76ca1ad7257b3655c7a47d7258b486b26975",
+      "files": [
+        {
+          "name": "build.gradle.kts",
+          "sha256": "3a40bd1fad7697618812767784a0971b03184f5b23f811cc0cd3f0c917ff27fb",
+          "clipboardSha256": "557ed4083bb64e48c6f88ac3f5ae819f8e422bc35b5545fb8dd5e62912641cc1"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "bff153085e5944d96e7efc63bc5f8f281013c2d410c05eabb4faf09161d4d806",
+          "clipboardSha256": "510b2e425ae160ae4d4abd9ab911b5d8d6b0e194c518f6c5cb5dfa8501cf4a46"
+        },
+        {
+          "name": "gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1",
+          "clipboardSha256": "f9ea254f100d14a28fae31d29ab8945dce638bcd77ad85c78a1dcfd145f97e30"
+        },
+        {
+          "name": "run.sh",
+          "sha256": "a065d82355d03154745327549e7e5bbcf6987876af5c58626d8e14d9d3dc9cd6",
+          "clipboardSha256": "2798ddb090489b73a969fad354c24afcffe98692071a233a38480cfa2d0f06c8"
+        },
+        {
+          "name": "src/main/scala/Main.scala",
+          "sha256": "30ad3c7cae4f888e1f0fb2d3ad99ae1d9c098a9bd22dfe14498af8c67f871c91",
+          "clipboardSha256": "4c8a1c63c0b562accf1ddebd4e8b741f823cd278805975e18065c9caf8a1f999"
+        }
+      ],
+      "shellRecipe": [
+        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach a0ecbc16da00140e2520462d478a2af470878272\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nsh run.sh build/install/api-example/bin/api-example"
+      ],
+      "expectedOutputs": [
+        [
+          "panes=4; related windows verified"
+        ]
+      ],
+      "excerptSha256": "7a03de8bbdae6d5c91892f12e738676cf5da88c294cd3280873cbcbb5746a684",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ]
+    },
+    {
+      "port": "dotnet",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceTree": "2bed2dca445fd23ad3f627f0c8f8eba76436aeb4",
+      "files": [
+        {
+          "name": "app/Program.cs",
+          "sha256": "a6cdaedb84beee9e5c93fd240e2cab22ed5353701523937399cc50e40519d9b9",
+          "clipboardSha256": "394cbc540d0b762957107da3e672977f927f3719612537fa7ccd9d625a7ae560"
+        },
+        {
+          "name": "app/Example.csproj",
+          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
+          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+        },
+        {
+          "name": "app/global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "app/NuGet.config",
+          "sha256": "e977519a23f7c0ea4961461102d6c78b91828cdc97e5e75d31758bd2bd440eb3",
+          "clipboardSha256": "8787f78945d068677587e2794dfa18753c6043ca88c900201b3a3cadb8c9ee7f"
+        }
+      ],
+      "shellRecipe": [
+        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source\ngit -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef\nexport NUGET_PACKAGES=\"$PWD/packages\"\ncd libtmux-source\ndotnet restore src/LibTmux.FSharp/LibTmux.FSharp.fsproj --locked-mode\ndotnet pack src/LibTmux/LibTmux.csproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ncd ../app\ndotnet restore Example.csproj --configfile NuGet.config\ndotnet build Example.csproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [
+          "hello-from-libtmux"
+        ]
+      ],
+      "excerptSha256": "b54ee9b04c809852fd395cd37143153e1d2f39a58b9b96827191d430fea58e61",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ]
+    },
+    {
+      "port": "fsharp",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceTree": "2bed2dca445fd23ad3f627f0c8f8eba76436aeb4",
+      "files": [
+        {
+          "name": "app/Program.fs",
+          "sha256": "9710f4d220aac36343b3469220db31f9e0c2297a8e800f012040704a84e756ae",
+          "clipboardSha256": "548117b5381266b36933d89f675115fb00b5470eb5aa3c3add27f66a7b33e8bf"
+        },
+        {
+          "name": "app/Example.fsproj",
+          "sha256": "4d7013dc6880249e3a34a104c27d4a85374ccbf5468165f22677fbdf1bfbbeaf",
+          "clipboardSha256": "7e11b837ac061657bb407a4d16a3e44f089272499af7156187d10e0384fc5d0f"
+        },
+        {
+          "name": "app/global.json",
+          "sha256": "e8c147e2003fe0af554dcd34367ae969a9150206b62c17cd86459695023c3bdf",
+          "clipboardSha256": "390e6dddf63a5b602271b9aee34e74676c116fb393ad0c5f36380ed4634a7ee3"
+        },
+        {
+          "name": "app/NuGet.config",
+          "sha256": "e977519a23f7c0ea4961461102d6c78b91828cdc97e5e75d31758bd2bd440eb3",
+          "clipboardSha256": "8787f78945d068677587e2794dfa18753c6043ca88c900201b3a3cadb8c9ee7f"
+        }
+      ],
+      "shellRecipe": [
+        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source\ngit -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef\nexport NUGET_PACKAGES=\"$PWD/packages\"\ncd libtmux-source\ndotnet restore src/LibTmux.FSharp/LibTmux.FSharp.fsproj --locked-mode\ndotnet pack src/LibTmux/LibTmux.csproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ndotnet pack src/LibTmux.FSharp/LibTmux.FSharp.fsproj -c Release --no-restore \\\n  -p:ContinuousIntegrationBuild=true --output artifacts/api-example-packages\ncd ../app\ndotnet restore Example.fsproj --configfile NuGet.config\ndotnet build Example.fsproj -c Release --no-restore --warnaserror\nexport TMUX_TMPDIR=/tmp/libtmux-dotnet-dev\nmkdir -p \"$TMUX_TMPDIR\"\nunset TMUX TMUX_PANE\ndotnet bin/Release/net8.0/Example.dll\ndotnet bin/Release/net10.0/Example.dll"
+      ],
+      "expectedOutputs": [
+        [
+          "other sessions: web, worker",
+          "wait found: true",
+          "run: exit 3, output [\"ok\"]"
+        ]
+      ],
+      "excerptSha256": "dc2f196cbd82c3e5df38057af1b662484b5416eb7c62dd6595cce2364909df53",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ]
+    },
+    {
+      "port": "cxx",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-cxx",
+      "sourceRevision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+      "sourceTree": "f6bc4187d0f44ae265e2937f4a6072572d4c5f58",
+      "files": [
+        {
+          "name": "main.cpp",
+          "sha256": "40447cc4eb3b6f2ca4ba998410c06adb7cb2a88d8adc074185958b82f87b8e01",
+          "clipboardSha256": "52a88b5e096a4e989a8465263dbffdd59cf660884e925b179582dcd803c87042"
+        },
+        {
+          "name": "CMakeLists.txt",
+          "sha256": "9a16cdcfd94e4bee10efe80c7a8bf0d15ad19e69e16ba41f8a8ebb64e52407a8",
+          "clipboardSha256": "6062661992aaec3b018e014c12a1cbcec1518ca856d8a7fc20013542181ef488"
+        },
+        {
+          "name": "run.sh",
+          "sha256": "fd801dde990b42eb5adeed4d61f71e0488fc096fb1fe0340bcfe5fa83c227ddb",
+          "clipboardSha256": "0d8dfd5d2f387ee45add8ab19dc3fda5a413375448226642d99ca57ede971a06"
+        }
+      ],
+      "shellRecipe": [
+        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-cxx.git libtmux-source\ngit -C libtmux-source checkout --detach 3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f\ncmake -S libtmux-source -B library \\\n  -DCMAKE_TOOLCHAIN_FILE=\"$PWD/libtmux-source/cmake/toolchains/clang-libcxx.cmake\" \\\n  -DCMAKE_BUILD_TYPE=Release -DLIBTMUX_BUILD_TESTS=OFF -DLIBTMUX_BUILD_EXAMPLES=OFF \\\n  -DLIBTMUX_BUILD_TESTING_LIBRARY=OFF -DLIBTMUX_CXX_STANDARD=23 \\\n  -DCMAKE_CXX_COMPILER=clang++\ncmake --build library -j 2\ncmake --install library --prefix \"$PWD/prefix\"\ncmake -S . -B build -DCMAKE_PREFIX_PATH=\"$PWD/prefix\" -DCMAKE_CXX_COMPILER=clang++ \\\n  -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_CXX_STANDARD=23\ncmake --build build -j 2\nsh run.sh build/api_example"
+      ],
+      "expectedOutputs": [
+        [
+          "hello from libtmux"
+        ]
+      ],
+      "excerptSha256": "64f5cf13df1f040b7729e747c9c32dac7d3296374d92668aa4d7f64da27e0248",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ]
+    },
+    {
+      "port": "swift",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-swift",
+      "sourceRevision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+      "sourceTree": "2b5161e4fb6850163cdde957602aa75524abe315",
+      "files": [
+        {
+          "name": "Package.swift",
+          "sha256": "6773b0d4d3a8e54266d8ab4d5c9085d8aba18dca8936e42b2bbf798dbd832ad0",
+          "clipboardSha256": "1cd4c6750cf3a06fdf4b6f0e3e7175ec543203e7410bb2dd516147aa43696346"
+        },
+        {
+          "name": "Sources/Main.swift",
+          "sha256": "dfa174fd1ca4dca6a373f982d670ee909d78f30a4baae0b1fff1f6a2d066271d",
+          "clipboardSha256": "9f07415bed4964c5eb7551ddaa8b8679ea65d842ae1d5680582f475a9f371b79"
+        },
+        {
+          "name": "run.sh",
+          "sha256": "ea5848a6a10b130553558503a145127ab9f359e8b2cccce6f10492a4d339109c",
+          "clipboardSha256": "2a78af9a6f8563583d1ef7ca702180e76ef3e9686fafccc7c44bf9e20be29756"
+        }
+      ],
+      "shellRecipe": [
+        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-swift.git libtmux-source\ngit -C libtmux-source checkout --detach 7993e7044347629b08020e9b02ae8bcffa0e5898\nswift build --jobs 2 --product ApiExample\nsh run.sh .build/debug/ApiExample"
+      ],
+      "expectedOutputs": [
+        [
+          "hello from libtmux"
+        ]
+      ],
+      "excerptSha256": "544e919257cad6f5157789713403937ee48beb7d5bb36c546206709b9b06e93b",
+      "tmuxVersions": [
+        "3.2a",
+        "3.7c"
+      ]
+    }
+  ]
+}

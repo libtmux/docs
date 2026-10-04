@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
 import { PORTS } from '../src/lib/ports.ts'
+import HOME_PROOF from '../test/fixtures/home-examples.json' with { type: 'json' }
+import { createHash } from 'node:crypto'
 
 /** Exercise the real homepage, including the prompt controlled by its picker. */
 export async function checkHomeLauncher(browser, base) {
@@ -135,6 +137,25 @@ export async function checkHomeLauncher(browser, base) {
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${theme}/${width}: no page overflow`)
         assert(await language.isVisible() && await solution.isVisible(), `${theme}/${width}: both header pickers visible`)
       }
+    }
+    await choose('rs')
+    await page.setViewportSize({ width: 1093, height: 777 })
+    for (const proof of HOME_PROOF.examples) {
+      await choose(proof.port)
+      const panel = page.locator(`.home-examples > [data-home-language="${proof.port}"]`)
+      const rendered = await panel.evaluate((element) => ({
+        excerpt: element.querySelector(':scope > .expressive-code [data-code]').getAttribute('data-code').replaceAll('\x7f', '\n'),
+        files: [...element.querySelectorAll('[data-home-file]')].map((file) => ({
+          name: file.dataset.homeFile,
+          code: file.querySelector('[data-code]').getAttribute('data-code').replaceAll('\x7f', '\n'),
+        })),
+        commands: [...element.querySelectorAll('[data-home-command] [data-code]')].map((button) => button.getAttribute('data-code').replaceAll('\x7f', '\n')),
+      }))
+      const hash = (text) => createHash('sha256').update(text).digest('hex')
+      assert.equal(hash(rendered.excerpt), proof.excerptSha256, `${proof.port}: exact excerpt copy payload`)
+      assert.deepEqual(rendered.files.map((file) => ({ name: file.name, sha256: hash(file.code) })), proof.files.map((file) => ({ name: file.name, sha256: file.clipboardSha256 })), `${proof.port}: complete native-verified file copy payloads`)
+      assert.deepEqual(rendered.commands, proof.shellRecipe, `${proof.port}: exact setup and run copy payloads`)
+
     }
     await choose('rs')
     const code = page.locator('.home-examples > [data-home-language="rs"] > .expressive-code pre code')
