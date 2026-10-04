@@ -35,7 +35,11 @@ await pane.kill();
 
 ```go
 cmd := "printf 'hello\\n'"
-if err := pane.SendKeys(ctx, tmux.SendKeysRequest{Command: &cmd, Literal: true}); err != nil {
+err := pane.SendKeys(ctx, tmux.SendKeysRequest{
+    Command: &cmd,
+    Literal: true,
+})
+if err != nil {
     return err
 }
 if err := pane.Kill(ctx); err != nil {
