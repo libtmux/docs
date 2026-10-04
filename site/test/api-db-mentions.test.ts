@@ -8,13 +8,15 @@ import mentionIndex from '../src/data/mentions.json'
 vi.mock('../src/db/paths', async (original) => {
   const { fileURLToPath } = await import('node:url')
   return {
-    ...await original<typeof import('../src/db/paths')>(),
+    ...(await original<typeof import('../src/db/paths')>()),
     MODEL_DIR: fileURLToPath(new URL('./fixtures/api/', import.meta.url)),
   }
 })
 
 const temporary: string[] = []
-afterAll(() => { for (const path of temporary) rmSync(path, { recursive: true, force: true }) })
+afterAll(() => {
+  for (const path of temporary) rmSync(path, { recursive: true, force: true })
+})
 
 /**
  * The backlink index: which prose mentions a symbol.
@@ -43,7 +45,9 @@ describe('prose mention index', () => {
       ['swift', 'JSONValue.bool(_:)', '/topics/socket-and-servers/'],
       ['csharp', 'LibTmux.ControlModeGuardKind.Error', '/topics/errors-and-exceptions/'],
     ]) {
-      expect(mentionIndex.mentions.some((row) => row.port === port && row.symbol === symbol && row.page === page)).toBe(false)
+      expect(mentionIndex.mentions.some((row) => row.port === port && row.symbol === symbol && row.page === page)).toBe(
+        false,
+      )
     }
   })
 
@@ -71,10 +75,7 @@ describe('prose mention index', () => {
     expect(result.mentions, 'rows indexed').toBe(3)
 
     const found = mentionedIn('py', 'libtmux.Pane.capture_pane')
-    expect(found.map((m) => m.page)).toEqual([
-      '/concepts/server-session-window-pane/',
-      '/topics/traversal/',
-    ])
+    expect(found.map((m) => m.page)).toEqual(['/concepts/server-session-window-pane/', '/topics/traversal/'])
     expect(found[0].title).toBe('Server, session, window, pane')
   })
 
@@ -82,9 +83,7 @@ describe('prose mention index', () => {
     // Ids are unique within a port, never globally, so a mention keyed only by
     // symbol would attach Python's backlinks to Rust's page.
     seed({
-      mentionsPath: mentionsFile([
-        { port: 'py', symbol: 'libtmux.Pane.capture_pane', page: '/topics/traversal/' },
-      ]),
+      mentionsPath: mentionsFile([{ port: 'py', symbol: 'libtmux.Pane.capture_pane', page: '/topics/traversal/' }]),
     })
     expect(mentionedIn('rs', 'libtmux.Pane.capture_pane')).toEqual([])
   })

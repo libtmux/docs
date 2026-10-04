@@ -2,12 +2,22 @@ import { describe, expect, it } from 'vitest'
 import { scopeProductSymbols } from '../src/product-exports.ts'
 import type { ApiSymbol } from '../src/model.ts'
 
-const declaration = (name: string, file: string, kind: ApiSymbol['kind'] = 'interface'): ApiSymbol => ({ id: name, name, kind, source: { file }, modifiers: [], signatures: [] })
+const declaration = (name: string, file: string, kind: ApiSymbol['kind'] = 'interface'): ApiSymbol => ({
+  id: name,
+  name,
+  kind,
+  source: { file },
+  modifiers: [],
+  signatures: [],
+})
 
 describe('package export boundaries', () => {
   it('keeps an exported signature type without advertising an internal helper', () => {
     const symbols = [
-      { ...declaration('createServer', '/pkg/server.ts', 'function'), signatures: [{ params: [{ name: 'options', type: 'Startup' }] }] },
+      {
+        ...declaration('createServer', '/pkg/server.ts', 'function'),
+        signatures: [{ params: [{ name: 'options', type: 'Startup' }] }],
+      },
       declaration('Policy', '/pkg/policy.ts'),
       declaration('Startup', '/pkg/startup.ts'),
       declaration('ImplementationContext', '/pkg/startup.ts'),
@@ -22,7 +32,11 @@ describe('package export boundaries', () => {
   })
 
   it('distinguishes a Rust re-export from a private module and a doctest marker', () => {
-    const symbols = [declaration('Workspace', '/crate/config.rs'), declaration('Secret', '/crate/config.rs'), declaration('MacrosReadme', '/crate/lib.rs')]
+    const symbols = [
+      declaration('Workspace', '/crate/config.rs'),
+      declaration('Secret', '/crate/config.rs'),
+      declaration('MacrosReadme', '/crate/lib.rs'),
+    ]
     const files: Record<string, string> = {
       '/crate/lib.rs': 'mod config;\npub use config::{Workspace};\n#[cfg(doctest)]\npub struct MacrosReadme;',
       '/crate/config.rs': 'pub struct Workspace;\npub struct Secret;',
@@ -45,8 +59,10 @@ describe('package export boundaries', () => {
       declaration('libtmux::workspace::build', '/workspace.hpp', 'function'),
       declaration('libtmux::workspace::detail::build_windows', '/workspace.hpp', 'function'),
       declaration('libtmux::workspace::detail::State', '/workspace.hpp', 'struct'),
-      { ...declaration('libtmux::workspace::detail::State::value', '/workspace.hpp', 'attribute'),
-        parent: 'libtmux::workspace::detail::State' },
+      {
+        ...declaration('libtmux::workspace::detail::State::value', '/workspace.hpp', 'attribute'),
+        parent: 'libtmux::workspace::detail::State',
+      },
     ]
     scopeProductSymbols(symbols, { port: 'cxx', entries: [], readSource: () => '' })
     expect(symbols.map((symbol) => symbol.apiScope)).toEqual(['exported', 'internal', 'internal', 'internal'])

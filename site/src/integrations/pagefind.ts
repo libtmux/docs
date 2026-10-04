@@ -26,9 +26,7 @@ export function pagefind(): AstroIntegration {
         logger.info(`indexing ${target}`)
         return new Promise<void>((resolve, reject) => {
           const proc = spawn('pnpm', ['exec', 'pagefind', '--site', target], { stdio: 'inherit' })
-          proc.on('close', (code) =>
-            code === 0 ? resolve() : reject(new Error(`pagefind exited ${code}`)),
-          )
+          proc.on('close', (code) => (code === 0 ? resolve() : reject(new Error(`pagefind exited ${code}`))))
           proc.on('error', reject)
         })
       },

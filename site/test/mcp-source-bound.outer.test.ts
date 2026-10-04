@@ -1,5 +1,14 @@
 import { execFileSync, spawnSync, type SpawnSyncReturns } from 'node:child_process'
-import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  chmodSync,
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -7,25 +16,52 @@ import { expect, it } from 'vitest'
 
 const root = new URL('../../', import.meta.url).pathname
 const files = [
-  'scripts/gen-mcp-protocol.mjs', 'scripts/gen-mcp-tools.mjs', 'scripts/lib/mcp-protocol.mjs',
-  'packages/api-model/src/source-lines.ts', 'site/src/lib/ports.ts',
-  'site/src/lib/site-root.ts', 'site/src/lib/cooldown.ts',
+  'scripts/gen-mcp-protocol.mjs',
+  'scripts/gen-mcp-tools.mjs',
+  'scripts/lib/mcp-protocol.mjs',
+  'packages/api-model/src/source-lines.ts',
+  'site/src/lib/ports.ts',
+  'site/src/lib/site-root.ts',
+  'site/src/lib/cooldown.ts',
 ]
-const tool = { name: 'list_sessions', description: 'Selected source contract', inputSchema: {
-  type: 'object', properties: { label: { type: 'string', description: 'Selected source argument' } },
-} }
+const tool = {
+  name: 'list_sessions',
+  description: 'Selected source contract',
+  inputSchema: {
+    type: 'object',
+    properties: { label: { type: 'string', description: 'Selected source argument' } },
+  },
+}
 
-function fixture(slug: 'go' | 'py' | 'ruby' | 'java' | 'swift', run: (fixture: {
-  directory: string; checkout: string; sha: string; model: string; snapshot: string; catalog: string;
-  discovery: string; env: NodeJS.ProcessEnv;
-  invoke: (script: 'protocol' | 'tools', args?: string[], env?: NodeJS.ProcessEnv) => SpawnSyncReturns<string>;
-}) => void, { javaLayout = 'catalog', toolPages = ['list-sessions.md'] }: {
-  javaLayout?: 'catalog' | 'toolsets'; toolPages?: readonly string[];
-} = {}) {
+function fixture(
+  slug: 'go' | 'py' | 'ruby' | 'java' | 'swift',
+  run: (fixture: {
+    directory: string
+    checkout: string
+    sha: string
+    model: string
+    snapshot: string
+    catalog: string
+    discovery: string
+    env: NodeJS.ProcessEnv
+    invoke: (script: 'protocol' | 'tools', args?: string[], env?: NodeJS.ProcessEnv) => SpawnSyncReturns<string>
+  }) => void,
+  {
+    javaLayout = 'catalog',
+    toolPages = ['list-sessions.md'],
+  }: {
+    javaLayout?: 'catalog' | 'toolsets'
+    toolPages?: readonly string[]
+  } = {},
+) {
   const directory = mkdtempSync(join(tmpdir(), 'libtmux-mcp-source-'))
   const checkout = join(directory, 'source')
-  const git = (...args: string[]) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
-  const write = (path: string, text: string) => { mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, text) }
+  const git = (...args: string[]) =>
+    execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+  const write = (path: string, text: string) => {
+    mkdirSync(dirname(path), { recursive: true })
+    writeFileSync(path, text)
+  }
   try {
     for (const file of files) {
       const target = join(directory, file)
@@ -35,15 +71,21 @@ function fixture(slug: 'go' | 'py' | 'ruby' | 'java' | 'swift', run: (fixture: {
     write(join(directory, 'package.json'), '{"type":"module"}')
     if (slug === 'java') {
       const directory = join(checkout, 'libtmux-mcp/src/main/java/io/github/libtmux/mcp')
-      write(join(directory, javaLayout === 'catalog' ? 'Catalog.java' : 'InspectTools.java'),
-        `Catalog.tool("helper_only");\ntools.add(${javaLayout === 'catalog' ? 'inspect(' : 'Catalog.literalized(Catalog.tool('}"list_sessions")${javaLayout === 'catalog' ? ')' : '))'};\n`)
+      write(
+        join(directory, javaLayout === 'catalog' ? 'Catalog.java' : 'InspectTools.java'),
+        `Catalog.tool("helper_only");\ntools.add(${javaLayout === 'catalog' ? 'inspect(' : 'Catalog.literalized(Catalog.tool('}"list_sessions")${javaLayout === 'catalog' ? ')' : '))'};\n`,
+      )
       write(join(directory, 'CatalogTest.java'), 'tools.add(tool("test_only"));\n')
     } else if (slug === 'swift') {
-      write(join(checkout, 'Sources/LibTmuxMCP/ToolOperation.swift'),
-        'enum ToolOperation: String {\n\n    case listSessions = "list_sessions"\n}\n')
+      write(
+        join(checkout, 'Sources/LibTmuxMCP/ToolOperation.swift'),
+        'enum ToolOperation: String {\n\n    case listSessions = "list_sessions"\n}\n',
+      )
     } else {
-      write(join(checkout, slug === 'go' ? 'mcp/manifest_catalog.go' : 'src/libtmux_mcp/tools/sessions.py'),
-        slug === 'go' ? 'var catalog = []tool{{name: "list_sessions"}}\n' : 'mcp.tool()(list_sessions)\n')
+      write(
+        join(checkout, slug === 'go' ? 'mcp/manifest_catalog.go' : 'src/libtmux_mcp/tools/sessions.py'),
+        slug === 'go' ? 'var catalog = []tool{{name: "list_sessions"}}\n' : 'mcp.tool()(list_sessions)\n',
+      )
     }
     if (slug === 'py') {
       for (const page of toolPages) write(join(checkout, 'docs/tools', page), '# Tool documentation\n')
@@ -57,15 +99,36 @@ function fixture(slug: 'go' | 'py' | 'ruby' | 'java' | 'swift', run: (fixture: {
     const snapshot = join(directory, `site/src/data/mcp-protocol/${slug}.json`)
     const catalog = join(directory, 'site/src/data/mcp-tools.json')
     const repo = slug === 'py' ? 'tmux-python/libtmux-mcp' : `libtmux/libtmux-${slug}`
-    write(model, JSON.stringify({ port: slug, revision: coreSha, sources: [{ product: 'mcp', repo, revision: sha, extractedRevision: sha }] }))
-    write(catalog, JSON.stringify({ generated: 'fixture', referenceDocumented: 54,
-      ports: Object.fromEntries(['py', 'ruby', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'].map((port) => [port, {
-        tools: ['old_tool'], registrations: [{ wireName: 'old_tool' }], revision: 'a'.repeat(40),
-      }])),
-    }))
+    write(
+      model,
+      JSON.stringify({
+        port: slug,
+        revision: coreSha,
+        sources: [{ product: 'mcp', repo, revision: sha, extractedRevision: sha }],
+      }),
+    )
+    write(
+      catalog,
+      JSON.stringify({
+        generated: 'fixture',
+        referenceDocumented: 54,
+        ports: Object.fromEntries(
+          ['py', 'ruby', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'].map((port) => [
+            port,
+            {
+              tools: ['old_tool'],
+              registrations: [{ wireName: 'old_tool' }],
+              revision: 'a'.repeat(40),
+            },
+          ]),
+        ),
+      }),
+    )
     const discovery = join(directory, 'discovery.json')
     const server = join(directory, 'server.mjs')
-    write(server, `
+    write(
+      server,
+      `
 import { writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { createInterface } from 'node:readline'
@@ -81,17 +144,29 @@ createInterface({ input: process.stdin }).on('line', (line) => {
     : { tools: process.env.EMPTY_TOOLS === '1' ? [] : [${JSON.stringify(tool)}] }
   console.log(JSON.stringify({ jsonrpc: '2.0', id: message.id, result }))
 })
-`)
-    const env: NodeJS.ProcessEnv = { ...process.env, HOME: join(directory, 'empty-home'),
-      LIBTMUX_DOCS_PORT: slug, LIBTMUX_DOCS_SOURCE_SHA: coreSha,
-      [`LIBTMUX_DOCS_CHECKOUT_${slug.toUpperCase()}`]: checkout, LIBTMUX_DOCS_MCP_PY: checkout,
+`,
+    )
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      HOME: join(directory, 'empty-home'),
+      LIBTMUX_DOCS_PORT: slug,
+      LIBTMUX_DOCS_SOURCE_SHA: coreSha,
+      [`LIBTMUX_DOCS_CHECKOUT_${slug.toUpperCase()}`]: checkout,
+      LIBTMUX_DOCS_MCP_PY: checkout,
       [`LIBTMUX_DOCS_MCP_COMMAND_${slug.toUpperCase()}`]: JSON.stringify([process.execPath, server]),
-      TMUX: 'inherited-session', TMUX_PANE: '%123', LIBTMUX_TOOLSETS: 'teardown', LIBTMUX_SOCKET_PATH: '/must-not-use',
-      DISCOVERY: discovery, SOURCE: checkout,
+      TMUX: 'inherited-session',
+      TMUX_PANE: '%123',
+      LIBTMUX_TOOLSETS: 'teardown',
+      LIBTMUX_SOCKET_PATH: '/must-not-use',
+      DISCOVERY: discovery,
+      SOURCE: checkout,
     }
-    const invoke = (script: 'protocol' | 'tools', args: string[] = [], overrides: NodeJS.ProcessEnv = {}) => spawnSync(process.execPath,
-      [join(directory, `scripts/gen-mcp-${script}.mjs`), '--port', slug, '--source-bound', ...args],
-      { encoding: 'utf8', timeout: 10000, env: { ...env, ...overrides } })
+    const invoke = (script: 'protocol' | 'tools', args: string[] = [], overrides: NodeJS.ProcessEnv = {}) =>
+      spawnSync(
+        process.execPath,
+        [join(directory, `scripts/gen-mcp-${script}.mjs`), '--port', slug, '--source-bound', ...args],
+        { encoding: 'utf8', timeout: 10000, env: { ...env, ...overrides } },
+      )
     run({ directory, checkout, sha, model, snapshot, catalog, discovery, env, invoke })
   } finally {
     rmSync(directory, { recursive: true, force: true })
@@ -106,125 +181,171 @@ it('cites the Swift enum case after a blank line', () => {
     expect(result.status, result.stderr).toBe(0)
     const registrations = JSON.parse(readFileSync(catalog, 'utf8')).ports.swift.registrations
     expect(registrations).toHaveLength(1)
-    expect(registrations[0]).toMatchObject({ wireName: 'list_sessions', source: {
-      file: 'Sources/LibTmuxMCP/ToolOperation.swift', line: 3,
-    } })
+    expect(registrations[0]).toMatchObject({
+      wireName: 'list_sessions',
+      source: {
+        file: 'Sources/LibTmuxMCP/ToolOperation.swift',
+        line: 3,
+      },
+    })
   })
 })
 
-it.each(['go', 'py'] as const)('binds the %s catalog to its actual MCP source and preserves unrelated catalogs', (slug) => {
-  fixture(slug, ({ sha, catalog, snapshot, discovery, invoke }) => {
-    const previous = JSON.parse(readFileSync(catalog, 'utf8'))
-    const captured = invoke('protocol')
-    expect(captured.status, captured.stderr).toBe(0)
-    const generated = invoke('tools')
-    expect(generated.status, generated.stderr).toBe(0)
-    const result = JSON.parse(readFileSync(catalog, 'utf8'))
-    expect(result.ports[slug].revision).toBe(sha)
-    expect(result.ports[slug].extractedRevision).toBe(sha)
-    expect(result.ports[slug].registrations[0]).toMatchObject({ ...tool, schemaStatus: 'runtime', source: { revision: sha, extractedRevision: sha } })
-    expect(JSON.parse(readFileSync(snapshot, 'utf8')).revision).toBe(sha)
-    for (const port of Object.keys(previous.ports).filter((port) => port !== slug)) expect(result.ports[port]).toEqual(previous.ports[port])
-    if (slug === 'go') expect(result.referenceDocumented).toBe(54)
-    else expect(result.referenceDocumented).toBe(1)
-    const environment = JSON.parse(readFileSync(discovery, 'utf8'))
-    expect(environment).toMatchObject({ toolsets: 'inspect,manage,execute,teardown', socket: 'libtmux-docs-protocol' })
-    expect(environment.tmux).toBeUndefined()
-    expect(environment.pane).toBeUndefined()
-    expect(environment.tmp).toContain('libtmux-docs-mcp-')
-    expect(existsSync(environment.tmp)).toBe(false)
-  })
-})
+it.each(['go', 'py'] as const)(
+  'binds the %s catalog to its actual MCP source and preserves unrelated catalogs',
+  (slug) => {
+    fixture(slug, ({ sha, catalog, snapshot, discovery, invoke }) => {
+      const previous = JSON.parse(readFileSync(catalog, 'utf8'))
+      const captured = invoke('protocol')
+      expect(captured.status, captured.stderr).toBe(0)
+      const generated = invoke('tools')
+      expect(generated.status, generated.stderr).toBe(0)
+      const result = JSON.parse(readFileSync(catalog, 'utf8'))
+      expect(result.ports[slug].revision).toBe(sha)
+      expect(result.ports[slug].extractedRevision).toBe(sha)
+      expect(result.ports[slug].registrations[0]).toMatchObject({
+        ...tool,
+        schemaStatus: 'runtime',
+        source: { revision: sha, extractedRevision: sha },
+      })
+      expect(JSON.parse(readFileSync(snapshot, 'utf8')).revision).toBe(sha)
+      for (const port of Object.keys(previous.ports).filter((port) => port !== slug))
+        expect(result.ports[port]).toEqual(previous.ports[port])
+      if (slug === 'go') expect(result.referenceDocumented).toBe(54)
+      else expect(result.referenceDocumented).toBe(1)
+      const environment = JSON.parse(readFileSync(discovery, 'utf8'))
+      expect(environment).toMatchObject({
+        toolsets: 'inspect,manage,execute,teardown',
+        socket: 'libtmux-docs-protocol',
+      })
+      expect(environment.tmux).toBeUndefined()
+      expect(environment.pane).toBeUndefined()
+      expect(environment.tmp).toContain('libtmux-docs-mcp-')
+      expect(existsSync(environment.tmp)).toBe(false)
+    })
+  },
+)
 
 it.each([
   ['complete', ['server/list-sessions.md', 'server/index.md'], null],
   ['extra', ['server/list-sessions.md', 'server/unknown-tool.md'], 'documented, not extracted: unknown_tool'],
   ['missing', ['server/index.md'], 'extracted, not documented: list_sessions'],
 ] as const)('checks nested Python tool pages: %s', (_scenario, toolPages, error) => {
-  fixture('py', ({ catalog, invoke }) => {
-    const captured = invoke('protocol')
-    expect(captured.status, captured.stderr).toBe(0)
-    const before = readFileSync(catalog, 'utf8')
-    const generated = invoke('tools')
-    if (error) {
-      expect(generated.status).not.toBe(0)
-      expect(generated.stderr).toContain(error)
-      expect(readFileSync(catalog, 'utf8')).toBe(before)
-    } else {
-      expect(generated.status, generated.stderr).toBe(0)
-      expect(JSON.parse(readFileSync(catalog, 'utf8')).referenceDocumented).toBe(1)
-    }
-  }, { toolPages })
+  fixture(
+    'py',
+    ({ catalog, invoke }) => {
+      const captured = invoke('protocol')
+      expect(captured.status, captured.stderr).toBe(0)
+      const before = readFileSync(catalog, 'utf8')
+      const generated = invoke('tools')
+      if (error) {
+        expect(generated.status).not.toBe(0)
+        expect(generated.stderr).toContain(error)
+        expect(readFileSync(catalog, 'utf8')).toBe(before)
+      } else {
+        expect(generated.status, generated.stderr).toBe(0)
+        expect(JSON.parse(readFileSync(catalog, 'utf8')).referenceDocumented).toBe(1)
+      }
+    },
+    { toolPages },
+  )
 })
 
-it.each(['catalog', 'toolsets'] as const)('binds Java %s registrations to runtime schemas and their source lines', (layout) => {
-  fixture('java', ({ sha, catalog, invoke }) => {
-    const captured = invoke('protocol')
-    expect(captured.status, captured.stderr).toBe(0)
-    const generated = invoke('tools')
-    expect(generated.status, generated.stderr).toBe(0)
-    const result = JSON.parse(readFileSync(catalog, 'utf8')).ports.java
-    expect(result.tools).toEqual(['list_sessions'])
-    expect(result.registrations).toEqual([expect.objectContaining({
-      ...tool, schemaStatus: 'runtime', source: {
-        repo: 'libtmux/libtmux-java', revision: sha, extractedRevision: sha,
-        file: `libtmux-mcp/src/main/java/io/github/libtmux/mcp/${layout === 'catalog' ? 'Catalog' : 'InspectTools'}.java`,
-        line: 2,
+it.each(['catalog', 'toolsets'] as const)(
+  'binds Java %s registrations to runtime schemas and their source lines',
+  (layout) => {
+    fixture(
+      'java',
+      ({ sha, catalog, invoke }) => {
+        const captured = invoke('protocol')
+        expect(captured.status, captured.stderr).toBe(0)
+        const generated = invoke('tools')
+        expect(generated.status, generated.stderr).toBe(0)
+        const result = JSON.parse(readFileSync(catalog, 'utf8')).ports.java
+        expect(result.tools).toEqual(['list_sessions'])
+        expect(result.registrations).toEqual([
+          expect.objectContaining({
+            ...tool,
+            schemaStatus: 'runtime',
+            source: {
+              repo: 'libtmux/libtmux-java',
+              revision: sha,
+              extractedRevision: sha,
+              file: `libtmux-mcp/src/main/java/io/github/libtmux/mcp/${layout === 'catalog' ? 'Catalog' : 'InspectTools'}.java`,
+              line: 2,
+            },
+          }),
+        ])
       },
-    })])
-  }, { javaLayout: layout })
-})
+      { javaLayout: layout },
+    )
+  },
+)
 
-it.each(['core revision', 'MCP revision', 'MCP repository'])('rejects an API model with the wrong %s before starting the server', (field) => {
-  fixture('go', ({ model, discovery, invoke }) => {
-    const value = JSON.parse(readFileSync(model, 'utf8'))
-    if (field === 'core revision') value.revision = 'b'.repeat(40)
-    else if (field === 'MCP revision') value.sources[0].extractedRevision = 'b'.repeat(40)
-    else value.sources[0].repo = 'other/repository'
-    writeFileSync(model, JSON.stringify(value))
-    for (const script of ['protocol', 'tools'] as const) {
-      const result = invoke(script)
+it.each(['core revision', 'MCP revision', 'MCP repository'])(
+  'rejects an API model with the wrong %s before starting the server',
+  (field) => {
+    fixture('go', ({ model, discovery, invoke }) => {
+      const value = JSON.parse(readFileSync(model, 'utf8'))
+      if (field === 'core revision') value.revision = 'b'.repeat(40)
+      else if (field === 'MCP revision') value.sources[0].extractedRevision = 'b'.repeat(40)
+      else value.sources[0].repo = 'other/repository'
+      writeFileSync(model, JSON.stringify(value))
+      for (const script of ['protocol', 'tools'] as const) {
+        const result = invoke(script)
+        expect(result.status).not.toBe(0)
+        expect(result.stderr).toContain('API model must describe the selected source and actual MCP checkout')
+      }
+      expect(existsSync(discovery)).toBe(false)
+    })
+  },
+)
+
+it.each(['revision', 'repo', 'missing', 'schema'])(
+  'rejects a %s protocol mismatch without replacing the catalog',
+  (field) => {
+    fixture('go', ({ snapshot, catalog, invoke }) => {
+      expect(invoke('protocol').status).toBe(0)
+      const before = readFileSync(catalog, 'utf8')
+      const value = JSON.parse(readFileSync(snapshot, 'utf8'))
+      if (field === 'revision') value.revision = 'b'.repeat(40)
+      else if (field === 'repo') value.repo = 'other/repository'
+      else if (field === 'schema') delete value.protocol.tools[0].inputSchema
+      if (field === 'missing') rmSync(snapshot)
+      else writeFileSync(snapshot, JSON.stringify(value))
+      const result = invoke('tools')
       expect(result.status).not.toBe(0)
-      expect(result.stderr).toContain('API model must describe the selected source and actual MCP checkout')
-    }
-    expect(existsSync(discovery)).toBe(false)
-  })
-})
-
-it.each(['revision', 'repo', 'missing', 'schema'])('rejects a %s protocol mismatch without replacing the catalog', (field) => {
-  fixture('go', ({ snapshot, catalog, invoke }) => {
-    expect(invoke('protocol').status).toBe(0)
-    const before = readFileSync(catalog, 'utf8')
-    const value = JSON.parse(readFileSync(snapshot, 'utf8'))
-    if (field === 'revision') value.revision = 'b'.repeat(40)
-    else if (field === 'repo') value.repo = 'other/repository'
-    else if (field === 'schema') delete value.protocol.tools[0].inputSchema
-    if (field === 'missing') rmSync(snapshot)
-    else writeFileSync(snapshot, JSON.stringify(value))
-    const result = invoke('tools')
-    expect(result.status).not.toBe(0)
-    expect(result.stderr).toMatch(/another source revision or repository|requires a runtime protocol snapshot|runtime schemas missing/)
-    expect(readFileSync(catalog, 'utf8')).toBe(before)
-  })
-})
+      expect(result.stderr).toMatch(
+        /another source revision or repository|requires a runtime protocol snapshot|runtime schemas missing/,
+      )
+      expect(readFileSync(catalog, 'utf8')).toBe(before)
+    })
+  },
+)
 
 it('reports a missing runtime instead of retaining a stale snapshot', () => {
   fixture('go', ({ snapshot, invoke }) => {
-    const result = invoke('protocol', [], { LIBTMUX_DOCS_MCP_COMMAND_GO: JSON.stringify(['/does-not-exist/libtmux-mcp']) })
+    const result = invoke('protocol', [], {
+      LIBTMUX_DOCS_MCP_COMMAND_GO: JSON.stringify(['/does-not-exist/libtmux-mcp']),
+    })
     expect(result.status).not.toBe(0)
     expect(result.stderr).toContain('ENOENT')
     expect(existsSync(snapshot)).toBe(false)
   })
 })
 
-it.each(['success', 'build failure', 'capture failure', 'override'])('prebuilds Go outside the protocol deadline: %s', (scenario) => {
-  fixture('go', ({ directory, checkout, snapshot, discovery, env, invoke }) => {
-    const bin = join(directory, 'bin')
-    const buildLog = join(directory, 'build.json')
-    const server = join(directory, 'server.mjs')
-    const executable = join(bin, 'go')
-    mkdirSync(bin)
-    writeFileSync(executable, `#!${process.execPath}
+it.each(['success', 'build failure', 'capture failure', 'override'])(
+  'prebuilds Go outside the protocol deadline: %s',
+  (scenario) => {
+    fixture('go', ({ directory, checkout, snapshot, discovery, env, invoke }) => {
+      const bin = join(directory, 'bin')
+      const buildLog = join(directory, 'build.json')
+      const server = join(directory, 'server.mjs')
+      const executable = join(bin, 'go')
+      mkdirSync(bin)
+      writeFileSync(
+        executable,
+        `#!${process.execPath}
 import { writeFileSync } from 'node:fs'
 const args = process.argv.slice(2)
 writeFileSync(${JSON.stringify(buildLog)}, JSON.stringify({ args, cwd: process.cwd() }))
@@ -234,50 +355,68 @@ if (${JSON.stringify(scenario)} === 'build failure') {
   process.stderr.write('fixture Go compile failed\\n')
   process.exit(42)
 }
-writeFileSync(args[args.indexOf('-o') + 1], ${JSON.stringify(`#!${process.execPath}\n${scenario === 'capture failure'
-      ? "process.stderr.write('fixture compiled server failed\\n'); process.exit(37)"
-      : `await import(${JSON.stringify(pathToFileURL(server).href)})`}`)}, { mode: 0o700 })
-`)
-    chmodSync(executable, 0o700)
-    // Shorten only the copied fixture's deadline: compilation exceeds it,
-    // while the already compiled server still answers in time.
-    const helper = join(directory, 'scripts/lib/mcp-protocol.mjs')
-    writeFileSync(helper, readFileSync(helper, 'utf8').replace('timeoutMs = 30000', 'timeoutMs = 200'))
-    const result = invoke('protocol', [], {
-      LIBTMUX_DOCS_MCP_COMMAND_GO: scenario === 'override' ? env.LIBTMUX_DOCS_MCP_COMMAND_GO : undefined,
-      PATH: `${bin}:${env.PATH}`,
+writeFileSync(args[args.indexOf('-o') + 1], ${JSON.stringify(
+          `#!${process.execPath}\n${
+            scenario === 'capture failure'
+              ? "process.stderr.write('fixture compiled server failed\\n'); process.exit(37)"
+              : `await import(${JSON.stringify(pathToFileURL(server).href)})`
+          }`,
+        )}, { mode: 0o700 })
+`,
+      )
+      chmodSync(executable, 0o700)
+      // Shorten only the copied fixture's deadline: compilation exceeds it,
+      // while the already compiled server still answers in time.
+      const helper = join(directory, 'scripts/lib/mcp-protocol.mjs')
+      writeFileSync(helper, readFileSync(helper, 'utf8').replace('timeoutMs = 30000', 'timeoutMs = 200'))
+      const result = invoke('protocol', [], {
+        LIBTMUX_DOCS_MCP_COMMAND_GO: scenario === 'override' ? env.LIBTMUX_DOCS_MCP_COMMAND_GO : undefined,
+        PATH: `${bin}:${env.PATH}`,
+      })
+      if (scenario === 'override') {
+        expect(result.status, result.stderr).toBe(0)
+        expect(existsSync(buildLog)).toBe(false)
+        return
+      }
+      const build = JSON.parse(readFileSync(buildLog, 'utf8'))
+      expect(build.cwd).toBe(join(checkout, 'mcp'))
+      expect(build.args).toEqual([
+        'build',
+        '-mod=readonly',
+        '-o',
+        expect.stringContaining('libtmux-docs-mcp-go-'),
+        './cmd/libtmux-mcp',
+      ])
+      const binary = build.args[3]
+      expect(binary.startsWith(checkout)).toBe(false)
+      expect(existsSync(dirname(binary))).toBe(false)
+      if (scenario === 'success') {
+        expect(result.status, result.stderr).toBe(0)
+        expect(JSON.parse(readFileSync(snapshot, 'utf8')).protocol.tools).toEqual([tool])
+        expect(JSON.parse(readFileSync(discovery, 'utf8')).tmp).toBe(dirname(binary))
+      } else {
+        expect(result.status).not.toBe(0)
+        expect(result.stderr).toContain(
+          scenario === 'build failure' ? 'fixture Go compile failed' : 'fixture compiled server failed',
+        )
+        expect(existsSync(snapshot)).toBe(false)
+        expect(existsSync(discovery)).toBe(false)
+      }
     })
-    if (scenario === 'override') {
-      expect(result.status, result.stderr).toBe(0)
-      expect(existsSync(buildLog)).toBe(false)
-      return
-    }
-    const build = JSON.parse(readFileSync(buildLog, 'utf8'))
-    expect(build.cwd).toBe(join(checkout, 'mcp'))
-    expect(build.args).toEqual(['build', '-mod=readonly', '-o', expect.stringContaining('libtmux-docs-mcp-go-'), './cmd/libtmux-mcp'])
-    const binary = build.args[3]
-    expect(binary.startsWith(checkout)).toBe(false)
-    expect(existsSync(dirname(binary))).toBe(false)
-    if (scenario === 'success') {
-      expect(result.status, result.stderr).toBe(0)
-      expect(JSON.parse(readFileSync(snapshot, 'utf8')).protocol.tools).toEqual([tool])
-      expect(JSON.parse(readFileSync(discovery, 'utf8')).tmp).toBe(dirname(binary))
-    } else {
-      expect(result.status).not.toBe(0)
-      expect(result.stderr).toContain(scenario === 'build failure' ? 'fixture Go compile failed' : 'fixture compiled server failed')
-      expect(existsSync(snapshot)).toBe(false)
-      expect(existsSync(discovery)).toBe(false)
-    }
-  })
-})
+  },
+)
 
-it.each(['success', 'startup failure', 'capture failure', 'cleanup failure', 'capture and cleanup failure'])('owns Ruby discovery daemon setup and cleanup: %s', (scenario) => {
-  fixture('ruby', ({ directory, checkout, snapshot, env, invoke }) => {
-    const bin = join(directory, 'bin')
-    const daemonLog = join(directory, 'daemon.jsonl')
-    const executable = join(bin, 'tmux')
-    mkdirSync(bin)
-    writeFileSync(executable, `#!${process.execPath}
+it.each(['success', 'startup failure', 'capture failure', 'cleanup failure', 'capture and cleanup failure'])(
+  'owns Ruby discovery daemon setup and cleanup: %s',
+  (scenario) => {
+    fixture('ruby', ({ directory, checkout, snapshot, env, invoke }) => {
+      const bin = join(directory, 'bin')
+      const daemonLog = join(directory, 'daemon.jsonl')
+      const executable = join(bin, 'tmux')
+      mkdirSync(bin)
+      writeFileSync(
+        executable,
+        `#!${process.execPath}
 import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 const args = process.argv.slice(2)
@@ -288,39 +427,63 @@ if (args[0] === '-L') {
   writeFileSync(socket, 'owned daemon')
   if (${JSON.stringify(scenario)} === 'startup failure') { process.stderr.write('fixture tmux startup failed\\n'); process.exit(42) }
 } else if (${JSON.stringify(scenario)}.includes('cleanup')) { process.stderr.write('fixture tmux cleanup failed\\n'); process.exit(43) }
-`)
-    chmodSync(executable, 0o700)
-    const server = join(directory, 'borrow-daemon.mjs')
-    writeFileSync(server, `
+`,
+      )
+      chmodSync(executable, 0o700)
+      const server = join(directory, 'borrow-daemon.mjs')
+      writeFileSync(
+        server,
+        `
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 if (!existsSync(join(process.env.TMUX_TMPDIR, 'tmux-' + process.getuid(), 'libtmux-docs-protocol'))) throw new Error('discovery requires an existing daemon')
 if (${JSON.stringify(scenario)}.includes('capture')) throw new Error('fixture Ruby capture failed')
 await import(${JSON.stringify(pathToFileURL(join(directory, 'server.mjs')).href)})
-`)
-    const result = invoke('protocol', [], {
-      LIBTMUX_DOCS_MCP_COMMAND_RUBY: JSON.stringify([process.execPath, server]), PATH: `${bin}:${env.PATH}`,
+`,
+      )
+      const result = invoke('protocol', [], {
+        LIBTMUX_DOCS_MCP_COMMAND_RUBY: JSON.stringify([process.execPath, server]),
+        PATH: `${bin}:${env.PATH}`,
+      })
+      const calls = JSON.parse(`[${readFileSync(daemonLog, 'utf8').trim().split('\n').join(',')}]`)
+      expect(calls).toHaveLength(2)
+      expect(calls[0].args).toEqual([
+        '-L',
+        'libtmux-docs-protocol',
+        '-f',
+        '/dev/null',
+        'new-session',
+        '-d',
+        '-s',
+        'docs',
+        '/bin/cat',
+      ])
+      expect(calls[0].tmp).toContain('libtmux-docs-mcp-ruby-')
+      expect(calls[0].tmp.startsWith(checkout)).toBe(false)
+      expect(calls[0].tmux).toBeUndefined()
+      expect(calls[0].pane).toBeUndefined()
+      expect(calls[1].args).toEqual([
+        '-S',
+        join(calls[0].tmp, `tmux-${process.getuid!()}`, 'libtmux-docs-protocol'),
+        'kill-server',
+      ])
+      expect(existsSync(calls[0].tmp)).toBe(false)
+      if (scenario === 'success') {
+        expect(result.status, result.stderr).toBe(0)
+        expect(JSON.parse(readFileSync(snapshot, 'utf8')).protocol.tools).toEqual([tool])
+      } else {
+        expect(result.status).not.toBe(0)
+        expect(result.stderr).toContain(
+          scenario.includes('capture')
+            ? 'fixture Ruby capture failed'
+            : `fixture tmux ${scenario.split(' ')[0]} failed`,
+        )
+        if (scenario.includes('cleanup')) expect(result.stderr).toContain('fixture tmux cleanup failed')
+        expect(existsSync(snapshot)).toBe(false)
+      }
     })
-    const calls = JSON.parse(`[${readFileSync(daemonLog, 'utf8').trim().split('\n').join(',')}]`)
-    expect(calls).toHaveLength(2)
-    expect(calls[0].args).toEqual(['-L', 'libtmux-docs-protocol', '-f', '/dev/null', 'new-session', '-d', '-s', 'docs', '/bin/cat'])
-    expect(calls[0].tmp).toContain('libtmux-docs-mcp-ruby-')
-    expect(calls[0].tmp.startsWith(checkout)).toBe(false)
-    expect(calls[0].tmux).toBeUndefined()
-    expect(calls[0].pane).toBeUndefined()
-    expect(calls[1].args).toEqual(['-S', join(calls[0].tmp, `tmux-${process.getuid!()}`, 'libtmux-docs-protocol'), 'kill-server'])
-    expect(existsSync(calls[0].tmp)).toBe(false)
-    if (scenario === 'success') {
-      expect(result.status, result.stderr).toBe(0)
-      expect(JSON.parse(readFileSync(snapshot, 'utf8')).protocol.tools).toEqual([tool])
-    } else {
-      expect(result.status).not.toBe(0)
-      expect(result.stderr).toContain(scenario.includes('capture') ? 'fixture Ruby capture failed' : `fixture tmux ${scenario.split(' ')[0]} failed`)
-      if (scenario.includes('cleanup')) expect(result.stderr).toContain('fixture tmux cleanup failed')
-      expect(existsSync(snapshot)).toBe(false)
-    }
-  })
-})
+  },
+)
 
 it('fails a source-bound check with a missing checkout', () => {
   fixture('go', ({ invoke }) => {
@@ -363,14 +526,19 @@ it('rejects tracked source edits before discovery or catalog generation', () => 
   })
 })
 
-it('does not inherit another language\'s MCP product for a selected library', () => {
+it("does not inherit another language's MCP product for a selected library", () => {
   fixture('go', ({ directory, catalog, discovery, env }) => {
     const before = readFileSync(catalog, 'utf8')
     for (const port of ['lua', 'kotlin', 'scala', 'fsharp']) {
       for (const script of ['protocol', 'tools']) {
-        const result = spawnSync(process.execPath, [join(directory, `scripts/gen-mcp-${script}.mjs`), '--port', port, '--source-bound'], {
-          encoding: 'utf8', env: { ...env, LIBTMUX_DOCS_PORT: port },
-        })
+        const result = spawnSync(
+          process.execPath,
+          [join(directory, `scripts/gen-mcp-${script}.mjs`), '--port', port, '--source-bound'],
+          {
+            encoding: 'utf8',
+            env: { ...env, LIBTMUX_DOCS_PORT: port },
+          },
+        )
         expect(result.status, result.stderr).toBe(0)
         expect(result.stdout).toBe('')
       }

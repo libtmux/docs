@@ -45,26 +45,54 @@ const TOOL_OPERATIONS: Record<string, Record<string, string>> = {
 }
 
 /** Resolve an equivalent operation to the target port's actual wire registration. */
-export function equivalentMcpTool(sourcePort: string, wireName: string, targetPort: string): McpRegistration | undefined {
+export function equivalentMcpTool(
+  sourcePort: string,
+  wireName: string,
+  targetPort: string,
+): McpRegistration | undefined {
   const source = MCP_REFERENCE[sourcePort]?.registrations.find((tool) => tool.wireName === wireName)
   if (!source) return undefined
   const operation = TOOL_OPERATIONS[sourcePort]?.[source.name] ?? source.name
-  return MCP_REFERENCE[targetPort]?.registrations.find((tool) => (TOOL_OPERATIONS[targetPort]?.[tool.name] ?? tool.name) === operation)
+  return MCP_REFERENCE[targetPort]?.registrations.find(
+    (tool) => (TOOL_OPERATIONS[targetPort]?.[tool.name] ?? tool.name) === operation,
+  )
 }
 
 /** Shared route identity for rendered tools and downloadable protocol data. */
-export function mcpReferenceRoutes(buildPort: string | undefined, defaults: Record<string, string>, buildVersion: string) {
-  return Object.entries(MCP_REFERENCE).filter(([port]) => !buildPort || port === buildPort)
-    .flatMap(([port, catalog]) => [undefined, ...catalog.registrations.map((tool) => tool.wireName)].map((toolName) => {
-      const version = buildPort ? buildVersion : (defaults[port] ?? 'latest')
-      return { path: `${buildPort ? '' : `${port}/${version}/`}mcp/tools${toolName ? `/${toolName}` : ''}`, port, toolName, version }
-    }))
+export function mcpReferenceRoutes(
+  buildPort: string | undefined,
+  defaults: Record<string, string>,
+  buildVersion: string,
+) {
+  return Object.entries(MCP_REFERENCE)
+    .filter(([port]) => !buildPort || port === buildPort)
+    .flatMap(([port, catalog]) =>
+      [undefined, ...catalog.registrations.map((tool) => tool.wireName)].map((toolName) => {
+        const version = buildPort ? buildVersion : (defaults[port] ?? 'latest')
+        return {
+          path: `${buildPort ? '' : `${port}/${version}/`}mcp/tools${toolName ? `/${toolName}` : ''}`,
+          port,
+          toolName,
+          version,
+        }
+      }),
+    )
 }
 
 let markdown: ReturnType<typeof createMarkdownProcessor> | undefined
 
-interface ToolDescriptionContext { port: string; version: string; toolName?: string }
-interface HtmlNode { type: string; tagName?: string; value?: string; properties?: Record<string, unknown>; children?: HtmlNode[] }
+interface ToolDescriptionContext {
+  port: string
+  version: string
+  toolName?: string
+}
+interface HtmlNode {
+  type: string
+  tagName?: string
+  value?: string
+  properties?: Record<string, unknown>
+  children?: HtmlNode[]
+}
 
 function rehypeMcpToolLinks() {
   return (tree: unknown, file: { data: { astro?: { frontmatter?: { mcp?: ToolDescriptionContext } } } }) => {
@@ -72,7 +100,8 @@ function rehypeMcpToolLinks() {
     if (!context || !PORT_BY_SLUG[context.port]) return
     const names = new Set(MCP_REFERENCE[context.port]?.registrations.map((tool) => tool.wireName))
     const link = (name: string, node: HtmlNode): HtmlNode => ({
-      type: 'element', tagName: 'a',
+      type: 'element',
+      tagName: 'a',
       properties: { href: portPageUrl(PORT_BY_SLUG[context.port], context.version, `mcp/tools/${name}`) },
       children: [node],
     })
@@ -93,7 +122,10 @@ function rehypeMcpToolLinks() {
         let start = 0
         for (const match of text.matchAll(/\b[a-z][a-z0-9]*_[a-z0-9_]+\b/g)) {
           if (!known(match[0])) continue
-          parts.push({ type: 'text', value: text.slice(start, match.index) }, link(match[0], { type: 'text', value: match[0] }))
+          parts.push(
+            { type: 'text', value: text.slice(start, match.index) },
+            link(match[0], { type: 'text', value: match[0] }),
+          )
           start = match.index + match[0].length
         }
         return [...parts, { type: 'text', value: text.slice(start) }]
@@ -110,5 +142,8 @@ export async function renderToolDescription(description: string, context?: ToolD
 }
 
 export function toolSummary(description: string): string {
-  return description.split(/\n\s*\n/, 1)[0].replace(/\s+/g, ' ').trim()
+  return description
+    .split(/\n\s*\n/, 1)[0]
+    .replace(/\s+/g, ' ')
+    .trim()
 }

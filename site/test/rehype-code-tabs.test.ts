@@ -47,8 +47,7 @@ const run = (children: El[]) => {
   return tree
 }
 
-const groups = (tree: El) =>
-  (tree.children ?? []).filter((c) => c.tagName === 'libtmux-code-tabs')
+const groups = (tree: El) => (tree.children ?? []).filter((c) => c.tagName === 'libtmux-code-tabs')
 
 const portsOf = (group: El) => String(group.properties?.['data-ports'] ?? '').split(',')
 
@@ -98,13 +97,7 @@ describe('rehypeCodeTabs grouping', () => {
   })
 
   it('renders that prose inside the panel it introduces', () => {
-    const tree = run([
-      fence('python'),
-      gap(),
-      para('Swift is the outlier.'),
-      gap(),
-      fence('swift'),
-    ])
+    const tree = run([fence('python'), gap(), para('Swift is the outlier.'), gap(), fence('swift')])
 
     const swift = panelFor(groups(tree)[0], 'swift')
     expect(swift, 'a Swift panel').toBeTruthy()
@@ -117,13 +110,7 @@ describe('rehypeCodeTabs grouping', () => {
   })
 
   it('ends the group at prose that introduces no fence', () => {
-    const tree = run([
-      fence('python'),
-      gap(),
-      fence('go'),
-      gap(),
-      para('An unrelated closing paragraph.'),
-    ])
+    const tree = run([fence('python'), gap(), fence('go'), gap(), para('An unrelated closing paragraph.')])
 
     expect(groups(tree)).toHaveLength(1)
     expect(portsOf(groups(tree)[0])).toEqual(['py', 'go'])
@@ -133,15 +120,7 @@ describe('rehypeCodeTabs grouping', () => {
   })
 
   it('starts a new group when a port repeats', () => {
-    const tree = run([
-      fence('python'),
-      gap(),
-      fence('go'),
-      gap(),
-      fence('python'),
-      gap(),
-      fence('go'),
-    ])
+    const tree = run([fence('python'), gap(), fence('go'), gap(), fence('python'), gap(), fence('go')])
 
     const gs = groups(tree)
     expect(gs).toHaveLength(2)

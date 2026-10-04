@@ -67,13 +67,18 @@ const PY_INTERSPHINX: Record<string, string> = {
 const PY_DOCS = 'https://docs.python.org/3/'
 
 /** Syntax words in the native declarations rendered as complete signatures. */
-const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(Object.entries({
-  kotlin: 'public private protected internal class interface object fun val var suspend override abstract open final data sealed enum inline reified crossinline noinline vararg in out where companion constructor operator infix tailrec external expect actual by',
-  scala: 'def extension val var class trait object type given using implicit inline transparent opaque override abstract final sealed case lazy private protected open infix export derives end',
-  fsharp: 'module namespace type member static abstract override interface inherit let rec mutable inline internal private public of with get set new val and when',
-  ts: 'readonly keyof typeof infer extends unique',
-  swift: 'any',
-}).map(([port, words]) => [port, new Set(words.split(' '))]))
+const SIGNATURE_KEYWORDS: Record<string, Set<string>> = Object.fromEntries(
+  Object.entries({
+    kotlin:
+      'public private protected internal class interface object fun val var suspend override abstract open final data sealed enum inline reified crossinline noinline vararg in out where companion constructor operator infix tailrec external expect actual by',
+    scala:
+      'def extension val var class trait object type given using implicit inline transparent opaque override abstract final sealed case lazy private protected open infix export derives end',
+    fsharp:
+      'module namespace type member static abstract override interface inherit let rec mutable inline internal private public of with get set new val and when',
+    ts: 'readonly keyof typeof infer extends unique',
+    swift: 'any',
+  }).map(([port, words]) => [port, new Set(words.split(' '))]),
+)
 
 /** Language help stays separate from links to API declarations. */
 export interface KeywordHelp {
@@ -86,7 +91,8 @@ const KEYWORD_HELP: Record<string, Record<string, KeywordHelp>> = {
   kotlin: {
     suspend: {
       title: 'Kotlin suspending functions',
-      description: 'Allows a function to call suspending operations and pause without blocking a thread. It does not start a coroutine by itself.',
+      description:
+        'Allows a function to call suspending operations and pause without blocking a thread. It does not start a coroutine by itself.',
       href: builtinHref('kotlin', 'suspend')!,
     },
   },
@@ -124,17 +130,50 @@ interface TypeSpan {
  * on one page.
  */
 const PY_EXCEPTIONS = new Set([
-  'ArithmeticError', 'AssertionError', 'AttributeError', 'BaseException',
-  'BlockingIOError', 'BrokenPipeError', 'BufferError', 'ChildProcessError',
-  'ConnectionError', 'EOFError', 'FileExistsError', 'FileNotFoundError',
-  'GeneratorExit', 'ImportError', 'IndentationError', 'IndexError',
-  'InterruptedError', 'IsADirectoryError', 'KeyError', 'KeyboardInterrupt',
-  'LookupError', 'MemoryError', 'NameError', 'NotADirectoryError',
-  'NotImplementedError', 'OSError', 'OverflowError', 'PermissionError',
-  'ProcessLookupError', 'RecursionError', 'ReferenceError', 'RuntimeError',
-  'StopAsyncIteration', 'StopIteration', 'SyntaxError', 'SystemError',
-  'SystemExit', 'TimeoutError', 'TypeError', 'UnboundLocalError',
-  'UnicodeDecodeError', 'UnicodeError', 'ValueError', 'ZeroDivisionError',
+  'ArithmeticError',
+  'AssertionError',
+  'AttributeError',
+  'BaseException',
+  'BlockingIOError',
+  'BrokenPipeError',
+  'BufferError',
+  'ChildProcessError',
+  'ConnectionError',
+  'EOFError',
+  'FileExistsError',
+  'FileNotFoundError',
+  'GeneratorExit',
+  'ImportError',
+  'IndentationError',
+  'IndexError',
+  'InterruptedError',
+  'IsADirectoryError',
+  'KeyError',
+  'KeyboardInterrupt',
+  'LookupError',
+  'MemoryError',
+  'NameError',
+  'NotADirectoryError',
+  'NotImplementedError',
+  'OSError',
+  'OverflowError',
+  'PermissionError',
+  'ProcessLookupError',
+  'RecursionError',
+  'ReferenceError',
+  'RuntimeError',
+  'StopAsyncIteration',
+  'StopIteration',
+  'SyntaxError',
+  'SystemError',
+  'SystemExit',
+  'TimeoutError',
+  'TypeError',
+  'UnboundLocalError',
+  'UnicodeDecodeError',
+  'UnicodeError',
+  'ValueError',
+  'ZeroDivisionError',
 ])
 
 /**
@@ -147,10 +186,33 @@ const PY_EXCEPTIONS = new Set([
  * where intersphinx sends it.
  */
 const PY_STDLIB_MODULES = new Set([
-  'subprocess', 'dataclasses', 'pathlib', 'typing', 'logging', 'os', 'sys',
-  'shutil', 'enum', 'abc', 'collections', 'functools', 'itertools', 'json',
-  'time', 'datetime', 'warnings', 'contextlib', 'traceback', 're', 'io',
-  'threading', 'asyncio', 'unittest', 'tempfile', 'textwrap', 'random',
+  'subprocess',
+  'dataclasses',
+  'pathlib',
+  'typing',
+  'logging',
+  'os',
+  'sys',
+  'shutil',
+  'enum',
+  'abc',
+  'collections',
+  'functools',
+  'itertools',
+  'json',
+  'time',
+  'datetime',
+  'warnings',
+  'contextlib',
+  'traceback',
+  're',
+  'io',
+  'threading',
+  'asyncio',
+  'unittest',
+  'tempfile',
+  'textwrap',
+  'random',
 ])
 
 export interface LinkTarget {
@@ -233,10 +295,12 @@ export class SymbolIndex {
       aliases.push(s)
       this.byQualified.set(qualified, aliases)
 
-      const suffixes = new Set([pub, qualified].flatMap((name) => {
-        const parts = name.split('.')
-        return parts.slice(1).map((_, i) => parts.slice(i + 1).join('.'))
-      }))
+      const suffixes = new Set(
+        [pub, qualified].flatMap((name) => {
+          const parts = name.split('.')
+          return parts.slice(1).map((_, i) => parts.slice(i + 1).join('.'))
+        }),
+      )
       for (const suffix of suffixes) {
         const list = this.bySuffix.get(suffix) ?? []
         list.push(s)
@@ -289,22 +353,13 @@ export class SymbolIndex {
    * from Go, Java and Rust pages: 1,889 links that sent a reader of one
    * language to another language's manual.
    */
-  addInventory(
-    baseUrl: string,
-    entries: InventoryEntry[],
-    langs?: string[],
-    project?: string,
-  ): void {
+  addInventory(baseUrl: string, entries: InventoryEntry[], langs?: string[], project?: string): void {
     const byName = new Map<string, InventoryEntry>()
     for (const entry of entries) if (!byName.has(entry.name)) byName.set(entry.name, entry)
     this.external.push({ baseUrl: baseUrl.replace(/\/*$/, '/'), byName, langs, project })
   }
 
-  private pick(
-    candidates: ApiSymbol[] | undefined,
-    role: string,
-    context?: ApiSymbol,
-  ): ApiSymbol | undefined {
+  private pick(candidates: ApiSymbol[] | undefined, role: string, context?: ApiSymbol): ApiSymbol | undefined {
     if (!candidates?.length) return undefined
     const kinds = ROLE_KINDS[role] ?? []
     const filtered = kinds.length ? candidates.filter((c) => kinds.includes(c.kind)) : candidates
@@ -374,12 +429,20 @@ export class SymbolIndex {
     if (imported) clean = [imported, ...tail].join('.')
     if (this.lang === 'scala') clean = clean.replace(/^_root_\./, '')
 
-    if (context && ['kotlin', 'scala', 'fsharp'].includes(this.lang ?? '') && !relative &&
-        context.signatures.some((sig) => sig.params.some((param) => param.name === clean))) {
+    if (
+      context &&
+      ['kotlin', 'scala', 'fsharp'].includes(this.lang ?? '') &&
+      !relative &&
+      context.signatures.some((sig) => sig.params.some((param) => param.name === clean))
+    ) {
       return { href: `${this.hrefFor(context).split('#')[0]}#${parameterId(context, clean)}`, external: false }
     }
     if (context && ['kotlin', 'scala'].includes(this.lang ?? '')) {
-      for (let scope: ApiSymbol | undefined = context; scope; scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined) {
+      for (
+        let scope: ApiSymbol | undefined = context;
+        scope;
+        scope = scope.parent ? this.byDeclared.get(scope.parent) : undefined
+      ) {
         if (scope.signatures.some((sig) => sig.typeParams?.includes(clean))) {
           return { href: this.hrefFor(scope), external: false, symbol: scope }
         }
@@ -458,8 +521,12 @@ export class SymbolIndex {
     // built-in table rather than after.
     for (const inv of this.external) {
       if (inv.langs && (!this.lang || !inv.langs.includes(this.lang))) continue
-      const hit = inv.byName.get(clean) ?? context?.namespaceImports?.toReversed()
-        .map((namespace) => inv.byName.get(`${namespace}.${clean}`)).find(Boolean)
+      const hit =
+        inv.byName.get(clean) ??
+        context?.namespaceImports
+          ?.toReversed()
+          .map((namespace) => inv.byName.get(`${namespace}.${clean}`))
+          .find(Boolean)
       if (hit) return { href: inv.baseUrl + hit.uri, external: true, project: inv.project }
     }
 
@@ -504,9 +571,7 @@ export class SymbolIndex {
 
   linkDoc(spans: DocSpan[], context?: ApiSymbol): (DocSpan & { link?: LinkTarget })[] {
     return spans.map((span) =>
-      span.kind === 'ref'
-        ? { ...span, link: this.resolve(span.target, span.role, context) }
-        : span,
+      span.kind === 'ref' ? { ...span, link: this.resolve(span.target, span.role, context) } : span,
     )
   }
 
@@ -528,9 +593,10 @@ export class SymbolIndex {
     // anything and C++ annotations rendered almost entirely plain.
     const pattern = String.raw`(\/\*[\s\S]*?\*\/|\/\/[^\n]*|["'][^"']*["']|[A-Za-z_][A-Za-z0-9_.]*(?:::[A-Za-z_][A-Za-z0-9_.]*)*)|([^A-Za-z_"'/]+|["'/])`
     // F# type variables start with an apostrophe but do not close like strings.
-    const re = new RegExp(this.lang === 'fsharp'
-      ? pattern.replace('(', String.raw`('[A-Za-z_][A-Za-z0-9_]*(?![A-Za-z0-9_'])|`)
-      : pattern, 'g')
+    const re = new RegExp(
+      this.lang === 'fsharp' ? pattern.replace('(', String.raw`('[A-Za-z_][A-Za-z0-9_]*(?![A-Za-z0-9_'])|`) : pattern,
+      'g',
+    )
     for (const m of annotation.matchAll(re)) {
       const [whole, ident, other] = m
       if (other !== undefined || !ident) {
@@ -550,25 +616,35 @@ export class SymbolIndex {
         out.push({ text: ident, keyword: true, ...(help ? { help } : {}) })
         continue
       }
-      if (signature && context && (ident === context.name || ident.endsWith(`.${context.name}`)) &&
-          /\b(?:def|fun|class|interface|trait|object|type|val|var|member|let)\s+$/.test(annotation.slice(0, m.index))) {
+      if (
+        signature &&
+        context &&
+        (ident === context.name || ident.endsWith(`.${context.name}`)) &&
+        /\b(?:def|fun|class|interface|trait|object|type|val|var|member|let)\s+$/.test(annotation.slice(0, m.index))
+      ) {
         const receiver = ident.slice(0, -context.name.length).replace(/\.$/, '')
         if (receiver) out.push(...this.linkType(receiver, context), { text: '.' })
         out.push({ text: context.name, declaration: true })
         continue
       }
-      if (signature && (
-        ((signature.params.some((param) => param.name === ident) || signature.receiver?.name === ident) &&
+      if (
+        signature &&
+        (((signature.params.some((param) => param.name === ident) || signature.receiver?.name === ident) &&
           /^\s*\??\s*:(?!:)/.test(annotation.slice(m.index! + ident.length))) ||
-        signature.typeParams?.includes(ident)
-      )) {
+          signature.typeParams?.includes(ident))
+      ) {
         out.push({ text: ident, declaration: true })
         continue
       }
       // Object fields, callback parameters and tuple labels declare names;
       // the types after their colons still use ordinary reference resolution.
-      if (this.lang === 'ts' && /^\s*\??\s*:(?!:)/.test(annotation.slice(m.index! + ident.length)) &&
-          /(?:^|[{[(;,])(?:\s|\/\*[\s\S]*?\*\/|\/\/[^\n]*)*(?:readonly\s+)?(?:\.\.\.)?$/.test(annotation.slice(0, m.index))) {
+      if (
+        this.lang === 'ts' &&
+        /^\s*\??\s*:(?!:)/.test(annotation.slice(m.index! + ident.length)) &&
+        /(?:^|[{[(;,])(?:\s|\/\*[\s\S]*?\*\/|\/\/[^\n]*)*(?:readonly\s+)?(?:\.\.\.)?$/.test(
+          annotation.slice(0, m.index),
+        )
+      ) {
         out.push({ text: ident, declaration: true })
         continue
       }

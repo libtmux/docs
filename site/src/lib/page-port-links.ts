@@ -13,12 +13,13 @@ import { LOCALES } from '../i18n/locales'
  * so the port comes from the build rather than from the path's second
  * segment.
  */
-const symbolsByRoute = new Map<string, ApiSymbol>(Object.entries(API_MODELS).flatMap(([port, model]) =>
-  model.symbols.map((symbol) => [
-    `${port}/${symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)}`,
-    symbol,
-  ] as const),
-))
+const symbolsByRoute = new Map<string, ApiSymbol>(
+  Object.entries(API_MODELS).flatMap(([port, model]) =>
+    model.symbols.map(
+      (symbol) => [`${port}/${symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)}`, symbol] as const,
+    ),
+  ),
+)
 
 /** Static routes emitted in each port build, verified against assembled pages. */
 export const SHARED_PAGE_PATHS = ['mcp', 'mcp/tools', 'parity', 'search', 'translations'] as const
@@ -55,7 +56,9 @@ export function pagePortLinks({
   defaults: Record<string, string>
   docs: DocsPage[]
 }): PagePortLink[] {
-  const path = pagePath.replace(/^\/+|\/+$/g, '').replace(/^tmux\/(?=guides(?:\/|$)|topics(?:\/|$)|concepts(?:\/|$)|examples(?:\/|$))/, '')
+  const path = pagePath
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/^tmux\/(?=guides(?:\/|$)|topics(?:\/|$)|concepts(?:\/|$)|examples(?:\/|$))/, '')
   const isReference = path === 'reference' || path.startsWith('reference/')
   const symbolSlug = isReference ? path.slice('reference/'.length) || undefined : undefined
   const productReference = /^(mcp|workspace)\/reference\/(.+)$/.exec(path)
@@ -66,9 +69,13 @@ export function pagePortLinks({
   const alternatives = symbol ? referenceAlternatives(symbolPort!, symbol.publicId ?? symbol.id) : []
   const own = docs.find((entry) => entry.data.port === portSlug && docsPath(entry) === path)
   const paths = [path, ...(own?.data.aliases ?? [])]
-  const entries = paths.flatMap((candidate) => docs.filter((entry) => docsPath(entry) === candidate || entry.data.aliases?.includes(candidate)))
-  const tool = path.startsWith('mcp/tools/') && portSlug
-    ? MCP_REFERENCE[portSlug]?.registrations.find((entry) => entry.wireName === path.slice('mcp/tools/'.length)) : undefined
+  const entries = paths.flatMap((candidate) =>
+    docs.filter((entry) => docsPath(entry) === candidate || entry.data.aliases?.includes(candidate)),
+  )
+  const tool =
+    path.startsWith('mcp/tools/') && portSlug
+      ? MCP_REFERENCE[portSlug]?.registrations.find((entry) => entry.wireName === path.slice('mcp/tools/'.length))
+      : undefined
 
   return PORTS.map((port) => {
     const targetVersion = port.slug === portSlug ? version : (defaults[port.slug] ?? 'latest')
@@ -84,7 +91,8 @@ export function pagePortLinks({
         // equivalent lives under the *target* port's version, which this
         // caller knows and `referenceAlternatives` does not.
         const targetSymbol = match?.publicId
-          ? API_MODELS[port.slug]?.symbols.find((entry) => (entry.publicId ?? entry.id) === match.publicId) : undefined
+          ? API_MODELS[port.slug]?.symbols.find((entry) => (entry.publicId ?? entry.id) === match.publicId)
+          : undefined
         const href = targetSymbol ? productApiHref(API_MODELS[port.slug], targetSymbol, targetVersion) : match?.href
         if (href && !links.some((link) => link.href === href)) {
           links.push({ href, label: alternative.label })
@@ -104,8 +112,9 @@ export function pagePortLinks({
     } else if (!port.parentLibrary && (SHARED_PAGE_PATHS as readonly string[]).includes(path)) {
       links = [{ href: portPageUrl(port, targetVersion, path) }]
     } else {
-      const target = entries.find((entry) => entry.data.port === port.slug && docsEntryAvailable(entry, port.slug))
-        ?? entries.find((entry) => docsEntryAvailable(entry, port.slug))
+      const target =
+        entries.find((entry) => entry.data.port === port.slug && docsEntryAvailable(entry, port.slug)) ??
+        entries.find((entry) => docsEntryAvailable(entry, port.slug))
       if (target) links = [{ href: portPageUrl(port, targetVersion, docsPath(target)) }]
     }
     return { port: port.slug, name: port.name, links }

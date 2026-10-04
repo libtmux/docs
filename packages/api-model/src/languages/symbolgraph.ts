@@ -41,8 +41,7 @@ const PUBLIC_IDS: Record<string, Record<string, string>> = {
   LibTmux: {
     'Server.newSession(named:startDirectory:windowName:width:height:environment:shell:)':
       'Server.newSession(named:startDirectory:windowName:width:height:)',
-    'Server.newWindow(in:named:startDirectory:at:environment:shell:)':
-      'Server.newWindow(in:named:startDirectory:)',
+    'Server.newWindow(in:named:startDirectory:at:environment:shell:)': 'Server.newWindow(in:named:startDirectory:)',
     'Server.split(_:direction:size:startDirectory:environment:shell:)':
       'Server.split(_:direction:size:startDirectory:)',
     'Server.splitWindow(_:direction:size:startDirectory:environment:shell:)':
@@ -79,7 +78,11 @@ interface RawSymbol {
 }
 
 const fragmentText = (fragments: Fragment[] | undefined): string | undefined =>
-  fragments?.map((f) => f.spelling).join('').replace(/\s+/g, ' ').trim() || undefined
+  fragments
+    ?.map((f) => f.spelling)
+    .join('')
+    .replace(/\s+/g, ' ')
+    .trim() || undefined
 
 function modifiersOf(raw: RawSymbol): Modifier[] {
   const out: Modifier[] = []
@@ -152,10 +155,7 @@ function signatureOf(raw: RawSymbol): Signature | undefined {
  * protocol conformance.
  */
 /** Conformance display names in stable order across compiler graph emissions. */
-function conformedNames(
-  conformances: Map<string, Map<string, string>>,
-  usr: string,
-): string[] | undefined {
+function conformedNames(conformances: Map<string, Map<string, string>>, usr: string): string[] | undefined {
   const found = conformances.get(usr)
   return found?.size ? [...found.values()].sort() : undefined
 }
@@ -189,9 +189,11 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
     const selectors = new Set(graph.symbols.map((symbol) => symbol.pathComponents.join('.')))
 
     const titleOf = new Map(graph.symbols.map((s) => [s.identifier.precise, s.pathComponents]))
-    const origins = new Map((graph.relationships ?? [])
-      .filter((relationship) => relationship.kind === 'memberOf' && relationship.sourceOrigin)
-      .map((relationship) => [relationship.source, relationship.sourceOrigin!.displayName]))
+    const origins = new Map(
+      (graph.relationships ?? [])
+        .filter((relationship) => relationship.kind === 'memberOf' && relationship.sourceOrigin)
+        .map((relationship) => [relationship.source, relationship.sourceOrigin!.displayName]),
+    )
     for (const rel of graph.relationships ?? []) {
       if (rel.kind !== 'conformsTo') continue
       // A target outside this graph — every standard library protocol — is
@@ -204,9 +206,7 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
       // for a local symbol — the form `BUILTINS.swift` and the symbol index
       // are both keyed on.
       const name =
-        titleOf.get(rel.target)?.join('.') ??
-        rel.targetFallback?.replace(/^[A-Za-z_][A-Za-z0-9_]*\./, '') ??
-        rel.target
+        titleOf.get(rel.target)?.join('.') ?? rel.targetFallback?.replace(/^[A-Za-z_][A-Za-z0-9_]*\./, '') ?? rel.target
       // The graph lists some conformances twice — `Sendable` and
       // `SendableMetatype` arrive once directly and once through another
       // protocol. Two distinct USRs never share a name, so the USR is the
@@ -228,7 +228,10 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
       const previous = PUBLIC_IDS[graph.module?.name ?? '']?.[id]
       // An explicitly retained overload owns its URL; never merge distinct declarations.
       const publicId = previous && !selectors.has(previous) ? previous : id
-      const doc = raw.docComment?.lines.map((l) => l.text).join('\n').trim()
+      const doc = raw.docComment?.lines
+        .map((l) => l.text)
+        .join('\n')
+        .trim()
       const signature = signatureOf(raw)
       // Swift doc comments are Markdown, and this used to split on the first
       // blank line and keep the rest as one string — the same thing the spec
@@ -239,7 +242,8 @@ export function extractSymbolGraph(files: string[]): ApiSymbol[] {
       const source: ApiSymbol['source'] = {
         file: (raw.location?.uri ?? '').replace(/^file:\/\//, ''),
         ...(raw.location?.uri && raw.location.position?.line !== undefined
-          ? { line: raw.location.position.line + 1 } : {}),
+          ? { line: raw.location.position.line + 1 }
+          : {}),
       }
       const inheritedFrom = source.file ? undefined : origins.get(raw.identifier.precise)
 

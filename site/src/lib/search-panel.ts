@@ -70,7 +70,11 @@ export interface SearchPanelHandle {
   clear: () => void
 }
 
-export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings: SearchPanelOptions = {}): SearchPanelHandle {
+export function mountSearchPanel(
+  root: HTMLElement,
+  bundlePath: string,
+  settings: SearchPanelOptions = {},
+): SearchPanelHandle {
   const input = root.querySelector<HTMLInputElement>('.search-panel__input')!
   const results = root.querySelector<HTMLElement>('.search-panel__results')!
   const filtersBox = root.querySelector<HTMLElement>('.search-panel__filters')!
@@ -252,8 +256,11 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
   }
 
   /** Results and the sections a reader can see, in the order arrow keys visit them. */
-  const choices = () =>
-    [...results.querySelectorAll<HTMLAnchorElement>('.search-panel__result, .search-panel__subs:not([hidden]) .search-panel__sub')]
+  const choices = () => [
+    ...results.querySelectorAll<HTMLAnchorElement>(
+      '.search-panel__result, .search-panel__subs:not([hidden]) .search-panel__sub',
+    ),
+  ]
 
   function highlight() {
     choices().forEach((choice, i) => choice.setAttribute('aria-selected', String(i === selected)))

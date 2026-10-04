@@ -59,16 +59,28 @@ const CASES = [
    */
   { name: 'port unrecorded', built: 0, floor: 10, omit: ['go'], mustFail: true, says: 'no floor recorded for go' },
   {
-    name: 'version masks fall', built: 10, floor: 10, mustFail: true,
-    setup: (dir) => { version(dir, 'py', 'latest', 2); version(dir, 'py', 'stable', 20) },
+    name: 'version masks fall',
+    built: 10,
+    floor: 10,
+    mustFail: true,
+    setup: (dir) => {
+      version(dir, 'py', 'latest', 2)
+      version(dir, 'py', 'stable', 20)
+    },
     says: 'resolution fell on py',
   },
   {
-    name: 'both versions hold', built: 10, floor: 10, mustFail: false,
+    name: 'both versions hold',
+    built: 10,
+    floor: 10,
+    mustFail: false,
     setup: (dir) => version(dir, 'py', 'stable', 10),
   },
   {
-    name: 'products share version', built: 10, floor: 10, mustFail: false,
+    name: 'products share version',
+    built: 10,
+    floor: 10,
+    mustFail: false,
     setup: (dir) => {
       version(dir, 'py', 'latest', 6)
       version(dir, 'py', 'latest/mcp', 4)
@@ -127,13 +139,26 @@ const GUARDS = [
   { name: 'lowering forced', built: 2, floor: 10, force: true, wantCode: 0, wantFloor: 2 },
   { name: 'raising allowed', built: 10, floor: 2, wantCode: 0, wantFloor: 10 },
   {
-    name: 'version lowering refused', built: 10, floor: 10, wantCode: 1, wantFloor: 10,
-    port: 'py', says: 'refusing to lower',
-    setup: (dir) => { version(dir, 'py', 'latest', 2); version(dir, 'py', 'stable', 20) },
+    name: 'version lowering refused',
+    built: 10,
+    floor: 10,
+    wantCode: 1,
+    wantFloor: 10,
+    port: 'py',
+    says: 'refusing to lower',
+    setup: (dir) => {
+      version(dir, 'py', 'latest', 2)
+      version(dir, 'py', 'stable', 20)
+    },
   },
   {
-    name: 'version count not added', built: 10, floor: 10, wantCode: 0, wantFloor: 10,
-    port: 'py', setup: (dir) => version(dir, 'py', 'stable', 10),
+    name: 'version count not added',
+    built: 10,
+    floor: 10,
+    wantCode: 0,
+    wantFloor: 10,
+    port: 'py',
+    setup: (dir) => version(dir, 'py', 'stable', 10),
   },
 ]
 
@@ -154,7 +179,9 @@ for (const c of GUARDS) {
       failures++
     } else {
       const how = c.force ? ' --force' : ''
-      console.log(`ok   ${c.name.padEnd(16)} built ${c.built} vs floor ${c.floor}${how} -> exit ${code}, floor now ${recorded}`)
+      console.log(
+        `ok   ${c.name.padEnd(16)} built ${c.built} vs floor ${c.floor}${how} -> exit ${code}, floor now ${recorded}`,
+      )
     }
   } finally {
     rmSync(dir, { recursive: true, force: true })

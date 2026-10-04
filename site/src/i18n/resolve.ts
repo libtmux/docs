@@ -136,9 +136,7 @@ export async function localeStatusesFor(sourceId: string): Promise<Record<string
   const statuses: Record<string, LocaleStatus> = { [DEFAULT_LOCALE]: 'translated' }
   for (const locale of LOCALES) {
     if (locale === DEFAULT_LOCALE) continue
-    const translation = entries.find(
-      (e) => localeOf(e.id) === locale && sourceIdOf(e.id) === sourceId,
-    )
+    const translation = entries.find((e) => localeOf(e.id) === locale && sourceIdOf(e.id) === sourceId)
     if (!translation) {
       statuses[locale] = 'placeholder'
       continue

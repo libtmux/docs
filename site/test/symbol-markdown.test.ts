@@ -46,17 +46,28 @@ describe('API Markdown content parity', () => {
 
   it('prefers a library error over a same-named .NET exception in the selected version', () => {
     const error: ApiSymbol = {
-      id: 'LibTmux.ArgumentException', name: 'ArgumentException', kind: 'class',
-      modifiers: [], signatures: [], source: { file: 'example.fs' }, slug: 'argument-exception',
+      id: 'LibTmux.ArgumentException',
+      name: 'ArgumentException',
+      kind: 'class',
+      modifiers: [],
+      signatures: [],
+      source: { file: 'example.fs' },
+      slug: 'argument-exception',
     }
     const symbol: ApiSymbol = {
-      id: 'LibTmux.sample', name: 'sample', kind: 'function', modifiers: [],
+      id: 'LibTmux.sample',
+      name: 'sample',
+      kind: 'function',
+      modifiers: [],
       signatures: [{ params: [], raises: [{ type: 'ArgumentException', doc: 'A library error.' }] }],
-      source: { file: 'example.fs' }, slug: 'sample',
+      source: { file: 'example.fs' },
+      slug: 'sample',
     }
     const model = { ...API_MODELS.fsharp, symbols: [error, symbol] }
     const text = symbolMarkdown({ model, symbol, version: 'stable' })
-    expect(text).toContain('[`ArgumentException`](' + referenceUrl(PORT_BY_SLUG.fsharp, 'stable') + 'argument-exception/)')
+    expect(text).toContain(
+      '[`ArgumentException`](' + referenceUrl(PORT_BY_SLUG.fsharp, 'stable') + 'argument-exception/)',
+    )
     expect(text).not.toContain('learn.microsoft.com')
   })
 
@@ -73,8 +84,9 @@ describe('API Markdown content parity', () => {
 
   it('preserves escaped parameter names and generic types as literal code', () => {
     const model = API_MODELS.kotlin
-    for (const symbol of model.symbols.filter((entry) => entry.signatures.some((signature) =>
-      signature.params.some((param) => param.name.includes('`'))))) {
+    for (const symbol of model.symbols.filter((entry) =>
+      entry.signatures.some((signature) => signature.params.some((param) => param.name.includes('`'))),
+    )) {
       const codes = inlineCodes(symbolMarkdown({ model, symbol }))
       for (const signature of symbol.signatures) {
         for (const param of signature.params) {
@@ -121,8 +133,13 @@ describe('API Markdown content parity', () => {
   it('preserves example bytes when blank lines and backticks are part of the program', () => {
     const code = 'const output = `first\n\n\nlast`;\nconsole.log(output);\nconsole.log("```");\n'
     const symbol: ApiSymbol = {
-      id: 'example', name: 'example', kind: 'function', modifiers: [], signatures: [],
-      source: { file: 'example.ts', line: 1 }, doc: { summary: 'Print the literal text.', examples: [{ lang: 'ts', code }] },
+      id: 'example',
+      name: 'example',
+      kind: 'function',
+      modifiers: [],
+      signatures: [],
+      source: { file: 'example.ts', line: 1 },
+      doc: { summary: 'Print the literal text.', examples: [{ lang: 'ts', code }] },
     }
     const text = symbolMarkdown({ model: { ...API_MODELS.ts, symbols: [symbol] }, symbol })
     expect(text).toContain(`\`\`\`\`ts\n${code}\`\`\`\``)
@@ -141,17 +158,37 @@ describe('API Markdown content parity', () => {
 
   it('uses the documented signature and keeps all declarations, warnings and provenance', () => {
     const symbol: ApiSymbol = {
-      id: 'Server.capture', name: 'capture', kind: 'method', modifiers: ['overload'],
-      source: { file: 'server.ts', line: 1 }, inheritedFrom: 'Base.capture',
+      id: 'Server.capture',
+      name: 'capture',
+      kind: 'method',
+      modifiers: ['overload'],
+      source: { file: 'server.ts', line: 1 },
+      inheritedFrom: 'Base.capture',
       signatures: [
         { params: [{ name: 'limit', type: 'number' }], returns: 'string[]' },
-        { params: [{ name: 'options', type: 'CaptureOptions', doc: 'Choose the line range.', since: '1.2', deprecated: 'Use a range.' }],
-          returns: 'string[]', returnsDoc: 'The captured lines.', raises: [{ type: 'CaptureError', doc: 'The pane no longer exists.' }] },
+        {
+          params: [
+            {
+              name: 'options',
+              type: 'CaptureOptions',
+              doc: 'Choose the line range.',
+              since: '1.2',
+              deprecated: 'Use a range.',
+            },
+          ],
+          returns: 'string[]',
+          returnsDoc: 'The captured lines.',
+          raises: [{ type: 'CaptureError', doc: 'The pane no longer exists.' }],
+        },
       ],
-      doc: { summary: 'Read pane output.', deprecated: 'Use Pane.capture.', changed: 'Returns complete lines.',
+      doc: {
+        summary: 'Read pane output.',
+        deprecated: 'Use Pane.capture.',
+        changed: 'Returns complete lines.',
         admonitions: [{ kind: 'warning', text: 'The pane may exit between commands.' }],
         references: [{ name: 'manual', text: 'The tmux capture-pane manual.' }],
-        examples: [{ lang: 'ts', code: 'await pane.capture()', intro: 'Read visible lines.' }] },
+        examples: [{ lang: 'ts', code: 'await pane.capture()', intro: 'Read visible lines.' }],
+      },
     }
     const text = symbolMarkdown({ model: { ...API_MODELS.ts, symbols: [symbol] }, symbol })
     expect(text).toContain('Server.capture(limit: number) -> string[]')
@@ -161,7 +198,9 @@ describe('API Markdown content parity', () => {
     expect(text).toContain('## Changed\n\nReturns complete lines.')
     expect(text).toContain('**warning:** The pane may exit between commands.')
     expect(text).toContain('- [manual] The tmux capture-pane manual.')
-    expect(text).toContain('## Parameters\n\n- `options` (`CaptureOptions`): Choose the line range. (added 1.2) (deprecated Use a range.)')
+    expect(text).toContain(
+      '## Parameters\n\n- `options` (`CaptureOptions`): Choose the line range. (added 1.2) (deprecated Use a range.)',
+    )
     expect(text).not.toContain('- `limit`')
     expect(text).toContain('## Returns\n\nThe captured lines.')
     expect(text).toContain('## Raises\n\n- `CaptureError`: The pane no longer exists.')
@@ -182,8 +221,10 @@ describe('API Markdown content parity', () => {
       const owner = byId.get(id) ?? model.symbols.find((symbol) => symbol.publicId === id)!
       const text = symbolMarkdown({ model, symbol: owner })
       const members = ordered.map((entry) => byId.get(entry.id)!)
-      const expected = [...members.filter((member) => !member.inheritedFrom), ...members.filter((member) => member.inheritedFrom)]
-        .map((member) => member.name)
+      const expected = [
+        ...members.filter((member) => !member.inheritedFrom),
+        ...members.filter((member) => member.inheritedFrom),
+      ].map((member) => member.name)
       const memberText = text.slice(text.search(/^## (?:Members|Inherited members)$/m))
       const names = [...memberText.matchAll(/^- `([^`]+)` \([a-z]+\)/gm)].map((match) => match[1])
       expect(names).toEqual(expected)

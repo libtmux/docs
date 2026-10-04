@@ -73,9 +73,7 @@ function paramsOf(node: Node): Param[] {
       continue
     }
     const variadic =
-      p.type === 'list_splat_pattern' ? 'positional'
-      : p.type === 'dictionary_splat_pattern' ? 'keyword'
-      : undefined
+      p.type === 'list_splat_pattern' ? 'positional' : p.type === 'dictionary_splat_pattern' ? 'keyword' : undefined
     if (variadic === 'positional') keywordOnly = true
 
     const name = p.childForFieldName('name') ?? p.namedChild(0) ?? p
@@ -183,9 +181,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     const decorators = decorated
       ? child.namedChildren.filter((n) => n?.type === 'decorator').map((n) => decoratorName(n!))
       : []
-    const modifiers = decorators
-      .map((d) => DECORATOR_MODIFIER[d])
-      .filter((m): m is Modifier => Boolean(m))
+    const modifiers = decorators.map((d) => DECORATOR_MODIFIER[d]).filter((m): m is Modifier => Boolean(m))
 
     if (def.type === 'class_definition') {
       const name = def.childForFieldName('name')?.text ?? '?'
@@ -220,8 +216,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
       const raw = docstringOf(def.childForFieldName('body'))
       const parsed = raw ? parsePythonDoc(raw) : undefined
       const sig = parsed ? applyDoc(signatureOf(def), parsed) : signatureOf(def)
-      const kind: SymbolKind =
-        decorators.includes('property') ? 'property' : parent ? 'method' : 'function'
+      const kind: SymbolKind = decorators.includes('property') ? 'property' : parent ? 'method' : 'function'
       const isAsync = def.children.some((c) => c?.type === 'async' || c?.text === 'async')
       emit(ctx, {
         id,
@@ -283,11 +278,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
 }
 
 /** Extract one Python file. `module` is its dotted name, e.g. `libtmux.pane`. */
-export async function extractPython(
-  file: string,
-  module: string,
-  options: ExtractOptions = {},
-): Promise<ApiSymbol[]> {
+export async function extractPython(file: string, module: string, options: ExtractOptions = {}): Promise<ApiSymbol[]> {
   const parser = await parserFor('python')
   const tree = parser.parse(readFileSync(file, 'utf8'))
   if (!tree) return []

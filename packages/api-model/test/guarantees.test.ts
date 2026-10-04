@@ -69,20 +69,17 @@ count = sum(len(entries) for entries in inv.values())
 names = sorted({name for entries in inv.values() for name in entries})
 print(json.dumps({"count": count, "domains": sorted(inv), "sample": names[:3]}))
 `
-    const out = execFileSync(
-      'uv',
-      ['run', '--with', 'sphinx', 'python', '-c', script, file],
-      { encoding: 'utf8', timeout: 120_000 },
-    )
+    const out = execFileSync('uv', ['run', '--with', 'sphinx', 'python', '-c', script, file], {
+      encoding: 'utf8',
+      timeout: 120_000,
+    })
     const result = JSON.parse(out.trim().split('\n').pop() ?? '{}') as {
       count: number
       domains: string[]
       sample: string[]
     }
 
-    expect(result.count, `${port}: Sphinx read a different number of entries`).toBe(
-      model.symbols.length,
-    )
+    expect(result.count, `${port}: Sphinx read a different number of entries`).toBe(model.symbols.length)
     expect(result.domains.length, `${port}: no domains`).toBeGreaterThan(0)
   })
 })
@@ -102,9 +99,7 @@ describe('names are representable', () => {
   it.each(PORTS)('%s has no whitespace in any name or id', (port) => {
     const model = load(port)
     if (!model) return
-    const bad = model.symbols.filter(
-      (s) => /\s/.test(s.name) || /\s/.test(s.id) || /\s/.test(s.publicId ?? ''),
-    )
+    const bad = model.symbols.filter((s) => /\s/.test(s.name) || /\s/.test(s.id) || /\s/.test(s.publicId ?? ''))
     expect(
       bad.slice(0, 5).map((s) => `${s.kind} ${JSON.stringify(s.name)} (${s.id})`),
       `${port}: ${bad.length} names carry whitespace`,
@@ -178,8 +173,9 @@ describe('the resolver keeps its rate', () => {
       }
     }
     const rate = 1 - failures.length / attempted.length
-    expect(rate, `${failures.length}/${attempted.length} unresolved:\n${failures.join('\n')}`)
-      .toBeGreaterThanOrEqual(0.85)
+    expect(rate, `${failures.length}/${attempted.length} unresolved:\n${failures.join('\n')}`).toBeGreaterThanOrEqual(
+      0.85,
+    )
   })
 
   it('still refuses what it should refuse', () => {
@@ -236,7 +232,10 @@ describe('doc comments give up their examples', () => {
       'edition2024',
     ])
     const wrong = blocks.filter((b) => attributes.has(b.lang))
-    expect(wrong.slice(0, 3).map((b) => b.lang), `${port} mis-tagged blocks`).toEqual([])
+    expect(
+      wrong.slice(0, 3).map((b) => b.lang),
+      `${port} mis-tagged blocks`,
+    ).toEqual([])
     const auxiliary = new Set(['console', 'text', 'toml'])
     const application = blocks.filter((b) => !auxiliary.has(b.lang))
     const own = application.filter((b) => b.lang === lang).length
@@ -272,29 +271,21 @@ describe('each language gets its own spelling of a cross-reference', () => {
     spans.filter((s) => s.kind === 'ref').map((s) => (s as { target: string }).target)
 
   it('Go doc links resolve, Rust-style ones do not leak into Go', () => {
-    expect(ref(tokenizeDoc('See [GlobalWindowScope.Options] for this.', 'go'))).toEqual([
-      'GlobalWindowScope.Options',
-    ])
+    expect(ref(tokenizeDoc('See [GlobalWindowScope.Options] for this.', 'go'))).toEqual(['GlobalWindowScope.Options'])
     // Bracketed prose is not a reference, and a Markdown link is not one either.
     expect(ref(tokenizeDoc('as noted [see below] and [text](http://x)', 'go'))).toEqual([])
   })
 
   it('Rust keeps its scope operator, and Go links do not fire there', () => {
-    expect(ref(tokenizeDoc('Returns [`Error::Unsupported`] below 3.3.', 'rs'))).toEqual([
-      'Error.Unsupported',
-    ])
+    expect(ref(tokenizeDoc('Returns [`Error::Unsupported`] below 3.3.', 'rs'))).toEqual(['Error.Unsupported'])
     expect(ref(tokenizeDoc('the [Options] field', 'rs'))).toEqual([])
   })
 
   it('javadoc and TSDoc inline tags', () => {
-    expect(ref(tokenizeDoc('Use {@link Server#newSession} instead.', 'java'))).toEqual([
-      'Server.newSession',
-    ])
+    expect(ref(tokenizeDoc('Use {@link Server#newSession} instead.', 'java'))).toEqual(['Server.newSession'])
     // `{@code x}` is a literal, the same thing reST spells with double backticks.
     const spans = tokenizeDoc('Pass {@code null} to clear.', 'java')
-    expect(spans.filter((s) => s.kind === 'code').map((s) => (s as { text: string }).text)).toEqual([
-      'null',
-    ])
+    expect(spans.filter((s) => s.kind === 'code').map((s) => (s as { text: string }).text)).toEqual(['null'])
   })
 
   it('rustdoc links to an item in scope, and through Markdown syntax', () => {
@@ -309,16 +300,12 @@ describe('each language gets its own spelling of a cross-reference', () => {
   })
 
   it('C# see-cref, with the addressing prefix removed', () => {
-    expect(ref(tokenizeDoc('See <see cref="T:LibTmux.Server"/> for more.', 'csharp'))).toEqual([
-      'LibTmux.Server',
-    ])
+    expect(ref(tokenizeDoc('See <see cref="T:LibTmux.Server"/> for more.', 'csharp'))).toEqual(['LibTmux.Server'])
   })
 
   it('a C# keyword is a literal, not a member', () => {
     const spans = tokenizeDoc('Or <see langword="null" /> for the default.', 'csharp')
-    expect(spans.filter((s) => s.kind === 'code').map((s) => (s as { text: string }).text)).toEqual([
-      'null',
-    ])
+    expect(spans.filter((s) => s.kind === 'code').map((s) => (s as { text: string }).text)).toEqual(['null'])
   })
 
   it('bold reaches the page as bold, and prose keeps its asterisks', () => {
@@ -326,7 +313,9 @@ describe('each language gets its own spelling of a cross-reference', () => {
     // like. Rendered as text they were literal asterisks, which is what the
     // reference showed once the doc comment behind `#[derive]` was readable.
     const strong = (t: string, l?: string) =>
-      tokenizeDoc(t, l).filter((s) => s.kind === 'strong').map((s) => (s as { text: string }).text)
+      tokenizeDoc(t, l)
+        .filter((s) => s.kind === 'strong')
+        .map((s) => (s as { text: string }).text)
     expect(strong('**Connecting.** `new` takes the socket.', 'rs')).toEqual(['Connecting.'])
     // A single asterisk is emphasis, a glob and a multiplication sign, so it
     // is left alone. Both of these are prose.
@@ -361,9 +350,7 @@ describe('a doc comment is read in the dialect it was written in', () => {
    * `<socket>`. Only javadoc's own vocabulary may be translated.
    */
   it('javadoc HTML becomes the model, and other angle brackets survive', () => {
-    const md = javadocToMarkdown(
-      'Takes a {@code List<String>} at a <socket> path.\n\n<p>Then <em>waits</em>.',
-    )
+    const md = javadocToMarkdown('Takes a {@code List<String>} at a <socket> path.\n\n<p>Then <em>waits</em>.')
     expect(md).toContain('List<String>')
     expect(md).toContain('<socket>')
     expect(md).not.toContain('<p>')
@@ -372,9 +359,7 @@ describe('a doc comment is read in the dialect it was written in', () => {
 
   it('javadoc example blocks reach the renderer that draws examples', () => {
     const { doc } = parseJavadoc('Creates it.\n\n<pre>{@code\nvar s = server.newSession();\n}</pre>')
-    expect(doc.examples?.map((e) => [e.lang, e.code])).toEqual([
-      ['java', 'var s = server.newSession();'],
-    ])
+    expect(doc.examples?.map((e) => [e.lang, e.code])).toEqual([['java', 'var s = server.newSession();']])
   })
 })
 
@@ -404,9 +389,7 @@ describe('doc comments give up their parameters', () => {
     const model = load('csharp')
     if (!model) return
     const leaked = model.symbols.filter((s) =>
-      /<(summary|remarks|para|returns|example|list)\b/.test(
-        `${s.doc?.summary ?? ''}${s.doc?.body ?? ''}`,
-      ),
+      /<(summary|remarks|para|returns|example|list)\b/.test(`${s.doc?.summary ?? ''}${s.doc?.body ?? ''}`),
     )
     expect(leaked.slice(0, 3).map((s) => s.publicId ?? s.id)).toEqual([])
   })
@@ -476,11 +459,7 @@ describe('the mention index is computed, not observed', () => {
   })
 
   it('ignores prose that is not a code span, and code that is not a name', () => {
-    const md = [
-      '| Python | server.sessions |',
-      '| Go | `see the guide` |',
-      '| C++ | `-L socket-name` |',
-    ].join('\n')
+    const md = ['| Python | server.sessions |', '| Go | `see the guide` |', '| C++ | `-L socket-name` |'].join('\n')
     // Unbackticked prose is not a mention, and neither is a phrase with
     // spaces and no call parens — which covers both the sentence and the
     // command-line flag, so the resolver is never asked about either.

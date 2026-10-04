@@ -98,74 +98,74 @@ for (const [port, where] of Object.entries(CHECKOUT)) {
     units.get(key).symbols.push(symbol)
   }
   for (const unit of units.values()) {
-  const repo = expand(PRODUCT_CHECKOUT[unit.repository] ?? where)
-  const rev = unit.revision
-  if (!rev) {
-    report(port, 'model records no revision, so every source link is unbuildable')
-    continue
-  }
-
-  // 1. The commit has to exist here at all.
-  if (git(repo, 'rev-parse', '--verify', '--quiet', `${rev}^{commit}`) === undefined) {
-    report(port, `revision ${rev.slice(0, 8)} is not in ${where}`)
-    continue
-  }
-
-  // 2. And it has to be reachable from a remote a reader can fetch.
-  const remotes = (git(repo, 'branch', '-r', '--contains', rev) ?? '')
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean)
-    .map((l) => l.split('/')[0])
-  const publicRemotes = [...new Set(remotes)].filter((r) => !PRIVATE_REMOTES.has(r))
-  if (!publicRemotes.length) {
-    report(
-      port,
-      `revision ${rev.slice(0, 8)} is on no public remote (${[...new Set(remotes)].join(', ') || 'no remote'}) — ` +
-        'every source link for this port 404s',
-    )
-    continue
-  }
-
-  // 3. Every path has to exist at that commit, and every line has to be
-  //    inside the file. A line past the end scrolls nowhere and is the shape
-  //    a bad remap would take.
-  const lengths = new Map()
-  let missing = 0
-  let past = 0
-  let firstMissing = ''
-  let noLine = 0
-  for (const s of unit.symbols) {
-    const file = s.source?.file
-    if (!file) continue
-    if (file.startsWith('..') || file.startsWith('/')) {
-      if (!firstMissing) firstMissing = file
-      missing++
+    const repo = expand(PRODUCT_CHECKOUT[unit.repository] ?? where)
+    const rev = unit.revision
+    if (!rev) {
+      report(port, 'model records no revision, so every source link is unbuildable')
       continue
     }
-    if (!lengths.has(file)) {
-      const blob = git(repo, 'show', `${rev}:${file}`)
-      lengths.set(file, blob === undefined ? null : blob.split('\n').length)
-    }
-    const n = lengths.get(file)
-    if (n === null) {
-      if (!firstMissing) firstMissing = file
-      missing++
+
+    // 1. The commit has to exist here at all.
+    if (git(repo, 'rev-parse', '--verify', '--quiet', `${rev}^{commit}`) === undefined) {
+      report(port, `revision ${rev.slice(0, 8)} is not in ${where}`)
       continue
     }
-    if (s.source.line === undefined) noLine++
-    else if (s.source.line < 1 || s.source.line > n) past++
-  }
 
-  if (missing) report(port, `${missing} symbols name a path absent at ${rev.slice(0, 8)}, e.g. ${firstMissing}`)
-  if (past) report(port, `${past} symbols point past the end of their file at ${rev.slice(0, 8)}`)
-  if (!missing && !past) {
-    console.log(
-      `check-source-links: ${port} ${unit.repository} ${unit.symbols.length} symbols, ${lengths.size} files ` +
-        `at ${rev.slice(0, 8)} (${publicRemotes.join(', ')})` +
-        (noLine ? `, ${noLine} without a line` : ''),
-    )
-  }
+    // 2. And it has to be reachable from a remote a reader can fetch.
+    const remotes = (git(repo, 'branch', '-r', '--contains', rev) ?? '')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .map((l) => l.split('/')[0])
+    const publicRemotes = [...new Set(remotes)].filter((r) => !PRIVATE_REMOTES.has(r))
+    if (!publicRemotes.length) {
+      report(
+        port,
+        `revision ${rev.slice(0, 8)} is on no public remote (${[...new Set(remotes)].join(', ') || 'no remote'}) — ` +
+          'every source link for this port 404s',
+      )
+      continue
+    }
+
+    // 3. Every path has to exist at that commit, and every line has to be
+    //    inside the file. A line past the end scrolls nowhere and is the shape
+    //    a bad remap would take.
+    const lengths = new Map()
+    let missing = 0
+    let past = 0
+    let firstMissing = ''
+    let noLine = 0
+    for (const s of unit.symbols) {
+      const file = s.source?.file
+      if (!file) continue
+      if (file.startsWith('..') || file.startsWith('/')) {
+        if (!firstMissing) firstMissing = file
+        missing++
+        continue
+      }
+      if (!lengths.has(file)) {
+        const blob = git(repo, 'show', `${rev}:${file}`)
+        lengths.set(file, blob === undefined ? null : blob.split('\n').length)
+      }
+      const n = lengths.get(file)
+      if (n === null) {
+        if (!firstMissing) firstMissing = file
+        missing++
+        continue
+      }
+      if (s.source.line === undefined) noLine++
+      else if (s.source.line < 1 || s.source.line > n) past++
+    }
+
+    if (missing) report(port, `${missing} symbols name a path absent at ${rev.slice(0, 8)}, e.g. ${firstMissing}`)
+    if (past) report(port, `${past} symbols point past the end of their file at ${rev.slice(0, 8)}`)
+    if (!missing && !past) {
+      console.log(
+        `check-source-links: ${port} ${unit.repository} ${unit.symbols.length} symbols, ${lengths.size} files ` +
+          `at ${rev.slice(0, 8)} (${publicRemotes.join(', ')})` +
+          (noLine ? `, ${noLine} without a line` : ''),
+      )
+    }
   }
 }
 

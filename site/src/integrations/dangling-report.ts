@@ -3,7 +3,11 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { AstroIntegration } from 'astro'
 
-interface DanglingReference { port: string; text: string; why: string }
+interface DanglingReference {
+  port: string
+  text: string
+  why: string
+}
 
 /**
  * Report unresolved API mentions at the end of a build, and fail on a
@@ -79,7 +83,10 @@ export function danglingReport(maxDangling = 60): AstroIntegration {
         for (const d of dangling) byPort.set(d.port, (byPort.get(d.port) ?? 0) + 1)
         logger.warn(
           `${dangling.length} dangling API references (` +
-            [...byPort].sort((a, b) => b[1] - a[1]).map(([p, n]) => `${p}:${n}`).join(' ') +
+            [...byPort]
+              .sort((a, b) => b[1] - a[1])
+              .map(([p, n]) => `${p}:${n}`)
+              .join(' ') +
             ')',
         )
         for (const d of dangling.slice(0, 12)) logger.warn(`  ${d.port}  ${d.text}  (${d.why})`)

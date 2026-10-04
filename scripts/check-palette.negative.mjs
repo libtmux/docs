@@ -13,9 +13,7 @@ import { fileURLToPath } from 'node:url'
 
 const script = join(dirname(fileURLToPath(import.meta.url)), 'check-palette.mjs')
 const ceilingFile = join(dirname(fileURLToPath(import.meta.url)), 'palette-ceiling.json')
-const { ceiling } = JSON.parse(
-  execFileSync('cat', [ceilingFile], { encoding: 'utf8' }),
-)
+const { ceiling } = JSON.parse(execFileSync('cat', [ceilingFile], { encoding: 'utf8' }))
 
 /** A source tree carrying exactly `n` hard-coded palette utilities. */
 function tree(n) {
@@ -86,7 +84,14 @@ function update(dir, start, force) {
 }
 
 const GUARDS = [
-  { name: 'raising refused', n: ceiling + 5, start: ceiling, wantCode: 1, wantCeiling: ceiling, says: 'refusing to raise' },
+  {
+    name: 'raising refused',
+    n: ceiling + 5,
+    start: ceiling,
+    wantCode: 1,
+    wantCeiling: ceiling,
+    says: 'refusing to raise',
+  },
   { name: 'raising forced', n: ceiling + 5, start: ceiling, force: true, wantCode: 0, wantCeiling: ceiling + 5 },
   { name: 'lowering allowed', n: ceiling - 5, start: ceiling, wantCode: 0, wantCeiling: ceiling - 5 },
 ]
@@ -106,7 +111,9 @@ for (const c of GUARDS) {
       failures++
     } else {
       const how = c.force ? ' --force' : ''
-      console.log(`ok   ${c.name.padEnd(18)} ${c.n} vs ceiling ${c.start}${how} -> exit ${code}, ceiling now ${recorded}`)
+      console.log(
+        `ok   ${c.name.padEnd(18)} ${c.n} vs ceiling ${c.start}${how} -> exit ${code}, ceiling now ${recorded}`,
+      )
     }
   } finally {
     rmSync(dir, { recursive: true, force: true })

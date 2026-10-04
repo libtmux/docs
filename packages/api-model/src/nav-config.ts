@@ -16,7 +16,6 @@ import type { Bucket, Match, PortNav } from './nav.ts'
  * that hang off them, then the machinery, then the auxiliary trees.
  */
 
-
 const nameRe = (re: string): Match => ({ kind: 'name', re })
 
 /**
@@ -44,7 +43,10 @@ const words = (...is: string[]): Match => ({
     {
       kind: 'anyOf',
       // `libtmux::pane::id` is a pane field whose own name says nothing.
-      of: [{ kind: 'word', is }, { kind: 'module', re: `(^|[.:/])(${is.join('|')})$` }],
+      of: [
+        { kind: 'word', is },
+        { kind: 'module', re: `(^|[.:/])(${is.join('|')})$` },
+      ],
     },
   ],
 })
@@ -83,7 +85,10 @@ const hierarchy = (re: string, pathRe: string, ...vocabulary: string[]): Match =
     nameRe(re),
     {
       kind: 'allOf',
-      of: [{ kind: 'path', re: pathRe }, { kind: 'not', of: nameRe(Object.values(ATTACHED_NAMES).join('|')) }],
+      of: [
+        { kind: 'path', re: pathRe },
+        { kind: 'not', of: nameRe(Object.values(ATTACHED_NAMES).join('|')) },
+      ],
     },
     words(...vocabulary),
   ],
@@ -175,7 +180,16 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
     match: {
       kind: 'allOf',
       of: [
-        nameOrPath('Test|Fixture|Mock|Fake', 'test|fixture|mock|junit', 'test', 'tests', 'testing', 'fixture', 'mock', 'fake'),
+        nameOrPath(
+          'Test|Fixture|Mock|Fake',
+          'test|fixture|mock|junit',
+          'test',
+          'tests',
+          'testing',
+          'fixture',
+          'mock',
+          'fake',
+        ),
         { kind: 'not', of: { kind: 'allOf', of: [FREE, nameRe('^logger$')] } },
       ],
     },
@@ -226,9 +240,10 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
       of: [
         {
           kind: 'anyOf',
-          of: ['Kind', 'Mode', 'Style', 'Action', 'Options', 'Result', 'Event'].map(
-            (suffix): Match => ({ kind: 'name', suffix }),
-          ),
+          of: ['Kind', 'Mode', 'Style', 'Action', 'Options', 'Result', 'Event'].map((suffix): Match => ({
+            kind: 'name',
+            suffix,
+          })),
         },
         // Suffixes that name a type. `normalizePlanWorkspaceOptions` is a
         // function that takes one.
@@ -247,7 +262,11 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
         nameOrPath(
           'Control|Notification|Subscribe',
           '(^|/)control',
-          'control', 'notification', 'notifications', 'subscribe', 'subscription',
+          'control',
+          'notification',
+          'notifications',
+          'subscribe',
+          'subscription',
         ),
         freePath('(^|/)notification\\.hpp$'),
       ],
@@ -287,7 +306,16 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
         nameOrPath(
           'Query|Filter|Predicate|Matcher|Criteria|Operator|Quantifier|Expr|Node$|Field$|^(Server|Session|Window|Pane|Client)Fields$',
           '(^|/)quer(y|ies)[./]|(^|/)matching|(^|/)filter',
-          'query', 'queries', 'filter', 'predicate', 'matcher', 'criteria', 'where', 'relation', 'field', 'fields',
+          'query',
+          'queries',
+          'filter',
+          'predicate',
+          'matcher',
+          'criteria',
+          'where',
+          'relation',
+          'field',
+          'fields',
         ),
         // The query language's own files, whose helpers are `any_of`,
         // `children_of` and `WhereOf`.
@@ -340,14 +368,23 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
     label: 'Keys and bindings',
     match: nameOrPath(ATTACHED_NAMES.keys, '(^|/)(keys?|binding)', 'key', 'keys', 'binding'),
   },
-  { id: 'buffers', label: 'Buffers', match: nameOrPath(ATTACHED_NAMES.buffers, '(^|/)buffers?[./]', 'buffer', 'buffers') },
+  {
+    id: 'buffers',
+    label: 'Buffers',
+    match: nameOrPath(ATTACHED_NAMES.buffers, '(^|/)buffers?[./]', 'buffer', 'buffers'),
+  },
   {
     id: 'layout',
     label: 'Layout and geometry',
     match: nameOrPath(
       ATTACHED_NAMES.layout,
       '(^|/)layouts?[./]',
-      'layout', 'split', 'resize', 'direction', 'dimension', 'rotation',
+      'layout',
+      'split',
+      'resize',
+      'direction',
+      'dimension',
+      'rotation',
     ),
   },
   {
@@ -363,7 +400,12 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
   {
     id: 'version',
     label: 'Versions',
-    match: nameOrPath(ATTACHED_NAMES.version, '(^|/)versions?[./]|(^|/)__about__\\.|(^|/)build_info\\.go$', 'version', 'release'),
+    match: nameOrPath(
+      ATTACHED_NAMES.version,
+      '(^|/)versions?[./]|(^|/)__about__\\.|(^|/)build_info\\.go$',
+      'version',
+      'release',
+    ),
   },
   {
     id: 'commands',
@@ -371,7 +413,14 @@ const CHAIN: { id: string; label: string; match: Match }[] = [
     match: nameOrPath(
       ATTACHED_NAMES.commands,
       '(^|/)(commands?|dispatch|transport|connection|process)|(^|/)libtmux/endpoint\\.rb$',
-      'command', 'commands', 'cmd', 'dispatch', 'transport', 'connection', 'process', 'engine',
+      'command',
+      'commands',
+      'cmd',
+      'dispatch',
+      'transport',
+      'connection',
+      'process',
+      'engine',
     ),
   },
 ]
@@ -430,9 +479,7 @@ const COLLAPSED = new Set(['requests', 'errors', 'constants', 'mcp', 'testing', 
 /** "Matches mine, and none of the rules that outrank mine." */
 function disjoint(index: number): Match {
   const above = CHAIN.slice(0, index).map((c): Match => ({ kind: 'not', of: c.match }))
-  return above.length === 0
-    ? CHAIN[index]!.match
-    : { kind: 'allOf', of: [CHAIN[index]!.match, ...above] }
+  return above.length === 0 ? CHAIN[index]!.match : { kind: 'allOf', of: [CHAIN[index]!.match, ...above] }
 }
 
 /**
@@ -565,7 +612,8 @@ if (SHARED.length !== CHAIN.length) {
 const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
   lua: {
     unsettled: {
-      'libtmux.Configurable': 'options and hooks shared by sessions, windows and panes; the concrete handle is the subclass',
+      'libtmux.Configurable':
+        'options and hooks shared by sessions, windows and panes; the concrete handle is the subclass',
       'libtmux.Creation': 'creation receipt shared by several tmux objects',
       'libtmux.Entity': 'base of the tmux entity hierarchy; the concrete entity is the subclass',
       'libtmux.LinkDestination': 'window-link target shared by sessions and windows',
@@ -585,8 +633,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
   py: {
     unsettled: {
       'libtmux._vendor._structures.InfinityType': 'vendored from packaging; version comparison, not tmux',
-      'libtmux._vendor._structures.NegativeInfinityType':
-        'vendored from packaging; version comparison, not tmux',
+      'libtmux._vendor._structures.NegativeInfinityType': 'vendored from packaging; version comparison, not tmux',
       'libtmux.constants._DefaultOptionScope': 'private sentinel for an option scope left unset',
       'libtmux.neo.Obj': 'base of the neo object layer; the tmux entity is the subclass',
       'libtmux.__all__': 'the package export list, not an API of its own',
@@ -628,8 +675,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'config.Entry': 'workspace config entry; Workspaces covers the plan, not the file it parses',
       'target.EndpointInputs': 'socket endpoint resolution; sits below Server rather than inside it',
       'target.ResolvedEndpoint': 'socket endpoint resolution; sits below Server rather than inside it',
-      'target.ResolvedSocketSelector':
-        'socket endpoint resolution; sits below Server rather than inside it',
+      'target.ResolvedSocketSelector': 'socket endpoint resolution; sits below Server rather than inside it',
       'target.OsString': 'extractor leak: std::ffi::OsString is not declared by this crate',
       'src.DesignNotes': 'extractor leak: a doc-only module surfaced as a struct',
       'src.Findings': 'extractor leak: a doc-only module surfaced as a struct',
@@ -660,10 +706,8 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'io.github.libtmux.FindSpec.FindSpec': 'target addressing; used by every entity, owned by none',
       'io.github.libtmux.TargetIds.TargetIds': 'target addressing; used by every entity, owned by none',
       'io.github.libtmux.batch.Batch.Batch': 'batch execution; no tmux object of its own',
-      'io.github.libtmux.batch.OperationOutcome.OperationOutcome':
-        'batch execution; no tmux object of its own',
-      'io.github.libtmux.jackson.LibTmuxModels.LibTmuxModels':
-        'Jackson serialisation registration, not tmux API',
+      'io.github.libtmux.batch.OperationOutcome.OperationOutcome': 'batch execution; no tmux object of its own',
+      'io.github.libtmux.jackson.LibTmuxModels.LibTmuxModels': 'Jackson serialisation registration, not tmux API',
     },
   },
   csharp: {
@@ -695,8 +739,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       OutputWait: 'wait and watch plumbing',
       SubscriptionChange: 'wait and watch plumbing',
       RegexPattern: 'regex translation for query matching; below Queries rather than inside it',
-      RegexUnsupportedConstruct:
-        'regex translation for query matching; below Queries rather than inside it',
+      RegexUnsupportedConstruct: 'regex translation for query matching; below Queries rather than inside it',
     },
   },
 }
@@ -720,13 +763,19 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     server: ['io.github.libtmux.IncarnationFence.IncarnationFence'],
   },
   kotlin: {
-    commands: ['Batch', 'ExecutionPolicy', 'MessageLog', 'Prompt', 'Shell', 'retryIfSafe'].map((name) => `io.github.libtmux.kotlin.${name}`),
+    commands: ['Batch', 'ExecutionPolicy', 'MessageLog', 'Prompt', 'Shell', 'retryIfSafe'].map(
+      (name) => `io.github.libtmux.kotlin.${name}`,
+    ),
     server: ['io.github.libtmux.kotlin.LibTmuxDsl'],
     control: ['io.github.libtmux.Channel.await', 'io.github.libtmux.Channel.awaitReservingCapacity'],
   },
   scala: {
-    snapshots: ['io.github.libtmux.scaladsl.live.LiveView', 'io.github.libtmux.scaladsl.streaming.Observation',
-      'io.github.libtmux.scaladsl.cats.Instances', 'io.github.libtmux.scaladsl.cats.Observation'],
+    snapshots: [
+      'io.github.libtmux.scaladsl.live.LiveView',
+      'io.github.libtmux.scaladsl.streaming.Observation',
+      'io.github.libtmux.scaladsl.cats.Instances',
+      'io.github.libtmux.scaladsl.cats.Observation',
+    ],
     commands: ['Batch', 'Shell', 'MessageLog', 'Prompt'].map((name) => `io.github.libtmux.scaladsl.cats.${name}`),
     control: ['io.github.libtmux.scaladsl.cats.Channel', 'io.github.libtmux.scaladsl.ox.Flows'],
   },
@@ -744,8 +793,7 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
 function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket {
   const placements = LANGUAGE_PLACEMENTS[port] ?? {}
   const ids = bucket.id === root ? placements[root] : undefined
-  const elsewhere = Object.entries(placements)
-    .flatMap(([id, symbols]) => id === root ? [] : symbols)
+  const elsewhere = Object.entries(placements).flatMap(([id, symbols]) => (id === root ? [] : symbols))
   const match: Match = elsewhere.length
     ? { kind: 'allOf', of: [bucket.match, { kind: 'not', of: { kind: 'id', is: elsewhere } }] }
     : bucket.match

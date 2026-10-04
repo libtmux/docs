@@ -144,7 +144,9 @@ if (asJson) {
   for (const c of checked) byPort[c.port] = (byPort[c.port] ?? 0) + 1
   console.log(
     `check-citations: ${checked.length} cited paths across ${Object.keys(byPort).length} ports ` +
-      `(${Object.entries(byPort).map(([p, n]) => `${p}:${n}`).join(' ')})`,
+      `(${Object.entries(byPort)
+        .map(([p, n]) => `${p}:${n}`)
+        .join(' ')})`,
   )
   for (const p of problems) {
     console.error(`  MISSING  ${p.file}:${p.line}  [${p.kind}]  ${p.port}: ${p.path}`)

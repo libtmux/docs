@@ -49,18 +49,14 @@ describeIfSource('Python extraction against gp-sphinx', () => {
     const pane = model.symbols.find((s) => s.publicId === 'libtmux.Pane' && s.kind === 'class')
     expect(pane, 'Pane class').toBeDefined()
 
-    const found = new Set(
-      model.symbols.filter((s) => s.parent === pane?.id).map((s) => s.publicId ?? s.id),
-    )
+    const found = new Set(model.symbols.filter((s) => s.parent === pane?.id).map((s) => s.publicId ?? s.id))
     const missing = expected.filter((id) => !found.has(id))
     expect(missing, `missing ${missing.length} of ${expected.length}`).toEqual([])
   })
 
   it('resolves inherited dataclass fields from another module', () => {
     const pane = model.symbols.find((s) => s.publicId === 'libtmux.Pane')
-    const field = model.symbols.find(
-      (s) => s.parent === pane?.id && s.name === 'buffer_name',
-    )
+    const field = model.symbols.find((s) => s.parent === pane?.id && s.name === 'buffer_name')
     expect(field?.inheritedFrom).toBe('libtmux.neo.Obj')
     expect(field?.publicId).toBe('libtmux.Pane.buffer_name')
   })
@@ -173,7 +169,10 @@ describeIfSource('id stability', () => {
       options: { privateMembers: true, specialMembers: true },
     })
     const key = (m: ApiModel) =>
-      m.symbols.map((s) => `${s.id}\t${s.publicId}`).sort().join('\n')
+      m.symbols
+        .map((s) => `${s.id}\t${s.publicId}`)
+        .sort()
+        .join('\n')
     expect(key(twice)).toBe(key(once))
   }, 120_000)
 
@@ -185,9 +184,7 @@ describeIfSource('id stability', () => {
     })
     // An inherited member is keyed on the class it lands on, so it stays put
     // even if the base it came from is renamed or re-homed.
-    const field = model.symbols.find(
-      (s) => s.publicId === 'libtmux.Pane.buffer_name',
-    )
+    const field = model.symbols.find((s) => s.publicId === 'libtmux.Pane.buffer_name')
     expect(field?.id).toBe('libtmux.pane.Pane.buffer_name')
     expect(field?.inheritedFrom).toBe('libtmux.neo.Obj')
   }, 120_000)
@@ -269,8 +266,13 @@ describe('methods belong to their types', () => {
     if (!methods.length) return
     const orphans = methods.filter((s) => !s.parent)
     const rate = 1 - orphans.length / methods.length
-    expect(rate, `${orphans.length} ownerless: ${orphans.slice(0, 3).map((s) => s.id).join(', ')}`)
-      .toBeGreaterThanOrEqual(0.95)
+    expect(
+      rate,
+      `${orphans.length} ownerless: ${orphans
+        .slice(0, 3)
+        .map((s) => s.id)
+        .join(', ')}`,
+    ).toBeGreaterThanOrEqual(0.95)
   })
 
   it('attaches a Go method to its receiver type', () => {
@@ -293,10 +295,11 @@ describe('the reference is pruned but not gutted', () => {
       const path = join(here, `../../site/src/data/api/${port}.json`)
       if (!existsSync(path)) continue
       const model = JSON.parse(readFileSync(path, 'utf8')) as ApiModel
-      const leaked = model.symbols.filter((s) =>
-        /^_?(internal|_generated)\./.test(s.publicId ?? s.id),
-      )
-      expect(leaked.map((s) => s.publicId), `${port} leaked internals`).toEqual([])
+      const leaked = model.symbols.filter((s) => /^_?(internal|_generated)\./.test(s.publicId ?? s.id))
+      expect(
+        leaked.map((s) => s.publicId),
+        `${port} leaked internals`,
+      ).toEqual([])
     }
   })
 

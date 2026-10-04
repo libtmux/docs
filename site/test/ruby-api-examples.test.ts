@@ -34,13 +34,18 @@ describe('verified complete Ruby API programs', () => {
       }
       const code = blocks[file.block].code
       expect(hash(code), `${example.symbol}/${file.name}`).toBe(file.sha256)
-      expect(exported.some((block) => hash(block.value + '\n') === file.sha256),
-        `${example.symbol}/${file.name} Markdown`).toBe(true)
+      expect(
+        exported.some((block) => hash(block.value + '\n') === file.sha256),
+        `${example.symbol}/${file.name} Markdown`,
+      ).toBe(true)
       expect(hash(code.replace(/\n$/, ''))).toBe(file.clipboardSha256)
     }
-    expect(blocks.filter((block) => block.lang === 'console')
-      .map((block) => block.code.replace(/^\$ /gm, '').trim())).toEqual(example.shellRecipe)
-    expect(blocks[2].sourceUrl).toBe(`https://github.com/${model.repo}/blob/${example.sourceRevision}/${example.sourceFile}`)
+    expect(
+      blocks.filter((block) => block.lang === 'console').map((block) => block.code.replace(/^\$ /gm, '').trim()),
+    ).toEqual(example.shellRecipe)
+    expect(blocks[2].sourceUrl).toBe(
+      `https://github.com/${model.repo}/blob/${example.sourceRevision}/${example.sourceFile}`,
+    )
     expect(markdown).toContain(`[Source example](${blocks[2].sourceUrl}).`)
     expect(blocks[2].code).toContain('require "libtmux"')
     expect(blocks[2].code).toContain('LibTmux::Server.start do')

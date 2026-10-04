@@ -3,7 +3,15 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Window } from 'happy-dom'
 import { API_MODEL_PORTS, PORTS } from '../src/lib/ports'
-import { SITE_BUILT, SITE_PREFIX, PREVIEW_PREFIX, productionPath, publishedHas, publishedPath, sitePath } from './site-root'
+import {
+  SITE_BUILT,
+  SITE_PREFIX,
+  PREVIEW_PREFIX,
+  productionPath,
+  publishedHas,
+  publishedPath,
+  sitePath,
+} from './site-root'
 
 /**
  * The published machine-readable artifacts, checked for shape and counts.
@@ -56,8 +64,7 @@ describeIfAssembled('published exports', () => {
 
     it('excludes preview and demo routes', () => {
       const index = readProduction('en/sitemap-index.xml')
-      const files = [...index.matchAll(/<loc>([^<]+)<\/loc>/g)]
-        .map((m) => new URL(m[1]).pathname.replace(/^\//, ''))
+      const files = [...index.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname.replace(/^\//, ''))
       const urls = files.flatMap((f) => [...readProduction(f).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]))
       expect(urls.length, 'sitemap has entries').toBeGreaterThan(0)
       expect(urls.filter((u) => /\/pr-|\/demo/.test(u))).toEqual([])
@@ -115,15 +122,17 @@ describeIfAssembled('published exports', () => {
     it('lists every port the site builds', () => {
       const m = manifest()
       expect(Array.isArray(m.ports), 'ports array').toBe(true)
-      expect(
-        (m.ports as Array<{ slug?: string }>).map((p) => p.slug).sort(),
-        'one entry per port in ports.ts',
-      ).toEqual(PORTS.map((p) => p.slug).sort())
+      expect((m.ports as Array<{ slug?: string }>).map((p) => p.slug).sort(), 'one entry per port in ports.ts').toEqual(
+        PORTS.map((p) => p.slug).sort(),
+      )
     })
 
     it.each(API_MODEL_PORTS)('advertises real $name reference sections and declaration links', async (port) => {
-      const reference = manifest().pages.find((page: { url: string; section: string }) =>
-        page.section === 'API reference' && new RegExp(`/${port.slug}/[^/]+/reference/$`).test(new URL(page.url).pathname))
+      const reference = manifest().pages.find(
+        (page: { url: string; section: string }) =>
+          page.section === 'API reference' &&
+          new RegExp(`/${port.slug}/[^/]+/reference/$`).test(new URL(page.url).pathname),
+      )
       expect(reference).toBeDefined()
       expect(reference.title).toBe('API reference')
       const root = new URL(reference.url).pathname.replace(/^\//, '')
@@ -166,7 +175,8 @@ describeIfAssembled('published exports', () => {
   describe('native shell assets', () => {
     for (const version of ['latest', 'stable']) {
       it.skipIf(!has(`${SITE_PREFIX}py/${version}/api/api/libtmux.session/index.html`))(
-        `${version} uses compiled shared chrome and the native palette adapter`, () => {
+        `${version} uses compiled shared chrome and the native palette adapter`,
+        () => {
           const html = read(`py/${version}/api/api/libtmux.session/index.html`)
           expect(html).toContain('data-native-shell=')
           expect(html).toMatch(/href="[^"]*\/_astro\/[^"]+\.css"/)
@@ -183,13 +193,19 @@ describeIfAssembled('published exports', () => {
       const manifest = JSON.parse(read('page-links.json'))
       expect(manifest.schema).toBe(1)
       expect(Object.keys(manifest.indexes).sort()).toEqual(PORTS.map((port) => port.slug).sort())
-      expect(manifest.symbols.py['libtmux.Session.windows']).toEqual(expect.arrayContaining([
-        expect.objectContaining({ port: 'ts', href: expect.stringMatching(/\/ts\/[^/]+\/reference\/session-session-windows\/$/) }),
-      ]))
+      expect(manifest.symbols.py['libtmux.Session.windows']).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            port: 'ts',
+            href: expect.stringMatching(/\/ts\/[^/]+\/reference\/session-session-windows\/$/),
+          }),
+        ]),
+      )
       const targets = new Set([
         ...Object.values(manifest.indexes as Record<string, string>),
-        ...Object.values(manifest.symbols as Record<string, Record<string, { href: string }[]>>)
-          .flatMap((symbols) => Object.values(symbols).flatMap((entries) => entries.map((entry) => entry.href))),
+        ...Object.values(manifest.symbols as Record<string, Record<string, { href: string }[]>>).flatMap((symbols) =>
+          Object.values(symbols).flatMap((entries) => entries.map((entry) => entry.href)),
+        ),
       ])
       const missing = [...targets].filter((href) => {
         const path = new URL(href, 'https://libtmux.org').pathname.replace(/^\//, '')
@@ -203,7 +219,11 @@ describeIfAssembled('published exports', () => {
     it('is a complete cluster wherever it appears, including x-default', () => {
       // A partial cluster is worse than none: a page that advertises `ja` but
       // not `x-default` tells a crawler the site has no fallback.
-      for (const page of [`${SITE_PREFIX}index.html`, `${SITE_PREFIX}concepts/index.html`, `${PREVIEW_PREFIX}/ja/index.html`]) {
+      for (const page of [
+        `${SITE_PREFIX}index.html`,
+        `${SITE_PREFIX}concepts/index.html`,
+        `${PREVIEW_PREFIX}/ja/index.html`,
+      ]) {
         if (!has(page)) continue
         const html = readPublished(page)
         const tags = [...html.matchAll(/<link\b[^>]*hreflang="([^"]+)"/g)].map((m) => m[1])

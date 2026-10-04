@@ -38,7 +38,8 @@ for (const [owner, file] of [
   ['lua', 'examples/quickstart.lua'],
   ['lua', 'examples/native_query.lua'],
   ['lua', 'examples/snapshot.lua'],
-]) wanted.set(`${owner}:${file}`, { owner, file })
+])
+  wanted.set(`${owner}:${file}`, { owner, file })
 for (const md of markdownFiles(CONTENT)) {
   const text = readFileSync(md, 'utf8')
   for (const m of text.matchAll(/^```(\w+)([^\n]*)$/gm)) {
@@ -56,13 +57,22 @@ const digest = (content) => createHash('sha256').update(content).digest('hex')
 export function cachedExample({ repository, revision, file, checkout, current }) {
   if (!/^[a-f0-9]{40}$/.test(revision)) throw new Error(`Invalid example revision: ${revision}`)
   if (existsSync(join(checkout, '.git'))) {
-    const content = execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`],
-      { encoding: 'utf8', maxBuffer: 4 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] })
+    const content = execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
+      encoding: 'utf8',
+      maxBuffer: 4 * 1024 * 1024,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
     return { repository, revision, sha256: digest(content), content }
   }
-  if (current?.repository !== repository || current?.revision !== revision ||
-      typeof current.content !== 'string' || current.sha256 !== digest(current.content)) {
-    throw new Error(`${repository}:${file}: no verified cache for ${revision}; provide its checkout and regenerate example sources`)
+  if (
+    current?.repository !== repository ||
+    current?.revision !== revision ||
+    typeof current.content !== 'string' ||
+    current.sha256 !== digest(current.content)
+  ) {
+    throw new Error(
+      `${repository}:${file}: no verified cache for ${revision}; provide its checkout and regenerate example sources`,
+    )
   }
   return current
 }
@@ -74,7 +84,8 @@ export function run() {
   const offline = new Set()
   for (const [key, { owner, file }] of [...wanted].sort((a, b) => a[0].localeCompare(b[0]))) {
     const modelPath = join(root, `site/src/data/api/${owner}.json`)
-    const provenance = existsSync(modelPath) ? JSON.parse(readFileSync(modelPath, 'utf8'))
+    const provenance = existsSync(modelPath)
+      ? JSON.parse(readFileSync(modelPath, 'utf8'))
       : JSON.parse(readFileSync(join(root, `site/src/data/port-guides/${owner}.json`), 'utf8')).source
     const repository = provenance.repository ?? provenance.repo
     const revision = provenance.revision
@@ -83,10 +94,16 @@ export function run() {
     cache[key] = cachedExample({ repository, revision, file, checkout, current: previous[key] })
   }
   const merged = `${JSON.stringify(cache, null, 2)}\n`
-  if (check && merged !== current) throw new Error(`${OUT}: stale example sources; run node scripts/gen-example-sources.mjs`)
+  if (check && merged !== current)
+    throw new Error(`${OUT}: stale example sources; run node scripts/gen-example-sources.mjs`)
   if (!check) writeFileSync(OUT, merged)
-  console.log(`gen-example-sources: ${check ? 'cache matches' : 'wrote'} ${Object.keys(cache).length} revision-bound example sources`)
-  if (offline.size) console.log(`gen-example-sources: cached sources for ${[...offline].join(', ')}; checksums and revisions checked, source checkouts unavailable`)
+  console.log(
+    `gen-example-sources: ${check ? 'cache matches' : 'wrote'} ${Object.keys(cache).length} revision-bound example sources`,
+  )
+  if (offline.size)
+    console.log(
+      `gen-example-sources: cached sources for ${[...offline].join(', ')}; checksums and revisions checked, source checkouts unavailable`,
+    )
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) run()

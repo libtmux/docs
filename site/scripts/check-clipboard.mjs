@@ -14,55 +14,81 @@ export function assertCompleteApiExample(rendered, example) {
     const files = example.files.filter((entry) => entry.sourceFile === file)
     const linkGroups = files.length ? files.map((entry) => rendered.sourceLinks[entry.block]) : [rendered.links]
     for (const links of linkGroups) {
-      assert.deepEqual(links.filter((link) => link.href === href),
-        [{ href, label: 'View source' }], `${example.symbol}: exact pinned source is a readable link for its file`)
+      assert.deepEqual(
+        links.filter((link) => link.href === href),
+        [{ href, label: 'View source' }],
+        `${example.symbol}: exact pinned source is a readable link for its file`,
+      )
     }
   }
   assert(!rendered.text.includes('[source example]('), `${example.symbol}: no literal Markdown link`)
   for (const file of example.files) {
     if (file.clipboardSha256) {
-      assert.equal(createHash('sha256').update(rendered.files[file.block]).digest('hex'),
-        file.clipboardSha256, `${example.symbol}/${file.name}: exact clipboard bytes`)
+      assert.equal(
+        createHash('sha256').update(rendered.files[file.block]).digest('hex'),
+        file.clipboardSha256,
+        `${example.symbol}/${file.name}: exact clipboard bytes`,
+      )
     }
-    const digest = createHash('sha256').update(rendered.files[file.block] + '\n').digest('hex')
+    const digest = createHash('sha256')
+      .update(rendered.files[file.block] + '\n')
+      .digest('hex')
     assert.equal(digest, file.sha256, `${example.symbol}/${file.name}: copied file matches native receipt`)
   }
   if (example.consoleBlocks) {
-    assert.deepEqual(example.consoleBlocks.map((index) => rendered.files[index]), example.shellRecipe,
-      `${example.symbol}: copied setup and run commands match native receipts`)
+    assert.deepEqual(
+      example.consoleBlocks.map((index) => rendered.files[index]),
+      example.shellRecipe,
+      `${example.symbol}: copied setup and run commands match native receipts`,
+    )
   }
 }
 
 /** Inspect rendered API examples against their native execution receipts. */
 export async function checkCompleteApiExamples(browser, base) {
-  const examples = JSON.parse(readFileSync(new URL('../test/fixtures/api-examples.json', import.meta.url), 'utf8')).examples
+  const examples = JSON.parse(
+    readFileSync(new URL('../test/fixtures/api-examples.json', import.meta.url), 'utf8'),
+  ).examples
   const page = await browser.newPage()
   try {
     for (const example of examples) {
       const path = example.page.replace(`ports/${example.port}/`, `${example.port}/latest/`)
       const response = await page.request.get(`${base}/${path}/`)
       assert(response.ok(), `${example.symbol}: HTTP ${response.status()}`)
-      const rendered = await page.evaluate(({ html, symbol }) => {
-        const doc = new DOMParser().parseFromString(html, 'text/html')
-        const section = doc.getElementById(`${symbol}.examples`)
-        return section && {
-          text: section.textContent,
-          links: [...section.querySelectorAll('.gp-sphinx-api-example-intro a')]
-            .map((link) => ({ href: link.getAttribute('href'), label: link.textContent })),
-          sourceLinks: [...section.querySelectorAll('.gp-sphinx-api-example')].map((block) => {
-            const intro = block.previousElementSibling
-            return intro?.matches('.gp-sphinx-api-example-intro')
-              ? [...intro.querySelectorAll('a')].map((link) => ({ href: link.getAttribute('href'), label: link.textContent }))
-              : []
-          }),
-          files: [...section.querySelectorAll('.gp-sphinx-api-example [data-code]')]
-            .map((button) => button.getAttribute('data-code').replaceAll('\x7f', '\n')),
-        }
-      }, { html: await response.text(), symbol: example.publicId ?? example.symbol })
+      const rendered = await page.evaluate(
+        ({ html, symbol }) => {
+          const doc = new DOMParser().parseFromString(html, 'text/html')
+          const section = doc.getElementById(`${symbol}.examples`)
+          return (
+            section && {
+              text: section.textContent,
+              links: [...section.querySelectorAll('.gp-sphinx-api-example-intro a')].map((link) => ({
+                href: link.getAttribute('href'),
+                label: link.textContent,
+              })),
+              sourceLinks: [...section.querySelectorAll('.gp-sphinx-api-example')].map((block) => {
+                const intro = block.previousElementSibling
+                return intro?.matches('.gp-sphinx-api-example-intro')
+                  ? [...intro.querySelectorAll('a')].map((link) => ({
+                      href: link.getAttribute('href'),
+                      label: link.textContent,
+                    }))
+                  : []
+              }),
+              files: [...section.querySelectorAll('.gp-sphinx-api-example [data-code]')].map((button) =>
+                button.getAttribute('data-code').replaceAll('\x7f', '\n'),
+              ),
+            }
+          )
+        },
+        { html: await response.text(), symbol: example.publicId ?? example.symbol },
+      )
       assert(rendered, `${example.symbol}: Examples section exists`)
       assertCompleteApiExample(rendered, example)
     }
-    console.log(`API examples: ${examples.length} programs on ${new Set(examples.map((example) => example.page)).size} pages preserve source links and copied file hashes`)
+    console.log(
+      `API examples: ${examples.length} programs on ${new Set(examples.map((example) => example.page)).size} pages preserve source links and copied file hashes`,
+    )
   } finally {
     await page.close()
   }
@@ -101,32 +127,43 @@ export async function checkClipboard(page, base) {
     for (const mode of ['api', 'rejected', 'fallback', 'false', 'throw']) {
       await page.evaluate((mode) => {
         window.__clipboardProbe = { api: [], fallback: [] }
-        Object.defineProperty(navigator, 'clipboard', { configurable: true,
-          value: ['api', 'rejected'].includes(mode) ? {
-            writeText: async (text) => {
-              window.__clipboardProbe.api.push(text)
-              if (mode === 'rejected') throw new Error('Clipboard denied')
-            },
-          } : undefined,
+        Object.defineProperty(navigator, 'clipboard', {
+          configurable: true,
+          value: ['api', 'rejected'].includes(mode)
+            ? {
+                writeText: async (text) => {
+                  window.__clipboardProbe.api.push(text)
+                  if (mode === 'rejected') throw new Error('Clipboard denied')
+                },
+              }
+            : undefined,
         })
-        Object.defineProperty(document, 'execCommand', { configurable: true, value: () => {
-          window.__clipboardProbe.fallback.push(document.activeElement.value)
-          if (mode === 'throw') throw new Error('Clipboard denied')
-          return mode !== 'false'
-        } })
+        Object.defineProperty(document, 'execCommand', {
+          configurable: true,
+          value: () => {
+            window.__clipboardProbe.fallback.push(document.activeElement.value)
+            if (mode === 'throw') throw new Error('Clipboard denied')
+            return mode !== 'false'
+          },
+        })
       }, mode)
-      await button.evaluate((element) => { element.textContent = 'Copy' })
+      await button.evaluate((element) => {
+        element.textContent = 'Copy'
+      })
       const copied = !['false', 'throw'].includes(mode)
       // Record the transient label before a busy renderer can reset it.
-      await button.evaluate((element, label) => {
-        window.__copyFeedback = undefined
-        const observer = new MutationObserver(() => {
-          if (element.textContent !== label) return
-          window.__copyFeedback = label
-          observer.disconnect()
-        })
-        observer.observe(element, { childList: true, characterData: true, subtree: true })
-      }, copied ? 'Copied' : 'Copy failed')
+      await button.evaluate(
+        (element, label) => {
+          window.__copyFeedback = undefined
+          const observer = new MutationObserver(() => {
+            if (element.textContent !== label) return
+            window.__copyFeedback = label
+            observer.disconnect()
+          })
+          observer.observe(element, { childList: true, characterData: true, subtree: true })
+        },
+        copied ? 'Copied' : 'Copy failed',
+      )
       await button.click()
       await page.waitForFunction((label) => window.__copyFeedback === label, copied ? 'Copied' : 'Copy failed')
       const announcement = copied ? 'Copied to clipboard.' : 'Copy failed. Select and copy the text manually.'
@@ -146,48 +183,90 @@ export async function checkClipboard(page, base) {
   const actions = page.locator('[data-page-actions]')
   await actions.locator('summary').click()
   const edit = actions.getByRole('link', { name: 'Edit this page on GitHub' })
-  assert.match(await edit.getAttribute('href'), /\/edit\/main\/site\/src\/content\/docs\/examples\/attach-and-send-keys\.md$/)
+  assert.match(
+    await edit.getAttribute('href'),
+    /\/edit\/main\/site\/src\/content\/docs\/examples\/attach-and-send-keys\.md$/,
+  )
   assert.equal(await page.locator('article').getByRole('link', { name: 'Edit this page on GitHub' }).count(), 0)
   const markdownHref = await page.locator('link[rel="alternate"][type="text/markdown"]').getAttribute('href')
   const markdown = await (await page.request.get(new URL(markdownHref, page.url()).href)).text()
-  const panelHeight = await actions.locator('.page-actions__panel').evaluate((element) => element.getBoundingClientRect().height)
+  const panelHeight = await actions
+    .locator('.page-actions__panel')
+    .evaluate((element) => element.getBoundingClientRect().height)
   for (const mode of ['accepted', 'refused']) {
     await page.evaluate((mode) => {
       window.__markdownCopied = undefined
-      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
-        write: async (items) => {
-          if (mode === 'refused') throw new Error('Clipboard denied')
-          window.__markdownCopied = await (await items[0].getType('text/plain')).text()
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: {
+          write: async (items) => {
+            if (mode === 'refused') throw new Error('Clipboard denied')
+            window.__markdownCopied = await (await items[0].getType('text/plain')).text()
+          },
         },
-      } })
+      })
     }, mode)
     await actions.getByRole('button', { name: 'Copy Markdown' }).click()
-    await page.waitForFunction(() => /Markdown copied|Could not copy/.test(document.querySelector('[data-page-actions] [role="status"]').textContent))
+    await page.waitForFunction(() =>
+      /Markdown copied|Could not copy/.test(document.querySelector('[data-page-actions] [role="status"]').textContent),
+    )
     if (mode === 'accepted') {
       assert.equal(await page.evaluate(() => window.__markdownCopied), markdown)
       await actions.locator('[data-page-copy][data-copied] .page-actions__copied').waitFor({ state: 'visible' })
-      assert.equal(await actions.locator('.page-actions__panel').evaluate((element) => element.getBoundingClientRect().height), panelHeight,
-        'Copy success does not add a menu row')
-      assert(await actions.locator('[role="status"]').evaluate((element) => element.classList.contains('sr-only')), 'Success is announced without a visible status row')
-      assert(await actions.getByRole('button', { name: 'Copy Markdown' }).evaluate((element) => element === document.activeElement), 'Copy preserves focus')
-      await page.waitForFunction(() => !document.querySelector('[data-page-copy]').hasAttribute('data-copied'), null, { timeout: 3000 })
+      assert.equal(
+        await actions.locator('.page-actions__panel').evaluate((element) => element.getBoundingClientRect().height),
+        panelHeight,
+        'Copy success does not add a menu row',
+      )
+      assert(
+        await actions.locator('[role="status"]').evaluate((element) => element.classList.contains('sr-only')),
+        'Success is announced without a visible status row',
+      )
+      assert(
+        await actions
+          .getByRole('button', { name: 'Copy Markdown' })
+          .evaluate((element) => element === document.activeElement),
+        'Copy preserves focus',
+      )
+      await page.waitForFunction(() => !document.querySelector('[data-page-copy]').hasAttribute('data-copied'), null, {
+        timeout: 3000,
+      })
     } else {
-      assert.equal(await actions.getByRole('link', { name: 'Open Markdown' }).getAttribute('href'), new URL(markdownHref, page.url()).href)
-      assert.equal(await actions.locator('[data-page-copy][data-copied]').count(), 0, 'A failed copy clears the success checkmark')
-      assert(await actions.getByRole('link', { name: 'Open Markdown' }).isVisible(), 'Failure keeps a visible recovery action')
+      assert.equal(
+        await actions.getByRole('link', { name: 'Open Markdown' }).getAttribute('href'),
+        new URL(markdownHref, page.url()).href,
+      )
+      assert.equal(
+        await actions.locator('[data-page-copy][data-copied]').count(),
+        0,
+        'A failed copy clears the success checkmark',
+      )
+      assert(
+        await actions.getByRole('link', { name: 'Open Markdown' }).isVisible(),
+        'Failure keeps a visible recovery action',
+      )
     }
   }
-  await page.evaluate(() => { window.print = () => { window.__pagePrinted = true } })
+  await page.evaluate(() => {
+    window.print = () => {
+      window.__pagePrinted = true
+    }
+  })
   await actions.getByRole('button', { name: 'Print', exact: true }).click()
   assert(await page.evaluate(() => window.__pagePrinted), 'Print invokes the browser print dialog')
   assert.equal(await actions.getAttribute('open'), null)
   await actions.locator('summary').click()
   await page.keyboard.press('Escape')
   assert.equal(await actions.getAttribute('open'), null)
-  assert(await actions.locator('summary').evaluate((element) => document.activeElement === element), 'Escape returns focus to Page actions')
+  assert(
+    await actions.locator('summary').evaluate((element) => document.activeElement === element),
+    'Escape returns focus to Page actions',
+  )
   console.log('Page actions: Markdown bytes, clipboard refusal, Edit, Print and Escape pass')
 
-  const examples = JSON.parse(readFileSync(new URL('../test/fixtures/product-examples.json', import.meta.url), 'utf8')).examples
+  const examples = JSON.parse(
+    readFileSync(new URL('../test/fixtures/product-examples.json', import.meta.url), 'utf8'),
+  ).examples
   const example = examples.find((entry) => entry.page === 'ports/go/workspace/internals/examples')
   assert(example, 'The Go workspace example has a native execution receipt')
   const response = await page.goto(`${base}/go/latest/workspace/internals/examples/`, { waitUntil: 'load' })
@@ -196,21 +275,38 @@ export async function checkClipboard(page, base) {
   for (const file of example.files) {
     const figure = page.getByRole('figure', { name: file.name, exact: true })
     const displayed = await figure.locator('.ec-line .code').allTextContents()
-    assert.equal(digest(displayed.map((line) => line === '\n' ? '' : line).join('\n') + '\n'),
-      file.sha256, `${file.name}: rendering preserves executed bytes, including tabs`)
+    assert.equal(
+      digest(displayed.map((line) => (line === '\n' ? '' : line)).join('\n') + '\n'),
+      file.sha256,
+      `${file.name}: rendering preserves executed bytes, including tabs`,
+    )
     await page.evaluate(() => {
       window.__programCopied = undefined
-      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
-        writeText: async (text) => { window.__programCopied = text },
-      } })
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: {
+          writeText: async (text) => {
+            window.__programCopied = text
+          },
+        },
+      })
     })
     await figure.getByRole('button', { name: 'Copy to clipboard', exact: true }).click()
     await page.waitForFunction(() => window.__programCopied !== undefined)
-    assert.equal(digest(await page.evaluate(() => window.__programCopied) + '\n'), file.sha256,
-      `${file.name}: the copy button preserves executed bytes`)
+    assert.equal(
+      digest((await page.evaluate(() => window.__programCopied)) + '\n'),
+      file.sha256,
+      `${file.name}: the copy button preserves executed bytes`,
+    )
   }
-  assert.equal(await page.locator('.expressive-code .code').first().evaluate((element) =>
-    getComputedStyle(element).tabSize), '2', 'Literal tabs use two-column tab stops')
+  assert.equal(
+    await page
+      .locator('.expressive-code .code')
+      .first()
+      .evaluate((element) => getComputedStyle(element).tabSize),
+    '2',
+    'Literal tabs use two-column tab stops',
+  )
   console.log('Complete Go example: rendered and copied files match the native receipt, including tabs')
 }
 

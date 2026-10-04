@@ -4,7 +4,12 @@ import { createInterface } from 'node:readline'
 /** Schema object order is not semantic; some SDKs emit hash maps in random order. */
 export function orderedProtocol(value) {
   if (Array.isArray(value)) return value.map(orderedProtocol)
-  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [key, orderedProtocol(item)]))
+  if (value && typeof value === 'object')
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, item]) => [key, orderedProtocol(item)]),
+    )
   return value
 }
 
@@ -14,7 +19,12 @@ export function orderedProtocol(value) {
  */
 export async function captureProtocol({ command, args = [], cwd, env = {}, timeoutMs = 30000 }) {
   const grouped = process.platform !== 'win32'
-  const child = spawn(command, args, { cwd, env: { ...process.env, ...env }, stdio: ['pipe', 'pipe', 'pipe'], detached: grouped })
+  const child = spawn(command, args, {
+    cwd,
+    env: { ...process.env, ...env },
+    stdio: ['pipe', 'pipe', 'pipe'],
+    detached: grouped,
+  })
   const closed = new Promise((resolve) => child.once('close', resolve))
   const stop = (signal) => {
     if (!child.pid) return
@@ -28,7 +38,9 @@ export async function captureProtocol({ command, args = [], cwd, env = {}, timeo
   const pending = new Map()
   let nextId = 0
   let stderr = ''
-  child.stderr.on('data', (chunk) => { stderr = (stderr + chunk).slice(-4096) })
+  child.stderr.on('data', (chunk) => {
+    stderr = (stderr + chunk).slice(-4096)
+  })
   const lines = createInterface({ input: child.stdout })
   const fail = (error) => {
     for (const request of pending.values()) request.reject(error)
@@ -39,20 +51,26 @@ export async function captureProtocol({ command, args = [], cwd, env = {}, timeo
   child.on('exit', (code) => fail(new Error(`MCP process exited ${code}: ${stderr}`)))
   lines.on('line', (line) => {
     let message
-    try { message = JSON.parse(line) } catch { return }
+    try {
+      message = JSON.parse(line)
+    } catch {
+      return
+    }
     const request = pending.get(message.id)
     if (!request) return
     pending.delete(message.id)
-    if (message.error?.code === -32601 && request.method === 'resources/templates/list') request.resolve({ resourceTemplates: [] })
+    if (message.error?.code === -32601 && request.method === 'resources/templates/list')
+      request.resolve({ resourceTemplates: [] })
     else if (message.error) request.reject(new Error(JSON.stringify(message.error)))
     else request.resolve(message.result)
   })
   const send = (message) => child.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`)
-  const request = (method, params) => new Promise((resolve, reject) => {
-    const id = ++nextId
-    pending.set(id, { resolve, reject, method })
-    send({ id, method, ...(params ? { params } : {}) })
-  })
+  const request = (method, params) =>
+    new Promise((resolve, reject) => {
+      const id = ++nextId
+      pending.set(id, { resolve, reject, method })
+      send({ id, method, ...(params ? { params } : {}) })
+    })
   const timeout = setTimeout(() => {
     fail(new Error(`MCP discovery timed out: ${stderr}`))
     stop('SIGKILL')
@@ -69,7 +87,8 @@ export async function captureProtocol({ command, args = [], cwd, env = {}, timeo
   }
   try {
     const initialized = await request('initialize', {
-      protocolVersion: '2025-11-25', capabilities: {},
+      protocolVersion: '2025-11-25',
+      capabilities: {},
       clientInfo: { name: 'libtmux-docs-reference', version: '1' },
     })
     send({ method: 'notifications/initialized' })

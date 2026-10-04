@@ -61,9 +61,10 @@ it('gives Kotlin, Scala and F# native references with parent type links', () => 
     const index = createApiIndex(model, (symbol) => `/reference/${symbol.slug}/`)
     if (port === 'fsharp') {
       const capture = model.symbols.find((symbol) => symbol.id === 'LibTmux.FSharp.Pane.capture')!
-      expect(index.linkType(capture.signatures[0].raw!, capture)
-        .find((span) => span.text === 'CapturePaneRequest')?.link?.href)
-        .toBe('/csharp/latest/reference/libtmux-capturepanerequest/')
+      expect(
+        index.linkType(capture.signatures[0].raw!, capture).find((span) => span.text === 'CapturePaneRequest')?.link
+          ?.href,
+      ).toBe('/csharp/latest/reference/libtmux-capturepanerequest/')
     } else {
       const parent = index.resolve('io.github.libtmux.Server')
       expect(parent?.href).toBe('/java/latest/reference/io-github-libtmux-server-server/')
@@ -79,17 +80,29 @@ describe('product reference equivalents', () => {
     expect(model.symbols.some((symbol) => symbol.id === 'WorkspaceBuilderError.!=(_:_:)')).toBe(false)
     const routes = productApiRedirects({ swift: model }, 'swift', {}, 'latest')
     expect(routes).toHaveLength(1)
-    expect(routes[0]).toMatchObject({ path: 'workspace/reference/workspacebuildererror-(_-_-)',
-      target: 'workspace/reference/workspacebuildererror', symbol: { id: 'WorkspaceBuilderError' } })
-    expect(productApiRoutes({ swift: model }, 'swift', {}, 'latest')
-      .some((route) => route.path === routes[0].path)).toBe(false)
-    expect(productApiRedirects({ swift: model }, undefined, { swift: 'stable' }, 'latest')[0].path)
-      .toBe(`swift/stable/${routes[0].path}`)
+    expect(routes[0]).toMatchObject({
+      path: 'workspace/reference/workspacebuildererror-(_-_-)',
+      target: 'workspace/reference/workspacebuildererror',
+      symbol: { id: 'WorkspaceBuilderError' },
+    })
+    expect(
+      productApiRoutes({ swift: model }, 'swift', {}, 'latest').some((route) => route.path === routes[0].path),
+    ).toBe(false)
+    expect(productApiRedirects({ swift: model }, undefined, { swift: 'stable' }, 'latest')[0].path).toBe(
+      `swift/stable/${routes[0].path}`,
+    )
     expect(productApiRedirects({ swift: model }, 'go', {}, 'latest')).toEqual([])
     expect(productApiRedirects({}, 'swift', {}, 'latest')).toEqual([])
-    const oldModel = { ...model, symbols: [...model.symbols, {
-      ...routes[0].symbol, id: 'WorkspaceBuilderError.!=(_:_:)',
-    }] }
+    const oldModel = {
+      ...model,
+      symbols: [
+        ...model.symbols,
+        {
+          ...routes[0].symbol,
+          id: 'WorkspaceBuilderError.!=(_:_:)',
+        },
+      ],
+    }
     expect(productApiRedirects({ swift: oldModel }, 'swift', {}, 'v0.1.0')).toEqual([])
   })
 
@@ -97,10 +110,18 @@ describe('product reference equivalents', () => {
     const model = API_MODELS.go
     const symbol = model.symbols.find((entry) => entry.id === 'workspace.Build')!
     const group = productApiAlternatives(model, symbol, 'v1.2.3', { ts: 'stable' })[0]
-    expect(group.ports.find((entry) => entry.port === 'go')?.href).toBe('/go/v1.2.3/workspace/reference/workspace-build/')
-    expect(group.ports.find((entry) => entry.port === 'ts')?.href).toBe('/ts/stable/workspace/reference/builder-applyworkspace/')
-    expect(group.ports.find((entry) => entry.port === 'rs')?.href).toBe('/rs/latest/workspace/reference/src-workspacebuilder-build/')
-    expect(referenceAlternatives('go', symbol.id)[0].ports.find((entry) => entry.port === 'ts')?.href).toBe('/ts/latest/workspace/reference/builder-applyworkspace/')
+    expect(group.ports.find((entry) => entry.port === 'go')?.href).toBe(
+      '/go/v1.2.3/workspace/reference/workspace-build/',
+    )
+    expect(group.ports.find((entry) => entry.port === 'ts')?.href).toBe(
+      '/ts/stable/workspace/reference/builder-applyworkspace/',
+    )
+    expect(group.ports.find((entry) => entry.port === 'rs')?.href).toBe(
+      '/rs/latest/workspace/reference/src-workspacebuilder-build/',
+    )
+    expect(referenceAlternatives('go', symbol.id)[0].ports.find((entry) => entry.port === 'ts')?.href).toBe(
+      '/ts/latest/workspace/reference/builder-applyworkspace/',
+    )
   })
 
   it('publishes every product declaration in its own reference', () => {

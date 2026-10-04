@@ -57,7 +57,8 @@ export function parseManual(html, commands, version) {
     link.append(code)
   }
   const sections = [...document.querySelectorAll('section.Sh > h1')].map((heading) => ({
-    id: heading.id, title: compact(heading.textContent),
+    id: heading.id,
+    title: compact(heading.textContent),
   }))
   for (const heading of document.querySelectorAll('h1, h2')) {
     const replacement = document.createElement(heading.tagName === 'H1' ? 'h2' : 'h3')
@@ -82,8 +83,12 @@ export function parseManual(html, commands, version) {
     }
     const related = { 'set-window-option': 'set-option', 'show-window-options': 'show-options' }[command.name]
     if (!related) throw new Error(`Command absent from the manual: ${command.name}`)
-    return { ...command, section: 'OPTIONS', summary: `Window-scoped form of ${related}.`,
-      html: `<p>Use <a href="${base}${related}/"><code>${related}</code></a> for the option semantics. This command selects window scope. Its accepted flags are listed above.</p>` }
+    return {
+      ...command,
+      section: 'OPTIONS',
+      summary: `Window-scoped form of ${related}.`,
+      html: `<p>Use <a href="${base}${related}/"><code>${related}</code></a> for the option semantics. This command selects window scope. Its accepted flags are listed above.</p>`,
+    }
   })
   const manual = document.body.innerHTML
   window.happyDOM.abort()
@@ -94,7 +99,9 @@ function main() {
   const args = process.argv.slice(2)
   const option = (name) => args[args.indexOf(name) + 1]
   if (!args.includes('--source') || !args.includes('--binaries') || !args.includes('--mandoc')) {
-    throw new Error('Usage: gen-tmux-manual.mjs --source <tmux-git> --binaries <version/bin/tmux parent> --mandoc <executable> [--check]')
+    throw new Error(
+      'Usage: gen-tmux-manual.mjs --source <tmux-git> --binaries <version/bin/tmux parent> --mandoc <executable> [--check]',
+    )
   }
   const source = resolve(option('--source'))
   const binaries = resolve(option('--binaries'))
@@ -112,27 +119,67 @@ function main() {
     delete env.TMUX_PANE
     let catalog
     try {
-      execFileSync(binary, ['-S', socket, '-f', '/dev/null', 'new-session', '-d', '-s', 'reference', '/bin/cat'], { env })
-      catalog = execFileSync(binary, ['-S', socket, '-f', '/dev/null', 'list-commands', '-F',
-        '#{command_list_name}\t#{command_list_alias}\t#{command_list_usage}'], { encoding: 'utf8', env })
+      execFileSync(binary, ['-S', socket, '-f', '/dev/null', 'new-session', '-d', '-s', 'reference', '/bin/cat'], {
+        env,
+      })
+      catalog = execFileSync(
+        binary,
+        [
+          '-S',
+          socket,
+          '-f',
+          '/dev/null',
+          'list-commands',
+          '-F',
+          '#{command_list_name}\t#{command_list_alias}\t#{command_list_usage}',
+        ],
+        { encoding: 'utf8', env },
+      )
     } finally {
       if (existsSync(socket)) execFileSync(binary, ['-S', socket, 'kill-server'], { env })
       rmSync(temporary, { recursive: true })
     }
-    const declarations = execFileSync('git', ['-C', source, 'grep', '-n', '-E', '\\.name = "', revision, '--', 'cmd-*.c'], { encoding: 'utf8' })
-    const sources = new Map([...declarations.matchAll(/^[^:]+:([^:]+):(\d+):.*\.name = "([^"]+)"/gm)]
-      .map((match) => [match[3], { sourceFile: match[1], sourceLine: Number(match[2]) }]))
-    const commands = catalog.trimEnd().split('\n').map((line) => {
-      const [name, alias, usage = ''] = line.split('\t')
-      if (!/^[a-z]+(?:-[a-z]+)*$/.test(name)) throw new Error(`Invalid command: ${name}`)
-      if (!sources.has(name)) throw new Error(`Missing source declaration: ${name}`)
-      return { name, alias, usage, ...sources.get(name) }
+    const declarations = execFileSync(
+      'git',
+      ['-C', source, 'grep', '-n', '-E', '\\.name = "', revision, '--', 'cmd-*.c'],
+      { encoding: 'utf8' },
+    )
+    const sources = new Map(
+      [...declarations.matchAll(/^[^:]+:([^:]+):(\d+):.*\.name = "([^"]+)"/gm)].map((match) => [
+        match[3],
+        { sourceFile: match[1], sourceLine: Number(match[2]) },
+      ]),
+    )
+    const commands = catalog
+      .trimEnd()
+      .split('\n')
+      .map((line) => {
+        const [name, alias, usage = ''] = line.split('\t')
+        if (!/^[a-z]+(?:-[a-z]+)*$/.test(name)) throw new Error(`Invalid command: ${name}`)
+        if (!sources.has(name)) throw new Error(`Missing source declaration: ${name}`)
+        return { name, alias, usage, ...sources.get(name) }
+      })
+    const html = execFileSync(mandoc, ['-Thtml', '-Ofragment'], {
+      input: manual,
+      encoding: 'utf8',
+      maxBuffer: 4 * 1024 * 1024,
     })
-    const html = execFileSync(mandoc, ['-Thtml', '-Ofragment'], { input: manual, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 })
-    const license = manual.split('\n.Dd')[0].split('\n').filter((line) => line.startsWith('.\\"')).slice(2)
-      .map((line) => line.replace(/^\.\\" ?/, '')).join('\n').trim()
-    const model = { version, revision, manualSha256: digest(manual), catalogSha256: digest(catalog), license,
-      ...parseManual(html, commands, version) }
+    const license = manual
+      .split('\n.Dd')[0]
+      .split('\n')
+      .filter((line) => line.startsWith('.\\"'))
+      .slice(2)
+      .map((line) => line.replace(/^\.\\" ?/, ''))
+      .join('\n')
+      .trim()
+    const model = {
+      version,
+      revision,
+      manualSha256: digest(manual),
+      catalogSha256: digest(catalog),
+      license,
+      ...parseManual(html, commands, version),
+    }
     const target = join(dataDir, `${version}.json`)
     const output = `${JSON.stringify(model, null, 2)}\n`
     if (args.includes('--check')) {

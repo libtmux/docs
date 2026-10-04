@@ -46,7 +46,10 @@ export function javadocToMarkdown(raw: string): string {
   // libtmux-java's sits at the start of a line that a blank line already
   // precedes, so the tag is all that has to go.
   text = text.replace(/^([ \t]*)<\/?p>[ \t]*/gm, '$1')
-  text = text.replace(/^([ \t]*)<h([1-6])>([\s\S]*?)<\/h\2>[ \t]*$/gm, (_, i, l, t) => `${i}${'#'.repeat(Number(l))} ${t}`)
+  text = text.replace(
+    /^([ \t]*)<h([1-6])>([\s\S]*?)<\/h\2>[ \t]*$/gm,
+    (_, i, l, t) => `${i}${'#'.repeat(Number(l))} ${t}`,
+  )
   text = text.replace(/^([ \t]*)<li>([\s\S]*?)(?:<\/li>)?[ \t]*$/gm, '$1- $2')
   text = text.replace(/^[ \t]*<\/?[uo]l>[ \t]*$\n?/gm, '')
   text = text.replace(/<br\s*\/?>/g, '  \n')

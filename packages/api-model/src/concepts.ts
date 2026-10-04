@@ -249,7 +249,7 @@ export const CONCEPTS: Record<string, Concept> = {
     },
   },
   'rotate-panes': {
-    label: "Rotate panes within a window",
+    label: 'Rotate panes within a window',
     symbols: {
       py: 'libtmux.Window.rotate',
       ts: 'window.Window.rotate',
@@ -323,7 +323,7 @@ export const CONCEPTS: Record<string, Concept> = {
     },
   },
   'window-session': {
-    label: "Find the session containing a window placement",
+    label: 'Find the session containing a window placement',
     parentObject: 'session',
     symbols: {
       kotlin: 'io.github.libtmux.kotlin.Window.session',
@@ -1747,7 +1747,7 @@ export const CONCEPTS: Record<string, Concept> = {
       cxx: '`Server::tmux_version` asks the executable with `tmux -V` without reaching a server',
     },
   },
-  'snapshot': {
+  snapshot: {
     label: 'Capture the whole hierarchy at one instant',
     symbols: {
       scala: 'io.github.libtmux.scaladsl.Server.snapshot',
@@ -3680,21 +3680,34 @@ const LUA_CONCEPTS: Record<string, string> = {
 // These Cats Effect operations forward to the corresponding Java handle;
 // their execution and ownership differ, while the tmux operation is shared.
 const SCALA_EFFECT_CONCEPTS: Record<string, string> = {
-  server: 'Server', session: 'Session', window: 'Window', pane: 'Pane',
-  'capture-pane': 'Pane.capture', 'send-keys': 'Pane.sendKeys',
-  'split-pane': 'Pane.split', 'split-window': 'Window.split',
-  'new-session': 'Server.newSession', 'new-window': 'Session.newWindow',
-  'kill-server': 'Server.killServer', 'list-sessions': 'Server.sessions',
-  'list-windows': 'Session.windows', 'list-panes': 'Window.panes',
-  'list-server-windows': 'Server.windows', 'list-server-panes': 'Server.panes',
-  'list-clients': 'Server.clients', snapshot: 'Server.snapshot',
-  'pane-window': 'Pane.window', 'window-session': 'Window.session',
-  'session-server': 'Session.server', 'window-server': 'Window.server',
-  'pane-server': 'Pane.server', 'client-server': 'Client.server',
+  server: 'Server',
+  session: 'Session',
+  window: 'Window',
+  pane: 'Pane',
+  'capture-pane': 'Pane.capture',
+  'send-keys': 'Pane.sendKeys',
+  'split-pane': 'Pane.split',
+  'split-window': 'Window.split',
+  'new-session': 'Server.newSession',
+  'new-window': 'Session.newWindow',
+  'kill-server': 'Server.killServer',
+  'list-sessions': 'Server.sessions',
+  'list-windows': 'Session.windows',
+  'list-panes': 'Window.panes',
+  'list-server-windows': 'Server.windows',
+  'list-server-panes': 'Server.panes',
+  'list-clients': 'Server.clients',
+  snapshot: 'Server.snapshot',
+  'pane-window': 'Pane.window',
+  'window-session': 'Window.session',
+  'session-server': 'Session.server',
+  'window-server': 'Window.server',
+  'pane-server': 'Pane.server',
+  'client-server': 'Client.server',
   'client-session': 'Client.session',
 }
 for (const [id, symbol] of Object.entries(SCALA_EFFECT_CONCEPTS)) {
-  const variants = CONCEPTS[id]!.variants ??= {}
+  const variants = (CONCEPTS[id]!.variants ??= {})
   variants.scala = [...(variants.scala ?? []), `io.github.libtmux.scaladsl.cats.${symbol}`]
 }
 for (const [id, symbol] of Object.entries(RUBY_CONCEPTS)) CONCEPTS[id]!.symbols.ruby = symbol
@@ -3703,9 +3716,12 @@ for (const concept of Object.values(CONCEPTS)) {
   concept.absent ??= {}
   if (!concept.symbols.ruby) concept.absent.ruby = 'No source-verified Ruby equivalent is recorded for this operation.'
   if (!concept.symbols.lua) concept.absent.lua = 'No source-verified Lua equivalent is recorded for this operation.'
-  if (!concept.symbols.kotlin) concept.absent.kotlin = 'No source-verified Kotlin equivalent is recorded for this operation.'
-  if (!concept.symbols.scala) concept.absent.scala = 'No source-verified Scala equivalent is recorded for this operation.'
-  if (!concept.symbols.fsharp) concept.absent.fsharp = 'No source-verified F# equivalent is recorded for this operation.'
+  if (!concept.symbols.kotlin)
+    concept.absent.kotlin = 'No source-verified Kotlin equivalent is recorded for this operation.'
+  if (!concept.symbols.scala)
+    concept.absent.scala = 'No source-verified Scala equivalent is recorded for this operation.'
+  if (!concept.symbols.fsharp)
+    concept.absent.fsharp = 'No source-verified F# equivalent is recorded for this operation.'
 }
 
 /** Every concept naming this symbol, including concepts sharing an overload group. */

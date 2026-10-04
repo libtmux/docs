@@ -1,15 +1,29 @@
 import { execFileSync } from 'node:child_process'
 import { describe, expect, it } from 'vitest'
-import { COOLDOWN_MARKERS, COOLDOWN_SLOTS, formatCooldown, hasCooldownSlot, type CooldownUnit } from '../src/lib/cooldown'
+import {
+  COOLDOWN_MARKERS,
+  COOLDOWN_SLOTS,
+  formatCooldown,
+  hasCooldownSlot,
+  type CooldownUnit,
+} from '../src/lib/cooldown'
 import { highlightWithCooldownSlots } from '../src/lib/highlight'
 import { PORTS, type InstallCommand } from '../src/lib/ports'
 
 /** Every install command that carries a cooldown, with the package it installs. */
 const cooldownCommands = PORTS.flatMap((port) => [
   ...port.installs.map((cmd) => ({ port: port.slug, pkg: port.packageName, cmd })),
-  ...(port.packages ?? []).flatMap((pkg) => (pkg.installs ?? []).map((cmd) => ({ port: port.slug, pkg: pkg.name, cmd }))),
-]).filter((entry): entry is { port: string; pkg: string; cmd: InstallCommand & { cooldown: NonNullable<InstallCommand['cooldown']> } } =>
-  Boolean(entry.cmd.cooldown),
+  ...(port.packages ?? []).flatMap((pkg) =>
+    (pkg.installs ?? []).map((cmd) => ({ port: port.slug, pkg: pkg.name, cmd })),
+  ),
+]).filter(
+  (
+    entry,
+  ): entry is {
+    port: string
+    pkg: string
+    cmd: InstallCommand & { cooldown: NonNullable<InstallCommand['cooldown']> }
+  } => Boolean(entry.cmd.cooldown),
 )
 
 /** A form with every placeholder written out, as the reader would copy it. */
@@ -28,7 +42,11 @@ describe('dependency cooldowns', () => {
   })
 
   it('leaves each placeholder as a slot the widget scripts rewrite', async () => {
-    const html = await highlightWithCooldownSlots(`$ pnpm_config_minimum_release_age=${COOLDOWN_SLOTS.minutes} pnpm add libtmux`, 'console', 7)
+    const html = await highlightWithCooldownSlots(
+      `$ pnpm_config_minimum_release_age=${COOLDOWN_SLOTS.minutes} pnpm add libtmux`,
+      'console',
+      7,
+    )
     expect(html).toContain('data-cooldown-scale="1440"')
     expect(html).toContain('>10080</span>')
     for (const marker of Object.values(COOLDOWN_MARKERS)) expect(html).not.toContain(marker)

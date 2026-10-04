@@ -27,10 +27,11 @@ export function attachCompleteCxxExamples(
   const require = (condition: unknown, message: string): void => {
     if (!condition) throw new Error(`Invalid complete C++ examples: ${message}`)
   }
-  require(source.repo === 'libtmux/libtmux-cxx' && /^[a-f0-9]{40}$/.test(source.revision),
-    'source must name the C++ repository and a full revision')
-  require(manifest?.schemaVersion === 1 && Array.isArray(manifest.programs) && manifest.programs.length,
-    'unsupported or empty manifest')
+  require(source.repo === 'libtmux/libtmux-cxx' &&
+    /^[a-f0-9]{40}$/.test(source.revision), 'source must name the C++ repository and a full revision')
+  require(manifest?.schemaVersion === 1 &&
+    Array.isArray(manifest.programs) &&
+    manifest.programs.length, 'unsupported or empty manifest')
   require(manifest.projectFile === 'examples/api/project/CMakeLists.txt', 'unexpected consumer project')
   const codeFor = (path: string): string => {
     const code = read(path)
@@ -44,18 +45,22 @@ export function attachCompleteCxxExamples(
   const names = new Set<string>()
   const targets = new Set<string>()
   for (const example of manifest.programs) {
-    require(/^[a-z][a-z0-9-]*$/.test(example.id) && !names.has(example.id),
-      'invalid or duplicate program name')
+    require(/^[a-z][a-z0-9-]*$/.test(example.id) && !names.has(example.id), 'invalid or duplicate program name')
     names.add(example.id)
     require(example.file === `examples/api/${example.id}.cpp`, 'unexpected program path')
-    require(typeof example.title === 'string' && example.title.trim() &&
-      typeof example.description === 'string' && example.description.trim(), 'task description is missing')
-    require(typeof example.expectedOutput === 'string' && example.expectedOutput.trim() &&
-      example.expectedOutput.endsWith('\n') && !example.expectedOutput.includes('\r'),
-      'expected output is missing or incomplete')
-    require(Array.isArray(example.symbols) && example.symbols.length &&
-      example.symbols.every((id) => typeof id === 'string' && /^libtmux::[A-Za-z_][\w:]*$/.test(id)),
-      'API targets are missing')
+    require(typeof example.title === 'string' &&
+      example.title.trim() &&
+      typeof example.description === 'string' &&
+      example.description.trim(), 'task description is missing')
+    require(typeof example.expectedOutput === 'string' &&
+      example.expectedOutput.trim() &&
+      example.expectedOutput.endsWith('\n') &&
+      !example.expectedOutput.includes('\r'), 'expected output is missing or incomplete')
+    require(Array.isArray(example.symbols) &&
+      example.symbols.length &&
+      example.symbols.every(
+        (id) => typeof id === 'string' && /^libtmux::[A-Za-z_][\w:]*$/.test(id),
+      ), 'API targets are missing')
     const program = codeFor(example.file)
     require(program.includes('int main()'), 'program entry point is missing')
     const blocks: NonNullable<DocBlock['examples']> = [
@@ -72,16 +77,20 @@ export function attachCompleteCxxExamples(
       {
         lang: 'cmake',
         intro: 'Save this complete consumer project as CMakeLists.txt:',
-        sourceUrl: urlFor(manifest.projectFile), code: project,
+        sourceUrl: urlFor(manifest.projectFile),
+        code: project,
       },
       {
         lang: 'cpp',
-        intro: 'Save this complete program as main.cpp. `ScopedTmuxServer` owns a private daemon and stops it when the program exits. Ordinary applications use `Server` for their own socket; these examples use the fixture until setup moves to ordinary server objects.',
-        sourceUrl: urlFor(example.file), code: program,
+        intro:
+          'Save this complete program as main.cpp. `ScopedTmuxServer` owns a private daemon and stops it when the program exits. Ordinary applications use `Server` for their own socket; these examples use the fixture until setup moves to ordinary server objects.',
+        sourceUrl: urlFor(example.file),
+        code: program,
       },
       {
         lang: 'console',
-        intro: 'Build against the installed library and run the saved program. An operation error produces a failing exit status:',
+        intro:
+          'Build against the installed library and run the saved program. An operation error produces a failing exit status:',
         code: '$ cmake -S . -B build -G Ninja \\\n    -DCMAKE_PREFIX_PATH="$PWD/libtmux-prefix" \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ && \\\n  cmake --build build --parallel 2 && \\\n  ./build/api_example\n',
       },
       { lang: 'text', intro: 'Expected output:', code: example.expectedOutput },

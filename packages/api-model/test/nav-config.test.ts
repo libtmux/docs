@@ -3,12 +3,7 @@ import { NAV } from '../src/nav-config.ts'
 import { compileNav } from '../src/nav.ts'
 import type { ApiSymbol } from '../src/model.ts'
 
-const symbol = (
-  id: string,
-  name: string,
-  file: string,
-  apiScope: ApiSymbol['apiScope'] = 'exported',
-): ApiSymbol => ({
+const symbol = (id: string, name: string, file: string, apiScope: ApiSymbol['apiScope'] = 'exported'): ApiSymbol => ({
   id,
   name,
   kind: 'class',
@@ -37,7 +32,14 @@ it('keeps explicit workspace helpers out of unrelated naming buckets', () => {
   const compiled = compileNav(
     NAV.cxx,
     [
-      { ...symbol('libtmux::workspace::BuildEvent', 'BuildEvent', 'examples/workspace/include/libtmux_consumers/workspace.hpp'), kind: 'struct' },
+      {
+        ...symbol(
+          'libtmux::workspace::BuildEvent',
+          'BuildEvent',
+          'examples/workspace/include/libtmux_consumers/workspace.hpp',
+        ),
+        kind: 'struct',
+      },
       symbol('libtmux::OtherEvent', 'OtherEvent', 'include/libtmux/events.hpp'),
     ],
     { conceptIds: {}, moduleOf: () => 'libtmux' },

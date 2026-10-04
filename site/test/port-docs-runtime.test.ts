@@ -21,20 +21,27 @@ function selectedVersion(port: string, source?: string) {
   try {
     mkdirSync(join(directory, 'port'))
     writeFileSync(output, '')
-    if (source !== undefined) writeFileSync(join(directory, 'port', port === 'rs' ? 'rust-toolchain.toml' : '.mise.toml'), source)
+    if (source !== undefined)
+      writeFileSync(join(directory, 'port', port === 'rs' ? 'rust-toolchain.toml' : '.mise.toml'), source)
     const result = spawnSync('bash', ['-e', '-c', script('Read selected Rust and Swift toolchains')], {
-      cwd: directory, encoding: 'utf8', timeout: 5000,
+      cwd: directory,
+      encoding: 'utf8',
+      timeout: 5000,
       env: { ...process.env, PORT: port, GITHUB_OUTPUT: output },
     })
     return { ...result, output: readFileSync(output, 'utf8') }
-  } finally { rmSync(directory, { recursive: true, force: true }) }
+  } finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
 }
 
 function doxygenProbe(version: string, aliases = 1, overloads = 2, protection = 'public') {
   const directory = mkdtempSync(join(tmpdir(), 'libtmux-doxygen-test-'))
   try {
     const binary = join(directory, 'doxygen')
-    writeFileSync(binary, `#!${process.execPath}
+    writeFileSync(
+      binary,
+      `#!${process.execPath}
 const fs = require('node:fs')
 if (process.argv[2] === '--version') {
   console.log(${JSON.stringify(version)})
@@ -47,11 +54,16 @@ const member = name => '<memberdef kind="function" prot="${protection}"><qualifi
 fs.writeFileSync('xml/namespacelibtmux.xml', '<doxygen><compounddef>' +
   Array(${aliases}).fill(member('libtmux::matching')).join('') +
   Array(${overloads}).fill(member('libtmux::tmuxq::matching')).join('') + '</compounddef></doxygen>')
-`, { mode: 0o700 })
+`,
+      { mode: 0o700 },
+    )
     return spawnSync('python3', [doxygenCheck, binary, '1.18.0'], {
-      encoding: 'utf8', timeout: 5000,
+      encoding: 'utf8',
+      timeout: 5000,
     })
-  } finally { rmSync(directory, { recursive: true, force: true }) }
+  } finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
 }
 
 describe('C++ Doxygen producer', () => {
@@ -79,45 +91,55 @@ describe('C++ Doxygen producer', () => {
       const output = join(directory, 'path')
       const extracted = join(directory, 'extracted')
       writeFileSync(output, '')
-      writeFileSync(join(directory, 'curl'), `#!${process.execPath}
+      writeFileSync(
+        join(directory, 'curl'),
+        `#!${process.execPath}
 const fs = require('node:fs')
 fs.writeFileSync(process.argv[process.argv.indexOf('--output') + 1], 'changed archive')
-`, { mode: 0o700 })
+`,
+        { mode: 0o700 },
+      )
       writeFileSync(join(directory, 'tar'), `#!/bin/sh\ntouch '${extracted}'\n`, { mode: 0o700 })
       const result = spawnSync('bash', ['-e', '-c', script('Install tested Doxygen producer')], {
-        cwd: root, encoding: 'utf8', timeout: 5000,
+        cwd: root,
+        encoding: 'utf8',
+        timeout: 5000,
         env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, RUNNER_TEMP: directory, GITHUB_PATH: output },
       })
       expect(result.status).not.toBe(0)
       expect(result.stderr).toContain('computed checksum did NOT match')
       expect(readFileSync(output, 'utf8')).toBe('')
       expect(() => readFileSync(extracted)).toThrow()
-    } finally { rmSync(directory, { recursive: true, force: true }) }
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
   })
 
   it.each(['1.18.0', '1.18.0 (8e760943e5d9581a444cf327f43a0b4d20d29482)'])(
-    'accepts %s with the public alias and both original overloads', (version) => {
+    'accepts %s with the public alias and both original overloads',
+    (version) => {
       const result = doxygenProbe(version)
       expect(result.status, result.stderr).toBe(0)
       expect(result.stdout).toContain('public using-declaration and two original overloads verified')
     },
   )
 
-  it.each(['1.9.8', '1.14.0', '1.18.1', '1.18.0 unexpected'])(
-    'rejects an untested producer %s', (version) => {
-      const result = doxygenProbe(version)
-      expect(result.status).not.toBe(0)
-      expect(result.stderr).toContain('Expected Doxygen 1.18.0')
-    },
-  )
+  it.each(['1.9.8', '1.14.0', '1.18.1', '1.18.0 unexpected'])('rejects an untested producer %s', (version) => {
+    const result = doxygenProbe(version)
+    expect(result.status).not.toBe(0)
+    expect(result.stderr).toContain('Expected Doxygen 1.18.0')
+  })
 
-  it.each([[0, 2, 'public'], [2, 2, 'public'], [1, 1, 'public'], [1, 2, 'private']] as const)(
-    'rejects %s aliases, %s original overloads, and %s visibility', (aliases, overloads, protection) => {
-      const result = doxygenProbe('1.18.0', aliases, overloads, protection)
-      expect(result.status).not.toBe(0)
-      expect(result.stderr).toContain('must emit the public libtmux::matching using-declaration')
-    },
-  )
+  it.each([
+    [0, 2, 'public'],
+    [2, 2, 'public'],
+    [1, 1, 'public'],
+    [1, 2, 'private'],
+  ] as const)('rejects %s aliases, %s original overloads, and %s visibility', (aliases, overloads, protection) => {
+    const result = doxygenProbe('1.18.0', aliases, overloads, protection)
+    expect(result.status).not.toBe(0)
+    expect(result.stderr).toContain('must emit the public libtmux::matching using-declaration')
+  })
 })
 
 describe('selected MCP runtime provisioning', () => {
@@ -147,45 +169,69 @@ describe('selected MCP runtime provisioning', () => {
   })
 
   it.each([
-    ['go', true], ['py', true], ['ruby', true],
-    ['lua', false], ['kotlin', false], ['scala', false], ['fsharp', false],
+    ['go', true],
+    ['py', true],
+    ['ruby', true],
+    ['lua', false],
+    ['kotlin', false],
+    ['scala', false],
+    ['fsharp', false],
   ])('uses the product catalog for %s runtime availability', (port, required) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-mcp-availability-'))
     try {
       const output = join(directory, 'output')
       writeFileSync(output, '')
       const result = spawnSync('bash', ['-e', '-c', script('Resolve MCP availability from the port catalog')], {
-        cwd: root, encoding: 'utf8', timeout: 5000,
+        cwd: root,
+        encoding: 'utf8',
+        timeout: 5000,
         env: { ...process.env, PORT: String(port), GITHUB_OUTPUT: output },
       })
       expect(result.status, result.stderr).toBe(0)
       expect(readFileSync(output, 'utf8')).toBe(`required=${required}\n`)
-    } finally { rmSync(directory, { recursive: true, force: true }) }
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
   })
 
-  it.each(['6.2.4', '6.2.3', 'unrecognized'])('verifies the installed Swift compiler reports %s before adding it to PATH', (version) => {
-    const directory = mkdtempSync(join(tmpdir(), 'libtmux-swift-version-'))
-    try {
-      const bin = join(directory, 'bin')
-      const output = join(directory, 'path')
-      mkdirSync(bin)
-      writeFileSync(output, '')
-      writeFileSync(join(bin, 'mise'), '#!/bin/sh\nprintf "%s\\n" "$STUB_TOOLCHAIN"\n', { mode: 0o700 })
-      writeFileSync(join(bin, 'swift'), `#!/bin/sh\nprintf '%s\\n' 'Swift version ${version} (fixture)'\n`, { mode: 0o700 })
-      const result = spawnSync('bash', ['-e', '-c', script('Verify selected Swift toolchain')], {
-        cwd: directory, encoding: 'utf8', timeout: 5000,
-        env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, STUB_TOOLCHAIN: directory, SWIFT_VERSION: '6.2.4', GITHUB_PATH: output },
-      })
-      if (version === '6.2.4') {
-        expect(result.status, result.stderr).toBe(0)
-        expect(readFileSync(output, 'utf8')).toBe(`${bin}\n`)
-      } else {
-        expect(result.status).not.toBe(0)
-        expect(result.stderr).toContain('Expected Swift 6.2.4')
-        expect(readFileSync(output, 'utf8')).toBe('')
+  it.each(['6.2.4', '6.2.3', 'unrecognized'])(
+    'verifies the installed Swift compiler reports %s before adding it to PATH',
+    (version) => {
+      const directory = mkdtempSync(join(tmpdir(), 'libtmux-swift-version-'))
+      try {
+        const bin = join(directory, 'bin')
+        const output = join(directory, 'path')
+        mkdirSync(bin)
+        writeFileSync(output, '')
+        writeFileSync(join(bin, 'mise'), '#!/bin/sh\nprintf "%s\\n" "$STUB_TOOLCHAIN"\n', { mode: 0o700 })
+        writeFileSync(join(bin, 'swift'), `#!/bin/sh\nprintf '%s\\n' 'Swift version ${version} (fixture)'\n`, {
+          mode: 0o700,
+        })
+        const result = spawnSync('bash', ['-e', '-c', script('Verify selected Swift toolchain')], {
+          cwd: directory,
+          encoding: 'utf8',
+          timeout: 5000,
+          env: {
+            ...process.env,
+            PATH: `${bin}:${process.env.PATH}`,
+            STUB_TOOLCHAIN: directory,
+            SWIFT_VERSION: '6.2.4',
+            GITHUB_PATH: output,
+          },
+        })
+        if (version === '6.2.4') {
+          expect(result.status, result.stderr).toBe(0)
+          expect(readFileSync(output, 'utf8')).toBe(`${bin}\n`)
+        } else {
+          expect(result.status).not.toBe(0)
+          expect(result.stderr).toContain('Expected Swift 6.2.4')
+          expect(readFileSync(output, 'utf8')).toBe('')
+        }
+      } finally {
+        rmSync(directory, { recursive: true, force: true })
       }
-    } finally { rmSync(directory, { recursive: true, force: true }) }
-  })
+    },
+  )
 
   it('installs the separate Python MCP checkout without altering the captured inputs', () => {
     const snapshot = workflow.indexOf('name: Snapshot source inputs before native generation')

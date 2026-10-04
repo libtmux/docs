@@ -11,9 +11,7 @@ import { docsRedirects, workspaceRedirects } from '../lib/docs-paths'
 import { llmsPage, localeProse } from '../lib/llms'
 import { isIndexSource, markdownDocument, markdownSlug } from '../lib/markdown-twins'
 
-type Props =
-  | { entry: CollectionEntry<'docs'> }
-  | { port: string; id: string; version: string }
+type Props = { entry: CollectionEntry<'docs'> } | { port: string; id: string; version: string }
 
 /**
  * The Markdown twins of `[...slug].astro`'s pages: every prose page, and
@@ -29,34 +27,53 @@ export async function getStaticPaths() {
   const locale = buildLocale()
   const port = process.env.LIBTMUX_DOCS_PORT
   let defaults: Record<string, string> = {}
-  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
+  try {
+    defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
+  } catch {
+    /* Local defaults are latest. */
+  }
   const proseEntries = localeProse(await getCollection('docs'), locale, port, defaults)
-  const prose = proseEntries
-    .map(({ entry, route }) => ({
-      params: { slug: markdownSlug(route, isIndexSource(entry.filePath)) },
-      props: { entry } as Props,
-    }))
+  const prose = proseEntries.map(({ entry, route }) => ({
+    params: { slug: markdownSlug(route, isIndexSource(entry.filePath)) },
+    props: { entry } as Props,
+  }))
   if (locale !== DEFAULT_LOCALE) return prose
   // Static hosting cannot issue a transport redirect for a Markdown asset.
   // Serve the canonical twin at its legacy path without adding an alias to a
   // manifest, sitemap, or search index.
   const proseByRoute = new Map(proseEntries.map(({ entry, route }) => [route, entry]))
-  const aliases = docsRedirects(proseEntries.map(({ entry }) => entry), port, defaults)
-    .map(({ path, target }) => {
-      const entry = proseByRoute.get(target)
-      if (!entry) throw new Error(`Markdown alias target is not a prose route: ${target}`)
-      return {
-        params: { slug: markdownSlug(path, isIndexSource(entry.filePath)) },
-        props: { entry } as Props,
-      }
-    })
-  const routes = productApiRoutes(API_MODELS, port, defaults, buildTarget(process.env).version)
-    .map(({ path, model, symbol, version }) => ({ params: { slug: path }, props: { port: model.port, id: symbol.id, version } as Props }))
+  const aliases = docsRedirects(
+    proseEntries.map(({ entry }) => entry),
+    port,
+    defaults,
+  ).map(({ path, target }) => {
+    const entry = proseByRoute.get(target)
+    if (!entry) throw new Error(`Markdown alias target is not a prose route: ${target}`)
+    return {
+      params: { slug: markdownSlug(path, isIndexSource(entry.filePath)) },
+      props: { entry } as Props,
+    }
+  })
+  const routes = productApiRoutes(API_MODELS, port, defaults, buildTarget(process.env).version).map(
+    ({ path, model, symbol, version }) => ({
+      params: { slug: path },
+      props: { port: model.port, id: symbol.id, version } as Props,
+    }),
+  )
   const byPath = new Map(routes.map((route) => [route.params.slug, route.props]))
-  const retired = productApiRedirects(API_MODELS, port, defaults, buildTarget(process.env).version)
-    .map(({ path, target }) => ({ params: { slug: path }, props: byPath.get(target)! }))
-  const all = [...prose, ...aliases, ...routes, ...retired, ...workspaceRedirects([...byPath.keys()])
-    .map(({ path, target }) => ({ params: { slug: path }, props: byPath.get(target)! }))]
+  const retired = productApiRedirects(API_MODELS, port, defaults, buildTarget(process.env).version).map(
+    ({ path, target }) => ({ params: { slug: path }, props: byPath.get(target)! }),
+  )
+  const all = [
+    ...prose,
+    ...aliases,
+    ...routes,
+    ...retired,
+    ...workspaceRedirects([...byPath.keys()]).map(({ path, target }) => ({
+      params: { slug: path },
+      props: byPath.get(target)!,
+    })),
+  ]
   const paths = all.map((route) => route.params.slug)
   if (new Set(paths).size !== paths.length) throw new Error('Duplicate generated Markdown route')
   return all
@@ -71,11 +88,15 @@ export const GET: APIRoute = ({ props, site }) => {
   }
   const model = API_MODELS[route.port]
   const symbol = model.symbols.find((entry) => entry.id === route.id)!
-  return new Response(symbolMarkdown({
-    model, symbol,
-    version: route.version,
-    canonical: new URL(productApiHref(model, symbol, route.version), site ?? 'https://libtmux.org').href,
-    source: sourceUrl(model, symbol),
-    packageName: symbol.package ?? model.sources?.find((source) => source.product === symbol.product)?.package,
-  }), { headers })
+  return new Response(
+    symbolMarkdown({
+      model,
+      symbol,
+      version: route.version,
+      canonical: new URL(productApiHref(model, symbol, route.version), site ?? 'https://libtmux.org').href,
+      source: sourceUrl(model, symbol),
+      packageName: symbol.package ?? model.sources?.find((source) => source.product === symbol.product)?.package,
+    }),
+    { headers },
+  )
 }

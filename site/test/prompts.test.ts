@@ -104,7 +104,7 @@ describe('prompt composition', () => {
     expect(text, 'docs.json').toContain(`${DOCS_BASE}/${port.slug}/latest/docs.json`)
     expect(text, 'reference').toContain(`${DOCS_BASE}/${port.slug}/latest/reference/`)
     expect(text, 'repository').toContain(`https://github.com/${port.repo}`)
-    expect(text, 'registry page').toContain((port.registry?.url ?? `https://github.com/${port.repo}`))
+    expect(text, 'registry page').toContain(port.registry?.url ?? `https://github.com/${port.repo}`)
   })
 
   it.each([DOCS_BASE, 'https://libtmux.org/pr-42/ja'])('cites shared tmux guides beneath %s', (docsBase) => {
@@ -220,7 +220,12 @@ describe('prompt legibility', () => {
   })
 
   it('indents continuation lines it is given an indent for', () => {
-    expect(wrap('alpha beta gamma delta', 12, '  ').split('\n').slice(1).every((l) => l.startsWith('  '))).toBe(true)
+    expect(
+      wrap('alpha beta gamma delta', 12, '  ')
+        .split('\n')
+        .slice(1)
+        .every((l) => l.startsWith('  ')),
+    ).toBe(true)
   })
 })
 
@@ -282,8 +287,9 @@ describe('prompt parts', () => {
    */
   it('ships the shared half once, not once per port', () => {
     const shared = sharedParts(ctx)
-    const partsBytes =
-      shared.sections ? Object.values(shared.sections).join('').length + Object.values(shared.openings).join('').length : 0
+    const partsBytes = shared.sections
+      ? Object.values(shared.sections).join('').length + Object.values(shared.openings).join('').length
+      : 0
     const portBytes = PORTS.reduce((sum, port) => {
       const parts = partsFor(port)
       return sum + parts.setup.length + Object.values(parts.notes).join('').length
@@ -391,7 +397,11 @@ describe.skipIf(!SITE_BUILT)(`cited URLs resolve in the assembled tree${SITE_BUI
   }
 
   it.each(MATRIX)('$port.slug/$topic.id cites only published URLs', ({ port, topic }) => {
-    const urls = [...promptFor(port, topic.id, ctx.version, `https://libtmux.org/${SITE_PREFIX.replace(/\/$/, '')}`).matchAll(/https:\/\/libtmux\.org\/\S*[^\s.,)]/g)].map((m) => m[0])
+    const urls = [
+      ...promptFor(port, topic.id, ctx.version, `https://libtmux.org/${SITE_PREFIX.replace(/\/$/, '')}`).matchAll(
+        /https:\/\/libtmux\.org\/\S*[^\s.,)]/g,
+      ),
+    ].map((m) => m[0])
     expect(urls.length).toBeGreaterThan(0)
     const dead = urls.filter((url) => !resolves(url))
     expect(dead, `not published: ${dead.join(', ')}`).toEqual([])
@@ -411,9 +421,9 @@ describe.skipIf(!SITE_BUILT)(`published prompt routes${SITE_BUILT ? '' : ` (${SK
   const manifest = () => JSON.parse(readFileSync(published('prompts.json'), 'utf8'))
 
   it('writes a text file for every port and topic', () => {
-    const missing = PROMPT_PAIRS
-      .map(({ port, topic }) => textPath(port.slug, topic.id))
-      .filter((path) => !existsSync(published(path)))
+    const missing = PROMPT_PAIRS.map(({ port, topic }) => textPath(port.slug, topic.id)).filter(
+      (path) => !existsSync(published(path)),
+    )
     expect(missing, `absent: ${missing.join(', ')}`).toEqual([])
   })
 
@@ -455,7 +465,9 @@ describe.skipIf(!SITE_BUILT)(`published prompt routes${SITE_BUILT ? '' : ` (${SK
       const version = versions.get(key)
       expect(version, `${key} is absent from prompts.json`).toBeTruthy()
       const file = readFileSync(published(textPath(port.slug, topic.id)), 'utf8')
-      expect(file, key).toBe(`${promptFor(port, topic.id, version, `https://libtmux.org/${SITE_PREFIX.replace(/\/$/, '')}`)}\n`)
+      expect(file, key).toBe(
+        `${promptFor(port, topic.id, version, `https://libtmux.org/${SITE_PREFIX.replace(/\/$/, '')}`)}\n`,
+      )
     }
   })
 
@@ -471,9 +483,9 @@ describe.skipIf(!SITE_BUILT)(`published prompt routes${SITE_BUILT ? '' : ` (${SK
    * carries its own copy under a prefix nothing links to.
    */
   it('does not repeat itself under a port and version prefix', () => {
-    const strays = PORTS
-      .map((port) => join(SITE_PREFIX, port.slug, 'latest', 'prompts'))
-      .filter((path) => existsSync(join(BUCKET_ROOT, path)))
+    const strays = PORTS.map((port) => join(SITE_PREFIX, port.slug, 'latest', 'prompts')).filter((path) =>
+      existsSync(join(BUCKET_ROOT, path)),
+    )
     expect(strays, `prompts published under a port prefix: ${strays.join(', ')}`).toEqual([])
   })
 })

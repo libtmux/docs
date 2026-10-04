@@ -3,7 +3,10 @@ import { Window } from 'happy-dom'
 import { installAnchorNavigation } from '../public/_shell/anchors.js'
 
 const disposals: (() => void)[] = []
-afterEach(() => { disposals.splice(0).forEach((dispose) => dispose()); vi.restoreAllMocks() })
+afterEach(() => {
+  disposals.splice(0).forEach((dispose) => dispose())
+  vi.restoreAllMocks()
+})
 
 function page(html: string, hash = '', fontsPending = false) {
   const win = new Window({ url: `https://libtmux.org/en/ts/latest/reference/${hash}` })
@@ -16,37 +19,54 @@ function page(html: string, hash = '', fontsPending = false) {
     frames.set(++sequence, fn)
     return sequence as unknown as ReturnType<typeof win.requestAnimationFrame>
   })
-  vi.spyOn(win, 'cancelAnimationFrame').mockImplementation((id) => { frames.delete(Number(id)) })
+  vi.spyOn(win, 'cancelAnimationFrame').mockImplementation((id) => {
+    frames.delete(Number(id))
+  })
   vi.spyOn(win, 'setTimeout').mockImplementation((fn) => {
     timers.set(++sequence, fn as () => void)
     return sequence as unknown as ReturnType<typeof win.setTimeout>
   })
-  vi.spyOn(win, 'clearTimeout').mockImplementation((id) => { timers.delete(Number(id)) })
+  vi.spyOn(win, 'clearTimeout').mockImplementation((id) => {
+    timers.delete(Number(id))
+  })
   vi.spyOn(win.HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue(new win.DOMRect(0, 200, 100, 30))
   const scrolled: { id: string; collapsed: number }[] = []
   win.HTMLElement.prototype.scrollIntoView = function () {
     scrolled.push({ id: this.id, collapsed: win.document.querySelectorAll('details:not([open])').length })
   }
   const dispose = installAnchorNavigation(win as unknown as typeof window)
-  disposals.push(dispose, () => { void win.happyDOM.abort() })
-  const flush = () => { const pending = [...frames.values()]; frames.clear(); pending.forEach((fn) => fn(0)) }
-  const click = (id: string, options = {}) => win.document.getElementById(id)!.dispatchEvent(
-    new win.MouseEvent('click', { bubbles: true, cancelable: true, button: 0, ...options }),
-  )
+  disposals.push(dispose, () => {
+    void win.happyDOM.abort()
+  })
+  const flush = () => {
+    const pending = [...frames.values()]
+    frames.clear()
+    pending.forEach((fn) => fn(0))
+  }
+  const click = (id: string, options = {}) =>
+    win.document
+      .getElementById(id)!
+      .dispatchEvent(new win.MouseEvent('click', { bubbles: true, cancelable: true, button: 0, ...options }))
   flush()
   return { win, doc: win.document, flush, click, scrolled, timers, dispose }
 }
 
 describe('shared anchor arrival', () => {
   it('opens every containing disclosure before scrolling and highlights its summary', () => {
-    const p = page('<details><summary>Outer</summary><details id="server"><summary id="server-label">Server</summary>Members</details></details>', '#server')
+    const p = page(
+      '<details><summary>Outer</summary><details id="server"><summary id="server-label">Server</summary>Members</details></details>',
+      '#server',
+    )
     expect(p.doc.querySelectorAll('details[open]')).toHaveLength(2)
     expect(p.scrolled).toEqual([{ id: 'server-label', collapsed: 0 }])
     expect(p.doc.querySelector('[data-anchor-arrival]')?.id).toBe('server-label')
   })
 
   it('highlights headings, API objects, and table rows without replacing navigation or focus', () => {
-    const p = page('<input id="editor"><h2 id="overview">Overview</h2><dl><dt id="LibTmux.Server">Server</dt><dd>Behavior</dd></dl><table><tr id="options-json"><td>--json</td></tr></table>', '#overview')
+    const p = page(
+      '<input id="editor"><h2 id="overview">Overview</h2><dl><dt id="LibTmux.Server">Server</dt><dd>Behavior</dd></dl><table><tr id="options-json"><td>--json</td></tr></table>',
+      '#overview',
+    )
     p.doc.querySelector('input')!.focus()
     for (const id of ['LibTmux.Server', 'options-json']) {
       p.win.location.hash = encodeURIComponent(id)
@@ -72,7 +92,10 @@ describe('shared anchor arrival', () => {
   })
 
   it('paints a visible heading for an alias instead of its zero-size anchor', () => {
-    const p = page('<h2 id="capture-options"><span class="section-anchor-alias" id="options"></span>Options</h2>', '#options')
+    const p = page(
+      '<h2 id="capture-options"><span class="section-anchor-alias" id="options"></span>Options</h2>',
+      '#options',
+    )
     expect(p.doc.querySelector('[data-anchor-arrival]')?.id).toBe('capture-options')
   })
 
@@ -80,10 +103,14 @@ describe('shared anchor arrival', () => {
     const p = page('<a id="again" href="#overview">Overview</a><h2 id="overview">Overview</h2>', '#overview')
     for (const callback of [...p.timers.values()]) callback()
     // A router suppresses native navigation after updating history itself.
-    p.win.addEventListener('click', (event) => {
-      event.preventDefault()
-      p.win.history.replaceState(null, '', '#overview')
-    }, { capture: true })
+    p.win.addEventListener(
+      'click',
+      (event) => {
+        event.preventDefault()
+        p.win.history.replaceState(null, '', '#overview')
+      },
+      { capture: true },
+    )
     p.click('again')
     p.flush()
     expect(p.doc.querySelector('[data-anchor-arrival]')?.id).toBe('overview')
@@ -104,9 +131,15 @@ describe('shared anchor arrival', () => {
   })
 
   it('ignores malformed fragments, other destinations, modified clicks and downloads', () => {
-    const p = page('<h2 id="target">Target</h2><a id="external" href="https://example.com/#target">External</a><a id="other" href="../other/#target">Other</a><a id="modified" href="#target">Modified</a><a id="download" href="#target" download>Download</a>', '#%E0%A4')
+    const p = page(
+      '<h2 id="target">Target</h2><a id="external" href="https://example.com/#target">External</a><a id="other" href="../other/#target">Other</a><a id="modified" href="#target">Modified</a><a id="download" href="#target" download>Download</a>',
+      '#%E0%A4',
+    )
     expect(p.doc.querySelector('[data-anchor-arrival]')).toBeNull()
-    p.click('external'); p.click('other'); p.click('modified', { ctrlKey: true }); p.click('download')
+    p.click('external')
+    p.click('other')
+    p.click('modified', { ctrlKey: true })
+    p.click('download')
     p.flush()
     expect(p.scrolled).toEqual([])
   })

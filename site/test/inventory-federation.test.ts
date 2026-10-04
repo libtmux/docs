@@ -28,10 +28,16 @@ describe('indexFor attaches the inventories', () => {
     const model = API_MODELS.kotlin
     const member = model.symbols.find((symbol) => symbol.id === 'io.github.libtmux.kotlin.Server.liveState')!
     const index = indexFor(model, href)
-    const targets = Object.fromEntries(index.linkType(member.signatures[0].raw!, member)
-      .filter((span) => span.link).map((span) => [span.text, span.link!.href]))
+    const targets = Object.fromEntries(
+      index
+        .linkType(member.signatures[0].raw!, member)
+        .filter((span) => span.link)
+        .map((span) => [span.text, span.link!.href]),
+    )
     expect(targets.config).toContain('Server.config')
-    expect(targets.defaultTimeout).toContain('/java/latest/reference/io-github-libtmux-serverconfig-serverconfig-defaulttimeout/')
+    expect(targets.defaultTimeout).toContain(
+      '/java/latest/reference/io-github-libtmux-serverconfig-serverconfig-defaulttimeout/',
+    )
     expect(targets.toKotlinDuration).toContain('/kotlin.time/to-kotlin-duration.html')
     expect(targets.scope).toContain('.parameter.scope')
     expect(targets.CoroutineScope).toContain('/kotlinx.coroutines/-coroutine-scope/')
@@ -52,9 +58,12 @@ describe('indexFor attaches the inventories', () => {
     const index = indexFor(model, href)
     expect(index.resolve('Deferred', 'any', member)?.href).toContain('/cats/effect/kernel/Deferred.html')
     expect(index.resolve('Signal', 'any', member)?.href).toContain('/fs2-core_3/3.13.0/fs2/concurrent/Signal.html')
-    expect(index.resolve('io.github.libtmux.snapshot.ServerMirror', 'any', member)?.href)
-      .toContain('/java/latest/reference/io-github-libtmux-snapshot-servermirror-servermirror/')
-    expect(index.resolve('Handles.scala', 'any', member)?.href).toMatch(/github\.com\/libtmux\/libtmux-java\/blob\/[a-f0-9]{40}\/libtmux-scala-cats\/src\/main\/scala\/.*\/Handles\.scala$/)
+    expect(index.resolve('io.github.libtmux.snapshot.ServerMirror', 'any', member)?.href).toContain(
+      '/java/latest/reference/io-github-libtmux-snapshot-servermirror-servermirror/',
+    )
+    expect(index.resolve('Handles.scala', 'any', member)?.href).toMatch(
+      /github\.com\/libtmux\/libtmux-java\/blob\/[a-f0-9]{40}\/libtmux-scala-cats\/src\/main\/scala\/.*\/Handles\.scala$/,
+    )
     for (const prefix of ['io.github.libtmux.scaladsl', 'io.github.libtmux.scaladsl.cats']) {
       const server = model.symbols.find((symbol) => symbol.id === `${prefix}.Server`)!
       expect(index.resolve('Window', 'class', server)?.symbol?.id).toBe(`${prefix}.Window`)
@@ -92,15 +101,21 @@ describe('indexFor attaches the inventories', () => {
       const index = indexFor(API_MODELS[port], href)
       for (const name of ['List', 'AbortController', 'str', 'Optional']) {
         const hit = index.resolve(name, 'class')
-        expect(hit?.href ?? '', `${port} resolved ${name} in another language`).not.toMatch(/docs\.python\.org|docs\.oracle\.com|developer\.mozilla\.org/)
+        expect(hit?.href ?? '', `${port} resolved ${name} in another language`).not.toMatch(
+          /docs\.python\.org|docs\.oracle\.com|developer\.mozilla\.org/,
+        )
       }
     }
   })
 
   it('links a workspace signature through the same inventories without sharing route caches', () => {
     const model = API_MODELS.java
-    const reader = model.symbols.find((symbol) => symbol.product === 'workspace'
-      && symbol.name === 'read' && symbol.source.file.endsWith('/WorkspaceBuilder.java'))!
+    const reader = model.symbols.find(
+      (symbol) =>
+        symbol.product === 'workspace' &&
+        symbol.name === 'read' &&
+        symbol.source.file.endsWith('/WorkspaceBuilder.java'),
+    )!
     expect(reader, 'WorkspaceBuilder.read declaration').toBeDefined()
     const signature = reader.signatures[0]
     const annotation = signature.params.find((param) => param.name === 'file')!.type!
@@ -116,7 +131,9 @@ describe('indexFor attaches the inventories', () => {
       expect(workspace?.href).toContain(`/java/${version}/workspace/reference/`)
       expect(productApiIndex(model, version)).toBe(product)
     }
-    expect(core.linkType(signature.returns!, reader).find((span) => span.text === 'Workspace')?.link?.href).toMatch(/^#/)
+    expect(core.linkType(signature.returns!, reader).find((span) => span.text === 'Workspace')?.link?.href).toMatch(
+      /^#/,
+    )
   })
 
   it('links dependency types in real product signatures and keeps their language scope', () => {
@@ -130,9 +147,15 @@ describe('indexFor attaches the inventories', () => {
     ] as const
     for (const [port, name, target] of cases) {
       const model = API_MODELS[port]
-      const symbol = model.symbols.find((entry) => entry.product === 'mcp'
-        && entry.signatures.some((signature) => [signature.returns, ...signature.params.map((param) => param.type)]
-          .some((annotation) => annotation?.includes(name))))!
+      const symbol = model.symbols.find(
+        (entry) =>
+          entry.product === 'mcp' &&
+          entry.signatures.some((signature) =>
+            [signature.returns, ...signature.params.map((param) => param.type)].some((annotation) =>
+              annotation?.includes(name),
+            ),
+          ),
+      )!
       expect(symbol, `${port} signature names ${name}`).toBeDefined()
       const link = productApiIndex(model, 'latest').linkType(name, symbol)[0].link
       expect(link?.external, `${port} ${name}`).toBe(true)
@@ -151,9 +174,10 @@ describe('each sidecar agrees with the .inv beside it', () => {
    */
   it.each(['python', 'jdk', 'dom'])('%s', (name) => {
     const inv = readInventory(readFileSync(join(invDir, `${name}.inv`)))
-    const sidecar = JSON.parse(
-      readFileSync(join(invDir, `${name}.entries.json`), 'utf8'),
-    ) as { project: string; e: [string, string][] }
+    const sidecar = JSON.parse(readFileSync(join(invDir, `${name}.entries.json`), 'utf8')) as {
+      project: string
+      e: [string, string][]
+    }
 
     expect(sidecar.e.length, `${name}: entry count differs`).toBe(inv.entries.length)
     expect(sidecar.project).toBe(inv.project)

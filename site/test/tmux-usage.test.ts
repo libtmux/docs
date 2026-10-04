@@ -26,22 +26,26 @@ function contrast(foreground: string, background: string) {
   return (values[0] + 0.05) / (values[1] + 0.05)
 }
 
-const scopeOf = (token?: ThemedToken) => token?.explanation?.flatMap((part) =>
-  part.scopes.map((scope) => scope.scopeName)) ?? []
+const scopeOf = (token?: ThemedToken) =>
+  token?.explanation?.flatMap((part) => part.scopes.map((scope) => scope.scopeName)) ?? []
 
 describe('tmux usage highlighting', () => {
   let highlighter: HighlighterCore
   beforeAll(async () => {
     highlighter = await createHighlighterCore({
-      themes: shellThemes(), langs: [tmuxUsage, tmuxShell, tmuxConfig, ...bash],
+      themes: shellThemes(),
+      langs: [tmuxUsage, tmuxShell, tmuxConfig, ...bash],
       engine: createOnigurumaEngine(import('shiki/wasm')),
     })
   })
   afterAll(() => highlighter.dispose())
 
-  const tokens = (code: string, theme = 'github-light') => highlighter.codeToTokens(code, {
-    lang: 'tmux-usage', theme, includeExplanation: true,
-  })
+  const tokens = (code: string, theme = 'github-light') =>
+    highlighter.codeToTokens(code, {
+      lang: 'tmux-usage',
+      theme,
+      includeExplanation: true,
+    })
 
   it.each([catalog32, catalog37])('distinguishes capture syntax from Bash in tmux $version', (catalog) => {
     const command = catalog.commands.find((entry) => entry.name === 'capture-pane')!
@@ -68,14 +72,20 @@ describe('tmux usage highlighting', () => {
     for (const word of ['session-name', 'shell-command', 'argument']) {
       expect(scopeOf(result.find((token) => token.content === word)!)).toContain('variable.parameter.tmux-usage')
     }
-    expect(scopeOf(result.find((token) => token.content.includes('...'))!)).toContain('punctuation.definition.tmux-usage')
+    expect(scopeOf(result.find((token) => token.content.includes('...'))!)).toContain(
+      'punctuation.definition.tmux-usage',
+    )
   })
 
   it('preserves every recorded command synopsis byte for byte', () => {
     for (const catalog of [catalog32, catalog37]) {
       for (const command of catalog.commands) {
         const text = `tmux ${command.name} ${command.usage}`
-        expect(tokens(text).tokens.map((line) => line.map((token) => token.content).join('')).join('\n')).toBe(text)
+        expect(
+          tokens(text)
+            .tokens.map((line) => line.map((token) => token.content).join(''))
+            .join('\n'),
+        ).toBe(text)
       }
     }
   })
@@ -108,15 +118,14 @@ describe('tmux usage highlighting', () => {
     expect(html).toContain('--1:#8A5400')
   })
 
-  const captureCommands = [
-    'tmux capture-pane -p -t "$TMUX_PANE"',
-    'tmux capture-pane -p -J -S -1000 -t "$TMUX_PANE"',
-  ]
+  const captureCommands = ['tmux capture-pane -p -t "$TMUX_PANE"', 'tmux capture-pane -p -J -S -1000 -t "$TMUX_PANE"']
 
   it.each(captureCommands)('highlights the runnable command %s in both themes', async (code) => {
     for (const theme of ['github-light', 'github-dark']) {
       const result = highlighter.codeToTokens(code, {
-        lang: 'tmux-shell', theme, includeExplanation: true,
+        lang: 'tmux-shell',
+        theme,
+        includeExplanation: true,
       })
       const tokens = result.tokens.flat()
       expect(tokens.map((token) => token.content).join('')).toBe(code)
@@ -146,13 +155,19 @@ describe('tmux usage highlighting', () => {
 
   it('lets Bash distinguish literal, escaped and expanded dollar signs', () => {
     const code = `tmux display-message '$TMUX_PANE' "\\$TMUX_PANE" "$TMUX_PANE"`
-    const result = highlighter.codeToTokens(code, {
-      lang: 'tmux-shell', theme: 'github-light', includeExplanation: true,
-    }).tokens.flat()
+    const result = highlighter
+      .codeToTokens(code, {
+        lang: 'tmux-shell',
+        theme: 'github-light',
+        includeExplanation: true,
+      })
+      .tokens.flat()
     expect(result.map((token) => token.content).join('')).toBe(code)
     const expanded = result.filter((token) => scopeOf(token).includes('variable.other.normal.shell'))
     expect(expanded.map((token) => token.content)).toEqual(['$TMUX_PANE'])
-    expect(scopeOf(result.find((token) => token.content.includes("'$TMUX_PANE'")))).toContain('string.quoted.single.shell')
+    expect(scopeOf(result.find((token) => token.content.includes("'$TMUX_PANE'")))).toContain(
+      'string.quoted.single.shell',
+    )
     expect(result.some((token) => scopeOf(token).includes('constant.character.escape.shell'))).toBe(true)
   })
 
@@ -160,12 +175,19 @@ describe('tmux usage highlighting', () => {
     const code = '%if "#{==:#{host},myhost}"\nset -g status-style bg=red\n%else\nset -g status-style bg=blue\n%endif'
     const result = highlighter.codeToTokens(code, { lang: 'tmux-config', theme, includeExplanation: true })
     expect(result.tokens.map((line) => line.map((part) => part.content).join('')).join('\n')).toBe(code)
-    for (const [value, scope] of [['%if', 'keyword.control'], ['host', 'variable.other'], ['set', 'entity.name.function'], ['-g', 'constant.other.option']]) {
+    for (const [value, scope] of [
+      ['%if', 'keyword.control'],
+      ['host', 'variable.other'],
+      ['set', 'entity.name.function'],
+      ['-g', 'constant.other.option'],
+    ]) {
       const token = result.tokens.flat().find((part) => part.content === value)!
       expect(scopeOf(token)).toContain(`${scope}.tmux-config`)
       expect(contrast(token.color!, result.bg!)).toBeGreaterThanOrEqual(4.5)
     }
-    expect(scopeOf(result.tokens[1].find((part) => part.content === 'set'))).not.toContain('string.quoted.double.tmux-config')
+    expect(scopeOf(result.tokens[1].find((part) => part.content === 'set'))).not.toContain(
+      'string.quoted.double.tmux-config',
+    )
     const renderer = await createRenderer(config)
     const rendered = await renderer.ec.render({ code, language: 'tmux-config' })
     expect(select('[data-code]', rendered.renderedGroupAst)?.properties.dataCode).toBe(code.replaceAll('\n', '\x7f'))
@@ -173,14 +195,21 @@ describe('tmux usage highlighting', () => {
   })
 
   it('recognizes runtime formats inside both quotes while leaving single-quoted environment variables literal', () => {
-    const result = highlighter.codeToTokens("# a comment\nset -g status-left '#{host} #[fg=red]#S $HOME'\nset -g status-right \"#{?pane_in_mode,#[fg=red],#[fg=green]}#W\"", {
-      lang: 'tmux-config', theme: 'github-dark', includeExplanation: true,
-    }).tokens
+    const result = highlighter.codeToTokens(
+      '# a comment\nset -g status-left \'#{host} #[fg=red]#S $HOME\'\nset -g status-right "#{?pane_in_mode,#[fg=red],#[fg=green]}#W"',
+      {
+        lang: 'tmux-config',
+        theme: 'github-dark',
+        includeExplanation: true,
+      },
+    ).tokens
     expect(scopeOf(result[0][0])).toContain('comment.line.number-sign.tmux-config')
     expect(result[1].some((token) => scopeOf(token).includes('meta.interpolation.tmux-config'))).toBe(true)
     expect(result[1].some((token) => scopeOf(token).includes('meta.style.tmux-config'))).toBe(true)
     expect(scopeOf(result[1].find((token) => token.content === '#S'))).toContain('variable.other.tmux-config')
-    expect(scopeOf(result[1].find((token) => token.content.includes('$HOME')))).not.toContain('variable.other.tmux-config')
+    expect(scopeOf(result[1].find((token) => token.content.includes('$HOME')))).not.toContain(
+      'variable.other.tmux-config',
+    )
     expect(result[2].some((token) => scopeOf(token).includes('meta.interpolation.tmux-config'))).toBe(true)
     expect(result[2].some((token) => scopeOf(token).includes('meta.style.tmux-config'))).toBe(true)
   })

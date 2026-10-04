@@ -17,29 +17,57 @@ describe('Ruby native documentation adapter', () => {
     ],
     namespaces: [
       {
-        id: 'LibTmux::Pane', name: 'Pane', kind: 'class', package: 'libtmux', product: 'core',
+        id: 'LibTmux::Pane',
+        name: 'Pane',
+        kind: 'class',
+        package: 'libtmux',
+        product: 'core',
         documentation: 'A pane handle.\n\nBound to one server.',
         source: { path: 'gems/libtmux/lib/libtmux/pane.rb', line: 12 },
       },
     ],
-    aliases: [{
-      id: 'LibTmux::Async::scope_diagnostics', name: 'scope_diagnostics', package: 'libtmux-async',
-      product: 'core', type: '{ closed: bool }',
-      source: { path: 'gems/libtmux-async/sig/libtmux-async.rbs', line: 7 },
-    }],
+    aliases: [
+      {
+        id: 'LibTmux::Async::scope_diagnostics',
+        name: 'scope_diagnostics',
+        package: 'libtmux-async',
+        product: 'core',
+        type: '{ closed: bool }',
+        source: { path: 'gems/libtmux-async/sig/libtmux-async.rbs', line: 7 },
+      },
+    ],
     symbols: [
       {
-        id: 'LibTmux::Pane#active?', owner: 'LibTmux::Pane#active?', namespace: 'LibTmux::Pane',
-        name: 'active?', kind: 'method', method_kind: 'instance', package: 'libtmux', product: 'core',
-        visibility: 'public', signatures: ['() -> bool'], returns: ['bool'], documentation: 'Whether this pane is active.',
-        tags: [], contract: { id: 'pane-state', title: 'Pane state' },
+        id: 'LibTmux::Pane#active?',
+        owner: 'LibTmux::Pane#active?',
+        namespace: 'LibTmux::Pane',
+        name: 'active?',
+        kind: 'method',
+        method_kind: 'instance',
+        package: 'libtmux',
+        product: 'core',
+        visibility: 'public',
+        signatures: ['() -> bool'],
+        returns: ['bool'],
+        documentation: 'Whether this pane is active.',
+        tags: [],
+        contract: { id: 'pane-state', title: 'Pane state' },
         source: { path: 'gems/libtmux/lib/libtmux/pane.rb', line: 30 },
       },
       {
-        id: 'LibTmux::Pane.active?', owner: 'LibTmux::Pane.active?', namespace: 'LibTmux::Pane',
-        name: 'active?', kind: 'method', method_kind: 'singleton', package: 'libtmux', product: 'core',
-        visibility: 'public', signatures: ['(name: ::String, ?force: bool) -> ::LibTmux::Pane'],
-        returns: ['::LibTmux::Pane'], documentation: '', tags: [],
+        id: 'LibTmux::Pane.active?',
+        owner: 'LibTmux::Pane.active?',
+        namespace: 'LibTmux::Pane',
+        name: 'active?',
+        kind: 'method',
+        method_kind: 'singleton',
+        package: 'libtmux',
+        product: 'core',
+        visibility: 'public',
+        signatures: ['(name: ::String, ?force: bool) -> ::LibTmux::Pane'],
+        returns: ['::LibTmux::Pane'],
+        documentation: '',
+        tags: [],
         contract: { id: 'pane-state', title: 'Pane state' },
         source: { path: 'gems/libtmux/lib/libtmux/pane.rb', line: 40 },
       },
@@ -84,13 +112,20 @@ describe('Ruby native documentation adapter', () => {
     const input = {
       ...artifact,
       examples: {
-        manifest: { programs: [{
-          id: 'pane_active', path: 'examples/api/active.rb', gem: 'libtmux',
-          api: {
-            symbols: ['LibTmux::Pane', 'LibTmux::Pane#active?'],
-            description: 'Read pane state.', output: 'active\n',
-          },
-        }] },
+        manifest: {
+          programs: [
+            {
+              id: 'pane_active',
+              path: 'examples/api/active.rb',
+              gem: 'libtmux',
+              api: {
+                symbols: ['LibTmux::Pane', 'LibTmux::Pane#active?'],
+                description: 'Read pane state.',
+                output: 'active\n',
+              },
+            },
+          ],
+        },
         files: [{ path: 'examples/api/active.rb', content: code }],
       },
     }
@@ -99,21 +134,26 @@ describe('Ruby native documentation adapter', () => {
       const symbol = model.symbols.find((entry) => entry.id === id)!
       expect(symbol.doc?.examples).toHaveLength(5)
       expect(symbol.doc!.examples![2]).toMatchObject({
-        lang: 'ruby', code,
+        lang: 'ruby',
+        code,
         sourceUrl: `https://github.com/libtmux/libtmux-ruby/blob/${REVISION}/examples/api/active.rb`,
       })
       expect(symbol.doc!.examples![4]).toMatchObject({ lang: 'text', code: 'active\n' })
     }
-    expect(model.symbols.find((entry) => entry.id === 'LibTmux::Pane#active?')?.doc?.summary)
-      .toBe('Whether this pane is active.')
-    expect(model.symbols.find((entry) => entry.id === 'LibTmux::Pane.active?')?.doc?.examples)
-      .toBeUndefined()
+    expect(model.symbols.find((entry) => entry.id === 'LibTmux::Pane#active?')?.doc?.summary).toBe(
+      'Whether this pane is active.',
+    )
+    expect(model.symbols.find((entry) => entry.id === 'LibTmux::Pane.active?')?.doc?.examples).toBeUndefined()
   })
 })
 
 describe('Lua native documentation adapter', () => {
   const definition = (file: string, line: number) => ({
-    file, start: [line, 0], finish: [line, 1], type: 'doc.class', visible: 'public',
+    file,
+    start: [line, 0],
+    finish: [line, 1],
+    type: 'doc.class',
+    visible: 'public',
   })
   const artifact = {
     schema: 1,
@@ -123,29 +163,53 @@ describe('Lua native documentation adapter', () => {
     package: { name: 'libtmux', version: '0.1.0alpha1-1', source_tag: 'v0.1.0alpha1' },
     declarations: [
       {
-        name: 'libtmux.query', type: 'type', view: 'libtmux.query',
+        name: 'libtmux.query',
+        type: 'type',
+        view: 'libtmux.query',
         defines: [definition('lua/libtmux/query.lua', 3)],
-        fields: [{
-          name: 'where', file: 'lua/libtmux/query.lua', start: [20, 0], type: 'setfield', view: 'function',
-          rawdesc: 'Filter records.', visible: 'public',
-          extends: {
-            args: [{ name: 'rows', view: 'T[]' }, { name: 'criteria', view: 'libtmux.Where' }],
-            returns: [{ view: 'libtmux.Selection<T>' }],
-            view: 'function libtmux.query.where(rows: T[], criteria: libtmux.Where) -> libtmux.Selection<T>',
+        fields: [
+          {
+            name: 'where',
+            file: 'lua/libtmux/query.lua',
+            start: [20, 0],
+            type: 'setfield',
+            view: 'function',
+            rawdesc: 'Filter records.',
+            visible: 'public',
+            extends: {
+              args: [
+                { name: 'rows', view: 'T[]' },
+                { name: 'criteria', view: 'libtmux.Where' },
+              ],
+              returns: [{ view: 'libtmux.Selection<T>' }],
+              view: 'function libtmux.query.where(rows: T[], criteria: libtmux.Where) -> libtmux.Selection<T>',
+            },
           },
-        }],
+        ],
       },
       {
-        name: 'libtmux.Request', type: 'type', view: 'libtmux.Request<T>',
+        name: 'libtmux.Request',
+        type: 'type',
+        view: 'libtmux.Request<T>',
         defines: [definition('lua/libtmux/_internal/runtime.lua', 100)],
-        fields: [{
-          name: 'await', file: 'lua/libtmux/_internal/runtime.lua', start: [120, 0], type: 'doc.field',
-          view: 'fun(self: libtmux.Request<T>, timeout?: number):T?, libtmux.Error?', rawdesc: 'Wait for completion.',
-          visible: 'public', extends: {
-            args: [{ name: 'self', view: 'libtmux.Request<T>' }, { name: 'timeout', view: 'number?' }],
-            returns: [{ view: 'T?' }, { name: 'error', view: 'libtmux.Error?' }],
+        fields: [
+          {
+            name: 'await',
+            file: 'lua/libtmux/_internal/runtime.lua',
+            start: [120, 0],
+            type: 'doc.field',
+            view: 'fun(self: libtmux.Request<T>, timeout?: number):T?, libtmux.Error?',
+            rawdesc: 'Wait for completion.',
+            visible: 'public',
+            extends: {
+              args: [
+                { name: 'self', view: 'libtmux.Request<T>' },
+                { name: 'timeout', view: 'number?' },
+              ],
+              returns: [{ view: 'T?' }, { name: 'error', view: 'libtmux.Error?' }],
+            },
           },
-        }],
+        ],
       },
     ],
     guides: [],
@@ -184,38 +248,50 @@ describe('Lua native documentation adapter', () => {
     })
     const typed = {
       ...artifact,
-      declarations: [{
-        name: 'libtmux.Server', type: 'type', view: 'libtmux.Server',
-        defines: [definition('lua/libtmux/_internal/server.lua', 600)],
-        fields: [
-          {
-            name: 'new_session', file: 'lua/libtmux/_internal/server.lua', start: [610, 0], type: 'doc.field',
-            view: 'fun(self: libtmux.Server, options?: libtmux.NewSessionOptions):libtmux.Request<libtmux.Creation>',
-            visible: 'public',
-            extends: {
-              type: 'doc.type',
+      declarations: [
+        {
+          name: 'libtmux.Server',
+          type: 'type',
+          view: 'libtmux.Server',
+          defines: [definition('lua/libtmux/_internal/server.lua', 600)],
+          fields: [
+            {
+              name: 'new_session',
+              file: 'lua/libtmux/_internal/server.lua',
+              start: [610, 0],
+              type: 'doc.field',
               view: 'fun(self: libtmux.Server, options?: libtmux.NewSessionOptions):libtmux.Request<libtmux.Creation>',
-              types: [{
-                type: 'doc.type.function',
-                args: [arg('self', 'libtmux.Server'), arg('options', '(libtmux.NewSessionOptions)?')],
-                returns: [{ view: 'libtmux.Request<libtmux.Creation>' }],
-              }],
+              visible: 'public',
+              extends: {
+                type: 'doc.type',
+                view: 'fun(self: libtmux.Server, options?: libtmux.NewSessionOptions):libtmux.Request<libtmux.Creation>',
+                types: [
+                  {
+                    type: 'doc.type.function',
+                    args: [arg('self', 'libtmux.Server'), arg('options', '(libtmux.NewSessionOptions)?')],
+                    returns: [{ view: 'libtmux.Request<libtmux.Creation>' }],
+                  },
+                ],
+              },
             },
-          },
-          {
-            name: 'handle', file: 'lua/libtmux/_internal/server.lua', start: [620, 0], type: 'doc.field',
-            view: 'fun(self: libtmux.Server, record: libtmux.SnapshotSession)|fun(self: libtmux.Server, record: libtmux.SnapshotPane)',
-            visible: 'public',
-            extends: {
-              type: 'doc.type',
-              types: [
-                { type: 'doc.type', types: [fn('libtmux.SnapshotSession', 'libtmux.Session')] },
-                { type: 'doc.type', types: [fn('libtmux.SnapshotPane', 'libtmux.Pane')] },
-              ],
+            {
+              name: 'handle',
+              file: 'lua/libtmux/_internal/server.lua',
+              start: [620, 0],
+              type: 'doc.field',
+              view: 'fun(self: libtmux.Server, record: libtmux.SnapshotSession)|fun(self: libtmux.Server, record: libtmux.SnapshotPane)',
+              visible: 'public',
+              extends: {
+                type: 'doc.type',
+                types: [
+                  { type: 'doc.type', types: [fn('libtmux.SnapshotSession', 'libtmux.Session')] },
+                  { type: 'doc.type', types: [fn('libtmux.SnapshotPane', 'libtmux.Pane')] },
+                ],
+              },
             },
-          },
-        ],
-      }],
+          ],
+        },
+      ],
     }
     const model = extractLua(typed)
     const create = model.symbols.find((s) => s.id === 'libtmux.Server:new_session')!
@@ -233,13 +309,21 @@ describe('Lua native documentation adapter', () => {
 
   it('credits a field LuaLS copied into a subclass to the class that declared it', () => {
     const field = (name: string, line: number) => ({
-      name, file: 'lua/libtmux/_internal/entity.lua', start: [line, 0], type: 'doc.field',
-      view: `fun(self: libtmux.Entity<T>)`, visible: 'public',
+      name,
+      file: 'lua/libtmux/_internal/entity.lua',
+      start: [line, 0],
+      type: 'doc.field',
+      view: `fun(self: libtmux.Entity<T>)`,
+      visible: 'public',
       extends: { args: [{ name: 'self', view: 'libtmux.Entity<T>' }], returns: [] },
     })
     const declare = (name: string, parent: string | undefined, fields: ReturnType<typeof field>[]) => ({
-      name, type: 'type', view: name,
-      defines: [{ ...definition('lua/libtmux/_internal/entity.lua', 1), ...(parent ? { extends: [{ view: parent }] } : {}) }],
+      name,
+      type: 'type',
+      view: name,
+      defines: [
+        { ...definition('lua/libtmux/_internal/entity.lua', 1), ...(parent ? { extends: [{ view: parent }] } : {}) },
+      ],
       fields,
     })
     const hierarchy = {
@@ -248,19 +332,26 @@ describe('Lua native documentation adapter', () => {
         declare('libtmux.Entity', undefined, [field('snapshot', 10)]),
         declare('libtmux.Configurable', 'libtmux.Entity<T>', [field('snapshot', 10), field('get_option', 20)]),
         declare('libtmux.Session', 'libtmux.Configurable<libtmux.SnapshotSession>', [
-          field('snapshot', 10), field('get_option', 20), field('new_window', 30),
+          field('snapshot', 10),
+          field('get_option', 20),
+          field('new_window', 30),
         ]),
       ],
     }
     const inherited = (model: ReturnType<typeof extractLua>) =>
-      Object.fromEntries(model.symbols.filter((s) => s.parent === 'libtmux.Session').map((s) => [s.name, s.inheritedFrom]))
+      Object.fromEntries(
+        model.symbols.filter((s) => s.parent === 'libtmux.Session').map((s) => [s.name, s.inheritedFrom]),
+      )
     expect(inherited(extractLua(hierarchy))).toEqual({
       snapshot: 'libtmux.Entity',
       get_option: 'libtmux.Configurable',
       new_window: undefined,
     })
     // A cycle in `extends` ends the walk instead of the stack.
-    hierarchy.declarations[0]!.defines[0] = { ...hierarchy.declarations[0]!.defines[0]!, extends: [{ view: 'libtmux.Session' }] }
+    hierarchy.declarations[0]!.defines[0] = {
+      ...hierarchy.declarations[0]!.defines[0]!,
+      extends: [{ view: 'libtmux.Session' }],
+    }
     expect(inherited(extractLua(hierarchy)).get_option).toBe('libtmux.Configurable')
   })
 })

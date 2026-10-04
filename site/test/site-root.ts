@@ -15,11 +15,8 @@ export const BUCKET_ROOT: string = process.env.LIBTMUX_DOCS_TEST_SITE
 
 /** The default-locale content tree, or a bare shell build used by a test. */
 export const ASSEMBLY_ROOT = join(BUCKET_ROOT, PREVIEW_PREFIX)
-export const SITE_ROOT = existsSync(join(ASSEMBLY_ROOT, 'en', 'index.html'))
-  ? join(ASSEMBLY_ROOT, 'en')
-  : ASSEMBLY_ROOT
-export const SITE_PREFIX = relative(BUCKET_ROOT, SITE_ROOT).replaceAll('\\', '/')
-  .replace(/(.+)/, '$1/')
+export const SITE_ROOT = existsSync(join(ASSEMBLY_ROOT, 'en', 'index.html')) ? join(ASSEMBLY_ROOT, 'en') : ASSEMBLY_ROOT
+export const SITE_PREFIX = relative(BUCKET_ROOT, SITE_ROOT).replaceAll('\\', '/').replace(/(.+)/, '$1/')
 
 /** Resolve a published URL path from the bucket root. */
 export const publishedPath = (...parts: string[]): string => join(BUCKET_ROOT, ...parts)
@@ -53,11 +50,11 @@ export const SITE_BUILT: boolean = !SOURCE_ONLY && !ASSEMBLY_RUNNING && existsSy
 export const SKIP_REASON: string | undefined = SOURCE_ONLY
   ? 'source-only mode excludes assembled-output checks'
   : ASSEMBLY_RUNNING
-  ? `an assembly holds .build.lock — suites reading ${SITE_ROOT} were skipped rather than ` +
-    'measuring a tree mid-rebuild'
-  : !existsSync(join(SITE_ROOT, 'index.html'))
-    ? `nothing assembled at ${SITE_ROOT} — run scripts/build-site.sh`
-    : undefined
+    ? `an assembly holds .build.lock — suites reading ${SITE_ROOT} were skipped rather than ` +
+      'measuring a tree mid-rebuild'
+    : !existsSync(join(SITE_ROOT, 'index.html'))
+      ? `nothing assembled at ${SITE_ROOT} — run scripts/build-site.sh`
+      : undefined
 
 /** Path inside the assembled tree. */
 export const sitePath = (...parts: string[]): string => join(SITE_ROOT, ...parts)

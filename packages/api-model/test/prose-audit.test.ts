@@ -11,7 +11,8 @@ import { extractWithSpec } from '../src/languages/spec.ts'
 import { GO } from '../src/languages/specs.ts'
 
 const root = fileURLToPath(new URL('../../../', import.meta.url))
-const audit = (...args: string[]) => spawnSync(process.execPath, ['scripts/check-api-links.mjs', ...args, '--json'], { cwd: root, encoding: 'utf8' })
+const audit = (...args: string[]) =>
+  spawnSync(process.execPath, ['scripts/check-api-links.mjs', ...args, '--json'], { cwd: root, encoding: 'utf8' })
 
 describe('product prose audit', () => {
   it('checks the product collection by default', () => {
@@ -26,7 +27,9 @@ describe('product prose audit', () => {
       writeFileSync(file, '---\ntitle: Capture\nport: ts\nproduct: mcp\n---\n\nUse `capture_pane()` for output.\n')
       const result = audit(file)
       expect(result.status).toBe(1)
-      expect(JSON.parse(result.stdout).unresolved.map((entry: { text: string }) => entry.text)).toEqual(['capture_pane()'])
+      expect(JSON.parse(result.stdout).unresolved.map((entry: { text: string }) => entry.text)).toEqual([
+        'capture_pane()',
+      ])
     } finally {
       rmSync(scratch, { recursive: true })
     }
@@ -67,23 +70,41 @@ describe('product context in prose', () => {
   })
 
   it('does not borrow another language when the page already names its port', () => {
-    const other = { port: 'py', version: '0', symbols: [{ id: 'Other', name: 'Other', kind: 'class', signatures: [] }] } as ApiModel
+    const other = {
+      port: 'py',
+      version: '0',
+      symbols: [{ id: 'Other', name: 'Other', kind: 'class', signatures: [] }],
+    } as ApiModel
     for (const product of [undefined, 'workspace'] as const) {
-      const result = decideMention('Other', { pagePort: 'go', product }, new Resolver([model, other]), { go: model, py: other })
+      const result = decideMention('Other', { pagePort: 'go', product }, new Resolver([model, other]), {
+        go: model,
+        py: other,
+      })
       expect(result.kind).toBe('unresolved')
     }
   })
 
   it('links standard-library types through the existing language catalog', () => {
     const rust = { port: 'rs', version: '0', symbols: [] } as unknown as ApiModel
-    expect(decideMention('BTreeMap', { pagePort: 'rs' }, new Resolver([rust]), { rs: rust }))
-      .toMatchObject({ kind: 'link', port: 'rs', href: 'https://doc.rust-lang.org/std/collections/struct.BTreeMap.html', external: true })
+    expect(decideMention('BTreeMap', { pagePort: 'rs' }, new Resolver([rust]), { rs: rust })).toMatchObject({
+      kind: 'link',
+      port: 'rs',
+      href: 'https://doc.rust-lang.org/std/collections/struct.BTreeMap.html',
+      external: true,
+    })
   })
 
   it('uses the enclosing type to distinguish nested builders', () => {
-    const java = { port: 'java', version: '0', symbols: ['SessionSpec', 'WindowSpec'].map((name) => ({
-      id: `io.example.${name}.${name}.Builder.environment`, name: 'environment', kind: 'method', signatures: [],
-    })) } as unknown as ApiModel
+    const java = {
+      port: 'java',
+      version: '0',
+      symbols: ['SessionSpec', 'WindowSpec'].map((name) => ({
+        id: `io.example.${name}.${name}.Builder.environment`,
+        name: 'environment',
+        kind: 'method',
+        signatures: [],
+      })),
+    } as unknown as ApiModel
     const r = new Resolver([java])
     const found = r.resolve('java', 'SessionSpec.Builder.environment(Map)')
     expect('symbol' in found && found.symbol.id).toBe('io.example.SessionSpec.SessionSpec.Builder.environment')
@@ -92,15 +113,20 @@ describe('product context in prose', () => {
 
   it('classifies MCP resource URIs and newly authored filenames explicitly', () => {
     expect(notASymbol('tmux://sessions/{session_id}')).toBe('a protocol URI')
-    expect(decideFilePath('dev.yaml', { before: 'Save this description as ' }, {})).toEqual({ kind: 'skip', why: 'file created by the example' })
+    expect(decideFilePath('dev.yaml', { before: 'Save this description as ' }, {})).toEqual({
+      kind: 'skip',
+      why: 'file created by the example',
+    })
     expect(decideFilePath('missing.yaml', { before: 'The implementation reads ' }, {}).kind).toBe('unresolved')
   })
 
   it('does not resolve a missing source path against another port', () => {
     const trees = { rs: new Set(['src/server.rs']), py: new Set(['src/libtmux/pane.py']) }
     expect(decideFilePath('src/libtmux/pane.py', { pagePort: 'rs' }, trees).kind).toBe('unresolved')
-    expect(decideFilePath('src/libtmux/pane.py', { pagePort: 'rs', before: 'Python uses ' }, trees))
-      .toMatchObject({ kind: 'link', port: 'py' })
+    expect(decideFilePath('src/libtmux/pane.py', { pagePort: 'rs', before: 'Python uses ' }, trees)).toMatchObject({
+      kind: 'link',
+      port: 'py',
+    })
     expect(decideFilePath('src/libtmux/pane.py', {}, trees)).toMatchObject({ kind: 'link', port: 'py' })
   })
 })
@@ -109,7 +135,10 @@ it('extracts exported Go error variables with their source documentation', async
   const scratch = mkdtempSync(join(tmpdir(), 'libtmux-go-api-'))
   const file = join(scratch, 'workspace.go')
   try {
-    writeFileSync(file, 'package workspace\n\n// ErrInvalidWorkspace matches parse and validation failures.\nvar ErrInvalidWorkspace = errors.New("workspace: invalid workspace")\nvar privateError = errors.New("private")\n')
+    writeFileSync(
+      file,
+      'package workspace\n\n// ErrInvalidWorkspace matches parse and validation failures.\nvar ErrInvalidWorkspace = errors.New("workspace: invalid workspace")\nvar privateError = errors.New("private")\n',
+    )
     const symbols = await extractWithSpec(GO, file, 'workspace')
     expect(symbols.map((symbol) => symbol.id)).toEqual(['workspace.ErrInvalidWorkspace'])
     expect(symbols[0].doc?.summary).toContain('parse and validation failures')

@@ -119,7 +119,16 @@ const CASES = [
 ]
 
 /** Properties whose value is a length that legitimately tracks the base font. */
-const NEAR = new Set(['paddingTop', 'paddingBottom', 'paddingLeft', 'marginBottom', 'marginLeft', 'minHeight', 'borderRadius', 'letterSpacing'])
+const NEAR = new Set([
+  'paddingTop',
+  'paddingBottom',
+  'paddingLeft',
+  'marginBottom',
+  'marginLeft',
+  'minHeight',
+  'borderRadius',
+  'letterSpacing',
+])
 
 /** A measure within a few characters of gp-sphinx's reads the same. */
 const WIDTH_TOLERANCE_PX = 12
@@ -179,9 +188,7 @@ const attributeCases = CASES.filter((c) => c.page === 'attribute')
 const fromMethod = await styles(page, OURS, methodCases, 'ours')
 const fromAttribute = await styles(page, OURS_ATTRIBUTE, attributeCases, 'ours')
 const ours = CASES.map((c) =>
-  c.page === 'attribute'
-    ? fromAttribute[attributeCases.indexOf(c)]
-    : fromMethod[methodCases.indexOf(c)],
+  c.page === 'attribute' ? fromAttribute[attributeCases.indexOf(c)] : fromMethod[methodCases.indexOf(c)],
 )
 await browser.close()
 

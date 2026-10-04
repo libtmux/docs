@@ -4,7 +4,18 @@ import { getCollection, render } from 'astro:content'
 import { DEFAULT_LOCALE, localeRoot } from '../i18n/locales.ts'
 import { buildLocale, localeOf } from '../i18n/resolve.ts'
 import { API_MODELS, PORT_NAME, pageSlug } from '../lib/api-models.ts'
-import { DOC_PRODUCTS, hasReference, PORTS, PORT_BY_SLUG, portPageUrl, productApiPath, productAvailable, productInDevelopment, referenceUrl, type DocProduct } from '../lib/ports.ts'
+import {
+  DOC_PRODUCTS,
+  hasReference,
+  PORTS,
+  PORT_BY_SLUG,
+  portPageUrl,
+  productApiPath,
+  productAvailable,
+  productInDevelopment,
+  referenceUrl,
+  type DocProduct,
+} from '../lib/ports.ts'
 import { PORT_ROOT } from '../lib/site-root.ts'
 import { docsRoutePath } from '../lib/docs-paths.ts'
 import { docsEntryAvailable } from '../lib/page-port-links.ts'
@@ -15,7 +26,13 @@ import { buildTarget } from '../lib/versions.ts'
 import { tmuxReferenceContext, tmuxReferenceUrl } from '../lib/tmux-reference'
 import { buildsTmuxDocumentation, TMUX_VERSIONS } from '../lib/tmux-manual-data'
 import { referenceIndexSections, referenceIndexSectionsFor } from '../lib/api-tree.ts'
-import { tmuxManualDescription, tmuxManualHeadings, tmuxManualTitle, tmuxManualRoutes, tmuxManualUrl } from '../lib/tmux-manual-data.ts'
+import {
+  tmuxManualDescription,
+  tmuxManualHeadings,
+  tmuxManualTitle,
+  tmuxManualRoutes,
+  tmuxManualUrl,
+} from '../lib/tmux-manual-data.ts'
 
 /**
  * `/docs.json` — the agent manifest.
@@ -47,19 +64,24 @@ export const GET: APIRoute = async ({ site }) => {
   const visiblePorts = PORTS.filter((entry) => !port || entry.slug === port)
   const locale = buildLocale()
   const defaults: Record<string, string> = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
-  const versionFor = (slug: string) => slug === port ? buildTarget(process.env).version : (defaults[slug] ?? 'latest')
+  const versionFor = (slug: string) => (slug === port ? buildTarget(process.env).version : (defaults[slug] ?? 'latest'))
 
   const entries = await getCollection(
     'docs',
-    (entry) => docsEntryAvailable(entry, port)
-      && localeOf(entry.id) === DEFAULT_LOCALE
-      && (locale === DEFAULT_LOCALE || Boolean(port) || !entry.data.port),
+    (entry) =>
+      docsEntryAvailable(entry, port) &&
+      localeOf(entry.id) === DEFAULT_LOCALE &&
+      (locale === DEFAULT_LOCALE || Boolean(port) || !entry.data.port),
   )
   // What this build serves at each route: a translation where it has one, and
   // the default locale's page where a placeholder stands in for it.
-  const translations = new Map(locale === DEFAULT_LOCALE ? []
-    : localeProse(await getCollection('docs'), locale, port, defaults)
-      .map(({ entry, route }) => [route, entry] as const))
+  const translations = new Map(
+    locale === DEFAULT_LOCALE
+      ? []
+      : localeProse(await getCollection('docs'), locale, port, defaults).map(
+          ({ entry, route }) => [route, entry] as const,
+        ),
+  )
 
   const pages = []
   for (const entry of entries) {
@@ -111,33 +133,54 @@ export const GET: APIRoute = async ({ site }) => {
 
   for (const { version, slug } of tmuxManualRoutes()) {
     const url = `${origin}${tmuxManualUrl(version, slug)}`
-    pages.push({ title: tmuxManualTitle(version, slug), description: tmuxManualDescription(version, slug),
-      section: 'tmux manual', url, markdownUrl: markdownPath(url, !slug),
-      headings: tmuxManualHeadings(version, slug).map((heading) => ({ id: heading.slug, level: heading.depth, text: heading.text })) })
-  }
-
-  if (buildsTmuxDocumentation()) for (const version of TMUX_VERSIONS) {
-    const context = tmuxReferenceContext(version)
-    const url = `${origin}${tmuxReferenceUrl(version)}`
-    const sections = referenceIndexSectionsFor(context.model, context.tree)
-    pages.push({ title: context.title, description: context.description,
-      section: 'tmux C source reference', url, markdownUrl: `${url}index.md`, symbolIndexUrl: `${url}tree.json`,
-      headings: [
-        ...(context.paths.length ? [{ id: 'api-source-paths', level: 2, text: 'Paths through the source' }] : []),
-        ...sections.map((section) => ({ id: `section-${section.id}`, level: 2, text: section.name })),
-      ],
-      symbols: sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => ({
-        id: symbol.publicId ?? symbol.id, name: symbol.name, kind: symbol.kind,
-        qualifiedName: qualifiedNameOf(symbol), namespace: moduleOf(symbol),
-        url: `${origin}${tmuxReferenceUrl(version, symbol)}`,
+    pages.push({
+      title: tmuxManualTitle(version, slug),
+      description: tmuxManualDescription(version, slug),
+      section: 'tmux manual',
+      url,
+      markdownUrl: markdownPath(url, !slug),
+      headings: tmuxManualHeadings(version, slug).map((heading) => ({
+        id: heading.slug,
+        level: heading.depth,
+        text: heading.text,
       })),
     })
   }
 
+  if (buildsTmuxDocumentation())
+    for (const version of TMUX_VERSIONS) {
+      const context = tmuxReferenceContext(version)
+      const url = `${origin}${tmuxReferenceUrl(version)}`
+      const sections = referenceIndexSectionsFor(context.model, context.tree)
+      pages.push({
+        title: context.title,
+        description: context.description,
+        section: 'tmux C source reference',
+        url,
+        markdownUrl: `${url}index.md`,
+        symbolIndexUrl: `${url}tree.json`,
+        headings: [
+          ...(context.paths.length ? [{ id: 'api-source-paths', level: 2, text: 'Paths through the source' }] : []),
+          ...sections.map((section) => ({ id: `section-${section.id}`, level: 2, text: section.name })),
+        ],
+        symbols: sections
+          .flatMap((section) => [...section.types, ...section.free])
+          .map((symbol) => ({
+            id: symbol.publicId ?? symbol.id,
+            name: symbol.name,
+            kind: symbol.kind,
+            qualifiedName: qualifiedNameOf(symbol),
+            namespace: moduleOf(symbol),
+            url: `${origin}${tmuxReferenceUrl(version, symbol)}`,
+          })),
+      })
+    }
+
   const manifest = {
     name: port ? `libtmux for ${PORT_BY_SLUG[port].name}` : 'libtmux',
     url: `${origin}${base}`,
-    description: port ? `Guides, examples and API reference for ${PORT_BY_SLUG[port].packageName}.`
+    description: port
+      ? `Guides, examples and API reference for ${PORT_BY_SLUG[port].packageName}.`
       : `Typed tmux control libraries for ${PORTS.map((port) => port.name).join(', ')}, documented as one site.`,
     sourceRepository: `https://github.com/${port ? PORT_BY_SLUG[port].repo : 'tmux-python/libtmux'}`,
     agentEntrypoints: {
@@ -158,15 +201,24 @@ export const GET: APIRoute = async ({ site }) => {
       reference: hasReference(p) ? referenceUrl(p, versionFor(p.slug)) : null,
       ...(p.parentLibrary ? { parentLibrary: p.parentLibrary } : {}),
       products: Object.entries(p.parentLibrary ? {} : DOC_PRODUCTS).map(([slug, product]) => ({
-        slug, name: product.label,
+        slug,
+        name: product.label,
         availability: productAvailable(p, slug as DocProduct) ? 'available' : 'unpublished',
         inDevelopment: productInDevelopment(p, slug as DocProduct),
-        ...(slug === 'workspace' ? { cli: p.workspaceCli ?? null, cliAvailability: p.workspaceCliAvailability ?? null } : {}),
+        ...(slug === 'workspace'
+          ? { cli: p.workspaceCli ?? null, cliAvailability: p.workspaceCliAvailability ?? null }
+          : {}),
         url: portPageUrl(p, versionFor(p.slug), slug),
         reference: productAvailable(p, slug as DocProduct)
-          ? portPageUrl(p, versionFor(p.slug), productApiPath(slug as DocProduct)) : null,
-        ...(slug === 'mcp' ? { protocol: productAvailable(p, 'mcp')
-          ? portPageUrl(p, versionFor(p.slug), 'mcp/tools').replace(/\/$/, '.json') : null } : {}),
+          ? portPageUrl(p, versionFor(p.slug), productApiPath(slug as DocProduct))
+          : null,
+        ...(slug === 'mcp'
+          ? {
+              protocol: productAvailable(p, 'mcp')
+                ? portPageUrl(p, versionFor(p.slug), 'mcp/tools').replace(/\/$/, '.json')
+                : null,
+            }
+          : {}),
         source: API_MODELS[p.slug]?.sources?.find((source) => source.product === slug),
       })),
       extracted: API_MODELS[p.slug]
@@ -182,9 +234,11 @@ export const GET: APIRoute = async ({ site }) => {
         kind: area.kind,
         availability: area.kind === 'unavailable' ? 'unpublished' : 'available',
         url: portPageUrl(p, versionFor(p.slug), area.route),
-        ...(area.kind === 'companion-package' ? {
-          package: p.packages?.find((entry) => entry.id === area.package)?.name,
-        } : {}),
+        ...(area.kind === 'companion-package'
+          ? {
+              package: p.packages?.find((entry) => entry.id === area.package)?.name,
+            }
+          : {}),
       })),
     })),
     pages,

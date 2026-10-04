@@ -163,7 +163,9 @@ try {
   // as it failing. A fresh checkout and a CI job without `serve.sh` both land
   // here, and reporting eight "no response" failures would train a reader to
   // ignore this command's output.
-  const reachable = await fetch(BASE, { method: 'HEAD' }).then((r) => r.ok).catch(() => false)
+  const reachable = await fetch(BASE, { method: 'HEAD' })
+    .then((r) => r.ok)
+    .catch(() => false)
   if (!reachable) throw new Error(`nothing serving at ${BASE}`)
   const { chromium } = await import('playwright')
   const browser = await chromium.launch()
@@ -219,8 +221,8 @@ function collect() {
       })
     }
   }
-  const preloaded = [...document.querySelectorAll('link[rel="preload"][as="font"]')].map((l) =>
-    new URL(l.getAttribute('href'), location.href).pathname,
+  const preloaded = [...document.querySelectorAll('link[rel="preload"][as="font"]')].map(
+    (l) => new URL(l.getAttribute('href'), location.href).pathname,
   )
   // What the preload actually cost, from the network rather than from disk:
   // a preloaded face is fetched at the highest priority the browser has, so
@@ -270,7 +272,12 @@ if (usage) {
       }
     }
     // Per page: a face opened with but not preloaded is text `block` hides.
-    const pre = new Set(page.preloaded.map((p) => byUrl.get(p)).filter(Boolean).map(label))
+    const pre = new Set(
+      page.preloaded
+        .map((p) => byUrl.get(p))
+        .filter(Boolean)
+        .map(label),
+    )
     const late = page.used
       .filter((u) => FAMILIES.some((f) => u.family.startsWith(f)))
       .map(label)
@@ -286,7 +293,9 @@ if (usage) {
   // A preload entry with no page beside it has no reason to be on the list.
   notes.push('preload cost per archetype:')
   for (const page of usage)
-    notes.push(`  ${page.name.padEnd(20)} ${String(page.preloaded.length).padStart(2)} faces  ${(page.bytes / 1024).toFixed(0).padStart(4)} KB`)
+    notes.push(
+      `  ${page.name.padEnd(20)} ${String(page.preloaded.length).padStart(2)} faces  ${(page.bytes / 1024).toFixed(0).padStart(4)} KB`,
+    )
   notes.push('faces opened with, and by which archetype:')
   for (const [face, pages] of [...needed].sort())
     if (pages.length) notes.push(`  ${face.padEnd(28)} ${[...new Set(pages)].join(', ')}`)

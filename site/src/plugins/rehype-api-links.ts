@@ -111,7 +111,13 @@ export function rehypeApiLinks() {
     const link = createProseLinker(file?.data?.astro?.frontmatter?.product)
     const sections: { depth: number; port?: string }[] = []
 
-    const walk = (node: El, inLink: boolean, rowPort: string | undefined, fence: { lang?: string }, before: { text: string }) => {
+    const walk = (
+      node: El,
+      inLink: boolean,
+      rowPort: string | undefined,
+      fence: { lang?: string },
+      before: { text: string },
+    ) => {
       const kids = node.children
       if (!Array.isArray(kids)) return
 
@@ -156,12 +162,18 @@ export function rehypeApiLinks() {
         if (child.tagName === 'code' && !inLink) {
           const text = textOf(child).trim()
           const explicitPort = child.properties?.dataDocPort
-          const pagePort = (typeof explicitPort === 'string' ? explicitPort : undefined)
-            ?? buildPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port
+          const pagePort =
+            (typeof explicitPort === 'string' ? explicitPort : undefined) ??
+            buildPort ??
+            rowPort ??
+            fence.lang ??
+            sections.at(-1)?.port
           const decision = link(text, { pagePort, before: scope.text })
           if (decision.kind === 'link') {
             kids[i] = {
-              type: 'element', tagName: 'a', children: [child],
+              type: 'element',
+              tagName: 'a',
+              children: [child],
               properties: {
                 href: decision.href,
                 class: decision.file ? 'api-mention api-mention--file' : 'api-mention',
@@ -169,7 +181,13 @@ export function rehypeApiLinks() {
                 ...(decision.external ? { rel: 'nofollow noopener' } : {}),
               },
             }
-          } else if (decision.kind === 'unresolved' && !decision.file && pagePort && isLikelyReference(text) && !notApiReason(text)) {
+          } else if (
+            decision.kind === 'unresolved' &&
+            !decision.file &&
+            pagePort &&
+            isLikelyReference(text) &&
+            !notApiReason(text)
+          ) {
             record({ port: pagePort, text, why: decision.why })
           }
           scope.text += text
@@ -185,9 +203,21 @@ export function rehypeApiLinks() {
 }
 
 const LANG_TO_PORT: Record<string, string> = {
-  python: 'py', py: 'py', typescript: 'ts', ts: 'ts', javascript: 'ts', js: 'ts',
-  rust: 'rs', rs: 'rs', go: 'go', java: 'java', csharp: 'csharp', cs: 'csharp',
-  cpp: 'cxx', 'c++': 'cxx', swift: 'swift',
+  python: 'py',
+  py: 'py',
+  typescript: 'ts',
+  ts: 'ts',
+  javascript: 'ts',
+  js: 'ts',
+  rust: 'rs',
+  rs: 'rs',
+  go: 'go',
+  java: 'java',
+  csharp: 'csharp',
+  cs: 'csharp',
+  cpp: 'cxx',
+  'c++': 'cxx',
+  swift: 'swift',
 }
 
 function textOf(node: unknown): string {

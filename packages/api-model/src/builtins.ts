@@ -25,8 +25,7 @@ const rust = (page: string) => `https://doc.rust-lang.org/std/${page}`
 const go = (page: string) => `https://pkg.go.dev/${page}`
 const cpp = (page: string) => `https://en.cppreference.com/w/cpp/${page}`
 const swift = (page: string) => `https://developer.apple.com/documentation/swift/${page}`
-const mdn = (page: string) =>
-  `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/${page}`
+const mdn = (page: string) => `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/${page}`
 const ts = (page: string) => `https://www.typescriptlang.org/docs/handbook/2/${page}`
 const kotlin = (page: string) => `https://kotlinlang.org/api/core/kotlin-stdlib/${page}/`
 const scala = (page: string) => `https://www.scala-lang.org/api/3.x/${page}.html`
@@ -35,69 +34,91 @@ const coroutines = (page: string) => `https://kotlinlang.org/api/kotlinx.corouti
 const catsEffect = (name: string) => `https://typelevel.org/cats-effect/api/3.x/cats/effect/kernel/${name}.html`
 
 /** Imports and unqualified references share the same verified destination. */
-const qualifiedKotlin = Object.fromEntries([
-  ['kotlin.time.Duration', kotlin('kotlin.time/-duration')],
-  ['kotlin.time.toKotlinDuration', kotlin('kotlin.time').replace(/\/$/, '/to-kotlin-duration.html')],
-  ['kotlin.time.toJavaDuration', kotlin('kotlin.time').replace(/\/$/, '/to-java-duration.html')],
-  ['kotlinx.coroutines.CoroutineScope', coroutines('kotlinx.coroutines/-coroutine-scope/')],
-  ['kotlinx.coroutines.CoroutineDispatcher', coroutines('kotlinx.coroutines/-coroutine-dispatcher/')],
-  ['kotlinx.coroutines.Dispatchers', coroutines('kotlinx.coroutines/-dispatchers/')],
-  ['kotlinx.coroutines.Dispatchers.IO', coroutines('kotlinx.coroutines/-dispatchers/-i-o.html')],
-  ['kotlinx.coroutines.Dispatchers.Default', coroutines('kotlinx.coroutines/-dispatchers/-default.html')],
-  ['kotlinx.coroutines.NonCancellable', coroutines('kotlinx.coroutines/-non-cancellable/')],
-  ['kotlinx.coroutines.launch', coroutines('kotlinx.coroutines/launch.html')],
-  ['kotlinx.coroutines.coroutineScope', coroutines('kotlinx.coroutines/coroutine-scope.html')],
-  ['kotlinx.coroutines.withContext', coroutines('kotlinx.coroutines/with-context.html')],
-  ['kotlinx.coroutines.runInterruptible', coroutines('kotlinx.coroutines/run-interruptible.html')],
-  ['kotlinx.coroutines.flow.Flow', coroutines('kotlinx.coroutines.flow/-flow/')],
-  ['kotlinx.coroutines.flow.StateFlow', coroutines('kotlinx.coroutines.flow/-state-flow/')],
-  ['kotlinx.coroutines.flow.MutableStateFlow', coroutines('kotlinx.coroutines.flow/-mutable-state-flow/')],
-].flatMap(([name, href]) => [[name!, href!], [name!.replace(/^kotlin(?:x\.coroutines(?:\.flow)?|\.time)\./, ''), href!]]))
+const qualifiedKotlin = Object.fromEntries(
+  [
+    ['kotlin.time.Duration', kotlin('kotlin.time/-duration')],
+    ['kotlin.time.toKotlinDuration', kotlin('kotlin.time').replace(/\/$/, '/to-kotlin-duration.html')],
+    ['kotlin.time.toJavaDuration', kotlin('kotlin.time').replace(/\/$/, '/to-java-duration.html')],
+    ['kotlinx.coroutines.CoroutineScope', coroutines('kotlinx.coroutines/-coroutine-scope/')],
+    ['kotlinx.coroutines.CoroutineDispatcher', coroutines('kotlinx.coroutines/-coroutine-dispatcher/')],
+    ['kotlinx.coroutines.Dispatchers', coroutines('kotlinx.coroutines/-dispatchers/')],
+    ['kotlinx.coroutines.Dispatchers.IO', coroutines('kotlinx.coroutines/-dispatchers/-i-o.html')],
+    ['kotlinx.coroutines.Dispatchers.Default', coroutines('kotlinx.coroutines/-dispatchers/-default.html')],
+    ['kotlinx.coroutines.NonCancellable', coroutines('kotlinx.coroutines/-non-cancellable/')],
+    ['kotlinx.coroutines.launch', coroutines('kotlinx.coroutines/launch.html')],
+    ['kotlinx.coroutines.coroutineScope', coroutines('kotlinx.coroutines/coroutine-scope.html')],
+    ['kotlinx.coroutines.withContext', coroutines('kotlinx.coroutines/with-context.html')],
+    ['kotlinx.coroutines.runInterruptible', coroutines('kotlinx.coroutines/run-interruptible.html')],
+    ['kotlinx.coroutines.flow.Flow', coroutines('kotlinx.coroutines.flow/-flow/')],
+    ['kotlinx.coroutines.flow.StateFlow', coroutines('kotlinx.coroutines.flow/-state-flow/')],
+    ['kotlinx.coroutines.flow.MutableStateFlow', coroutines('kotlinx.coroutines.flow/-mutable-state-flow/')],
+  ].flatMap(([name, href]) => [
+    [name!, href!],
+    [name!.replace(/^kotlin(?:x\.coroutines(?:\.flow)?|\.time)\./, ''), href!],
+  ]),
+)
 const qualifiedScala = Object.fromEntries([
   ...['Async', 'Deferred', 'Outcome', 'Resource', 'Fiber', 'Ref'].flatMap((name) =>
-    [name, `cats.effect.${name}`, `cats.effect.kernel.${name}`].map((alias) => [alias, catsEffect(name)])),
+    [name, `cats.effect.${name}`, `cats.effect.kernel.${name}`].map((alias) => [alias, catsEffect(name)]),
+  ),
   ...['Signal', 'SignallingRef'].flatMap((name) =>
-    [name, `fs2.concurrent.${name}`].map((alias) => [alias, `https://javadoc.io/static/co.fs2/fs2-core_3/3.13.0/fs2/concurrent/${name}.html`])),
+    [name, `fs2.concurrent.${name}`].map((alias) => [
+      alias,
+      `https://javadoc.io/static/co.fs2/fs2-core_3/3.13.0/fs2/concurrent/${name}.html`,
+    ]),
+  ),
 ])
 
-const qualifiedDotnetExceptions = Object.fromEntries([
-  'System.Exception',
-  'System.ArgumentException',
-  'System.ArgumentNullException',
-  'System.ArgumentOutOfRangeException',
-  'System.InvalidOperationException',
-  'System.NotSupportedException',
-  'System.ObjectDisposedException',
-  'System.TimeoutException',
-  'System.FormatException',
-  'System.OperationCanceledException',
-  'System.IO.InvalidDataException',
-  'System.IO.IOException',
-  'System.Text.RegularExpressions.RegexMatchTimeoutException',
-  'System.Text.Json.JsonException',
-  'System.Threading.Tasks.TaskCanceledException',
-].flatMap((name) => [name, name.split('.').at(-1)!].map((alias) => [alias, dotnet(name.toLowerCase())])))
+const qualifiedDotnetExceptions = Object.fromEntries(
+  [
+    'System.Exception',
+    'System.ArgumentException',
+    'System.ArgumentNullException',
+    'System.ArgumentOutOfRangeException',
+    'System.InvalidOperationException',
+    'System.NotSupportedException',
+    'System.ObjectDisposedException',
+    'System.TimeoutException',
+    'System.FormatException',
+    'System.OperationCanceledException',
+    'System.IO.InvalidDataException',
+    'System.IO.IOException',
+    'System.Text.RegularExpressions.RegexMatchTimeoutException',
+    'System.Text.Json.JsonException',
+    'System.Threading.Tasks.TaskCanceledException',
+  ].flatMap((name) => [name, name.split('.').at(-1)!].map((alias) => [alias, dotnet(name.toLowerCase())])),
+)
 
 export const BUILTINS: Record<string, Record<string, string>> = {
   kotlin: {
     ...qualifiedKotlin,
     suspend: 'https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions',
     finally: 'https://kotlinlang.org/docs/exceptions.html#finally-block',
-    String: kotlin('kotlin/-string'), Boolean: kotlin('kotlin/-boolean'),
-    Int: kotlin('kotlin/-int'), Long: kotlin('kotlin/-long'),
-    Unit: kotlin('kotlin/-unit'), Any: kotlin('kotlin/-any'),
-    List: kotlin('kotlin.collections/-list'), Map: kotlin('kotlin.collections/-map'),
+    String: kotlin('kotlin/-string'),
+    Boolean: kotlin('kotlin/-boolean'),
+    Int: kotlin('kotlin/-int'),
+    Long: kotlin('kotlin/-long'),
+    Unit: kotlin('kotlin/-unit'),
+    Any: kotlin('kotlin/-any'),
+    List: kotlin('kotlin.collections/-list'),
+    Map: kotlin('kotlin.collections/-map'),
     Iterable: kotlin('kotlin.collections/-iterable'),
     Flow: 'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/',
-    StateFlow: 'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-state-flow/',
-    'collect()': 'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/collect.html',
+    StateFlow:
+      'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-state-flow/',
+    'collect()':
+      'https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/collect.html',
     'singleOrNull()': 'https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/single-or-null.html',
   },
   scala: {
     ...qualifiedScala,
-    String: scala('scala/Predef$'), Boolean: scala('scala/Boolean'),
-    Int: scala('scala/Int'), Long: scala('scala/Long'), Unit: scala('scala/Unit'),
-    Option: scala('scala/Option'), Either: scala('scala/util/Either'),
+    String: scala('scala/Predef$'),
+    Boolean: scala('scala/Boolean'),
+    Int: scala('scala/Int'),
+    Long: scala('scala/Long'),
+    Unit: scala('scala/Unit'),
+    Option: scala('scala/Option'),
+    Either: scala('scala/util/Either'),
     Vector: scala('scala/collection/immutable/Vector'),
     List: scala('scala/collection/immutable/List'),
     IterableOnce: scala('scala/collection/IterableOnce'),
@@ -113,8 +134,10 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     option: fsharp('fsharp-core-fsharpoption-1'),
     list: fsharp('fsharp-collections-fsharplist-1'),
     seq: dotnet('system.collections.generic.ienumerable-1'),
-    string: dotnet('system.string'), bool: dotnet('system.boolean'),
-    int: dotnet('system.int32'), int64: dotnet('system.int64'),
+    string: dotnet('system.string'),
+    bool: dotnet('system.boolean'),
+    int: dotnet('system.int32'),
+    int64: dotnet('system.int64'),
     Task: dotnet('system.threading.tasks.task'),
     CancellationToken: dotnet('system.threading.cancellationtoken'),
     IReadOnlyList: dotnet('system.collections.generic.ireadonlylist-1'),
@@ -311,7 +334,8 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Readonly: ts('..%2Futility-types.html#readonlytype'),
   },
   java: {
-    ExtensionContext: 'https://docs.junit.org/current/api/org.junit.jupiter.api/org/junit/jupiter/api/extension/ExtensionContext.html',
+    ExtensionContext:
+      'https://docs.junit.org/current/api/org.junit.jupiter.api/org/junit/jupiter/api/extension/ExtensionContext.html',
     boolean: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.5',
     int: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.1',
     long: 'https://docs.oracle.com/javase/specs/jls/se21/html/jls-4.html#jls-4.2.1',
@@ -322,9 +346,10 @@ export const BUILTINS: Record<string, Record<string, string>> = {
   // the subtype 5.3 added and LuaLS spells separately. `any` and `unknown`
   // are LuaLS annotation types, with no counterpart in the language.
   lua: Object.fromEntries([
-    ...['nil', 'boolean', 'number', 'integer', 'string', 'function', 'table', 'thread', 'userdata'].map(
-      (name) => [name, 'https://www.lua.org/manual/5.4/manual.html#2.1'],
-    ),
+    ...['nil', 'boolean', 'number', 'integer', 'string', 'function', 'table', 'thread', 'userdata'].map((name) => [
+      name,
+      'https://www.lua.org/manual/5.4/manual.html#2.1',
+    ]),
     ...['any', 'unknown'].map((name) => [name, 'https://luals.github.io/wiki/annotations/#documenting-types']),
   ]),
   py: {
@@ -339,8 +364,11 @@ export function builtinHref(port: string, name: string): string | undefined {
   if (!Object.hasOwn(BUILTINS, port)) return undefined
   const types = BUILTINS[port]!
   if (Object.hasOwn(types, name)) return types[name]
-  const nativeName = port === 'kotlin'
-    ? name.replace(/^kotlin\.(?:collections\.)?/, '')
-    : port === 'scala' ? name.replace(/^scala\.(?:Predef\.|collection\.(?:immutable\.)?|util\.)?/, '') : name
+  const nativeName =
+    port === 'kotlin'
+      ? name.replace(/^kotlin\.(?:collections\.)?/, '')
+      : port === 'scala'
+        ? name.replace(/^scala\.(?:Predef\.|collection\.(?:immutable\.)?|util\.)?/, '')
+        : name
   return Object.hasOwn(types, nativeName) ? types[nativeName] : undefined
 }

@@ -12,48 +12,82 @@ export async function checkHomeLanguageIcon(page, port = null) {
   const trigger = page.locator('[data-home-launcher] [data-page-port-switcher] > summary')
   const icons = trigger.locator('img:visible')
   assert.equal(await icons.count(), port ? 1 : 0, 'Only the selected language icon is visible')
-  assert.equal(await trigger.locator('[data-home-default-icon]').isVisible(), !port, 'An unset language keeps the code glyph')
+  assert.equal(
+    await trigger.locator('[data-home-default-icon]').isVisible(),
+    !port,
+    'An unset language keeps the code glyph',
+  )
   const geometry = await trigger.evaluate((element) => {
     const icon = element.querySelector('.home-language-icon').getBoundingClientRect()
     const label = [...element.querySelectorAll('.page-port-name, .page-port-short-name')]
-      .find((node) => node.checkVisibility()).getBoundingClientRect()
+      .find((node) => node.checkVisibility())
+      .getBoundingClientRect()
     const button = element.getBoundingClientRect()
     const clear = element.closest('.clearable-picker').querySelector('.picker-clear')
     const caretElement = element.querySelector('.doc-picker-caret')
     const caret = caretElement.getBoundingClientRect()
     const clearBox = clear.getBoundingClientRect()
     const sizer = element.querySelector('.page-port-label-sizer')
-    return { height: button.height, iconHeight: icon.height, iconRight: icon.right, labelLeft: label.left,
-      clearFits: clear.hidden || (label.right < clearBox.left && clearBox.right <= button.right
-        && Math.abs(clearBox.x + clearBox.width / 2 - caret.x - caret.width / 2) < 1),
+    return {
+      height: button.height,
+      iconHeight: icon.height,
+      iconRight: icon.right,
+      labelLeft: label.left,
+      clearFits:
+        clear.hidden ||
+        (label.right < clearBox.left &&
+          clearBox.right <= button.right &&
+          Math.abs(clearBox.x + clearBox.width / 2 - caret.x - caret.width / 2) < 1),
       caretVisible: getComputedStyle(caretElement).visibility !== 'hidden',
       sizerHidden: getComputedStyle(sizer).visibility === 'hidden' && sizer.getBoundingClientRect().height === 0,
-      centerOffset: Math.abs(icon.y + icon.height / 2 - (button.y + button.height / 2)) }
+      centerOffset: Math.abs(icon.y + icon.height / 2 - (button.y + button.height / 2)),
+    }
   })
   assert.equal(geometry.height, 36, `The trigger keeps the same height for every language: ${JSON.stringify(geometry)}`)
   assert.equal(geometry.iconHeight, 24, 'Every language uses the same icon box')
   assert(geometry.clearFits, 'Clear occupies the chevron slot without covering the language label')
   assert.equal(geometry.caretVisible, !port, 'The clear button replaces the chevron only for an explicit language')
   assert(geometry.sizerHidden, 'Width measurement never exposes extra language labels')
-  assert.equal((await trigger.innerText()).trim(), port ? PORTS.find((entry) => entry.slug === port).name
-    : page.viewportSize().width <= 736 ? 'Port' : 'Language', 'The trigger shows only its current label')
-  const solution = await page.locator('[data-home-launcher] .home-launcher-solution:not([hidden]) .surface-picker > summary').boundingBox()
-  const solutionIcon = await page.locator('[data-home-launcher] .home-launcher-solution:not([hidden]) .surface-picker > summary > .surface-artwork').boundingBox()
+  assert.equal(
+    (await trigger.innerText()).trim(),
+    port ? PORTS.find((entry) => entry.slug === port).name : page.viewportSize().width <= 736 ? 'Port' : 'Language',
+    'The trigger shows only its current label',
+  )
+  const solution = await page
+    .locator('[data-home-launcher] .home-launcher-solution:not([hidden]) .surface-picker > summary')
+    .boundingBox()
+  const solutionIcon = await page
+    .locator('[data-home-launcher] .home-launcher-solution:not([hidden]) .surface-picker > summary > .surface-artwork')
+    .boundingBox()
   assert.equal(solution.height, geometry.height, 'The two launcher buttons have equal heights')
   assert.equal(solutionIcon.height, geometry.iconHeight, 'Language and solution icons use the same size')
-  assert(geometry.centerOffset < 1 && geometry.iconRight < geometry.labelLeft, 'The icon sits beside and centered with its label')
+  assert(
+    geometry.centerOffset < 1 && geometry.iconRight < geometry.labelLeft,
+    'The icon sits beside and centered with its label',
+  )
   if (port) {
     assert.equal(await icons.getAttribute('data-home-language-icon'), port)
     assert((await icons.getAttribute('src')).endsWith(`/brand/languages/${port}/icon.svg`))
-    assert(await icons.evaluate((img) => img.complete && img.naturalWidth > 0), 'The selected language SVG is already loaded')
+    assert(
+      await icons.evaluate((img) => img.complete && img.naturalWidth > 0),
+      'The selected language SVG is already loaded',
+    )
     const image = await icons.boundingBox()
     const box = await trigger.locator('.home-language-icon').boundingBox()
-    assert(Math.abs(image.width - 24) < .1, 'The image fits the icon box width')
-    assert(Math.abs(image.height - 24) < .1, 'Non-square artwork fits the icon box height')
-    assert(Math.abs(image.x - box.x) < 1 && Math.abs(image.y - box.y) <= 2, 'The image fits beside the label, allowing a small optical correction')
+    assert(Math.abs(image.width - 24) < 0.1, 'The image fits the icon box width')
+    assert(Math.abs(image.height - 24) < 0.1, 'Non-square artwork fits the icon box height')
+    assert(
+      Math.abs(image.x - box.x) < 1 && Math.abs(image.y - box.y) <= 2,
+      'The image fits beside the label, allowing a small optical correction',
+    )
   }
-  const menuSources = await page.locator('[data-home-launcher] .port-artwork').evaluateAll((images) => images.map((img) => img.getAttribute('src')))
-  assert(menuSources.length === PORTS.length && menuSources.every((src) => !src.includes('/brand/languages/')), 'Menu options keep their libtmux artwork')
+  const menuSources = await page
+    .locator('[data-home-launcher] .port-artwork')
+    .evaluateAll((images) => images.map((img) => img.getAttribute('src')))
+  assert(
+    menuSources.length === PORTS.length && menuSources.every((src) => !src.includes('/brand/languages/')),
+    'Menu options keep their libtmux artwork',
+  )
 }
 
 /** Keep compact labels and example options inside their available row. */
@@ -69,7 +103,12 @@ export async function checkHomeResponsiveLayout(page, width, port = null) {
   assert.equal(await launcher.locator('.page-port-name').isVisible(), !compact)
   assert.equal(await launcher.locator('.page-port-short-name').isVisible(), compact)
   if (!port && compact) assert.equal(await launcher.locator('.page-port-short-name').innerText(), 'Port')
-  if (port && compact) assert.equal(await launcher.locator('.page-port-short-name').innerText(), PORTS.find((entry) => entry.slug === port).name, 'Compact layouts retain the full language name')
+  if (port && compact)
+    assert.equal(
+      await launcher.locator('.page-port-short-name').innerText(),
+      PORTS.find((entry) => entry.slug === port).name,
+      'Compact layouts retain the full language name',
+    )
   const solution = launcher.locator('.home-launcher-solution:not([hidden])')
   assert.equal(await solution.locator('.home-solution-name-full').isVisible(), !compact)
   assert.equal(await solution.locator('.home-solution-name-short').isVisible(), compact)
@@ -124,15 +163,29 @@ export async function checkHomeLauncher(browser, base) {
     assert(await reset.isVisible(), 'A chosen language can be reset')
     assert.equal(await logo.count(), 0, 'The top header keeps only the wordmark')
     await checkHomeLanguageIcon(page, port)
-    assert.equal((await language.locator('summary').boundingBox()).width, previousWidth, 'Changing language leaves the adjacent solution selector in place')
-    const cards = await page.locator(`.home-intro [data-home-language="${port}"] .home-solutions > a`).evaluateAll((links) => links.map((link) => ({
-      display: getComputedStyle(link).display,
-      border: getComputedStyle(link).borderTopWidth,
-      label: getComputedStyle(link.querySelector('strong')).display,
-      description: getComputedStyle(link.querySelector('small')).display,
-    })))
-    assert(cards.length > 0 && cards.every((card) => card.display === 'flex' && card.border === '1px'
-      && card.label === 'block' && card.description === 'block'), `${port}: solution cards retain their layout and borders`)
+    assert.equal(
+      (await language.locator('summary').boundingBox()).width,
+      previousWidth,
+      'Changing language leaves the adjacent solution selector in place',
+    )
+    const cards = await page
+      .locator(`.home-intro [data-home-language="${port}"] .home-solutions > a`)
+      .evaluateAll((links) =>
+        links.map((link) => ({
+          display: getComputedStyle(link).display,
+          border: getComputedStyle(link).borderTopWidth,
+          label: getComputedStyle(link.querySelector('strong')).display,
+          description: getComputedStyle(link.querySelector('small')).display,
+        })),
+      )
+    assert(
+      cards.length > 0 &&
+        cards.every(
+          (card) =>
+            card.display === 'flex' && card.border === '1px' && card.label === 'block' && card.description === 'block',
+        ),
+      `${port}: solution cards retain their layout and borders`,
+    )
   }
   try {
     await page.goto(`${base}/`)
@@ -149,9 +202,15 @@ export async function checkHomeLauncher(browser, base) {
     for (const { slug } of PORTS) {
       await choose(slug)
       const links = await solution.locator('a').evaluateAll((links) => links.map((link) => link.getAttribute('href')))
-      assert(links.length > 0 && links.every((href) => href.startsWith(`${new URL(base).pathname}/${slug}/`)), `${slug}: owned solution destinations`)
+      assert(
+        links.length > 0 && links.every((href) => href.startsWith(`${new URL(base).pathname}/${slug}/`)),
+        `${slug}: owned solution destinations`,
+      )
       if (['kotlin', 'scala', 'fsharp'].includes(slug)) assert.equal(links.length, 1, `${slug}: core library only`)
-      assert.match(await prompt.locator(`[data-port="${slug}"] [data-prompt-text]`).innerText(), new RegExp(`/en/${slug}/`))
+      assert.match(
+        await prompt.locator(`[data-port="${slug}"] [data-prompt-text]`).innerText(),
+        new RegExp(`/en/${slug}/`),
+      )
       await checkHomeResponsiveLayout(page, 840, slug)
       await checkHomeResponsiveLayout(page, 280, slug)
       await page.setViewportSize({ width: 1280, height: 777 })
@@ -171,8 +230,16 @@ export async function checkHomeLauncher(browser, base) {
     await checkHomeLanguageIcon(page, 'fsharp')
     assert.equal(await prompt.locator('[data-select="topic"]').inputValue(), 'session-switcher')
     await choose('go')
-    assert.equal(new URL(page.url()).searchParams.get('prompt'), 'session-switcher', 'Language changes preserve the task')
-    assert.equal(new URL(page.url()).searchParams.get('from'), 'shared', 'Language changes preserve unrelated parameters')
+    assert.equal(
+      new URL(page.url()).searchParams.get('prompt'),
+      'session-switcher',
+      'Language changes preserve the task',
+    )
+    assert.equal(
+      new URL(page.url()).searchParams.get('from'),
+      'shared',
+      'Language changes preserve unrelated parameters',
+    )
     assert.equal(new URL(page.url()).hash, '#example')
     await prompt.locator('[data-action="reroll"]').click()
     const rerolled = await prompt.locator('[data-select="topic"]').inputValue()
@@ -180,7 +247,11 @@ export async function checkHomeLauncher(browser, base) {
     assert.equal(new URL(page.url()).searchParams.get('port'), 'go', 'Task changes preserve the language')
     await page.reload()
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'go')
-    assert.equal(await prompt.locator('[data-select="topic"]').inputValue(), rerolled, 'Reload restores the language and task')
+    assert.equal(
+      await prompt.locator('[data-select="topic"]').inputValue(),
+      rerolled,
+      'Reload restores the language and task',
+    )
     await language.locator('summary').click()
     const resetGap = await language.locator('.doc-picker-title-actions').evaluate((actions) => {
       const button = actions.querySelector('button').getBoundingClientRect()
@@ -198,39 +269,62 @@ export async function checkHomeLauncher(browser, base) {
     assert.equal(await logo.count(), 0, 'Reset keeps the wordmark without duplicate artwork')
     await checkHomeLanguageIcon(page)
     assert.equal(await language.locator('[aria-current]').count(), 0, 'Reset leaves no selected language')
-    assert(await language.locator('summary').evaluate((element) => document.activeElement === element), 'Reset keeps focus on the language picker')
+    assert(
+      await language.locator('summary').evaluate((element) => document.activeElement === element),
+      'Reset keeps focus on the language picker',
+    )
     await page.reload()
-    await page.waitForFunction(() => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Language')
+    await page.waitForFunction(
+      () => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Language',
+    )
     assert.equal(await reset.isVisible(), false, 'The cleared choice stays cleared on reload')
     await checkHomeLanguageIcon(page)
     assert.equal(await prompt.getAttribute('data-active-port'), PORTS[0].slug)
     await choose('fsharp')
     await reset.click()
-    assert.equal(new URL(page.url()).searchParams.has('port'), false, 'The header reset also removes the port parameter')
+    assert.equal(
+      new URL(page.url()).searchParams.has('port'),
+      false,
+      'The header reset also removes the port parameter',
+    )
     await page.goto(`${base}/?port=constructor&prompt=setup`)
-    await page.waitForFunction(() => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Language')
+    await page.waitForFunction(
+      () => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Language',
+    )
     assert.equal(new URL(page.url()).searchParams.has('port'), false, 'Unknown languages do not become a selection')
     await page.goto(`${base}/?port=fsharp&prompt=setup#first`)
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'fsharp')
-    await page.evaluate(() => { location.hash = 'second' })
+    await page.evaluate(() => {
+      location.hash = 'second'
+    })
     await choose('go')
     await chooseHomeTask(page, 'session-switcher')
     await page.goBack()
-    await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'fsharp'
-      && document.querySelector('.lm-agent-prompt [data-select="topic"]')?.value === 'setup')
+    await page.waitForFunction(
+      () =>
+        document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'fsharp' &&
+        document.querySelector('.lm-agent-prompt [data-select="topic"]')?.value === 'setup',
+    )
     assert.equal(new URL(page.url()).hash, '#first', 'Back restores the matching language and task')
     await checkHomeLanguageIcon(page, 'fsharp')
     // The popstate handlers restore choices before Astro swaps this page.
     await page.evaluate(() => {
       window.__homeNavigationComplete = false
-      document.addEventListener('astro:page-load', () => {
-        window.__homeNavigationComplete = true
-      }, { once: true })
+      document.addEventListener(
+        'astro:page-load',
+        () => {
+          window.__homeNavigationComplete = true
+        },
+        { once: true },
+      )
     })
     await page.goForward()
     await page.waitForFunction(() => window.__homeNavigationComplete)
-    await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'go'
-      && document.querySelector('.lm-agent-prompt [data-select="topic"]')?.value === 'session-switcher')
+    await page.waitForFunction(
+      () =>
+        document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'go' &&
+        document.querySelector('.lm-agent-prompt [data-select="topic"]')?.value === 'session-switcher',
+    )
     assert.equal(new URL(page.url()).hash, '#second', 'Forward restores the matching language and task')
     await checkHomeLanguageIcon(page, 'go')
     await choose('py')
@@ -238,16 +332,28 @@ export async function checkHomeLauncher(browser, base) {
     await chooseHomeTask(page, 'setup')
     const original = await prompt.locator('[data-port="py"] [data-prompt-text]').innerText()
     const tasks = await topic.locator('option').evaluateAll((options) => options.map((option) => option.value))
-    await chooseHomeTask(page, tasks.find((value) => value !== 'setup'))
+    await chooseHomeTask(
+      page,
+      tasks.find((value) => value !== 'setup'),
+    )
     const text = await prompt.locator('[data-port="py"] [data-prompt-text]').innerText()
     assert.notEqual(text, original, 'Task selection still recomposes the prompt')
-    await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
-      writeText: async (text) => { window.__homeCopiedPrompt = text },
-    } }))
+    await page.evaluate(() =>
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: {
+          writeText: async (text) => {
+            window.__homeCopiedPrompt = text
+          },
+        },
+      }),
+    )
     await prompt.locator('[data-port="py"] [data-action="copy"]').click()
     assert.equal(await page.evaluate(() => window.__homeCopiedPrompt), text, 'Copy preserves all prompt bytes')
     for (const theme of ['light', 'dark']) {
-      await page.evaluate((theme) => { document.documentElement.dataset.themeMode = theme }, theme)
+      await page.evaluate((theme) => {
+        document.documentElement.dataset.themeMode = theme
+      }, theme)
       const colors = await page.evaluate(() => {
         const code = document.querySelector('.home-examples [data-home-language="py"] .expressive-code pre')
         const prompt = document.querySelector('.lm-agent-prompt__code')
@@ -256,8 +362,14 @@ export async function checkHomeLauncher(browser, base) {
       assert.equal(colors[0], colors[1], `${theme}: code and prompt use the same background`)
       for (const width of [1920, 1440, 1135, 906, 390, 320]) {
         await page.setViewportSize({ width, height: 777 })
-        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${theme}/${width}: no page overflow`)
-        assert(await language.isVisible() && await solution.isVisible(), `${theme}/${width}: both header pickers visible`)
+        assert(
+          await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+          `${theme}/${width}: no page overflow`,
+        )
+        assert(
+          (await language.isVisible()) && (await solution.isVisible()),
+          `${theme}/${width}: both header pickers visible`,
+        )
       }
     }
     await choose('rs')
@@ -270,7 +382,9 @@ export async function checkHomeLauncher(browser, base) {
           name: file.dataset.homeFile,
           code: file.querySelector('[data-code]').getAttribute('data-code').replaceAll('\x7f', '\n'),
         })),
-        commands: [...element.querySelectorAll('[data-home-command] [data-code]')].map((button) => button.getAttribute('data-code').replaceAll('\x7f', '\n')),
+        commands: [...element.querySelectorAll('[data-home-command] [data-code]')].map((button) =>
+          button.getAttribute('data-code').replaceAll('\x7f', '\n'),
+        ),
       }))
       const hash = (text) => createHash('sha256').update(text).digest('hex')
       assert.deepEqual(rendered.commands, proof.shellRecipe, `${proof.port}: exact setup and run copy payloads`)
@@ -278,18 +392,32 @@ export async function checkHomeLauncher(browser, base) {
         await panel.locator('[data-example-errors]').setChecked(view === 'errors' || view === 'full')
         await panel.locator('[data-example-cleanup]').setChecked(view === 'cleanup' || view === 'full')
         const selected = panel.locator(`[data-home-view="${view}"]`)
-        assert.equal(await panel.locator('[data-home-view]:visible').count(), 1, `${proof.port}/${view}: exactly one complete program is shown`)
+        assert.equal(
+          await panel.locator('[data-home-view]:visible').count(),
+          1,
+          `${proof.port}/${view}: exactly one complete program is shown`,
+        )
         assert(await selected.isVisible(), `${proof.port}/${view}: the selected program is shown`)
         const binding = view === 'full' ? proof : proof.variants[view]
         const main = await selected.locator('[data-code]').getAttribute('data-code')
         const codeText = main.replaceAll('\x7f', '\n')
         assert.equal(hash(codeText), binding.excerptSha256, `${proof.port}/${view}: exact visible program`)
-        await page.evaluate(() => { window.__homeCopiedPrompt = null })
+        await page.evaluate(() => {
+          window.__homeCopiedPrompt = null
+        })
         await selected.locator('[data-code]').click()
-        assert.equal(await page.evaluate(() => window.__homeCopiedPrompt), codeText, `${proof.port}/${view}: Copy matches the visible program`)
+        assert.equal(
+          await page.evaluate(() => window.__homeCopiedPrompt),
+          codeText,
+          `${proof.port}/${view}: Copy matches the visible program`,
+        )
         const files = [{ name: await selected.getAttribute('data-home-file'), code: codeText }, ...rendered.files]
         const byName = (a, b) => a.name.localeCompare(b.name)
-        assert.deepEqual(files.map((file) => ({ name: file.name, sha256: hash(file.code) })).sort(byName), binding.files.map((file) => ({ name: file.name, sha256: file.clipboardSha256 })).sort(byName), `${proof.port}/${view}: complete native-verified file copy payloads`)
+        assert.deepEqual(
+          files.map((file) => ({ name: file.name, sha256: hash(file.code) })).sort(byName),
+          binding.files.map((file) => ({ name: file.name, sha256: file.clipboardSha256 })).sort(byName),
+          `${proof.port}/${view}: complete native-verified file copy payloads`,
+        )
         const pre = selected.locator('pre')
         const width = await pre.evaluate(async (element) => {
           // Container-query sizes settle after a previously hidden panel is painted.
@@ -297,18 +425,32 @@ export async function checkHomeLauncher(browser, base) {
           await new Promise(requestAnimationFrame)
           await document.fonts.ready
           await new Promise(requestAnimationFrame)
-          return { available: element.clientWidth, content: element.scrollWidth,
+          return {
+            available: element.clientWidth,
+            content: element.scrollWidth,
             font: getComputedStyle(element.querySelector('code')).fontSize,
             gutter: getComputedStyle(element).scrollbarGutter,
             container: getComputedStyle(element).containerType,
             columns: element.closest('[data-home-view]').style.getPropertyValue('--home-code-columns'),
-            lines: [...element.querySelectorAll('.code')].map((line) => {
-              const range = document.createRange(); range.selectNodeContents(line)
-              return { text: line.textContent, width: range.getBoundingClientRect().width,
-                font: getComputedStyle(line).font, padding: getComputedStyle(line).padding }
-            }).sort((a, b) => b.width - a.width).slice(0, 2) }
+            lines: [...element.querySelectorAll('.code')]
+              .map((line) => {
+                const range = document.createRange()
+                range.selectNodeContents(line)
+                return {
+                  text: line.textContent,
+                  width: range.getBoundingClientRect().width,
+                  font: getComputedStyle(line).font,
+                  padding: getComputedStyle(line).padding,
+                }
+              })
+              .sort((a, b) => b.width - a.width)
+              .slice(0, 2),
+          }
         })
-        assert(width.content <= width.available + 1, `${proof.port}/${view}: no horizontal scrollbar at 1093px ${JSON.stringify(width)}`)
+        assert(
+          width.content <= width.available + 1,
+          `${proof.port}/${view}: no horizontal scrollbar at 1093px ${JSON.stringify(width)}`,
+        )
       }
     }
     await choose('rs')
@@ -319,7 +461,9 @@ export async function checkHomeLauncher(browser, base) {
       const layout = await page.evaluate(() => {
         const intro = document.querySelector('.home-intro').getBoundingClientRect()
         const examples = document.querySelector('.home-examples').getBoundingClientRect()
-        const font = getComputedStyle(document.querySelector('.home-examples [data-home-language="rs"] [data-home-view="full"] pre code')).fontSize
+        const font = getComputedStyle(
+          document.querySelector('.home-examples [data-home-language="rs"] [data-home-view="full"] pre code'),
+        ).fontSize
         return { intro: intro.width, examples: examples.width, font: parseFloat(font) }
       })
       assert(layout.intro <= 320.5, `${width}: intro stops at 20rem`)
@@ -328,11 +472,28 @@ export async function checkHomeLauncher(browser, base) {
       fontSizes.push(layout.font)
     }
     assert(fontSizes[0] < fontSizes[2], 'Code grows with its container')
-    await page.locator('.home-examples').evaluate((element) => { element.style.width = '360px' })
-    assert.equal(await code.evaluate((element) => getComputedStyle(element).fontSize), '13px', 'Sizing follows the container at the same viewport')
-    await code.locator('.ec-line').first().evaluate((line) => { line.textContent = 'unusuallyLongSymbol'.repeat(12) })
-    assert(await code.locator('..').evaluate((pre) => pre.scrollWidth > pre.clientWidth), 'An indivisible symbol remains scrollable')
-    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Long symbols do not widen the page')
+    await page.locator('.home-examples').evaluate((element) => {
+      element.style.width = '360px'
+    })
+    assert.equal(
+      await code.evaluate((element) => getComputedStyle(element).fontSize),
+      '13px',
+      'Sizing follows the container at the same viewport',
+    )
+    await code
+      .locator('.ec-line')
+      .first()
+      .evaluate((line) => {
+        line.textContent = 'unusuallyLongSymbol'.repeat(12)
+      })
+    assert(
+      await code.locator('..').evaluate((pre) => pre.scrollWidth > pre.clientWidth),
+      'An indivisible symbol remains scrollable',
+    )
+    assert(
+      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+      'Long symbols do not widen the page',
+    )
     await page.reload()
     await language.locator('[data-port="rs"]').waitFor({ state: 'attached' })
     await page.setViewportSize({ width: 906, height: 777 })
@@ -340,7 +501,10 @@ export async function checkHomeLauncher(browser, base) {
     await page.keyboard.press('Enter')
     await page.keyboard.press('Escape')
     assert.equal(await language.getAttribute('open'), null, 'Escape closes the picker')
-    assert(await language.locator('summary').evaluate((element) => document.activeElement === element), 'Escape restores focus')
+    assert(
+      await language.locator('summary').evaluate((element) => document.activeElement === element),
+      'Escape restores focus',
+    )
     assert.deepEqual(errors, [], 'Homepage has no runtime errors')
   } finally {
     await context.close()
@@ -348,10 +512,16 @@ export async function checkHomeLauncher(browser, base) {
   const blockedStorage = await browser.newContext()
   try {
     // Astro's development toolbar reads storage unguarded; it is absent from published pages.
-    await blockedStorage.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
-    await blockedStorage.addInitScript(() => Object.defineProperty(window, 'localStorage', {
-      get() { throw new DOMException('Storage blocked', 'SecurityError') },
-    }))
+    await blockedStorage.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) =>
+      route.fulfill({ contentType: 'application/javascript', body: 'export {}' }),
+    )
+    await blockedStorage.addInitScript(() =>
+      Object.defineProperty(window, 'localStorage', {
+        get() {
+          throw new DOMException('Storage blocked', 'SecurityError')
+        },
+      }),
+    )
     const page = await blockedStorage.newPage()
     page.on('pageerror', (error) => errors.push(error.message))
     await page.goto(`${base}/?port=fsharp&prompt=session-switcher`)
@@ -364,7 +534,9 @@ export async function checkHomeLauncher(browser, base) {
     await checkHomeLanguageIcon(page)
     assert.equal(new URL(page.url()).searchParams.has('port'), false)
     await page.reload()
-    await page.waitForFunction(() => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Language')
+    await page.waitForFunction(
+      () => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Language',
+    )
     assert.deepEqual(errors, [], 'Shared links and reset work without storage')
   } finally {
     await blockedStorage.close()
@@ -383,9 +555,16 @@ export async function checkHomeLauncher(browser, base) {
     }
     await picker.locator('summary').click()
     await checkHomeLanguageIcon(page)
-    assert.equal(await picker.locator('a[data-port]:visible').count(), PORTS.length, 'No-JS still exposes real language links')
+    assert.equal(
+      await picker.locator('a[data-port]:visible').count(),
+      PORTS.length,
+      'No-JS still exposes real language links',
+    )
     assert(await picker.locator('.tmux-area a').isVisible(), 'No-JS retains the separate tmux destination')
-    assert(await page.locator('.lm-agent-prompt__panel[data-default] [data-prompt-text]').isVisible(), 'Default prompt remains readable without JavaScript')
+    assert(
+      await page.locator('.lm-agent-prompt__panel[data-default] [data-prompt-text]').isVisible(),
+      'Default prompt remains readable without JavaScript',
+    )
     await picker.locator('a[data-port="ruby"]').click()
     await page.waitForURL('**/ruby/latest/')
   } finally {
@@ -395,5 +574,7 @@ export async function checkHomeLauncher(browser, base) {
   await checkHomeTaskReset(browser, base)
   await checkColorScheme(browser, base)
   await checkHomeExampleOptions(browser, base)
-  console.log('Homepage: 13 languages, 52 complete selectable programs/copy, owned solutions, shared URLs, reset, blocked storage, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS')
+  console.log(
+    'Homepage: 13 languages, 52 complete selectable programs/copy, owned solutions, shared URLs, reset, blocked storage, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS',
+  )
 }

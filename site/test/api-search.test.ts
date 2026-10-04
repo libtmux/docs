@@ -9,8 +9,16 @@ describe('reference symbol search', () => {
     const tree = referenceTree('java')
     for (const [query, id, slug] of [
       ['io.github.libtmux.Server', 'io.github.libtmux.Server.Server', 'io-github-libtmux-server-server'],
-      ['io.github.libtmux.Server.Builder', 'io.github.libtmux.Server.Server.Builder', 'io-github-libtmux-server-server-builder-dv7l'],
-      ['io.github.libtmux.Server.sessions', 'io.github.libtmux.Server.Server.sessions', 'io-github-libtmux-server-server-sessions'],
+      [
+        'io.github.libtmux.Server.Builder',
+        'io.github.libtmux.Server.Server.Builder',
+        'io-github-libtmux-server-server-builder-dv7l',
+      ],
+      [
+        'io.github.libtmux.Server.sessions',
+        'io.github.libtmux.Server.Server.sessions',
+        'io-github-libtmux-server-server-sessions',
+      ],
     ]) {
       expect(searchApi(tree, query)[0]).toMatchObject({ id, qualifiedName: query, slug })
       expect(searchApi(tree, id)[0].id).toBe(id)
@@ -51,8 +59,15 @@ describe('reference symbol search', () => {
 
   it.each(API_MODEL_PORTS.map((port) => port.slug))('retains %s native kinds and searchable identities', (port) => {
     const inventory = referenceTree(port)
-    const symbols = new Map(API_MODELS[port].symbols.flatMap((symbol) =>
-      [[symbol.id, symbol], [symbol.publicId ?? symbol.id, symbol]] as const))
+    const symbols = new Map(
+      API_MODELS[port].symbols.flatMap(
+        (symbol) =>
+          [
+            [symbol.id, symbol],
+            [symbol.publicId ?? symbol.id, symbol],
+          ] as const,
+      ),
+    )
     const results = searchApi(inventory, '')
     expect(results.length).toBeGreaterThan(0)
     expect(new Set(results.map((entry) => entry.id)).size).toBe(results.length)

@@ -68,8 +68,10 @@ describeIfBuilt('code tabs', () => {
      * by the script under test.
      */
     const isModuleOnly = (source: string) =>
-      /\bimport\.meta\b/.test(source) || /\bimport\s*\(/.test(source) ||
-      /\bimport\b\s*(?:[\w*{]|['"])/.test(source) || /\bexport\s/.test(source)
+      /\bimport\.meta\b/.test(source) ||
+      /\bimport\s*\(/.test(source) ||
+      /\bimport\b\s*(?:[\w*{]|['"])/.test(source) ||
+      /\bexport\s/.test(source)
 
     for (const script of [...document.querySelectorAll('script')]) {
       if (!isJs(script)) continue
@@ -123,9 +125,7 @@ describeIfBuilt('code tabs', () => {
 
     // A fresh page load with that preference stored opens on Go, not Python.
     const fresh = load('go')
-    const panel = [...fresh.document.querySelectorAll<HTMLElement>('.code-tab-panel')].find(
-      (p) => !p.hidden,
-    )
+    const panel = [...fresh.document.querySelectorAll<HTMLElement>('.code-tab-panel')].find((p) => !p.hidden)
     expect(panel?.dataset.port).toBe('go')
   })
 
@@ -134,9 +134,7 @@ describeIfBuilt('code tabs', () => {
     // block would be a worse answer than showing what it does have.
     const fresh = load('swift')
     for (const group of fresh.document.querySelectorAll('libtmux-code-tabs')) {
-      const shown = [...group.querySelectorAll<HTMLElement>('.code-tab-panel')].filter(
-        (p) => !p.hidden,
-      )
+      const shown = [...group.querySelectorAll<HTMLElement>('.code-tab-panel')].filter((p) => !p.hidden)
       expect(shown.length, 'exactly one panel per group').toBe(1)
     }
   })

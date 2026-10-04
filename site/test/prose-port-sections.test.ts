@@ -1,7 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 
-type Element = { type: string; tagName?: string; value?: string; properties?: Record<string, unknown>; children?: Element[] }
+type Element = {
+  type: string
+  tagName?: string
+  value?: string
+  properties?: Record<string, unknown>
+  children?: Element[]
+}
 const text = (value: string): Element => ({ type: 'text', value })
 const element = (tagName: string, ...children: Element[]): Element => ({ type: 'element', tagName, children })
 
@@ -12,7 +18,10 @@ describe('API links in port sections', () => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', '')
     vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"go":"stable"}')
     const paragraph = element('p', element('code', text('workspace.Parse')))
-    rehypeApiLinks()({ type: 'root', children: [paragraph] }, { data: { astro: { frontmatter: { port: 'go', product: 'workspace' } } } })
+    rehypeApiLinks()(
+      { type: 'root', children: [paragraph] },
+      { data: { astro: { frontmatter: { port: 'go', product: 'workspace' } } } },
+    )
     expect(paragraph.children?.[0].properties?.href).toBe('/go/stable/workspace/reference/workspace-parse/')
   })
 
@@ -21,7 +30,10 @@ describe('API links in port sections', () => {
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'v0.1')
     const product = element('p', element('code', text('workspace.Parse')))
     const core = element('p', element('code', text('tmux.Server')))
-    rehypeApiLinks()({ type: 'root', children: [product, core] }, { data: { astro: { frontmatter: { port: 'go', product: 'workspace' } } } })
+    rehypeApiLinks()(
+      { type: 'root', children: [product, core] },
+      { data: { astro: { frontmatter: { port: 'go', product: 'workspace' } } } },
+    )
     expect(product.children?.[0].properties?.href).toBe('/go/v0.1/workspace/reference/workspace-parse/')
     expect(core.children?.[0].properties?.href).toBe('/go/v0.1/reference/tmux-server/')
   })
@@ -34,10 +46,14 @@ describe('API links in port sections', () => {
     const tree = {
       type: 'root',
       children: [
-        element('h3', text('Python')), first,
-        element('h4', text('Implementation')), nested,
-        element('h3', text('Go')), other,
-        element('h3', text('Shared concepts')), shared,
+        element('h3', text('Python')),
+        first,
+        element('h4', text('Implementation')),
+        nested,
+        element('h3', text('Go')),
+        other,
+        element('h3', text('Shared concepts')),
+        shared,
       ],
     }
     rehypeApiLinks()(tree)

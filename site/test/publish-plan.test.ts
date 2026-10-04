@@ -10,8 +10,19 @@ import { PORTS } from '../src/lib/ports'
 const workflow = readFileSync(new URL('../../.github/workflows/publish.yml', import.meta.url), 'utf8')
 
 const catalog = [
-  { slug: 'py', repo: 'tmux-python/libtmux', tagGrammar: 'pep440', docsDispatch: { workflow: 'docs.yml', ref: 'docs-site-deploy' } },
-  { slug: 'rs', repo: 'libtmux/libtmux-rs', tagPrefix: 'libtmux@', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml' } },
+  {
+    slug: 'py',
+    repo: 'tmux-python/libtmux',
+    tagGrammar: 'pep440',
+    docsDispatch: { workflow: 'docs.yml', ref: 'docs-site-deploy' },
+  },
+  {
+    slug: 'rs',
+    repo: 'libtmux/libtmux-rs',
+    tagPrefix: 'libtmux@',
+    tagGrammar: 'semver',
+    docsDispatch: { workflow: 'docs.yml' },
+  },
   { slug: 'go', repo: 'libtmux/libtmux-go', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml' } },
   { slug: 'swift', repo: 'libtmux/libtmux-swift', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml' } },
 ]
@@ -52,44 +63,106 @@ describe('publish plan', () => {
     expect(rows(run({ ports: 'go', ref: 'v1.9.0', version: 'v1.9.0', versionKind: 'tag' }))).toEqual([
       ['go', 'v1.9.0', 'v1.9.0', 'tag', false, ''],
     ])
-    expect(rows(run({ ports: 'go', ref: 'v1.9.0', version: 'stable', versionKind: 'alias', resolvesTo: 'v1.9.0', isDefault: true })))
-      .toEqual([['go', 'v1.9.0', 'stable', 'alias', true, 'v1.9.0']])
+    expect(
+      rows(
+        run({
+          ports: 'go',
+          ref: 'v1.9.0',
+          version: 'stable',
+          versionKind: 'alias',
+          resolvesTo: 'v1.9.0',
+          isDefault: true,
+        }),
+      ),
+    ).toEqual([['go', 'v1.9.0', 'stable', 'alias', true, 'v1.9.0']])
   })
 
   it('selects each parent and wrapper once through its owning repository', () => {
     const family = [
-      { slug: 'java', repo: 'libtmux/libtmux-java', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml', language: 'java' } },
-      { slug: 'kotlin', repo: 'libtmux/libtmux-java', tagGrammar: 'semver', parentLibrary: { slug: 'java' }, docsDispatch: { workflow: 'docs.yml', language: 'kotlin' } },
-      { slug: 'scala', repo: 'libtmux/libtmux-java', tagGrammar: 'semver', parentLibrary: { slug: 'java' }, docsDispatch: { workflow: 'docs.yml', language: 'scala' } },
-      { slug: 'csharp', repo: 'libtmux/libtmux-dotnet', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml', language: 'csharp' } },
-      { slug: 'fsharp', repo: 'libtmux/libtmux-dotnet', tagGrammar: 'semver', parentLibrary: { slug: 'csharp' }, docsDispatch: { workflow: 'docs.yml', language: 'fsharp' } },
+      {
+        slug: 'java',
+        repo: 'libtmux/libtmux-java',
+        tagGrammar: 'semver',
+        docsDispatch: { workflow: 'docs.yml', language: 'java' },
+      },
+      {
+        slug: 'kotlin',
+        repo: 'libtmux/libtmux-java',
+        tagGrammar: 'semver',
+        parentLibrary: { slug: 'java' },
+        docsDispatch: { workflow: 'docs.yml', language: 'kotlin' },
+      },
+      {
+        slug: 'scala',
+        repo: 'libtmux/libtmux-java',
+        tagGrammar: 'semver',
+        parentLibrary: { slug: 'java' },
+        docsDispatch: { workflow: 'docs.yml', language: 'scala' },
+      },
+      {
+        slug: 'csharp',
+        repo: 'libtmux/libtmux-dotnet',
+        tagGrammar: 'semver',
+        docsDispatch: { workflow: 'docs.yml', language: 'csharp' },
+      },
+      {
+        slug: 'fsharp',
+        repo: 'libtmux/libtmux-dotnet',
+        tagGrammar: 'semver',
+        parentLibrary: { slug: 'csharp' },
+        docsDispatch: { workflow: 'docs.yml', language: 'fsharp' },
+      },
     ]
     const lookups: string[] = []
-    const entries = plan({ ports: 'all', ref: 'latest' }, [...catalog, ...family], (repo) => {
-      lookups.push(repo)
-      return lookup(repo)
-    }, versions)
+    const entries = plan(
+      { ports: 'all', ref: 'latest' },
+      [...catalog, ...family],
+      (repo) => {
+        lookups.push(repo)
+        return lookup(repo)
+      },
+      versions,
+    )
     expect(lookups).toHaveLength(6)
     expect(new Set(lookups).size).toBe(6)
     expect(entries.map((entry) => [entry.port, entry.language])).toEqual([
-      ['py', ''], ['rs', ''], ['go', ''], ['swift', ''],
-      ['java', 'java'], ['kotlin', 'kotlin'], ['scala', 'scala'], ['csharp', 'csharp'], ['fsharp', 'fsharp'],
+      ['py', ''],
+      ['rs', ''],
+      ['go', ''],
+      ['swift', ''],
+      ['java', 'java'],
+      ['kotlin', 'kotlin'],
+      ['scala', 'scala'],
+      ['csharp', 'csharp'],
+      ['fsharp', 'fsharp'],
     ])
     expect(plan({ ports: 'kotlin,fsharp', ref: 'latest' }, family, lookup, versions)).toMatchObject([
       { port: 'kotlin', repo: 'libtmux/libtmux-java', language: 'kotlin' },
       { port: 'fsharp', repo: 'libtmux/libtmux-dotnet', language: 'fsharp' },
     ])
-    expect(plan({ ports: 'scala', ref: 'v0.1.0', version: 'v0.1.0', versionKind: 'tag' }, family, lookup, versions))
-      .toMatchObject([{ language: 'scala', sourceRef: 'v0.1.0' }])
+    expect(
+      plan({ ports: 'scala', ref: 'v0.1.0', version: 'v0.1.0', versionKind: 'tag' }, family, lookup, versions),
+    ).toMatchObject([{ language: 'scala', sourceRef: 'v0.1.0' }])
   })
 
-  it.each(['master', 'feature/docs', 'abc1234567890123456789012345678901234567'])('keeps Python source %s separate from its reviewed caller', (ref) => {
-    expect(run({ ports: 'py', ref, version: 'review', versionKind: 'trunk' })).toMatchObject([{
-      port: 'py', repo: 'tmux-python/libtmux', repoOwner: 'tmux-python', repoName: 'libtmux',
-      workflow: 'docs.yml', dispatchRef: 'docs-site-deploy', sourceRef: ref, language: '',
-    }])
-    expect(run({ ports: 'py' })).toMatchObject([{ dispatchRef: 'docs-site-deploy', sourceRef: 'master' }])
-  })
+  it.each(['master', 'feature/docs', 'abc1234567890123456789012345678901234567'])(
+    'keeps Python source %s separate from its reviewed caller',
+    (ref) => {
+      expect(run({ ports: 'py', ref, version: 'review', versionKind: 'trunk' })).toMatchObject([
+        {
+          port: 'py',
+          repo: 'tmux-python/libtmux',
+          repoOwner: 'tmux-python',
+          repoName: 'libtmux',
+          workflow: 'docs.yml',
+          dispatchRef: 'docs-site-deploy',
+          sourceRef: ref,
+          language: '',
+        },
+      ])
+      expect(run({ ports: 'py' })).toMatchObject([{ dispatchRef: 'docs-site-deploy', sourceRef: 'master' }])
+    },
+  )
 
   it('shows the reviewed caller independently from the source in its dry-run summary', () => {
     const text = summary(run({ ports: 'py', ref: 'feature/docs', version: 'review', versionKind: 'trunk' }), true)
@@ -106,15 +179,18 @@ describe('publish plan', () => {
       expect(entry).toMatchObject({
         workflow: port.docsDispatch!.workflow,
         dispatchRef: port.docsDispatch!.ref ?? 'master',
-        repoOwner: port.repo.split('/')[0], repoName: port.repo.split('/')[1], sourceRef: 'master',
+        repoOwner: port.repo.split('/')[0],
+        repoName: port.repo.split('/')[1],
+        sourceRef: 'master',
       })
     }
   })
 
   it('requires explicit dispatch metadata even for a repository in the libtmux organization', () => {
     const unsupported = [{ slug: 'unconfigured', repo: 'libtmux/new-port', tagGrammar: 'semver' }]
-    expect(() => plan({ ports: 'unconfigured', ref: 'latest' }, unsupported, lookup, versions))
-      .toThrow('unconfigured has no dispatchable docs workflow')
+    expect(() => plan({ ports: 'unconfigured', ref: 'latest' }, unsupported, lookup, versions)).toThrow(
+      'unconfigured has no dispatchable docs workflow',
+    )
   })
 
   it.each([
@@ -124,8 +200,9 @@ describe('publish plan', () => {
     { docsDispatch: { workflow: 'docs.yml', ref: 'master\nother' } },
     { docsDispatch: { workflow: 'docs.yml', language: 'java' } },
   ])('rejects malformed or cross-language dispatch metadata %j', (change) => {
-    expect(() => plan({ ports: 'go', ref: 'latest' }, [{ ...catalog[2], ...change }], lookup, versions))
-      .toThrow(/invalid repository|invalid docs workflow|must select itself/)
+    expect(() => plan({ ports: 'go', ref: 'latest' }, [{ ...catalog[2], ...change }], lookup, versions)).toThrow(
+      /invalid repository|invalid docs workflow|must select itself/,
+    )
   })
 
   it('refuses what it cannot dispatch or publish', () => {
@@ -163,24 +240,43 @@ describe('publish workflow', () => {
   it.each([
     { repo: 'tmux-python/libtmux', dispatchRef: 'docs-site-deploy', language: '' },
     ...['', 'java', 'kotlin', 'scala', 'csharp', 'fsharp'].map((language) => ({
-      repo: 'libtmux/libtmux-java', dispatchRef: 'master', language,
+      repo: 'libtmux/libtmux-java',
+      dispatchRef: 'master',
+      language,
     })),
   ])('dispatches only the catalogued caller and selected language %j', ({ repo, dispatchRef, language }) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-publish-dispatch-'))
     try {
       const calls = join(directory, 'calls')
-      writeFileSync(join(directory, 'gh'), `#!/usr/bin/env bash
+      writeFileSync(
+        join(directory, 'gh'),
+        `#!/usr/bin/env bash
 printf '%s\\n' "$@" >> "$CALLS"
 if [[ "$1" == workflow ]]; then printf 'https://github.com/example/actions/runs/123\\n'; fi
-`, { mode: 0o755 })
-      const body = /- name: Publish[^\n]*\n[\s\S]*?        run: \|\n([\s\S]*?)(?=\n  # The shell)/.exec(workflow)![1]
+`,
+        { mode: 0o755 },
+      )
+      const body = /- name: Publish[^\n]*\n[\s\S]*?        run: \|\n([\s\S]*?)(?=\n  # The shell)/
+        .exec(workflow)![1]
         .replace(/^ {10}/gm, '')
-      execFileSync('bash', ['-c', body], { env: {
-        ...process.env, PATH: `${directory}:${process.env.PATH}`, CALLS: calls, GH_TOKEN: 'test',
-        GITHUB_STEP_SUMMARY: join(directory, 'summary'), REPO: repo, WORKFLOW: 'reviewed-docs.yml',
-        DISPATCH_REF: dispatchRef, SOURCE_REF: 'reviewed-ref', VERSION: 'latest', KIND: 'trunk',
-        IS_DEFAULT: 'true', RESOLVES_TO: '', LANGUAGE: language,
-      } })
+      execFileSync('bash', ['-c', body], {
+        env: {
+          ...process.env,
+          PATH: `${directory}:${process.env.PATH}`,
+          CALLS: calls,
+          GH_TOKEN: 'test',
+          GITHUB_STEP_SUMMARY: join(directory, 'summary'),
+          REPO: repo,
+          WORKFLOW: 'reviewed-docs.yml',
+          DISPATCH_REF: dispatchRef,
+          SOURCE_REF: 'reviewed-ref',
+          VERSION: 'latest',
+          KIND: 'trunk',
+          IS_DEFAULT: 'true',
+          RESOLVES_TO: '',
+          LANGUAGE: language,
+        },
+      })
       const args = readFileSync(calls, 'utf8').trim().split('\n')
       expect(args.slice(0, 7)).toEqual(['workflow', 'run', 'reviewed-docs.yml', '--repo', repo, '--ref', dispatchRef])
       expect(args.filter((arg) => arg.startsWith('language='))).toEqual(language ? [`language=${language}`] : [])
@@ -193,15 +289,23 @@ if [[ "$1" == workflow ]]; then printf 'https://github.com/example/actions/runs/
   })
 
   it.each(['dispatch', 'shell'])('propagates %s dispatch and child-run failures with visible diagnostics', (job) => {
-    const body = (job === 'dispatch'
-      ? /- name: Publish[^\n]*\n[\s\S]*?        run: \|\n([\s\S]*?)(?=\n  # The shell)/.exec(workflow)![1]
-      : /  shell:\n[\s\S]*?        run: \|\n([\s\S]*)$/.exec(workflow)![1])
-      .replace(/^ {10}/gm, '')
-    const cases = [['success', 0], ['dispatch-failure', 17], ['invalid-id', 1], ['child-failure', 23]] as const
+    const body = (
+      job === 'dispatch'
+        ? /- name: Publish[^\n]*\n[\s\S]*?        run: \|\n([\s\S]*?)(?=\n  # The shell)/.exec(workflow)![1]
+        : /  shell:\n[\s\S]*?        run: \|\n([\s\S]*)$/.exec(workflow)![1]
+    ).replace(/^ {10}/gm, '')
+    const cases = [
+      ['success', 0],
+      ['dispatch-failure', 17],
+      ['invalid-id', 1],
+      ['child-failure', 23],
+    ] as const
     for (const [mode, expected] of cases) {
       const directory = mkdtempSync(join(tmpdir(), 'libtmux-publish-failure-'))
       try {
-        writeFileSync(join(directory, 'gh'), `#!/usr/bin/env bash
+        writeFileSync(
+          join(directory, 'gh'),
+          `#!/usr/bin/env bash
 printf '%s\\n' "$*" >> "$CALLS"
 if [[ "$1" == workflow ]]; then
   if [[ "$MODE" == dispatch-failure ]]; then echo 'dispatch refused' >&2; exit 17; fi
@@ -213,13 +317,30 @@ elif [[ "$2" == watch ]]; then
 elif [[ "$2" == view ]]; then
   echo 'failed child step details'
 fi
-`, { mode: 0o755 })
-        const result = spawnSync('bash', ['-c', body], { encoding: 'utf8', env: {
-          ...process.env, PATH: `${directory}:${process.env.PATH}`, CALLS: join(directory, 'calls'),
-          MODE: mode, GH_TOKEN: 'test', GITHUB_STEP_SUMMARY: join(directory, 'summary'),
-          REPO: 'libtmux/docs', WORKFLOW: 'docs.yml', REF: 'main', DISPATCH_REF: 'main', SOURCE_REF: 'reviewed-ref',
-          VERSION: 'latest', KIND: 'trunk', IS_DEFAULT: 'true', RESOLVES_TO: '', LANGUAGE: '',
-        } })
+`,
+          { mode: 0o755 },
+        )
+        const result = spawnSync('bash', ['-c', body], {
+          encoding: 'utf8',
+          env: {
+            ...process.env,
+            PATH: `${directory}:${process.env.PATH}`,
+            CALLS: join(directory, 'calls'),
+            MODE: mode,
+            GH_TOKEN: 'test',
+            GITHUB_STEP_SUMMARY: join(directory, 'summary'),
+            REPO: 'libtmux/docs',
+            WORKFLOW: 'docs.yml',
+            REF: 'main',
+            DISPATCH_REF: 'main',
+            SOURCE_REF: 'reviewed-ref',
+            VERSION: 'latest',
+            KIND: 'trunk',
+            IS_DEFAULT: 'true',
+            RESOLVES_TO: '',
+            LANGUAGE: '',
+          },
+        })
         expect(result.status, `${job}: ${mode}: ${result.stderr}`).toBe(expected)
         const calls = readFileSync(join(directory, 'calls'), 'utf8')
         if (mode === 'dispatch-failure' || mode === 'invalid-id') {

@@ -73,13 +73,16 @@ function git(repo, ...args) {
 
 /** Read package versions from their owning manifest, independent of docs URL labels. */
 function packageVersion(checkout, port, product) {
-  const read = (file) => existsSync(join(checkout, file)) ? readFileSync(join(checkout, file), 'utf8') : ''
+  const read = (file) => (existsSync(join(checkout, file)) ? readFileSync(join(checkout, file), 'utf8') : '')
   if (port === 'py') return /^version\s*=\s*"([^"]+)"/m.exec(read('pyproject.toml'))?.[1]
-  if (port === 'ts') return JSON.parse(read(`packages/${product === 'core' ? 'libtmux' : product}/package.json`)).version
+  if (port === 'ts')
+    return JSON.parse(read(`packages/${product === 'core' ? 'libtmux' : product}/package.json`)).version
   if (port === 'rs') {
     const crate = product === 'core' ? 'libtmux' : product === 'workspace' ? 'tmux-workspace' : 'tmux-mcp'
-    return /^version\s*=\s*"([^"]+)"/m.exec(read(`crates/${crate}/Cargo.toml`))?.[1]
-      ?? /^version\s*=\s*"([^"]+)"/m.exec(read('Cargo.toml'))?.[1]
+    return (
+      /^version\s*=\s*"([^"]+)"/m.exec(read(`crates/${crate}/Cargo.toml`))?.[1] ??
+      /^version\s*=\s*"([^"]+)"/m.exec(read('Cargo.toml'))?.[1]
+    )
   }
   if (['java', 'kotlin', 'scala'].includes(port)) return /^libtmuxVersion=(.+)$/m.exec(read('gradle.properties'))?.[1]
   if (['csharp', 'fsharp'].includes(port)) {
@@ -241,8 +244,13 @@ const PORTS = {
   },
   java: {
     checkout: '~/work/libtmux/libtmux-java',
-    roots: ['libtmux/src/main/java', 'libtmux/build/generated/sources/fieldCatalog/java/main',
-      'libtmux-workspace/src/main/java', 'libtmux-jackson/src/main/java', 'libtmux-junit5/src/main/java'],
+    roots: [
+      'libtmux/src/main/java',
+      'libtmux/build/generated/sources/fieldCatalog/java/main',
+      'libtmux-workspace/src/main/java',
+      'libtmux-jackson/src/main/java',
+      'libtmux-junit5/src/main/java',
+    ],
     generate: [':libtmux:generateFieldMetamodel'],
     generateWhen: 'build-logic/conventions/src/main/kotlin/libtmux.field-catalog.gradle.kts',
     repo: 'libtmux/libtmux-java',
@@ -259,23 +267,35 @@ const PORTS = {
     roots: ['libtmux-kotlin/src/main/kotlin', 'libtmux-kotlin/build/generated/sources/operations/kotlin'],
     generate: [':libtmux-kotlin:generateOperationWrappers'],
     pathRoots: ['libtmux-kotlin/', 'docs/guide/kotlin.md', 'examples/src/main/kotlin/'],
-    repo: 'libtmux/libtmux-java', options: {},
+    repo: 'libtmux/libtmux-java',
+    options: {},
   },
   scala: {
     checkout: '~/work/libtmux/libtmux-java',
-    roots: ['libtmux-scala/src/main/scala', 'libtmux-scala/build/generated/sources/catalog/scala',
-      'libtmux-scala-cats/src/main/scala', 'libtmux-scala-cats/build/generated/sources/catalog/scala',
-      'libtmux-scala-ox/src/main/scala'],
+    roots: [
+      'libtmux-scala/src/main/scala',
+      'libtmux-scala/build/generated/sources/catalog/scala',
+      'libtmux-scala-cats/src/main/scala',
+      'libtmux-scala-cats/build/generated/sources/catalog/scala',
+      'libtmux-scala-ox/src/main/scala',
+    ],
     generate: [':libtmux-scala:generateScalaSources', ':libtmux-scala-cats:generateScalaSources'],
-    pathRoots: ['libtmux-scala/', 'libtmux-scala-cats/', 'libtmux-scala-ox/',
-      'docs/guide/scala/', 'examples/src/main/scala/'],
-    repo: 'libtmux/libtmux-java', options: {},
+    pathRoots: [
+      'libtmux-scala/',
+      'libtmux-scala-cats/',
+      'libtmux-scala-ox/',
+      'docs/guide/scala/',
+      'examples/src/main/scala/',
+    ],
+    repo: 'libtmux/libtmux-java',
+    options: {},
   },
   fsharp: {
     checkout: '~/work/libtmux/libtmux-dotnet',
     root: 'src/LibTmux.FSharp',
     pathRoots: ['src/LibTmux.FSharp/', 'docs/fsharp/', 'examples/LibTmux.FSharp.'],
-    repo: 'libtmux/libtmux-dotnet', options: {},
+    repo: 'libtmux/libtmux-dotnet',
+    options: {},
   },
   // C++ comes from the Doxygen XML this project's own build already produces:
   // tree-sitter has no preprocessor, so `LIBTMUX_NAMESPACE_BEGIN` derails the
@@ -299,7 +319,8 @@ const PORTS = {
       dir: 'symbolgraph',
       from: 'Sources',
       what: 'symbol graph',
-      build: 'swift build --enable-all-traits -Xswiftc -emit-symbol-graph -Xswiftc -emit-symbol-graph-dir -Xswiftc "$PWD/symbolgraph"',
+      build:
+        'swift build --enable-all-traits -Xswiftc -emit-symbol-graph -Xswiftc -emit-symbol-graph-dir -Xswiftc "$PWD/symbolgraph"',
     },
     repo: 'libtmux/libtmux-swift',
     options: {},
@@ -307,13 +328,18 @@ const PORTS = {
 }
 
 const args = process.argv.slice(2)
-const repositoryPaths = (tree, cfg) => tree.split('\n').filter((path) =>
-  path && (!cfg.pathRoots || !path.includes('/') || cfg.pathRoots.some((prefix) => path.startsWith(prefix))))
+const repositoryPaths = (tree, cfg) =>
+  tree
+    .split('\n')
+    .filter(
+      (path) =>
+        path && (!cfg.pathRoots || !path.includes('/') || cfg.pathRoots.some((prefix) => path.startsWith(prefix))),
+    )
 const only = args.includes('--port') ? args[args.indexOf('--port') + 1] : undefined
 const check = args.includes('--check')
 /** Feed configured upstream C sources through the same Doxygen extractor as C++. */
 function generateTmuxModel() {
-  const value = (flag, fallback) => args.includes(flag) ? args[args.indexOf(flag) + 1] : fallback
+  const value = (flag, fallback) => (args.includes(flag) ? args[args.indexOf(flag) + 1] : fallback)
   const version = value('--version')
   const pins = JSON.parse(readFileSync(join(repoRoot, 'site/src/data/tmux/versions.json'), 'utf8'))
   const pin = pins.versions.find((entry) => entry.version === version)
@@ -325,10 +351,14 @@ function generateTmuxModel() {
   if (!commit || !tree) throw new Error(`Missing pinned tmux Git object ${revision}`)
   const scratch = mkdtempSync(join(tmpdir(), 'libtmux-doxygen-c-'))
   const source = resolve(value('--source-root', join(scratch, 'source')))
-  const run = (command, argv, cwd = source) => execFileSync(command, argv, {
-    cwd, encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, LC_ALL: 'C', TZ: 'UTC' },
-  })
+  const run = (command, argv, cwd = source) =>
+    execFileSync(command, argv, {
+      cwd,
+      encoding: 'utf8',
+      maxBuffer: 1 << 28,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env, LC_ALL: 'C', TZ: 'UTC' },
+    })
   const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex')
   const quote = (text) => `"${text.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`
   try {
@@ -337,8 +367,21 @@ function generateTmuxModel() {
       const archive = execFileSync('git', ['-C', checkout, 'archive', commit], { maxBuffer: 1 << 28 })
       execFileSync('tar', ['-x', '-C', source], { input: archive })
       run('sh', ['autogen.sh'])
-      execFileSync('./configure', [], { cwd: source, encoding: 'utf8', maxBuffer: 1 << 26,
-        env: { ...process.env, CC: process.env.CC || 'clang-18', CFLAGS: '', CPPFLAGS: '', LDFLAGS: '', LIBS: '', LC_ALL: 'C', TZ: 'UTC' } })
+      execFileSync('./configure', [], {
+        cwd: source,
+        encoding: 'utf8',
+        maxBuffer: 1 << 26,
+        env: {
+          ...process.env,
+          CC: process.env.CC || 'clang-18',
+          CFLAGS: '',
+          CPPFLAGS: '',
+          LDFLAGS: '',
+          LIBS: '',
+          LC_ALL: 'C',
+          TZ: 'UTC',
+        },
+      })
     }
     // A reused configured archive must still contain every exact tracked byte.
     const tracked = (git(checkout, 'ls-tree', '-r', commit) ?? '').split('\n').map((line) => {
@@ -353,12 +396,25 @@ function generateTmuxModel() {
       if (actual !== blob) throw new Error(`Configured tmux input differs from ${commit}: ${file}`)
       sourceHashes[file] = sha256(bytes)
     }
-    const makeWords = (variable) => run('make', ['--no-print-directory', '-s',
-      `--eval=model-values: ; @printf "%s\\0" $(${variable})`, 'model-values']).split('\0').filter(Boolean)
+    const makeWords = (variable) =>
+      run('make', [
+        '--no-print-directory',
+        '-s',
+        `--eval=model-values: ; @printf "%s\\0" $(${variable})`,
+        'model-values',
+      ])
+        .split('\0')
+        .filter(Boolean)
     const compile = makeWords('COMPILE')
     const configuredSources = [...makeWords('dist_tmux_SOURCES'), ...makeWords('nodist_tmux_SOURCES')]
     const trackedPaths = new Set(tracked.map(({ file }) => file))
-    const translationUnits = [...new Set(configuredSources.filter((file) => file.endsWith('.c') && trackedPaths.has(file) && !file.startsWith('compat/')))].sort()
+    const translationUnits = [
+      ...new Set(
+        configuredSources.filter(
+          (file) => file.endsWith('.c') && trackedPaths.has(file) && !file.startsWith('compat/'),
+        ),
+      ),
+    ].sort()
     const headers = [...trackedPaths].filter((file) => !file.includes('/') && file.endsWith('.h')).sort()
     const inputs = [...translationUnits, ...headers].sort()
     const inputSet = new Set(inputs)
@@ -370,26 +426,47 @@ function generateTmuxModel() {
       if (include) includePaths.push(include[1] || compile[++i])
     }
     const doxygenVersion = run(doxygen, ['--version']).trim()
-    if (!/^1\.18\.0(?:\s|$)/.test(doxygenVersion)) throw new Error(`Expected tested Doxygen 1.18.0, got ${doxygenVersion}`)
+    if (!/^1\.18\.0(?:\s|$)/.test(doxygenVersion))
+      throw new Error(`Expected tested Doxygen 1.18.0, got ${doxygenVersion}`)
     const config = [
-      'PROJECT_NAME = tmux', `OUTPUT_DIRECTORY = ${quote(scratch)}`,
-      `INPUT = ${inputs.map(quote).join(' ')}`, 'EXTENSION_MAPPING = c=C h=C',
-      'OPTIMIZE_OUTPUT_FOR_C = YES', 'EXTRACT_ALL = YES', 'EXTRACT_STATIC = YES',
-      'EXTRACT_LOCAL_CLASSES = YES', 'GENERATE_HTML = NO', 'GENERATE_LATEX = NO',
-      'GENERATE_XML = YES', 'XML_PROGRAMLISTING = YES', 'SOURCE_BROWSER = YES',
-      'REFERENCES_RELATION = YES', 'REFERENCED_BY_RELATION = YES',
-      'ENABLE_PREPROCESSING = YES', 'MACRO_EXPANSION = YES', 'EXPAND_ONLY_PREDEF = NO',
-      'SEARCH_INCLUDES = YES', `INCLUDE_PATH = ${[...new Set(includePaths)].map(quote).join(' ')}`,
+      'PROJECT_NAME = tmux',
+      `OUTPUT_DIRECTORY = ${quote(scratch)}`,
+      `INPUT = ${inputs.map(quote).join(' ')}`,
+      'EXTENSION_MAPPING = c=C h=C',
+      'OPTIMIZE_OUTPUT_FOR_C = YES',
+      'EXTRACT_ALL = YES',
+      'EXTRACT_STATIC = YES',
+      'EXTRACT_LOCAL_CLASSES = YES',
+      'GENERATE_HTML = NO',
+      'GENERATE_LATEX = NO',
+      'GENERATE_XML = YES',
+      'XML_PROGRAMLISTING = YES',
+      'SOURCE_BROWSER = YES',
+      'REFERENCES_RELATION = YES',
+      'REFERENCED_BY_RELATION = YES',
+      'ENABLE_PREPROCESSING = YES',
+      'MACRO_EXPANSION = YES',
+      'EXPAND_ONLY_PREDEF = NO',
+      'SEARCH_INCLUDES = YES',
+      `INCLUDE_PATH = ${[...new Set(includePaths)].map(quote).join(' ')}`,
       `PREDEFINED = ${[...compile.filter((arg) => arg.startsWith('-D')).map((arg) => arg.slice(2)), '__attribute__(x)='].map(quote).join(' ')}`,
-      'SKIP_FUNCTION_MACROS = YES', 'QUIET = YES', 'WARNINGS = YES', 'WARN_IF_UNDOCUMENTED = NO',
-      `WARN_LOGFILE = ${quote(join(scratch, 'warnings.log'))}`, 'STRIP_FROM_PATH = .', 'HAVE_DOT = NO',
+      'SKIP_FUNCTION_MACROS = YES',
+      'QUIET = YES',
+      'WARNINGS = YES',
+      'WARN_IF_UNDOCUMENTED = NO',
+      `WARN_LOGFILE = ${quote(join(scratch, 'warnings.log'))}`,
+      'STRIP_FROM_PATH = .',
+      'HAVE_DOT = NO',
     ].join('\n')
     writeFileSync(join(scratch, 'Doxyfile'), `${config}\n`)
     run(doxygen, [join(scratch, 'Doxyfile')])
     const warnings = readFileSync(join(scratch, 'warnings.log'), 'utf8').replaceAll(source, '<source>')
     if (/\berror:/i.test(warnings)) throw new Error(`Doxygen errors: ${warnings}`)
     const referenceDiagnostics = []
-    const extracted = extractDoxygen(join(scratch, 'xml'), source, { language: 'c', onDiagnostic: (message) => referenceDiagnostics.push(message) })
+    const extracted = extractDoxygen(join(scratch, 'xml'), source, {
+      language: 'c',
+      onDiagnostic: (message) => referenceDiagnostics.push(message),
+    })
     const symbols = extracted.filter((symbol) => inputSet.has(symbol.source.file))
     const ids = new Map(symbols.map((symbol) => [symbol.id, symbol]))
     if (ids.size !== symbols.length) throw new Error('Duplicate C declaration identity')
@@ -398,22 +475,31 @@ function generateTmuxModel() {
       symbol.apiScope = 'internal'
       symbol.source = { ...symbol.source, repo: 'tmux/tmux', revision: commit }
       if (symbol.references) symbol.references = symbol.references.filter((ref) => ids.has(ref.target))
-      if (symbol.imports) symbol.imports = Object.fromEntries(Object.entries(symbol.imports).filter(([, target]) => ids.has(target)))
+      if (symbol.imports)
+        symbol.imports = Object.fromEntries(Object.entries(symbol.imports).filter(([, target]) => ids.has(target)))
       symbol.slug = pageSlug(symbol.id)
     }
     const slugs = new Map()
     for (const symbol of symbols) slugs.set(symbol.slug, [...(slugs.get(symbol.slug) ?? []), symbol])
-    for (const group of slugs.values()) if (group.length > 1) for (const symbol of group) symbol.slug += `-${shortHash(symbol.id)}`
+    for (const group of slugs.values())
+      if (group.length > 1) for (const symbol of group) symbol.slug += `-${shortHash(symbol.id)}`
     if (new Set(symbols.map((symbol) => symbol.slug)).size !== symbols.length) throw new Error('C page slug collision')
-    const commands = symbols.filter((symbol) => symbol.type === 'const struct cmd_entry' && symbol.value).map((symbol) => {
-      const name = /\.name\s*=\s*"([^"\\]+)"/.exec(symbol.value)?.[1]
-      const exec = /\.exec\s*=\s*([A-Za-z_]\w*)/.exec(symbol.value)?.[1]
-      if (!name || !exec) throw new Error(`Unresolved command initializer ${symbol.id}`)
-      const callbacks = (symbol.references ?? []).map((ref) => ids.get(ref.target)).filter((target) => target?.kind === 'function' && target.name === exec)
-      if (callbacks.length !== 1) throw new Error(`Command ${name} callback must resolve once through native XML references`)
-      return { name, entry: symbol.id, callback: callbacks[0].id }
-    }).sort((a, b) => a.name.localeCompare(b.name))
-    if (new Set(commands.map((command) => command.name)).size !== commands.length) throw new Error('Duplicate command name')
+    const commands = symbols
+      .filter((symbol) => symbol.type === 'const struct cmd_entry' && symbol.value)
+      .map((symbol) => {
+        const name = /\.name\s*=\s*"([^"\\]+)"/.exec(symbol.value)?.[1]
+        const exec = /\.exec\s*=\s*([A-Za-z_]\w*)/.exec(symbol.value)?.[1]
+        if (!name || !exec) throw new Error(`Unresolved command initializer ${symbol.id}`)
+        const callbacks = (symbol.references ?? [])
+          .map((ref) => ids.get(ref.target))
+          .filter((target) => target?.kind === 'function' && target.name === exec)
+        if (callbacks.length !== 1)
+          throw new Error(`Command ${name} callback must resolve once through native XML references`)
+        return { name, entry: symbol.id, callback: callbacks[0].id }
+      })
+      .sort((a, b) => a.name.localeCompare(b.name))
+    if (new Set(commands.map((command) => command.name)).size !== commands.length)
+      throw new Error('Duplicate command name')
     const notices = {}
     for (const file of inputs) {
       const contents = readFileSync(join(source, file), 'utf8')
@@ -422,34 +508,62 @@ function generateTmuxModel() {
     }
     const copying = readFileSync(join(source, 'COPYING'), 'utf8')
     const model = {
-      schemaVersion: 1, project: 'tmux', language: 'c', version, repo: 'tmux/tmux', revision: commit,
+      schemaVersion: 1,
+      project: 'tmux',
+      language: 'c',
+      version,
+      repo: 'tmux/tmux',
+      revision: commit,
       extractor: 'doxygen-c-v1',
       profile: {
-        producer: `Doxygen ${doxygenVersion}`, producerBinarySha256: sha256(readFileSync(doxygenPath)), configuredPlatform: run(compile[0], ['-dumpmachine']).trim(),
-        compiler: run(compile[0], ['--version']).split('\n')[0], arguments: compile.slice(1),
-        pin: revision, sourceCommit: commit, sourceTree: tree, translationUnits, inputs,
+        producer: `Doxygen ${doxygenVersion}`,
+        producerBinarySha256: sha256(readFileSync(doxygenPath)),
+        configuredPlatform: run(compile[0], ['-dumpmachine']).trim(),
+        compiler: run(compile[0], ['--version']).split('\n')[0],
+        arguments: compile.slice(1),
+        pin: revision,
+        sourceCommit: commit,
+        sourceTree: tree,
+        translationUnits,
+        inputs,
         exclusions: [
-          { paths: configuredSources.filter((file) => file.endsWith('.c') && !inputSet.has(file)).sort(), reason: 'Generated parser and compatibility implementation are outside the source reference.' },
-          { paths: [...trackedPaths].filter((file) => file.endsWith('.c') && !configuredSources.includes(file)).sort(), reason: 'Not selected by this configured platform.' },
+          {
+            paths: configuredSources.filter((file) => file.endsWith('.c') && !inputSet.has(file)).sort(),
+            reason: 'Generated parser and compatibility implementation are outside the source reference.',
+          },
+          {
+            paths: [...trackedPaths].filter((file) => file.endsWith('.c') && !configuredSources.includes(file)).sort(),
+            reason: 'Not selected by this configured platform.',
+          },
         ],
-        macroExpansion: 'Native included definitions and configured Makefile -D flags; no synthetic feature definitions.',
-        ignoredDecorations: ['__attribute__(x)'], initializerLineLimit: 30,
-        spelling: 'Doxygen-normalized declarations, types and initializers, including expanded macros; not verbatim source slices. Anonymous synthetic types have no reconstructed raw declaration.',
-        references: 'Resolved native XML relationships and explicit C tag types between included symbols; external targets omitted. Call edges are a bounded syntactic projection of refid-linked programlisting inside native function body spans: direct statements, returns, first conditions and assignment RHS. Each call edge records source sites. Callback/address uses, macros, indirect calls, ambiguous or continued expressions remain general references; cross-file static function links are omitted and recorded as producer diagnostics; no runtime execution or complete call graph is claimed.',
-        sourceHashes, referenceDiagnostics: [...new Set(referenceDiagnostics)].sort(), diagnostics: warnings.trim() ? warnings.trim().split('\n') : [],
+        macroExpansion:
+          'Native included definitions and configured Makefile -D flags; no synthetic feature definitions.',
+        ignoredDecorations: ['__attribute__(x)'],
+        initializerLineLimit: 30,
+        spelling:
+          'Doxygen-normalized declarations, types and initializers, including expanded macros; not verbatim source slices. Anonymous synthetic types have no reconstructed raw declaration.',
+        references:
+          'Resolved native XML relationships and explicit C tag types between included symbols; external targets omitted. Call edges are a bounded syntactic projection of refid-linked programlisting inside native function body spans: direct statements, returns, first conditions and assignment RHS. Each call edge records source sites. Callback/address uses, macros, indirect calls, ambiguous or continued expressions remain general references; cross-file static function links are omitted and recorded as producer diagnostics; no runtime execution or complete call graph is claimed.',
+        sourceHashes,
+        referenceDiagnostics: [...new Set(referenceDiagnostics)].sort(),
+        diagnostics: warnings.trim() ? warnings.trim().split('\n') : [],
       },
       license: { file: 'COPYING', sha256: sha256(copying), text: copying, notices },
-      commands, symbols,
+      commands,
+      symbols,
     }
     const out = join(repoRoot, 'site/src/data/tmux/api', `${version}.json`)
     const text = `${JSON.stringify(model)}\n`
     if (check) {
-      if (!existsSync(out) || readFileSync(out, 'utf8') !== text) throw new Error(`${out} stale; regenerate with the same configured toolchain`)
+      if (!existsSync(out) || readFileSync(out, 'utf8') !== text)
+        throw new Error(`${out} stale; regenerate with the same configured toolchain`)
     } else {
       mkdirSync(dirname(out), { recursive: true })
       writeFileSync(out, text)
     }
-    console.log(`gen-api-model: tmux ${version}: ${symbols.length} shared symbols, ${commands.length} native command associations${check ? ' current' : ''}`)
+    console.log(
+      `gen-api-model: tmux ${version}: ${symbols.length} shared symbols, ${commands.length} native command associations${check ? ' current' : ''}`,
+    )
     if (args.includes('--retain-output')) console.log(`Native Doxygen evidence: ${scratch}`)
     else rmSync(scratch, { recursive: true })
   } catch (error) {
@@ -459,7 +573,8 @@ function generateTmuxModel() {
 }
 
 if (args.includes('--project')) {
-  if (args[args.indexOf('--project') + 1] !== 'tmux' || only) throw new Error('Use --project tmux independently of --port')
+  if (args[args.indexOf('--project') + 1] !== 'tmux' || only)
+    throw new Error('Use --project tmux independently of --port')
   generateTmuxModel()
   process.exit(0)
 }
@@ -472,9 +587,7 @@ if (args.includes('--project')) {
  */
 const navOnly = args.includes('--nav')
 const skipNativeModelPortsIndex = args.indexOf('--skip-native-model-ports')
-const skipNativeModelPortsValue = skipNativeModelPortsIndex === -1
-  ? undefined
-  : args[skipNativeModelPortsIndex + 1]
+const skipNativeModelPortsValue = skipNativeModelPortsIndex === -1 ? undefined : args[skipNativeModelPortsIndex + 1]
 if (skipNativeModelPortsIndex !== -1 && !check) {
   console.error('gen-api-model: --skip-native-model-ports requires --check')
   process.exit(2)
@@ -483,7 +596,12 @@ if (skipNativeModelPortsIndex !== -1 && (!skipNativeModelPortsValue || skipNativ
   console.error('gen-api-model: --skip-native-model-ports requires a comma-separated port list')
   process.exit(2)
 }
-const skipNativeModelPorts = new Set((skipNativeModelPortsValue ?? '').split(',').map((port) => port.trim()).filter(Boolean))
+const skipNativeModelPorts = new Set(
+  (skipNativeModelPortsValue ?? '')
+    .split(',')
+    .map((port) => port.trim())
+    .filter(Boolean),
+)
 for (const port of skipNativeModelPorts) {
   if (!(port in PORTS)) {
     console.error(`gen-api-model: --skip-native-model-ports names unknown port ${port}`)
@@ -537,10 +655,8 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   }
 
   const head = git(checkout, 'rev-parse', 'HEAD')
-  const selectedSource = process.env.LIBTMUX_DOCS_PORT === port
-    ? process.env.LIBTMUX_DOCS_SOURCE_SHA : undefined
-  const selectedRef = process.env.LIBTMUX_DOCS_PORT === port
-    ? process.env.LIBTMUX_DOCS_SOURCE_REF : undefined
+  const selectedSource = process.env.LIBTMUX_DOCS_PORT === port ? process.env.LIBTMUX_DOCS_SOURCE_SHA : undefined
+  const selectedRef = process.env.LIBTMUX_DOCS_PORT === port ? process.env.LIBTMUX_DOCS_SOURCE_REF : undefined
   if (selectedSource) {
     if (!/^[0-9a-f]{40}$/.test(selectedSource) || head !== selectedSource) {
       console.error(`gen-api-model: ${port} checkout HEAD ${head} does not match selected source ${selectedSource}`)
@@ -548,7 +664,9 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     }
     const resolved = selectedRef ? git(checkout, 'rev-parse', `${selectedRef}^{commit}`) : head
     if (resolved !== selectedSource) {
-      console.error(`gen-api-model: ${port} source ref ${selectedRef} resolves to ${resolved}, expected ${selectedSource}`)
+      console.error(
+        `gen-api-model: ${port} source ref ${selectedRef} resolves to ${resolved}, expected ${selectedSource}`,
+      )
       process.exit(1)
     }
   }
@@ -560,13 +678,12 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     // Gradle owns dependency tracking; stale generated methods must never be
     // accepted simply because their output directory already exists.
     execFileSync(join(checkout, 'gradlew'), [...cfg.generate, '--console=plain'], {
-      cwd: checkout, stdio: 'inherit',
+      cwd: checkout,
+      stdio: 'inherit',
     })
   }
 
-  const roots = (cfg.roots ?? [cfg.root])
-    .map((r) => join(checkout, r))
-    .filter((r) => existsSync(r))
+  const roots = (cfg.roots ?? [cfg.root]).map((r) => join(checkout, r)).filter((r) => existsSync(r))
   if (!roots.length) {
     console.error(`gen-api-model: no source roots exist for ${port}`)
     process.exit(1)
@@ -620,89 +737,141 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   if (port === 'go') {
     // Read committed bytes at the citation revision, never a newer working tree.
     const files = (git(checkout, 'ls-tree', '-r', '--name-only', revision, 'tmux') ?? '')
-      .split('\n').filter((file) => /^tmux\/[^/]+_test\.go$/.test(file))
+      .split('\n')
+      .filter((file) => /^tmux\/[^/]+_test\.go$/.test(file))
       .map((file) => ({
         file,
         code: execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
-          encoding: 'utf8', maxBuffer: 1 << 26,
+          encoding: 'utf8',
+          maxBuffer: 1 << 26,
         }),
       }))
     const examples = await readCompleteGoExamples(files)
     const goVersion = /^go (\d+\.\d+\.\d+)$/m.exec(git(checkout, 'show', `${revision}:go.mod`) ?? '')?.[1]
     if (examples.length && !goVersion) throw new Error('Missing Go version for complete examples')
-    if (examples.length) attachCompleteGoExamples(model.symbols, examples, {
-      repo: cfg.repo, revision, goVersion,
-    })
+    if (examples.length)
+      attachCompleteGoExamples(model.symbols, examples, {
+        repo: cfg.repo,
+        revision,
+        goVersion,
+      })
   }
 
   if (['java', 'kotlin', 'scala'].includes(port)) {
-    attachCompleteJvmExamples(model.symbols, port, (file) => {
-      try {
-        return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
-          encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'],
-        })
-      } catch {
-        return undefined
-      }
-    }, { repo: cfg.repo, revision })
+    attachCompleteJvmExamples(
+      model.symbols,
+      port,
+      (file) => {
+        try {
+          return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
+            encoding: 'utf8',
+            maxBuffer: 1 << 26,
+            stdio: ['ignore', 'pipe', 'ignore'],
+          })
+        } catch {
+          return undefined
+        }
+      },
+      { repo: cfg.repo, revision },
+    )
   }
 
   if (port === 'swift') {
-    attachCompleteSwiftExamples(model.symbols, (file) => {
-      try {
-        return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
-          encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'],
-        })
-      } catch {
-        return undefined
-      }
-    }, { repo: cfg.repo, revision })
+    attachCompleteSwiftExamples(
+      model.symbols,
+      (file) => {
+        try {
+          return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
+            encoding: 'utf8',
+            maxBuffer: 1 << 26,
+            stdio: ['ignore', 'pipe', 'ignore'],
+          })
+        } catch {
+          return undefined
+        }
+      },
+      { repo: cfg.repo, revision },
+    )
   }
 
   if (port === 'fsharp' || port === 'csharp') {
     const attach = port === 'fsharp' ? attachCompleteFSharpExamples : attachCompleteCSharpExamples
-    attach(model.symbols, (file) => {
-      try {
-        return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
-          encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'],
-        })
-      } catch {
-        return undefined
-      }
-    }, { repo: cfg.repo, revision })
+    attach(
+      model.symbols,
+      (file) => {
+        try {
+          return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
+            encoding: 'utf8',
+            maxBuffer: 1 << 26,
+            stdio: ['ignore', 'pipe', 'ignore'],
+          })
+        } catch {
+          return undefined
+        }
+      },
+      { repo: cfg.repo, revision },
+    )
   }
 
   if (port === 'cxx' || port === 'rs') {
     const attach = port === 'rs' ? attachCompleteRustExamples : attachCompleteCxxExamples
-    attach(model.symbols, (file) => {
-      try {
-        return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
-          encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'],
-        })
-      } catch {
-        return undefined
-      }
-    }, { repo: cfg.repo, revision })
+    attach(
+      model.symbols,
+      (file) => {
+        try {
+          return execFileSync('git', ['-C', checkout, 'show', `${revision}:${file}`], {
+            encoding: 'utf8',
+            maxBuffer: 1 << 26,
+            stdio: ['ignore', 'pipe', 'ignore'],
+          })
+        } catch {
+          return undefined
+        }
+      },
+      { repo: cfg.repo, revision },
+    )
   }
 
   const legacyIds = new Set(model.symbols.map((symbol) => symbol.id))
   const sourceUnits = [{ checkout, repo: cfg.repo, revision, head, symbols: model.symbols }]
   const mcpRoots = {
-    ts: 'packages/mcp/src', rs: 'crates/tmux-mcp/src', go: 'mcp',
-    java: 'libtmux-mcp/src/main/java', csharp: 'src/LibTmux.Mcp',
+    ts: 'packages/mcp/src',
+    rs: 'crates/tmux-mcp/src',
+    go: 'mcp',
+    java: 'libtmux-mcp/src/main/java',
+    csharp: 'src/LibTmux.Mcp',
   }
-  const extras = cfg.nativeArtifact ? [] : port === 'py'
-    ? [
-      { product: 'workspace', checkout: expand(process.env.LIBTMUX_DOCS_WORKSPACE_PY || '~/work/python/tmuxp'), root: 'src', repo: 'tmux-python/tmuxp', package: 'tmuxp' },
-      { product: 'mcp', checkout: expand(process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp'), root: 'src', repo: 'tmux-python/libtmux-mcp', package: 'libtmux-mcp' },
-    ]
-    : mcpRoots[port] ? [{ product: 'mcp', checkout, root: mcpRoots[port], repo: cfg.repo }] : []
+  const extras = cfg.nativeArtifact
+    ? []
+    : port === 'py'
+      ? [
+          {
+            product: 'workspace',
+            checkout: expand(process.env.LIBTMUX_DOCS_WORKSPACE_PY || '~/work/python/tmuxp'),
+            root: 'src',
+            repo: 'tmux-python/tmuxp',
+            package: 'tmuxp',
+          },
+          {
+            product: 'mcp',
+            checkout: expand(process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp'),
+            root: 'src',
+            repo: 'tmux-python/libtmux-mcp',
+            package: 'libtmux-mcp',
+          },
+        ]
+      : mcpRoots[port]
+        ? [{ product: 'mcp', checkout, root: mcpRoots[port], repo: cfg.repo }]
+        : []
   for (const extra of extras) {
     const extraHead = git(extra.checkout, 'rev-parse', 'HEAD')
-    if (!extraHead || !existsSync(join(extra.checkout, extra.root))) throw new Error(`Missing ${port} ${extra.product} source`)
+    if (!extraHead || !existsSync(join(extra.checkout, extra.root)))
+      throw new Error(`Missing ${port} ${extra.product} source`)
     const extraRevision = publicRevision(extra.checkout, extraHead, port, extra.repo)
     const extracted = await extractProject({
-      port, root: join(extra.checkout, extra.root), revision: extraRevision,
+      port,
+      root: join(extra.checkout, extra.root),
+      revision: extraRevision,
       options: { ...cfg.options, privateMembers: false, specialMembers: true },
     })
     // These crates use file-relative names. Prefix the additional package so
@@ -728,18 +897,25 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       `INPUT = ${quote(join(checkout, 'examples/workspace/include'))} ${quote(join(checkout, 'apps/mcp/include'))}`,
       `OUTPUT_DIRECTORY = ${quote(output)}`,
       `STRIP_FROM_PATH = ${quote(checkout)}`,
-      'EXTRACT_ALL = YES', 'WARN_AS_ERROR = NO',
+      'EXTRACT_ALL = YES',
+      'WARN_AS_ERROR = NO',
     ].join('\n')
     execFileSync('doxygen', ['-'], { cwd: checkout, input: config, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] })
-    const symbols = extractDoxygen(join(output, 'xml'), checkout)
-      .filter((symbol) => /^(examples\/workspace|apps\/mcp)\//.test(symbol.source.file))
+    const symbols = extractDoxygen(join(output, 'xml'), checkout).filter((symbol) =>
+      /^(examples\/workspace|apps\/mcp)\//.test(symbol.source.file),
+    )
     sourceUnits[0].symbols.push(...symbols)
     rmSync(output, { recursive: true })
   }
   if (model.pruned) model.pruned.kept = model.symbols.length
-  const productOf = (file) => /(?:^|\/)(?:workspace|TmuxWorkspace|LibTmux\.Workspace|libtmux-workspace)(?:\/|$)|crates\/tmux-workspace\//.test(file)
-    ? 'workspace'
-    : /(?:^|\/)(?:mcp|LibTmuxMCP|LibTmux\.Mcp|libtmux-mcp)(?:\/|$)|crates\/tmux-mcp\//.test(file) ? 'mcp' : 'core'
+  const productOf = (file) =>
+    /(?:^|\/)(?:workspace|TmuxWorkspace|LibTmux\.Workspace|libtmux-workspace)(?:\/|$)|crates\/tmux-workspace\//.test(
+      file,
+    )
+      ? 'workspace'
+      : /(?:^|\/)(?:mcp|LibTmuxMCP|LibTmux\.Mcp|libtmux-mcp)(?:\/|$)|crates\/tmux-mcp\//.test(file)
+        ? 'mcp'
+        : 'core'
   const packages = {
     ts: { workspace: '@libtmux/workspace', mcp: '@libtmux/mcp' },
     rs: { workspace: 'tmux-workspace', mcp: 'tmux-mcp' },
@@ -761,7 +937,13 @@ for (const [port, cfg] of Object.entries(PORTS)) {
         model.generatedSources[relativeFile] ??= readFileSync(join(unit.checkout, relativeFile), 'utf8')
       }
       symbol.product ??= productOf(relativeFile)
-      symbol.source = { ...symbol.source, file: relativeFile, repo: unit.repo, revision: unit.revision, extractedRevision: unit.head }
+      symbol.source = {
+        ...symbol.source,
+        file: relativeFile,
+        repo: unit.repo,
+        revision: unit.revision,
+        extractedRevision: unit.head,
+      }
     }
     inheritProductFromOwners(unit.symbols)
     for (const product of ['workspace', 'mcp']) {
@@ -770,15 +952,25 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       let entries = []
       if (port === 'ts') {
         const manifest = JSON.parse(readFileSync(join(unit.checkout, `packages/${product}/package.json`), 'utf8'))
-        entries = Object.values(manifest.exports).flatMap((entry) => typeof entry === 'object' && entry.bun ? [resolve(unit.checkout, `packages/${product}`, entry.bun)] : [])
+        entries = Object.values(manifest.exports).flatMap((entry) =>
+          typeof entry === 'object' && entry.bun ? [resolve(unit.checkout, `packages/${product}`, entry.bun)] : [],
+        )
       } else if (port === 'rs') entries = [join(unit.checkout, `crates/tmux-${product}/src/lib.rs`)]
-      scopeProductSymbols(symbols, { port, root: unit.checkout, entries, readSource: (file) => readFileSync(file, 'utf8') })
+      scopeProductSymbols(symbols, {
+        port,
+        root: unit.checkout,
+        entries,
+        readSource: (file) => readFileSync(file, 'utf8'),
+      })
     }
     remapLines(unit.checkout, unit.symbols, unit.revision, unit.head)
     for (const product of new Set(unit.symbols.map((symbol) => symbol.product))) {
       model.sources.push({
-        product, package: unit.package ?? packages[port]?.[product] ?? portBySlug[port].packageName,
-        repo: unit.repo, revision: unit.revision, extractedRevision: unit.head,
+        product,
+        package: unit.package ?? packages[port]?.[product] ?? portBySlug[port].packageName,
+        repo: unit.repo,
+        revision: unit.revision,
+        extractedRevision: unit.head,
         version: packageVersion(unit.checkout, port, product),
       })
     }
@@ -883,8 +1075,10 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     const nav = navSidecar(port, model)
     const stalePaths = [
       strip(read(`${port}.json`)) !== strip(text) && `${port}.json`,
-      tree && JSON.stringify(committedPaths && JSON.parse(committedPaths).paths) !==
-        JSON.stringify(repositoryPaths(tree, cfg)) && `${port}.paths.json`,
+      tree &&
+        JSON.stringify(committedPaths && JSON.parse(committedPaths).paths) !==
+          JSON.stringify(repositoryPaths(tree, cfg)) &&
+        `${port}.paths.json`,
       nav && read(`${port}.nav.json`) !== `${JSON.stringify(nav)}\n` && `${port}.nav.json`,
     ].filter(Boolean)
     if (stalePaths.length) {
@@ -928,7 +1122,10 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   const kinds = model.symbols.reduce((a, s) => ((a[s.kind] = (a[s.kind] ?? 0) + 1), a), {})
   console.log(
     `gen-api-model: ${port} -> ${model.symbols.length} symbols ` +
-      `(${Object.entries(kinds).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k}:${v}`).join(' ')}) ` +
+      `(${Object.entries(kinds)
+        .sort((a, b) => b[1] - a[1])
+        .map(([k, v]) => `${k}:${v}`)
+        .join(' ')}) ` +
       `${(text.length / 1024 / 1024).toFixed(1)} MB` +
       (disambiguated ? ` [${disambiguated} slugs disambiguated]` : ''),
   )

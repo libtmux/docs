@@ -116,7 +116,9 @@ export function workspaceDocsLoader(): Loader {
         ownedIds.delete(file)
       }
       const reportError = (file: string, error: unknown) => {
-        context.logger.error(`Failed to reload ${relative(root, file)}: ${error instanceof Error ? error.message : String(error)}`)
+        context.logger.error(
+          `Failed to reload ${relative(root, file)}: ${error instanceof Error ? error.message : String(error)}`,
+        )
       }
 
       const syncShared = async (version: number, initial = false) => {
@@ -139,13 +141,18 @@ export function workspaceDocsLoader(): Loader {
             const ports = PORT_SLUGS.filter((port) => !realIds.has(`ports/${port}/${idFor(relPath)}`))
             const ids = ports.map((port) => `ports/${port}/${idFor(relPath)}`)
             const digests = ports.map((port) => context.generateDigest(`${port}\u0000${raw}`))
-            if (ownedIds.has(file) && ids.every((id, index) => context.store.get(id)?.digest === digests[index])) continue
+            if (ownedIds.has(file) && ids.every((id, index) => context.store.get(id)?.digest === digests[index]))
+              continue
             const { frontmatter, content: body } = parseFrontmatter(raw)
             const entries: Parameters<LoaderContext['store']['set']>[0][] = []
 
             for (const [index, port] of ports.entries()) {
               const id = ids[index]!
-              const data = await context.parseData({ id, data: resolvePortData(frontmatter, port, PRODUCT), filePath: relFilePath })
+              const data = await context.parseData({
+                id,
+                data: resolvePortData(frontmatter, port, PRODUCT),
+                filePath: relFilePath,
+              })
               const resolvedBody = resolvePortBody(body, port)
               const rendered = await context.renderMarkdown(frontmatterBlock(data) + resolvedBody, {
                 fileURL: pathToFileURL(file),
@@ -171,8 +178,8 @@ export function workspaceDocsLoader(): Loader {
         let pending = Promise.resolve()
         const onChange = (changedPath: string) => {
           const relPath = relative(sharedDir, changedPath)
-          if (isAbsolute(relPath) || relPath === '..' || relPath.startsWith(`..${sep}`)
-            || !/\.mdx?$/.test(relPath)) return pending
+          if (isAbsolute(relPath) || relPath === '..' || relPath.startsWith(`..${sep}`) || !/\.mdx?$/.test(relPath))
+            return pending
           context.logger.info(`Reloading shared workspace sources (${relative(root, changedPath)} changed)`)
           const version = ++revision
           // Watchers ignore promises, so the queue must contain every failure.

@@ -21,7 +21,16 @@ try {
   writeFileSync(join(scratch, 'example.go'), '// uncommitted replacement\n')
   assert.deepEqual(cachedExample(request), initial)
   git('add', 'example.go')
-  git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '--quiet', '-m', 'Later revision')
+  git(
+    '-c',
+    'user.name=Fixture',
+    '-c',
+    'user.email=fixture@example.invalid',
+    'commit',
+    '--quiet',
+    '-m',
+    'Later revision',
+  )
   assert.deepEqual(cachedExample(request), initial)
   console.log('ok   examples ignore a dirty working tree and a later HEAD')
 

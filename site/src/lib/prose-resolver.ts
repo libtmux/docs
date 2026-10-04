@@ -1,4 +1,13 @@
-import { Resolver, decideFilePath, decideMention, notASymbol, type ApiProduct, type InventoryEntry, type MentionContext, type MentionDecision } from '@libtmux/api-model'
+import {
+  Resolver,
+  decideFilePath,
+  decideMention,
+  notASymbol,
+  type ApiProduct,
+  type InventoryEntry,
+  type MentionContext,
+  type MentionDecision,
+} from '@libtmux/api-model'
 import { API_MODELS, PORT_NAME, parentApiInventory } from './api-models'
 import { productApiHref } from './product-api'
 import { PORT_BY_SLUG, referenceUrl } from './ports'
@@ -29,9 +38,19 @@ export const PORT_BY_LABEL: Record<string, string> = Object.fromEntries(
 // Static imports also survive the bundled Markdown route, where source files
 // are no longer adjacent to this module.
 const PATHS: Record<string, { repo: string; revision: string; paths: string[] }> = {
-  py: pyPaths, ruby: rubyPaths, lua: luaPaths, ts: tsPaths, rs: rsPaths,
-  go: goPaths, java: javaPaths, csharp: csharpPaths, cxx: cxxPaths,
-  swift: swiftPaths, kotlin: kotlinPaths, scala: scalaPaths, fsharp: fsharpPaths,
+  py: pyPaths,
+  ruby: rubyPaths,
+  lua: luaPaths,
+  ts: tsPaths,
+  rs: rsPaths,
+  go: goPaths,
+  java: javaPaths,
+  csharp: csharpPaths,
+  cxx: cxxPaths,
+  swift: swiftPaths,
+  kotlin: kotlinPaths,
+  scala: scalaPaths,
+  fsharp: fsharpPaths,
 }
 const TREES = Object.fromEntries(Object.entries(PATHS).map(([port, data]) => [port, new Set(data.paths)]))
 const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|md|toml|json|ya?ml|sh)$/
@@ -42,9 +61,13 @@ type ProseDecision = MentionDecision & { file?: boolean }
 export function createProseLinker(product?: ApiProduct) {
   const resolver = getResolver()
   let defaults: Record<string, string> = {}
-  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
-  const versionOf = (port: string) => port === process.env.LIBTMUX_DOCS_PORT
-    ? buildTarget(process.env).version : (defaults[port] ?? 'latest')
+  try {
+    defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
+  } catch {
+    /* Local defaults are latest. */
+  }
+  const versionOf = (port: string) =>
+    port === process.env.LIBTMUX_DOCS_PORT ? buildTarget(process.env).version : (defaults[port] ?? 'latest')
 
   return (text: string, context: Pick<MentionContext, 'pagePort' | 'before'>): ProseDecision => {
     if (FILE_RE.test(text) || text.endsWith('/')) {
@@ -53,20 +76,29 @@ export function createProseLinker(product?: ApiProduct) {
       if (decision.kind !== 'link') return decision
       const meta = PATHS[decision.port]!
       return {
-        kind: 'link', port: decision.port, file: true, external: true,
+        kind: 'link',
+        port: decision.port,
+        file: true,
+        external: true,
         href: `https://github.com/${meta.repo}/${decision.dir ? 'tree' : 'blob'}/${meta.revision}/${decision.path}`,
         title: `${decision.path}: ${meta.repo}`,
       }
     }
     if (notASymbol(text)) return { kind: 'skip', why: 'not a symbol' }
-    const decision = decideMention(text, {
-      ...context, product,
-      symbolHref: (port, symbol) => productApiHref(API_MODELS[port], symbol, versionOf(port)),
-      moduleHref: (port, module) => {
-        const target = PORT_BY_SLUG[port]
-        return target ? `${referenceUrl(target, versionOf(port))}#${module}` : `#${module}`
+    const decision = decideMention(
+      text,
+      {
+        ...context,
+        product,
+        symbolHref: (port, symbol) => productApiHref(API_MODELS[port], symbol, versionOf(port)),
+        moduleHref: (port, module) => {
+          const target = PORT_BY_SLUG[port]
+          return target ? `${referenceUrl(target, versionOf(port))}#${module}` : `#${module}`
+        },
       },
-    }, resolver, API_MODELS)
+      resolver,
+      API_MODELS,
+    )
     if (decision.kind === 'link' && decision.href.startsWith('/reference/')) {
       return { ...decision, href: withPortRoot(decision.href) }
     }

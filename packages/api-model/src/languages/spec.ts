@@ -142,11 +142,7 @@ function docCommentFor(node: Node, spec: LanguageSpec): string | undefined {
   // up through transparent wrappers is the difference between 16% and 80% of
   // TypeScript's symbols being documented — and nothing failed at 16%.
   let anchor: Node = node
-  while (
-    !anchor.previousNamedSibling &&
-    anchor.parent &&
-    spec.transparent?.includes(anchor.parent.type)
-  ) {
+  while (!anchor.previousNamedSibling && anchor.parent && spec.transparent?.includes(anchor.parent.type)) {
     anchor = anchor.parent
   }
   let cursor: Node | null = anchor.previousNamedSibling
@@ -231,9 +227,7 @@ function paramsOf(node: Node | null, spec: LanguageSpec): Param[] {
 function signatureOf(node: Node, spec: LanguageSpec): Signature {
   const f = { ...DEFAULT_FIELDS, ...spec.fields }
   const returns =
-    node.childForFieldName(f.returns) ??
-    node.childForFieldName('result') ??
-    node.childForFieldName('type')
+    node.childForFieldName(f.returns) ?? node.childForFieldName('result') ?? node.childForFieldName('type')
   return {
     params: paramsOf(node.childForFieldName(f.params), spec),
     // A grammar's return-type node often includes the syntax that introduces
@@ -345,8 +339,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
     // `function_item`, so the spec cannot tell them apart — only the presence
     // of an enclosing `impl` or `trait` can, and that is known here. 85 Rust
     // functions in `mod` blocks were reported as ownerless methods.
-    const resolvedKind: SymbolKind =
-      memberKind === 'method' && !owner ? 'function' : memberKind
+    const resolvedKind: SymbolKind = memberKind === 'method' && !owner ? 'function' : memberKind
     // Built before the doc so C#'s `<param>` and `<exception>` can be lifted
     // onto it: the comment carries them, and nothing else does.
     const memberSignatures = hasParams ? [signatureOf(child, spec)] : []
@@ -380,11 +373,7 @@ function walk(node: Node, ctx: Ctx, parent: string | undefined): void {
  * The dialect is declared on the spec rather than tested for by grammar name,
  * so adding a port that documents in markup is a field rather than a branch.
  */
-function docFor(
-  raw: string | undefined,
-  spec: LanguageSpec,
-  signatures: Signature[],
-): DocBlock | undefined {
+function docFor(raw: string | undefined, spec: LanguageSpec, signatures: Signature[]): DocBlock | undefined {
   if (!raw) return undefined
   const parse =
     spec.docDialect === 'xml'
@@ -416,18 +405,25 @@ export async function extractWithSpec(
   const parser = await parserFor(spec.grammar)
   const tree = parser.parse(readFileSync(file, 'utf8'))
   if (!tree) return []
-  const packageName = spec.grammar === 'java'
-    ? tree.rootNode.namedChildren.find((node) => node?.type === 'package_declaration')
-      ?.namedChildren.find((node) => node?.type === 'scoped_identifier' || node?.type === 'identifier')
-    : undefined
+  const packageName =
+    spec.grammar === 'java'
+      ? tree.rootNode.namedChildren
+          .find((node) => node?.type === 'package_declaration')
+          ?.namedChildren.find((node) => node?.type === 'scoped_identifier' || node?.type === 'identifier')
+      : undefined
   const ctx: Ctx = {
     file,
     module,
     // Java packages come from declarations, not source paths or file names.
-    namespace: spec.grammar === 'java'
-      ? packageName?.type === 'identifier' ? packageName.text
-        : packageName?.descendantsOfType('identifier').flatMap((node) => node ? [node.text] : []).join('.') ?? ''
-      : undefined,
+    namespace:
+      spec.grammar === 'java'
+        ? packageName?.type === 'identifier'
+          ? packageName.text
+          : (packageName
+              ?.descendantsOfType('identifier')
+              .flatMap((node) => (node ? [node.text] : []))
+              .join('.') ?? '')
+        : undefined,
     symbols: [],
     byId: new Map(),
     spec,

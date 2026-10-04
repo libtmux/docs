@@ -14,7 +14,10 @@ const CONTENT_PORTS = new Set([...PORTS.map((port) => port.slug), 'root'])
 const SLOT_TAG = /<!--\s*port:([\s\S]*?)-->|<!--\s*\/port\s*-->/gi
 
 /** Keep browse cards in their authored port, including explicitly shared root cards. */
-export function selectPortCards<T extends { ports?: readonly string[] }>(cards: readonly T[] | undefined, port?: string): T[] {
+export function selectPortCards<T extends { ports?: readonly string[] }>(
+  cards: readonly T[] | undefined,
+  port?: string,
+): T[] {
   return cards?.filter((card) => !card.ports || card.ports.includes(port || 'root')) ?? []
 }
 
@@ -28,7 +31,12 @@ function fencedRanges(raw: string): [number, number][] {
     if (match) {
       const [, marker, rest] = match
       if (!fence && !(marker[0] === '`' && rest.includes('`'))) {
-        fence = { marker: marker[0], length: marker.length, start: offset, literal: /^(?:markdown|md)\b/.test(rest.trim()) }
+        fence = {
+          marker: marker[0],
+          length: marker.length,
+          start: offset,
+          literal: /^(?:markdown|md)\b/.test(rest.trim()),
+        }
       } else if (fence && marker[0] === fence.marker && marker.length >= fence.length && !rest.trim()) {
         if (fence.literal) ranges.push([fence.start, offset + line.length])
         fence = undefined
@@ -102,7 +110,10 @@ export function resolveSlots(node: SlotNode, port?: string): string {
 }
 
 /** Resolve ownership and retain the context needed to link root-page API names. */
-export function resolvePortContent(raw: string, port?: string): { body: string; portAt: (offset: number) => string | undefined } {
+export function resolvePortContent(
+  raw: string,
+  port?: string,
+): { body: string; portAt: (offset: number) => string | undefined } {
   const parts: string[] = []
   const regions: { start: number; end: number; port: string }[] = []
   let offset = 0
@@ -111,7 +122,10 @@ export function resolvePortContent(raw: string, port?: string): { body: string; 
     const owners = node.ports && [...node.ports].filter((owner) => owner !== 'root')
     const owner = owners?.length ? (owners.length === 1 ? owners[0] : undefined) : inherited
     for (const child of node.children) {
-      if (typeof child !== 'string') { append(child, owner); continue }
+      if (typeof child !== 'string') {
+        append(child, owner)
+        continue
+      }
       parts.push(child)
       if (owner) regions.push({ start: offset, end: offset + child.length, port: owner })
       offset += child.length
@@ -135,7 +149,11 @@ export interface SharedFrontmatter {
 }
 
 /** Merge a shared page's defaults with one port's overrides. */
-export function resolvePortData(frontmatter: SharedFrontmatter, port: string, product: string): Record<string, unknown> {
+export function resolvePortData(
+  frontmatter: SharedFrontmatter,
+  port: string,
+  product: string,
+): Record<string, unknown> {
   const { ports: overrides, ...defaults } = frontmatter
   return { ...defaults, ...overrides?.[port], port, product }
 }

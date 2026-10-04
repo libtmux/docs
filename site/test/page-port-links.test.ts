@@ -22,10 +22,18 @@ describe('matching pages in another port', () => {
   })
   it('uses native equivalents when a shared article does not cover a port', () => {
     const shared = { id: 'topics/pane-interaction', data: { supportedPorts: ['go', 'py'] } }
-    const native = { id: '_staged/lua/guides/panes', data: { port: 'lua', route: 'guides/panes', aliases: ['topics/pane-interaction'] } }
+    const native = {
+      id: '_staged/lua/guides/panes',
+      data: { port: 'lua', route: 'guides/panes', aliases: ['topics/pane-interaction'] },
+    }
     expect(docsEntryAvailable(shared, 'lua')).toBe(false)
     expect(docsEntryAvailable(shared, 'go')).toBe(true)
-    const links = pagePortLinks({ ...options, docs: [shared, native], pagePath: 'topics/pane-interaction', portSlug: 'go' })
+    const links = pagePortLinks({
+      ...options,
+      docs: [shared, native],
+      pagePath: 'topics/pane-interaction',
+      portSlug: 'go',
+    })
     expect(links.find((p) => p.port === 'lua')?.links[0].href).toBe('/pr-42/en/lua/latest/guides/panes/')
     expect(links.find((p) => p.port === 'ruby')?.links).toEqual([])
     const reverse = pagePortLinks({ ...options, docs: [shared, native], pagePath: 'guides/panes', portSlug: 'lua' })
@@ -44,7 +52,11 @@ describe('matching pages in another port', () => {
   })
 
   it('disables pages excluded by their port and unknown root-only routes', () => {
-    expect(pagePortLinks({ ...options, pagePath: 'guides/python-only' }).filter((p) => p.links.length).map((p) => p.port)).toEqual(['py'])
+    expect(
+      pagePortLinks({ ...options, pagePath: 'guides/python-only' })
+        .filter((p) => p.links.length)
+        .map((p) => p.port),
+    ).toEqual(['py'])
     expect(pagePortLinks({ ...options, pagePath: 'missing-page' }).every((p) => !p.links.length)).toBe(true)
   })
 
@@ -56,53 +68,98 @@ describe('matching pages in another port', () => {
   it('switches MCP tools using each port’s registered wire name', () => {
     const links = pagePortLinks({ ...options, pagePath: 'mcp/tools/capture_pane', portSlug: 'ts' })
     expect(links.find((entry) => entry.port === 'lua')?.links).toEqual([])
-    expect(links.filter((entry) => entry.port !== 'lua' && entry.port !== 'ruby' && !PORT_BY_SLUG[entry.port].parentLibrary).every((entry) => entry.links.length === 1)).toBe(true)
-    expect(links.find((entry) => entry.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/v1.2.3/mcp/tools/capture_pane/')
-    expect(links.find((entry) => entry.port === 'py')?.links[0].href).toBe('/pr-42/en/py/stable/mcp/tools/capture_pane/')
-    expect(links.find((entry) => entry.port === 'csharp')?.links[0].href).toBe('/pr-42/en/csharp/latest/mcp/tools/capture_pane/')
+    expect(
+      links
+        .filter((entry) => entry.port !== 'lua' && entry.port !== 'ruby' && !PORT_BY_SLUG[entry.port].parentLibrary)
+        .every((entry) => entry.links.length === 1),
+    ).toBe(true)
+    expect(links.find((entry) => entry.port === 'ts')?.links[0].href).toBe(
+      '/pr-42/en/ts/v1.2.3/mcp/tools/capture_pane/',
+    )
+    expect(links.find((entry) => entry.port === 'py')?.links[0].href).toBe(
+      '/pr-42/en/py/stable/mcp/tools/capture_pane/',
+    )
+    expect(links.find((entry) => entry.port === 'csharp')?.links[0].href).toBe(
+      '/pr-42/en/csharp/latest/mcp/tools/capture_pane/',
+    )
     const reverse = pagePortLinks({ ...options, pagePath: 'mcp/tools/capture_pane', portSlug: 'csharp' })
-    expect(reverse.find((entry) => entry.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/latest/mcp/tools/capture_pane/')
+    expect(reverse.find((entry) => entry.port === 'ts')?.links[0].href).toBe(
+      '/pr-42/en/ts/latest/mcp/tools/capture_pane/',
+    )
   })
 
   it('links the current snapshot tool across ports and rejects unknown tools', () => {
     const links = pagePortLinks({ ...options, pagePath: 'mcp/tools/snapshot_pane', portSlug: 'ts' })
-    expect(links.find((entry) => entry.port === 'py')?.links[0]?.href).toBe('/pr-42/en/py/stable/mcp/tools/snapshot_pane/')
-    expect(links.find((entry) => entry.port === 'cxx')?.links[0]?.href).toBe('/pr-42/en/cxx/latest/mcp/tools/snapshot_pane/')
-    expect(links.find((entry) => entry.port === 'swift')?.links[0]?.href).toBe('/pr-42/en/swift/latest/mcp/tools/snapshot_pane/')
-    expect(pagePortLinks({ ...options, pagePath: 'mcp/tools/missing', portSlug: 'ts' }).every((entry) => !entry.links.length)).toBe(true)
+    expect(links.find((entry) => entry.port === 'py')?.links[0]?.href).toBe(
+      '/pr-42/en/py/stable/mcp/tools/snapshot_pane/',
+    )
+    expect(links.find((entry) => entry.port === 'cxx')?.links[0]?.href).toBe(
+      '/pr-42/en/cxx/latest/mcp/tools/snapshot_pane/',
+    )
+    expect(links.find((entry) => entry.port === 'swift')?.links[0]?.href).toBe(
+      '/pr-42/en/swift/latest/mcp/tools/snapshot_pane/',
+    )
+    expect(
+      pagePortLinks({ ...options, pagePath: 'mcp/tools/missing', portSlug: 'ts' }).every(
+        (entry) => !entry.links.length,
+      ),
+    ).toBe(true)
   })
 
   it('rejects retired raw tmux commands and links current pane shell commands', () => {
     const swift = pagePortLinks({ ...options, pagePath: 'mcp/tools/run_command', portSlug: 'swift' })
     expect(swift.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual([])
     const python = pagePortLinks({ ...options, pagePath: 'mcp/tools/run_command', portSlug: 'py' })
-    expect(python.find((entry) => entry.port === 'swift')?.links[0]?.href).toBe('/pr-42/en/swift/latest/mcp/tools/run_shell_command/')
-    expect(python.find((entry) => entry.port === 'go')?.links[0]?.href).toBe('/pr-42/en/go/latest/mcp/tools/run_shell_command/')
+    expect(python.find((entry) => entry.port === 'swift')?.links[0]?.href).toBe(
+      '/pr-42/en/swift/latest/mcp/tools/run_shell_command/',
+    )
+    expect(python.find((entry) => entry.port === 'go')?.links[0]?.href).toBe(
+      '/pr-42/en/go/latest/mcp/tools/run_shell_command/',
+    )
   })
 
   it('keeps scrollback-only clearing separate from clearing the visible screen', () => {
     const rust = pagePortLinks({ ...options, pagePath: 'mcp/tools/clear_pane_scrollback', portSlug: 'rs' })
-    expect(rust.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'])
+    expect(rust.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual([
+      'ts',
+      'rs',
+      'go',
+      'java',
+      'csharp',
+      'cxx',
+      'swift',
+    ])
     const python = pagePortLinks({ ...options, pagePath: 'mcp/tools/clear_pane', portSlug: 'py' })
     expect(python.find((entry) => entry.port === 'rs')?.links).toEqual([])
     expect(python.find((entry) => entry.port === 'csharp')?.links).toEqual([])
   })
 
   it('offers reference indexes rather than transplanting the current reference path', () => {
-    expect(pagePortLinks({ ...options, pagePath: 'reference', portSlug: 'ts' }).find((p) => p.port === 'py')?.links[0].href).toBe('/pr-42/en/py/stable/reference/')
+    expect(
+      pagePortLinks({ ...options, pagePath: 'reference', portSlug: 'ts' }).find((p) => p.port === 'py')?.links[0].href,
+    ).toBe('/pr-42/en/py/stable/reference/')
   })
 
   it('links session pane equivalents and disables Java without a direct accessor', () => {
     const links = pagePortLinks({ ...options, pagePath: 'reference/session-session-panes', portSlug: 'ts' })
-    expect(links.find((p) => p.port === 'py')?.links[0].href).toBe('/pr-42/en/py/stable/reference/libtmux-session-panes/')
+    expect(links.find((p) => p.port === 'py')?.links[0].href).toBe(
+      '/pr-42/en/py/stable/reference/libtmux-session-panes/',
+    )
     // The page's own port keeps the version being built, not the default.
-    expect(links.find((p) => p.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/v1.2.3/reference/session-session-panes/')
+    expect(links.find((p) => p.port === 'ts')?.links[0].href).toBe(
+      '/pr-42/en/ts/v1.2.3/reference/session-session-panes/',
+    )
     expect(links.find((p) => p.port === 'java')?.links).toEqual([])
   })
 
   it('keeps both scopes when a Swift page documents session and window overloads', () => {
     const links = pagePortLinks({ ...options, pagePath: 'reference/snapshot-panes(of-)', portSlug: 'swift' })
-    expect(links.find((p) => p.port === 'py')?.links.map((link) => link.href).sort()).toEqual([
+    expect(
+      links
+        .find((p) => p.port === 'py')
+        ?.links.map((link) => link.href)
+        .sort(),
+    ).toEqual([
       '/pr-42/en/py/stable/reference/libtmux-session-panes/',
       '/pr-42/en/py/stable/reference/libtmux-window-panes/',
     ])
@@ -125,20 +182,27 @@ describe('locale switcher targets', () => {
   })
 })
 
-
 describe('workspace documentation compatibility', () => {
   it.each(['cli/load', 'configuration/commands', 'reference/compatibility', 'guides/automation', 'examples/gallery'])(
-    'switches the nested %s reference across authored ports', (section) => {
+    'switches the nested %s reference across authored ports',
+    (section) => {
       const pagePath = `workspace/${section}`
       const entries = PORTS.filter((port) => !port.parentLibrary).map((port) => ({
-        id: `ports/${port.slug}/${pagePath}`, data: { port: port.slug, product: 'workspace' },
+        id: `ports/${port.slug}/${pagePath}`,
+        data: { port: port.slug, product: 'workspace' },
       }))
       const links = pagePortLinks({ ...options, docs: entries, pagePath, portSlug: 'go' })
       for (const entry of links) {
         const version = entry.port === 'go' ? 'v1.2.3' : entry.port === 'py' ? 'stable' : 'latest'
-        expect(entry.links).toEqual(PORT_BY_SLUG[entry.port].parentLibrary ? [] : [{ href: `/pr-42/en/${entry.port}/${version}/${pagePath}/` }])
+        expect(entry.links).toEqual(
+          PORT_BY_SLUG[entry.port].parentLibrary ? [] : [{ href: `/pr-42/en/${entry.port}/${version}/${pagePath}/` }],
+        )
       }
-      const missing = pagePortLinks({ ...options, pagePath, docs: entries.filter((entry) => entry.data.port !== 'cxx') })
+      const missing = pagePortLinks({
+        ...options,
+        pagePath,
+        docs: entries.filter((entry) => entry.data.port !== 'cxx'),
+      })
       expect(missing.find((entry) => entry.port === 'cxx')?.links).toEqual([])
     },
   )
@@ -147,19 +211,27 @@ describe('workspace documentation compatibility', () => {
     const entries = [...docs, { id: 'ports/py/workspace/guides', data: { port: 'py', product: 'workspace' } }]
     const cli = pagePortLinks({ ...options, docs: entries, pagePath: 'workspace/guides', portSlug: 'py' })
     expect(cli.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['py'])
-    const internals = pagePortLinks({ ...options, docs: entries, pagePath: 'workspace/internals/guides', portSlug: 'ts' })
+    const internals = pagePortLinks({
+      ...options,
+      docs: entries,
+      pagePath: 'workspace/internals/guides',
+      portSlug: 'ts',
+    })
     expect(internals.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['ts', 'rs'])
   })
 
   it('lifts a port without a workspace CLI out of Internals, and leaves Python alone', async () => {
     const { workspaceRedirects } = await import('../src/lib/docs-paths')
-    expect(workspaceRedirects([
-      'py/stable/workspace/examples', 'py/stable/workspace/internals/examples',
-      'go/latest/workspace/internals/examples', 'go/latest/workspace/reference/builder',
-      'go/latest/workspace/internals', 'go/latest/guides',
-    ])).toEqual([
-      { path: 'go/latest/workspace/examples', target: 'go/latest/workspace/internals/examples' },
-    ])
+    expect(
+      workspaceRedirects([
+        'py/stable/workspace/examples',
+        'py/stable/workspace/internals/examples',
+        'go/latest/workspace/internals/examples',
+        'go/latest/workspace/reference/builder',
+        'go/latest/workspace/internals',
+        'go/latest/guides',
+      ]),
+    ).toEqual([{ path: 'go/latest/workspace/examples', target: 'go/latest/workspace/internals/examples' }])
     // The reference is its own section now, so there is nothing under
     // Internals for it to be lifted out of.
     expect(workspaceRedirects(['workspace/reference/builder'])).toEqual([])

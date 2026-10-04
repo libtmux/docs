@@ -35,12 +35,17 @@ it('checks a large corpus in a small heap and still rejects missing pages and an
   const anchor = 'long-anchor-for-memory-regression'
   const target = 'long-target-for-memory-regression'
   const padding = 'x'.repeat(2 * 1024 * 1024)
-  const check = () => spawnSync(process.execPath, ['--max-old-space-size=64', checker, root, '--all'], {
-    encoding: 'utf8', timeout: 10_000,
-  })
+  const check = () =>
+    spawnSync(process.execPath, ['--max-old-space-size=64', checker, root, '--all'], {
+      encoding: 'utf8',
+      timeout: 10_000,
+    })
   try {
-    for (let i = 0; i < 48; i++) writeFileSync(join(root, `large-corpus-page-${i}.html`),
-      `<h1 id="${anchor}">${padding}</h1><a href="/large-corpus-page-${(i + 1) % 48}.html#${anchor}">Next</a><a href="/${target}/#${anchor}">There</a>`)
+    for (let i = 0; i < 48; i++)
+      writeFileSync(
+        join(root, `large-corpus-page-${i}.html`),
+        `<h1 id="${anchor}">${padding}</h1><a href="/large-corpus-page-${(i + 1) % 48}.html#${anchor}">Next</a><a href="/${target}/#${anchor}">There</a>`,
+      )
     const missingPage = check()
     expect(missingPage.status, missingPage.stderr).toBe(1)
     expect(missingPage.stdout).toContain('48 pages, 96 links checked, 48 broken')

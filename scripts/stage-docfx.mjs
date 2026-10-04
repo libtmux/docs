@@ -139,7 +139,11 @@ for (const file of files) {
     // `…GetOptionRequest_System…`. Nine broken links, all of them anchors on
     // pages that existed, which is why the page looked fine on arrival.
     const uidRef = decodeUid(href.replace(/\*$/, ''))
-    const label = uidRef.split('.').slice(-2).join('.').replace(/\(.*\)$/, '()')
+    const label = uidRef
+      .split('.')
+      .slice(-2)
+      .join('.')
+      .replace(/\(.*\)$/, '()')
     const hit = pageFor(uidRef)
     if (!hit) return `\`${label}\``
     const hash = hit.member ? `#${anchorOf(uidRef)}` : ''
@@ -180,7 +184,10 @@ for (const file of files) {
 // siblings live in. Using `../` here sent all 215 links to
 // /<port>/<version>/<uid>/, which does not exist.
 // ---------------------------------------------------------------------------
-const namespaces = pages.filter((p) => p.kind === 'Namespace').map((p) => p.uid).sort()
+const namespaces = pages
+  .filter((p) => p.kind === 'Namespace')
+  .map((p) => p.uid)
+  .sort()
 const KIND_ORDER = ['Interface', 'Class', 'Struct', 'Enum', 'Delegate']
 const plural = { Interface: 'Interfaces', Class: 'Classes', Struct: 'Structs', Enum: 'Enums', Delegate: 'Delegates' }
 

@@ -45,7 +45,15 @@ describe('TypeScript port metadata', () => {
     expect(ts.workspaceCliAvailability).toBe('published')
     const cli = ts.packages?.find((entry) => entry.id === 'workspace')
     expect(cli).toMatchObject({ name: '@libtmux/workspace-cli', executable: 'tmux-workspace' })
-    expect(cli?.installs?.map(({ label }) => label)).toEqual(['npx', 'bunx', 'pnpm dlx', 'yarn dlx', 'npm -g', 'pnpm -g', 'bun -g'])
+    expect(cli?.installs?.map(({ label }) => label)).toEqual([
+      'npx',
+      'bunx',
+      'pnpm dlx',
+      'yarn dlx',
+      'npm -g',
+      'pnpm -g',
+      'bun -g',
+    ])
     expect(cli?.installs?.every(({ code }) => code.includes('@libtmux/workspace-cli'))).toBe(true)
   })
 })

@@ -67,9 +67,11 @@ export function memberSignals(
     }
     // A member can realise several concepts; the broadest one speaks for it.
     for (const [variant, target] of [symbol, ...(concept.variants?.[port] ?? [])].entries()) {
-      if (concept.parentObject) parentObjects.set(target, {
-        level: ['window', 'session', 'server'].indexOf(concept.parentObject), variant,
-      })
+      if (concept.parentObject)
+        parentObjects.set(target, {
+          level: ['window', 'session', 'server'].indexOf(concept.parentObject),
+          variant,
+        })
       if ((conceptPorts.get(target) ?? 0) < ports) {
         conceptPorts.set(target, ports)
         conceptIds.set(target, id)
@@ -85,7 +87,11 @@ export function memberSignals(
 const idOf = (s: ApiSymbol) => s.publicId ?? s.id
 
 /** Include explicit public re-exports without inferring access from private bases. */
-export function membersOf(model: ApiModelBase & { port?: string }, owner: ApiSymbol, signals = memberSignals(model.port ?? '')): ApiSymbol[] {
+export function membersOf(
+  model: ApiModelBase & { port?: string },
+  owner: ApiSymbol,
+  signals = memberSignals(model.port ?? ''),
+): ApiSymbol[] {
   const members = model.symbols.filter((symbol) => symbol.parent === owner.id)
   for (const id of signals.inheritedParents.get(idOf(owner)) ?? []) {
     const source = model.symbols.find((symbol) => idOf(symbol) === id)
@@ -161,7 +167,8 @@ export function compareMembers(signals: MemberSignals): (a: ApiSymbol, b: ApiSym
     rank(a) - rank(b) ||
     (memberTier(a, signals) === 'parent'
       ? signals.parentObjects.get(idOf(a))!.level - signals.parentObjects.get(idOf(b))!.level ||
-        signals.parentObjects.get(idOf(a))!.variant - signals.parentObjects.get(idOf(b))!.variant : 0) ||
+        signals.parentObjects.get(idOf(a))!.variant - signals.parentObjects.get(idOf(b))!.variant
+      : 0) ||
     Number(Boolean(a.inheritedFrom)) - Number(Boolean(b.inheritedFrom)) ||
     (signals.conceptPorts.get(idOf(b)) ?? 0) - (signals.conceptPorts.get(idOf(a)) ?? 0) ||
     (signals.conceptOrder.get(idOf(a)) ?? Infinity) - (signals.conceptOrder.get(idOf(b)) ?? Infinity) ||
