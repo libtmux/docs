@@ -59,7 +59,8 @@ struct Capture {
             guard let pane = try await server.panes().first else {
                 throw CaptureError.failed("The session has no pane")
             }
-            try await server.run("printf '\\nlibtmux capture ready\\n'", in: pane)
+            let command = "printf '\\nlibtmux capture ready\\n'"
+            try await server.run(command, in: pane)
             let clock = ContinuousClock()
             let deadline = clock.now.advanced(by: .seconds(5))
             var captured = false
@@ -73,27 +74,32 @@ struct Capture {
                 try await Task.sleep(for: .milliseconds(25))
             }
             guard captured else {
-                throw CaptureError.failed("Output did not arrive within five seconds")
+                throw CaptureError.failed(
+                    "Output did not arrive within five seconds"
+                )
             }
         } catch {
             failure = error
         }
 
+        let stderr = FileHandle.standardError
         var cleanupFailed = false
         if started {
             do { try await server.killServer() }
             catch {
-                FileHandle.standardError.write(Data("Stop tmux: \(error)\n".utf8))
+                stderr.write(Data("Stop tmux: \(error)\n".utf8))
                 cleanupFailed = true
             }
         }
         do { try FileManager.default.removeItem(at: directory) }
         catch {
-            FileHandle.standardError.write(Data("Remove socket: \(error)\n".utf8))
+            stderr.write(Data("Remove socket: \(error)\n".utf8))
             cleanupFailed = true
         }
         if let failure { throw failure }
-        if cleanupFailed { throw CaptureError.failed("Cleanup failed; see diagnostics") }
+        if cleanupFailed {
+            throw CaptureError.failed("Cleanup failed; see diagnostics")
+        }
     }
 }
 ```
