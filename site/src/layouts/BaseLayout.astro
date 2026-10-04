@@ -41,6 +41,8 @@ interface Props {
   portSlug?: string
   /** The page provides its own programming-language switcher. */
   pagePortSwitcher?: boolean
+  /** Match the header and notice to the page's documentation frame. */
+  documentationLayout?: 'prose' | 'reference'
   version?: string
   noindex?: boolean
   /** Include this page in the local search index. */
@@ -82,6 +84,7 @@ const {
   pagePath: requestedPagePath,
   portSlug,
   pagePortSwitcher = false,
+  documentationLayout,
   version: requestedVersion,
   noindex = false,
   searchable = true,
@@ -250,7 +253,7 @@ const githubUrl = githubPort?.source && githubPort.repo === githubRepo
     changing the token moved nothing, and the page stayed on slate-950 while
     every component around it followed the token.
   -->
-  <body class="min-h-screen antialiased">
+  <body class="min-h-screen antialiased" data-documentation-layout={documentationLayout}>
     {
       !bare && (
         <SiteHeader

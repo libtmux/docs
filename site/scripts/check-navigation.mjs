@@ -2,15 +2,20 @@ import assert from 'node:assert/strict'
 import { PORTS, productAvailable } from '../src/lib/ports.ts'
 
 async function checkNoticeAlignment(page, centered = false) {
-  const { noticeLeft, contentLeft } = await page.evaluate((landing) => {
+  const { noticeLeft, contentLeft, artworkLeft } = await page.evaluate((landing) => {
     const badge = document.querySelector('.prerelease-notice__badge')
     const content = document.querySelector(landing ? 'main' : '.site-header__mark')
+    const artwork = document.querySelector('[data-documentation-context] [data-surface-picker] > summary .surface-artwork')
     return {
       noticeLeft: badge.getBoundingClientRect().left,
       contentLeft: content.getBoundingClientRect().left + (landing ? parseFloat(getComputedStyle(content).paddingLeft) : 0),
+      artworkLeft: artwork?.getBoundingClientRect().left,
     }
   }, centered)
   assert(Math.abs(noticeLeft - contentLeft) <= 1, `${page.url()}: notice at ${noticeLeft}px aligns with ${centered ? 'landing content' : 'documentation header'} at ${contentLeft}px`)
+  if (artworkLeft !== undefined) {
+    assert(Math.abs(noticeLeft - artworkLeft) <= 1, `${page.url()}: notice at ${noticeLeft}px aligns with documentation artwork at ${artworkLeft}px`)
+  }
 }
 
 /** Surface selection changes the page tree without losing the port or version. */
@@ -172,6 +177,18 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
           assert(await reader.locator('[data-surface-picker] > summary').first().getAttribute('aria-label').then((label) => label.endsWith('Workspace Manager, Guides')),
             'History restores the selected surface and section')
           assert(await reader.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${width}: page has no horizontal overflow`)
+          await openPicker(picker, javaScriptEnabled)
+          if (javaScriptEnabled) await picker.locator('[data-surface-search]').fill('')
+          const core = group(picker, 'Core Library')
+          if (!(await core.evaluate((element) => element.open))) await core.locator(':scope > summary').click()
+          await core.getByRole('link', { name: 'Reference', exact: true }).click()
+          await reader.waitForURL(`${base}/go/latest/reference/`)
+          await checkNoticeAlignment(reader)
+          assert(await reader.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${width}: reference has no horizontal overflow`)
+          if (width === 320 || width === 1920) {
+            await reader.goto(`${base}/`, { waitUntil: 'load' })
+            await checkNoticeAlignment(reader, true)
+          }
         }
       } finally {
         await context.close()
