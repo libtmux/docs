@@ -6,10 +6,10 @@
     "sourceTree": "e96d4764638e6fcec75029a82bd11ecc638772f5",
     "program": "quickstart.py",
     "excerpt": {
-      "startLine": 15,
-      "endLine": 26,
-      "dedent": 4,
-      "importsEndLine": 8
+      "startLine": 1,
+      "endLine": 30,
+      "dedent": 0,
+      "importsEndLine": 0
     },
     "files": [
       {
@@ -68,10 +68,10 @@
     "sourceTree": "ce8ac2d6cbc167566b6a9d92e9fc52eb3b4092ba",
     "program": "quickstart.lua",
     "excerpt": {
-      "startLine": 15,
-      "endLine": 46,
-      "dedent": 4,
-      "importsEndLine": 1
+      "startLine": 1,
+      "endLine": 51,
+      "dedent": 0,
+      "importsEndLine": 0
     },
     "files": [
       {
@@ -99,10 +99,10 @@
     "sourceTree": "72aa97efc1e3efc3b8658edd07928b26818869b9",
     "program": "quickstart.ts",
     "excerpt": {
-      "startLine": 16,
-      "endLine": 32,
-      "dedent": 2,
-      "importsEndLine": 5
+      "startLine": 1,
+      "endLine": 47,
+      "dedent": 0,
+      "importsEndLine": 0
     },
     "files": [
       {
@@ -130,10 +130,10 @@
     "sourceTree": "865aef72a40135bade83eb5d44c0b78ea018a270",
     "program": "src/main.rs",
     "excerpt": {
-      "startLine": 6,
-      "endLine": 26,
+      "startLine": 1,
+      "endLine": 70,
       "dedent": 0,
-      "importsEndLine": 4
+      "importsEndLine": 0
     },
     "files": [
       {
@@ -171,10 +171,10 @@
     "sourceTree": "96e6d6d4f688bf26503e46a541a88d6fce71663c",
     "program": "quickstart.go",
     "excerpt": {
-      "startLine": 59,
-      "endLine": 76,
-      "dedent": 1,
-      "importsEndLine": 15
+      "startLine": 1,
+      "endLine": 99,
+      "dedent": 0,
+      "importsEndLine": 0
     },
     "files": [
       {
@@ -202,10 +202,10 @@
     "sourceTree": "342c76ca1ad7257b3655c7a47d7258b486b26975",
     "program": "src/main/java/Main.java",
     "excerpt": {
-      "startLine": 20,
-      "endLine": 37,
-      "dedent": 8,
-      "importsEndLine": 6
+      "startLine": 1,
+      "endLine": 39,
+      "dedent": 0,
+      "importsEndLine": 0
     },
     "files": [
       {
@@ -247,10 +247,10 @@
     "sourceTree": "342c76ca1ad7257b3655c7a47d7258b486b26975",
     "program": "src/main/kotlin/Main.kt",
     "excerpt": {
-      "startLine": 17,
-      "endLine": 31,
-      "dedent": 4,
-      "importsEndLine": 7
+      "startLine": 1,
+      "endLine": 32,
+      "dedent": 0,
+      "importsEndLine": 0
     },
     "files": [
       {
@@ -292,10 +292,10 @@
     "sourceTree": "342c76ca1ad7257b3655c7a47d7258b486b26975",
     "program": "src/main/scala/Main.scala",
     "excerpt": {
-      "startLine": 15,
-      "endLine": 25,
-      "dedent": 4,
-      "importsEndLine": 4
+      "startLine": 1,
+      "endLine": 27,
+      "dedent": 0,
+      "importsEndLine": 0
     },
     "files": [
       {
@@ -337,10 +337,10 @@
     "sourceTree": "2bed2dca445fd23ad3f627f0c8f8eba76436aeb4",
     "program": "app/Program.cs",
     "excerpt": {
-      "startLine": 26,
+      "startLine": 1,
       "endLine": 47,
       "dedent": 0,
-      "importsEndLine": 5
+      "importsEndLine": 0
     },
     "files": [
       {
@@ -377,16 +377,16 @@
     "sourceTree": "2bed2dca445fd23ad3f627f0c8f8eba76436aeb4",
     "program": "app/Program.fs",
     "excerpt": {
-      "startLine": 34,
-      "endLine": 80,
-      "dedent": 8,
-      "importsEndLine": 4
+      "startLine": 1,
+      "endLine": 83,
+      "dedent": 0,
+      "importsEndLine": 0
     },
     "files": [
       {
         "name": "app/Program.fs",
         "lang": "fsharp",
-        "code": "open System\nopen System.Threading\nopen LibTmux\nopen LibTmux.FSharp\n\nlet runAsync () =\n    task {\n        use deadline = new CancellationTokenSource(TimeSpan.FromSeconds 30.)\n        let token = deadline.Token\n\n        let options =\n            ServerConnectionOptions(\n                SocketName = \"fsharp-\" + Guid.NewGuid().ToString(\"N\"),\n                ConfigurationFile = \"/dev/null\",\n                TmuxBinaryPath =\n                    (Environment.GetEnvironmentVariable \"LIBTMUX_TMUX\"\n                     |> Option.ofObj\n                     |> Option.defaultValue \"tmux\")\n            )\n\n        use! owned = LibTmux.Server.CreateOwnedAsync(options, token)\n\n        for name in [ \"build\"; \"web\"; \"worker\" ] do\n            let! _ =\n                owned.Value.CreateSessionAsync(\n                    NewSessionRequest(Name = name, Command = \"/bin/sh\"),\n                    token\n                )\n\n            ()\n\n        let! server = LibTmux.Server.ConnectAsync(options, token)\n\n        // List and filter: tmux narrows the listing, then every row is rechecked.\n        // atMostOne is None when nothing matches and raises when several do.\n        let! build =\n            server\n            |> Server.sessions\n            |> Query.where (SessionFields.name |> Filter.eq \"build\")\n            |> Query.atMostOne token\n\n        let! others =\n            server\n            |> Server.sessions\n            |> Query.where (SessionFields.name |> Filter.ne \"build\")\n            |> Query.list token\n\n        printfn\n            \"other sessions: %s\"\n            (String.Join(\", \", [ for session in others -> session.Name ]))\n\n        match build with\n        | None -> printfn \"no build session\"\n        | Some session ->\n            let! panes = session |> Session.panes |> Query.list token\n            let pane = panes[0]\n\n            // Type a command and wait for what it prints, not for its echo.\n            let! started =\n                pane\n                |> Pane.sendAndWait\n                    token\n                    (TimeSpan.FromSeconds 10.)\n                    \"echo build started\"\n                    \"build started\"\n\n            // Run a command to its exit status and read what it printed.\n            let! result =\n                pane\n                |> Pane.run\n                    token\n                    (TimeSpan.FromSeconds 10.)\n                    \"printf 'ok\\\\n'; exit 3\"\n\n            printfn \"wait found: %b\" started.Found\n\n            printfn\n                \"run: exit %d, output %A\"\n                result.ExitStatus.Value\n                (List.ofSeq result.Output)\n    }\n\nrunAsync().GetAwaiter().GetResult()\n"
+        "code": "open System\nopen System.Threading\nopen LibTmux\nopen LibTmux.FSharp\n\nlet runAsync () =\n    task {\n        use deadline = new CancellationTokenSource(TimeSpan.FromSeconds 30.)\n        let token = deadline.Token\n\n        let options =\n            ServerConnectionOptions(\n                SocketName = \"fsharp-\" + Guid.NewGuid().ToString(\"N\"),\n                ConfigurationFile = \"/dev/null\",\n                TmuxBinaryPath =\n                    (Environment.GetEnvironmentVariable \"LIBTMUX_TMUX\"\n                     |> Option.ofObj\n                     |> Option.defaultValue \"tmux\")\n            )\n\n        use! owned = LibTmux.Server.CreateOwnedAsync(options, token)\n\n        for name in [ \"build\"; \"web\"; \"worker\" ] do\n            let! _ =\n                owned.Value.CreateSessionAsync(\n                    NewSessionRequest(Name = name, Command = \"/bin/sh\"),\n                    token\n                )\n\n            ()\n\n        let! server = LibTmux.Server.ConnectAsync(options, token)\n\n        // List and filter: tmux narrows the listing; every row is rechecked.\n        // atMostOne is None when nothing matches and raises when several do.\n        let! build =\n            server\n            |> Server.sessions\n            |> Query.where (SessionFields.name |> Filter.eq \"build\")\n            |> Query.atMostOne token\n\n        let! others =\n            server\n            |> Server.sessions\n            |> Query.where (SessionFields.name |> Filter.ne \"build\")\n            |> Query.list token\n\n        printfn\n            \"other sessions: %s\"\n            (String.Join(\", \", [ for session in others -> session.Name ]))\n\n        match build with\n        | None -> printfn \"no build session\"\n        | Some session ->\n            let! panes = session |> Session.panes |> Query.list token\n            let pane = panes[0]\n\n            // Type a command and wait for what it prints, not for its echo.\n            let! started =\n                pane\n                |> Pane.sendAndWait\n                    token\n                    (TimeSpan.FromSeconds 10.)\n                    \"echo build started\"\n                    \"build started\"\n\n            // Run a command to its exit status and read what it printed.\n            let! result =\n                pane\n                |> Pane.run\n                    token\n                    (TimeSpan.FromSeconds 10.)\n                    \"printf 'ok\\\\n'; exit 3\"\n\n            printfn \"wait found: %b\" started.Found\n\n            printfn\n                \"run: exit %d, output %A\"\n                result.ExitStatus.Value\n                (List.ofSeq result.Output)\n    }\n\nrunAsync().GetAwaiter().GetResult()\n"
       },
       {
         "name": "app/Example.fsproj",
@@ -417,10 +417,10 @@
     "sourceTree": "f6bc4187d0f44ae265e2937f4a6072572d4c5f58",
     "program": "main.cpp",
     "excerpt": {
-      "startLine": 16,
-      "endLine": 65,
-      "dedent": 2,
-      "importsEndLine": 3
+      "startLine": 1,
+      "endLine": 66,
+      "dedent": 0,
+      "importsEndLine": 0
     },
     "files": [
       {
@@ -452,10 +452,10 @@
     "sourceTree": "2b5161e4fb6850163cdde957602aa75524abe315",
     "program": "Sources/Main.swift",
     "excerpt": {
-      "startLine": 13,
-      "endLine": 30,
-      "dedent": 8,
-      "importsEndLine": 2
+      "startLine": 1,
+      "endLine": 37,
+      "dedent": 0,
+      "importsEndLine": 0
     },
     "files": [
       {

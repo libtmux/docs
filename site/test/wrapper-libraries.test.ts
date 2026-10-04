@@ -114,11 +114,17 @@ describe('quickstart display formatting', () => {
     expect(HOME_PROOF.examples.map((example) => example.port).sort()).toEqual(Object.keys(HOME_EXAMPLES).sort())
   })
 
-  it.each(PORTS)('$slug fits 88 columns, including expanded tabs', ({ slug }) => {
+  it.each(PORTS)('$slug displays its setup and cleanup along with the task', ({ slug }) => {
+    const example = HOME_EXAMPLES[slug as keyof typeof HOME_EXAMPLES]
+    const program = example.files.find((file) => file.name === example.program)!
+    expect(QUICKSTARTS[slug]!.code).toBe(program.code.trimEnd())
+  })
+
+  it.each(PORTS)('$slug fits 80 columns, including expanded tabs', ({ slug }) => {
     const code = QUICKSTARTS[slug]?.code
     expect(code, slug).toBeTruthy()
     for (const [index, line] of code!.split('\n').entries()) {
-      expect(columns(line), `${slug}:${index + 1} ${line}`).toBeLessThanOrEqual(88)
+      expect(columns(line), `${slug}:${index + 1} ${line}`).toBeLessThanOrEqual(80)
     }
   })
 
