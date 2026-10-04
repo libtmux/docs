@@ -312,7 +312,7 @@
       "files": [
         {
           "name": "Connect.scala",
-          "sha256": "cbca6ab2fdb96a5b4291cdc9003a17d32a098c2b5f7cff159b03bd4ab63ca1a5"
+          "sha256": "4b471b0afcaba7699b6b2cc5d888e597e62903410a4aa25b1fef3cfd9f0a152f"
         },
         {
           "name": "build.gradle.kts",
