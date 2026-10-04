@@ -37,7 +37,8 @@ import java.util.Objects;
 
 public final class Connect {
     public static void main(String[] args) {
-        String socket = Objects.requireNonNull(System.getenv("LIBTMUX_SOCKET_PATH"),
+        String socket = Objects.requireNonNull(
+                System.getenv("LIBTMUX_SOCKET_PATH"),
                 "Set LIBTMUX_SOCKET_PATH to an existing socket");
         ServerConfig config = ServerConfig.builder()
                 .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
@@ -47,7 +48,8 @@ public final class Connect {
             Session session = server.sessions().stream()
                     .filter(candidate -> candidate.name().equals("work"))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("The work session does not exist"));
+                    .orElseThrow(() -> new IllegalStateException(
+                            "The work session does not exist"));
             System.out.println(session.name());
         }
     }
