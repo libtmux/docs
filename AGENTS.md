@@ -11,7 +11,10 @@ requested work.
 
 - Environment, Oxlint, formatting, tests, and pull requests:
   [CONTRIBUTING.md](CONTRIBUTING.md).
-- Documentation, user-facing text, comments, and commits: [WRITING.md](WRITING.md).
+- Documentation, user-facing text, comments, commits, and any code example
+  (example programs, console recipes, Markdown code blocks):
+  [WRITING.md](WRITING.md), and its [Documented examples that
+  run](WRITING.md#documented-examples-that-run) section for code a reader sees.
 
 Each guide is the single home for its subject.
 
