@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { PORTS } from '../src/lib/ports.ts'
 import HOME_PROOF from '../test/fixtures/home-examples.json' with { type: 'json' }
 import { createHash } from 'node:crypto'
+import { checkHomeHover } from './check-home-hover.mjs'
 
 /** Only the homepage trigger changes artwork; reset retains the code glyph. */
 export async function checkHomeLanguageIcon(page, port = null) {
@@ -286,5 +287,6 @@ export async function checkHomeLauncher(browser, base) {
   } finally {
     await noScript.close()
   }
+  await checkHomeHover(browser, base)
   console.log('Homepage: 13 languages, owned solutions, shared URLs, reset, blocked storage, prompt tasks/copy, shared themes, container sizing, keyboard and no-JS PASS')
 }

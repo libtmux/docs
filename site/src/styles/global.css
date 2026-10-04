@@ -2,8 +2,8 @@
    layer so Tailwind utilities keep cascade priority over it; unlayered
    imports would beat every layered rule regardless of specificity.
 
-   Motion: this site is intentionally motionless — no transitions,
-   animations, or smooth scrolling anywhere. */
+   Navigation is motionless. Homepage hover previews have a brief fade,
+   disabled when the reader prefers reduced motion. */
 @import "tailwindcss";
 @import "./gp-sphinx-tokens.css";
 @import "./brand.css";
@@ -907,6 +907,13 @@ body[data-documentation-layout='reference'] {
 
 .scheme-switch__option:hover {
   background: color-mix(in oklab, var(--topnav-background), var(--topnav-text-color) 10%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html[data-home-scheme-fade] body,
+  html[data-home-scheme-fade] body :where(*) {
+    transition: background-color 180ms ease-out, color 180ms ease-out, border-color 180ms ease-out;
+  }
 }
 
 .scheme-switch__icon {

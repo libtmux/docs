@@ -511,6 +511,8 @@ const activePortRules = items
     supported: boolean
   }
 
+  import { HOME_PORT_PREVIEW_EVENT } from '../../lib/home-hover-preview'
+
   const STORAGE_KEY = 'libtmux-docs.package-install.port'
   const SYNC_EVENT = 'lm-pkg-install:change'
   const TOPIC_KEY = 'libtmux-docs.agent-prompt.topic'
@@ -799,6 +801,10 @@ const activePortRules = items
   })
 
   // The package picker and this one share a language, in both directions.
+  window.addEventListener(HOME_PORT_PREVIEW_EVENT, ((event: CustomEvent<{ slug: string }>) => {
+    widgets().forEach((widget) => selectPort(widget, event.detail.slug, false))
+  }) as EventListener)
+
   window.addEventListener(SYNC_EVENT, ((event: CustomEvent<{ origin: HTMLElement; slug: string }>) => {
     widgets().forEach((widget) => {
       if (widget === event.detail.origin) return

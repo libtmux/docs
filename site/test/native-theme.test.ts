@@ -43,6 +43,18 @@ afterEach(async () => {
 })
 
 describe('theme preference across Astro and native pages', () => {
+  it.each(['light', 'dark', 'system'])('previews %s without changing the saved Astro preference', (preview) => {
+    const { window } = page({ 'color-scheme': 'dark' }, 'light')
+    window.document.documentElement.setAttribute('data-home-scheme-preview', preview)
+    astro(window)
+    expect(window.document.documentElement.getAttribute('data-theme-mode')).toBe(preview === 'system' ? 'light' : preview)
+    expect(window.document.documentElement.getAttribute('data-color-scheme')).toBe('dark')
+    expect(window.localStorage.getItem('color-scheme')).toBe('dark')
+    window.document.documentElement.removeAttribute('data-home-scheme-preview')
+    window.eval('applyTheme()')
+    expect(window.document.documentElement.getAttribute('data-theme-mode')).toBe('dark')
+  })
+
   it.each([
     ['', '', null],
     ['', 'ruby', 'ruby'],

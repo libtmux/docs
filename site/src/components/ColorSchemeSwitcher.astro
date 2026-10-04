@@ -76,7 +76,10 @@ const OPTIONS = [
 </fieldset>
 
 <script>
+  import { bindHomeHoverPreview, HOME_PREVIEW_FADE } from '../lib/home-hover-preview'
+
   const STORAGE_KEY = 'color-scheme'
+  let controller: AbortController | undefined
 
   /**
    * Write the choice, then let the script that owns the resolution apply it.
@@ -88,6 +91,7 @@ const OPTIONS = [
    * copy of that would be a second thing to keep true.
    */
   function choose(value: string) {
+    document.documentElement.removeAttribute('data-home-scheme-preview')
     try {
       localStorage.setItem(STORAGE_KEY, value)
     } catch {
@@ -98,25 +102,49 @@ const OPTIONS = [
   }
 
   function bind() {
+    controller?.abort()
+    controller = new AbortController()
+    const { signal } = controller
+    const home = document.querySelector('[data-home-launcher]')
+    let fadeTimer: ReturnType<typeof setTimeout> | undefined
+    const paintPreview = (value: string | null) => {
+      const root = document.documentElement
+      clearTimeout(fadeTimer)
+      root.removeAttribute('data-home-scheme-fade')
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        root.setAttribute('data-home-scheme-fade', '')
+        fadeTimer = setTimeout(() => root.removeAttribute('data-home-scheme-fade'), HOME_PREVIEW_FADE)
+      }
+      if (value) root.setAttribute('data-home-scheme-preview', value)
+      else root.removeAttribute('data-home-scheme-preview')
+      window.__applyTheme?.()
+    }
+    const preview = home ? bindHomeHoverPreview({
+      options: [...document.querySelectorAll<HTMLElement>('[data-scheme-switch] [data-scheme]')],
+      show: (option) => paintPreview(option.dataset.scheme!),
+      restore: () => paintPreview(null),
+      signal,
+    }) : undefined
+    const clearFade = () => {
+      clearTimeout(fadeTimer)
+      document.documentElement.removeAttribute('data-home-scheme-fade')
+    }
+    signal.addEventListener('abort', clearFade, { once: true })
+    document.addEventListener('astro:before-swap', clearFade, { signal })
     for (const input of document.querySelectorAll<HTMLInputElement>(
       '[data-scheme-switch] input[type="radio"]',
     )) {
       // The server marked `system` checked; storage may say otherwise, and
       // the control has to agree with the highlight the CSS is already
       // showing or the next arrow-key press starts from the wrong option.
-      const stored = (() => {
-        try {
-          return localStorage.getItem(STORAGE_KEY)
-        } catch {
-          return null
-        }
-      })()
-      if (stored) input.checked = input.value === stored
-      if (input.dataset.bound) continue
-      input.dataset.bound = 'yes'
+      const stored = document.documentElement.getAttribute('data-color-scheme') ?? 'system'
+      input.checked = input.value === stored
       input.addEventListener('change', () => {
-        if (input.checked) choose(input.value)
-      })
+        if (input.checked) {
+          preview?.commit()
+          choose(input.value)
+        }
+      }, { signal })
     }
   }
 
