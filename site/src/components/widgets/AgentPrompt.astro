@@ -2,6 +2,7 @@
 import { PORTS } from '../../lib/ports'
 import { promptInputs } from '../../lib/registry'
 import { highlightPrompt } from '../../lib/prompt-highlight'
+import { promptThemeRules } from '../../lib/highlight'
 import { composeFromParts, portParts, sharedParts, TOPICS, VERSION_SENTINEL } from '../../lib/prompts'
 import { DEFAULT_LOCALE, localeRoot } from '../../i18n/locales'
 import { SITE_ROOT } from '../../lib/site-root'
@@ -45,6 +46,8 @@ interface Props {
   defaultPort?: string
   /** Active topic on load. */
   defaultTopic?: string
+  /** Hide the tabs when the page supplies a shared language picker. */
+  showLanguageTabs?: boolean
   variant?: 'full' | 'compact'
   /**
    * Where the copy button sits. `overlay`, the default, floats it over the
@@ -54,7 +57,7 @@ interface Props {
   copyButton?: 'gutter' | 'overlay'
 }
 
-const { ports, defaultPort, defaultTopic = 'setup', variant = 'full', copyButton = 'overlay' } = Astro.props as Props
+const { ports, defaultPort, defaultTopic = 'setup', showLanguageTabs = true, variant = 'full', copyButton = 'overlay' } = Astro.props as Props
 // A page that names its task, such as /prompts/<topic>/, opens on it. The
 // others open on the task the reader last chose.
 const topicPinned = 'defaultTopic' in Astro.props
@@ -153,7 +156,7 @@ const activePortRules = items
   data-root={SITE_ROOT || '/'}
 >
   {
-    items.length > 1 && (
+    showLanguageTabs && items.length > 1 && (
       <div class="lm-agent-prompt__tabs" role="tablist" aria-label="Language">
         {items.map((p) => (
           <button
@@ -226,21 +229,17 @@ const activePortRules = items
    * for why that matters against Tailwind v4's preflight. */
   .lm-agent-prompt {
     --lm-agent-prompt-bg: var(--background-color);
-    --lm-agent-prompt-bg-tabs: #f1f5f9; /* slate-100 */
-    --lm-agent-prompt-border: #e2e8f0; /* slate-200 */
+    --lm-agent-prompt-bg-tabs: var(--color-surface);
+    --lm-agent-prompt-border: var(--color-edge);
     --lm-agent-prompt-fg: var(--text-color);
-    --lm-agent-prompt-fg-muted: #64748b; /* slate-500 */
+    --lm-agent-prompt-fg-muted: var(--color-muted);
     --lm-agent-prompt-accent: var(--theme-primary);
     --lm-agent-prompt-hover: rgb(0 0 0 / 4%);
-    --lm-agent-prompt-code-bg: #f8fafc; /* slate-50 */
     --lm-agent-prompt-mono: var(--font-ibm-plex-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
     /* slate-300 / slate-600, matching Sidebar.astro and TableOfContents so
      * the site has one scrollbar rather than three. */
     --lm-agent-prompt-scroll: rgb(203 213 225);
     --lm-agent-prompt-scroll-hover: rgb(148 163 184);
-    --lm-agent-prompt-url: #1d4ed8; /* blue-700 */
-    --lm-agent-prompt-cmd: #047857; /* emerald-700 */
-    --lm-agent-prompt-key: #7c3aed; /* violet-600 */
 
     border: 1px solid var(--lm-agent-prompt-border);
     border-radius: 0.375rem;
@@ -251,16 +250,9 @@ const activePortRules = items
   }
 
   html[data-theme-mode='dark'] .lm-agent-prompt {
-    --lm-agent-prompt-bg-tabs: #1e293b; /* slate-800 */
-    --lm-agent-prompt-border: #1e293b;
-    --lm-agent-prompt-fg-muted: #94a3b8; /* slate-400 */
     --lm-agent-prompt-hover: rgb(255 255 255 / 6%);
-    --lm-agent-prompt-code-bg: #0f172a; /* slate-900 */
     --lm-agent-prompt-scroll: rgb(71 85 105);
     --lm-agent-prompt-scroll-hover: rgb(100 116 139);
-    --lm-agent-prompt-url: #7dd3fc; /* sky-300 */
-    --lm-agent-prompt-cmd: #6ee7b7; /* emerald-300 */
-    --lm-agent-prompt-key: #c4b5fd; /* violet-300 */
   }
 
   .lm-agent-prompt__tabs {
@@ -401,15 +393,15 @@ const activePortRules = items
      * the page, and it stays selectable in one gesture. */
     max-height: 26rem;
     overflow: auto;
-    padding: 0.9rem 0.5rem 0.9rem 1rem;
+    padding: 1rem;
   }
 
   .lm-agent-prompt__code code {
     font-family: var(--lm-agent-prompt-mono);
-    font-size: 0.78rem;
-    line-height: 1.5;
+    font-size: 0.875rem;
+    line-height: 1.7;
     white-space: pre;
-    color: var(--lm-agent-prompt-fg);
+    color: var(--lm-agent-prompt-code-fg);
   }
 
   .lm-agent-prompt__code pre::-webkit-scrollbar {
@@ -434,10 +426,10 @@ const activePortRules = items
    * reader looks for: what to run, what to read, and what the facts are. */
   .lm-agent-prompt__code .lm-ph-url { color: var(--lm-agent-prompt-url); }
   .lm-agent-prompt__code .lm-ph-cmd { color: var(--lm-agent-prompt-cmd); }
-  .lm-agent-prompt__code .lm-ph-code { color: var(--lm-agent-prompt-cmd); }
+  .lm-agent-prompt__code .lm-ph-code { color: var(--lm-agent-prompt-inline); }
   .lm-agent-prompt__code .lm-ph-key { color: var(--lm-agent-prompt-key); }
-  .lm-agent-prompt__code .lm-ph-heading { color: var(--lm-agent-prompt-fg); font-weight: 600; }
-  .lm-agent-prompt__code .lm-ph-marker { color: var(--lm-agent-prompt-fg-muted); }
+  .lm-agent-prompt__code .lm-ph-heading { color: var(--lm-agent-prompt-code-fg); font-weight: 600; }
+  .lm-agent-prompt__code .lm-ph-marker { color: var(--lm-agent-prompt-marker); }
 
   /* In a gutter, level with the first line, with space on both sides so a
    * line cut off at the gutter's edge does not touch the button. */
@@ -492,15 +484,11 @@ const activePortRules = items
     padding-right: 3.25rem;
   }
 
-  @media (max-width: 40rem) {
-    .lm-agent-prompt__code code {
-      font-size: 0.72rem;
-    }
-  }
 </style>
 
 {/* Generated from the ports actually rendered here, not hand-typed. */}
 <style is:global set:html={activePortRules} />
+<style is:global set:html={promptThemeRules()} />
 
 <script>
   // The browser composes with the same function the routes and the tests use.

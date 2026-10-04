@@ -5,8 +5,8 @@ import { branding } from '../lib/branding'
 import { withRoot } from '../lib/site-root'
 import '../styles/documentation-picker.css'
 
-interface Props { entries: PagePortLink[]; portSlug?: string }
-const { entries, portSlug } = Astro.props
+interface Props { entries: PagePortLink[]; portSlug?: string; label?: string }
+const { entries, portSlug, label } = Astro.props
 const current = entries.find((entry) => entry.port === portSlug)
 const name = current?.name ?? PORT_BY_SLUG[portSlug ?? '']?.name ?? 'In other ports'
 const shortName = PORT_BY_SLUG[portSlug ?? '']?.shortName ?? name
@@ -20,7 +20,7 @@ const known = new Set(families.flatMap((family) => family.ports))
 families.push({ label: 'Other languages', ports: entries.filter((entry) => !known.has(entry.port)).map((entry) => entry.port) })
 ---
 <details class="doc-picker" data-page-port-switcher data-doc-picker>
-  <summary aria-label={`${name}: this page in other programming languages`}>
+  <summary aria-label={label ?? `${name}: this page in other programming languages`}>
     <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="m5 4-4 4 4 4m6-8 4 4-4 4M9.5 2l-3 12" stroke-linecap="round" stroke-linejoin="round" /></svg>
     <span class="page-port-name">{name}</span><span class="page-port-short-name" aria-hidden="true">{shortName}</span>
     <svg class="doc-picker-caret" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
@@ -38,6 +38,7 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
         <h3>{family.label}</h3>
         <div class="doc-picker-options">
           {ports.map((entry) => entry.links.length ? entry.links.map((link) => <a class="doc-picker-option" href={link.href}
+            data-port={entry.port} data-port-name={entry.name} data-port-short-name={PORT_BY_SLUG[entry.port]?.shortName ?? entry.name}
             data-picker-option data-match={`${entry.port} ${entry.name} ${PORT_BY_SLUG[entry.port]?.shortName ?? ''} ${link.label ?? ''}`}
             aria-current={entry.port === portSlug ? 'page' : undefined}>
             <img class="port-artwork" src={withRoot(branding(entry.port).asset('logo.svg'))} width="26" height="26" alt="" />

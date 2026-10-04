@@ -10,6 +10,7 @@ import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
 import { checkApiExampleOwnership, checkApiNavigation, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkNativeLayout } from './check-native-layout.mjs'
 import { checkReferencePreferences, checkGlobalHeader } from './check-reference-preferences.mjs'
+import { checkHomeLauncher } from './check-home-launcher.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
@@ -19,6 +20,7 @@ const signaturePorts = apiSignaturesOnly ? API_MODEL_PORTS
   : API_MODEL_PORTS.filter((port) => ['py', 'ts'].includes(port.slug))
 const referencePreferencesOnly = process.argv.includes('--reference-preferences')
 const globalHeaderOnly = process.argv.includes('--global-header')
+const homeLauncherOnly = process.argv.includes('--home-launcher')
 const documentationNavigationOnly = process.argv.includes('--documentation-navigation')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 
@@ -552,7 +554,9 @@ try {
   if (!driver) throw new Error(`Unknown browser: ${engine}`)
   browser = await driver.launch(engine === 'chromium' ? { channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL } : {})
   await ready
-  if (keywordHelpOnly) {
+  if (homeLauncherOnly) {
+    await checkHomeLauncher(browser, base)
+  } else if (keywordHelpOnly) {
     await retryReload(() => checkKeywordHelp(browser, base))
   } else if (apiSignaturesOnly) {
     await checkSignatureLayouts(browser, base)
@@ -591,6 +595,7 @@ try {
       .then(() => null, (error) => error)
     const preferences = checkReferencePreferences(browser, base).then(() => null, (error) => error)
     const globalHeader = checkGlobalHeader(browser, base).then(() => null, (error) => error)
+    const homeLauncher = checkHomeLauncher(browser, base).then(() => null, (error) => error)
     const documentationNavigation = retryReload(() => checkDocumentationNavigation(browser, base)).then(() => null, (error) => error)
     const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     apiNavigationPage.setDefaultTimeout(10000)
@@ -851,7 +856,7 @@ try {
     console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
     const failures = (await Promise.all([
       navigation, apiExamples, reference, preferences, globalHeader, apiNavigation,
-      clipboard, nativeLayout, documentationNavigation,
+      clipboard, nativeLayout, documentationNavigation, homeLauncher,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
     await navigationPage.close()

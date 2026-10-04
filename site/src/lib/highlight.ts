@@ -43,6 +43,28 @@ const LANGS = [
  */
 const THEMES = { light: 'github-light', dark: 'github-dark' }
 
+/** Give the dynamic prompt tokens the same palette as the code highlighter. */
+export function promptThemeRules(): string {
+  return shellThemes().map((theme) => {
+    const foreground = theme.colors?.['editor.foreground']
+    const background = theme.colors?.['editor.background']
+    if (!foreground || !background) throw new Error(`Prompt theme ${theme.name} has no editor colors`)
+    const token = (scope: string) => [...theme.tokenColors].reverse().find((rule) =>
+      (Array.isArray(rule.scope) ? rule.scope : [rule.scope]).includes(scope),
+    )?.settings.foreground ?? foreground
+    const selector = theme.type === 'dark' ? 'html[data-theme-mode="dark"]' : 'html:not([data-theme-mode="dark"])'
+    return `${selector} .lm-agent-prompt {
+      --lm-agent-prompt-code-bg: ${background};
+      --lm-agent-prompt-code-fg: ${foreground};
+      --lm-agent-prompt-url: ${token('support')};
+      --lm-agent-prompt-cmd: ${foreground};
+      --lm-agent-prompt-inline: ${token('string')};
+      --lm-agent-prompt-key: ${token('entity')};
+      --lm-agent-prompt-marker: ${token('keyword')};
+    }`
+  }).join('\n')
+}
+
 async function highlighter(): Promise<Highlighter> {
   instance ??= createHighlighter({
     // Registered under the names in `THEMES`, with plain Bash arguments.

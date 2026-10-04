@@ -43,6 +43,8 @@ const brand = branding(portSlug, pagePath)
   <div class="site-header__bar">
     <a href={withRoot('/')} class="site-header__mark font-mono text-lg font-semibold tracking-tight"><img src={withRoot(brand.asset('logo.svg'))} width="28" height="28" alt="" aria-hidden="true" />libtmux</a>
 
+    <slot name="navigation" />
+
     <div class="site-header__spacer"></div>
 
     {/* Keep search and colour controls visible at every width. */}
