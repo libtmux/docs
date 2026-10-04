@@ -167,7 +167,8 @@ await pane.unsetOption("automatic-rename");
 ```
 
 ```go
-if err := window.SetOption(ctx, "automatic-rename", "off", tmux.SetOptionOptions{}); err != nil {
+set := tmux.SetOptionOptions{}
+if err := window.SetOption(ctx, "automatic-rename", "off", set); err != nil {
     return fmt.Errorf("set automatic rename: %w", err)
 }
 options, err := window.Options(ctx)
@@ -176,7 +177,8 @@ if err != nil {
 }
 value, present := options.AutomaticRename().Get()
 fmt.Println("automatic rename:", value, "present:", present)
-if err := window.UnsetOption(ctx, "automatic-rename", tmux.UnsetOptionOptions{}); err != nil {
+unset := tmux.UnsetOptionOptions{}
+if err := window.UnsetOption(ctx, "automatic-rename", unset); err != nil {
     return fmt.Errorf("unset automatic rename: %w", err)
 }
 ```
@@ -369,7 +371,8 @@ await session.showHooks();
 ```
 
 ```go
-if err := session.SetHook(ctx, "session-renamed", "display-message 'renamed'"); err != nil {
+hook := "display-message 'renamed'"
+if err := session.SetHook(ctx, "session-renamed", hook); err != nil {
     return fmt.Errorf("set session hook: %w", err)
 }
 value, present, err := session.RawHook(ctx, "session-renamed")
@@ -390,7 +393,8 @@ session.hooks().all();
 ```
 
 ```csharp
-await session.Hooks.SetAsync(new SetHookRequest("session-renamed", "display-message 'renamed'"));
+SetHookRequest hook = new("session-renamed", "display-message 'renamed'");
+await session.Hooks.SetAsync(hook);
 await session.Hooks.GetAllAsync();
 ```
 
@@ -400,8 +404,10 @@ session.hooks(); // No session unset helper is listed above.
 ```
 
 ```swift
-try await server.setHook("session-renamed", to: "display-message 'renamed'", in: .session(session.id.rawValue))
-try await server.hooks(.session(session.id.rawValue))
+let id = session.id.rawValue
+let command = "display-message 'renamed'"
+try await server.setHook("session-renamed", to: command, in: .session(id))
+try await server.hooks(.session(id))
 ```
 
 <a id="window-and-pane-hook-scopes-are-mostly-fiction"></a>
