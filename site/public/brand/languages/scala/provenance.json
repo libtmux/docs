@@ -1,0 +1,22 @@
+{
+  "name": "Scala",
+  "asset": "icon.svg",
+  "sourceUrl": "https://www.scala-lang.org/resources/safari-pinned-tab.svg",
+  "resolvedUrl": "https://www.scala-lang.org/resources/safari-pinned-tab.svg",
+  "sourcePage": "https://github.com/scala/scala-lang/blob/06f69fd1db55358ba531d8c52f6740f118357f23/resources/safari-pinned-tab.svg",
+  "retrievedAt": "2026-10-04T14:52:42+00:00",
+  "sha256": "5aeef67e960076d5d37e767f9b64dd5fd942ac6deefadcda32f128e3a7ce2f5e",
+  "copyright": "Copyright EPFL, as stated by Martin Odersky in the linked Scala user discussion. No artwork copyright year is specified.",
+  "license": {
+    "name": "General artwork license unresolved; historical noncommercial logo-use permission",
+    "urls": [
+      "https://groups.google.com/g/scala-user/c/bCC-R0FQn1w",
+      "https://users.scala-lang.org/t/using-scala-logo/6332",
+      "https://github.com/scala/scala-lang/issues/1040"
+    ],
+    "notes": "The historical policy generally permits noncommercial Scala promotion. The training discussion requires no implied endorsement. The explicit-license issue remains open as of retrieval; do not label this SVG MIT, CC0, or share-alike licensed."
+  },
+  "modifications": "None. The downloaded SVG bytes are preserved.",
+  "upstreamRevision": "06f69fd1db55358ba531d8c52f6740f118357f23",
+  "identicalPinnedSource": "https://raw.githubusercontent.com/scala/scala-lang/06f69fd1db55358ba531d8c52f6740f118357f23/resources/safari-pinned-tab.svg"
+}
