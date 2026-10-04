@@ -27,7 +27,8 @@ Use an empty directory on Linux with Git, tmux 3.2a or newer, and .NET SDK 10.0.
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(Example).fs" />
-    <ProjectReference Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
+    <ProjectReference
+      Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
   </ItemGroup>
 </Project>
 ```
@@ -58,7 +59,8 @@ trap 'exit 1' HUP INT TERM
 
 unset TMUX TMUX_PANE
 export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
+"$binary" -S "$socket" -f /dev/null \
+    new-session -d -s work-one -n editor /bin/cat
 "$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
 "$@"
 "$binary" -S "$socket" has-session -t '=work-one'
@@ -95,22 +97,32 @@ let run () = task {
     let! captured = server |> Server.capture token SnapshotDepth.Sessions
     let prefix = Filter.startsWith "work-" SessionFields.name
     let matching = captured.Sessions |> Query.matching prefix
-    let names = matching |> Seq.map (fun session -> session.Name) |> Seq.sort |> Seq.toList
+    let names =
+        matching
+        |> Seq.map (fun session -> session.Name)
+        |> Seq.sort
+        |> Seq.toList
     if names <> [ "work-one"; "work-two" ] then failwith "Unexpected sessions"
     printfn "%s" (String.concat ", " names)
-    let native = captured.Sessions |> Seq.filter (fun session -> session.Name.StartsWith("work-"))
-    if Seq.length native <> matching.Count then failwith "Local filters disagree"
+    let native =
+        captured.Sessions
+        |> Seq.filter (fun session -> session.Name.StartsWith("work-"))
+    if Seq.length native <> matching.Count then
+        failwith "Local filters disagree"
     let onlyOne = Filter.allOf [
         Filter.startsWith "work-" SessionFields.name
         Filter.eq "work-one" SessionFields.name
     ]
     let selected = captured.Sessions |> Query.matching onlyOne
-    if selected.Count <> 1 || selected[0].Name <> "work-one" then failwith "Wrong AND result"
+    if selected.Count <> 1 || selected[0].Name <> "work-one" then
+        failwith "Wrong AND result"
     let either = Filter.oneOf [ "work-one"; "work-two" ] SessionFields.name
-    if (captured.Sessions |> Query.matching either).Count <> 2 then failwith "Wrong OR result"
+    let eitherMatches = captured.Sessions |> Query.matching either
+    if eitherMatches.Count <> 2 then failwith "Wrong OR result"
     let excluded = Filter.eq "work-one" SessionFields.name |> Filter.negate
     let remaining = captured.Sessions |> Query.matching excluded
-    if remaining.Count <> 1 || remaining[0].Name <> "work-two" then failwith "Wrong NOT result"
+    if remaining.Count <> 1 || remaining[0].Name <> "work-two" then
+        failwith "Wrong NOT result"
 }
 
 [<EntryPoint>]
@@ -125,7 +137,8 @@ let main _ =
 
 ```console
 $ dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local \
-  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath="$PWD/.packages" &&
+    -p:DisableImplicitLibraryPacksFolder=true \
+    -p:RestorePackagesPath="$PWD/.packages" &&
   sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local
 ```
 
@@ -155,10 +168,12 @@ let run () = task {
     let! server = LibTmux.Server.ConnectAsync(
         ServerConnectionOptions(SocketPath = socket), token)
     do! server |> Control.withSession token (fun control -> task {
-        let command = TmuxCommand.Create("list-sessions", "-F", "#{session_name}")
+        let command =
+            TmuxCommand.Create("list-sessions", "-F", "#{session_name}")
         let! lines = control.SendAsync(command, token)
         let names = lines |> Seq.sort |> Seq.toList
-        if names <> [ "work-one"; "work-two" ] then failwith "Unexpected sessions"
+        if names <> [ "work-one"; "work-two" ] then
+            failwith "Unexpected sessions"
         printfn "%s" (String.concat ", " names)
     })
     let! captured = server |> Server.capture token SnapshotDepth.Sessions
@@ -178,7 +193,8 @@ let main _ =
 
 ```console
 $ dotnet build Query.fsproj --maxcpucount:1 -p:Example=Control \
-  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath="$PWD/.packages" &&
+    -p:DisableImplicitLibraryPacksFolder=true \
+    -p:RestorePackagesPath="$PWD/.packages" &&
   sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Control
 ```
 
