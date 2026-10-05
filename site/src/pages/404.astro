@@ -64,27 +64,26 @@ const portDefaults: Record<string, string> = (() => {
     <script is:inline type="application/json" id="port-slugs" set:html={JSON.stringify(portSlugs)} />
     <script is:inline type="application/json" id="port-defaults" set:html={JSON.stringify(portDefaults)} />
   </main>
-</BaseLayout>
+  <script>
+    const slugsEl = document.getElementById('port-slugs')
+    const versionEl = document.getElementById('port-defaults')
+    if (slugsEl?.textContent && versionEl?.textContent) {
+      const slugs: string[] = JSON.parse(slugsEl.textContent)
+      const portDefaults: Record<string, string> = JSON.parse(versionEl.textContent)
 
-<script>
-  const slugsEl = document.getElementById('port-slugs')
-  const versionEl = document.getElementById('port-defaults')
-  if (slugsEl?.textContent && versionEl?.textContent) {
-    const slugs: string[] = JSON.parse(slugsEl.textContent)
-    const portDefaults: Record<string, string> = JSON.parse(versionEl.textContent)
-
-    const [firstSegment] = location.pathname.replace(/^\/+/, '').split('/')
-    if (firstSegment && slugs.includes(firstSegment)) {
-      const hint = document.getElementById('port-hint')
-      const nameEl = document.getElementById('port-hint-name')
-      const rootLink = document.getElementById('port-hint-root') as HTMLAnchorElement | null
-      const versionLink = document.getElementById('port-hint-version') as HTMLAnchorElement | null
-      if (hint && nameEl && rootLink && versionLink) {
-        nameEl.textContent = firstSegment
-        rootLink.href = `/${firstSegment}/`
-        versionLink.href = `/${firstSegment}/${portDefaults[firstSegment] ?? 'latest'}/`
-        hint.classList.remove('hidden')
+      const [firstSegment] = location.pathname.replace(/^\/+/, '').split('/')
+      if (firstSegment && slugs.includes(firstSegment)) {
+        const hint = document.getElementById('port-hint')
+        const nameEl = document.getElementById('port-hint-name')
+        const rootLink = document.getElementById('port-hint-root') as HTMLAnchorElement | null
+        const versionLink = document.getElementById('port-hint-version') as HTMLAnchorElement | null
+        if (hint && nameEl && rootLink && versionLink) {
+          nameEl.textContent = firstSegment
+          rootLink.href = `/${firstSegment}/`
+          versionLink.href = `/${firstSegment}/${portDefaults[firstSegment] ?? 'latest'}/`
+          hint.classList.remove('hidden')
+        }
       }
     }
-  }
-</script>
+  </script>
+</BaseLayout>

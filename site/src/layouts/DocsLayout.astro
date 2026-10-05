@@ -265,6 +265,101 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
       )
     }
   </div>
+  <script>
+    // Mobile sidebar drawer. Same mechanism as MobileToC.astro's script
+    // (AbortController-scoped listeners, re-init on astro:after-swap so a
+    // ClientRouter navigation replaces them instead of stacking duplicates) —
+    // duplicated here rather than imported because MobileSidebar.astro, which
+    // would otherwise own this, cannot currently be built (see the note atop
+    // this file's frontmatter).
+    let controller: AbortController | null = null
+
+    function initMobileSidebar() {
+      controller?.abort()
+      controller = new AbortController()
+      const { signal } = controller
+      const toggleButton = document.getElementById('mobile-sidebar-toggle')
+      const closeButton = document.getElementById('mobile-sidebar-close')
+      const sidebar = document.getElementById('mobile-sidebar')
+      const overlay = document.getElementById('mobile-sidebar-overlay')
+      // Recover if a navigation happened while the drawer was open.
+      document.body.style.overflow = ''
+
+      /**
+       * A closed drawer is off-screen, not absent — `-translate-x-full` moves
+       * it out of view and leaves every link in it focusable. Tabbing from the
+       * page walked into a menu nobody could see. `inert` removes it from the
+       * tab order and the accessibility tree in one attribute, and is what
+       * `visibility` would do if the drawer did not need to animate.
+       */
+      function setInert(on: boolean) {
+        if (sidebar) sidebar.inert = on
+      }
+      setInert(true)
+
+      function open() {
+        if (!sidebar || !overlay) return
+        // One drawer at a time: the contents panel listens for this and closes.
+        document.dispatchEvent(new CustomEvent('libtmux:drawer-open', { detail: 'sidebar' }))
+        sidebar.classList.remove('-translate-x-full')
+        overlay.classList.remove('opacity-0', 'invisible')
+        overlay.classList.add('opacity-100', 'visible')
+        document.body.style.overflow = 'hidden'
+        toggleButton?.setAttribute('aria-expanded', 'true')
+        setInert(false)
+        // Into the drawer, so the next Tab is a menu item rather than whatever
+        // sits behind it; and back to the button on close, so the reader
+        // returns to where they were rather than to the top of the document.
+        ;(closeButton ?? sidebar.querySelector<HTMLElement>('a'))?.focus()
+      }
+      function close() {
+        if (!sidebar || !overlay) return
+        const hadFocus = sidebar.contains(document.activeElement)
+        sidebar.classList.add('-translate-x-full')
+        overlay.classList.remove('opacity-100', 'visible')
+        overlay.classList.add('opacity-0', 'invisible')
+        document.body.style.overflow = ''
+        toggleButton?.setAttribute('aria-expanded', 'false')
+        setInert(true)
+        if (hadFocus) toggleButton?.focus()
+      }
+
+      toggleButton?.addEventListener('click', open, { signal })
+      closeButton?.addEventListener('click', close, { signal })
+      overlay?.addEventListener('click', close, { signal })
+      document.addEventListener(
+        'keydown',
+        (e) => {
+          if (e.key === 'Escape' && sidebar && !sidebar.classList.contains('-translate-x-full')) close()
+        },
+        { signal },
+      )
+      sidebar?.querySelectorAll('a').forEach((link) => link.addEventListener('click', close, { signal }))
+
+      // Another drawer opened.
+      document.addEventListener(
+        'libtmux:drawer-open',
+        (e) => {
+          if ((e as CustomEvent).detail !== 'sidebar') close()
+        },
+        { signal },
+      )
+
+      /*
+       * Crossing to the desktop layout closes it.
+       *
+       * The drawer and its overlay are `lg:hidden`, so widening the window made
+       * both vanish — but `body { overflow: hidden }` stayed, leaving a desktop
+       * page that could not be scrolled and no visible control to release it.
+       */
+      const desktop = window.matchMedia('(min-width: 1024px)')
+      desktop.addEventListener('change', (e) => e.matches && close(), { signal })
+      if (desktop.matches) close()
+    }
+
+    initMobileSidebar()
+    document.addEventListener('astro:after-swap', initMobileSidebar)
+  </script>
 </BaseLayout>
 
 <style>
@@ -312,99 +407,3 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
   .mobile-fallback nav { padding-block: 0.5rem; }
 
 </style>
-
-<script>
-  // Mobile sidebar drawer. Same mechanism as MobileToC.astro's script
-  // (AbortController-scoped listeners, re-init on astro:after-swap so a
-  // ClientRouter navigation replaces them instead of stacking duplicates) —
-  // duplicated here rather than imported because MobileSidebar.astro, which
-  // would otherwise own this, cannot currently be built (see the note atop
-  // this file's frontmatter).
-  let controller: AbortController | null = null
-
-  function initMobileSidebar() {
-    controller?.abort()
-    controller = new AbortController()
-    const { signal } = controller
-    const toggleButton = document.getElementById('mobile-sidebar-toggle')
-    const closeButton = document.getElementById('mobile-sidebar-close')
-    const sidebar = document.getElementById('mobile-sidebar')
-    const overlay = document.getElementById('mobile-sidebar-overlay')
-    // Recover if a navigation happened while the drawer was open.
-    document.body.style.overflow = ''
-
-    /**
-     * A closed drawer is off-screen, not absent — `-translate-x-full` moves
-     * it out of view and leaves every link in it focusable. Tabbing from the
-     * page walked into a menu nobody could see. `inert` removes it from the
-     * tab order and the accessibility tree in one attribute, and is what
-     * `visibility` would do if the drawer did not need to animate.
-     */
-    function setInert(on: boolean) {
-      if (sidebar) sidebar.inert = on
-    }
-    setInert(true)
-
-    function open() {
-      if (!sidebar || !overlay) return
-      // One drawer at a time: the contents panel listens for this and closes.
-      document.dispatchEvent(new CustomEvent('libtmux:drawer-open', { detail: 'sidebar' }))
-      sidebar.classList.remove('-translate-x-full')
-      overlay.classList.remove('opacity-0', 'invisible')
-      overlay.classList.add('opacity-100', 'visible')
-      document.body.style.overflow = 'hidden'
-      toggleButton?.setAttribute('aria-expanded', 'true')
-      setInert(false)
-      // Into the drawer, so the next Tab is a menu item rather than whatever
-      // sits behind it; and back to the button on close, so the reader
-      // returns to where they were rather than to the top of the document.
-      ;(closeButton ?? sidebar.querySelector<HTMLElement>('a'))?.focus()
-    }
-    function close() {
-      if (!sidebar || !overlay) return
-      const hadFocus = sidebar.contains(document.activeElement)
-      sidebar.classList.add('-translate-x-full')
-      overlay.classList.remove('opacity-100', 'visible')
-      overlay.classList.add('opacity-0', 'invisible')
-      document.body.style.overflow = ''
-      toggleButton?.setAttribute('aria-expanded', 'false')
-      setInert(true)
-      if (hadFocus) toggleButton?.focus()
-    }
-
-    toggleButton?.addEventListener('click', open, { signal })
-    closeButton?.addEventListener('click', close, { signal })
-    overlay?.addEventListener('click', close, { signal })
-    document.addEventListener(
-      'keydown',
-      (e) => {
-        if (e.key === 'Escape' && sidebar && !sidebar.classList.contains('-translate-x-full')) close()
-      },
-      { signal },
-    )
-    sidebar?.querySelectorAll('a').forEach((link) => link.addEventListener('click', close, { signal }))
-
-    // Another drawer opened.
-    document.addEventListener(
-      'libtmux:drawer-open',
-      (e) => {
-        if ((e as CustomEvent).detail !== 'sidebar') close()
-      },
-      { signal },
-    )
-
-    /*
-     * Crossing to the desktop layout closes it.
-     *
-     * The drawer and its overlay are `lg:hidden`, so widening the window made
-     * both vanish — but `body { overflow: hidden }` stayed, leaving a desktop
-     * page that could not be scrolled and no visible control to release it.
-     */
-    const desktop = window.matchMedia('(min-width: 1024px)')
-    desktop.addEventListener('change', (e) => e.matches && close(), { signal })
-    if (desktop.matches) close()
-  }
-
-  initMobileSidebar()
-  document.addEventListener('astro:after-swap', initMobileSidebar)
-</script>

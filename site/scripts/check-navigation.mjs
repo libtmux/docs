@@ -1,6 +1,57 @@
 import assert from 'node:assert/strict'
 import { PORTS, productAvailable } from '../src/lib/ports.ts'
 
+/** Optional scripts injected at the end of the body cannot gate navigation. */
+export async function checkNavigationBeforeAnalytics(browser, base) {
+  const page = await browser.newPage({ viewport: { width: 390, height: 900 }, reducedMotion: 'reduce' })
+  page.setDefaultTimeout(5000)
+  const url = `${base}/tmux/concepts/server-session-window-pane/`
+  const analytics = `${base}/pending-analytics.js`
+  let release
+  const pending = new Promise((resolve) => { release = resolve })
+  let requested = false
+  let completed = false
+  await page.route(analytics, async (route) => {
+    requested = true
+    await pending
+    await route.fulfill({ contentType: 'text/javascript', body: '' })
+    completed = true
+  })
+  await page.route(url, async (route) => {
+    const response = await route.fetch()
+    const body = await response.text()
+    assert(body.includes('</body>'), 'The real documentation page has a body')
+    await route.fulfill({ response, body: body.replace('</body>',
+      `<script type="module" src="${analytics}"></script></body>`) })
+  })
+  try {
+    await page.goto(url, { waitUntil: 'commit' })
+    const picker = page.locator('[data-surface-picker][data-enhanced]')
+    await picker.waitFor({ state: 'visible' })
+    await picker.locator(':scope > summary').focus()
+    await page.keyboard.press('Enter')
+    const search = picker.locator('[data-surface-search]')
+    await search.waitFor({ state: 'visible' })
+    assert(await search.evaluate((input) => input === document.activeElement), 'Picker search receives keyboard focus')
+    await page.keyboard.press('Escape')
+    assert.equal(await picker.getAttribute('open'), null, 'Escape closes the picker')
+    assert(await picker.locator(':scope > summary').evaluate((node) => node === document.activeElement), 'Picker returns focus')
+    const drawer = page.locator('#mobile-sidebar-toggle')
+    await drawer.click()
+    assert.equal(await drawer.getAttribute('aria-expanded'), 'true', 'Mobile navigation opens')
+    await page.keyboard.press('Escape')
+    assert.equal(await drawer.getAttribute('aria-expanded'), 'false', 'Escape closes mobile navigation')
+    assert(await drawer.evaluate((node) => node === document.activeElement), 'Mobile navigation returns focus')
+    assert(requested && !completed, 'Navigation works while the injected analytics module is still pending')
+    assert.equal(await page.evaluate(() => document.readyState), 'interactive', 'Navigation does not await document load')
+    console.log('Navigation: picker and mobile drawer work before pending analytics completes')
+  } finally {
+    release()
+    await page.unrouteAll({ behavior: 'wait' })
+    await page.close()
+  }
+}
+
 async function checkNoticeAlignment(page, centered = false) {
   const { noticeLeft, contentLeft, artworkLeft } = await page.evaluate((landing) => {
     const badge = document.querySelector('.prerelease-notice__badge')
@@ -103,6 +154,7 @@ export async function checkContextSettings(page, javaScriptEnabled = true) {
 
 /** Surface selection changes the page tree without losing the port or version. */
 export async function checkDocumentationNavigation(browser, base, complete = false) {
+  await checkNavigationBeforeAnalytics(browser, base)
   const ports = complete ? PORTS : PORTS.filter((port) => ['fsharp', 'ruby'].includes(port.slug))
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
   page.setDefaultTimeout(10000)
