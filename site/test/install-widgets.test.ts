@@ -1,7 +1,8 @@
 import { readFileSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
+import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { pickerPaintRules } from '../src/lib/picker-paint'
 import { SITE_BUILT, SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
 
@@ -14,10 +15,8 @@ import { SITE_BUILT, SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
  * prehydrate rule that matches no panel, a strip whose tabs cannot be reached
  * from the keyboard. Static markup checks and a screenshot see none of it.
  *
- * The harness is `code-tabs.test.ts`'s — see that file for why each module
- * script is evaluated in its own scope and why module-only bundles are
- * skipped. CDP will not bind in this environment, which is why this is a DOM
- * rather than a browser.
+ * Widget modules and their shared imports run in separate scopes. Browser
+ * navigation and search modules are covered by the rendering audit.
  */
 const PORT_HOME = join(SITE_ROOT, 'ts/latest/index.html')
 const TS_MCP = join(SITE_ROOT, 'ts/latest/mcp/index.html')
@@ -39,6 +38,8 @@ interface Loaded {
   document: Document
 }
 
+const compiledModules = new Map<string, string>()
+
 /** Load a built page into a DOM and run its scripts, with `stored` preset. */
 function load(page: string, url: string, stored: Record<string, string> = {}): Loaded {
   const window = new Window({ url })
@@ -46,6 +47,23 @@ function load(page: string, url: string, stored: Record<string, string> = {}): L
   for (const [key, value] of Object.entries(stored)) window.localStorage.setItem(key, value)
   document.write(readFileSync(page, 'utf8'))
   const evaluate = (source: string) => window.eval(`(() => {\n${source}\n})()`)
+  const modules = new Map<string, { exports: Record<string, unknown> }>()
+  const evaluateModule = (asset: string): Record<string, unknown> => {
+    const existing = modules.get(asset)
+    if (existing) return existing.exports
+    const module = { exports: {} }
+    modules.set(asset, module)
+    let source = compiledModules.get(asset)
+    if (!source) {
+      source = transpileModule(readFileSync(asset, 'utf8'), {
+        compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2022 },
+      }).outputText
+      compiledModules.set(asset, source)
+    }
+    const run = window.eval(`(function(require, module, exports) {\n${source}\n})`)
+    run((specifier: string) => evaluateModule(join(dirname(asset), specifier)), module, module.exports)
+    return module.exports
+  }
   for (const script of [...document.querySelectorAll('script')]) {
     if (!isJs(script)) continue
     const src = script.getAttribute('src')
@@ -57,6 +75,10 @@ function load(page: string, url: string, stored: Record<string, string> = {}): L
     if (!src.includes('/_astro/')) continue
     const asset = publishedPath(src)
     if (!existsSync(asset)) continue
+    if (/\/(PackageInstall|McpInstall)\./.test(src)) {
+      evaluateModule(asset)
+      continue
+    }
     const source = readFileSync(asset, 'utf8')
     if (!isModuleOnly(source)) evaluate(source)
   }

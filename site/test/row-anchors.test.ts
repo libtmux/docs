@@ -75,7 +75,7 @@ describe('section and item permalinks', () => {
 
 describe.skipIf(!SITE_BUILT)('rendered option permalinks', () => {
   it('gives published prose table rows a section-qualified permalink', () => {
-    const tree = fromHtml(readFileSync(sitePath('topics/options-and-hooks/index.html'), 'utf8'))
+    const tree = fromHtml(readFileSync(sitePath('tmux/topics/options-and-hooks/index.html'), 'utf8'))
     const ids: string[] = []
     visit(tree, 'element', (node) => {
       if (node.tagName !== 'tr' || typeof node.properties.id !== 'string') return

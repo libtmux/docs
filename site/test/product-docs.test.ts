@@ -455,10 +455,12 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     }
   })
 
-  it('switches to equivalent sections and matches visible breadcrumbs to structured data', async () => {
+  it('switches to equivalent sections and the tmux documentation', async () => {
     const defaults = manifest().defaultVersion
     for (const page of pages()) await inspect(page.path, (document) => {
-      const links = [...document.querySelectorAll('[data-page-port-switcher] a[href]')]
+      const links = [...document.querySelectorAll('[data-page-port-switcher] a[data-port][href]')]
+      const tmux = document.querySelector('[data-page-port-switcher] .tmux-area a[href]')
+      expect(tmux?.getAttribute('href'), `${page.path} tmux destination`).toBe(urlFor('tmux/').pathname)
       const counterparts = new Map(PORTS.flatMap((port) => {
         const section = page.section
         if (port.parentLibrary || !sectionsFor(port.slug, page.product).includes(section)) return []
@@ -477,6 +479,11 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           expect(unavailable.some((entry) => entry.textContent.includes(port.name)), `${page.path} unavailable ${port.name}`).toBe(true)
         }
       }
+    })
+  })
+
+  it('matches visible breadcrumbs to structured data', async () => {
+    for (const page of pages()) await inspect(page.path, (document) => {
       const crumb = document.querySelector('nav[aria-label="Breadcrumb"]')!
       expect(crumb, page.path).not.toBeNull()
       const labels = [...crumb.querySelectorAll('a, [aria-current="page"]')].map((item) => item.textContent.trim())
