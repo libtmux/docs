@@ -855,26 +855,25 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
   </main>
 
 
+  <script>
+    // Fetch the served Markdown and put it on the clipboard. Fetching rather
+    // than embedding keeps one source for the document; a failure leaves the
+    // label saying so instead of silently copying nothing.
+    document.addEventListener('click', async (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('.api-copy-md')
+      if (!button?.dataset.md) return
+      const original = button.textContent
+      try {
+        const response = await fetch(button.dataset.md)
+        if (!response.ok) throw new Error(String(response.status))
+        await navigator.clipboard.writeText(await response.text())
+        button.textContent = 'Copied'
+      } catch {
+        button.textContent = 'Copy failed'
+      }
+      setTimeout(() => {
+        button.textContent = original
+      }, 1500)
+    })
+  </script>
 </BaseLayout>
-
-<script>
-  // Fetch the served Markdown and put it on the clipboard. Fetching rather
-  // than embedding keeps one source for the document; a failure leaves the
-  // label saying so instead of silently copying nothing.
-  document.addEventListener('click', async (event) => {
-    const button = (event.target as HTMLElement).closest<HTMLButtonElement>('.api-copy-md')
-    if (!button?.dataset.md) return
-    const original = button.textContent
-    try {
-      const response = await fetch(button.dataset.md)
-      if (!response.ok) throw new Error(String(response.status))
-      await navigator.clipboard.writeText(await response.text())
-      button.textContent = 'Copied'
-    } catch {
-      button.textContent = 'Copy failed'
-    }
-    setTimeout(() => {
-      button.textContent = original
-    }, 1500)
-  })
-</script>

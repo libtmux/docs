@@ -297,26 +297,25 @@ const homeBrands = homeLauncher
     {!bare && <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} githubUrl={githubUrl} flush={flush} />}
     <BackToTop />
     <SearchModal port={navPort} version={navVersion} />
+    <script>
+      import { initDocumentationNavigation } from '../components/docs/documentation-navigation'
+
+      // A Sidebar may first render inside <noscript>. Start the shared behavior
+      // here so Astro's script deduplication cannot strand it in that fallback.
+      initDocumentationNavigation()
+      document.addEventListener('astro:after-swap', initDocumentationNavigation)
+
+      // Port/version trees have independently built scripts. Loading a second
+      // bundle into the same document would keep both sets of global listeners.
+      document.addEventListener('astro:before-preparation', (event) => {
+        const load = event.loader
+        event.loader = async () => {
+          await load()
+          if (event.newDocument.documentElement.dataset.shellBase !== document.documentElement.dataset.shellBase) {
+            event.preventDefault()
+          }
+        }
+      })
+    </script>
   </body>
 </html>
-
-<script>
-  import { initDocumentationNavigation } from '../components/docs/documentation-navigation'
-
-  // A Sidebar may first render inside <noscript>. Start the shared behavior
-  // here so Astro's script deduplication cannot strand it in that fallback.
-  initDocumentationNavigation()
-  document.addEventListener('astro:after-swap', initDocumentationNavigation)
-
-  // Port/version trees have independently built scripts. Loading a second
-  // bundle into the same document would keep both sets of global listeners.
-  document.addEventListener('astro:before-preparation', (event) => {
-    const load = event.loader
-    event.loader = async () => {
-      await load()
-      if (event.newDocument.documentElement.dataset.shellBase !== document.documentElement.dataset.shellBase) {
-        event.preventDefault()
-      }
-    }
-  })
-</script>
