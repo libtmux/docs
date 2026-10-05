@@ -19,7 +19,9 @@ function fixture(slug: 'go' | 'py' | 'ruby' | 'java' | 'swift', run: (fixture: {
   directory: string; checkout: string; sha: string; model: string; snapshot: string; catalog: string;
   discovery: string; env: NodeJS.ProcessEnv;
   invoke: (script: 'protocol' | 'tools', args?: string[], env?: NodeJS.ProcessEnv) => SpawnSyncReturns<string>;
-}) => void, javaLayout: 'catalog' | 'toolsets' = 'catalog') {
+}) => void, { javaLayout = 'catalog', toolPages = ['list-sessions.md'] }: {
+  javaLayout?: 'catalog' | 'toolsets'; toolPages?: readonly string[];
+} = {}) {
   const directory = mkdtempSync(join(tmpdir(), 'libtmux-mcp-source-'))
   const checkout = join(directory, 'source')
   const git = (...args: string[]) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
@@ -43,7 +45,9 @@ function fixture(slug: 'go' | 'py' | 'ruby' | 'java' | 'swift', run: (fixture: {
       write(join(checkout, slug === 'go' ? 'mcp/manifest_catalog.go' : 'src/libtmux_mcp/tools/sessions.py'),
         slug === 'go' ? 'var catalog = []tool{{name: "list_sessions"}}\n' : 'mcp.tool()(list_sessions)\n')
     }
-    if (slug === 'py') write(join(checkout, 'docs/tools/list-sessions.md'), '# List sessions\n')
+    if (slug === 'py') {
+      for (const page of toolPages) write(join(checkout, 'docs/tools', page), '# Tool documentation\n')
+    }
     git('init', '-q')
     git('add', '.')
     git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'Source fixture')
@@ -132,6 +136,27 @@ it.each(['go', 'py'] as const)('binds the %s catalog to its actual MCP source an
   })
 })
 
+it.each([
+  ['complete', ['server/list-sessions.md', 'server/index.md'], null],
+  ['extra', ['server/list-sessions.md', 'server/unknown-tool.md'], 'documented, not extracted: unknown_tool'],
+  ['missing', ['server/index.md'], 'extracted, not documented: list_sessions'],
+] as const)('checks nested Python tool pages: %s', (_scenario, toolPages, error) => {
+  fixture('py', ({ catalog, invoke }) => {
+    const captured = invoke('protocol')
+    expect(captured.status, captured.stderr).toBe(0)
+    const before = readFileSync(catalog, 'utf8')
+    const generated = invoke('tools')
+    if (error) {
+      expect(generated.status).not.toBe(0)
+      expect(generated.stderr).toContain(error)
+      expect(readFileSync(catalog, 'utf8')).toBe(before)
+    } else {
+      expect(generated.status, generated.stderr).toBe(0)
+      expect(JSON.parse(readFileSync(catalog, 'utf8')).referenceDocumented).toBe(1)
+    }
+  }, { toolPages })
+})
+
 it.each(['catalog', 'toolsets'] as const)('binds Java %s registrations to runtime schemas and their source lines', (layout) => {
   fixture('java', ({ sha, catalog, invoke }) => {
     const captured = invoke('protocol')
@@ -147,7 +172,7 @@ it.each(['catalog', 'toolsets'] as const)('binds Java %s registrations to runtim
         line: 2,
       },
     })])
-  }, layout)
+  }, { javaLayout: layout })
 })
 
 it.each(['core revision', 'MCP revision', 'MCP repository'])('rejects an API model with the wrong %s before starting the server', (field) => {

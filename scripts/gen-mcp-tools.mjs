@@ -287,7 +287,7 @@ for (const port of relevant) {
 const docsDir = join(PORTS.find((port) => port.slug === 'py').checkout, 'docs/tools')
 let referenceDocumented = previous?.referenceDocumented ?? null
 if ((!only || only === 'py') && existsSync(docsDir)) {
-  const documented = filesIn(docsDir, '*.md')
+  const documented = filesIn(docsDir, '**/*.md')
     .map((f) => f.split('/').pop().replace(/\.md$/, '').replaceAll('-', '_'))
     .filter((n) => n !== 'index')
     .sort()
