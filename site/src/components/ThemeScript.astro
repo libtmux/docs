@@ -18,13 +18,16 @@
 
     // Apply color scheme attribute for CSS targeting
     document.documentElement.setAttribute('data-color-scheme', colorScheme);
-    
+
+    // A homepage hover changes the resolved colors, never the saved choice.
+    const preview = document.documentElement.getAttribute('data-home-scheme-preview');
+    const resolved = COLOR_SCHEMES.includes(preview) ? preview : colorScheme;
     // Apply color scheme mode
-    if (colorScheme === 'system') {
+    if (resolved === 'system') {
       const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       document.documentElement.setAttribute('data-theme-mode', systemPrefersDark ? 'dark' : 'light');
     } else {
-      document.documentElement.setAttribute('data-theme-mode', colorScheme);
+      document.documentElement.setAttribute('data-theme-mode', resolved);
     }
   }
   
@@ -54,6 +57,12 @@
       document.documentElement.setAttribute('data-pkg-port', port);
     } else {
       document.documentElement.removeAttribute('data-pkg-port');
+    }
+    // Reset still shows a default code example, but its trigger has no choice.
+    if (homePorts.includes(port)) {
+      document.documentElement.setAttribute('data-home-selected-port', port);
+    } else {
+      document.documentElement.removeAttribute('data-home-selected-port');
     }
     // And each port's package manager, one level down. Without this a panel
     // painted its first manager, npm, and the widget's script switched it to
@@ -190,7 +199,8 @@
     // never touched the control — everyone, on a first visit — kept whichever
     // scheme the page opened in when they changed their OS setting, while a
     // reader who had chosen `system` explicitly tracked it correctly.
-    const stored = document.documentElement.getAttribute('data-color-scheme');
+    const stored = document.documentElement.getAttribute('data-home-scheme-preview')
+      || document.documentElement.getAttribute('data-color-scheme');
     if (!stored || stored === 'system') {
       document.documentElement.setAttribute('data-theme-mode', e.matches ? 'dark' : 'light');
     }

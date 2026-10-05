@@ -901,6 +901,8 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
   const STORAGE_KEY = 'libtmux-docs.package-install.port'
   // Per port, because a choice of pnpm says nothing about a choice of uv.
   const MANAGER_KEY = 'libtmux-docs.package-install.manager'
+  import { HOME_PORT_PREVIEW_EVENT } from '../../lib/home-hover-preview'
+
   const SYNC_EVENT = 'lm-pkg-install:change'
   const MANAGER_SYNC_EVENT = 'lm-pkg-install:manager'
 
@@ -1119,6 +1121,12 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
     selectPort(widget, tab.dataset.tabValue, true)
     window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: { origin: widget, slug: tab.dataset.tabValue } }))
   })
+
+  window.addEventListener(HOME_PORT_PREVIEW_EVENT, ((event: CustomEvent<{ slug: string }>) => {
+    document.querySelectorAll<HTMLElement>('.lm-pkg-install').forEach((widget) => {
+      selectPort(widget, event.detail.slug, false)
+    })
+  }) as EventListener)
 
   window.addEventListener(SYNC_EVENT, ((e: CustomEvent<{ origin: HTMLElement; slug: string }>) => {
     document.querySelectorAll<HTMLElement>('.lm-pkg-install').forEach((widget) => {

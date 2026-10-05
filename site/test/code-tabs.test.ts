@@ -18,7 +18,7 @@ import { SITE_BUILT, SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
 // built, and every other assembled-tree suite reads it from there. This one
 // looked somewhere else, so it could skip — silently, since a skipped
 // `describe` reports as a pass — while the suites beside it ran.
-const PAGE = join(SITE_ROOT, 'topics/architecture/index.html')
+const PAGE = join(SITE_ROOT, 'tmux/topics/architecture/index.html')
 
 const describeIfBuilt = SITE_BUILT && existsSync(PAGE) ? describe : describe.skip
 
@@ -27,7 +27,7 @@ describeIfBuilt('code tabs', () => {
   let document: Document
 
   const load = (stored?: string) => {
-    window = new Window({ url: `https://libtmux.org/${SITE_PREFIX}topics/architecture/` })
+    window = new Window({ url: `https://libtmux.org/${SITE_PREFIX}tmux/topics/architecture/` })
     document = window.document as unknown as Document
     if (stored) window.localStorage.setItem('libtmux-code-tab', stored)
     const html = readFileSync(PAGE, 'utf8')

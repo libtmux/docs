@@ -1,0 +1,26 @@
+{
+  "name": "Scala",
+  "asset": "icon.svg",
+  "sourceUrl": "https://raw.githubusercontent.com/scala/scala-lang/06f69fd1db55358ba531d8c52f6740f118357f23/resources/img/scala-spiral.svg",
+  "resolvedUrl": "https://raw.githubusercontent.com/scala/scala-lang/06f69fd1db55358ba531d8c52f6740f118357f23/resources/img/scala-spiral.svg",
+  "sourcePage": "https://github.com/scala/scala-lang/blob/06f69fd1db55358ba531d8c52f6740f118357f23/resources/img/scala-spiral.svg",
+  "retrievedAt": "2026-10-04T15:08:53+00:00",
+  "sha256": "7158fb24be8236bce419459ed5fb1daf7ceafe07a0534b0c9e0b3178f03f73d0",
+  "copyright": "Copyright EPFL, as stated by Martin Odersky in the linked Scala user discussion. No artwork copyright year is specified.",
+  "license": {
+    "name": "General artwork license unresolved; historical noncommercial logo-use permission",
+    "urls": [
+      "https://github.com/scala/scala-lang/blob/06f69fd1db55358ba531d8c52f6740f118357f23/license.md",
+      "https://groups.google.com/g/scala-user/c/bCC-R0FQn1w",
+      "https://users.scala-lang.org/t/using-scala-logo/6332",
+      "https://github.com/scala/scala-lang/issues/1040"
+    ],
+    "notes": "The repository's license.md describes the Scala software's Apache-2.0 license and credits EPFL and Lightbend; it does not explicitly grant an artwork license. The historical logo policy generally permits noncommercial Scala promotion. The training discussion requires no implied endorsement. The explicit-license issue remains open as of retrieval; no general artwork or derivative license is established here. The local change crops empty canvas while preserving all drawing geometry and colors."
+  },
+  "modifications": "Cropped the empty surrounding canvas by changing the root dimensions, viewBox and enable-background to 449.116 120.875 278.923 453.25. Added a crop notice. The artwork paths, gradients, colors and transforms are unchanged.",
+  "upstreamRevision": "06f69fd1db55358ba531d8c52f6740f118357f23",
+  "sourceCopy": {
+    "file": "scala-spiral.svg",
+    "sha256": "f21912f0b5d2b813f4112b669352cfd67da25ca1bc1b39b951ba05f031b1fe4b"
+  }
+}

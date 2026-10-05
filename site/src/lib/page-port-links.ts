@@ -55,7 +55,7 @@ export function pagePortLinks({
   defaults: Record<string, string>
   docs: DocsPage[]
 }): PagePortLink[] {
-  const path = pagePath.replace(/^\/+|\/+$/g, '')
+  const path = pagePath.replace(/^\/+|\/+$/g, '').replace(/^tmux\/(?=guides(?:\/|$)|topics(?:\/|$)|concepts(?:\/|$)|examples(?:\/|$))/, '')
   const isReference = path === 'reference' || path.startsWith('reference/')
   const symbolSlug = isReference ? path.slice('reference/'.length) || undefined : undefined
   const productReference = /^(mcp|workspace)\/reference\/(.+)$/.exec(path)

@@ -23,7 +23,7 @@ async function checkContextControls(page) {
   await page.waitForFunction(() => !document.documentElement.hasAttribute('data-astro-transition'))
   const layout = await page.evaluate(() => {
     const bar = document.querySelector('[data-documentation-context]')
-    const controls = [...bar.querySelectorAll('.doc-picker > summary, .documentation-context-navigation > button')]
+    const controls = [...bar.querySelectorAll('.doc-picker > summary, .documentation-context-navigation > button, [data-context-settings-toggle], [data-context-settings-back]')]
       .map((element) => {
         const { x, y, width, height } = element.getBoundingClientRect()
         const hit = document.elementFromPoint(x + width / 2, y + height / 2)
@@ -40,6 +40,65 @@ async function checkContextControls(page) {
     }
   }
   assert(layout.height <= 58, `${page.url()}: context remains a single compact row`)
+}
+
+/** Narrow settings use the existing bar and preserve a keyboard return path. */
+export async function checkContextSettings(page, javaScriptEnabled = true) {
+  const context = page.locator('[data-documentation-context]')
+  const toggle = context.locator('[data-context-settings-toggle]')
+  const settings = context.locator('[data-context-settings]')
+  const back = context.locator('[data-context-settings-back]')
+  const navigation = context.locator('.documentation-context-navigation > button')
+  const compact = await page.evaluate(() => matchMedia('(max-width: 24rem)').matches)
+  assert.equal(await toggle.isVisible(), javaScriptEnabled && compact, 'The cog appears on enhanced narrow screens')
+  if (!await toggle.isVisible()) {
+    assert(await settings.isVisible(), 'Version and locale remain directly available without compact enhancement')
+    return
+  }
+  for (const button of await navigation.all()) assert(!await button.isVisible(), 'Narrow navigation controls live in the cog view')
+  const before = await context.boundingBox()
+  await toggle.focus()
+  await page.keyboard.press('Enter')
+  assert(await settings.isVisible(), 'Cog opens version and locale in the bar')
+  assert(!await context.locator('[data-surface-picker] > summary').isVisible(), 'Settings replace the primary controls')
+  assert(await back.evaluate((button) => button === document.activeElement), 'Settings focus Back')
+  const after = await context.boundingBox()
+  assert(Math.abs(before.height - after.height) <= 1 && before.width === after.width, 'Settings stay within the same container')
+  await checkContextControls(page)
+  for (const button of await navigation.all()) {
+    assert(await button.isVisible(), 'The cog view exposes navigation controls')
+    await button.click()
+    assert.equal(await button.getAttribute('aria-expanded'), 'true', 'Navigation opens from the cog view')
+    await page.keyboard.press('Escape')
+    assert.equal(await button.getAttribute('aria-expanded'), 'false', 'Escape closes navigation')
+    assert(await settings.isVisible(), 'Closing navigation returns to the cog view')
+    assert(await button.evaluate((control) => control === document.activeElement), 'Closing navigation restores its control focus')
+  }
+  const version = settings.locator('[data-version-picker]')
+  await version.locator(':scope > summary').click()
+  await version.locator('[data-picker-panel]').waitFor({ state: 'visible' })
+  await page.keyboard.press('Escape')
+  assert(await settings.isVisible(), 'First Escape dismisses the picker without leaving settings')
+  await page.keyboard.press('Escape')
+  assert(!await settings.isVisible(), 'Second Escape returns to the primary view')
+  assert(await toggle.evaluate((button) => button === document.activeElement), 'Returning restores focus to the cog')
+  await toggle.click()
+  await back.click()
+  assert(!await settings.isVisible(), 'Back returns to the primary view')
+  assert(await context.locator('[data-page-port-switcher] > summary').isVisible(), 'The language/area picker is restored')
+  const drawerButton = (await navigation.all())[0]
+  if (drawerButton) {
+    const viewport = page.viewportSize()
+    await page.setViewportSize({ ...viewport, width: 641 })
+    await drawerButton.click()
+    await page.setViewportSize(viewport)
+    await context.locator(':scope[data-settings-open]').waitFor()
+    await page.keyboard.press('Escape')
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+    assert(await drawerButton.isVisible(), 'Resizing an open drawer keeps its return control visible')
+    assert(await drawerButton.evaluate((button) => button === document.activeElement), 'Drawer return focus survives a resize into compact mode')
+    await back.click()
+  }
 }
 
 /** Surface selection changes the page tree without losing the port or version. */
@@ -142,14 +201,16 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
           await reader.goto(`${base}/go/latest/workspace/`, { waitUntil: 'load' })
           await checkNoticeAlignment(reader)
           await checkContextControls(reader)
+          await checkContextSettings(reader, javaScriptEnabled)
           const picker = desktopPicker(reader)
           const layout = await reader.evaluate(() => {
             const bounds = (selector) => {
-              const { top, bottom, height, width } = document.querySelector(selector).getBoundingClientRect()
+              const visible = [...document.querySelectorAll(selector)].find((node) => node.checkVisibility())
+              const { top, bottom, height, width } = visible.getBoundingClientRect()
               return { top, bottom, height, width }
             }
             return { bar: bounds('[data-documentation-context]'), surface: bounds('[data-surface-picker] > summary'),
-              port: bounds('[data-page-port-switcher] > summary'), header: ['.site-header__search', '.scheme-switch', '.site-header__menu-button'].map(bounds) }
+              port: bounds('[data-page-port-switcher] > summary'), header: ['.site-header__search', '.scheme-switch, .scheme-cycle', '.site-header__menu-button'].map(bounds) }
           })
           assert(layout.bar.height <= 58, `${width}: context remains a single compact row`)
           assert(Math.abs((layout.surface.top + layout.surface.bottom) - (layout.port.top + layout.port.bottom)) <= 1,
@@ -175,7 +236,8 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
             await search.fill('workspace guides')
           }
           const panel = await picker.locator('[data-surface-panel]').boundingBox()
-          assert(panel.x >= 0 && panel.x + panel.width <= width + 1, `${width}/${colorScheme}: picker fits the viewport`)
+          const usableWidth = await reader.evaluate(() => document.documentElement.clientWidth)
+          assert(panel.x >= 0 && panel.x + panel.width <= usableWidth + 1, `${width}/${colorScheme}: picker fits beside the scrollbar`)
           if (javaScriptEnabled) assert(panel.y >= 0 && panel.y + panel.height <= 901, `${width}: floating picker fits vertically`)
           const target = group(picker, 'Workspace Manager').getByRole('link', { name: 'Guides', exact: true })
           if (javaScriptEnabled) await picker.locator('[data-surface-search]').press('Enter')
@@ -201,7 +263,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
           await reader.waitForURL(`${base}/go/latest/workspace/guides/`)
           assert(await reader.locator('[data-surface-picker] > summary').first().getAttribute('aria-label').then((label) => label.endsWith('Workspace Manager, Guides')),
             'History restores the selected surface and section')
-          assert(await reader.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${width}: page has no horizontal overflow`)
+          assert(await reader.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), `${width}: page has no horizontal overflow`)
           await openPicker(picker, javaScriptEnabled)
           if (javaScriptEnabled) await picker.locator('[data-surface-search]').fill('')
           const core = group(picker, 'Core Library')
@@ -210,7 +272,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
           await reader.waitForURL(`${base}/go/latest/reference/`)
           await checkNoticeAlignment(reader)
           await checkContextControls(reader)
-          assert(await reader.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${width}: reference has no horizontal overflow`)
+          assert(await reader.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), `${width}: reference has no horizontal overflow`)
           if (width === 320 || width === 1920) {
             await reader.goto(`${base}/`, { waitUntil: 'load' })
             await checkNoticeAlignment(reader, true)
@@ -345,7 +407,7 @@ export async function checkApiNavigation(page, base) {
 /** Check the controls attached to a document after its content is replaced. */
 export async function checkNavigation(page, base) {
   await observeInitialPageLoad(page)
-  await page.goto(`${base}/examples/attach-and-send-keys/`, { waitUntil: 'load' })
+  await page.goto(`${base}/tmux/examples/attach-and-send-keys/`, { waitUntil: 'load' })
   await page.waitForFunction(() => window.__docsPageLoaded)
   await page.evaluate(() => {
     localStorage.setItem('color-scheme', 'dark')

@@ -318,7 +318,7 @@ export const TOPIC_BY_ID: Readonly<Record<string, PromptTopic>> = Object.fromEnt
 
 /** A doc page's absolute URL. Shared prose sits above the version axis. */
 function pageUrl(ctx: PromptContext, path: string): string {
-  return `${ctx.docsBase}/${path}/`
+  return `${ctx.docsBase}/tmux/${path}/`
 }
 
 /** A port-tree URL, which does carry the version. */

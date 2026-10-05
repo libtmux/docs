@@ -19,10 +19,9 @@
  * painted highlighted rather than corrected afterwards — the same reason the
  * package picker resolves its language in <head>, written up there.
  *
- * Radio inputs, not buttons: a group where exactly one is chosen is what a
- * radio group is, and it arrives with roving focus, arrow-key movement and a
- * name announced once for the set. `aria-pressed` on three buttons is the
- * same thing rebuilt by hand and worse.
+ * Wide layouts use native radios with arrow-key navigation. Compact layouts
+ * use one button to cycle through Auto, Light, and Dark. Its accessible name
+ * identifies the current preference and the next choice.
  */
 const OPTIONS = [
   { id: 'system', label: 'Auto', title: 'Match the operating system' },
@@ -74,9 +73,21 @@ const OPTIONS = [
     ))
   }
 </fieldset>
+<button type="button" class="scheme-cycle" data-scheme-cycle hidden
+  aria-label="Colour scheme: Auto. Switch to Light" title="Colour scheme: Auto. Switch to Light">
+  <span data-scheme-cycle-icon aria-hidden="true"></span>
+</button>
 
 <script>
+  import { bindHomeHoverPreview, HOME_PREVIEW_FADE } from '../lib/home-hover-preview'
+
   const STORAGE_KEY = 'color-scheme'
+  let controller: AbortController | undefined
+
+  function currentScheme() {
+    const value = document.documentElement.getAttribute('data-color-scheme')
+    return value === 'light' || value === 'dark' ? value : 'system'
+  }
 
   /**
    * Write the choice, then let the script that owns the resolution apply it.
@@ -88,6 +99,7 @@ const OPTIONS = [
    * copy of that would be a second thing to keep true.
    */
   function choose(value: string) {
+    document.documentElement.removeAttribute('data-home-scheme-preview')
     try {
       localStorage.setItem(STORAGE_KEY, value)
     } catch {
@@ -95,28 +107,78 @@ const OPTIONS = [
       document.documentElement.setAttribute('data-color-scheme', value)
     }
     window.__applyTheme?.()
+    syncControls()
+  }
+
+  function syncControls() {
+    const preference = currentScheme()
+    const label = { system: 'Auto', light: 'Light', dark: 'Dark' }[preference] ?? 'Auto'
+    const next = { system: 'Light', light: 'Dark', dark: 'Auto' }[preference] ?? 'Light'
+    for (const input of document.querySelectorAll<HTMLInputElement>('[data-scheme-switch] input')) {
+      input.checked = input.value === preference
+    }
+    for (const button of document.querySelectorAll<HTMLButtonElement>('[data-scheme-cycle]')) {
+      const description = `Colour scheme: ${label}. Switch to ${next}`
+      button.setAttribute('aria-label', description)
+      button.title = description
+      const icon = document.querySelector(`[data-scheme-switch] [data-scheme="${preference}"] svg`)
+      if (icon) button.querySelector('[data-scheme-cycle-icon]')!.replaceChildren(icon.cloneNode(true))
+    }
   }
 
   function bind() {
+    controller?.abort()
+    controller = new AbortController()
+    const { signal } = controller
+    for (const button of document.querySelectorAll<HTMLButtonElement>('[data-scheme-cycle]')) {
+      button.hidden = false
+      button.addEventListener('click', () => {
+        preview?.commit()
+        const preference = currentScheme()
+        choose({ system: 'light', light: 'dark', dark: 'system' }[preference] ?? 'system')
+      }, { signal })
+    }
+    syncControls()
+    const home = document.querySelector('[data-home-launcher]')
+    let fadeTimer: ReturnType<typeof setTimeout> | undefined
+    const paintPreview = (value: string | null) => {
+      const root = document.documentElement
+      clearTimeout(fadeTimer)
+      root.removeAttribute('data-home-scheme-fade')
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        root.setAttribute('data-home-scheme-fade', '')
+        fadeTimer = setTimeout(() => root.removeAttribute('data-home-scheme-fade'), HOME_PREVIEW_FADE)
+      }
+      if (value) root.setAttribute('data-home-scheme-preview', value)
+      else root.removeAttribute('data-home-scheme-preview')
+      window.__applyTheme?.()
+    }
+    const preview = home ? bindHomeHoverPreview({
+      options: [...document.querySelectorAll<HTMLElement>('[data-scheme-switch] [data-scheme]')],
+      show: (option) => paintPreview(option.dataset.scheme!),
+      restore: () => paintPreview(null),
+      signal,
+    }) : undefined
+    const clearFade = () => {
+      clearTimeout(fadeTimer)
+      document.documentElement.removeAttribute('data-home-scheme-fade')
+    }
+    signal.addEventListener('abort', clearFade, { once: true })
+    document.addEventListener('astro:before-swap', clearFade, { signal })
     for (const input of document.querySelectorAll<HTMLInputElement>(
       '[data-scheme-switch] input[type="radio"]',
     )) {
       // The server marked `system` checked; storage may say otherwise, and
       // the control has to agree with the highlight the CSS is already
       // showing or the next arrow-key press starts from the wrong option.
-      const stored = (() => {
-        try {
-          return localStorage.getItem(STORAGE_KEY)
-        } catch {
-          return null
-        }
-      })()
-      if (stored) input.checked = input.value === stored
-      if (input.dataset.bound) continue
-      input.dataset.bound = 'yes'
+      const stored = document.documentElement.getAttribute('data-color-scheme') ?? 'system'
+      input.checked = input.value === stored
       input.addEventListener('change', () => {
-        if (input.checked) choose(input.value)
-      })
+        if (input.checked) {
+          preview?.commit()
+          choose(input.value)
+        }
+      }, { signal })
     }
   }
 

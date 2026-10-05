@@ -10,6 +10,8 @@ import type { Locale } from './locales.ts'
  */
 export const ui = {
   en: {
+    'navigation.back': 'Back',
+    'navigation.settings': 'Documentation controls',
     'i18n.untranslated': 'This page has not been translated yet.',
     'i18n.contribute': 'Help translate it',
     'i18n.translated': 'Japanese translation available',
@@ -35,6 +37,8 @@ export const ui = {
     'footer.rawSource': 'raw source',
   },
   ja: {
+    'navigation.back': '戻る',
+    'navigation.settings': '表示とナビゲーション',
     'i18n.untranslated': 'このページはまだ翻訳されていません。',
     'i18n.contribute': '翻訳に協力する',
     'i18n.translated': '日本語版があります',

@@ -4,8 +4,11 @@ import SectionHeading from '../../../../components/SectionHeading.astro'
 import { Code } from 'astro-expressive-code/components'
 import { withRoot } from '../../../../lib/site-root'
 import { rowAnchor } from '../../../../lib/row-anchors'
+import { highlightTmuxManual, linkTmuxManualEntries } from '../../../../lib/tmux-manual'
 import type { SidebarItem } from '../../../../lib/sidebar'
-import { TMUX_REPOSITORY, TMUX_VERSIONS, tmuxApiLinks, tmuxCommandNotes, tmuxGuidesFor, tmuxManualHtml, tmuxPageDescription, tmuxPageHeadings, tmuxPageTitle, tmuxReference, tmuxReferenceRoutes, tmuxReferenceUrl } from '../../../../lib/tmux-reference'
+import { pagePortsFor } from '../../../../lib/page-ports-for'
+import { PORTS } from '../../../../lib/ports'
+import { TMUX_REPOSITORY, tmuxApiLinks, tmuxCommandNotes, tmuxGuidesFor, tmuxManualHtml, tmuxPageDescription, tmuxPageHeadings, tmuxPageTitle, tmuxReference, tmuxReferenceRoutes, tmuxReferenceUrl } from '../../../../lib/tmux-reference'
 
 export function getStaticPaths() {
   return tmuxReferenceRoutes().map(({ version, slug }) => ({ params: { version, slug } }))
@@ -35,26 +38,23 @@ const breadcrumbs = [
   ...(slug ? [{ name: command?.name ?? 'Manual', url: tmuxReferenceUrl(version, slug) }] : []),
 ]
 const equivalents = tmuxApiLinks(command?.name ?? '')
+const pagePorts = command ? PORTS.map((port) => ({ port: port.slug, name: port.name,
+  links: equivalents.filter((entry) => entry.name === port.name).map((entry) => ({ href: entry.href })),
+})) : await pagePortsFor('reference')
 const guides = tmuxGuidesFor(command?.name ?? '')
 const headings = tmuxPageHeadings(version, slug)
 const notes = tmuxCommandNotes(version, slug)
 const source = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.revision }
+const manualHtml = command || isManual
+  ? await highlightTmuxManual(linkTmuxManualEntries(tmuxManualHtml(command?.html ?? reference.manual, version), command?.name))
+  : ''
 ---
 
 <DocsLayout title={title} description={description} pagePath={pagePath}
-  headings={headings} navigation={navigation} breadcrumbs={breadcrumbs} pagePorts={[]}
+  headings={headings} navigation={navigation} breadcrumbs={breadcrumbs} pagePorts={pagePorts}
   pageSource={source} markdownIndex={!slug}
   canonicalOverride={new URL(tmuxReferenceUrl(version, slug), Astro.site).href}
   noindex={version !== 'latest'} searchable={version === 'latest'}>
-  <nav class="not-prose tmux-versions" aria-label="tmux version" data-pagefind-ignore="all">
-    <span>Version</span>
-    {TMUX_VERSIONS.map((entry) => {
-      const target = !slug || isManual || tmuxReference(entry).commands.some((item) => item.name === slug) ? slug : undefined
-      return <a href={tmuxReferenceUrl(entry, target)} aria-current={entry === version ? 'page' : undefined}>
-        {entry === 'latest' ? `Latest (${tmuxReference(entry).version})` : entry}
-      </a>
-    })}
-  </nav>
   {command ? <>
     <p>{command.summary}</p>
     {notes && <>
@@ -78,11 +78,11 @@ const source = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.revision 
       </section>)}
       <details class="tmux-original-manual">
         <summary>Original manual wording</summary>
-        <div class="tmux-manual" set:html={tmuxManualHtml(command.html, version)} />
+        <div class="tmux-manual" set:html={manualHtml} />
       </details>
     </> : <>
       <SectionHeading id={rowAnchor(command.name, 'behavior')} legacyId="behavior">Behavior</SectionHeading>
-      <div class="tmux-manual" set:html={tmuxManualHtml(command.html, version)} />
+      <div class="tmux-manual" set:html={manualHtml} />
     </>}
     {guides.length > 0 && <>
       <SectionHeading id={rowAnchor(command.name, 'guides')} legacyId="guides">Guides</SectionHeading>
@@ -93,7 +93,7 @@ const source = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.revision 
       <p>Each API describes its own defaults, errors and execution model.</p>
       <ul>{equivalents.map((entry) => <li><a href={entry.href}>{entry.name}</a></li>)}</ul>
     </>}
-  </> : isManual ? <div class="tmux-manual" set:html={tmuxManualHtml(reference.manual, version)} /> : <>
+  </> : isManual ? <div class="tmux-manual" set:html={manualHtml} /> : <>
     <p>Look up the flags and behavior supported by tmux {reference.version}. Choose the version installed on your machine with <code>tmux -V</code>.</p>
     <p>Start with the <a href={`${tmuxReferenceUrl(version, 'manual')}#DESCRIPTION`}>global options</a>, <a href={`${tmuxReferenceUrl(version, 'manual')}#COMMANDS`}>target syntax</a>, or <a href={`${tmuxReferenceUrl(version, 'manual')}#FORMATS`}>formats</a>. The <a href={tmuxReferenceUrl(version, 'manual')}>full manual</a> also covers options, hooks and key bindings.</p>
     {sections.map((section) => <section>
@@ -114,9 +114,6 @@ const source = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.revision 
 </DocsLayout>
 
 <style>
-  .tmux-versions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: 0 0 1.5rem; font-size: .875rem; }
-  .tmux-versions a { border: 1px solid var(--color-edge); border-radius: .375rem; padding: .25rem .625rem; }
-  .tmux-versions a[aria-current] { font-weight: 600; background: var(--color-surface-hover); }
   .tmux-syntax, .tmux-license { white-space: pre-wrap; overflow-wrap: anywhere; }
   .tmux-command-list dt { margin-top: 1rem; }
   .tmux-command-list dd { margin-left: 0; }
@@ -129,7 +126,11 @@ const source = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.revision 
   .tmux-original-manual summary { cursor: pointer; }
   @media (max-width: 480px) { .tmux-option-list > div { grid-template-columns: 4.75rem minmax(0, 1fr); gap: .75rem; } }
   .tmux-manual :global(pre) { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .tmux-manual :global(pre.lm-highlighted) { background: var(--shiki-light-bg); color: var(--shiki-light); border: 1px solid var(--color-edge); border-radius: .375rem; padding: 1rem; font-family: var(--font-ibm-plex-mono); font-size: .875rem; line-height: 1.7; }
+  :global(html[data-theme-mode="dark"]) .tmux-manual :global(pre.lm-highlighted) { background: var(--shiki-dark-bg); color: var(--shiki-dark); }
   .tmux-manual :global(table) { display: block; overflow-x: auto; }
   .tmux-manual :global(dd) { margin-left: 1rem; }
   .tmux-manual :global(.Pp) { margin-block: 1em; }
+  .tmux-manual :global(.manual-entry-permalink) { margin-left: .5rem; font-weight: 400; text-decoration: none; opacity: .55; }
+  .tmux-manual :global(.manual-entry-permalink:is(:hover, :focus-visible)) { opacity: 1; text-decoration: underline; }
 </style>

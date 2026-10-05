@@ -6,10 +6,11 @@ import { PORT_BY_SLUG } from '../../lib/ports'
 import { withRoot } from '../../lib/site-root'
 import type { Locale } from '../../i18n/locales'
 import '../../styles/documentation-picker.css'
-interface Props { surfaces: DocumentationSurface[]; currentPath: string; port: string; version: string; locale: Locale; solutionsOnly?: boolean }
+import TmuxLogo from '../tmux/Logo.astro'
+interface Props { surfaces: DocumentationSurface[]; currentPath: string; port?: string; version: string; locale: Locale; solutionsOnly?: boolean }
 const { surfaces, currentPath, port, version, locale, solutionsOnly = false } = Astro.props
 const { surface, section } = currentDocumentation(surfaces, currentPath)
-const descriptions: Record<string, string> = { core: 'API reference and guides', mcp: 'Tools for connected assistants', workspace: 'Repeatable development environments' }
+const descriptions: Record<string, string> = { core: 'API reference and guides', mcp: 'Tools for connected assistants', workspace: 'Repeatable development environments', tmux: 'Commands, configuration and terminal workflows' }
 const artwork = (id: string) => {
   const path = branding(port, id === 'core' ? '' : id).asset('logo.svg')
   return withRoot(path)
@@ -17,8 +18,10 @@ const artwork = (id: string) => {
 ---
 <details class="surface-picker doc-picker" data-surface-picker data-doc-picker data-pagefind-ignore="all">
   <summary aria-label={solutionsOnly ? 'Choose a solution' : `Choose documentation: ${surface.label}, ${section.label}`}>
-    <img class="surface-artwork" src={artwork(surface.id)} width="30" height="30" alt="" />
-    <span class="surface-current"><strong>{solutionsOnly ? 'Choose a solution' : surface.label}</strong>{!solutionsOnly && <small>{section.label}</small>}</span>
+    {port ? <img class="surface-artwork" src={artwork(surface.id)} width="30" height="30" alt="" /> : <TmuxLogo />}
+    <span class="surface-current"><strong>{!solutionsOnly && surface.id === 'tmux'
+      ? <><span class="surface-name-full">{surface.label}</span><span class="surface-name-short">tmux</span></>
+      : solutionsOnly ? <><span class="home-solution-name-full">Choose a solution</span><span class="home-solution-name-short" aria-hidden="true">Solution</span></> : surface.label}</strong>{!solutionsOnly && <small>{section.label}</small>}</span>
     <svg class="doc-picker-caret" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
   </summary>
   <div class="surface-panel doc-picker-panel" data-surface-panel data-picker-panel>
@@ -35,7 +38,7 @@ const artwork = (id: string) => {
         <span class="surface-group-name"><strong>{entry.label}</strong>{' '}<small>{descriptions[entry.id]}</small></span>
         <span class="surface-destination-arrow" aria-hidden="true">→</span>
       </a> : <details class="surface-group" data-surface-group data-picker-group open={entry.id === surface.id}>
-        <summary><img class="surface-artwork" src={artwork(entry.id)} width="30" height="30" alt="" />
+        <summary>{port ? <img class="surface-artwork" src={artwork(entry.id)} width="30" height="30" alt="" /> : <TmuxLogo />}
           <span class="surface-group-name"><strong>{entry.label}</strong>{' '}<small>{descriptions[entry.id]}</small></span>
           <svg class="surface-chevron" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 4 4 4-4 4" /></svg>
         </summary>
@@ -60,7 +63,7 @@ const artwork = (id: string) => {
     </nav>
     <p class="doc-picker-empty" data-surface-empty data-picker-empty hidden>No matching documentation.</p>
     <p class="sr-only" role="status" data-surface-status data-picker-status></p>
-    <div class="surface-picker-footer" aria-label="Current documentation context"><span>{PORT_BY_SLUG[port].name}</span>{' · '}<span>{version}</span>{' · '}<span>{locale}</span></div>
+    <div class="surface-picker-footer" aria-label="Current documentation context"><span>{port ? PORT_BY_SLUG[port].name : 'tmux'}</span>{' · '}<span>{version}</span>{' · '}<span>{locale}</span></div>
   </div>
 </details>
 <style>
@@ -70,19 +73,27 @@ const artwork = (id: string) => {
   .surface-picker > summary { min-height: 2.5rem; padding: .2rem .4rem; }
   .surface-current { min-width: 0; line-height: 1.35; }
   .surface-current strong, .surface-current small { display: block; }
+  .surface-name-short { display: none; }
+  .home-solution-name-short { display: none; }
+  @media (max-width: 24rem) {
+    .surface-name-full { display: none; }
+    .surface-name-short { display: inline; }
+  }
   small { font-size: .6875rem; color: var(--color-muted); }
   .surface-artwork { flex: none; width: 1.875rem; height: 1.875rem; object-fit: contain; }
   .surface-chevron { flex: none; margin-left: auto; color: var(--color-muted); }
   .surface-group[open] > summary .surface-chevron { transform: rotate(90deg); }
-  .surface-group { border-top: 1px solid var(--color-edge); }
+  .surface-panel > nav { display: grid; gap: .25rem; padding-bottom: .25rem; }
+  .surface-group > summary, .surface-destination { border: 1px solid transparent; }
+  .surface-group > summary:hover, .surface-destination:hover { border-color: var(--color-edge); }
   .surface-group > summary { min-height: 4rem; padding: .7rem .4rem; border-radius: .4rem; }
-  .surface-destination { min-height: 4rem; border-top: 1px solid var(--color-edge); }
+  .surface-destination { min-height: 4rem; }
   .surface-destination-arrow { margin-left: auto; }
   .surface-group-name { min-width: 0; }
   .surface-group-name strong, .surface-group-name small { display: block; }
   .surface-group-name strong { font-weight: 500; }
   .surface-group-name small { margin-top: .2rem; }
-  .surface-options { padding-top: 1px; padding-bottom: .75rem; }
+  .surface-options { padding-top: .25rem; padding-bottom: .75rem; }
   .surface-alternatives { padding: .25rem 0 .5rem; border-top: 1px solid var(--color-edge); }
   .surface-alternatives > small { padding-inline: .4rem; }
   .surface-alternatives:not(:has(a:not([hidden]))) { display: none; }

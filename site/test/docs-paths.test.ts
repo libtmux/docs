@@ -1,9 +1,21 @@
 import { describe, expect, it } from 'vitest'
-import { docsPath, docsRedirects, docsRoutePath, sourceGuideRedirects, workspaceRedirectPath } from '../src/lib/docs-paths'
+import { docsPath, docsRedirects, docsRoutePath, proseHref, sourceGuideRedirects, workspaceRedirectPath } from '../src/lib/docs-paths'
 
 const pythonGuide = { id: 'ports/py/workspace/guides', data: { port: 'py', product: 'workspace' } }
 
 describe('product document URLs', () => {
+  it.each(['guides', 'topics', 'concepts', 'examples'])('mounts shared %s only inside tmux while keeping library routes', (section) => {
+    for (const id of [section, `${section}/nested/page`]) {
+      const entry = { id, data: {} }
+      expect(docsRoutePath(entry)).toBe(`tmux/${id}`)
+      expect(docsRoutePath(entry, 'go')).toBe(id)
+      expect(docsRoutePath({ id, data: { port: 'go' } })).toBe(`go/latest/${id}`)
+      expect(proseHref(`/${id}/?example=one#target`, '/pr-42/en')).toBe(`/pr-42/en/tmux/${id}/?example=one#target`)
+      expect(proseHref(`/tmux/${id}/`, '/en')).toBe(`/en/tmux/${id}/`)
+    }
+    expect(docsRoutePath({ id: 'third-party-notices', data: {} })).toBe('third-party-notices')
+  })
+
   it('retires the duplicate F# API overview in root and selected-version builds', () => {
     expect(sourceGuideRedirects(undefined, { fsharp: 'stable' })).toEqual([
       { path: 'fsharp/stable/guides/api-overview', target: 'fsharp/stable/reference' },

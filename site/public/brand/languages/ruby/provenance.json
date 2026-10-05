@@ -1,0 +1,19 @@
+{
+  "name": "Ruby",
+  "asset": "icon.svg",
+  "sourceUrl": "https://www.ruby-lang.org/images/header-ruby-logo.svg",
+  "resolvedUrl": "https://www.ruby-lang.org/images/header-ruby-logo.svg",
+  "sourcePage": "https://www.ruby-lang.org/en/about/logo/",
+  "retrievedAt": "2026-10-04T14:52:41+00:00",
+  "sha256": "128ab0befae77abb5b74f6082b9b9185a0d99558d04c98b1e56de1fa65c28ce6",
+  "copyright": "Copyright © 2006, Yukihiro Matsumoto.",
+  "license": {
+    "name": "CC-BY-SA-2.5",
+    "urls": [
+      "https://creativecommons.org/licenses/by-sa/2.5/",
+      "https://www.ruby-lang.org/en/about/logo/"
+    ],
+    "notes": "Credit Yukihiro Matsumoto and link the license. This separate, unchanged artwork retains its license; it does not relicense the surrounding site."
+  },
+  "modifications": "None. The downloaded SVG bytes are preserved."
+}

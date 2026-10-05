@@ -11,6 +11,10 @@ import { checkApiExampleOwnership, checkApiNavigation, checkDocumentationNavigat
 import { checkNativeLayout } from './check-native-layout.mjs'
 import { checkReferencePreferences, checkGlobalHeader } from './check-reference-preferences.mjs'
 import { checkHomeLauncher } from './check-home-launcher.mjs'
+import { checkHomeTaskReset } from './check-home-task-reset.mjs'
+import { checkColorScheme } from './check-color-scheme.mjs'
+import { checkHomeExampleOptions } from './check-home-example-options.mjs'
+import { checkDevSample } from './check-dev-sample.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
@@ -21,6 +25,8 @@ const signaturePorts = apiSignaturesOnly ? API_MODEL_PORTS
 const referencePreferencesOnly = process.argv.includes('--reference-preferences')
 const globalHeaderOnly = process.argv.includes('--global-header')
 const homeLauncherOnly = process.argv.includes('--home-launcher')
+const homeControlsOnly = process.argv.includes('--home-controls')
+const sampleOnly = process.argv.includes('--sample')
 const documentationNavigationOnly = process.argv.includes('--documentation-navigation')
 const workspacePortCount = PORTS.filter((port) => productAvailable(port, 'workspace')).length
 
@@ -542,9 +548,10 @@ async function checkReferenceAndHeroes(browser, base) {
 try {
   // Compile the first page during setup; navigation assertions measure
   // the running app. The outer loop still budgets this initial compilation.
-  const firstPage = keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
+  const firstPage = homeLauncherOnly || homeControlsOnly ? '/'
+    : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : documentationNavigationOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
-    : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/concepts/server-session-window-pane/'
+    : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/' : '/tmux/concepts/server-session-window-pane/'
   const ready = fetch(`${base}${firstPage}`).then(async (response) => {
     assert(response.ok, `Browser setup: HTTP ${response.status} at ${firstPage}`)
     await response.text()
@@ -554,8 +561,14 @@ try {
   if (!driver) throw new Error(`Unknown browser: ${engine}`)
   browser = await driver.launch(engine === 'chromium' ? { channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL } : {})
   await ready
-  if (homeLauncherOnly) {
+  if (sampleOnly) {
+    await checkDevSample(browser, base)
+  } else if (homeLauncherOnly) {
     await checkHomeLauncher(browser, base)
+  } else if (homeControlsOnly) {
+    await checkHomeTaskReset(browser, base)
+    await checkColorScheme(browser, base)
+    await checkHomeExampleOptions(browser, base)
   } else if (keywordHelpOnly) {
     await retryReload(() => checkKeywordHelp(browser, base))
   } else if (apiSignaturesOnly) {
@@ -577,8 +590,16 @@ try {
     page.setDefaultTimeout(10000)
     await retryReload(() => checkApiNavigation(page, base))
   } else {
-    const nativeLayout = checkNativeLayout(browser).then(() => null, (error) => error)
-    const apiExamples = checkCompleteApiExamples(browser, base).then(() => null, (error) => error)
+    // Keep one auxiliary check beside the main page walk. Starting every
+    // matrix at once saturates the compiler and times out unrelated pages.
+    let previous = Promise.resolve()
+    const schedule = (check) => {
+      const pending = previous.then(check).then(() => null, (error) => error)
+      previous = pending
+      return pending
+    }
+    const nativeLayout = schedule(() => checkNativeLayout(browser))
+    const apiExamples = schedule(() => checkCompleteApiExamples(browser, base))
     const page = await browser.newPage({ reducedMotion: 'reduce' })
     page.setDefaultTimeout(10000)
     const manifest = await page.request.get(`${base}/page-links.json`)
@@ -586,21 +607,21 @@ try {
     assert.equal((await manifest.json()).schema, 1)
     const clipboardPage = await browser.newPage()
     clipboardPage.setDefaultTimeout(10000)
-    const clipboard = checkClipboard(clipboardPage, base).then(() => null, (error) => error)
+    const clipboard = schedule(() => checkClipboard(clipboardPage, base).finally(() => clipboardPage.close()))
     const navigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     navigationPage.setDefaultTimeout(10000)
-    const navigation = retryReload(() => checkNavigation(navigationPage, base)).then(() => null, (error) => error)
-    const reference = checkReferenceAndHeroes(browser, base).then(() => checkSignatureLayouts(browser, base))
+    const navigation = schedule(() => retryReload(() => checkNavigation(navigationPage, base)).finally(() => navigationPage.close()))
+    const reference = schedule(() => checkReferenceAndHeroes(browser, base).then(() => checkSignatureLayouts(browser, base))
       .then(() => retryReload(() => checkKeywordHelp(browser, base)))
-      .then(() => null, (error) => error)
-    const preferences = checkReferencePreferences(browser, base).then(() => null, (error) => error)
-    const globalHeader = checkGlobalHeader(browser, base).then(() => null, (error) => error)
-    const homeLauncher = checkHomeLauncher(browser, base).then(() => null, (error) => error)
-    const documentationNavigation = retryReload(() => checkDocumentationNavigation(browser, base)).then(() => null, (error) => error)
+    )
+    const preferences = schedule(() => checkReferencePreferences(browser, base))
+    const globalHeader = schedule(() => checkGlobalHeader(browser, base))
+    const homeLauncher = schedule(() => checkHomeLauncher(browser, base))
+    const documentationNavigation = schedule(() => retryReload(() => checkDocumentationNavigation(browser, base)))
     const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     apiNavigationPage.setDefaultTimeout(10000)
-    const apiNavigation = retryReload(() => checkApiNavigation(apiNavigationPage, base)).then(() => null, (error) => error)
-    const paths = ['concepts/server-session-window-pane', 'examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
+    const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).finally(() => apiNavigationPage.close()))
+    const paths = ['tmux/concepts/server-session-window-pane', 'tmux/examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
       'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
       'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/capture_pane']
     for (const path of paths) await retryReload(async () => {
@@ -610,6 +631,7 @@ try {
       await page.evaluate(() => document.fonts.ready)
       assert.equal(await page.locator('header nav[aria-label="Documentation destinations"]').count(), 0)
       const switcher = page.locator('[data-page-port-switcher]')
+      const portLinks = switcher.locator('a[data-port]')
       const hasSwitcher = path !== 'mcp/tools'
       assert.equal(await switcher.count(), hasSwitcher ? 1 : 0, `${path}: one page language switcher when available`)
       const isReference = path.includes('/reference/')
@@ -626,10 +648,13 @@ try {
         assert(geometry.above && geometry.contextAbove, `${path}: context controls precede the breadcrumb and heading`)
       }
       const expected = isReference ? '/en/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/' : path.includes('workspace/') ? `/en/${path}/`
-        : path === 'dotnet/latest/mcp/tools/capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : `/en/py/stable/${path.replace(/^ts\/latest\//, '')}/`
-      if (hasSwitcher) assert.equal(await switcher.locator('a').first().getAttribute('href'), expected)
+        : path === 'dotnet/latest/mcp/tools/capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : `/en/py/stable/${path.replace(/^(?:ts\/latest\/|tmux\/)/, '')}/`
+      if (hasSwitcher) {
+        assert.equal(await portLinks.first().getAttribute('href'), expected)
+        assert.equal(await switcher.locator('.tmux-area a').getAttribute('href'), '/en/tmux/')
+      }
       if (path === 'py/stable/workspace/guides') {
-        assert.equal(await switcher.locator('a').count(), workspacePortCount)
+        assert.equal(await portLinks.count(), workspacePortCount)
         assert.equal(
           await switcher.locator('[aria-disabled="true"]').count(),
           PORTS.length - workspacePortCount,
@@ -640,12 +665,12 @@ try {
         assert(unavailable.some((label) => /Python/.test(label)), 'Python internals guide stays unavailable')
       }
       if (path === 'dotnet/latest/mcp/tools/capture_pane') {
-        assert.equal(await switcher.locator('a').count(), 8)
+        assert.equal(await portLinks.count(), 8)
         assert.equal(await switcher.locator('a[aria-current="page"]').getAttribute('href'), `/en/${path}/`)
       }
       if (isReference) {
         assert.equal(
-          await switcher.locator('a').count(),
+          await portLinks.count(),
           workspacePortCount,
           'Workspace construction has an equivalent in every published workspace product',
         )
@@ -660,8 +685,9 @@ try {
           headerHeight: document.querySelector('.site-header__bar').getBoundingClientRect().height,
           badgeForeground: getComputedStyle(document.querySelector('.prerelease-notice__badge')).color,
           schemeLabelWidth: document.querySelector('.scheme-switch__label').getBoundingClientRect().width,
-          headerControls: ['.site-header__search', '.scheme-switch', '.site-header__menu-button'].map((selector) => {
-            const { top, height } = document.querySelector(selector).getBoundingClientRect()
+          headerControls: ['.site-header__search', '.scheme-switch, .scheme-cycle', '.site-header__menu-button'].map((selector) => {
+            const control = [...document.querySelectorAll(selector)].find((node) => node.checkVisibility())
+            const { top, height } = control.getBoundingClientRect()
             return { top, height }
           }),
           redundantHeaderLinks: document.querySelectorAll('.site-header__wide-link').length,
@@ -786,7 +812,7 @@ try {
     for (const colorScheme of ['light', 'dark']) {
       await page.setViewportSize({ width: 390, height: 844 })
       await page.emulateMedia({ colorScheme })
-      await page.goto(`${base}/concepts/server-session-window-pane/`, { waitUntil: 'load' })
+      await page.goto(`${base}/sidebar-free-layout/`, { waitUntil: 'load' })
       const toolbar = await page.evaluate(() => {
         delete document.documentElement.dataset.themeMode
         const style = (selector) => getComputedStyle(document.querySelector(selector))
@@ -797,7 +823,7 @@ try {
       assert.equal(toolbar.icon, toolbar.text, `${colorScheme}: toolbar icons use the page text color`)
       const context = await browser.newContext({ javaScriptEnabled: false, colorScheme, viewport: { width: 390, height: 844 } })
       const noScript = await context.newPage()
-      await noScript.goto(`${base}/concepts/server-session-window-pane/`, { waitUntil: 'load' })
+      await noScript.goto(`${base}/tmux/concepts/server-session-window-pane/`, { waitUntil: 'load' })
       const checkContrast = async (scheme, selectors = ['h1', '.prose h2', '.prose p']) => {
         const samples = await noScript.evaluate((selectors) => {
           const context = document.createElement('canvas').getContext('2d')
@@ -832,9 +858,9 @@ try {
         }
       }
       await checkContrast(colorScheme)
-      assert.equal(await noScript.locator('.mobile-toolbar').isVisible(), false, 'No-JS hides inactive drawer buttons')
+      assert.equal(await noScript.locator('.documentation-context-navigation').isVisible(), false, 'No-JS hides inactive context drawer buttons')
       assert.equal(await noScript.locator('.mobile-fallback').isVisible(), true, 'No-JS has usable mobile navigation')
-      await checkContrast(colorScheme, ['.mobile-fallback summary'])
+      await checkContrast(colorScheme, ['.mobile-fallback summary', '.documentation-context .surface-current strong', '.documentation-context [data-page-port-switcher] > summary'])
       const browse = noScript.locator('.mobile-fallback > details').first()
       await browse.locator('summary').first().focus()
       await noScript.keyboard.press('Enter')
@@ -854,14 +880,12 @@ try {
       await context.close()
     }
     console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
+    await page.close()
     const failures = (await Promise.all([
       navigation, apiExamples, reference, preferences, globalHeader, apiNavigation,
       clipboard, nativeLayout, documentationNavigation, homeLauncher,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
-    await navigationPage.close()
-    await apiNavigationPage.close()
-    await clipboardPage.close()
   }
 } finally {
   await browser?.close()

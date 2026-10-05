@@ -1,10 +1,46 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { parseManual } from '../../scripts/gen-tmux-reference.mjs'
 import { buildsTmuxReference, tmuxCommandNotes, tmuxCommandsFor, tmuxGuidesFor, tmuxManualHtml, tmuxPageHeadings, tmuxReference, tmuxReferenceUrl } from '../src/lib/tmux-reference'
+import { highlightTmuxManual, linkTmuxManualEntries } from '../src/lib/tmux-manual'
+import { fromHtml } from 'hast-util-from-html'
+import { select, selectAll, type Nodes } from 'astro-expressive-code/hast'
+
+const contents = (node: Nodes): string => node.type === 'text' ? node.value
+  : 'children' in node ? node.children.map(contents).join('') : ''
 
 afterEach(() => { vi.unstubAllEnvs(); vi.resetModules() })
 
 describe('versioned tmux reference', () => {
+  beforeAll(async () => { await highlightTmuxManual('<pre>set -g status off</pre>') })
+  it.each(['3.2a', '3.7c'])('links every %s definition without colliding keys or losing old targets', (version) => {
+    const original = fromHtml(tmuxReference(version).manual, { fragment: true })
+    const linked = fromHtml(linkTmuxManualEntries(tmuxReference(version).manual), { fragment: true })
+    const ids = selectAll('[id]', linked).map((node) => node.properties.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const node of selectAll('[id]', original)) expect(ids).toContain(node.properties.id)
+    for (const node of selectAll('dt', linked)) {
+      expect(node.properties.id).toBeTruthy()
+      expect(select(`a[href="#${node.properties.id}"]`, node)).toBeDefined()
+      expect(select('a a', node)).toBeUndefined()
+    }
+    expect(contents(select('#default-key-binding-l', linked)!)).toBe('l')
+    expect(contents(select('#default-key-binding-shift-l', linked)!)).toBe('L')
+    expect(contents(select('#default-key-binding-left-bracket', linked)!)).toBe('[')
+    expect(contents(select('#default-key-binding-right-bracket', linked)!)).toBe(']')
+  })
+
+  it.each(['3.2a', '3.7c'])('highlights the %s manual without changing example text or destinations', async (version) => {
+    const html = tmuxManualHtml(tmuxReference(version).manual, version)
+    const original = fromHtml(html, { fragment: true })
+    const rendered = fromHtml(await highlightTmuxManual(html), { fragment: true })
+    expect(selectAll('pre:not([data-language="tmux-usage"])', rendered).map(contents))
+      .toEqual(selectAll('pre', original).map(contents))
+    expect(selectAll('pre span[style*="--shiki-light:"]', rendered).length).toBeGreaterThan(100)
+    expect(contents(select('[data-language="tmux-usage"]', rendered)!))
+      .toBe(contents(select('table.Nm', original)!).replace(/\s+/g, ' ').trim())
+    expect(selectAll('a', rendered).map((node) => node.properties.href))
+      .toEqual(selectAll('a', original).map((node) => node.properties.href))
+  })
   it('organizes every capture flag for lookup without showing flags from newer tmux releases', () => {
     const current = tmuxCommandNotes('latest', 'capture-pane')!
     const old = tmuxCommandNotes('3.2a', 'capture-pane')!
@@ -90,7 +126,7 @@ describe('versioned tmux reference', () => {
     expect(tmuxPageHeadings('latest', 'server-access').map((heading) => heading.slug))
       .toEqual(['server-access-syntax', 'server-access-behavior'])
     expect(tmuxGuidesFor('capture-pane').map((guide) => guide.href))
-      .toEqual([tmuxReferenceUrl().replace('/tmux/latest/reference/', '/guides/capturing-output/')])
+      .toEqual([tmuxReferenceUrl().replace('/tmux/latest/reference/', '/tmux/guides/capturing-output/')])
     expect(tmuxPageHeadings('3.2a', 'manual').some((heading) => heading.slug === 'COMMANDS')).toBe(true)
   })
 })

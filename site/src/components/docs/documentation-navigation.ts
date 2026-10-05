@@ -4,6 +4,48 @@ export function initDocumentationNavigation() {
   controller?.abort()
   controller = new AbortController()
   const { signal } = controller
+  for (const context of document.querySelectorAll<HTMLElement>('[data-documentation-context]')) {
+    const toggle = context.querySelector<HTMLButtonElement>('[data-context-settings-toggle]')!
+    const back = context.querySelector<HTMLButtonElement>('[data-context-settings-back]')!
+    const settings = context.querySelector<HTMLElement>('[data-context-settings]')!
+    if (!toggle || !back || !settings) continue
+    const compact = window.matchMedia('(max-width: 24rem)')
+    context.dataset.settingsEnhanced = ''
+    toggle.hidden = back.hidden = false
+    const closeSettings = () => {
+      for (const picker of settings.querySelectorAll<HTMLDetailsElement>('[data-doc-picker][open]')) picker.open = false
+      delete context.dataset.settingsOpen
+      toggle.setAttribute('aria-expanded', 'false')
+    }
+    toggle.addEventListener('click', () => {
+      if (!compact.matches) return
+      for (const picker of context.querySelectorAll<HTMLDetailsElement>('[data-doc-picker][open]')) picker.open = false
+      context.dataset.settingsOpen = ''
+      toggle.setAttribute('aria-expanded', 'true')
+      back.focus({ preventScroll: true })
+    }, { signal })
+    back.addEventListener('click', () => { closeSettings(); toggle.focus({ preventScroll: true }) }, { signal })
+    context.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !context.hasAttribute('data-settings-open')) return
+      event.preventDefault()
+      closeSettings()
+      toggle.focus({ preventScroll: true })
+    }, { signal })
+    compact.addEventListener('change', () => {
+      const focused = document.activeElement
+      const navigationOpen = context.querySelector('.documentation-context-navigation > button[aria-expanded="true"]')
+      closeSettings()
+      // A drawer must still have a visible opener to restore focus on close.
+      if (compact.matches && navigationOpen) {
+        context.dataset.settingsOpen = ''
+        toggle.setAttribute('aria-expanded', 'true')
+      }
+      // Keep keyboard focus on a visible control when resizing either way.
+      if (focused instanceof HTMLElement && context.contains(focused) && !focused.getClientRects().length) {
+        (compact.matches ? toggle : settings.querySelector<HTMLElement>('summary'))?.focus({ preventScroll: true })
+      }
+    }, { signal })
+  }
   for (const picker of document.querySelectorAll<HTMLDetailsElement>('[data-doc-picker]')) {
     const panel = picker.querySelector<HTMLElement>('[data-picker-panel]')!
     const summary = picker.querySelector<HTMLElement>(':scope > summary')!
@@ -25,8 +67,10 @@ export function initDocumentationNavigation() {
         if (topLayer && panel.matches(':popover-open')) panel.hidePopover()
         return
       }
+      const viewportWidth = document.documentElement.clientWidth
+      panel.style.maxWidth = `${Math.max(0, viewportWidth - 16)}px`
       const width = panel.getBoundingClientRect().width
-      panel.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - width - 8))}px`
+      panel.style.left = `${Math.max(8, Math.min(rect.left, viewportWidth - width - 8))}px`
       const below = window.innerHeight - rect.bottom - 14
       const above = rect.top - 14
       const upward = below < 220 && above > below

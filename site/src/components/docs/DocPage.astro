@@ -1,7 +1,7 @@
 ---
 import { getCollection, render, type CollectionEntry } from 'astro:content'
 import DocsLayout from '../../layouts/DocsLayout.astro'
-import { docsPath } from '../../lib/docs-paths'
+import { docsPath, proseHref, tmuxProsePath } from '../../lib/docs-paths'
 import { PORT_BY_SLUG, hasPackageInstalls, productApiPath, productAvailable } from '../../lib/ports'
 import DocCard from '../DocCard.astro'
 import PortLinks from '../PortLinks.astro'
@@ -14,7 +14,7 @@ import { DEFAULT_LOCALE, LOCALE_LABEL, localeRoot, type Locale } from '../../i18
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, contributeLink, repoPath } from '../../i18n/contribute'
 import { isIndexSource, markdownPath } from '../../lib/markdown-twins'
 import { t } from '../../i18n/ui'
-import { withRoot } from '../../lib/site-root'
+import { SITE_ROOT, withRoot } from '../../lib/site-root'
 import { selectPortCards } from '../../lib/workspace-shared-slots'
 import {
   localeOf,
@@ -53,7 +53,7 @@ const localeStatuses = localesEnabled() ? await localeStatusesFor(sourceId) : { 
 // Another locale's tree, so it composes through that locale's root rather
 // than this build's — withRoot would have produced /ja/concepts/ for a page
 // that lives at /en/concepts/.
-const englishHref = `${localeRoot(DEFAULT_LOCALE)}${sourceId}/`
+const englishHref = `${localeRoot(DEFAULT_LOCALE)}${entry.data.port ? sourceId : tmuxProsePath(sourceId)}/`
 
 /*
  * A placeholder gets no table of contents. `headings` is the English entry's,
@@ -86,6 +86,7 @@ const contribute = entry.filePath && !entry.data.source
 // The root build sets no port, so root prose stays canonical at the root.
 const buildPort = process.env.LIBTMUX_DOCS_PORT || undefined
 const port = entry.data.port ?? buildPort
+const publicPagePath = port ? pagePath : tmuxProsePath(pagePath)
 const cards = selectPortCards(entry.data.cards, port)
 const packageSource = port && entry.data.product ? API_MODELS[port]?.sources?.find((source) => source.product === entry.data.product) : undefined
 const isProductApi = entry.data.product && pagePath === productApiPath(entry.data.product)
@@ -132,14 +133,14 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
     ...headings,
     ...(isProductApi ? [{ depth: 2, slug: 'generated-api', text: 'API declarations' }] : []),
   ]}
-  pagePath={pagePath}
+  pagePath={publicPagePath}
   noindex={entry.data.noindex || Boolean(placeholderLocale)}
   canonicalOverride={placeholderLocale ? englishHref : undefined}
   updated={entry.data.updated}
   tableOfContents={showToc}
   locale={locale}
   locales={placeholderLocale || entry.data.product || entry.data.route ? [] : locales}
-  sourcePath={entry.data.product || entry.data.route ? pagePath : sourceId}
+  sourcePath={entry.data.product || entry.data.route ? publicPagePath : port ? sourceId : tmuxProsePath(sourceId)}
   localeStatuses={localeStatuses}
   pageSource={entry.data.source ?? (entry.filePath ? { repo: CONTRIBUTE_REPO, path: repoPath(entry.filePath), ref: CONTRIBUTE_BRANCH } : undefined)}
   markdownIndex={isIndexSource(entry.filePath)}
@@ -215,7 +216,7 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
       <p class="mb-6 text-sm opacity-80">
         {t(locale, 'i18n.available')}:{' '}
         {translations.map((l) => (
-          <a class="underline" href={`${localeRoot(l)}${sourceId}/`}>
+          <a class="underline" href={`${localeRoot(l)}${publicPagePath}/`}>
             {LOCALE_LABEL[l]}
           </a>
         ))}
@@ -253,7 +254,7 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   )}
   {!placeholderLocale && cards.length > 0 && (
     <div class="not-prose mt-8 mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {cards.map((card) => <DocCard href={card.href} label={card.label} body={card.body} />)}
+      {cards.map((card) => <DocCard href={proseHref(card.href, SITE_ROOT, port, version)} label={card.label} body={card.body} />)}
     </div>
   )}
   {!placeholderLocale && <Content />}

@@ -7,6 +7,7 @@ import { composeFromParts, portParts, sharedParts, TOPICS, VERSION_SENTINEL } fr
 import { DEFAULT_LOCALE, localeRoot } from '../../i18n/locales'
 import { SITE_ROOT } from '../../lib/site-root'
 import RerollButton from '../RerollButton.astro'
+import TaskPicker from './TaskPicker.astro'
 
 /**
  * The prompt a reader copies into a coding agent, with a picker for which
@@ -48,6 +49,8 @@ interface Props {
   defaultTopic?: string
   /** Hide the tabs when the page supplies a shared language picker. */
   showLanguageTabs?: boolean
+  /** Allow a homepage reader to clear their explicit task choice. */
+  showTaskReset?: boolean
   variant?: 'full' | 'compact'
   /**
    * Where the copy button sits. `overlay`, the default, floats it over the
@@ -57,7 +60,7 @@ interface Props {
   copyButton?: 'gutter' | 'overlay'
 }
 
-const { ports, defaultPort, defaultTopic = 'setup', showLanguageTabs = true, variant = 'full', copyButton = 'overlay' } = Astro.props as Props
+const { ports, defaultPort, defaultTopic = 'setup', showLanguageTabs = true, showTaskReset = false, variant = 'full', copyButton = 'overlay' } = Astro.props as Props
 // A page that names its task, such as /prompts/<topic>/, opens on it. The
 // others open on the task the reader last chose.
 const topicPinned = 'defaultTopic' in Astro.props
@@ -153,6 +156,7 @@ const activePortRules = items
   data-ports={items.map((p) => p.slug).join(' ')}
   data-default-topic={defaultTopic}
   data-topic-pinned={topicPinned ? '' : undefined}
+  data-resettable-task={showTaskReset ? '' : undefined}
   data-root={SITE_ROOT || '/'}
 >
   {
@@ -176,7 +180,7 @@ const activePortRules = items
 
   <div class="lm-agent-prompt__controls">
     <div class="lm-agent-prompt__task">
-      <label class="lm-agent-prompt__control">
+      {showTaskReset ? <TaskPicker defaultTopic={defaultTopic} /> : <label class="lm-agent-prompt__control">
         <span class="lm-agent-prompt__label">Task</span>
         <select class="lm-agent-prompt__select" data-select="topic">
           {
@@ -187,9 +191,9 @@ const activePortRules = items
             ))
           }
         </select>
-      </label>
+      </label>}
       {/* Beside the label, not in it: a button inside a label passes its click to the select. */}
-      <RerollButton size="sm" title="Pick another task" data-action="reroll" />
+      <RerollButton size={showTaskReset ? 'lg' : 'sm'} title="Pick another task" data-action="reroll" />
     </div>
     <label class="lm-agent-prompt__control" data-version-control hidden>
       <span class="lm-agent-prompt__label">Version</span>
@@ -340,6 +344,32 @@ const activePortRules = items
     margin: 0;
     font-size: 0.8rem;
     color: var(--lm-agent-prompt-fg-muted);
+  }
+
+  .lm-agent-prompt[data-resettable-task] .lm-agent-prompt__controls { flex-wrap: nowrap; }
+  .lm-agent-prompt[data-resettable-task] :is(.lm-agent-prompt__task, .lm-agent-prompt__control) { min-width: 0; }
+  .lm-agent-prompt[data-resettable-task] .lm-agent-prompt__task { flex-shrink: 0; }
+  .lm-agent-prompt[data-resettable-task] .lm-agent-prompt__select { min-width: 0; max-width: 100%; }
+  .lm-agent-prompt[data-resettable-task] .lm-agent-prompt__summary {
+    min-width: 0;
+    min-height: 2.8em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    line-height: 1.4;
+    white-space: normal;
+    text-overflow: ellipsis;
+  }
+
+  @container (max-width: 36rem) {
+    .lm-agent-prompt[data-resettable-task] .lm-agent-prompt__summary { display: none; }
+    .lm-agent-prompt[data-resettable-task] .lm-agent-prompt__task { flex: 1; }
+    .lm-agent-prompt[data-resettable-task] .task-picker { flex: 1; }
+    .lm-agent-prompt[data-resettable-task] .lm-agent-prompt__control { flex: 1; }
+    .lm-agent-prompt[data-resettable-task] .lm-agent-prompt__select { width: 100%; }
+    .lm-agent-prompt[data-resettable-task] .lm-agent-prompt__controls { gap: .5rem; padding-inline: .6rem; }
   }
 
   .lm-agent-prompt__body {
@@ -511,6 +541,8 @@ const activePortRules = items
     supported: boolean
   }
 
+  import { HOME_PORT_PREVIEW_EVENT } from '../../lib/home-hover-preview'
+
   const STORAGE_KEY = 'libtmux-docs.package-install.port'
   const SYNC_EVENT = 'lm-pkg-install:change'
   const TOPIC_KEY = 'libtmux-docs.agent-prompt.topic'
@@ -572,6 +604,23 @@ const activePortRules = items
     const summary = widget.querySelector<HTMLElement>('[data-summary]')
     const known = TOPIC_BY_ID[topic]
     if (summary && known) summary.textContent = known.summary
+    const select = widget.querySelector<HTMLSelectElement>('[data-select="topic"]')
+    if (select && known) select.title = known.summary
+    const menu = widget.querySelector<HTMLDetailsElement>('[data-task-menu]')
+    if (menu && known) {
+      menu.querySelector('[data-task-current]')!.textContent = known.label
+      menu.querySelector('summary')!.setAttribute('aria-label', `Task: ${known.label}`)
+      menu.querySelector('summary')!.title = known.summary
+      for (const option of menu.querySelectorAll<HTMLAnchorElement>('[data-task-option]')) {
+        const current = option.dataset.taskOption === topic
+        if (current) option.setAttribute('aria-current', 'true')
+        else option.removeAttribute('aria-current')
+        option.querySelector<HTMLElement>('.doc-picker-check')!.hidden = !current
+        const url = new URL(window.location.href)
+        url.searchParams.set(TOPIC_PARAM, option.dataset.taskOption!)
+        option.href = url.href
+      }
+    }
   }
 
   function selectPort(widget: HTMLElement, slug: string, persist: boolean) {
@@ -733,7 +782,26 @@ const activePortRules = items
     const url = new URL(window.location.href)
     url.searchParams.set(TOPIC_PARAM, topic)
     history.replaceState(history.state, '', url)
+    const reset = widget.querySelector<HTMLButtonElement>('[data-action="reset-topic"]')
+    if (reset) reset.hidden = false
     render(widget)
+  }
+
+  function resetTopic(widget: HTMLElement) {
+    const select = widget.querySelector<HTMLSelectElement>('[data-select="topic"]')
+    if (!select) return
+    try { localStorage.removeItem(TOPIC_KEY) } catch { /* The URL still clears the choice. */ }
+    const url = new URL(window.location.href)
+    url.searchParams.delete(TOPIC_PARAM)
+    history.replaceState(history.state, '', url)
+    select.value = widget.dataset.defaultTopic ?? 'setup'
+    const reset = widget.querySelector<HTMLButtonElement>('[data-action="reset-topic"]')
+    if (reset) reset.hidden = true
+    render(widget)
+    const menu = widget.querySelector<HTMLDetailsElement>('[data-task-menu]')
+    if (menu) menu.open = false
+    const control = menu?.querySelector('summary') ?? select
+    control.focus({ preventScroll: true })
   }
 
   /** Choose another task at random, from the ones this picker offers. */
@@ -757,9 +825,16 @@ const activePortRules = items
       saved = null
     }
     widgets().forEach((widget) => {
+      const enhanced = widget.querySelector<HTMLElement>('[data-task-enhanced]')
+      if (enhanced) {
+        widget.querySelector<HTMLElement>('[data-task-native]')!.hidden = true
+        enhanced.hidden = false
+      }
       const topic = startingTopic(widget)
       const select = widget.querySelector<HTMLSelectElement>('[data-select="topic"]')
-      if (topic && select) select.value = topic
+      if (select) select.value = topic ?? widget.dataset.defaultTopic ?? 'setup'
+      const reset = widget.querySelector<HTMLButtonElement>('[data-action="reset-topic"]')
+      if (reset) reset.hidden = !topic
       // A saved language this widget does not offer falls back to its own
       // port; selectPort would ignore it and leave the restored task unrendered.
       const offered = widget.dataset.ports?.split(' ') ?? []
@@ -769,8 +844,27 @@ const activePortRules = items
     })
   }
 
+  // Handle local task links before Astro's document-level navigation listener.
   document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement
+    const task = target.closest<HTMLAnchorElement>('[data-task-option]')
+    if (task && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+      const widget = task.closest<HTMLElement>('.lm-agent-prompt')!
+      event.preventDefault()
+      chooseTopic(widget, task.dataset.taskOption!)
+      const menu = task.closest('details')!
+      menu.open = false
+      menu.querySelector('summary')!.focus({ preventScroll: true })
+    }
+  }, { capture: true })
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement
+    const reset = target.closest('[data-action="reset-topic"]')?.closest<HTMLElement>('.lm-agent-prompt')
+    if (reset) {
+      resetTopic(reset)
+      return
+    }
     const copy = target.closest<HTMLElement>('[data-action="copy"]')
     if (copy?.closest('.lm-agent-prompt')) {
       event.preventDefault()
@@ -799,6 +893,10 @@ const activePortRules = items
   })
 
   // The package picker and this one share a language, in both directions.
+  window.addEventListener(HOME_PORT_PREVIEW_EVENT, ((event: CustomEvent<{ slug: string }>) => {
+    widgets().forEach((widget) => selectPort(widget, event.detail.slug, false))
+  }) as EventListener)
+
   window.addEventListener(SYNC_EVENT, ((event: CustomEvent<{ origin: HTMLElement; slug: string }>) => {
     widgets().forEach((widget) => {
       if (widget === event.detail.origin) return

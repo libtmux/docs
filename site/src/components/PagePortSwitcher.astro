@@ -2,14 +2,22 @@
 import type { PagePortLink } from '../lib/page-port-links'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { branding } from '../lib/branding'
-import { withRoot } from '../lib/site-root'
+import { withRoot, withPortRoot } from '../lib/site-root'
+import TmuxLogo from './tmux/Logo.astro'
 import '../styles/documentation-picker.css'
 
-interface Props { entries: PagePortLink[]; portSlug?: string; label?: string }
-const { entries, portSlug, label } = Astro.props
+interface Props {
+  entries: PagePortLink[]
+  portSlug?: string
+  label?: string
+  tmux?: boolean
+  /** Language artwork belongs only to the homepage launcher's trigger. */
+  homeLanguageIcons?: boolean
+}
+const { entries, portSlug, label, tmux = false, homeLanguageIcons = false } = Astro.props
 const current = entries.find((entry) => entry.port === portSlug)
-const name = current?.name ?? PORT_BY_SLUG[portSlug ?? '']?.name ?? 'In other ports'
-const shortName = PORT_BY_SLUG[portSlug ?? '']?.shortName ?? name
+const name = tmux ? 'tmux CLI' : current?.name ?? PORT_BY_SLUG[portSlug ?? '']?.name ?? 'In other ports'
+const shortName = tmux ? 'tmux' : PORT_BY_SLUG[portSlug ?? '']?.shortName ?? name
 const families = [
   { label: 'Scripting & web', ports: ['py', 'ruby', 'lua', 'ts'] },
   { label: 'Compiled & native', ports: ['rs', 'go', 'cxx', 'swift'] },
@@ -20,9 +28,15 @@ const known = new Set(families.flatMap((family) => family.ports))
 families.push({ label: 'Other languages', ports: entries.filter((entry) => !known.has(entry.port)).map((entry) => entry.port) })
 ---
 <details class="doc-picker" data-page-port-switcher data-doc-picker>
-  <summary aria-label={label ?? `${name}: this page in other programming languages`}>
-    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="m5 4-4 4 4 4m6-8 4 4-4 4M9.5 2l-3 12" stroke-linecap="round" stroke-linejoin="round" /></svg>
-    <span class="page-port-name">{name}</span><span class="page-port-short-name" aria-hidden="true">{shortName}</span>
+  <summary aria-label={label ?? `${name}: choose a language or tmux documentation`}>
+    <span class:list={['page-port-icon', { 'home-language-icon': homeLanguageIcons }]} aria-hidden="true">
+      <svg data-home-default-icon={homeLanguageIcons || undefined} viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="m5 4-4 4 4 4m6-8 4 4-4 4M9.5 2l-3 12" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      {homeLanguageIcons && entries.map((entry) => <img
+        data-home-language-icon={entry.port}
+        src={withRoot(`/brand/languages/${entry.port}/icon.svg`)}
+        width="24" height="24" alt="" loading="eager" decoding="sync" />)}
+    </span>
+    <span class="page-port-name">{homeLanguageIcons ? 'Choose a language' : name}</span><span class="page-port-short-name" aria-hidden="true">{homeLanguageIcons ? 'Port' : shortName}</span>
     <svg class="doc-picker-caret" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
   </summary>
   <div class="doc-picker-panel port-picker-panel" data-picker-panel>
@@ -51,13 +65,27 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
         </div>
       </section>
     })}
+    <section class="tmux-area" data-picker-group>
+      <h3 class="doc-picker-title">Just tmux</h3>
+      <a class="doc-picker-option" href={withPortRoot('/tmux/')} data-picker-option
+        data-match="just tmux cli terminal manual commands guides topics reference"
+        aria-current={tmux ? 'location' : undefined}>
+        <TmuxLogo size={26} /><span>tmux CLI</span>
+        <span class="tmux-destination" aria-hidden="true">
+          {tmux && <span class="doc-picker-check">✓</span>}<span>→</span>
+        </span>
+      </a>
+    </section>
     <p class="doc-picker-empty" data-picker-empty hidden>No matching ports.</p>
     <p class="sr-only" role="status" data-picker-status></p>
   </div>
 </details>
 <style>
+  .page-port-icon { display: grid; place-items: center; flex: none; }
   .page-port-short-name { display: none; }
   .port-family + .port-family { margin-top: .65rem; }
   .port-family h3 { margin: .75rem .4rem .25rem; font-size: .6875rem; font-weight: 400; text-transform: uppercase; letter-spacing: .025em; color: var(--color-muted); }
   .port-artwork { flex: none; width: 1.625rem; height: 1.625rem; object-fit: contain; }
+  .tmux-area { margin-top: .75rem; padding-top: .5rem; border-top: 1px solid var(--color-edge); }
+  .tmux-destination { display: inline-flex; align-items: center; gap: .5rem; margin-left: auto; }
 </style>

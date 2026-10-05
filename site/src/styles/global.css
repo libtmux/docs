@@ -2,8 +2,8 @@
    layer so Tailwind utilities keep cascade priority over it; unlayered
    imports would beat every layered rule regardless of specificity.
 
-   Motion: this site is intentionally motionless — no transitions,
-   animations, or smooth scrolling anywhere. */
+   Navigation is motionless. Homepage hover previews have a brief fade,
+   disabled when the reader prefers reduced motion. */
 @import "tailwindcss";
 @import "./gp-sphinx-tokens.css";
 @import "./brand.css";
@@ -226,6 +226,12 @@
  */
 html {
   scroll-padding-top: calc(var(--topnav-height, 3rem) + 1.5rem);
+}
+
+/* Header controls are already visible above the reserved reading area. Do not
+   scroll the document to bring a focused control out from behind the header. */
+html:has(.site-header :focus) {
+  scroll-padding-top: 0;
 }
 
 :target {
@@ -771,9 +777,18 @@ body[data-documentation-layout='reference'] {
   padding: 0.5rem var(--site-gutter);
 }
 
+.prerelease-notice--centered {
+  --site-gutter: 1rem;
+}
+
 .prerelease-notice--centered .prerelease-notice__inner {
   max-width: 80rem;
-  padding-inline: 1rem;
+}
+
+@media (min-width: 40rem) {
+  body:has(.home-launcher) .prerelease-notice--centered {
+    --site-gutter: 1.5rem;
+  }
 }
 
 .prerelease-notice__text {
@@ -841,18 +856,30 @@ body[data-documentation-layout='reference'] {
   outline-offset: 2px;
 }
 
-/* Below the header's own wrap point the sentence needs the full width, so the
-   button moves under it rather than squeezing the text to two words a line. */
+.prerelease-notice__dismiss-icon { display: none; }
+
+/* Keep the sentence full width; the close control shares the badge's row. */
 @media (max-width: 30rem) {
   .prerelease-notice__inner {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.5rem;
+    position: relative;
+    display: block;
   }
-
+  .prerelease-notice__text { row-gap: .75rem; }
+  .prerelease-notice__text > span { flex-basis: 100%; }
+  .prerelease-notice__badge { margin-inline-end: 2.5rem; }
   .prerelease-notice__dismiss {
-    align-self: flex-end;
+    position: absolute;
+    top: .25rem;
+    right: var(--site-gutter);
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border-color: transparent;
+    background: transparent;
   }
+  .prerelease-notice__dismiss-label { display: none; }
+  .prerelease-notice__dismiss-icon { display: block; }
 }
 
 /*
@@ -895,6 +922,13 @@ body[data-documentation-layout='reference'] {
   background: color-mix(in oklab, var(--topnav-background), var(--topnav-text-color) 10%);
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  html[data-home-scheme-fade] body,
+  html[data-home-scheme-fade] body :where(*) {
+    transition: background-color 180ms ease-out, color 180ms ease-out, border-color 180ms ease-out;
+  }
+}
+
 .scheme-switch__icon {
   display: inline-flex;
 }
@@ -927,6 +961,15 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 .scheme-switch__option:focus-within {
   outline: 2px solid var(--focus-ring-color);
   outline-offset: 1px;
+}
+
+.scheme-cycle { display: none; align-items: center; justify-content: center; width: 2rem; height: 1.75rem; padding: .25rem; border: 1px solid var(--color-background-border); border-radius: var(--radius-md, .375rem); color: var(--topnav-link-color); background: transparent; cursor: pointer; }
+.scheme-cycle [data-scheme-cycle-icon] { display: flex; }
+.scheme-cycle:hover { background: var(--color-surface-hover); }
+.scheme-cycle:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+@media (max-width: 40rem) {
+  .scheme-cycle:not([hidden]) { display: inline-flex; }
+  .scheme-switch:has(+ .scheme-cycle:not([hidden])) { display: none; }
 }
 
 /* Keep full language names by hiding the scheme labels first. */
@@ -1101,6 +1144,22 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   }
 }
 
+@media (max-width: 20rem) {
+  body { --site-gutter: .5rem; }
+  .site-header__bar { gap: .35rem; }
+}
+
+@media (max-width: 19rem) {
+  .site-header__wordmark {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
 /* A landscape phone has ~320px of height and the sticky bar is charged
    against every one of them. */
 @media (max-height: 30rem) {
@@ -1185,11 +1244,11 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   transform: rotate(180deg);
 }
 
-@media (min-width: 48rem) and (max-width: 95.999rem) {
+@media (max-width: 95.999rem) {
   .site-header__menu-label { display: none; }
   .site-header__bar { gap: 0.5rem; }
 }
-@media (min-width: 48rem) and (max-width: 69.999rem) {
+@media (max-width: 69.999rem) {
   .site-header__search-label { display: none; }
 }
 @media (max-width: 25rem) {

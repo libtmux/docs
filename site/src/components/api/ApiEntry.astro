@@ -1,7 +1,8 @@
 ---
 import { parameterId, qualifiedNameOf, type ApiSymbol, type SymbolIndex } from '@libtmux/api-model'
 import { API_MODELS, mentionsOf, referenceAlternatives } from '../../lib/api-models'
-import { withRoot } from '../../lib/site-root'
+import { SITE_ROOT } from '../../lib/site-root'
+import { proseHref } from '../../lib/docs-paths'
 import { Code } from 'astro-expressive-code/components'
 import { codeLang } from '../../lib/highlight'
 import Aside from '../Aside.astro'
@@ -630,7 +631,7 @@ const hasBody =
                 .map((m, j) => (
                   <>
                     {j > 0 && ', '}
-                    <a href={withRoot(m.page)}>{m.title ?? m.page}</a>
+                    <a href={proseHref(m.page, SITE_ROOT)}>{m.title ?? m.page}</a>
                   </>
                 ))}
             </>

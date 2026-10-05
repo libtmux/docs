@@ -43,6 +43,32 @@ afterEach(async () => {
 })
 
 describe('theme preference across Astro and native pages', () => {
+  it.each(['light', 'dark', 'system'])('previews %s without changing the saved Astro preference', (preview) => {
+    const { window } = page({ 'color-scheme': 'dark' }, 'light')
+    window.document.documentElement.setAttribute('data-home-scheme-preview', preview)
+    astro(window)
+    expect(window.document.documentElement.getAttribute('data-theme-mode')).toBe(preview === 'system' ? 'light' : preview)
+    expect(window.document.documentElement.getAttribute('data-color-scheme')).toBe('dark')
+    expect(window.localStorage.getItem('color-scheme')).toBe('dark')
+    window.document.documentElement.removeAttribute('data-home-scheme-preview')
+    window.eval('applyTheme()')
+    expect(window.document.documentElement.getAttribute('data-theme-mode')).toBe('dark')
+  })
+
+  it.each([
+    ['', '', null],
+    ['', 'ruby', 'ruby'],
+    ['?port=lua', 'ruby', 'lua'],
+    ['?port=unknown', 'ruby', 'ruby'],
+    ['?port=unknown', 'missing', null],
+  ])('resolves a homepage icon before paint: URL %s, saved %s', (query, saved, expected) => {
+    const { window } = page(saved ? { 'libtmux-docs.package-install.port': saved } : {})
+    window.location.href = `https://libtmux.org/en/${query}`
+    window.document.documentElement.setAttribute('data-home-ports', 'py ruby lua')
+    astro(window)
+    expect(window.document.documentElement.getAttribute('data-home-selected-port')).toBe(expected)
+  })
+
   it.each([
     ['dark', 'light', 'dark'], ['light', 'dark', 'light'],
     ['system', 'dark', 'dark'], ['system', 'light', 'light'],

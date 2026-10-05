@@ -1,0 +1,11 @@
+---
+import { withPortRoot } from '../../lib/site-root'
+
+interface Props { size?: number }
+const { size = 30 } = Astro.props
+---
+<img class="tmux-logo" src={withPortRoot('/brand/tmux/tmux-logomark.svg')}
+  width={size} height={size} alt="" aria-hidden="true" decoding="sync" />
+<style>
+  .tmux-logo { flex: none; object-fit: contain; }
+</style>

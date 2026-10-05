@@ -1,0 +1,26 @@
+{
+  "name": "Java",
+  "asset": "icon.svg",
+  "sourceUrl": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/java/java-original.svg",
+  "resolvedUrl": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/java/java-original.svg",
+  "sourcePage": "https://github.com/devicons/devicon/tree/7330accdbc47e2dc0c19789a48533c4a3c50fe58/icons/java",
+  "retrievedAt": "2026-10-04T14:52:42+00:00",
+  "sha256": "7582e518a9c02425f97155e5a3bd39d1a3a7d421b78caf9c8df7443dad3edc5d",
+  "copyright": "Devicon collection: Copyright (c) 2015 konpa. Java and related marks are trademarks of Oracle and/or its affiliates. The SVG has no separate artwork copyright notice.",
+  "license": {
+    "name": "MIT for the Devicon copy; underlying Java logo rights are not established by that license",
+    "urls": [
+      "https://github.com/devicons/devicon/blob/7330accdbc47e2dc0c19789a48533c4a3c50fe58/LICENSE",
+      "https://www.oracle.com/legal/logos/"
+    ],
+    "notes": "This is a community SVG, not an Oracle-supplied asset. MIT does not establish unrestricted rights to the Java logo. Oracle generally requires authorization for its logos. No Oracle authorization is recorded here; use is limited to identifying Java in the language selector.",
+    "localCopy": {
+      "file": "LICENSE.txt",
+      "sourceUrl": "https://raw.githubusercontent.com/devicons/devicon/7330accdbc47e2dc0c19789a48533c4a3c50fe58/LICENSE",
+      "retrievedAt": "2026-10-04T14:52:42+00:00",
+      "sha256": "121194741d4a915b9f5890fdd6dd95121f9b1f816517c792358d72d7c838d664"
+    }
+  },
+  "modifications": "None. The downloaded SVG bytes are preserved.",
+  "upstreamRevision": "7330accdbc47e2dc0c19789a48533c4a3c50fe58"
+}

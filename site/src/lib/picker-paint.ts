@@ -22,9 +22,17 @@ import { PORTS } from './ports'
  */
 export function pickerPaintRules(): string {
   return '.site-header__logos img{visibility:hidden}.site-header__logos img[data-home-logo-default]{visibility:inherit}'
+    + '.home-language-icon{display:inline-flex;align-items:center;justify-content:center;flex:none;width:var(--home-launcher-icon-size,1.5rem);height:var(--home-launcher-icon-size,1.5rem)}'
+    + '.home-language-icon img{display:none;width:var(--home-launcher-icon-size,1.5rem);height:var(--home-launcher-icon-size,1.5rem);object-fit:contain}'
+    // The supplied Python SVG reserves space below the snakes for a shadow.
+    + '.home-language-icon img[data-home-language-icon="py"]{transform:translateY(8.333%)}'
+    + 'html[data-theme-mode="light"] .home-language-icon{color-scheme:light}'
+    + 'html[data-theme-mode="dark"] .home-language-icon{color-scheme:dark}'
     + PORTS.map((p) => paintPort(p.slug, 'lm-pkg-install') + paintPort(p.slug, 'lm-agent-prompt') + paintPortManagers(p)
       + `html[data-pkg-port="${p.slug}"] .site-header__logos img{visibility:hidden}`
-      + `html[data-pkg-port="${p.slug}"] .site-header__logos img[data-home-logo="${p.slug}"]{visibility:inherit}`).join('')
+      + `html[data-pkg-port="${p.slug}"] .site-header__logos img[data-home-logo="${p.slug}"]{visibility:inherit}`
+      + `html[data-home-selected-port="${p.slug}"] .home-language-icon [data-home-default-icon]{display:none}`
+      + `html[data-home-selected-port="${p.slug}"] .home-language-icon img[data-home-language-icon="${p.slug}"]{display:block}`).join('')
 }
 
 /** A port's library and each companion package keep their own saved manager. */

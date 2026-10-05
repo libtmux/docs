@@ -15,7 +15,7 @@ The program prints its name and leaves the tmux server running. It reports an
 error if the connection fails or the session is absent.
 
 This controls tmux from your program. To open a session in your terminal, use
-`tmux attach-session`; the [shared guide](../../../../guides/attaching-to-tmux/) covers
+`tmux attach-session`; the [shared guide](../../../../tmux/guides/attaching-to-tmux/) covers
 interactive attachment and detaching.
 
 <a id="which-socket-a-bare-constructor-reaches"></a>

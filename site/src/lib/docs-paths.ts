@@ -2,12 +2,17 @@
 import { PORT_BY_SLUG } from './ports.ts'
 import { SOURCE_GUIDE_PORTS, sourceGuideRedirectsFor } from './port-documentation.ts'
 
+/** Shared tmux prose has one public home, outside the language libraries. */
+export function tmuxProsePath(path: string): string {
+  return /^(guides|topics|concepts|examples)(?:\/|$)/.test(path) ? `tmux/${path}` : path
+}
+
 /** Task links stay in the reader's port and version; explicit port links stay explicit. */
 export function proseHref(href: string, root: string, port?: string, version = 'latest'): string {
   if (!href.startsWith('/') || href.startsWith('//')) return href
   const section = /^\/(concepts|guides|topics|examples)(?:\/|[?#]|$)/.exec(href)?.[1]
   const local = port && section && (!PORT_BY_SLUG[port]?.parentLibrary || section === 'concepts')
-  return `${root.replace(/\/+$/, '')}${local ? `/${port}/${version}` : ''}${href}`
+  return `${root.replace(/\/+$/, '')}${local ? `/${port}/${version}` : section ? '/tmux' : ''}${href}`
 }
 
 export interface DocsPage {
@@ -36,7 +41,8 @@ export function docsRoutePath(
   defaults: Record<string, string> = {},
 ): string {
   const path = docsPath(entry)
-  if (!entry.data.port || buildPort) return path
+  if (buildPort) return path
+  if (!entry.data.port) return tmuxProsePath(path)
   const port = entry.data.port!
   return `${port}/${defaults[port] ?? 'latest'}/${path}`
 }

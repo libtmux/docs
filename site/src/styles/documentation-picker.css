@@ -27,3 +27,9 @@
 .doc-picker-empty { padding: .75rem .5rem; }
 .doc-picker [hidden] { display: none !important; }
 .doc-picker :is(summary, a, input):focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+.clearable-picker { position: relative; min-width: 0; }
+.clearable-picker:has(> .picker-clear:not([hidden])) > .doc-picker > summary .doc-picker-caret { margin-left: 1.8rem; }
+.picker-clear { position: absolute; top: 50%; right: 1.6rem; transform: translateY(-50%); display: grid; place-items: center; width: 1.5rem; height: 1.5rem; padding: 0; border: 0; border-radius: .25rem; background: transparent; color: var(--color-muted); cursor: pointer; }
+.picker-clear[hidden] { display: none; }
+.picker-clear:hover { background: var(--color-surface-hover); color: var(--text-color); }
+.picker-clear:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 1px; }

@@ -2,8 +2,9 @@
  * Viewer-request function for the libtmux.org CloudFront distribution.
  * Runtime: cloudfront-js-2.0.
  *
- * Four rules, and the order matters. The origin root is answered first and
- * alone; every other path is already below a locale. The KVS lookup runs next
+ * The order matters. The origin root is answered first and
+ * alone; every other path is already below a locale. Shared prose redirects
+ * into the tmux tree before the KVS lookup runs,
  * because both
  * bare forms it targets would otherwise be swallowed: `/py` has no extension,
  * so rule 3 would 301 it to `/py/` and stop; `/py/` ends in `/`, so rule 2
@@ -46,6 +47,32 @@ async function handler(event) {
             headers: {
                 location: { value: `/${DEFAULT_LOCALE}/` },
                 'cache-control': { value: 'public, max-age=0, s-maxage=300' },
+            },
+        }
+    }
+
+    // Shared prose belongs to tmux. Preserve locale, preview and deep paths.
+    const prose = /^((?:\/pr-\d+)?\/[a-z]{2}(?:-[A-Za-z0-9]+)*)\/(guides|topics|concepts|examples)(?=\/|\.md$|$)/.exec(uri)
+    if (prose) {
+        let target = `${prose[1]}/tmux/${uri.slice(prose[1].length + 1)}`
+        target = target.replace(/\/index\.html$/, '/')
+        const name = target.slice(target.lastIndexOf('/') + 1)
+        const dot = name.lastIndexOf('.')
+        const ext = dot === -1 ? '' : name.slice(dot + 1).toLowerCase()
+        if (!target.endsWith('/') && !ASSET_EXTENSIONS[ext]) target += '/'
+        const parameters = []
+        Object.keys(request.querystring || {}).forEach((key) => {
+            const item = request.querystring[key]
+            const values = item.multiValue || [item]
+            values.forEach((value) => parameters.push(`${key}=${value.value}`))
+        })
+        const query = parameters.join('&')
+        return {
+            statusCode: 301,
+            statusDescription: 'Moved Permanently',
+            headers: {
+                location: { value: `${target}${query ? `?${query}` : ''}` },
+                'cache-control': { value: 'public, max-age=86400' },
             },
         }
     }

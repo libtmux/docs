@@ -9,6 +9,7 @@ import { buildTarget } from '../lib/versions'
 import CodeTabs from '../components/CodeTabs.astro'
 import { generateToC } from '../utils/generateToC'
 import { DEFAULT_LOCALE, localeSourcePath, type Locale } from '../i18n/locales'
+import type { LocaleStatus } from '../i18n/resolve'
 import PageToolbar from '../components/PageToolbar.astro'
 import DocumentationContext from '../components/docs/DocumentationContext.astro'
 import { pageBreadcrumbs, type SidebarItem } from '../lib/sidebar'
@@ -63,7 +64,7 @@ interface Props {
   /** Overrides the computed canonical. A placeholder points at its English page. */
   canonicalOverride?: string
   /** Every locale's status for this page, for the locale switcher. */
-  localeStatuses?: Record<string, string>
+  localeStatuses?: Record<string, LocaleStatus>
   /** Forwarded to BaseLayout's machine-readable footer. */
   pageSource?: PageSource
   markdownIndex?: boolean
@@ -124,6 +125,8 @@ const version = requestedVersion ?? buildTarget(process.env).version
 // reading it directly means this layout doesn't have to trust that every
 // caller formats `pagePath` the same way BaseLayout does.
 const currentPath = Astro.url.pathname
+const hasContext = Boolean(port) || /^(tmux|guides|topics|concepts|examples)(\/|$)/.test(pagePath)
+const contextVersion = port ? version : pagePath.match(/^tmux\/([^/]+)\/(?:reference|manual)/)?.[1] ?? 'latest'
 
 const tocItems =
   tableOfContents && headings.length > 0 ? generateToC(headings) : []
@@ -147,7 +150,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
   description={description}
   pagePath={pagePath}
   portSlug={port}
-  documentationLayout={port ? 'prose' : undefined}
+  documentationLayout={hasContext ? 'prose' : undefined}
   version={version}
   noindex={noindex}
   searchable={searchable}
@@ -163,12 +166,12 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
   markdown={markdown}
   repository={product && port ? API_MODELS[port]?.sources?.find((source) => source.product === product)?.repo : undefined}
 >
-  {port && <DocumentationContext slot="context" port={port} version={version} locale={locale}
-    sourcePath={localeSourcePath(Astro.url.pathname, locale)} pagePorts={pagePorts}>
+  {hasContext && <DocumentationContext slot="context" port={port} version={contextVersion} locale={locale}
+    sourcePath={localeSourcePath(Astro.url.pathname, locale)} pagePorts={pagePorts} localeStatuses={localeStatuses}>
     <DocumentationNavigationButtons slot="navigation" tableOfContents={tocItems.length > 0} />
   </DocumentationContext>}
   <CodeTabs />
-  {!port && <div class="mobile-toolbar lg:hidden"><DocumentationNavigationButtons tableOfContents={tocItems.length > 0} /></div>}
+  {!hasContext && <div class="mobile-toolbar lg:hidden"><DocumentationNavigationButtons tableOfContents={tocItems.length > 0} /></div>}
 
   <noscript>
     <style is:inline>
@@ -225,7 +228,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
     </aside>
 
     <main class="min-w-0 flex-1">
-      {(!port || pagePath) && <PageToolbar breadcrumbs={breadcrumbs} pagePorts={port ? [] : pagePorts} port={port} editHref={editHref} editLabel={editLabel} />}
+      {(!port || pagePath) && <PageToolbar breadcrumbs={breadcrumbs} pagePorts={hasContext ? [] : pagePorts} port={port} editHref={editHref} editLabel={editLabel} />}
       {bare ? <slot /> : (
       <article class="prose max-w-none dark:prose-invert">
         {productBrand ? (

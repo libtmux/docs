@@ -6,6 +6,7 @@ import { TOPICS, type PromptTopic } from '../../lib/prompts'
 import { PORTS } from '../../lib/ports'
 import { buildsPrompts, textPath, topicPath } from '../../lib/prompt-routes'
 import { withRoot } from '../../lib/site-root'
+import { tmuxProsePath } from '../../lib/docs-paths'
 
 /**
  * `/prompts/` and `/prompts/<topic>/` — the index, and one task in every
@@ -133,7 +134,7 @@ const breadcrumbs = [
         {
           topic.pages.map((page) => (
             <li>
-              <a class="underline" href={withRoot(`/${page}/`)}>
+              <a class="underline" href={withRoot(`/${tmuxProsePath(page)}/`)}>
                 {page}
               </a>
             </li>

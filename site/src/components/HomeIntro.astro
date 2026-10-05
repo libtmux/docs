@@ -1,6 +1,7 @@
 ---
 import { Code } from 'astro-expressive-code/components'
 import PackageInstall from './widgets/PackageInstall.astro'
+import HomeExample from './HomeExample.astro'
 import { PORTS, portHomeUrl, portPageUrl, referenceUrl } from '../lib/ports'
 import { QUICKSTARTS } from '../lib/quickstarts'
 import type { DocumentationSurface } from '../lib/documentation-navigation'
@@ -40,30 +41,11 @@ const descriptions: Record<string, string> = {
     <section class="home-examples" aria-label="Language quickstart">
       {PORTS.map((port, index) => {
         const snippet = QUICKSTARTS[port.slug]
-        const columns = snippet ? Math.min(88, Math.max(...snippet.code.split('\n')
-          .map((line) => line.replace(/\t/g, '    ').length))) : 88
-        return <div data-home-language={port.slug} hidden={index !== 0} style={`--home-code-columns: ${columns}`}>
-        <h2>Start with {port.name}</h2>
-        {snippet && <Code code={snippet.code} lang={snippet.lang} frame="none" />}
+        return <div data-home-language={port.slug} hidden={index !== 0}>
+        {snippet?.complete ? <HomeExample port={port.slug} language={port.name} example={snippet.complete} />
+          : <><h2>Start with {port.name}</h2>{snippet && <Code code={snippet.code} lang={snippet.lang} frame="none" />}</>}
         {snippet?.note && <p class="home-example-note">{snippet.note}</p>}
-        {snippet?.complete ? <>
-          <p class="home-example-note">{snippet.code === snippet.complete.files.find((file) => file.name === snippet.complete!.program)?.code.trimEnd()
-            ? 'Complete program; setup below.' : 'Excerpt from the complete program below.'}</p>
-          <details class="home-example-run">
-            <summary>Run this example</summary>
-            <p>{snippet.complete.prerequisites}</p>
-            <p>Save these files in a new directory, keeping the paths shown. The program uses its own tmux socket and includes cleanup.</p>
-            {snippet.complete.files.map((file) => <details class="home-example-file" open={file.name === snippet.complete!.program} data-home-file={file.name}>
-              <summary>{file.name}</summary>
-              <Code code={file.code.replace(/\n$/, '')} lang={file.lang} frame="none" />
-            </details>)}
-            <h3>Setup and run</h3>
-            {snippet.complete.commands.map((command, index) => <div data-home-command={index}><Code code={command} lang="bash" frame="none" /></div>)}
-            <h3>Expected output</h3>
-            <Code code={snippet.complete.expectedOutput.replace(/\n$/, '')} lang="text" />
-            <p>Library revision: <a href={`https://github.com/${snippet.complete.sourceRepository}/tree/${snippet.complete.sourceRevision}`}>{snippet.complete.sourceRevision.slice(0, 12)}</a>.</p>
-          </details>
-        </> : snippet && <details class="home-example-source"><summary>Example source</summary><p>{snippet.source}</p></details>}
+        {!snippet?.complete && snippet && <details class="home-example-source"><summary>Example source</summary><p>{snippet.source}</p></details>}
         <p class="home-example-link"><a href={portPageUrl(port, defaultVersionFor(port.slug), 'examples')}>More {port.name} examples →</a></p>
         <PackageInstall ports={[port.slug]} />
       </div>})}
@@ -88,25 +70,17 @@ const descriptions: Record<string, string> = {
   .home-solutions small { margin-top: .2rem; font-size: .8125rem; color: var(--color-muted); }
   .home-solution-arrow { margin-left: auto; color: var(--color-link); }
   .home-examples { container-type: inline-size; }
-  .home-examples > [data-home-language] > :global(.expressive-code) {
-    /* IBM Plex Mono advances .6em per column; rem bounds preserve zoom. */
-    --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * .6)), .9375rem);
-  }
   .home-examples h2 { margin-bottom: .85rem; font-size: 1rem; font-weight: 600; }
   .home-example-link { margin-block: .8rem 1.2rem; font-size: .8125rem; color: var(--color-muted); }
   .home-example-link a { color: var(--color-link); }
   /* Reserve the vertical scrollbar before sizing text to the code container. */
-  .home-examples :global(.expressive-code pre) { max-height: 34rem; overflow: auto; tab-size: 4; container-type: inline-size; scrollbar-gutter: stable; }
+  .home-examples :global(.expressive-code pre) { max-height: 34rem; overflow: auto; tab-size: 8; container-type: inline-size; scrollbar-gutter: stable; }
   @media (max-width: 48rem) {
     .home-preview { grid-template-columns: 1fr; }
     h1 { max-width: 18ch; }
     .home-solutions { margin-top: 1rem; }
   }
-  .home-example-note, .home-example-source, .home-example-run { margin-top: .8rem; font-size: .8125rem; color: var(--color-muted); }
+  .home-example-note, .home-example-source { margin-top: .8rem; font-size: .8125rem; color: var(--color-muted); }
   .home-examples summary { cursor: pointer; }
-  .home-example-source p, .home-example-run p { margin-top: .75rem; }
-  .home-example-file, .home-example-run h3 { margin-top: 1rem; }
-  .home-example-file > summary { margin-bottom: .5rem; font-family: var(--font-ibm-plex-mono); }
-  .home-example-run h3 { margin-bottom: .5rem; font-weight: 600; }
-  .home-example-run [data-home-command] + [data-home-command] { margin-top: .75rem; }
+  .home-example-source p { margin-top: .75rem; }
 </style>

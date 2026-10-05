@@ -1,6 +1,6 @@
 ---
 title: コンセプト
-description: どの libtmux 実装にも共通するモデル。個別のリファレンスを読む前に。
+description: tmux のサーバー、セッション、ウィンドウ、ペインの仕組み。
 sidebar:
   label: 概要
   group: コンセプト

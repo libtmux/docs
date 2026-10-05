@@ -1,0 +1,18 @@
+{
+  "name": "Python",
+  "asset": "icon.svg",
+  "sourceUrl": "https://s3.dualstack.us-east-2.amazonaws.com/pythondotorg-assets/media/files/python-logo-only.svg",
+  "resolvedUrl": "https://s3.dualstack.us-east-2.amazonaws.com/pythondotorg-assets/media/files/python-logo-only.svg",
+  "sourcePage": "https://www.python.org/community/logos/",
+  "retrievedAt": "2026-10-04T14:52:41+00:00",
+  "sha256": "baec8662a1461c2cacc326b54d2727cb2f1ce07ba02d00f5b826d035104f649f",
+  "copyright": "Python Software Foundation owns the Python trademarks. The supplied SVG does not contain a separate artwork copyright notice or year.",
+  "license": {
+    "name": "PSF logo and trademark usage terms",
+    "urls": [
+      "https://www.python.org/psf/trademarks/"
+    ],
+    "notes": "The PSF permits the unaltered two-snakes logo to identify Python. Preserve the supplied artwork and do not imply endorsement."
+  },
+  "modifications": "None. The downloaded SVG bytes are preserved."
+}
