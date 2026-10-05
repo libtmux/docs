@@ -98,7 +98,7 @@ const initial = entries[0].port
           animation.onfinish = () => animations.delete(animation)
         }
       }
-      const name = chosen?.dataset.portName ?? 'Choose a language'
+      const name = chosen?.dataset.portName ?? 'Language'
       picker.querySelector('.page-port-name')!.textContent = name
       picker.querySelector('.page-port-short-name')!.textContent = chosen?.dataset.portName ?? 'Port'
       picker.querySelector('summary')!.setAttribute('aria-label', chosen ? `${name}: choose a programming language` : 'Choose a programming language')
@@ -131,7 +131,7 @@ const initial = entries[0].port
         check.textContent = '✓'
         chosen.append(check)
       }
-      const name = chosen?.dataset.portName ?? 'Choose a language'
+      const name = chosen?.dataset.portName ?? 'Language'
       picker.open = false
       try {
         if (chosen) localStorage.setItem(storageKey, port)

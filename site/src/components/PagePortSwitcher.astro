@@ -38,9 +38,9 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
         src={withRoot(`/brand/languages/${entry.port}/icon.svg`)}
         width="24" height="24" alt="" loading="eager" decoding="sync" />)}
     </span>
-    <span class="page-port-name">{homeLanguageIcons ? 'Choose a language' : name}</span><span class="page-port-short-name" aria-hidden="true">{homeLanguageIcons ? 'Port' : shortName}</span>
+    <span class="page-port-name">{homeLanguageIcons ? 'Language' : name}</span><span class="page-port-short-name" aria-hidden="true">{homeLanguageIcons ? 'Port' : shortName}</span>
     {reserveLabelWidth && <span class="page-port-label-sizer" aria-hidden="true" style="visibility: hidden; height: 0; overflow: hidden;">
-      <span class="page-port-sizer-default">{homeLanguageIcons ? 'Choose a language' : name}</span>
+      <span class="page-port-sizer-default">{homeLanguageIcons ? 'Language' : name}</span>
       {entries.map((entry) => <span>{entry.name}</span>)}
     </span>}
     <svg class="doc-picker-caret" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
