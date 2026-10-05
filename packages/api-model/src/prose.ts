@@ -35,7 +35,7 @@ export const OWNER_KINDS: ReadonlySet<string> = new Set([
   'class',
   'exception',
   'interface',
-  'struct',
+  'struct', 'union',
   'trait',
   'enum',
   'module',

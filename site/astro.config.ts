@@ -22,6 +22,7 @@ import { rehypeRowAnchors } from './src/plugins/rehype-row-anchors'
 import { PORT_BY_SLUG, PORTS } from './src/lib/ports.ts'
 import { tmuxProsePath, workspaceRedirectPath } from './src/lib/docs-paths.ts'
 import { KNOWN_PORTS } from './src/lib/workspace-shared-slots.ts'
+import { isLegacyTmuxManualPath } from './src/lib/tmux-manual-data.ts'
 
 /**
  * Every build targets one version. CI supplies these; a bare `pnpm dev`
@@ -133,7 +134,9 @@ export default defineConfig({
           sitemap({
             filter: (page) =>
               !page.includes('/pr-') && !page.includes('/demo') && !isPlaceholder(page) &&
-              !isWorkspaceRedirect(page) && !isPortRoot(page),
+              !isWorkspaceRedirect(page) && !isPortRoot(page) &&
+              !isLegacyTmuxManualPath(new URL(page).pathname) &&
+              !/\/tmux\/(?!latest\/)[^/]+\/(?:manual|reference)\//.test(new URL(page).pathname),
           }),
         ]
       : []),

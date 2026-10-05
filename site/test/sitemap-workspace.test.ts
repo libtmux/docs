@@ -48,6 +48,23 @@ describe('translated tmux sitemap routes', () => {
   })
 })
 
+describe('tmux manual sitemap routes', () => {
+  it('indexes the latest manual and excludes redirects and numbered snapshots', () => {
+    const keep = ['', 'capture-pane/', 'full/']
+    for (const path of keep) {
+      expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/latest/manual/${path}`)).toBe(true)
+      expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/3.2a/manual/${path}`)).toBe(false)
+    }
+    for (const path of ['', 'c-struct-session/']) {
+      expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/latest/reference/${path}`)).toBe(true)
+      expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/3.2a/reference/${path}`)).toBe(false)
+    }
+    for (const path of ['capture-pane/', 'manual/']) {
+      expect(sitemapOptions.filter!(`https://libtmux.org/en/tmux/latest/reference/${path}`)).toBe(false)
+    }
+  })
+})
+
 describe('canonical workspace sitemap routes', () => {
   it.each(['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift', 'ruby'])(
     'includes real %s Guides and Examples pages', (port) => {

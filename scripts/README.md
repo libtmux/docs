@@ -138,7 +138,7 @@ before producing the version subtree.
 
 ## Checks
 
-### Versioned tmux CLI reference
+### Versioned tmux manual
 
 The command reference uses the revisions in `site/src/data/tmux/versions.json`.
 Each snapshot combines that revision's manual with the corresponding binary's
@@ -149,14 +149,14 @@ With mandoc 1.14.6 and binaries installed as `<binaries>/<version>/bin/tmux`,
 regenerate the committed snapshots:
 
 ```console
-$ node scripts/gen-tmux-reference.mjs --source ~/study/c/tmux \
+$ node scripts/gen-tmux-manual.mjs --source ~/study/c/tmux \
     --binaries ~/.local/share/libtmux-tmux-matrix --mandoc mandoc
 ```
 
 Verify that the snapshots match both the pinned source and installed binaries:
 
 ```console
-$ node scripts/gen-tmux-reference.mjs --source ~/study/c/tmux \
+$ node scripts/gen-tmux-manual.mjs --source ~/study/c/tmux \
     --binaries ~/.local/share/libtmux-tmux-matrix --mandoc mandoc --check
 ```
 

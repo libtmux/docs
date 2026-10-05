@@ -1,0 +1,144 @@
+---
+import DocsLayout from '../../../../layouts/DocsLayout.astro'
+import SectionHeading from '../../../../components/SectionHeading.astro'
+import { Code } from 'astro-expressive-code/components'
+import { tmuxCommandSources, tmuxReferenceUrl } from '../../../../lib/tmux-reference'
+import { withRoot } from '../../../../lib/site-root'
+import { rowAnchor } from '../../../../lib/row-anchors'
+import { highlightTmuxManual, linkTmuxManualEntries } from '../../../../lib/tmux-manual'
+import type { SidebarItem } from '../../../../lib/sidebar'
+import { pagePortsFor } from '../../../../lib/page-ports-for'
+import { PORTS } from '../../../../lib/ports'
+import { TMUX_REPOSITORY, tmuxApiLinks, tmuxCommandNotes, tmuxGuidesFor, tmuxManualHtml, tmuxManualDescription, tmuxManualHeadings, tmuxManualTitle, tmuxManual, tmuxManualRoutes, tmuxManualUrl } from '../../../../lib/tmux-manual-data'
+
+export function getStaticPaths() {
+  return tmuxManualRoutes().map(({ version, slug }) => ({ params: { version, slug } }))
+}
+const { version = 'latest', slug } = Astro.params
+const reference = tmuxManual(version)
+const command = reference.commands.find((entry) => entry.name === slug)
+const isManual = slug === 'full'
+if (slug && !command && !isManual) throw new Error(`Unknown tmux command: ${slug}`)
+const title = tmuxManualTitle(version, slug)
+const pagePath = `tmux/${version}/manual${slug ? `/${slug}` : ''}`
+const description = tmuxManualDescription(version, slug)
+const sections = [...new Set(reference.commands.map((entry) => entry.section))]
+const sectionTitle = (section: string) => section[0] + section.slice(1).toLowerCase()
+const navigation: SidebarItem[] = [
+  { type: 'link', label: 'All commands', href: tmuxManualUrl(version) },
+  { type: 'link', label: 'Full manual', href: tmuxManualUrl(version, 'full') },
+  ...sections.map((section) => ({ type: 'group' as const, label: sectionTitle(section),
+    items: reference.commands.filter((entry) => entry.section === section).map((entry) => ({
+      type: 'link' as const, label: entry.name, href: tmuxManualUrl(version, entry.name),
+    })),
+  })),
+]
+const breadcrumbs = [
+  { name: 'Documentation', url: withRoot('/') },
+  { name: `tmux ${reference.version}`, url: tmuxManualUrl(version) },
+  ...(slug ? [{ name: command?.name ?? 'Manual', url: tmuxManualUrl(version, slug) }] : []),
+]
+const equivalents = tmuxApiLinks(command?.name ?? '')
+const pagePorts = command ? PORTS.map((port) => ({ port: port.slug, name: port.name,
+  links: equivalents.filter((entry) => entry.name === port.name).map((entry) => ({ href: entry.href })),
+})) : await pagePortsFor('reference')
+const guides = tmuxGuidesFor(command?.name ?? '')
+const headings = tmuxManualHeadings(version, slug)
+const notes = tmuxCommandNotes(version, slug)
+const implementations = command ? tmuxCommandSources(version, command.name) : []
+const source = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.revision }
+const manualHtml = command || isManual
+  ? await highlightTmuxManual(linkTmuxManualEntries(tmuxManualHtml(command?.html ?? reference.manual, version), command?.name))
+  : ''
+---
+
+<DocsLayout title={title} description={description} pagePath={pagePath}
+  headings={headings} navigation={navigation} breadcrumbs={breadcrumbs} pagePorts={pagePorts}
+  pageSource={source} markdownIndex={!slug}
+  canonicalOverride={new URL(tmuxManualUrl(version, slug), Astro.site).href}
+  noindex={version !== 'latest'} searchable={version === 'latest'}>
+  {command ? <>
+    <p>{command.summary}</p>
+    {notes && <>
+      <SectionHeading id={rowAnchor(command.name, 'common uses')} legacyId="examples">Common uses</SectionHeading>
+      <p>{notes.context}</p>
+      {notes.examples.map((example) => <>
+        <p class="tmux-example-label">{example.title}</p>
+        <Code code={example.code} lang="tmux-shell" wrap />
+      </>)}
+    </>}
+    <SectionHeading id={rowAnchor(command.name, 'syntax')} legacyId="syntax">Syntax</SectionHeading>
+    <div class="tmux-syntax"><Code code={`tmux ${command.name}${command.usage ? ` ${command.usage}` : ''}`} lang="tmux-usage" wrap /></div>
+    {command.alias && <p>Alias: <code>{command.alias}</code>.</p>}
+    {notes ? <>
+      <SectionHeading id={rowAnchor(command.name, 'options')} legacyId="behavior">Options</SectionHeading>
+      {notes.groups.map((group) => <section>
+        <SectionHeading level={3} id={group.id} legacyId={group.legacyId}>{group.title}</SectionHeading>
+        <dl class="tmux-option-list">{group.options.map((option) => <div id={option.id} class="anchored-entry">
+          <dt><a class="row-label-link" href={`#${option.id}`} aria-label={`Link to ${option.label} in ${group.title}`}><code>{option.label}</code></a></dt><dd>{option.text}</dd>
+        </div>)}</dl>
+      </section>)}
+      <details class="tmux-original-manual">
+        <summary>Original manual wording</summary>
+        <div class="tmux-manual" set:html={manualHtml} />
+      </details>
+    </> : <>
+      <SectionHeading id={rowAnchor(command.name, 'behavior')} legacyId="behavior">Behavior</SectionHeading>
+      <div class="tmux-manual" set:html={manualHtml} />
+    </>}
+    {guides.length > 0 && <>
+      <SectionHeading id={rowAnchor(command.name, 'guides')} legacyId="guides">Guides</SectionHeading>
+      <ul>{guides.map((guide) => <li><a href={guide.href}>{guide.title}</a></li>)}</ul>
+    </>}
+    {implementations.length > 0 && <>
+      <SectionHeading id={rowAnchor(command.name, 'implementation')}>C implementation</SectionHeading>
+      <p>Internal declarations in tmux {reference.version}:</p>
+      <ul>{implementations.map((entry) => <li><a href={entry.href}><code>{entry.name}</code></a></li>)}</ul>
+    </>}
+    {equivalents.length > 0 && <>
+      <SectionHeading id={rowAnchor(command.name, 'use from a library')} legacyId="libraries">Use from a library</SectionHeading>
+      <p>Each API describes its own defaults, errors and execution model.</p>
+      <ul>{equivalents.map((entry) => <li><a href={entry.href}>{entry.name}</a></li>)}</ul>
+    </>}
+  </> : isManual ? <div class="tmux-manual" set:html={manualHtml} /> : <>
+    <p>Look up the flags and behavior supported by tmux {reference.version}. Choose the version installed on your machine with <code>tmux -V</code>.</p>
+    <p>The <a href={tmuxReferenceUrl(version)}>C source reference</a> documents this version's internal declarations.</p>
+    <p>Start with the <a href={`${tmuxManualUrl(version, 'full')}#DESCRIPTION`}>global options</a>, <a href={`${tmuxManualUrl(version, 'full')}#COMMANDS`}>target syntax</a>, or <a href={`${tmuxManualUrl(version, 'full')}#FORMATS`}>formats</a>. The <a href={tmuxManualUrl(version, 'full')}>full manual</a> also covers options, hooks and key bindings.</p>
+    {sections.map((section) => <section>
+      <SectionHeading id={section.toLowerCase().replaceAll(' ', '-')}>{sectionTitle(section)}</SectionHeading>
+      <dl class="tmux-command-list">{reference.commands.filter((entry) => entry.section === section).map((entry) => <>
+        <dt><a href={tmuxManualUrl(version, entry.name)}><code>{entry.name}</code></a></dt>
+        <dd>{entry.summary}</dd>
+      </>)}</dl>
+    </section>)}
+  </>}
+  <details class="mt-8">
+    <summary>tmux sources and license</summary>
+    <p>Syntax comes from <code>tmux {reference.version} list-commands</code>. See the <a href={`${tmuxManualUrl(version, 'full')}#DESCRIPTION`}>global options</a> for sockets and configuration, and <a href={`${tmuxManualUrl(version, 'full')}#COMMANDS`}>command syntax and targets</a>.</p>
+    <p>Behavior is taken from the <a href={`https://github.com/${TMUX_REPOSITORY}/blob/${reference.revision}/tmux.1`}>tmux {reference.version} manual</a>.</p>
+    {command && <p><a href={`https://github.com/${TMUX_REPOSITORY}/blob/${reference.revision}/${command.sourceFile}#L${command.sourceLine}`}>Command declaration</a></p>}
+    <pre class="tmux-license">{reference.license}</pre>
+  </details>
+</DocsLayout>
+
+<style>
+  .tmux-syntax, .tmux-license { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .tmux-command-list dt { margin-top: 1rem; }
+  .tmux-command-list dd { margin-left: 0; }
+  .tmux-example-label { margin-bottom: .5rem; font-weight: 600; }
+  .tmux-option-list { margin-block: .5rem 1.5rem; }
+  .tmux-option-list > div { display: grid; grid-template-columns: 6rem minmax(0, 1fr); gap: 1rem; padding-block: .625rem; border-bottom: 1px solid var(--color-edge); }
+  .tmux-option-list :is(dt, dd) { margin: 0; }
+  .tmux-option-list code { white-space: nowrap; }
+  .tmux-original-manual { margin-block: 1.5rem; }
+  .tmux-original-manual summary { cursor: pointer; }
+  @media (max-width: 480px) { .tmux-option-list > div { grid-template-columns: 4.75rem minmax(0, 1fr); gap: .75rem; } }
+  .tmux-manual :global(pre) { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .tmux-manual :global(pre.lm-highlighted) { background: var(--shiki-light-bg); color: var(--shiki-light); border: 1px solid var(--color-edge); border-radius: .375rem; padding: 1rem; font-family: var(--font-ibm-plex-mono); font-size: .875rem; line-height: 1.7; }
+  :global(html[data-theme-mode="dark"]) .tmux-manual :global(pre.lm-highlighted) { background: var(--shiki-dark-bg); color: var(--shiki-dark); }
+  .tmux-manual :global(table) { display: block; overflow-x: auto; }
+  .tmux-manual :global(dd) { margin-left: 1rem; }
+  .tmux-manual :global(.Pp) { margin-block: 1em; }
+  .tmux-manual :global(.manual-entry-permalink) { margin-left: .5rem; font-weight: 400; text-decoration: none; opacity: .55; }
+  .tmux-manual :global(.manual-entry-permalink:is(:hover, :focus-visible)) { opacity: 1; text-decoration: underline; }
+</style>

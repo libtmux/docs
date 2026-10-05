@@ -1,7 +1,7 @@
-import type { ApiModel, ApiProduct, ApiSymbol } from './model.ts'
+import type { ApiModelBase, ApiProduct, ApiSymbol } from './model.ts'
 
 /** Select a product without assigning legacy core declarations to a new package. */
-export function symbolsForProduct(model: ApiModel, product: ApiProduct): ApiSymbol[] {
+export function symbolsForProduct(model: ApiModelBase, product: ApiProduct): ApiSymbol[] {
   return model.symbols.filter((symbol) => (symbol.product ?? 'core') === product && symbol.apiScope !== 'internal')
 }
 
@@ -24,7 +24,7 @@ export function inheritProductFromOwners(symbols: ApiSymbol[]): void {
 }
 
 /** Build a source link from the declaration's repository before the port fallback. */
-export function sourceUrl(model: ApiModel, symbol: ApiSymbol, referenceBase?: string): string | undefined {
+export function sourceUrl(model: ApiModelBase, symbol: ApiSymbol, referenceBase?: string): string | undefined {
   const { file, line } = symbol.source
   if (model.generatedSources?.[file] !== undefined) {
     return referenceBase ? `${referenceBase}sources/${file}` : undefined

@@ -222,6 +222,7 @@ function branch(name: string, href: string | undefined, level: number, lazy: str
     a.id = id
     a.href = href
     a.tabIndex = -1
+    if (new URL(href, location.href).pathname === location.pathname) a.setAttribute('aria-current', 'page')
     wordBreak(name).forEach((part, i) => {
       if (i > 0) a.append(document.createElement('wbr'))
       a.append(part)
@@ -269,7 +270,11 @@ async function build(nav: HTMLElement, item: HTMLElement): Promise<HTMLElement |
       children.push(branch(c.label, c.slug ? `${base}${c.slug}/` : undefined, level, `bucket:${c.id}`, c.types.length))
     }
   } else {
-    for (const [name, slug, , kind] of json.members[id] ?? []) children.push(leaf(name, `${base}${slug}/`, level, kind))
+    for (const [name, slug, memberId, kind] of json.members[id] ?? []) {
+      children.push(memberId && json.members[memberId]?.length
+        ? branch(name, `${base}${slug}/`, level, `type:${memberId}`, undefined, kind)
+        : leaf(name, `${base}${slug}/`, level, kind))
+    }
   }
   const group = document.createElement('ul')
   group.setAttribute('role', 'group')

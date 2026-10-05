@@ -1,0 +1,137 @@
+---
+import InstallCode from './InstallCode.astro'
+import './package-install.css'
+import { highlightInline } from '../../lib/highlight'
+import pins from '../../data/tmux/versions.json'
+
+interface Platform {
+  id: string
+  label: string
+  steps: { lead: string; code: string; lang?: string }[]
+  note?: string
+  source?: string
+}
+const platforms: Platform[] = [
+  { id: 'debian', label: 'Debian / Ubuntu', steps: [
+    { lead: 'Update the package index:', code: 'sudo apt update' },
+    { lead: 'Install tmux:', code: 'sudo apt install tmux' },
+  ] },
+  { id: 'fedora', label: 'Fedora / RHEL / CentOS', steps: [
+    { lead: 'Install tmux:', code: 'sudo dnf install tmux' },
+  ], note: 'On older RHEL or CentOS releases, use yum in place of dnf.' },
+  { id: 'arch', label: 'Arch Linux', steps: [
+    { lead: 'Install tmux:', code: 'sudo pacman -S tmux' },
+  ] },
+  { id: 'brew', label: 'macOS / Homebrew', steps: [
+    { lead: 'Install tmux with Homebrew:', code: 'brew install tmux' },
+  ], source: 'https://formulae.brew.sh/formula/tmux' },
+  { id: 'windows', label: 'Windows / psmux', steps: [
+    { lead: 'Install psmux with WinGet:', code: 'winget install --id marlocarlo.psmux --exact' },
+  ], note: 'psmux is a separate native Windows implementation. For upstream tmux in WSL, select the Linux distribution you use there.',
+    source: 'https://github.com/psmux/psmux#installation' },
+  { id: 'nixos', label: 'NixOS', steps: [
+    { lead: 'Add to /etc/nixos/configuration.nix:', code: 'programs.tmux.enable = true;', lang: 'nix' },
+    { lead: 'Apply your configuration:', code: 'sudo nixos-rebuild switch' },
+  ], source: 'https://wiki.nixos.org/wiki/Tmux#System_setup' },
+  { id: 'source', label: 'Compile from source', steps: [
+    { lead: `Clone tmux ${pins.latest}:`, code: [
+      'git clone \\',
+      `  --branch ${pins.latest} \\`,
+      '  --depth 1 \\',
+      `  https://github.com/tmux/tmux.git tmux-${pins.latest}`,
+    ].join('\n') },
+    { lead: 'Enter the source directory:', code: `cd tmux-${pins.latest}` },
+    { lead: 'Generate the configuration script:', code: 'sh autogen.sh' },
+    { lead: 'Configure the build:', code: './configure' },
+    { lead: 'Compile tmux:', code: 'make' },
+    { lead: 'Install the compiled program:', code: 'sudo make install' },
+  ], note: 'Requires a C compiler, make, Git, autoconf, automake, bison, pkg-config, and the libevent and ncurses development packages.',
+    source: 'https://github.com/tmux/tmux/wiki/Installing#From-version-control' },
+]
+const items = await Promise.all(platforms.map(async (platform) => ({
+  ...platform,
+  steps: await Promise.all(platform.steps.map(async (step) => ({
+    ...step,
+    lang: step.lang ?? 'console',
+    html: await highlightInline(step.lang ? step.code : `$ ${step.code}`, step.lang ?? 'console'),
+  }))),
+})))
+---
+<tmux-install class="tmux-install lm-pkg-install lm-pkg-install--full not-prose">
+  <div class="lm-pkg-install__body">
+    <div class="tmux-install__tabs lm-pkg-install__managers" role="tablist" aria-label="Install tmux on your system" hidden>
+      {items.map((platform, i) => <button type="button" role="tab" class="lm-pkg-install__manager" id={`tmux-install-tab-${platform.id}`}
+        aria-controls={`tmux-install-panel-${platform.id}`} aria-selected={i === 0} tabindex={i === 0 ? 0 : -1}
+        data-platform={platform.id}>{platform.label}</button>)}
+    </div>
+    {items.map((platform) => <section class="tmux-install__panel" id={`tmux-install-panel-${platform.id}`}
+      aria-labelledby={`tmux-install-tab-${platform.id}`} data-panel={platform.id}>
+      <h3 class="tmux-install__heading">{platform.label}</h3>
+      {platform.note && <p class="lm-pkg-install__note">{platform.note}</p>}
+      {platform.steps.map((step) => <>
+        <p class="tmux-install__lead">{step.lead}</p>
+        <InstallCode html={step.html} language={step.lang} />
+      </>)}
+      <p class="lm-pkg-install__links"><a href={platform.source ?? 'https://github.com/tmux/tmux/wiki/Installing#Binary-packages'}>Installation documentation ↗</a></p>
+    </section>)}
+  </div>
+  <span class="sr-only" data-copy-status role="status" aria-live="polite" aria-atomic="true" />
+</tmux-install>
+<script>
+  import { tmuxInstallPlatform } from '../../lib/tmux-install'
+  class TmuxInstall extends HTMLElement {
+    private controller?: AbortController
+    connectedCallback() {
+      this.controller?.abort()
+      this.controller = new AbortController()
+      const tabs = [...this.querySelectorAll<HTMLButtonElement>('[role="tab"]')]
+      const panels = [...this.querySelectorAll<HTMLElement>('[data-panel]')]
+      const choose = (id: string, remember = false) => {
+        const current = tabs.find((tab) => tab.dataset.platform === id) ?? tabs[0]
+        if (!current) return
+        for (const tab of tabs) {
+          const selected = tab === current
+          tab.setAttribute('aria-selected', String(selected))
+          tab.tabIndex = selected ? 0 : -1
+        }
+        for (const panel of panels) {
+          panel.hidden = panel.dataset.panel !== current.dataset.platform
+          panel.setAttribute('role', 'tabpanel')
+          panel.tabIndex = 0
+        }
+        if (remember) try { localStorage.setItem('libtmux-tmux-install', current.dataset.platform!) } catch {}
+      }
+      let saved: string | null = null
+      try { saved = localStorage.getItem('libtmux-tmux-install') } catch {}
+      const hints = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData
+      choose(saved ?? tmuxInstallPlatform(navigator.userAgent, hints?.platform ?? navigator.platform))
+      this.setAttribute('data-enhanced', '')
+      this.querySelector<HTMLElement>('[role="tablist"]')!.hidden = false
+      this.addEventListener('click', (event) => {
+        const tab = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-platform]')
+        if (tab) choose(tab.dataset.platform!, true)
+      }, { signal: this.controller.signal })
+      this.addEventListener('keydown', (event) => {
+        const current = tabs.indexOf(event.target as HTMLButtonElement)
+        if (current < 0) return
+        const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
+          : event.key === 'ArrowRight' ? (current + 1) % tabs.length
+            : event.key === 'ArrowLeft' ? (current + tabs.length - 1) % tabs.length : -1
+        if (next < 0) return
+        event.preventDefault()
+        choose(tabs[next].dataset.platform!, true)
+        tabs[next].focus({ preventScroll: true })
+      }, { signal: this.controller.signal })
+    }
+    disconnectedCallback() { this.controller?.abort() }
+  }
+  if (!customElements.get('tmux-install')) customElements.define('tmux-install', TmuxInstall)
+</script>
+<style>
+  .tmux-install { display: block; }
+  .tmux-install__tabs[hidden], .tmux-install__panel[hidden] { display: none; }
+  .tmux-install__heading { font-weight: 600; margin: 1rem 0 .5rem; }
+  .tmux-install[data-enhanced] .tmux-install__heading { display: none; }
+  .tmux-install__lead { font-size: .8em; line-height: 1.5; margin: .75rem 0 .35rem; }
+  .tmux-install__panel > .tmux-install__lead:first-of-type { margin-top: 0; }
+</style>

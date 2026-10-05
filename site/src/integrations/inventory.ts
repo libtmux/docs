@@ -1,3 +1,5 @@
+import { TMUX_VERSIONS } from '../lib/tmux-manual-data'
+import { tmuxSourceModel } from '../lib/tmux-reference'
 import { DEFAULT_LOCALE } from '../i18n/locales'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -82,6 +84,15 @@ export function inventory(): AstroIntegration {
         if ((process.env.LIBTMUX_DOCS_LOCALE || DEFAULT_LOCALE) !== DEFAULT_LOCALE) return
         const out = dir.pathname
         let total = 0
+        for (const version of TMUX_VERSIONS) {
+          const model = tmuxSourceModel(version)
+          const path = join(out, 'tmux', version, 'reference', 'objects.inv')
+          mkdirSync(dirname(path), { recursive: true })
+          writeFileSync(path, writeInventory(model, {
+            project: 'tmux C source', version: model.version,
+            uriFor: (symbol) => `${symbol.slug}/`,
+          }))
+        }
 
         const uriFor = uriForModel
 

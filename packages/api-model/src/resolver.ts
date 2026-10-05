@@ -30,7 +30,7 @@ export type Resolution =
   | { how: 'not-a-symbol'; why: string }
 
 /** Kinds that can own members, and therefore act as a scope. */
-const TYPE_KINDS = new Set(['class', 'struct', 'interface', 'enum', 'trait', 'exception', 'module', 'typealias'])
+const TYPE_KINDS = new Set(['class', 'struct', 'union', 'interface', 'enum', 'trait', 'exception', 'module', 'typealias'])
 
 /**
  * Ecosystems with no `objects.inv` to federate against.

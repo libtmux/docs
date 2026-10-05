@@ -109,7 +109,7 @@ export async function checkGlobalHeader(browser, base) {
     const context = await browser.newContext({ javaScriptEnabled, reducedMotion: 'reduce' })
     const page = await context.newPage()
     try {
-      for (const path of ['/', '/tmux/latest/reference/capture-pane/']) {
+      for (const path of ['/', '/tmux/latest/manual/capture-pane/']) {
         await page.goto(`${base}${path}`)
         for (const width of [390, 768, 784, 1024, 1440, 1600]) {
           await page.setViewportSize({ width, height: 900 })

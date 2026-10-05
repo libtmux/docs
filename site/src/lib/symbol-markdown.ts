@@ -1,11 +1,12 @@
-import type { ApiModel, ApiSymbol, Signature } from '@libtmux/api-model'
+import type { ApiModel, ApiSymbol, Signature, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
 import { membersOf, memberSignals, memberTier, moduleOf, qualifiedNameOf } from '@libtmux/api-model'
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
-import { apiEntryFields, apiMemberGroups } from './api-sections'
-import { tmuxCommandsFor, tmuxReferenceUrl } from './tmux-reference'
+import { apiEntryFields, apiMemberGroups, anonymousDeclarationLabel } from './api-sections'
+import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
 import { productApiIndex } from './product-api'
 import { defaultVersionFor } from './versions'
+import { apiCallSource, apiRelationshipSections, type ApiRelationshipPath } from './api-relationships'
 
 /**
  * A symbol's page as Markdown.
@@ -20,7 +21,11 @@ import { defaultVersionFor } from './versions'
  * whose whole point is to be the symbol without them.
  */
 export interface MarkdownContext {
-  model: ApiModel
+  model: ApiModel | SourceApiModel
+  index?: SymbolIndex
+  hrefFor?: (symbol: ApiSymbol) => string
+  manualLinks?: { name: string; href: string }[]
+  paths?: ApiRelationshipPath[]
   symbol: ApiSymbol
   /** Absolute URL of the HTML page this describes. */
   canonical?: string
@@ -51,6 +56,9 @@ function inlineCode(code: string): string {
 
 export function symbolMarkdown(ctx: MarkdownContext): string {
   const { model, symbol } = ctx
+  const port = 'port' in model ? model.port : undefined
+  const language = 'language' in model ? model.language : port
+  const index = ctx.index ?? (port && 'port' in model ? productApiIndex(model, ctx.version ?? defaultVersionFor(port)) : undefined)
   const id = qualifiedNameOf(symbol)
   const out: string[] = [`# ${id}`, '']
 
@@ -60,18 +68,17 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   const mod = moduleOf(parent ?? symbol)
   if (mod) facts.push(`- **Module:** ${mod}`)
   if (ctx.packageName) facts.push(`- **Package:** ${ctx.packageName}`)
-  facts.push(`- **Language:** ${PORT_NAME[model.port] ?? model.port}`)
+  facts.push(`- **Language:** ${(port ? PORT_NAME[port] ?? port : language?.toUpperCase())}`)
   if (symbol.kind) facts.push(`- **Kind:** ${symbol.kind}`)
   if (ctx.source) facts.push(`- **Source:** ${ctx.source}`)
   if (symbol.exportedFrom) facts.push(`- **Exported from:** ${symbol.exportedFrom}`)
   if (symbol.inheritedFrom) facts.push(`- **Inherited from:** ${symbol.inheritedFrom}`)
   if (symbol.publicOwner && symbol.publicOwner !== symbol.id) facts.push(`- **Public owner:** ${symbol.publicOwner}`)
   if (symbol.extends?.length) {
-    const index = productApiIndex(model, ctx.version ?? defaultVersionFor(model.port))
     const bases = symbol.extends.map((base) => {
       const parts: string[] = []
       let plain = ''
-      for (const part of index.linkType(base, symbol)) {
+      for (const part of index?.linkType(base, symbol) ?? [{ text: base }]) {
         if (!part.link) { plain += part.text; continue }
         if (plain) { parts.push(inlineCode(plain)); plain = '' }
         parts.push(`[${inlineCode(part.text)}](${part.link.href})`)
@@ -83,16 +90,18 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
   if (ctx.canonical) facts.push(`- **Page:** ${ctx.canonical}`)
   if (facts.length) out.push(...facts, '')
-  for (const command of tmuxCommandsFor(model.port, symbol.publicId ?? symbol.id)) {
-    out.push(`tmux command: [\`${command.name}\`](${tmuxReferenceUrl('latest', command.name)})`, '')
-  }
+  const commands = ctx.manualLinks ?? (port ? tmuxCommandsFor(port, symbol.publicId ?? symbol.id)
+    .map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
+  for (const command of commands) out.push(`tmux command: [\`${command.name}\`](${command.href})`, '')
   if (symbol.apiScope === 'supporting') {
     out.push('This type appears in public signatures. It is not a package entry point.', '')
   }
 
-  const native = ['kotlin', 'scala', 'fsharp'].includes(model.port)
-  const sig = symbol.signatures.map((entry) => native && entry.raw ? entry.raw : signatureLine(symbol, entry)).join('\n\n')
-  if (sig) out.push(fencedCode(sig), '')
+  const native = ['kotlin', 'scala', 'fsharp', 'c'].includes(language ?? '')
+  const signatures = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
+  const sig = signatures.map((entry) => native && entry.raw ? entry.raw : signatureLine(symbol, entry)).join('\n\n')
+  if (sig) out.push(fencedCode(sig, language === 'c' ? 'c' : ''), '')
+  else if (language === 'c') out.push(`${anonymousDeclarationLabel(symbol)}.`, '')
 
   if (symbol.doc?.summary) out.push(symbol.doc.summary, '')
   if (symbol.doc?.body) out.push(symbol.doc.body, '')
@@ -117,7 +126,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     out.push(`> **${note.kind}:** ${note.text.replaceAll('\n', '\n> ')}`, '')
   }
 
-  const { params, returns, raises } = apiEntryFields(symbol, model.port)
+  const { params, returns, raises } = apiEntryFields(symbol, language)
   const overloads = (labels: string[]) => labels.length ? ` (for ${labels.map(inlineCode).join('; ')})` : ''
   if (params.length) {
     out.push('## Parameters', '')
@@ -134,22 +143,21 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
 
   if (raises.length) {
     out.push('## Raises', '')
-    const index = productApiIndex(model, ctx.version ?? defaultVersionFor(model.port))
     for (const r of raises) {
-      const href = index.resolve(r.type, 'class', symbol)?.href
+      const href = index?.resolve(r.type, 'class', symbol)?.href
       const label = inlineCode(r.type)
       out.push(`- ${href ? `[${label}](${href})` : label}${r.doc ? `: ${r.doc}` : ''}${overloads(r.overloads)}`)
     }
     out.push('')
   }
 
-  const signals = memberSignals(model.port, mentions.mentions)
+  const signals = memberSignals(port ?? '', mentions.mentions)
   const members = membersOf(model, symbol, signals)
   const declared = members.filter((member) => !member.inheritedFrom || memberTier(member, signals) === 'parent')
   const inherited = members.filter((member) => member.inheritedFrom && memberTier(member, signals) !== 'parent')
   const appendMembers = (entries: ApiSymbol[]) => {
     for (const member of entries) {
-      out.push(`- ${inlineCode(member.name)} (${member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
+      out.push(`- ${ctx.hrefFor ? `[${inlineCode(member.name)}](${ctx.hrefFor(member)})` : inlineCode(member.name)} (${member.kind})${member.inheritedFrom ? `, inherited from ${inlineCode(member.inheritedFrom)}` : ''}${member.doc?.summary ? `: ${member.doc.summary}` : ''}`)
     }
     out.push('')
   }
@@ -163,6 +171,26 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   if (inherited.length) {
     out.push('## Inherited members', '')
     appendMembers(inherited)
+  }
+
+  const symbolLink = (target: ApiSymbol) => {
+    const name = inlineCode(qualifiedNameOf(target))
+    return ctx.hrefFor ? `[${name}](${ctx.hrefFor(target)})` : name
+  }
+  const paths = (ctx.paths ?? []).filter((path) => path.symbols.some((entry) => entry.id === symbol.id))
+  if (paths.length) {
+    out.push('## Paths through the source', '', 'Arrows name source relationships, not a runtime execution order.', '')
+    for (const path of paths) out.push(`### ${path.title}`, '', path.symbols.map((entry, i) =>
+      `${i > 0 ? ` — ${path.edges[i - 1] === 'call' ? 'calls' : 'references'} → ` : ''}${symbolLink(entry)}`).join(''), '')
+  }
+  for (const section of apiRelationshipSections(model, symbol)) {
+    out.push(`## ${section.label}`, '')
+    for (const target of section.items) {
+      const callSource = section.id === 'api-calls' ? apiCallSource(model, symbol, target)
+        : section.id === 'api-called-by' ? apiCallSource(model, target, symbol) : undefined
+      out.push(`- ${symbolLink(target)} (${target.kind})${callSource ? ` [Call site](${callSource})` : ''}`)
+    }
+    out.push('')
   }
 
   // One trailing newline, so the file ends the way a text file should.

@@ -9,7 +9,7 @@ export interface ApiSection {
 
 /** The fields shown by ApiEntry, shared with its section navigation. */
 export function apiEntryFields(symbol: ApiSymbol, port?: string) {
-  const native = ['kotlin', 'scala', 'fsharp'].includes(port ?? '')
+  const native = ['kotlin', 'scala', 'fsharp', 'c'].includes(port ?? '')
   const name = port === 'swift' ? symbol.name.replace(/\([^)]*\)$/, '') : symbol.name
   const labels = symbol.signatures.map((signature) =>
     `${name}(${signature.params.map((param) => param.name).join(', ')})`)
@@ -73,11 +73,11 @@ export function apiMemberGroups(members: ApiSymbol[], signals: MemberSignals) {
 }
 
 /** Related declarations come from ownership, inheritance and return types. */
-export function relatedApiTypes(owner: ApiSymbol, members: ApiSymbol[], index: SymbolIndex, parent?: ApiSymbol) {
+export function relatedApiTypes(owner: ApiSymbol, members: ApiSymbol[], index: SymbolIndex, parent?: ApiSymbol, options: { includeInternal?: boolean } = {}) {
   const types = new Map<string, ApiSymbol>()
   const add = (symbol?: ApiSymbol) => {
-    if (!symbol || symbol.id === owner.id || symbol.apiScope === 'internal' ||
-        !['class', 'struct', 'interface', 'trait', 'enum', 'typealias'].includes(symbol.kind)) return
+    if (!symbol || symbol.id === owner.id || (!options.includeInternal && symbol.apiScope === 'internal') ||
+        !['class', 'struct', 'union', 'interface', 'trait', 'enum', 'typealias'].includes(symbol.kind)) return
     types.set(symbol.publicId ?? symbol.id, symbol)
   }
   add(parent)
@@ -85,10 +85,19 @@ export function relatedApiTypes(owner: ApiSymbol, members: ApiSymbol[], index: S
     for (const span of index.linkType(type, owner)) add(span.link?.symbol)
   }
   for (const symbol of [owner, ...members]) {
+    if (options.includeInternal && symbol.type) {
+      for (const span of index.linkType(symbol.type, symbol)) add(span.link?.symbol)
+    }
     for (const signature of symbol.signatures) {
-      if (!signature.returns) continue
-      for (const span of index.linkType(signature.returns, symbol)) add(span.link?.symbol)
+      for (const type of [signature.returns, ...(options.includeInternal ? signature.params.map((param) => param.type) : [])]) {
+        if (type) for (const span of index.linkType(type, symbol)) add(span.link?.symbol)
+      }
     }
   }
   return [...types.values()].slice(0, 6)
+}
+
+/** Describe unnamed native types without inventing a compilable declaration. */
+export function anonymousDeclarationLabel(symbol: ApiSymbol): string {
+  return symbol.type ? `${symbol.name}: ${symbol.type}` : `Anonymous ${symbol.kind}`
 }

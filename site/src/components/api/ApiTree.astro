@@ -16,14 +16,11 @@
  * every closed row is still a link.
  */
 import ApiTreeItems, { type TreeNode } from './ApiTreeItems.astro'
-import type { NavEntry } from '../../lib/api-models'
 import { bucketTotal, firstEntry, type TreeBucket } from '../../lib/api-tree'
-import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
-import { buildTarget } from '../../lib/versions'
 import '../../styles/api-tree.css'
 
 interface Props {
-  port: string
+  referenceBase: string
   portName: string
   tree: TreeBucket[]
   /** Top-level bucket holding the page. */
@@ -37,34 +34,37 @@ interface Props {
   /** Declaration id of the page's own symbol, when it is a member. */
   ownerId?: string
   members: { id: string; name: string; kind: string; href: string }[]
+  /** Members for each owner on the current page's ancestry, opened on first paint. */
+  ancestorMembers?: Map<string, Props['members']>
   /** Nav ids of the types that have members, which open into them. */
   withMembers: Set<string>
   currentPath: string
 }
 
 const {
-  port, portName, tree, currentRoot, currentBucket, currentTypeId, ownerNavId, ownerId,
-  members, withMembers, currentPath,
+  referenceBase, portName, tree, currentRoot, currentBucket, currentTypeId, ownerNavId, ownerId,
+  members, ancestorMembers, withMembers, currentPath,
 } = Astro.props as Props
 // The port's own reference root. `withRoot` would give the locale root:
 // Astro's `base` prefixes routes, not strings a component builds.
-const base = referenceUrl(PORT_BY_SLUG[port]!, buildTarget(process.env).version)
+const base = referenceBase
 const href = (slug: string) => `${base}${slug}/`
 
 let seq = 0
 const nextId = () => `api-nav-${++seq}`
 
-const typeNode = (t: NavEntry, level: number): TreeNode => {
-  const current = t.id === ownerNavId
-  if (t.id === currentTypeId && members.length > 0) {
+const symbolNode = (symbol: { id: string; name: string; kind: string; href: string }, level: number): TreeNode => {
+  const current = symbol.id === ownerNavId || symbol.id === ownerId
+  const children = ancestorMembers?.get(symbol.id) ?? (symbol.id === currentTypeId ? members : undefined)
+  if (children?.length) {
     return {
-      id: nextId(), label: t.name, kind: t.kind, href: href(t.slug), level, current, expanded: true,
-      children: members.map((m) => ({ id: nextId(), label: m.name, kind: m.kind, href: m.href, level: level + 1, current: m.id === ownerId })),
+      id: nextId(), label: symbol.name, kind: symbol.kind, href: symbol.href, level, current, expanded: true,
+      children: children.map((member) => symbolNode(member, level + 1)),
     }
   }
   return {
-    id: nextId(), label: t.name, kind: t.kind, href: href(t.slug), level, current,
-    ...(withMembers.has(t.id) ? { expanded: false, lazy: `type:${t.id}` } : {}),
+    id: nextId(), label: symbol.name, kind: symbol.kind, href: symbol.href, level, current,
+    ...(withMembers.has(symbol.id) ? { expanded: false, lazy: `type:${symbol.id}` } : {}),
   }
 }
 
@@ -76,7 +76,7 @@ const bucketNode = (b: TreeBucket, level: number, child: boolean): TreeNode => {
   return {
     ...head,
     expanded: true,
-    children: [...b.entries.map((t) => typeNode(t, level + 1)), ...b.children.map((c) => bucketNode(c, level + 1, true))],
+    children: [...b.entries.map((t) => symbolNode({ ...t, href: href(t.slug) }, level + 1)), ...b.children.map((c) => bucketNode(c, level + 1, true))],
   }
 }
 

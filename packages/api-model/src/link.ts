@@ -19,7 +19,7 @@ import { qualifiedNameOf } from './modules.ts'
 
 /** Which symbol kinds a role is allowed to match. */
 const ROLE_KINDS: Record<string, SymbolKind[]> = {
-  class: ['class', 'exception', 'enum', 'struct', 'interface', 'typealias', 'trait'],
+  class: ['class', 'exception', 'enum', 'struct', 'union', 'interface', 'typealias', 'trait'],
   exc: ['exception', 'class'],
   meth: ['method', 'function'],
   func: ['function', 'method'],
@@ -260,7 +260,7 @@ export class SymbolIndex {
    * throwing away the easy case.
    */
   private static rank(kind: SymbolKind): number {
-    if (kind === 'class' || kind === 'exception' || kind === 'struct' || kind === 'interface') {
+    if (kind === 'class' || kind === 'exception' || kind === 'struct' || kind === 'union' || kind === 'interface') {
       return 0
     }
     if (kind === 'enum' || kind === 'trait' || kind === 'typealias') return 1

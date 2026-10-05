@@ -22,7 +22,7 @@ describe('route branding', () => {
     expect(tmuxDocumentationTitle('Getting started', 'tmux/guides/getting-started')).toBe('Getting started | Guides | tmux | libtmux.org')
     expect(tmuxDocumentationTitle('Guides', 'tmux/guides')).toBe('Guides | tmux | libtmux.org')
     expect(tmuxDocumentationTitle('capture-pane', 'tmux/3.7c/manual/capture-pane')).toBe('capture-pane | Manual | tmux | libtmux.org')
-    expect(tmuxDocumentationTitle('Just tmux', 'tmux')).toBe('tmux | libtmux.org')
+    expect(tmuxDocumentationTitle('tmux', 'tmux')).toBe('tmux | libtmux.org')
   })
   it('uses project titles independently of package names and shared source repositories', () => {
     const names = {

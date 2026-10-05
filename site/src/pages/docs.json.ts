@@ -12,8 +12,10 @@ import { isIndexSource, markdownPath } from '../lib/markdown-twins.ts'
 import { localeProse } from '../lib/llms.ts'
 import { documentationAreas } from '../lib/port-documentation.ts'
 import { buildTarget } from '../lib/versions.ts'
-import { referenceIndexSections } from '../lib/api-tree.ts'
-import { tmuxPageDescription, tmuxPageHeadings, tmuxPageTitle, tmuxReferenceRoutes, tmuxReferenceUrl } from '../lib/tmux-reference.ts'
+import { tmuxReferenceContext, tmuxReferenceUrl } from '../lib/tmux-reference'
+import { buildsTmuxDocumentation, TMUX_VERSIONS } from '../lib/tmux-manual-data'
+import { referenceIndexSections, referenceIndexSectionsFor } from '../lib/api-tree.ts'
+import { tmuxManualDescription, tmuxManualHeadings, tmuxManualTitle, tmuxManualRoutes, tmuxManualUrl } from '../lib/tmux-manual-data.ts'
 
 /**
  * `/docs.json` — the agent manifest.
@@ -107,11 +109,29 @@ export const GET: APIRoute = async ({ site }) => {
     })
   }
 
-  for (const { version, slug } of tmuxReferenceRoutes()) {
-    const url = `${origin}${tmuxReferenceUrl(version, slug)}`
-    pages.push({ title: tmuxPageTitle(version, slug), description: tmuxPageDescription(version, slug),
-      section: 'tmux CLI reference', url, markdownUrl: markdownPath(url, !slug),
-      headings: tmuxPageHeadings(version, slug).map((heading) => ({ id: heading.slug, level: heading.depth, text: heading.text })) })
+  for (const { version, slug } of tmuxManualRoutes()) {
+    const url = `${origin}${tmuxManualUrl(version, slug)}`
+    pages.push({ title: tmuxManualTitle(version, slug), description: tmuxManualDescription(version, slug),
+      section: 'tmux manual', url, markdownUrl: markdownPath(url, !slug),
+      headings: tmuxManualHeadings(version, slug).map((heading) => ({ id: heading.slug, level: heading.depth, text: heading.text })) })
+  }
+
+  if (buildsTmuxDocumentation()) for (const version of TMUX_VERSIONS) {
+    const context = tmuxReferenceContext(version)
+    const url = `${origin}${tmuxReferenceUrl(version)}`
+    const sections = referenceIndexSectionsFor(context.model, context.tree)
+    pages.push({ title: context.title, description: context.description,
+      section: 'tmux C source reference', url, markdownUrl: `${url}index.md`, symbolIndexUrl: `${url}tree.json`,
+      headings: [
+        ...(context.paths.length ? [{ id: 'api-source-paths', level: 2, text: 'Paths through the source' }] : []),
+        ...sections.map((section) => ({ id: `section-${section.id}`, level: 2, text: section.name })),
+      ],
+      symbols: sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => ({
+        id: symbol.publicId ?? symbol.id, name: symbol.name, kind: symbol.kind,
+        qualifiedName: qualifiedNameOf(symbol), namespace: moduleOf(symbol),
+        url: `${origin}${tmuxReferenceUrl(version, symbol)}`,
+      })),
+    })
   }
 
   const manifest = {

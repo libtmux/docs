@@ -1,5 +1,5 @@
 import { CONCEPTS, type Concept } from './concepts.ts'
-import type { ApiModel, ApiSymbol } from './model.ts'
+import type { ApiModelBase, ApiSymbol } from './model.ts'
 
 /**
  * The order a type's members are listed in, most useful first.
@@ -85,7 +85,7 @@ export function memberSignals(
 const idOf = (s: ApiSymbol) => s.publicId ?? s.id
 
 /** Include explicit public re-exports without inferring access from private bases. */
-export function membersOf(model: ApiModel, owner: ApiSymbol, signals = memberSignals(model.port)): ApiSymbol[] {
+export function membersOf(model: ApiModelBase & { port?: string }, owner: ApiSymbol, signals = memberSignals(model.port ?? '')): ApiSymbol[] {
   const members = model.symbols.filter((symbol) => symbol.parent === owner.id)
   for (const id of signals.inheritedParents.get(idOf(owner)) ?? []) {
     const source = model.symbols.find((symbol) => idOf(symbol) === id)

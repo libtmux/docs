@@ -20,13 +20,13 @@ describe('documentation surface navigation', () => {
   it('offers the tmux area without inventing a library port or empty prose sections', async () => {
     const surfaces = await getDocumentationSurfaces(undefined, 'latest')
     expect(surfaces.map((surface) => surface.id)).toEqual(['tmux'])
-    expect(surfaces[0].sections.map((section) => section.id)).toEqual(['home', 'manual'])
-    expect(currentDocumentation(surfaces, '/tmux/latest/reference/capture-pane/').section.id).toBe('manual')
+    expect(surfaces[0].sections.map((section) => section.id)).toEqual(['home', 'manual', 'reference'])
+    expect(currentDocumentation(surfaces, '/tmux/latest/manual/capture-pane/').section.id).toBe('manual')
     expect(PORTS.some((port) => port.slug === 'tmux')).toBe(false)
   })
 
   it('selects shared sections inside the tmux hub', () => {
-    const surfaces = [{ id: 'tmux', label: 'Just tmux', href: '/tmux/', sections: [
+    const surfaces = [{ id: 'tmux', label: 'tmux', href: '/tmux/', sections: [
       { id: 'home', label: 'Home', href: '/tmux/', items: [] },
       { id: 'guides', label: 'Guides', href: '/tmux/guides/', items: [] },
     ] }]
@@ -37,9 +37,10 @@ describe('documentation surface navigation', () => {
     const surfaces = await getDocumentationSurfaces(undefined, '3.2a')
     expect(surfaces[0].sections.map(({ label, href }) => ({ label, href }))).toEqual([
       { label: 'Current docs →', href: '/tmux/' },
-      { label: 'Manual', href: '/tmux/3.2a/reference/' },
+      { label: 'Manual', href: '/tmux/3.2a/manual/' },
+      { label: 'Reference', href: '/tmux/3.2a/reference/' },
     ])
-    expect(currentDocumentation(surfaces, '/tmux/3.2a/reference/capture-pane/').section.id).toBe('manual')
+    expect(currentDocumentation(surfaces, '/tmux/3.2a/manual/capture-pane/').section.id).toBe('manual')
   })
 
   it.each(PORTS)('keeps $slug nested app selection and destinations inside the current version', (port) => {

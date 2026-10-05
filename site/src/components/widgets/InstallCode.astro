@@ -1,0 +1,76 @@
+---
+/** A highlighted install command with the shared copy control. */
+interface Props {
+  html: string
+  language: string
+  layout?: 'gutter' | 'overlay'
+}
+const { html, language, layout = 'gutter' } = Astro.props
+---
+<div class={`lm-pkg-install__code lm-pkg-install__code--${layout}`} data-language={language} data-install-code><pre><code set:html={html} /></pre><button type="button" class="lm-pkg-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
+<script>
+  function copyPanelCode(button: HTMLElement) {
+    const wrap = button.closest('.lm-pkg-install__code')
+    const codeEl = wrap?.querySelector('code')
+    if (!codeEl) return
+    let text = codeEl.textContent ?? ''
+    if (wrap?.getAttribute('data-language') === 'console') {
+      text = text.replace(/^\$ /gm, '')
+    }
+    writeClipboardText(text, button)
+  }
+
+  function writeClipboardText(text: string, button: HTMLElement) {
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(
+        () => announceCopyResult(button, true),
+        () => fallbackCopy(text, button),
+      )
+    } else {
+      fallbackCopy(text, button)
+    }
+  }
+
+  function fallbackCopy(text: string, button: HTMLElement) {
+    const focused = document.activeElement
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.focus()
+    textarea.select()
+    let copied = false
+    try {
+      copied = document.execCommand('copy')
+    } catch {
+      copied = false
+    } finally {
+      textarea.remove()
+      if (focused instanceof HTMLElement) focused.focus({ preventScroll: true })
+    }
+    announceCopyResult(button, copied)
+  }
+
+  function announceCopyResult(button: HTMLElement, copied: boolean) {
+    const status = button.closest('.lm-pkg-install')?.querySelector('[data-copy-status]')
+    status?.replaceChildren(document.createTextNode(copied ? 'Copied to clipboard.' : 'Copy failed. Select and copy the text manually.'))
+    const original = button.getAttribute('data-copy-label') ?? button.textContent ?? 'Copy'
+    button.setAttribute('data-copy-label', original)
+    button.textContent = copied ? 'Copied' : 'Copy failed'
+    button.classList.toggle('lm-pkg-install__copy--done', copied)
+    const win = button as HTMLElement & { _lmCopyResetTimer?: number }
+    window.clearTimeout(win._lmCopyResetTimer)
+    win._lmCopyResetTimer = window.setTimeout(() => {
+      button.textContent = original
+      button.classList.remove('lm-pkg-install__copy--done')
+    }, 1500)
+  }
+
+  document.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLElement>('[data-install-code] [data-action="copy"]')
+    if (!button) return
+    event.preventDefault()
+    copyPanelCode(button)
+  })
+</script>

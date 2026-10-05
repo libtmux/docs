@@ -4,7 +4,7 @@ import { fromHtml } from 'hast-util-from-html'
 import { visit } from 'unist-util-visit'
 import { rowAnchor } from '../src/lib/row-anchors'
 import { rehypeRowAnchors } from '../src/plugins/rehype-row-anchors'
-import { TMUX_VERSIONS, tmuxCommandNotes, tmuxPageHeadings } from '../src/lib/tmux-reference'
+import { TMUX_VERSIONS, tmuxCommandNotes, tmuxManualHeadings } from '../src/lib/tmux-manual-data'
 import { SITE_BUILT, sitePath } from './site-root'
 
 const render = (html: string) => {
@@ -90,7 +90,7 @@ describe.skipIf(!SITE_BUILT)('rendered option permalinks', () => {
   })
 
   it.each(TMUX_VERSIONS)('keeps %s sections, option rows and Markdown links aligned', (version) => {
-    const path = `tmux/${version}/reference/capture-pane`
+    const path = `tmux/${version}/manual/capture-pane`
     const html = readFileSync(sitePath(path, 'index.html'), 'utf8')
     const markdown = readFileSync(sitePath(`${path}.md`), 'utf8')
     const tree = fromHtml(html)
@@ -101,7 +101,7 @@ describe.skipIf(!SITE_BUILT)('rendered option permalinks', () => {
       if (typeof node.properties.href === 'string') links.push(node.properties.href)
     })
     const notes = tmuxCommandNotes(version, 'capture-pane')!
-    for (const heading of tmuxPageHeadings(version, 'capture-pane')) {
+    for (const heading of tmuxManualHeadings(version, 'capture-pane')) {
       expect(ids.filter((id) => id === heading.slug)).toHaveLength(1)
       expect(links).toContain(`#${heading.slug}`)
     }

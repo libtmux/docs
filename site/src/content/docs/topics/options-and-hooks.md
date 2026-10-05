@@ -453,10 +453,10 @@ Check the library's supported tmux versions before using a version-specific
 option or hook.
 
 <!-- port:root -->
-Use the command references for [show-options](/tmux/latest/reference/show-options/),
-[set-option](/tmux/latest/reference/set-option/),
-[show-hooks](/tmux/latest/reference/show-hooks/), and
-[set-hook](/tmux/latest/reference/set-hook/) to check the flags and scope rules
+Use the command references for [show-options](/tmux/latest/manual/show-options/),
+[set-option](/tmux/latest/manual/set-option/),
+[show-hooks](/tmux/latest/manual/show-hooks/), and
+[set-hook](/tmux/latest/manual/set-hook/) to check the flags and scope rules
 for your tmux version.
 <!-- /port -->
 

@@ -21,7 +21,7 @@ export function tmuxDocumentationTitle(title: string, pagePath: string): string 
   }
   const parts = pagePath.split('/').filter(Boolean)
   const section = sections[parts[1]] ?? sections[parts[2]]
-  const page = title === 'Just tmux' ? '' : title
+  const page = title === 'tmux' ? '' : title
   return [page, section && page.toLowerCase() !== section.toLowerCase() ? section : '', 'tmux', 'libtmux.org']
     .filter(Boolean).join(' | ')
 }

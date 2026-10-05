@@ -4,8 +4,10 @@
  * Run once before assembly; Astro reads the generated JSON in every build.
  * Usage: node scripts/gen-api-model.mjs [--port py] [--check | --nav]
  *        [--skip-native-model-ports ruby,lua]
+ *        --project tmux --version 3.7c [--source-root CONFIGURED_ARCHIVE] [--check]
  */
 import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
@@ -309,6 +311,159 @@ const repositoryPaths = (tree, cfg) => tree.split('\n').filter((path) =>
   path && (!cfg.pathRoots || !path.includes('/') || cfg.pathRoots.some((prefix) => path.startsWith(prefix))))
 const only = args.includes('--port') ? args[args.indexOf('--port') + 1] : undefined
 const check = args.includes('--check')
+/** Feed configured upstream C sources through the same Doxygen extractor as C++. */
+function generateTmuxModel() {
+  const value = (flag, fallback) => args.includes(flag) ? args[args.indexOf(flag) + 1] : fallback
+  const version = value('--version')
+  const pins = JSON.parse(readFileSync(join(repoRoot, 'site/src/data/tmux/versions.json'), 'utf8'))
+  const pin = pins.versions.find((entry) => entry.version === version)
+  if (!pin) throw new Error('--project tmux requires a version in tmux/versions.json')
+  const checkout = expand(value('--checkout', '~/study/c/tmux'))
+  const revision = pin.revision
+  const commit = git(checkout, 'rev-parse', `${revision}^{commit}`)
+  const tree = git(checkout, 'rev-parse', `${commit}^{tree}`)
+  if (!commit || !tree) throw new Error(`Missing pinned tmux Git object ${revision}`)
+  const scratch = mkdtempSync(join(tmpdir(), 'libtmux-doxygen-c-'))
+  const source = resolve(value('--source-root', join(scratch, 'source')))
+  const run = (command, argv, cwd = source) => execFileSync(command, argv, {
+    cwd, encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, LC_ALL: 'C', TZ: 'UTC' },
+  })
+  const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex')
+  const quote = (text) => `"${text.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`
+  try {
+    if (!args.includes('--source-root')) {
+      mkdirSync(source)
+      const archive = execFileSync('git', ['-C', checkout, 'archive', commit], { maxBuffer: 1 << 28 })
+      execFileSync('tar', ['-x', '-C', source], { input: archive })
+      run('sh', ['autogen.sh'])
+      execFileSync('./configure', [], { cwd: source, encoding: 'utf8', maxBuffer: 1 << 26,
+        env: { ...process.env, CC: process.env.CC || 'clang-18', CFLAGS: '', CPPFLAGS: '', LDFLAGS: '', LIBS: '', LC_ALL: 'C', TZ: 'UTC' } })
+    }
+    // A reused configured archive must still contain every exact tracked byte.
+    const tracked = (git(checkout, 'ls-tree', '-r', commit) ?? '').split('\n').map((line) => {
+      const match = /^\d+ blob ([a-f0-9]+)\t(.+)$/.exec(line)
+      if (!match) throw new Error(`Unexpected tmux tree entry ${line}`)
+      return { blob: match[1], file: match[2] }
+    })
+    const sourceHashes = {}
+    for (const { file, blob } of tracked) {
+      const bytes = readFileSync(join(source, file))
+      const actual = createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex')
+      if (actual !== blob) throw new Error(`Configured tmux input differs from ${commit}: ${file}`)
+      sourceHashes[file] = sha256(bytes)
+    }
+    const makeWords = (variable) => run('make', ['--no-print-directory', '-s',
+      `--eval=model-values: ; @printf "%s\\0" $(${variable})`, 'model-values']).split('\0').filter(Boolean)
+    const compile = makeWords('COMPILE')
+    const configuredSources = [...makeWords('dist_tmux_SOURCES'), ...makeWords('nodist_tmux_SOURCES')]
+    const trackedPaths = new Set(tracked.map(({ file }) => file))
+    const translationUnits = [...new Set(configuredSources.filter((file) => file.endsWith('.c') && trackedPaths.has(file) && !file.startsWith('compat/')))].sort()
+    const headers = [...trackedPaths].filter((file) => !file.includes('/') && file.endsWith('.h')).sort()
+    const inputs = [...translationUnits, ...headers].sort()
+    const inputSet = new Set(inputs)
+    const doxygen = value('--doxygen', process.env.DOXYGEN || 'doxygen')
+    const doxygenPath = isAbsolute(doxygen) ? doxygen : run('which', [doxygen]).trim()
+    const includePaths = ['.']
+    for (let i = 1; i < compile.length; i++) {
+      const include = /^(?:-I|-iquote|-isystem)(.*)$/.exec(compile[i])
+      if (include) includePaths.push(include[1] || compile[++i])
+    }
+    const doxygenVersion = run(doxygen, ['--version']).trim()
+    if (!/^1\.18\.0(?:\s|$)/.test(doxygenVersion)) throw new Error(`Expected tested Doxygen 1.18.0, got ${doxygenVersion}`)
+    const config = [
+      'PROJECT_NAME = tmux', `OUTPUT_DIRECTORY = ${quote(scratch)}`,
+      `INPUT = ${inputs.map(quote).join(' ')}`, 'EXTENSION_MAPPING = c=C h=C',
+      'OPTIMIZE_OUTPUT_FOR_C = YES', 'EXTRACT_ALL = YES', 'EXTRACT_STATIC = YES',
+      'EXTRACT_LOCAL_CLASSES = YES', 'GENERATE_HTML = NO', 'GENERATE_LATEX = NO',
+      'GENERATE_XML = YES', 'XML_PROGRAMLISTING = YES', 'SOURCE_BROWSER = YES',
+      'REFERENCES_RELATION = YES', 'REFERENCED_BY_RELATION = YES',
+      'ENABLE_PREPROCESSING = YES', 'MACRO_EXPANSION = YES', 'EXPAND_ONLY_PREDEF = NO',
+      'SEARCH_INCLUDES = YES', `INCLUDE_PATH = ${[...new Set(includePaths)].map(quote).join(' ')}`,
+      `PREDEFINED = ${[...compile.filter((arg) => arg.startsWith('-D')).map((arg) => arg.slice(2)), '__attribute__(x)='].map(quote).join(' ')}`,
+      'SKIP_FUNCTION_MACROS = YES', 'QUIET = YES', 'WARNINGS = YES', 'WARN_IF_UNDOCUMENTED = NO',
+      `WARN_LOGFILE = ${quote(join(scratch, 'warnings.log'))}`, 'STRIP_FROM_PATH = .', 'HAVE_DOT = NO',
+    ].join('\n')
+    writeFileSync(join(scratch, 'Doxyfile'), `${config}\n`)
+    run(doxygen, [join(scratch, 'Doxyfile')])
+    const warnings = readFileSync(join(scratch, 'warnings.log'), 'utf8').replaceAll(source, '<source>')
+    if (/\berror:/i.test(warnings)) throw new Error(`Doxygen errors: ${warnings}`)
+    const referenceDiagnostics = []
+    const extracted = extractDoxygen(join(scratch, 'xml'), source, { language: 'c', onDiagnostic: (message) => referenceDiagnostics.push(message) })
+    const symbols = extracted.filter((symbol) => inputSet.has(symbol.source.file))
+    const ids = new Map(symbols.map((symbol) => [symbol.id, symbol]))
+    if (ids.size !== symbols.length) throw new Error('Duplicate C declaration identity')
+    for (const symbol of symbols) {
+      if (symbol.parent && !ids.has(symbol.parent)) throw new Error(`Missing C parent ${symbol.parent}`)
+      symbol.apiScope = 'internal'
+      symbol.source = { ...symbol.source, repo: 'tmux/tmux', revision: commit }
+      if (symbol.references) symbol.references = symbol.references.filter((ref) => ids.has(ref.target))
+      if (symbol.imports) symbol.imports = Object.fromEntries(Object.entries(symbol.imports).filter(([, target]) => ids.has(target)))
+      symbol.slug = pageSlug(symbol.id)
+    }
+    const slugs = new Map()
+    for (const symbol of symbols) slugs.set(symbol.slug, [...(slugs.get(symbol.slug) ?? []), symbol])
+    for (const group of slugs.values()) if (group.length > 1) for (const symbol of group) symbol.slug += `-${shortHash(symbol.id)}`
+    if (new Set(symbols.map((symbol) => symbol.slug)).size !== symbols.length) throw new Error('C page slug collision')
+    const commands = symbols.filter((symbol) => symbol.type === 'const struct cmd_entry' && symbol.value).map((symbol) => {
+      const name = /\.name\s*=\s*"([^"\\]+)"/.exec(symbol.value)?.[1]
+      const exec = /\.exec\s*=\s*([A-Za-z_]\w*)/.exec(symbol.value)?.[1]
+      if (!name || !exec) throw new Error(`Unresolved command initializer ${symbol.id}`)
+      const callbacks = (symbol.references ?? []).map((ref) => ids.get(ref.target)).filter((target) => target?.kind === 'function' && target.name === exec)
+      if (callbacks.length !== 1) throw new Error(`Command ${name} callback must resolve once through native XML references`)
+      return { name, entry: symbol.id, callback: callbacks[0].id }
+    }).sort((a, b) => a.name.localeCompare(b.name))
+    if (new Set(commands.map((command) => command.name)).size !== commands.length) throw new Error('Duplicate command name')
+    const notices = {}
+    for (const file of inputs) {
+      const contents = readFileSync(join(source, file), 'utf8')
+      const leading = /^(?:\s*\/\*[\s\S]*?\*\/\s*)+/.exec(contents)?.[0]?.trim()
+      if (leading && /copyright/i.test(leading)) notices[file] = leading
+    }
+    const copying = readFileSync(join(source, 'COPYING'), 'utf8')
+    const model = {
+      schemaVersion: 1, project: 'tmux', language: 'c', version, repo: 'tmux/tmux', revision: commit,
+      extractor: 'doxygen-c-v1',
+      profile: {
+        producer: `Doxygen ${doxygenVersion}`, producerBinarySha256: sha256(readFileSync(doxygenPath)), configuredPlatform: run(compile[0], ['-dumpmachine']).trim(),
+        compiler: run(compile[0], ['--version']).split('\n')[0], arguments: compile.slice(1),
+        pin: revision, sourceCommit: commit, sourceTree: tree, translationUnits, inputs,
+        exclusions: [
+          { paths: configuredSources.filter((file) => file.endsWith('.c') && !inputSet.has(file)).sort(), reason: 'Generated parser and compatibility implementation are outside the source reference.' },
+          { paths: [...trackedPaths].filter((file) => file.endsWith('.c') && !configuredSources.includes(file)).sort(), reason: 'Not selected by this configured platform.' },
+        ],
+        macroExpansion: 'Native included definitions and configured Makefile -D flags; no synthetic feature definitions.',
+        ignoredDecorations: ['__attribute__(x)'], initializerLineLimit: 30,
+        spelling: 'Doxygen-normalized declarations, types and initializers, including expanded macros; not verbatim source slices. Anonymous synthetic types have no reconstructed raw declaration.',
+        references: 'Resolved native XML relationships and explicit C tag types between included symbols; external targets omitted. Call edges are a bounded syntactic projection of refid-linked programlisting inside native function body spans: direct statements, returns, first conditions and assignment RHS. Each call edge records source sites. Callback/address uses, macros, indirect calls, ambiguous or continued expressions remain general references; cross-file static function links are omitted and recorded as producer diagnostics; no runtime execution or complete call graph is claimed.',
+        sourceHashes, referenceDiagnostics: [...new Set(referenceDiagnostics)].sort(), diagnostics: warnings.trim() ? warnings.trim().split('\n') : [],
+      },
+      license: { file: 'COPYING', sha256: sha256(copying), text: copying, notices },
+      commands, symbols,
+    }
+    const out = join(repoRoot, 'site/src/data/tmux/api', `${version}.json`)
+    const text = `${JSON.stringify(model)}\n`
+    if (check) {
+      if (!existsSync(out) || readFileSync(out, 'utf8') !== text) throw new Error(`${out} stale; regenerate with the same configured toolchain`)
+    } else {
+      mkdirSync(dirname(out), { recursive: true })
+      writeFileSync(out, text)
+    }
+    console.log(`gen-api-model: tmux ${version}: ${symbols.length} shared symbols, ${commands.length} native command associations${check ? ' current' : ''}`)
+    if (args.includes('--retain-output')) console.log(`Native Doxygen evidence: ${scratch}`)
+    else rmSync(scratch, { recursive: true })
+  } catch (error) {
+    console.error(`Native Doxygen evidence retained: ${scratch}`)
+    throw error
+  }
+}
+
+if (args.includes('--project')) {
+  if (args[args.indexOf('--project') + 1] !== 'tmux' || only) throw new Error('Use --project tmux independently of --port')
+  generateTmuxModel()
+  process.exit(0)
+}
+
 /*
  * `--nav` rewrites only the sidebar sidecars, from the committed models. The
  * sidebar is a function of the model and nav-config.ts, so an edit to the

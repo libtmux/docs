@@ -1,0 +1,21 @@
+---
+interface Props { name: string; tagline: string; logo: string }
+const { name, tagline, logo } = Astro.props
+---
+<section class="port-hero max-w-4xl">
+  <img src={logo} width="88" height="88" alt="" class="port-hero__mark" />
+  <div class="min-w-0 wrap-anywhere">
+    <h1 id="_top" class="mt-1 text-4xl font-semibold tracking-tight sm:text-5xl">{name}</h1>
+    <p class="port-hero__tagline mt-2 text-xl">{tagline}</p>
+    <slot />
+  </div>
+</section>
+<style>
+  .port-hero { display: flex; align-items: flex-start; gap: 1.5rem; }
+  .port-hero__mark { width: 88px; height: 88px; flex: none; object-fit: contain; }
+  .port-hero__tagline { color: var(--color-foreground-muted); }
+  @media (max-width: 479px) {
+    .port-hero { display: block; }
+    .port-hero__mark { margin-bottom: 1rem; }
+  }
+</style>

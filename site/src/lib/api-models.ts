@@ -1,4 +1,4 @@
-import { conceptsFor, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
+import { conceptsFor, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
 import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
@@ -125,6 +125,7 @@ export const OWNER_KINDS = new Set([
   'exception',
   'interface',
   'struct',
+  'union',
   'trait',
   'enum',
   'module',
@@ -165,13 +166,13 @@ export const PORT_NAME: Record<string, string> = {
  * on the port index. `hrefFor` sends links to that anchor instead. Pages are
  * for types that have something under them.
  */
-export function ownersOf(model: ApiModel) {
+export function ownersOf(model: ApiModelBase) {
   const hasMembers = new Set(model.symbols.flatMap((s) => (s.parent ? [s.parent] : [])))
   return model.symbols.filter((s) => OWNER_KINDS.has(s.kind) && hasMembers.has(s.id))
 }
 
 /** The types the port index lists: top-level only, so nesting reads as nesting. */
-export function topLevelTypesOf(model: ApiModel) {
+export function topLevelTypesOf(model: ApiModelBase) {
   const owners = new Set(ownersOf(model).map((symbol) => symbol.id))
   return model.symbols.filter((s) => !s.parent && OWNER_KINDS.has(s.kind)
     && (s.kind !== 'typealias' || owners.has(s.id)))
@@ -273,13 +274,13 @@ export function parentApiInventory(port: string): InventoryEntry[] {
 }
 
 /** Build an index with this site's language-scoped external inventories. */
-export function createApiIndex(model: ApiModel, hrefFor: (s: ApiSymbol) => string): SymbolIndex {
-  const index = new SymbolIndex(model.symbols, hrefFor, model.port)
+export function createApiIndex(model: ApiModelBase & { port?: string; language?: string }, hrefFor: (s: ApiSymbol) => string): SymbolIndex {
+  const index = new SymbolIndex(model.symbols, hrefFor, model.port ?? model.language)
   for (const { data, baseUrl, langs, project } of INVENTORIES) {
     index.addInventory(baseUrl, entriesOf(data), langs, project)
   }
-  const parent = PORT_BY_SLUG[model.port]?.parentLibrary
-  if (parent) {
+  const parent = model.port ? PORT_BY_SLUG[model.port]?.parentLibrary : undefined
+  if (parent && model.port) {
     index.addInventory('', parentApiInventory(model.port), [model.port], `libtmux ${PORT_NAME[parent.slug]}`)
   }
   const sourceFiles = new Map<string, Map<string, string>>()
@@ -303,7 +304,7 @@ export function createApiIndex(model: ApiModel, hrefFor: (s: ApiSymbol) => strin
     entries.push({ name, uri: href.slice(base.length), type: 'std:label', priority: 1, dispname: '-' })
     filesByBase.set(base, entries)
   }
-  for (const [base, entries] of filesByBase) index.addInventory(base, entries, [model.port], 'Source')
+  for (const [base, entries] of filesByBase) index.addInventory(base, entries, [model.port ?? model.language ?? ''], 'Source')
   return index
 }
 

@@ -1,132 +1,118 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { parseManual } from '../../scripts/gen-tmux-reference.mjs'
-import { buildsTmuxReference, tmuxCommandNotes, tmuxCommandsFor, tmuxGuidesFor, tmuxManualHtml, tmuxPageHeadings, tmuxReference, tmuxReferenceUrl } from '../src/lib/tmux-reference'
-import { highlightTmuxManual, linkTmuxManualEntries } from '../src/lib/tmux-manual'
-import { fromHtml } from 'hast-util-from-html'
-import { select, selectAll, type Nodes } from 'astro-expressive-code/hast'
+import { describe, expect, it } from 'vitest'
+import { readInventory, sourceUrl, writeInventory } from '@libtmux/api-model'
+import { tmuxCommandSources, tmuxReferenceContext, tmuxReferenceIndex, tmuxReferencePaths, tmuxReferenceTree, tmuxReferenceUrl, tmuxReferenceVersionUrl, tmuxSourceCommands, tmuxSourceModel } from '../src/lib/tmux-reference'
+import { tmuxManual, tmuxManualUrl } from '../src/lib/tmux-manual-data'
+import { referenceIndexSectionsFor } from '../src/lib/api-tree'
+import { searchApi } from '../src/lib/api-search'
+import { symbolMarkdown } from '../src/lib/symbol-markdown'
+import { relatedApiTypes } from '../src/lib/api-sections'
+import { PORTS } from '../src/lib/ports'
 
-const contents = (node: Nodes): string => node.type === 'text' ? node.value
-  : 'children' in node ? node.children.map(contents).join('') : ''
+describe.each(['3.7c', '3.2a'])('tmux %s through the shared API system', (version) => {
+  const model = tmuxSourceModel(version)
+  const byId = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
 
-afterEach(() => { vi.unstubAllEnvs(); vi.resetModules() })
-
-describe('versioned tmux reference', () => {
-  beforeAll(async () => { await highlightTmuxManual('<pre>set -g status off</pre>') })
-  it.each(['3.2a', '3.7c'])('links every %s definition without colliding keys or losing old targets', (version) => {
-    const original = fromHtml(tmuxReference(version).manual, { fragment: true })
-    const linked = fromHtml(linkTmuxManualEntries(tmuxReference(version).manual), { fragment: true })
-    const ids = selectAll('[id]', linked).map((node) => node.properties.id)
-    expect(new Set(ids).size).toBe(ids.length)
-    for (const node of selectAll('[id]', original)) expect(ids).toContain(node.properties.id)
-    for (const node of selectAll('dt', linked)) {
-      expect(node.properties.id).toBeTruthy()
-      expect(select(`a[href="#${node.properties.id}"]`, node)).toBeDefined()
-      expect(select('a a', node)).toBeUndefined()
-    }
-    expect(contents(select('#default-key-binding-l', linked)!)).toBe('l')
-    expect(contents(select('#default-key-binding-shift-l', linked)!)).toBe('L')
-    expect(contents(select('#default-key-binding-left-bracket', linked)!)).toBe('[')
-    expect(contents(select('#default-key-binding-right-bracket', linked)!)).toBe(']')
+  it('preserves one addressable declaration per ID and native ownership', () => {
+    expect(new Set(model.symbols.map((symbol) => symbol.id)).size).toBe(model.symbols.length)
+    expect(new Set(model.symbols.map((symbol) => symbol.slug)).size).toBe(model.symbols.length)
+    expect(model.symbols.filter((symbol) => !symbol.slug || (symbol.parent && !byId.has(symbol.parent)))).toEqual([])
+    expect(model.symbols.flatMap((symbol) => symbol.references ?? []).filter((reference) => !byId.has(reference.target))).toEqual([])
+    expect(model).not.toHaveProperty('port')
+    expect(PORTS.some((port) => port.slug as string === 'tmux' || port.slug as string === 'c')).toBe(false)
   })
 
-  it.each(['3.2a', '3.7c'])('highlights the %s manual without changing example text or destinations', async (version) => {
-    const html = tmuxManualHtml(tmuxReference(version).manual, version)
-    const original = fromHtml(html, { fragment: true })
-    const rendered = fromHtml(await highlightTmuxManual(html), { fragment: true })
-    expect(selectAll('pre:not([data-language="tmux-usage"])', rendered).map(contents))
-      .toEqual(selectAll('pre', original).map(contents))
-    expect(selectAll('pre span[style*="--shiki-light:"]', rendered).length).toBeGreaterThan(100)
-    expect(contents(select('[data-language="tmux-usage"]', rendered)!))
-      .toBe(contents(select('table.Nm', original)!).replace(/\s+/g, ' ').trim())
-    expect(selectAll('a', rendered).map((node) => node.properties.href))
-      .toEqual(selectAll('a', original).map((node) => node.properties.href))
+  it('uses the shared bucket index and searchable tree without losing declarations', () => {
+    const context = tmuxReferenceContext(version)
+    const sections = referenceIndexSectionsFor(model, context.tree)
+    const indexed = sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => symbol.id)
+    expect(indexed.toSorted()).toEqual(model.symbols.filter((symbol) => !symbol.parent).map((symbol) => symbol.id).toSorted())
+    const tree = tmuxReferenceTree(version)
+    expect(searchApi(tree, '').map((entry) => entry.id).toSorted()).toEqual(model.symbols.map((symbol) => symbol.id).toSorted())
+    expect(searchApi(tree, 'window_pane')[0].id).toBe('c:struct:window_pane')
+    expect(context.nav.placement['c:struct:window_pane']).toBe('pane')
+    expect(context.tree.find((bucket) => bucket.id === 'pane')?.entries[0].id).toBe('c:struct:window_pane')
+    expect(context.tree.slice(0, 5).map((bucket) => bucket.id)).toEqual(['server', 'session', 'window', 'pane', 'client'])
+    expect(context.tree.find((bucket) => bucket.id === 'session')?.entries.slice(0, 4).map((entry) => entry.name))
+      .toEqual(['session', 'session_create', 'session_find', 'session_find_by_id'])
+    expect(context.tree.find((bucket) => bucket.id === 'session')?.children[0].entries.map((entry) => entry.name)).toContain('session_cmp')
+    expect(sections.find((section) => section.id === 'session-support')?.collapsed).toBe(true)
+    expect(context.nav.diagnostics).toMatchObject({ unmatched: [], ambiguous: [], deadBuckets: [] })
+    expect(tree.relationships?.['c:function:server_start']?.some((edge) => edge.kind === 'call')).toBe(true)
   })
-  it('organizes every capture flag for lookup without showing flags from newer tmux releases', () => {
-    const current = tmuxCommandNotes('latest', 'capture-pane')!
-    const old = tmuxCommandNotes('3.2a', 'capture-pane')!
-    const flags = (notes: typeof current) => notes.groups.flatMap((group) => group.options.map((option) => option.flag)).sort()
-    expect(flags(current)).toEqual(['C', 'E', 'F', 'H', 'J', 'L', 'M', 'N', 'P', 'S', 'T', 'a', 'b', 'e', 'p', 'q', 't'])
-    expect(flags(old)).toEqual(['C', 'E', 'J', 'N', 'P', 'S', 'a', 'b', 'e', 'p', 'q', 't'])
-    expect(current.groups[1].options.find((option) => option.flag === 'J')!.text).toContain('Implies -T.')
-    expect(old.groups[1].options.find((option) => option.flag === 'J')!.text).not.toContain('-T')
-    expect(current.examples.map((example) => example.code)).toEqual([
-      'tmux capture-pane -p -t "$TMUX_PANE"',
-      'tmux capture-pane -p -J -S -1000 -t "$TMUX_PANE"',
+
+  it('exposes genuine code paths without promoting callback references into calls', () => {
+    const paths = tmuxReferencePaths(version)
+    expect(paths).toHaveLength(3)
+    expect(paths[0].edges.every((kind) => kind === 'call')).toBe(true)
+    expect(paths[2].edges.every((kind) => kind === 'call')).toBe(true)
+    // This guarded expression is outside the conservative call projection.
+    // The native relationship stays a reference instead of being guessed.
+    expect(paths[1].edges).toEqual(['reference', 'call', 'call'])
+    const text = symbolMarkdown({ model, symbol: byId.get('c:function:spawn_pane')!, index: tmuxReferenceIndex(version),
+      hrefFor: (symbol) => tmuxReferenceUrl(version, symbol), paths })
+    expect(text).toContain('## Called by')
+    expect(text).toContain('## Calls')
+    expect(text).toContain('## Paths through the source')
+    expect(text).toContain(tmuxReferenceUrl(version, byId.get('c:function:window_add_pane')))
+  })
+
+  it('links command registrations and callbacks to the matching manual version', () => {
+    expect(model.commands.map((command) => command.name).toSorted()).toEqual(tmuxManual(version).commands.map((command) => command.name).toSorted())
+    const capture = model.commands.find((command) => command.name === 'capture-pane')!
+    const clear = model.commands.find((command) => command.name === 'clear-history')!
+    expect(capture.callback).toBe(clear.callback)
+    expect(tmuxReferenceContext(version, byId.get(capture.callback)).pagePorts.some((port) => port.links.length > 0)).toBe(true)
+    expect(tmuxCommandSources(version, 'capture-pane').map((entry) => entry.href)).toEqual([
+      tmuxReferenceUrl(version, byId.get(capture.entry)), tmuxReferenceUrl(version, byId.get(capture.callback)),
     ])
-    expect(current.context).toContain('inside tmux')
-    expect(tmuxCommandNotes('latest', 'new-session')).toBeUndefined()
+    expect(tmuxSourceCommands(version, byId.get(capture.callback)!)).toContainEqual({ name: 'capture-pane', href: tmuxManualUrl(version, 'capture-pane') })
   })
 
-  it('keeps version-specific commands and flags separate', () => {
-    const old = tmuxReference('3.2a')
-    const current = tmuxReference('latest')
-    expect(old.commands).toHaveLength(87)
-    expect(current.commands).toHaveLength(91)
-    expect(current).toBe(tmuxReference('3.7c'))
-    expect(old.commands.some((command) => command.name === 'new-pane')).toBe(false)
-    expect(current.commands.some((command) => command.name === 'new-pane')).toBe(true)
-    const capture = (version: string) => tmuxReference(version).commands.find((command) => command.name === 'capture-pane')!
-    expect(capture('3.2a').usage.split(']')[0]).not.toContain('F')
-    expect(capture('3.7c').usage.split(']')[0]).toContain('F')
-    expect(() => tmuxReference('3.99')).toThrow('Unknown tmux reference version')
+  it('copies native C syntax and links types in the selected version', () => {
+    const symbol = byId.get('c:function:server_start')!
+    const index = tmuxReferenceIndex(version)
+    expect(index.linkType('struct tmuxproc *', symbol).find((span) => span.link)?.link?.symbol?.id).toBe('c:struct:tmuxproc')
+    const text = symbolMarkdown({ model, symbol, index, version,
+      source: sourceUrl(model, symbol), hrefFor: (entry) => tmuxReferenceUrl(version, entry) })
+    expect(text).toContain('```c\nint server_start(')
+    expect(text).not.toContain('client: struct tmuxproc')
+    expect(text).toContain(`/blob/${model.revision}/server.c#L`)
+    expect(relatedApiTypes(symbol, [], index, undefined, { includeInternal: true }).map((entry) => entry.id)).toContain('c:struct:tmuxproc')
   })
 
-  it('stays in the selected version and the root build', () => {
-    expect(buildsTmuxReference({})).toBe(true)
-    expect(buildsTmuxReference({ LIBTMUX_DOCS_PORT: 'go' })).toBe(false)
-    expect(buildsTmuxReference({ LIBTMUX_DOCS_LOCALE: 'ja' })).toBe(false)
-    const html = tmuxManualHtml(tmuxReference('latest').manual, 'latest')
-    expect(html).toContain(`href="${tmuxReferenceUrl('latest', 'capture-pane')}"`)
-    expect(html).not.toContain('/tmux/3.7c/')
+  it('uses the same compressed inventory writer with the C domain and symbol pages', () => {
+    const buffer = writeInventory(model, { project: 'tmux', version, uriFor: (symbol) => `${symbol.slug}/` })
+    const inventory = readInventory(buffer)
+    expect(inventory.entries).toHaveLength(model.symbols.length)
+    expect(inventory.entries.find((entry) => entry.name === 'window_pane')).toMatchObject({
+      type: 'c:struct', uri: 'c-struct-window_pane/',
+    })
+    expect(inventory.entries.find((entry) => entry.name === 'server_start')?.type).toBe('c:function')
+    const nestedUnion = model.symbols.find((symbol) => symbol.kind === 'union' && symbol.parent)!
+    expect(inventory.entries.find((entry) => entry.uri === `${nestedUnion.slug}/`)?.type).toBe('c:union')
+    expect(inventory.entries.find((entry) => entry.name === 'session.name')?.type).toBe('c:member')
+    const enumerator = model.symbols.find((symbol) => symbol.kind === 'constant' && byId.get(symbol.parent ?? '')?.kind === 'enum')!
+    expect(inventory.entries.find((entry) => entry.uri === `${enumerator.slug}/`)?.type).toBe('c:enumerator')
+    expect(new Set(inventory.entries.map((entry) => `${entry.type}:${entry.name}`)).size).toBe(inventory.entries.length)
   })
+})
 
-  it('links commands and retains upstream descriptions and license', () => {
-    const commands = [{ name: 'capture-pane', alias: 'capturep', usage: '[-p]' }]
-    const html = '<section class="Sh"><h1 id="PANES">Panes</h1><dl><dt><code class="Ic">capture-pane</code></dt><dd><div class="Bd">(alias: capturep)</div>Capture visible lines. See <a href="#FORMATS">formats</a> and <code class="Ic">capturep</code>.</dd></dl></section>'
-    const result = parseManual(html, commands, '3.7c')
-    expect(result.commands[0].summary).toBe('Capture visible lines.')
-    expect(result.commands[0].html).not.toContain('(alias:')
-    expect(result.commands[0].html).toContain('/tmux/3.7c/reference/manual/#FORMATS')
-    expect(result.commands[0].html).toContain('/tmux/3.7c/reference/capture-pane/')
-    const older = html.replace('(alias: capturep)</div>', '(alias: capturep</div>\n    ) ')
-    expect(parseManual(older, commands, '3.2a').commands[0].summary).toBe('Capture visible lines.')
-    expect(tmuxReference('latest').license).toContain('Permission to use, copy, modify, and distribute')
-    expect(() => parseManual(html.replace('capture-pane</code>', 'unknown</code>'), commands, '3.7c')).toThrow('Command absent from the manual')
-  })
+it('separates version indexes and preserves only existing symbol counterparts', () => {
+  const current = tmuxSourceModel('latest')
+  const old = tmuxSourceModel('3.2a')
+  const session = current.symbols.find((symbol) => symbol.id === 'c:struct:session')!
+  expect(tmuxReferenceVersionUrl('3.2a', 'latest', session.slug)).toBe(tmuxReferenceUrl('3.2a', old.symbols.find((symbol) => symbol.id === session.id)))
+  const absent = current.symbols.find((symbol) => !old.symbols.some((entry) => entry.id === symbol.id))!
+  expect(tmuxReferenceVersionUrl('3.2a', 'latest', absent.slug)).toBe(tmuxReferenceUrl('3.2a'))
+  expect(tmuxReferenceIndex('latest')).not.toBe(tmuxReferenceIndex('3.7c'))
+  expect(tmuxReferenceIndex('latest').resolve('c:struct:session')?.href).toBe(tmuxReferenceUrl('latest', session))
+  expect(tmuxReferenceIndex('3.7c').resolve('c:struct:session')?.href).toBe(tmuxReferenceUrl('3.7c', session))
+})
 
-  it('excludes the formatter build date and host from the pinned manual', () => {
-    const manual = '<section class="Sh"><h1 id="DESCRIPTION">Description</h1><p>tmux usage.</p></section>'
-    const first = `${manual}<table class="foot"><tr><td>October 1, 2026</td><td>Debian</td></tr></table>`
-    const second = `${manual}<table class="foot"><tr><td>October 2, 2026</td><td>OpenBSD</td></tr></table>`
-    expect(parseManual(first, [], '3.7c')).toEqual(parseManual(second, [], '3.7c'))
-    expect(parseManual(first, [], '3.7c').manual).not.toContain('October')
-  })
-
-  it('links translated pages to the English reference inside the preview', async () => {
-    vi.stubEnv('LIBTMUX_DOCS_ROOT', '/pr-42/ja')
-    vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '/pr-42/en')
-    vi.resetModules()
-    const { tmuxReferenceUrl: referenceUrl } = await import('../src/lib/tmux-reference')
-    expect(referenceUrl('3.2a', 'capture-pane')).toBe('/pr-42/en/tmux/3.2a/reference/capture-pane/')
-  })
-
-  it('links verified API concepts without inferring behavior from similar names', () => {
-    expect(tmuxCommandsFor('ts', 'pane.Pane.capture').map((command) => command.name)).toEqual(['capture-pane'])
-    expect(tmuxCommandsFor('ts', 'server.Server.sessions').map((command) => command.name)).toEqual(['list-sessions'])
-    expect(tmuxCommandsFor('ts', 'Unrelated.capture')).toEqual([])
-    expect(tmuxCommandsFor('ts', 'server.Server.windows').map((command) => command.name)).toEqual(['list-windows'])
-    expect(tmuxCommandsFor('ts', 'pane.Pane.split').map((command) => command.name)).toEqual(['split-window'])
-  })
-
-  it('exports the same command sections and related guides as the page', () => {
-    expect(tmuxPageHeadings('latest', 'capture-pane').map((heading) => heading.slug))
-      .toEqual(['capture-pane-common-uses', 'capture-pane-syntax', 'capture-pane-options',
-        'capture-pane-options-output-and-line-range', 'capture-pane-options-text-formatting',
-        'capture-pane-options-screens-and-pending-output', 'capture-pane-guides', 'capture-pane-use-from-a-library'])
-    expect(tmuxPageHeadings('latest', 'server-access').map((heading) => heading.slug))
-      .toEqual(['server-access-syntax', 'server-access-behavior'])
-    expect(tmuxGuidesFor('capture-pane').map((guide) => guide.href))
-      .toEqual([tmuxReferenceUrl().replace('/tmux/latest/reference/', '/tmux/guides/capturing-output/')])
-    expect(tmuxPageHeadings('3.2a', 'manual').some((heading) => heading.slug === 'COMMANDS')).toBe(true)
-  })
+it('describes an anonymous C value without converting it to a function signature', () => {
+  const model = tmuxSourceModel('latest')
+  const symbol = model.symbols.find((entry) => entry.name === 'window_copy_cmd_table' && entry.kind === 'attribute')!
+  const text = symbolMarkdown({ model, symbol, index: tmuxReferenceIndex() })
+  expect(text).toContain('window_copy_cmd_table: anonymous struct.')
+  expect(text).not.toContain('window_copy_cmd_table()')
 })

@@ -24,6 +24,7 @@ export interface ApiTreeJson {
   port: string
   buckets: ApiTreeBucket[]
   members: Record<string, [string, string, string?, string?, ('types' | 'members')?, string?, string?][]>
+  relationships?: Record<string, { target: string; kind: 'type' | 'call' | 'reference'; sites?: { file: string; line: number }[] }[]>
 }
 
 export interface ApiSearchResult {

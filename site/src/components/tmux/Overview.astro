@@ -1,22 +1,33 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import DocCard from '../../components/DocCard.astro'
-import { withRoot } from '../../lib/site-root'
+import { withPortRoot, withRoot } from '../../lib/site-root'
 import { tmuxReferenceUrl } from '../../lib/tmux-reference'
+import { tmuxManualUrl } from '../../lib/tmux-manual-data'
 import { pagePortsFor } from '../../lib/page-ports-for'
-import TmuxLogo from './Logo.astro'
+import DocumentationHero from '../DocumentationHero.astro'
+import PortLinks from '../PortLinks.astro'
+import TmuxInstall from '../widgets/TmuxInstall.astro'
 const pages = [
   { label: 'Guides', href: withRoot('/tmux/guides/'), body: 'Create sessions, split panes, send input and capture output.' },
   { label: 'Topics', href: withRoot('/tmux/topics/'), body: 'Understand targeting, options, hooks, completion and server ownership.' },
   { label: 'Concepts', href: withRoot('/tmux/concepts/'), body: 'Learn how servers, sessions, windows and panes fit together.' },
   { label: 'Examples', href: withRoot('/tmux/examples/'), body: 'Run complete programs with setup, expected results and cleanup.' },
-  { label: 'Manual', href: tmuxReferenceUrl(), body: 'Look up command syntax, flags and behavior for your tmux version.' },
+  { label: 'Reference', href: tmuxReferenceUrl(), body: 'Browse the C declarations and implementation in each tmux release.' },
+  { label: 'Manual', href: tmuxManualUrl(), body: 'Look up command syntax, flags and behavior for your tmux version.' },
 ]
 ---
-<DocsLayout title="Just tmux" description="Use tmux from your terminal: guides, topics and a versioned manual."
-  pagePath="tmux" pagePorts={await pagePortsFor('')} tableOfContents={false}>
-  <TmuxLogo size={56} />
-  <p>Create terminal workspaces, keep sessions running, and control windows and panes from the command line.</p>
+<DocsLayout title="tmux" description="Use tmux from your terminal: guides, topics, a versioned manual and C source reference."
+  pagePath="tmux" pagePorts={await pagePortsFor('')} tableOfContents={false} bare breadcrumbs={[]}>
+  <DocumentationHero name="tmux" tagline="Create terminal workspaces, keep sessions running, and control windows and panes from the command line."
+    logo={withPortRoot('/brand/tmux/tmux-logomark.svg')}>
+    <PortLinks project={{ name: 'tmux', repo: 'tmux/tmux', homepage: 'https://github.com/tmux/tmux/wiki' }} class="mt-3" />
+  </DocumentationHero>
+  <section class="mt-10" aria-labelledby="tmux-install">
+    <h2 id="tmux-install" class="mb-4 text-xl font-semibold">Install</h2>
+    <TmuxInstall />
+  </section>
+  <div class="prose max-w-none dark:prose-invert mt-8">
   <p>This is the <a href={withRoot('/')}>libtmux</a> website. Our libraries and supporting tools control tmux;
     these pages are maintained separately from the <a href="https://github.com/tmux/tmux/wiki">official tmux website</a>.</p>
   <p>tmux was created by <a href="https://github.com/nicm">Nicholas Marriott (nicm)</a> and is developed with its
@@ -26,4 +37,5 @@ const pages = [
     {pages.map((page) => <DocCard {...page} />)}
   </div>
   <p>The <a href={withRoot('/')}>language libraries</a> control the same tmux objects from application code. Command pages link to related guides and library APIs.</p>
+  </div>
 </DocsLayout>
