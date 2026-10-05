@@ -2,7 +2,7 @@ import type { SymbolKind } from '@libtmux/api-model'
 
 /** Compact marks retain the documented kind, including module versus method. */
 const KIND_MARKS: Record<SymbolKind, string> = {
-  class: 'C', interface: 'I', struct: 'S', enum: 'E', trait: 'T',
+  class: 'C', interface: 'I', struct: 'S', union: 'U', enum: 'E', trait: 'T',
   module: 'M', function: 'f', method: 'm', property: 'p', attribute: 'a',
   constant: 'k', typealias: 'A', exception: '!',
 }

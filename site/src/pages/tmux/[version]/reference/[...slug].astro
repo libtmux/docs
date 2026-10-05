@@ -1,13 +1,21 @@
 ---
+import ApiReference from '../../../../components/api/ApiReference.astro'
 import RedirectPage from '../../../../components/docs/RedirectPage.astro'
+import { tmuxReferenceContext, tmuxReferenceRoutes } from '../../../../lib/tmux-reference'
 import { tmuxManualRoutes, tmuxManualUrl } from '../../../../lib/tmux-manual-data'
 
 export function getStaticPaths() {
-  return tmuxManualRoutes().map(({ version, slug }) => ({
-    params: { version, slug: slug === 'full' ? 'manual' : slug },
-    props: { destination: tmuxManualUrl(version, slug) },
-  }))
+  return [
+    ...tmuxReferenceRoutes().map(({ version, symbol }) => ({
+      params: { version, slug: symbol?.slug }, props: { version, symbol },
+    })),
+    ...tmuxManualRoutes().filter(({ slug }) => slug).map(({ version, slug }) => ({
+      params: { version, slug: slug === 'full' ? 'manual' : slug },
+      props: { destination: tmuxManualUrl(version, slug) },
+    })),
+  ]
 }
-const { destination } = Astro.props
+const { version = 'latest', symbol, destination } = Astro.props
 ---
-<RedirectPage destination={destination} title="tmux manual" />
+{destination ? <RedirectPage destination={destination} title="tmux manual" />
+  : <ApiReference source={tmuxReferenceContext(version, symbol)} owner={symbol} searchable={version === 'latest'} />}

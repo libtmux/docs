@@ -11,7 +11,7 @@ import ApiDoc from './ApiDoc.astro'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
 import type { AsideType } from '../../lib/aside'
-import { apiEntryFields } from '../../lib/api-sections'
+import { apiEntryFields, anonymousDeclarationLabel } from '../../lib/api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from '../../lib/tmux-manual-data'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
 
@@ -34,6 +34,9 @@ interface Props {
   sourceUrl?: (symbol: ApiSymbol) => string | undefined
   /** This entry's port. Enables the cross-language block; omit to hide it. */
   port?: string
+  /** Declaration syntax, independent of library-port identity. */
+  language?: string
+  manualLinks?: { name: string; href: string }[]
   /** Override equivalent links for a product or version context. */
   alternativesFor?: (symbol: ApiSymbol) => ReturnType<typeof referenceAlternatives>
   /**
@@ -62,11 +65,12 @@ interface Props {
   /** Keep the declaration anchor distinct from the page heading. */
   anchorId?: string
 }
-const { symbol, index, sourceUrl, port, alternativesFor, heading = false, member = false,
+const { symbol, index, sourceUrl, port, language = port, manualLinks, alternativesFor, heading = false, member = false,
   showSummary = true, showBases = true, anchorId } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
-const nativeSignatures = ['kotlin', 'scala', 'fsharp'].includes(port ?? '')
+const nativeEntries = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
+const nativeSignatures = ['kotlin', 'scala', 'fsharp', 'c'].includes(language ?? '')
 
 /**
  * The Sphinx domain this port's symbols belong to.
@@ -78,8 +82,8 @@ const nativeSignatures = ['kotlin', 'scala', 'fsharp'].includes(port ?? '')
  * has no domain for — claiming `py` for a Rust trait would be a lie a
  * consumer could act on.
  */
-const DOMAIN: Record<string, string> = { py: 'py', ts: 'js', cxx: 'cpp' }
-const domain = port ? (DOMAIN[port] ?? 'std') : 'py'
+const DOMAIN: Record<string, string> = { py: 'py', ts: 'js', cxx: 'cpp', c: 'c' }
+const domain = language ? (DOMAIN[language] ?? 'std') : 'py'
 
 /**
  * An absent reason, split so its backticked symbol names render as code.
@@ -124,6 +128,7 @@ const KEYWORD: Record<string, string> = {
   exception: 'exception',
   interface: 'interface',
   struct: 'struct',
+  union: 'union',
   enum: 'enum',
   trait: 'trait',
   typealias: 'type',
@@ -154,7 +159,7 @@ const references = symbol.doc?.references ?? []
  * "explained in a concept" and "used in an example" are different offers.
  */
 const mentions = port ? mentionsOf(port, symbol.id) : []
-const tmuxCommands = port ? tmuxCommandsFor(port, anchor) : []
+const tmuxCommands = manualLinks ?? (port ? tmuxCommandsFor(port, anchor).map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
 const mentionSections = [...new Set(mentions.map((m) => m.section ?? 'docs'))].sort()
 
 const badges = [
@@ -205,7 +210,7 @@ const FOLD_THRESHOLD = 10
 const folds = (sig: { params: unknown[] }) => sig.params.length >= FOLD_THRESHOLD
 const foldable = symbol.signatures.some(folds)
 
-const { params, returns, raises } = apiEntryFields(symbol, port)
+const { params, returns, raises } = apiEntryFields(symbol, language)
 const hasFields = params.length > 0 || returns.length > 0 || raises.length > 0
 
 /**
@@ -283,9 +288,9 @@ const hasBody =
     <div class="gp-sphinx-api-layout gp-sphinx-api-layout--responsive">
       <div class="gp-sphinx-api-layout-left">
         <span class="gp-sphinx-api-signature">
-          {nativeSignatures ? symbol.signatures.map((sig) => (
+          {nativeSignatures ? (nativeEntries.length ? nativeEntries.map((sig) => (
             <span class:list={['api-native-signature', port === 'fsharp' && 'api-native-signature--fsharp']}><ApiType type={sig.raw ?? symbol.name} index={index} context={symbol} signature={sig} /></span>
-          )) : <>
+          )) : <span class="api-native-signature">{anonymousDeclarationLabel(symbol)}</span>) : <>
           {keyword && <em class="property"><span class="pre">{keyword}</span> </em>}
           {prename && <span class="sig-prename descclassname"><span class="pre">{prename}</span></span>}<span class="sig-name descname"><span class="pre">{symbol.name}</span></span>
           {
@@ -616,7 +621,7 @@ const hasBody =
       <span class="gp-sphinx-api-mentions-label">tmux command</span>
       {tmuxCommands.map((command, i) => <>
         {i > 0 && ', '}
-        <a href={tmuxManualUrl('latest', command.name)}><code>{command.name}</code></a>
+        <a href={command.href}><code>{command.name}</code></a>
       </>)}
     </p>}
     {

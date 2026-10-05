@@ -5,7 +5,7 @@
  * Free of `astro:content` so the post-build conversion, which astro.config.ts
  * loads, applies the same rules as the routes that write twins from source.
  */
-import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
+import type { ApiModel, ApiSymbol, SourceApiModel } from '@libtmux/api-model'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO } from '../i18n/contribute.ts'
 
 /** The file a page is rendered from: a path in a repository, at a ref. */
@@ -21,12 +21,12 @@ export function rawSourceUrl(source: PageSource): string {
 }
 
 /** A generated API page's source: its declaration, else the extracted model. */
-export function symbolSource(model: ApiModel, symbol: ApiSymbol): PageSource {
-  const repo = symbol.source.repo ?? model.repo
-  const ref = symbol.source.revision ?? model.revision
-  return symbol.source.file && !model.generatedSources?.[symbol.source.file] && repo && ref
-    ? { repo, path: symbol.source.file, ref }
-    : { repo: CONTRIBUTE_REPO, path: `site/src/data/api/${model.port}.json`, ref: CONTRIBUTE_BRANCH }
+export function symbolSource(model: ApiModel | SourceApiModel, symbol?: ApiSymbol): PageSource {
+  const repo = symbol?.source.repo ?? model.repo
+  const ref = symbol?.source.revision ?? model.revision
+  return symbol?.source.file && !model.generatedSources?.[symbol?.source.file] && repo && ref
+    ? { repo, path: symbol?.source.file, ref }
+    : { repo: CONTRIBUTE_REPO, path: 'port' in model ? `site/src/data/api/${model.port}.json` : `site/src/data/${model.project}/api/${model.version}.json`, ref: CONTRIBUTE_BRANCH }
 }
 
 /**

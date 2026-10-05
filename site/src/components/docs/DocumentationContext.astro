@@ -8,6 +8,7 @@ import type { PagePortLink } from '../../lib/page-port-links'
 import type { Locale } from '../../i18n/locales'
 import type { LocaleStatus } from '../../i18n/resolve'
 import { t } from '../../i18n/ui'
+import { tmuxReferenceVersionUrl } from '../../lib/tmux-reference'
 import { TMUX_VERSIONS, tmuxManual, tmuxManualVersionUrl } from '../../lib/tmux-manual-data'
 
 interface Props {
@@ -22,9 +23,10 @@ interface Props {
 const { port, version, locale, sourcePath, pagePorts, localeStatuses, reference = false } = Astro.props
 const surfaces = await getDocumentationSurfaces(port, version, locale)
 const command = sourcePath.match(/^tmux\/[^/]+\/manual\/(.+?)\/?$/)?.[1]
+const sourceReference = sourcePath.match(/^tmux\/([^/]+)\/reference(?:\/(.*?))?\/?$/)
 const tmuxVersions = !port ? TMUX_VERSIONS.map((entry) => ({
   label: entry === 'latest' ? `Latest (${tmuxManual(entry).version})` : entry,
-  href: tmuxManualVersionUrl(entry, command),
+  href: sourceReference ? tmuxReferenceVersionUrl(entry, sourceReference[1], sourceReference[2]) : tmuxManualVersionUrl(entry, command),
   current: entry === version,
 })) : undefined
 ---
@@ -40,7 +42,7 @@ const tmuxVersions = !port ? TMUX_VERSIONS.map((entry) => ({
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m7 3-5 5 5 5M2 8h12" /></svg>
           <span>{t(locale, 'navigation.back')}</span>
         </button>
-        <VersionSwitcher portSlug={port} version={version} entries={tmuxVersions} />
+        <VersionSwitcher portSlug={port} version={version} entries={tmuxVersions} label={sourceReference ? 'tmux source version' : 'tmux manual version'} />
         <LocaleSwitcher locale={locale} sourcePath={sourcePath} localeStatuses={localeStatuses ?? { [locale]: 'translated' }} />
       </div>
       <button type="button" class="context-settings-toggle" data-context-settings-toggle hidden

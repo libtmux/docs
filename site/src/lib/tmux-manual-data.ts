@@ -39,7 +39,7 @@ export function tmuxManualVersionUrl(version: string, command?: string): string 
 export function isLegacyTmuxManualPath(pathname: string): boolean {
   const match = pathname.match(/\/tmux\/([^/]+)\/reference\/(.*?)\/?$/)
   if (!match || !TMUX_VERSIONS.includes(match[1])) return false
-  return !match[2] || match[2] === 'manual'
+  return match[2] === 'manual'
     || tmuxManual(match[1]).commands.some((command) => command.name === match[2])
 }
 

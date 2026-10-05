@@ -2,6 +2,7 @@
 import DocsLayout from '../../../../layouts/DocsLayout.astro'
 import SectionHeading from '../../../../components/SectionHeading.astro'
 import { Code } from 'astro-expressive-code/components'
+import { tmuxCommandSources, tmuxReferenceUrl } from '../../../../lib/tmux-reference'
 import { withRoot } from '../../../../lib/site-root'
 import { rowAnchor } from '../../../../lib/row-anchors'
 import { highlightTmuxManual, linkTmuxManualEntries } from '../../../../lib/tmux-manual'
@@ -44,6 +45,7 @@ const pagePorts = command ? PORTS.map((port) => ({ port: port.slug, name: port.n
 const guides = tmuxGuidesFor(command?.name ?? '')
 const headings = tmuxManualHeadings(version, slug)
 const notes = tmuxCommandNotes(version, slug)
+const implementations = command ? tmuxCommandSources(version, command.name) : []
 const source = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.revision }
 const manualHtml = command || isManual
   ? await highlightTmuxManual(linkTmuxManualEntries(tmuxManualHtml(command?.html ?? reference.manual, version), command?.name))
@@ -88,6 +90,11 @@ const manualHtml = command || isManual
       <SectionHeading id={rowAnchor(command.name, 'guides')} legacyId="guides">Guides</SectionHeading>
       <ul>{guides.map((guide) => <li><a href={guide.href}>{guide.title}</a></li>)}</ul>
     </>}
+    {implementations.length > 0 && <>
+      <SectionHeading id={rowAnchor(command.name, 'implementation')}>C implementation</SectionHeading>
+      <p>Internal declarations in tmux {reference.version}:</p>
+      <ul>{implementations.map((entry) => <li><a href={entry.href}><code>{entry.name}</code></a></li>)}</ul>
+    </>}
     {equivalents.length > 0 && <>
       <SectionHeading id={rowAnchor(command.name, 'use from a library')} legacyId="libraries">Use from a library</SectionHeading>
       <p>Each API describes its own defaults, errors and execution model.</p>
@@ -95,6 +102,7 @@ const manualHtml = command || isManual
     </>}
   </> : isManual ? <div class="tmux-manual" set:html={manualHtml} /> : <>
     <p>Look up the flags and behavior supported by tmux {reference.version}. Choose the version installed on your machine with <code>tmux -V</code>.</p>
+    <p>The <a href={tmuxReferenceUrl(version)}>C source reference</a> documents this version's internal declarations.</p>
     <p>Start with the <a href={`${tmuxManualUrl(version, 'full')}#DESCRIPTION`}>global options</a>, <a href={`${tmuxManualUrl(version, 'full')}#COMMANDS`}>target syntax</a>, or <a href={`${tmuxManualUrl(version, 'full')}#FORMATS`}>formats</a>. The <a href={tmuxManualUrl(version, 'full')}>full manual</a> also covers options, hooks and key bindings.</p>
     {sections.map((section) => <section>
       <SectionHeading id={section.toLowerCase().replaceAll(' ', '-')}>{sectionTitle(section)}</SectionHeading>

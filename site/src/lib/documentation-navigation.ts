@@ -5,6 +5,7 @@ import { API_MODELS } from './api-models'
 import { productApiHref, productApiRoots } from './product-api'
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales'
 import { withPortRoot } from './site-root'
+import { tmuxReferenceUrl } from './tmux-reference'
 import { tmuxManualUrl } from './tmux-manual-data'
 
 export interface DocumentationSection {
@@ -114,11 +115,12 @@ export function getDocumentationSurfaces(port: string | undefined, version: stri
         ...(current ? menus : []).flatMap((item) => item.type === 'group' && item.href
           ? [{ id: item.label.toLowerCase(), label: item.label, href: item.href, items: item.items }] : []),
         { id: 'manual', label: 'Manual', href: tmuxManualUrl(version), items: [] },
+        { id: 'reference', label: 'Reference', href: tmuxReferenceUrl(version), items: [] },
       ]
       sections[0].items = sections.filter((section) => section.href).map((section) => ({
         type: 'link', label: section.label, href: section.href!,
       }))
-      return [{ id: 'tmux', label: 'Just tmux', href: withPortRoot('/tmux/'), sections }]
+      return [{ id: 'tmux', label: 'tmux', href: withPortRoot('/tmux/'), sections }]
     }
     const products = documentationAreas(port).flatMap((domain) => domain.kind !== 'unavailable' && domain.product ? [domain.product] : [])
     const menus = await Promise.all(['core' as const, ...products].map(async (product) =>
