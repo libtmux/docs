@@ -3,6 +3,7 @@ import { LOCALE_LABEL, localePageHref, type Locale } from '../i18n/locales'
 import type { LocaleStatus } from '../i18n/resolve'
 import { withRoot } from '../lib/site-root'
 import { t } from '../i18n/ui'
+import PickerSearch from './docs/PickerSearch.astro'
 import '../styles/documentation-picker.css'
 
 interface Props {
@@ -33,11 +34,14 @@ const entries = Object.entries(localeStatuses) as [Locale, LocaleStatus][]
         <span lang={locale}>{LOCALE_LABEL[locale]}</span>
         <svg class="doc-picker-caret" viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
       </summary>
-      <div class="doc-picker-panel locale-picker-panel" data-picker-panel><ul>
+      <div class="doc-picker-panel locale-picker-panel" data-picker-panel>
+        <PickerSearch label={t(locale, 'i18n.available')} placeholder={t(locale, 'i18n.findLanguage')} emptyMessage={t(locale, 'i18n.noMatchingLanguages')} />
+        <ul>
         {entries.map(([l, status]) => (
           <li>
             <a
               class="doc-picker-option" data-picker-option data-preserve-fragment
+              data-match={`${l} ${LOCALE_LABEL[l]}`}
               href={href(l)}
               hreflang={l}
               lang={l}
@@ -51,7 +55,7 @@ const entries = Object.entries(localeStatuses) as [Locale, LocaleStatus][]
           </li>
         ))}
         <li class="mt-1 border-t border-edge pt-1">
-          <a class="doc-picker-option" data-picker-option href={withRoot('/translations/')} lang={locale}>
+          <a class="doc-picker-option" data-picker-option data-match={t(locale, 'i18n.coverage')} href={withRoot('/translations/')} lang={locale}>
             {t(locale, 'i18n.coverage')}
           </a>
         </li>
@@ -60,4 +64,7 @@ const entries = Object.entries(localeStatuses) as [Locale, LocaleStatus][]
   )
 }
 
-<style>.locale-picker-panel { --picker-width: 14rem; }</style>
+<style>
+  .locale-picker-panel { --picker-width: 14rem; max-height: min(28rem, calc(100dvh - 8rem)); overflow-y: auto; overscroll-behavior: contain; }
+  .locale-picker-panel li:has(> a[hidden]) { display: none; }
+</style>

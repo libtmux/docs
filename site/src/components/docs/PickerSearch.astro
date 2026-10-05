@@ -1,0 +1,11 @@
+---
+interface Props { label: string; placeholder: string; emptyMessage: string }
+const { label, placeholder, emptyMessage } = Astro.props
+---
+<label class="doc-picker-search" hidden data-picker-search-label>
+  <span class="sr-only">{label}</span>
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>
+  <input type="search" placeholder={placeholder} autocomplete="off" data-picker-search />
+</label>
+<p class="doc-picker-empty" data-picker-empty hidden>{emptyMessage}</p>
+<p class="sr-only" role="status" data-picker-status></p>

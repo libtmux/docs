@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { PORTS, productAvailable } from '../src/lib/ports.ts'
+import { checkPickerFilters } from './check-picker-filters.mjs'
 
 /** Optional scripts injected at the end of the body cannot gate navigation. */
 export async function checkNavigationBeforeAnalytics(browser, base) {
@@ -154,6 +155,7 @@ export async function checkContextSettings(page, javaScriptEnabled = true) {
 
 /** Surface selection changes the page tree without losing the port or version. */
 export async function checkDocumentationNavigation(browser, base, complete = false) {
+  await checkPickerFilters(browser, base, complete)
   await checkNavigationBeforeAnalytics(browser, base)
   const ports = complete ? PORTS : PORTS.filter((port) => ['fsharp', 'ruby'].includes(port.slug))
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })

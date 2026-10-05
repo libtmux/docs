@@ -1,6 +1,7 @@
 ---
 import { PORT_BY_SLUG } from '../lib/ports'
 import { withRoot } from '../lib/site-root'
+import PickerSearch from './docs/PickerSearch.astro'
 import '../styles/documentation-picker.css'
 
 interface Props { portSlug?: string; version: string; entries?: { label: string; href: string; current: boolean }[]; label?: string }
@@ -17,7 +18,8 @@ const currentHref = Astro.url.pathname.replace(/\/404\/?$/, '/404.html') + Astro
   </summary>
   <div class="doc-picker-panel version-picker-panel" data-picker-panel>
     <p class="doc-picker-title">{label}</p>
-    {entries.map((entry) => <a class="doc-picker-option" data-picker-option data-preserve-fragment href={entry.href} aria-current={entry.current ? 'page' : undefined}>
+    <PickerSearch label="Find a version" placeholder="Find version…" emptyMessage="No matching versions." />
+    {entries.map((entry) => <a class="doc-picker-option" data-picker-option data-match={entry.label} data-preserve-fragment href={entry.href} aria-current={entry.current ? 'page' : undefined}>
       <span>{entry.label}</span>{entry.current && <span class="doc-picker-check" aria-hidden="true">✓</span>}
     </a>)}
   </div>
@@ -30,19 +32,20 @@ const currentHref = Astro.url.pathname.replace(/\/404\/?$/, '/404.html') + Astro
       <svg class="doc-picker-caret" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
     </summary>
     <div class="doc-picker-panel version-picker-panel" data-picker-panel>
-      <div data-version-options>
+      <PickerSearch label="Find a version" placeholder="Find version…" emptyMessage="No matching versions." />
+      <div data-version-options><section data-picker-group>
         <p class="doc-picker-title">Current version</p>
-        <a class="doc-picker-option" data-picker-option data-preserve-fragment href={currentHref} aria-current="page">
+        <a class="doc-picker-option" data-picker-option data-match={version} data-preserve-fragment href={currentHref} aria-current="page">
           <span>{version}</span><span class="doc-picker-check" aria-hidden="true">✓</span>
         </a>
-      </div>
+      </section></div>
     </div>
   </details>
 </libtmux-version-switcher>}
 <style>
   libtmux-version-switcher { display: inline-block; }
   .version-label { font-family: var(--font-mono); font-size: .75rem; }
-  .version-picker-panel { --picker-width: 14rem; }
+  .version-picker-panel { --picker-width: 14rem; max-height: min(28rem, calc(100dvh - 8rem)); overflow-y: auto; overscroll-behavior: contain; }
 </style>
 <script>
   import { parseTag, type TagGrammar, type VersionEntry, type VersionManifest } from '../lib/versions'
@@ -89,6 +92,7 @@ const currentHref = Astro.url.pathname.replace(/\/404\/?$/, '/404.html') + Astro
       const fragment = document.createDocumentFragment()
       for (const [label, versions] of groups) {
         const section = document.createElement('section')
+        section.dataset.pickerGroup = ''
         const heading = document.createElement('p')
         heading.className = 'doc-picker-title'
         heading.textContent = label
@@ -97,6 +101,7 @@ const currentHref = Astro.url.pathname.replace(/\/404\/?$/, '/404.html') + Astro
           const link = document.createElement('a')
           link.className = 'doc-picker-option'
           link.dataset.pickerOption = ''
+          link.dataset.match = `${entry.slug} ${entry.label} ${label}${entry.eol ? ' end of life' : ''}`
           link.dataset.preserveFragment = ''
           const marker = `${root}/${port}/${current}/`
           const rest = location.pathname.startsWith(marker) ? location.pathname.slice(marker.length) : ''
@@ -117,6 +122,7 @@ const currentHref = Astro.url.pathname.replace(/\/404\/?$/, '/404.html') + Astro
         fragment.append(section)
       }
       target.replaceChildren(fragment)
+      this.querySelector<HTMLInputElement>('[data-picker-search]')?.dispatchEvent(new Event('input'))
     }
     disconnectedCallback() { this.controller?.abort() }
   }

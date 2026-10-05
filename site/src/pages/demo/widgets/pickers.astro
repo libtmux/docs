@@ -1,0 +1,73 @@
+---
+import DemoLayout from '../../../components/demo/DemoLayout.astro'
+import VersionSwitcher from '../../../components/VersionSwitcher.astro'
+import LocaleSwitcher from '../../../components/LocaleSwitcher.astro'
+
+const versions = ['latest', ...Array.from({ length: 40 }, (_, index) => `v1.${39 - index}.0`)]
+---
+<DemoLayout title="Documentation picker demo" description="Filter and scroll documentation menus." current="/demo/widgets/pickers/">
+  <h1 class="text-3xl font-semibold tracking-tight">Documentation pickers</h1>
+  <p class="mt-2 text-muted">Open a menu, type a query, and use the arrow keys to choose a result. Escape closes the menu and returns focus to its button. Try a narrow or short window to check scrolling.</p>
+
+  <section class="mt-8 rounded-lg border border-edge p-4" data-demo-versions>
+    <h2 class="text-xl font-semibold">Long version list</h2>
+    <p class="my-3 text-sm text-muted">These sample versions stay on this page. Search for <code>1.12</code> or a version that does not exist, then clear the search to restore the list.</p>
+    <div class="inline-block">
+      <VersionSwitcher version="latest" label="Demo documentation version" entries={versions.map((version) => ({ label: version, href: `#version-${version}`, current: version === 'latest' }))} />
+    </div>
+  </section>
+
+  <section class="mt-8 rounded-lg border border-edge p-4" data-demo-locales>
+    <h2 class="text-xl font-semibold">Documentation languages</h2>
+    <p class="my-3 text-sm text-muted">The menu begins with the supported locales. Add sample entries to exercise a long list; these entries do not represent available translations.</p>
+    <div class="flex flex-wrap items-center gap-3">
+      <LocaleSwitcher locale="en" sourcePath="demo/widgets/pickers" localeStatuses={{ en: 'translated', ja: 'translated' }} />
+      <button type="button" class="rounded border border-edge px-3 py-2 text-sm hover:bg-surface-hover" data-demo-add-locales hidden aria-pressed="false">Add sample languages</button>
+    </div>
+  </section>
+
+  <section class="mt-8 rounded-lg border border-edge p-4" data-demo-published>
+    <h2 class="text-xl font-semibold">Published versions</h2>
+    <p class="my-3 text-sm text-muted">This menu loads the available Kotlin versions from the site's current version manifest.</p>
+    <VersionSwitcher portSlug="kotlin" version="latest" />
+  </section>
+
+  <p class="mt-8 text-sm text-muted">Search appears when JavaScript is available. Without it, the version list and supported language links remain usable.</p>
+</DemoLayout>
+
+<script>
+  function initPickerDemo() {
+    const demo = document.querySelector('[data-demo-locales]')
+    const button = demo?.querySelector<HTMLButtonElement>('[data-demo-add-locales]')
+    const list = demo?.querySelector('ul')
+    const original = list?.querySelector('li')
+    if (!button || !list || !original || button.dataset.ready !== undefined) return
+    button.dataset.ready = ''
+    button.hidden = false
+    button.addEventListener('click', () => {
+      const add = button.getAttribute('aria-pressed') !== 'true'
+      for (const sample of list.querySelectorAll('[data-demo-sample]')) sample.remove()
+      if (add) {
+        for (let index = 1; index <= 40; index++) {
+          const row = original.cloneNode(true) as HTMLElement
+          row.dataset.demoSample = ''
+          const link = row.querySelector<HTMLAnchorElement>('a')!
+          const name = `Sample language ${String(index).padStart(2, '0')}`
+          link.removeAttribute('aria-current')
+          link.removeAttribute('data-preserve-fragment')
+          link.querySelector('.doc-picker-check')?.remove()
+          const label = link.querySelector('span')!
+          label.textContent = name
+          label.classList.remove('font-semibold')
+          link.dataset.match = name
+          link.href = `#sample-language-${index}`
+          list.insertBefore(row, list.lastElementChild)
+        }
+      }
+      button.setAttribute('aria-pressed', String(add))
+      button.textContent = add ? 'Use supported languages' : 'Add sample languages'
+    })
+  }
+  initPickerDemo()
+  document.addEventListener('astro:page-load', initPickerDemo)
+</script>

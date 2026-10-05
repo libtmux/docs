@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict'
 import { checkHomeResponsiveLayout } from './check-home-launcher.mjs'
+import { checkPickerFilters } from './check-picker-filters.mjs'
 import { checkNavigationBeforeAnalytics } from './check-navigation.mjs'
 
 /** A bounded rendering sample; the publication audit runs the full matrix. */
 export async function checkDevSample(browser, base) {
+  await checkPickerFilters(browser, base)
   await checkNavigationBeforeAnalytics(browser, base)
   const context = await browser.newContext({ reducedMotion: 'reduce' })
   const page = await context.newPage()
