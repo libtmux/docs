@@ -4,9 +4,11 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { DOC_PRODUCTS, PORTS } from '../src/lib/ports'
+import { DOC_PRODUCTS, PORTS as SUPPORTED_PORTS } from '../src/lib/ports'
 import { DEFAULT_LOCALE } from '../src/i18n/locales'
 
+// Retain coverage for a port whose native API migrates before its prose.
+const PORTS = [...SUPPORTED_PORTS, { slug: 'fixture', publishesOwnApi: true, publishesOwnTree: false }]
 // The publisher the deploy runs, not a copy of it: `deploy-shell.yml` and
 // `check-publish` invoke this same file.
 const script = fileURLToPath(new URL('../../scripts/publish-root.sh', import.meta.url))
@@ -126,7 +128,7 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
 
   it('rejects a native API symlink without removing it or its target', () => {
     const directory = assemblyFixture()
-    const api = join(directory, '_site', DEFAULT_LOCALE, PORTS[0].slug, 'latest/api')
+    const api = join(directory, '_site', DEFAULT_LOCALE, SHELL_PORT, 'latest/api')
     rmSync(api, { recursive: true })
     write(join(directory, 'outside/index.html'), 'Native publisher output\n')
     symlinkSync(join(directory, 'outside'), api, 'dir')
@@ -136,6 +138,23 @@ describe('production shell publication boundaries', { timeout: 30_000 }, () => {
     expect(result.stderr).toContain('symlink')
     expect(existsSync(api)).toBe(true)
     expect(readFileSync(join(directory, 'outside/index.html'), 'utf8')).toBe('Native publisher output\n')
+  })
+
+  it('protects the complete Python version tree through assembly and publication', () => {
+    const directory = assemblyFixture()
+    for (const path of ['index.html', 'guides/index.html', 'reference/index.html', 'mcp/index.html', '_astro/port.js']) {
+      write(join(directory, '_site', DEFAULT_LOCALE, 'py/latest', path), 'Port-owned output\n')
+    }
+    const result = spawnSync(process.execPath, [metadataScript], { cwd: directory, encoding: 'utf8', timeout: 10000 })
+    expect(result.error).toBeUndefined()
+    expect(result.status, result.stderr).toBe(0)
+    expect(existsSync(join(directory, '_site', DEFAULT_LOCALE, 'py/latest'))).toBe(false)
+    renameSync(join(directory, '_site', DEFAULT_LOCALE), join(directory, 'dist'))
+    const published = publish(directory)
+    expect(published.status, published.stderr).toBe(0)
+    const destinations = published.commands.filter((args) => args[0] === 's3').map((args) => args[3])
+    expect(destinations).toContain('s3://docs-test/en/py/index.html')
+    expect(destinations.some((path) => path.startsWith('s3://docs-test/en/py/latest/'))).toBe(false)
   })
 
   it.each(['en', 'ja'])('publishes %s products without replacing port, version, native API, or historical prefixes', (locale) => {
