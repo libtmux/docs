@@ -107,6 +107,15 @@ describe('prompt composition', () => {
     expect(text, 'registry page').toContain((port.registry?.url ?? `https://github.com/${port.repo}`))
   })
 
+  it.each([DOCS_BASE, 'https://libtmux.org/pr-42/ja'])('cites shared tmux guides beneath %s', (docsBase) => {
+    const { sections } = sharedParts({ ...ctx, docsBase })
+    for (const topic of TOPICS.filter((entry) => entry.id !== 'setup')) {
+      for (const page of topic.pages) {
+        expect(sections[topic.id], `${topic.id}: ${page}`).toContain(`${docsBase}/tmux/${page}/`)
+      }
+    }
+  })
+
   it.each(PORTS.filter((p) => p.ecosystemHost))('$slug cites its ecosystem host', (port) => {
     for (const topic of TOPICS) {
       expect(promptFor(port, topic.id)).toContain(port.ecosystemHost!.url)
@@ -281,7 +290,7 @@ describe('prompt parts', () => {
     }, 0)
     const wholeBytes = MATRIX.reduce((sum, { port, topic }) => sum + promptFor(port, topic.id).length, 0)
     expect(wholeBytes / (partsBytes + portBytes)).toBeGreaterThan(4)
-    expect(partsBytes + portBytes).toBeLessThan(40_000)
+    expect(partsBytes + portBytes).toBeLessThan(41_000)
   })
 
   it('rejects an unknown topic rather than composing a prompt without one', () => {
