@@ -102,7 +102,7 @@ export async function checkHomeLauncher(browser, base) {
   const solution = page.locator('.home-launcher-solution:not([hidden])')
   const prompt = page.locator('.lm-agent-prompt')
   const reset = page.locator('[data-home-launcher] .picker-clear[data-home-reset]')
-  const logo = page.locator('.site-header__mark img:visible')
+  const logo = page.locator('.site-header__mark img')
   const choose = async (port) => {
     await language.locator('summary .doc-picker-caret').click()
     await language.locator(`a[data-port="${port}"]`).click()
@@ -111,8 +111,7 @@ export async function checkHomeLauncher(browser, base) {
     assert.equal(await solution.getAttribute('data-home-language'), port)
     assert.equal(new URL(page.url()).searchParams.get('port'), port, 'The address carries the chosen language')
     assert(await reset.isVisible(), 'A chosen language can be reset')
-    assert.equal(await logo.getAttribute('src'), await language.locator(`a[data-port="${port}"] img`).getAttribute('src'), 'The header logo follows the selected language')
-    assert(await logo.evaluate((img) => img.complete && img.naturalWidth > 0), 'The selected logo is already loaded')
+    assert.equal(await logo.count(), 0, 'The top header keeps only the wordmark')
     await checkHomeLanguageIcon(page, port)
     const cards = await page.locator(`.home-intro [data-home-language="${port}"] .home-solutions > a`).evaluateAll((links) => links.map((link) => ({
       display: getComputedStyle(link).display,
@@ -134,7 +133,7 @@ export async function checkHomeLauncher(browser, base) {
       await checkHomeResponsiveLayout(page, width)
     }
     await page.setViewportSize({ width: 1280, height: 777 })
-    const defaultLogo = await logo.getAttribute('src')
+    assert.equal(await logo.count(), 0, 'The top header has no duplicate artwork')
     for (const { slug } of PORTS) {
       await choose(slug)
       const links = await solution.locator('a').evaluateAll((links) => links.map((link) => link.getAttribute('href')))
@@ -184,7 +183,7 @@ export async function checkHomeLauncher(browser, base) {
     assert.equal(new URL(page.url()).hash, '#example')
     assert.equal(await page.evaluate(() => localStorage.getItem('libtmux-docs.package-install.port')), null)
     assert.equal(await reset.isVisible(), false)
-    assert.equal(await logo.getAttribute('src'), defaultLogo, 'Reset restores the default header logo')
+    assert.equal(await logo.count(), 0, 'Reset keeps the wordmark without duplicate artwork')
     await checkHomeLanguageIcon(page)
     assert.equal(await language.locator('[aria-current]').count(), 0, 'Reset leaves no selected language')
     assert(await language.locator('summary').evaluate((element) => document.activeElement === element), 'Reset keeps focus on the language picker')
