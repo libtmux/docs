@@ -67,7 +67,7 @@ $ tmux -L workspace-guide kill-session -t '=workspace-guide'
 [tmuxp reference source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/__init__.py).
 <!-- /port -->
 
-<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+<!-- port:ts,rs,go,java,csharp,cxx,swift -->
 Build the documented `tmux-workspace` revision, then load a small session on a
 private socket. Use a Unix shell with tmux 3.2a or newer on `PATH`.
 
@@ -208,7 +208,7 @@ $ export PATH="$PWD/libtmux-workspace-cli/build/install/tmux-workspace/bin:$PATH
 Keep the distribution's `bin` and `lib` directories together. Set `JAVA_HOME`
 to the JDK if Java is not already on `PATH`.
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 ```console
 $ git clone --filter=blob:none https://github.com/libtmux/libtmux-dotnet.git
 ```
@@ -394,7 +394,7 @@ and [automation](../automation/) for attachment, output and failure handling.
 <!-- port:java -->
 [CLI source](https://github.com/libtmux/libtmux-java/blob/3e5b20d22af3890ae5f7f52842e4b05d170a983f/libtmux-workspace-cli/README.md).
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 [CLI source](https://github.com/libtmux/libtmux-dotnet/blob/f77fe776ba67a04abb20ddbbc26cf4a000d63b74/src/LibTmux.Workspace.Cli/README.md).
 <!-- /port -->
 <!-- port:cxx -->

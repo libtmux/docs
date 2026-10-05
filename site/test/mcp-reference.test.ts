@@ -42,11 +42,11 @@ it('keeps the advertised wire name and input schema for every documented tool', 
       expect(tool.inputSchema?.type).toBe('object')
     }
   }
-  expect(MCP_REFERENCE.dotnet.registrations.some((tool) => tool.wireName === 'list_sessions')).toBe(true)
+  expect(MCP_REFERENCE.csharp.registrations.some((tool) => tool.wireName === 'list_sessions')).toBe(true)
 })
 
 it('links equivalent operations whose registered names differ', () => {
-  const ports = ['ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
+  const ports = ['ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']
   const groups = [
     [['py', 'run_command'], ...ports.map((port) => [port, 'run_shell_command'])],
     ...['create_session', 'create_window', 'split_window', 'snapshot_pane']
@@ -69,7 +69,7 @@ it('keeps different effects and unavailable tools out of the equivalents', () =>
   expect(equivalentMcpTool('py', 'missing', 'py')).toBeUndefined()
   expect(equivalentMcpTool('missing', 'list_sessions', 'py')).toBeUndefined()
   expect(equivalentMcpTool('py', 'list_sessions', 'missing')).toBeUndefined()
-  expect(equivalentMcpTool('py', 'capture_pane', 'dotnet')?.wireName).toBe('capture_pane')
+  expect(equivalentMcpTool('py', 'capture_pane', 'csharp')?.wireName).toBe('capture_pane')
 })
 
 it('links only registered tool mentions in description prose', async () => {
@@ -80,7 +80,7 @@ it('links only registered tool mentions in description prose', async () => {
   expect(html).not.toContain('/mcp/tools/missing_tool/')
   expect(html).not.toContain('/mcp/tools/send_keys/')
   expect(html.match(/\/py\/stable\/mcp\/tools\/capture_pane\/"/g)).toHaveLength(1)
-  const dotnet = await renderToolDescription('Use capture_pane or `run_shell_command`.', { port: 'dotnet', version: 'latest' })
-  expect(dotnet).toContain('/dotnet/latest/mcp/tools/capture_pane/')
-  expect(dotnet).toContain('/dotnet/latest/mcp/tools/run_shell_command/')
+  const dotnet = await renderToolDescription('Use capture_pane or `run_shell_command`.', { port: 'csharp', version: 'latest' })
+  expect(dotnet).toContain('/csharp/latest/mcp/tools/capture_pane/')
+  expect(dotnet).toContain('/csharp/latest/mcp/tools/run_shell_command/')
 })

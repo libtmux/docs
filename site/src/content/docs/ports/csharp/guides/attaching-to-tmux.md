@@ -1,8 +1,8 @@
 ---
-port: dotnet
+port: csharp
 route: guides/attaching-to-tmux
 title: Attaching to tmux
-description: Connect to an existing tmux server and find a session with .NET.
+description: Connect to an existing tmux server and find a session with C#.
 sidebar:
   label: Attaching to tmux
   group: Guides

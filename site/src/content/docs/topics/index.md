@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Topics
 description: Object traversal, cleanup, pane I/O, configuration, and failure handling.
 sidebar:

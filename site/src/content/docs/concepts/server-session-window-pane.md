@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, java, dotnet, cxx, swift, ruby, lua]
+supportedPorts: [py, ts, rs, java, csharp, cxx, swift, ruby, lua]
 title: Server, session, window, pane
 description: How tmux servers, sessions, windows, panes and attached clients relate to each other.
 sidebar:
@@ -38,7 +38,7 @@ remains stable for that object's lifetime even if its name or index changes:
 Use stable IDs to identify the same tmux object across reads. Names and indexes
 can change while a program is running.
 
-<!-- port:py,ts,rs,go,java,dotnet,cxx,swift -->
+<!-- port:py,ts,rs,go,java,csharp,cxx,swift -->
 Read the hierarchy:
 
 ```python
@@ -192,9 +192,9 @@ Ports differ in how they read state and report failures:
   `.refresh()`. TypeScript, Swift, and Go also provide snapshots whose
   relationships can be queried without another tmux command.
 - **Blocking and async calls.** Python and Java use blocking calls. Rust,
-  TypeScript, .NET, and Swift provide async APIs. Go uses ordinary calls with
+  TypeScript, C#, and Swift provide async APIs. Go uses ordinary calls with
   contexts for cancellation and deadlines.
-- **Failure handling.** Python and .NET raise exceptions. C++ returns
+- **Failure handling.** Python and C# raise exceptions. C++ returns
   `expected<T, CommandFailure>`. Some commands have an expected negative answer,
   such as `has-session` when a session is absent; check the method's result
   contract before treating that answer as a failure.

@@ -88,7 +88,7 @@ describe('indexFor attaches the inventories', () => {
   })
 
   it('does not answer for a language it does not describe', () => {
-    for (const port of ['rs', 'go', 'dotnet', 'cxx', 'swift'] as const) {
+    for (const port of ['rs', 'go', 'csharp', 'cxx', 'swift'] as const) {
       const index = indexFor(API_MODELS[port], href)
       for (const name of ['List', 'AbortController', 'str', 'Optional']) {
         const hit = index.resolve(name, 'class')
@@ -123,7 +123,7 @@ describe('indexFor attaches the inventories', () => {
     const cases = [
       ['rs', 'ErrorData', 'docs.rs/rmcp/3.1.2'],
       ['java', 'McpSyncServer', 'mcp-core/2.0.1'],
-      ['dotnet', 'IMcpServerBuilder', 'csharp.sdk.modelcontextprotocol.io'],
+      ['csharp', 'IMcpServerBuilder', 'csharp.sdk.modelcontextprotocol.io'],
       ['py', 'FastMCP', 'gofastmcp.com'],
       ['ts', 'McpServer', 'typescript-sdk/blob/1.30.0'],
       ['go', 'sdk.Tool', 'go-sdk@v1.6.1'],

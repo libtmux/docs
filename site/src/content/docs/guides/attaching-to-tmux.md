@@ -127,7 +127,7 @@ socket and leaves that server running:
 [Java](/java/latest/guides/attaching-to-tmux/) ·
 [Kotlin](/kotlin/latest/guides/attaching-to-tmux/) ·
 [Scala](/scala/latest/guides/attaching-to-tmux/) ·
-[.NET](/dotnet/latest/guides/attaching-to-tmux/) ·
+[C#](/csharp/latest/guides/attaching-to-tmux/) ·
 [F#](/fsharp/latest/guides/attaching-to-tmux/) ·
 [C++](/cxx/latest/guides/attaching-to-tmux/) ·
 [Swift](/swift/latest/guides/attaching-to-tmux/) ·

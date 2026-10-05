@@ -27,8 +27,8 @@ describe('standard types in product signatures', () => {
     ['scala', 'Option[String]', 'Option', 'https://www.scala-lang.org/api/3.x/scala/Option.html'],
     ['fsharp', "Result<'T, 'Error>", 'Result', 'https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-fsharpresult-2.html'],
     ['rs', 'Option<OsString>', 'OsString', 'https://doc.rust-lang.org/std/ffi/struct.OsString.html'],
-    ['dotnet', 'IProgress<T>?', 'IProgress', 'https://learn.microsoft.com/dotnet/api/system.iprogress-1'],
-    ['dotnet', 'ReadOnlyMemory<byte>', 'ReadOnlyMemory', 'https://learn.microsoft.com/dotnet/api/system.readonlymemory-1'],
+    ['csharp', 'IProgress<T>?', 'IProgress', 'https://learn.microsoft.com/dotnet/api/system.iprogress-1'],
+    ['csharp', 'ReadOnlyMemory<byte>', 'ReadOnlyMemory', 'https://learn.microsoft.com/dotnet/api/system.readonlymemory-1'],
     ['cxx', 'std::function<void(double)>', 'double', 'https://en.cppreference.com/w/cpp/language/types'],
     ['swift', 'Data', 'Data', 'https://developer.apple.com/documentation/foundation/data'],
     ['swift', 'AsyncStream<String>', 'AsyncStream', 'https://developer.apple.com/documentation/swift/asyncstream'],
@@ -40,7 +40,7 @@ describe('standard types in product signatures', () => {
   })
 
   it('does not classify placeholders, return labels, or dependency types as builtins', () => {
-    for (const port of ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']) {
+    for (const port of ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']) {
       for (const name of ['T', 'Self', 'Integer', 'tools', 'err', 'ILogger', 'IServiceCollection', 'McpServer']) {
         expect(builtinHref(port, name), `${port}:${name}`).toBeUndefined()
       }
@@ -104,7 +104,7 @@ describe('.NET exception references in F# and C#', () => {
     ['System.Threading.Tasks.TaskCanceledException', 'system.threading.tasks.taskcanceledexception'],
   ] as const
 
-  it.each(['fsharp', 'dotnet'])('links verified qualified and imported exception names in %s', (port) => {
+  it.each(['fsharp', 'csharp'])('links verified qualified and imported exception names in %s', (port) => {
     const index = new SymbolIndex([], () => '#', port)
     for (const [qualified, page] of exceptions) {
       for (const name of [qualified, qualified.split('.').at(-1)!]) {
@@ -130,7 +130,7 @@ describe('.NET exception references in F# and C#', () => {
   })
 
   it('leaves unknown namespaces and exceptions plain without borrowing another language', () => {
-    for (const port of ['fsharp', 'dotnet']) {
+    for (const port of ['fsharp', 'csharp']) {
       const index = new SymbolIndex([], () => '#', port)
       for (const name of ['System.MissingException', 'System.IO.ArgumentException',
         'Other.ArgumentException', 'System.Text.Json.OtherException', 'System.Exceptionish',
@@ -144,7 +144,7 @@ describe('.NET exception references in F# and C#', () => {
     }
   })
 
-  it.each(['fsharp', 'dotnet'])('retains a local exception definition before a short builtin in %s', (port) => {
+  it.each(['fsharp', 'csharp'])('retains a local exception definition before a short builtin in %s', (port) => {
     const symbol = { id: 'LibTmux.ArgumentException', name: 'ArgumentException', kind: 'class',
       modifiers: [], signatures: [], source: { file: 'example' }, slug: 'argument-exception' } satisfies ApiSymbol
     const index = new SymbolIndex([symbol], () => '/reference/argument-exception/', port)

@@ -6553,7 +6553,7 @@
         {
           "file": "csharp/library/site.webmanifest",
           "bytes": 741,
-          "sha256": "c1b68953793d270e33be6513dfff9fb6f2b264a15fa06c239fe511eb5f3d0f17",
+          "sha256": "771a567852f47d0b0146807d845e13b6221592bce2e4a226e80d3d8c8f770bac",
           "format": "webmanifest"
         },
         {
@@ -6667,7 +6667,7 @@
         {
           "file": "csharp/library/site-dark.webmanifest",
           "bytes": 739,
-          "sha256": "d3f2301fa381caeaf25469c643c4c9cfca9f35556be3f46cfea79eeb300f3251",
+          "sha256": "8008e4542a4b150f96a993ed2075d0dbf8ee5ab2caa91394531b5994f279950c",
           "format": "webmanifest"
         },
         {
@@ -6964,7 +6964,7 @@
         {
           "file": "csharp/workspace/site.webmanifest",
           "bytes": 762,
-          "sha256": "0d49985804b9b5150e1580581845421404e19d6c7d8523ee80a16ce27b89134c",
+          "sha256": "973cd2887a8ecdc7970341c1134390e77e97154e6eb042ee89bbaf6427723ce9",
           "format": "webmanifest"
         },
         {
@@ -7078,7 +7078,7 @@
         {
           "file": "csharp/workspace/site-dark.webmanifest",
           "bytes": 760,
-          "sha256": "b4d077cfd3741b9dc7e1ec45ed5247e50147ed7e8e864c2ff8603208e5ac53ea",
+          "sha256": "0ef7c1973285f968167b94e96e8279ef0ae5ea1bc7c8c67b7d18a6fe7d6e432c",
           "format": "webmanifest"
         },
         {
@@ -7375,7 +7375,7 @@
         {
           "file": "csharp/mcp/site.webmanifest",
           "bytes": 752,
-          "sha256": "804288ee67c7f91a5550139d0db02241c83839f3a0c2688d9bbc80db55660cc9",
+          "sha256": "70de2c87011f7c99855dca54557d75645d771b905db6d8c12a358b9a4b2cbdb5",
           "format": "webmanifest"
         },
         {
@@ -7489,7 +7489,7 @@
         {
           "file": "csharp/mcp/site-dark.webmanifest",
           "bytes": 750,
-          "sha256": "4bd68717c8d6e2943b6267ba91216dfd98e05c1cfb67b15d5943ad3a718768bb",
+          "sha256": "0bbc7f862a03baa3b57d3a426619dfd639d93f090ba4a2a643b4fb580beede48",
           "format": "webmanifest"
         },
         {

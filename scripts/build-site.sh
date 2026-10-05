@@ -725,7 +725,7 @@ reference_source_dir() {
   if [ -d "$worktree" ]; then
     case "$slug" in
       py | cxx) [ -f "$worktree/docs/conf.py" ] && expanded="$worktree" ;;
-      dotnet) [ -f "$worktree/docfx.json" ] && expanded="$worktree" ;;
+      csharp) [ -f "$worktree/docfx.json" ] && expanded="$worktree" ;;
     esac
   fi
   printf '%s' "$expanded"
@@ -883,7 +883,7 @@ build_reference() {
       fi
       ;;
 
-    dotnet)
+    csharp)
       if ! toolchain_ready docfx; then
         printf 'skipped\tdocfx not usable%s\n' "${toolchain_broken_reason:+: $toolchain_broken_reason}"
         return

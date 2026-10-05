@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Traversal
 description: Moving up and down the server/session/window/pane tree, and the two questions that come up once you have more than one object.
 sidebar:
@@ -28,7 +28,7 @@ pane](/concepts/server-session-window-pane/).
 <!-- /port --><!-- port:go -->| Go | `server.Sessions(ctx)` | `session.Windows()` | `window.Panes()` |
 <!-- /port --><!-- port:rs -->| Rust | `await server.sessions()` | `session.windows()` | `window.panes()` |
 <!-- /port --><!-- port:java -->| Java | `server.sessions()` | `session.windows()` | `window.panes()` |
-<!-- /port --><!-- port:dotnet -->| .NET | `server.GetSessionsAsync()` | `session.GetWindowsAsync()` | `window.GetPanesAsync()` |
+<!-- /port --><!-- port:csharp -->| C# | `server.GetSessionsAsync()` | `session.GetWindowsAsync()` | `window.GetPanesAsync()` |
 <!-- /port --><!-- port:cxx -->| C++ | `server->sessions()` | `session->windows()` | `window->panes()` |
 <!-- /port --><!-- port:swift -->| Swift | `Server.sessions()`, or `snapshot.windows(of: session)` for windows/panes once you have a `Snapshot` | see previous column | see previous column |
 <!-- /port -->
@@ -85,9 +85,9 @@ The relation must have been included in the read that produced the session;
 an uncaptured relation does not establish that the session has no panes.
 <!-- /port -->
 
-<!-- port:dotnet -->
+<!-- port:csharp -->
 <!-- port:root -->
-### .NET
+### C#
 <!-- /port -->
 
 `LibTmux.Session.Panes` reads the session's captured relations. It does not
@@ -135,7 +135,7 @@ pane](/concepts/server-session-window-pane/) introduces that distinction:
 <!-- /port --><!-- port:go -->| Go | `pane.Window()` → `(Window, bool)` | `window.Session()` → `(Session, bool)` |
 <!-- /port --><!-- port:rs -->| Rust | `await pane.window()` → `Result<Option<Window>, Error>` | `await window.session()` → `Result<Option<Session>, Error>` |
 <!-- /port --><!-- port:java -->| Java | `pane.window()` | `window.session()` |
-<!-- /port --><!-- port:dotnet -->| .NET | `pane.Window` (property) | `window.Session` (property) |
+<!-- /port --><!-- port:csharp -->| C# | `pane.Window` (property) | `window.Session` (property) |
 <!-- /port --><!-- port:cxx -->| C++ | `pane->window()` | `window->session()` |
 <!-- /port --><!-- port:swift -->| Swift | `pane.windowID`, then look it up via `Snapshot` | not a per-window field: join through the snapshot instead |
 <!-- /port -->
@@ -147,7 +147,7 @@ current existence matters.
 <!-- port:rs -->
 Handle both a command failure and an absent parent in the optional result.
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 `.Window`, `.Session`, `.ActiveWindow`, and `.ActivePane` read captured state
 synchronously. They throw `IncompleteSnapshotException` when the capture lacks
 the required context.
@@ -258,7 +258,7 @@ active child directly rather than making you filter a list:
 <!-- /port --><!-- port:go -->| Go | `session.ActiveWindow()` → `(Window, bool)` | `window.ActivePane()` → `(Pane, bool)` |
 <!-- /port --><!-- port:rs -->| Rust | `await session.active_window()` → `Result<Option<Window>, Error>` | `await window.active_pane()` → `Result<Option<Pane>, Error>` |
 <!-- /port --><!-- port:java -->| Java | `session.activeWindow()` → `Optional<Window>` | `window.activePane()` → `Optional<Pane>` |
-<!-- /port --><!-- port:dotnet -->| .NET | `session.ActiveWindow` (property) | `window.ActivePane` (property) |
+<!-- /port --><!-- port:csharp -->| C# | `session.ActiveWindow` (property) | `window.ActivePane` (property) |
 <!-- /port --><!-- port:cxx -->| C++ | `session->active_window()` | `window->active_pane()` |
 <!-- /port --><!-- port:swift -->| Swift | filter for `isActive` on `snapshot.windows(of: session)`: `Window` carries its own `window_active` flag rather than the session exposing an accessor | same pattern, on the pane's own active flag |
 <!-- /port -->
@@ -278,7 +278,7 @@ array, slice, or list:
 `QueryList` supports `in`: use `window in session.windows` or
 `pane in window.panes`.
 <!-- /port -->
-<!-- port:java,cxx,dotnet -->
+<!-- port:java,cxx,csharp -->
 Use standard collection membership operations with the object identity
 comparison described below.
 <!-- /port -->
@@ -311,7 +311,7 @@ the same server. Equality operators vary by port:
 <!-- /port --><!-- port:go -->| Go | `pane.ID() == other.ID()`: `PaneID` is a plain, `==`-comparable `string` |
 <!-- /port --><!-- port:rs -->| Rust | `pane.id() == other.id()`: verified from the port's own doctests, not struct equality |
 <!-- /port --><!-- port:java -->| Java | `pane.equals(other)`: overridden to compare server identity plus pane ID |
-<!-- /port --><!-- port:dotnet -->| .NET | `pane.Equals(other)`: overridden to compare a generation counter plus ID |
+<!-- /port --><!-- port:csharp -->| C# | `pane.Equals(other)`: overridden to compare a generation counter plus ID |
 <!-- /port --><!-- port:cxx -->| C++ | `pane == other`: `operator==` is defined directly on `Session`/`Window`/`Pane` |
 <!-- /port --><!-- port:swift -->| Swift | compare `.id` for identity; see the equality note below |
 <!-- /port -->

@@ -666,7 +666,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
         'Jackson serialisation registration, not tmux API',
     },
   },
-  dotnet: {
+  csharp: {
     unsettled: {
       'LibTmux.LibTmuxInfo': 'assembly metadata',
       'LibTmux.TmuxDiagnostics': 'diagnostic source names shared by every entity',
@@ -757,7 +757,7 @@ function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket 
 }
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
-  ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'fsharp', 'dotnet', 'cxx', 'swift'].map((port) => [
+  ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift'].map((port) => [
     port,
     {
       port,

@@ -41,7 +41,7 @@ describe('prose mention index', () => {
   it('does not turn language types into unrelated API backlinks', () => {
     for (const [port, symbol, page] of [
       ['swift', 'JSONValue.bool(_:)', '/topics/socket-and-servers/'],
-      ['dotnet', 'LibTmux.ControlModeGuardKind.Error', '/topics/errors-and-exceptions/'],
+      ['csharp', 'LibTmux.ControlModeGuardKind.Error', '/topics/errors-and-exceptions/'],
     ]) {
       expect(mentionIndex.mentions.some((row) => row.port === port && row.symbol === symbol && row.page === page)).toBe(false)
     }

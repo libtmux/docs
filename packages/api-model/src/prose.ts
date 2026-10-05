@@ -20,7 +20,7 @@ export const PORT_NAME: Record<string, string> = {
   rs: 'Rust',
   go: 'Go',
   java: 'Java',
-  dotnet: '.NET',
+  csharp: 'C#',
   cxx: 'C++',
   swift: 'Swift',
   ruby: 'Ruby',
@@ -71,7 +71,7 @@ export function pageSlug(id: string): string {
  * Where a symbol's page is.
  *
  * Every symbol has one. This used to send members to an anchor on their
- * owner's page — `/reference/dotnet/libtmux-pane/#LibTmux.Pane.CaptureAsync`
+ * owner's page — `/reference/csharp/libtmux-pane/#LibTmux.Pane.CaptureAsync`
  * — which meant 10,511 of 11,592 symbols had no URL of their own, could not
  * be listed in a sidebar, and could not carry their own examples or source
  * link. learn.microsoft.com gives every method and property a page; so does

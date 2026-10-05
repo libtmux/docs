@@ -13,7 +13,7 @@
     {"slug":"java","name":"Java","shortName":"Java","logoLanguage":"java","versionedDocs":true},
     {"slug":"kotlin","name":"Kotlin","shortName":"Kt","logoLanguage":"kotlin","versionedDocs":true},
     {"slug":"scala","name":"Scala","shortName":"Sc","logoLanguage":"scala","versionedDocs":true},
-    {"slug":"dotnet","name":".NET","shortName":".NET","logoLanguage":"csharp","versionedDocs":true},
+    {"slug":"csharp","name":"C#","shortName":"C#","logoLanguage":"csharp","versionedDocs":true},
     {"slug":"fsharp","name":"F#","shortName":"F#","logoLanguage":"fsharp","versionedDocs":true},
     {"slug":"cxx","name":"C++","shortName":"C++","logoLanguage":"cpp","versionedDocs":true},
     {"slug":"swift","name":"Swift","shortName":"Sw","logoLanguage":"swift","versionedDocs":true},

@@ -623,7 +623,7 @@ try {
     const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).finally(() => apiNavigationPage.close()))
     const paths = ['tmux/concepts/server-session-window-pane', 'tmux/examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
       'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
-      'ts/latest/mcp/tools', 'dotnet/latest/mcp/tools/capture_pane']
+      'ts/latest/mcp/tools', 'csharp/latest/mcp/tools/capture_pane']
     for (const path of paths) await retryReload(async () => {
       await page.setViewportSize({ width: 1440, height: 1000 })
       const response = await page.goto(`${base}/${path}/`, { waitUntil: 'load' })
@@ -648,7 +648,7 @@ try {
         assert(geometry.above && geometry.contextAbove, `${path}: context controls precede the breadcrumb and heading`)
       }
       const expected = isReference ? '/en/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/' : path.includes('workspace/') ? `/en/${path}/`
-        : path === 'dotnet/latest/mcp/tools/capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : `/en/py/stable/${path.replace(/^(?:ts\/latest\/|tmux\/)/, '')}/`
+        : path === 'csharp/latest/mcp/tools/capture_pane' ? '/en/py/stable/mcp/tools/capture_pane/' : `/en/py/stable/${path.replace(/^(?:ts\/latest\/|tmux\/)/, '')}/`
       if (hasSwitcher) {
         assert.equal(await portLinks.first().getAttribute('href'), expected)
         assert.equal(await switcher.locator('.tmux-area a').getAttribute('href'), '/en/tmux/')
@@ -664,7 +664,7 @@ try {
         const unavailable = await switcher.locator('[aria-disabled="true"]').allTextContents()
         assert(unavailable.some((label) => /Python/.test(label)), 'Python internals guide stays unavailable')
       }
-      if (path === 'dotnet/latest/mcp/tools/capture_pane') {
+      if (path === 'csharp/latest/mcp/tools/capture_pane') {
         assert.equal(await portLinks.count(), 8)
         assert.equal(await switcher.locator('a[aria-current="page"]').getAttribute('href'), `/en/${path}/`)
       }

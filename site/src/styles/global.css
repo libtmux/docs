@@ -211,7 +211,7 @@
  * Room for the sticky header when a hash lands on an entry.
  *
  * Making the header sticky put it over whatever an anchor scrolled to:
- * /reference/dotnet/libtmux-pane/#LibTmux.Pane.CaptureAsync arrived with its
+ * /reference/csharp/libtmux-pane/#LibTmux.Pane.CaptureAsync arrived with its
  * signature behind the bar. gp-sphinx solves the same problem with
  * `scroll-margin-top: calc(var(--header-height) + 2.5rem)` on `:target`.
  *

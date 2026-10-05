@@ -44,7 +44,7 @@ const DOMAIN: Record<PortSlug, string> = {
   kotlin: 'std',
   scala: 'std',
   fsharp: 'std',
-  dotnet: 'std',
+  csharp: 'std',
   swift: 'std',
 }
 

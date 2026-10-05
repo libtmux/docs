@@ -12,7 +12,7 @@ tableOfContents: true
 
 Capture a hierarchy, then read its sessions, windows and panes locally. Handles retain the state they captured; a rename does not rewrite an older handle. Use a new capture to observe later changes.
 
-[`Server`](../../reference/libtmux-fsharp-server/) is the F# helper module. It operates on the underlying [`LibTmux.Server`](../../../../dotnet/latest/reference/libtmux-server/) object. Choose a snapshot depth before traversal: sessions, windows or panes. A relation that was not captured is unavailable, rather than an empty collection.
+[`Server`](../../reference/libtmux-fsharp-server/) is the F# helper module. It operates on the underlying [`LibTmux.Server`](../../../../csharp/latest/reference/libtmux-server/) object. Choose a snapshot depth before traversal: sessions, windows or panes. A relation that was not captured is unavailable, rather than an empty collection.
 
 A session holds window placements; a window holds panes. A linked window can appear in several sessions, so traversal counts placements rather than necessarily distinct physical windows. Names can change; retain IDs when identifying a target.
 

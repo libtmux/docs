@@ -61,8 +61,8 @@ describe('publish plan', () => {
       { slug: 'java', repo: 'libtmux/libtmux-java', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml', language: 'java' } },
       { slug: 'kotlin', repo: 'libtmux/libtmux-java', tagGrammar: 'semver', parentLibrary: { slug: 'java' }, docsDispatch: { workflow: 'docs.yml', language: 'kotlin' } },
       { slug: 'scala', repo: 'libtmux/libtmux-java', tagGrammar: 'semver', parentLibrary: { slug: 'java' }, docsDispatch: { workflow: 'docs.yml', language: 'scala' } },
-      { slug: 'dotnet', repo: 'libtmux/libtmux-dotnet', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml', language: 'dotnet' } },
-      { slug: 'fsharp', repo: 'libtmux/libtmux-dotnet', tagGrammar: 'semver', parentLibrary: { slug: 'dotnet' }, docsDispatch: { workflow: 'docs.yml', language: 'fsharp' } },
+      { slug: 'csharp', repo: 'libtmux/libtmux-dotnet', tagGrammar: 'semver', docsDispatch: { workflow: 'docs.yml', language: 'csharp' } },
+      { slug: 'fsharp', repo: 'libtmux/libtmux-dotnet', tagGrammar: 'semver', parentLibrary: { slug: 'csharp' }, docsDispatch: { workflow: 'docs.yml', language: 'fsharp' } },
     ]
     const lookups: string[] = []
     const entries = plan({ ports: 'all', ref: 'latest' }, [...catalog, ...family], (repo) => {
@@ -73,7 +73,7 @@ describe('publish plan', () => {
     expect(new Set(lookups).size).toBe(6)
     expect(entries.map((entry) => [entry.port, entry.language])).toEqual([
       ['py', ''], ['rs', ''], ['go', ''], ['swift', ''],
-      ['java', 'java'], ['kotlin', 'kotlin'], ['scala', 'scala'], ['dotnet', 'dotnet'], ['fsharp', 'fsharp'],
+      ['java', 'java'], ['kotlin', 'kotlin'], ['scala', 'scala'], ['csharp', 'csharp'], ['fsharp', 'fsharp'],
     ])
     expect(plan({ ports: 'kotlin,fsharp', ref: 'latest' }, family, lookup, versions)).toMatchObject([
       { port: 'kotlin', repo: 'libtmux/libtmux-java', language: 'kotlin' },
@@ -162,7 +162,7 @@ describe('publish workflow', () => {
 
   it.each([
     { repo: 'tmux-python/libtmux', dispatchRef: 'docs-site-deploy', language: '' },
-    ...['', 'java', 'kotlin', 'scala', 'dotnet', 'fsharp'].map((language) => ({
+    ...['', 'java', 'kotlin', 'scala', 'csharp', 'fsharp'].map((language) => ({
       repo: 'libtmux/libtmux-java', dispatchRef: 'master', language,
     })),
   ])('dispatches only the catalogued caller and selected language %j', ({ repo, dispatchRef, language }) => {

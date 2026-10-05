@@ -88,7 +88,7 @@ For YAML or JSON configuration, validation, and language APIs, choose a port:
 <a id="go"></a>[Go](/go/latest/workspace/internals/examples/) ·
 <a id="rust"></a>[Rust](/rs/latest/workspace/internals/examples/) ·
 <a id="java"></a>[Java](/java/latest/workspace/internals/examples/) ·
-<a id="net"></a>[.NET](/dotnet/latest/workspace/internals/examples/) ·
+<a id="net"></a>[C#](/csharp/latest/workspace/internals/examples/) ·
 <a id="c"></a>[C++](/cxx/latest/workspace/internals/examples/) ·
 <a id="swift"></a>[Swift](/swift/latest/workspace/internals/examples/)
 

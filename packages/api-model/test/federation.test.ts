@@ -26,7 +26,7 @@ import { moduleOf, modulesIn } from '../src/modules.ts'
  */
 const here = dirname(fileURLToPath(import.meta.url))
 const PY_INV = join(here, '../../../site/src/data/inventories/python.inv')
-const OTHER_PORTS = ['ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']
+const OTHER_PORTS = ['ruby', 'lua', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']
 
 /** Names that are Python's and also perfectly ordinary in other languages. */
 const POACHED = [
@@ -204,7 +204,7 @@ describe('module names', () => {
     // One module per symbol is a flat list wearing a costume — .NET's docfx
     // ids produced 243 headings for 239 cards.
     const mods = modulesIn({
-      port: 'dotnet',
+      port: 'csharp',
       symbols: [
         sym('Exceptions.LibTmuxException.LibTmuxException', 'LibTmuxException'),
         sym('Requests.SendKeysRequest.SendKeysRequest', 'SendKeysRequest'),
@@ -292,7 +292,7 @@ describe('modules resolve as destinations', () => {
 it('prefers a method over a same-named module path', () => {
   const r = new Resolver([
     {
-      port: 'dotnet',
+      port: 'csharp',
       symbols: [
         { id: 'Server.FromEnvironment.Server', name: 'Server', kind: 'class', signatures: [], docs: [] },
         {
@@ -306,7 +306,7 @@ it('prefers a method over a same-named module path', () => {
       ],
     },
   ] as never)
-  const res = r.resolve('dotnet', 'Server.FromEnvironment')
+  const res = r.resolve('csharp', 'Server.FromEnvironment')
   expect(res.how).toBe('unique')
   expect(res.how === 'unique' && res.symbol.name).toBe('FromEnvironment')
 })
@@ -329,7 +329,7 @@ it('prefers a method over a same-named module path', () => {
 describe('enum variants reach the model', () => {
   const cases: { port: string; enumName: string; variant: string }[] = [
     { port: 'rs', enumName: 'Subscription', variant: 'Session' },
-    { port: 'dotnet', enumName: 'TmuxDispatchState', variant: 'NotDispatched' },
+    { port: 'csharp', enumName: 'TmuxDispatchState', variant: 'NotDispatched' },
     { port: 'java', enumName: 'OperationOutcome', variant: 'COMPLETE' },
     // C++ comes from Doxygen, which nests an enum's values inside the enum's
     // own <memberdef> rather than emitting one each — a different miss from
@@ -429,7 +429,7 @@ describe('JDK and DOM federation', () => {
 
   it.runIf(jdk && dom)('neither answers for a language it does not describe', () => {
     const r = resolver()
-    for (const port of ['py', 'rs', 'go', 'dotnet', 'cxx', 'swift']) {
+    for (const port of ['py', 'rs', 'go', 'csharp', 'cxx', 'swift']) {
       for (const name of ['Optional', 'Promise', 'Stream.filter()', 'List']) {
         expect(r.resolve(port, name).how, `${port} resolved ${name}`).not.toBe('federated')
       }

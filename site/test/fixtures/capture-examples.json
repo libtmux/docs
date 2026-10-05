@@ -128,7 +128,7 @@
       ]
     },
     {
-      "port": "dotnet",
+      "port": "csharp",
       "language": "csharp",
       "sourceRevision": "320dc64f4b8b7815842471327a5e6b84a1499bf8",
       "sourceRepository": "libtmux/libtmux-dotnet",
@@ -149,7 +149,7 @@
         "3.2a",
         "3.7c"
       ],
-      "page": "ports/dotnet/examples/capture-pane-output",
+      "page": "ports/csharp/examples/capture-pane-output",
       "shellRecipe": [
         "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 320dc64f4b8b7815842471327a5e6b84a1499bf8 &&\n  dotnet build Capture.csproj --maxcpucount:1 &&\n  dotnet run --project Capture.csproj --no-build"
       ]

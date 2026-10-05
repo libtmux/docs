@@ -277,7 +277,7 @@ Constraints:
       rs: 'Use `libtmux::test::TestServer`, which runs an isolated server and shuts it down on drop.',
       go: 'Use `tmuxtest.NewServer(ctx, t)` from `github.com/libtmux/libtmux-go/tmux/tmuxtest`, which registers its own cleanup.',
       java: 'Use the JUnit 5 support in `io.github.libtmux.junit5`: `TmuxExtension`, and `NamedServerFixture` when the socket name matters.',
-      dotnet: 'Use `LibTmux.Testing.TemporaryServerScope`, which is `IAsyncDisposable`, so `await using` handles teardown on the failure path.',
+      csharp: 'Use `LibTmux.Testing.TemporaryServerScope`, which is `IAsyncDisposable`, so `await using` handles teardown on the failure path.',
       cxx: 'Use `libtmux::testing::ScopedTmuxServer` from `<libtmux/testing/scoped_server.hpp>`, whose destructor reports teardown.',
       swift: 'Use `withTmuxServer { }` from the `TmuxFixture` library product, which scopes the server to the closure.',
       ts: 'This port does not export a test fixture yet; its launcher is internal. Build the fixture on the public API and say what you needed that was missing, so it can be vended properly.',

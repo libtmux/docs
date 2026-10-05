@@ -1,7 +1,7 @@
 ---
-title: ".NET workspace builder API"
-description: "Internal reference for the .NET workspace builder and configuration APIs."
-port: dotnet
+title: "C# workspace builder API"
+description: "Internal reference for the C# workspace builder and configuration APIs."
+port: csharp
 product: workspace
 sidebar:
   group: Internals

@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Control mode vs one-shot
 description: How a call in your program actually reaches the tmux server, and why a port might give you a choice.
 sidebar:
@@ -34,7 +34,7 @@ connections. tmux also accepts several commands in one invocation:
 <!-- /port --><!-- port:ts -->| TypeScript | default | `pipeline()`, `batch()` | `connect()` / `watch()`: notifications only, commands stay per-process |
 <!-- /port --><!-- port:go -->| Go | `process` path | `Plan.Run` | `connection` (`Session.OpenControl`), `streaming` (`Session.OpenNotifications`) |
 <!-- /port --><!-- port:rs -->| Rust | `plan` feature, sequential | `plan`, folded | `control-mode` feature |
-<!-- /port --><!-- port:dotnet -->| C# | "One-shot" mode | "Chained" mode (`server.Chain()`) | "Control" mode (`EnterControlModeAsync`) |
+<!-- /port --><!-- port:csharp -->| C# | "One-shot" mode | "Chained" mode (`server.Chain()`) | "Control" mode (`EnterControlModeAsync`) |
 <!-- /port --><!-- port:cxx -->| C++ | bounded subprocess (default) | `Chain` | `Server::control()` → `Connection` |
 <!-- /port --><!-- port:java -->| Java | every call | `Batch` | `ControlClient` (`attach`, `send`, `subscribeEvents`) |
 <!-- /port --><!-- port:swift -->| Swift | default | - | `Server.connected(attachingTo:_:)` / `ControlConnection.watch(_:)` |
@@ -42,7 +42,7 @@ connections. tmux also accepts several commands in one invocation:
 Choose based on whether you need command results, notifications, or a batch of
 changes.
 
-<!-- port:ts,go,dotnet,java,rs -->
+<!-- port:ts,go,csharp,java,rs -->
 ## Notifications and commands are separable
 
 <!-- port:ts -->
@@ -59,7 +59,7 @@ from alias-expanded or waiting commands.
 opens a notification stream. Close each handle when finished. Starting an
 observer does not change the transport used by an existing server handle.
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 Use `EnterControlModeAsync` for commands on a persistent connection.
 <!-- /port -->
 <!-- port:java -->
@@ -95,7 +95,7 @@ Batching can reduce repeated reads and process starts.
 <!-- port:go -->
 A `Plan` groups operations without attaching a control client.
 <!-- /port -->
-<!-- port:dotnet,cxx -->
+<!-- port:csharp,cxx -->
 A `Chain` groups operations without attaching a control client.
 <!-- /port -->
 

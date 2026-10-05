@@ -212,7 +212,7 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   go: new Set(['go-link']),
   java: new Set(['jsdoc']),
   ts: new Set(['jsdoc']),
-  dotnet: new Set(['xml-doc']),
+  csharp: new Set(['xml-doc']),
   // DocC gives double backticks a meaning reST reserves for a literal: in a
   // Swift doc comment ``Server`` is a symbol link, not code.
   swift: new Set(['docc']),

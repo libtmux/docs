@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Architecture
 description: Locate operations, distinguish snapshots from live commands, and find their implementation.
 sidebar:
@@ -17,7 +17,7 @@ session, window, pane](/concepts/server-session-window-pane/).
 
 ## Calling operations
 
-<!-- port:py,ts,go,rs,java,dotnet,cxx -->
+<!-- port:py,ts,go,rs,java,csharp,cxx -->
 Session, window, and pane handles carry their ID and server context. Call an
 operation on the object you want to change. The examples below send input and
 kill that pane.
@@ -96,7 +96,7 @@ catalogs, fixed field sets, or captured dictionaries:
 <!-- port:swift -->
 | Swift | fixed field sets | non-optional fields |
 <!-- /port -->
-<!-- port:dotnet -->| .NET | a snapshot dictionary read at capture time | typed properties that throw `IncompleteSnapshotException` for a field the capture didn't request, rather than gating on tmux version per field |
+<!-- port:csharp -->| C# | a snapshot dictionary read at capture time | typed properties that throw `IncompleteSnapshotException` for a field the capture didn't request, rather than gating on tmux version per field |
 <!-- /port -->
 <!-- port:swift -->
 The captured fields include indices, dimensions, active state, command, path,
@@ -159,8 +159,8 @@ Use these entry points when inspecting the implementation:
   exist only for the query layer.
 <!-- /port -->
 
-<!-- port:dotnet -->
-- **.NET**: `src/LibTmux/` gives every entity its own name (`Pane.cs`,
+<!-- port:csharp -->
+- **C#**: `src/LibTmux/` gives every entity its own name (`Pane.cs`,
   `Session.cs`, ...) but splits each into several `partial class` files by
   concern rather than by inheritance: `Pane.Capture.cs`, `Pane.Input.cs`,
   `Pane.Relations.cs`, `Pane.Scopes.cs`, `Pane.Topology.cs`, and so on all
@@ -192,7 +192,7 @@ Use these entry points when inspecting the implementation:
 ## Naming conventions
 
 Method names follow language conventions: Python, Rust, and C++ use
-`snake_case`; TypeScript, Java, and Swift use `camelCase`; Go and .NET use
+`snake_case`; TypeScript, Java, and Swift use `camelCase`; Go and C# use
 `PascalCase`. Option and hook names remain tmux's dash-separated strings, such
 as `automatic-rename`, regardless of the method's spelling.
 <!-- /port -->

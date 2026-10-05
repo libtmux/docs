@@ -8,7 +8,7 @@ import { PORTS } from '../src/lib/ports'
 import { SOURCE_GUIDE_PORTS } from '../src/lib/port-documentation'
 import scalaGuides from '../src/data/port-guides/scala.json'
 import fsharpGuides from '../src/data/port-guides/fsharp.json'
-import dotnetModel from '../src/data/api/dotnet.json'
+import csharpModel from '../src/data/api/csharp.json'
 
 describe('integrated guide inputs', () => {
   const port = PORTS.find((entry) => entry.slug === 'lua')!
@@ -158,13 +158,13 @@ describe('staged port guide links', () => {
 
   it('links every native descriptor depth to its exact .NET enum constant', () => {
     const original = fsharpGuides.guides.find((guide) => guide.path === 'docs/fsharp/supported-query-fields.md')!.content
-    const root = '/pr-93/en/dotnet/v0.0.0-alpha.18/reference/'
-    const result = linkSnapshotDepths(original, dotnetModel.symbols, root)
+    const root = '/pr-93/en/csharp/v0.0.0-alpha.18/reference/'
+    const result = linkSnapshotDepths(original, csharpModel.symbols, root)
     const depths = [...original.matchAll(/^- Required depth: `([^`]+)`$/gm)].map((match) => match[1])
     expect(depths).toHaveLength(27)
     expect(depths.filter((value) => value === 'Windows')).toHaveLength(7)
     for (const value of new Set(depths)) {
-      const symbol = dotnetModel.symbols.find((entry) => entry.id === `LibTmux.SnapshotDepth.${value}`)!
+      const symbol = csharpModel.symbols.find((entry) => entry.id === `LibTmux.SnapshotDepth.${value}`)!
       expect(result.split(`- Required depth: [\`${value}\`](${root}${symbol.slug}/)`).length - 1)
         .toBe(depths.filter((depth) => depth === value).length)
     }
@@ -176,13 +176,13 @@ describe('staged port guide links', () => {
   })
 
   it.each(['missing', 'duplicate', 'wrong-owner', 'wrong-kind', 'wrong-product'])('rejects a %s depth declaration', (mode) => {
-    const actual = dotnetModel.symbols.find((entry) => entry.id === 'LibTmux.SnapshotDepth.Windows')!
+    const actual = csharpModel.symbols.find((entry) => entry.id === 'LibTmux.SnapshotDepth.Windows')!
     const candidate = { ...actual }
     if (mode === 'wrong-owner') candidate.parent = 'LibTmux.FSharp.SessionSpec'
     if (mode === 'wrong-kind') candidate.kind = 'property'
     if (mode === 'wrong-product') candidate.product = 'workspace'
     const symbols = mode === 'missing' ? [] : mode === 'duplicate' ? [candidate, candidate] : [candidate]
-    expect(() => linkSnapshotDepths('- Required depth: `Windows`\n', symbols, '/dotnet/latest/reference/'))
+    expect(() => linkSnapshotDepths('- Required depth: `Windows`\n', symbols, '/csharp/latest/reference/'))
       .toThrow('F# descriptor depth must resolve to one public .NET enum constant: LibTmux.SnapshotDepth.Windows')
   })
 
@@ -190,7 +190,7 @@ describe('staged port guide links', () => {
     const source = 'A `Windows` property.\n\n- Other property: `Windows`\n\n'
       + '```text\n- Required depth: `Windows`\n```\n\n'
       + '- Required depth: [`Windows`](https://example.org/depth)\n'
-    expect(linkSnapshotDepths(source, [], '/dotnet/latest/reference/')).toBe(source)
+    expect(linkSnapshotDepths(source, [], '/csharp/latest/reference/')).toBe(source)
     const artifact = structuredClone(fsharpGuides)
     const guide = artifact.guides.find((entry) => entry.path === 'docs/fsharp/queries.md')!
     guide.content += '\n- Required depth: `Windows`\n'

@@ -368,7 +368,7 @@ export class SymbolIndex {
     const relative = target.startsWith('.')
     let clean = target.replace(/^[~.]/, '').replace(/\(\)$/, '')
     if (this.lang === 'scala') clean = clean.replace(/^_root_\./, '').replace(/#/g, '.')
-    if (this.lang === 'fsharp' || this.lang === 'dotnet') clean = clean.replace(/`\d+/g, '')
+    if (this.lang === 'fsharp' || this.lang === 'csharp') clean = clean.replace(/`\d+/g, '')
     const [importHead, ...tail] = clean.split('.')
     const imported = !relative && context?.imports?.[importHead]
     if (imported) clean = [imported, ...tail].join('.')

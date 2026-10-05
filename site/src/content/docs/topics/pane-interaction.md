@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Pane interaction
 description: Input defaults, screen capture, and waiting for a command to finish.
 sidebar:
@@ -91,9 +91,9 @@ interprets tmux key names.
 
 <!-- /port -->
 
-<!-- port:dotnet -->
+<!-- port:csharp -->
 <!-- port:root -->
-### .NET
+### C#
 <!-- /port -->
 
 **Type without Enter:** `SendKeysAsync(new SendKeysRequest(text, enter: false))`
@@ -147,7 +147,7 @@ carriage return and delivers it with the text in one tmux command.
 command.
 <!-- /port -->
 
-<!-- port:py,ts,go,dotnet,cxx -->
+<!-- port:py,ts,go,csharp,cxx -->
 Text and Enter can be separate tmux commands. If the second operation fails,
 the text may already be in the pane. Check the current state before retrying;
 repeating the whole request can duplicate input.
@@ -277,7 +277,7 @@ For a new command whose exit status matters, use `session.Run` and inspect its
 result. Capturing screen text alone cannot establish the command's exit status.
 <!-- /port -->
 
-<!-- port:dotnet -->
+<!-- port:csharp -->
 Use `TmuxWaitChannel` when the command can signal a named tmux `wait-for`
 channel. Use a cancellation token to bound the wait.
 <!-- /port -->

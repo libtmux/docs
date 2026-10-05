@@ -1,7 +1,7 @@
 ---
-title: .NET MCP API
-description: Find the .NET server composition API and current MCP protocol catalog.
-port: dotnet
+title: C# MCP API
+description: Find the C# server composition API and current MCP protocol catalog.
+port: csharp
 product: mcp
 sidebar:
   label: Language API

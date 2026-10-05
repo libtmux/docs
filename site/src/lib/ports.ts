@@ -817,17 +817,17 @@ const CORE_PORTS: readonly Port[] = [
     },
   },
   {
-    slug: 'dotnet',
+    slug: 'csharp',
     projectName: 'libtmux-dotnet',
     logoLanguage: 'csharp',
-    shortName: '.NET',
+    shortName: 'C#',
     workspaceCli: 'tmux-workspace load',
     workspaceCliAvailability: 'published',
-    name: '.NET',
+    name: 'C#',
     language: 'C#',
     packageName: 'LibTmux',
     repo: 'libtmux/libtmux-dotnet',
-    docsDispatch: { workflow: 'docs.yml', language: 'dotnet' },
+    docsDispatch: { workflow: 'docs.yml', language: 'csharp' },
     checkout: '~/work/libtmux/libtmux-dotnet',
     worktree: '~/work/libtmux/libtmux-dotnet-docs',
     versionedDocs: true,
@@ -1074,7 +1074,7 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
   {
     slug: 'fsharp', logoLanguage: 'fsharp', shortName: 'F#', name: 'F#', language: 'F#',
     projectName: 'libtmux-fsharp',
-    parentLibrary: { slug: 'dotnet', runtime: '.NET' },
+    parentLibrary: { slug: 'csharp', runtime: '.NET' },
     sourceReferenceDirectory: 'docs/fsharp-reference/reference',
     packageName: 'LibTmux.FSharp',
     registry: { name: 'NuGet', url: 'https://www.nuget.org/packages/LibTmux.FSharp', icon: 'nuget' },
@@ -1322,7 +1322,7 @@ export function pageBrand(portSlug?: string, pagePath = ''): { language: string;
   if (port?.slug === 'java') {
     if (segments.some((segment) => /(^|[-.])kotlin($|[-.])/.test(segment))) language = 'kotlin'
     else if (segments.some((segment) => /(^|[-.])scala($|[-.])/.test(segment))) language = 'scala'
-  } else if (port?.slug === 'dotnet' && segments.some((segment) => /(^|[-.])fsharp($|[-.])/.test(segment))) {
+  } else if (port?.slug === 'csharp' && segments.some((segment) => /(^|[-.])fsharp($|[-.])/.test(segment))) {
     language = 'fsharp'
   }
   const variant = segments.some((segment) => /^(?:libtmux[-.]|tmux-)?mcp(?:[.-]|$)/.test(segment)) ? 'mcp'

@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Environment
 description: Locate tmux objects from process variables and manage the environment inherited by new panes.
 sidebar:
@@ -91,9 +91,9 @@ the current tmux objects. Select the object your operation needs:
 **Pane:** See the Java context example below.
 <!-- /port -->
 
-<!-- port:dotnet -->
+<!-- port:csharp -->
 <!-- port:root -->
-### .NET
+### C#
 <!-- /port -->
 
 **Server:** `Server.FromEnvironment(env)`
@@ -186,7 +186,7 @@ Check the returned `error`. A `FromEnvError` identifies a missing or malformed
 variable. Passing `nil` reads the process environment; pass an explicit map to
 resolve a captured environment.
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 Handle `TmuxObjectNotFoundException` when the environment cannot identify an
 object.
 <!-- /port -->
@@ -304,9 +304,9 @@ processes inherit it; existing processes retain their own environments.
 **Unset:** Not documented here; see the process-environment note below.
 <!-- /port -->
 
-<!-- port:dotnet -->
+<!-- port:csharp -->
 <!-- port:root -->
-### .NET
+### C#
 <!-- /port -->
 
 **Set:** `server.Environment.SetAsync(name, value)`,
@@ -342,7 +342,7 @@ processes inherit it; existing processes retain their own environments.
 in:)`
 <!-- /port -->
 
-<!-- port:py,ts,go,rs,dotnet,swift -->
+<!-- port:py,ts,go,rs,csharp,swift -->
 ### Examples
 
 ```python
@@ -398,7 +398,7 @@ Use `unset_environment` for `-u`, or `remove_environment` for `-r`.
 <!-- port:swift -->
 Use `unsetEnvironment` for `-u`, or `removeEnvironment` for `-r`.
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 Use `.UnsetAsync` for `-u`, or `.RemoveAsync` for `-r`.
 <!-- /port -->
 

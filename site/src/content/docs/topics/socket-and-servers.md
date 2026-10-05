@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Socket and servers
 description: Select a server socket, check liveness, and detect a replacement daemon.
 sidebar:
@@ -23,7 +23,7 @@ selectors:
 <!-- /port --><!-- port:go -->| Go | `tmux.NewServer(tmux.ServerOptions{})` | `tmux.ServerOptions{SocketName: "work"}` | `tmux.ServerOptions{SocketPath: "..."}` |
 <!-- /port --><!-- port:rs -->| Rust | `Server::new()` | `Server::builder().socket_name("work").build()?` | `Server::builder().socket_path("...").build()?` |
 <!-- /port --><!-- port:java -->| Java | `ServerEndpoint.defaultSocket()` | `ServerEndpoint.namedSocket("work")` | `ServerEndpoint.socketPath(path)` |
-<!-- /port --><!-- port:dotnet -->| .NET | `new ServerConnectionOptions()` | `new ServerConnectionOptions(socketName: "work")` | `new ServerConnectionOptions(socketPath: "...")` |
+<!-- /port --><!-- port:csharp -->| C# | `new ServerConnectionOptions()` | `new ServerConnectionOptions(socketName: "work")` | `new ServerConnectionOptions(socketPath: "...")` |
 <!-- /port --><!-- port:cxx -->| C++ | `Server::at_default()` | `Server::at_socket_name("work")` | `Server::at_socket_path("...")` |
 <!-- /port --><!-- port:swift -->| Swift | no bare default: see below | `Server(socketName: "work")` | `Server(socketPath: "...")` |
 <!-- /port -->
@@ -87,7 +87,7 @@ tmux's default socket, use `Server(socketName: "default")`.
 `Server(socket_name_factory=...)` accepts a callable that generates socket
 names. Use a unique name for each isolated test server.
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 `ServerConnectionOptions(socketNameFactory: ...)` accepts a callable that
 generates socket names. Use a unique name for each isolated test server.
 <!-- /port -->
@@ -105,7 +105,7 @@ socket:
 <!-- /port --><!-- port:go -->| Go | `server.IsAlive(ctx)` → `(bool, error)`: the `error` is reserved for a question that couldn't be answered at all, not for "not alive" |
 <!-- /port --><!-- port:rs -->| Rust | `server.is_alive().await` → `bool`; `server.check_alive().await` is the fallible twin, for when the *reason* matters |
 <!-- /port --><!-- port:java -->| Java | `server.isAlive()` → `boolean` |
-<!-- /port --><!-- port:dotnet -->| .NET | `await server.IsAliveAsync()` → `Task<bool>` |
+<!-- /port --><!-- port:csharp -->| C# | `await server.IsAliveAsync()` → `Task<bool>` |
 <!-- /port --><!-- port:cxx -->| C++ | `server.is_alive(timeout)` → `bool` |
 <!-- /port --><!-- port:swift -->| Swift | `try await server.isRunning()` → `Bool` |
 <!-- /port -->
@@ -192,7 +192,7 @@ Call `server.kill().await?` and handle a cleanup failure before returning.
 Call `server.killServer()` to stop tmux. `Server.close()` releases the local
 connection and leaves tmux running; see [Ownership and cleanup](../context-managers/).
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 Call `await server.KillAsync()` and handle a cleanup failure before returning.
 <!-- /port -->
 <!-- port:cxx -->

@@ -28,7 +28,7 @@
   {
     "project": "MCP C# SDK",
     "version": "2.2.0",
-    "langs": ["dotnet"],
+    "langs": ["csharp"],
     "baseUrl": "https://csharp.sdk.modelcontextprotocol.io/api/",
     "e": [
       ["McpException", "ModelContextProtocol.McpException.html"],
@@ -39,7 +39,7 @@
   {
     "project": "Microsoft.Extensions",
     "version": "10",
-    "langs": ["dotnet"],
+    "langs": ["csharp"],
     "baseUrl": "https://learn.microsoft.com/dotnet/api/",
     "e": [
       ["ILogger", "microsoft.extensions.logging.ilogger"],

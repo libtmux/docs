@@ -297,7 +297,7 @@
       "go",
       "rs",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ]

@@ -8,7 +8,7 @@ import { PORTS } from './ports.ts'
  * callers filter their per-port synthesis against this set rather than
  * against every port `ports.ts` lists.
  */
-export const KNOWN_PORTS = new Set(['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'])
+export const KNOWN_PORTS = new Set(['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'])
 
 const CONTENT_PORTS = new Set([...PORTS.map((port) => port.slug), 'root'])
 const SLOT_TAG = /<!--\s*port:([\s\S]*?)-->|<!--\s*\/port\s*-->/gi

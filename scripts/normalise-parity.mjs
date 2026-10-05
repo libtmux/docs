@@ -492,7 +492,7 @@ function describeRevisionSkew(ports) {
 }
 
 const CHECKOUTS = {
-  dotnet: expandHome('~/work/libtmux/libtmux-dotnet'),
+  csharp: expandHome('~/work/libtmux/libtmux-dotnet'),
   go: expandHome('~/work/libtmux/libtmux-go'),
   java: expandHome('~/work/libtmux/libtmux-java'),
   swift: expandHome('~/work/libtmux/libtmux-swift'),
@@ -506,7 +506,7 @@ function main() {
   }
 
   const ports = {
-    dotnet: parseDotnet(CHECKOUTS.dotnet),
+    csharp: parseDotnet(CHECKOUTS.csharp),
     go: parseGo(CHECKOUTS.go),
     java: parseJava(CHECKOUTS.java),
     swift: parseSwift(CHECKOUTS.swift),

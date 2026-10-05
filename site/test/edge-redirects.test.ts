@@ -43,3 +43,36 @@ describe('tmux prose redirects at the edge', () => {
     expect(Buffer.byteLength(source)).toBeLessThanOrEqual(10_240)
   })
 })
+
+describe('C# documentation redirects at the edge', () => {
+  it('keeps locale, preview, version, declaration and export paths', async () => {
+    for (const root of ['/en', '/ja', '/zh-Hant', '/pr-42/en']) for (const [path, target] of [
+      ['', '/'], ['/', '/'], ['/index.html', '/'],
+      ['/latest', '/latest/'], ['/v0.0.0-alpha.20/', '/v0.0.0-alpha.20/'],
+      ['/pr-8/reference/libtmux-pane/', '/pr-8/reference/libtmux-pane/'],
+      ['/stable/api/libtmux.client', '/stable/api/libtmux.client/'],
+      ['/latest/reference/libtmux-server/index.html', '/latest/reference/libtmux-server/'],
+      ['/latest/reference/libtmux-server.md', '/latest/reference/libtmux-server.md'],
+      ['/latest/objects.inv', '/latest/objects.inv'], ['/docs.json', '/docs.json'],
+    ]) {
+      const result = await handler({ request: { uri: `${root}/dotnet${path}` } })
+      expect(result.statusCode).toBe(301)
+      expect(result.headers?.location.value).toBe(`${root}/csharp${target}`)
+    }
+  })
+
+  it('preserves encoded and repeated query parameters', async () => {
+    const result = await handler({ request: { uri: '/en/dotnet/latest/reference/libtmux-server/', querystring: {
+      q: { value: 'a%20b' }, tag: { multiValue: [{ value: 'a%2Fb' }, { value: 'a%26b' }] }, empty: { value: '' },
+    } } })
+    expect(result.headers?.location.value).toBe('/en/csharp/latest/reference/libtmux-server/?q=a%20b&tag=a%2Fb&tag=a%26b&empty=')
+  })
+
+  it.each(['/en/csharp/latest/', '/en/fsharp/latest/', '/en/dotnetwork/', '/dotnet/', '/en/tmux/dotnet/'])(
+    'leaves unrelated and canonical paths alone: %s', async (uri) => {
+      const result = await handler({ request: { uri } })
+      expect(result.statusCode).toBeUndefined()
+      expect(result.uri).toBe(`${uri}index.html`)
+    },
+  )
+})

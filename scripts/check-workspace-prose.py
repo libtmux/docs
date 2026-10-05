@@ -22,7 +22,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument(
     "--port",
-    choices=["ts", "rs", "go", "java", "dotnet", "cxx", "swift"],
+    choices=["ts", "rs", "go", "java", "csharp", "cxx", "swift"],
     required=True,
 )
 parser.add_argument("--binary", required=True, type=pathlib.Path)

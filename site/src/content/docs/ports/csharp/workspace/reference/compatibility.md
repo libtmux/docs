@@ -1,7 +1,7 @@
 ---
 title: Runtime and configuration support
-description: Runtime requirements and configuration boundaries for the .NET workspace command.
-port: dotnet
+description: Runtime requirements and configuration boundaries for the C# workspace command.
+port: csharp
 product: workspace
 sidebar:
   label: Runtime and configuration support

@@ -1,5 +1,5 @@
 ---
-port: dotnet
+port: csharp
 route: guides/sending-keys
 title: Sending keys
 description: Send text and named keys, then wait for the result.
@@ -17,7 +17,7 @@ steps separately and waits for its output before treating the task as done.
 ## Run the complete program
 
 [Capture pane output](../../examples/capture-pane-output/) supplies the full
-.NET program, imports, project setup and run command. It starts a private
+C# program, imports, project setup and run command. It starts a private
 server, sends a command, checks a complete output line and cleans up.
 
 ## Literal text, key names, and whether Enter follows

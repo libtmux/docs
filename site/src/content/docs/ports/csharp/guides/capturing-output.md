@@ -1,5 +1,5 @@
 ---
-port: dotnet
+port: csharp
 route: guides/capturing-output
 title: Capturing output
 description: Read pane output with an explicit completion condition.
@@ -18,7 +18,7 @@ is disposed with `await using`.
 ## Run the complete program
 
 [Capture pane output](../../examples/capture-pane-output/) includes the full
-.NET program, all imports, project files and a run command. The program
+C# program, all imports, project files and a run command. The program
 matches `libtmux capture ready` as a complete line, so the echoed command cannot
 satisfy the check. It creates and cleans up its own tmux server.
 

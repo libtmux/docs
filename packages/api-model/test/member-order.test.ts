@@ -127,7 +127,7 @@ d('member order', () => {
     ['kotlin', 'io.github.libtmux.kotlin.Pane', ['window', 'server']],
     ['scala', 'io.github.libtmux.scaladsl.Pane', ['window', 'server']],
     ['scala', 'io.github.libtmux.scaladsl.cats.Pane', ['window', 'server']],
-    ['dotnet', 'LibTmux.Pane', ['Window', 'Session', 'Server']],
+    ['csharp', 'LibTmux.Pane', ['Window', 'Session', 'Server']],
     ['cxx', 'libtmux::Pane', ['window', 'session', 'server']],
     ['cxx', 'libtmux::Window', ['session', 'server']],
     ['cxx', 'libtmux::Session', ['server']],

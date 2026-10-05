@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Workspaces
 description: Build pane layouts with the object API or a workspace configuration file.
 sidebar:
@@ -132,7 +132,7 @@ These packages read or build workspace configurations based on tmuxp:
 <!-- /port --><!-- port:go -->| Go | `workspace` | tmuxp-shaped, per the port's own module layout |
 <!-- /port --><!-- port:rs -->| Rust | `tmux-workspace` | tmuxp-shaped |
 <!-- /port --><!-- port:java -->| Java | `libtmux-workspace` | "enough of tmuxp's format to describe a workspace" |
-<!-- /port --><!-- port:dotnet -->| C# | `LibTmux.Workspace` | reads tmuxp YAML directly |
+<!-- /port --><!-- port:csharp -->| C# | `LibTmux.Workspace` | reads tmuxp YAML directly |
 <!-- /port --><!-- port:swift -->| Swift | `TmuxWorkspace` | Swift, JSON, or YAML (YAML needs the `YAMLWorkspaces` trait) |
 <!-- /port -->
 <!-- port:ts -->
@@ -216,7 +216,7 @@ including when the block raises:
 Use a named error result in the enclosing function so deferred cleanup can
 return its own failure. Give cleanup a fresh, bounded context:
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 An ownership scope kills its session when `await using` exits:
 <!-- /port -->
 

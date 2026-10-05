@@ -96,7 +96,7 @@ export interface ProseMention {
 
 const FENCE_PORT: Record<string, string> = {
   python: 'py', py: 'py', typescript: 'ts', ts: 'ts', javascript: 'ts', js: 'ts',
-  rust: 'rs', rs: 'rs', go: 'go', java: 'java', csharp: 'dotnet', cs: 'dotnet',
+  rust: 'rs', rs: 'rs', go: 'go', java: 'java', csharp: 'csharp', cs: 'csharp',
   cpp: 'cxx', 'c++': 'cxx', swift: 'swift',
 }
 

@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Waiting and retrying
 description: Polling a condition instead of guessing a sleep, and tmux's own wait-for signal channel as the alternative to polling.
 sidebar:
@@ -75,9 +75,9 @@ feature.
 downstream code cannot depend on
 <!-- /port -->
 
-<!-- port:dotnet -->
+<!-- port:csharp -->
 <!-- port:root -->
-### .NET
+### C#
 <!-- /port -->
 
 **Helper:** `LibTmux.Testing.TmuxWait.UntilAsync(probe, timeout, interval)`
@@ -186,7 +186,7 @@ announce its own completion:
 <!-- /port --><!-- port:go -->| Go | `server.WaitFor(ctx, tmux.WaitForRequest{Channel: name, Mode: tmux.WaitForModeSignal})` | `tmux.WaitForRequest{Channel: name}` (the zero-value `WaitForRequest.Mode` waits) |
 <!-- /port --><!-- port:rs -->| Rust | `server.signal_channel(name).await?` | `server.wait_for_channel(name, timeout).await?` → `ChannelWait::Signalled` or `TimedOut` |
 <!-- /port --><!-- port:java -->| Java | `server.channel(name).signal()` | `server.channel(name).await(timeout)` → a `WakeReason`, never silently "success" |
-<!-- /port --><!-- port:dotnet -->| .NET | `server.OpenWaitChannel(name)` returns a `TmuxWaitChannel`; signalling is the same request with a different mode | `await using` the channel, then `WaitAsync(budget)` |
+<!-- /port --><!-- port:csharp -->| C# | `server.OpenWaitChannel(name)` returns a `TmuxWaitChannel`; signalling is the same request with a different mode | `await using` the channel, then `WaitAsync(budget)` |
 <!-- /port --><!-- port:cxx -->| C++ | `server.signal(channel)` | `server.wait_for(channel, timeout)` |
 <!-- /port --><!-- port:swift -->| Swift | `try await server.signal(channel)` | `try await server.wait(for: channel)` |
 <!-- /port -->

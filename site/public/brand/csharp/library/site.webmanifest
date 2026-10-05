@@ -2,7 +2,7 @@
   "name": "libtmux for C# / .NET",
   "short_name": "libtmux",
   "id": "/",
-  "start_url": "../../../dotnet/",
+  "start_url": "../../../csharp/",
   "scope": "../../../",
   "display": "browser",
   "background_color": "#F4F4F1",

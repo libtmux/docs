@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Options and hooks
 description: Read and update tmux options, and register commands for tmux events.
 sidebar:
@@ -101,9 +101,9 @@ declared kind
 
 <!-- /port -->
 
-<!-- port:dotnet -->
+<!-- port:csharp -->
 <!-- port:root -->
-### .NET
+### C#
 <!-- /port -->
 
 **Read all (this scope):** `pane.Options.GetAllAsync()`
@@ -288,9 +288,9 @@ by design (see below)
 
 <!-- /port -->
 
-<!-- port:dotnet -->
+<!-- port:csharp -->
 <!-- port:root -->
-### .NET
+### C#
 <!-- /port -->
 
 **Set:** `pane.Hooks.SetAsync(new SetHookRequest(event, command))`

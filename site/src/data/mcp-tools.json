@@ -44724,7 +44724,7 @@
         }
       }
     },
-    "dotnet": {
+    "csharp": {
       "tools": [
         "call_read_tools_batch",
         "capture_pane",
@@ -69217,7 +69217,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69233,7 +69233,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69243,7 +69243,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69255,7 +69255,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69271,7 +69271,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69281,7 +69281,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69303,7 +69303,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69313,7 +69313,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69323,7 +69323,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69333,7 +69333,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69342,7 +69342,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69352,7 +69352,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69362,7 +69362,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69375,7 +69375,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69385,7 +69385,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69395,7 +69395,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69408,7 +69408,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69418,7 +69418,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69431,7 +69431,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69444,7 +69444,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69457,7 +69457,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69467,7 +69467,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69477,7 +69477,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69487,7 +69487,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69497,7 +69497,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69512,7 +69512,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69522,7 +69522,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69532,7 +69532,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69542,7 +69542,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69552,7 +69552,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69565,7 +69565,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69575,7 +69575,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69587,7 +69587,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69596,7 +69596,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69609,7 +69609,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69618,7 +69618,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69631,7 +69631,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69644,7 +69644,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69654,7 +69654,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69664,7 +69664,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69677,7 +69677,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69687,7 +69687,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69697,7 +69697,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69710,7 +69710,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ],
@@ -69720,7 +69720,7 @@
       "rs",
       "go",
       "java",
-      "dotnet",
+      "csharp",
       "cxx",
       "swift"
     ]

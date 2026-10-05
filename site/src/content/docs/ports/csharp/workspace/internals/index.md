@@ -1,7 +1,7 @@
 ---
-title: ".NET workspace internals"
-description: "Architecture and development interfaces of the .NET workspace builder."
-port: dotnet
+title: "C# workspace internals"
+description: "Architecture and development interfaces of the C# workspace builder."
+port: csharp
 product: workspace
 sidebar:
   label: Overview

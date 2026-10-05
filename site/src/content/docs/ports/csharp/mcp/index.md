@@ -1,7 +1,7 @@
 ---
-title: tmux MCP for .NET
+title: tmux MCP for C#
 description: Run LibTmux.Mcp as a .NET tool with bounded results and a selectable tool catalog.
-port: dotnet
+port: csharp
 product: mcp
 sidebar:
   label: Overview

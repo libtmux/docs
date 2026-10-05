@@ -90,7 +90,7 @@ Complete programs with imports, setup, and cleanup:
 [Java](/java/latest/examples/capture-pane-output/) ·
 [Kotlin](/kotlin/latest/examples/capture-pane-output/) ·
 [Scala](/scala/latest/examples/capture-pane-output/) ·
-[.NET](/dotnet/latest/examples/capture-pane-output/) ·
+[C#](/csharp/latest/examples/capture-pane-output/) ·
 [F#](/fsharp/latest/examples/capture-pane-output/) ·
 [C++](/cxx/latest/examples/capture-pane-output/) ·
 [Swift](/swift/latest/examples/capture-pane-output/) ·

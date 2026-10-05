@@ -356,7 +356,7 @@
       "cleanup": "import io.github.libtmux.{ServerConfig, ServerEndpoint}\nimport io.github.libtmux.scaladsl.{config => _, *}\nimport java.nio.file.Path\nimport java.time.Duration\nimport java.util.UUID\nimport scala.util.Using\n\nobject Main {\n  def main(args: Array[String]): Unit = {\n    val socket = s\"libtmux-home-${UUID.randomUUID()}\"\n    val config = ServerConfig.builder()\n      .endpoint(ServerEndpoint.namedSocket(socket))\n      .configFile(Path.of(\"/dev/null\"))\n      .defaultTimeout(Duration.ofSeconds(5))\n      .build()\n\n    Using.resource(Server.open(config)) { server =>\n      try {\n        val session = server.newSession(\"work\")\n        session.newWindow(\"logs\")\n\n        val panes = server.panes()\n        val named = panes.filter(_.info.title().nonEmpty)\n        val commands = named.map(_.info.currentCommand())\n        assert(panes.size == 2)\n\n        println(s\"${session.name}: ${panes.size} panes\")\n        println(s\"commands: ${commands.distinct.sorted.mkString(\", \")}\")\n      } finally {\n        server.killServer()\n      }\n    }\n  }\n}\n"
     }
   },
-  "dotnet": {
+  "csharp": {
     "lang": "csharp",
     "sourceRepository": "libtmux/libtmux-dotnet",
     "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",

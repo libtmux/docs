@@ -94,7 +94,7 @@ describe('reference page navigation', () => {
     expect(relatedApiTypes(member, [], index, owner)).toEqual([owner])
   })
 
-  it.each(['py', 'ts', 'java', 'kotlin', 'scala', 'dotnet'])('groups %s parent objects before its other members', (port) => {
+  it.each(['py', 'ts', 'java', 'kotlin', 'scala', 'csharp'])('groups %s parent objects before its other members', (port) => {
     const signals = memberSignals(port)
     const owner = API_MODELS[port].symbols.find((entry) => entry.name === 'Pane' && entry.kind === 'class')!
     const members = API_MODELS[port].symbols.filter((entry) => entry.parent === owner.id).sort(compareMembers(signals))
@@ -102,7 +102,7 @@ describe('reference page navigation', () => {
     expect(groups[0].id).toBe('api-parent-objects')
     expect(groups[0].label).toBe('Parent objects')
     expect(groups[0].members.map((member) => member.name.toLowerCase())).toEqual(
-      ['py', 'ts', 'dotnet'].includes(port) ? ['window', 'session', 'server'] : ['window', 'server'],
+      ['py', 'ts', 'csharp'].includes(port) ? ['window', 'session', 'server'] : ['window', 'server'],
     )
     expect(groups.flatMap((group) => group.members)).toEqual(members)
   })

@@ -305,4 +305,4 @@ export const CSHARP: LanguageSpec = {
   fields: { returns: 'type' },
 }
 
-export const SPECS = { ts: TYPESCRIPT, rs: RUST, go: GO, java: JAVA, dotnet: CSHARP } as const
+export const SPECS = { ts: TYPESCRIPT, rs: RUST, go: GO, java: JAVA, csharp: CSHARP } as const

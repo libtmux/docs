@@ -94,7 +94,7 @@ const PORTS = [
     pattern: /tools\.add\(\s*(?:(?:\w+\.)*\w+\(\s*)+"([a-z][a-z0-9_]*)"/gs,
   },
   {
-    slug: 'dotnet',
+    slug: 'csharp',
     dir: '~/work/libtmux/libtmux-dotnet/src/LibTmux.Mcp/Policy',
     glob: 'CapabilityModel.cs',
     pattern: /(?:Inspect|ManageTool|Execute|TeardownTool)\(\s*"([a-z][a-z0-9_]*)"/g,
@@ -309,7 +309,7 @@ const slugs = PORTS.map((p) => p.slug).filter((slug) => results[slug])
  * A port whose server is on disk always registers something. Zero means the
  * pattern stopped matching, not that the tools went away: .NET moved from an
  * `McpServerTool` attribute per method to one capability list, and this scan
- * kept exiting 0 while reporting `dotnet:0` until the staleness check noticed
+ * kept exiting 0 while reporting `csharp:0` until the staleness check noticed
  * the file had emptied.
  */
 const silent = relevant.filter((p) => results[p.slug].tools.length === 0 && existsSync(expand(p.dir)))

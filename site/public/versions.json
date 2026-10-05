@@ -73,7 +73,7 @@
         "supported": true
       }
     ],
-    "dotnet": [
+    "csharp": [
       {
         "slug": "latest",
         "label": "latest",
@@ -116,7 +116,7 @@
     "java": "latest",
     "kotlin": "latest",
     "scala": "latest",
-    "dotnet": "latest",
+    "csharp": "latest",
     "fsharp": "latest",
     "cxx": "latest",
     "swift": "latest"

@@ -79,16 +79,16 @@ describe('documentation surface navigation', () => {
   })
 
   it('offers a section when a real child exists, without requiring an overview or adding empty sections', () => {
-    const surfaces = buildDocumentationSurfaces('dotnet', 'latest', { core: [
-      link('First session', '/dotnet/latest/tutorials/first-session/'),
-      link('Installation', '/dotnet/latest/guides/installation/'),
+    const surfaces = buildDocumentationSurfaces('csharp', 'latest', { core: [
+      link('First session', '/csharp/latest/tutorials/first-session/'),
+      link('Installation', '/csharp/latest/guides/installation/'),
     ] })
     const core = surfaces.find((surface) => surface.id === 'core')!
     expect(core.sections.map((section) => [section.id, section.href])).toEqual([
-      ['home', '/dotnet/latest/'],
-      ['guides', '/dotnet/latest/guides/installation/'],
-      ['tutorials', '/dotnet/latest/tutorials/first-session/'],
-      ['reference', '/dotnet/latest/reference/'],
+      ['home', '/csharp/latest/'],
+      ['guides', '/csharp/latest/guides/installation/'],
+      ['tutorials', '/csharp/latest/tutorials/first-session/'],
+      ['reference', '/csharp/latest/reference/'],
     ])
     expect(core.sections[0].items.map((item) => item.label)).toEqual(['Overview', 'Guides', 'Tutorials', 'Reference'])
   })

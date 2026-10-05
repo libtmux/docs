@@ -29,7 +29,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 const PORT_BY_LABEL: Record<string, string> = Object.fromEntries(
   Object.entries(PORT_NAME).map(([slug, name]) => [name, slug]),
 )
-PORT_BY_LABEL['C#'] = 'dotnet'
+PORT_BY_LABEL['C#'] = 'csharp'
 
 
 export interface DanglingReference {
@@ -287,7 +287,7 @@ const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|md|toml
 
 const LANG_TO_PORT: Record<string, string> = {
   python: 'py', py: 'py', typescript: 'ts', ts: 'ts', javascript: 'ts', js: 'ts',
-  rust: 'rs', rs: 'rs', go: 'go', java: 'java', csharp: 'dotnet', cs: 'dotnet',
+  rust: 'rs', rs: 'rs', go: 'go', java: 'java', csharp: 'csharp', cs: 'csharp',
   cpp: 'cxx', 'c++': 'cxx', swift: 'swift',
 }
 
