@@ -270,7 +270,7 @@ export async function getSidebar(
     }),
   ).map(({ label, href, items }) => ({
     type: 'group' as const,
-    label,
+    label: label === 'CLI reference' ? 'CLI Manual' : label,
     href,
     items: items.map((i): SidebarLinkItem => ({ type: 'link', label: i.label, href: i.href })),
   }))

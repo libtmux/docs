@@ -21,6 +21,7 @@ their delivery does not prove that the pane programs completed.
 - [Guides](./guides/) covers `validate`, `plan`, and `load`.
 - [Topics](./topics/) explains the supported format and creation-only model.
 - [Examples](./examples/) provides a bounded YAML configuration.
+- [CLI Manual](./cli/) documents commands, flags, output and exit statuses.
 - [Language API](./reference/) documents the workspace gem.
 
 The [source-owned workspace guide](./source-guide/) is staged from the same

@@ -8389,6 +8389,13 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::Workspace.load",
+   "page": "/ruby/latest/workspace/cli/load/",
+   "title": "load",
+   "section": "ports"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Workspace.load",
    "page": "/ruby/latest/workspace/examples/",
    "title": "Ruby workspace examples",
    "section": "ports"
@@ -8412,6 +8419,20 @@
    "symbol": "LibTmux::Workspace#plan",
    "page": "/ruby/latest/workspace/",
    "title": "tmux workspace manager for Ruby",
+   "section": "ports"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Workspace#plan",
+   "page": "/ruby/latest/workspace/cli/load/",
+   "title": "load",
+   "section": "ports"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Workspace#plan",
+   "page": "/ruby/latest/workspace/cli/plan/",
+   "title": "plan",
    "section": "ports"
   },
   {

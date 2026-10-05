@@ -238,6 +238,9 @@ html:has(.site-header :focus) {
   scroll-margin-top: calc(var(--topnav-height, 3rem) + 1.5rem);
 }
 
+.prose .cli-command-list dt { margin-top: 1rem; }
+.prose .cli-command-list dd { margin-left: 0; }
+
 .prose .row-label-link { position: relative; display: inline-block; color: inherit; text-decoration: none; }
 .prose .row-label-link:hover { text-decoration: underline; }
 .prose .row-label-link::after {

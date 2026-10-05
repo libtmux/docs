@@ -26,9 +26,9 @@ export interface DocumentationSurface {
 const labels: Record<string, string> = {
   home: 'Home', guides: 'Guides', tutorials: 'Tutorials', topics: 'Topics', concepts: 'Concepts',
   examples: 'Examples', reference: 'Reference', configuration: 'Configuration', internals: 'Internals',
-  async: 'Async', runtimes: 'Runtimes', notices: 'Third-party notices',
+  async: 'Async', runtimes: 'Runtimes', notices: 'Third-party notices', manual: 'CLI Manual',
 }
-const standardSections = ['home', 'guides', 'tutorials', 'topics', 'concepts', 'examples', 'reference']
+const standardSections = ['home', 'guides', 'tutorials', 'topics', 'concepts', 'examples', 'manual', 'reference']
 const linksOf = (items: SidebarItem[]): SidebarLinkItem[] => items.flatMap((item) => item.type === 'link'
   ? [item] : [...(item.href ? [{ type: 'link' as const, label: item.label, href: item.href }] : []), ...item.items])
 
@@ -53,17 +53,17 @@ export function buildDocumentationSurfaces(
       const route = link.href.startsWith(base) ? link.href.slice(base.length).replace(/\/$/, '') : undefined
       const relative = route === domain.route ? '' : route?.startsWith(prefix) ? route.slice(prefix.length) : undefined
       let key = relative?.split('/')[0] || 'home'
-      if (link.external || key === 'cli' || key === 'tools' || key === 'api') key = 'reference'
+      if (id === 'workspace' && (key === 'cli' || /^reference\/(?:exit-codes|output)$/.test(relative ?? ''))) key = 'manual'
+      else if (link.external || key === 'cli' || key === 'tools' || key === 'api') key = 'reference'
       const section = sections.get(key) ?? { id: key, label: labels[key] ?? link.label, items: [] }
-      if (!section.href && relative === key && !link.external) section.href = link.href
+      if (!section.href && (relative === key || (key === 'manual' && relative === 'cli')) && !link.external) section.href = link.href
       section.items.push(link)
       sections.set(key, section)
     }
     const reference: DocumentationSection = sections.get('reference') ?? { id: 'reference', label: 'Reference', items: [] }
     reference.href = referenceUrl(info, version, id)
     if (domain.product) {
-      // Protocol tools, CLI contracts and the implementation API are distinct
-      // references within the same application, with their own native URLs.
+      // Protocol tools and the implementation API retain their native URLs.
       const groups = new Map<string, SidebarLinkItem[]>()
       for (const item of linksOf(reference.items)) {
         const route = item.href.slice(base.length)
@@ -137,9 +137,13 @@ export function currentDocumentation(surfaces: DocumentationSurface[], currentPa
   const surface = surfaces.filter((entry) => currentPath.startsWith(entry.href))
     .sort((a, b) => b.href.length - a.href.length)[0] ?? surfaces[0]
   const path = currentPath.slice(surface.href.length).split('/')[0] || 'home'
-  const key = path === 'cli' || path === 'tools' || path === 'api' ? 'reference' : path
-  const section = surface.sections.filter((entry) => entry.id !== 'home' && entry.href && currentPath.startsWith(entry.href))
-    .sort((a, b) => b.href!.length - a.href!.length)[0]
+  const key = path === 'cli' && surface.id === 'workspace' ? 'manual'
+    : path === 'cli' || path === 'tools' || path === 'api' ? 'reference' : path
+  const section = surface.sections.filter((entry) => entry.id !== 'home').flatMap((entry) =>
+    [entry.href, ...linksOf(entry.items).map((item) => item.href)]
+      .filter((href): href is string => Boolean(href && currentPath.startsWith(href)))
+      .map((href) => ({ entry, href })))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.entry
     ?? surface.sections.find((entry) => entry.id === key) ?? surface.sections[0]
   return { surface, section }
 }

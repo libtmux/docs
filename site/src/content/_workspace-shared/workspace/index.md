@@ -24,7 +24,7 @@ sidebar:
   order: 0
 tableOfContents: true
 cards:
-  - label: Command reference
+  - label: CLI Manual
     href: ./cli/
     body: Commands, options and machine output.
   - label: Configuration
@@ -55,7 +55,7 @@ session and can attach to it or leave it detached.
 2. [Configure windows and panes](./configuration/).
 3. [Capture and reload a session](./guides/export-session/).
 
-The [command reference](./cli/) covers discovery, search, editing, conversion
+The [CLI manual](./cli/) covers discovery, search, editing, conversion
 and import. Use [examples](./examples/gallery/) for complete files and their
 prerequisites.
 
@@ -77,7 +77,7 @@ or request machine output for automation.
 2. [Configure windows and panes](./configuration/).
 3. [Capture and reload a session](./guides/export-session/).
 
-The [command reference](./cli/) covers discovery, search, editing, loading,
+The [CLI manual](./cli/) covers discovery, search, editing, loading,
 capture, conversion and import. [Examples](./examples/gallery/) provide
 complete configurations with their prerequisites.
 
