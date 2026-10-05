@@ -8,7 +8,7 @@
   
   const COLOR_SCHEMES = ['light', 'dark', 'system'];
 
-  // The route supplies the palette. Only the light/dark preference is saved.
+  // Documentation routes supply the palette; the homepage follows its language.
   function readPreference(key) {
     try { return localStorage.getItem(key); } catch (_) { return null; }
   }
@@ -63,6 +63,14 @@
       document.documentElement.setAttribute('data-home-selected-port', port);
     } else {
       document.documentElement.removeAttribute('data-home-selected-port');
+    }
+    if (homePorts.length) {
+      const brands = JSON.parse(document.documentElement.getAttribute('data-home-brands') || '{}');
+      const brand = brands[homePorts.includes(port) ? port : homePorts[0]];
+      if (brand) {
+        document.documentElement.setAttribute('data-brand', brand);
+        document.documentElement.setAttribute('data-theme', brand);
+      }
     }
     // And each port's package manager, one level down. Without this a panel
     // painted its first manager, npm, and the widget's script switched it to
