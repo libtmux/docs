@@ -100,15 +100,19 @@ function existingManifest(slugs: string[]) {
   }
 }
 
-function manifestError(operation: ManifestResponse['operation'], code: string, status = 254): ManifestResponse {
+function manifestError(operation: ManifestResponse['operation'], code: string, status = 254, prefix = ''): ManifestResponse {
   const name = operation === 'get-object' ? 'GetObject' : 'PutObject'
-  return { operation, error: `An error occurred (${code}) when calling the ${name} operation: request failed`, status }
+  return { operation, error: `${prefix}An error occurred (${code}) when calling the ${name} operation: request failed`, status }
 }
 
 describe('port manifest publication', () => {
   it.each([
     manifestError('get-object', '403'),
     manifestError('get-object', 'SlowDown'),
+    manifestError('get-object', '403', 254, 'aws: [ERROR]: '),
+    manifestError('get-object', 'AccessDenied', 254, 'aws: [ERROR]: '),
+    manifestError('get-object', 'SlowDown', 254, 'aws: [ERROR]: '),
+    manifestError('get-object', 'NoSuchKey', 254, 'Unexpected error: '),
     { operation: 'get-object', error: 'Could not connect to the endpoint URL: https://docs-test.s3.amazonaws.com', status: 255 },
   ] satisfies ManifestResponse[])('reports a failed read without writing: $error', (response) => {
     const result = publishManifest([response])
@@ -118,15 +122,17 @@ describe('port manifest publication', () => {
     expect(result.calls.map(({ args }) => args[1])).toEqual(['get-object'])
   })
 
-  it.each(['404', 'NoSuchKey'])('creates a missing manifest after %s with a conditional first write', (code) => {
-    const result = publishManifest([manifestError('get-object', code), { operation: 'put-object' }])
-    expect(result.status, result.stderr).toBe(0)
-    expect(result.calls[1].args.slice(-2)).toEqual(['--if-none-match', '*'])
-    expect(result.calls[1].document).toEqual({
-      schema: 1, ports: { go: [{ slug: 'next', label: 'Next', kind: 'alias', supported: true, resolvesTo: 'v2', publication: { ...publication, operation: 'published' } }] },
-      defaultVersion: { go: 'next' },
-    })
-  })
+  it.each(['404', 'NoSuchKey'].flatMap((code) => ['', 'aws: [ERROR]: '].map((prefix) => ({ code, prefix }))))(
+    'creates a missing manifest after $prefix$code with a conditional first write', ({ code, prefix }) => {
+      const result = publishManifest([manifestError('get-object', code, 254, prefix), { operation: 'put-object' }])
+      expect(result.status, result.stderr).toBe(0)
+      expect(result.calls[1].args.slice(-2)).toEqual(['--if-none-match', '*'])
+      expect(result.calls[1].document).toEqual({
+        schema: 1, ports: { go: [{ slug: 'next', label: 'Next', kind: 'alias', supported: true, resolvesTo: 'v2', publication: { ...publication, operation: 'published' } }] },
+        defaultVersion: { go: 'next' },
+      })
+    },
+  )
 
   it('merges an existing document using the ETag returned with its bytes', () => {
     const result = publishManifest([
