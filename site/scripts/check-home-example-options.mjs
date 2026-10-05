@@ -37,7 +37,7 @@ export async function checkHomeExampleOptions(browser, base) {
       await check(true, true)
       for (const { slug } of PORTS) {
         const picker = page.locator('[data-home-launcher] [data-page-port-switcher]')
-        await picker.locator('summary .doc-picker-caret').click()
+        await picker.locator('summary').click()
         await picker.locator(`[data-port="${slug}"]`).click()
         await check(true, true)
       }

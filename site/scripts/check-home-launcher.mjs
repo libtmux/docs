@@ -19,14 +19,24 @@ export async function checkHomeLanguageIcon(page, port = null) {
       .find((node) => node.checkVisibility()).getBoundingClientRect()
     const button = element.getBoundingClientRect()
     const clear = element.closest('.clearable-picker').querySelector('.picker-clear')
-    const caret = element.querySelector('.doc-picker-caret').getBoundingClientRect()
+    const caretElement = element.querySelector('.doc-picker-caret')
+    const caret = caretElement.getBoundingClientRect()
+    const clearBox = clear.getBoundingClientRect()
+    const sizer = element.querySelector('.page-port-label-sizer')
     return { height: button.height, iconHeight: icon.height, iconRight: icon.right, labelLeft: label.left,
-      clearFits: clear.hidden || (label.right < clear.getBoundingClientRect().left && clear.getBoundingClientRect().right <= caret.left),
+      clearFits: clear.hidden || (label.right < clearBox.left && clearBox.right <= button.right
+        && Math.abs(clearBox.x + clearBox.width / 2 - caret.x - caret.width / 2) < 1),
+      caretVisible: getComputedStyle(caretElement).visibility !== 'hidden',
+      sizerHidden: getComputedStyle(sizer).visibility === 'hidden' && sizer.getBoundingClientRect().height === 0,
       centerOffset: Math.abs(icon.y + icon.height / 2 - (button.y + button.height / 2)) }
   })
   assert.equal(geometry.height, 36, `The trigger keeps the same height for every language: ${JSON.stringify(geometry)}`)
   assert.equal(geometry.iconHeight, 24, 'Every language uses the same icon box')
-  assert(geometry.clearFits, 'Clear sits between the language label and chevron without covering either')
+  assert(geometry.clearFits, 'Clear occupies the chevron slot without covering the language label')
+  assert.equal(geometry.caretVisible, !port, 'The clear button replaces the chevron only for an explicit language')
+  assert(geometry.sizerHidden, 'Width measurement never exposes extra language labels')
+  assert.equal((await trigger.innerText()).trim(), port ? PORTS.find((entry) => entry.slug === port).name
+    : page.viewportSize().width <= 736 ? 'Port' : 'Choose a language', 'The trigger shows only its current label')
   const solution = await page.locator('[data-home-launcher] .home-launcher-solution:not([hidden]) .surface-picker > summary').boundingBox()
   const solutionIcon = await page.locator('[data-home-launcher] .home-launcher-solution:not([hidden]) .surface-picker > summary > .surface-artwork').boundingBox()
   assert.equal(solution.height, geometry.height, 'The two launcher buttons have equal heights')
@@ -104,7 +114,8 @@ export async function checkHomeLauncher(browser, base) {
   const reset = page.locator('[data-home-launcher] .picker-clear[data-home-reset]')
   const logo = page.locator('.site-header__mark img')
   const choose = async (port) => {
-    await language.locator('summary .doc-picker-caret').click()
+    const previousWidth = (await language.locator('summary').boundingBox()).width
+    await language.locator('summary').click()
     await language.locator(`a[data-port="${port}"]`).click()
     await page.waitForFunction((port) => document.querySelector('.lm-agent-prompt')?.dataset.activePort === port, port)
     assert(await page.locator(`.home-examples [data-home-language="${port}"]`).isVisible())
@@ -113,6 +124,7 @@ export async function checkHomeLauncher(browser, base) {
     assert(await reset.isVisible(), 'A chosen language can be reset')
     assert.equal(await logo.count(), 0, 'The top header keeps only the wordmark')
     await checkHomeLanguageIcon(page, port)
+    assert.equal((await language.locator('summary').boundingBox()).width, previousWidth, 'Changing language leaves the adjacent solution selector in place')
     const cards = await page.locator(`.home-intro [data-home-language="${port}"] .home-solutions > a`).evaluateAll((links) => links.map((link) => ({
       display: getComputedStyle(link).display,
       border: getComputedStyle(link).borderTopWidth,
@@ -169,7 +181,7 @@ export async function checkHomeLauncher(browser, base) {
     await page.reload()
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'go')
     assert.equal(await prompt.locator('[data-select="topic"]').inputValue(), rerolled, 'Reload restores the language and task')
-    await language.locator('summary .doc-picker-caret').click()
+    await language.locator('summary').click()
     const resetGap = await language.locator('.doc-picker-title-actions').evaluate((actions) => {
       const button = actions.querySelector('button').getBoundingClientRect()
       const count = actions.querySelector('.doc-picker-count').getBoundingClientRect()
