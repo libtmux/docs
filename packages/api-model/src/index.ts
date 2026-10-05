@@ -23,3 +23,5 @@ export { NAV } from './nav-config.ts'
 export { MEMBER_TIERS, memberSignals, memberTier, compareMembers, membersOf, type MemberSignals, type MemberTier } from './member-order.ts'
 
 export { parentInventory } from './parent-inventory.ts'
+
+export { navSidecarFor, type NavConfig } from './nav-sidecar.ts'

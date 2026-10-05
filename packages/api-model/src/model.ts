@@ -43,6 +43,7 @@ export type SymbolKind =
   | 'class'
   | 'interface'
   | 'struct'
+  | 'union'
   | 'enum'
   | 'trait'
   | 'function'
@@ -63,6 +64,7 @@ export type SymbolKind =
  */
 export type Modifier =
   | 'static'
+  | 'macro'
   | 'classmethod'
   | 'abstract'
   | 'async'
@@ -197,6 +199,8 @@ export interface ApiSymbol {
   signatures: Signature[]
   /** Explicit source imports used to resolve aliases in native signatures. */
   imports?: Record<string, string>
+  /** Relationships resolved by the native documentation producer. */
+  references?: { target: string; kind: 'type' | 'call' | 'reference'; sites?: { file: string; line: number }[] }[]
   /** Opened namespaces, in source order, for native unqualified types. */
   namespaceImports?: string[]
   /** Declaration forwarded by a native export, such as a Scala companion field. */
@@ -239,8 +243,8 @@ export interface ApiSymbol {
 }
 
 /** Everything extracted from one port's source tree. */
-export interface ApiModel {
-  port: PortSlug
+/** Declarations and provenance shared by library and source references. */
+export interface ApiModelBase {
   /** Generated public source files, stored with the revision that produced them. */
   generatedSources?: Record<string, string>
   repo?: string
@@ -255,6 +259,17 @@ export interface ApiModel {
    * A count that silently doubles is the failure mode worth catching.
    */
   pruned?: { dropped: number; kept: number; rules: string[] }
+}
+
+export interface ApiModel extends ApiModelBase {
+  port: PortSlug
+}
+
+/** A source project is a documentation area, not a libtmux language port. */
+export interface SourceApiModel extends ApiModelBase {
+  project: string
+  language: string
+  version: string
 }
 
 /** What the extractor should include, mirroring autodoc's own flags. */

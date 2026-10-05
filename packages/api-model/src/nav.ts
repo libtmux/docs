@@ -71,6 +71,8 @@ export interface Bucket {
   id: string
   label: string
   match: Match
+  /** Exact declaration ids shown first; unlisted entries keep the default order. */
+  order?: string[]
   /** Rendered closed. Machinery should be; the domain should not. */
   collapsed?: boolean
   children?: Bucket[]

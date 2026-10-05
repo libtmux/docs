@@ -1,4 +1,4 @@
-import type { ApiModel, ApiSymbol } from './model.ts'
+import type { ApiModelBase, ApiSymbol } from './model.ts'
 
 /** The source-qualified spelling shown to readers; stable link ids remain separate. */
 export const qualifiedNameOf = (symbol: ApiSymbol): string => symbol.qualifiedName ?? symbol.publicId ?? symbol.id
@@ -27,7 +27,7 @@ export function moduleOf(symbol: ApiSymbol): string {
  * returned in declaration-path order so the listing reads like the source
  * tree, with the shallowest — usually the primary package — first.
  */
-export function modulesIn(model: ApiModel): { name: string; symbols: ApiSymbol[] }[] {
+export function modulesIn(model: ApiModelBase): { name: string; symbols: ApiSymbol[] }[] {
   const byModule = new Map<string, ApiSymbol[]>()
   for (const s of model.symbols) {
     if (s.parent) continue
