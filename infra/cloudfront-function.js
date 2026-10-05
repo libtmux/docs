@@ -51,10 +51,12 @@ async function handler(event) {
         }
     }
 
-    // Shared prose belongs to tmux. Preserve locale, preview and deep paths.
-    const prose = /^((?:\/pr-\d+)?\/[a-z]{2}(?:-[A-Za-z0-9]+)*)\/(guides|topics|concepts|examples)(?=\/|\.md$|$)/.exec(uri)
-    if (prose) {
-        let target = `${prose[1]}/tmux/${uri.slice(prose[1].length + 1)}`
+    // Canonical documentation routes precede the default-version lookup.
+    const moved = /^((?:\/pr-\d+)?\/[a-z]{2}(?:-[A-Za-z0-9]+)*)\/(dotnet|guides|topics|concepts|examples)(?=\/|\.md$|$)/.exec(uri)
+    if (moved) {
+        let target = moved[2] === 'dotnet'
+            ? `${moved[1]}/csharp${uri.slice(moved[0].length)}`
+            : `${moved[1]}/tmux/${uri.slice(moved[1].length + 1)}`
         target = target.replace(/\/index\.html$/, '/')
         const name = target.slice(target.lastIndexOf('/') + 1)
         const dot = name.lastIndexOf('.')
@@ -137,7 +139,7 @@ async function handler(event) {
     // "Is this a file?" is decided by the extension, not by "contains a
     // dot". Testing for a dot looks equivalent and is not: three kinds of
     // real page carry one in their last segment — a version tag
-    // ("/py/v0.46.2"), a .NET type ("/dotnet/stable/api/libtmux.client",
+    // ("/py/v0.46.2"), a .NET type ("/csharp/stable/api/libtmux.client",
     // 215 of them), and a locale-tagged path — and each was silently
     // treated as a file, passed through, and 403'd at the origin. The
     // allowlist below is every extension this build actually emits.
