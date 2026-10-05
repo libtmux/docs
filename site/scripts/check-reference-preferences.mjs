@@ -111,7 +111,7 @@ export async function checkGlobalHeader(browser, base) {
     try {
       for (const path of ['/', '/tmux/latest/manual/capture-pane/']) {
         await page.goto(`${base}${path}`)
-        for (const width of [390, 768, 784, 1024, 1440, 1600]) {
+        for (const width of [280, 304, 390, 768, 784, 1024, 1440, 1600]) {
           await page.setViewportSize({ width, height: 900 })
           assert.equal(await page.locator('header nav[aria-label="Documentation destinations"]').count(), 0)
           const menu = page.locator('.site-header__menu')
@@ -122,12 +122,16 @@ export async function checkGlobalHeader(browser, base) {
             const controls = document.querySelector('.site-header__always').getBoundingClientRect()
             const menu = document.querySelector('.site-header__menu-button').getBoundingClientRect()
             return { fits: document.documentElement.scrollWidth <= innerWidth + 1,
+              wordmarkVisible: brand.width > 40 && brand.height > 20
+                && getComputedStyle(document.querySelector('.site-header__wordmark')).clipPath === 'none',
               separate: brand.right <= controls.left && controls.right <= menu.left }
           })
           assert(geometry.fits && geometry.separate, `${path} at ${width}px: header controls fit without overlap`)
+          assert(geometry.wordmarkVisible, `${path} at ${width}px: the wordmark remains a visible home link`)
           await menu.locator(':scope > summary').click()
         }
       }
+      await page.setViewportSize({ width: 280, height: 900 })
       await page.locator('.site-header__mark').focus()
       await page.keyboard.press('Enter')
       await page.waitForURL(`${base}/`)
@@ -135,5 +139,5 @@ export async function checkGlobalHeader(browser, base) {
       await context.close()
     }
   }
-  console.log('Global header: no destination strip, usable menu and home link, 390–1600px with/without JavaScript')
+  console.log('Global header: no destination strip, usable menu and home link, 280–1600px with/without JavaScript')
 }
