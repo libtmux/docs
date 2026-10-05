@@ -70,7 +70,7 @@ $ rm -rf "$WORKSPACE_TMP"
 | Option | Behavior |
 | --- | --- |
 | `--socket PATH` | Required path to an existing server's socket. Relative paths resolve from the current directory. |
-| `--timeout SECONDS` | Finite positive deadline for each apply or switch operation; defaults to `5`. It is not a deadline for the whole workspace. |
+| `--timeout SECONDS` | Finite positive time budget shared by preflight and all creation steps; defaults to `5`. A post-load client switch receives a separate budget of the same length. This option does not bound terminal attachment. |
 | `--compensate` | Attempt guarded cleanup of positively identified created resources after application failure. It cannot undo shell effects. |
 | `--attach` | Attach this CLI's terminal after loading. Requires `/dev/tty` and a valid `TERM`. |
 | `--switch CLIENT` | Switch the explicitly named current client to the created session after loading. There is no fallback client selection. |
@@ -95,3 +95,4 @@ remain available and the command returns status `3`. Read the [exit statuses](..
 when using JSON output in a script.
 
 [CLI parser and implementation](https://github.com/libtmux/libtmux-ruby/blob/9b1545562a112353c2c893a1d3e8c0d9b4b51f8d/gems/libtmux-workspace/lib/libtmux/workspace/cli.rb).
+[Apply deadline](https://github.com/libtmux/libtmux-ruby/blob/9b1545562a112353c2c893a1d3e8c0d9b4b51f8d/gems/libtmux-workspace/lib/libtmux/workspace/apply.rb).
