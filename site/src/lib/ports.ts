@@ -320,6 +320,7 @@ const CORE_PORTS: readonly Port[] = [
     tagGrammar: 'pep440',
     renderer: 'sphinx',
     publishesOwnApi: true,
+    publishesOwnTree: true,
     generator: 'Sphinx + sphinx-gp-theme',
     installs: [
       {
