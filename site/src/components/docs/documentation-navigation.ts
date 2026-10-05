@@ -106,6 +106,8 @@ export function initDocumentationNavigation() {
       if (search) { search.value = ''; filter() }
       if (topLayer) panel.showPopover()
       position()
+      // A reopened menu must not leave its focused search above the viewport.
+      panel.scrollTop = 0
       if (picker.open) (search ?? panel.querySelector<HTMLElement>('a[aria-current]') ?? visibleLinks()[0])?.focus({ preventScroll: true })
     }, { signal })
     search?.addEventListener('input', filter, { signal })

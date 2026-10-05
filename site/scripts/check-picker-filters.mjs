@@ -43,6 +43,16 @@ async function exercise(page, selector, query, count) {
   await page.keyboard.press('Escape')
   assert.equal(await picker.getAttribute('open'), null)
   assert(await trigger.evaluate((node) => node === document.activeElement), 'Escape returns focus')
+  const documentScroll = await page.evaluate(() => scrollY)
+  await trigger.click()
+  await search.waitFor({ state: 'visible' })
+  const input = await search.boundingBox()
+  const reopened = await panel.boundingBox()
+  assert(input && reopened && input.y >= reopened.y && input.y + input.height <= reopened.y + reopened.height,
+    'Reopening brings the focused search back into the menu viewport')
+  assert(await search.evaluate((node) => node === document.activeElement), 'Reopening focuses search')
+  assert.equal(await page.evaluate(() => scrollY), documentScroll, 'Reopening preserves document scroll')
+  await page.keyboard.press('Escape')
 }
 
 /** Real widgets, dense lists, and delayed manifest updates share filtering. */
@@ -108,5 +118,5 @@ export async function checkPickerFilters(browser, base, complete = false) {
     await picker.locator('a').last().click()
     assert.equal(new URL(page.url()).hash, '#version-v1.0.0', 'No-JavaScript version links remain usable')
   } finally { await noScript.close() }
-  console.log('Picker filters: both themes, 280–853px, short viewports, wheel/keyboard scrolling, delayed versions, and no JavaScript PASS')
+  console.log('Picker filters: both themes, 280–853px, short viewports, wheel/keyboard scrolling, reopening, delayed versions, and no JavaScript PASS')
 }
