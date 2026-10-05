@@ -368,7 +368,7 @@ jobs:
               put_args+=(--if-match "$etag")
             else
               read_status=$?
-              if ! grep -Eq '^An error occurred \((404|NoSuchKey)\) when calling the GetObject operation:' "$RUNNER_TEMP/manifest-read-error.txt"; then
+              if ! grep -Eq '^(aws: \[ERROR\]: )?An error occurred \((404|NoSuchKey)\) when calling the GetObject operation:' "$RUNNER_TEMP/manifest-read-error.txt"; then
                 echo "::error::could not read $key" >&2
                 cat "$RUNNER_TEMP/manifest-read-error.txt" >&2
                 exit "$read_status"
