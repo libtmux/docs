@@ -170,7 +170,7 @@ export async function checkClipboard(page, base) {
         'Copy success does not add a menu row')
       assert(await actions.locator('[role="status"]').evaluate((element) => element.classList.contains('sr-only')), 'Success is announced without a visible status row')
       assert(await actions.getByRole('button', { name: 'Copy Markdown' }).evaluate((element) => element === document.activeElement), 'Copy preserves focus')
-      await page.waitForFunction(() => !document.querySelector('[data-page-copy]').hasAttribute('data-copied'))
+      await page.waitForFunction(() => !document.querySelector('[data-page-copy]').hasAttribute('data-copied'), null, { timeout: 3000 })
     } else {
       assert.equal(await actions.getByRole('link', { name: 'Open Markdown' }).getAttribute('href'), new URL(markdownHref, page.url()).href)
       assert.equal(await actions.locator('[data-page-copy][data-copied]').count(), 0, 'A failed copy clears the success checkmark')
