@@ -13,10 +13,13 @@ const { editHref, editLabel = 'Edit this page on GitHub' } = Astro.props
     </svg>
   </summary>
   <div class="page-actions__panel">
-    <button type="button" data-page-copy>Copy Markdown</button>
+    <button type="button" data-page-copy>
+      <span>Copy Markdown</span>
+      <svg class="page-actions__copied" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m4 10 4 4 8-8" /></svg>
+    </button>
     <button type="button" data-page-print>Print</button>
     {editHref && <a href={editHref} rel="noopener" target="_blank">{editLabel}</a>}
-    <p class="page-actions__status" role="status" aria-live="polite"></p>
+    <p class="page-actions__status sr-only" role="status" aria-live="polite"></p>
   </div>
 </details>
 
@@ -49,13 +52,17 @@ const { editHref, editLabel = 'Edit this page on GitHub' } = Astro.props
     cursor: pointer;
   }
   button:hover, a:hover { background: var(--color-api-background-hover); }
+  [data-page-copy] { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+  [data-page-copy][aria-disabled="true"] { cursor: progress; }
+  .page-actions__copied { flex: none; visibility: hidden; }
+  [data-copied] .page-actions__copied { visibility: visible; }
   :is(summary, button, a):focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
-  .page-actions__status { margin: 0; padding: 0 .75rem; font-size: .8rem; }
-  .page-actions__status:not(:empty) { padding-block: .5rem; }
+  .page-actions__status:not(.sr-only) { margin: 0; padding: .5rem .75rem; font-size: .8rem; }
   @media print { .page-actions { display: none; } }
 </style>
 
 <script>
+  const copiedTimers = new WeakMap<HTMLButtonElement, ReturnType<typeof setTimeout>>()
   document.addEventListener('click', async (event) => {
     const target = event.target instanceof Element ? event.target : undefined
     const actions = target?.closest<HTMLDetailsElement>('[data-page-actions]')
@@ -68,11 +75,14 @@ const { editHref, editLabel = 'Edit this page on GitHub' } = Astro.props
       window.print()
     }
     const copy = target?.closest<HTMLButtonElement>('[data-page-copy]')
-    if (!copy) return
+    if (!copy || copy.getAttribute('aria-disabled') === 'true') return
     const status = actions.querySelector<HTMLElement>('[role="status"]')!
+    clearTimeout(copiedTimers.get(copy))
+    copy.removeAttribute('data-copied')
+    status.classList.add('sr-only')
     const href = document.querySelector<HTMLLinkElement>('link[rel="alternate"][type="text/markdown"]')?.href
-    if (!href) { status.textContent = 'Markdown is unavailable for this page.'; return }
-    copy.disabled = true
+    if (!href) { status.classList.remove('sr-only'); status.textContent = 'Markdown is unavailable for this page.'; return }
+    copy.setAttribute('aria-disabled', 'true')
     status.textContent = 'Copying…'
     try {
       const text = fetch(href).then(async (response) => {
@@ -85,14 +95,17 @@ const { editHref, editLabel = 'Edit this page on GitHub' } = Astro.props
       } else {
         await navigator.clipboard.writeText(await text)
       }
+      copy.setAttribute('data-copied', '')
       status.textContent = 'Markdown copied.'
+      copiedTimers.set(copy, setTimeout(() => { copy.removeAttribute('data-copied'); copiedTimers.delete(copy) }, 2000))
     } catch {
+      status.classList.remove('sr-only')
       status.replaceChildren(document.createTextNode('Could not copy. '))
       const link = document.createElement('a')
       link.href = href
       link.textContent = 'Open Markdown'
       status.append(link)
-    } finally { copy.disabled = false }
+    } finally { copy.removeAttribute('aria-disabled') }
   })
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return

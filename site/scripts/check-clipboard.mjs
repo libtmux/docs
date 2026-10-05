@@ -150,6 +150,7 @@ export async function checkClipboard(page, base) {
   assert.equal(await page.locator('article').getByRole('link', { name: 'Edit this page on GitHub' }).count(), 0)
   const markdownHref = await page.locator('link[rel="alternate"][type="text/markdown"]').getAttribute('href')
   const markdown = await (await page.request.get(new URL(markdownHref, page.url()).href)).text()
+  const panelHeight = await actions.locator('.page-actions__panel').evaluate((element) => element.getBoundingClientRect().height)
   for (const mode of ['accepted', 'refused']) {
     await page.evaluate((mode) => {
       window.__markdownCopied = undefined
@@ -162,8 +163,19 @@ export async function checkClipboard(page, base) {
     }, mode)
     await actions.getByRole('button', { name: 'Copy Markdown' }).click()
     await page.waitForFunction(() => /Markdown copied|Could not copy/.test(document.querySelector('[data-page-actions] [role="status"]').textContent))
-    if (mode === 'accepted') assert.equal(await page.evaluate(() => window.__markdownCopied), markdown)
-    else assert.equal(await actions.getByRole('link', { name: 'Open Markdown' }).getAttribute('href'), new URL(markdownHref, page.url()).href)
+    if (mode === 'accepted') {
+      assert.equal(await page.evaluate(() => window.__markdownCopied), markdown)
+      await actions.locator('[data-page-copy][data-copied] .page-actions__copied').waitFor({ state: 'visible' })
+      assert.equal(await actions.locator('.page-actions__panel').evaluate((element) => element.getBoundingClientRect().height), panelHeight,
+        'Copy success does not add a menu row')
+      assert(await actions.locator('[role="status"]').evaluate((element) => element.classList.contains('sr-only')), 'Success is announced without a visible status row')
+      assert(await actions.getByRole('button', { name: 'Copy Markdown' }).evaluate((element) => element === document.activeElement), 'Copy preserves focus')
+      await page.waitForFunction(() => !document.querySelector('[data-page-copy]').hasAttribute('data-copied'))
+    } else {
+      assert.equal(await actions.getByRole('link', { name: 'Open Markdown' }).getAttribute('href'), new URL(markdownHref, page.url()).href)
+      assert.equal(await actions.locator('[data-page-copy][data-copied]').count(), 0, 'A failed copy clears the success checkmark')
+      assert(await actions.getByRole('link', { name: 'Open Markdown' }).isVisible(), 'Failure keeps a visible recovery action')
+    }
   }
   await page.evaluate(() => { window.print = () => { window.__pagePrinted = true } })
   await actions.getByRole('button', { name: 'Print', exact: true }).click()
