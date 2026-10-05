@@ -181,7 +181,8 @@
     // gone by 400ms with the woff2 still 1.1s away.
     const wait = () => document.fonts.ready.then(show).catch(show);
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', wait);
+      // Parsing finishes before deferred modules such as analytics complete.
+      document.addEventListener('readystatechange', wait, { once: true });
     } else {
       wait();
     }

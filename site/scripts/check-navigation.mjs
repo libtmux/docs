@@ -5,6 +5,8 @@ import { PORTS, productAvailable } from '../src/lib/ports.ts'
 export async function checkNavigationBeforeAnalytics(browser, base) {
   const page = await browser.newPage({ viewport: { width: 390, height: 900 }, reducedMotion: 'reduce' })
   page.setDefaultTimeout(5000)
+  await page.clock.install({ time: 0 })
+  await page.clock.pauseAt(1000)
   const url = `${base}/tmux/concepts/server-session-window-pane/`
   const analytics = `${base}/pending-analytics.js`
   let release
@@ -26,6 +28,15 @@ export async function checkNavigationBeforeAnalytics(browser, base) {
   })
   try {
     await page.goto(url, { waitUntil: 'commit' })
+    const visibility = await page.evaluate(async () => {
+      if (document.readyState === 'loading') {
+        await new Promise((resolve) => document.addEventListener('readystatechange', resolve, { once: true }))
+      }
+      await document.fonts.ready
+      return getComputedStyle(document.body).visibility
+    })
+    assert.equal(visibility, 'visible', 'Loaded fonts reveal the page while analytics and the fallback timer are still pending')
+    await page.clock.resume()
     const picker = page.locator('[data-surface-picker][data-enhanced]')
     await picker.waitFor({ state: 'visible' })
     await picker.locator(':scope > summary').focus()
