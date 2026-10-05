@@ -347,7 +347,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       }
       const surface = page.product === 'mcp' ? 'MCP' : 'Workspace Manager'
       const section = page.section.split('/')[0] || 'home'
-      const sectionLabel = section[0].toUpperCase() + section.slice(1)
+      const sectionLabel = section === 'reference' ? 'API Reference' : section[0].toUpperCase() + section.slice(1)
       expect(picker?.querySelector('.surface-current strong')?.textContent, `${page.path} current app`).toBe(surface)
       expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} current section`).toBe(sectionLabel)
       const current = picker?.querySelectorAll('[aria-current="location"]')
