@@ -33,7 +33,7 @@ Use explicit output formats when a script reads the result.
 [Command source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/__init__.py).
 <!-- /port -->
 
-<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+<!-- port:ts,rs,go,java,csharp,cxx,swift -->
 Every command accepts `--json` and `--ndjson`. JSON writes one document to
 stdout. NDJSON writes one JSON record per line and takes precedence if both
 flags are present. Machine output contains no terminal styling.
@@ -79,7 +79,7 @@ can filter advisory records; fatal errors and results remain visible.
 Captured child results retain up to 64 KiB of source bytes per stream and mark
 truncation. NDJSON forwards child output as it arrives.
 <!-- /port -->
-<!-- port:rs,go,java,dotnet,cxx -->
+<!-- port:rs,go,java,csharp,cxx -->
 NDJSON can carry child-output records while a command is running. Read the
 terminal result and child status after those records.
 <!-- /port -->
@@ -106,7 +106,7 @@ hiding errors. Redirected or machine output avoids the progress display.
 <!-- port:java -->
 [CLI source](https://github.com/libtmux/libtmux-java/blob/3e5b20d22af3890ae5f7f52842e4b05d170a983f/libtmux-workspace-cli/README.md).
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 [CLI source](https://github.com/libtmux/libtmux-dotnet/blob/f77fe776ba67a04abb20ddbbc26cf4a000d63b74/src/LibTmux.Workspace.Cli/README.md).
 <!-- /port -->
 <!-- port:cxx -->

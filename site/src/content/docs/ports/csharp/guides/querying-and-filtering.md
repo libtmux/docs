@@ -1,5 +1,5 @@
 ---
-port: dotnet
+port: csharp
 route: guides/querying-and-filtering
 title: Querying and filtering
 description: Choose a target and handle missing or ambiguous results.
@@ -19,7 +19,7 @@ you need handles or must detect several matching objects.
 
 ## Require exactly one match
 
-[Attaching to tmux](../attaching-to-tmux/) provides the complete .NET program
+[Attaching to tmux](../attaching-to-tmux/) provides the complete C# program
 and its setup. It searches an existing server for `work`, prints the name and
 reports an absent session. Its launcher checks that the server remains running.
 

@@ -19,13 +19,13 @@ describe('wrapper library identities', () => {
   const wrappers = [
     { slug: 'kotlin', parent: 'java', runtime: 'JVM', packageName: 'io.github.libtmux:libtmux-kotlin' },
     { slug: 'scala', parent: 'java', runtime: 'JVM', packageName: 'io.github.libtmux:libtmux-scala_3' },
-    { slug: 'fsharp', parent: 'dotnet', runtime: '.NET', packageName: 'LibTmux.FSharp' },
+    { slug: 'fsharp', parent: 'csharp', runtime: '.NET', packageName: 'LibTmux.FSharp' },
   ]
 
   it('keeps wrappers beside their parent with distinct packages and artwork', () => {
     const slugs = PORTS.map((port) => port.slug)
     expect(slugs.slice(slugs.indexOf('java'), slugs.indexOf('java') + 3)).toEqual(['java', 'kotlin', 'scala'])
-    expect(slugs.slice(slugs.indexOf('dotnet'), slugs.indexOf('dotnet') + 2)).toEqual(['dotnet', 'fsharp'])
+    expect(slugs.slice(slugs.indexOf('csharp'), slugs.indexOf('csharp') + 2)).toEqual(['csharp', 'fsharp'])
     for (const { slug, parent, runtime, packageName } of wrappers) {
       const port = PORT_BY_SLUG[slug]
       expect(port, slug).toBeDefined()

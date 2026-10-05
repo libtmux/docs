@@ -21,7 +21,7 @@ parser. The parser is available through `tmuxp.cli.create_parser`.
 [Parser source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/__init__.py).
 <!-- /port -->
 
-<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+<!-- port:ts,rs,go,java,csharp,cxx,swift -->
 Generate completion using the installed `tmux-workspace` command. The script
 matches that executable's command definitions.
 
@@ -47,7 +47,7 @@ $ tmux-workspace --generate-completion bash > tmux-workspace.bash
 $ tmux-workspace --generate bash > tmux-workspace.bash
 ```
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 ```console
 $ tmux-workspace --generate bash > tmux-workspace.bash
 ```
@@ -90,7 +90,7 @@ sessions. Regenerate it after upgrading the CLI.
 <!-- port:java -->
 The CLI provides Bash completion.
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 `--generate zsh` and `--generate fish` generate the other supported shells.
 <!-- /port -->
 <!-- port:cxx -->
@@ -115,7 +115,7 @@ Generating a script does not start tmux or load workspace files.
 <!-- port:java -->
 [CLI source](https://github.com/libtmux/libtmux-java/blob/3e5b20d22af3890ae5f7f52842e4b05d170a983f/libtmux-workspace-cli/README.md).
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 [CLI source](https://github.com/libtmux/libtmux-dotnet/blob/f77fe776ba67a04abb20ddbbc26cf4a000d63b74/src/LibTmux.Workspace.Cli/README.md).
 <!-- /port -->
 <!-- port:cxx -->

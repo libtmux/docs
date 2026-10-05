@@ -34,7 +34,7 @@ The command resolves a file or saved workspace name.
 [Command source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/convert.py).
 <!-- /port -->
 
-<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+<!-- port:ts,rs,go,java,csharp,cxx,swift -->
 Convert a complete workspace document between YAML and JSON. Conversion
 preserves mapping fields; it does not establish that every field can be loaded.
 
@@ -78,7 +78,7 @@ it](../load/).
 <!-- port:java -->
 [CLI source](https://github.com/libtmux/libtmux-java/blob/3e5b20d22af3890ae5f7f52842e4b05d170a983f/libtmux-workspace-cli/README.md).
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 [CLI source](https://github.com/libtmux/libtmux-dotnet/blob/f77fe776ba67a04abb20ddbbc26cf4a000d63b74/src/LibTmux.Workspace.Cli/README.md).
 <!-- /port -->
 <!-- port:cxx -->

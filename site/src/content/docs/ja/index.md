@@ -9,7 +9,7 @@ reviewed: false
 ---
 
 libtmux は tmux を制御する型付きライブラリで、Python、TypeScript、Rust、Go、
-Java、.NET、C++、Swift の実装があります。ドキュメントはすべての実装で
+Java、C#、C++、Swift の実装があります。ドキュメントはすべての実装で
 一つのサイトを共有しています。
 
 ## 翻訳済みのページ

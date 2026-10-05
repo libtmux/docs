@@ -18,7 +18,7 @@ const { KNOWN_PORTS, resolvePortBody, resolvePortContent } = await import(`file:
 
 /** The first column's label, as the prose writes it. */
 const PORT_BY_LABEL = Object.fromEntries(PORT_DEFS.map((port) => [port.name, port.slug]))
-PORT_BY_LABEL['C#'] = 'dotnet'
+PORT_BY_LABEL['C#'] = 'csharp'
 
 const modelList = PORTS.map((port) => join(modelDir, `${port}.json`))
   .filter((f) => existsSync(f))

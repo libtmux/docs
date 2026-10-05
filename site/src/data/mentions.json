@@ -1,6 +1,769 @@
 {
  "mentions": [
   {
+   "port": "csharp",
+   "symbol": "LibTmux.IncompleteSnapshotException",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.IncompleteSnapshotException",
+   "page": "/topics/format-tokens/",
+   "title": "Format-token fields",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.IncompleteSnapshotException",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.LibTmuxException",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.LibTmuxException.Dispatch",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Mcp.McpServerComposition.Add",
+   "page": "/csharp/latest/mcp/reference/",
+   "title": "C# MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Mcp.ServerPolicy",
+   "page": "/csharp/latest/mcp/reference/",
+   "title": "C# MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.OwnedServerScope",
+   "page": "/csharp/latest/guides/capturing-output/",
+   "title": "Capturing output",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.OwnedServerScope",
+   "page": "/csharp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.OwnedServerScope",
+   "page": "/csharp/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.OwnedSessionScope",
+   "page": "/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.OwnedWindowScope",
+   "page": "/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Pane",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Pane.CaptureAsync",
+   "page": "/csharp/latest/guides/capturing-output/",
+   "title": "Capturing output",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Pane.CaptureAsync",
+   "page": "/csharp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Pane.CaptureAsync",
+   "page": "/csharp/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Pane.EnterAsync",
+   "page": "/csharp/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Pane.Equals",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Pane.FromEnvironmentAsync",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Pane.Height",
+   "page": "/topics/format-tokens/",
+   "title": "Format-token fields",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Pane.SendKeysAsync",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Pane.SendTextAsync",
+   "page": "/csharp/latest/guides/sending-keys/",
+   "title": "Sending keys",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Pane.SendTextAsync",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Pane.Title",
+   "page": "/topics/format-tokens/",
+   "title": "Format-token fields",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Pane.Window",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.SendKeysRequest.Literal",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server",
+   "page": "/csharp/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server",
+   "page": "/csharp/latest/workspace/internals/",
+   "title": "C# workspace internals",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server.Chain",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server.CreateOwnedAsync",
+   "page": "/csharp/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server.CreateOwnedAsync",
+   "page": "/csharp/latest/workspace/internals/guides/",
+   "title": "Use the C# workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server.EnterControlModeAsync",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server.FromEnvironment",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server.GetSessionsAsync",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server.HasSessionAsync",
+   "page": "/csharp/latest/guides/querying-and-filtering/",
+   "title": "Querying and filtering",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server.IsAliveAsync",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server.KillAsync",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Server.OpenWaitChannel",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.ServerConnectionOptions",
+   "page": "/csharp/latest/workspace/internals/guides/",
+   "title": "Use the C# workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.ServerConnectionOptions",
+   "page": "/topics/socket-and-servers/",
+   "title": "Socket and servers",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Session",
+   "page": "/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Session",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Session.ActiveWindow",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Session.FromEnvironmentAsync",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Session.GetWindowsAsync",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Session.Panes",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Testing.TemporaryHierarchyScope",
+   "page": "/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Testing.TmuxTestFactory",
+   "page": "/csharp/latest/guides/testing-with-libtmux/",
+   "title": "Testing with libtmux",
+   "section": "guides"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Testing.TmuxTestFactory.CreateHierarchyAsync",
+   "page": "/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxCommandException",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxDispatchState",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxDispatchState.Dispatched",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxDispatchState.NotDispatched",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxDispatchState.Unknown",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxEnvironment.GetAllAsync",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxEnvironment.RemoveAsync",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxEnvironment.SetAsync",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxEnvironment.UnsetAsync",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxHooks.GetAllAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxHooks.RunAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxHooks.SetAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxHooks.UnsetAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxObjectNotFoundException",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxObjectNotFoundException",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxOptions.GetAllAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxOptions.GetAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxOptions.SetAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxOptions.UnsetAsync",
+   "page": "/topics/options-and-hooks/",
+   "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxTransportException",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxWait.UntilAsync",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxWaitChannel",
+   "page": "/topics/pane-interaction/",
+   "title": "Pane interaction",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxWaitChannel",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.TmuxWaitChannel.WaitAsync",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Window",
+   "page": "/topics/context-managers/",
+   "title": "Ownership and cleanup",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Window",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Window.ActivePane",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Window.FromEnvironmentAsync",
+   "page": "/topics/environment/",
+   "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Window.GetPanesAsync",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Window.Session",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.PaneReadiness",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.PaneReadiness.Always",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.PaneReadiness.Always",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.PaneReadiness.Auto",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.PaneReadiness.Auto",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.PaneReadiness.Never",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.PaneReadiness.Never",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuilder",
+   "page": "/csharp/latest/workspace/internals/guides/",
+   "title": "Use the C# workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuilder",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuilder.BuildAsync",
+   "page": "/csharp/latest/workspace/internals/",
+   "title": "C# workspace internals",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuilder.BuildAsync",
+   "page": "/csharp/latest/workspace/internals/examples/",
+   "title": "C# workspace builder examples",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuilder.BuildAsync",
+   "page": "/csharp/latest/workspace/internals/guides/",
+   "title": "Use the C# workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuilder.BuildAsync",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuildException",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuildException",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuildException.PartialResult",
+   "page": "/csharp/latest/workspace/internals/guides/",
+   "title": "Use the C# workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuildException.PartialResult",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuildException.PartialResult",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceFile",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceFile.Parse",
+   "page": "/csharp/latest/workspace/internals/",
+   "title": "C# workspace internals",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceFile.Parse",
+   "page": "/csharp/latest/workspace/internals/guides/",
+   "title": "Use the C# workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceFile.Parse",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceFormatException",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspacePane",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceResult",
+   "page": "/csharp/latest/workspace/internals/guides/",
+   "title": "Use the C# workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceResult",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceResult.Unsupported",
+   "page": "/csharp/latest/workspace/internals/guides/",
+   "title": "Use the C# workspace builder",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceResult.Unsupported",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceWindow",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
    "port": "cxx",
    "symbol": "libtmux::Chain",
    "page": "/concepts/transports/",
@@ -824,769 +1587,6 @@
    "symbol": "libtmux::workspace::Workspace::windows",
    "page": "/cxx/latest/workspace/configuration/windows/",
    "title": "Window configuration",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.IncompleteSnapshotException",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.IncompleteSnapshotException",
-   "page": "/topics/format-tokens/",
-   "title": "Format-token fields",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.IncompleteSnapshotException",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.LibTmuxException",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.LibTmuxException.Dispatch",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Mcp.McpServerComposition.Add",
-   "page": "/dotnet/latest/mcp/reference/",
-   "title": ".NET MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Mcp.ServerPolicy",
-   "page": "/dotnet/latest/mcp/reference/",
-   "title": ".NET MCP API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.OwnedServerScope",
-   "page": "/dotnet/latest/guides/capturing-output/",
-   "title": "Capturing output",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.OwnedServerScope",
-   "page": "/dotnet/latest/guides/getting-started/",
-   "title": "Getting started",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.OwnedServerScope",
-   "page": "/dotnet/latest/guides/sending-keys/",
-   "title": "Sending keys",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.OwnedSessionScope",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.OwnedWindowScope",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Pane",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Pane.CaptureAsync",
-   "page": "/dotnet/latest/guides/capturing-output/",
-   "title": "Capturing output",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Pane.CaptureAsync",
-   "page": "/dotnet/latest/guides/getting-started/",
-   "title": "Getting started",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Pane.CaptureAsync",
-   "page": "/dotnet/latest/guides/sending-keys/",
-   "title": "Sending keys",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Pane.EnterAsync",
-   "page": "/dotnet/latest/guides/sending-keys/",
-   "title": "Sending keys",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Pane.Equals",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Pane.FromEnvironmentAsync",
-   "page": "/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Pane.Height",
-   "page": "/topics/format-tokens/",
-   "title": "Format-token fields",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Pane.SendKeysAsync",
-   "page": "/topics/pane-interaction/",
-   "title": "Pane interaction",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Pane.SendTextAsync",
-   "page": "/dotnet/latest/guides/sending-keys/",
-   "title": "Sending keys",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Pane.SendTextAsync",
-   "page": "/topics/pane-interaction/",
-   "title": "Pane interaction",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Pane.Title",
-   "page": "/topics/format-tokens/",
-   "title": "Format-token fields",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Pane.Window",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.SendKeysRequest.Literal",
-   "page": "/topics/pane-interaction/",
-   "title": "Pane interaction",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server",
-   "page": "/dotnet/latest/guides/attaching-to-tmux/",
-   "title": "Attaching to tmux",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server",
-   "page": "/dotnet/latest/workspace/internals/",
-   "title": ".NET workspace internals",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server",
-   "page": "/dotnet/latest/workspace/reference/",
-   "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server.Chain",
-   "page": "/concepts/transports/",
-   "title": "Control mode vs one-shot",
-   "section": "concepts"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server.CreateOwnedAsync",
-   "page": "/dotnet/latest/guides/testing-with-libtmux/",
-   "title": "Testing with libtmux",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server.CreateOwnedAsync",
-   "page": "/dotnet/latest/workspace/internals/guides/",
-   "title": "Use the .NET workspace builder",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server.EnterControlModeAsync",
-   "page": "/concepts/transports/",
-   "title": "Control mode vs one-shot",
-   "section": "concepts"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server.FromEnvironment",
-   "page": "/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server.GetSessionsAsync",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server.HasSessionAsync",
-   "page": "/dotnet/latest/guides/querying-and-filtering/",
-   "title": "Querying and filtering",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server.IsAliveAsync",
-   "page": "/topics/socket-and-servers/",
-   "title": "Socket and servers",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server.KillAsync",
-   "page": "/topics/socket-and-servers/",
-   "title": "Socket and servers",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Server.OpenWaitChannel",
-   "page": "/topics/waiting-and-retry/",
-   "title": "Waiting and retrying",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.ServerConnectionOptions",
-   "page": "/dotnet/latest/workspace/internals/guides/",
-   "title": "Use the .NET workspace builder",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.ServerConnectionOptions",
-   "page": "/topics/socket-and-servers/",
-   "title": "Socket and servers",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Session",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Session",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Session.ActiveWindow",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Session.FromEnvironmentAsync",
-   "page": "/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Session.GetWindowsAsync",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Session.Panes",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Testing.TemporaryHierarchyScope",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Testing.TmuxTestFactory",
-   "page": "/dotnet/latest/guides/testing-with-libtmux/",
-   "title": "Testing with libtmux",
-   "section": "guides"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Testing.TmuxTestFactory.CreateHierarchyAsync",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxCommandException",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxDispatchState",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxDispatchState.Dispatched",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxDispatchState.NotDispatched",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxDispatchState.Unknown",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxEnvironment.GetAllAsync",
-   "page": "/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxEnvironment.RemoveAsync",
-   "page": "/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxEnvironment.SetAsync",
-   "page": "/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxEnvironment.UnsetAsync",
-   "page": "/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxHooks.GetAllAsync",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxHooks.RunAsync",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxHooks.SetAsync",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxHooks.UnsetAsync",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxObjectNotFoundException",
-   "page": "/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxObjectNotFoundException",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxOptions.GetAllAsync",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxOptions.GetAsync",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxOptions.SetAsync",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxOptions.UnsetAsync",
-   "page": "/topics/options-and-hooks/",
-   "title": "Options and hooks",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxTransportException",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxWait.UntilAsync",
-   "page": "/topics/waiting-and-retry/",
-   "title": "Waiting and retrying",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxWaitChannel",
-   "page": "/topics/pane-interaction/",
-   "title": "Pane interaction",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxWaitChannel",
-   "page": "/topics/waiting-and-retry/",
-   "title": "Waiting and retrying",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.TmuxWaitChannel.WaitAsync",
-   "page": "/topics/waiting-and-retry/",
-   "title": "Waiting and retrying",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Window",
-   "page": "/topics/context-managers/",
-   "title": "Ownership and cleanup",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Window",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Window.ActivePane",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Window.FromEnvironmentAsync",
-   "page": "/topics/environment/",
-   "title": "Environment",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Window.GetPanesAsync",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Window.Session",
-   "page": "/topics/traversal/",
-   "title": "Traversal",
-   "section": "topics"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.PaneReadiness",
-   "page": "/dotnet/latest/workspace/reference/",
-   "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Always",
-   "page": "/dotnet/latest/workspace/internals/topics/",
-   "title": ".NET workspace builder behavior",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Always",
-   "page": "/dotnet/latest/workspace/reference/",
-   "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Auto",
-   "page": "/dotnet/latest/workspace/internals/topics/",
-   "title": ".NET workspace builder behavior",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Auto",
-   "page": "/dotnet/latest/workspace/reference/",
-   "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Never",
-   "page": "/dotnet/latest/workspace/internals/topics/",
-   "title": ".NET workspace builder behavior",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Never",
-   "page": "/dotnet/latest/workspace/reference/",
-   "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceBuilder",
-   "page": "/dotnet/latest/workspace/internals/guides/",
-   "title": "Use the .NET workspace builder",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceBuilder",
-   "page": "/dotnet/latest/workspace/reference/",
-   "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceBuilder.BuildAsync",
-   "page": "/dotnet/latest/workspace/internals/",
-   "title": ".NET workspace internals",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceBuilder.BuildAsync",
-   "page": "/dotnet/latest/workspace/internals/examples/",
-   "title": ".NET workspace builder examples",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceBuilder.BuildAsync",
-   "page": "/dotnet/latest/workspace/internals/guides/",
-   "title": "Use the .NET workspace builder",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceBuilder.BuildAsync",
-   "page": "/dotnet/latest/workspace/reference/",
-   "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceBuildException",
-   "page": "/dotnet/latest/workspace/internals/topics/",
-   "title": ".NET workspace builder behavior",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceBuildException",
-   "page": "/dotnet/latest/workspace/reference/",
-   "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceBuildException.PartialResult",
-   "page": "/dotnet/latest/workspace/internals/guides/",
-   "title": "Use the .NET workspace builder",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceBuildException.PartialResult",
-   "page": "/dotnet/latest/workspace/internals/topics/",
-   "title": ".NET workspace builder behavior",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceBuildException.PartialResult",
-   "page": "/dotnet/latest/workspace/reference/",
-   "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceFile",
-   "page": "/dotnet/latest/workspace/reference/",
-   "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceFile.Parse",
-   "page": "/dotnet/latest/workspace/internals/",
-   "title": ".NET workspace internals",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceFile.Parse",
-   "page": "/dotnet/latest/workspace/internals/guides/",
-   "title": "Use the .NET workspace builder",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceFile.Parse",
-   "page": "/dotnet/latest/workspace/internals/topics/",
-   "title": ".NET workspace builder behavior",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceFormatException",
-   "page": "/dotnet/latest/workspace/reference/",
-   "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspacePane",
-   "page": "/dotnet/latest/workspace/reference/",
-   "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceResult",
-   "page": "/dotnet/latest/workspace/internals/guides/",
-   "title": "Use the .NET workspace builder",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceResult",
-   "page": "/dotnet/latest/workspace/reference/",
-   "title": ".NET workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceResult.Unsupported",
-   "page": "/dotnet/latest/workspace/internals/guides/",
-   "title": "Use the .NET workspace builder",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceResult.Unsupported",
-   "page": "/dotnet/latest/workspace/internals/topics/",
-   "title": ".NET workspace builder behavior",
-   "section": "ports"
-  },
-  {
-   "port": "dotnet",
-   "symbol": "LibTmux.Workspace.WorkspaceWindow",
-   "page": "/dotnet/latest/workspace/reference/",
-   "title": ".NET workspace builder API",
    "section": "ports"
   },
   {
@@ -6919,14 +6919,14 @@
   {
    "port": "py",
    "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
-   "page": "/cxx/latest/workspace/configuration/environment/",
+   "page": "/csharp/latest/workspace/configuration/environment/",
    "title": "Workspace environment",
    "section": "ports"
   },
   {
    "port": "py",
    "symbol": "tmuxp.cli.shell.CLIShellNamespace.shell",
-   "page": "/dotnet/latest/workspace/configuration/environment/",
+   "page": "/cxx/latest/workspace/configuration/environment/",
    "title": "Workspace environment",
    "section": "ports"
   },
@@ -10525,6 +10525,13 @@
   },
   {
    "port": "fsharp",
+   "text": "LibTmux",
+   "page": "/fsharp/latest/guides/quickstart/",
+   "line": 249,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "fsharp",
    "text": "AggregateException",
    "page": "/fsharp/latest/guides/streams/",
    "line": 308,
@@ -10657,7 +10664,7 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "dotnet",
+   "port": "csharp",
    "text": "ConnectAndBuild",
    "page": "/examples/attach-and-send-keys/",
    "line": 152,

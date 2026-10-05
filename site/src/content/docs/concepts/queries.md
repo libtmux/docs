@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, rs, java, dotnet, cxx, swift]
+supportedPorts: [py, rs, java, csharp, cxx, swift]
 title: Filtering and queries
 description: How you get from every session on the server to the one pane you mean, and what happens when zero or several match.
 sidebar:
@@ -73,7 +73,7 @@ programs for matching names, handling result counts, traversing linked windows,
 refreshing snapshots, validating query documents, and filtering live tmux rows.
 <!-- /port -->
 
-<!-- port:go,rs,java,cxx,dotnet,swift -->
+<!-- port:go,rs,java,cxx,csharp,swift -->
 <a id="go-rust-java-c-typed-fields-that-fail-queries-at-compile-time"></a>
 
 ## Typed and local filters

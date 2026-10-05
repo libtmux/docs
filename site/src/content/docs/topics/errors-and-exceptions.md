@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Errors and exceptions
 description: Handle command failures, inspect delivery status, and decide when a retry is safe.
 sidebar:
@@ -26,7 +26,7 @@ queries](/concepts/queries/#the-cardinality-contract-side-by-side).
 <!-- /port --><!-- port:go -->| Go | returns `(T, error)` | no shared base type: small typed `...Error` structs plus sentinel `errors.New` values, composed with `errors.Is` / `errors.As` and `%w` wrapping |
 <!-- /port --><!-- port:rs -->| Rust | returns `Result<T, Error>` | one `Error` enum, `#[non_exhaustive]`, matched rather than caught |
 <!-- /port --><!-- port:java -->| Java | throws (unchecked) | `LibTmuxException extends RuntimeException` |
-<!-- /port --><!-- port:dotnet -->| .NET | throws | `LibTmuxException`, with typed subclasses per failure (`TmuxCommandException`, `TmuxTransportException`, `TmuxObjectNotFoundException`, and a dozen more) |
+<!-- /port --><!-- port:csharp -->| C# | throws | `LibTmuxException`, with typed subclasses per failure (`TmuxCommandException`, `TmuxTransportException`, `TmuxObjectNotFoundException`, and a dozen more) |
 <!-- /port --><!-- port:cxx -->| C++ | returns `expected<T, CommandFailure>` | `CommandFailure { kind, delivery, exit_code, diagnostic }`: no exception type at all |
 <!-- /port --><!-- port:swift -->| Swift | throws (typed) | `enum TmuxError: Error`, thrown as `throws(TmuxError)`: Swift's typed-throws syntax, not a bare `throws` |
 <!-- /port -->
@@ -68,7 +68,7 @@ information:
 | Port | Name | States |
 |------|------|--------|
 <!-- port:ts -->| TypeScript | `TmuxTransportError.delivery` | `"not_started"` / `"written"` / `"replied"` / `"indeterminate"`: only `not_started` is safe to retry blindly |
-<!-- /port --><!-- port:dotnet -->| .NET | `LibTmuxException.Dispatch` (`TmuxDispatchState`) | `NotDispatched` / `Dispatched` / `Unknown` (the default) |
+<!-- /port --><!-- port:csharp -->| C# | `LibTmuxException.Dispatch` (`TmuxDispatchState`) | `NotDispatched` / `Dispatched` / `Unknown` (the default) |
 <!-- /port --><!-- port:java -->| Java | `DispatchOutcome`, via `TmuxTimeoutException.outcome()` | `NOT_DISPATCHED` / `COMPLETE` / `UNKNOWN` |
 <!-- /port --><!-- port:cxx -->| C++ | `DeliveryStatus` | `not_started` / `written` / `replied` / `indeterminate` |
 <!-- /port --><!-- port:rs -->| Rust | `ControlModeErrorKind` (behind the `control-mode` feature) | `DispatchTimedOut` (safe to retry) vs. plain `TimedOut` (not: the connection may have already committed the command) |
@@ -114,7 +114,7 @@ Treat unknown delivery as potentially executed.
 A `not_started` result means the request did not reach tmux. A `written` result
 means the transport accepted the request but no terminal reply arrived.
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 `NotDispatched` identifies a request that did not reach tmux.
 <!-- /port -->
 <!-- port:java -->

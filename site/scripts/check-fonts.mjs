@@ -71,7 +71,7 @@ const ARCHETYPES = [
   ['ref rs', '/rs/latest/reference/blocking-runtime/', true],
   ['ref go', '/go/latest/reference/tmux-activityaction/', true],
   ['ref java', '/java/latest/reference/io-github-libtmux-batch-batch-batch/', true],
-  ['ref dotnet', '/dotnet/latest/reference/libtmux-attachsessionrequest/', true],
+  ['ref dotnet', '/csharp/latest/reference/libtmux-attachsessionrequest/', true],
   ['ref cxx', '/cxx/latest/reference/libtmux-argumentsensitivity/', true],
   ['ref swift', '/swift/latest/reference/server/', true],
   // A member's own page, which is a different shape from its type's: the type
@@ -79,7 +79,7 @@ const ARCHETYPES = [
   // annotations in a signature live only here, so an archetype list without
   // one reports Mono 400 italic as preloaded and unused.
   ['member py', '/py/stable/reference/libtmux-server-wait_for/', true],
-  ['member dotnet', '/dotnet/latest/reference/libtmux-pane-clearhistoryasync/', true],
+  ['member dotnet', '/csharp/latest/reference/libtmux-pane-clearhistoryasync/', true],
 ]
 
 /**

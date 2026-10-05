@@ -1,7 +1,7 @@
 ---
 title: "Inspect a workspace through MCP"
-description: "Connect the development .NET MCP server to a session loaded by its native workspace CLI."
-port: dotnet
+description: "Connect the development C# MCP server to a session loaded by its native workspace CLI."
+port: csharp
 product: workspace
 sidebar:
   label: "Inspect through MCP"
@@ -10,7 +10,7 @@ sidebar:
 tableOfContents: true
 ---
 
-Inspect the session you loaded with the .NET workspace CLI by pointing its MCP
+Inspect the session you loaded with the C# workspace CLI by pointing its MCP
 server at the same tmux socket. The loaded windows and panes are ordinary tmux
 objects; discovery returns their existing IDs.
 

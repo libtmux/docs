@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Ownership and cleanup
 description: Scope-based cleanup for tmux objects, and when your program must kill them explicitly.
 sidebar:
@@ -14,14 +14,14 @@ cleanup can kill it when your code leaves a block, including after an exception.
 See [Workspaces](/concepts/workspaces/) for a temporary layout example.
 
 <!-- port:root -->
-Python provides context managers for tmux objects. .NET provides ownership
+Python provides context managers for tmux objects. C# provides ownership
 scopes for servers, sessions, and windows. Other ports require explicit cleanup
 or offer guards for test servers:
 
 | Port | Server | Session | Window | Pane |
 |------|:------:|:-------:|:------:|:----:|
 <!-- port:py -->| Python | yes | yes | yes | yes |
-<!-- /port --><!-- port:dotnet -->| .NET | yes | yes | yes | - |
+<!-- /port --><!-- port:csharp -->| C# | yes | yes | yes | - |
 <!-- /port --><!-- port:java -->| Java | closes conn. | - | - | - |
 <!-- /port --><!-- port:rs -->| Rust | test-only | - | - | - |
 <!-- /port --><!-- port:cxx -->| C++ | test-only | - | - | - |
@@ -57,12 +57,12 @@ with Server() as server:
 Nested scopes exit in reverse order: pane, window, session, then server.
 <!-- /port -->
 
-<!-- port:dotnet -->
+<!-- port:csharp -->
 <a id="net-an-explicit-ownership-type-stopping-at-window"></a>
 
 ## Owned sessions and windows
 
-.NET's `OwnedSessionScope` and `OwnedWindowScope` wrap the created object and
+C#'s `OwnedSessionScope` and `OwnedWindowScope` wrap the created object and
 implement `IAsyncDisposable`. The `Session` and `Window` handles themselves are
 not disposable:
 

@@ -200,8 +200,8 @@ const PROBES = {
   },
   async kotlin(port) { return PROBES.java(port) },
   async scala(port) { return PROBES.java(port) },
-  async fsharp(port) { return PROBES.dotnet(port) },
-  async dotnet(port) {
+  async fsharp(port) { return PROBES.csharp(port) },
+  async csharp(port) {
     const { missing, body } = await getJson(
       `https://api.nuget.org/v3-flatcontainer/${port.packageName.toLowerCase()}/index.json`,
     )

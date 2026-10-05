@@ -8,7 +8,7 @@
   "revisionSkew": {
     "note": "Recorded baselines: dotnet and java pin c4a980b; swift pins 988b02a (v0.62.0-60-g988b02a74a02); go records SHA-256 digests per source file, without a shared Python Git revision. The ledgers do not establish a shared Python baseline for comparing coverage.",
     "pythonRevisionByPort": {
-      "dotnet": "c4a980b",
+      "csharp": "c4a980b",
       "go": null,
       "java": "c4a980b",
       "swift": "988b02a"
@@ -48,7 +48,7 @@
     "libtmux.window"
   ],
   "ports": {
-    "dotnet": {
+    "csharp": {
       "available": true,
       "ledgerFormat": "JSON entries map Python public symbols to approved C# destinations, exclusions with reasons, or internal implementations without a public equivalent.",
       "ledgerPaths": [

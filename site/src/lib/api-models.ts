@@ -7,7 +7,7 @@ import dependencyInv from '../data/inventories/dependencies.entries.json'
 import { PORT_BY_SLUG, referenceUrl, type DocProduct } from './ports'
 import { defaultVersionFor } from './versions'
 import cxxNav from '../data/api/cxx.nav.json'
-import dotnetNav from '../data/api/dotnet.nav.json'
+import csharpNav from '../data/api/csharp.nav.json'
 import goNav from '../data/api/go.nav.json'
 import javaNav from '../data/api/java.nav.json'
 import pyNav from '../data/api/py.nav.json'
@@ -17,7 +17,7 @@ import rsNav from '../data/api/rs.nav.json'
 import swiftNav from '../data/api/swift.nav.json'
 import tsNav from '../data/api/ts.nav.json'
 import cxxModel from '../data/api/cxx.json'
-import dotnetModel from '../data/api/dotnet.json'
+import csharpModel from '../data/api/csharp.json'
 import goModel from '../data/api/go.json'
 import javaModel from '../data/api/java.json'
 import pyModel from '../data/api/py.json'
@@ -50,7 +50,7 @@ export const API_MODELS: Record<string, ApiModel> = {
   rs: rsModel as unknown as ApiModel,
   go: goModel as unknown as ApiModel,
   java: javaModel as unknown as ApiModel,
-  dotnet: dotnetModel as unknown as ApiModel,
+  csharp: csharpModel as unknown as ApiModel,
   cxx: cxxModel as unknown as ApiModel,
   swift: swiftModel as unknown as ApiModel,
   kotlin: kotlinModel as unknown as ApiModel,
@@ -106,7 +106,7 @@ export const API_NAV: Record<string, PortNavData> = {
   rs: rsNav as unknown as PortNavData,
   go: goNav as unknown as PortNavData,
   java: javaNav as unknown as PortNavData,
-  dotnet: dotnetNav as unknown as PortNavData,
+  csharp: csharpNav as unknown as PortNavData,
   cxx: cxxNav as unknown as PortNavData,
   swift: swiftNav as unknown as PortNavData,
   kotlin: kotlinNav as unknown as PortNavData,
@@ -140,7 +140,7 @@ export const PORT_NAME: Record<string, string> = {
   rs: 'Rust',
   go: 'Go',
   java: 'Java',
-  dotnet: '.NET',
+  csharp: 'C#',
   cxx: 'C++',
   swift: 'Swift',
   kotlin: 'Kotlin',

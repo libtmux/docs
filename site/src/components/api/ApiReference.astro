@@ -458,7 +458,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             name={qualifiedNameOf(owner)}
             namespace={ownerModule || undefined}
             label={['java', 'kotlin', 'scala', 'go'].includes(port ?? '') ? 'Package'
-              : ['dotnet', 'fsharp', 'cxx'].includes(port ?? '') ? 'Namespace' : 'Module'}
+              : ['csharp', 'fsharp', 'cxx'].includes(port ?? '') ? 'Namespace' : 'Module'}
             href={ownerModule && moduleAnchors.has(ownerModule) ? `${refBase}#${ownerModule}` : undefined}
           />
           {owner.doc?.summary && <p class="api-reference-summary">

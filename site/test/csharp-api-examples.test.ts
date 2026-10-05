@@ -2,12 +2,12 @@ import type { ApiModel } from '@libtmux/api-model'
 import { createHash } from 'node:crypto'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { describe, expect, it } from 'vitest'
-import data from '../src/data/api/dotnet.json'
+import data from '../src/data/api/csharp.json'
 import receipt from './fixtures/api-examples.json'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 
 const model = data as unknown as ApiModel
-const examples = receipt.examples.filter((example) => example.port === 'dotnet')
+const examples = receipt.examples.filter((example) => example.port === 'csharp')
 const hash = (code: string) => createHash('sha256').update(code).digest('hex')
 
 describe('verified complete C# API programs', () => {
@@ -36,7 +36,7 @@ describe('verified complete C# API programs', () => {
     const markdown = symbolMarkdown({ model, symbol })
     const exported = fromMarkdown(markdown).children.filter((node) => node.type === 'code')
     expect(symbol.source.revision).toBe(example.sourceRevision)
-    expect(example.page).toBe(`ports/dotnet/reference/${symbol.slug}`)
+    expect(example.page).toBe(`ports/csharp/reference/${symbol.slug}`)
     for (const target of example.sourceCompilerIds) {
       expect(target.slice(2).replace(/\(.*$/, '').replace(/`{1,2}\d+/g, '')).toBe(symbol.id)
     }

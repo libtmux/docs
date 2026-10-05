@@ -55,7 +55,7 @@ function fixture(slug: 'go' | 'py' | 'ruby' | 'java' | 'swift', run: (fixture: {
     const repo = slug === 'py' ? 'tmux-python/libtmux-mcp' : `libtmux/libtmux-${slug}`
     write(model, JSON.stringify({ port: slug, revision: coreSha, sources: [{ product: 'mcp', repo, revision: sha, extractedRevision: sha }] }))
     write(catalog, JSON.stringify({ generated: 'fixture', referenceDocumented: 54,
-      ports: Object.fromEntries(['py', 'ruby', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'].map((port) => [port, {
+      ports: Object.fromEntries(['py', 'ruby', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'].map((port) => [port, {
         tools: ['old_tool'], registrations: [{ wireName: 'old_tool' }], revision: 'a'.repeat(40),
       }])),
     }))

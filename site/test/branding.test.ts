@@ -28,12 +28,12 @@ describe('route branding', () => {
     const names = {
       py: 'libtmux', ruby: 'libtmux-ruby', lua: 'libtmux-lua', ts: 'libtmux-ts',
       rs: 'libtmux-rs', go: 'libtmux-go', java: 'libtmux-java', kotlin: 'libtmux-kotlin',
-      scala: 'libtmux-scala', dotnet: 'libtmux-dotnet', fsharp: 'libtmux-fsharp',
+      scala: 'libtmux-scala', csharp: 'libtmux-dotnet', fsharp: 'libtmux-fsharp',
       cxx: 'libtmux-cxx', swift: 'libtmux-swift',
     }
     expect(Object.fromEntries(PORTS.map((port) => [port.slug, branding(port.slug).projectName]))).toEqual(names)
     expect(branding('java', 'reference/libtmux-scala-cats').projectName).toBe('libtmux-scala')
-    expect(branding('dotnet', 'reference/LibTmux.FSharp').projectName).toBe('libtmux-fsharp')
+    expect(branding('csharp', 'reference/LibTmux.FSharp').projectName).toBe('libtmux-fsharp')
     expect(branding().projectName).toBe('libtmux')
     expect(documentationTitle('Server', 'libtmux-scala')).toBe('Server | libtmux-scala')
     expect(documentationTitle('Server | libtmux', 'libtmux-dotnet')).toBe('Server | libtmux-dotnet')
@@ -60,7 +60,7 @@ describe('route branding', () => {
     expect(pageBrand(undefined, 'reference/ts/Server')).toEqual({ language: 'typescript', variant: 'library' })
     expect(pageBrand('java', 'reference/libtmux-scala-cats')).toEqual({ language: 'scala', variant: 'library' })
     expect(pageBrand('java', 'reference/libtmux-kotlin')).toEqual({ language: 'kotlin', variant: 'library' })
-    expect(pageBrand('dotnet', 'reference/LibTmux.FSharp')).toEqual({ language: 'fsharp', variant: 'library' })
+    expect(pageBrand('csharp', 'reference/LibTmux.FSharp')).toEqual({ language: 'fsharp', variant: 'library' })
   })
   it('uses product overlays without changing unrelated library pages', () => {
     expect(pageBrand('ts', 'mcp/tools/')).toEqual({ language: 'typescript', variant: 'mcp' })

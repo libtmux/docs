@@ -1,5 +1,5 @@
 ---
-port: dotnet
+port: csharp
 route: examples/capture-pane-output
 title: Capture pane output
 description: Run a complete program that captures a pane and waits for a complete output line.

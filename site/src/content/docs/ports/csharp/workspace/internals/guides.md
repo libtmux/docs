@@ -1,7 +1,7 @@
 ---
-title: "Use the .NET workspace builder"
+title: "Use the C# workspace builder"
 description: "Parse a workspace, build it on an owned server, and handle partial failures."
-port: dotnet
+port: csharp
 product: workspace
 sidebar:
   group: Internals

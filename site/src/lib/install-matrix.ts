@@ -430,8 +430,8 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
       )
     },
   },
-  dotnet: {
-    port: 'dotnet',
+  csharp: {
+    port: 'csharp',
     package: 'LibTmux.Mcp',
     methods: [
       { id: 'dnx', label: 'dnx', docUrl: null },

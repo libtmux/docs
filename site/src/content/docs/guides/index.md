@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Guides
 description: Task-oriented walkthroughs that sit between the concepts and each port's own API reference.
 sidebar:

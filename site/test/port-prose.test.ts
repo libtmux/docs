@@ -10,10 +10,11 @@ import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 import { proseMentions } from '@libtmux/api-model'
 import { proseHref } from '../src/lib/docs-paths'
 import { docsEntryAvailable } from '../src/lib/page-port-links'
+import { PORT_BY_SLUG } from '../src/lib/ports'
 
 const languageNames: Record<string, string[]> = {
   py: ['Python'], ts: ['TypeScript'], go: ['Go'], rs: ['Rust'], java: ['Java'],
-  dotnet: ['.NET', 'C#'], cxx: ['C++'], swift: ['Swift'],
+  csharp: ['.NET', 'C#'], cxx: ['C++'], swift: ['Swift'],
 }
 const contentRoot = fileURLToPath(new URL('../src/content/', import.meta.url))
 
@@ -115,18 +116,18 @@ describe('port prose ownership', () => {
     }
   })
 
-  it.each(['ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'])('keeps native workspace commands on %s pages', (port) => {
+  it.each(['ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'])('keeps native workspace commands on %s pages', (port) => {
     for (const name of ['index', 'convert', 'edit', 'freeze', 'ls', 'debug-info', 'search', 'load', 'import', 'import-teamocil', 'import-tmuxinator', 'completion', 'shell']) {
       const raw = readFileSync(`${contentRoot}_workspace-shared/workspace/cli/${name}.md`, 'utf8')
       const body = resolvePortBody(raw, port)
       expect(body, `${port}:${name}`).toMatch(/\$ (?:EDITOR=vi )?tmux-workspace /)
       expect(body, `${port}:${name}`).not.toMatch(/\$ tmuxp |tmuxp compatibility reference|proposed native|seven native ports/i)
-      expect(body, `${port}:${name}`).toContain(`https://github.com/libtmux/libtmux-${port}/blob/`)
+      expect(body, `${port}:${name}`).toContain(`https://github.com/${PORT_BY_SLUG[port]!.repo}/blob/`)
       expect(body, `${port}:${name}`).not.toContain('https://github.com/tmux-python/tmuxp/')
     }
   })
 
-  it.each(['ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'])('keeps every shared workspace guide about %s', (port) => {
+  it.each(['ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'])('keeps every shared workspace guide about %s', (port) => {
     for (const path of globSync(`${contentRoot}_workspace-shared/workspace/**/*.md`)) {
       const body = resolvePortBody(readFileSync(path, 'utf8'), port)
       expect(body, path).not.toMatch(/\$ (?:uv tool install tmuxp|tmuxp )|Python alternative|tmuxp compatibility reference|proposed native|seven native ports|workspace-cli worktree/i)
@@ -144,10 +145,10 @@ describe('port prose ownership', () => {
           const override = `${contentRoot}docs/ports/${port}/${relative}`
           expect([target, override].some((page) => existsSync(`${page}.md`) || existsSync(`${page}/index.md`)), `${path}: ${card.href}`).toBe(true)
         }
-      } else expect(body, path).toContain(`https://github.com/libtmux/libtmux-${port}/blob/`)
+      } else expect(body, path).toContain(`https://github.com/${PORT_BY_SLUG[port]!.repo}/blob/`)
       expect(body, path).not.toContain('https://github.com/tmux-python/tmuxp/')
       const repositories = [...body.matchAll(/https:\/\/github\.com\/libtmux\/libtmux-([a-z]+)\//g)]
-      expect(repositories.map((match) => match[1]).every((slug) => slug === port), path).toBe(true)
+      expect(repositories.every((match) => `libtmux/libtmux-${match[1]}` === PORT_BY_SLUG[port]!.repo), path).toBe(true)
     }
   })
 

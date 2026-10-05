@@ -42,7 +42,7 @@ const PORT_LABEL = {
   rs: 'Rust',
   go: 'Go',
   java: 'Java',
-  dotnet: '.NET',
+  csharp: 'C#',
   cxx: 'C++',
   swift: 'Swift',
 }

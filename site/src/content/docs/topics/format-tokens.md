@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Format-token fields
 description: The typed fields every object exposes, mirroring tmux's own format tokens, and why a field is sometimes absent.
 sidebar:
@@ -30,7 +30,7 @@ described below.
 <!-- /port --><!-- port:go -->| Go | a two-return-value accessor: `pane.DeadSignal()` returns `(string, bool)`: Go's own "comma ok" idiom |
 <!-- /port --><!-- port:rs -->| Rust | `Option<T>`; consult the reference for the accessor name |
 <!-- /port --><!-- port:java -->| Java | `Optional<T>`: `pane.floating()` returns `Optional<Boolean>`, empty when the field isn't populated |
-<!-- /port --><!-- port:dotnet -->| .NET | nullable values or `IncompleteSnapshotException`, depending on whether the value or captured field is absent |
+<!-- /port --><!-- port:csharp -->| C# | nullable values or `IncompleteSnapshotException`, depending on whether the value or captured field is absent |
 <!-- /port --><!-- port:cxx -->
 | C++ | fixed, non-optional fields; see below for other tokens |
 <!-- /port -->
@@ -63,7 +63,7 @@ Rust's `formats.rs` marks this token as optional. Consult its generated
 reference for the accessor name.
 <!-- /port -->
 
-<!-- port:dotnet -->
+<!-- port:csharp -->
 .NET also distinguishes missing values from incomplete captures. `Pane.Title` is
 nullable because tmux may report no title. `Pane.Height`, `.Width`, and `.Index`
 throw `IncompleteSnapshotException` when the read that produced the handle did

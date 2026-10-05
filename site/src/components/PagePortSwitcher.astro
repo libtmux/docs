@@ -22,7 +22,7 @@ const families = [
   { label: 'Scripting & web', ports: ['py', 'ruby', 'lua', 'ts'] },
   { label: 'Compiled & native', ports: ['rs', 'go', 'cxx', 'swift'] },
   { label: 'JVM', ports: ['java', 'kotlin', 'scala'] },
-  { label: '.NET', ports: ['dotnet', 'fsharp'] },
+  { label: '.NET', ports: ['csharp', 'fsharp'] },
 ]
 const known = new Set(families.flatMap((family) => family.ports))
 families.push({ label: 'Other languages', ports: entries.filter((entry) => !known.has(entry.port)).map((entry) => entry.port) })

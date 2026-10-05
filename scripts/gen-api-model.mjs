@@ -82,7 +82,7 @@ function packageVersion(checkout, port, product) {
       ?? /^version\s*=\s*"([^"]+)"/m.exec(read('Cargo.toml'))?.[1]
   }
   if (['java', 'kotlin', 'scala'].includes(port)) return /^libtmuxVersion=(.+)$/m.exec(read('gradle.properties'))?.[1]
-  if (['dotnet', 'fsharp'].includes(port)) {
+  if (['csharp', 'fsharp'].includes(port)) {
     const props = read('Directory.Build.props')
     const prefix = /<VersionPrefix>([^<]+)</.exec(props)?.[1]
     const suffix = /<VersionSuffix>([^<]+)</.exec(props)?.[1]
@@ -248,7 +248,7 @@ const PORTS = {
     repo: 'libtmux/libtmux-java',
     options: { inheritedMembers: true },
   },
-  dotnet: {
+  csharp: {
     checkout: '~/work/libtmux/libtmux-dotnet',
     roots: ['src/LibTmux', 'src/LibTmux.Workspace', 'src/LibTmux.Query.Json', 'src/LibTmux.Testing'],
     repo: 'libtmux/libtmux-dotnet',
@@ -659,7 +659,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     }, { repo: cfg.repo, revision })
   }
 
-  if (port === 'fsharp' || port === 'dotnet') {
+  if (port === 'fsharp' || port === 'csharp') {
     const attach = port === 'fsharp' ? attachCompleteFSharpExamples : attachCompleteCSharpExamples
     attach(model.symbols, (file) => {
       try {
@@ -689,7 +689,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
   const sourceUnits = [{ checkout, repo: cfg.repo, revision, head, symbols: model.symbols }]
   const mcpRoots = {
     ts: 'packages/mcp/src', rs: 'crates/tmux-mcp/src', go: 'mcp',
-    java: 'libtmux-mcp/src/main/java', dotnet: 'src/LibTmux.Mcp',
+    java: 'libtmux-mcp/src/main/java', csharp: 'src/LibTmux.Mcp',
   }
   const extras = cfg.nativeArtifact ? [] : port === 'py'
     ? [
@@ -745,7 +745,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     rs: { workspace: 'tmux-workspace', mcp: 'tmux-mcp' },
     go: { workspace: 'github.com/libtmux/libtmux-go/workspace', mcp: 'github.com/libtmux/libtmux-go/mcp' },
     java: { workspace: 'libtmux-workspace', mcp: 'libtmux-mcp' },
-    dotnet: { workspace: 'LibTmux.Workspace', mcp: 'LibTmux.Mcp' },
+    csharp: { workspace: 'LibTmux.Workspace', mcp: 'LibTmux.Mcp' },
     cxx: { workspace: 'workspace consumer', mcp: 'mcp_tools consumer' },
     swift: { workspace: 'TmuxWorkspace', mcp: 'LibTmuxMCP' },
   }

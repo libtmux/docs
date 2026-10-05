@@ -90,7 +90,7 @@ checked process result.
 [loader.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/workspace/loader.py); [classic.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/workspace/builder/classic.py); [sleep.yaml](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/sleep.yaml); [skip-send.yaml](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/examples/skip-send.yaml).
 <!-- /port -->
 
-<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+<!-- port:ts,rs,go,java,csharp,cxx,swift -->
 `shell_command_before` adds setup for every affected pane. Setup is ordered from
 session to window to pane, followed by that pane's `shell_command` entries.
 
@@ -110,12 +110,12 @@ windows:
 <!-- /port -->
         shell_command:
           - cmd: printf ready
-<!-- port:ts,rs,go,java,dotnet,cxx -->
+<!-- port:ts,rs,go,java,csharp,cxx -->
             sleep_after: 0.01
 <!-- /port -->
           - cmd: printf waiting
             enter: false
-<!-- port:ts,rs,go,java,dotnet,cxx -->
+<!-- port:ts,rs,go,java,csharp,cxx -->
             sleep_after: 0
 <!-- /port -->
 ```
@@ -128,7 +128,7 @@ earlier shell command succeeded.
 
 Pane-level `enter`, `sleep_before` and `sleep_after` establish defaults.
 
-<!-- port:ts,rs,go,java,dotnet,cxx -->
+<!-- port:ts,rs,go,java,csharp,cxx -->
 Command mappings can change those defaults. An override carries to following
 commands in that pane until another override. Set an explicit value when later
 commands need to restore Enter or remove a delay.
@@ -165,7 +165,7 @@ commands.
 <!-- port:java -->
 [CLI source](https://github.com/libtmux/libtmux-java/blob/3e5b20d22af3890ae5f7f52842e4b05d170a983f/libtmux-workspace-cli/README.md).
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 [CLI source](https://github.com/libtmux/libtmux-dotnet/blob/f77fe776ba67a04abb20ddbbc26cf4a000d63b74/src/LibTmux.Workspace.Cli/README.md).
 <!-- /port -->
 <!-- port:cxx -->

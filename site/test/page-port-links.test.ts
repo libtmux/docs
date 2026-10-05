@@ -59,8 +59,8 @@ describe('matching pages in another port', () => {
     expect(links.filter((entry) => entry.port !== 'lua' && entry.port !== 'ruby' && !PORT_BY_SLUG[entry.port].parentLibrary).every((entry) => entry.links.length === 1)).toBe(true)
     expect(links.find((entry) => entry.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/v1.2.3/mcp/tools/capture_pane/')
     expect(links.find((entry) => entry.port === 'py')?.links[0].href).toBe('/pr-42/en/py/stable/mcp/tools/capture_pane/')
-    expect(links.find((entry) => entry.port === 'dotnet')?.links[0].href).toBe('/pr-42/en/dotnet/latest/mcp/tools/capture_pane/')
-    const reverse = pagePortLinks({ ...options, pagePath: 'mcp/tools/capture_pane', portSlug: 'dotnet' })
+    expect(links.find((entry) => entry.port === 'csharp')?.links[0].href).toBe('/pr-42/en/csharp/latest/mcp/tools/capture_pane/')
+    const reverse = pagePortLinks({ ...options, pagePath: 'mcp/tools/capture_pane', portSlug: 'csharp' })
     expect(reverse.find((entry) => entry.port === 'ts')?.links[0].href).toBe('/pr-42/en/ts/latest/mcp/tools/capture_pane/')
   })
 
@@ -82,10 +82,10 @@ describe('matching pages in another port', () => {
 
   it('keeps scrollback-only clearing separate from clearing the visible screen', () => {
     const rust = pagePortLinks({ ...options, pagePath: 'mcp/tools/clear_pane_scrollback', portSlug: 'rs' })
-    expect(rust.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'])
+    expect(rust.filter((entry) => entry.links.length).map((entry) => entry.port)).toEqual(['ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'])
     const python = pagePortLinks({ ...options, pagePath: 'mcp/tools/clear_pane', portSlug: 'py' })
     expect(python.find((entry) => entry.port === 'rs')?.links).toEqual([])
-    expect(python.find((entry) => entry.port === 'dotnet')?.links).toEqual([])
+    expect(python.find((entry) => entry.port === 'csharp')?.links).toEqual([])
   })
 
   it('offers reference indexes rather than transplanting the current reference path', () => {
@@ -119,7 +119,7 @@ describe('locale switcher targets', () => {
     ['/pr-42/ja/mcp/tools/', 'ja', '/pr-42/en/mcp/tools/'],
     ['/pr-42/ja/404/', 'ja', '/pr-42/en/404.html'],
     ['/pr-42/en/ts/latest/404/', 'en', '/pr-42/en/ts/latest/404.html'],
-    ['/pr-42/en/dotnet/latest/api/libtmux.client/', 'en', '/pr-42/en/dotnet/latest/api/libtmux.client/'],
+    ['/pr-42/en/csharp/latest/api/libtmux.client/', 'en', '/pr-42/en/csharp/latest/api/libtmux.client/'],
   ])('keeps the English counterpart of %s inside its preview', (pathname, locale, expected) => {
     expect(localePageHref('en', localeSourcePath(pathname, locale))).toBe(expected)
   })

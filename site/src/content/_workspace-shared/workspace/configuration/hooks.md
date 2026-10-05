@@ -106,7 +106,7 @@ delays and Enter behavior.
 [classic.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/workspace/builder/classic.py); [registry.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/workspace/builder/registry.py); [protocol.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/workspace/builder/protocol.py); [options.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/workspace/options.py); [plugins.md](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/docs/topics/plugins.md).
 <!-- /port -->
 
-<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+<!-- port:ts,rs,go,java,csharp,cxx,swift -->
 Use `before_script` when setup must finish successfully before configured
 windows are built. The command is split into an executable and arguments;
 shell operators require an explicit shell.
@@ -144,7 +144,7 @@ the prompt wait expires.
 
 ## Optional extensions
 
-<!-- port:ts,rs,go,java,dotnet -->
+<!-- port:ts,rs,go,java,csharp -->
 Nonempty `plugins` or `workspace_builder` values select the optional Python
 extension runtime. Set `TMUX_WORKSPACE_PYTHON` to an interpreter with a compatible
 tmuxp 1.74 installation. Ordinary documents use the native builder.
@@ -170,7 +170,7 @@ optional [inspection shell](../../cli/shell/) is a separate feature.
 <!-- port:java -->
 [CLI source](https://github.com/libtmux/libtmux-java/blob/3e5b20d22af3890ae5f7f52842e4b05d170a983f/libtmux-workspace-cli/README.md).
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 [CLI source](https://github.com/libtmux/libtmux-dotnet/blob/f77fe776ba67a04abb20ddbbc26cf4a000d63b74/src/LibTmux.Workspace.Cli/README.md).
 <!-- /port -->
 <!-- port:cxx -->

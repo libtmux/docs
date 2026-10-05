@@ -66,14 +66,14 @@ describe('tmux manual sitemap routes', () => {
 })
 
 describe('canonical workspace sitemap routes', () => {
-  it.each(['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift', 'ruby'])(
+  it.each(['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift', 'ruby'])(
     'includes real %s Guides and Examples pages', (port) => {
       expect(includes(port, 'guides')).toBe(true)
       expect(includes(port, 'examples')).toBe(true)
     },
   )
 
-  it.each(['ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'])(
+  it.each(['ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'])(
     'excludes retired %s Topics and API routes', (port) => {
       expect(includes(port, 'topics')).toBe(false)
       expect(includes(port, 'api/builder')).toBe(false)

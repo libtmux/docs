@@ -97,9 +97,9 @@ export function linkSnapshotDepths(content, symbols, referenceRoot) {
     const children = paragraph?.type === 'paragraph' ? paragraph.children : []
     if (children.length === 2 && children[0].type === 'text' && children[0].value === 'Required depth: '
         && children[1].type === 'inlineCode') {
-      symbols ??= JSON.parse(readFileSync(join(root, 'site/src/data/api/dotnet.json'), 'utf8')).symbols
+      symbols ??= JSON.parse(readFileSync(join(root, 'site/src/data/api/csharp.json'), 'utf8')).symbols
       // The Markdown pipeline adds the locale and preview mount once.
-      referenceRoot ??= `/dotnet/${defaultVersionFor('dotnet')}/reference/`
+      referenceRoot ??= `/csharp/${defaultVersionFor('csharp')}/reference/`
       const label = children[1]
       const id = `LibTmux.SnapshotDepth.${label.value}`
       const matches = symbols.filter((symbol) => (symbol.publicId ?? symbol.id) === id)

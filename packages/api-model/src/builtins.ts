@@ -126,7 +126,7 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     'Async.StartAsTask': `${fsharp('fsharp-control-fsharpasync')}#StartAsTask`,
     'Task.WhenAll': dotnet('system.threading.tasks.task.whenall'),
   },
-  dotnet: {
+  csharp: {
     ...qualifiedDotnetExceptions,
     bool: dotnet('system.boolean'),
     Boolean: dotnet('system.boolean'),

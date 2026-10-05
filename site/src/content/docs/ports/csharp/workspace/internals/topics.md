@@ -1,7 +1,7 @@
 ---
-title: ".NET workspace builder behavior"
-description: "Internal configuration, application, and failure contracts of the .NET workspace builder."
-port: dotnet
+title: "C# workspace builder behavior"
+description: "Internal configuration, application, and failure contracts of the C# workspace builder."
+port: csharp
 product: workspace
 sidebar:
   group: Internals

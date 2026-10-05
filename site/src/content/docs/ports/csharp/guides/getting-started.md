@@ -1,5 +1,5 @@
 ---
-port: dotnet
+port: csharp
 route: guides/getting-started
 title: Getting started
 description: Run a complete program with this language library.
@@ -10,7 +10,7 @@ sidebar:
 tableOfContents: true
 ---
 
-Use `LibTmux` to create sessions, send input and read pane output from .NET.
+Use `LibTmux` to create sessions, send input and read pane output from C#.
 The [complete capture program](../../examples/capture-pane-output/) includes
 imports, its entry point, project files, dependency setup and a run command.
 

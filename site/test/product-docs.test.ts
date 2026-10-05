@@ -38,7 +38,7 @@ const products = ['mcp', 'workspace'] as const
 const read = (path: string) => readFileSync(sitePath(path), 'utf8')
 const manifest = (): Manifest => JSON.parse(read('versions.json'))
 const urlFor = (path: string) => new URL(`/${SITE_PREFIX}${path}`, 'https://libtmux.org')
-const productUrl = /\/(?:py|ruby|lua|ts|rs|go|java|dotnet|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
+const productUrl = /\/(?:py|ruby|lua|ts|rs|go|java|csharp|cxx|swift)\/[^/]+\/(?:mcp|workspace)(?:\/|$)/
 
 it('advertises local native loaders while retaining their development status', () => {
   // Ruby ships its own released `libtmux-workspace load` and published MCP
@@ -280,7 +280,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       }
       const hrefs = tags(html, 'a').map((tag) => attribute(tag, 'href')).filter((href): href is string => Boolean(href))
       expect(hrefs.filter((href) => new URL(href, urlFor(page.path)).origin === 'https://libtmux.org'
-        && /\/ports\/(?:py|ruby|lua|ts|rs|go|java|dotnet|cxx|swift)\//.test(href)),
+        && /\/ports\/(?:py|ruby|lua|ts|rs|go|java|csharp|cxx|swift)\//.test(href)),
         `${page.path} storage identities in public links`).toEqual([])
       if (!page.section && page.version !== 'latest') {
         const home = pageHtml(`${page.port}/${page.version}/`)
@@ -630,7 +630,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(resolves(entry.url), entry.url).toBe(true)
         expect(resolves(entry.markdownUrl), entry.markdownUrl).toBe(true)
         expect(entry.url, `${root} canonical workspace API exports`).not.toMatch(/\/workspace\/api(?:\/|$)/)
-        expect(entry.url, `${root} legacy workspace Topics redirect excluded`).not.toMatch(/\/(?:lua|ts|rs|go|java|dotnet|cxx|swift)\/[^/]+\/workspace\/topics\/?$/)
+        expect(entry.url, `${root} legacy workspace Topics redirect excluded`).not.toMatch(/\/(?:lua|ts|rs|go|java|csharp|cxx|swift)\/[^/]+\/workspace\/topics\/?$/)
         if (root) expect(new URL(entry.url).pathname).toContain(`/${SITE_PREFIX}${root}`)
       }
     }
@@ -638,10 +638,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     expect(existsSync(japanese), 'Japanese assembled manifest').toBe(true)
     const translated = JSON.parse(readFileSync(japanese, 'utf8')) as { pages: { url: string }[] }
     expect(translated.pages.map((entry) => new URL(entry.url).pathname)
-      .filter((path) => /^\/ja\/(?:py|ruby|lua|ts|rs|go|java|dotnet|cxx|swift)\//.test(path)),
+      .filter((path) => /^\/ja\/(?:py|ruby|lua|ts|rs|go|java|csharp|cxx|swift)\//.test(path)),
     'Japanese manifest does not invent localized port guides').toEqual([])
     for (const entry of translated.pages.filter((entry) => productUrl.test(entry.url))) {
-      expect(new URL(entry.url).pathname, entry.url).not.toMatch(/^\/ja\/(?:py|ruby|lua|ts|rs|go|java|dotnet|cxx|swift)\//)
+      expect(new URL(entry.url).pathname, entry.url).not.toMatch(/^\/ja\/(?:py|ruby|lua|ts|rs|go|java|csharp|cxx|swift)\//)
       expect(resolves(entry.url), entry.url).toBe(true)
     }
   })

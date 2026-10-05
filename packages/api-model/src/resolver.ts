@@ -69,7 +69,7 @@ export const DEFAULT_PRIMARY_MODULES: Record<string, string> = {
   kotlin: 'io.github.libtmux.kotlin',
   scala: 'io.github.libtmux.scaladsl',
   fsharp: 'LibTmux.FSharp',
-  dotnet: 'LibTmux',
+  csharp: 'LibTmux',
   cxx: 'libtmux',
   swift: 'LibTmux',
 }

@@ -101,7 +101,7 @@ describe('verified complete programs', () => {
     const { content, frontmatter } = parsePage(example.page)
     expect(frontmatter.supportedPorts).toEqual([])
     expect(fences(content).every((block) => ['sh', 'console'].includes(block.language))).toBe(true)
-    const ports = ['py', 'ts', 'go', 'rs', 'java', 'dotnet', 'cxx', 'swift']
+    const ports = ['py', 'ts', 'go', 'rs', 'java', 'csharp', 'cxx', 'swift']
     const variants = ports.map((port) => {
       const id = `ports/${port}/${example.page}`
       const variant = parsePage(id)

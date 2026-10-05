@@ -23,7 +23,7 @@ describe('shared browse cards', () => {
     const shared = cards(section)
     expect(shared).toHaveLength(count)
     expect(new Set(shared.map((card) => card.href)).size).toBe(count)
-    for (const port of ['py', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift']) {
+    for (const port of ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']) {
       expect(cards(section, port)).toEqual(shared)
       for (const version of ['latest', 'stable', 'v0.1']) {
         const base = `https://libtmux.org/pr-42/en/${port}/${version}/${section}/`

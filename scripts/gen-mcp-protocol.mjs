@@ -35,14 +35,14 @@ const commands = {
   ts: ['bun', 'packages/mcp/src/server.ts'],
   rs: ['target/debug/tmux-mcp'],
   java: ['libtmux-mcp/build/install/libtmux-mcp/bin/libtmux-mcp'],
-  dotnet: ['dotnet', 'src/LibTmux.Mcp/bin/Release/net10.0/LibTmux.Mcp.dll'],
+  csharp: ['dotnet', 'src/LibTmux.Mcp/bin/Release/net10.0/LibTmux.Mcp.dll'],
   cxx: ['build/cxx-dev/apps/mcp/libtmux-mcp-server', '--socket-name', 'libtmux-docs-protocol'],
   swift: ['.build/debug/libtmux-mcp'],
 }
 const builds = {
   rs: [['cargo', 'build', '--locked', '-p', 'tmux-mcp', '--bin', 'tmux-mcp', '--jobs', '2']],
   java: [['./gradlew', ':libtmux-mcp:installDist', '--max-workers=2']],
-  dotnet: [['dotnet', 'build', 'src/LibTmux.Mcp/LibTmux.Mcp.csproj', '--configuration', 'Release', '-m:2']],
+  csharp: [['dotnet', 'build', 'src/LibTmux.Mcp/LibTmux.Mcp.csproj', '--configuration', 'Release', '-m:2']],
   cxx: [
     ['cmake', '--preset', 'cxx-dev', '-DLIBTMUX_BUILD_TESTS=OFF', '-DLIBTMUX_BUILD_EXAMPLES=OFF'],
     ['cmake', '--build', '--preset', 'cxx-dev', '--target', 'libtmux-mcp-server', '--parallel', '2'],
@@ -59,7 +59,7 @@ const selections = {
   java: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
   rs: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
   go: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
-  dotnet: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
+  csharp: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
   swift: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
   cxx: { LIBTMUX_TOOLSETS: 'inspect,manage,execute,teardown' },
 }

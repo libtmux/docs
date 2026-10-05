@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Attach and send keys
 description: Get a session handle, send a command to a pane, and capture output.
 sidebar:
@@ -163,9 +163,9 @@ mirrored into README.md by `go generate ./tmux`, and CI fails if the two drift
 `ExamplesRunTest`
 <!-- /port -->
 
-<!-- port:dotnet -->
+<!-- port:csharp -->
 <!-- port:root -->
-### .NET
+### C#
 <!-- /port -->
 
 **Source:** `examples/LibTmux.Examples/Snippets/OneShot.cs`

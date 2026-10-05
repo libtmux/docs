@@ -1,7 +1,7 @@
 ---
-title: .NET MCP examples
-description: List sessions through the .NET MCP server and inspect implementation examples.
-port: dotnet
+title: C# MCP examples
+description: List sessions through the C# MCP server and inspect implementation examples.
+port: csharp
 product: mcp
 sidebar:
   label: Examples

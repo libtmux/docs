@@ -1,7 +1,7 @@
 ---
-title: .NET MCP topics
+title: C# MCP topics
 description: Select toolsets, inspect the pinned endpoint, and observe bounded commands.
-port: dotnet
+port: csharp
 product: mcp
 sidebar:
   label: Topics

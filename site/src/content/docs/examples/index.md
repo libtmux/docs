@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, dotnet, cxx, swift]
+supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
 title: Examples
 description: Programs for sending input, capturing output, and building workspaces.
 sidebar:
@@ -37,7 +37,7 @@ them:
 <!-- /port --><!-- port:go -->| Go | `go generate ./tmux` (`internal/generate/docs`) | A `<!-- docs:name -->` region in `README.md` is rewritten from the matching `// docs:name` … `// docs:end` region in `examples/`; CI fails on drift |
 <!-- /port --><!-- port:rs -->| Rust | `#![doc = include_str!("../README.md")]` | The entire README is a doc comment, so `cargo test --doc` compiles and runs every fenced Rust block in it |
 <!-- /port --><!-- port:java -->| Java | `docs-tests` (`./gradlew :docs-tests:test`) | Every Java fence in READMEs and guides is compiled against the real artifacts, then run against real tmux via `libtmux-junit5` |
-<!-- /port --><!-- port:dotnet -->| .NET | `sync_snippets.py --check` + `ReadmeExampleTests` | A `<!-- snippet: Name -->` region is quoted from a tested `[Example]` method; every `csharp run` block is additionally compiled and executed |
+<!-- /port --><!-- port:csharp -->| C# | `sync_snippets.py --check` + `ReadmeExampleTests` | A `<!-- snippet: Name -->` region is quoted from a tested `[Example]` method; every `csharp run` block is additionally compiled and executed |
 <!-- /port --><!-- port:cxx -->| C++ | `tools/docs/check_readme.py` | Each ` ```cpp ` block in `README.md` must appear verbatim as a `#region` in `examples/05-readme.cpp`, which CTest builds and runs |
 <!-- /port --><!-- port:swift -->| Swift | `Scripts/check_examples.py` | Each ` ```swift ` block in `README.md` and product READMEs must appear in `Examples/Sources/`, which `swift test --package-path Examples` compiles through its public products |
 <!-- /port -->

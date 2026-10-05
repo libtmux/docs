@@ -26,7 +26,7 @@ tasks. Keep their example imports, prerequisites and behavior explicit.
 [Parser source](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/__init__.py).
 <!-- /port -->
 
-<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+<!-- port:ts,rs,go,java,csharp,cxx,swift -->
 The executable's parser owns its command names, arguments and options. Keep
 reference generation tied to those definitions.
 
@@ -44,7 +44,7 @@ Cobra owns the command tree. `--command-tree` exports JSON metadata; `--generate
 <!-- port:java -->
 picocli owns the command definitions. `--generate schema` exports metadata and `--generate bash` writes completion.
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 System.CommandLine owns the command definitions. `--generate reference` exports metadata; `--generate man` writes the manual.
 <!-- /port -->
 <!-- port:cxx -->
@@ -80,7 +80,7 @@ the test owns. Check failure cases as well as successful construction.
 <!-- port:java -->
 [CLI source](https://github.com/libtmux/libtmux-java/blob/3e5b20d22af3890ae5f7f52842e4b05d170a983f/libtmux-workspace-cli/README.md).
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 [CLI source](https://github.com/libtmux/libtmux-dotnet/blob/f77fe776ba67a04abb20ddbbc26cf4a000d63b74/src/LibTmux.Workspace.Cli/README.md).
 <!-- /port -->
 <!-- port:cxx -->

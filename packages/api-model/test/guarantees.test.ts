@@ -13,7 +13,7 @@ import type { ApiModel } from '../src/model.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const DATA = join(here, '../../../site/src/data/api')
-const PORTS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'] as const
+const PORTS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'] as const
 
 function load(port: string): ApiModel | undefined {
   const path = join(DATA, `${port}.json`)
@@ -155,8 +155,8 @@ describe('the resolver keeps its rate', () => {
     { port: 'go', text: 'window.Panes(ctx)' },
     { port: 'java', text: 'Server.newSession' },
     { port: 'java', text: 'pane.capture()' },
-    { port: 'dotnet', text: 'Server.CreateSessionAsync' },
-    { port: 'dotnet', text: 'pane.CaptureAsync()' },
+    { port: 'csharp', text: 'Server.CreateSessionAsync' },
+    { port: 'csharp', text: 'pane.CaptureAsync()' },
     { port: 'cxx', text: 'libtmux::Pane' },
     { port: 'cxx', text: 'pane.capture()' },
     { port: 'cxx', text: 'server.new_session()' },
@@ -309,13 +309,13 @@ describe('each language gets its own spelling of a cross-reference', () => {
   })
 
   it('C# see-cref, with the addressing prefix removed', () => {
-    expect(ref(tokenizeDoc('See <see cref="T:LibTmux.Server"/> for more.', 'dotnet'))).toEqual([
+    expect(ref(tokenizeDoc('See <see cref="T:LibTmux.Server"/> for more.', 'csharp'))).toEqual([
       'LibTmux.Server',
     ])
   })
 
   it('a C# keyword is a literal, not a member', () => {
-    const spans = tokenizeDoc('Or <see langword="null" /> for the default.', 'dotnet')
+    const spans = tokenizeDoc('Or <see langword="null" /> for the default.', 'csharp')
     expect(spans.filter((s) => s.kind === 'code').map((s) => (s as { text: string }).text)).toEqual([
       'null',
     ])
@@ -387,7 +387,7 @@ describe('doc comments give up their parameters', () => {
    */
   it.each([
     // Request options moved from constructor parameters to properties.
-    ['dotnet', 600],
+    ['csharp', 600],
     ['java', 40],
     ['py', 500],
   ])('%s documents at least %i parameters', (port, floor) => {
@@ -401,7 +401,7 @@ describe('doc comments give up their parameters', () => {
   })
 
   it('no C# doc XML survives into a rendered description', () => {
-    const model = load('dotnet')
+    const model = load('csharp')
     if (!model) return
     const leaked = model.symbols.filter((s) =>
       /<(summary|remarks|para|returns|example|list)\b/.test(
@@ -424,7 +424,7 @@ describe('every member has an owner that exists', () => {
    * not public API and is dropped; Swift's extension on `Sequence` is public
    * API on a foreign type and is re-parented to the top level.
    */
-  it.each(['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'dotnet', 'cxx', 'swift'])(
+  it.each(['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift'])(
     '%s has no member pointing at a missing owner',
     (port) => {
       const model = load(port)

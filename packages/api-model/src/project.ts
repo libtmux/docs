@@ -197,7 +197,7 @@ const LAYOUT: Record<
   // written across twelve files became twelve types. Both say a file is not
   // the unit of naming. C# is the easier of the two, because it states the
   // unit in line 1 of every file.
-  dotnet: { ext: 'cs', skip: /(^|\/)(obj|bin)\/|Tests?\.cs$/, moduleFrom: 'namespace' },
+  csharp: { ext: 'cs', skip: /(^|\/)(obj|bin)\/|Tests?\.cs$/, moduleFrom: 'namespace' },
 }
 
 /**

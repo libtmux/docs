@@ -1,7 +1,7 @@
 ---
-title: Connect a .NET MCP client
+title: Connect a C# MCP client
 description: Install the .NET tool, configure a socket and toolsets, and diagnose launcher environments.
-port: dotnet
+port: csharp
 product: mcp
 sidebar:
   label: Guides

@@ -66,17 +66,17 @@ it('leaves the preview mount to Markdown while selecting the parent API version'
     guides.guides.find((guide: { path: string }) => guide.path === 'docs/fsharp/supported-query-fields.md').content
       += '\n- Required depth: `Windows`\n'
     write(join(directory, 'site/src/data/port-guides/fsharp.json'), JSON.stringify(guides))
-    write(join(directory, 'site/src/data/api/dotnet.json'), JSON.stringify({ symbols: [{
+    write(join(directory, 'site/src/data/api/csharp.json'), JSON.stringify({ symbols: [{
       id: 'LibTmux.SnapshotDepth.Windows', parent: 'LibTmux.SnapshotDepth', kind: 'constant',
       product: 'core', slug: 'libtmux-snapshotdepth-windows',
     }] }))
     const run = invokeGenerator(directory, { ...process.env, LIBTMUX_DOCS_ROOT: '/pr-93/en/',
-      LIBTMUX_DOCS_PORT_ROOT: '/pr-93/en/', LIBTMUX_DOCS_PORT_DEFAULTS: '{"dotnet":"v0.0.0-alpha.18"}',
+      LIBTMUX_DOCS_PORT_ROOT: '/pr-93/en/', LIBTMUX_DOCS_PORT_DEFAULTS: '{"csharp":"v0.0.0-alpha.18"}',
     }, ['--wrappers'])
     expect(run.status, run.stderr).toBe(0)
     const guide = readFileSync(join(directory,
       'site/src/content/docs/_staged/fsharp/guides/supported-query-fields/index.md'), 'utf8')
-    expect(guide).toContain('[`Windows`](/dotnet/v0.0.0-alpha.18/reference/libtmux-snapshotdepth-windows/)')
+    expect(guide).toContain('[`Windows`](/csharp/v0.0.0-alpha.18/reference/libtmux-snapshotdepth-windows/)')
     expect(guide).not.toContain('/pr-93/')
   })
 })

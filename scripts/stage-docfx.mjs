@@ -186,7 +186,7 @@ const plural = { Interface: 'Interfaces', Class: 'Classes', Struct: 'Structs', E
 
 const out = []
 out.push('---')
-out.push('title: ".NET API reference"')
+out.push('title: "C# API reference"')
 out.push(
   'description: "Every public type in LibTmux, LibTmux.Query.Json, LibTmux.Workspace and LibTmux.Mcp, generated from the C# XML documentation comments."',
 )

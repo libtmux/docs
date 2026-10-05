@@ -84,7 +84,7 @@ Python-specific environment effects.
 [loader.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/workspace/loader.py); [finders.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/workspace/finders.py); [classic.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/workspace/builder/classic.py); [load.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/load.py); [shell.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/shell.py); [shell.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/cli/shell.py); [colors.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/_internal/colors.py); [util.py](https://github.com/tmux-python/tmuxp/blob/618b398acc05506d3c682906c36cdeb29dcfa1ff/src/tmuxp/util.py).
 <!-- /port -->
 
-<!-- port:ts,rs,go,java,dotnet,cxx,swift -->
+<!-- port:ts,rs,go,java,csharp,cxx,swift -->
 The CLI's process environment controls discovery and optional runtimes.
 Configuration `environment` maps provide variables to the workspace's shells.
 
@@ -115,7 +115,7 @@ from the loader process. Command and launch-shell text keep their expressions
 for the pane shell; referenced loader variables are supplied to that pane unless
 the document already sets them. Shell quoting therefore remains meaningful.
 <!-- /port -->
-<!-- port:ts,go,java,dotnet,cxx,swift -->
+<!-- port:ts,go,java,csharp,cxx,swift -->
 The loader expands defined variables in configuration values before delivery.
 An expression can therefore use the invoking process's value before the pane
 shell reads it. Use explicit configuration variables and inspect resulting
@@ -148,7 +148,7 @@ These are process settings, not workspace YAML keys. Read
 <!-- port:java -->
 [CLI source](https://github.com/libtmux/libtmux-java/blob/3e5b20d22af3890ae5f7f52842e4b05d170a983f/libtmux-workspace-cli/README.md).
 <!-- /port -->
-<!-- port:dotnet -->
+<!-- port:csharp -->
 [CLI source](https://github.com/libtmux/libtmux-dotnet/blob/f77fe776ba67a04abb20ddbbc26cf4a000d63b74/src/LibTmux.Workspace.Cli/README.md).
 <!-- /port -->
 <!-- port:cxx -->

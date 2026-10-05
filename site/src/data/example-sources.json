@@ -1,5 +1,5 @@
 {
-  "dotnet:examples/LibTmux.Examples/Snippets/OneShot.cs": {
+  "csharp:examples/LibTmux.Examples/Snippets/OneShot.cs": {
     "repository": "libtmux/libtmux-dotnet",
     "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
     "sha256": "a99b447bf8716408758af66c9ed70d931c85adf2e1703cc4a9ff5e43f914ee03",
