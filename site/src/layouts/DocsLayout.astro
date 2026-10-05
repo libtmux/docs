@@ -228,7 +228,7 @@ const breadcrumbs = requestedBreadcrumbs ?? (product && port ? [
     </aside>
 
     <main class="min-w-0 flex-1">
-      {(!port || pagePath) && <PageToolbar breadcrumbs={breadcrumbs} pagePorts={hasContext ? [] : pagePorts} port={port} editHref={editHref} editLabel={editLabel} />}
+      {(!port || pagePath) && !(bare && breadcrumbs.length === 0) && <PageToolbar breadcrumbs={breadcrumbs} pagePorts={hasContext ? [] : pagePorts} port={port} editHref={editHref} editLabel={editLabel} />}
       {bare ? <slot /> : (
       <article class="prose max-w-none dark:prose-invert">
         {productBrand ? (

@@ -3,39 +3,41 @@ import RegistryIcon from './icons/RegistryIcon.astro'
 import { portSourceUrl, type DocProduct, type Port } from '../lib/ports'
 
 interface Props {
-  port: Port
+  port?: Port
+  project?: { name: string; repo: string; homepage: string }
   product?: DocProduct
   version?: string
   revision?: string
   class?: string
 }
 
-const { port, product, version = 'latest', revision, class: className = '' } = Astro.props as Props
-const pkg = product ? port.packages?.find((entry) => entry.id === product) : undefined
+const { port, project, product, version = 'latest', revision, class: className = '' } = Astro.props as Props
+const pkg = product ? port?.packages?.find((entry) => entry.id === product) : undefined
 const source = pkg?.source
-const repo = source?.repo ?? port.repo
+const repo = project?.repo ?? source?.repo ?? port!.repo
 // An app in a separate repository has its own release history.
-const taggedVersion = /^v?\d/.test(version) && repo === port.repo
-  ? `${port.tagPrefix ?? ''}${version}` : undefined
+const taggedVersion = /^v?\d/.test(version) && repo === port?.repo
+  ? `${port?.tagPrefix ?? ''}${version}` : undefined
 const ref = version === 'latest' ? source?.ref : taggedVersion ?? revision ?? source?.ref
-const sourceUrl = product
+const sourceUrl = project ? `https://github.com/${repo}` : product
   ? source ? `https://github.com/${repo}/tree/${ref}/${source.path}` : `https://github.com/${repo}`
-  : portSourceUrl(port, version, revision)
+  : portSourceUrl(port!, version, revision)
 const registry = product
-  ? pkg?.registry && port.registry ? { ...port.registry, url: pkg.registry } : undefined
-  : port.registry
+  ? pkg?.registry && port?.registry ? { ...port.registry, url: pkg.registry } : undefined
+  : port?.registry
 
 // Go's registry and reference host are the same destination.
 const ecosystem =
-  !product && port.ecosystemHost && port.ecosystemHost.url !== registry?.url
+  !product && port?.ecosystemHost && port.ecosystemHost.url !== registry?.url
     ? port.ecosystemHost
     : undefined
 ---
 
-<nav class:list={['port-links', className]} aria-label={`${port.name} package and source`}>
+<nav class:list={['port-links', className]} aria-label={project ? `${project.name} website and source` : `${port!.name} package and source`}>
+  {project && <a class="port-link" href={project.homepage} rel="noopener"><span>Official website</span></a>}
   <a class="port-link" href={sourceUrl} title={source ? `${repo}/${source.path} (${ref})` : undefined} rel="noopener">
     <RegistryIcon icon="github" decorative />
-    <span>{product ? 'GitHub' : port.repo}</span>
+    <span>{product ? 'GitHub' : repo}</span>
   </a>
   {
     registry && (
