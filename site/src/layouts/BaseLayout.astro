@@ -172,12 +172,16 @@ const githubUrl = githubPort?.source && githubPort.repo === githubRepo
   ? portSourceUrl(githubPort, target.version,
       source.repo === githubRepo ? source.ref : process.env.LIBTMUX_DOCS_PORT === navPort ? process.env.LIBTMUX_DOCS_SOURCE_SHA : undefined)
   : `https://github.com/${githubRepo}/`
+const homeBrands = homeLauncher
+  ? Object.fromEntries(Object.values(PORT_BY_SLUG).map((port) => [port.slug, port.logoLanguage]))
+  : undefined
 
 ---
 
 <!doctype html>
 <html lang={locale} data-theme={brand.language} data-brand={brand.language} data-brand-variant={brand.variant} data-shell-base={buildBase}
-  data-home-ports={homeLauncher ? Object.keys(PORT_BY_SLUG).join(' ') : undefined}>
+  data-home-ports={homeLauncher ? Object.keys(PORT_BY_SLUG).join(' ') : undefined}
+  data-home-brands={homeBrands ? JSON.stringify(homeBrands) : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

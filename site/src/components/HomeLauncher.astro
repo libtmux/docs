@@ -76,6 +76,7 @@ const initial = entries[0].port
     const homepagePath = window.location.pathname
     const picker = root.querySelector<HTMLDetailsElement>('[data-page-port-switcher]')!
     const links = [...picker.querySelectorAll<HTMLAnchorElement>('a[data-port]')]
+    const brands: Record<string, string> = JSON.parse(document.documentElement.getAttribute('data-home-brands') || '{}')
     let selected: string | null = null
     let preview: ReturnType<typeof bindHomeHoverPreview>
     const animations = new Set<Animation>()
@@ -99,6 +100,10 @@ const initial = entries[0].port
       picker.querySelector('.page-port-short-name')!.textContent = chosen?.dataset.portName ?? 'Port'
       picker.querySelector('summary')!.setAttribute('aria-label', chosen ? `${name}: choose a programming language` : 'Choose a programming language')
       document.documentElement.setAttribute('data-pkg-port', port)
+      if (brands[port]) {
+        document.documentElement.setAttribute('data-brand', brands[port])
+        document.documentElement.setAttribute('data-theme', brands[port])
+      }
       if (chosen) document.documentElement.setAttribute('data-home-selected-port', port)
       else document.documentElement.removeAttribute('data-home-selected-port')
       // Widgets render the current task and package without saving a hover.
