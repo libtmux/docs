@@ -169,6 +169,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
   const ports = complete ? PORTS : PORTS.filter((port) => ['fsharp', 'ruby'].includes(port.slug))
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
   page.setDefaultTimeout(10000)
+  await observeInitialPageLoad(page)
   const desktopPicker = (reader) => reader.locator('[data-documentation-context] [data-surface-picker]')
   const group = (picker, label) => picker.locator('[data-surface-group]').filter({
     has: picker.page().locator('summary strong', { hasText: new RegExp(`^${label}$`) }),
@@ -183,6 +184,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
   }
   try {
     await page.goto(`${base}/`, { waitUntil: 'load' })
+    await page.waitForFunction(() => window.__docsPageLoaded)
     await checkNoticeAlignment(page, true)
     for (const port of ports) {
       const { slug, parentLibrary } = port
@@ -198,7 +200,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
       const core = group(picker, 'Core Library')
       const sections = await core.locator('.surface-options a').evaluateAll((links) =>
         links.map((link) => ({ label: link.textContent.trim().replace(/\s*✓$/, ''), href: link.getAttribute('href') })))
-      for (const label of ['Home', 'Guides', 'Concepts', 'Examples', 'Reference']) {
+      for (const label of ['Home', 'Guides', 'Concepts', 'Examples', 'API Reference']) {
         assert.equal(sections.filter((section) => section.label === label).length, 1,
           `${slug}: ${label} has one real destination`)
       }
@@ -312,7 +314,11 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
           if (width < 1024 && javaScriptEnabled) assert.equal(await reader.locator('#mobile-sidebar-toggle').getAttribute('aria-expanded'), 'false',
             'Changing sections closes the mobile drawer')
           if (javaScriptEnabled) {
-            if (width < 1024) await reader.locator('#mobile-sidebar-toggle').click()
+            if (width < 1024) {
+              const settings = reader.locator('[data-context-settings-toggle]')
+              if (await settings.isVisible()) await settings.click()
+              await reader.locator('#mobile-sidebar-toggle').click()
+            }
             const search = reader.locator('[data-section-search]:visible')
             await search.fill('troubleshoot')
             const links = reader.locator('.sidebar-nav:visible a:visible')
@@ -332,7 +338,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
           if (javaScriptEnabled) await picker.locator('[data-surface-search]').fill('')
           const core = group(picker, 'Core Library')
           if (!(await core.evaluate((element) => element.open))) await core.locator(':scope > summary').click()
-          await core.getByRole('link', { name: 'Reference', exact: true }).click()
+          await core.getByRole('link', { name: 'API Reference', exact: true }).click()
           await reader.waitForURL(`${base}/go/latest/reference/`)
           await checkNoticeAlignment(reader)
           await checkContextControls(reader)

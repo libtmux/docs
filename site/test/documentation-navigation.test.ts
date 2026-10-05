@@ -37,8 +37,8 @@ describe('documentation surface navigation', () => {
     const surfaces = await getDocumentationSurfaces(undefined, '3.2a')
     expect(surfaces[0].sections.map(({ label, href }) => ({ label, href }))).toEqual([
       { label: 'Current docs →', href: '/tmux/' },
-      { label: 'Manual', href: '/tmux/3.2a/manual/' },
-      { label: 'Reference', href: '/tmux/3.2a/reference/' },
+      { label: 'CLI Manual', href: '/tmux/3.2a/manual/' },
+      { label: 'C source reference', href: '/tmux/3.2a/reference/' },
     ])
     expect(currentDocumentation(surfaces, '/tmux/3.2a/manual/capture-pane/').section.id).toBe('manual')
   })
@@ -95,7 +95,7 @@ describe('documentation surface navigation', () => {
       ['tutorials', '/csharp/latest/tutorials/first-session/'],
       ['reference', '/csharp/latest/reference/'],
     ])
-    expect(core.sections[0].items.map((item) => item.label)).toEqual(['Overview', 'Guides', 'Tutorials', 'Reference'])
+    expect(core.sections[0].items.map((item) => item.label)).toEqual(['Overview', 'Guides', 'Tutorials', 'API Reference'])
   })
 
   it('separates CLI and protocol references from the language API', () => {

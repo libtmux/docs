@@ -11,7 +11,7 @@ interface Props {
   portSlug?: string
   label?: string
   tmux?: boolean
-  /** Language artwork belongs only to the homepage launcher's trigger. */
+  /** The homepage changes its selected artwork without navigating. */
   homeLanguageIcons?: boolean
   /** Reserve the widest label so changing the selection does not resize it. */
   reserveLabelWidth?: boolean
@@ -32,7 +32,9 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
 <details class="doc-picker" data-page-port-switcher data-doc-picker>
   <summary aria-label={label ?? `${name}: choose a language or tmux documentation`} data-reserve-label-width={reserveLabelWidth || undefined}>
     <span class:list={['page-port-icon', { 'home-language-icon': homeLanguageIcons }]} aria-hidden="true">
-      <svg data-home-default-icon={homeLanguageIcons || undefined} viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="m5 4-4 4 4 4m6-8 4 4-4 4M9.5 2l-3 12" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      {!homeLanguageIcons && portSlug && PORT_BY_SLUG[portSlug] ? <img
+        src={withRoot(`/brand/languages/${portSlug}/icon.svg`)}
+        width="24" height="24" alt="" /> : <svg data-home-default-icon={homeLanguageIcons || undefined} viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="m5 4-4 4 4 4m6-8 4 4-4 4M9.5 2l-3 12" stroke-linecap="round" stroke-linejoin="round" /></svg>}
       {homeLanguageIcons && entries.map((entry) => <img
         data-home-language-icon={entry.port}
         src={withRoot(`/brand/languages/${entry.port}/icon.svg`)}
@@ -93,6 +95,7 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
   .page-port-label-sizer { display: grid; visibility: hidden; height: 0; overflow: hidden; white-space: nowrap; pointer-events: none; }
   .page-port-label-sizer > span { grid-area: 1 / 1; }
   .page-port-icon { display: grid; place-items: center; flex: none; }
+  .page-port-icon > img { width: 1.5rem; height: 1.5rem; object-fit: contain; }
   .page-port-short-name { display: none; }
   .port-family + .port-family { margin-top: .65rem; }
   .port-family h3 { margin: .75rem .4rem .25rem; font-size: .6875rem; font-weight: 400; text-transform: uppercase; letter-spacing: .025em; color: var(--color-muted); }

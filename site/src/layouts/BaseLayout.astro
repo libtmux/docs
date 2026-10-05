@@ -276,11 +276,11 @@ const homeBrands = homeLauncher
         </SiteHeader>
       )
     }
-    {/* Under the header and inside the same `bare` guard: a page without the
+    <slot name="context" />
+    {/* Under the navigation bars and inside the same `bare` guard: a page without the
         top bar is an embedded or vendored one, and a notice about this site's
         stability has no business appearing there. */}
     {!bare && <PrereleaseNotice centered={!navPort && !pagePath} />}
-    <slot name="context" />
     <!-- `data-pagefind-body` scopes the index to the page's own content.
          Without it Pagefind indexed the header and footer on all 1,066
          pages, so every nav label outranked the prose that mentioned it
