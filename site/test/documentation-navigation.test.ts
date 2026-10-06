@@ -9,7 +9,7 @@ const menus = (port: typeof PORTS[number], version: string) => Object.fromEntrie
   const base = (path = '') => portPageUrl(port, version, [surface === 'core' ? '' : surface, path].filter(Boolean).join('/'))
   return [surface, [link('Overview', base()), link('Guides', base('guides')), link('Examples', base('examples')),
     link('API', base('reference')),
-    ...(surface === 'workspace' ? [link('CLI reference', base('cli')), link('Load', base('cli/load')),
+    ...(surface === 'workspace' ? [link('CLI Manual', base('cli')), link('Load', base('cli/load')),
       link('Installation', base('guides/installation')), link('Internal guides', base('internals/guides')),
       link('Exit codes', base('reference/exit-codes')), link('Output', base('reference/output'))] : []),
     ...(surface === 'mcp' ? [link('Tools', base('tools'))] : []),
@@ -57,6 +57,11 @@ describe('documentation surface navigation', () => {
       expect(selected.section.id).toBe('guides')
       expect(selected.section.items.every((item) => item.type !== 'link' || !item.href.includes('/internals/'))).toBe(true)
       expect(currentDocumentation(surfaces, `${surface.href}reference/example/`).section.id).toBe('reference')
+      if (surface.id === 'workspace') {
+        const manual = currentDocumentation(surfaces, `${surface.href}cli/load/`).section
+        expect(manual.label).toBe('CLI Manual')
+        expect(manual.href).toBe(`${surface.href}cli/`)
+      }
     }
   })
 
@@ -98,11 +103,14 @@ describe('documentation surface navigation', () => {
     const surfaces = buildDocumentationSurfaces('go', 'latest', menus(port, 'latest'))
     const workspace = currentDocumentation(surfaces, portPageUrl(port, 'latest', 'workspace/cli/load'))
     expect(workspace.surface.id).toBe('workspace')
-    expect(workspace.section.id).toBe('reference')
-    expect(workspace.section.items.map((item) => item.label)).toContain('CLI reference')
-    expect(workspace.section.items.map((item) => item.label)).toContain('Language API')
-    const contracts = workspace.section.items.find((item) => item.label === 'CLI contracts')!
-    expect(contracts.type === 'group' && contracts.items.map((item) => item.label)).toEqual(['Exit codes', 'Output'])
+    expect(workspace.section.id).toBe('manual')
+    expect(workspace.section.label).toBe('CLI Manual')
+    expect(workspace.section.href).toBe('/go/latest/workspace/cli/')
+    expect(workspace.section.items.map((item) => item.label)).toEqual(['CLI Manual', 'Load', 'Exit codes', 'Output'])
+    expect(currentDocumentation(surfaces, '/go/latest/workspace/reference/output/').section.id).toBe('manual')
+    const api = currentDocumentation(surfaces, '/go/latest/workspace/reference/')
+    expect(api.section.id).toBe('reference')
+    expect(api.section.items.map((item) => item.label)).toEqual(['Language API'])
     const mcp = currentDocumentation(surfaces, portPageUrl(port, 'latest', 'mcp/tools/list_sessions'))
     expect(mcp.surface.id).toBe('mcp')
     expect(mcp.section.items.map((item) => item.label)).toEqual(['Language API', 'Tools'])

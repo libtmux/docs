@@ -3,26 +3,52 @@ description: Use `tmux-workspace` to load, inspect and save workspace files.
 product: workspace
 sidebar:
   group: CLI reference
-  label: Workspace command reference
+  label: CLI Manual
   order: 21
 tableOfContents: true
-title: Workspace command reference
+title: tmux-workspace CLI manual
+ports:
+  py:
+    title: tmuxp CLI manual
+    description: Use tmuxp to load, inspect and save workspace configurations.
 ---
 
 <!-- port:py -->
 Use `tmuxp` to load, inspect and save workspace configurations. [Install
 tmuxp](../guides/installation/) separately from the core `libtmux` package.
 
-## Choose a task
+## Sessions
 
-- [Load](./load/) builds a session from files or saved workspace names.
-- [Freeze](./freeze/) exports a running session.
-- [Convert](./convert/) changes YAML and JSON representation.
-- [Edit](./edit/) opens a workspace in an editor.
-- [List](./ls/) and [search](./search/) find saved configurations.
-- [Diagnostics](./debug-info/) reports runtime and tmux information.
-- [Shell](./shell/) evaluates Python with tmux context.
-- [Import](./import/) translates Teamocil or tmuxinator configuration.
+<dl class="cli-command-list">
+  <dt><a href="./load/"><code>load</code></a></dt>
+  <dd>Build a session from files or saved workspace names.</dd>
+  <dt><a href="./freeze/"><code>freeze</code></a></dt>
+  <dd>Export a running session to a workspace configuration.</dd>
+</dl>
+
+## Workspace files
+
+<dl class="cli-command-list">
+  <dt><a href="./ls/"><code>ls</code></a></dt>
+  <dd>List saved configurations.</dd>
+  <dt><a href="./search/"><code>search</code></a></dt>
+  <dd>Find configurations by name or content.</dd>
+  <dt><a href="./edit/"><code>edit</code></a></dt>
+  <dd>Open a workspace in an editor.</dd>
+  <dt><a href="./convert/"><code>convert</code></a></dt>
+  <dd>Change a workspace between YAML and JSON representation.</dd>
+  <dt><a href="./import/"><code>import</code></a></dt>
+  <dd>Translate Teamocil or tmuxinator configuration.</dd>
+</dl>
+
+## Diagnostics and shell
+
+<dl class="cli-command-list">
+  <dt><a href="./debug-info/"><code>debug-info</code></a></dt>
+  <dd>Report runtime and tmux information.</dd>
+  <dt><a href="./shell/"><code>shell</code></a></dt>
+  <dd>Evaluate Python with tmux context.</dd>
+</dl>
 
 ## Command options
 
@@ -51,16 +77,40 @@ Use `tmux-workspace` to load, inspect and save workspace files. Complete
 [installation](../guides/installation/) and put the executable on `PATH` before
 using these commands.
 
-## Choose a task
+## Sessions
 
-- [Load](./load/) creates a session from a workspace file.
-- [Freeze](./freeze/) captures a running session into a document.
-- [List](./ls/) and [search](./search/) find saved configurations.
-- [Edit](./edit/) opens a configuration in your editor.
-- [Convert](./convert/) changes a document between YAML and JSON.
-- [Import](./import/) translates Teamocil or tmuxinator configuration.
-- [Diagnostics](./debug-info/) reports runtime and tmux information.
-- [Completion](./completion/) configures your shell.
+<dl class="cli-command-list">
+  <dt><a href="./load/"><code>load</code></a></dt>
+  <dd>Create a session from a workspace file.</dd>
+  <dt><a href="./freeze/"><code>freeze</code></a></dt>
+  <dd>Capture a running session into a workspace document.</dd>
+</dl>
+
+## Workspace files
+
+<dl class="cli-command-list">
+  <dt><a href="./ls/"><code>ls</code></a></dt>
+  <dd>List saved configurations.</dd>
+  <dt><a href="./search/"><code>search</code></a></dt>
+  <dd>Find saved configurations.</dd>
+  <dt><a href="./edit/"><code>edit</code></a></dt>
+  <dd>Open a configuration in your editor.</dd>
+  <dt><a href="./convert/"><code>convert</code></a></dt>
+  <dd>Change a document between YAML and JSON.</dd>
+  <dt><a href="./import/"><code>import</code></a></dt>
+  <dd>Translate Teamocil or tmuxinator configuration.</dd>
+</dl>
+
+## Diagnostics and completion
+
+<dl class="cli-command-list">
+  <dt><a href="./debug-info/"><code>debug-info</code></a></dt>
+  <dd>Report runtime and tmux information.</dd>
+  <dt><a href="./completion/"><code>completion</code></a></dt>
+  <dd>Generate completion for your shell.</dd>
+</dl>
+
+## Command options
 
 Show the options accepted by the installed command:
 

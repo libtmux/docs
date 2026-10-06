@@ -35,6 +35,7 @@ interface DocsManifest {
 }
 
 const products = ['mcp', 'workspace'] as const
+const primaryPorts = PORTS.filter((port) => !port.parentLibrary)
 const read = (path: string) => readFileSync(sitePath(path), 'utf8')
 const manifest = (): Manifest => JSON.parse(read('versions.json'))
 const urlFor = (path: string) => new URL(`/${SITE_PREFIX}${path}`, 'https://libtmux.org')
@@ -73,7 +74,7 @@ function sectionsFor(port: string, product: ProductPage['product']): string[] {
 
 function pages(): ProductPage[] {
   const versions = manifest()
-  return PORTS.filter((port) => !port.parentLibrary).flatMap((port) => {
+  return primaryPorts.flatMap((port) => {
     const supported = versions.ports[port.slug]?.filter((entry) => entry.supported) ?? []
     expect(supported.length, `${port.slug} has assembled supported versions`).toBeGreaterThan(0)
     return supported.flatMap(({ slug: version }) => products.flatMap((product) =>
@@ -455,9 +456,9 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     }
   })
 
-  it('switches to equivalent sections and the tmux documentation', async () => {
+  it.each(primaryPorts.map((port) => port.slug))('switches to equivalent sections and the tmux documentation for %s', async (slug) => {
     const defaults = manifest().defaultVersion
-    for (const page of pages()) await inspect(page.path, (document) => {
+    for (const page of pages().filter((entry) => entry.port === slug)) await inspect(page.path, (document) => {
       const links = [...document.querySelectorAll('[data-page-port-switcher] a[data-port][href]')]
       const tmux = document.querySelector('[data-page-port-switcher] .tmux-area a[href]')
       expect(tmux?.getAttribute('href'), `${page.path} tmux destination`).toBe(urlFor('tmux/').pathname)
@@ -482,8 +483,8 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     })
   })
 
-  it('matches visible breadcrumbs to structured data', async () => {
-    for (const page of pages()) await inspect(page.path, (document) => {
+  it.each(primaryPorts.map((port) => port.slug))('matches visible breadcrumbs to structured data for %s', async (slug) => {
+    for (const page of pages().filter((entry) => entry.port === slug)) await inspect(page.path, (document) => {
       const crumb = document.querySelector('nav[aria-label="Breadcrumb"]')!
       expect(crumb, page.path).not.toBeNull()
       const labels = [...crumb.querySelectorAll('a, [aria-current="page"]')].map((item) => item.textContent.trim())

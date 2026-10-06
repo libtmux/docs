@@ -106,7 +106,7 @@ const manualHtml = command || isManual
     <p>Start with the <a href={`${tmuxManualUrl(version, 'full')}#DESCRIPTION`}>global options</a>, <a href={`${tmuxManualUrl(version, 'full')}#COMMANDS`}>target syntax</a>, or <a href={`${tmuxManualUrl(version, 'full')}#FORMATS`}>formats</a>. The <a href={tmuxManualUrl(version, 'full')}>full manual</a> also covers options, hooks and key bindings.</p>
     {sections.map((section) => <section>
       <SectionHeading id={section.toLowerCase().replaceAll(' ', '-')}>{sectionTitle(section)}</SectionHeading>
-      <dl class="tmux-command-list">{reference.commands.filter((entry) => entry.section === section).map((entry) => <>
+      <dl class="cli-command-list">{reference.commands.filter((entry) => entry.section === section).map((entry) => <>
         <dt><a href={tmuxManualUrl(version, entry.name)}><code>{entry.name}</code></a></dt>
         <dd>{entry.summary}</dd>
       </>)}</dl>
@@ -123,8 +123,6 @@ const manualHtml = command || isManual
 
 <style>
   .tmux-syntax, .tmux-license { white-space: pre-wrap; overflow-wrap: anywhere; }
-  .tmux-command-list dt { margin-top: 1rem; }
-  .tmux-command-list dd { margin-left: 0; }
   .tmux-example-label { margin-bottom: .5rem; font-weight: 600; }
   .tmux-option-list { margin-block: .5rem 1.5rem; }
   .tmux-option-list > div { display: grid; grid-template-columns: 6rem minmax(0, 1fr); gap: 1rem; padding-block: .625rem; border-bottom: 1px solid var(--color-edge); }
