@@ -221,7 +221,8 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
       await page.goto(`${base}/${slug}/latest/guides/`, { waitUntil: 'load' })
       assert.equal((await page.locator('main h1').textContent()).trim(), 'Guides')
       const nav = page.locator('.sidebar-nav:visible')
-      const guideLinks = nav.locator('a').filter({ hasNotText: /^\s*Guides\s*$/ })
+      assert.equal(await nav.getByRole('link', { name: 'Overview', exact: true }).getAttribute('href'), `${new URL(base).pathname}/${slug}/latest/guides/`)
+      const guideLinks = nav.locator('a').filter({ hasNotText: /^\s*Overview\s*$/ })
       assert.deepEqual((await guideLinks.allTextContents()).slice(0, 2).map((label) => label.trim()),
         ['Getting started', 'Attaching to tmux'], `${slug}: setup leads the guides`)
       assert.equal(await nav.locator('a[href*="api-overview"]').count(), 0, `${slug}: no duplicate API guide`)

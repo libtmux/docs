@@ -47,7 +47,7 @@ const pageItems: SidebarItem[] = navigation ?? (selected ? selected.section.item
       item.type === 'group' ? (
         <SidebarSection label={item.label} href={item.href} items={item.items} currentPath={currentPath} />
       ) : (
-        <SidebarLink href={item.href} label={item.label} external={item.external} kind={item.kind} isActive={isActivePath(item.href, currentPath)} />
+        <SidebarLink href={item.href} label={item.href === selected?.section.href && item.label === selected.section.label ? 'Overview' : item.label} external={item.external} kind={item.kind} isActive={isActivePath(item.href, currentPath)} />
       ),
     )
   }

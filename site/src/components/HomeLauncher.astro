@@ -15,8 +15,8 @@ const initial = entries[0].port
 ---
 
 <nav class="home-launcher" aria-label="Choose language and solution" data-home-launcher data-default-port={initial}>
-  <div class="clearable-picker home-language-control">
-    <PagePortSwitcher entries={entries} portSlug={initial} label="Choose a programming language" homeLanguageIcons>
+  <div class="clearable-picker home-language-control" data-clear-replaces-caret>
+    <PagePortSwitcher entries={entries} portSlug={initial} label="Choose a programming language" homeLanguageIcons reserveLabelWidth>
       <button slot="title-actions" class="home-launcher-reset" type="button" data-home-reset hidden aria-label="Reset language selection">Reset</button>
     </PagePortSwitcher>
     <button class="picker-clear" type="button" data-home-reset hidden aria-label="Clear language selection" title="Clear language selection">
@@ -34,6 +34,7 @@ const initial = entries[0].port
   .home-launcher { --home-launcher-icon-size: 1.5rem; display: flex; align-items: center; gap: .5rem; min-width: 0; }
   .home-launcher [hidden] { display: none !important; }
   .home-launcher-next { color: var(--color-muted); font-size: .8125rem; }
+  .home-language-control { --picker-trigger-padding-inline: .55rem; }
   .home-launcher-solution { flex: none; }
   .home-launcher :global(.page-port-name),
   .home-launcher :global(.page-port-short-name) { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
@@ -47,6 +48,7 @@ const initial = entries[0].port
   @media (max-width: 46rem) {
     .home-launcher :global(.doc-picker:not([data-enhanced]) > .doc-picker-panel) { position: fixed; top: auto; left: .5rem; width: min(var(--picker-width), calc(100% - 1rem)); }
     .home-launcher :global(.page-port-name),
+    .home-launcher :global(.page-port-sizer-default),
     .home-launcher :global(.home-solution-name-full) { display: none; }
     .home-launcher :global(.page-port-short-name),
     .home-launcher :global(.home-solution-name-short) { display: inline; }
@@ -56,6 +58,7 @@ const initial = entries[0].port
     .home-launcher { order: 5; flex-basis: 100%; padding-block: .25rem; }
   }
   @media (max-width: 24rem) {
+    .home-language-control { --picker-trigger-padding-inline: .35rem; }
     .home-launcher { gap: .3rem; }
     .home-launcher :global([data-page-port-switcher] > summary),
     .home-launcher :global(.surface-picker > summary) { gap: .3rem; padding-inline: .35rem; }
@@ -95,7 +98,7 @@ const initial = entries[0].port
           animation.onfinish = () => animations.delete(animation)
         }
       }
-      const name = chosen?.dataset.portName ?? 'Choose a language'
+      const name = chosen?.dataset.portName ?? 'Language'
       picker.querySelector('.page-port-name')!.textContent = name
       picker.querySelector('.page-port-short-name')!.textContent = chosen?.dataset.portName ?? 'Port'
       picker.querySelector('summary')!.setAttribute('aria-label', chosen ? `${name}: choose a programming language` : 'Choose a programming language')
@@ -128,7 +131,7 @@ const initial = entries[0].port
         check.textContent = '✓'
         chosen.append(check)
       }
-      const name = chosen?.dataset.portName ?? 'Choose a language'
+      const name = chosen?.dataset.portName ?? 'Language'
       picker.open = false
       try {
         if (chosen) localStorage.setItem(storageKey, port)

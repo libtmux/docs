@@ -15,7 +15,8 @@ export async function checkDevSample(browser, base) {
       const response = await page.goto(`${base}/${path}`)
       assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
       await page.locator('[data-scheme-cycle]:not([hidden])').waitFor({ state: 'attached' })
-      await page.evaluate(() => document.fonts.ready)
+      // Vite's first dependency reload may replace the document while fonts load.
+      await page.waitForFunction(() => document.fonts.status === 'loaded')
       assert.equal(await page.locator('main h1').count(), 1, `${path}: one main heading`)
       for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 })

@@ -19,14 +19,24 @@ export async function checkHomeLanguageIcon(page, port = null) {
       .find((node) => node.checkVisibility()).getBoundingClientRect()
     const button = element.getBoundingClientRect()
     const clear = element.closest('.clearable-picker').querySelector('.picker-clear')
-    const caret = element.querySelector('.doc-picker-caret').getBoundingClientRect()
+    const caretElement = element.querySelector('.doc-picker-caret')
+    const caret = caretElement.getBoundingClientRect()
+    const clearBox = clear.getBoundingClientRect()
+    const sizer = element.querySelector('.page-port-label-sizer')
     return { height: button.height, iconHeight: icon.height, iconRight: icon.right, labelLeft: label.left,
-      clearFits: clear.hidden || (label.right < clear.getBoundingClientRect().left && clear.getBoundingClientRect().right <= caret.left),
+      clearFits: clear.hidden || (label.right < clearBox.left && clearBox.right <= button.right
+        && Math.abs(clearBox.x + clearBox.width / 2 - caret.x - caret.width / 2) < 1),
+      caretVisible: getComputedStyle(caretElement).visibility !== 'hidden',
+      sizerHidden: getComputedStyle(sizer).visibility === 'hidden' && sizer.getBoundingClientRect().height === 0,
       centerOffset: Math.abs(icon.y + icon.height / 2 - (button.y + button.height / 2)) }
   })
   assert.equal(geometry.height, 36, `The trigger keeps the same height for every language: ${JSON.stringify(geometry)}`)
   assert.equal(geometry.iconHeight, 24, 'Every language uses the same icon box')
-  assert(geometry.clearFits, 'Clear sits between the language label and chevron without covering either')
+  assert(geometry.clearFits, 'Clear occupies the chevron slot without covering the language label')
+  assert.equal(geometry.caretVisible, !port, 'The clear button replaces the chevron only for an explicit language')
+  assert(geometry.sizerHidden, 'Width measurement never exposes extra language labels')
+  assert.equal((await trigger.innerText()).trim(), port ? PORTS.find((entry) => entry.slug === port).name
+    : page.viewportSize().width <= 736 ? 'Port' : 'Language', 'The trigger shows only its current label')
   const solution = await page.locator('[data-home-launcher] .home-launcher-solution:not([hidden]) .surface-picker > summary').boundingBox()
   const solutionIcon = await page.locator('[data-home-launcher] .home-launcher-solution:not([hidden]) .surface-picker > summary > .surface-artwork').boundingBox()
   assert.equal(solution.height, geometry.height, 'The two launcher buttons have equal heights')
@@ -102,18 +112,19 @@ export async function checkHomeLauncher(browser, base) {
   const solution = page.locator('.home-launcher-solution:not([hidden])')
   const prompt = page.locator('.lm-agent-prompt')
   const reset = page.locator('[data-home-launcher] .picker-clear[data-home-reset]')
-  const logo = page.locator('.site-header__mark img:visible')
+  const logo = page.locator('.site-header__mark img')
   const choose = async (port) => {
-    await language.locator('summary .doc-picker-caret').click()
+    const previousWidth = (await language.locator('summary').boundingBox()).width
+    await language.locator('summary').click()
     await language.locator(`a[data-port="${port}"]`).click()
     await page.waitForFunction((port) => document.querySelector('.lm-agent-prompt')?.dataset.activePort === port, port)
     assert(await page.locator(`.home-examples [data-home-language="${port}"]`).isVisible())
     assert.equal(await solution.getAttribute('data-home-language'), port)
     assert.equal(new URL(page.url()).searchParams.get('port'), port, 'The address carries the chosen language')
     assert(await reset.isVisible(), 'A chosen language can be reset')
-    assert.equal(await logo.getAttribute('src'), await language.locator(`a[data-port="${port}"] img`).getAttribute('src'), 'The header logo follows the selected language')
-    assert(await logo.evaluate((img) => img.complete && img.naturalWidth > 0), 'The selected logo is already loaded')
+    assert.equal(await logo.count(), 0, 'The top header keeps only the wordmark')
     await checkHomeLanguageIcon(page, port)
+    assert.equal((await language.locator('summary').boundingBox()).width, previousWidth, 'Changing language leaves the adjacent solution selector in place')
     const cards = await page.locator(`.home-intro [data-home-language="${port}"] .home-solutions > a`).evaluateAll((links) => links.map((link) => ({
       display: getComputedStyle(link).display,
       border: getComputedStyle(link).borderTopWidth,
@@ -134,7 +145,7 @@ export async function checkHomeLauncher(browser, base) {
       await checkHomeResponsiveLayout(page, width)
     }
     await page.setViewportSize({ width: 1280, height: 777 })
-    const defaultLogo = await logo.getAttribute('src')
+    assert.equal(await logo.count(), 0, 'The top header has no duplicate artwork')
     for (const { slug } of PORTS) {
       await choose(slug)
       const links = await solution.locator('a').evaluateAll((links) => links.map((link) => link.getAttribute('href')))
@@ -170,7 +181,7 @@ export async function checkHomeLauncher(browser, base) {
     await page.reload()
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'go')
     assert.equal(await prompt.locator('[data-select="topic"]').inputValue(), rerolled, 'Reload restores the language and task')
-    await language.locator('summary .doc-picker-caret').click()
+    await language.locator('summary').click()
     const resetGap = await language.locator('.doc-picker-title-actions').evaluate((actions) => {
       const button = actions.querySelector('button').getBoundingClientRect()
       const count = actions.querySelector('.doc-picker-count').getBoundingClientRect()
@@ -184,12 +195,12 @@ export async function checkHomeLauncher(browser, base) {
     assert.equal(new URL(page.url()).hash, '#example')
     assert.equal(await page.evaluate(() => localStorage.getItem('libtmux-docs.package-install.port')), null)
     assert.equal(await reset.isVisible(), false)
-    assert.equal(await logo.getAttribute('src'), defaultLogo, 'Reset restores the default header logo')
+    assert.equal(await logo.count(), 0, 'Reset keeps the wordmark without duplicate artwork')
     await checkHomeLanguageIcon(page)
     assert.equal(await language.locator('[aria-current]').count(), 0, 'Reset leaves no selected language')
     assert(await language.locator('summary').evaluate((element) => document.activeElement === element), 'Reset keeps focus on the language picker')
     await page.reload()
-    await page.waitForFunction(() => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Choose a language')
+    await page.waitForFunction(() => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Language')
     assert.equal(await reset.isVisible(), false, 'The cleared choice stays cleared on reload')
     await checkHomeLanguageIcon(page)
     assert.equal(await prompt.getAttribute('data-active-port'), PORTS[0].slug)
@@ -197,7 +208,7 @@ export async function checkHomeLauncher(browser, base) {
     await reset.click()
     assert.equal(new URL(page.url()).searchParams.has('port'), false, 'The header reset also removes the port parameter')
     await page.goto(`${base}/?port=constructor&prompt=setup`)
-    await page.waitForFunction(() => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Choose a language')
+    await page.waitForFunction(() => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Language')
     assert.equal(new URL(page.url()).searchParams.has('port'), false, 'Unknown languages do not become a selection')
     await page.goto(`${base}/?port=fsharp&prompt=setup#first`)
     await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'fsharp')
@@ -353,7 +364,7 @@ export async function checkHomeLauncher(browser, base) {
     await checkHomeLanguageIcon(page)
     assert.equal(new URL(page.url()).searchParams.has('port'), false)
     await page.reload()
-    await page.waitForFunction(() => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Choose a language')
+    await page.waitForFunction(() => document.querySelector('[data-home-launcher] .page-port-name')?.textContent === 'Language')
     assert.deepEqual(errors, [], 'Shared links and reset work without storage')
   } finally {
     await blockedStorage.close()

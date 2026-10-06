@@ -1149,17 +1149,6 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   .site-header__bar { gap: .35rem; }
 }
 
-@media (max-width: 19rem) {
-  .site-header__wordmark {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-}
-
 /* A landscape phone has ~320px of height and the sticky bar is charged
    against every one of them. */
 @media (max-height: 30rem) {
