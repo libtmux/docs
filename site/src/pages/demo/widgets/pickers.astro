@@ -9,15 +9,15 @@ const versions = ['latest', ...Array.from({ length: 40 }, (_, index) => `v1.${39
   <h1 class="text-3xl font-semibold tracking-tight">Documentation pickers</h1>
   <p class="mt-2 text-muted">Open a menu, type a query, and use the arrow keys to choose a result. Escape closes the menu and returns focus to its button. Try a narrow or short window to check scrolling.</p>
 
-  <section class="mt-8 rounded-lg border border-edge p-4" data-demo-versions>
+  <section id="demo-versions" class="mt-8 rounded-lg border border-edge p-4" data-demo-versions>
     <h2 class="text-xl font-semibold">Long version list</h2>
     <p class="my-3 text-sm text-muted">These sample versions stay on this page. Search for <code>1.12</code> or a version that does not exist, then clear the search to restore the list.</p>
     <div class="inline-block">
-      <VersionSwitcher version="latest" label="Demo documentation version" entries={versions.map((version) => ({ label: version, href: `#version-${version}`, current: version === 'latest' }))} />
+      <VersionSwitcher version="latest" label="Demo documentation version" entries={versions.map((version) => ({ label: version, href: '#demo-versions', current: version === 'latest' }))} />
     </div>
   </section>
 
-  <section class="mt-8 rounded-lg border border-edge p-4" data-demo-locales>
+  <section id="demo-locales" class="mt-8 rounded-lg border border-edge p-4" data-demo-locales>
     <h2 class="text-xl font-semibold">Documentation languages</h2>
     <p class="my-3 text-sm text-muted">The menu begins with the supported locales. Add sample entries to exercise a long list; these entries do not represent available translations.</p>
     <div class="flex flex-wrap items-center gap-3">
@@ -60,7 +60,7 @@ const versions = ['latest', ...Array.from({ length: 40 }, (_, index) => `v1.${39
           label.textContent = name
           label.classList.remove('font-semibold')
           link.dataset.match = name
-          link.href = `#sample-language-${index}`
+          link.href = '#demo-locales'
           list.insertBefore(row, list.lastElementChild)
         }
       }

@@ -53,6 +53,8 @@ async function exercise(page, selector, query, count) {
   assert(await search.evaluate((node) => node === document.activeElement), 'Reopening focuses search')
   assert.equal(await page.evaluate(() => scrollY), documentScroll, 'Reopening preserves document scroll')
   await page.keyboard.press('Escape')
+  assert(await picker.locator('a[href^="#"]').evaluateAll((links) => links.every((link) =>
+    document.getElementById(decodeURIComponent(link.hash.slice(1))))), 'Every sample link has an existing destination')
 }
 
 /** Real widgets, dense lists, and delayed manifest updates share filtering. */
@@ -116,7 +118,8 @@ export async function checkPickerFilters(browser, base, complete = false) {
     const panel = picker.locator('[data-picker-panel]')
     assert(await panel.evaluate((node) => node.scrollHeight > node.clientHeight && getComputedStyle(node).overflowY === 'auto'))
     await picker.locator('a').last().click()
-    assert.equal(new URL(page.url()).hash, '#version-v1.0.0', 'No-JavaScript version links remain usable')
+    assert.equal(new URL(page.url()).hash, '#demo-versions', 'No-JavaScript version links remain usable')
+    assert.equal(await page.locator(new URL(page.url()).hash).count(), 1, 'The sample destination exists')
   } finally { await noScript.close() }
   console.log('Picker filters: both themes, 280–853px, short viewports, wheel/keyboard scrolling, reopening, delayed versions, and no JavaScript PASS')
 }
