@@ -22,7 +22,7 @@ const versions = ['latest', ...Array.from({ length: 40 }, (_, index) => `v1.${39
     <p class="my-3 text-sm text-muted">The menu begins with the supported locales. Add sample entries to exercise a long list; these entries do not represent available translations.</p>
     <div class="flex flex-wrap items-center gap-3">
       <LocaleSwitcher locale="en" sourcePath="demo/widgets/pickers" localeStatuses={{ en: 'translated', ja: 'translated' }} />
-      <button type="button" class="rounded border border-edge px-3 py-2 text-sm hover:bg-surface-hover" data-demo-add-locales hidden aria-pressed="false">Add sample languages</button>
+      <button type="button" class="cursor-pointer rounded border border-edge px-3 py-2 text-sm hover:bg-surface-hover" data-demo-add-locales hidden aria-pressed="false">Add sample languages</button>
     </div>
   </section>
 
