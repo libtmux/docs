@@ -361,6 +361,13 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(nav.getAttribute('aria-label'), page.path).toBe(`${surface}: ${sectionLabel}`)
         const links = [...nav.querySelectorAll('a[href]')]
         expect(links.length, `${page.path} current section pages`).toBeGreaterThan(0)
+        const sourceGuidePath = port.slug === 'ruby' && section === 'guides'
+          ? urlFor(`${page.port}/${page.version}/${page.product}/source-guide/`).pathname : undefined
+        if (sourceGuidePath) {
+          const guides = links.filter((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === sourceGuidePath)
+          expect(guides, `${page.path} native guide`).toHaveLength(1)
+          expect(guides[0].textContent.trim()).toBe(page.product === 'mcp' ? 'MCP server guide' : 'Workspace guide')
+        }
         for (const link of links) {
           const href = link.getAttribute('href')!
           const path = new URL(href, urlFor(page.path)).pathname
@@ -369,7 +376,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
             expect(path.startsWith(prefix), `${page.path} reference stays in its app`).toBe(true)
             expect(['reference', page.product === 'mcp' ? 'tools' : 'cli'], `${page.path} reference kinds`)
               .toContain(path.slice(prefix.length).split('/')[0])
-          } else expect(path, `${page.path} scoped sidebar`).toContain(urlFor(sectionPath).pathname)
+          } else if (path !== sourceGuidePath) expect(path, `${page.path} scoped sidebar`).toContain(urlFor(sectionPath).pathname)
           expect(resolves(href, urlFor(page.path).href), `${page.path} sidebar destination ${href}`).toBe(true)
         }
         if (page.product === 'mcp' && page.section === 'reference' && productAvailable(port, 'mcp')) {

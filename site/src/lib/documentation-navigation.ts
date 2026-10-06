@@ -55,6 +55,7 @@ export function buildDocumentationSurfaces(
       const relative = route === domain.route ? '' : route?.startsWith(prefix) ? route.slice(prefix.length) : undefined
       let key = relative?.split('/')[0] || 'home'
       if (key === 'third-party-notices') continue
+      if (key === 'source-guide') key = 'guides'
       if (id === 'workspace' && (key === 'cli' || /^reference\/(?:exit-codes|output)$/.test(relative ?? ''))) key = 'manual'
       else if (link.external || key === 'cli' || key === 'tools' || key === 'api') key = 'reference'
       const section = sections.get(key) ?? { id: key, label: labels[key] ?? link.label, items: [] }
@@ -139,7 +140,8 @@ export function currentDocumentation(surfaces: DocumentationSurface[], currentPa
   const surface = surfaces.filter((entry) => currentPath.startsWith(entry.href))
     .sort((a, b) => b.href.length - a.href.length)[0] ?? surfaces[0]
   const path = currentPath.slice(surface.href.length).split('/')[0] || 'home'
-  const key = path === 'cli' && surface.id === 'workspace' ? 'manual'
+  const key = path === 'source-guide' ? 'guides'
+    : path === 'cli' && surface.id === 'workspace' ? 'manual'
     : path === 'cli' || path === 'tools' || path === 'api' ? 'reference' : path
   const section = surface.sections.filter((entry) => entry.id !== 'home').flatMap((entry) =>
     [entry.href, ...linksOf(entry.items).map((item) => item.href)]

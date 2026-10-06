@@ -51,4 +51,4 @@ Creation accepts command argument arrays. Sending text and sending named keys
 are separate variants. A dispatch receipt does not claim that the pane program
 completed.
 
-[Source-owned MCP guide](../source-guide/)
+[MCP server guide](../source-guide/)

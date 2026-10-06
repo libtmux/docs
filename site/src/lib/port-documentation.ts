@@ -155,8 +155,14 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
         title: 'Async', description: 'Run concurrent commands within an owned Async scope.',
         package: 'async', sidebar: { group: 'Companion packages' },
       }),
-      guide('gems/libtmux-mcp/README.md', 'mcp/source-guide', 'mcp', { package: 'mcp', product: 'mcp', aliases: [] }),
-      guide('gems/libtmux-workspace/README.md', 'workspace/source-guide', 'workspace', { package: 'workspace', product: 'workspace', aliases: [] }),
+      guide('gems/libtmux-mcp/README.md', 'mcp/source-guide', 'mcp', {
+        title: 'MCP server guide', sidebar: { group: 'Guides', order: 3 },
+        package: 'mcp', product: 'mcp', aliases: [],
+      }),
+      guide('gems/libtmux-workspace/README.md', 'workspace/source-guide', 'workspace', {
+        title: 'Workspace guide', sidebar: { group: 'Guides', order: 3 },
+        package: 'workspace', product: 'workspace', aliases: [],
+      }),
     ],
   },
   lua: {
