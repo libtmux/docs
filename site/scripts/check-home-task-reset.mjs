@@ -1,5 +1,63 @@
 import assert from 'node:assert/strict'
 
+async function checkTaskFirstPaint(browser, base) {
+  const versions = { schema: 1, ports: { ts: [
+    { slug: 'latest', label: 'latest', kind: 'trunk', supported: true },
+    { slug: 'next', label: 'next', kind: 'alias', supported: true },
+    { slug: 'v0.1.0-alpha.12', label: 'v0.1.0-alpha.12', kind: 'prerelease', supported: true },
+  ] } }
+  for (const width of [853, 390, 280]) {
+    const context = await browser.newContext({ viewport: { width, height: 789 }, reducedMotion: 'reduce' })
+    let releaseWidget
+    const widgetReady = new Promise((resolve) => { releaseWidget = resolve })
+    try {
+      await context.route('**/astro/runtime/client/dev-toolbar/entrypoint.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'export {}' }))
+      await context.route('**/*AgentPrompt*', async (route) => {
+        if (route.request().resourceType() === 'script') await widgetReady
+        await route.continue()
+      })
+      await context.route('**/versions.json', (route) => route.fulfill({ json: versions }))
+      const page = await context.newPage()
+      page.setDefaultTimeout(10000)
+      const response = await page.goto(`${base}/?port=ts&errors=1&cleanup=1`, { waitUntil: 'commit' })
+      assert(response?.ok(), `Task first paint: HTTP ${response?.status()}`)
+      const widget = page.locator('.lm-agent-prompt')
+      const native = widget.locator('[data-task-native] select')
+      await native.waitFor({ state: 'visible' })
+      await page.evaluate(() => document.fonts.ready)
+      assert.equal((await native.boundingBox()).height, 36, `${width}: the initial task selector reserves its enhanced height`)
+      const geometry = () => widget.locator('.lm-agent-prompt__controls').evaluate((bar) => {
+        const origin = bar.getBoundingClientRect()
+        return Object.fromEntries(['.lm-agent-prompt__task', '[data-action="reroll"]', '[data-summary]'].map((selector) => {
+          const element = bar.querySelector(selector)
+          if (!element.getClientRects().length) return [selector, null]
+          const box = element.getBoundingClientRect()
+          return [selector, { x: box.x - origin.x, y: box.y - origin.y, width: box.width, height: box.height }]
+        }))
+      })
+      const before = await geometry()
+      releaseWidget()
+      await page.waitForLoadState('load')
+      await page.waitForFunction(() => document.querySelector('.lm-agent-prompt')?.dataset.activePort === 'ts')
+      await page.waitForLoadState('networkidle')
+      assert.equal(await widget.locator('[data-version-control]').count(), 0, 'Published versions do not insert another homepage control')
+      assert.deepEqual(await geometry(), before, `${width}: initializing the task picker leaves the row in place`)
+      const visiblePrompt = widget.locator('[data-port="ts"] [data-prompt-text]')
+      assert.match(await visiblePrompt.innerText(), /\/ts\/latest\//, 'The homepage prompt uses the port default')
+      if (width === 853) {
+        await page.goto(`${base}/prompts/?port=ts`)
+        const version = page.locator('.lm-agent-prompt [data-select="version"]')
+        await version.waitFor({ state: 'visible' })
+        await version.selectOption('v0.1.0-alpha.12')
+        assert.match(await page.locator('.lm-agent-prompt [data-port="ts"] [data-prompt-text]').innerText(), /\/ts\/v0\.1\.0-alpha\.12\//, 'Dedicated prompts retain version selection')
+      }
+    } finally {
+      releaseWidget()
+      await context.close()
+    }
+  }
+}
+
 export async function chooseHomeTask(page, topic) {
   const menu = page.locator('[data-task-menu]')
   if (!await menu.evaluate((element) => element.open)) await menu.locator('summary .doc-picker-caret').click()
@@ -10,6 +68,7 @@ export async function chooseHomeTask(page, topic) {
 }
 
 export async function checkHomeTaskReset(browser, base) {
+  await checkTaskFirstPaint(browser, base)
   for (const blocked of [false, true]) {
     const context = await browser.newContext({ viewport: { width: 914, height: 777 }, reducedMotion: 'reduce' })
     try {
