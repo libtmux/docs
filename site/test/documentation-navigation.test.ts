@@ -75,6 +75,23 @@ describe('documentation surface navigation', () => {
     }
   })
 
+  it('places Ruby package guides inside Guides while preserving their reader URLs', () => {
+    const ruby = PORTS.find((port) => port.slug === 'ruby')!
+    const version = 'v0.1.0'
+    const inventory = menus(ruby, version)
+    for (const [product, title] of [['mcp', 'MCP server guide'], ['workspace', 'Workspace guide']] as const) {
+      const href = portPageUrl(ruby, version, `${product}/source-guide`)
+      inventory[product].push(link(title, href))
+      const surfaces = buildDocumentationSurfaces('ruby', version, inventory)
+      const current = currentDocumentation(surfaces, href)
+      expect(current.surface.id).toBe(product)
+      expect(current.section.id).toBe('guides')
+      expect(current.section.href).toBe(portPageUrl(ruby, version, `${product}/guides`))
+      expect(current.section.items).toContainEqual(link(title, href))
+      expect(current.surface.sections.map((section) => section.id)).not.toContain('source-guide')
+    }
+  })
+
   it('omits unavailable Lua apps even when their availability pages exist', () => {
     const port = PORTS.find((entry) => entry.slug === 'lua')!
     const surfaces = buildDocumentationSurfaces('lua', 'latest', { core: [],

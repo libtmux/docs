@@ -7991,7 +7991,7 @@
    "port": "ruby",
    "symbol": "LibTmux::Async::Server",
    "page": "/ruby/latest/mcp/source-guide/",
-   "title": "libtmux-mcp",
+   "title": "MCP server guide",
    "section": "mcp"
   },
   {
@@ -8145,28 +8145,28 @@
    "port": "ruby",
    "symbol": "LibTmux::MCP::Application",
    "page": "/ruby/latest/mcp/source-guide/",
-   "title": "libtmux-mcp",
+   "title": "MCP server guide",
    "section": "mcp"
   },
   {
    "port": "ruby",
    "symbol": "LibTmux::MCP::Application#accept_shell",
    "page": "/ruby/latest/mcp/source-guide/",
-   "title": "libtmux-mcp",
+   "title": "MCP server guide",
    "section": "mcp"
   },
   {
    "port": "ruby",
    "symbol": "LibTmux::MCP::Application#sdk_server",
    "page": "/ruby/latest/mcp/source-guide/",
-   "title": "libtmux-mcp",
+   "title": "MCP server guide",
    "section": "mcp"
   },
   {
    "port": "ruby",
    "symbol": "LibTmux::MCP::StdioTransport",
    "page": "/ruby/latest/mcp/source-guide/",
-   "title": "libtmux-mcp",
+   "title": "MCP server guide",
    "section": "mcp"
   },
   {
@@ -8264,7 +8264,7 @@
    "port": "ruby",
    "symbol": "LibTmux::Selection#size",
    "page": "/ruby/latest/workspace/source-guide/",
-   "title": "libtmux-workspace",
+   "title": "Workspace guide",
    "section": "workspace"
   },
   {
@@ -8334,7 +8334,7 @@
    "port": "ruby",
    "symbol": "LibTmux::WindowSnapshot#layout",
    "page": "/ruby/latest/workspace/source-guide/",
-   "title": "libtmux-workspace",
+   "title": "Workspace guide",
    "section": "workspace"
   },
   {
@@ -8348,35 +8348,35 @@
    "port": "ruby",
    "symbol": "LibTmux::Workspace::ApplyError",
    "page": "/ruby/latest/workspace/source-guide/",
-   "title": "libtmux-workspace",
+   "title": "Workspace guide",
    "section": "workspace"
   },
   {
    "port": "ruby",
    "symbol": "LibTmux::Workspace::ApplyError#result",
    "page": "/ruby/latest/workspace/source-guide/",
-   "title": "libtmux-workspace",
+   "title": "Workspace guide",
    "section": "workspace"
   },
   {
    "port": "ruby",
    "symbol": "LibTmux::Workspace::ApplyResult#created_refs",
    "page": "/ruby/latest/workspace/source-guide/",
-   "title": "libtmux-workspace",
+   "title": "Workspace guide",
    "section": "workspace"
   },
   {
    "port": "ruby",
    "symbol": "LibTmux::Workspace::ConfigError",
    "page": "/ruby/latest/workspace/source-guide/",
-   "title": "libtmux-workspace",
+   "title": "Workspace guide",
    "section": "workspace"
   },
   {
    "port": "ruby",
    "symbol": "LibTmux::Workspace::Plan#apply",
    "page": "/ruby/latest/workspace/source-guide/",
-   "title": "libtmux-workspace",
+   "title": "Workspace guide",
    "section": "workspace"
   },
   {
@@ -8411,7 +8411,7 @@
    "port": "ruby",
    "symbol": "LibTmux::Workspace.load",
    "page": "/ruby/latest/workspace/source-guide/",
-   "title": "libtmux-workspace",
+   "title": "Workspace guide",
    "section": "workspace"
   },
   {
@@ -8439,14 +8439,14 @@
    "port": "ruby",
    "symbol": "LibTmux::Workspace#plan",
    "page": "/ruby/latest/workspace/source-guide/",
-   "title": "libtmux-workspace",
+   "title": "Workspace guide",
    "section": "workspace"
   },
   {
    "port": "ruby",
    "symbol": "LibTmux::Workspace#to_h",
    "page": "/ruby/latest/workspace/source-guide/",
-   "title": "libtmux-workspace",
+   "title": "Workspace guide",
    "section": "workspace"
   },
   {

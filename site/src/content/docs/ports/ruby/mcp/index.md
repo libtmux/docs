@@ -28,5 +28,5 @@ calling an undisclosed name.
 
 The server requires Ruby 3.3 or newer. Strong process tracking for waits and
 authored runs requires tmux 3.3 or newer plus native process identity support.
-The [source-owned MCP guide](./source-guide/) is staged from the same revision
+The [MCP server guide](./source-guide/) is staged from the same revision
 as the generated reference.
