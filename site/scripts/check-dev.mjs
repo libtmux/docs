@@ -633,6 +633,8 @@ try {
       const switcher = page.locator('[data-page-port-switcher]')
       const portLinks = switcher.locator('a[data-port]')
       const hasSwitcher = path !== 'mcp/tools'
+      // Dependency optimization can replace the loaded document during startup.
+      if (hasSwitcher) await switcher.waitFor({ state: 'visible' })
       assert.equal(await switcher.count(), hasSwitcher ? 1 : 0, `${path}: one page language switcher when available`)
       const isReference = path.includes('/reference/')
       if (hasSwitcher) {
