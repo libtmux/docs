@@ -51,6 +51,8 @@ interface Props {
   showLanguageTabs?: boolean
   /** Allow a homepage reader to clear their explicit task choice. */
   showTaskReset?: boolean
+  /** Offer published documentation versions in the prompt controls. */
+  showVersionPicker?: boolean
   variant?: 'full' | 'compact'
   /**
    * Where the copy button sits. `overlay`, the default, floats it over the
@@ -60,7 +62,7 @@ interface Props {
   copyButton?: 'gutter' | 'overlay'
 }
 
-const { ports, defaultPort, defaultTopic = 'setup', showLanguageTabs = true, showTaskReset = false, variant = 'full', copyButton = 'overlay' } = Astro.props as Props
+const { ports, defaultPort, defaultTopic = 'setup', showLanguageTabs = true, showTaskReset = false, showVersionPicker = true, variant = 'full', copyButton = 'overlay' } = Astro.props as Props
 // A page that names its task, such as /prompts/<topic>/, opens on it. The
 // others open on the task the reader last chose.
 const topicPinned = 'defaultTopic' in Astro.props
@@ -195,10 +197,10 @@ const activePortRules = items
       {/* Beside the label, not in it: a button inside a label passes its click to the select. */}
       <RerollButton size={showTaskReset ? 'lg' : 'sm'} title="Pick another task" data-action="reroll" />
     </div>
-    <label class="lm-agent-prompt__control" data-version-control hidden>
+    {showVersionPicker && <label class="lm-agent-prompt__control" data-version-control hidden>
       <span class="lm-agent-prompt__label">Version</span>
       <select class="lm-agent-prompt__select" data-select="version" />
-    </label>
+    </label>}
     <p class="lm-agent-prompt__summary" data-summary>
       {TOPICS.find((t) => t.id === defaultTopic)!.summary}
     </p>
