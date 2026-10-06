@@ -11,6 +11,7 @@ import { tmuxManualUrl } from './tmux-manual-data'
 export interface DocumentationSection {
   id: string
   label: string
+  shortLabel?: string
   href?: string
   items: SidebarItem[]
   alternatives?: SidebarLinkItem[]
@@ -25,8 +26,8 @@ export interface DocumentationSurface {
 
 const labels: Record<string, string> = {
   home: 'Home', guides: 'Guides', tutorials: 'Tutorials', topics: 'Topics', concepts: 'Concepts',
-  examples: 'Examples', reference: 'Reference', configuration: 'Configuration', internals: 'Internals',
-  async: 'Async', runtimes: 'Runtimes', notices: 'Third-party notices', manual: 'CLI Manual',
+  examples: 'Examples', reference: 'API Reference', configuration: 'Configuration', internals: 'Internals',
+  async: 'Async', runtimes: 'Runtimes', manual: 'CLI Manual',
 }
 const standardSections = ['home', 'guides', 'tutorials', 'topics', 'concepts', 'examples', 'manual', 'reference']
 const linksOf = (items: SidebarItem[]): SidebarLinkItem[] => items.flatMap((item) => item.type === 'link'
@@ -53,6 +54,7 @@ export function buildDocumentationSurfaces(
       const route = link.href.startsWith(base) ? link.href.slice(base.length).replace(/\/$/, '') : undefined
       const relative = route === domain.route ? '' : route?.startsWith(prefix) ? route.slice(prefix.length) : undefined
       let key = relative?.split('/')[0] || 'home'
+      if (key === 'third-party-notices') continue
       if (id === 'workspace' && (key === 'cli' || /^reference\/(?:exit-codes|output)$/.test(relative ?? ''))) key = 'manual'
       else if (link.external || key === 'cli' || key === 'tools' || key === 'api') key = 'reference'
       const section = sections.get(key) ?? { id: key, label: labels[key] ?? link.label, items: [] }
@@ -60,7 +62,7 @@ export function buildDocumentationSurfaces(
       section.items.push(link)
       sections.set(key, section)
     }
-    const reference: DocumentationSection = sections.get('reference') ?? { id: 'reference', label: 'Reference', items: [] }
+    const reference: DocumentationSection = sections.get('reference') ?? { id: 'reference', label: 'API Reference', items: [] }
     reference.href = referenceUrl(info, version, id)
     if (domain.product) {
       // Protocol tools and the implementation API retain their native URLs.
@@ -114,8 +116,8 @@ export function getDocumentationSurfaces(port: string | undefined, version: stri
         { id: 'home', label: current ? 'Home' : 'Current docs →', href: withPortRoot('/tmux/'), items: [] },
         ...(current ? menus : []).flatMap((item) => item.type === 'group' && item.href
           ? [{ id: item.label.toLowerCase(), label: item.label, href: item.href, items: item.items }] : []),
-        { id: 'manual', label: 'Manual', href: tmuxManualUrl(version), items: [] },
-        { id: 'reference', label: 'Reference', href: tmuxReferenceUrl(version), items: [] },
+        { id: 'manual', label: 'CLI Manual', href: tmuxManualUrl(version), items: [] },
+        { id: 'reference', label: 'C source reference', shortLabel: 'C reference', href: tmuxReferenceUrl(version), items: [] },
       ]
       sections[0].items = sections.filter((section) => section.href).map((section) => ({
         type: 'link', label: section.label, href: section.href!,

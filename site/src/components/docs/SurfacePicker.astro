@@ -45,8 +45,10 @@ const artwork = (id: string) => {
         <div class="surface-options doc-picker-options">
           {entry.sections.map((item) => item.href && <a href={item.href} class="surface-option doc-picker-option"
             data-surface-option data-picker-option data-match={`${entry.label} ${item.label} ${item.id === 'reference' ? 'api tools cli' : ''}`}
+            aria-label={item.shortLabel ? item.label : undefined}
             aria-current={entry.id === surface.id && item.id === section.id ? 'location' : undefined}>
-              <DocumentationIcon name={item.id} /><span>{item.label}</span>
+              <DocumentationIcon name={item.id} /><span class:list={{ 'surface-section-full': item.shortLabel }}>{item.label}</span>
+              {item.shortLabel && <span class="surface-section-short" aria-hidden="true">{item.shortLabel}</span>}
               {entry.id === surface.id && item.id === section.id && <span class="doc-picker-check" aria-hidden="true">✓</span>}
             </a>)}
         </div>
@@ -74,10 +76,13 @@ const artwork = (id: string) => {
   .surface-current { min-width: 0; line-height: 1.35; }
   .surface-current strong, .surface-current small { display: block; }
   .surface-name-short { display: none; }
+  .surface-section-short { display: none; }
   .home-solution-name-short { display: none; }
   @media (max-width: 24rem) {
     .surface-name-full { display: none; }
     .surface-name-short { display: inline; }
+    .surface-section-full { display: none; }
+    .surface-section-short { display: inline; }
   }
   small { font-size: .6875rem; color: var(--color-muted); }
   .surface-artwork { flex: none; width: 1.875rem; height: 1.875rem; object-fit: contain; }
