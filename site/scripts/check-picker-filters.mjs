@@ -66,6 +66,7 @@ export async function checkPickerFilters(browser, base, complete = false) {
     page.setDefaultTimeout(5000)
     try {
       for (const viewport of sizes) {
+        console.log(`Picker filters: ${colorScheme}, ${viewport.width}×${viewport.height}`)
         await page.setViewportSize(viewport)
         await page.goto(`${base}/demo/widgets/pickers/`)
         await page.locator('[data-demo-add-locales]').click()
@@ -105,6 +106,18 @@ export async function checkPickerFilters(browser, base, complete = false) {
     await search.fill('')
     assert.equal(await picker.locator('[data-picker-option]:visible').count(), 3)
     await bounds(page, picker.locator('[data-picker-panel]'))
+    await page.keyboard.press('Escape')
+    await page.locator('[data-demo-add-locales]').click()
+    const locales = page.locator('[data-demo-locales] [data-locale-picker]')
+    await locales.locator(':scope > summary').click()
+    await locales.locator('[data-picker-search]').fill('sample language 12')
+    await locales.getByRole('link', { name: 'Sample language 12', exact: true }).click()
+    assert.equal(new URL(page.url()).hash, '#demo-locales')
+    const versions = page.locator('[data-demo-versions] [data-version-picker]')
+    await versions.locator(':scope > summary').click()
+    await versions.locator('[data-picker-search]').fill('1.12.0')
+    await versions.getByRole('link', { name: 'v1.12.0', exact: true }).click()
+    assert.equal(new URL(page.url()).hash, '#demo-versions', 'Sample versions use their own destination after choosing a sample language')
   } finally { release(); await context.unrouteAll({ behavior: 'wait' }); await context.close() }
 
   const noScript = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 853, height: 789 } })

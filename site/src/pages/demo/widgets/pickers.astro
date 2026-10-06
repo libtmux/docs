@@ -13,7 +13,7 @@ const versions = ['latest', ...Array.from({ length: 40 }, (_, index) => `v1.${39
     <h2 class="text-xl font-semibold">Long version list</h2>
     <p class="my-3 text-sm text-muted">These sample versions stay on this page. Search for <code>1.12</code> or a version that does not exist, then clear the search to restore the list.</p>
     <div class="inline-block">
-      <VersionSwitcher version="latest" label="Demo documentation version" entries={versions.map((version) => ({ label: version, href: '#demo-versions', current: version === 'latest' }))} />
+      <VersionSwitcher version="latest" label="Demo documentation version" entries={versions.map((version) => ({ label: version, href: '#demo-versions', current: version === 'latest', preserveFragment: false }))} />
     </div>
   </section>
 

@@ -4,7 +4,7 @@ import { withRoot } from '../lib/site-root'
 import PickerSearch from './docs/PickerSearch.astro'
 import '../styles/documentation-picker.css'
 
-interface Props { portSlug?: string; version: string; entries?: { label: string; href: string; current: boolean }[]; label?: string }
+interface Props { portSlug?: string; version: string; entries?: { label: string; href: string; current: boolean; preserveFragment?: boolean }[]; label?: string }
 const { portSlug, version, entries, label = 'tmux manual version' } = Astro.props
 const candidate = portSlug ? PORT_BY_SLUG[portSlug] : undefined
 const port = candidate?.versionedDocs ? candidate : undefined
@@ -19,7 +19,7 @@ const currentHref = Astro.url.pathname.replace(/\/404\/?$/, '/404.html') + Astro
   <div class="doc-picker-panel version-picker-panel" data-picker-panel>
     <p class="doc-picker-title">{label}</p>
     <PickerSearch label="Find a version" placeholder="Find version…" emptyMessage="No matching versions." />
-    {entries.map((entry) => <a class="doc-picker-option" data-picker-option data-match={entry.label} data-preserve-fragment href={entry.href} aria-current={entry.current ? 'page' : undefined}>
+    {entries.map((entry) => <a class="doc-picker-option" data-picker-option data-match={entry.label} data-preserve-fragment={entry.preserveFragment === false ? undefined : ''} href={entry.href} aria-current={entry.current ? 'page' : undefined}>
       <span>{entry.label}</span>{entry.current && <span class="doc-picker-check" aria-hidden="true">✓</span>}
     </a>)}
   </div>
