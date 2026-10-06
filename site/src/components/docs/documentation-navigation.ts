@@ -50,8 +50,8 @@ export function initDocumentationNavigation() {
     const panel = picker.querySelector<HTMLElement>('[data-picker-panel]')!
     const summary = picker.querySelector<HTMLElement>(':scope > summary')!
     const search = picker.querySelector<HTMLInputElement>('[data-picker-search]')
-    const groups = [...picker.querySelectorAll<HTMLElement>('[data-picker-group]')]
-    let saved = groups.map((group) => group instanceof HTMLDetailsElement && group.open)
+    const groups = () => [...picker.querySelectorAll<HTMLElement>('[data-picker-group]')]
+    let saved = new Map(groups().map((group) => [group, group instanceof HTMLDetailsElement && group.open]))
     const options = () => [...picker.querySelectorAll<HTMLElement>('[data-picker-option]')]
     picker.dataset.enhanced = ''
     // The top layer escapes scrolling containers. Native details remain usable
@@ -82,9 +82,9 @@ export function initDocumentationNavigation() {
       const tokens = (search?.value ?? '').toLocaleLowerCase().trim().split(/\s+/).filter(Boolean)
       const entries = options()
       for (const option of entries) option.hidden = !tokens.every((token) => option.dataset.match!.toLocaleLowerCase().includes(token))
-      groups.forEach((group, index) => {
+      groups().forEach((group) => {
         group.hidden = ![...group.querySelectorAll<HTMLElement>('[data-picker-option]')].some((option) => !option.hidden)
-        if (group instanceof HTMLDetailsElement) group.open = tokens.length ? !group.hidden : saved[index]
+        if (group instanceof HTMLDetailsElement) group.open = tokens.length ? !group.hidden : saved.get(group) ?? false
       })
       const count = entries.filter((option) => !option.hidden).length
       const empty = picker.querySelector<HTMLElement>('[data-picker-empty]')
@@ -102,10 +102,12 @@ export function initDocumentationNavigation() {
       for (const other of document.querySelectorAll<HTMLDetailsElement>('[data-doc-picker][open]')) {
         if (other !== picker) other.open = false
       }
-      saved = groups.map((group) => group instanceof HTMLDetailsElement && group.open)
+      saved = new Map(groups().map((group) => [group, group instanceof HTMLDetailsElement && group.open]))
       if (search) { search.value = ''; filter() }
       if (topLayer) panel.showPopover()
       position()
+      // A reopened menu must not leave its focused search above the viewport.
+      panel.scrollTop = 0
       if (picker.open) (search ?? panel.querySelector<HTMLElement>('a[aria-current]') ?? visibleLinks()[0])?.focus({ preventScroll: true })
     }, { signal })
     search?.addEventListener('input', filter, { signal })

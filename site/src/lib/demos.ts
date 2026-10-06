@@ -48,6 +48,11 @@ export const DEMO_SECTIONS: DemoSection[] = [
         title: 'Search',
         description: "The search panel's three ways to show the sections of a page that matched.",
       },
+      {
+        href: '/demo/widgets/pickers/',
+        title: 'Documentation pickers',
+        description: 'Search, keyboard navigation, and scrolling in version and language menus.',
+      },
     ],
   },
 ]
