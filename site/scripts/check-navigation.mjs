@@ -90,11 +90,13 @@ async function checkContextControls(page) {
         const { x, y, width, height } = element.getBoundingClientRect()
         const hit = document.elementFromPoint(x + width / 2, y + height / 2)
         return { name: element.getAttribute('aria-label') ?? element.textContent.trim(), x, y, width, height,
+          selector: element.matches('.documentation-context-selectors .doc-picker > summary'),
           reachable: element.contains(hit), coveredBy: hit?.outerHTML.slice(0, 180) }
       }).filter(({ width, height }) => width > 0 && height > 0)
     return { height: bar.getBoundingClientRect().height, controls }
   })
   for (const [index, control] of layout.controls.entries()) {
+    if (control.selector) assert.equal(control.height, 36, `${page.url()}: ${control.name} matches the homepage's 36px controls`)
     assert(control.reachable, `${page.url()}: context control is reachable: ${JSON.stringify(control)}`)
     for (const other of layout.controls.slice(index + 1)) {
       const overlap = Math.min(control.x + control.width, other.x + other.width) - Math.max(control.x, other.x)

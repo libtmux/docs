@@ -27,7 +27,7 @@ export interface DocumentationSurface {
 const labels: Record<string, string> = {
   home: 'Home', guides: 'Guides', tutorials: 'Tutorials', topics: 'Topics', concepts: 'Concepts',
   examples: 'Examples', reference: 'API Reference', configuration: 'Configuration', internals: 'Internals',
-  async: 'Async', runtimes: 'Runtimes', notices: 'Third-party notices', manual: 'CLI Manual',
+  async: 'Async', runtimes: 'Runtimes', manual: 'CLI Manual',
 }
 const standardSections = ['home', 'guides', 'tutorials', 'topics', 'concepts', 'examples', 'manual', 'reference']
 const linksOf = (items: SidebarItem[]): SidebarLinkItem[] => items.flatMap((item) => item.type === 'link'
@@ -54,6 +54,7 @@ export function buildDocumentationSurfaces(
       const route = link.href.startsWith(base) ? link.href.slice(base.length).replace(/\/$/, '') : undefined
       const relative = route === domain.route ? '' : route?.startsWith(prefix) ? route.slice(prefix.length) : undefined
       let key = relative?.split('/')[0] || 'home'
+      if (key === 'third-party-notices') continue
       if (id === 'workspace' && (key === 'cli' || /^reference\/(?:exit-codes|output)$/.test(relative ?? ''))) key = 'manual'
       else if (link.external || key === 'cli' || key === 'tools' || key === 'api') key = 'reference'
       const section = sections.get(key) ?? { id: key, label: labels[key] ?? link.label, items: [] }

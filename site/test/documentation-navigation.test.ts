@@ -8,7 +8,7 @@ const link = (label: string, href: string): SidebarItem => ({ type: 'link', labe
 const menus = (port: typeof PORTS[number], version: string) => Object.fromEntries(['core', 'mcp', 'workspace'].map((surface) => {
   const base = (path = '') => portPageUrl(port, version, [surface === 'core' ? '' : surface, path].filter(Boolean).join('/'))
   return [surface, [link('Overview', base()), link('Guides', base('guides')), link('Examples', base('examples')),
-    link('API', base('reference')),
+    link('API', base('reference')), link('Third-party notices', base('third-party-notices')),
     ...(surface === 'workspace' ? [link('CLI Manual', base('cli')), link('Load', base('cli/load')),
       link('Installation', base('guides/installation')), link('Internal guides', base('internals/guides')),
       link('Exit codes', base('reference/exit-codes')), link('Output', base('reference/output'))] : []),
@@ -51,6 +51,7 @@ describe('documentation surface navigation', () => {
         expect(section.href).toMatch(`/` + port.slug + `/${version}/`)
       }
       expect(surface.sections.map((section) => section.id)).not.toContain('tutorials')
+      expect(surface.sections.map((section) => section.id)).not.toContain('third-party-notices')
       if (surface.id === 'core') continue
       const selected = currentDocumentation(surfaces, `${surface.href}guides/installation/`)
       expect(selected.surface.id).toBe(surface.id)
