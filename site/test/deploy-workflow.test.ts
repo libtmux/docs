@@ -458,7 +458,7 @@ describe('publication URL audits', () => {
         mkdirSync(reference, { recursive: true })
         if (!missing || slug !== 'rs') writeFileSync(join(reference, 'index.html'), 'reference')
         const host = ({ rs: 'docs.rs', go: 'pkg.go.dev', java: 'javadoc.io' } as Record<string, string>)[slug]
-        const links = `<div class="surface-options"><a href="${hrefPrefix}/en/${slug}/latest/">Home</a><a href="${hrefPrefix}/en/${slug}/latest/reference/">Reference</a></div>`
+        const links = `<div class="surface-options"><a href="${hrefPrefix}/en/${slug}/latest/">Home</a><a href="${hrefPrefix}/en/${slug}/latest/reference/">API Reference</a></div>`
           + '<div class="surface-alternatives">'
           + (host ? `<a href="https://${host}/" target="_blank" rel="noopener noreferrer">${host}</a>` : '')
           + (slug === 'py' ? `<a href="${hrefPrefix}/en/py/latest/api/">Upstream reference</a>` : '') + '</div>'

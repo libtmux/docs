@@ -95,7 +95,7 @@ for (const port of PORTS) {
     : new RegExp(`^/${port}/${version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/reference/$`)
   const ours = sections.filter((link) => owned(link) && expected.test(pathOf(hrefOf(link))))
   if (ours.length !== 1) failures.push(`${port}: Core Library does not offer exactly one current native reference`)
-  else if (labelOf(ours[0]) !== 'Reference') failures.push(`${port}: native reference is not labelled Reference`)
+  else if (labelOf(ours[0]) !== 'API Reference') failures.push(`${port}: native reference is not labelled API Reference`)
 
   const host = ECOSYSTEM[port]
   if (host) {
