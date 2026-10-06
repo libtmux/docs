@@ -28,11 +28,12 @@ async function checkTaskFirstPaint(browser, base) {
       assert.equal((await native.boundingBox()).height, 36, `${width}: the initial task selector reserves its enhanced height`)
       const geometry = () => widget.locator('.lm-agent-prompt__controls').evaluate((bar) => {
         const origin = bar.getBoundingClientRect()
-        return Object.fromEntries(['.lm-agent-prompt__task', '[data-action="reroll"]', '[data-summary]'].map((selector) => {
-          const element = bar.querySelector(selector)
-          if (!element.getClientRects().length) return [selector, null]
+        const elements = ['.lm-agent-prompt__task', '[data-action="reroll"]', '[data-summary]'].map((selector) => [selector, bar.querySelector(selector)])
+        elements.push(['task control', bar.querySelector('[data-task-native]:not([hidden]) select, [data-task-enhanced]:not([hidden]) [data-task-menu] > summary')])
+        return Object.fromEntries(elements.map(([name, element]) => {
+          if (!element.getClientRects().length) return [name, null]
           const box = element.getBoundingClientRect()
-          return [selector, { x: box.x - origin.x, y: box.y - origin.y, width: box.width, height: box.height }]
+          return [name, { x: box.x - origin.x, y: box.y - origin.y, width: box.width, height: box.height }]
         }))
       })
       const before = await geometry()
