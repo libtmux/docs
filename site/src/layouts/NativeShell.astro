@@ -1,5 +1,6 @@
 ---
 import ShellHead from '../components/ShellHead.astro'
+import { ClientRouter } from 'astro:transitions'
 import SiteHeader from '../components/SiteHeader.astro'
 import SiteFooter from '../components/SiteFooter.astro'
 import PrereleaseNotice from '../components/PrereleaseNotice.astro'
@@ -33,6 +34,7 @@ const equivalents = { port, primary: page.signatures[0], symbols, indexes: page.
 <!doctype html>
 <html data-native-shell-export>
   <head data-native-shell-assets>
+    <ClientRouter fallback="swap" />
     <script is:inline>
       // Migrate Furo's preference once; storage-disabled readers still use the shared controls.
       try {
@@ -48,9 +50,7 @@ const equivalents = { port, primary: page.signatures[0], symbols, indexes: page.
     <template data-native-boundary="header-start"></template>
     <script is:inline>
       document.documentElement.classList.remove('no-js');
-      function syncNativeTheme() { document.body.dataset.theme = document.documentElement.dataset.themeMode || 'auto'; }
-      syncNativeTheme();
-      new MutationObserver(syncNativeTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme-mode'] });
+      document.body.dataset.theme = document.documentElement.dataset.themeMode || 'auto';
     </script>
     <SiteHeader documentationContext portSlug={port} version={version} locale={locale} sourcePath={page.sourcePath}>
       <div slot="navigation" class="site-header-language">
@@ -58,7 +58,7 @@ const equivalents = { port, primary: page.signatures[0], symbols, indexes: page.
       </div>
     </SiteHeader>
     <DocumentationContext port={port} version={version} locale={locale} sourcePath={page.sourcePath} reference>
-      <DocumentationNavigationButtons slot="navigation" tableOfContents native />
+      <DocumentationNavigationButtons slot="navigation" tableOfContents={page.hasTableOfContents} native />
     </DocumentationContext>
     <PrereleaseNotice />
     <template data-native-boundary="header-end"></template>

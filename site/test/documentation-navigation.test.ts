@@ -141,6 +141,13 @@ describe('documentation surface navigation', () => {
     const surfaces = buildDocumentationSurfaces('py', 'latest', { core })
     const { section } = currentDocumentation(surfaces, '/py/latest/reference/libtmux-server/')
     expect(section.alternatives?.map((item) => item.href)).toEqual(['/py/latest/api/', 'https://docs.rs/libtmux'])
-    expect(currentDocumentation(surfaces, '/py/latest/api/libtmux.server/').section.id).toBe('reference')
+    for (const path of ['/py/latest/api/', '/py/latest/api/libtmux.server/']) {
+      const selected = currentDocumentation(surfaces, path)
+      expect(selected.section.id).toBe('reference')
+      expect(selected.alternative?.label).toBe('Upstream reference')
+      expect(selected.alternative?.href).toBe('/py/latest/api/')
+    }
+    expect(currentDocumentation(surfaces, '/py/latest/reference/libtmux-server/').alternative).toBeUndefined()
+    expect(currentDocumentation(surfaces, '/py/latest/guides/').alternative).toBeUndefined()
   })
 })

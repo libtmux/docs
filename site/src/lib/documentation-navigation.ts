@@ -149,5 +149,7 @@ export function currentDocumentation(surfaces: DocumentationSurface[], currentPa
       .map((href) => ({ entry, href })))
     .sort((a, b) => b.href.length - a.href.length)[0]?.entry
     ?? surface.sections.find((entry) => entry.id === key) ?? surface.sections[0]
-  return { surface, section }
+  const alternative = section.alternatives?.filter((item) => !item.external && currentPath.startsWith(item.href))
+    .sort((a, b) => b.href.length - a.href.length)[0]
+  return { surface, section, alternative }
 }

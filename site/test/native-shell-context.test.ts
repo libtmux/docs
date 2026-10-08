@@ -43,10 +43,21 @@ describe('native shell context', () => {
     expect(server.source).toEqual({ repo: 'tmux-python/libtmux', ref: sourceSha, path: 'docs/api/libtmux.server.md', sha256: nativeHash(source) })
     expect(server.articleSha256).toBe(nativeHash(article))
     expect(server.signatures).toEqual(['libtmux.Server'])
+    expect(server.hasTableOfContents).toBe(false)
     const index = context.pages.find((page: { file: string }) => page.file === 'genindex/index.html')!
     expect(index.source).toBeUndefined()
     expect(index.markdownHref).toBeUndefined()
     expect(await collectNativeContext(artifact, options)).toEqual(context)
+  })
+
+  it('offers contents only for real destinations beyond the page title', async () => {
+    const { artifact, options, html } = fixture()
+    const page = join(artifact, 'api/libtmux.server/index.html')
+    const writeToc = (links: string) => writeFileSync(page, html.replace('</body>', `<aside><div class="toc-tree">${links}</div></aside></body>`))
+    writeToc('<a href="#">Server</a><a href="#missing">Missing</a><a href="#%zz">Invalid</a>')
+    expect((await collectNativeContext(artifact, options)).pages[0].hasTableOfContents).toBe(false)
+    writeToc('<a href="#libtmux.Server">Server declaration</a>')
+    expect((await collectNativeContext(artifact, options)).pages[0].hasTableOfContents).toBe(true)
   })
 
   it('rejects a different revision or uncommitted source instead of citing it as the selected revision', async () => {

@@ -32,6 +32,9 @@ html[data-native-shell] .toolbar-button { cursor: pointer; }
 html[data-native-shell] .sidebar-drawer { z-index: 45; }
 html[data-native-shell] .sidebar-overlay,
 html[data-native-shell] .toc-overlay { z-index: 44; }
+/* Native custom CSS widens the drawer and overrides Furo's layered open rule. */
+html[data-native-shell] #__toc:checked ~ .page .toc-drawer { right: 0; }
+html[data-native-toc="false"] :is(.toc-drawer, .toc-overlay, .toc-content-icon) { display: none; }
 html[data-native-shell] #documentation-navigation { display: flex; }
 @media (min-width: 63.01em) {
   html[data-native-shell] .sidebar-drawer { z-index: 30; }

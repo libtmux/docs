@@ -30,7 +30,7 @@ try {
   page.on('response', (response) => {
     if (response.ok()) loaded.add(response.url())
   })
-  for (const width of [1440, 1062, 768, 688, 641, 390]) {
+  for (const width of [1440, 1062, 1027, 768, 688, 641, 390]) {
     for (const colorScheme of ['light', 'dark']) {
       await page.setViewportSize({ width, height: 900 })
       await page.emulateMedia({ colorScheme })
@@ -44,7 +44,10 @@ try {
       await page.waitForFunction(() => document.querySelector('[data-page-port-switcher] a[href$="/ts/latest/reference/session-session/"]'))
       assert([...loaded].some((url) => url.includes(`/${version}/_astro/`) && url.endsWith('.css')), 'Compiled native CSS did not load')
       assert([...loaded].some((url) => url.includes(`/${version}/_astro/DocumentationScript.`)), 'Compiled shared navigation did not load')
-      assert(![...loaded].some((url) => /(?:\/_shell\/shell\.js|\/spa-nav\.js)/.test(url)), 'A competing native shell/router loaded')
+      assert(![...loaded].some((url) => /(?:\/_shell\/shell\.js|\/spa-nav\.js|\/scripts\/furo\.js)/.test(url)), 'A competing native shell/router loaded')
+      assert(await page.locator('meta[name="astro-view-transitions-enabled"]').count(), 'Native pages have no shared client router')
+      assert.equal(await page.locator('[data-surface-picker] .surface-current small').textContent(), 'Upstream reference')
+      assert.deepEqual((await page.locator('[data-surface-picker] a[aria-current]').allTextContents()).map((text) => text.replaceAll(/\s|✓/g, '')), ['Upstreamreference'])
       await menu.locator('summary').focus()
       await page.keyboard.press('Enter')
       const bounds = await menu.evaluate((details) => {
@@ -88,6 +91,15 @@ try {
     assert(await page.locator(`#${input}`).isChecked(), `${button}: keyboard opens the drawer`)
     assert(await page.evaluate((id) => document.getElementById(id).contains(document.activeElement),
       input === '__navigation' ? 'native-navigation' : 'native-toc'), `${button}: focus moves into the drawer`)
+    await page.waitForFunction((id) => {
+      const drawer = document.getElementById(id)
+      const rect = drawer.getBoundingClientRect()
+      if (rect.left < 0 || rect.right > innerWidth) return false
+      const link = [...drawer.querySelectorAll('a[href]')].find((link) => link.checkVisibility())
+      if (!link) return false
+      const bounds = link.getBoundingClientRect()
+      return link.contains(document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2))
+    }, input === '__navigation' ? 'native-navigation' : 'native-toc')
     await page.keyboard.press('Control+k')
     await page.locator('dialog[open]').waitFor()
     await page.keyboard.press('Escape')
