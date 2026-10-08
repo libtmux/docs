@@ -1005,7 +1005,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
  */
 .site-header__bar {
   margin-inline: auto;
-  max-width: var(--site-frame-width, 96rem);
+  max-width: 108rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
