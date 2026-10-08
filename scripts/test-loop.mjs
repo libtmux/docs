@@ -65,7 +65,7 @@ try {
   if (loop !== 'inner') await node('scripts/stage-port-docs.mjs', '--integrated')
   const checks = loop === 'inner' ? [
     tests('packages/api-model', ['concepts', 'resolver', 'mentions']),
-    tests('site', ['native-switchers', 'normalize-native-shell']),
+    tests('site', ['native-switchers', 'native-shell-context', 'normalize-native-shell']),
   ] : ['packages/api-model', 'packages/theme', 'site'].map((directory) => tests(directory))
   if (loop !== 'inner') checks.push(
     pnpm('run', '--recursive', 'lint'),

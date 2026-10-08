@@ -8,7 +8,6 @@ import { chromium, firefox, webkit } from 'playwright'
 import { API_MODEL_PORTS, PORTS, productAvailable } from '../src/lib/ports.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
 import { checkApiExampleOwnership, checkApiNavigation, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
-import { checkNativeLayout } from './check-native-layout.mjs'
 import { checkReferencePreferences, checkGlobalHeader } from './check-reference-preferences.mjs'
 import { checkHomeLauncher } from './check-home-launcher.mjs'
 import { checkHomeTaskReset } from './check-home-task-reset.mjs'
@@ -598,7 +597,6 @@ try {
       previous = pending
       return pending
     }
-    const nativeLayout = schedule(() => checkNativeLayout(browser))
     const apiExamples = schedule(() => checkCompleteApiExamples(browser, base))
     const page = await browser.newPage({ reducedMotion: 'reduce' })
     page.setDefaultTimeout(10000)
@@ -886,7 +884,7 @@ try {
     await page.close()
     const failures = (await Promise.all([
       navigation, apiExamples, reference, preferences, globalHeader, apiNavigation,
-      clipboard, nativeLayout, documentationNavigation, homeLauncher,
+      clipboard, documentationNavigation, homeLauncher,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
   }

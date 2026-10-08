@@ -1,0 +1,91 @@
+<script>
+  const data = document.querySelector<HTMLScriptElement>('[data-native-page-ports]')
+  if (data) {
+    const context: {
+      port: string; primary?: string; indexes?: Record<string, string>
+      symbols: Record<string, { port: string; href: string; label: string }[]>
+    } = JSON.parse(data.textContent ?? '{}')
+    const picker = document.querySelector<HTMLElement>('[data-page-port-switcher]')!
+    const templates = new Map<string, HTMLElement>()
+    for (const option of picker.querySelectorAll<HTMLElement>('[data-picker-option][data-port]')) {
+      if (!templates.has(option.dataset.port!)) templates.set(option.dataset.port!, option.cloneNode(true) as HTMLElement)
+    }
+    const refresh = () => {
+      let hash = ''
+      try { hash = decodeURIComponent(location.hash.slice(1)) } catch { /* Malformed fragments have no counterpart. */ }
+      const signature = document.getElementById(hash)?.closest('dt.sig')?.id
+      const matches = context.symbols[hash] ?? (signature ? context.symbols[signature] : context.symbols[context.primary ?? '']) ?? []
+      for (const [port, template] of templates) {
+        const existing = [...picker.querySelectorAll<HTMLElement>('[data-picker-option][data-port]')].filter((option) => option.dataset.port === port)
+        let links: { href: string; label?: string }[] = matches.filter((entry, index, all) =>
+          entry.port === port && all.findIndex((other) => other.href === entry.href) === index)
+        if (context.indexes?.[port]) links = [{ href: context.indexes[port] }]
+        if (port === context.port) links = [{ href: location.pathname + location.hash }]
+        const options = (links.length ? links : [undefined]).map((link) => {
+          const option = document.createElement(link ? 'a' : 'span')
+          for (const attribute of template.attributes) {
+            if (!['href', 'aria-disabled', 'aria-current', 'hidden'].includes(attribute.name)) option.setAttribute(attribute.name, attribute.value)
+          }
+          option.append(...[...template.childNodes].map((node) => node.cloneNode(true)))
+          option.querySelector('.doc-picker-check')?.remove()
+          const label = option.querySelector('span')!
+          label.textContent = template.dataset.portName!
+          if (!link || links.length > 1) {
+            const detail = document.createElement('small')
+            detail.textContent = link?.label ?? 'Unavailable'
+            label.append(detail)
+          }
+          option.dataset.match = `${port} ${template.dataset.portName} ${link?.label ?? ''}`
+          if (link) option.setAttribute('href', link.href)
+          else option.setAttribute('aria-disabled', 'true')
+          if (port === context.port) {
+            option.setAttribute('aria-current', 'page')
+            const check = document.createElement('span')
+            check.className = 'doc-picker-check'
+            check.setAttribute('aria-hidden', 'true')
+            check.textContent = '✓'
+            option.append(check)
+          }
+          return option
+        })
+        existing[0]?.replaceWith(...options)
+        existing.slice(1).forEach((option) => option.remove())
+      }
+    }
+    refresh()
+    window.addEventListener('hashchange', refresh)
+
+    for (const [inputId, buttonId, drawerId] of [
+      ['__navigation', 'mobile-sidebar-toggle', 'native-navigation'],
+      ['__toc', 'mobile-toc-toggle', 'native-toc'],
+    ]) {
+      const input = document.getElementById(inputId) as HTMLInputElement | null
+      const button = document.getElementById(buttonId)
+      const drawer = document.getElementById(drawerId)
+      if (!input || !button || !drawer) continue
+      const sync = () => {
+        button.setAttribute('aria-expanded', String(input.checked))
+        if (input.checked) drawer.querySelector<HTMLElement>('a, input')?.focus({ preventScroll: true })
+      }
+      input.addEventListener('change', sync)
+      button.addEventListener('keydown', (event) => {
+        if (event.key === ' ' || event.key === 'Enter') {
+          event.preventDefault()
+          input.checked = !input.checked
+          input.dispatchEvent(new Event('change', { bubbles: true }))
+        }
+      })
+      document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape' || !input.checked) return
+        input.checked = false
+        sync()
+        button.focus({ preventScroll: true })
+      })
+      drawer.addEventListener('click', (event) => {
+        if (!(event.target instanceof Element) || !event.target.closest('a')) return
+        input.checked = false
+        sync()
+      })
+    }
+  }
+</script>

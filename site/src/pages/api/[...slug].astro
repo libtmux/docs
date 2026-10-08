@@ -1,6 +1,8 @@
 ---
 import { getCollection, render } from 'astro:content'
 import DocsLayout from '../../layouts/DocsLayout.astro'
+import NativeShell from '../../layouts/NativeShell.astro'
+import { nativeShellContext } from '../../lib/native-shell'
 import { PORT_BY_SLUG } from '../../lib/ports'
 import { isIndexSource } from '../../lib/markdown-twins'
 
@@ -12,6 +14,10 @@ import { isIndexSource } from '../../lib/markdown-twins'
  * that env var keeps one port's reference out of another port's build.
  */
 export async function getStaticPaths() {
+  const context = nativeShellContext()
+  if (context) return context.pages.map((page) => ({
+    params: { slug: page.path.replace(/\/$/, '') || undefined }, props: { context, page },
+  }))
   const port = process.env.LIBTMUX_DOCS_PORT
   const entries = await getCollection('api', (e) => !port || e.data.port === port)
   return entries.map((entry) => ({
@@ -20,9 +26,10 @@ export async function getStaticPaths() {
   }))
 }
 
-const { entry } = Astro.props
-const { Content, headings } = await render(entry)
-const port = PORT_BY_SLUG[entry.data.port]
+const { entry, context, page } = Astro.props
+const rendered = entry ? await render(entry) : undefined
+const Content = rendered?.Content
+const port = entry ? PORT_BY_SLUG[entry.data.port] : undefined
 
 /**
  * The page's own path within this port+version, which is what Seo.astro
@@ -30,15 +37,15 @@ const port = PORT_BY_SLUG[entry.data.port]
  * them (.NET, 215 type pages) needs the rest of the id, or every type page
  * would declare itself a duplicate of the index.
  */
-const rest = entry.id.replace(/^[^/]+\/?/, '')
+const rest = entry?.id.replace(/^[^/]+\/?/, '')
 const pagePath = rest ? `api/${rest}` : 'api'
 ---
 
-<DocsLayout
+{context && page ? <NativeShell context={context} page={page} /> : entry && Content && <DocsLayout
   title={entry.data.title}
   description={entry.data.description}
   port={entry.data.port}
-  headings={headings}
+  headings={rendered?.headings}
   pagePath={pagePath}
   markdownIndex={isIndexSource(entry.filePath)}
 >
@@ -50,4 +57,4 @@ const pagePath = rest ? `api/${rest}` : 'api'
       </p>
     )
   }
-</DocsLayout>
+</DocsLayout>}

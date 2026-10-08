@@ -409,11 +409,14 @@ build_shell() {
   fi
   mkdir -p "$outdir"
 
-  local key cached
-  key="$(printf '%s|%s|%s|%s|%s|%s|%s|%s|%s|%s' \
+  local key cached native_context_digest=""
+  if [ -n "${LIBTMUX_DOCS_NATIVE_CONTEXT:-}" ]; then
+    native_context_digest="$(sha256sum "$LIBTMUX_DOCS_NATIVE_CONTEXT" | cut -d' ' -f1)"
+  fi
+  key="$(printf '%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s' \
     "$base_fingerprint" "$base" "$version" "$kind" "$is_default" "$default_version" \
     "${LIBTMUX_DOCS_PORT:-}" "${LIBTMUX_DOCS_PORT_DEFAULTS:-}" \
-    "${LIBTMUX_DOCS_LOCALE:-}" "${LIBTMUX_DOCS_PORT_ROOT:-}" | sha256sum | cut -c1-40)"
+    "${LIBTMUX_DOCS_LOCALE:-}" "${LIBTMUX_DOCS_PORT_ROOT:-}" "$native_context_digest" | sha256sum | cut -c1-40)"
   cached="$cache_dir/shell-$key"
   if [ "$no_cache" -eq 0 ] && [ -d "$cached" ]; then
     cp -a "$cached/." "$outdir/"
@@ -439,6 +442,7 @@ build_shell() {
       LIBTMUX_DOCS_DEFAULT_VERSION="$default_version" \
       LIBTMUX_DOCS_SKIP_PAGEFIND=true \
       LIBTMUX_DOCS_PORT="${LIBTMUX_DOCS_PORT:-}" \
+      LIBTMUX_DOCS_NATIVE_CONTEXT="${LIBTMUX_DOCS_NATIVE_CONTEXT:-}" \
       pnpm exec astro build --outDir "$outdir"
   )
 
@@ -1031,12 +1035,25 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     [ "$version" = "$default_version" ] && is_default=true
 
     port_out="$site_out/$slug/$version"
+    native_context=""
+    if [ "$skip_refs" -eq 0 ] && [ "$own_api" = "own-api" ]; then
+      ref_outdir="$scratch/ref-$slug-$version"
+      result="$(build_reference_cached "$slug" "$checkout" "$version" "$ref_outdir")"
+      ref_status="${result%%$'\t'*}"
+      ref_reason="${result#*$'\t'}"
+      if [ "$ref_status" = built ] && [ "$renderer" = sphinx ]; then
+        native_context="$scratch/native-context-$slug-$version.json"
+        native_source="$(reference_source_dir "$slug" "$checkout")"
+        node "$script_dir/native-shell-context.mjs" "$ref_outdir" "$LIBTMUX_DOCS_PORT_ROOT" \
+          "$slug" "$version" "$native_source" "$native_context" "${LIBTMUX_DOCS_SOURCE_SHA:-}"
+      fi
+    fi
     log "building $name ($slug)/$version (base=$LIBTMUX_DOCS_PORT_ROOT/$slug/$version/)"
     # LIBTMUX_DOCS_PORT is what makes this a *language* build rather than a
     # copy of the shared prose: the remark plugin drops every code fence
     # belonging to another port, and Seo/sidebar treat the page as that
     # port's own rather than a duplicate of the root's.
-    LIBTMUX_DOCS_PORT="$slug" \
+    LIBTMUX_DOCS_PORT="$slug" LIBTMUX_DOCS_NATIVE_CONTEXT="$native_context" \
       build_shell "$LIBTMUX_DOCS_PORT_ROOT/$slug/$version/" "$version" "$kind" "$is_default" "$default_version" "$port_out"
 
     if [ "$skip_refs" -eq 1 ]; then
@@ -1067,17 +1084,16 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
       continue
     fi
 
-    ref_outdir="$scratch/ref-$slug-$version"
-    result="$(build_reference_cached "$slug" "$checkout" "$version" "$ref_outdir")"
-    ref_status="${result%%$'\t'*}"
-    ref_reason="${result#*$'\t'}"
-
     if [ "$ref_status" = "built" ]; then
+      native_shell_args=()
+      if [ "$renderer" = sphinx ]; then
+        native_shell_args+=("$slug" "$version" "$native_context" "$port_out")
+      fi
+      node "$script_dir/normalize-native-shell.mjs" "$ref_outdir" "$LIBTMUX_DOCS_PORT_ROOT" "${native_shell_args[@]}"
+      # The temporary exports are replaced before search or publication sees them.
+      rm -rf "$port_out/api"
       mkdir -p "$port_out/api"
       cp -a "$ref_outdir/." "$port_out/api/"
-      native_shell_args=()
-      if [ "$renderer" = sphinx ]; then native_shell_args+=("$slug" "$version"); fi
-      node "$script_dir/normalize-native-shell.mjs" "$port_out/api" "$LIBTMUX_DOCS_PORT_ROOT" "${native_shell_args[@]}"
       node "$script_dir/brand-native-pages.mjs" "$port_out/api" "$slug" "$LIBTMUX_DOCS_PORT_ROOT"
     elif [ "$ref_status" = "skipped" ]; then
       mkdir -p "$port_out/api"
@@ -1087,6 +1103,9 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     summary_rows+=("$slug|$version|$renderer|$ref_status|[$generator] $ref_reason")
   done
 done < <(list_ports)
+
+# Compiled native exports and their assets must be complete before indexing.
+node "$script_dir/inject-shell.mjs" --site "$assembly_out"
 
 # Production owns the origin's robots.txt; a preview keeps its copy inside
 # its publish prefix.

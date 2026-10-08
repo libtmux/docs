@@ -68,7 +68,8 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
             <img class="port-artwork" src={withRoot(branding(entry.port).asset('logo.svg'))} width="26" height="26" alt="" />
             <span>{entry.name}{entry.links.length > 1 && <small>{link.label}</small>}</span>
             {entry.port === portSlug && <span class="doc-picker-check" aria-hidden="true">✓</span>}
-          </a>) : <span class="doc-picker-option" aria-disabled="true" data-picker-option data-match={`${entry.port} ${entry.name}`}>
+          </a>) : <span class="doc-picker-option" aria-disabled="true" data-port={entry.port} data-port-name={entry.name}
+            data-picker-option data-match={`${entry.port} ${entry.name}`}>
             <img class="port-artwork" src={withRoot(branding(entry.port).asset('logo.svg'))} width="26" height="26" alt="" />
             <span>{entry.name}<small>Unavailable</small></span>
           </span>)}

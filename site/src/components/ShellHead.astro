@@ -1,0 +1,24 @@
+---
+import '../styles/global.css'
+import { Font } from 'astro:assets'
+import ThemeScript from './ThemeScript.astro'
+import { pickerPaintRules } from '../lib/picker-paint'
+import { withRoot } from '../lib/site-root'
+---
+{/* Preload the faces used at first paint before the font gate starts. */}
+<Font cssVariable="--font-ibm-plex-sans" preload={[
+  { weight: 400, style: 'normal' }, { weight: 500, style: 'normal' },
+  { weight: 600, style: 'normal' }, { weight: 700, style: 'normal' },
+]} />
+<Font cssVariable="--font-ibm-plex-mono" preload={[
+  { weight: 400, style: 'normal' }, { weight: 400, style: 'italic' },
+  { weight: 600, style: 'normal' }, { weight: 700, style: 'normal' },
+  { weight: 700, style: 'italic' },
+]} />
+{/* ThemeScript lifts this gate on document.fonts.ready or after three seconds. */}
+<style is:inline>html.fonts-pending body{visibility:hidden}</style>
+<ThemeScript />
+<link rel="stylesheet" href={withRoot('/_shell/anchors.css')} />
+<script is:inline type="module" src={withRoot('/_shell/anchors.js')}></script>
+<style is:global set:html={pickerPaintRules()} />
+<link rel="preload" href={withRoot('/versions.json')} as="fetch" crossorigin="anonymous" />

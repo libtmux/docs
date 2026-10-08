@@ -1,0 +1,75 @@
+---
+import ShellHead from '../components/ShellHead.astro'
+import SiteHeader from '../components/SiteHeader.astro'
+import SiteFooter from '../components/SiteFooter.astro'
+import PrereleaseNotice from '../components/PrereleaseNotice.astro'
+import PagePortSwitcher from '../components/PagePortSwitcher.astro'
+import SearchModal from '../components/SearchModal.astro'
+import BackToTop from '../components/BackToTop.astro'
+import DocumentationContext from '../components/docs/DocumentationContext.astro'
+import DocumentationNavigationButtons from '../components/docs/DocumentationNavigationButtons.astro'
+import DocumentationScript from '../components/docs/DocumentationScript.astro'
+import NativeSphinxScript from '../components/docs/NativeSphinxScript.astro'
+import type { NativePageContext, NativeShellContext } from '../lib/native-shell'
+import { referencePageLinks } from '../lib/reference-page-links'
+import { PORTS } from '../lib/ports'
+import '../styles/native-sphinx.css'
+
+interface Props { context: NativeShellContext; page: NativePageContext }
+const { context, page } = Astro.props
+const { port, version, locale, base } = context
+const references = referencePageLinks()
+const symbols = Object.fromEntries(page.signatures.filter((id) => references.symbols[port]?.[id])
+  .map((id) => [id, references.symbols[port][id]]))
+const matches = symbols[page.signatures[0]] ?? []
+const entries = PORTS.map((entry) => ({
+  port: entry.slug, name: entry.name,
+  links: entry.slug === port ? [{ href: page.url }]
+    : !page.path ? [{ href: references.indexes[entry.slug] }]
+      : matches.filter((match, index, all) => match.port === entry.slug && all.findIndex((other) => other.href === match.href) === index),
+}))
+const equivalents = { port, primary: page.signatures[0], symbols, indexes: page.path ? undefined : references.indexes }
+---
+<!doctype html>
+<html data-native-shell-export>
+  <head data-native-shell-assets>
+    <script is:inline>
+      // Migrate Furo's preference once; storage-disabled readers still use the shared controls.
+      try {
+        if (!localStorage.getItem('color-scheme')) {
+          const legacy = localStorage.getItem('theme');
+          if (['light', 'dark', 'auto'].includes(legacy)) localStorage.setItem('color-scheme', legacy === 'auto' ? 'system' : legacy);
+        }
+      } catch (_) {}
+    </script>
+    <ShellHead />
+  </head>
+  <body>
+    <template data-native-boundary="header-start"></template>
+    <script is:inline>
+      document.documentElement.classList.remove('no-js');
+      function syncNativeTheme() { document.body.dataset.theme = document.documentElement.dataset.themeMode || 'auto'; }
+      syncNativeTheme();
+      new MutationObserver(syncNativeTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme-mode'] });
+    </script>
+    <SiteHeader documentationContext portSlug={port} version={version} locale={locale} sourcePath={page.sourcePath}>
+      <div slot="navigation" class="site-header-language">
+        <PagePortSwitcher entries={entries} portSlug={port} reserveLabelWidth />
+      </div>
+    </SiteHeader>
+    <DocumentationContext port={port} version={version} locale={locale} sourcePath={page.sourcePath} reference>
+      <DocumentationNavigationButtons slot="navigation" tableOfContents native />
+    </DocumentationContext>
+    <PrereleaseNotice />
+    <template data-native-boundary="header-end"></template>
+    <template data-native-boundary="footer-start"></template>
+    <SiteFooter locale={locale} source={page.source} markdownHref={page.markdownHref} llmsRoot={base}
+      githubUrl={`https://github.com/${context.source.repository}/tree/${context.source.sha}`} flush />
+    <BackToTop />
+    <SearchModal port={port} version={version} />
+    <script type="application/json" data-native-page-ports set:html={JSON.stringify(equivalents).replaceAll('<', '\\u003c')} />
+    <DocumentationScript />
+    <NativeSphinxScript />
+    <template data-native-boundary="footer-end"></template>
+  </body>
+</html>
