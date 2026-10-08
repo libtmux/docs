@@ -7,7 +7,7 @@ import { dev } from 'astro'
 import { chromium, firefox, webkit } from 'playwright'
 import { API_MODEL_PORTS, PORTS, productAvailable } from '../src/lib/ports.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
-import { checkApiExampleOwnership, checkApiNavigation, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
+import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
 import { checkReferencePreferences, checkGlobalHeader } from './check-reference-preferences.mjs'
 import { checkHomeLauncher } from './check-home-launcher.mjs'
 import { checkHomeTaskReset } from './check-home-task-reset.mjs'
@@ -16,6 +16,7 @@ import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample } from './check-dev-sample.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
+const apiAnchorsOnly = process.argv.includes('--api-anchors')
 const apiSignaturesOnly = process.argv.includes('--api-signatures')
 const referenceLayoutOnly = process.argv.includes('--reference-layout')
 const keywordHelpOnly = process.argv.includes('--keyword-help')
@@ -502,13 +503,14 @@ async function checkReferenceAndHeroes(browser, base) {
       await page.getByRole('button', { name: 'Show full name', exact: true }).click()
       assert.equal(await page.locator('.api-qualified-namespace').innerText(), 'io.github.libtmux')
       assert.equal(await page.locator('[data-api-copy-name]').getAttribute('data-api-copy-name'), qualifiedName)
-      assert.equal(await page.locator('main h1').getAttribute('id'), qualifiedName.replace('libtmux.Server', 'libtmux.Server.Server'))
+      const legacyId = qualifiedName.replace('libtmux.Server', 'libtmux.Server.Server')
+      assert(await page.locator(`[id="${legacyId}"]`).evaluate((element) => element.matches('dt.gp-sphinx-api-header')),
+        'The stable symbol fragment reaches its declaration')
       assert(await page.locator('.api-qualified-name').textContent().then((text) => text.includes(qualifiedName)),
         `${qualifiedName}: complete source name remains in accessible HTML`)
       if (!qualifiedName.endsWith('.sessions')) {
-        const legacyId = qualifiedName.replace('libtmux.Server', 'libtmux.Server.Server')
         const declaration = page.locator(`dt[data-symbol-id="${legacyId}"]`)
-        assert.equal(await declaration.getAttribute('id'), `${legacyId}.declaration`)
+        assert.equal(await declaration.locator('.section-anchor-alias').getAttribute('id'), `${legacyId}.declaration`)
         for (const width of [1440, 390]) {
           await page.setViewportSize({ width, height: 900 })
           const signature = declaration.locator('.gp-sphinx-api-signature:visible')
@@ -588,6 +590,8 @@ try {
     const page = await browser.newPage({ reducedMotion: 'reduce' })
     page.setDefaultTimeout(10000)
     await retryReload(() => checkApiNavigation(page, base))
+  } else if (apiAnchorsOnly) {
+    await retryReload(() => checkApiAnchorArrival(browser, base))
   } else {
     // Keep one auxiliary check beside the main page walk. Starting every
     // matrix at once saturates the compiler and times out unrelated pages.
@@ -619,6 +623,7 @@ try {
     const apiNavigationPage = await browser.newPage({ reducedMotion: 'reduce' })
     apiNavigationPage.setDefaultTimeout(10000)
     const apiNavigation = schedule(() => retryReload(() => checkApiNavigation(apiNavigationPage, base)).finally(() => apiNavigationPage.close()))
+    const apiAnchors = schedule(() => retryReload(() => checkApiAnchorArrival(browser, base)))
     const paths = ['tmux/concepts/server-session-window-pane', 'tmux/examples/attach-and-send-keys', 'mcp/tools', 'ts/latest/workspace/reference/builder-applyworkspace',
       'ts/latest/workspace/internals/guides', 'py/stable/workspace/guides',
       'ts/latest/mcp/tools', 'csharp/latest/mcp/tools/capture_pane']
@@ -884,7 +889,7 @@ try {
     await page.close()
     const failures = (await Promise.all([
       navigation, apiExamples, reference, preferences, globalHeader, apiNavigation,
-      clipboard, documentationNavigation, homeLauncher,
+      clipboard, documentationNavigation, homeLauncher, apiAnchors,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
   }

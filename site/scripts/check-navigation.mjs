@@ -478,6 +478,64 @@ export async function checkApiNavigation(page, base) {
   console.log('API search: full member names, category filters, keyboard focus, phone layout and visible retryable failures pass')
 }
 
+/** Public symbol fragments and earlier declaration links reach the same bar. */
+export async function checkApiAnchorArrival(browser, base) {
+  const paths = new Set([`${base}/py/latest/reference/libtmux-_internal-query_list-querylist/`])
+  const catalog = await browser.newPage()
+  try {
+    for (const port of PORTS) {
+      await catalog.goto(`${base}/${port.slug}/latest/reference/`, { waitUntil: 'load' })
+      const href = await catalog.locator('.api-index-card__link').first().getAttribute('href')
+      assert(href, `${port.slug}: the reference index links a real declaration`)
+      paths.add(new URL(href, base).href)
+    }
+  } finally {
+    await catalog.close()
+  }
+  for (const [width, colorScheme, javaScriptEnabled] of [
+    [390, 'light', true], [1280, 'dark', true],
+    [390, 'dark', false], [1280, 'light', false],
+  ]) {
+    const context = await browser.newContext({ viewport: { width, height: 1000 }, colorScheme,
+      javaScriptEnabled, reducedMotion: 'reduce' })
+    const page = await context.newPage()
+    page.setDefaultTimeout(10000)
+    try {
+      for (const path of paths) {
+        const response = await page.goto(path, { waitUntil: 'load' })
+        assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
+        const declaration = page.locator('dt.gp-sphinx-api-header').first()
+        const href = await declaration.locator('a.headerlink').getAttribute('href')
+        const identity = href.slice(1)
+        const idleColor = await declaration.evaluate((element) => getComputedStyle(element).backgroundColor)
+        assert.equal(await declaration.getAttribute('id'), identity, `${path}: the symbol link reaches its declaration`)
+        for (const fragment of [identity, `${identity}.declaration`]) {
+          await page.goto(`${path}#${encodeURIComponent(fragment)}`, { waitUntil: 'load' })
+          await page.evaluate(() => document.fonts.ready)
+          if (javaScriptEnabled) await page.waitForFunction((id) =>
+            document.getElementById(id)?.hasAttribute('data-anchor-arrival'), identity)
+          const arrival = await declaration.evaluate((element, fragment) => {
+            const rect = element.getBoundingClientRect()
+            return { ownsFragment: element.contains(document.getElementById(fragment)),
+              target: element.matches(':target, :has(> .section-anchor-alias:target)'),
+              color: getComputedStyle(element).backgroundColor, top: rect.top,
+              header: document.querySelector('.site-header').getBoundingClientRect().bottom,
+              viewport: innerHeight, overflow: document.documentElement.scrollWidth - innerWidth }
+          }, fragment)
+          assert(arrival.ownsFragment && arrival.target, `${path}: ${fragment} targets the declaration`)
+          assert(arrival.color !== idleColor && arrival.color !== 'rgba(0, 0, 0, 0)' && arrival.color !== 'transparent',
+            `${path}#${fragment}: arrival changes the declaration background`)
+          assert(arrival.top >= arrival.header - 1 && arrival.top < arrival.viewport && arrival.overflow <= 1,
+            `${path}#${fragment} at ${width}px (JavaScript ${javaScriptEnabled}): the declaration is visible below the header without overflow: ${JSON.stringify(arrival)}`)
+        }
+      }
+    } finally {
+      await context.close()
+    }
+  }
+  console.log(`API anchors: ${paths.size} declarations across ${PORTS.length} ports, primary and retained fragments, phone/desktop, both themes and no-JavaScript navigation pass`)
+}
+
 /** Check the controls attached to a document after its content is replaced. */
 export async function checkNavigation(page, base) {
   await observeInitialPageLoad(page)
