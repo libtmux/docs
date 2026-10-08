@@ -120,6 +120,9 @@ try {
       await page.goto(`${root}genindex/`)
       assert.equal(await page.locator('#mobile-toc-toggle').count(), 0, 'An empty native index offers Contents')
       assert.equal(await page.locator('#native-toc').isVisible(), false)
+      await page.locator('#__navigation').focus()
+      await page.keyboard.press('Tab')
+      assert.notEqual(await page.evaluate(() => document.activeElement.id), '__toc', 'Empty Contents remains a keyboard stop')
     } finally { await context.close() }
   }
 } finally { await browser.close() }
