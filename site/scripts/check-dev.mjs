@@ -299,11 +299,16 @@ async function checkKeywordHelp(browser, base) {
           await panel.waitFor({ state: 'visible' })
           if (javaScriptEnabled) await page.evaluate(() => new Promise(requestAnimationFrame))
           const box = await panel.boundingBox()
-          assert(box.x >= 0 && box.y >= 0 && box.x + box.width <= width + 1 && box.y + box.height <= 901,
-            `${colorScheme}/${width}px/JS=${javaScriptEnabled}: keyword help stays inside the viewport`)
+          // Chromium can reserve a stable gutter while clientWidth still includes it.
+          const viewport = await page.evaluate(() => {
+            const { left, right, width } = document.documentElement.getBoundingClientRect()
+            return { left, right, width, height: innerHeight }
+          })
+          assert(box.x >= viewport.left && box.y >= 0 && box.x + box.width <= viewport.right + 1 && box.y + box.height <= viewport.height + 1,
+            `${colorScheme}/${width}px/JS=${javaScriptEnabled}: keyword help stays inside the viewport: ${JSON.stringify({ box, viewport })}`)
           if (!javaScriptEnabled) {
-            assert(Math.abs(box.x + box.width / 2 - width / 2) < 1 && Math.abs(box.y + box.height / 2 - 450) < 1,
-              'Native keyword help stays centered without JavaScript')
+            assert(Math.abs(box.x + box.width / 2 - (viewport.left + viewport.right) / 2) < 1 && Math.abs(box.y + box.height / 2 - viewport.height / 2) < 1,
+              `Native keyword help stays centered without JavaScript: ${JSON.stringify({ box, viewport })}`)
           }
           const after = await declaration.boundingBox()
           assert.equal(after.height, before.height, 'Keyword help does not change the signature height')

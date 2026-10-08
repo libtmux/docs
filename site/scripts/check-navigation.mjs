@@ -402,7 +402,12 @@ export async function checkApiNavigation(page, base) {
       await nav.locator('[role="tree"]').evaluate((el) => { el.scrollTop = el.scrollHeight })
       if (close === 'button') await nav.locator('[data-api-nav-close]').click()
       else if (close === 'Escape') await page.keyboard.press('Escape')
-      else await page.locator('[data-api-nav-overlay]').click({ position: { x: width - 2, y: 400 } })
+      else {
+        const overlay = page.locator('[data-api-nav-overlay]')
+        const bounds = await overlay.boundingBox()
+        assert(bounds, 'The open drawer exposes its dismissal overlay')
+        await overlay.click({ position: { x: bounds.width - 2, y: 400 } })
+      }
       await nav.waitFor({ state: 'hidden' })
       assert.equal(await toggle.getAttribute('aria-expanded'), 'false')
       assert.equal(await page.evaluate(() => document.body.style.overflow), '')
