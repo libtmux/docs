@@ -108,10 +108,12 @@ export async function checkGlobalHeader(browser, base) {
   for (const javaScriptEnabled of [false, true]) {
     const context = await browser.newContext({ javaScriptEnabled, reducedMotion: 'reduce' })
     const page = await context.newPage()
+    const headerFrames = new Map()
     try {
-      for (const path of ['/', '/tmux/latest/manual/capture-pane/']) {
+      for (const path of ['/', '/tmux/latest/manual/capture-pane/', '/py/latest/', '/ts/latest/', '/api-example-probe/']) {
         await page.goto(`${base}${path}`)
-        for (const width of [280, 304, 390, 768, 784, 1024, 1440, 1600]) {
+        await page.waitForFunction(() => document.fonts.status === 'loaded')
+        for (const width of [280, 304, 390, 768, 784, 1024, 1440, 1600, 1920]) {
           await page.setViewportSize({ width, height: 900 })
           assert.equal(await page.locator('header nav[aria-label="Documentation destinations"]').count(), 0)
           const menu = page.locator('.site-header__menu')
@@ -121,13 +123,19 @@ export async function checkGlobalHeader(browser, base) {
             const brand = document.querySelector('.site-header__mark').getBoundingClientRect()
             const controls = document.querySelector('.site-header__always').getBoundingClientRect()
             const menu = document.querySelector('.site-header__menu-button').getBoundingClientRect()
+            const bar = document.querySelector('.site-header__bar').getBoundingClientRect()
             return { fits: document.documentElement.scrollWidth <= innerWidth + 1,
+              frame: { left: bar.left, width: bar.width, height: bar.height, wordmark: brand.left, controls: controls.left, menu: menu.left },
               wordmarkVisible: brand.width > 40 && brand.height > 20
                 && getComputedStyle(document.querySelector('.site-header__wordmark')).clipPath === 'none',
               separate: brand.right <= controls.left && controls.right <= menu.left }
           })
           assert(geometry.fits && geometry.separate, `${path} at ${width}px: header controls fit without overlap`)
           assert(geometry.wordmarkVisible, `${path} at ${width}px: the wordmark remains a visible home link`)
+          if (width >= 1600) {
+            if (!headerFrames.has(width)) headerFrames.set(width, geometry.frame)
+            assert.deepEqual(geometry.frame, headerFrames.get(width), `${path} at ${width}px: global controls keep their homepage positions`)
+          }
           await menu.locator(':scope > summary').click()
         }
       }
@@ -139,5 +147,5 @@ export async function checkGlobalHeader(browser, base) {
       await context.close()
     }
   }
-  console.log('Global header: no destination strip, usable menu and home link, 280–1600px with/without JavaScript')
+  console.log('Global header: usable menu and home link, stable wide-screen positions across home, prose, ports and reference, 280–1920px with/without JavaScript')
 }

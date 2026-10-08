@@ -127,8 +127,10 @@ const openState = (p, id, closedClass) => p.evaluate(([i, c]) => {
 // breakpoint
 for (const [w, want] of [[360, true], [390, true], [768, true], [1023, true], [1024, false], [1440, false]]) {
   const p = await page(WITH_TOC, w)
-  const visible = await p.locator('.mobile-toolbar').isVisible()
-  note(visible === want, `toolbar ${want ? 'visible' : 'hidden'} at ${w}px`)
+  const settings = p.locator('[data-context-settings-toggle]')
+  if (await settings.isVisible()) await settings.click()
+  const visible = await p.locator('#mobile-sidebar-toggle').isVisible()
+  note(visible === want, `navigation control ${want ? 'visible' : 'hidden'} at ${w}px`)
   await p.close()
 }
 // The shared picker stays reachable while the API drawer opens and resizes.

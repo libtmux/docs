@@ -1,10 +1,8 @@
 ---
 import SurfacePicker from './SurfacePicker.astro'
-import PagePortSwitcher from '../PagePortSwitcher.astro'
 import VersionSwitcher from '../VersionSwitcher.astro'
 import LocaleSwitcher from '../LocaleSwitcher.astro'
 import { getDocumentationSurfaces } from '../../lib/documentation-navigation'
-import type { PagePortLink } from '../../lib/page-port-links'
 import type { Locale } from '../../i18n/locales'
 import type { LocaleStatus } from '../../i18n/resolve'
 import { t } from '../../i18n/ui'
@@ -16,11 +14,10 @@ interface Props {
   version: string
   locale: Locale
   sourcePath: string
-  pagePorts: PagePortLink[]
   localeStatuses?: Record<string, LocaleStatus>
   reference?: boolean
 }
-const { port, version, locale, sourcePath, pagePorts, localeStatuses, reference = false } = Astro.props
+const { port, version, locale, sourcePath, localeStatuses, reference = false } = Astro.props
 const surfaces = await getDocumentationSurfaces(port, version, locale)
 const command = sourcePath.match(/^tmux\/[^/]+\/manual\/(.+?)\/?$/)?.[1]
 const sourceReference = sourcePath.match(/^tmux\/([^/]+)\/reference(?:\/(.*?))?\/?$/)
@@ -36,7 +33,6 @@ const tmuxVersions = !port ? TMUX_VERSIONS.map((entry) => ({
       <SurfacePicker surfaces={surfaces} currentPath={Astro.url.pathname} port={port} version={version} locale={locale} />
     </div>
     <div class="documentation-context-selectors" aria-label="Documentation context">
-      <PagePortSwitcher entries={pagePorts} portSlug={port} tmux={!port} />
       <div class="documentation-context-settings" id="documentation-settings" data-context-settings>
         <button type="button" class="context-settings-back" data-context-settings-back hidden aria-label={t(locale, 'navigation.back')}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m7 3-5 5 5 5M2 8h12" /></svg>
@@ -86,10 +82,8 @@ const tmuxVersions = !port ? TMUX_VERSIONS.map((entry) => ({
     .documentation-context-navigation { gap: .2rem; padding: .25rem .25rem .25rem 0; }
     .documentation-context :global(.surface-picker > summary) { padding-inline: calc(var(--site-gutter) - .25rem - 1px) .2rem; gap: .3rem; }
     .documentation-context :global(.surface-artwork) { width: 1.5rem; height: 1.5rem; }
-    .documentation-context :global([data-page-port-switcher] > summary), .documentation-context :global([data-locale-picker] > summary), .documentation-context :global([data-version-picker] > summary) { padding-inline: .35rem; gap: .2rem; }
-    .documentation-context :global([data-page-port-switcher] > summary > svg:first-child), .documentation-context :global([data-locale-picker] > summary > span[lang]) { display: none; }
-    .documentation-context :global(.page-port-name) { display: none; }
-    .documentation-context :global(.page-port-short-name) { display: inline; }
+    .documentation-context :global([data-locale-picker] > summary), .documentation-context :global([data-version-picker] > summary) { padding-inline: .35rem; gap: .2rem; }
+    .documentation-context :global([data-locale-picker] > summary > span[lang]) { display: none; }
     .documentation-context :global(.version-label) { max-width: 4.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .documentation-context :global(.toolbar-button) { width: 2rem; height: 2.25rem; }
   }
@@ -99,8 +93,7 @@ const tmuxVersions = !port ? TMUX_VERSIONS.map((entry) => ({
     .documentation-context[data-settings-enhanced] .documentation-context-navigation { display: none; }
     .documentation-context[data-settings-enhanced] .context-settings-toggle { display: inline-flex; }
     .documentation-context[data-settings-open] .documentation-context-surface,
-    .documentation-context[data-settings-open] .context-settings-toggle,
-    .documentation-context[data-settings-open] .documentation-context-selectors > :global([data-page-port-switcher]) { display: none; }
+    .documentation-context[data-settings-open] .context-settings-toggle { display: none; }
     .documentation-context[data-settings-open] .documentation-context-selectors { flex: 1; padding-inline: var(--site-gutter) .2rem; }
     .documentation-context[data-settings-open] .documentation-context-settings { display: flex; flex: 1; min-height: 2.5rem; }
     .documentation-context[data-settings-open] .documentation-context-navigation:not(:empty) { display: flex; padding-right: var(--site-gutter); }

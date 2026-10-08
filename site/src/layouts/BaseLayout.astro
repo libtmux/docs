@@ -1,8 +1,6 @@
 ---
-import '../styles/global.css'
 import { buildLocale } from '../i18n/resolve'
 import { localeSourcePath } from '../i18n/locales'
-import { Font } from 'astro:assets'
 import { ClientRouter } from 'astro:transitions'
 import BackToTop from '../components/BackToTop.astro'
 import Seo from '../components/Seo.astro'
@@ -11,9 +9,9 @@ import { pageBrand } from '../lib/ports'
 import SiteFooter from '../components/SiteFooter.astro'
 import PrereleaseNotice from '../components/PrereleaseNotice.astro'
 import SiteHeader from '../components/SiteHeader.astro'
-import ThemeScript from '../components/ThemeScript.astro'
+import ShellHead from '../components/ShellHead.astro'
+import DocumentationScript from '../components/docs/DocumentationScript.astro'
 import SearchModal from '../components/SearchModal.astro'
-import { pickerPaintRules } from '../lib/picker-paint'
 import { buildTarget } from '../lib/versions'
 import type { VersionEntry } from '../lib/versions'
 import { withPortRoot, withRoot } from '../lib/site-root'
@@ -28,9 +26,8 @@ import type { LocaleStatus } from '../i18n/resolve'
  * landing, prose, and the three ports whose reference we render ourselves.
  *
  * Ports rendered by Sphinx or their own generator do not use this layout;
- * they receive the same header, footer and switchers as runtime-injected
- * artifacts instead. Keeping the markup here and the injected copy in sync
- * is what `scripts/build-site.sh` checks.
+ * their native articles receive compiled exports of these same components
+ * during assembly. NativeShell.astro supplies each native page's context.
  */
 interface Props {
   title: string
@@ -187,45 +184,7 @@ const homeBrands = homeLauncher
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <ClientRouter fallback="swap" />
     <BrandIcons portSlug={navPort} pagePath={pagePath} />
-    {/*
-      Preload faces used on initial pages, as measured by check-fonts.mjs.
-      ThemeScript waits for document.fonts.ready; preloading starts those
-      requests before CSS discovery. See notes/gp-sphinx-parity.md.
-    */}
-    <Font
-      cssVariable="--font-ibm-plex-sans"
-      preload={[
-        { weight: 400, style: 'normal' },
-        { weight: 500, style: 'normal' },
-        { weight: 600, style: 'normal' },
-        { weight: 700, style: 'normal' },
-      ]}
-    />
-    <Font
-      cssVariable="--font-ibm-plex-mono"
-      preload={[
-        { weight: 400, style: 'normal' },
-        { weight: 400, style: 'italic' },
-        { weight: 600, style: 'normal' },
-        { weight: 700, style: 'normal' },
-        { weight: 700, style: 'italic' },
-      ]}
-    />
-    {/*
-      The font gate's stylesheet, before anything it hides.
-
-      Paired with `gateOnFonts()` in ThemeScript: the class is only ever added
-      by that script, so a reader without JavaScript is never gated, and the
-      script lifts it on `document.fonts.ready` or after 3s, whichever is
-      first. `visibility` rather than `display` so the layout is computed and
-      settled behind the gate — the page appears, it does not assemble.
-    */}
-    <style is:inline>html.fonts-pending body{visibility:hidden}</style>
-    <ThemeScript />
-    <link rel="stylesheet" href={withRoot('/_shell/anchors.css')} />
-    <script is:inline type="module" src={withRoot('/_shell/anchors.js')}></script>
-    {/* Paints the picker in the saved language. Must precede the body. */}
-    <style is:global set:html={pickerPaintRules()} />
+    <ShellHead />
     <Seo
       title={title}
       description={description}
@@ -244,9 +203,6 @@ const homeBrands = homeLauncher
       updated={updated}
       breadcrumbs={breadcrumbs}
     />
-    {/* The switcher reads the live manifest, so a version published after
-        this build still appears here. */}
-    <link rel="preload" href={withRoot('/versions.json')} as="fetch" crossorigin="anonymous" />
     {/* Where an agent finds this page as Markdown without guessing the
         suffix. `data-twin` tells integrations/markdown-twins.ts who writes it. */}
     <link rel="alternate" type="text/markdown" href={markdownHref} data-twin={typeof markdown === 'object' ? 'elsewhere' : markdown} />
@@ -296,25 +252,6 @@ const homeBrands = homeLauncher
     {!bare && <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} githubUrl={githubUrl} flush={flush} />}
     <BackToTop />
     <SearchModal port={navPort} version={navVersion} />
-    <script>
-      import { initDocumentationNavigation } from '../components/docs/documentation-navigation'
-
-      // A Sidebar may first render inside <noscript>. Start the shared behavior
-      // here so Astro's script deduplication cannot strand it in that fallback.
-      initDocumentationNavigation()
-      document.addEventListener('astro:after-swap', initDocumentationNavigation)
-
-      // Port/version trees have independently built scripts. Loading a second
-      // bundle into the same document would keep both sets of global listeners.
-      document.addEventListener('astro:before-preparation', (event) => {
-        const load = event.loader
-        event.loader = async () => {
-          await load()
-          if (event.newDocument.documentElement.dataset.shellBase !== document.documentElement.dataset.shellBase) {
-            event.preventDefault()
-          }
-        }
-      })
-    </script>
+    <DocumentationScript />
   </body>
 </html>

@@ -8,7 +8,6 @@ import { chromium, firefox, webkit } from 'playwright'
 import { API_MODEL_PORTS, PORTS, productAvailable } from '../src/lib/ports.ts'
 import { checkClipboard, checkCompleteApiExamples } from './check-clipboard.mjs'
 import { checkApiExampleOwnership, checkApiNavigation, checkDocumentationNavigation, checkNavigation } from './check-navigation.mjs'
-import { checkNativeLayout } from './check-native-layout.mjs'
 import { checkReferencePreferences, checkGlobalHeader } from './check-reference-preferences.mjs'
 import { checkHomeLauncher } from './check-home-launcher.mjs'
 import { checkHomeTaskReset } from './check-home-task-reset.mjs'
@@ -598,7 +597,6 @@ try {
       previous = pending
       return pending
     }
-    const nativeLayout = schedule(() => checkNativeLayout(browser))
     const apiExamples = schedule(() => checkCompleteApiExamples(browser, base))
     const page = await browser.newPage({ reducedMotion: 'reduce' })
     page.setDefaultTimeout(10000)
@@ -685,6 +683,7 @@ try {
         const result = await page.evaluate(() => ({
           overflow: document.documentElement.scrollWidth - innerWidth,
           headerHeight: document.querySelector('.site-header__bar').getBoundingClientRect().height,
+          headerPicker: Boolean(document.querySelector('.site-header-language [data-page-port-switcher]')),
           badgeForeground: getComputedStyle(document.querySelector('.prerelease-notice__badge')).color,
           schemeLabelWidth: document.querySelector('.scheme-switch__label').getBoundingClientRect().width,
           headerControls: ['.site-header__search', '.scheme-switch, .scheme-cycle', '.site-header__menu-button'].map((selector) => {
@@ -700,7 +699,7 @@ try {
               ? head.map((cell, i) => Math.abs(cell.getBoundingClientRect().x - body[i].getBoundingClientRect().x)) : []
           }),
         }))
-        assert(result.headerHeight <= 49, `${path} at ${width}px: header grew`)
+        assert(result.headerHeight <= (result.headerPicker && width <= 560 ? 97 : 53), `${path} at ${width}px: responsive header fits`)
         assert.equal(result.redundantHeaderLinks, 0, 'Surface destinations are absent from the header bar')
         assert(result.headerControls.every((control) => Math.abs(control.height - result.headerControls[0].height) < 0.1
           && Math.abs(control.top - result.headerControls[0].top) < 0.1), `${path} at ${width}px: header controls align at equal heights`)
@@ -862,7 +861,7 @@ try {
       await checkContrast(colorScheme)
       assert.equal(await noScript.locator('.documentation-context-navigation').isVisible(), false, 'No-JS hides inactive context drawer buttons')
       assert.equal(await noScript.locator('.mobile-fallback').isVisible(), true, 'No-JS has usable mobile navigation')
-      await checkContrast(colorScheme, ['.mobile-fallback summary', '.documentation-context .surface-current strong', '.documentation-context [data-page-port-switcher] > summary'])
+      await checkContrast(colorScheme, ['.mobile-fallback summary', '.documentation-context .surface-current strong', '.site-header-language [data-page-port-switcher] > summary'])
       const browse = noScript.locator('.mobile-fallback > details').first()
       await browse.locator('summary').first().focus()
       await noScript.keyboard.press('Enter')
@@ -885,7 +884,7 @@ try {
     await page.close()
     const failures = (await Promise.all([
       navigation, apiExamples, reference, preferences, globalHeader, apiNavigation,
-      clipboard, nativeLayout, documentationNavigation, homeLauncher,
+      clipboard, documentationNavigation, homeLauncher,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
   }

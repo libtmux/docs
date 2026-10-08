@@ -1,0 +1,62 @@
+/* Furo's fluid root size would resize the shared controls on wide screens. */
+html[data-native-shell] { font-size: 100%; --native-header-height: calc(3.25rem + 1px); }
+@media (max-width: 35rem) { html[data-native-shell] { --native-header-height: calc(6rem + 1px); } }
+/* The shared shell owns the palette; Furo still owns the native article. */
+html[data-native-shell] body {
+  height: auto;
+  min-height: 100vh;
+  --color-background-primary: var(--background-color);
+  --color-background-secondary: var(--color-surface);
+  --color-background-hover: var(--color-surface-hover);
+  --color-foreground-primary: var(--text-color);
+  --color-foreground-secondary: var(--color-muted);
+  --color-foreground-muted: var(--color-muted);
+  --color-background-border: var(--color-edge);
+  --color-brand-primary: var(--color-link);
+  --color-brand-content: var(--color-link);
+  --color-brand-visited: var(--lt-color-link-visited);
+  --color-inline-code-background: var(--color-surface);
+  --font-stack: var(--font-sans);
+  --font-stack--monospace: var(--font-mono);
+}
+html[data-native-shell] .sidebar-sticky,
+html[data-native-shell] .toc-sticky {
+  top: var(--native-header-height);
+  height: calc(100vh - var(--native-header-height));
+}
+html[data-native-shell] .site-header a { color: inherit; }
+html[data-native-shell] :is(.site-header, .documentation-context, .prerelease-notice) { line-height: 1.5; }
+html[data-native-shell] .site-header h3,
+html[data-native-shell] .documentation-context h3 { font-family: var(--font-sans); }
+html[data-native-shell] .toolbar-button { cursor: pointer; }
+html[data-native-shell] .sidebar-drawer { z-index: 45; }
+html[data-native-shell] .sidebar-overlay,
+html[data-native-shell] .toc-overlay { z-index: 44; }
+html[data-native-shell] #documentation-navigation { display: flex; }
+@media (min-width: 63.01em) {
+  html[data-native-shell] .sidebar-drawer { z-index: 30; }
+  html[data-native-shell] #mobile-sidebar-toggle { display: none; }
+}
+@media (min-width: 82.01em) {
+  html[data-native-shell] .toc-drawer { z-index: 30; }
+  html[data-native-shell] #documentation-navigation { display: none; }
+}
+@media (max-width: 24rem) {
+  html[data-native-shell] .documentation-context[data-settings-enhanced]:not([data-settings-open]) #documentation-navigation { display: none; }
+}
+/* No-script readers can tab to the native checkbox controls and their labels. */
+html.no-js[data-native-shell] .sidebar-toggle {
+  display: block;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+}
+html.no-js[data-native-shell]:has(#__navigation:focus-visible) #mobile-sidebar-toggle,
+html.no-js[data-native-shell]:has(#__toc:focus-visible) #mobile-toc-toggle {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-native-shell] .sidebar-drawer,
+  html[data-native-shell] .toc-drawer { transition: none; }
+}

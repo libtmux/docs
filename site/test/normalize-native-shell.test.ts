@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { runInNewContext } from 'node:vm'
 import { describe, expect, it } from 'vitest'
 import { normalizeNativeShell } from '../../scripts/normalize-native-shell.mjs'
+import { nativeArticle, nativeHash } from '../../scripts/native-shell-context.mjs'
 import { recordBuild, verifyBuild } from '../../scripts/publication-provenance.mjs'
 
 describe('native shell URL normalization', () => {
@@ -26,54 +27,53 @@ describe('native shell URL normalization', () => {
       expect(destination).toBe(`${target}?q=Server%20panes#results`)
       expect(await normalizeNativeShell(directory, '/pr-42/en', { sphinxPort: 'py', version: 'v0.62.0' })).toBe(0)
       writeFileSync(join(directory, 'index.html'), '<html><head></head><body>Missing article</body></html>')
-      await expect(normalizeNativeShell(directory, '/pr-42/en', { sphinxPort: 'py' })).rejects.toThrow('no article')
+      await expect(normalizeNativeShell(directory, '/pr-42/en', { sphinxPort: 'py' })).rejects.toThrow('no compiled context')
     } finally {
       rmSync(directory, { recursive: true, force: true })
     }
   })
 
-  it('adds the Sphinx shell to old sources and preserves nested links and redirects', async () => {
+  it('splices compiled regions without rewriting native content, links, metadata or credits', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'native-sphinx-'))
     try {
-      mkdirSync(join(directory, 'api/pane'), { recursive: true })
-      const page = join(directory, 'api/pane/index.html')
-      writeFileSync(page, '<html><head><link rel="stylesheet" href="../../_static/theme.css"></head><body><article><a href="#capture">Capture</a><h2 id="capture">Pane</h2></article></body></html>')
-      const redirect = '<html><head><meta http-equiv="refresh" content="0;url=/search/"></head></html>'
-      writeFileSync(join(directory, 'index.html'), redirect)
-      await normalizeNativeShell(directory, '/pr-42/en', { sphinxPort: 'py', version: 'v0.62.0' })
+      const native = join(directory, 'native')
+      const shell = join(directory, 'shell')
+      mkdirSync(join(native, 'api/pane'), { recursive: true })
+      mkdirSync(join(shell, 'api/api/pane'), { recursive: true })
+      const page = join(native, 'api/pane/index.html')
+      const article = '<h2 id="capture">Pane &amp; capture</h2>\n<pre>  $ printf &quot;ok&quot;\n</pre><a href="#capture">Capture</a>'
+      const baseline = `<html class="no-js"><head><title>Native title</title><link rel="canonical" href="https://native.example/pane/"><link href="../../_static/theme.css" rel="stylesheet"><link href="../../_static/libtmux-org.css?v=old" rel="stylesheet"><script src="/_shell/shell.js"></script></head><body><header class="mobile-header">Old</header><article role="main">${article}</article><footer><a href="../session/">Next</a><p>Native attribution</p><div class="page-source"><code>docs/pane.md</code></div></footer></body></html>`
+      writeFileSync(page, baseline)
+      const context = {
+        schema: 1, port: 'py', version: 'v0.62.0', root: '/pr-42/en/', base: '/pr-42/en/py/v0.62.0/api/',
+        pages: [{ file: 'api/pane/index.html', htmlSha256: nativeHash(baseline), articleSha256: nativeHash(article) }],
+      }
+      const contextFile = join(directory, 'context.json')
+      writeFileSync(contextFile, JSON.stringify(context))
+      const envelope = `<html data-native-shell-export><head data-native-shell-assets><link rel="stylesheet" href="/pr-42/en/py/v0.62.0/_astro/shell.css"><script type="module" src="/pr-42/en/py/v0.62.0/_astro/shell.js"></script></head><body><template data-native-boundary="header-start"></template><header class="site-header">Shared header</header><template data-native-boundary="header-end"></template><template data-native-boundary="footer-start"></template><footer class="shared-footer">Shared footer</footer><template data-native-boundary="footer-end"></template></body></html>`
+      writeFileSync(join(shell, 'api/api/pane/index.html'), envelope)
+      const options = { sphinxPort: 'py', version: 'v0.62.0', contextFile, shellDirectory: shell }
+      await normalizeNativeShell(native, '/pr-42/en', options)
       const html = readFileSync(page, 'utf8')
-      expect(html).toContain('href="../../_static/libtmux-org.css"')
-      expect(html).toContain('data-pagefind-body data-pagefind-filter="port:Python"')
-      expect(html).toContain('<script defer src="/pr-42/en/_shell/shell.js"></script>')
+      expect(nativeArticle(html)).toBe(article)
+      expect(html).toContain('<title>Native title</title><link rel="canonical" href="https://native.example/pane/">')
       expect(html).toContain('href="../../_static/theme.css"')
-      expect(html).toContain('<a href="#capture">Capture</a>')
-      expect(html.indexOf('id="lt-shell-style"')).toBeLessThan(html.indexOf('</head>'))
-      expect(html.indexOf('data-lt-shell="header"')).toBeLessThan(html.indexOf('<article'))
-      expect(html).toContain('data-current="v0.62.0"')
-      expect(html).toContain('href="/pr-42/en/py/v0.62.0/api/api/pane/"')
-      expect(html.match(/data-lt-shell="header"/g)).toHaveLength(1)
-      expect(html.match(/data-lt-shell="footer"/g)).toHaveLength(1)
-      expect(readFileSync(join(directory, '_static/libtmux-org.css'), 'utf8')).toContain("url('/pr-42/en/_shell/tokens.css')")
-      expect(readFileSync(join(directory, 'index.html'), 'utf8')).toBe(redirect)
-      expect(await normalizeNativeShell(directory, '/pr-42/en/', { sphinxPort: 'py', version: 'v0.62.0' })).toBe(0)
+      expect(html).toContain('<a href="../session/">Next</a><p>Native attribution</p>')
+      expect(html).toContain('data-pagefind-body data-pagefind-filter="port:Python"')
+      expect(html).toContain('data-theme="python" data-brand="python"')
+      expect(html).toContain('src="/pr-42/en/py/v0.62.0/_astro/shell.js"')
+      expect(html).not.toContain('src="/pr-42/en/_shell/shell.js"')
+      expect(html).not.toMatch(/libtmux-org|mobile-header|data-native-shell-export|data-native-boundary|docs\/pane.md/)
+      expect(html.indexOf('class="site-header"')).toBeLessThan(html.indexOf('<article'))
+      expect(await normalizeNativeShell(native, '/pr-42/en/', options)).toBe(0)
       expect(readFileSync(page, 'utf8')).toBe(html)
-    } finally {
-      rmSync(directory, { recursive: true, force: true })
-    }
-  })
 
-  it('replaces source-owned integration without duplicate scripts or styles', async () => {
-    const directory = mkdtempSync(join(tmpdir(), 'native-sphinx-'))
-    try {
-      const page = join(directory, 'index.html')
-      writeFileSync(page, '<html><head><link href="_static/libtmux-org.css?v=old" rel="stylesheet"><script src="/_shell/shell.js" defer="defer"></script></head><body><article>Reference</article></body></html>')
-      await normalizeNativeShell(directory, '/en', { sphinxPort: 'py' })
-      const html = readFileSync(page, 'utf8')
-      expect(html.match(/shell\.js/g)).toHaveLength(1)
-      expect(html.match(/libtmux-org\.css/g)).toHaveLength(1)
-      expect(html).not.toContain('?v=old')
-      writeFileSync(page, '<html><body>Truncated source</body></html>')
-      await expect(normalizeNativeShell(directory, '/en', { sphinxPort: 'py' })).rejects.toThrow('no closing head')
+      writeFileSync(page, html.replace('Pane &amp; capture', 'Changed article'))
+      await expect(normalizeNativeShell(native, '/pr-42/en', options)).rejects.toThrow('article changed')
+      writeFileSync(page, baseline)
+      writeFileSync(join(shell, 'api/api/pane/index.html'), envelope.replace('footer-end', 'missing'))
+      await expect(normalizeNativeShell(native, '/pr-42/en', options)).rejects.toThrow('one footer region')
+      await expect(normalizeNativeShell(native, '/en', options)).rejects.toThrow('assembly identity')
     } finally {
       rmSync(directory, { recursive: true, force: true })
     }

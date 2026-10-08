@@ -1,0 +1,18 @@
+<script>
+  import { initDocumentationNavigation } from './documentation-navigation'
+
+  // A Sidebar may start inside noscript; initialize shared behavior outside it.
+  initDocumentationNavigation()
+  document.addEventListener('astro:after-swap', initDocumentationNavigation)
+
+  // Independently built trees must not accumulate each other's global listeners.
+  document.addEventListener('astro:before-preparation', (event) => {
+    const load = event.loader
+    event.loader = async () => {
+      await load()
+      if (event.newDocument.documentElement.dataset.shellBase !== document.documentElement.dataset.shellBase) {
+        event.preventDefault()
+      }
+    }
+  })
+</script>

@@ -150,7 +150,7 @@ export async function checkContextSettings(page, javaScriptEnabled = true) {
   await toggle.click()
   await back.click()
   assert(!await settings.isVisible(), 'Back returns to the primary view')
-  assert(await context.locator('[data-page-port-switcher] > summary').isVisible(), 'The language/area picker is restored')
+  assert(await page.locator('.site-header-language [data-page-port-switcher] > summary').isVisible(), 'The language picker remains available in the top bar')
   const drawerButton = (await navigation.all())[0]
   if (drawerButton) {
     const viewport = page.viewportSize()

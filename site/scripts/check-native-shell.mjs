@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
 import { chromium } from 'playwright'
-import { checkNativeFirstPaint } from './check-native-layout.mjs'
+import { checkNativeFirstPaint, checkNativeHeader } from './check-native-layout.mjs'
 
 const base = (process.argv.find((arg) => arg.startsWith('http')) ?? 'http://localhost:8080/en').replace(/\/$/, '')
 const version = process.argv.find((arg) => arg.startsWith('--version='))?.slice('--version='.length) ?? 'stable'
@@ -13,42 +13,77 @@ try {
   page.on('response', (response) => {
     if (response.ok()) loaded.add(response.url())
   })
-  for (const width of [1440, 768, 688, 390]) {
+  for (const width of [1440, 1062, 768, 688, 641, 390]) {
     for (const colorScheme of ['light', 'dark']) {
       await page.setViewportSize({ width, height: 900 })
       await page.emulateMedia({ colorScheme })
       await checkNativeFirstPaint(page, `${base}/py/${version}/api/api/libtmux.session/`)
+      await page.evaluate(() => scrollTo(0, 900))
+      await page.waitForFunction(() => scrollY >= 900)
+      await checkNativeHeader(page)
+      await page.evaluate(() => scrollTo(0, 0))
       const menu = page.locator('[data-page-port-switcher]')
       await menu.waitFor()
       await page.waitForFunction(() => document.querySelector('[data-page-port-switcher] a[href$="/ts/latest/reference/session-session/"]'))
-      assert(loaded.has(`${base}/_shell/shell.js`), 'Native shell script did not load from this locale')
-      assert(loaded.has(`${base}/_shell/tokens.css`), 'Native shell tokens did not load from this locale')
+      assert([...loaded].some((url) => url.includes(`/${version}/_astro/`) && url.endsWith('.css')), 'Compiled native CSS did not load')
+      assert([...loaded].some((url) => url.includes(`/${version}/_astro/DocumentationScript.`)), 'Compiled shared navigation did not load')
+      assert(![...loaded].some((url) => /(?:\/_shell\/shell\.js|\/spa-nav\.js)/.test(url)), 'A competing native shell/router loaded')
       await menu.locator('summary').focus()
       await page.keyboard.press('Enter')
       const bounds = await menu.evaluate((details) => {
         const current = details.querySelector('summary').getBoundingClientRect()
-        const locale = details.nextElementSibling.querySelector('summary').getBoundingClientRect()
-        const panel = details.querySelector('ul')
+        const panel = details.querySelector('[data-picker-panel]')
         const rect = panel.getBoundingClientRect()
-        const covered = [...panel.querySelectorAll('li')].filter((item) => {
+        const covered = [...panel.querySelectorAll('[data-picker-option]')].filter((item) => {
+          if (!item.checkVisibility()) return false
           const row = item.getBoundingClientRect()
-          return [rect.left + 12, rect.right - 12].some((x) => !item.contains(document.elementFromPoint(x, row.top + row.height / 2)))
+          const y = row.top + row.height / 2
+          if (y <= rect.top || y >= rect.bottom) return false
+          return !item.contains(document.elementFromPoint(row.left + row.width / 2, y))
         }).map((item) => item.textContent.trim())
-        return { open: details.open, sameRow: Math.abs(current.y - locale.y) <= 1, left: rect.left, right: rect.right, viewport: innerWidth, covered }
+        return { open: details.open, controlHeight: current.height, left: rect.left, right: rect.right, viewport: innerWidth, covered }
       })
       const context = `${width}px ${colorScheme}`
       assert(bounds.open, `${context}: keyboard did not open the port dropdown`)
-      assert(bounds.sameRow && bounds.left >= 0 && bounds.right <= bounds.viewport, `${context}: native dropdowns split rows or leave the viewport`)
+      assert(bounds.controlHeight === 36 && bounds.left >= 0 && bounds.right <= bounds.viewport, `${context}: native dropdown has the wrong size or leaves the viewport`)
       assert.deepEqual(bounds.covered, [], `${context}: native content covers port menu entries`)
-      await page.keyboard.press('Enter')
+      await page.keyboard.press('Escape')
       assert.equal(await menu.evaluate((details) => details.open), false, `${context}: keyboard did not close the port dropdown`)
     }
   }
   await page.evaluate(() => { location.hash = 'sessions' })
   await page.waitForFunction(() => document.querySelector('[data-page-port-switcher] a[href$="/ts/latest/reference/session-session/"]'))
+  const picker = page.locator('[data-page-port-switcher]')
+  await picker.locator('summary').click()
+  await picker.locator('[data-picker-search]').fill('TypeScript')
   await page.evaluate(() => { location.hash = 'libtmux.Session.windows' })
   await page.waitForFunction(() => document.querySelector('[data-page-port-switcher] a[href$="/ts/latest/reference/session-session-windows/"]'))
-  console.log('Native shell: compact header, stable first paint, assets, keyboard, unobscured dropdowns at 1440/768/688/390px in light/dark, and class/member equivalents passed')
+  assert.deepEqual(await picker.locator('[data-picker-option]').evaluateAll((options) => options
+    .filter((option) => option.checkVisibility({ visibilityProperty: true }))
+    .map((option) => option.dataset.port)), ['ts'], 'Fragment navigation preserves the active language filter')
+  await page.keyboard.press('Escape')
+  await page.evaluate(() => scrollTo(0, 0))
+  for (const [input, button] of [['__navigation', 'mobile-sidebar-toggle'], ['__toc', 'mobile-toc-toggle']]) {
+    await page.setViewportSize({ width: 641, height: 900 })
+    const opener = page.locator(`#${button}`)
+    await opener.focus()
+    await page.keyboard.press('Enter')
+    assert(await page.locator(`#${input}`).isChecked(), `${button}: keyboard opens the drawer`)
+    assert(await page.evaluate((id) => document.getElementById(id).contains(document.activeElement),
+      input === '__navigation' ? 'native-navigation' : 'native-toc'), `${button}: focus moves into the drawer`)
+    await page.keyboard.press('Control+k')
+    await page.locator('dialog[open]').waitFor()
+    await page.keyboard.press('Escape')
+    await page.waitForFunction(() => !document.querySelector('dialog[open]'))
+    assert(await page.locator(`#${input}`).isChecked(), `${button}: dismissing search preserves the underlying drawer`)
+    await page.setViewportSize({ width: 380, height: 900 })
+    await page.waitForFunction(() => document.querySelector('[data-documentation-context]').hasAttribute('data-settings-open'))
+    assert(await opener.isVisible(), `${button}: resizing keeps the drawer opener visible`)
+    await page.keyboard.press('Escape')
+    assert.equal(await page.locator(`#${input}`).isChecked(), false, `${button}: Escape closes the drawer`)
+    assert.equal(await page.evaluate(() => document.activeElement?.id), button, `${button}: Escape returns focus to the visible opener`)
+  }
+  console.log('Native shell: stable first paint, reachable scrolled header, assets, keyboard, unobscured dropdowns at 1440/1062/768/688/641/390px in light/dark, filtered class/member equivalents, and drawer focus across resizing passed')
 } finally {
   await browser.close()
 }

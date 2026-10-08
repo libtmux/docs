@@ -166,14 +166,13 @@ describeIfAssembled('published exports', () => {
   describe('native shell assets', () => {
     for (const version of ['latest', 'stable']) {
       it.skipIf(!has(`${SITE_PREFIX}py/${version}/api/api/libtmux.session/index.html`))(
-        `${version} loads the shell script and tokens from this locale tree`, () => {
+        `${version} uses compiled shared chrome and the native palette adapter`, () => {
           const html = read(`py/${version}/api/api/libtmux.session/index.html`)
-          const script = /<script\b[^>]*src="([^"]*\/_shell\/shell\.js[^"]*)"/.exec(html)?.[1]
-          expect(script).toBe(`/${SITE_PREFIX}_shell/shell.js`)
-          expect(has(script!)).toBe(true)
-          const css = read(`py/${version}/api/_static/libtmux-org.css`)
-          expect(css).toContain(`url('/${SITE_PREFIX}_shell/tokens.css')`)
-          expect(has(`${SITE_PREFIX}_shell/tokens.css`)).toBe(true)
+          expect(html).toContain('data-native-shell=')
+          expect(html).toMatch(/href="[^"]*\/_astro\/[^"]+\.css"/)
+          expect(html).toMatch(/<script[^>]*src="[^"]*\/_astro\/DocumentationScript\./)
+          expect(html).not.toMatch(/<script[^>]*src="[^"]*(?:\/_shell\/shell\.js|\/spa-nav\.js)/)
+          expect(html).not.toContain('data-native-shell-export')
         },
       )
     }

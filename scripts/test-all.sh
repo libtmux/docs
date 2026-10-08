@@ -341,7 +341,7 @@ if curl --connect-timeout 1 --max-time 3 -sf -o /dev/null "$SERVE_SITE/py/stable
   # it is a rendering question: which faces a page opens with is answered by
   # laying the page out, not by reading its HTML.
   step 'fonts'
-  (cd site && node scripts/check-fonts.mjs --url "$SERVE_SITE")
+  (cd site && node scripts/check-fonts.mjs --site "$out$preview" --url "$SERVE_SITE")
 
   # The mobile shell is behaviour, not pixels: which drawer is open, what has
   # focus, whether the toolbar is there at all at a given width. None of it
