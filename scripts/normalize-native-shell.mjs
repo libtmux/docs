@@ -72,6 +72,9 @@ function adaptNativePage(html, page, context, chrome, file, highlightDigest) {
       .replace(/<style\b[^>]*\bid=["']lt-shell-style["'][^>]*>[\s\S]*?<\/style>\s*/gi, '')
       .replace(/<style\b[^>]*>html\.gp-sphinx-theme-pending[\s\S]*?<\/style>/g, '')
       .replace(/<style\b[^>]*\bid=["']sphinx-fonts["'][^>]*>[\s\S]*?<\/style>/g, '')
+      // Older gp-sphinx releases delete this conflicting extension asset but leave its tag.
+      .replace(/<script\b[^>]*\bsrc=["']((?:\.\.\/)*_static\/tabs\.js(?:\?[^"']*)?)["'][^>]*>[\s\S]*?<\/script>/gi,
+        (tag, src) => existsSync(resolve(dirname(file), src.split('?')[0])) ? tag : '')
       .replace(/<link\b(?=[^>]*\bas=["']font["'])[^>]*>/gi, '')
       .replace(/<header\b[^>]*class=["']mobile-header["'][^>]*>[\s\S]*?<\/header>/g, '')
       .replace(/<button\b[^>]*class=["']theme-toggle["'][^>]*>[\s\S]*?<\/button>/g, '')
