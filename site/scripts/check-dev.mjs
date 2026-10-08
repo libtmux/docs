@@ -134,7 +134,7 @@ server = await startServer()
 const base = `http://127.0.0.1:${server.address.port}/en`
 
 // Vite can reload once after its initial dependency optimization.
-async function retryReload(check) {
+async function retryReload(check, page) {
   try {
     await check()
   } catch (error) {
@@ -142,6 +142,7 @@ async function retryReload(check) {
     const navigation = message.match(/Navigation to "([^"]+)" is interrupted by another navigation to "([^"]+)"/)
     const samePageReload = navigation && navigation[1] === navigation[2] && navigation[1].startsWith(`${base}/`)
     if (!/Execution context was destroyed/.test(message) && !samePageReload) throw error
+    if (samePageReload && page) await page.waitForURL(navigation[2], { waitUntil: 'load' })
     await check()
   }
 }
@@ -740,7 +741,7 @@ try {
         const menu = await switcher.locator('[data-picker-panel]').boundingBox()
         assert(menu && menu.x >= 0 && menu.x + menu.width <= 390, `${path}: dropdown leaves phone viewport`)
       }
-    })
+    }, page)
     for (const path of [
       'py/latest/reference/libtmux-server',
       'py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder',
