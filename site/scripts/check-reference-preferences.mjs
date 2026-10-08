@@ -155,7 +155,10 @@ export async function checkGlobalHeader(browser, base) {
 export async function checkScrollbarStability(browser, base) {
   const classic = await browser.browserType().launch({
     ignoreDefaultArgs: ['--hide-scrollbars'],
-    ...(browser.browserType().name() === 'chromium' ? { args: ['--disable-features=OverlayScrollbar'] } : {}),
+    ...(browser.browserType().name() === 'chromium' ? {
+      channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL,
+      args: ['--disable-features=OverlayScrollbar'],
+    } : {}),
   })
   try {
     for (const width of [280, 628, 1280]) for (const colorScheme of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {

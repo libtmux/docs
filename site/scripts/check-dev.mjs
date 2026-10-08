@@ -138,7 +138,10 @@ async function retryReload(check) {
   try {
     await check()
   } catch (error) {
-    if (!/Execution context was destroyed/.test(String(error))) throw error
+    const message = String(error)
+    const navigation = message.match(/Navigation to "([^"]+)" is interrupted by another navigation to "([^"]+)"/)
+    const samePageReload = navigation && navigation[1] === navigation[2] && navigation[1].startsWith(`${base}/`)
+    if (!/Execution context was destroyed/.test(message) && !samePageReload) throw error
     await check()
   }
 }
