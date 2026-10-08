@@ -62,7 +62,7 @@ its own dark-theme colors.
 The tmux CLI selector displays the Windows Terminal artwork by Microsoft
 Corporation, licensed under [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/).
 The SVG is unmodified. See the [source and provenance](/brand/tools/terminal/provenance.json)
-and [copyright and license](/brand/tools/terminal/LICENSE).
+and [copyright and license](/brand/tools/terminal/LICENSE.txt).
 
 ## Documentation toolchain
 

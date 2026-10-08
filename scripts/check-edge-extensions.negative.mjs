@@ -8,7 +8,7 @@
  * uses the same tree with the extension present, because a check that always
  * failed would satisfy the first case on its own.
  */
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, renameSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, dirname } from 'node:path'
 import { execFileSync } from 'node:child_process'
@@ -89,6 +89,22 @@ const check = (name, ok, detail) => {
     code !== 0 && out.includes('.buildinfo'),
     `exited ${code}:\n${out}`,
   )
+  rmSync(dir, { recursive: true, force: true })
+}
+
+{
+  const dir = site()
+  const fn = fnFile(['html', 'inv', 'buildinfo', 'txt'])
+  const license = join(dir, 'reference', 'py', 'LICENSE')
+  writeFileSync(license, 'Copyright and license notice')
+  const broken = run(dir, fn)
+  check('an extensionless file fails even when every extension is allowed',
+    broken.code !== 0 && broken.out.includes('no extension') && broken.out.includes('/LICENSE'),
+    `exited ${broken.code}:\n${broken.out}`)
+  renameSync(license, `${license}.txt`)
+  const corrected = run(dir, fn)
+  check('an allowed text extension makes the same notice routable', corrected.code === 0,
+    `exited ${corrected.code}:\n${corrected.out}`)
   rmSync(dir, { recursive: true, force: true })
 }
 

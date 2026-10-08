@@ -76,6 +76,7 @@ const allowed = new Set([...table[1].matchAll(/([A-Za-z0-9_]+)\s*:\s*1/g)].map((
 
 /** Extensions actually present, and one example path each. */
 const found = new Map()
+const extensionless = []
 const walk = (dir) => {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry)
@@ -88,7 +89,10 @@ const walk = (dir) => {
     // there. Skipping dotfiles here made this check blind to exactly the file
     // class the function is most likely to redirect away from itself.
     const dot = entry.lastIndexOf('.')
-    if (dot === -1) continue
+    if (dot === -1) {
+      extensionless.push(full.slice(siteDir.length))
+      continue
+    }
     const ext = entry.slice(dot + 1).toLowerCase()
     if (!found.has(ext)) found.set(ext, full.slice(siteDir.length))
   }
@@ -96,10 +100,12 @@ const walk = (dir) => {
 walk(siteDir)
 
 const missing = [...found.keys()].filter((e) => !allowed.has(e)).sort()
-if (missing.length) {
+if (missing.length || extensionless.length) {
   console.error(`check-edge-extensions: the edge function would redirect these away from their own files.`)
   for (const ext of missing) console.error(`  .${ext.padEnd(12)} e.g. ${found.get(ext)}`)
-  console.error(`\nAdd them to ASSET_EXTENSIONS in ${fnPath.slice(repoRoot.length + 1)}.`)
+  for (const path of extensionless) console.error(`  no extension   ${path}`)
+  if (missing.length) console.error(`\nAdd the missing extensions to ASSET_EXTENSIONS in ${fnPath.slice(repoRoot.length + 1)}.`)
+  if (extensionless.length) console.error(`\nRename extensionless files and their links to use an allowed extension.`)
   process.exit(1)
 }
 
