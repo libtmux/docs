@@ -66,9 +66,10 @@ for (const scheme of ['light', 'dark']) {
             top = node
             node = node.parentElement?.closest('[role="treeitem"]') ?? null
           }
-          return top?.querySelector(':scope > [role="group"] > li:first-child a')?.textContent?.trim()
+          return top?.querySelector(':scope > [role="group"] > li:first-child a')?.getAttribute('href')
         })
-        check(firstPublicObject === 'libtmux.Server', `${scheme}/${viewport}: Lua Server is not the first public Server object`)
+        check(firstPublicObject === new URL(BASE + path).pathname,
+          `${scheme}/${viewport}: Lua Server is not the first public Server object`)
       }
     }
 
@@ -88,27 +89,37 @@ for (const scheme of ['light', 'dark']) {
     const luaResponse = await page.goto(`${BASE}/lua/latest/`, { waitUntil: 'networkidle' })
     check(luaResponse?.ok(), `${scheme}/${viewport}: Lua availability landing returned ${luaResponse?.status() ?? 'no response'}`)
     if (luaResponse?.ok()) {
-      const text = await page.locator('main').textContent()
-      check(/MCP \(not available\)/.test(text ?? ''), `${scheme}/${viewport}: Lua MCP status label is missing`)
-      check(/Workspace Manager \(not available\)/.test(text ?? ''), `${scheme}/${viewport}: Lua workspace status label is missing`)
+      for (const product of ['mcp', 'workspace']) {
+        const offered = page.locator(`main a[href$="/lua/latest/${product}/"], [data-surface-picker] a[href$="/lua/latest/${product}/"]`)
+        check(await offered.count() === 0, `${scheme}/${viewport}: Lua offers unavailable ${product}`)
+      }
     }
 
     const response = await page.goto(`${BASE}/`, { waitUntil: 'networkidle' })
     check(response?.ok(), `${scheme}/${viewport}: home returned ${response?.status() ?? 'no response'}`)
     if (response?.ok()) {
-      const picker = page.locator('.lm-pkg-install:has([data-tab-value="ruby"])').first()
-      const ruby = picker.locator('[data-tab-value="ruby"]')
-      const lua = picker.locator('[data-tab-value="lua"]')
-      await ruby.click()
-      check(await ruby.getAttribute('aria-selected') === 'true', `${scheme}/${viewport}: Ruby install tab did not select`)
-      check(await picker.locator('[data-port="ruby"] code').first().textContent().then((text) => /gem install/.test(text ?? '')),
+      const language = page.locator('[data-home-launcher] [data-page-port-switcher]')
+      const choose = async (port) => {
+        await language.locator(':scope > summary').click()
+        const option = language.locator(`a[data-port="${port}"]`)
+        await option.focus()
+        await option.press('Enter')
+        await page.waitForFunction((port) => document.querySelector('.lm-agent-prompt')?.dataset.activePort === port, port)
+        check(new URL(page.url()).searchParams.get('port') === port,
+          `${scheme}/${viewport}: keyboard language selection did not select ${port}`)
+      }
+      const install = (port) => page.locator(`.home-examples > [data-home-language="${port}"] .lm-pkg-install`)
+      await choose('ruby')
+      check(await install('ruby').isVisible(), `${scheme}/${viewport}: Ruby install is not visible`)
+      check(await install('ruby').locator('code').first().textContent().then((text) => /gem install/.test(text ?? '')),
         `${scheme}/${viewport}: Ruby install command is missing`)
-      await ruby.press('ArrowRight')
-      check(await lua.getAttribute('aria-selected') === 'true', `${scheme}/${viewport}: ArrowRight did not select Lua`)
-      check(await picker.locator('[data-port="lua"] code').first().textContent().then((text) => /luarocks\s+(?:--local\s+)?install/.test(text ?? '')),
+      await choose('lua')
+      check(await install('lua').isVisible() && !(await install('ruby').isVisible()),
+        `${scheme}/${viewport}: Lua selection did not replace the Ruby install`)
+      check(await install('lua').locator('code').first().textContent().then((text) => /luarocks\s+(?:--local\s+)?install/.test(text ?? '')),
         `${scheme}/${viewport}: Lua install command is missing`)
-      await ruby.click()
-      const copy = picker.locator('[data-port="ruby"] .lm-pkg-install__copy').first()
+      await choose('ruby')
+      const copy = install('ruby').locator('.lm-pkg-install__copy').first()
       await copy.click()
       await copy.filter({ hasText: /copied/i }).waitFor({ timeout: 1000 }).catch(() => {})
       check(await copy.textContent().then((text) => /copied/i.test(text ?? '')),
