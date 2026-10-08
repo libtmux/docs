@@ -112,6 +112,8 @@
 
 /* Base reset of border color */
 @layer base {
+  html[data-js] .section-search[hidden] { display: block !important; visibility: hidden; }
+
   *,
   ::after,
   ::before,
@@ -971,6 +973,10 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 .scheme-cycle:hover { background: var(--color-surface-hover); }
 .scheme-cycle:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
 @media (max-width: 40rem) {
+  @layer base {
+    html[data-js] .scheme-cycle[hidden] { display: inline-flex !important; visibility: hidden; }
+  }
+  html[data-js] .scheme-switch { display: none; }
   .scheme-cycle:not([hidden]) { display: inline-flex; }
   .scheme-switch:has(+ .scheme-cycle:not([hidden])) { display: none; }
 }
@@ -994,13 +1000,8 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 /*
  * The top bar, and what it does when there is not enough room.
  *
- * It used to wrap. Ten language chips, four controls and three links on one
- * flex line became three rows and a 207px header on a 320px phone — a third
- * of the viewport, above the docs shell's own mobile toolbar. Wrapping is what
- * a bar does when nobody has decided what to drop.
- *
- * Scheme labels yield first, then language names shorten. On phones the
- * languages move into the disclosure already in the markup.
+ * Language controls use the same height on the homepage and documentation.
+ * On phones the picker moves to a second header row.
  */
 .site-header__bar {
   margin-inline: auto;
@@ -1009,7 +1010,37 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem var(--site-gutter);
-  min-height: 3rem;
+  min-height: 3.25rem;
+}
+
+.site-header-language {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.site-header-language [data-page-port-switcher] > summary {
+  padding-inline: .55rem;
+}
+
+.site-header-language .doc-picker-caret { margin-inline: .40625rem; }
+
+@media (max-width: 46rem) {
+  .site-header-language .doc-picker:not([data-enhanced]) > .doc-picker-panel {
+    position: fixed;
+    top: auto;
+    left: .5rem;
+    width: min(var(--picker-width), calc(100% - 1rem));
+  }
+}
+
+@media (max-width: 35rem) {
+  .site-header__bar:has(.site-header-language) { flex-wrap: wrap; }
+  .site-header-language { order: 5; flex-basis: 100%; padding-block: .25rem; }
+}
+
+@media (max-width: 24rem) {
+  .site-header-language [data-page-port-switcher] > summary { gap: .3rem; padding-inline: .35rem; }
 }
 
 .site-header__mark {

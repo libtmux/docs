@@ -11,6 +11,7 @@ import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
 import { apiEntryFields, apiEntrySections, apiMemberGroups, relatedApiTypes, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
+import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
 import DocumentationContext from '../../components/docs/DocumentationContext.astro'
 import type { PagePortLink } from '../../lib/page-port-links'
 import { pagePortsFor } from '../../lib/page-ports-for'
@@ -404,8 +405,11 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
   flush
   breadcrumbs={breadcrumbs}
 >
+  {model && <div slot="header-navigation" class="site-header-language">
+    <PagePortSwitcher entries={pagePorts} portSlug={port} tmux={!port} reserveLabelWidth />
+  </div>}
   {model && <DocumentationContext slot="context" port={port} version={version}
-    locale={buildLocale()} sourcePath={localeSourcePath(Astro.url.pathname, buildLocale())} pagePorts={pagePorts} reference>
+    locale={buildLocale()} sourcePath={localeSourcePath(Astro.url.pathname, buildLocale())} reference>
     <button type="button" class="api-nav-toggle" slot="navigation" data-api-nav-toggle data-pagefind-ignore="all" aria-controls="api-nav" aria-expanded="false">
           <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
             <path stroke-linecap="round" d="M2 4h12M2 8h12M2 12h8" />

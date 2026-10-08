@@ -32,10 +32,12 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
 <details class="doc-picker" data-page-port-switcher data-doc-picker>
   <summary aria-label={label ?? `${name}: choose a language or tmux documentation`} data-reserve-label-width={reserveLabelWidth || undefined}>
     <span class:list={['page-port-icon', { 'home-language-icon': homeLanguageIcons }]} aria-hidden="true">
-      {!homeLanguageIcons && portSlug && PORT_BY_SLUG[portSlug] ? <img
+      {tmux ? <span class="page-port-terminal">$</span> : !homeLanguageIcons && portSlug && PORT_BY_SLUG[portSlug] ? <img
+        data-language-icon={portSlug}
         src={withRoot(`/brand/languages/${portSlug}/icon.svg`)}
         width="24" height="24" alt="" /> : <svg data-home-default-icon={homeLanguageIcons || undefined} viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="m5 4-4 4 4 4m6-8 4 4-4 4M9.5 2l-3 12" stroke-linecap="round" stroke-linejoin="round" /></svg>}
       {homeLanguageIcons && entries.map((entry) => <img
+        data-language-icon={entry.port}
         data-home-language-icon={entry.port}
         src={withRoot(`/brand/languages/${entry.port}/icon.svg`)}
         width="24" height="24" alt="" loading="eager" decoding="sync" />)}
@@ -95,7 +97,10 @@ families.push({ label: 'Other languages', ports: entries.filter((entry) => !know
   .page-port-label-sizer { display: grid; visibility: hidden; height: 0; overflow: hidden; white-space: nowrap; pointer-events: none; }
   .page-port-label-sizer > span { grid-area: 1 / 1; }
   .page-port-icon { display: grid; place-items: center; flex: none; }
+  .page-port-terminal { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; font: 1.25rem/1 var(--font-mono); }
   .page-port-icon > img { width: 1.5rem; height: 1.5rem; object-fit: contain; }
+  /* The Python SVG reserves space below the snakes for a shadow. */
+  .page-port-icon > img[data-language-icon="py"] { transform: translateY(8.333%); }
   .page-port-short-name { display: none; }
   .port-family + .port-family { margin-top: .65rem; }
   .port-family h3 { margin: .75rem .4rem .25rem; font-size: .6875rem; font-weight: 400; text-transform: uppercase; letter-spacing: .025em; color: var(--color-muted); }

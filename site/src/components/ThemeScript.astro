@@ -13,6 +13,7 @@
     try { return localStorage.getItem(key); } catch (_) { return null; }
   }
   function applyTheme() {
+    document.documentElement.dataset.js = '';
     const stored = readPreference('color-scheme') || document.documentElement.getAttribute('data-color-scheme');
     const colorScheme = COLOR_SCHEMES.includes(stored) ? stored : 'system';
 

@@ -32,13 +32,15 @@ export async function checkDevSample(browser, base) {
           return {
             overflow: document.documentElement.scrollWidth - innerWidth,
             header: document.querySelector('.site-header__bar').getBoundingClientRect().height,
+            headerPicker: Boolean(document.querySelector('.site-header-language [data-page-port-switcher]')),
             controls,
             tableColumns: head.length,
             columns: head.length === body.length ? head.map((cell, index) =>
               Math.abs(cell.getBoundingClientRect().x - body[index].getBoundingClientRect().x)) : null,
           }
         })
-        assert(layout.overflow <= 1 && layout.header <= 49, `${path}/${width}: page and compact header fit`)
+        const headerLimit = layout.headerPicker && width <= 560 ? 97 : 53
+        assert(layout.overflow <= 1 && layout.header <= headerLimit, `${path}/${width}: page and responsive header fit`)
         assert(layout.controls.every((control) => control.height > 0
           && Math.abs(control.height - layout.controls[0].height) < .1
           && Math.abs(control.top - layout.controls[0].top) < .1), `${path}/${width}: visible controls align`)
@@ -49,6 +51,8 @@ export async function checkDevSample(browser, base) {
       if (path.startsWith('tmux/')) {
         assert.match(await page.title(), /\| tmux \| libtmux\.org$/)
         const picker = page.locator('[data-page-port-switcher]')
+        assert.equal(await page.locator('.site-header-language [data-page-port-switcher]').count(), 1, 'Language selection is in the top bar')
+        assert.equal(await page.locator('[data-documentation-context] [data-page-port-switcher]').count(), 0, 'The subbar has no duplicate language picker')
         await picker.locator('summary').click()
         const panel = picker.locator('[data-picker-panel]')
         await panel.waitFor({ state: 'visible' })
