@@ -177,13 +177,15 @@ export async function checkScrollbarStability(browser, base) {
           },
         }
       })
-      const settle = () => page.waitForFunction(() => document.fonts.status === 'loaded')
+      // Wait for font layout before comparing header geometry.
+      const settle = () => page.evaluate(() => document.fonts.ready)
       const label = `${width}px, ${colorScheme}, JavaScript ${javaScriptEnabled}`
       try {
         await page.goto(`${base}/?port=py`)
         await settle()
         const contentHeight = await page.evaluate(() => document.documentElement.scrollHeight)
         await page.setViewportSize({ width, height: contentHeight + 128 })
+        await settle()
         const home = await frame()
         assert(!home.scrolls, `${label}: the real homepage fits the viewport`)
         assert(!home.overflow, `${label}: the homepage has no horizontal overflow`)
