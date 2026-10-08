@@ -57,6 +57,13 @@ its own dark-theme colors.
 | C# | Copyright the .NET authors. [Brand-use permission](https://github.com/dotnet/brand/issues/10#issuecomment-669465301) allows the unmodified logo to represent .NET. The repository's CC0 statement covers illustrations; no blanket CC0 claim is made for the logo. | [.NET provenance](/brand/languages/csharp/provenance.json) |
 | F# | The F# Software Foundation. Its [logo terms](https://foundation.fsharp.org/logo) require unchanged shape, colors and proportions, without implying Foundation representation. | [F# provenance](/brand/languages/fsharp/provenance.json) |
 
+## Terminal artwork
+
+The tmux CLI selector displays the Windows Terminal artwork by Microsoft
+Corporation, licensed under [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/).
+The SVG is unmodified. See the [source and provenance](/brand/tools/terminal/provenance.json)
+and [copyright and license](/brand/tools/terminal/LICENSE).
+
 ## Documentation toolchain
 
 libtmux and this site are built with open-source software. The following
