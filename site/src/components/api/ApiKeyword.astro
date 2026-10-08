@@ -69,7 +69,9 @@ const id = `api-keyword-help-${locals.apiKeywordSequence = (locals.apiKeywordSeq
     const anchor = trigger.getBoundingClientRect()
     const box = panel.getBoundingClientRect()
     const gap = 8
-    const left = Math.max(gap, Math.min(anchor.left, innerWidth - box.width - gap))
+    // Fixed popovers must leave the reserved scrollbar gutter clear.
+    const viewport = document.documentElement.getBoundingClientRect()
+    const left = Math.max(viewport.left + gap, Math.min(anchor.left, viewport.right - box.width - gap))
     const below = anchor.bottom + gap
     const preferredTop = below + box.height <= innerHeight - gap ? below : anchor.top - box.height - gap
     const top = Math.max(gap, Math.min(preferredTop, innerHeight - box.height - gap))
