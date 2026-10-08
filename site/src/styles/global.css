@@ -112,6 +112,9 @@
 
 /* Base reset of border color */
 @layer base {
+  /* Short and long pages keep the same width with classic scrollbars. */
+  html { scrollbar-gutter: stable; }
+
   html[data-js] .section-search[hidden] { display: block !important; visibility: hidden; }
 
   *,
@@ -1178,11 +1181,6 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   }
 }
 
-@media (max-width: 20rem) {
-  body { --site-gutter: .5rem; }
-  .site-header__bar { gap: .35rem; }
-}
-
 /* A landscape phone has ~320px of height and the sticky bar is charged
    against every one of them. */
 @media (max-height: 30rem) {
@@ -1276,6 +1274,10 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 }
 @media (max-width: 25rem) {
   .site-header__menu-label { display: none; }
+}
+@media (max-width: 20rem) {
+  body { --site-gutter: .5rem; }
+  .site-header__bar { column-gap: .25rem; }
 }
 
 .brand-action {
