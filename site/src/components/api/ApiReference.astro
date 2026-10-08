@@ -438,11 +438,6 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
     )}
 
     <div class="api-reference-content min-w-0 px-4 py-6 lg:px-6">
-      <!-- The id is the anchor every link to this type uses. `hrefFor` sends a
-           type to `<page>/#<publicId>` whether the link comes from a
-           signature, a doc comment or prose, and without this the fragment
-           had nothing to land on: the page was right and the scroll position
-           was the top of it. -->
       <PageToolbar breadcrumbs={breadcrumbs} />
       <header id={owner ? 'api-overview' : undefined} class:list={[owner && 'api-reference-heading']}>
         {owner && <div class="api-reference-eyebrow">
@@ -451,10 +446,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
           {owner.doc?.since && <span>Since {owner.doc.since}</span>}
           <span class="api-reference-version">{version}</span>
         </div>}
-        <h1
-          id={owner ? (owner.publicId ?? owner.id) : undefined}
-          class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight"
-        >
+        <h1 class="scroll-mt-24 font-mono text-2xl font-semibold tracking-tight">
           <SymbolName name={displayName} />
         </h1>
         {owner && <>
@@ -776,7 +768,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 member={!OWNER_KINDS.has(owner.kind)}
                 showSummary={false}
                 showBases={false}
-                anchorId={`${owner.publicId ?? owner.id}.declaration`}
+                legacyId={`${owner.publicId ?? owner.id}.declaration`}
               />
             </section>
 

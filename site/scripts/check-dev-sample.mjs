@@ -63,6 +63,12 @@ export async function checkDevSample(browser, base) {
         assert(await picker.locator('summary').evaluate((node) => node === document.activeElement), 'Escape restores focus')
       }
       if (path === 'api-example-probe/') {
+        const declaration = page.locator('dt.gp-sphinx-api-header').first()
+        const identity = await declaration.getAttribute('id')
+        assert.equal(await declaration.locator('a.headerlink').getAttribute('href'), `#${identity}`,
+          'A declaration permalink lands on its signature bar')
+        assert.equal(await declaration.locator('.section-anchor-alias').getAttribute('id'), `${identity}.declaration`,
+          'The previous declaration fragment remains available')
         const equivalents = page.locator('.api-elsewhere a')
         const hrefs = await equivalents.evaluateAll((links) => links.map((link) => link.getAttribute('href')))
         const java = hrefs.find((href) => /\/java\/latest\/reference\/.*capture/.test(href))

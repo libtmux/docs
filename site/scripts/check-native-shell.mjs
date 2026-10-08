@@ -7,6 +7,23 @@ const base = (process.argv.find((arg) => arg.startsWith('http')) ?? 'http://loca
 const version = process.argv.find((arg) => arg.startsWith('--version='))?.slice('--version='.length) ?? 'stable'
 const browser = await chromium.launch({ channel: process.env.LIBTMUX_DOCS_BROWSER_CHANNEL })
 try {
+  for (const javaScriptEnabled of [true, false]) {
+    const context = await browser.newContext({ javaScriptEnabled, reducedMotion: 'reduce', viewport: { width: 390, height: 900 } })
+    try {
+      const page = await context.newPage()
+      const id = 'libtmux._internal.query_list.QueryList'
+      await page.goto(`${base}/py/${version}/api/internals/api/libtmux._internal.query_list/#${id}`, { waitUntil: 'load' })
+      await page.evaluate(() => document.fonts.ready)
+      const motion = await page.evaluate((id) => {
+        const target = document.getElementById(id).getBoundingClientRect()
+        return { behavior: getComputedStyle(document.documentElement).scrollBehavior, top: target.top, bottom: target.bottom, header: document.querySelector('.site-header').getBoundingClientRect().bottom, viewport: innerHeight }
+      }, id)
+      assert.equal(motion.behavior, 'auto', `Reduced motion with JavaScript ${javaScriptEnabled}: native fragment navigation animates`)
+      assert(motion.top >= motion.header - 1 && motion.bottom <= motion.viewport, `Reduced motion with JavaScript ${javaScriptEnabled}: the deep-link destination is not visible below the header`)
+    } finally {
+      await context.close()
+    }
+  }
   const page = await browser.newPage()
   page.setDefaultTimeout(10000)
   const loaded = new Set()
@@ -83,7 +100,7 @@ try {
     assert.equal(await page.locator(`#${input}`).isChecked(), false, `${button}: Escape closes the drawer`)
     assert.equal(await page.evaluate(() => document.activeElement?.id), button, `${button}: Escape returns focus to the visible opener`)
   }
-  console.log('Native shell: stable first paint, reachable scrolled header, assets, keyboard, unobscured dropdowns at 1440/1062/768/688/641/390px in light/dark, filtered class/member equivalents, and drawer focus across resizing passed')
+  console.log('Native shell: reduced-motion deep links with and without JavaScript, stable first paint, reachable scrolled header, assets, keyboard, unobscured dropdowns at 1440/1062/768/688/641/390px in light/dark, filtered class/member equivalents, and drawer focus across resizing passed')
 } finally {
   await browser.close()
 }

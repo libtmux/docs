@@ -62,11 +62,11 @@ interface Props {
   showSummary?: boolean
   /** A reference page may show these relationships beside its title. */
   showBases?: boolean
-  /** Keep the declaration anchor distinct from the page heading. */
-  anchorId?: string
+  /** Previous fragment for the same declaration. */
+  legacyId?: string
 }
 const { symbol, index, sourceUrl, port, language = port, manualLinks, alternativesFor, heading = false, member = false,
-  showSummary = true, showBases = true, anchorId } = Astro.props as Props
+  showSummary = true, showBases = true, legacyId } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const kind = symbol.kind
 const nativeEntries = language === 'c' ? symbol.signatures.filter((signature) => signature.raw) : symbol.signatures
@@ -275,7 +275,7 @@ const hasBody =
 >
   <dt
     class:list={['sig sig-object py gp-sphinx-api-header', nativeSignatures && 'api-native-header']}
-    id={anchorId ?? anchor}
+    id={anchor}
     data-symbol-id={symbol.id}
     data-domain={domain}
     data-objtype={kind}
@@ -285,6 +285,7 @@ const hasBody =
     data-has-source={String(Boolean(source))}
     data-signature-expanded="false"
   >
+    {legacyId && legacyId !== anchor && <span id={legacyId} class="section-anchor-alias" />}
     <div class="gp-sphinx-api-layout gp-sphinx-api-layout--responsive">
       <div class="gp-sphinx-api-layout-left">
         <span class="gp-sphinx-api-signature">

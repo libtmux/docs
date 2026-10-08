@@ -135,6 +135,8 @@
 }
 
 /* Member declarations need the same distinct surface as type declarations. */
+dt.gp-sphinx-api-header { position: relative; }
+dt.gp-sphinx-api-header > .section-anchor-alias { inset-block-start: 0; inset-inline-start: 0; }
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(:target) {
   background: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
 }
