@@ -33,16 +33,20 @@ describe('native shell URL normalization', () => {
     }
   })
 
-  it('splices compiled regions without rewriting native content, links, metadata or credits', async () => {
+  it.each([false, true])('splices compiled regions and handles legacy tabs references (asset present: %s)', async (tabsPresent) => {
     const directory = mkdtempSync(join(tmpdir(), 'native-sphinx-'))
     try {
       const native = join(directory, 'native')
       const shell = join(directory, 'shell')
       mkdirSync(join(native, 'api/pane'), { recursive: true })
+      mkdirSync(join(native, '_static'), { recursive: true })
+      if (tabsPresent) writeFileSync(join(native, '_static/tabs.js'), '/* retained tabs extension */')
       mkdirSync(join(shell, 'api/api/pane'), { recursive: true })
       const page = join(native, 'api/pane/index.html')
       const article = '<h2 id="capture">Pane &amp; capture</h2>\n<pre>  $ printf &quot;ok&quot;\n</pre><a href="#capture">Capture</a>'
-      const baseline = `<html class="no-js"><head><title>Native title</title><link rel="canonical" href="https://native.example/pane/"><link href="../../_static/theme.css" rel="stylesheet"><link href="../../_static/libtmux-org.css?v=old" rel="stylesheet"><script src="/_shell/shell.js"></script></head><body><header class="mobile-header">Old</header><article role="main">${article}</article><footer><a href="../session/">Next</a><p>Native attribution</p><div class="page-source"><code>docs/pane.md</code></div></footer></body></html>`
+      const tabs = '<script src="../../_static/tabs.js?v=legacy"></script>'
+      const otherScripts = '<script src="../../_static/design-tabs.js"></script><script src="https://other.example/_static/tabs.js"></script><script src="../../_static/missing.js"></script>'
+      const baseline = `<html class="no-js"><head><title>Native title</title><link rel="canonical" href="https://native.example/pane/"><link href="../../_static/theme.css" rel="stylesheet"><link href="../../_static/libtmux-org.css?v=old" rel="stylesheet"><script src="/_shell/shell.js"></script>${tabs}${otherScripts}</head><body><header class="mobile-header">Old</header><article role="main">${article}</article><footer><a href="../session/">Next</a><p>Native attribution</p><div class="page-source"><code>docs/pane.md</code></div></footer></body></html>`
       writeFileSync(page, baseline)
       const context = {
         schema: 1, port: 'py', version: 'v0.62.0', root: '/pr-42/en/', base: '/pr-42/en/py/v0.62.0/api/',
@@ -58,6 +62,8 @@ describe('native shell URL normalization', () => {
       expect(nativeArticle(html)).toBe(article)
       expect(html).toContain('<title>Native title</title><link rel="canonical" href="https://native.example/pane/">')
       expect(html).toContain('href="../../_static/theme.css"')
+      expect(html.includes(tabs)).toBe(tabsPresent)
+      expect(html).toContain(otherScripts)
       expect(html).toContain('<a href="../session/">Next</a><p>Native attribution</p>')
       expect(html).toContain('data-pagefind-body data-pagefind-filter="port:Python"')
       expect(html).toContain('data-theme="python" data-brand="python"')
