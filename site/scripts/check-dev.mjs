@@ -602,6 +602,9 @@ try {
       return pending
     }
     const apiExamples = schedule(() => checkCompleteApiExamples(browser, base))
+    // Cold API indexes occupy the same development server as the page walk.
+    // Finish that initial compilation before starting timed browser navigation.
+    await apiExamples
     const page = await browser.newPage({ reducedMotion: 'reduce' })
     page.setDefaultTimeout(10000)
     const manifest = await page.request.get(`${base}/page-links.json`)
