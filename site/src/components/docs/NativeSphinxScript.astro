@@ -51,6 +51,7 @@
         existing[0]?.replaceWith(...options)
         existing.slice(1).forEach((option) => option.remove())
       }
+      picker.querySelector<HTMLInputElement>('[data-picker-search]')?.dispatchEvent(new Event('input'))
     }
     refresh()
     window.addEventListener('hashchange', refresh)
@@ -65,7 +66,8 @@
       if (!input || !button || !drawer) continue
       const sync = () => {
         button.setAttribute('aria-expanded', String(input.checked))
-        if (input.checked) drawer.querySelector<HTMLElement>('a, input')?.focus({ preventScroll: true })
+        if (input.checked) [...drawer.querySelectorAll<HTMLElement>('a[href], input')]
+          .find((element) => element.checkVisibility({ visibilityProperty: true }))?.focus({ preventScroll: true })
       }
       input.addEventListener('change', sync)
       button.addEventListener('keydown', (event) => {
@@ -76,11 +78,13 @@
         }
       })
       document.addEventListener('keydown', (event) => {
-        if (event.key !== 'Escape' || !input.checked) return
+        if (event.key !== 'Escape' || !input.checked || document.querySelector('dialog[open]')) return
+        event.preventDefault()
+        event.stopPropagation()
         input.checked = false
         sync()
         button.focus({ preventScroll: true })
-      })
+      }, { capture: true })
       drawer.addEventListener('click', (event) => {
         if (!(event.target instanceof Element) || !event.target.closest('a')) return
         input.checked = false

@@ -33,7 +33,7 @@ export function initDocumentationNavigation() {
     }, { signal })
     compact.addEventListener('change', () => {
       const focused = document.activeElement
-      const navigationOpen = context.querySelector('.documentation-context-navigation > button[aria-expanded="true"]')
+      const navigationOpen = context.querySelector('.documentation-context-navigation > :is(button, [role="button"])[aria-expanded="true"]')
       closeSettings()
       // A drawer must still have a visible opener to restore focus on close.
       if (compact.matches && navigationOpen) {

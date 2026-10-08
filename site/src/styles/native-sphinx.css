@@ -3,6 +3,8 @@ html[data-native-shell] { font-size: 100%; --native-header-height: calc(3.25rem 
 @media (max-width: 35rem) { html[data-native-shell] { --native-header-height: calc(6rem + 1px); } }
 /* The shared shell owns the palette; Furo still owns the native article. */
 html[data-native-shell] body {
+  height: auto;
+  min-height: 100vh;
   --color-background-primary: var(--background-color);
   --color-background-secondary: var(--color-surface);
   --color-background-hover: var(--color-surface-hover);
@@ -32,9 +34,11 @@ html[data-native-shell] .sidebar-overlay,
 html[data-native-shell] .toc-overlay { z-index: 44; }
 html[data-native-shell] #documentation-navigation { display: flex; }
 @media (min-width: 63.01em) {
+  html[data-native-shell] .sidebar-drawer { z-index: 30; }
   html[data-native-shell] #mobile-sidebar-toggle { display: none; }
 }
 @media (min-width: 82.01em) {
+  html[data-native-shell] .toc-drawer { z-index: 30; }
   html[data-native-shell] #documentation-navigation { display: none; }
 }
 @media (max-width: 24rem) {

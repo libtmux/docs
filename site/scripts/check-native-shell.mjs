@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
 import { chromium } from 'playwright'
-import { checkNativeFirstPaint } from './check-native-layout.mjs'
+import { checkNativeFirstPaint, checkNativeHeader } from './check-native-layout.mjs'
 
 const base = (process.argv.find((arg) => arg.startsWith('http')) ?? 'http://localhost:8080/en').replace(/\/$/, '')
 const version = process.argv.find((arg) => arg.startsWith('--version='))?.slice('--version='.length) ?? 'stable'
@@ -18,6 +18,10 @@ try {
       await page.setViewportSize({ width, height: 900 })
       await page.emulateMedia({ colorScheme })
       await checkNativeFirstPaint(page, `${base}/py/${version}/api/api/libtmux.session/`)
+      await page.evaluate(() => scrollTo(0, 900))
+      await page.waitForFunction(() => scrollY >= 900)
+      await checkNativeHeader(page)
+      await page.evaluate(() => scrollTo(0, 0))
       const menu = page.locator('[data-page-port-switcher]')
       await menu.waitFor()
       await page.waitForFunction(() => document.querySelector('[data-page-port-switcher] a[href$="/ts/latest/reference/session-session/"]'))
@@ -49,9 +53,37 @@ try {
   }
   await page.evaluate(() => { location.hash = 'sessions' })
   await page.waitForFunction(() => document.querySelector('[data-page-port-switcher] a[href$="/ts/latest/reference/session-session/"]'))
+  const picker = page.locator('[data-page-port-switcher]')
+  await picker.locator('summary').click()
+  await picker.locator('[data-picker-search]').fill('TypeScript')
   await page.evaluate(() => { location.hash = 'libtmux.Session.windows' })
   await page.waitForFunction(() => document.querySelector('[data-page-port-switcher] a[href$="/ts/latest/reference/session-session-windows/"]'))
-  console.log('Native shell: compact header, stable first paint, assets, keyboard, unobscured dropdowns at 1440/1062/768/688/641/390px in light/dark, and class/member equivalents passed')
+  assert.deepEqual(await picker.locator('[data-picker-option]').evaluateAll((options) => options
+    .filter((option) => option.checkVisibility({ visibilityProperty: true }))
+    .map((option) => option.dataset.port)), ['ts'], 'Fragment navigation preserves the active language filter')
+  await page.keyboard.press('Escape')
+  await page.evaluate(() => scrollTo(0, 0))
+  for (const [input, button] of [['__navigation', 'mobile-sidebar-toggle'], ['__toc', 'mobile-toc-toggle']]) {
+    await page.setViewportSize({ width: 641, height: 900 })
+    const opener = page.locator(`#${button}`)
+    await opener.focus()
+    await page.keyboard.press('Enter')
+    assert(await page.locator(`#${input}`).isChecked(), `${button}: keyboard opens the drawer`)
+    assert(await page.evaluate((id) => document.getElementById(id).contains(document.activeElement),
+      input === '__navigation' ? 'native-navigation' : 'native-toc'), `${button}: focus moves into the drawer`)
+    await page.keyboard.press('Control+k')
+    await page.locator('dialog[open]').waitFor()
+    await page.keyboard.press('Escape')
+    await page.waitForFunction(() => !document.querySelector('dialog[open]'))
+    assert(await page.locator(`#${input}`).isChecked(), `${button}: dismissing search preserves the underlying drawer`)
+    await page.setViewportSize({ width: 380, height: 900 })
+    await page.waitForFunction(() => document.querySelector('[data-documentation-context]').hasAttribute('data-settings-open'))
+    assert(await opener.isVisible(), `${button}: resizing keeps the drawer opener visible`)
+    await page.keyboard.press('Escape')
+    assert.equal(await page.locator(`#${input}`).isChecked(), false, `${button}: Escape closes the drawer`)
+    assert.equal(await page.evaluate(() => document.activeElement?.id), button, `${button}: Escape returns focus to the visible opener`)
+  }
+  console.log('Native shell: stable first paint, reachable scrolled header, assets, keyboard, unobscured dropdowns at 1440/1062/768/688/641/390px in light/dark, filtered class/member equivalents, and drawer focus across resizing passed')
 } finally {
   await browser.close()
 }
