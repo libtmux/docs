@@ -249,18 +249,18 @@ vector. Use `into_iter().matching_owned(...)` when selected values should move
 out of the original collection.
 
 <a id="the-cardinality-contract-side-by-side"></a>
-<a id="result-counts"></a>
+<a id="handle-zero-one-and-several-results"></a>
 
-## Handle zero, one, and several results
+## Result counts
 
 Choose the result contract before sending input or deleting an object. Taking
 [`next()`](https://doc.rust-lang.org/std/iter/trait.Iterator.html#tymethod.next) would silently accept the first match in an ambiguous collection.
 
 | Matches | `exactly_one()` | `one_or_none()` |
 | --- | --- | --- |
-| None | `Err(ExactlyOneError::NoItems)` | [`Ok(None)`](https://doc.rust-lang.org/std/result/enum.Result.html#variant.Ok) |
-| One | [`Ok(item)`](https://doc.rust-lang.org/std/result/enum.Result.html#variant.Ok) | [`Ok(Some(item))`](https://doc.rust-lang.org/std/result/enum.Result.html#variant.Ok) |
-| Several | `Err(ExactlyOneError::MultipleItems)` | [`Err(MultipleItemsError)`](../../reference/query-multipleitemserror/) |
+| <a id="handle-zero-one-and-several-results-none"></a>None | `Err(ExactlyOneError::NoItems)` | [`Ok(None)`](https://doc.rust-lang.org/std/result/enum.Result.html#variant.Ok) |
+| <a id="handle-zero-one-and-several-results-one"></a>One | [`Ok(item)`](https://doc.rust-lang.org/std/result/enum.Result.html#variant.Ok) | [`Ok(Some(item))`](https://doc.rust-lang.org/std/result/enum.Result.html#variant.Ok) |
+| <a id="handle-zero-one-and-several-results-several"></a>Several | `Err(ExactlyOneError::MultipleItems)` | [`Err(MultipleItemsError)`](../../reference/query-multipleitemserror/) |
 
 Both helpers preserve the iterator's item type and pull at most two items.
 With a [slice iterator](https://doc.rust-lang.org/std/primitive.slice.html#method.iter),
