@@ -102,6 +102,20 @@ describe('port prose ownership', () => {
     expect(rendered.code).not.toContain('Python')
   })
 
+  it.each(['', 'py', 'ts', 'go', 'java', 'csharp', 'cxx', 'swift'])(
+    'keeps the transport explanation outside the %s table in HTML and Markdown', async (port) => {
+      const { content } = parseFrontmatter(readFileSync(`${contentRoot}docs/concepts/transports.md`, 'utf8'), { frontmatter: 'remove' })
+      vi.stubEnv('LIBTMUX_DOCS_PORT', port)
+      const renderer = await createMarkdownProcessor({ remarkPlugins: [remarkPortCode], syntaxHighlight: false })
+      const html = (await renderer.render(content)).code
+      const table = html.match(/<table>[\s\S]*?<\/table>/)?.[0]
+      expect(table).toBeDefined()
+      expect(table).not.toContain('Choose based on')
+      expect(html).toContain('<p>Choose based on whether you need command results')
+      expect(resolvePortCode(content, port)).toMatch(/\|\n\nChoose based on/)
+    },
+  )
+
   it('rejects misspelled, empty and unmatched ownership markers', () => {
     for (const body of ['<!-- port:golang -->bad<!-- /port -->', '<!-- port: -->bad<!-- /port -->', '<!-- port:go -->bad']) {
       expect(() => resolvePortBody(body, 'go')).toThrow()

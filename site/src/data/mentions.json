@@ -7093,6 +7093,34 @@
   },
   {
    "port": "rs",
+   "symbol": "command.CommandChain",
+   "page": "/concepts/transports/",
+   "title": "Control mode vs one-shot",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "command.CommandChain",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "command.CommandResult",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "command.CommandResult.success",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
    "symbol": "config.ConfigError",
    "page": "/rs/latest/workspace/reference/",
    "title": "Rust workspace builder API",
@@ -7268,6 +7296,62 @@
   },
   {
    "port": "rs",
+   "symbol": "control.BlockResult",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "control.BlockResult.succeeded",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "control.ControlEvents.shutdown",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "control.ControlMode",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "control.ControlMode.attach",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "control.ControlMode.attach",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "control.ControlSender.send",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "control.ControlSender.watch_only",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
    "symbol": "error.ControlModeErrorKind",
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
@@ -7293,6 +7377,13 @@
    "page": "/topics/options-and-hooks/",
    "title": "Options and hooks",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "formats.text.TmuxText.as_bytes",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
   },
   {
    "port": "rs",
@@ -7384,6 +7475,20 @@
    "page": "/rs/latest/workspace/configuration/environment/",
    "title": "Workspace environment",
    "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
   },
   {
    "port": "rs",
@@ -7534,6 +7639,41 @@
   },
   {
    "port": "rs",
+   "symbol": "plan.ops.panes.SendKeys",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.ops.timing.Pause",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.Plan",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.Plan",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.Plan.add",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
    "symbol": "plan.Plan.preview",
    "page": "/rs/latest/workspace/internals/guides/",
    "title": "Use the Rust workspace builder",
@@ -7548,9 +7688,254 @@
   },
   {
    "port": "rs",
+   "symbol": "plan.Plan.run_over_control_mode",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.Plan.validate",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.planner.Planner.Folding",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.planner.Planner.Folding",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.planner.Planner.Marked",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.planner.Planner.Marked",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.planner.Planner.Sequential",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.planner.Planner.Sequential",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.run.Outcome.Complete",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.run.Outcome.Failed",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.run.Outcome.Skipped",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.run.PlanResult.dispatches",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.run.PlanResult.is_complete",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.run.PlanResult.operations",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "plan.Slot.pane",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.ExactlyOneError",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.fields.ManyRelation.all",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.fields.ManyRelation.any",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.fields.ManyRelation.none",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.fields.OneRelation.is",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.fields.TextField.contains",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.fields.TextField.ends_with",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.fields.TextField.eq_ignore_case",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.fields.TextField.regex",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.fields.TextField.starts_with",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.Filterable",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.Filterable.filter_fields",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.FilterExpr",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
    "symbol": "query.FilterExpr.and",
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.FilterExpr.and",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.FilterExpr.not",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.FilterExpr.or",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.QueryIteratorExt.exactly_one",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.QueryIteratorExt.matching",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "query.QueryIteratorExt.one_or_none",
+   "page": "/rs/latest/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.builder.ServerBuilder.default_timeout",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
    "section": "concepts"
   },
   {
@@ -7563,8 +7948,29 @@
   {
    "port": "rs",
    "symbol": "server.Server",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server",
    "page": "/rs/latest/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
    "section": "guides"
   },
   {
@@ -7632,10 +8038,24 @@
   },
   {
    "port": "rs",
+   "symbol": "server.Server.chain",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
    "symbol": "server.Server.check_alive",
    "page": "/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.cmd",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
   },
   {
    "port": "rs",
@@ -7661,6 +8081,13 @@
   {
    "port": "rs",
    "symbol": "server.Server.kill",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.kill",
    "page": "/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
@@ -7671,6 +8098,27 @@
    "page": "/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.over_control_mode",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.over_control_mode",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server.over_control_mode",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
   },
   {
    "port": "rs",
@@ -7695,6 +8143,13 @@
   },
   {
    "port": "rs",
+   "symbol": "server.Server.shutdown",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
    "symbol": "server.Server.signal_channel",
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
@@ -7713,6 +8168,20 @@
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.Session",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.Session",
+   "page": "/rs/latest/guides/control-mode/",
+   "title": "Send commands over control mode",
+   "section": "guides"
   },
   {
    "port": "rs",
@@ -7923,6 +8392,20 @@
    "page": "/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "window.Window",
+   "page": "/rs/latest/concepts/transports/",
+   "title": "Subprocesses, plans, and control mode",
+   "section": "concepts"
+  },
+  {
+   "port": "rs",
+   "symbol": "window.Window",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
   },
   {
    "port": "rs",

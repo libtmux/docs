@@ -31,6 +31,7 @@ describe('verified complete programs', () => {
       port, paths: ['index', 'server-session-window-pane', 'queries', 'transports', 'workspaces'],
     })),
     { port: 'go', paths: ['server-session-window-pane', 'queries'] },
+    { port: 'rs', paths: ['queries', 'transports'] },
   ])('gives $port one owned route for its complete concept programs', ({ port, paths }) => {
     const docs = paths.flatMap((path) => {
       const route = path === 'index' ? 'concepts' : `concepts/${path}`
