@@ -4,6 +4,12 @@ import { proseMentions } from '../src/mentions.ts'
 const LABELS = { Python: 'py', TypeScript: 'ts', Go: 'go' }
 
 describe('prose mentions', () => {
+  it('reports exact source spans without including frontmatter or fenced code', () => {
+    const source = '---\ntitle: `Server`\n---\nUse ``Server`` and `Session.panes`.\n\n```python\n`Server`\n```'
+    const mentions = proseMentions(source, LABELS)
+    expect(mentions.map(({ start, end }) => source.slice(start, end))).toEqual(['``Server``', '`Session.panes`'])
+  })
+
   it('retains port context through nested sections and resets it at sibling sections', () => {
     const source = [
       '## Python',
@@ -25,7 +31,7 @@ describe('prose mentions', () => {
 
   it('keeps sentence context and table port labels', () => {
     const source = "Python uses `Session.panes`.\n\n| Go | `Session.Panes` |"
-    expect(proseMentions(source, LABELS)).toEqual([
+    expect(proseMentions(source, LABELS).map(({ start: _start, end: _end, ...mention }) => mention)).toEqual([
       { text: 'Session.panes', port: undefined, before: 'Python uses ', line: 1 },
       { text: 'Session.Panes', port: 'go', before: '| Go | ', line: 3 },
     ])
@@ -47,7 +53,7 @@ describe('prose mentions', () => {
 
   it('keeps a reference when its inline code wraps onto another source line', () => {
     const source = '## Python\nUse `Session.new_window(name,\nattach=False)` to create it.'
-    expect(proseMentions(source, LABELS)).toEqual([
+    expect(proseMentions(source, LABELS).map(({ start: _start, end: _end, ...mention }) => mention)).toEqual([
       { text: 'Session.new_window(name, attach=False)', port: 'py', before: 'Use ', line: 2 },
     ])
   })

@@ -1,8 +1,78 @@
-import { Resolver, type InventoryEntry } from '@libtmux/api-model'
-import { API_MODELS, parentApiInventory } from './api-models'
+import { Resolver, decideFilePath, decideMention, notASymbol, type ApiProduct, type InventoryEntry, type MentionContext, type MentionDecision } from '@libtmux/api-model'
+import { API_MODELS, PORT_NAME, parentApiInventory } from './api-models'
+import { productApiHref } from './product-api'
+import { PORT_BY_SLUG, referenceUrl } from './ports'
+import { buildTarget } from './versions'
+import { withPortRoot } from './site-root'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
 import pythonInv from '../data/inventories/python.entries.json'
+import pyPaths from '../data/api/py.paths.json'
+import rubyPaths from '../data/api/ruby.paths.json'
+import luaPaths from '../data/api/lua.paths.json'
+import tsPaths from '../data/api/ts.paths.json'
+import rsPaths from '../data/api/rs.paths.json'
+import goPaths from '../data/api/go.paths.json'
+import javaPaths from '../data/api/java.paths.json'
+import csharpPaths from '../data/api/csharp.paths.json'
+import cxxPaths from '../data/api/cxx.paths.json'
+import swiftPaths from '../data/api/swift.paths.json'
+import kotlinPaths from '../data/api/kotlin.paths.json'
+import scalaPaths from '../data/api/scala.paths.json'
+import fsharpPaths from '../data/api/fsharp.paths.json'
+
+/** Language labels used by shared prose headings and comparison rows. */
+export const PORT_BY_LABEL: Record<string, string> = Object.fromEntries(
+  Object.entries(PORT_NAME).map(([slug, name]) => [name, slug]),
+)
+
+// Static imports also survive the bundled Markdown route, where source files
+// are no longer adjacent to this module.
+const PATHS: Record<string, { repo: string; revision: string; paths: string[] }> = {
+  py: pyPaths, ruby: rubyPaths, lua: luaPaths, ts: tsPaths, rs: rsPaths,
+  go: goPaths, java: javaPaths, csharp: csharpPaths, cxx: cxxPaths,
+  swift: swiftPaths, kotlin: kotlinPaths, scala: scalaPaths, fsharp: fsharpPaths,
+}
+const TREES = Object.fromEntries(Object.entries(PATHS).map(([port, data]) => [port, new Set(data.paths)]))
+const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|md|toml|json|ya?ml|sh)$/
+
+type ProseDecision = MentionDecision & { file?: boolean }
+
+/** Resolve HTML and Markdown prose against the same version and source tree. */
+export function createProseLinker(product?: ApiProduct) {
+  const resolver = getResolver()
+  let defaults: Record<string, string> = {}
+  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
+  const versionOf = (port: string) => port === process.env.LIBTMUX_DOCS_PORT
+    ? buildTarget(process.env).version : (defaults[port] ?? 'latest')
+
+  return (text: string, context: Pick<MentionContext, 'pagePort' | 'before'>): ProseDecision => {
+    if (FILE_RE.test(text) || text.endsWith('/')) {
+      const decision = decideFilePath(text, context, TREES)
+      if (decision.kind === 'unresolved') return { ...decision, tried: [], file: true }
+      if (decision.kind !== 'link') return decision
+      const meta = PATHS[decision.port]!
+      return {
+        kind: 'link', port: decision.port, file: true, external: true,
+        href: `https://github.com/${meta.repo}/${decision.dir ? 'tree' : 'blob'}/${meta.revision}/${decision.path}`,
+        title: `${decision.path}: ${meta.repo}`,
+      }
+    }
+    if (notASymbol(text)) return { kind: 'skip', why: 'not a symbol' }
+    const decision = decideMention(text, {
+      ...context, product,
+      symbolHref: (port, symbol) => productApiHref(API_MODELS[port], symbol, versionOf(port)),
+      moduleHref: (port, module) => {
+        const target = PORT_BY_SLUG[port]
+        return target ? `${referenceUrl(target, versionOf(port))}#${module}` : `#${module}`
+      },
+    }, resolver, API_MODELS)
+    if (decision.kind === 'link' && decision.href.startsWith('/reference/')) {
+      return { ...decision, href: withPortRoot(decision.href) }
+    }
+    return decision
+  }
+}
 
 /**
  * The resolver that answers "what does this name refer to", with the

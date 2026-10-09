@@ -379,6 +379,9 @@ export function decideFilePath(
     if (hit?.ambiguous) return { kind: 'unresolved', why: `several files named this in ${port} — write the path out` }
     if (hit) return { kind: 'link', port, path: hit.path, dir: hit.dir }
   }
+  if (named || ctx.pagePort) return generic
+    ? { kind: 'skip', why: 'names a kind of file, not one path' }
+    : { kind: 'unresolved', why: 'not held by the stated port' }
   const all = Object.keys(trees).flatMap((port) => {
     const hit = claims(port)
     return hit && !hit.ambiguous ? [{ port, path: hit.path, dir: hit.dir }] : []

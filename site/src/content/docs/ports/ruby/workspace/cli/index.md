@@ -28,7 +28,7 @@ workspace gem using the [workspace installation instructions](../../).
 ## Input and common options
 
 Pass one configuration file after the options. If you omit the file, discovery
-requires exactly one of `.tmuxp.yaml`, [`.tmuxp.yml`](./validate/), or
+requires exactly one of [`.tmuxp.yaml`](./validate/), [`.tmuxp.yml`](./validate/), or
 [`.tmuxp.json`](./validate/) in the current directory. Missing or ambiguous
 input exits with status `2`.
 

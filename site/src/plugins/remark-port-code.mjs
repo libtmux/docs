@@ -100,11 +100,15 @@ export function resolvePortCode(body, port, authoredPort, link = (href) => href)
       fence = undefined
     } else if (!fence?.dropping && !fence?.replaced) {
       out.push(fence ? line : line
-        .replace(/(`+).*?\1|(\]\()([^\s)]+)(?=[\s)])/g, (all, code, prefix, href) => code ? all : `${prefix}${link(href)}`)
-        .replace(/^( {0,3}\[[^\]]+\]:\s*)(\S+)/, (_all, prefix, href) => `${prefix}${link(href)}`))
+        .replace(/(`+).*?\1|(\]\()(<[^<>\n]*>|[^\s)]+)(?=[\s)])/g, (all, code, prefix, href) => code ? all : `${prefix}${destination(href)}`)
+        .replace(/^( {0,3}\[[^\]]+\]:\s*)(<[^<>\n]*>|\S+)/, (_all, prefix, href) => `${prefix}${destination(href)}`))
     }
   }
   return out.join('\n').replace(/\n{3,}/g, '\n\n')
+
+  function destination(href) {
+    return href.startsWith('<') && href.endsWith('>') ? `<${link(href.slice(1, -1))}>` : link(href)
+  }
 }
 
 /**

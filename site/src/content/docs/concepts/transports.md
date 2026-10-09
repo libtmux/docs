@@ -1,7 +1,7 @@
 ---
 supportedPorts: [py, ts, go, java, csharp, cxx, swift]
 title: Control mode vs one-shot
-description: How a call in your program actually reaches the tmux server, and why a port might give you a choice.
+description: Choose subprocesses, command batches, or persistent connections to send commands and receive events.
 sidebar:
   label: Control mode vs one-shot
   group: Concepts
@@ -20,24 +20,80 @@ connections. tmux also accepts several commands in one invocation:
    notifications (`%window-add`, `%output`, ...) come out, without starting a
    process per call.
 3. **One invocation, several commands.** tmux accepts more than one command
-   per invocation (`;`-joined, or one `-F`-tagged `list-*` per line). A port
-   can fold several logical operations into a single process start without
-   opening a control-mode connection at all.
+   per invocation (`;`-joined, or one `-F`-tagged `list-*` per line). Grouping
+   operations this way reduces process starts without opening a control-mode
+   connection.
 
 <a id="where-each-port-draws-the-line"></a>
 
 ## Available transports
 
-| Port | One-shot | Folded invocation | Persistent control client |
-|------|----------|--------------------|-----------------------------|
-<!-- port:py -->| Python | every call | - | test-only (`ControlMode`, `libtmux._internal`) |
-<!-- /port --><!-- port:ts -->| TypeScript | default | `pipeline()`, `batch()` | `connect()` / `watch()`: notifications only, commands stay per-process |
-<!-- /port --><!-- port:go -->| Go | `process` path | `Plan.Run` | `connection` (`Session.OpenControl`), `streaming` (`Session.OpenNotifications`) |
-<!-- /port --><!-- port:rs -->| Rust | default | `CommandChain` or `plan` | `control-mode` feature |
-<!-- /port --><!-- port:csharp -->| C# | "One-shot" mode | "Chained" mode (`server.Chain()`) | "Control" mode (`EnterControlModeAsync`) |
-<!-- /port --><!-- port:cxx -->| C++ | bounded subprocess (default) | `Chain` | `Server::control()` → `Connection` |
-<!-- /port --><!-- port:java -->| Java | every call | `Batch` | `ControlClient` (`attach`, `send`, `subscribeEvents`) |
-<!-- /port --><!-- port:swift -->| Swift | default | - | `Server.connected(attachingTo:_:)` / `ControlConnection.watch(_:)` |
+<!-- port:py -->
+<!-- port:root -->
+### Python
+<!-- /port -->
+Each library call starts a tmux subprocess. `ControlMode` in
+`libtmux._internal` is an internal test helper, not a public command transport.
+<!-- /port -->
+
+<!-- port:ts -->
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+Commands use a subprocess by default. `pipeline()` and `batch()` group
+operations. `connect()` and `watch()` keep a connection for notifications;
+ordinary commands still use separate processes.
+<!-- /port -->
+
+<!-- port:go -->
+<!-- port:root -->
+### Go
+<!-- /port -->
+The process transport starts a tmux subprocess for each call. `Plan.Run`
+groups commands into fewer invocations. Use `Session.OpenControl` for a
+persistent command connection and `Session.OpenNotifications` for a notification
+stream.
+<!-- /port -->
+
+<!-- port:rs -->
+<!-- port:root -->
+### Rust
+<!-- /port -->
+Commands use subprocesses by default. `CommandChain` and the planning API
+group commands; the `control-mode` feature enables persistent connections.
+<!-- /port -->
+
+<!-- port:csharp -->
+<!-- port:root -->
+### C#
+<!-- /port -->
+The default one-shot mode runs commands through subprocesses. `Server.Chain`
+groups commands, and `EnterControlModeAsync` opens a persistent command
+connection.
+<!-- /port -->
+
+<!-- port:cxx -->
+<!-- port:root -->
+### C++
+<!-- /port -->
+The default transport uses bounded subprocesses. `Chain` groups commands
+into an invocation. `Server::control()` opens a persistent `Connection`.
+<!-- /port -->
+
+<!-- port:java -->
+<!-- port:root -->
+### Java
+<!-- /port -->
+Ordinary calls run through tmux subprocesses. `Batch` groups commands,
+and `ControlClient` provides a persistent connection for commands and events.
+<!-- /port -->
+
+<!-- port:swift -->
+<!-- port:root -->
+### Swift
+<!-- /port -->
+Ordinary calls use subprocesses. `Server.connected(attachingTo:_:)` provides
+a persistent connection, and `ControlConnection.watch(_:)` receives events.
 <!-- /port -->
 
 Choose based on whether you need command results, notifications, or a batch of

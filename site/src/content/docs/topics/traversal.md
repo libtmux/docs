@@ -21,17 +21,71 @@ issues another tmux command depends on the API, independently of whether the
 call is async; see [Server, session, window,
 pane](/concepts/server-session-window-pane/).
 
-| Port | Server → sessions | Session → windows | Window → panes |
-|------|--------------------|--------------------|-----------------|
-<!-- port:py -->| Python | `server.sessions` | `session.windows` | `window.panes` |
-<!-- /port --><!-- port:ts -->| TypeScript | `await server.sessions()` | `session.windows` | `window.panes` |
-<!-- /port --><!-- port:go -->| Go | `server.Sessions(ctx)` | `session.Windows()` | `window.Panes()` |
-<!-- /port --><!-- port:rs -->| Rust | `await server.sessions()` | `session.windows()` | `window.panes()` |
-<!-- /port --><!-- port:java -->| Java | `server.sessions()` | `session.windows()` | `window.panes()` |
-<!-- /port --><!-- port:csharp -->| C# | `server.GetSessionsAsync()` | `session.GetWindowsAsync()` | `window.GetPanesAsync()` |
-<!-- /port --><!-- port:cxx -->| C++ | `server->sessions()` | `session->windows()` | `window->panes()` |
-<!-- /port --><!-- port:swift -->| Swift | `Server.sessions()`, or `snapshot.windows(of: session)` for windows/panes once you have a `Snapshot` | see previous column | see previous column |
+<!-- port:py -->
+<!-- port:root -->
+### Python
 <!-- /port -->
+Read `Server.sessions`, then `Session.windows` and `Window.panes`
+to traverse from the server down to its panes.
+<!-- /port -->
+
+<!-- port:ts -->
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+Await `Server.sessions`, then read `Session.windows` and
+`Window.panes` from the loaded graph.
+<!-- /port -->
+
+<!-- port:go -->
+<!-- port:root -->
+### Go
+<!-- /port -->
+Call `Server.Sessions` with a context to read the sessions.
+`Session.Windows` and `Window.Panes` traverse their captured relationships.
+<!-- /port -->
+
+<!-- port:rs -->
+<!-- port:root -->
+### Rust
+<!-- /port -->
+Use `Server.sessions`, `Session.windows`, and `Window.panes`
+to read each level of the hierarchy.
+<!-- /port -->
+
+<!-- port:java -->
+<!-- port:root -->
+### Java
+<!-- /port -->
+Use `Server.sessions`, `Session.windows`, and `Window.panes`
+to read each level of the hierarchy.
+<!-- /port -->
+
+<!-- port:csharp -->
+<!-- port:root -->
+### C#
+<!-- /port -->
+Use `Server.GetSessionsAsync`, `Session.GetWindowsAsync`, and
+`Window.GetPanesAsync` to read each level of the hierarchy.
+<!-- /port -->
+
+<!-- port:cxx -->
+<!-- port:root -->
+### C++
+<!-- /port -->
+Use `Server::sessions`, `Session::windows`, and `Window::panes`
+to read each level of the hierarchy.
+<!-- /port -->
+
+<!-- port:swift -->
+<!-- port:root -->
+### Swift
+<!-- /port -->
+Read sessions through `Server.sessions()`. Once you have a
+`Snapshot`, use its relationship queries, including `Snapshot.windows(of:)`,
+to find the windows and panes for those captured objects.
+<!-- /port -->
+
 <!-- port:ts -->
 `session.windows` and `window.panes` read the graph loaded by
 `await server.sessions()` without additional tmux commands.
@@ -128,17 +182,69 @@ Parent lookups may read captured data or query tmux again. Check the method's
 read and failure semantics; [Server, session, window,
 pane](/concepts/server-session-window-pane/) introduces that distinction:
 
-| Port | Pane → window | Window → session |
-|------|----------------|--------------------|
-<!-- port:py -->| Python | `pane.window` | `window.session` |
-<!-- /port --><!-- port:ts -->| TypeScript | `pane.window` (getter, from the loaded graph) | `window.session` (getter) |
-<!-- /port --><!-- port:go -->| Go | `pane.Window()` → `(Window, bool)` | `window.Session()` → `(Session, bool)` |
-<!-- /port --><!-- port:rs -->| Rust | `await pane.window()` → `Result<Option<Window>, Error>` | `await window.session()` → `Result<Option<Session>, Error>` |
-<!-- /port --><!-- port:java -->| Java | `pane.window()` | `window.session()` |
-<!-- /port --><!-- port:csharp -->| C# | `pane.Window` (property) | `window.Session` (property) |
-<!-- /port --><!-- port:cxx -->| C++ | `pane->window()` | `window->session()` |
-<!-- /port --><!-- port:swift -->| Swift | `pane.windowID`, then look it up via `Snapshot` | not a per-window field: join through the snapshot instead |
+<!-- port:py -->
+<!-- port:root -->
+### Python
 <!-- /port -->
+Read `Pane.window` for a pane’s window and `Window.session` for
+a window’s session.
+<!-- /port -->
+
+<!-- port:ts -->
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+`Pane.window` and `Window.session` are getters that follow the
+relationships in the loaded graph.
+<!-- /port -->
+
+<!-- port:go -->
+<!-- port:root -->
+### Go
+<!-- /port -->
+`Pane.Window` returns `(Window, bool)` and `Window.Session` returns
+`(Session, bool)`. Check the boolean before using the parent.
+<!-- /port -->
+
+<!-- port:rs -->
+<!-- port:root -->
+### Rust
+<!-- /port -->
+`Pane.window` and `Window.session` asynchronously return
+`Result<Option<Window>, Error>` and `Result<Option<Session>, Error>`.
+Handle both a command failure and an absent parent.
+<!-- /port -->
+
+<!-- port:java -->
+<!-- port:root -->
+### Java
+<!-- /port -->
+Call `Pane.window` and `Window.session` to find an object’s parent.
+<!-- /port -->
+
+<!-- port:csharp -->
+<!-- port:root -->
+### C#
+<!-- /port -->
+Read the `Pane.Window` and `Window.Session` properties.
+<!-- /port -->
+
+<!-- port:cxx -->
+<!-- port:root -->
+### C++
+<!-- /port -->
+Call `Pane::window` and `Window::session` to find an object’s parent.
+<!-- /port -->
+
+<!-- port:swift -->
+<!-- port:root -->
+### Swift
+<!-- /port -->
+Use `Pane.windowID` to look up the window in a `Snapshot`.
+Find a window’s sessions through the snapshot’s relationships; a window
+does not store a single session field.
+<!-- /port -->
+
 <!-- port:go -->
 Check the boolean from a relationship lookup. It reports whether the relation
 was captured, not whether the object still exists in tmux. Use a live read when
@@ -247,21 +353,72 @@ snapshot.sessions(of: window).contains(session)
 
 ## The active child
 
-"Which window is in front right now" and "which pane would a command
-actually reach" are common enough questions that most ports expose the
-active child directly rather than making you filter a list:
+The active window and pane identify where untargeted input goes. Use their
+accessors or inspect the active flags in a captured snapshot:
 
-| Port | Session's active window | Window's active pane |
-|------|---------------------------|------------------------|
-<!-- port:py -->| Python | `session.active_window` | `window.active_pane` |
-<!-- /port --><!-- port:ts -->| TypeScript | `session.activeWindow` (getter) | `window.activePane` (getter) |
-<!-- /port --><!-- port:go -->| Go | `session.ActiveWindow()` → `(Window, bool)` | `window.ActivePane()` → `(Pane, bool)` |
-<!-- /port --><!-- port:rs -->| Rust | `await session.active_window()` → `Result<Option<Window>, Error>` | `await window.active_pane()` → `Result<Option<Pane>, Error>` |
-<!-- /port --><!-- port:java -->| Java | `session.activeWindow()` → `Optional<Window>` | `window.activePane()` → `Optional<Pane>` |
-<!-- /port --><!-- port:csharp -->| C# | `session.ActiveWindow` (property) | `window.ActivePane` (property) |
-<!-- /port --><!-- port:cxx -->| C++ | `session->active_window()` | `window->active_pane()` |
-<!-- /port --><!-- port:swift -->| Swift | filter for `isActive` on `snapshot.windows(of: session)`: `Window` carries its own `window_active` flag rather than the session exposing an accessor | same pattern, on the pane's own active flag |
+<!-- port:py -->
+<!-- port:root -->
+### Python
 <!-- /port -->
+Read `Session.active_window` and `Window.active_pane` for the
+selected objects.
+<!-- /port -->
+
+<!-- port:ts -->
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+Read the `Session.activeWindow` and `Window.activePane` getters.
+<!-- /port -->
+
+<!-- port:go -->
+<!-- port:root -->
+### Go
+<!-- /port -->
+`Session.ActiveWindow` returns `(Window, bool)` and
+`Window.ActivePane` returns `(Pane, bool)`. Check the boolean before use.
+<!-- /port -->
+
+<!-- port:rs -->
+<!-- port:root -->
+### Rust
+<!-- /port -->
+`Session.active_window` and `Window.active_pane` asynchronously
+return `Result<Option<Window>, Error>` and `Result<Option<Pane>, Error>`.
+Handle errors and the absence of an active object.
+<!-- /port -->
+
+<!-- port:java -->
+<!-- port:root -->
+### Java
+<!-- /port -->
+`Session.activeWindow` returns `Optional<Window>`, and
+`Window.activePane` returns `Optional<Pane>`.
+<!-- /port -->
+
+<!-- port:csharp -->
+<!-- port:root -->
+### C#
+<!-- /port -->
+Read the `Session.ActiveWindow` and `Window.ActivePane` properties.
+<!-- /port -->
+
+<!-- port:cxx -->
+<!-- port:root -->
+### C++
+<!-- /port -->
+Call `Session::active_window` and `Window::active_pane`.
+<!-- /port -->
+
+<!-- port:swift -->
+<!-- port:root -->
+### Swift
+<!-- /port -->
+Filter the snapshot’s windows or panes by their `isActive` flag.
+For example, inspect the windows returned by `Snapshot.windows(of:)`
+for the selected session.
+<!-- /port -->
+
 <!-- port:swift -->
 Filter snapshot children by `isActive`.
 <!-- /port -->
@@ -302,19 +459,69 @@ belong to the same server before comparing IDs.
 ## Is this the same object?
 
 Compare IDs to determine whether two handles refer to the same tmux object on
-the same server. Equality operators vary by port:
+the same server. Check what handle equality includes before using it as an
+identity test:
 
-| Port | How you check |
-|------|----------------|
-<!-- port:py -->| Python | `window.window_id == other.window_id` (or `pane.pane_id == ...`) |
-<!-- /port --><!-- port:ts -->| TypeScript | compare `.id` |
-<!-- /port --><!-- port:go -->| Go | `pane.ID() == other.ID()`: `PaneID` is a plain, `==`-comparable `string` |
-<!-- /port --><!-- port:rs -->| Rust | `pane.id() == other.id()`: verified from the port's own doctests, not struct equality |
-<!-- /port --><!-- port:java -->| Java | `pane.equals(other)`: overridden to compare server identity plus pane ID |
-<!-- /port --><!-- port:csharp -->| C# | `pane.Equals(other)`: overridden to compare a generation counter plus ID |
-<!-- /port --><!-- port:cxx -->| C++ | `pane == other`: `operator==` is defined directly on `Session`/`Window`/`Pane` |
-<!-- /port --><!-- port:swift -->| Swift | compare `.id` for identity; see the equality note below |
+<!-- port:py -->
+<!-- port:root -->
+### Python
 <!-- /port -->
+Compare `Window.window_id` or `Pane.pane_id` when checking whether
+two handles name the same object on the same server.
+<!-- /port -->
+
+<!-- port:ts -->
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+Compare the handles’ `id` properties when checking identity on the
+same server.
+<!-- /port -->
+
+<!-- port:go -->
+<!-- port:root -->
+### Go
+<!-- /port -->
+Compare `Pane.ID` values. `PaneID` is a string type and supports
+`==`; include the server context when comparing objects from different servers.
+<!-- /port -->
+
+<!-- port:rs -->
+<!-- port:root -->
+### Rust
+<!-- /port -->
+Compare `Pane.id` values when checking identity on the same server.
+<!-- /port -->
+
+<!-- port:java -->
+<!-- port:root -->
+### Java
+<!-- /port -->
+`Pane.equals` compares the server identity and pane ID.
+<!-- /port -->
+
+<!-- port:csharp -->
+<!-- port:root -->
+### C#
+<!-- /port -->
+`Pane.Equals` compares a generation counter and the pane ID.
+<!-- /port -->
+
+<!-- port:cxx -->
+<!-- port:root -->
+### C++
+<!-- /port -->
+`Session`, `Window`, and `Pane` define `operator==` for equality checks.
+<!-- /port -->
+
+<!-- port:swift -->
+<!-- port:root -->
+### Swift
+<!-- /port -->
+Compare the `id` values when checking identity on the same server.
+The equality behavior described below also includes captured state.
+<!-- /port -->
+
 <!-- port:swift -->
 **Swift's equality compares captured state.** Compiler-synthesized equality for
 `Session`, `Window`, and `Pane` compares every stored property, including

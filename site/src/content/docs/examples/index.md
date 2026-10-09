@@ -30,17 +30,74 @@ Port repositories use the following checks for their source examples. This site
 reads or copies those examples; a successful site build alone does not execute
 them:
 
-| Port | Mechanism | What it checks |
-|------|-----------|-----------------|
-<!-- port:py -->| Python | `pytest` `testpaths` includes `README.md` and `src/libtmux` | `>>>` doctest blocks run against a real, isolated tmux session on every test run |
-<!-- /port --><!-- port:ts -->| TypeScript | `scripts/check-doc-runnable.ts` | A block tagged `<!-- runs: examples/foo.ts -->` must appear, line for line, in that file, which the integration suite executes |
-<!-- /port --><!-- port:go -->| Go | `go generate ./tmux` (`internal/generate/docs`) | A `<!-- docs:name -->` region in `README.md` is rewritten from the matching `// docs:name` … `// docs:end` region in `examples/`; CI fails on drift |
-<!-- /port --><!-- port:rs -->| Rust | `#![doc = include_str!("../README.md")]` | The entire README is a doc comment, so `cargo test --doc` compiles and runs every fenced Rust block in it |
-<!-- /port --><!-- port:java -->| Java | `docs-tests` (`./gradlew :docs-tests:test`) | Every Java fence in READMEs and guides is compiled against the real artifacts, then run against real tmux via `libtmux-junit5` |
-<!-- /port --><!-- port:csharp -->| C# | `sync_snippets.py --check` + `ReadmeExampleTests` | A `<!-- snippet: Name -->` region is quoted from a tested `[Example]` method; every `csharp run` block is additionally compiled and executed |
-<!-- /port --><!-- port:cxx -->| C++ | `tools/docs/check_readme.py` | Each ` ```cpp ` block in `README.md` must appear verbatim as a `#region` in `examples/05-readme.cpp`, which CTest builds and runs |
-<!-- /port --><!-- port:swift -->| Swift | `Scripts/check_examples.py` | Each ` ```swift ` block in `README.md` and product READMEs must appear in `Examples/Sources/`, which `swift test --package-path Examples` compiles through its public products |
+<!-- port:py -->
+<!-- port:root -->
+### Python
 <!-- /port -->
+The test configuration includes `README.md` and `src/libtmux/` in its
+doctest collection. The `>>>` examples run against isolated tmux sessions.
+<!-- /port -->
+
+<!-- port:ts -->
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+`scripts/check-doc-runnable.ts` checks that a block tagged with its
+example source matches that file line for line. The integration suite
+executes the source program.
+<!-- /port -->
+
+<!-- port:go -->
+<!-- port:root -->
+### Go
+<!-- /port -->
+`go generate ./tmux` refreshes documented regions from matching source
+regions under `examples/`. CI checks that those generated excerpts are current.
+<!-- /port -->
+
+<!-- port:rs -->
+<!-- port:root -->
+### Rust
+<!-- /port -->
+The library includes its README as a crate doc comment.
+`cargo test --doc` compiles and runs its executable Rust code blocks.
+<!-- /port -->
+
+<!-- port:java -->
+<!-- port:root -->
+### Java
+<!-- /port -->
+`./gradlew :docs-tests:test` compiles executable Java blocks in READMEs
+and guides against the library artifacts, then runs them against tmux through
+`libtmux-junit5`.
+<!-- /port -->
+
+<!-- port:csharp -->
+<!-- port:root -->
+### C#
+<!-- /port -->
+`sync_snippets.py --check` checks excerpts from tested `[Example]`
+methods. `ReadmeExampleTests` also compiles and executes blocks marked
+`csharp run`.
+<!-- /port -->
+
+<!-- port:cxx -->
+<!-- port:root -->
+### C++
+<!-- /port -->
+`tools/docs/check_readme.py` checks that README examples match their
+source regions in `examples/05-readme.cpp`. CTest builds and runs that program.
+<!-- /port -->
+
+<!-- port:swift -->
+<!-- port:root -->
+### Swift
+<!-- /port -->
+`Scripts/check_examples.py` checks that README examples match sources
+under `Examples/Sources/`. `swift test --package-path Examples` compiles
+those examples through the public products.
+<!-- /port -->
+
 See [Testing with libtmux](/guides/testing-with-libtmux/) for the fixture
 each of those test suites runs against, and each example page for the
 exact file a given snippet was quoted from.

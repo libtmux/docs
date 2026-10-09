@@ -19,6 +19,7 @@ import { productApiHref, productApiRoots } from './product-api.ts'
 import { tmuxReferenceUrl } from './tmux-reference'
 import { buildsTmuxDocumentation, tmuxManualUrl } from './tmux-manual-data.ts'
 import { selectPortCards } from './workspace-shared-slots.ts'
+import { linkProseMarkdown } from './prose-markdown'
 
 export interface LlmsPage {
   title: string
@@ -84,7 +85,7 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
   const version = port ? buildTarget(process.env).version : (defaults[entryPort ?? ''] ?? 'latest')
   const path = docsRoutePath(entry, port, defaults)
   const url = `${origin}${entry.data.product && !port ? `${PORT_ROOT}/` : base}${path ? `${path}/` : ''}`
-  let body = resolvePortCode(entry.body ?? '', port, entryPort,
+  let body = resolvePortCode(linkProseMarkdown(entry.body ?? '', entryPort ?? port, entry.data.product), port, entryPort,
     (href: string) => new URL(proseHref(href, SITE_ROOT, entryPort ?? port, version), url).href)
   const cards = selectPortCards(entry.data.cards, entryPort ?? port)
   if (cards.length) {
