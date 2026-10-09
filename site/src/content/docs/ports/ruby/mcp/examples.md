@@ -1,39 +1,43 @@
 ---
 title: Ruby MCP examples
-description: Configure a client for the default Ruby MCP catalog or opt-in observation tools.
+description: Run complete Ruby programs for an MCP client or an embedded application.
 port: ruby
 product: mcp
 sidebar:
-  label: Examples
+  label: Overview
+  group: Examples
   order: 3
+cards:
+  - label: Page session metadata
+    href: page-session-metadata/
+    body: Embed the MCP application, page two session names from one capture, and close owned resources.
+  - label: Launch a client server
+    href: ../guides/connect-client/
+    body: Run a stdio MCP server with a private tmux daemon and a generated client configuration.
 ---
+
+Both examples include their complete program, pinned dependencies, run
+commands, expected results, and cleanup. Each creates its own tmux daemon.
 
 ## Default read-only catalog
 
-This client configuration selects a named tmux socket and exposes only
-capability discovery and snapshots:
+The [client guide](../guides/connect-client/#configure-a-client) generates an
+MCP configuration using the launcher's absolute path and the current Ruby
+executable. Its default catalog contains `tmux_capabilities` and
+`tmux_snapshot`. Listing the tools and querying the example session verifies
+the connection.
 
-```json
-{
-  "mcpServers": {
-    "tmux-ruby": {
-      "command": "libtmux-mcp",
-      "args": ["--socket-name", "libtmux-docs", "--endpoint", "local"]
-    }
-  }
-}
-```
-
-Start the named tmux server separately before the client launches the MCP
-process. Ask the client to list tools; the result should contain
-`tmux_capabilities` and `tmux_snapshot`.
+The [embedded example](page-session-metadata/) calls those tools from Ruby
+inside an Async scope. It creates two sessions and prints their names by
+following a snapshot cursor.
 
 ## Add bounded observation
 
-Append `--enable-tool`, `tmux_capture`, `--enable-tool`, and `tmux_wait` to the
-argument array. The discovered catalog then includes those two names. Do not
-enable creation, input, close, or authored execution unless the client needs
-those effects.
-
-The [source-owned MCP guide](../source-guide/) links the executable protocol
-example that drives the installed gem through pipes and an isolated server.
+For capture or waits in the client launcher, add
+`"--enable-tool", "tmux_capture"` or `"--enable-tool", "tmux_wait"` to the
+array passed to `LibTmux::MCP::CLI.run` in `run-mcp.rb`. Adding them to the
+generated client configuration's arguments has no effect: the launcher does
+not forward those arguments. Enable creation, input, close, or authored
+execution only when the client needs those effects.
+The [guides overview](../guides/#enable-observation) explains the tool choices;
+the [source-owned guide](../source-guide/) gives their lifecycle contracts.

@@ -8466,6 +8466,13 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::Async::Server",
+   "page": "/ruby/latest/mcp/examples/page-session-metadata/",
+   "title": "Page session metadata from Ruby",
+   "section": "ports"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Async::Server",
    "page": "/ruby/latest/mcp/reference/",
    "title": "Ruby MCP API reference",
    "section": "ports"
@@ -8504,6 +8511,13 @@
    "page": "/ruby/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Async.open",
+   "page": "/ruby/latest/mcp/examples/page-session-metadata/",
+   "title": "Page session metadata from Ruby",
+   "section": "ports"
   },
   {
    "port": "ruby",
@@ -8620,6 +8634,13 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::MCP::Application",
+   "page": "/ruby/latest/mcp/examples/page-session-metadata/",
+   "title": "Page session metadata from Ruby",
+   "section": "ports"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::MCP::Application",
    "page": "/ruby/latest/mcp/reference/",
    "title": "Ruby MCP API reference",
    "section": "ports"
@@ -8644,6 +8665,20 @@
    "page": "/ruby/latest/mcp/source-guide/",
    "title": "MCP server guide",
    "section": "mcp"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::MCP::CLI.run",
+   "page": "/ruby/latest/mcp/examples/",
+   "title": "Ruby MCP examples",
+   "section": "ports"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::MCP::CLI.run",
+   "page": "/ruby/latest/mcp/guides/",
+   "title": "Ruby MCP guides",
+   "section": "ports"
   },
   {
    "port": "ruby",
