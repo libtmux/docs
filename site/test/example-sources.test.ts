@@ -27,10 +27,9 @@ const CONTENT = join(dirname(fileURLToPath(import.meta.url)), '../src/content/do
  * Raise this as examples are converted; it exists to stop the number going
  * the other way. It measures source inclusion, not execution coverage.
  */
-// Complete workspace programs replace their shared source excerpts; native
-// receipts and rendering checks live in complete-examples.test.ts.
-// Scala's workspace excerpt depended on an undisplayed ExampleRuntime helper.
-const SOURCED_FLOOR = 9
+// Complete workspace and Rust MCP programs replace some imported excerpts;
+// their native receipts and rendering checks live in complete-examples.test.ts.
+const SOURCED_FLOOR = 8
 
 interface Fence {
   file: string

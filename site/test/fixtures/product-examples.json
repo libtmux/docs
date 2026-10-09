@@ -327,6 +327,37 @@
         "BUNDLE_FROZEN=true BUNDLE_GEMFILE=./libtmux-source/Gemfile bundle install",
         "ruby -W:no-experimental snapshot-sessions.rb"
       ]
+    },
+    {
+      "port": "rs",
+      "language": "rust",
+      "sourceRevision": "a6fc2a65674177b92b17fa380757155d2ba150fd",
+      "sourceRepository": "libtmux/libtmux-rs",
+      "files": [
+        {
+          "name": "Cargo.toml",
+          "sha256": "5ec266b05567cb1799d2df65b3dcf6f5db69cab7c8878616d43f21da192d2562"
+        },
+        {
+          "name": "src/main.rs",
+          "sha256": "e3c7b08830177404e9c6c87b8680398a4983840b8ac3832bb7a461f5eaf6419e"
+        }
+      ],
+      "toolchain": [
+        "Rust 1.97.1"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/rs/mcp/examples/inspect-sessions",
+      "shellRecipe": [
+        "mkdir inspect-mcp-sessions",
+        "cd inspect-mcp-sessions",
+        "mkdir src",
+        "cargo +1.97.1 generate-lockfile",
+        "cargo +1.97.1 run --locked --quiet"
+      ]
     }
   ],
   "rootWorkspace": {

@@ -7443,6 +7443,20 @@
   },
   {
    "port": "rs",
+   "symbol": "mcp.src.TmuxTools.call_read_tools_batch",
+   "page": "/rs/latest/mcp/topics/tool-selection/",
+   "title": "Tool selection",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.src.TmuxTools.capture_pane",
+   "page": "/rs/latest/mcp/topics/tool-selection/",
+   "title": "Tool selection",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
    "symbol": "mcp.src.TmuxTools.capture_since",
    "page": "/rs/latest/mcp/topics/",
    "title": "Rust MCP topics",
@@ -7450,9 +7464,44 @@
   },
   {
    "port": "rs",
+   "symbol": "mcp.src.TmuxTools.capture_since",
+   "page": "/rs/latest/mcp/topics/tool-selection/",
+   "title": "Tool selection",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.src.TmuxTools.create_session",
+   "page": "/rs/latest/mcp/topics/tool-selection/",
+   "title": "Tool selection",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.src.TmuxTools.kill_session",
+   "page": "/rs/latest/mcp/topics/tool-selection/",
+   "title": "Tool selection",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
    "symbol": "mcp.src.TmuxTools.list_sessions",
-   "page": "/rs/latest/mcp/examples/",
-   "title": "Rust MCP examples",
+   "page": "/rs/latest/mcp/examples/inspect-sessions/",
+   "title": "List sessions through MCP",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.src.TmuxTools.list_sessions",
+   "page": "/rs/latest/mcp/guides/connect-client/",
+   "title": "Connect an MCP client",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.src.TmuxTools.list_sessions",
+   "page": "/rs/latest/mcp/topics/tool-selection/",
+   "title": "Tool selection",
    "section": "ports"
   },
   {
@@ -7460,6 +7509,69 @@
    "symbol": "mcp.src.TmuxTools.offered",
    "page": "/rs/latest/mcp/reference/",
    "title": "Rust MCP API",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.src.TmuxTools.rename_session",
+   "page": "/rs/latest/mcp/topics/tool-selection/",
+   "title": "Tool selection",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.src.TmuxTools.resize_pane",
+   "page": "/rs/latest/mcp/topics/tool-selection/",
+   "title": "Tool selection",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.src.TmuxTools.select_layout",
+   "page": "/rs/latest/mcp/topics/tool-selection/",
+   "title": "Tool selection",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.src.TmuxTools.send_keys",
+   "page": "/rs/latest/mcp/examples/inspect-sessions/",
+   "title": "List sessions through MCP",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.src.TmuxTools.send_keys",
+   "page": "/rs/latest/mcp/topics/tool-selection/",
+   "title": "Tool selection",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.src.TmuxTools.set_history_limit",
+   "page": "/rs/latest/mcp/topics/tool-selection/",
+   "title": "Tool selection",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.src.TmuxTools.show_environment",
+   "page": "/rs/latest/mcp/topics/tool-selection/",
+   "title": "Tool selection",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.src.TmuxTools.snapshot_pane",
+   "page": "/rs/latest/mcp/topics/tool-selection/",
+   "title": "Tool selection",
+   "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "mcp.src.TmuxTools.wait_for_text",
+   "page": "/rs/latest/mcp/guides/connect-client/",
+   "title": "Connect an MCP client",
    "section": "ports"
   },
   {
@@ -7979,13 +8091,6 @@
    "page": "/rs/latest/guides/testing-with-libtmux/",
    "title": "Testing with libtmux",
    "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "server.Server",
-   "page": "/rs/latest/mcp/examples/",
-   "title": "Rust MCP examples",
-   "section": "ports"
   },
   {
    "port": "rs",

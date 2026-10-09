@@ -4,8 +4,13 @@ description: Select toolsets, inspect the pinned endpoint, and observe bounded c
 port: rs
 product: mcp
 sidebar:
-  label: Topics
-  order: 1
+  label: Overview
+  group: Topics
+  order: 2
+cards:
+  - label: Tool selection
+    href: tool-selection/
+    body: Select groups and exact names, apply exclusions, and inspect aggregate-call authority.
 ---
 
 The server selects one tmux endpoint and freezes its offered tools at startup.
@@ -13,6 +18,9 @@ Read `tmux://capabilities` to inspect that endpoint's provenance and the
 effective tool selection.
 
 ## Select tools
+
+[Tool selection](tool-selection/) gives complete client configurations and
+explains how direct calls and batch children use the effective selection.
 
 `LIBTMUX_TOOLSETS` selects any combination of `inspect`, `manage`,
 `execute`, and `teardown`. `LIBTMUX_TOOLS` adds exact names;
@@ -45,4 +53,4 @@ The server exposes the static `tmux://capabilities` resource. Read live
 hierarchy and terminal state through tools. The current surface has no
 workflow prompts or dynamic resource templates.
 
-[Configuration and lifecycle contract](https://github.com/libtmux/libtmux-rs/blob/f0e37052c232636b61d095817046e6bfc8f2ca40/crates/tmux-mcp/README.md).
+[Configuration and lifecycle contract](https://github.com/libtmux/libtmux-rs/blob/a6fc2a65674177b92b17fa380757155d2ba150fd/crates/tmux-mcp/README.md).

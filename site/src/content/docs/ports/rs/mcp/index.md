@@ -20,12 +20,12 @@ Toolsets select inspection, management, execution, and teardown. Read
 
 - [Install](#install) points an MCP client at this server.
 - [Tools](./tools/) lists the MCP operations, arguments, and results.
-- [Guides](./guides/) install the executable and choose a socket.
+- [Guides](./guides/) connect a client and choose its tmux socket.
 - [Topics](./topics/) explain toolsets, command waits, and capability discovery.
-- [Examples](./examples/) call a tool, then explore server internals.
+- [Examples](./examples/) run a Rust MCP client with a private tmux server.
 - [Language API](./reference/) documents embedding and implementation types.
 
 The Rust [Workspace Manager](../workspace/) is a separate crate. The current MCP catalog does not
 include a workspace-file operation.
 
-[Crate documentation and prerequisites](https://github.com/libtmux/libtmux-rs/blob/f0e37052c232636b61d095817046e6bfc8f2ca40/crates/tmux-mcp/README.md).
+[Crate documentation and prerequisites](https://github.com/libtmux/libtmux-rs/blob/a6fc2a65674177b92b17fa380757155d2ba150fd/crates/tmux-mcp/README.md).
