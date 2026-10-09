@@ -22,6 +22,14 @@ cards:
   - label: Filtering and querying
     href: querying-and-filtering/
     body: Find objects and handle missing or ambiguous matches.
+  - label: Batching commands
+    href: batching-commands/
+    body: Group commands, inspect their results, and handle failures.
+    ports: [rs]
+  - label: Control mode
+    href: control-mode/
+    body: Keep a connection open for commands and tmux notifications.
+    ports: [rs]
   - label: Testing
     href: testing-with-libtmux/
     body: Use isolated tmux servers and manage test cleanup.

@@ -7786,6 +7786,13 @@
   },
   {
    "port": "rs",
+   "symbol": "plan.Slot.pane",
+   "page": "/rs/latest/guides/batching-commands/",
+   "title": "Batch commands with a plan",
+   "section": "guides"
+  },
+  {
+   "port": "rs",
    "symbol": "query.ExactlyOneError",
    "page": "/rs/latest/concepts/queries/",
    "title": "Filtering and queries",
@@ -8322,27 +8329,6 @@
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "src.WorkspaceBuilder.plan",
-   "page": "/rs/latest/concepts/transports/",
-   "title": "Subprocesses, plans, and control mode",
-   "section": "concepts"
-  },
-  {
-   "port": "rs",
-   "symbol": "src.WorkspaceBuilder.plan",
-   "page": "/rs/latest/guides/batching-commands/",
-   "title": "Batch commands with a plan",
-   "section": "guides"
-  },
-  {
-   "port": "rs",
-   "symbol": "src.WorkspaceBuilder.plan",
-   "page": "/rs/latest/guides/control-mode/",
-   "title": "Send commands over control mode",
-   "section": "guides"
   },
   {
    "port": "rs",

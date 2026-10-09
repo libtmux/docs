@@ -55,7 +55,7 @@ $ git clone https://github.com/libtmux/libtmux-rs libtmux-source &&
   git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4
 ```
 
-Only the `plan` feature is enabled. `control-mode` is unnecessary for these
+Only the [plan][plan-feature] feature is enabled. `control-mode` is unnecessary for these
 subprocess plans, and the program uses ordinary `Server` construction rather
 than a testing fixture.
 
@@ -214,7 +214,8 @@ refused plan: failed, skipped
 ## References to newly created objects
 
 `Plan::add(NewWindow::new(...))` returns a window slot, not a live `Window`.
-Its `pane()` points to the first pane that operation will create. The later
+Its [`Slot::pane`](../../reference/plan-slot-pane/) points to the first pane
+that operation will create. The later
 `SendKeys` operations use that typed reference, so the program does not guess
 an ID or query tmux between recording steps.
 
@@ -288,3 +289,5 @@ Source contracts: [Plan](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22
 [planners](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/plan/planner.rs),
 and [execution and outcomes](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/plan/run.rs)
 at the displayed library revision.
+
+[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/Cargo.toml#L115

@@ -57,7 +57,7 @@ $ git clone https://github.com/libtmux/libtmux-rs libtmux-source &&
   git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4
 ```
 
-Only the `control-mode` feature is enabled. It does not require `plan`,
+Only the `control-mode` feature is enabled. It does not require [plan][plan-feature],
 `query`, or `test-support`.
 
 Save the complete program as `control.rs`:
@@ -290,3 +290,5 @@ route and [Batching commands](../batching-commands/) for recorded plans.
 The pinned [control connection contract](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/control.rs)
 and [typed routing contract](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/server.rs)
 describe the source revision used by the program.
+
+[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/Cargo.toml#L115

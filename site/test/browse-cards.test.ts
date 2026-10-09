@@ -24,10 +24,16 @@ describe('shared browse cards', () => {
     expect(shared).toHaveLength(count)
     expect(new Set(shared.map((card) => card.href)).size).toBe(count)
     for (const port of ['py', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']) {
-      expect(cards(section, port)).toEqual(shared)
+      const selected = cards(section, port)
+      if (section === 'guides' && port === 'rs') {
+        expect(selected.filter((card) => shared.some((item) => item.href === card.href))).toEqual(shared)
+        expect(selected.filter((card) => !shared.some((item) => item.href === card.href))
+          .map((card) => card.href)).toEqual(['batching-commands/', 'control-mode/'])
+        expect(selected).toHaveLength(count + 2)
+      } else expect(selected).toEqual(shared)
       for (const version of ['latest', 'stable', 'v0.1']) {
         const base = `https://libtmux.org/pr-42/en/${port}/${version}/${section}/`
-        for (const card of cards(section, port)) {
+        for (const card of selected) {
           expect(new URL(card.href, base).pathname)
             .toBe(`/pr-42/en/${port}/${version}/${section}/${card.href}`)
         }

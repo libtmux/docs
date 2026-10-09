@@ -11,7 +11,7 @@ tableOfContents: true
 ---
 
 Ordinary [`Server`](../../reference/server-server/) calls use tmux subprocesses.
-No optional Cargo feature is required for that route. Add `plan` to record and
+No optional Cargo feature is required for that route. Add [plan][plan-feature] to record and
 group commands, or `control-mode` to use a persistent connection for commands
 and notifications.
 
@@ -24,7 +24,7 @@ and notifications.
 | --- | --- | --- |
 | List objects, create a session, send keys, or capture a pane | Ordinary `Server`, `Session`, `Window`, and `Pane` methods | None |
 | Send a known command sequence in one invocation | `Server::chain(CommandChain)` | None |
-| Describe operations, validate dependencies, and choose how to group them | `Plan` with `Planner::Sequential`, `Folding`, or `Marked` | `plan` |
+| Describe operations, validate dependencies, and choose how to group them | `Plan` with `Planner::Sequential`, `Folding`, or `Marked` | [plan][plan-feature] |
 | Attach a persistent command and event connection | `ControlMode::attach` | `control-mode` |
 | Route typed object methods through that connection | `Server::over_control_mode` | `control-mode` |
 
@@ -90,7 +90,7 @@ $ git clone https://github.com/libtmux/libtmux-rs libtmux-source &&
 ```
 
 This dependency disables all default features to show that subprocess calls
-do not depend on `query`, `plan`, or `control-mode`.
+do not depend on `query`, [plan][plan-feature], or `control-mode`.
 
 Save the complete program as `subprocess.rs`:
 
@@ -247,3 +247,5 @@ These examples use the public APIs at
 The pinned [Server contract](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/server.rs)
 describes command outcomes, shutdown, and routing. The guides above explain
 plans and persistent connections as separate application workflows.
+
+[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/Cargo.toml#L115
