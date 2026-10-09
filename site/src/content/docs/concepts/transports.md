@@ -1,5 +1,5 @@
 ---
-supportedPorts: [py, ts, rs, go, java, csharp, cxx, swift]
+supportedPorts: [py, ts, go, java, csharp, cxx, swift]
 title: Control mode vs one-shot
 description: How a call in your program actually reaches the tmux server, and why a port might give you a choice.
 sidebar:
@@ -33,12 +33,13 @@ connections. tmux also accepts several commands in one invocation:
 <!-- port:py -->| Python | every call | - | test-only (`ControlMode`, `libtmux._internal`) |
 <!-- /port --><!-- port:ts -->| TypeScript | default | `pipeline()`, `batch()` | `connect()` / `watch()`: notifications only, commands stay per-process |
 <!-- /port --><!-- port:go -->| Go | `process` path | `Plan.Run` | `connection` (`Session.OpenControl`), `streaming` (`Session.OpenNotifications`) |
-<!-- /port --><!-- port:rs -->| Rust | `plan` feature, sequential | `plan`, folded | `control-mode` feature |
+<!-- /port --><!-- port:rs -->| Rust | default | `CommandChain` or `plan` | `control-mode` feature |
 <!-- /port --><!-- port:csharp -->| C# | "One-shot" mode | "Chained" mode (`server.Chain()`) | "Control" mode (`EnterControlModeAsync`) |
 <!-- /port --><!-- port:cxx -->| C++ | bounded subprocess (default) | `Chain` | `Server::control()` → `Connection` |
 <!-- /port --><!-- port:java -->| Java | every call | `Batch` | `ControlClient` (`attach`, `send`, `subscribeEvents`) |
 <!-- /port --><!-- port:swift -->| Swift | default | - | `Server.connected(attachingTo:_:)` / `ControlConnection.watch(_:)` |
 <!-- /port -->
+
 Choose based on whether you need command results, notifications, or a batch of
 changes.
 
