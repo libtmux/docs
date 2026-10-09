@@ -24,6 +24,20 @@ html[data-native-shell] .toc-sticky {
   top: var(--native-header-height);
   height: calc(100vh - var(--native-header-height));
 }
+html[data-native-shell] .toc-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5;
+  text-transform: none;
+}
+html[data-native-shell] .toc-tree { font-size: 0.875rem; line-height: 1.5; }
+html[data-native-shell] .toc-tree code { font-size: inherit; }
+/* The overlay covers the header, so its contents start at the viewport top. */
+@media (max-width: 82em) {
+  html[data-native-shell] .toc-sticky { top: 0; height: 100dvh; }
+  html[data-native-shell] .toc-title-container { padding-top: 1rem; }
+  html[data-native-shell] .toc-title { font-size: 1.125rem; }
+}
 html[data-native-shell] .site-header a { color: inherit; }
 html[data-native-shell] :is(.site-header, .documentation-context, .prerelease-notice) { line-height: 1.5; }
 html[data-native-shell] .site-header h3,
