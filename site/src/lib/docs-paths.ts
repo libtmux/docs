@@ -16,7 +16,8 @@ export function proseHref(href: string, root: string, port?: string, version = '
   }
   const section = /^\/(concepts|guides|topics|examples)(?:\/|[?#]|$)/.exec(href)?.[1]
   const local = port && section && (!PORT_BY_SLUG[port]?.parentLibrary || section === 'concepts')
-  return `${root.replace(/\/+$/, '')}${local ? `/${port}/${version}` : section ? '/tmux' : ''}${href}`
+  const prefix = local ? portRoot : root
+  return `${prefix.replace(/\/+$/, '')}${local ? `/${port}/${version}` : section ? '/tmux' : ''}${href}`
 }
 
 export interface DocsPage {

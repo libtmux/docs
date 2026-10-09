@@ -30,6 +30,30 @@ function exampleBytes(markdown: string): string[] {
 }
 
 describe('prose Markdown links', () => {
+  it.each(['', '/pr-42'])('links owned tasks from Japanese exports to their English port under %s', async (prefix) => {
+    vi.stubEnv('LIBTMUX_DOCS_ROOT', `${prefix}/ja`)
+    vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', `${prefix}/en`)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{"go":"next","java":"latest","ts":"next"}')
+    vi.resetModules()
+    const { llmsPage: deployedPage } = await import('../src/lib/llms')
+    const pages = [
+      ['topics/architecture', ['go/next/concepts/queries', 'java/latest/concepts/queries']],
+      ['concepts/server-session-window-pane', ['go/next/topics/errors-and-exceptions']],
+      ['topics/waiting-and-retry', ['ts/next/concepts/transports']],
+    ] as const
+    for (const [id, targets] of pages) {
+      const { content, frontmatter } = parseFrontmatter(readFileSync(new URL(`../src/content/docs/${id}.md`, import.meta.url), 'utf8'))
+      const entry = { id, body: content, data: frontmatter } as CollectionEntry<'docs'>
+      const exported = deployedPage(entry, 'https://libtmux.org', `${prefix}/ja/`)
+      for (const target of targets) {
+        expect(urls(exported.body)).toContain(`https://libtmux.org${prefix}/en/${target}/`)
+        expect(urls(exported.body)).not.toContain(`https://libtmux.org${prefix}/ja/${target}/`)
+      }
+      expect(exampleBytes(exported.body)).toEqual(exampleBytes(resolvePortCode(content)))
+    }
+  })
+
   it.each([
     { root: '/en', ports: '/en' },
     { root: '/pr-42/en', ports: '/pr-42/en' },
