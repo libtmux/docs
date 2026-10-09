@@ -99,13 +99,17 @@ export function resolvePortCode(body, port, authoredPort, link = (href) => href)
       if (!fence.dropping) out.push(line)
       fence = undefined
     } else if (!fence?.dropping && !fence?.replaced) {
-      out.push(fence ? line : line
-        .replace(/(`+).*?\1|(\]\()(<[^<>\n]*>|[^\s)]+)(?=[\s)])/g, (all, code, prefix, href) => code ? all : `${prefix}${destination(href)}`)
-        .replace(/^( {0,3}\[[^\]]+\]:\s*)(<[^<>\n]*>|\S+)/, (_all, prefix, href) => `${prefix}${destination(href)}`))
+      out.push(fence ? line : rewriteMarkdownLinks(line, link))
     }
   }
   return out.join('\n').replace(/\n{3,}/g, '\n\n')
+}
 
+/** Rewrite authored destinations while preserving labels and literal inline code. */
+export function rewriteMarkdownLinks(text, link) {
+  return text
+    .replace(/(`+).*?\1|(\]\()(<[^<>\n]*>|[^\s)]+)(?=[\s)])/g, (all, code, prefix, href) => code ? all : `${prefix}${destination(href)}`)
+    .replace(/^( {0,3}\[[^\]]+\]:\s*)(<[^<>\n]*>|\S+)/gm, (_all, prefix, href) => `${prefix}${destination(href)}`)
   function destination(href) {
     return href.startsWith('<') && href.endsWith('>') ? `<${link(href.slice(1, -1))}>` : link(href)
   }
@@ -139,7 +143,7 @@ export function remarkPortCode() {
     // The Markdown export uses the same selector, including nested regions.
     if (raw !== selected) tree.children = processor.parse(selected).children
 
-    visit(tree, 'inlineCode', (node) => {
+    visit(tree, ['inlineCode', 'link', 'linkReference'], (node) => {
       const owner = portAt(node.position?.start.offset ?? -1)
       if (!owner) return
       node.data ??= {}

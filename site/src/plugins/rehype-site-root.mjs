@@ -17,19 +17,21 @@ import { buildTarget } from '../lib/versions.ts'
  */
 export function rehypeSiteRoot() {
   const root = (process.env.LIBTMUX_DOCS_ROOT || '/').replace(/\/+$/, '')
+  const portRoot = (process.env.LIBTMUX_DOCS_PORT_ROOT || root).replace(/\/+$/, '')
   const buildPort = process.env.LIBTMUX_DOCS_PORT
   const defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
 
   return (tree, file) => {
     const port = file?.data?.astro?.frontmatter?.port || buildPort
-    const version = port === buildPort ? buildTarget(process.env).version : (defaults[port] || 'latest')
     visit(tree, 'element', (node) => {
       const attr = node.tagName === 'a' ? 'href' : node.tagName === 'img' ? 'src' : null
       if (!attr) return
       const value = node.properties?.[attr]
       // Only single-leading-slash paths: '//host' is protocol-relative.
       if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return
-      node.properties[attr] = attr === 'href' ? proseHref(value, root, port, version) : `${root}${value}`
+      const owner = typeof node.properties.dataDocPort === 'string' ? node.properties.dataDocPort : port
+      const version = owner === buildPort ? buildTarget(process.env).version : (defaults[owner] || 'latest')
+      node.properties[attr] = attr === 'href' ? proseHref(value, root, owner, version, portRoot) : `${root}${value}`
     })
   }
 }
