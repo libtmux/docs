@@ -14,6 +14,7 @@ export interface NativePageContext {
   markdownSha256?: string
   htmlSha256: string
   articleSha256: string
+  hasTableOfContents: boolean
   signatures: string[]
 }
 

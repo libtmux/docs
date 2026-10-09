@@ -92,6 +92,12 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
         file, path, url: `${base}${path}`, sourcePath: `${port.slug}/${version}/api/${path}`,
         source, markdownHref, markdownSha256,
         htmlSha256: hashes[file], articleSha256: nativeHash(nativeArticle(html)),
+        hasTableOfContents: [...window.document.querySelectorAll('.toc-tree a[href^="#"]')].some((link) => {
+          let id
+          try { id = decodeURIComponent(link.getAttribute('href').slice(1)) } catch { return false }
+          const target = id ? window.document.getElementById(id) : null
+          return Boolean(target?.closest('article') && !target.matches('h1') && !target.querySelector(':scope > h1'))
+        }),
         signatures: [...window.document.querySelectorAll('dt.sig[id]')].map((element) => element.id),
       })
     }

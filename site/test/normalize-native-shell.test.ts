@@ -8,6 +8,18 @@ import { nativeArticle, nativeHash } from '../../scripts/native-shell-context.mj
 import { recordBuild, verifyBuild } from '../../scripts/publication-provenance.mjs'
 
 describe('native shell URL normalization', () => {
+  it.each(['copybutton.js', 'design-tabs.js', 'doctools.js'])('rejects an unrecognized native widget before adapting %s', async (name) => {
+    const directory = mkdtempSync(join(tmpdir(), 'native-widget-'))
+    try {
+      mkdirSync(join(directory, '_static'))
+      writeFileSync(join(directory, '_static', name), 'Changed native widget')
+      const contextFile = join(directory, 'context.json')
+      writeFileSync(contextFile, JSON.stringify({ port: 'py', version: 'latest', root: '/en/', pages: [] }))
+      await expect(normalizeNativeShell(directory, '/en', { sphinxPort: 'py', contextFile })).rejects.toThrow('Native widget changed')
+      expect(readFileSync(join(directory, '_static', name), 'utf8')).toBe('Changed native widget')
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+
   it.each(['search.html', 'search/index.html'])('routes native %s to scoped search with the query intact', async (name) => {
     const directory = mkdtempSync(join(tmpdir(), 'native-search-'))
     try {
@@ -61,9 +73,11 @@ describe('native shell URL normalization', () => {
       const html = readFileSync(page, 'utf8')
       expect(nativeArticle(html)).toBe(article)
       expect(html).toContain('<title>Native title</title><link rel="canonical" href="https://native.example/pane/">')
-      expect(html).toContain('href="../../_static/theme.css"')
-      expect(html.includes(tabs)).toBe(tabsPresent)
-      expect(html).toContain(otherScripts)
+      expect(html).toContain('href="/pr-42/en/py/v0.62.0/api/_static/theme.css"')
+      expect(html.includes('src="/pr-42/en/py/v0.62.0/api/_static/tabs.js?v=legacy"')).toBe(tabsPresent)
+      expect(html).toContain('src="/pr-42/en/py/v0.62.0/api/_static/design-tabs.js"')
+      expect(html).toContain('src="https://other.example/_static/tabs.js"')
+      expect(html).toContain('src="/pr-42/en/py/v0.62.0/api/_static/missing.js"')
       expect(html).toContain('<a href="../session/">Next</a><p>Native attribution</p>')
       expect(html).toContain('data-pagefind-body data-pagefind-filter="port:Python"')
       expect(html).toContain('data-theme="python" data-brand="python"')

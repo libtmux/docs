@@ -9,7 +9,8 @@ import '../../styles/documentation-picker.css'
 import TmuxLogo from '../tmux/Logo.astro'
 interface Props { surfaces: DocumentationSurface[]; currentPath: string; port?: string; version: string; locale: Locale; solutionsOnly?: boolean }
 const { surfaces, currentPath, port, version, locale, solutionsOnly = false } = Astro.props
-const { surface, section } = currentDocumentation(surfaces, currentPath)
+const { surface, section, alternative } = currentDocumentation(surfaces, currentPath)
+const currentLabel = alternative?.label ?? section.label
 const descriptions: Record<string, string> = { core: 'API reference and guides', mcp: 'Tools for connected assistants', workspace: 'Repeatable development environments', tmux: 'Commands, configuration and terminal workflows' }
 const artwork = (id: string) => {
   const path = branding(port, id === 'core' ? '' : id).asset('logo.svg')
@@ -17,11 +18,11 @@ const artwork = (id: string) => {
 }
 ---
 <details class="surface-picker doc-picker" data-surface-picker data-doc-picker data-pagefind-ignore="all">
-  <summary aria-label={solutionsOnly ? 'Choose a solution' : `Choose documentation: ${surface.label}, ${section.label}`}>
+  <summary aria-label={solutionsOnly ? 'Choose a solution' : `Choose documentation: ${surface.label}, ${currentLabel}`}>
     {port ? <img class="surface-artwork" src={artwork(surface.id)} width="30" height="30" alt="" /> : <TmuxLogo />}
     <span class="surface-current"><strong>{!solutionsOnly && surface.id === 'tmux'
       ? <><span class="surface-name-full">{surface.label}</span><span class="surface-name-short">tmux</span></>
-      : solutionsOnly ? <><span class="home-solution-name-full">Choose a solution</span><span class="home-solution-name-short" aria-hidden="true">Solution</span></> : surface.label}</strong>{!solutionsOnly && <small>{section.label}</small>}</span>
+      : solutionsOnly ? <><span class="home-solution-name-full">Choose a solution</span><span class="home-solution-name-short" aria-hidden="true">Solution</span></> : surface.label}</strong>{!solutionsOnly && <small>{currentLabel}</small>}</span>
     <svg class="doc-picker-caret" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
   </summary>
   <div class="surface-panel doc-picker-panel" data-surface-panel data-picker-panel>
@@ -46,18 +47,20 @@ const artwork = (id: string) => {
           {entry.sections.map((item) => item.href && <a href={item.href} class="surface-option doc-picker-option"
             data-surface-option data-picker-option data-match={`${entry.label} ${item.label} ${item.id === 'reference' ? 'api tools cli' : ''}`}
             aria-label={item.shortLabel ? item.label : undefined}
-            aria-current={entry.id === surface.id && item.id === section.id ? 'location' : undefined}>
+            aria-current={!alternative && entry.id === surface.id && item.id === section.id ? 'location' : undefined}>
               <DocumentationIcon name={item.id} /><span class:list={{ 'surface-section-full': item.shortLabel }}>{item.label}</span>
               {item.shortLabel && <span class="surface-section-short" aria-hidden="true">{item.shortLabel}</span>}
-              {entry.id === surface.id && item.id === section.id && <span class="doc-picker-check" aria-hidden="true">✓</span>}
+              {!alternative && entry.id === surface.id && item.id === section.id && <span class="doc-picker-check" aria-hidden="true">✓</span>}
             </a>)}
         </div>
         {entry.sections.some((item) => item.alternatives?.length) && <div class="surface-alternatives">
           <small>Other references</small>
           {entry.sections.flatMap((item) => item.alternatives ?? []).map((item) => <a
             href={item.href} class="surface-option doc-picker-option" data-surface-option data-picker-option data-match={`${entry.label} Reference ${item.label}`}
+            aria-current={entry.id === surface.id && item === alternative ? 'location' : undefined}
             target={item.external ? '_blank' : undefined} rel={item.external ? 'noopener noreferrer' : undefined}>
             <DocumentationIcon name="reference" /><span>{item.label}</span>
+            {entry.id === surface.id && item === alternative && <span class="doc-picker-check" aria-hidden="true">✓</span>}
             {item.external && <><span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></>}
           </a>)}
         </div>}

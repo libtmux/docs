@@ -7,6 +7,7 @@ import { nativeArticle, nativeHash } from './native-shell-context.mjs'
 
 const escapeAttribute = (text) => text.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;')
 const spaNavigationHash = '02509e118ca80bc577ad947e5aa6017aa3358d0e79b5213fbae77ed6a9a0c3c9'
+const furoHash = 'b76a4a02a82fb459f2d11261deaf749309cf5810c8f192a0687439a4c222cade'
 const highlightHash = '096231e9c87df80ec3273da9c5b71bc81503206726a07a4dd4de44c256ff859c'
 
 /** Sphinx's optional search-term storage must not make a native page throw. */
@@ -24,6 +25,41 @@ function adaptHighlight(directory) {
   if (after === original) return 0
   writeFileSync(file, after)
   return 1
+}
+
+/** Keep native widget behavior when Astro replaces the document body. */
+function adaptWidgets(directory) {
+  const assets = [
+    ['doctools.js', '2992c09df91826a8d33e3b48b645ee77e457adcf7c712d776a814e1e2c448b43', [
+      ['_ready(Documentation.init);', '_ready(Documentation.init);\ndocument.addEventListener("astro:after-swap", Documentation.initDomainIndexTable);'],
+    ]],
+    ['copybutton.js', '75381d09e0497b436ac3c7a1e690415e4f2ccf2b0cc5202fad70b3bdcb7bbf80', [
+      ['const addCopyButtonToCodeCells = () => {', 'let nativeClipboard;\nconst addCopyButtonToCodeCells = () => {\n  nativeClipboard?.destroy();'],
+      ["codeCell.insertAdjacentHTML('afterend', clipboardButton(id))", "if (!codeCell.nextElementSibling?.classList.contains('copybtn')) codeCell.insertAdjacentHTML('afterend', clipboardButton(id))"],
+      ["const clipboard = new ClipboardJS('.copybtn', {text: copyTargetText})", "const clipboard = nativeClipboard = new ClipboardJS('.copybtn', {text: copyTargetText})"],
+      ['runWhenDOMLoaded(addCopyButtonToCodeCells)', 'runWhenDOMLoaded(addCopyButtonToCodeCells)\ndocument.addEventListener("astro:page-load", addCopyButtonToCodeCells);\ndocument.addEventListener("astro:before-swap", () => nativeClipboard?.destroy());'],
+    ]],
+    ['design-tabs.js', 'de2467cfca5bb555043369f1eea82c9cd794e70fa0444f216aa4ebb18cefc9f0', [
+      ['function ready() {', 'function ready() {\n  sd_id_to_elements = {};'],
+      ['document.addEventListener("DOMContentLoaded", ready, false);', 'document.addEventListener("DOMContentLoaded", ready, false);\ndocument.addEventListener("astro:page-load", ready);'],
+      ['window.sessionStorage.getItem(\n          storageKeyPrefix + group\n        )', '(() => { try { return window.sessionStorage.getItem(storageKeyPrefix + group); } catch { return null; } })()'],
+      ['window.sessionStorage.setItem(storageKeyPrefix + group, tabParam);', 'try { window.sessionStorage.setItem(storageKeyPrefix + group, tabParam); } catch {}'],
+      ['window.sessionStorage.setItem(storageKeyPrefix + group, id);', 'try { window.sessionStorage.setItem(storageKeyPrefix + group, id); } catch {}'],
+    ]],
+  ]
+  const digests = {}
+  let changed = 0
+  for (const [name, digest, edits] of assets) {
+    const file = join(directory, '_static', name)
+    if (!existsSync(file)) continue
+    const original = readFileSync(file, 'utf8')
+    const before = edits.reduce((value, [from, to]) => value.replaceAll(to, from), original)
+    if (nativeHash(before) !== digest) throw new Error(`Native widget changed: ${file}`)
+    const after = edits.reduce((value, [from, to]) => value.replaceAll(from, to), before)
+    digests[name] = nativeHash(after)
+    if (after !== original) { writeFileSync(file, after); changed++ }
+  }
+  return { changed, digests }
 }
 
 function exportRegion(html, name) {
@@ -53,7 +89,7 @@ function stripNativeTheme(html, file) {
   })
 }
 
-function adaptNativePage(html, page, context, chrome, file, highlightDigest) {
+function adaptNativePage(html, page, context, chrome, file, assetDigests) {
   if (!/<\/head>/i.test(html)) throw new Error(`Native page has no closing head: ${file}`)
   if (!/<body\b[^>]*>/i.test(html) || !/<\/body>/i.test(html)) throw new Error(`Native page has no body: ${file}`)
   const article = nativeArticle(html)
@@ -84,9 +120,17 @@ function adaptNativePage(html, page, context, chrome, file, highlightDigest) {
         if (nativeHash(readFileSync(asset)) !== spaNavigationHash) throw new Error(`Native navigation bootstrap changed: ${asset}`)
         return ''
       })
+      .replace(/<script\b[^>]*\bsrc=["']((?:[^"']*\/)?_static\/scripts\/furo\.js(?:\?[^"']*)?)["'][^>]*>[\s\S]*?<\/script>/gi, (_tag, src) => {
+        const asset = resolve(dirname(file), src.split('?')[0])
+        if (nativeHash(readFileSync(asset)) !== furoHash) throw new Error(`Native theme script changed: ${asset}`)
+        return ''
+      })
     result = stripNativeTheme(result, file)
-    if (highlightDigest) result = result.replace(/\bsrc=(["'])([^"']*sphinx_highlight\.js)(?:\?[^"']*)?\1/g,
-      (_attribute, quote, src) => `src=${quote}${src}?v=${highlightDigest.slice(0, 12)}${quote}`)
+    result = result.replace(/\bsrc=(["'])((?:[^"']*\/)?_static\/([^/"'?]+\.js))(?:\?[^"']*)?\1/g,
+      (attribute, quote, src, name) => assetDigests[name] ? `src=${quote}${src}?v=${assetDigests[name].slice(0, 12)}${quote}` : attribute)
+    // ClientRouter compares asset URLs before changing the document location.
+    result = result.replace(/\b(src|href)=(["'])(?:\.\.\/)*(_static\/[^"']+)\2/g,
+      (_attribute, name, quote, path) => `${name}=${quote}${escapeAttribute(context.base + path)}${quote}`)
     result = result.replace(/\bhref=(["'])(\/[^"']+\.html)\1/g, (attribute, quote, href) => {
       const target = context.pages.find((entry) => `/${entry.path?.replace(/\/$/, '')}.html` === href)
       return target ? `href=${quote}${escapeAttribute(target.url)}${quote}` : attribute
@@ -96,9 +140,9 @@ function adaptNativePage(html, page, context, chrome, file, highlightDigest) {
   let before = transform(html.slice(0, opening.index))
   let after = transform(html.slice(afterArticle))
   before = before.replace(/<html\b([^>]*)>/i, (_tag, attributes) => {
-    const clean = attributes.replace(/\sdata-(?:native-shell|theme|brand|brand-variant|shell-base)(?=[=\s]|$)(?:=["'][^"']*["'])?/gi, '')
+    const clean = attributes.replace(/\sdata-(?:native-shell|native-toc|theme|brand|brand-variant|shell-base)(?=[=\s]|$)(?:=["'][^"']*["'])?/gi, '')
     const brand = PORT_BY_SLUG[context.port].logoLanguage
-    return `<html${clean} data-native-shell="${contextHash}" data-theme="${brand}" data-brand="${brand}" data-brand-variant="library" data-shell-base="${escapeAttribute(context.base)}">`
+    return `<html${clean} data-native-shell="${contextHash}" data-theme="${brand}" data-brand="${brand}" data-brand-variant="library" data-shell-base="${escapeAttribute(context.base)}" data-native-toc="${Boolean(page.hasTableOfContents)}">`
   })
   before = before
     .replace(/<\/head>/i, `<!-- libtmux-native-head -->${chrome.head}<!-- /libtmux-native-head -->\n</head>`)
@@ -131,8 +175,11 @@ export async function normalizeNativeShell(directory, prefix, { sphinxPort, vers
   const seen = new Set()
   const normalize = (content) => content.replace(/(['"(])(?:https?:\/\/libtmux\.org)?\/_shell\//g, `$1${root}/_shell/`)
   let changed = context ? adaptHighlight(directory) : 0
+  const widgets = context ? adaptWidgets(directory) : { changed: 0, digests: {} }
+  changed += widgets.changed
   const highlightFile = join(directory, '_static/sphinx_highlight.js')
   const highlightDigest = context && existsSync(highlightFile) ? nativeHash(readFileSync(highlightFile)) : undefined
+  const assetDigests = { ...widgets.digests, 'sphinx_highlight.js': highlightDigest }
   function walk(dir) {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const path = join(dir, entry.name)
@@ -158,7 +205,7 @@ export async function normalizeNativeShell(directory, prefix, { sphinxPort, vers
           const page = pages.get(name)
           if (!page || !shellDirectory) throw new Error(`Native page has no compiled context: ${name}`)
           seen.add(name)
-          after = adaptNativePage(before, page, context, compiledChrome(join(shellDirectory, 'api', name)), path, highlightDigest)
+          after = adaptNativePage(before, page, context, compiledChrome(join(shellDirectory, 'api', name)), path, assetDigests)
         } else {
           after = normalize(before)
         }

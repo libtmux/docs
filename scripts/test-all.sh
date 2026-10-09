@@ -364,6 +364,7 @@ if curl --connect-timeout 1 --max-time 3 -sf -o /dev/null "$SERVE_SITE/py/stable
   if curl --connect-timeout 1 --max-time 3 -sf -o /dev/null "$SERVE_SITE/py/stable/api/api/libtmux.server/"; then
     step 'native page navigation'
     (cd site && node scripts/check-native-shell.mjs "$SERVE_SITE")
+    (cd site && node scripts/check-native-navigation.mjs "$SERVE_SITE")
 
     step 'style parity with gp-sphinx'
     (cd site && node scripts/check-style-parity.mjs "$SERVE_SITE")
