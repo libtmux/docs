@@ -21,9 +21,9 @@ calling an undisclosed name.
 
 - [Install](#install) configures an MCP client to launch the Ruby server.
 - [Tools](./tools/) records the actual wire schemas and per-tool policy.
-- [Guides](./guides/) select an owned socket and enable optional tools.
-- [Topics](./topics/) explains retained captures, waits, and shell enrollment.
-- [Examples](./examples/) shows a complete client configuration.
+- [Guides](./guides/) connect a client to a private tmux server.
+- [Topics](./topics/) explain captures, cursors, references, and tool policy.
+- [Examples](./examples/) run a client launcher or embed the MCP application.
 - [Language API](./reference/) documents the Ruby embedding surface.
 
 The server requires Ruby 3.3 or newer. Strong process tracking for waits and

@@ -4,9 +4,18 @@ description: Understand tool policy, retained observations, resources, and autho
 port: ruby
 product: mcp
 sidebar:
-  label: Topics
-  order: 1
+  label: Overview
+  group: Topics
+  order: 2
+cards:
+  - label: Snapshots and references
+    href: snapshots-and-references/
+    body: Filter metadata, continue a retained result, and handle expired cursors and stale references.
 ---
+
+The Ruby MCP server exposes selected operations on one tmux endpoint.
+Its tool policy controls what clients can request; captured metadata and
+references determine what those requests describe.
 
 ## Tool policy
 

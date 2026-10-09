@@ -270,6 +270,63 @@
         "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-rs.git && \\\n    git -C libtmux-source fetch --depth=1 origin d4e08b4eaab62ef4eeedab79b47973ae9a1de310 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "cargo run --quiet"
       ]
+    },
+    {
+      "port": "ruby",
+      "language": "ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "files": [
+        {
+          "name": "run-mcp.rb",
+          "sha256": "1e04164e6c25bee064455036c82096997fefef650c3d18fedd581943944129e0"
+        }
+      ],
+      "toolchain": [
+        "Ruby 4.0.7",
+        "Bundler with the pinned source lockfile"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/ruby/mcp/guides/connect-client",
+      "shellRecipe": [
+        "mkdir ruby-mcp-client && cd ruby-mcp-client",
+        "git clone https://github.com/libtmux/libtmux-ruby libtmux-source",
+        "git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "BUNDLE_FROZEN=true BUNDLE_GEMFILE=./libtmux-source/Gemfile bundle install",
+        "ruby -W:no-experimental run-mcp.rb",
+        "ruby -rjson -rrbconfig -e '\n  puts JSON.pretty_generate(\n    \"mcpServers\" => {\n      \"tmux-ruby\" => {\n        \"command\" => RbConfig.ruby,\n        \"args\" => [\"-W:no-experimental\", File.expand_path(\"run-mcp.rb\")]\n      }\n    }\n  )\n'"
+      ]
+    },
+    {
+      "port": "ruby",
+      "language": "ruby",
+      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRepository": "libtmux/libtmux-ruby",
+      "files": [
+        {
+          "name": "snapshot-sessions.rb",
+          "sha256": "2df8b331308a9541b21b7c8325578fcdecb5f520b639542e7fe9cb6856341fee"
+        }
+      ],
+      "toolchain": [
+        "Ruby 4.0.7",
+        "Bundler with the pinned source lockfile"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/ruby/mcp/examples/page-session-metadata",
+      "shellRecipe": [
+        "mkdir ruby-mcp-pages && cd ruby-mcp-pages",
+        "git clone https://github.com/libtmux/libtmux-ruby libtmux-source",
+        "git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+        "BUNDLE_FROZEN=true BUNDLE_GEMFILE=./libtmux-source/Gemfile bundle install",
+        "ruby -W:no-experimental snapshot-sessions.rb"
+      ]
     }
   ],
   "rootWorkspace": {

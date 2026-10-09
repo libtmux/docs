@@ -7,12 +7,27 @@ const copied = (lines: string[]) => sessionLines(lines)
   .filter((line) => line.kind !== 'output').map((line) => line.text).join('\n')
 
 describe('console command continuations', () => {
+  it('copies a multiline quoted program including comment lines, then omits output', async () => {
+    const renderer = await createRenderer({ plugins: [shellPrompt()] })
+    const command = "ruby -e '\n# Ruby source\nputs \"ready\"\n'"
+    const rendered = await renderer.ec.render({ code: `$ ${command}\nready`, language: 'console' })
+    const button = select('[data-code]', rendered.renderedGroupAst)
+    expect(button?.properties.dataCode).toBe(command.replace(/\n/g, '\x7f'))
+  })
+
+  it.each(["'", '"', '`'])('keeps %s quote state across command lines', (quote) => {
+    const lines = [`$ echo ${quote}first`, '$ literal prompt', `last${quote} &&`, '  next', 'output', '$ done']
+    expect(copied(lines)).toBe(`echo ${quote}first\n$ literal prompt\nlast${quote} &&\n  next\ndone`)
+    expect(sessionLines(lines).map((line) => line.kind))
+      .toEqual(['prompt', 'command', 'command', 'command', 'output', 'prompt'])
+  })
+
   it('renders complete chained clipboard bytes and omits session output', async () => {
     const renderer = await createRenderer({ plugins: [shellPrompt()] })
     const code = '$ first &&\n  # prepare the next step\n\n  (second ||\n    third) |\n  fourth\noutput &&\nstill output'
     const rendered = await renderer.ec.render({ code, language: 'console' })
     const button = select('[data-code]', rendered.renderedGroupAst)
-    expect(button?.properties.dataCode).toBe('first &&\x7f  (second ||\x7f    third) |\x7f  fourth')
+    expect(button?.properties.dataCode).toBe('first &&\x7f  # prepare the next step\x7f\x7f  (second ||\x7f    third) |\x7f  fourth')
   })
 
   it('copies a complete dependency setup and nested subshell chain', () => {
@@ -41,7 +56,6 @@ describe('console command continuations', () => {
     'printf done # comment &&',
     String.raw`printf '%s\n' \&&`,
     String.raw`printf '%s\n' \|`,
-    'echo unfinished "quoted &&',
   ])('does not treat literal or commented operators as commands: %s', (command) => {
     expect(copied([`$ ${command}`, 'output', '$ next'])).toBe(`${command}\nnext`)
   })
@@ -66,6 +80,41 @@ describe('console command continuations', () => {
 
   it('does not make an output operator consume the next output line', () => {
     expect(copied(['$ print', 'output &&', 'still output', '$ next'])).toBe('print\nnext')
+  })
+
+  it('leaves escaped quotes open and preserves a quoted final backslash', () => {
+    const lines = ['$ echo "first \\"', 'next\\', 'last"', 'output']
+    expect(copied(lines)).toBe(lines.slice(0, -1).join('\n').slice(2))
+  })
+
+  it('does not extend a command ending in an escaped backslash', () => {
+    expect(copied(['$ echo \\\\', 'output', '$ next'])).toBe('echo \\\\\nnext')
+  })
+
+  it('keeps a hash inside a word after escaped whitespace', () => {
+    const command = String.raw`printf '%s\n' alpha\ #beta` + '\\'
+    expect(copied([`$ ${command}`, '  gamma', 'output'])).toBe(`${command}\n  gamma`)
+  })
+
+  it('keeps a hash inside a word after closing a continued quote', () => {
+    const lines = ["$ echo 'first", "last'#literal\\", '  next', 'output']
+    expect(copied(lines)).toBe(lines.slice(0, -1).join('\n').slice(2))
+  })
+
+  it('keeps a joined word across a backslash-newline', () => {
+    const lines = ['$ echo alpha\\', '#beta\\', '  gamma', 'output']
+    expect(copied(lines)).toBe(lines.slice(0, -1).join('\n').slice(2))
+  })
+
+  it('keeps a word boundary before a backslash-newline', () => {
+    const lines = ['$ echo alpha \\', '# comment', 'output']
+    expect(copied(lines)).toBe('echo alpha \\\n# comment')
+    expect(sessionLines(lines).map((line) => line.kind))
+      .toEqual(['prompt', 'command', 'output'])
+  })
+
+  it('does not let a quote in output consume the next prompt', () => {
+    expect(copied(['$ echo first', "output with ' an apostrophe", '$ next'])).toBe('echo first\nnext')
   })
 
   it('preserves existing backslash continuations and bare command lists', () => {

@@ -24,14 +24,14 @@ export const SESSION_LANGS = new Set(['console', 'shellsession'])
 export const PROMPT = '$ '
 
 /**
- * Recognize trailing shell operators without treating quoted text or comments as syntax.
+ * Keep open quotes across lines and distinguish shell operators from literal text.
  * @param {string} text
+ * @param {string} quote
+ * @param {boolean} inWord
  */
-function commandContinuation(text) {
-  if (text.endsWith('\\')) return 'backslash'
-  let quote = ''
+function commandContinuation(text, quote, inWord) {
   let escaped = false
-  let syntax = ''
+  let syntax = quote || inWord ? 'x' : ''
   for (let index = 0; index < text.length; index++) {
     const character = text[index]
     if (escaped) {
@@ -50,21 +50,26 @@ function commandContinuation(text) {
     } else if (['"', "'", '`'].includes(character)) {
       quote = character
       syntax += 'x'
-    } else if (character === '#' && (index === 0 || /[\s;&|()]/.test(text[index - 1]))) {
+    } else if (character === '#' && (!syntax || /[\s;&|()]$/.test(syntax))) {
       break
     } else {
       syntax += character
     }
   }
-  return !quote && /(?:&&|\|\||\|)\s*$/.test(syntax) ? 'operator' : ''
+  const continuation = quote ? 'quote'
+    : escaped ? 'backslash'
+      : /(?:&&|\|\||\|)\s*$/.test(syntax) ? 'operator' : ''
+  // Backslash-newline joins the next line without creating a word boundary.
+  const joinedWord = escaped && /[^\s;&|()]$/.test(syntax.slice(0, -1))
+  return { quote, continuation, inWord: joinedWord }
 }
 
 /**
  * Classify each line of a session.
  *
  * A line that starts with the prompt is a command, and so is each line after
- * one that ends in `\` or an unquoted `&&`, `||`, or `|`. Anything else is
- * output. A block with no prompt at all is a bare command list, like the MCP
+ * one with an open quote, trailing `\`, or unquoted `&&`, `||`, or `|`.
+ * Anything else is output. A block with no prompt is a bare command list, like the MCP
  * widget's CLI bodies, so every line is a command.
  *
  * @param {string[]} lines
@@ -76,12 +81,18 @@ export function sessionLines(lines) {
     return lines.map((text) => ({ kind: 'command', text }))
   }
   let continuation = ''
+  let quote = ''
+  let inWord = false
   return lines.map((line) => {
     /** @type {'prompt' | 'command' | 'output'} */
     const kind = continuation ? 'command' : line.startsWith(PROMPT) ? 'prompt' : 'output'
     const text = kind === 'prompt' ? line.slice(PROMPT.length) : line
     const awaitingOperand = continuation === 'operator' && /^\s*(?:#.*)?$/.test(text)
-    if (!awaitingOperand) continuation = kind !== 'output' ? commandContinuation(text) : ''
+    if (!awaitingOperand) {
+      ({ quote, continuation, inWord } = kind !== 'output'
+        ? commandContinuation(text, quote, inWord)
+        : { quote: '', continuation: '', inWord: false })
+    }
     return { kind, text }
   })
 }
@@ -183,16 +194,15 @@ export function shellPrompt() {
       },
       postprocessRenderedBlock: ({ codeBlock, renderData }) => {
         const session = sessions.get(codeBlock)
-        if (!session?.some(({ kind }) => kind === 'output')) return
+        if (!session?.some(({ kind }) => kind === 'prompt')) return
         const copy = select('[data-code]', renderData.blockAst)
         if (!copy) return
-        // Frames' own terminal copy text, from the command lines only: it
-        // drops comment lines and joins lines with DEL.
+        // Comment-looking lines can be quoted program input. Preserve every
+        // command line while omitting session output and encoding newlines.
         copy.properties.dataCode = session
           .filter(({ kind }) => kind !== 'output')
           .map(({ text }) => text)
           .join('\n')
-          .replace(/(?<=^|\n)\s*#.*($|\n+)/g, '')
           .trim()
           .replace(/\n/g, '\x7f')
       },
