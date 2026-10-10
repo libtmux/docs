@@ -100,6 +100,10 @@ Include imports, an entry point, required inputs, and cleanup. Show dependency
 and run commands. Do not rely on variables or helper code from another example.
 A source file that only declares functions is not a runnable program.
 
+Keep ordinary examples on their library's default endpoint. The external
+[example runner](notes/example-testing.md) supplies socket defaults and owns
+test cleanup without adding fixture setup to the displayed program.
+
 Run the exact displayed program against the documented library revision.
 Record its commands, source revision, result, and content hash in the review.
 Tests that add a hidden prelude or execute a larger source file do not verify
