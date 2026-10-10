@@ -22,24 +22,40 @@ or invalid configuration.
 
 ## Builder options
 
-[`WorkspaceBuilder`](./libtmux-workspace-workspacebuilder/)
-accepts a server, an optional positive readiness timeout, and a
-[`PaneReadiness`](./libtmux-workspace-panereadiness/) policy.
-Its `BuildAsync` accepts the configuration and an optional cancellation token.
+[`WorkspaceBuilder`](./libtmux-workspace-workspacebuilder/) accepts the server
+to use. `PlanAsync` validates the declaration and observes that endpoint;
+its returned [`WorkspacePlan`](./libtmux-workspace-workspaceplan/) lists the
+actions to review before `ApplyAsync` executes them. Enumerating those actions
+performs no I/O. Application rechecks the observed daemon and session.
 
-The default timeout is ten seconds. `Auto`, `Always`, and `Never` select which
-panes wait before command delivery. [Topics](../topics/) explains the prompt
-heuristic and its limitations.
+[`WorkspacePlanOptions`](./libtmux-workspace-workspaceplanoptions/) controls
+existing-session conflicts, readiness, host scripts, and cleanup. The defaults
+refuse an existing session and send pane input immediately. `BuildAsync`
+combines planning and application with those defaults.
+
+Choose [`WorkspaceReadiness.Cooperative`](./libtmux-workspace-workspacereadiness/)
+when pane startup can signal its assigned channel. Configure a positive
+`ReadinessTimeout`; a timeout prevents command delivery to that pane.
+[Topics](../topics/) explains the startup contract and its limits.
 
 ## Results and failures
 
 [`WorkspaceResult`](./libtmux-workspace-workspaceresult/)
-contains the created session, windows, and rejected layouts. A rejected layout
-does not discard its window.
+contains the session, created windows, rejected final layouts, and action
+journals. Reusing an existing session creates no windows. A rejected final
+layout does not discard its window.
 
 [`WorkspaceBuildException`](./libtmux-workspace-workspacebuildexception/)
 keeps a `PartialResult` when state could be materialized before failure. It
-can be null when no such result could be read. Inspect live tmux state before
-retrying; a missing result does not prove that no command reached tmux.
+can be null when no such result could be read. `Journal` records action
+outcomes; `CompensationJournal` records attempted cleanup. Inspect live tmux
+state before retrying; a missing result does not prove that no command reached
+tmux.
 
-[Result contract](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Workspace/WorkspaceResult.cs); [Failure contract](https://github.com/libtmux/libtmux-dotnet/blob/6656a563ec9e07ab52e0c3ac96f7704fc94cc0c0/src/LibTmux.Workspace/WorkspaceBuildException.cs).
+Cancellation during application raises
+[`WorkspaceOperationCanceledException`](./libtmux-workspace-workspaceoperationcanceledexception/)
+with the caller's token, partial state, and journals. Cancellation does not
+imply rollback. `CompensateOnFailure` requests bounded cleanup only of
+resources proven to belong to that application.
+
+[Result contract](https://github.com/libtmux/libtmux-dotnet/blob/ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc/src/LibTmux.Workspace/WorkspaceResult.cs); [Failure contract](https://github.com/libtmux/libtmux-dotnet/blob/ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc/src/LibTmux.Workspace/WorkspaceBuildException.cs).
