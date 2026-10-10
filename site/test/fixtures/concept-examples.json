@@ -821,11 +821,11 @@
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "385a4b4d48cdff06c12fc4d4906e0f665f70f19d09b418cd6943b73124ec0565"
+          "sha256": "846c98bc3ac4e886a41899509233c1fd2772d0ee15bc8a7082d88535635fa275"
         },
         {
           "name": "batching.rs",
-          "sha256": "aae01800c8c46c11e9a89106d41f8018eb5f52dfce131e6fb38d2184df8c6c50"
+          "sha256": "01720dc55cbf017ce588464ee2f616d82c90e227fd079e571da32246b348da25"
         }
       ],
       "shellRecipe": [
