@@ -72,6 +72,8 @@ const qualifiedDotnetExceptions = Object.fromEntries([
   'System.FormatException',
   'System.OperationCanceledException',
   'System.IO.InvalidDataException',
+  'System.IO.IOException',
+  'System.Text.RegularExpressions.RegexMatchTimeoutException',
   'System.Text.Json.JsonException',
   'System.Threading.Tasks.TaskCanceledException',
 ].flatMap((name) => [name, name.split('.').at(-1)!].map((alias) => [alias, dotnet(name.toLowerCase())])))
@@ -153,6 +155,8 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     IReadOnlyList: dotnet('system.collections.generic.ireadonlylist-1'),
     IReadOnlyDictionary: dotnet('system.collections.generic.ireadonlydictionary-2'),
     IEnumerable: dotnet('system.collections.generic.ienumerable-1'),
+    IEnumerator: dotnet('system.collections.generic.ienumerator-1'),
+    IReadOnlyCollection: dotnet('system.collections.generic.ireadonlycollection-1'),
     IAsyncEnumerable: dotnet('system.collections.generic.iasyncenumerable-1'),
     IAsyncDisposable: dotnet('system.iasyncdisposable'),
     IDisposable: dotnet('system.idisposable'),

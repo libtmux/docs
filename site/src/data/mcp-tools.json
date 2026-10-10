@@ -44778,10 +44778,10 @@
           "wireName": "call_read_tools_batch",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 575
+            "line": 586
           },
           "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Execute up to 16 declared inspect operations serially; inner operations receive no separate approval.",
           "schemaStatus": "runtime",
@@ -44819,7 +44819,7 @@
                             },
                             "maxLines": {
                               "default": null,
-                              "description": "Maximum returned lines.",
+                              "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
                               "maximum": 2147483647,
                               "minimum": -2147483648,
                               "type": [
@@ -44829,7 +44829,7 @@
                             },
                             "paneId": {
                               "default": null,
-                              "description": "A pane id. Omit for the active pane.",
+                              "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                               "type": [
                                 "string",
                                 "null"
@@ -44855,7 +44855,7 @@
                           "properties": {
                             "cursor": {
                               "default": null,
-                              "description": "The opaque cursor returned by the previous call.",
+                              "description": "The opaque cursor returned by the previous call. Omit to start from what is on screen now.",
                               "type": [
                                 "string",
                                 "null"
@@ -44863,7 +44863,7 @@
                             },
                             "maxLines": {
                               "default": null,
-                              "description": "Maximum returned lines.",
+                              "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
                               "maximum": 2147483647,
                               "minimum": -2147483648,
                               "type": [
@@ -44873,7 +44873,7 @@
                             },
                             "paneId": {
                               "default": null,
-                              "description": "A pane id. Omit for the active pane.",
+                              "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                               "type": [
                                 "string",
                                 "null"
@@ -45005,7 +45005,7 @@
                             },
                             "paneId": {
                               "default": null,
-                              "description": "A pane id used as the lookup context.",
+                              "description": "A pane id used as the lookup context. Omit for this server's own pane, or else the one the first session shows.",
                               "type": [
                                 "string",
                                 "null"
@@ -45220,7 +45220,7 @@
                           "properties": {
                             "paneId": {
                               "default": null,
-                              "description": "The pane whose scope is read.",
+                              "description": "The pane whose scope is read. Omit for this server's own pane, or else the one the first session shows.",
                               "type": [
                                 "string",
                                 "null"
@@ -45261,7 +45261,7 @@
                             },
                             "paneId": {
                               "default": null,
-                              "description": "The pane whose scope is read.",
+                              "description": "The pane whose scope is read. Omit for this server's own pane, or else the one the first session shows.",
                               "type": [
                                 "string",
                                 "null"
@@ -45301,7 +45301,7 @@
                           "properties": {
                             "maxLines": {
                               "default": null,
-                              "description": "Maximum returned lines.",
+                              "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
                               "maximum": 2147483647,
                               "minimum": -2147483648,
                               "type": [
@@ -45311,7 +45311,7 @@
                             },
                             "paneId": {
                               "default": null,
-                              "description": "A pane id. Omit for the active pane.",
+                              "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                               "type": [
                                 "string",
                                 "null"
@@ -45462,10 +45462,10 @@
           "wireName": "capture_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 565
+            "line": 576
           },
           "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Read the text a pane is showing, and optionally its scrollback. The newest lines are always kept; anything dropped to fit the budget is reported. To watch a pane across several turns, use capture_since instead — it returns only what is new.",
           "schemaStatus": "runtime",
@@ -45484,7 +45484,7 @@
               },
               "maxLines": {
                 "default": null,
-                "description": "Maximum returned lines.",
+                "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
                 "maximum": 2147483647,
                 "minimum": -2147483648,
                 "type": [
@@ -45494,7 +45494,7 @@
               },
               "paneId": {
                 "default": null,
-                "description": "A pane id. Omit for the active pane.",
+                "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -45573,10 +45573,10 @@
           "wireName": "capture_since",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 566
+            "line": 577
           },
           "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Read only what a pane has printed since the last call. Pass back the cursor each time. Use this to watch a long-running process across turns: the tenth read costs what the first did, where re-capturing the pane would return everything again. Call with no cursor to start watching from now.",
           "schemaStatus": "runtime",
@@ -45585,7 +45585,7 @@
             "properties": {
               "cursor": {
                 "default": null,
-                "description": "The opaque cursor returned by the previous call.",
+                "description": "The opaque cursor returned by the previous call. Omit to start from what is on screen now.",
                 "type": [
                   "string",
                   "null"
@@ -45593,7 +45593,7 @@
               },
               "maxLines": {
                 "default": null,
-                "description": "Maximum returned lines.",
+                "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
                 "maximum": 2147483647,
                 "minimum": -2147483648,
                 "type": [
@@ -45603,7 +45603,7 @@
               },
               "paneId": {
                 "default": null,
-                "description": "A pane id. Omit for the active pane.",
+                "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -45694,19 +45694,19 @@
           "wireName": "clear_pane_scrollback",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 602
+            "line": 613
           },
-          "description": "Delete tmux state; accepts no command payload. Clear pane scrollback.",
+          "description": "Delete tmux state; accepts no command payload. Delete a pane's scrollback history, keeping what the screen shows. Deleted history cannot be read back.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
             "properties": {
               "paneId": {
                 "default": null,
-                "description": "A pane id. Omit for the active pane.",
+                "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -45778,10 +45778,10 @@
           "wireName": "create_session",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 592
+            "line": 603
           },
           "description": "Start a pane's configured process; accepts no command payload. Create a detached tmux session and return its ids. Give a width and height when nothing will attach to it: a session with no client keeps tmux's default 80x24, which truncates wide output.",
           "schemaStatus": "runtime",
@@ -45790,7 +45790,7 @@
             "properties": {
               "height": {
                 "default": null,
-                "description": "Rows.",
+                "description": "Rows. Omit for tmux's default of 24.",
                 "maximum": 2147483647,
                 "minimum": -2147483648,
                 "type": [
@@ -45800,7 +45800,7 @@
               },
               "name": {
                 "default": null,
-                "description": "The session name.",
+                "description": "The session name. Omit and tmux names it with a number.",
                 "type": [
                   "string",
                   "null"
@@ -45808,7 +45808,7 @@
               },
               "startDirectory": {
                 "default": null,
-                "description": "The literal starting directory.",
+                "description": "The literal starting directory. Omit for the MCP server's own working directory.",
                 "type": [
                   "string",
                   "null"
@@ -45816,7 +45816,7 @@
               },
               "width": {
                 "default": null,
-                "description": "Columns.",
+                "description": "Columns. Omit for tmux's default of 80.",
                 "maximum": 2147483647,
                 "minimum": -2147483648,
                 "type": [
@@ -45894,10 +45894,10 @@
           "wireName": "create_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 593
+            "line": 604
           },
           "description": "Start a pane's configured process; accepts no command payload. Create a window in a tmux session and return its ids.",
           "schemaStatus": "runtime",
@@ -45906,7 +45906,7 @@
             "properties": {
               "name": {
                 "default": null,
-                "description": "The window name.",
+                "description": "The window name. Omit and tmux names it after the program it runs.",
                 "type": [
                   "string",
                   "null"
@@ -45914,7 +45914,7 @@
               },
               "session": {
                 "default": null,
-                "description": "A session id or name.",
+                "description": "A session id or name. Omit for the first session.",
                 "type": [
                   "string",
                   "null"
@@ -45922,7 +45922,7 @@
               },
               "startDirectory": {
                 "default": null,
-                "description": "The literal starting directory.",
+                "description": "The literal starting directory. Omit for the MCP server's own working directory.",
                 "type": [
                   "string",
                   "null"
@@ -45998,10 +45998,10 @@
           "wireName": "find_pane_by_position",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 569
+            "line": 580
           },
           "description": "Inspect tmux metadata; accepts no client-supplied executable input. Find the pane sitting at an index within a window. Answers nothing rather than failing when no pane is at that position.",
           "schemaStatus": "runtime",
@@ -46149,12 +46149,12 @@
           "wireName": "get_pane_info",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 564
+            "line": 575
           },
-          "description": "Inspect tmux metadata; accepts no client-supplied executable input. Get pane info.",
+          "description": "Inspect tmux metadata; accepts no client-supplied executable input. Read one pane's size, title, running command, working directory, process ID, history size and limit, and whether it is active, dead, zoomed, in a mode or the pane this server runs in. This is metadata only; to read what the pane shows, use capture_pane or snapshot_pane.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -46293,10 +46293,10 @@
           "wireName": "get_server_info",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 561
+            "line": 572
           },
           "description": "Inspect tmux metadata; accepts no client-supplied executable input. Read the tmux server's version and how many sessions, windows and panes it holds. Use to confirm a socket is alive and which tmux is running it.",
           "schemaStatus": "runtime",
@@ -46390,12 +46390,12 @@
           "wireName": "get_session_info",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 562
+            "line": 573
           },
-          "description": "Inspect tmux metadata; accepts no client-supplied executable input. Get session info.",
+          "description": "Inspect tmux metadata; accepts no client-supplied executable input. Read one session's name, ID, window count and whether a client is attached, without listing every session. Give the session, or a window ID to read the session that holds it.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -46467,10 +46467,10 @@
           "wireName": "get_tmux_variables",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 571
+            "line": 582
           },
           "description": "Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration. Expand named tmux format variables for a pane, such as session_name or window_width. Use it for fields nothing else answers; get_pane_info already returns the common ones, and show_option reads configuration rather than live state.",
           "schemaStatus": "runtime",
@@ -46486,7 +46486,7 @@
               },
               "paneId": {
                 "default": null,
-                "description": "A pane id used as the lookup context.",
+                "description": "A pane id used as the lookup context. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -46538,12 +46538,12 @@
           "wireName": "get_window_info",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 563
+            "line": 574
           },
-          "description": "Inspect tmux metadata; accepts no client-supplied executable input. Get window info.",
+          "description": "Inspect tmux metadata; accepts no client-supplied executable input. Read one window's name, index, size, layout, pane count and whether it is its session's current window, without listing every window. Give the window ID, or a pane ID to read the window that holds it.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -46638,12 +46638,12 @@
           "wireName": "kill_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 603
+            "line": 614
           },
-          "description": "Delete tmux state; accepts no command payload. Kill pane.",
+          "description": "Delete tmux state; accepts no command payload. Close a pane and end its program. Refuses the pane this server runs in; to remove a whole window, use kill_window.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -46722,12 +46722,12 @@
           "wireName": "kill_session",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 605
+            "line": 616
           },
-          "description": "Delete tmux state; accepts no command payload. Kill session.",
+          "description": "Delete tmux state; accepts no command payload. Close a session with all its windows and panes. Refuses the session this server runs in.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -46806,12 +46806,12 @@
           "wireName": "kill_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 604
+            "line": 615
           },
-          "description": "Delete tmux state; accepts no command payload. Kill window.",
+          "description": "Delete tmux state; accepts no command payload. Close a window and every pane in it. Refuses the window this server runs in.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -46890,10 +46890,10 @@
           "wireName": "list_panes",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 560
+            "line": 571
           },
           "description": "Inspect tmux metadata; accepts no client-supplied executable input. List tmux panes, optionally within one session or window. Filter for isCaller=true to answer 'which pane am I in?', which finds one only when this server drives the caller's own socket — get_server_info says whose socket that is. This reads sizes and running commands, not terminal text — for that use search_panes.",
           "schemaStatus": "runtime",
@@ -47031,6 +47031,7 @@
             "title": "List panes"
           },
           "meta": {
+            "anthropic/alwaysLoad": true,
             "com.git-pull.libtmux-mcp/capability": {
               "amplifiesFutureInput": false,
               "inputLiteralization": {},
@@ -47054,10 +47055,10 @@
           "wireName": "list_sessions",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 558
+            "line": 569
           },
           "description": "Inspect tmux metadata; accepts no client-supplied executable input. List the tmux sessions. This reads names and sizes, not terminal text — to find what a pane is showing, use search_panes.",
           "schemaStatus": "runtime",
@@ -47134,10 +47135,10 @@
           "wireName": "list_windows",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 559
+            "line": 570
           },
           "description": "Inspect tmux metadata; accepts no client-supplied executable input. List tmux windows, optionally within one session. This reads names and layouts, not terminal text — to find what a pane is showing, use search_panes.",
           "schemaStatus": "runtime",
@@ -47223,6 +47224,7 @@
             "title": "List windows"
           },
           "meta": {
+            "anthropic/alwaysLoad": true,
             "com.git-pull.libtmux-mcp/capability": {
               "amplifiesFutureInput": false,
               "inputLiteralization": {},
@@ -47246,10 +47248,10 @@
           "wireName": "move_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 584
+            "line": 595
           },
           "description": "Change tmux state; no client-supplied executable input. Move a window to another index, or into another session. With replaceExisting it takes an index that is already occupied by killing the window there, which needs the teardown toolset.",
           "schemaStatus": "runtime",
@@ -47258,7 +47260,7 @@
             "properties": {
               "destination": {
                 "default": "",
-                "description": "The destination window index, or empty for the next free index.",
+                "description": "The destination window index. Omit for the next free index, as an empty one does.",
                 "type": "string"
               },
               "replaceExisting": {
@@ -47268,7 +47270,7 @@
               },
               "session": {
                 "default": null,
-                "description": "The destination session id or name.",
+                "description": "The destination session id or name. Omit to stay in the window's session.",
                 "type": [
                   "string",
                   "null"
@@ -47348,10 +47350,10 @@
           "wireName": "paste_text",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 599
+            "line": 610
           },
           "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Paste a block of text into exactly one pane through a tmux buffer. Use for multi-line text, or anything an editor would mangle if typed — bracketed paste stops auto-indent. Set enter to append a newline to that same private buffer. It refuses a target in a human-owned mode and never fans out to synchronized siblings. The temporary buffer is deleted afterwards; if cleanup fails, the result identifies what remains.",
           "schemaStatus": "runtime",
@@ -47370,7 +47372,7 @@
               },
               "paneId": {
                 "default": null,
-                "description": "A pane id. Omit for the active pane.",
+                "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -47450,10 +47452,10 @@
           "wireName": "rename_session",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 577
+            "line": 588
           },
           "description": "Change tmux state; no client-supplied executable input. Rename a tmux session. Its id does not change, so anything holding one still works.",
           "schemaStatus": "runtime",
@@ -47466,7 +47468,7 @@
               },
               "session": {
                 "default": null,
-                "description": "A session id or name.",
+                "description": "A session id or name. Omit for the first session.",
                 "type": [
                   "string",
                   "null"
@@ -47544,10 +47546,10 @@
           "wireName": "rename_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 578
+            "line": 589
           },
           "description": "Change tmux state; no client-supplied executable input. Rename a tmux window. Its id does not change.",
           "schemaStatus": "runtime",
@@ -47560,7 +47562,7 @@
               },
               "windowId": {
                 "default": null,
-                "description": "A window id.",
+                "description": "A window id. Omit for this server's own window, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -47638,10 +47640,10 @@
           "wireName": "resize_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 583
+            "line": 594
           },
           "description": "Change tmux state; no client-supplied executable input. Resize a pane, or zoom it to fill its window. Widening a pane before reading it is the fix for output that comes back wrapped across rows.",
           "schemaStatus": "runtime",
@@ -47650,7 +47652,7 @@
             "properties": {
               "height": {
                 "default": null,
-                "description": "Rows.",
+                "description": "Rows. Omit to keep the current height.",
                 "maximum": 2147483647,
                 "minimum": -2147483648,
                 "type": [
@@ -47660,7 +47662,7 @@
               },
               "paneId": {
                 "default": null,
-                "description": "A pane id. Omit for the active pane.",
+                "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -47668,7 +47670,7 @@
               },
               "width": {
                 "default": null,
-                "description": "Columns.",
+                "description": "Columns. Omit to keep the current width.",
                 "maximum": 2147483647,
                 "minimum": -2147483648,
                 "type": [
@@ -47748,19 +47750,19 @@
           "wireName": "resize_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 582
+            "line": 593
           },
-          "description": "Change tmux state; no client-supplied executable input. Resize window.",
+          "description": "Change tmux state; no client-supplied executable input. Resize a window to a width and height in cells; its panes resize with it. To resize one pane, use resize_pane.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
             "properties": {
               "height": {
                 "default": null,
-                "description": "Rows.",
+                "description": "Rows. Omit to keep the current height.",
                 "maximum": 2147483647,
                 "minimum": -2147483648,
                 "type": [
@@ -47770,7 +47772,7 @@
               },
               "width": {
                 "default": null,
-                "description": "Columns.",
+                "description": "Columns. Omit to keep the current width.",
                 "maximum": 2147483647,
                 "minimum": -2147483648,
                 "type": [
@@ -47780,7 +47782,7 @@
               },
               "windowId": {
                 "default": null,
-                "description": "A window id. Omit for the active window.",
+                "description": "A window id. Omit for this server's own window, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -47853,10 +47855,10 @@
           "wireName": "respawn_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 595
+            "line": 606
           },
           "description": "Start a pane's configured process; accepts no command payload. Only restarts a pane whose command has ALREADY EXITED. killExistingProcess overrides that and kills what is running first — an editor holding unsaved changes, a build part way through. It reruns the command the pane was created with rather than running something new.",
           "schemaStatus": "runtime",
@@ -47870,7 +47872,7 @@
               },
               "paneId": {
                 "default": null,
-                "description": "A pane id. Omit for the active pane.",
+                "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -47878,7 +47880,7 @@
               },
               "startDirectory": {
                 "default": null,
-                "description": "The literal starting directory.",
+                "description": "The literal starting directory. Omit for the directory the pane started in before.",
                 "type": [
                   "string",
                   "null"
@@ -47954,10 +47956,10 @@
           "wireName": "run_shell_command",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 596
+            "line": 607
           },
           "description": "Run a shell command in a pane with your user's permissions. Run a shell command in one pane, wait for it to finish, and report its singular real exit status and output. This is the tool for 'run X and tell me if it worked'. It reaches only the pane you name: the command travels through a tmux buffer, which synchronize-panes does not fan out, so the exit status is one pane's. Use send_keys when you want a synchronized cohort to receive input. Do NOT send keys and then poll a capture in a loop — this waits deterministically and costs one call. The command runs in a subshell, so cd and export do not persist. It refuses the named pane in a human-owned mode. Check linesMissed and anchorLost. A timed-out command MAY STILL BE RUNNING; inspect it and do not retry it — unless started is false, which means it never ran because something other than an idle shell was reading that pane's input.",
           "schemaStatus": "runtime",
@@ -47970,7 +47972,7 @@
               },
               "maxLines": {
                 "default": null,
-                "description": "Maximum returned lines.",
+                "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
                 "maximum": 2147483647,
                 "minimum": -2147483648,
                 "type": [
@@ -47980,7 +47982,7 @@
               },
               "paneId": {
                 "default": null,
-                "description": "A pane id. Omit for the active pane.",
+                "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -47993,7 +47995,7 @@
               },
               "timeoutSeconds": {
                 "default": null,
-                "description": "Requested timeout in seconds.",
+                "description": "Seconds to wait, lowered to the server's ceiling. Omit to wait the whole ceiling, 30 unless LIBTMUX_MCP_WAIT_MAX_SECONDS sets another.",
                 "type": [
                   "number",
                   "null"
@@ -48053,6 +48055,10 @@
                 ],
                 "type": "object"
               },
+              "paneExited": {
+                "default": false,
+                "type": "boolean"
+              },
               "paneId": {
                 "type": "string"
               },
@@ -48107,10 +48113,10 @@
           "wireName": "search_panes",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 568
+            "line": 579
           },
           "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Find which panes are showing text matching a regular expression. This is the tool for 'which pane has the error', 'where is the build running', or any question about what a pane CONTAINS — the list tools only see names and sizes.",
           "schemaStatus": "runtime",
@@ -48245,10 +48251,10 @@
           "wireName": "select_layout",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 581
+            "line": 592
           },
           "description": "Change tmux state; no client-supplied executable input. Arrange a window's panes with a named layout — even-horizontal, even-vertical, main-horizontal, main-vertical, tiled — or a layout string read from list_windows.",
           "schemaStatus": "runtime",
@@ -48257,7 +48263,7 @@
             "properties": {
               "layout": {
                 "default": null,
-                "description": "A supported layout name or layout string.",
+                "description": "A supported layout name or layout string. Omit to reapply the window's last preset layout, if it has had one.",
                 "type": [
                   "string",
                   "null"
@@ -48265,7 +48271,7 @@
               },
               "windowId": {
                 "default": null,
-                "description": "A window id. Omit for the active window.",
+                "description": "A window id. Omit for this server's own window, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -48338,10 +48344,10 @@
           "wireName": "select_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 580
+            "line": 591
           },
           "description": "Change tmux state; no client-supplied executable input. Make a pane the active one in its window. This changes what a watching human sees; targeting a pane by id does not require selecting it first.",
           "schemaStatus": "runtime",
@@ -48422,10 +48428,10 @@
           "wireName": "select_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 579
+            "line": 590
           },
           "description": "Change tmux state; no client-supplied executable input. Make a window the current one in its session.",
           "schemaStatus": "runtime",
@@ -48506,10 +48512,10 @@
           "wireName": "send_keys",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 597
+            "line": 608
           },
           "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Send raw keystrokes to a pane and return immediately. Use for driving an interactive program — a key in vim, a menu choice, Ctrl-C. Set literal=false to send named keys such as C-c, Escape or F5. It refuses the named pane in a human-owned mode and, when source input expands, every synchronized input cohort peer. To run a shell command and learn whether it worked, use run_shell_command instead; this reports nothing about what happens next. Tracks what it sends — including edits such as backspace, Ctrl-U or Ctrl-C — so wait_for_text can tell this pane's echo apart from real output for a short time afterward.",
           "schemaStatus": "runtime",
@@ -48532,7 +48538,7 @@
               },
               "paneId": {
                 "default": null,
-                "description": "A pane id. Omit for the active pane.",
+                "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -48603,10 +48609,10 @@
           "wireName": "send_keys_batch",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 598
+            "line": 609
           },
           "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Send several keystrokes to one pane in order, in a single call. Use for a short interactive sequence — open a file, move, type, save — instead of one call per key. Each operation refuses the named pane in a human-owned mode and, when source input expands, every synchronized input cohort peer. A batch has at most 64 steps and 64 KiB of UTF-8 text. Each delay is 0-2000 ms and all delays together must fit the server wait ceiling.",
           "schemaStatus": "runtime",
@@ -48772,10 +48778,10 @@
           "wireName": "set_history_limit",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 590
+            "line": 601
           },
           "description": "Change tmux state; no client-supplied executable input. Set how many scrollback lines tmux keeps. This is a SESSION option, so it covers every window in the session rather than one pane, and the session must be named because the call can destroy data. Raise it before starting something that prints a lot: no capture can return lines tmux has already discarded. LOWERING it discards the excess from every pane immediately, and the result says how many lines went; raising the limit again does not bring them back.",
           "schemaStatus": "runtime",
@@ -48862,10 +48868,10 @@
           "wireName": "set_mouse_enabled",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 589
+            "line": 600
           },
           "description": "Change tmux state; no client-supplied executable input. Turn tmux mouse support on or off. This sets the global option, so it applies to every session on this server and changes what a human watching can do with their mouse.",
           "schemaStatus": "runtime",
@@ -48945,10 +48951,10 @@
           "wireName": "set_pane_title",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 586
+            "line": 597
           },
           "description": "Change tmux state; no client-supplied executable input. Set a pane's title. Useful for labelling panes you created so a human watching can tell which is which.",
           "schemaStatus": "runtime",
@@ -48957,7 +48963,7 @@
             "properties": {
               "paneId": {
                 "default": null,
-                "description": "A pane id. Omit for the active pane.",
+                "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -49039,12 +49045,12 @@
           "wireName": "set_synchronize_panes",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 600
+            "line": 611
           },
-          "description": "Change tmux state; no client-supplied executable input. The synchronized input cohort is the panes whose effective synchronize-panes setting is on. Enabling it makes panes without overrides members; pane overrides can include or exclude panes.",
+          "description": "Change tmux state; no client-supplied executable input. Turn synchronize-panes on or off for a window. Input typed into one of its panes then reaches the synchronized input cohort: every pane whose effective synchronize-panes setting is on. A pane without a setting of its own follows the window; one with its own setting stays included or excluded either way.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -49055,7 +49061,7 @@
               },
               "windowId": {
                 "default": null,
-                "description": "A window id. Omit for the active window.",
+                "description": "A window id. Omit for this server's own window, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -49130,10 +49136,10 @@
           "wireName": "show_environment",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 573
+            "line": 584
           },
           "description": "Read the tmux environment; accepts no client-supplied executable input. A listing answers names without values, and a named variable is still withheld when the name reads as a credential. Read what a NEW pane will inherit, at the server or session level — not what an already-running shell has.",
           "schemaStatus": "runtime",
@@ -49231,10 +49237,10 @@
           "wireName": "show_hooks",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 574
+            "line": 585
           },
           "description": "Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration. Read the hooks tmux will run on its own events. Read-only on purpose: a hook written here would outlive this conversation and keep firing with nobody left who knows why. Put hooks you want to keep in your tmux config file.",
           "schemaStatus": "runtime",
@@ -49243,7 +49249,7 @@
             "properties": {
               "paneId": {
                 "default": null,
-                "description": "The pane whose scope is read.",
+                "description": "The pane whose scope is read. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -49334,10 +49340,10 @@
           "wireName": "show_option",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 572
+            "line": 583
           },
           "description": "Read configured tmux commands; accepts no client-supplied executable input. Returned values may contain executable configuration. Read tmux options at the server, session, window or pane level. Values set at a wider scope are included and marked inherited, because that is where nearly all tmux configuration lives. Omit the name to list them all. Reading history-limit before a long tail tells you how much output the pane can hold before it starts dropping lines.",
           "schemaStatus": "runtime",
@@ -49350,7 +49356,7 @@
               },
               "paneId": {
                 "default": null,
-                "description": "The pane whose scope is read.",
+                "description": "The pane whose scope is read. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -49448,10 +49454,10 @@
           "wireName": "signal_channel",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 588
+            "line": 599
           },
           "description": "Change tmux state; no client-supplied executable input. Signal a tmux wait-for channel, releasing whatever waits on it. The channel latches: signalling before anyone waits still satisfies the next wait, so a handoff cannot be lost to a race.",
           "schemaStatus": "runtime",
@@ -49531,10 +49537,10 @@
           "wireName": "snapshot_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 567
+            "line": 578
           },
           "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Read a pane's visible content together with its cursor position, size and running command, in one call. Prefer this over capture_pane plus list_panes: it is one round trip and the cursor is guaranteed to describe the text returned with it.",
           "schemaStatus": "runtime",
@@ -49543,7 +49549,7 @@
             "properties": {
               "maxLines": {
                 "default": null,
-                "description": "Maximum returned lines.",
+                "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
                 "maximum": 2147483647,
                 "minimum": -2147483648,
                 "type": [
@@ -49553,7 +49559,7 @@
               },
               "paneId": {
                 "default": null,
-                "description": "A pane id. Omit for the active pane.",
+                "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -49716,6 +49722,7 @@
             "title": "Snapshot pane"
           },
           "meta": {
+            "anthropic/alwaysLoad": true,
             "com.git-pull.libtmux-mcp/capability": {
               "amplifiesFutureInput": false,
               "inputLiteralization": {},
@@ -49740,10 +49747,10 @@
           "wireName": "split_window",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 594
+            "line": 605
           },
           "description": "Start a pane's configured process; accepts no command payload. Split a pane and return the NEW pane's id. Use that id for what you put in it — pane ids stay valid across layout changes, where window names and indexes do not.",
           "schemaStatus": "runtime",
@@ -49763,7 +49770,7 @@
               },
               "paneId": {
                 "default": null,
-                "description": "The pane to split. Omit for the active pane.",
+                "description": "The pane to split. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -49771,7 +49778,7 @@
               },
               "percentage": {
                 "default": null,
-                "description": "Percentage of the space for the new pane.",
+                "description": "Percentage of the space for the new pane. Omit for half.",
                 "maximum": 2147483647,
                 "minimum": -2147483648,
                 "type": [
@@ -49781,7 +49788,7 @@
               },
               "startDirectory": {
                 "default": null,
-                "description": "The literal starting directory.",
+                "description": "The literal starting directory. Omit for the MCP server's own working directory.",
                 "type": [
                   "string",
                   "null"
@@ -49856,12 +49863,12 @@
           "wireName": "swap_pane",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 585
+            "line": 596
           },
-          "description": "Change tmux state; no client-supplied executable input. Swap pane.",
+          "description": "Change tmux state; no client-supplied executable input. Swap two panes' positions; each keeps its program, its content and its ID.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -49955,10 +49962,10 @@
           "wireName": "wait_for_channel",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 587
+            "line": 598
           },
           "description": "Change tmux state; no client-supplied executable input. Block until something signals a tmux wait-for channel with 'tmux wait-for -S <channel>'. Use when you composed a shell command that signals it. For an ordinary command whose completion you want, run_shell_command already does this and also reports the exit status.",
           "schemaStatus": "runtime",
@@ -49971,7 +49978,7 @@
               },
               "timeoutSeconds": {
                 "default": null,
-                "description": "Requested timeout in seconds.",
+                "description": "Seconds to wait, lowered to the server's ceiling. Omit to wait the whole ceiling, 30 unless LIBTMUX_MCP_WAIT_MAX_SECONDS sets another.",
                 "type": [
                   "number",
                   "null"
@@ -50041,12 +50048,12 @@
           "wireName": "wait_for_text",
           "source": {
             "repo": "libtmux/libtmux-dotnet",
-            "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-            "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+            "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+            "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
             "file": "src/LibTmux.Mcp/Policy/CapabilityModel.cs",
-            "line": 570
+            "line": 581
           },
-          "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait until a pane prints something matching one of these patterns, then return. Use for output you did NOT start — a server's ready line, another process's progress, a person typing. Only output arriving AFTER the call counts: text already on screen never matches, so a pattern visible in the returned tail can still time out. For a command you are running yourself, run_shell_command is better: it reports the real exit status instead of guessing from text. Never poll capture_pane in a loop; this call does the waiting. Text this server itself typed is discounted while deciding what is new, for a few seconds after it is sent or submitted, so its own echo cannot be the match — except on a pane whose program has not yet configured its terminal; wait for a first prompt before typing into a freshly created pane.",
+          "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait until a pane prints something matching one of these patterns, then return. Use for output you did NOT start — a server's ready line, another process's progress, a person typing. A matching pattern already on screen returns PresentAtEntry. For a command you are running yourself, run_shell_command is better: it reports the real exit status instead of guessing from text. Never poll capture_pane in a loop; this call does the waiting. Control observation is required by default; pollingFallback reports activation when the operator permits fallback. Text this server itself typed is discounted while deciding what is new, for a few seconds after it is sent or submitted, so its own echo cannot be the match — except on a pane whose program has not yet configured its terminal; wait for a first prompt before typing into a freshly created pane.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
@@ -50058,7 +50065,7 @@
               },
               "paneId": {
                 "default": null,
-                "description": "A pane id. Omit for the active pane.",
+                "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                 "type": [
                   "string",
                   "null"
@@ -50066,7 +50073,7 @@
               },
               "patterns": {
                 "default": null,
-                "description": "Linear-time regular expressions that end the wait successfully: .NET syntax without lookarounds, backreferences or atomic groups. Only output arriving after this call counts; text already on screen never matches. Across both pattern lists: at most 32 entries and 16384 UTF-8 bytes; each entry is at most 999 UTF-8 bytes.",
+                "description": "Linear-time regular expressions that end the wait successfully: .NET syntax without lookarounds, backreferences or atomic groups. Output arriving after this call counts unless the pattern is already present, which returns PresentAtEntry. Omit to return on any new output. Across both pattern lists: at most 32 entries and 16384 UTF-8 bytes; each entry is at most 999 UTF-8 bytes.",
                 "items": {
                   "type": [
                     "string",
@@ -50080,7 +50087,7 @@
               },
               "stopPatterns": {
                 "default": null,
-                "description": "Linear-time regular expressions that stop the wait, in the same subset as patterns. Across both pattern lists: at most 32 entries and 16384 UTF-8 bytes; each entry is at most 999 UTF-8 bytes.",
+                "description": "Linear-time regular expressions that stop the wait, in the same subset as patterns. Omit for none. Across both pattern lists: at most 32 entries and 16384 UTF-8 bytes; each entry is at most 999 UTF-8 bytes.",
                 "items": {
                   "type": [
                     "string",
@@ -50094,7 +50101,7 @@
               },
               "timeoutSeconds": {
                 "default": null,
-                "description": "Requested timeout in seconds.",
+                "description": "Seconds to wait, lowered to the server's ceiling. Omit to wait the whole ceiling, 30 unless LIBTMUX_MCP_WAIT_MAX_SECONDS sets another.",
                 "type": [
                   "number",
                   "null"
@@ -50105,11 +50112,20 @@
           },
           "outputSchema": {
             "properties": {
+              "anchorLost": {
+                "type": "boolean"
+              },
               "effectiveTimeoutSeconds": {
                 "type": "number"
               },
               "elapsedSeconds": {
                 "type": "number"
+              },
+              "eventsDropped": {
+                "type": "integer"
+              },
+              "linesMissed": {
+                "type": "boolean"
               },
               "matchedPattern": {
                 "type": [
@@ -50130,6 +50146,9 @@
               },
               "paneId": {
                 "type": "string"
+              },
+              "pollingFallback": {
+                "type": "boolean"
               },
               "tail": {
                 "properties": {
@@ -50200,8 +50219,8 @@
       "selectable": true,
       "source": "src/LibTmux.Mcp/Policy",
       "repo": "libtmux/libtmux-dotnet",
-      "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
-      "extractedRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
+      "extractedRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -50232,7 +50251,7 @@
         "resourceTemplates": [],
         "serverInfo": {
           "name": "tmux",
-          "version": "0.0.0-alpha.18"
+          "version": "0.0.0-alpha.20"
         }
       }
     },

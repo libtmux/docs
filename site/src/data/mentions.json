@@ -562,55 +562,6 @@
   },
   {
    "port": "csharp",
-   "symbol": "LibTmux.Workspace.PaneReadiness",
-   "page": "/csharp/latest/workspace/reference/",
-   "title": "C# workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "csharp",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Always",
-   "page": "/csharp/latest/workspace/internals/topics/",
-   "title": "C# workspace builder behavior",
-   "section": "ports"
-  },
-  {
-   "port": "csharp",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Always",
-   "page": "/csharp/latest/workspace/reference/",
-   "title": "C# workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "csharp",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Auto",
-   "page": "/csharp/latest/workspace/internals/topics/",
-   "title": "C# workspace builder behavior",
-   "section": "ports"
-  },
-  {
-   "port": "csharp",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Auto",
-   "page": "/csharp/latest/workspace/reference/",
-   "title": "C# workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "csharp",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Never",
-   "page": "/csharp/latest/workspace/internals/topics/",
-   "title": "C# workspace builder behavior",
-   "section": "ports"
-  },
-  {
-   "port": "csharp",
-   "symbol": "LibTmux.Workspace.PaneReadiness.Never",
-   "page": "/csharp/latest/workspace/reference/",
-   "title": "C# workspace builder API",
-   "section": "ports"
-  },
-  {
-   "port": "csharp",
    "symbol": "LibTmux.Workspace.WorkspaceBuilder",
    "page": "/csharp/latest/workspace/internals/guides/",
    "title": "Use the C# workspace builder",
@@ -619,6 +570,20 @@
   {
    "port": "csharp",
    "symbol": "LibTmux.Workspace.WorkspaceBuilder",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuilder.ApplyAsync",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuilder.ApplyAsync",
    "page": "/csharp/latest/workspace/reference/",
    "title": "C# workspace builder API",
    "section": "ports"
@@ -653,6 +618,13 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceBuilder.PlanAsync",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Workspace.WorkspaceBuildException",
    "page": "/csharp/latest/workspace/internals/topics/",
    "title": "C# workspace builder behavior",
@@ -674,16 +646,23 @@
   },
   {
    "port": "csharp",
-   "symbol": "LibTmux.Workspace.WorkspaceBuildException.PartialResult",
+   "symbol": "LibTmux.Workspace.WorkspaceExistingSession.Append",
    "page": "/csharp/latest/workspace/internals/topics/",
    "title": "C# workspace builder behavior",
    "section": "ports"
   },
   {
    "port": "csharp",
-   "symbol": "LibTmux.Workspace.WorkspaceBuildException.PartialResult",
-   "page": "/csharp/latest/workspace/reference/",
-   "title": "C# workspace builder API",
+   "symbol": "LibTmux.Workspace.WorkspaceExistingSession.Replace",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceExistingSession.Reuse",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
    "section": "ports"
   },
   {
@@ -716,7 +695,28 @@
   },
   {
    "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceFile.Resolve",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
    "symbol": "LibTmux.Workspace.WorkspaceFormatException",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceOperationCanceledException",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceOperationCanceledException",
    "page": "/csharp/latest/workspace/reference/",
    "title": "C# workspace builder API",
    "section": "ports"
@@ -726,6 +726,55 @@
    "symbol": "LibTmux.Workspace.WorkspacePane",
    "page": "/csharp/latest/workspace/reference/",
    "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspacePlan",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspacePlan.Actions",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspacePlanOptions",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspacePlanOptions",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceReadiness.Cooperative",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceReadiness.Cooperative",
+   "page": "/csharp/latest/workspace/reference/",
+   "title": "C# workspace builder API",
+   "section": "ports"
+  },
+  {
+   "port": "csharp",
+   "symbol": "LibTmux.Workspace.WorkspaceReadiness.Immediate",
+   "page": "/csharp/latest/workspace/internals/topics/",
+   "title": "C# workspace builder behavior",
    "section": "ports"
   },
   {

@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-dotnet",
-  "revision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+  "revision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -32,7 +32,7 @@
     "resourceTemplates": [],
     "serverInfo": {
       "name": "tmux",
-      "version": "0.0.0-alpha.18"
+      "version": "0.0.0-alpha.20"
     },
     "tools": [
       {
@@ -116,7 +116,7 @@
                           },
                           "maxLines": {
                             "default": null,
-                            "description": "Maximum returned lines.",
+                            "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
                             "maximum": 2147483647,
                             "minimum": -2147483648,
                             "type": [
@@ -126,7 +126,7 @@
                           },
                           "paneId": {
                             "default": null,
-                            "description": "A pane id. Omit for the active pane.",
+                            "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                             "type": [
                               "string",
                               "null"
@@ -152,7 +152,7 @@
                         "properties": {
                           "cursor": {
                             "default": null,
-                            "description": "The opaque cursor returned by the previous call.",
+                            "description": "The opaque cursor returned by the previous call. Omit to start from what is on screen now.",
                             "type": [
                               "string",
                               "null"
@@ -160,7 +160,7 @@
                           },
                           "maxLines": {
                             "default": null,
-                            "description": "Maximum returned lines.",
+                            "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
                             "maximum": 2147483647,
                             "minimum": -2147483648,
                             "type": [
@@ -170,7 +170,7 @@
                           },
                           "paneId": {
                             "default": null,
-                            "description": "A pane id. Omit for the active pane.",
+                            "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                             "type": [
                               "string",
                               "null"
@@ -302,7 +302,7 @@
                           },
                           "paneId": {
                             "default": null,
-                            "description": "A pane id used as the lookup context.",
+                            "description": "A pane id used as the lookup context. Omit for this server's own pane, or else the one the first session shows.",
                             "type": [
                               "string",
                               "null"
@@ -517,7 +517,7 @@
                         "properties": {
                           "paneId": {
                             "default": null,
-                            "description": "The pane whose scope is read.",
+                            "description": "The pane whose scope is read. Omit for this server's own pane, or else the one the first session shows.",
                             "type": [
                               "string",
                               "null"
@@ -558,7 +558,7 @@
                           },
                           "paneId": {
                             "default": null,
-                            "description": "The pane whose scope is read.",
+                            "description": "The pane whose scope is read. Omit for this server's own pane, or else the one the first session shows.",
                             "type": [
                               "string",
                               "null"
@@ -598,7 +598,7 @@
                         "properties": {
                           "maxLines": {
                             "default": null,
-                            "description": "Maximum returned lines.",
+                            "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
                             "maximum": 2147483647,
                             "minimum": -2147483648,
                             "type": [
@@ -608,7 +608,7 @@
                           },
                           "paneId": {
                             "default": null,
-                            "description": "A pane id. Omit for the active pane.",
+                            "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
                             "type": [
                               "string",
                               "null"
@@ -754,7 +754,7 @@
             },
             "maxLines": {
               "default": null,
-              "description": "Maximum returned lines.",
+              "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
               "maximum": 2147483647,
               "minimum": -2147483648,
               "type": [
@@ -764,7 +764,7 @@
             },
             "paneId": {
               "default": null,
-              "description": "A pane id. Omit for the active pane.",
+              "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -847,7 +847,7 @@
           "properties": {
             "cursor": {
               "default": null,
-              "description": "The opaque cursor returned by the previous call.",
+              "description": "The opaque cursor returned by the previous call. Omit to start from what is on screen now.",
               "type": [
                 "string",
                 "null"
@@ -855,7 +855,7 @@
             },
             "maxLines": {
               "default": null,
-              "description": "Maximum returned lines.",
+              "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
               "maximum": 2147483647,
               "minimum": -2147483648,
               "type": [
@@ -865,7 +865,7 @@
             },
             "paneId": {
               "default": null,
-              "description": "A pane id. Omit for the active pane.",
+              "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -953,13 +953,13 @@
           "readOnlyHint": false,
           "title": "Clear pane scrollback"
         },
-        "description": "Delete tmux state; accepts no command payload. Clear pane scrollback.",
+        "description": "Delete tmux state; accepts no command payload. Delete a pane's scrollback history, keeping what the screen shows. Deleted history cannot be read back.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
             "paneId": {
               "default": null,
-              "description": "A pane id. Omit for the active pane.",
+              "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -1039,7 +1039,7 @@
           "properties": {
             "height": {
               "default": null,
-              "description": "Rows.",
+              "description": "Rows. Omit for tmux's default of 24.",
               "maximum": 2147483647,
               "minimum": -2147483648,
               "type": [
@@ -1049,7 +1049,7 @@
             },
             "name": {
               "default": null,
-              "description": "The session name.",
+              "description": "The session name. Omit and tmux names it with a number.",
               "type": [
                 "string",
                 "null"
@@ -1057,7 +1057,7 @@
             },
             "startDirectory": {
               "default": null,
-              "description": "The literal starting directory.",
+              "description": "The literal starting directory. Omit for the MCP server's own working directory.",
               "type": [
                 "string",
                 "null"
@@ -1065,7 +1065,7 @@
             },
             "width": {
               "default": null,
-              "description": "Columns.",
+              "description": "Columns. Omit for tmux's default of 80.",
               "maximum": 2147483647,
               "minimum": -2147483648,
               "type": [
@@ -1147,7 +1147,7 @@
           "properties": {
             "name": {
               "default": null,
-              "description": "The window name.",
+              "description": "The window name. Omit and tmux names it after the program it runs.",
               "type": [
                 "string",
                 "null"
@@ -1155,7 +1155,7 @@
             },
             "session": {
               "default": null,
-              "description": "A session id or name.",
+              "description": "A session id or name. Omit for the first session.",
               "type": [
                 "string",
                 "null"
@@ -1163,7 +1163,7 @@
             },
             "startDirectory": {
               "default": null,
-              "description": "The literal starting directory.",
+              "description": "The literal starting directory. Omit for the MCP server's own working directory.",
               "type": [
                 "string",
                 "null"
@@ -1376,7 +1376,7 @@
           "readOnlyHint": false,
           "title": "Get pane info"
         },
-        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Get pane info.",
+        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Read one pane's size, title, running command, working directory, process ID, history size and limit, and whether it is active, dead, zoomed, in a mode or the pane this server runs in. This is metadata only; to read what the pane shows, use capture_pane or snapshot_pane.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -1601,7 +1601,7 @@
           "readOnlyHint": false,
           "title": "Get session info"
         },
-        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Get session info.",
+        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Read one session's name, ID, window count and whether a client is attached, without listing every session. Give the session, or a window ID to read the session that holds it.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -1686,7 +1686,7 @@
             },
             "paneId": {
               "default": null,
-              "description": "A pane id used as the lookup context.",
+              "description": "A pane id used as the lookup context. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -1733,7 +1733,7 @@
           "readOnlyHint": false,
           "title": "Get window info"
         },
-        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Get window info.",
+        "description": "Inspect tmux metadata; accepts no client-supplied executable input. Read one window's name, index, size, layout, pane count and whether it is its session's current window, without listing every window. Give the window ID, or a pane ID to read the window that holds it.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -1826,7 +1826,7 @@
           "readOnlyHint": false,
           "title": "Kill pane"
         },
-        "description": "Delete tmux state; accepts no command payload. Kill pane.",
+        "description": "Delete tmux state; accepts no command payload. Close a pane and end its program. Refuses the pane this server runs in; to remove a whole window, use kill_window.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -1902,7 +1902,7 @@
           "readOnlyHint": false,
           "title": "Kill session"
         },
-        "description": "Delete tmux state; accepts no command payload. Kill session.",
+        "description": "Delete tmux state; accepts no command payload. Close a session with all its windows and panes. Refuses the session this server runs in.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -1978,7 +1978,7 @@
           "readOnlyHint": false,
           "title": "Kill window"
         },
-        "description": "Delete tmux state; accepts no command payload. Kill window.",
+        "description": "Delete tmux state; accepts no command payload. Close a window and every pane in it. Refuses the window this server runs in.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -2029,6 +2029,7 @@
       },
       {
         "_meta": {
+          "anthropic/alwaysLoad": true,
           "com.git-pull.libtmux-mcp/capability": {
             "amplifiesFutureInput": false,
             "inputLiteralization": {},
@@ -2257,6 +2258,7 @@
       },
       {
         "_meta": {
+          "anthropic/alwaysLoad": true,
           "com.git-pull.libtmux-mcp/capability": {
             "amplifiesFutureInput": false,
             "inputLiteralization": {},
@@ -2392,7 +2394,7 @@
           "properties": {
             "destination": {
               "default": "",
-              "description": "The destination window index, or empty for the next free index.",
+              "description": "The destination window index. Omit for the next free index, as an empty one does.",
               "type": "string"
             },
             "replaceExisting": {
@@ -2402,7 +2404,7 @@
             },
             "session": {
               "default": null,
-              "description": "The destination session id or name.",
+              "description": "The destination session id or name. Omit to stay in the window's session.",
               "type": [
                 "string",
                 "null"
@@ -2496,7 +2498,7 @@
             },
             "paneId": {
               "default": null,
-              "description": "A pane id. Omit for the active pane.",
+              "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -2586,7 +2588,7 @@
             },
             "session": {
               "default": null,
-              "description": "A session id or name.",
+              "description": "A session id or name. Omit for the first session.",
               "type": [
                 "string",
                 "null"
@@ -2672,7 +2674,7 @@
             },
             "windowId": {
               "default": null,
-              "description": "A window id.",
+              "description": "A window id. Omit for this server's own window, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -2752,7 +2754,7 @@
           "properties": {
             "height": {
               "default": null,
-              "description": "Rows.",
+              "description": "Rows. Omit to keep the current height.",
               "maximum": 2147483647,
               "minimum": -2147483648,
               "type": [
@@ -2762,7 +2764,7 @@
             },
             "paneId": {
               "default": null,
-              "description": "A pane id. Omit for the active pane.",
+              "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -2770,7 +2772,7 @@
             },
             "width": {
               "default": null,
-              "description": "Columns.",
+              "description": "Columns. Omit to keep the current width.",
               "maximum": 2147483647,
               "minimum": -2147483648,
               "type": [
@@ -2848,13 +2850,13 @@
           "readOnlyHint": false,
           "title": "Resize window"
         },
-        "description": "Change tmux state; no client-supplied executable input. Resize window.",
+        "description": "Change tmux state; no client-supplied executable input. Resize a window to a width and height in cells; its panes resize with it. To resize one pane, use resize_pane.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
             "height": {
               "default": null,
-              "description": "Rows.",
+              "description": "Rows. Omit to keep the current height.",
               "maximum": 2147483647,
               "minimum": -2147483648,
               "type": [
@@ -2864,7 +2866,7 @@
             },
             "width": {
               "default": null,
-              "description": "Columns.",
+              "description": "Columns. Omit to keep the current width.",
               "maximum": 2147483647,
               "minimum": -2147483648,
               "type": [
@@ -2874,7 +2876,7 @@
             },
             "windowId": {
               "default": null,
-              "description": "A window id. Omit for the active window.",
+              "description": "A window id. Omit for this server's own window, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -2959,7 +2961,7 @@
             },
             "paneId": {
               "default": null,
-              "description": "A pane id. Omit for the active pane.",
+              "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -2967,7 +2969,7 @@
             },
             "startDirectory": {
               "default": null,
-              "description": "The literal starting directory.",
+              "description": "The literal starting directory. Omit for the directory the pane started in before.",
               "type": [
                 "string",
                 "null"
@@ -3049,7 +3051,7 @@
             },
             "maxLines": {
               "default": null,
-              "description": "Maximum returned lines.",
+              "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
               "maximum": 2147483647,
               "minimum": -2147483648,
               "type": [
@@ -3059,7 +3061,7 @@
             },
             "paneId": {
               "default": null,
-              "description": "A pane id. Omit for the active pane.",
+              "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -3072,7 +3074,7 @@
             },
             "timeoutSeconds": {
               "default": null,
-              "description": "Requested timeout in seconds.",
+              "description": "Seconds to wait, lowered to the server's ceiling. Omit to wait the whole ceiling, 30 unless LIBTMUX_MCP_WAIT_MAX_SECONDS sets another.",
               "type": [
                 "number",
                 "null"
@@ -3132,6 +3134,10 @@
                 "droppedBytes"
               ],
               "type": "object"
+            },
+            "paneExited": {
+              "default": false,
+              "type": "boolean"
             },
             "paneId": {
               "type": "string"
@@ -3319,7 +3325,7 @@
           "properties": {
             "layout": {
               "default": null,
-              "description": "A supported layout name or layout string.",
+              "description": "A supported layout name or layout string. Omit to reapply the window's last preset layout, if it has had one.",
               "type": [
                 "string",
                 "null"
@@ -3327,7 +3333,7 @@
             },
             "windowId": {
               "default": null,
-              "description": "A window id. Omit for the active window.",
+              "description": "A window id. Omit for this server's own window, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -3570,7 +3576,7 @@
             },
             "paneId": {
               "default": null,
-              "description": "A pane id. Omit for the active pane.",
+              "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -3965,7 +3971,7 @@
           "properties": {
             "paneId": {
               "default": null,
-              "description": "A pane id. Omit for the active pane.",
+              "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -4042,7 +4048,7 @@
           "readOnlyHint": false,
           "title": "Set synchronize panes"
         },
-        "description": "Change tmux state; no client-supplied executable input. The synchronized input cohort is the panes whose effective synchronize-panes setting is on. Enabling it makes panes without overrides members; pane overrides can include or exclude panes.",
+        "description": "Change tmux state; no client-supplied executable input. Turn synchronize-panes on or off for a window. Input typed into one of its panes then reaches the synchronized input cohort: every pane whose effective synchronize-panes setting is on. A pane without a setting of its own follows the window; one with its own setting stays included or excluded either way.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -4052,7 +4058,7 @@
             },
             "windowId": {
               "default": null,
-              "description": "A window id. Omit for the active window.",
+              "description": "A window id. Omit for this server's own window, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -4224,7 +4230,7 @@
           "properties": {
             "paneId": {
               "default": null,
-              "description": "The pane whose scope is read.",
+              "description": "The pane whose scope is read. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -4324,7 +4330,7 @@
             },
             "paneId": {
               "default": null,
-              "description": "The pane whose scope is read.",
+              "description": "The pane whose scope is read. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -4470,6 +4476,7 @@
       },
       {
         "_meta": {
+          "anthropic/alwaysLoad": true,
           "com.git-pull.libtmux-mcp/capability": {
             "amplifiesFutureInput": false,
             "inputLiteralization": {},
@@ -4501,7 +4508,7 @@
           "properties": {
             "maxLines": {
               "default": null,
-              "description": "Maximum returned lines.",
+              "description": "Maximum returned lines, newest kept. Omit for the server default, 500 unless LIBTMUX_MCP_MAX_LINES sets another.",
               "maximum": 2147483647,
               "minimum": -2147483648,
               "type": [
@@ -4511,7 +4518,7 @@
             },
             "paneId": {
               "default": null,
-              "description": "A pane id. Omit for the active pane.",
+              "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -4715,7 +4722,7 @@
             },
             "paneId": {
               "default": null,
-              "description": "The pane to split. Omit for the active pane.",
+              "description": "The pane to split. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -4723,7 +4730,7 @@
             },
             "percentage": {
               "default": null,
-              "description": "Percentage of the space for the new pane.",
+              "description": "Percentage of the space for the new pane. Omit for half.",
               "maximum": 2147483647,
               "minimum": -2147483648,
               "type": [
@@ -4733,7 +4740,7 @@
             },
             "startDirectory": {
               "default": null,
-              "description": "The literal starting directory.",
+              "description": "The literal starting directory. Omit for the MCP server's own working directory.",
               "type": [
                 "string",
                 "null"
@@ -4804,7 +4811,7 @@
           "readOnlyHint": false,
           "title": "Swap pane"
         },
-        "description": "Change tmux state; no client-supplied executable input. Swap pane.",
+        "description": "Change tmux state; no client-supplied executable input. Swap two panes' positions; each keeps its program, its content and its ID.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -4904,7 +4911,7 @@
             },
             "timeoutSeconds": {
               "default": null,
-              "description": "Requested timeout in seconds.",
+              "description": "Seconds to wait, lowered to the server's ceiling. Omit to wait the whole ceiling, 30 unless LIBTMUX_MCP_WAIT_MAX_SECONDS sets another.",
               "type": [
                 "number",
                 "null"
@@ -4973,7 +4980,7 @@
           "readOnlyHint": false,
           "title": "Wait for text"
         },
-        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait until a pane prints something matching one of these patterns, then return. Use for output you did NOT start — a server's ready line, another process's progress, a person typing. Only output arriving AFTER the call counts: text already on screen never matches, so a pattern visible in the returned tail can still time out. For a command you are running yourself, run_shell_command is better: it reports the real exit status instead of guessing from text. Never poll capture_pane in a loop; this call does the waiting. Text this server itself typed is discounted while deciding what is new, for a few seconds after it is sent or submitted, so its own echo cannot be the match — except on a pane whose program has not yet configured its terminal; wait for a first prompt before typing into a freshly created pane.",
+        "description": "Read pane output; accepts no client-supplied executable input. Returned content may be sensitive or untrusted. Wait until a pane prints something matching one of these patterns, then return. Use for output you did NOT start — a server's ready line, another process's progress, a person typing. A matching pattern already on screen returns PresentAtEntry. For a command you are running yourself, run_shell_command is better: it reports the real exit status instead of guessing from text. Never poll capture_pane in a loop; this call does the waiting. Control observation is required by default; pollingFallback reports activation when the operator permits fallback. Text this server itself typed is discounted while deciding what is new, for a few seconds after it is sent or submitted, so its own echo cannot be the match — except on a pane whose program has not yet configured its terminal; wait for a first prompt before typing into a freshly created pane.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
@@ -4984,7 +4991,7 @@
             },
             "paneId": {
               "default": null,
-              "description": "A pane id. Omit for the active pane.",
+              "description": "A pane id. Omit for this server's own pane, or else the one the first session shows.",
               "type": [
                 "string",
                 "null"
@@ -4992,7 +4999,7 @@
             },
             "patterns": {
               "default": null,
-              "description": "Linear-time regular expressions that end the wait successfully: .NET syntax without lookarounds, backreferences or atomic groups. Only output arriving after this call counts; text already on screen never matches. Across both pattern lists: at most 32 entries and 16384 UTF-8 bytes; each entry is at most 999 UTF-8 bytes.",
+              "description": "Linear-time regular expressions that end the wait successfully: .NET syntax without lookarounds, backreferences or atomic groups. Output arriving after this call counts unless the pattern is already present, which returns PresentAtEntry. Omit to return on any new output. Across both pattern lists: at most 32 entries and 16384 UTF-8 bytes; each entry is at most 999 UTF-8 bytes.",
               "items": {
                 "type": [
                   "string",
@@ -5006,7 +5013,7 @@
             },
             "stopPatterns": {
               "default": null,
-              "description": "Linear-time regular expressions that stop the wait, in the same subset as patterns. Across both pattern lists: at most 32 entries and 16384 UTF-8 bytes; each entry is at most 999 UTF-8 bytes.",
+              "description": "Linear-time regular expressions that stop the wait, in the same subset as patterns. Omit for none. Across both pattern lists: at most 32 entries and 16384 UTF-8 bytes; each entry is at most 999 UTF-8 bytes.",
               "items": {
                 "type": [
                   "string",
@@ -5020,7 +5027,7 @@
             },
             "timeoutSeconds": {
               "default": null,
-              "description": "Requested timeout in seconds.",
+              "description": "Seconds to wait, lowered to the server's ceiling. Omit to wait the whole ceiling, 30 unless LIBTMUX_MCP_WAIT_MAX_SECONDS sets another.",
               "type": [
                 "number",
                 "null"
@@ -5032,11 +5039,20 @@
         "name": "wait_for_text",
         "outputSchema": {
           "properties": {
+            "anchorLost": {
+              "type": "boolean"
+            },
             "effectiveTimeoutSeconds": {
               "type": "number"
             },
             "elapsedSeconds": {
               "type": "number"
+            },
+            "eventsDropped": {
+              "type": "integer"
+            },
+            "linesMissed": {
+              "type": "boolean"
             },
             "matchedPattern": {
               "type": [
@@ -5057,6 +5073,9 @@
             },
             "paneId": {
               "type": "string"
+            },
+            "pollingFallback": {
+              "type": "boolean"
             },
             "tail": {
               "properties": {

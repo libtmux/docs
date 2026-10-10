@@ -12,13 +12,13 @@ cards:
     body: Every MCP operation, with its arguments and results.
   - label: Guides
     href: ./guides/
-    body: Install the tool and choose a socket.
+    body: Install the tool, choose a socket, and verify the client's connection.
   - label: Topics
     href: ./topics/
-    body: Toolsets, command waits, and capability discovery.
+    body: Tool selection, command waits, capture limits, and cancellation.
   - label: Examples
     href: ./examples/
-    body: List sessions and run a bounded command.
+    body: Complete clients for session inspection and bounded command execution.
   - label: Language API
     href: ./reference/
     body: Embedding and implementation types.
@@ -35,9 +35,12 @@ and `capture_since`.
 ## Toolsets
 
 Use `LIBTMUX_TOOLSETS=inspect` for discovery and terminal reads.
-Additional toolsets enable changes, execution, and teardown.
+Additional toolsets enable changes, execution, and teardown. The
+[tool-selection topic](topics/tool-selection/) explains exact-name filters,
+defaults, and the capability resource. The [complete examples](examples/)
+include project files and cleanup for their owned tmux servers.
 
 [Workspace Manager](../workspace/) is the separately packaged
 `LibTmux.Workspace` library. The MCP catalog does not include a workspace-file operation.
 
-[Package contract](https://github.com/libtmux/libtmux-dotnet/blob/320dc64f4b8b7815842471327a5e6b84a1499bf8/src/LibTmux.Mcp/README.md).
+[Package contract](https://github.com/libtmux/libtmux-dotnet/blob/ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc/src/LibTmux.Mcp/README.md).

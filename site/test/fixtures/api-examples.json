@@ -10468,7 +10468,7 @@
       "page": "ports/csharp/reference/libtmux-server",
       "symbol": "LibTmux.Server",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
       "sourceProgramId": "csharp-ServerConstruction",
       "sourceCompilerIds": [
@@ -10496,8 +10496,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -10513,7 +10513,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -10530,14 +10530,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-open",
       "symbol": "LibTmux.Server.Open",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
       "sourceProgramId": "csharp-ServerConstruction",
       "sourceCompilerIds": [
@@ -10565,8 +10565,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -10582,7 +10582,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -10599,14 +10599,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-connectasync",
       "symbol": "LibTmux.Server.ConnectAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
       "sourceProgramId": "csharp-ServerConstruction",
       "sourceCompilerIds": [
@@ -10635,8 +10635,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -10652,7 +10652,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -10669,14 +10669,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-createownedasync",
       "symbol": "LibTmux.Server.CreateOwnedAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
       "sourceProgramId": "csharp-ServerConstruction",
       "sourceCompilerIds": [
@@ -10704,8 +10704,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -10721,7 +10721,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -10738,14 +10738,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-createownedsessionasync",
       "symbol": "LibTmux.Server.CreateOwnedSessionAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/ServerConstruction.cs",
       "sourceProgramId": "csharp-ServerConstruction",
       "sourceCompilerIds": [
@@ -10773,8 +10773,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -10790,7 +10790,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -10807,14 +10807,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-getsessionsasync",
       "symbol": "LibTmux.Server.GetSessionsAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/ServerListings.cs",
       "sourceProgramId": "csharp-ServerListings",
       "sourceCompilerIds": [
@@ -10842,8 +10842,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -10859,7 +10859,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -10878,14 +10878,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-getwindowsasync",
       "symbol": "LibTmux.Server.GetWindowsAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/ServerListings.cs",
       "sourceProgramId": "csharp-ServerListings",
       "sourceCompilerIds": [
@@ -10913,8 +10913,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -10930,7 +10930,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -10949,14 +10949,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-getpanesasync",
       "symbol": "LibTmux.Server.GetPanesAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/ServerListings.cs",
       "sourceProgramId": "csharp-ServerListings",
       "sourceCompilerIds": [
@@ -10984,8 +10984,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11001,7 +11001,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -11020,14 +11020,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-getclientsasync",
       "symbol": "LibTmux.Server.GetClientsAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/ServerListings.cs",
       "sourceProgramId": "csharp-ServerListings",
       "sourceCompilerIds": [
@@ -11055,8 +11055,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11072,7 +11072,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -11091,14 +11091,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-createsessionasync",
       "symbol": "LibTmux.Server.CreateSessionAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
       "sourceProgramId": "csharp-CreateWindowPane",
       "sourceCompilerIds": [
@@ -11126,8 +11126,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11143,7 +11143,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -11160,14 +11160,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-session-createwindowasync",
       "symbol": "LibTmux.Session.CreateWindowAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
       "sourceProgramId": "csharp-CreateWindowPane",
       "sourceCompilerIds": [
@@ -11195,8 +11195,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11212,7 +11212,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -11229,14 +11229,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-window-getpanesasync",
       "symbol": "LibTmux.Window.GetPanesAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
       "sourceProgramId": "csharp-CreateWindowPane",
       "sourceCompilerIds": [
@@ -11264,8 +11264,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11281,7 +11281,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -11298,14 +11298,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-pane-splitasync",
       "symbol": "LibTmux.Pane.SplitAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
       "sourceProgramId": "csharp-CreateWindowPane",
       "sourceCompilerIds": [
@@ -11333,8 +11333,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11350,7 +11350,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -11367,14 +11367,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-session-getwindowsasync",
       "symbol": "LibTmux.Session.GetWindowsAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
       "sourceProgramId": "csharp-CreateWindowPane",
       "sourceCompilerIds": [
@@ -11402,8 +11402,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11419,7 +11419,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -11436,14 +11436,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-session-getpanesasync",
       "symbol": "LibTmux.Session.GetPanesAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/CreateWindowPane.cs",
       "sourceProgramId": "csharp-CreateWindowPane",
       "sourceCompilerIds": [
@@ -11471,8 +11471,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11488,7 +11488,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -11505,14 +11505,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-query-queryextensions-translate",
       "symbol": "LibTmux.Query.QueryExtensions.Translate",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/ServerQueries.cs",
       "sourceProgramId": "csharp-ServerQueries",
       "sourceCompilerIds": [
@@ -11540,8 +11540,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11557,7 +11557,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -11574,14 +11574,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-query-queryextensions-matching",
       "symbol": "LibTmux.Query.QueryExtensions.Matching",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/ServerQueries.cs",
       "sourceProgramId": "csharp-ServerQueries",
       "sourceCompilerIds": [
@@ -11611,8 +11611,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11628,7 +11628,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -11645,14 +11645,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-getsessionasync",
       "symbol": "LibTmux.Server.GetSessionAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
       "sourceProgramId": "csharp-EntityLookups",
       "sourceCompilerIds": [
@@ -11680,8 +11680,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11697,7 +11697,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -11720,14 +11720,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-findsessionasync",
       "symbol": "LibTmux.Server.FindSessionAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
       "sourceProgramId": "csharp-EntityLookups",
       "sourceCompilerIds": [
@@ -11755,8 +11755,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11772,7 +11772,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -11795,14 +11795,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-getwindowasync",
       "symbol": "LibTmux.Server.GetWindowAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
       "sourceProgramId": "csharp-EntityLookups",
       "sourceCompilerIds": [
@@ -11830,8 +11830,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11847,7 +11847,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -11870,14 +11870,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-getpaneasync",
       "symbol": "LibTmux.Server.GetPaneAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
       "sourceProgramId": "csharp-EntityLookups",
       "sourceCompilerIds": [
@@ -11905,8 +11905,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11922,7 +11922,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -11945,14 +11945,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-window-findpaneasync",
       "symbol": "LibTmux.Window.FindPaneAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/EntityLookups.cs",
       "sourceProgramId": "csharp-EntityLookups",
       "sourceCompilerIds": [
@@ -11980,8 +11980,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -11997,7 +11997,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -12020,14 +12020,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-capturesnapshotasync",
       "symbol": "LibTmux.Server.CaptureSnapshotAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/SnapshotAccess.cs",
       "sourceProgramId": "csharp-SnapshotAccess",
       "sourceCompilerIds": [
@@ -12055,8 +12055,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -12072,7 +12072,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -12093,14 +12093,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-capturedrelation-iscaptured",
       "symbol": "LibTmux.CapturedRelation.IsCaptured",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/SnapshotAccess.cs",
       "sourceProgramId": "csharp-SnapshotAccess",
       "sourceCompilerIds": [
@@ -12128,8 +12128,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -12145,7 +12145,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -12166,14 +12166,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-capturedvalue-iscaptured",
       "symbol": "LibTmux.CapturedValue.IsCaptured",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/SnapshotAccess.cs",
       "sourceProgramId": "csharp-SnapshotAccess",
       "sourceCompilerIds": [
@@ -12201,8 +12201,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -12218,7 +12218,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -12239,14 +12239,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-capturedvalue-value",
       "symbol": "LibTmux.CapturedValue.Value",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/SnapshotAccess.cs",
       "sourceProgramId": "csharp-SnapshotAccess",
       "sourceCompilerIds": [
@@ -12274,8 +12274,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -12291,7 +12291,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -12312,14 +12312,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-pane-sendkeysasync",
       "symbol": "LibTmux.Pane.SendKeysAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/InputCapture.cs",
       "sourceProgramId": "csharp-InputCapture",
       "sourceCompilerIds": [
@@ -12347,8 +12347,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -12364,7 +12364,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -12379,14 +12379,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-pane-captureasync",
       "symbol": "LibTmux.Pane.CaptureAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/InputCapture.cs",
       "sourceProgramId": "csharp-InputCapture",
       "sourceCompilerIds": [
@@ -12414,8 +12414,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -12431,7 +12431,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -12446,14 +12446,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-server-openwaitchannel",
       "symbol": "LibTmux.Server.OpenWaitChannel",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/InputCapture.cs",
       "sourceProgramId": "csharp-InputCapture",
       "sourceCompilerIds": [
@@ -12481,8 +12481,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -12498,7 +12498,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -12513,14 +12513,14 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "csharp",
       "page": "ports/csharp/reference/libtmux-tmuxwaitchannel-waitasync",
       "symbol": "LibTmux.TmuxWaitChannel.WaitAsync",
       "sourceRepository": "libtmux/libtmux-dotnet",
-      "sourceRevision": "4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+      "sourceRevision": "ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
       "sourceFile": "examples/LibTmux.Examples/Programs/InputCapture.cs",
       "sourceProgramId": "csharp-InputCapture",
       "sourceCompilerIds": [
@@ -12548,8 +12548,8 @@
           "path": "Example.csproj",
           "block": 3,
           "sourceFile": "examples/api/csharp/Example.csproj",
-          "sha256": "e52631c3bc6cf7f55f79426e42f24c11b51fc1c6ada3aa5de750b260776ac75c",
-          "clipboardSha256": "850555a244a332adf3e845659e410ccdd90d5b9fbbe9bb29a83a74841cac74c7"
+          "sha256": "c4ee0e81ca836ee73d809cf4c753eed91b300c108afe986f6dfe324c7b81a6f9",
+          "clipboardSha256": "b529959e74d4353bcb9179cf19060651dc857108cf0d2cf63711f64bf12f6c05"
         },
         {
           "name": "Program.cs",
@@ -12565,7 +12565,7 @@
         5
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach 4f1b997b2e4aeb604c4184707e49dcd4dea44fef",
+        "git clone https://github.com/libtmux/libtmux-dotnet.git libtmux-source && \\\n  git -C libtmux-source checkout --detach ec8b6ab2a4f65e23664f43fba538ba200d4ae8bc",
         "export NUGET_PACKAGES=\"$PWD/packages\" && \\\n  dotnet restore libtmux-source/src/LibTmux/LibTmux.csproj --locked-mode && \\\n  dotnet pack libtmux-source/src/LibTmux/LibTmux.csproj \\\n    --configuration Release --no-restore -p:ContinuousIntegrationBuild=true \\\n    --output \"$PWD/libtmux-source/artifacts/api-example-packages\" && \\\n  dotnet restore Example.csproj --configfile NuGet.config && \\\n  dotnet build Example.csproj --configuration Release --no-restore --warnaserror && \\\n  export LIBTMUX_TMUX=\"$(command -v tmux)\" && \\\n  export TMUX_TMPDIR=/tmp/libtmux-dotnet-dev && \\\n  mkdir -p \"$TMUX_TMPDIR\" && \\\n  unset TMUX TMUX_PANE && \\\n  dotnet bin/Release/net8.0/Example.dll && \\\n  dotnet bin/Release/net10.0/Example.dll"
       ],
       "expectedOutputs": [
@@ -12580,7 +12580,7 @@
         "3.2a",
         "3.7c"
       ],
-      "verificationScope": "Fresh exact displayed HTTPS clone and source-pack recipe executed once for each language profile at the documented merge revision. All 20 whole programs then rebuilt sequentially in their profile consumer and ran on .NET 8 and 10 against tmux 3.2a and 3.7c, with exact output, retained assemblies and no live owned sockets. Both capture-failure controls exited unsuccessfully after cleanup. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
+      "verificationScope": "All seven whole programs execute their exact displayed HTTPS clone, locked source restore, package, consumer build and run recipes at the documented revision. Each runs on .NET 8 and 10 with tmux 3.2a and 3.7c. Four injected capture failures exit unsuccessfully after owned-server cleanup. Recorded socket endpoints are stopped after every run. Whole files include their final LF; copied file controls remove one final LF. No hidden program prelude."
     },
     {
       "port": "cxx",
