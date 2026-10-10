@@ -29,6 +29,8 @@ describe('standard types in product signatures', () => {
     ['rs', 'Option<OsString>', 'OsString', 'https://doc.rust-lang.org/std/ffi/struct.OsString.html'],
     ['csharp', 'IProgress<T>?', 'IProgress', 'https://learn.microsoft.com/dotnet/api/system.iprogress-1'],
     ['csharp', 'ReadOnlyMemory<byte>', 'ReadOnlyMemory', 'https://learn.microsoft.com/dotnet/api/system.readonlymemory-1'],
+    ['csharp', 'IEnumerator<T>', 'IEnumerator', 'https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1'],
+    ['csharp', 'IReadOnlyCollection<Pane>', 'IReadOnlyCollection', 'https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1'],
     ['cxx', 'std::function<void(double)>', 'double', 'https://en.cppreference.com/w/cpp/language/types'],
     ['swift', 'Data', 'Data', 'https://developer.apple.com/documentation/foundation/data'],
     ['swift', 'AsyncStream<String>', 'AsyncStream', 'https://developer.apple.com/documentation/swift/asyncstream'],
@@ -100,6 +102,8 @@ describe('.NET exception references in F# and C#', () => {
     ['System.FormatException', 'system.formatexception'],
     ['System.OperationCanceledException', 'system.operationcanceledexception'],
     ['System.IO.InvalidDataException', 'system.io.invaliddataexception'],
+    ['System.IO.IOException', 'system.io.ioexception'],
+    ['System.Text.RegularExpressions.RegexMatchTimeoutException', 'system.text.regularexpressions.regexmatchtimeoutexception'],
     ['System.Text.Json.JsonException', 'system.text.json.jsonexception'],
     ['System.Threading.Tasks.TaskCanceledException', 'system.threading.tasks.taskcanceledexception'],
   ] as const
