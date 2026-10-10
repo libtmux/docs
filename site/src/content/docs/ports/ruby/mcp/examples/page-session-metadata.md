@@ -62,7 +62,8 @@ def describe_failure(error)
     details.concat(error.cleanup_errors.map { |message| "Cleanup: #{message}" })
   end
   if error.respond_to?(:async_cleanup_errors)
-    details.concat(error.async_cleanup_errors.map { |message| "Cleanup: #{message}" })
+    async_errors = error.async_cleanup_errors
+    details.concat(async_errors.map { |message| "Cleanup: #{message}" })
   end
   details.join("\n")
 end
