@@ -21,3 +21,6 @@ allowBuilds:
   tree-sitter-scala: false
 minimumReleaseAge: 4320
 minimumReleaseAgeStrict: false
+patchedDependencies:
+  # Cancel viewport prefetch for links removed by a client navigation.
+  astro@7.3.5: patches/astro@7.3.5.patch

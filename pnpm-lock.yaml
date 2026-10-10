@@ -192,6 +192,9 @@ catalogs:
       specifier: 0.25.10
       version: 0.25.10
 
+patchedDependencies:
+  astro@7.3.5: 8d9d3d9846bc0ef177412506f49cc826ef05ae1635c7469368d442ff574c7eb8
+
 importers:
 
   .:
@@ -290,7 +293,7 @@ importers:
         version: 7.3.1
       '@astrojs/mdx':
         specifier: ^8.0.2
-        version: 8.0.2(@astrojs/markdown-remark@7.3.1)(@astrojs/markdown-satteri@0.4.2)(astro@7.3.5(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1))
+        version: 8.0.2(@astrojs/markdown-remark@7.3.1)(@astrojs/markdown-satteri@0.4.2)(astro@7.3.5(patch_hash=8d9d3d9846bc0ef177412506f49cc826ef05ae1635c7469368d442ff574c7eb8)(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1))
       '@astrojs/sitemap':
         specifier: ^3.7.4
         version: 3.7.4
@@ -308,7 +311,7 @@ importers:
         version: link:../packages/theme
       astro:
         specifier: ^7.3.5
-        version: 7.3.5(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1)
+        version: 7.3.5(patch_hash=8d9d3d9846bc0ef177412506f49cc826ef05ae1635c7469368d442ff574c7eb8)(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -345,7 +348,7 @@ importers:
         version: 4.3.3(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
       astro-expressive-code:
         specifier: ^0.44.2
-        version: 0.44.2(astro@7.3.5(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1))
+        version: 0.44.2(astro@7.3.5(patch_hash=8d9d3d9846bc0ef177412506f49cc826ef05ae1635c7469368d442ff574c7eb8)(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: 'catalog:'
         version: 20.14.5
@@ -3569,11 +3572,11 @@ snapshots:
       github-slugger: 2.0.0
       satteri: 0.10.5
 
-  '@astrojs/mdx@8.0.2(@astrojs/markdown-remark@7.3.1)(@astrojs/markdown-satteri@0.4.2)(astro@7.3.5(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1))':
+  '@astrojs/mdx@8.0.2(@astrojs/markdown-remark@7.3.1)(@astrojs/markdown-satteri@0.4.2)(astro@7.3.5(patch_hash=8d9d3d9846bc0ef177412506f49cc826ef05ae1635c7469368d442ff574c7eb8)(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1))':
     dependencies:
       '@astrojs/internal-helpers': 0.11.0
       '@astrojs/markdown-satteri': 0.4.2
-      astro: 7.3.5(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1)
+      astro: 7.3.5(patch_hash=8d9d3d9846bc0ef177412506f49cc826ef05ae1635c7469368d442ff574c7eb8)(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1)
       es-module-lexer: 2.3.2
     optionalDependencies:
       '@astrojs/markdown-remark': 7.3.1
@@ -4589,13 +4592,13 @@ snapshots:
 
   astring@1.9.0: {}
 
-  astro-expressive-code@0.44.2(astro@7.3.5(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1)):
+  astro-expressive-code@0.44.2(astro@7.3.5(patch_hash=8d9d3d9846bc0ef177412506f49cc826ef05ae1635c7469368d442ff574c7eb8)(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1)):
     dependencies:
-      astro: 7.3.5(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1)
+      astro: 7.3.5(patch_hash=8d9d3d9846bc0ef177412506f49cc826ef05ae1635c7469368d442ff574c7eb8)(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1)
       rehype-expressive-code: 0.44.2
       url-extras: 0.1.0
 
-  astro@7.3.5(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1):
+  astro@7.3.5(patch_hash=8d9d3d9846bc0ef177412506f49cc826ef05ae1635c7469368d442ff574c7eb8)(@astrojs/markdown-remark@7.3.1)(@types/node@26.6.3)(jiti@2.7.0)(yaml@2.9.1):
     dependencies:
       '@astrojs/compiler-rs': 0.5.1
       '@astrojs/internal-helpers': 0.11.0
