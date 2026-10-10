@@ -793,7 +793,7 @@
         },
         {
           "name": "subprocess.rs",
-          "sha256": "966b8ca918fbf5d3befb4ccfeefc4a6e274ed63e5c7933892d78ffec767b5b6b"
+          "sha256": "bb5a951d062c0258b5b12a1272876abebca64ba42c98ab68b3c2b5408a0306c6"
         }
       ],
       "shellRecipe": [
