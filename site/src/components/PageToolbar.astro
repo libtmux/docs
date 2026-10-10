@@ -16,8 +16,8 @@ const { breadcrumbs, pagePorts = [], port, editHref, editLabel } = Astro.props
 <div class="not-prose mb-4 flex items-center gap-x-4" data-page-toolbar data-pagefind-ignore="all">
   <nav aria-label="Breadcrumb" class="min-w-0 flex-1 text-sm text-muted">
     <ol class="flex flex-wrap gap-x-2 gap-y-1">
-      {breadcrumbs.map((item, i) => <li class="flex min-w-0 gap-2 wrap-anywhere">
-        {i > 0 && <span aria-hidden="true">/</span>}
+      {breadcrumbs.map((item, i) => <li class="min-w-0 max-w-full wrap-anywhere">
+        {i > 0 && <span aria-hidden="true" class="me-2">/</span>}
         {i === breadcrumbs.length - 1 ? <span aria-current="page">{item.name}</span> : <a class="hover:underline" href={item.url}>{item.name}</a>}
       </li>)}
     </ol>
