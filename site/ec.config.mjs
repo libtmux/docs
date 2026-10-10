@@ -1,5 +1,6 @@
 import { defineEcConfig } from 'astro-expressive-code'
 import { shellPrompt, shellThemes } from './src/plugins/ec-shell-prompt.mjs'
+import { copyReadiness } from './src/plugins/ec-copy-readiness.mjs'
 import { tmuxUsage } from './src/lib/tmux-usage.mjs'
 import { tmuxShell } from './src/lib/tmux-shell.mjs'
 import { tmuxConfig } from './src/lib/tmux-config.mjs'
@@ -17,7 +18,7 @@ export default defineEcConfig({
   // Keep literal tabs in displayed code and clipboard text.
   tabWidth: 0,
   themes: shellThemes(),
-  plugins: [shellPrompt()],
+  plugins: [shellPrompt(), copyReadiness()],
   shiki: { langs: [tmuxUsage, ...bash, tmuxShell, tmuxConfig], langAlias: { sbt: 'scala', tmux: 'tmux-config' } },
   useDarkModeMediaQuery: false,
   themeCssSelector: (theme) =>
