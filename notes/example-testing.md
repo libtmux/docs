@@ -1,8 +1,8 @@
 # Run ordinary examples with external tmux defaults
 
-[`scripts/example_environment.py`](../scripts/example_environment.py) runs a command with an owned tmux daemon and child-only endpoint defaults. The example keeps its imports and ordinary `Server()` call. The selected port must support `LIBTMUX_SOCKET_PATH` and `LIBTMUX_SOCKET_NAME` for those defaults to take effect.
+[`scripts/example_environment.py`](../scripts/example_environment.py) runs a command with child-only endpoint defaults and external process cleanup. The example keeps its imports and ordinary public server API. The selected port must support `LIBTMUX_SOCKET_PATH` and `LIBTMUX_SOCKET_NAME` for those defaults to take effect.
 
-The commands below assume the example files and their dependencies exist in the working directory. Use `--cwd` to select a port checkout. Run its existing Python example without changing the source:
+The commands below assume the example files and their dependencies exist in the working directory. Use `--cwd` to select a port checkout. This invocation runs Python's session-cleanup demonstration without changing its source:
 
 ```console
 $ python3 scripts/example_environment.py \
@@ -13,6 +13,16 @@ $ python3 scripts/example_environment.py \
 The output directory must be new. `example.log` contains the example's output, `tmux.log` contains daemon diagnostics, and `result.json` records the command, process identities, exit observations and cleanup outcome. The runner returns zero only when the command succeeds and cleanup completes. It does not install dependencies or choose a library version; activate the intended runtime and library before running it.
 
 The socket directory follows Python's `TMPDIR` selection and must reside on a filesystem that supports Unix sockets. The output directory can be on a different volume. Failure to write a receipt still triggers owned-process cleanup and makes the invocation fail.
+
+## Choose the initial server state
+
+Use `--server-state absent` to begin with no daemon at the private endpoint. The example's public API must start tmux if its operations need a server. The runner sets the environment, checks that the endpoint is absent, and launches the unchanged program. It adopts orphaned descendants for cleanup, including a daemon started by that program. A program that does not need tmux may finish without starting it.
+
+The default, `--server-state running`, starts a foreground fixture daemon before the program runs. This mode supports examples and native tests that require an existing server. Run ordinary examples under both initial conditions to check startup and reuse; a passing prestarted fixture cannot establish the startup case. Neither mode requires cleanup statements in the example. Keep cleanup helpers in examples that teach those helpers.
+
+`result.json` records `serverState` and `socketExistsBeforeExample`. `daemonPid` identifies a fixture that the runner started and is null in absent mode. The `processes` array includes accepted descendants and their exit observations. In absent mode, the program's own tmux diagnostics go to `example.log`; the runner's `tmux.log` remains empty.
+
+Each invocation creates its own endpoint directory. Parallel invocations can reuse the same example source and named-socket default without sharing a daemon. Use a separate output directory for each invocation, and exercise both initial conditions with both socket selectors.
 
 ## Endpoint selection and environment restoration
 
@@ -53,7 +63,9 @@ Sphinx still owns test groups, setup, cleanup, flags and expected output. Python
 
 ## Failure and process cleanup
 
-The supervisor starts tmux in the foreground and retains its process handle. After the command exits, it signals only its accepted child processes and reaps orphaned descendants. Cleanup uses process identities, so it does not rediscover and kill a daemon by a socket name that may have been reused.
+The supervisor retains the example's process handle and, in running mode, the foreground fixture's handle. After the command exits, it signals only its accepted child processes and reaps orphaned descendants. Cleanup uses process identities, so it does not rediscover and kill a daemon by a socket name that may have been reused.
+
+While the example runs, the supervisor also adopts orphaned descendants and reaps children that have exited. It leaves live children running. This lets a library's cleanup operation observe daemon termination through PID disappearance when its runtime lacks pidfd bindings; an exited daemon cannot remain a zombie until the example returns.
 
 The controller and supervisor reset an inherited ignored `SIGCHLD` disposition before starting children, preserving their actual exit statuses. If allocating a pidfd fails after a child starts, the invocation fails but retains that child for cleanup. The single supervisor thread can terminate and reap its own unreaped child without a pidfd; the receipt identifies that fallback as `unreaped-child`. A child-inventory error does not stop cleanup of known children, but it prevents the runner from claiming complete cleanup or removing the socket directory.
 
@@ -71,4 +83,4 @@ Run its live tests against the selected tmux executable:
 $ python3 scripts/test_example_environment.py -v
 ```
 
-The tests cover both selectors, unchanged parent environment, command failure, orphaned processes, timeout, command crash, controller interruption or crash, inherited signal state, pidfd allocation and child-inventory failures, paired body and cleanup errors, and refusal to reuse an old output directory. Each invocation records the accepted process identities and exit observations. These tests do not establish format-adapter coverage or execution of every language port.
+The tests cover both selectors, both initial server conditions, unchanged parent environment, parallel endpoint isolation, command failure, orphaned processes, timeout, command crash, controller interruption or crash, inherited signal state, pidfd allocation and child-inventory failures, paired body and cleanup errors, and refusal to reuse an old output directory. The absent-mode checks start a real daemon from the child program and leave it for the runner to retire. Each invocation records the accepted process identities and exit observations. These tests do not establish format-adapter coverage or execution of every language port.

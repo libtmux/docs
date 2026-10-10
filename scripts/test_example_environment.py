@@ -38,7 +38,7 @@ class ExampleEnvironmentTests(unittest.TestCase):
         cls.counter = 0
         print(f"Runner receipts: {cls.artifacts}", flush=True)
 
-    def launch(self, code, *, mode="path", timeout=5, extra=(), ignore_sigchld=False):
+    def launch(self, code, *, mode="path", server_state="running", timeout=5, extra=(), ignore_sigchld=False):
         type(self).counter += 1
         output = self.artifacts / f"{self.counter:02}-{self._testMethodName}"
         env = dict(os.environ, TMUX="unusable-parent-endpoint,1,0", TMUX_PANE="%999999",
@@ -47,6 +47,7 @@ class ExampleEnvironmentTests(unittest.TestCase):
         process = subprocess.Popen(
             [sys.executable, str(RUNNER), "--output-dir", str(output),
              "--socket-mode", mode, "--timeout", str(timeout), *extra,
+             "--server-state", server_state,
              "--", sys.executable, "-c", code], env=env,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             preexec_fn=(lambda: signal.signal(signal.SIGCHLD, signal.SIG_IGN)) if ignore_sigchld else None,
@@ -85,6 +86,146 @@ class ExampleEnvironmentTests(unittest.TestCase):
             self.assertTrue(process["exitObserved"], process)
             self.assertIsNotNone(process["exitCode"])
             self.assertLessEqual(process["exitObservedAt"], record["rootRemovedAt"])
+
+    def wait_example_ready(self, output):
+        deadline = time.monotonic() + 12
+        while time.monotonic() < deadline:
+            try:
+                lines = (output / "example.log").read_text().splitlines()
+                if lines:
+                    return json.loads(lines[0])
+                record = json.loads((output / "result.json").read_text())
+                if record["state"] == "complete":
+                    self.fail(f"Example did not reach its barrier: {record}")
+            except OSError as error:
+                if error.errno not in (errno.ENOENT, errno.ENODATA):
+                    raise
+            time.sleep(0.01)
+        self.fail(f"No example barrier: {output}")
+
+    @staticmethod
+    def daemon_starting_program(exit_code=0):
+        # This is a runner test: the child deliberately leaves its new daemon alive.
+        return '''import json, os, pathlib, subprocess, time
+root = pathlib.Path(os.environ["TMUX_TMPDIR"])
+if "LIBTMUX_SOCKET_PATH" in os.environ:
+    endpoint = pathlib.Path(os.environ["LIBTMUX_SOCKET_PATH"])
+    selection = ["-S", str(endpoint)]
+else:
+    name = os.environ["LIBTMUX_SOCKET_NAME"]
+    endpoint = root / f"tmux-{os.getuid()}" / name
+    selection = ["-L", name]
+assert not os.path.lexists(endpoint), "The runner prestarted a daemon"
+subprocess.run(["tmux", *selection, "-f", "/dev/null", "new-session", "-d", "-s", "example", "sleep 60"], check=True)
+pid = int(subprocess.check_output(["tmux", *selection, "display-message", "-p", "#{pid}"]))
+print(json.dumps({"pid": pid, "root": str(root), "socket": str(endpoint)}), flush=True)
+while not (root / "finish-example").exists():
+    time.sleep(0.01)
+subprocess.run(["tmux", *selection, "has-session", "-t", "=example"], check=True)
+raise SystemExit(''' + str(exit_code) + ''')
+'''
+
+    def test_absent_daemon_is_started_by_the_example_and_retired_by_the_runner(self):
+        before = dict(os.environ)
+        for mode in ("path", "name"):
+            for outcome in ("success", "body-failure", "timeout", "controller-crash"):
+                with self.subTest(mode=mode, outcome=outcome):
+                    process, output = self.launch(
+                        self.daemon_starting_program(17 if outcome == "body-failure" else 0),
+                        mode=mode, server_state="absent", timeout=1 if outcome == "timeout" else 5,
+                    )
+                    ready = self.wait_example_ready(output)
+                    descriptor = observer_pidfd(ready["pid"])
+                    try:
+                        self.assertFalse(select.select([descriptor], [], [], 0)[0])
+                        if outcome in ("success", "body-failure"):
+                            (Path(ready["root"]) / "finish-example").touch()
+                        elif outcome == "controller-crash":
+                            process.kill()
+                        process.communicate(timeout=15)
+                        record = self.wait_record(output, "complete")
+                        self.assertEqual(record["serverState"], "absent")
+                        self.assertFalse(record["socketExistsBeforeExample"])
+                        self.assertIsNone(record["daemonPid"])
+                        self.assertFalse(any(child["role"] == "tmux-daemon" for child in record["processes"]))
+                        daemon = next(child for child in record["processes"] if child["pid"] == ready["pid"])
+                        self.assertEqual(daemon["role"], "adopted-descendant")
+                        self.assertTrue(select.select([descriptor], [], [], 0)[0])
+                        self.assertEqual(record["passed"], outcome == "success")
+                        if outcome == "body-failure":
+                            self.assertEqual(record["exampleExitCode"], 17)
+                        elif outcome in ("timeout", "controller-crash"):
+                            expected = "TimeoutError" if outcome == "timeout" else "InterruptedError"
+                            self.assertEqual(record["errors"][0]["type"], expected)
+                        self.cleaned(record)
+                    finally:
+                        os.close(descriptor)
+        self.assertEqual(dict(os.environ), before)
+
+    def test_parallel_absent_daemon_runs_keep_the_other_daemon_alive(self):
+        runs = []
+        try:
+            for mode in ("path", "name"):
+                process, output = self.launch(self.daemon_starting_program(), mode=mode,
+                                              server_state="absent", timeout=10)
+                ready = self.wait_example_ready(output)
+                runs.append((process, output, ready, observer_pidfd(ready["pid"])))
+            self.assertNotEqual(runs[0][2]["pid"], runs[1][2]["pid"])
+            self.assertNotEqual(runs[0][2]["root"], runs[1][2]["root"])
+            self.assertNotEqual(runs[0][2]["socket"], runs[1][2]["socket"])
+            for index, (process, output, ready, descriptor) in enumerate(runs):
+                (Path(ready["root"]) / "finish-example").touch()
+                process.communicate(timeout=15)
+                record = self.wait_record(output, "complete")
+                self.assertTrue(record["passed"], record)
+                self.assertTrue(select.select([descriptor], [], [], 0)[0])
+                self.cleaned(record)
+                if index == 0:
+                    self.assertFalse(select.select([runs[1][3]], [], [], 0)[0])
+                    self.assertTrue(Path(runs[1][2]["socket"]).exists())
+        finally:
+            for process, _, _, descriptor in runs:
+                self.finish_controller(process)
+                os.close(descriptor)
+
+    def test_absent_mode_does_not_require_the_example_to_start_tmux(self):
+        process, output = self.launch("print('no tmux operation')", server_state="absent")
+        process.communicate(timeout=15)
+        record = self.wait_record(output, "complete")
+        self.assertTrue(record["passed"], record)
+        self.assertFalse(record["socketExistsBeforeExample"])
+        self.assertEqual([child["role"] for child in record["processes"]], ["example"])
+        self.cleaned(record)
+
+    def test_daemon_exit_is_reaped_while_the_example_is_still_running(self):
+        code = '''import os, subprocess, time
+selection = ["-S", os.environ["LIBTMUX_SOCKET_PATH"]]
+subprocess.run(["tmux", *selection, "-f", "/dev/null", "new-session", "-d", "-s", "example", "sleep 60"], check=True)
+pid = int(subprocess.check_output(["tmux", *selection, "display-message", "-p", "#{pid}"]))
+subprocess.run(["tmux", *selection, "kill-server"], check=True)
+deadline = time.monotonic() + 1
+while True:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        break
+    if time.monotonic() >= deadline:
+        raise AssertionError("The runner left the stopped daemon as a zombie while the example was alive")
+    time.sleep(0.01)
+print(pid)
+'''
+        for state in ("absent", "running"):
+            with self.subTest(state=state):
+                process, output = self.launch(code, server_state=state)
+                process.communicate(timeout=15)
+                record = self.wait_record(output, "complete")
+                self.assertTrue(record["passed"], (record, (output / "example.log").read_text()))
+                daemon_pid = int((output / "example.log").read_text())
+                daemon = next(child for child in record["processes"] if child["pid"] == daemon_pid)
+                worker = next(child for child in record["processes"] if child["role"] == "example")
+                self.assertFalse(daemon["signals"])
+                self.assertLess(daemon["exitObservedAt"], worker["exitObservedAt"])
+                self.cleaned(record)
 
     def test_defaults_are_child_only_and_select_the_owned_daemon(self):
         before = dict(os.environ)

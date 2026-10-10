@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Run an unchanged example with child-only tmux defaults on Linux.
 
-A separate supervisor owns the foreground daemon and reaps orphaned descendants.
+A separate supervisor reaps orphaned descendants, including daemons started by
+the example. It can also start a foreground daemon before the example runs.
 Closing the controller pipe, including after a controller crash, requests cleanup.
 The output directory retains the result and logs; only the supervisor's private
 socket directory is removed, after every accepted child has exited.
@@ -147,7 +148,9 @@ class Supervisor:
         self.record = dict(schema=1, runId=config["runId"], state="starting",
                            command=config["command"], cwd=config["cwd"],
                            supervisorPid=os.getpid(), controllerPid=os.getppid(),
-                           socketMode=config["socketMode"], errors=[], passed=False)
+                           socketMode=config["socketMode"],
+                           serverState=config.get("serverState", "running"),
+                           errors=[], passed=False)
 
     def save(self) -> None:
         self.record["processes"] = [child.receipt() for child in self.children]
@@ -271,23 +274,39 @@ class Supervisor:
                                environmentKeys=["TMUX_TMPDIR", "TMUX_BIN", "LIBTMUX_TMUX",
                                                 "LIBTMUX_SOCKET_" + self.config["socketMode"].upper()])
             with (self.output / "tmux.log").open("wb") as tmux_log:
-                daemon = self.start([self.config["tmux"], "-D", "-f", "/dev/null", "-S", str(socket_path)],
-                                    "tmux-daemon", tmux_log, env)
-                deadline = time.monotonic() + self.config["startupTimeout"]
-                while not socket_path.exists():
-                    if self.cancelled():
-                        raise InterruptedError("Controller interrupted during fixture startup")
-                    if daemon.poll():
-                        raise RuntimeError("The foreground tmux daemon exited during startup; see tmux.log")
-                    if time.monotonic() >= deadline:
-                        raise TimeoutError("The foreground tmux daemon did not publish its socket")
-                    time.sleep(0.01)
+                daemon = None
+                if self.record["serverState"] == "running":
+                    daemon = self.start([self.config["tmux"], "-D", "-f", "/dev/null", "-S", str(socket_path)],
+                                        "tmux-daemon", tmux_log, env)
+                    deadline = time.monotonic() + self.config["startupTimeout"]
+                    while not socket_path.exists():
+                        if self.cancelled():
+                            raise InterruptedError("Controller interrupted during fixture startup")
+                        if daemon.poll():
+                            raise RuntimeError("The foreground tmux daemon exited during startup; see tmux.log")
+                        if time.monotonic() >= deadline:
+                            raise TimeoutError("The foreground tmux daemon did not publish its socket")
+                        time.sleep(0.01)
+                elif self.record["serverState"] != "absent":
+                    raise ValueError("serverState must be absent or running")
+                # Record the condition before starting the unchanged example.
+                # lexists also rejects a dangling replacement at the private endpoint.
+                self.record["socketExistsBeforeExample"] = os.path.lexists(socket_path)
+                if daemon is None and self.record["socketExistsBeforeExample"]:
+                    raise RuntimeError("The no-daemon endpoint is occupied before the example starts")
                 with (self.output / "example.log").open("wb") as example_log:
                     worker = self.start(self.config["command"], "example", example_log, env)
-                    self.record.update(state="running", examplePid=worker.pid, daemonPid=daemon.pid)
+                    self.record.update(state="running", examplePid=worker.pid,
+                                       daemonPid=daemon.pid if daemon is not None else None)
                     self.save()
                     deadline = time.monotonic() + self.config["timeout"]
                     while not worker.poll():
+                        self.adopt_orphans()
+                        # Reap completed children without stopping live ones. A
+                        # library may wait for its closed daemon's PID to vanish.
+                        for child in self.children:
+                            if child is not worker:
+                                child.poll()
                         if self.cancelled():
                             raise InterruptedError("The controller exited or requested cancellation")
                         if time.monotonic() >= deadline:
@@ -342,6 +361,8 @@ def main() -> int:
     parser.add_argument("--output-dir", required=True, type=Path, help="New directory for logs and the result receipt")
     parser.add_argument("--cwd", type=Path, default=Path.cwd())
     parser.add_argument("--socket-mode", choices=("path", "name"), default="path")
+    parser.add_argument("--server-state", choices=("absent", "running"), default="running",
+                        help="Start with no daemon, or prestart a fixture daemon (default: running)")
     parser.add_argument("--timeout", type=positive_seconds, default=30.0)
     parser.add_argument("--startup-timeout", type=positive_seconds, default=5.0)
     parser.add_argument("--cleanup-timeout", type=positive_seconds, default=5.0)
@@ -364,6 +385,7 @@ def main() -> int:
     output.mkdir(parents=True, exist_ok=False)
     config = dict(runId=secrets.token_hex(16), command=command, cwd=str(args.cwd.resolve()),
                   tmux=str(Path(binary).resolve()), socketMode=args.socket_mode,
+                  serverState=args.server_state,
                   timeout=args.timeout, startupTimeout=args.startup_timeout,
                   cleanupTimeout=args.cleanup_timeout)
     save_json(output / "invocation.json", config)
