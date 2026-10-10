@@ -59,7 +59,113 @@ $ python3 scripts/example_environment.py \
     -- python3 -m sphinx -b doctest -E -a -W docs docs/_build/doctest
 ```
 
-Sphinx still owns test groups, setup, cleanup, flags and expected output. Python's doctest runner still owns prompts, exception matching and output checks. Markdown and Astro Markdown/MDX require a collector that selects the displayed program; invoking an Astro build alone does not execute its fences. This supervisor does not collect blocks, compare rendered source or certify that a native runner executed any tests. Those checks belong to the format adapter and its receipt.
+Sphinx still owns test groups, setup, cleanup, flags and expected output. Python's doctest runner still owns prompts, exception matching and output checks. Markdown and Astro Markdown/MDX use the native collector described below; invoking an Astro build alone does not execute its fences. This supervisor does not collect blocks, compare rendered source or certify that a native runner executed any tests. Those checks belong to the format adapter and its receipt.
+
+## Bind Markdown and Astro programs
+
+Ordinary fences keep their language name. An external JSON recipe selects the page, files and commands to test; no test tag, wrapper, socket setting or cleanup statement belongs in the copied program. For example, the Python lifecycle branch's workspace program can appear in `site/src/pages/workspace.mdx` as:
+
+````markdown
+```python
+"""Create or reuse a session and window at the ordinary configured endpoint."""
+
+from __future__ import annotations
+
+import libtmux
+
+server = libtmux.Server().ensure_running()
+session = server.find_or_create_session("libtmux-example").value
+window = session.find_or_create_window("work").value
+pane = window.panes[0]
+print(session.session_name, window.window_name, pane.pane_id, flush=True)
+```
+````
+
+This program needs a package revision that provides these lifecycle APIs. Select that revision and install its dependencies before running it. Rendering alone cannot establish compatibility with a released package.
+
+Place its test recipe in `site/examples.json`:
+
+```json
+{
+  "schema": 1,
+  "programs": [
+    {
+      "id": "workspace",
+      "document": "src/pages/workspace.mdx",
+      "rendered": "workspace/index.html",
+      "files": [
+        { "path": "workspace.py", "language": "python", "block": 0 }
+      ],
+      "commands": [["python3", "workspace.py"]],
+      "stdoutPattern": "libtmux-example work %\\d+\\n"
+    }
+  ]
+}
+```
+
+`document` is relative to the recipe; `rendered` is relative to Astro's output directory. `block` is a zero-based index among that language's native code blocks after port selection and source inclusion. A program may select several files and run several argument arrays, such as a compiler followed by the resulting executable. Every command must succeed. Optional `stdout` checks exact output; `stdoutPattern` checks the entire final command's output with a JavaScript regular expression. Earlier commands retain separate output and exit records.
+
+Bind the recipe, document and rendering configuration. Include library source and package metadata needed to identify the tested revision. This site's native `file="..."` includes also require `site/src/data/example-sources.json`; the adapter checks the actual cached entry and records its revision. Bind additional authored plugins, components and include inputs explicitly. The manifest checks declared inputs and supported source includes; it does not trace every dynamic import or external read made by arbitrary build code.
+
+```console
+$ python3 scripts/example_sources.py bind \
+    --output artifacts/workspace-binding.json \
+    --input site/examples.json site/src/pages/workspace.mdx \
+    site/astro.config.ts site/src/data/example-sources.json
+```
+
+This repository's Astro integration activates when all three variables are supplied. Use a fresh output directory and receipt:
+
+```console
+$ env LIBTMUX_EXAMPLE_BINDING="$PWD/artifacts/workspace-binding.json" \
+    LIBTMUX_EXAMPLE_RECIPE="$PWD/site/examples.json" \
+    LIBTMUX_EXAMPLE_RENDER_RECEIPT="$PWD/artifacts/workspace-render.json" \
+    pnpm --filter @libtmux/site exec astro build \
+    --outDir ../artifacts/workspace-html
+```
+
+The observer checks the native input document, collects code after source inclusion and highlighting, and checks final HTML after MDX components execute. Each collected block receives an HTML data attribute that binds its identity, order, language, displayed text and Copy payload. A matching snippet elsewhere on the page cannot replace it. The attribute adds nothing to the program users copy. The receipt records authored and rendered forms: for example, Expressive Code expands tabs, and the executed file contains the displayed and copied spaces.
+
+An enabled Astro build also creates a fresh cache beside its render receipt, with the suffix `.astro-cache`. This forces content collections to run their native collection hooks on every verification build, even when earlier builds cached the same page. Keep this directory with the run's artifacts or remove it with those artifacts afterward. Ordinary builds retain their configured cache. Repeated verification builds require distinct receipts and output directories.
+
+Plain Markdown can use the standalone native Markdown processor. Set the recipe's `document` to a `.md` file and run:
+
+```console
+$ node site/scripts/markdown-examples.mjs render \
+    --binding artifacts/workspace-binding.json \
+    --recipe site/examples.json \
+    --receipt artifacts/workspace-render.json \
+    --output-dir artifacts/workspace-html
+```
+
+The standalone command uses the site's port/source selection plugin without syntax highlighting. An Astro page must use its Astro build so its actual plugins and MDX components are checked. Keep one binding and rendering receipt for each selected configuration.
+
+Execute the recorded program under external tmux defaults:
+
+```console
+$ python3 scripts/example_environment.py \
+    --output-dir artifacts/workspace-absent-path \
+    --server-state absent --socket-mode path \
+    -- node site/scripts/markdown-examples.mjs run \
+    --binding artifacts/workspace-binding.json \
+    --render-receipt artifacts/workspace-render.json \
+    --program workspace \
+    --output-dir artifacts/workspace-program \
+    --receipt artifacts/workspace-execution.json
+```
+
+The command writes the rendered program to a fresh directory and executes it without a hidden prelude. Runtime and package selection come from the caller's environment. It rechecks bound files, final HTML and program bytes after execution. Repeat with fresh execution directories and receipts for running/absent servers and path/name selectors. The same rendering receipt can serve these runs while its inputs remain unchanged.
+
+Verify the rendering and execution records together:
+
+```console
+$ node site/scripts/markdown-examples.mjs verify \
+    --binding artifacts/workspace-binding.json \
+    --render-receipt artifacts/workspace-render.json \
+    --execution-receipt artifacts/workspace-execution.json
+```
+
+Verification rejects changed source, recipe, HTML, program files or command logs, a nonzero command, unexpected output and incomplete execution. The render and run commands refuse reused receipt paths. A process killed before completion leaves an incomplete receipt. The supervisor's separate `result.json` must also pass; source and execution checks do not establish tmux cleanup.
 
 ## Bind doctest source and expected output
 
@@ -215,7 +321,7 @@ The receipt completes after Sphinx returns, including its warning-as-error statu
 
 The adapters count executed tests in `attempted`. On Python versions whose native count includes skips, the receipt also records that original count and subtracts the native skip count. A skipped-only run fails.
 
-These adapters do not supply a generic Markdown or Astro Markdown/MDX collector. Those formats still need a native pipeline integration that binds the selected rendered program. Sphinx configuration and example imports can execute arbitrary project code; the source manifest is a drift check, and the external supervisor provides tmux lifecycle control rather than operating-system isolation.
+Sphinx configuration and example imports can execute arbitrary project code; the source manifest is a drift check, and the external supervisor provides tmux lifecycle control rather than operating-system isolation. Markdown and Astro use the separate native collector above; their receipts do not replace Sphinx's group and expected-output semantics.
 
 ## Failure and process cleanup
 
