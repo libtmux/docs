@@ -10,6 +10,11 @@ export function tmuxProsePath(path: string): string {
 /** Task links stay in the reader's port and version; explicit port links stay explicit. */
 export function proseHref(href: string, root: string, port?: string, version = 'latest', portRoot = root): string {
   if (!href.startsWith('/') || href.startsWith('//')) return href
+  const target = /^\/([^/?#]+)/.exec(href)?.[1] ?? ''
+  const tmuxReference = /^\/tmux\/[^/?#]+\/(manual|reference)(?:\/|[?#]|$)/.test(href)
+  if (Object.hasOwn(PORT_BY_SLUG, target) || tmuxReference) {
+    return `${portRoot.replace(/\/+$/, '')}${href}`
+  }
   const product = /^\/(mcp|workspace)(?:\/|[?#]|$)/.exec(href)?.[1] as 'mcp' | 'workspace' | undefined
   if (product && port && PORT_BY_SLUG[port] && productAvailable(PORT_BY_SLUG[port], product)) {
     return `${portRoot.replace(/\/+$/, '')}/${port}/${version}${href}`

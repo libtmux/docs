@@ -30,6 +30,39 @@ function exampleBytes(markdown: string): string[] {
 }
 
 describe('prose Markdown links', () => {
+  it.each(['', '/pr-42'])('keeps explicit library and manual links consistent in Japanese HTML and exports under %s', async (prefix) => {
+    vi.stubEnv('LIBTMUX_DOCS_ROOT', `${prefix}/ja`)
+    vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', `${prefix}/en`)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+    vi.stubEnv('LIBTMUX_DOCS_PORT_DEFAULTS', '{}')
+    vi.resetModules()
+    const { llmsPage: deployedPage } = await import('../src/lib/llms')
+    const { rehypeSiteRoot } = await import('../src/plugins/rehype-site-root.mjs')
+    const { remarkPortCode: deployedPortCode } = await import('../src/plugins/remark-port-code.mjs')
+    const renderer = await createMarkdownProcessor({
+      remarkPlugins: [deployedPortCode], rehypePlugins: [rehypeSiteRoot], syntaxHighlight: false,
+    })
+    for (const id of ['examples/capture-pane-output', 'guides/attaching-to-tmux', 'examples/workspace-from-file', 'concepts/queries']) {
+      const { content, frontmatter } = parseFrontmatter(readFileSync(new URL(`../src/content/docs/${id}.md`, import.meta.url), 'utf8'))
+      const entry = { id, body: content, data: frontmatter } as CollectionEntry<'docs'>
+      const exported = deployedPage(entry, 'https://libtmux.org', `${prefix}/ja/`)
+      const html = (await renderer.render(content)).code
+      const htmlLinks = [...html.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((match) => new URL(match[1], 'https://libtmux.org').href)
+      const owned = urls(content).filter((href) => {
+        const owner = href.split('/')[1]
+        return Object.hasOwn(PORT_BY_SLUG, owner) || href.startsWith('/tmux/latest/manual/')
+      })
+      expect(owned.length, id).toBeGreaterThan(0)
+      for (const href of owned) {
+        const target = `https://libtmux.org${prefix}/en${href}`
+        expect(htmlLinks, `${id} HTML`).toContain(target)
+        expect(urls(exported.body), `${id} Markdown`).toContain(target)
+        expect(urls(exported.body)).not.toContain(`https://libtmux.org${prefix}/ja${href}`)
+      }
+      expect(exampleBytes(exported.body)).toEqual(exampleBytes(resolvePortCode(content)))
+    }
+  })
+
   it.each(['', '/pr-42'])('links owned tasks from Japanese exports to their English port under %s', async (prefix) => {
     vi.stubEnv('LIBTMUX_DOCS_ROOT', `${prefix}/ja`)
     vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', `${prefix}/en`)
