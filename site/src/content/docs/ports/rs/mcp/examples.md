@@ -1,20 +1,29 @@
 ---
 title: Rust MCP examples
-description: List sessions through the Rust MCP server and inspect implementation examples.
+description: Run a complete Rust client and inspect structured session metadata over MCP.
 port: rs
 product: mcp
 sidebar:
-  label: Examples
+  label: Overview
+  group: Examples
   order: 3
+cards:
+  - label: List sessions through MCP
+    href: inspect-sessions/
+    body: Run an embedded client and server against a private tmux daemon, then close owned resources.
+  - label: Connect an MCP client
+    href: ../guides/connect-client/
+    body: Install the executable and configure a client to launch it.
 ---
 
-Connect the server using the [setup guide](../guides/), then call
-[`list_sessions`](../tools/list_sessions/) from your MCP client.
+The [session example](inspect-sessions/) includes the complete Cargo project,
+program, setup commands, and expected output. It creates its own tmux server.
+The [connection guide](../guides/connect-client/) configures an existing MCP
+client to launch the executable instead.
 
 ## List sessions
 
-This is the `params` object for an MCP `tools/call` request. Send it
-through the connected client:
+Send this `params` object through a connected client's MCP `tools/call` method:
 
 ```json
 {
@@ -23,53 +32,29 @@ through the connected client:
 }
 ```
 
-Use the returned session IDs when choosing a window or pane. The
-[tool reference](../tools/list_sessions/) describes this port's result
-and optional arguments.
+Check whether the result reports a tool error before reading its structured
+content. Use the returned IDs to choose a window or pane. The
+[list_sessions reference](../tools/list_sessions/) describes the result.
 
 ## Internals
 
-The following examples are for applications that embed or extend the server.
-Installing and connecting an MCP client does not require this code.
+The complete example embeds both protocol endpoints in one Rust process.
+They exchange JSON-RPC over an in-memory stream and perform normal tool
+discovery. An installed MCP client is not needed to run it.
 
-The crate includes a complete stdio server with its tool selection chosen in Rust
-code. Use it when the offered surface is part of the embedding
-application's policy.
+<span id="embed-a-read-only-surface"></span>
 
-### Embed a read-only surface
+### Choose tools in Rust
 
-```rust file="crates/tmux-mcp/examples/readonly.rs"
-```
+The example supplies the `inspect` selection to the embedded server. It checks
+that discovery contains the session-listing tool and excludes pane input.
+The [selection topic](../topics/tool-selection/) describes other combinations.
 
-The example waits until the transport ends. It selects libtmux's ambient
-server, so choose the tmux environment before launching it. Application
-code can instead construct a `Server` for its own endpoint.
+<span id="run-the-source-example"></span>
 
-### Run the source example
+### Run the program
 
-From the Rust repository with its toolchain and tmux installed:
-
-```console
-$ cargo run \
-    -p tmux-mcp \
-    --example readonly
-```
-
-The process speaks MCP on stdin and stdout. It writes the selected tool
-count to stderr.
-
-To inspect the configured tools and output schemas without
-starting a tmux server:
-
-```console
-$ cargo run \
-    -p tmux-mcp \
-    --example surface
-```
-
-The [readonly source](https://github.com/libtmux/libtmux-rs/blob/f0e37052c232636b61d095817046e6bfc8f2ca40/crates/tmux-mcp/examples/readonly.rs)
-and [surface source](https://github.com/libtmux/libtmux-rs/blob/f0e37052c232636b61d095817046e6bfc8f2ca40/crates/tmux-mcp/examples/surface.rs)
-are shipped crate examples. The crate's test suite also drives an isolated
-real tmux server. Rendering this source is not an execution of the example.
-
-See [Topics](../topics/) for command deadlines and tool selection.
+Follow the [complete setup](inspect-sessions/#run-the-example) in a fresh
+directory. The program prints both session names, closes the protocol
+endpoints, stops its tmux daemon, and verifies that the socket has closed.
+Operation and cleanup errors both produce a failing exit status.

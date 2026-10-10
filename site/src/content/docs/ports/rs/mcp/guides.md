@@ -1,63 +1,41 @@
 ---
-title: Connect a Rust MCP client
-description: Install tmux-mcp, select a socket explicitly, and verify the chosen tool selection.
+title: Rust MCP guides
+description: Install tmux-mcp, choose a socket, and check the client's tool selection.
 port: rs
 product: mcp
 sidebar:
-  label: Guides
-  order: 2
+  label: Overview
+  group: Guides
+  order: 1
+cards:
+  - label: Connect a client
+    href: connect-client/
+    body: Install the pinned executable, configure the client, and check discovery and socket ownership.
 ---
 
-Install the `tmux-mcp` executable, then let your MCP client launch it.
-Rust 1.88 or newer is required to build the crate, and tmux 3.2a or newer
-must be on the runtime path.
+The [connection guide](connect-client/) includes installation, client
+configuration, and checks for the selected tmux server. It uses the same
+source revision as the MCP reference.
 
 ## Install and connect
 
-Cargo requires an explicit prerelease version:
+Let the MCP client launch `tmux-mcp` and communicate over stdin and stdout.
+Choose the tool selection in the client configuration. For an existing tmux
+server, select its socket explicitly.
 
-```console
-$ cargo install \
-    --version 0.1.0-alpha.13 \
-    tmux-mcp
-```
-
-Use a named socket and an inspection toolset:
-
-```console
-$ LIBTMUX_TOOLSETS=inspect tmux-mcp \
-    --socket-name docs-agent
-```
-
-The executable waits for MCP requests. A client using `mcpServers` can
-launch the same command:
-
-```json
-{
-  "mcpServers": {
-    "tmux-rust": {
-      "command": "tmux-mcp",
-      "args": ["--socket-name", "docs-agent"],
-      "env": {"LIBTMUX_TOOLSETS": "inspect"}
-    }
-  }
-}
-```
-
-Without a selector, it uses the dedicated `libtmux-mcp` socket with a
-minimal configuration. `--socket` selects an explicit socket path.
+The [installation steps](connect-client/#install-and-connect) use the tested
+Rust toolchain and Git revision. The [socket settings](connect-client/#connect-to-an-existing-server)
+distinguish an existing server from the launcher's default dedicated daemon.
 
 ## Verify the selection
 
-Ask the client to list tools and read `tmux://capabilities`. The `inspect`
-toolset includes discovery, capture, and bounded observation. Add `execute`
-for command execution and `teardown` for removal. Client approval uses
-MCP annotations; the retired safety and confirmation flags fail startup.
+Ask the client to list tools and read `tmux://capabilities`. Its tool list and
+socket report describe this connection. The [tool-selection topic](../topics/tool-selection/)
+explains how groups, exact names, and exclusions combine.
 
 ## Diagnose failures
 
-Read stderr for launcher diagnostics; stdout carries MCP. Use
-`tmux-mcp --help` for supported arguments. If a target disappeared,
-re-list it. Inspect partial effects before submitting another change.
-
-[Executable contract](https://github.com/libtmux/libtmux-rs/blob/f0e37052c232636b61d095817046e6bfc8f2ca40/crates/tmux-mcp/README.md).
+Read the client's server log for stderr. The
+[startup checks](connect-client/#diagnose-startup-failures) cover invalid
+selection, conflicting socket settings, and executable lookup. Reconnect after
+changing the environment; the server chooses these settings once at startup.
