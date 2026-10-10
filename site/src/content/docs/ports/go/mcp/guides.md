@@ -1,68 +1,38 @@
 ---
-title: Connect a Go MCP client
-description: Install libtmux-mcp, inspect its effective tool selection, and diagnose a selected socket.
+title: Go MCP guides
+description: Install the executable, select a tmux endpoint, and diagnose an MCP client's connection.
 port: go
 product: mcp
 sidebar:
-  label: Guides
+  label: Overview
+  group: Guides
   order: 2
+cards:
+  - label: Connect a client
+    href: connect-client/
+    body: Install the pinned executable and configure its socket and tools.
 ---
 
-Install the Go MCP command and verify its effective configuration before
-connecting a client. Go 1.26 or newer is required to build it.
+Let your MCP client start `libtmux-mcp` as a subprocess. The
+[connection guide](connect-client/) covers installation, a dedicated server,
+and selecting an existing socket.
 
 ## Install the command
 
-```console
-$ go install github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@latest
-```
-
-Make Go's binary installation directory available to the MCP client's
-`PATH`. The server also needs tmux 3.2a or newer.
+Build the executable with Go 1.26 or newer and run it with tmux 3.2a or newer.
+Follow the [installation steps](connect-client/#install-the-command), or use
+the [complete client example](../examples/inspect-sessions/) to install into
+an isolated project directory.
 
 ## Inspect the selection
 
-This reports the effective tool list without resolving or contacting tmux:
-
-```console
-$ LIBTMUX_TOOLSETS=inspect libtmux-mcp -tools
-```
-
-Diagnose the endpoint separately:
-
-```console
-$ libtmux-mcp \
-    -doctor \
-    -socket-name docs-agent
-```
-
-The report includes the tmux version, endpoint, topology, and caller
-context. A daemon that has not started yet is not a configuration error.
+The launcher's `-tools` report checks whether the selected tmux server is
+answering, without starting it. Use the client's socket and environment when
+[checking the configuration](connect-client/#inspect-the-selection).
 
 ## Connect a client
 
-For a client using `mcpServers`:
-
-```json
-{
-  "mcpServers": {
-    "tmux-go": {
-      "command": "libtmux-mcp",
-      "args": ["-socket-name", "docs-agent"],
-      "env": {
-        "LIBTMUX_TOOLSETS": "inspect"
-      }
-    }
-  }
-}
-```
-
-Add the `execute` toolset when the client needs to create tmux objects
-or run commands. Reconnect after changing startup configuration.
-
-Choose a socket path or name; conflicting selectors fail startup.
-`-binary` selects the tmux executable. A client's curated environment
-may have a different `PATH` or locale from your shell; compare the
-doctor report with the tmux binary that started your sessions.
-
-[Launcher reference](https://github.com/libtmux/libtmux-go/blob/52968a3181c1c9e6d1b26c565d4b170968ae61c0/mcp/cmd/libtmux-mcp/README.md).
+Configure one socket and the [tools you need](../topics/tool-selection/) in
+the client's startup environment. Keep stdout available for MCP messages;
+read startup errors in the client's stderr log. Use the
+[startup checks](connect-client/#diagnose-startup) when a connection fails.

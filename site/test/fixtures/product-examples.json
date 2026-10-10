@@ -422,6 +422,74 @@
         "dotnet tool install \\\n    --tool-path .tools \\\n    --version 0.0.0-alpha.20 \\\n    LibTmux.Mcp",
         "dotnet run --project McpExample.csproj --no-launch-profile"
       ]
+    },
+    {
+      "port": "go",
+      "language": "go",
+      "sourceRevision": "6e7420927f4cb717fe089a710328e44e8d551025",
+      "sourceRepository": "libtmux/libtmux-go",
+      "files": [
+        {
+          "name": "go.mod",
+          "sha256": "96275c7f48d59c0b5fab40050b874c791afa26c33e91caa75c2f86d8bfe96247"
+        },
+        {
+          "name": "main.go",
+          "sha256": "4bf5af2cacf59ee249faf5b1a03c90989a4630f677bf2269333cdb3d23a8d992"
+        }
+      ],
+      "toolchain": [
+        "Go 1.26.5",
+        "github.com/libtmux/libtmux-go v0.0.1-alpha.9",
+        "github.com/libtmux/libtmux-go/mcp v0.0.1-alpha.12",
+        "github.com/modelcontextprotocol/go-sdk v1.6.1"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/go/mcp/examples/inspect-sessions",
+      "shellRecipe": [
+        "mkdir inspect-mcp-sessions",
+        "cd inspect-mcp-sessions",
+        "GOBIN=\"$PWD/.tools\" go install \\\n    github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@v0.0.1-alpha.12",
+        "go mod tidy",
+        "go run ."
+      ]
+    },
+    {
+      "port": "go",
+      "language": "go",
+      "sourceRevision": "6e7420927f4cb717fe089a710328e44e8d551025",
+      "sourceRepository": "libtmux/libtmux-go",
+      "files": [
+        {
+          "name": "go.mod",
+          "sha256": "08431445630b8c2f989a6294e939a9746857bf2d88e28903cb28a72d67461fd0"
+        },
+        {
+          "name": "main.go",
+          "sha256": "463b621f2e258be2bb76bd510ef29477d2100b97d531bcfde816c7b54717d596"
+        }
+      ],
+      "toolchain": [
+        "Go 1.26.5",
+        "github.com/libtmux/libtmux-go v0.0.1-alpha.9",
+        "github.com/libtmux/libtmux-go/mcp v0.0.1-alpha.12",
+        "github.com/modelcontextprotocol/go-sdk v1.6.1"
+      ],
+      "tmux": [
+        "3.2a",
+        "3.7c"
+      ],
+      "page": "ports/go/mcp/examples/run-command",
+      "shellRecipe": [
+        "mkdir run-mcp-command",
+        "cd run-mcp-command",
+        "GOBIN=\"$PWD/.tools\" go install \\\n    github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@v0.0.1-alpha.12",
+        "go mod tidy",
+        "go run ."
+      ]
     }
   ],
   "rootWorkspace": {

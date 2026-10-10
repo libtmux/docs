@@ -1,48 +1,43 @@
 ---
 title: Go MCP topics
-description: Select toolsets, inspect the pinned endpoint, and observe bounded commands.
+description: Choose tools, inspect the pinned endpoint, and interpret command completion and output.
 port: go
 product: mcp
 sidebar:
-  label: Topics
+  label: Overview
+  group: Topics
   order: 1
+cards:
+  - label: Tool selection
+    href: tool-selection/
+    body: Combine toolsets, exact tool names, and exclusions at startup.
+  - label: Waits and output
+    href: waits-and-output/
+    body: Distinguish tool errors, exit status, timeouts, and incomplete output.
 ---
 
 The server selects one tmux endpoint and freezes its offered tools at startup.
-Read `tmux://capabilities` to inspect that endpoint's provenance and the
-effective tool selection.
+These choices determine what the connected client can call.
 
 ## Select tools
 
-`LIBTMUX_TOOLSETS` selects any combination of `inspect`, `manage`,
-`execute`, and `teardown`. `LIBTMUX_TOOLS` adds exact names;
-`LIBTMUX_EXCLUDE_TOOLS` removes names last. Unknown names and malformed
-lists fail startup.
-
-Use `inspect` for discovery and terminal reads. Add `manage` for topology
-changes and `execute` for input and process creation. Select `teardown`
-explicitly when removal is needed on an existing or explicitly selected
-server. A default dedicated daemon can receive teardown tools when the
-launcher verifies its own minimal-configuration provenance.
-
-Tool selection shapes the callable interface. Execute tools act with the
-tmux user's authority; selecting a socket does not confine shell effects.
+Use `inspect` for hierarchy and terminal reads, `manage` for topology changes,
+and `execute` for input and command execution. Select `teardown` when removal
+is needed. [Tool selection](tool-selection/) explains defaults, individual
+names, exclusions, and the distinction between missing and failing tools.
 
 ## Observe a command
 
-Use [`run_shell_command`](../tools/run_shell_command/) for a bounded command
-and its exit status. A deadline ends the wait; the pane command may still
-be running. Inspect it before submitting another command.
-
-Use [`capture_since`](../tools/capture_since/) to collect subsequent output
-and [`wait_for_text`](../tools/wait_for_text/) for an expected terminal
-condition. Their schemas and result limits are in the [tool reference](../tools/).
-The current catalog has no detached job-handle API.
+[`run_shell_command`](../tools/run_shell_command/) waits for a bounded command
+and reports completion separately from its exit status and captured output.
+A timeout does not establish that the command stopped. Read
+[Waits and output](waits-and-output/) before deciding whether to submit more
+input to that pane.
 
 ## Resources and prompts
 
-The server exposes the static `tmux://capabilities` resource. Read live
-hierarchy and terminal state through tools. The current surface has no
-workflow prompts or dynamic resource templates.
-
-[Configuration and lifecycle contract](https://github.com/libtmux/libtmux-go/blob/52968a3181c1c9e6d1b26c565d4b170968ae61c0/mcp/README.md).
+`tmux://capabilities` reports the startup endpoint and effective tools. Its
+payload is static; use tools to read live hierarchy and terminal state. The
+server offers no workflow prompts, dynamic resource templates, or detached
+job handles. The [module contract](https://github.com/libtmux/libtmux-go/blob/6e7420927f4cb717fe089a710328e44e8d551025/mcp/README.md)
+describes the resource and capability metadata.

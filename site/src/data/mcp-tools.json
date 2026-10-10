@@ -28268,8 +28268,8 @@
           "wireName": "call_read_tools_batch",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 303
           },
@@ -29484,8 +29484,8 @@
           "wireName": "capture_pane",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 191
           },
@@ -29631,8 +29631,8 @@
           "wireName": "capture_since",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 199
           },
@@ -29796,10 +29796,10 @@
           "wireName": "clear_pane_scrollback",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 563
+            "line": 565
           },
           "description": "Delete tmux state; accepts no command payload. Deletes retained scrollback from one pane.",
           "schemaStatus": "runtime",
@@ -29890,10 +29890,10 @@
           "wireName": "create_session",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 433
+            "line": 435
           },
           "description": "Start a pane's configured process; accepts no command payload. Creates a detached session whose first pane runs the configured process.",
           "schemaStatus": "runtime",
@@ -30023,10 +30023,10 @@
           "wireName": "create_window",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 450
+            "line": 452
           },
           "description": "Start a pane's configured process; accepts no command payload. Creates a window whose first pane runs the configured process.",
           "schemaStatus": "runtime",
@@ -30169,8 +30169,8 @@
           "wireName": "find_pane_by_position",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 229
           },
@@ -30343,8 +30343,8 @@
           "wireName": "get_pane_info",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 174
           },
@@ -30643,8 +30643,8 @@
           "wireName": "get_server_info",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 151
           },
@@ -30879,8 +30879,8 @@
           "wireName": "get_session_info",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 158
           },
@@ -31115,8 +31115,8 @@
           "wireName": "get_tmux_variables",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 251
           },
@@ -31230,8 +31230,8 @@
           "wireName": "get_window_info",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 166
           },
@@ -31562,10 +31562,10 @@
           "wireName": "kill_pane",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 568
+            "line": 570
           },
           "description": "Delete tmux state; accepts no command payload. Deletes one pane and ends its process.",
           "schemaStatus": "runtime",
@@ -31673,10 +31673,10 @@
           "wireName": "kill_session",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 576
+            "line": 578
           },
           "description": "Delete tmux state; accepts no command payload. Deletes one session and every window and pane in it.",
           "schemaStatus": "runtime",
@@ -31776,10 +31776,10 @@
           "wireName": "kill_window",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 572
+            "line": 574
           },
           "description": "Delete tmux state; accepts no command payload. Deletes one window and every pane in it.",
           "schemaStatus": "runtime",
@@ -31887,8 +31887,8 @@
           "wireName": "list_panes",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 143
           },
@@ -32193,8 +32193,8 @@
           "wireName": "list_sessions",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 127
           },
@@ -32341,8 +32341,8 @@
           "wireName": "list_windows",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 135
           },
@@ -32517,10 +32517,10 @@
           "wireName": "move_window",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 377
+            "line": 379
           },
           "description": "Change tmux state; no client-supplied executable input. Moves a window to another session, optionally at an index.",
           "schemaStatus": "runtime",
@@ -32652,10 +32652,10 @@
           "wireName": "paste_text",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 525
+            "line": 527
           },
           "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Pastes literal text only to its target; optional Enter appends one newline to the same private buffer.",
           "schemaStatus": "runtime",
@@ -32773,8 +32773,8 @@
           "wireName": "rename_session",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 333
           },
@@ -32888,8 +32888,8 @@
           "wireName": "rename_window",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 341
           },
@@ -33003,10 +33003,10 @@
           "wireName": "resize_pane",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 370
+            "line": 372
           },
           "description": "Change tmux state; no client-supplied executable input. Sets a pane's width, height, or both.",
           "schemaStatus": "runtime",
@@ -33130,10 +33130,10 @@
           "wireName": "resize_window",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 363
+            "line": 365
           },
           "description": "Change tmux state; no client-supplied executable input. Sets a window's width, height, or both.",
           "schemaStatus": "runtime",
@@ -33257,10 +33257,10 @@
           "wireName": "respawn_pane",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 479
+            "line": 481
           },
           "description": "Start a pane's configured process; accepts no command payload. Kills the pane's current process and starts its configured process again.",
           "schemaStatus": "runtime",
@@ -33369,10 +33369,10 @@
           "wireName": "run_shell_command",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 491
+            "line": 493
           },
           "description": "Run a shell command in a pane with your user's permissions. Runs one command you author in a pane that is not synchronized with others, rechecks the pane just before sending, and waits for it to finish, reporting its exit status.",
           "schemaStatus": "runtime",
@@ -33589,8 +33589,8 @@
           "wireName": "search_panes",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 218
           },
@@ -33968,18 +33968,18 @@
           "wireName": "select_layout",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 357
           },
-          "description": "Change tmux state; no client-supplied executable input. Applies a built-in tmux layout, or a saved layout string from get_window_info.",
+          "description": "Change tmux state; no client-supplied executable input. Applies a named layout, a unique abbreviation for the running tmux version, or a saved layout from get_window_info. Invalid syntax is rejected before window lookup; tmux validates geometry when applying the layout.",
           "schemaStatus": "runtime",
           "inputSchema": {
             "additionalProperties": false,
             "properties": {
               "layout": {
-                "description": "a built-in tmux layout name, or a saved layout string from get_window_info",
+                "description": "a named layout, a unique abbreviation for the running tmux version, or a saved layout from get_window_info",
                 "type": "string"
               },
               "window_id": {
@@ -34023,13 +34023,13 @@
                 "openWorldHint": true,
                 "readOnlyHint": false
               },
-              "description": "Change tmux state; no client-supplied executable input. Applies a built-in tmux layout, or a saved layout string from get_window_info.",
+              "description": "Change tmux state; no client-supplied executable input. Applies a named layout, a unique abbreviation for the running tmux version, or a saved layout from get_window_info. Invalid syntax is rejected before window lookup; tmux validates geometry when applying the layout.",
               "inputLiteralization": {},
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
                   "layout": {
-                    "description": "a built-in tmux layout name, or a saved layout string from get_window_info",
+                    "description": "a named layout, a unique abbreviation for the running tmux version, or a saved layout from get_window_info",
                     "type": "string"
                   },
                   "window_id": {
@@ -34081,8 +34081,8 @@
           "wireName": "select_pane",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 353
           },
@@ -34176,8 +34176,8 @@
           "wireName": "select_window",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 349
           },
@@ -34271,10 +34271,10 @@
           "wireName": "send_keys",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 504
+            "line": 506
           },
           "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Sends keys to a pane and to every pane synchronize-panes links it with; the ids reported are the panes checked before sending, not proof that each one received the keys.",
           "schemaStatus": "runtime",
@@ -34430,10 +34430,10 @@
           "wireName": "send_keys_batch",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 515
+            "line": 517
           },
           "description": "Send input to a pane's program; a shell that receives it runs it with your user's permissions. Sends up to sixty-four key sequences in order, rechecking before each one which panes synchronize-panes links to its target.",
           "schemaStatus": "runtime",
@@ -34677,10 +34677,10 @@
           "wireName": "set_history_limit",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 420
+            "line": 422
           },
           "description": "Change tmux state; no client-supplied executable input. Sets a bounded integer scrollback limit for future panes in a session.",
           "schemaStatus": "runtime",
@@ -34805,10 +34805,10 @@
           "wireName": "set_mouse_enabled",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 415
+            "line": 417
           },
           "description": "Change tmux state; no client-supplied executable input. Enables or disables tmux mouse handling.",
           "schemaStatus": "runtime",
@@ -34917,10 +34917,10 @@
           "wireName": "set_pane_title",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 389
+            "line": 391
           },
           "description": "Change tmux state; no client-supplied executable input. Replaces a pane's literal title.",
           "schemaStatus": "runtime",
@@ -35032,10 +35032,10 @@
           "wireName": "set_synchronize_panes",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 536
+            "line": 538
           },
           "description": "Change tmux state; no client-supplied executable input. Sets the window synchronization default (synchronize-panes); pane-level overrides still decide which panes receive later input.",
           "schemaStatus": "runtime",
@@ -35158,8 +35158,8 @@
           "wireName": "show_environment",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 275
           },
@@ -35328,8 +35328,8 @@
           "wireName": "show_hooks",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 283
           },
@@ -35492,8 +35492,8 @@
           "wireName": "show_option",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 263
           },
@@ -35657,10 +35657,10 @@
           "wireName": "signal_channel",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 410
+            "line": 412
           },
           "description": "Change tmux state; no client-supplied executable input. Signals one server-wide tmux channel.",
           "schemaStatus": "runtime",
@@ -35751,8 +35751,8 @@
           "wireName": "snapshot_pane",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 210
           },
@@ -36050,10 +36050,10 @@
           "wireName": "split_window",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 466
+            "line": 468
           },
           "description": "Start a pane's configured process; accepts no command payload. Creates a pane whose configured process starts after the split.",
           "schemaStatus": "runtime",
@@ -36185,10 +36185,10 @@
           "wireName": "swap_pane",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 384
+            "line": 386
           },
           "description": "Change tmux state; no client-supplied executable input. Swaps the positions of two panes.",
           "schemaStatus": "runtime",
@@ -36298,10 +36298,10 @@
           "wireName": "wait_for_channel",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
-            "line": 400
+            "line": 402
           },
           "description": "Change tmux state; no client-supplied executable input. Waits on tmux's channel state with a bounded timeout.",
           "schemaStatus": "runtime",
@@ -36424,8 +36424,8 @@
           "wireName": "wait_for_text",
           "source": {
             "repo": "libtmux/libtmux-go",
-            "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-            "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+            "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+            "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
             "file": "mcp/manifest_catalog.go",
             "line": 239
           },
@@ -36703,8 +36703,8 @@
       "selectable": true,
       "source": "mcp",
       "repo": "libtmux/libtmux-go",
-      "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
-      "extractedRevision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+      "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
+      "extractedRevision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
       "selection": {
         "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
       },
@@ -36732,7 +36732,7 @@
         "resourceTemplates": [],
         "serverInfo": {
           "name": "libtmux",
-          "version": "v0.0.1-alpha.11"
+          "version": "v0.0.1-alpha.12"
         }
       }
     },
