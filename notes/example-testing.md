@@ -14,6 +14,8 @@ The output directory must be new. `example.log` contains the example's output, `
 
 The socket directory follows Python's `TMPDIR` selection and must reside on a filesystem that supports Unix sockets. The output directory can be on a different volume. Failure to write a receipt still triggers owned-process cleanup and makes the invocation fail.
 
+Before launching a child, the runner saves the private directory's path and its device/inode pair in `result.json` as `root` and `rootIdentity`. It records socket selection before fixture startup and the initial endpoint condition before the example starts. These fields identify the resources used by that invocation; they do not authorize deleting a directory without checking its current identity and accepted process exits.
+
 ## Choose the initial server state
 
 Use `--server-state absent` to begin with no daemon at the private endpoint. The example's public API must start tmux if its operations need a server. The runner sets the environment, checks that the endpoint is absent, and launches the unchanged program. It adopts orphaned descendants for cleanup, including a daemon started by that program. A program that does not need tmux may finish without starting it.

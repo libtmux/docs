@@ -190,6 +190,43 @@ class ChildDescriptorTests(unittest.TestCase):
             child.descriptor = None
 
 
+class RootReceiptTests(unittest.TestCase):
+    def test_root_identity_is_saved_before_the_first_process(self):
+        for state in ("absent", "running"):
+            for mode in ("path", "name"):
+                with self.subTest(state=state, mode=mode):
+                    with tempfile.TemporaryDirectory(prefix="example-receipt-test-") as directory:
+                        output = Path(directory)
+                        config = dict(runId="receipt-test", command=[sys.executable, "-c", "pass"],
+                                      cwd=directory, socketMode=mode, serverState=state,
+                                      tmux="/unused/tmux", timeout=1, startupTimeout=1,
+                                      cleanupTimeout=1)
+                        supervisor = runner.Supervisor(config, output)
+                        observed = []
+
+                        def before_dispatch(*args, **kwargs):
+                            receipt = json.loads((output / "result.json").read_text())
+                            identity = supervisor.root.lstat()
+                            observed.append((receipt, supervisor.root,
+                                             dict(device=identity.st_dev, inode=identity.st_ino)))
+                            raise RuntimeError("Stopped before creating a child")
+
+                        with patch.object(runner.subprocess, "Popen", side_effect=before_dispatch):
+                            self.assertEqual(supervisor.run(), 1)
+                        self.assertEqual(len(observed), 1)
+                        receipt, root, identity = observed[0]
+                        self.assertEqual(receipt["root"], str(root))
+                        self.assertEqual(receipt["rootIdentity"], identity)
+                        self.assertEqual(receipt["processes"], [])
+                        self.assertTrue(Path(receipt["socket"]).is_relative_to(root))
+                        if state == "absent":
+                            self.assertFalse(receipt["socketExistsBeforeExample"])
+                        final = json.loads((output / "result.json").read_text())
+                        self.assertEqual(final["rootIdentity"], identity)
+                        self.assertTrue(final["rootRemoved"])
+                        self.assertFalse(root.exists())
+
+
 class ExampleEnvironmentTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

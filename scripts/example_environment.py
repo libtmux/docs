@@ -264,6 +264,9 @@ class Supervisor:
             self.root = Path(tempfile.mkdtemp(prefix="libtmux-example-"))
             identity = self.root.lstat()
             self.root_identity = (identity.st_dev, identity.st_ino)
+            self.record.update(root=str(self.root),
+                               rootIdentity=dict(device=identity.st_dev, inode=identity.st_ino))
+            self.save()
             env = dict(os.environ)
             for name in ("TMUX", "TMUX_PANE", "LIBTMUX_SOCKET_PATH", "LIBTMUX_SOCKET_NAME"):
                 env.pop(name, None)
@@ -281,9 +284,10 @@ class Supervisor:
                 directory.mkdir(mode=0o700)
                 socket_path = directory / "example"
                 env["LIBTMUX_SOCKET_NAME"] = "example"
-            self.record.update(root=str(self.root), socket=str(socket_path),
+            self.record.update(socket=str(socket_path),
                                environmentKeys=["TMUX_TMPDIR", "TMUX_BIN", "LIBTMUX_TMUX",
                                                 "LIBTMUX_SOCKET_" + self.config["socketMode"].upper()])
+            self.save()
             with (self.output / "tmux.log").open("wb") as tmux_log:
                 daemon = None
                 if self.record["serverState"] == "running":
@@ -305,6 +309,7 @@ class Supervisor:
                 self.record["socketExistsBeforeExample"] = os.path.lexists(socket_path)
                 if daemon is None and self.record["socketExistsBeforeExample"]:
                     raise RuntimeError("The no-daemon endpoint is occupied before the example starts")
+                self.save()
                 with (self.output / "example.log").open("wb") as example_log:
                     worker = self.start(self.config["command"], "example", example_log, env)
                     self.record.update(state="running", examplePid=worker.pid,
