@@ -95,6 +95,14 @@ describe('product context in prose', () => {
     expect(decideFilePath('dev.yaml', { before: 'Save this description as ' }, {})).toEqual({ kind: 'skip', why: 'file created by the example' })
     expect(decideFilePath('missing.yaml', { before: 'The implementation reads ' }, {}).kind).toBe('unresolved')
   })
+
+  it('does not resolve a missing source path against another port', () => {
+    const trees = { rs: new Set(['src/server.rs']), py: new Set(['src/libtmux/pane.py']) }
+    expect(decideFilePath('src/libtmux/pane.py', { pagePort: 'rs' }, trees).kind).toBe('unresolved')
+    expect(decideFilePath('src/libtmux/pane.py', { pagePort: 'rs', before: 'Python uses ' }, trees))
+      .toMatchObject({ kind: 'link', port: 'py' })
+    expect(decideFilePath('src/libtmux/pane.py', {}, trees)).toMatchObject({ kind: 'link', port: 'py' })
+  })
 })
 
 it('extracts exported Go error variables with their source documentation', async () => {

@@ -12,30 +12,79 @@ tableOfContents: true
 Object fields expose values from tmux's
 [FORMATS](https://man.openbsd.org/tmux.1#FORMATS), such as `pane_id`,
 `window_zoomed_flag`, and `session_name`. The available fields depend on the
-port, object scope, tmux version, and data requested by the read.
+accessor, object scope, tmux version, and data requested by the read.
 
 A token needs the right **scope** and **tmux version**. For example, a pane
 token needs a pane context, and a token added after your tmux release may be
-absent. Ports represent absence with optional values, flags, or errors, as
+absent. Check the accessor's result before using a field that can be missing, as
 described below.
 
 <a id="the-absence-idiom-per-port"></a>
 
 ## Handling an absent field
 
-| Port | What an excluded field looks like |
-|------|--------------------------------------|
-<!-- port:py -->| Python | the attribute is `None` |
-<!-- /port --><!-- port:ts -->| TypeScript | the property is `undefined` |
-<!-- /port --><!-- port:go -->| Go | a two-return-value accessor: `pane.DeadSignal()` returns `(string, bool)`: Go's own "comma ok" idiom |
-<!-- /port --><!-- port:rs -->| Rust | `Option<T>`; consult the reference for the accessor name |
-<!-- /port --><!-- port:java -->| Java | `Optional<T>`: `pane.floating()` returns `Optional<Boolean>`, empty when the field isn't populated |
-<!-- /port --><!-- port:csharp -->| C# | nullable values or `IncompleteSnapshotException`, depending on whether the value or captured field is absent |
-<!-- /port --><!-- port:cxx -->
-| C++ | fixed, non-optional fields; see below for other tokens |
+<!-- port:py -->
+<!-- port:root -->
+### Python
 <!-- /port -->
+An excluded field has the value `None`.
+<!-- /port -->
+
+<!-- port:ts -->
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+An excluded field has the value `undefined`.
+<!-- /port -->
+
+<!-- port:go -->
+<!-- port:root -->
+### Go
+<!-- /port -->
+Accessors return a value and a boolean when a field can be unavailable.
+For example, `Pane.DeadSignal` returns `(string, bool)`; check the boolean
+before using the string.
+<!-- /port -->
+
+<!-- port:rs -->
+<!-- port:root -->
+### Rust
+<!-- /port -->
+Some handle accessors return `Option<T>` for unavailable values.
+Check the reference for the selected accessor and its return type.
+<!-- /port -->
+
+<!-- port:java -->
+<!-- port:root -->
+### Java
+<!-- /port -->
+Accessors use `Optional<T>` for fields that may be unavailable.
+For example, `Pane.floating` returns an empty `Optional<Boolean>` when
+that field is not populated.
+<!-- /port -->
+
+<!-- port:csharp -->
+<!-- port:root -->
+### C#
+<!-- /port -->
+A nullable value represents an absent value. A field that was not
+captured can instead raise `IncompleteSnapshotException`.
+<!-- /port -->
+
+<!-- port:cxx -->
+<!-- port:root -->
+### C++
+<!-- /port -->
+Handles expose fixed, non-optional fields. See below for accessing
+tokens outside that fixed set.
+<!-- /port -->
+
 <!-- port:swift -->
-| Swift | fixed, non-optional fields; see below for other tokens |
+<!-- port:root -->
+### Swift
+<!-- /port -->
+Snapshots expose fixed, non-optional fields. See below for accessing
+tokens outside that fixed set.
 <!-- /port -->
 
 These examples read optional fields, including `pane_dead_signal` on tmux 3.3 or
@@ -59,12 +108,12 @@ pane.floating(); // Optional<Boolean>: a different field, same idiom: empty
 ```
 
 <!-- port:rs -->
-Rust's `formats.rs` marks this token as optional. Consult its generated
+`crates/libtmux/src/formats.rs` marks this token as optional. Consult the
 reference for the accessor name.
 <!-- /port -->
 
 <!-- port:csharp -->
-.NET also distinguishes missing values from incomplete captures. `Pane.Title` is
+Missing values differ from incomplete captures. `Pane.Title` is
 nullable because tmux may report no title. `Pane.Height`, `.Width`, and `.Index`
 throw `IncompleteSnapshotException` when the read that produced the handle did
 not request those fields. A handle resolved by ID alone may therefore lack
@@ -84,22 +133,32 @@ int height = pane.Height;     // throws IncompleteSnapshotException instead,
 Field accessors retain the scope and version requirements of tmux tokens.
 
 <!-- port:ts -->
-- **TypeScript** uses `_generated/format_fields.ts` rows with `scope`, `since`,
-  and `token`. For example, `pane_zoomed_flag` has pane scope and requires tmux
-  3.7. `_generated/field_aliases.ts` supplies the camelCase alias
-  `pane.zoomedFlag`.
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+`packages/libtmux/src/_generated/format_fields.ts` records each token's
+scope and first tmux version. For example, `pane_zoomed_flag` has pane scope
+and requires tmux 3.7. `packages/libtmux/src/_generated/field_aliases.ts`
+supplies the camelCase alias `pane.zoomedFlag`.
 <!-- /port -->
 
 <!-- port:rs -->
-- **Rust** uses a macro row in `formats.rs` for each token's wire name, scope,
-  tmux version, and type. `pane_dead_signal` has `Pane` scope, requires `V3_3`,
-  and preserves arbitrary non-NUL bytes.
+<!-- port:root -->
+### Rust
+<!-- /port -->
+`crates/libtmux/src/formats.rs` records each token's tmux name, required
+context, first supported release, decoder, and handling of empty values.
+`pane_dead_signal` requires pane context and tmux 3.3. Its text value
+preserves arbitrary non-NUL bytes.
 <!-- /port -->
 
 <!-- port:go -->
-- **Go** generates `format_generated.go` with `internal/generate/formats`. Some
-  accessors decode richer values: `pane.DeadTime()` returns `(time.Time, bool)`
-  and performs timestamp parsing for the caller.
+<!-- port:root -->
+### Go
+<!-- /port -->
+`tmux/internal/generate/formats/` generates `tmux/format_generated.go`.
+Some accessors also parse the returned text: `Pane.DeadTime` returns
+`(time.Time, bool)`, so the caller does not need to parse the timestamp.
 <!-- /port -->
 
 Version gates describe tmux behavior: `pane_dead_signal`
@@ -116,15 +175,21 @@ floating-pane tokens (`pane_floating_flag`, `pane_pb_progress`, `pane_x`,
 `Session`, `Window`, and `Pane` expose a fixed set of captured fields:
 
 <!-- port:swift -->
-- **Swift** carries `index`, `width`, `height`, `isActive`, `currentCommand`,
-  `currentPath`, and the four edge flags.
+<!-- port:root -->
+### Swift
+<!-- /port -->
+Captured pane fields include `index`, `width`, `height`, `isActive`,
+`currentCommand`, `currentPath`, and the four edge flags.
 <!-- /port -->
 
 <!-- port:cxx -->
-- **C++** declares fields in `kFields` arrays. Pane fields include `id`,
-  `command`, `active`, `index`, `title`, `pid`, `tty`, `path`, `width`,
-  `height`, `dead`, `in_mode`, edge flags, and `piping`. Accessors return
-  `std::string_view`, `bool`, or `long long`.
+<!-- port:root -->
+### C++
+<!-- /port -->
+The `kFields` arrays declare which fields to capture. Pane fields include
+`id`, `command`, `active`, `index`, `title`, `pid`, `tty`, `path`, `width`,
+`height`, `dead`, `in_mode`, edge flags, and `piping`. Accessors return
+`std::string_view`, `bool`, or `long long`.
 <!-- /port -->
 
 ```swift

@@ -1,36 +1,13 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
+import { appendFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { visit } from 'unist-util-visit'
-import { decideFilePath, decideMention, isLikelyReference, notASymbol, notApiReason, type ApiProduct, type ApiSymbol, type MentionContext, type Resolver } from '@libtmux/api-model'
-import { getResolver } from '../lib/prose-resolver'
-import { API_MODELS, PORT_NAME } from '../lib/api-models'
-import { withPortRoot } from '../lib/site-root'
-import { productApiHref } from '../lib/product-api'
-import { PORT_BY_SLUG, referenceUrl } from '../lib/ports'
-import { buildTarget } from '../lib/versions'
+import { isLikelyReference, notApiReason, type ApiProduct } from '@libtmux/api-model'
+import { createProseLinker, PORT_BY_LABEL } from '../lib/prose-resolver'
+import { PORT_BY_SLUG } from '../lib/ports'
 
-/**
- * Link the API mentions in a prose table to the reference.
- *
- * `/topics/traversal/` compares the same call across eight ports in a table;
- * every cell names a real symbol and none of them linked, because the resolver
- * only ran inside `/reference/`. This is the same resolver, applied to prose.
- *
- * The port comes from the row's first cell, which is why this reads the table
- * structurally rather than substituting text: in a port build the table still
- * shows all eight rows — `remark-port-code` filters fenced blocks, not inline
- * code — so build context cannot say which language a cell is.
- */
-
+/** Link inline API and source references using their prose ownership. */
 const here = dirname(fileURLToPath(import.meta.url))
-
-/** The row label a table uses for each port. */
-const PORT_BY_LABEL: Record<string, string> = Object.fromEntries(
-  Object.entries(PORT_NAME).map(([slug, name]) => [name, slug]),
-)
-PORT_BY_LABEL['C#'] = 'csharp'
-
 
 export interface DanglingReference {
   port: string
@@ -105,18 +82,6 @@ function record(entry: DanglingReference): void {
   }
 }
 
-/** The paths each port ships, for prose that names a file. */
-const PATHS: Record<string, { repo: string; revision: string; paths: Set<string> }> = {}
-for (const port of Object.keys(API_MODELS)) {
-  const f = join(here, '../data/api', `${port}.paths.json`)
-  if (!existsSync(f)) continue
-  const d = JSON.parse(readFileSync(f, 'utf8')) as { repo: string; revision: string; paths: string[] }
-  PATHS[port] = { repo: d.repo, revision: d.revision, paths: new Set(d.paths) }
-}
-const TREES: Record<string, ReadonlySet<string>> = Object.fromEntries(
-  Object.entries(PATHS).map(([k, v]) => [k, v.paths]),
-)
-
 /** Blocks whose text is one context for the sentence rule. */
 const BLOCKS = new Set(['p', 'li', 'td', 'th', 'dd', 'dt', 'figcaption', 'blockquote'])
 
@@ -143,14 +108,7 @@ export function rehypeApiLinks() {
     // name against another language's model would create a misleading link.
     if (buildPort && PORT_BY_SLUG[buildPort]?.referenceKind === 'guide') return
     begin()
-    const r = getResolver()
-    const product = file?.data?.astro?.frontmatter?.product
-    let defaults: Record<string, string> = {}
-    try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
-
-    /** The version a port publishes: this build's, when it is that port. */
-    const versionOf = (port: string) =>
-      port === process.env.LIBTMUX_DOCS_PORT ? buildTarget(process.env).version : (defaults[port] ?? 'latest')
+    const link = createProseLinker(file?.data?.astro?.frontmatter?.product)
     const sections: { depth: number; port?: string }[] = []
 
     const walk = (node: El, inLink: boolean, rowPort: string | undefined, fence: { lang?: string }, before: { text: string }) => {
@@ -197,19 +155,22 @@ export function rehypeApiLinks() {
         }
         if (child.tagName === 'code' && !inLink) {
           const text = textOf(child).trim()
-          const ctx = {
-            pagePort: String(child.properties?.dataDocPort ?? buildPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port ?? '') || undefined,
-            product,
-            before: scope.text,
-            symbolHref: (port: string, symbol: ApiSymbol) => productApiHref(API_MODELS[port], symbol, versionOf(port)),
-            moduleHref: (port: string, module: string) => {
-              const target = PORT_BY_SLUG[port]
-              return target ? `${referenceUrl(target, versionOf(port))}#${module}` : `#${module}`
-            },
-          }
-          const wrapped = linkFor(text, ctx, r)
-          if (wrapped) {
-            kids[i] = { type: 'element', tagName: 'a', properties: wrapped.properties, children: [child] } as El
+          const explicitPort = child.properties?.dataDocPort
+          const pagePort = (typeof explicitPort === 'string' ? explicitPort : undefined)
+            ?? buildPort ?? rowPort ?? fence.lang ?? sections.at(-1)?.port
+          const decision = link(text, { pagePort, before: scope.text })
+          if (decision.kind === 'link') {
+            kids[i] = {
+              type: 'element', tagName: 'a', children: [child],
+              properties: {
+                href: decision.href,
+                class: decision.file ? 'api-mention api-mention--file' : 'api-mention',
+                title: decision.title,
+                ...(decision.external ? { rel: 'nofollow noopener' } : {}),
+              },
+            }
+          } else if (decision.kind === 'unresolved' && !decision.file && pagePort && isLikelyReference(text) && !notApiReason(text)) {
+            record({ port: pagePort, text, why: decision.why })
           }
           scope.text += text
           continue
@@ -219,71 +180,9 @@ export function rehypeApiLinks() {
       }
     }
 
-    /** The anchor for one span, or nothing when it should stay plain. */
-    const linkFor = (text: string, ctx: MentionContext, r: Resolver) => {
-      if (!text) return undefined
-      if (FILE_RE.test(text) || text.endsWith('/')) {
-        const d = decideFilePath(text, ctx, TREES)
-        if (d.kind !== 'link') return undefined
-        const meta = PATHS[d.port]
-        if (!meta) return undefined
-        const kind = d.dir ? 'tree' : 'blob'
-        return {
-          properties: {
-            href: `https://github.com/${meta.repo}/${kind}/${meta.revision}/${d.path}`,
-            class: 'api-mention api-mention--file',
-            title: `${d.path}: ${meta.repo}`,
-            rel: 'nofollow noopener',
-          },
-        }
-      }
-      if (notASymbol(text)) return undefined
-      const d = decideMention(text, ctx, r, API_MODELS)
-      if (d.kind === 'unresolved') {
-        /*
-         * Reported only where a language was known.
-         *
-         * The root build has no port, so `CaptureAsync` there is not a
-         * dangling reference — it is a name eight languages could own, in a
-         * build that was never told which. Recording it conflates a defect in
-         * the prose with the absence of context, and the root build's share
-         * was half the total. A port build knows, so its failures are facts.
-         */
-        if (ctx.pagePort && isLikelyReference(text) && !notApiReason(text)) {
-          record({ port: ctx.pagePort, text, why: d.why })
-        }
-        return undefined
-      }
-      if (d.kind !== 'link') return undefined
-      // Every reference link goes through productApiHref: it knows which of
-      // the three trees a symbol belongs to and which version of the target
-      // port publishes it. `d.href` survives only for what is not a symbol
-      // page — a federated inventory hit, or a module index — and the
-      // builders this plugin supplies already carry the site root, so only a
-      // bare path from the package's own default needs one.
-      let href = d.href.startsWith('/reference/') ? withPortRoot(d.href) : d.href
-      if (!d.external) {
-        const res = r.resolve(d.port, text, ctx.product)
-        if ('symbol' in res) href = productApiHref(API_MODELS[d.port], res.symbol, versionOf(d.port))
-      }
-      return {
-        properties: {
-          // withPortRoot: this rewrites prose, which is built in every
-          // locale, into reference URLs, which exist in the default locale
-          // only. withRoot sent a Japanese page to /ja/reference/….
-          href,
-          class: 'api-mention',
-          title: d.title,
-          ...(d.external ? { rel: 'nofollow noopener' } : {}),
-        },
-      }
-    }
-
     walk(tree as El, false, undefined, {}, { text: '' })
   }
 }
-
-const FILE_RE = /^[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|md|toml|json|ya?ml|sh)$/
 
 const LANG_TO_PORT: Record<string, string> = {
   python: 'py', py: 'py', typescript: 'ts', ts: 'ts', javascript: 'ts', js: 'ts',

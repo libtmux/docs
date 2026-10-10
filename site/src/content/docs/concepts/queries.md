@@ -192,12 +192,34 @@ let matching = try await server.panes().filter(expression)
 ## Result counts
 
 <!-- port:py,ts,java -->
-| Port | Collection filter | Exactly-one | Empty | Several |
-|------|--------------------|--------------|-------|---------|
-<!-- port:py -->| Python | `.filter()` | `.get()` | `ObjectDoesNotExist` (or `default=`) | `MultipleObjectsReturned` |
-<!-- /port --><!-- port:ts -->| TypeScript | `.where()` / `.filter()` | `.one()` | `NoMatchError` (or `.oneOrUndefined()`) | `MultipleMatchesError` |
-<!-- /port --><!-- port:java -->| Java | `Stream.filter()` | `Selections.exactlyOne()` | `CardinalityException.NoMatch` | `CardinalityException.MultipleMatches` |
+<!-- port:py -->
+<!-- port:root -->
+### Python
 <!-- /port -->
+Use `QueryList.filter` to keep matching objects and `QueryList.get` when
+exactly one must match. An empty result raises `ObjectDoesNotExist` unless
+you supply `default=`. Several matches raise `MultipleObjectsReturned`.
+<!-- /port -->
+
+<!-- port:ts -->
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+Use `where()` or `filter()` to select matches and `one()` to require exactly
+one. No match raises `NoMatchError`; `oneOrUndefined()` accepts that case.
+Several matches raise `MultipleMatchesError`.
+<!-- /port -->
+
+<!-- port:java -->
+<!-- port:root -->
+### Java
+<!-- /port -->
+Filter with `Stream.filter` and require one match with
+`Selections.exactlyOne`. Empty and multiple results raise
+`CardinalityException.NoMatch` and `CardinalityException.MultipleMatches`,
+respectively.
+<!-- /port -->
+
 <!-- /port -->
 
 [Filtering and querying](/guides/querying-and-filtering/) shows exactly-one

@@ -77,33 +77,90 @@ Keep the `Server` that produced the snapshot. Pass its captured values back to
 that server for operations.
 <!-- /port -->
 
-## A generated data table under a hand-written surface
+<a id="a-generated-data-table-under-a-hand-written-surface"></a>
 
-Ports translate object IDs into tmux targets (`-t`) and read state through
-tmux's `FORMATS` variables (`#{...}`). Their field definitions use generated
-catalogs, fixed field sets, or captured dictionaries:
+## Reading tmux fields
 
-| Port | Generated table | Hand-written surface |
-|------|-------------------|----------------------|
-<!-- port:py -->| Python | `libtmux.constants` (`FORMATS`, gated by scope and tmux version) | dataclass fields on `Obj` (`libtmux.neo`), `None` when a gate excludes a token |
-<!-- /port --><!-- port:ts -->| TypeScript | `packages/libtmux/src/_generated/format_fields.ts` (`{ scope, since, token }` per row) | camelCase aliases on `Pane`/`Session`/`Window` (`packages/libtmux/src/_generated/field_aliases.ts`) |
-<!-- /port --><!-- port:go -->| Go | `format_generated.go`, `option_generated.go` (built by `internal/generate/formats`) | `(value, bool)` accessor methods: Go's own "comma ok" idiom for a gate |
-<!-- /port --><!-- port:rs -->| Rust | `formats.rs`'s per-token macro rows (`token, wire name, scope, kind, since version, absent-handling`) | typed methods returning `Option<T>` |
-<!-- /port --><!-- port:java -->| Java | (typed field accessors generated for the query layer: see `Pane_`/`Session_` in [Filtering and queries](/concepts/queries/)) | `Optional<T>` for fields introduced after a port's tmux floor |
-<!-- /port --><!-- port:cxx -->
-| C++ | fixed field sets | non-optional fields |
+Object IDs become tmux targets (`-t`). Format variables (`#{...}`) provide
+the state returned by tmux.
+
+<!-- port:py -->
+<!-- port:root -->
+### Python
 <!-- /port -->
+`libtmux.constants` defines the format fields and their scope and tmux-version
+requirements. `Obj` in `libtmux.neo` exposes the captured values as dataclass
+fields. A field excluded by those requirements is `None`.
+<!-- /port -->
+
+<!-- port:ts -->
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+`packages/libtmux/src/_generated/format_fields.ts` records each token's scope
+and first tmux version. `packages/libtmux/src/_generated/field_aliases.ts`
+provides camelCase aliases for fields on `Pane`, `Session`, and `Window`.
+<!-- /port -->
+
+<!-- port:go -->
+<!-- port:root -->
+### Go
+<!-- /port -->
+`tmux/format_generated.go` defines format fields, and
+`tmux/option_generated.go` defines options. The format generator lives in
+`tmux/internal/generate/formats/`. Accessors return a value and a boolean
+when a field can be unavailable; check the boolean before using the value.
+<!-- /port -->
+
+<!-- port:rs -->
+<!-- port:root -->
+### Rust
+<!-- /port -->
+`crates/libtmux/src/formats.rs` defines the format catalog. Each entry records
+the tmux name, required context, first supported release, decoder, and handling
+of empty values. `crates/libtmux/src/snapshot.rs` uses that catalog to decode
+captured fields.
+
+Handle accessors such as `Pane.current_command` return `Option<T>` when a
+value can be absent. Typed field queries return `Availability`, which also
+distinguishes an unsupported field from an absent value. See
+[Format-token fields](../format-tokens/) for field availability.
+<!-- /port -->
+
+<!-- port:java -->
+<!-- port:root -->
+### Java
+<!-- /port -->
+Typed field classes such as `Pane_` and `Session_` support the query layer.
+Accessors use `Optional<T>` for fields that may be unavailable on the running
+tmux version. [Filtering and queries](/concepts/queries/) explains how to
+select and query those fields.
+<!-- /port -->
+
+<!-- port:csharp -->
+<!-- port:root -->
+### C#
+<!-- /port -->
+Typed properties read a dictionary captured from tmux. A property throws
+`IncompleteSnapshotException` when the capture did not request its field.
+This differs from a captured field whose value is absent.
+<!-- /port -->
+
 <!-- port:swift -->
-| Swift | fixed field sets | non-optional fields |
+<!-- port:root -->
+### Swift
 <!-- /port -->
-<!-- port:csharp -->| C# | a snapshot dictionary read at capture time | typed properties that throw `IncompleteSnapshotException` for a field the capture didn't request, rather than gating on tmux version per field |
+Snapshots capture a fixed set of non-optional fields, including indices,
+dimensions, active state, command, path, and edge flags.
+[Format-token fields](../format-tokens/) covers other tokens.
 <!-- /port -->
-<!-- port:swift -->
-The captured fields include indices, dimensions, active state, command, path,
-and edge flags. [Format-token fields](../format-tokens/) covers other tokens.
-<!-- /port -->
+
 <!-- port:cxx -->
-Use `pane->expand("#{...}")` for tokens outside the fixed fields.
+<!-- port:root -->
+### C++
+<!-- /port -->
+Handles capture a fixed set of non-optional fields. Use
+`pane->expand("#{...}")` for tokens outside those fields.
 [Format-token fields](../format-tokens/) covers their interpretation.
 <!-- /port -->
 
@@ -111,81 +168,122 @@ Use `pane->expand("#{...}")` for tokens outside the fixed fields.
 
 ## Source layout
 
-Use these entry points when inspecting the implementation:
-
 <!-- port:py -->
-- **Python**: one module per tier (`libtmux.server`, `.session`, `.window`,
-  `.pane`, `.client`), plus `libtmux.common` for shared plumbing,
-  `libtmux.neo` for the dataclass query layer, `libtmux.options` /
-  `libtmux.hooks` as mixins every tier includes, and `libtmux.exc` for the
-  exception hierarchy.
+<!-- port:root -->
+### Python
+<!-- /port -->
+`Server`, `Session`, `Window`, `Pane`, and `Client` each have their own module:
+`src/libtmux/server.py`, `src/libtmux/session.py`, `src/libtmux/window.py`,
+`src/libtmux/pane.py`, and `src/libtmux/client.py`.
+
+`src/libtmux/common.py` holds shared behavior. `src/libtmux/neo.py` defines
+the dataclass query layer, `src/libtmux/options.py` and `src/libtmux/hooks.py`
+provide mixins, and `src/libtmux/exc.py` defines the exception hierarchy.
 <!-- /port -->
 
 <!-- port:ts -->
-- **TypeScript**: `packages/libtmux/src/{server,session,window,pane,client}.ts`
-  hold the public classes; nearly everything they call into lives under
-  `_internal/operations/` (one file per concern: `pane_io.ts`, `hooks.ts`,
-  `options.ts`, `topology.ts`) and `_generated/` (the format/option/hook
-  catalogs above). Separate packages in the same monorepo cover workspaces
-  (`@libtmux/workspace`) and an MCP server.
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+The public classes live in `packages/libtmux/src/server.ts`,
+`packages/libtmux/src/session.ts`, `packages/libtmux/src/window.ts`,
+`packages/libtmux/src/pane.ts`, and `packages/libtmux/src/client.ts`.
+
+Their operations are split by concern under
+`packages/libtmux/src/_internal/operations/`, including
+`packages/libtmux/src/_internal/operations/pane_io.ts`,
+`packages/libtmux/src/_internal/operations/hooks.ts`,
+`packages/libtmux/src/_internal/operations/options.ts`, and
+`packages/libtmux/src/_internal/operations/topology.ts`.
+`packages/libtmux/src/_generated/` contains the generated field catalogs.
+Workspaces and the MCP server have separate packages in the same repository.
 <!-- /port -->
 
 <!-- port:go -->
-- **Go**: a single `tmux` package, split by concern into many files rather
-  than many packages (`model.go` for the core structs, `lifecycle_kill.go`,
-  `pane_capture.go`, `pane_geometry.go`, `hierarchy.go`, `plan_server.go`
-  for folded invocations); `tmuxq` is a separate package for predicate
-  queries over an already-read snapshot ([Filtering and
-  queries](/concepts/queries/)), and `workspace` a separate one again.
+<!-- port:root -->
+### Go
+<!-- /port -->
+The `tmux` package groups its implementation by concern. `tmux/model.go`
+defines the core structs. `tmux/lifecycle_kill.go`, `tmux/pane_capture.go`,
+`tmux/pane_geometry.go`, and `tmux/hierarchy.go` implement lifecycle,
+capture, geometry, and traversal. `tmux/plan_server.go` combines commands
+into fewer invocations.
+
+`tmuxq/` provides predicate queries over an already-read snapshot; see
+[Filtering and queries](/concepts/queries/). Workspace support lives in
+`workspace/`.
 <!-- /port -->
 
 <!-- port:rs -->
-- **Rust**: `crates/libtmux/src/{server,session,window,pane}/` directories,
-  each split into files by concern (a `settings.rs` per tier holding that
-  tier's options-and-hooks methods, matching the pattern in [Options and
-  hooks](../options-and-hooks/)); `hooks.rs`, `options.rs`, and `formats.rs`
-  hold the shared, scope-generic machinery those call into. Workspaces and
-  the MCP server are separate crates in the same workspace.
+<!-- port:root -->
+### Rust
+<!-- /port -->
+`Server`, `Session`, `Window`, and `Pane` are defined in
+`crates/libtmux/src/server.rs`, `crates/libtmux/src/session.rs`,
+`crates/libtmux/src/window.rs`, and `crates/libtmux/src/pane.rs`.
+Their additional operations live in `crates/libtmux/src/server/`,
+`crates/libtmux/src/session/`, `crates/libtmux/src/window/`, and
+`crates/libtmux/src/pane/`.
+
+The [options and hooks](../options-and-hooks/) methods are grouped in
+`crates/libtmux/src/server/settings.rs`,
+`crates/libtmux/src/session/settings.rs`,
+`crates/libtmux/src/window/settings.rs`, and
+`crates/libtmux/src/pane/settings.rs`.
+`crates/libtmux/src/hooks.rs` defines `IndexedHooks` and `SparseValues`;
+`crates/libtmux/src/options.rs` defines option schemas and values.
+Workspaces and the MCP server are separate crates under
+`crates/tmux-workspace/` and `crates/tmux-mcp/`.
 <!-- /port -->
 
 <!-- port:java -->
-- **Java**: `libtmux/src/main/java/io/github/libtmux/` holds `Server`,
-  `Session`, `Window`, and
-  `Pane` as `final` classes; each exposes its option and hook tables through
-  `.options()` / `.hooks()` accessor methods returning a separate `Options`
-  / `Hooks` view scoped to that object, rather than mixing those methods
-  directly into the entity class. `Session_`,
-  `Window_`, and `Pane_` are a parallel set of typed-field classes that
-  exist only for the query layer.
+<!-- port:root -->
+### Java
+<!-- /port -->
+`libtmux/src/main/java/io/github/libtmux/` holds the `Server`, `Session`,
+`Window`, and `Pane` classes. Their `options()` and `hooks()` accessors
+return `Options` and `Hooks` views scoped to the object.
+`Session_`, `Window_`, and `Pane_` are typed-field classes for the query layer.
 <!-- /port -->
 
 <!-- port:csharp -->
-- **C#**: `src/LibTmux/` gives every entity its own name (`Pane.cs`,
-  `Session.cs`, ...) but splits each into several `partial class` files by
-  concern rather than by inheritance: `Pane.Capture.cs`, `Pane.Input.cs`,
-  `Pane.Relations.cs`, `Pane.Scopes.cs`, `Pane.Topology.cs`, and so on all
-  contribute to one `Pane` type. `Options`/`Hooks` are reached through
-  `.Options` / `.Hooks` properties.
+<!-- port:root -->
+### C#
+<!-- /port -->
+`src/LibTmux/` splits each entity into partial-class files by concern.
+For example, `src/LibTmux/Pane.cs`, `src/LibTmux/Pane.Capture.cs`,
+`src/LibTmux/Pane.Input.cs`, `src/LibTmux/Pane.Relations.cs`,
+`src/LibTmux/Pane.Scopes.cs`, and `src/LibTmux/Pane.Topology.cs` contribute
+to one `Pane` type. `Options` and `Hooks` views are reached through the
+object's properties.
 <!-- /port -->
 
 <!-- port:cxx -->
-- **C++**: `include/libtmux/entities.hpp` declares `Session`, `Window`, and
-  `Pane` together as value types (`private Row` bases), with their method
-  bodies in `src/` rather than the header; `server.hpp`, `options.hpp`, and
-  `capabilities.hpp` are separate headers.
-  A private `testing` component (`include/libtmux/testing/`) ships
-  separately from the library proper: see [Context
-  managers](../context-managers/) for what it's for.
+<!-- port:root -->
+### C++
+<!-- /port -->
+`include/libtmux/entities.hpp` declares `Session`, `Window`, and `Pane`.
+Their method bodies live in `src/`. `include/libtmux/server.hpp`,
+`include/libtmux/options.hpp`, and `include/libtmux/capabilities.hpp`
+define server operations, options, and capability checks.
+
+The `include/libtmux/testing/` component is separate from the library;
+[Context managers](../context-managers/) explains its test-server ownership.
 <!-- /port -->
 
 <!-- port:swift -->
-- **Swift**: `Sources/LibTmux/Server.swift` is the hub every operation
-  extends; `Session.swift` and `Pane.swift` declare the thin value types,
-  `Snapshot.swift` holds the relationship queries
-  ([Traversal](../traversal/)), and `Options.swift`, `PaneInteraction.swift`,
-  and `Mutations.swift` are `extension Server` files grouping options/hooks,
-  send/capture, and kill respectively: all reachable only through `Server`,
-  per the section above.
+<!-- port:root -->
+### Swift
+<!-- /port -->
+`Sources/LibTmux/Server.swift` defines `Server`. `Sources/LibTmux/Session.swift`,
+`Sources/LibTmux/Window.swift`, and `Sources/LibTmux/Pane.swift` define the
+snapshot value types. `Sources/LibTmux/Snapshot.swift` implements the
+[relationship queries](../traversal/).
+
+Extensions on `Server` group related operations:
+`Sources/LibTmux/Options.swift` implements options and hooks,
+`Sources/LibTmux/PaneInteraction.swift` handles input and capture, and
+`Sources/LibTmux/Mutations.swift` handles changes such as killing a pane.
 <!-- /port -->
 
 <!-- port:root -->

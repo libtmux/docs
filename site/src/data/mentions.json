@@ -772,6 +772,13 @@
   },
   {
    "port": "cxx",
+   "symbol": "libtmux::CommandFailure",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
+  },
+  {
+   "port": "cxx",
    "symbol": "libtmux::CommandOperation::wait_until",
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
@@ -3068,6 +3075,13 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.Server.WaitFor",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.Server.Windows",
    "page": "/go/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
@@ -3278,6 +3292,13 @@
   },
   {
    "port": "go",
+   "symbol": "tmux.WaitForModeSignal",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "go",
    "symbol": "tmux.WaitForRequest",
    "page": "/topics/pane-interaction/",
    "title": "Pane interaction",
@@ -3285,7 +3306,7 @@
   },
   {
    "port": "go",
-   "symbol": "tmux.WaitForRequest.Mode",
+   "symbol": "tmux.WaitForRequest",
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
@@ -3712,6 +3733,13 @@
   },
   {
    "port": "java",
+   "symbol": "io.github.libtmux.Channel.Channel.signal",
+   "page": "/topics/waiting-and-retry/",
+   "title": "Waiting and retrying",
+   "section": "topics"
+  },
+  {
+   "port": "java",
    "symbol": "io.github.libtmux.Client_.Client_",
    "page": "/scala/latest/guides/query/",
    "title": "Queries",
@@ -3726,21 +3754,7 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.control.ControlClient.ControlClient.attach",
-   "page": "/concepts/transports/",
-   "title": "Control mode vs one-shot",
-   "section": "concepts"
-  },
-  {
-   "port": "java",
    "symbol": "io.github.libtmux.control.ControlClient.ControlClient.send",
-   "page": "/concepts/transports/",
-   "title": "Control mode vs one-shot",
-   "section": "concepts"
-  },
-  {
-   "port": "java",
-   "symbol": "io.github.libtmux.control.ControlClient.ControlClient.subscribeEvents",
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
    "section": "concepts"
@@ -3807,6 +3821,13 @@
    "page": "/scala/latest/guides/execution/",
    "title": "Execution",
    "section": "guides"
+  },
+  {
+   "port": "java",
+   "symbol": "io.github.libtmux.exception.LibTmuxException.LibTmuxException",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
   },
   {
    "port": "java",
@@ -6415,9 +6436,23 @@
   {
    "port": "py",
    "symbol": "libtmux._internal.query_list.QueryList.get",
+   "page": "/concepts/queries/",
+   "title": "Filtering and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux._internal.query_list.QueryList.get",
    "page": "/py/latest/guides/querying-and-filtering/",
    "title": "Querying and filtering",
    "section": "guides"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.client.Client",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
   },
   {
    "port": "py",
@@ -6478,6 +6513,13 @@
   {
    "port": "py",
    "symbol": "libtmux.pane.Pane",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane",
    "page": "/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
@@ -6523,6 +6565,13 @@
    "page": "/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.pane.Pane.pane_id",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
   },
   {
    "port": "py",
@@ -6597,13 +6646,6 @@
   {
    "port": "py",
    "symbol": "libtmux.pane.Pane.window",
-   "page": "/topics/architecture/",
-   "title": "Architecture",
-   "section": "topics"
-  },
-  {
-   "port": "py",
-   "symbol": "libtmux.pane.Pane.window",
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
@@ -6628,6 +6670,13 @@
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.server.Server",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
   },
   {
    "port": "py",
@@ -6765,6 +6814,13 @@
   {
    "port": "py",
    "symbol": "libtmux.session.Session",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.session.Session",
    "page": "/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
@@ -6842,6 +6898,13 @@
   {
    "port": "py",
    "symbol": "libtmux.window.Window",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.window.Window",
    "page": "/topics/context-managers/",
    "title": "Ownership and cleanup",
    "section": "topics"
@@ -6891,6 +6954,13 @@
   {
    "port": "py",
    "symbol": "libtmux.window.Window.session",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "py",
+   "symbol": "libtmux.window.Window.window_id",
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
@@ -7352,13 +7422,6 @@
   },
   {
    "port": "rs",
-   "symbol": "error.ControlModeErrorKind",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
-  },
-  {
-   "port": "rs",
    "symbol": "error.ControlModeErrorKind.DispatchTimedOut",
    "page": "/topics/errors-and-exceptions/",
    "title": "Errors and exceptions",
@@ -7419,6 +7482,20 @@
    "page": "/rs/latest/workspace/reference/",
    "title": "Rust workspace builder API",
    "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "hooks.IndexedHooks",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "hooks.SparseValues",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
   },
   {
    "port": "rs",
@@ -7605,8 +7682,8 @@
   {
    "port": "rs",
    "symbol": "pane.Pane",
-   "page": "/topics/format-tokens/",
-   "title": "Format-token fields",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
    "section": "topics"
   },
   {
@@ -7639,6 +7716,13 @@
   },
   {
    "port": "rs",
+   "symbol": "pane.Pane.current_command",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
    "symbol": "pane.Pane.from_env",
    "page": "/topics/environment/",
    "title": "Environment",
@@ -7649,6 +7733,13 @@
    "symbol": "pane.Pane.hook",
    "page": "/topics/options-and-hooks/",
    "title": "Options and hooks",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "pane.Pane.id",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
    "section": "topics"
   },
   {
@@ -8052,7 +8143,7 @@
   },
   {
    "port": "rs",
-   "symbol": "server.ChannelWait.Signalled",
+   "symbol": "server.ChannelWait",
    "page": "/topics/waiting-and-retry/",
    "title": "Waiting and retrying",
    "section": "topics"
@@ -8119,6 +8210,13 @@
    "page": "/rs/latest/workspace/reference/",
    "title": "Rust workspace builder API",
    "section": "ports"
+  },
+  {
+   "port": "rs",
+   "symbol": "server.Server",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
   },
   {
    "port": "rs",
@@ -8298,6 +8396,13 @@
   {
    "port": "rs",
    "symbol": "session.Session",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "session.Session",
    "page": "/topics/environment/",
    "title": "Environment",
    "section": "topics"
@@ -8356,6 +8461,13 @@
    "symbol": "session.Session.windows",
    "page": "/topics/traversal/",
    "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "rs",
+   "symbol": "snapshot.Availability",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
    "section": "topics"
   },
   {
@@ -8427,13 +8539,6 @@
    "page": "/rs/latest/workspace/internals/guides/",
    "title": "Use the Rust workspace builder",
    "section": "ports"
-  },
-  {
-   "port": "rs",
-   "symbol": "src.WorkspaceBuilder.plan",
-   "page": "/concepts/transports/",
-   "title": "Control mode vs one-shot",
-   "section": "concepts"
   },
   {
    "port": "rs",
@@ -8511,6 +8616,13 @@
    "page": "/rs/latest/guides/batching-commands/",
    "title": "Batch commands with a plan",
    "section": "guides"
+  },
+  {
+   "port": "rs",
+   "symbol": "window.Window",
+   "page": "/topics/architecture/",
+   "title": "Architecture",
+   "section": "topics"
   },
   {
    "port": "rs",
@@ -9473,13 +9585,6 @@
   },
   {
    "port": "swift",
-   "symbol": "ControlSession",
-   "page": "/topics/errors-and-exceptions/",
-   "title": "Errors and exceptions",
-   "section": "topics"
-  },
-  {
-   "port": "swift",
    "symbol": "ControlSession.watch(_:)",
    "page": "/concepts/transports/",
    "title": "Control mode vs one-shot",
@@ -9858,6 +9963,13 @@
   },
   {
    "port": "swift",
+   "symbol": "Snapshot.windows(of:)",
+   "page": "/topics/traversal/",
+   "title": "Traversal",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
    "symbol": "SubscriptionChange",
    "page": "/topics/format-tokens/",
    "title": "Format-token fields",
@@ -9882,6 +9994,13 @@
    "symbol": "TmuxContext.current(environment:)",
    "page": "/topics/environment/",
    "title": "Environment",
+   "section": "topics"
+  },
+  {
+   "port": "swift",
+   "symbol": "TmuxError",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
    "section": "topics"
   },
   {
@@ -10412,13 +10531,6 @@
   {
    "port": "ts",
    "symbol": "errors.VersionTooLowError.since",
-   "page": "/topics/format-tokens/",
-   "title": "Format-token fields",
-   "section": "topics"
-  },
-  {
-   "port": "ts",
-   "symbol": "errors.VersionTooLowError.since",
    "page": "/ts/latest/concepts/queries/",
    "title": "Filtering and queries",
    "section": "concepts"
@@ -10555,6 +10667,13 @@
    "page": "/ts/latest/workspace/reference/",
    "title": "TypeScript workspace builder API",
    "section": "ports"
+  },
+  {
+   "port": "ts",
+   "symbol": "selection.ClientWhere.written",
+   "page": "/topics/errors-and-exceptions/",
+   "title": "Errors and exceptions",
+   "section": "topics"
   },
   {
    "port": "ts",
@@ -10936,13 +11055,6 @@
   },
   {
    "port": "ts",
-   "symbol": "types.FormatSubscription.scope",
-   "page": "/topics/format-tokens/",
-   "title": "Format-token fields",
-   "section": "topics"
-  },
-  {
-   "port": "ts",
    "symbol": "types.SendKeysOptions.enter",
    "page": "/ts/latest/workspace/configuration/commands/",
    "title": "Workspace commands",
@@ -11297,14 +11409,14 @@
    "port": "swift",
    "text": "TmuxWorkspace",
    "page": "/concepts/workspaces/",
-   "line": 134,
+   "line": 153,
    "why": "not defined in the stated port"
   },
   {
    "port": "swift",
    "text": "YAMLWorkspaces",
    "page": "/concepts/workspaces/",
-   "line": 134,
+   "line": 154,
    "why": "not defined in the stated port"
   },
   {
@@ -11382,13 +11494,6 @@
    "text": "[Symbol.asyncDispose]",
    "page": "/topics/context-managers/",
    "line": 147,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "swift",
-   "text": "throws(TmuxError)",
-   "page": "/topics/errors-and-exceptions/",
-   "line": 31,
    "why": "not defined in the stated port"
   }
  ]

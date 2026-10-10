@@ -103,16 +103,14 @@ describe('port prose ownership', () => {
   })
 
   it.each(['', 'py', 'ts', 'go', 'java', 'csharp', 'cxx', 'swift'])(
-    'keeps the transport explanation outside the %s table in HTML and Markdown', async (port) => {
+    'renders transport choices as complete prose for %s in HTML and Markdown', async (port) => {
       const { content } = parseFrontmatter(readFileSync(`${contentRoot}docs/concepts/transports.md`, 'utf8'), { frontmatter: 'remove' })
       vi.stubEnv('LIBTMUX_DOCS_PORT', port)
       const renderer = await createMarkdownProcessor({ remarkPlugins: [remarkPortCode], syntaxHighlight: false })
       const html = (await renderer.render(content)).code
-      const table = html.match(/<table>[\s\S]*?<\/table>/)?.[0]
-      expect(table).toBeDefined()
-      expect(table).not.toContain('Choose based on')
+      expect(html).not.toContain('<table>')
       expect(html).toContain('<p>Choose based on whether you need command results')
-      expect(resolvePortCode(content, port)).toMatch(/\|\n\nChoose based on/)
+      expect(resolvePortCode(content, port)).toContain('\n\nChoose based on')
     },
   )
 
@@ -176,6 +174,40 @@ describe('port prose ownership', () => {
       const names = [...prose.matchAll(/\b(?:Python|TypeScript|Go|Rust|Java|Swift)\b|\.NET|C\+\+|C#/g)].map((match) => match[0])
       expect(names.filter((name) => !ownNames.includes(name)), path).toEqual([])
     }
+  })
+
+  it.each(Object.keys(PORT_BY_SLUG))('does not leave multi-port comparison framing in %s articles', (port) => {
+    const paths = [
+      ...globSync(`${contentRoot}docs/{concepts,guides,topics,examples}/*.md`),
+      ...globSync(`${contentRoot}docs/ports/${port}/**/*.md`),
+      ...globSync(`${contentRoot}_workspace-shared/workspace/**/*.md`),
+    ]
+    for (const path of paths) {
+      const { content, frontmatter } = parseFrontmatter(readFileSync(path, 'utf8'))
+      if (path.includes('/docs/') && !path.includes(`/ports/${port}/`)
+        && !docsEntryAvailable({ id: path.slice(`${contentRoot}docs/`.length).replace(/\.md$/, ''), data: frontmatter }, port)) continue
+      const prose = resolvePortCode(content, port, frontmatter.port).replace(/^ *(`{3,}|~{3,})[^\n]*\n[\s\S]*?^ *\1[^\n]*$/gm, '')
+      expect(prose, path).not.toMatch(/^\s*\|\s*(?:Port|Language)\s*\|/m)
+      expect(prose, path).not.toMatch(/^\s*[-*]\s+\*\*(?:Python|TypeScript|Rust|Go|Java|C#|\.NET|C\+\+|Swift|Ruby|Lua|Kotlin|Scala|F#)\*\*(?::|\s)/m)
+    }
+  })
+
+  it('links architecture files at the selected revision and preserves the old heading anchor', async () => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'rs')
+    const { content } = parseFrontmatter(readFileSync(`${contentRoot}docs/topics/architecture.md`, 'utf8'))
+    const renderer = await createMarkdownProcessor({ remarkPlugins: [remarkPortCode], rehypePlugins: [rehypeApiLinks], syntaxHighlight: false })
+    const html = (await renderer.render(content)).code
+    const inventory = JSON.parse(readFileSync(new URL('../src/data/api/rs.paths.json', import.meta.url), 'utf8'))
+    for (const file of ['formats.rs', 'snapshot.rs', 'hooks.rs', 'options.rs', 'server/settings.rs', 'session/settings.rs', 'window/settings.rs', 'pane/settings.rs']) {
+      expect(html).toContain(`href="https://github.com/${inventory.repo}/blob/${inventory.revision}/crates/libtmux/src/${file}"`)
+    }
+    for (const object of ['server', 'session', 'window', 'pane']) {
+      expect(html).toContain(`href="https://github.com/${inventory.repo}/tree/${inventory.revision}/crates/libtmux/src/${object}"`)
+      expect(html).toContain(`href="/rs/latest/reference/${object}-${object}/"`)
+    }
+    expect(html).toContain('id="a-generated-data-table-under-a-hand-written-surface"')
+    expect(html).not.toContain('<table>')
+    expect(html).not.toContain('<strong>Rust</strong>')
   })
 
   it('removes foreign headings and prose before HTML and heading metadata are generated', async () => {

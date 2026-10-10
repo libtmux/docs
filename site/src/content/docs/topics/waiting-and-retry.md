@@ -179,17 +179,73 @@ Use `tmux wait-for -S <channel>` to signal and `tmux wait-for <channel>` to
 block until signalled. This avoids repeated screen captures when the command can
 announce its own completion:
 
-| Port | Signal | Wait |
-|------|--------|------|
-<!-- port:py -->| Python | `server.wait_for(channel, set_flag=True)` | `server.wait_for(channel)` |
-<!-- /port --><!-- port:ts -->| TypeScript | not exposed as public API: used only inside the test-server's own startup handshake | - |
-<!-- /port --><!-- port:go -->| Go | `server.WaitFor(ctx, tmux.WaitForRequest{Channel: name, Mode: tmux.WaitForModeSignal})` | `tmux.WaitForRequest{Channel: name}` (the zero-value `WaitForRequest.Mode` waits) |
-<!-- /port --><!-- port:rs -->| Rust | `server.signal_channel(name).await?` | `server.wait_for_channel(name, timeout).await?` → `ChannelWait::Signalled` or `TimedOut` |
-<!-- /port --><!-- port:java -->| Java | `server.channel(name).signal()` | `server.channel(name).await(timeout)` → a `WakeReason`, never silently "success" |
-<!-- /port --><!-- port:csharp -->| C# | `server.OpenWaitChannel(name)` returns a `TmuxWaitChannel`; signalling is the same request with a different mode | `await using` the channel, then `WaitAsync(budget)` |
-<!-- /port --><!-- port:cxx -->| C++ | `server.signal(channel)` | `server.wait_for(channel, timeout)` |
-<!-- /port --><!-- port:swift -->| Swift | `try await server.signal(channel)` | `try await server.wait(for: channel)` |
+<!-- port:py -->
+<!-- port:root -->
+### Python
 <!-- /port -->
+Signal a channel with `Server.wait_for` and `set_flag=True`.
+Call the same method without that flag to wait for the signal.
+<!-- /port -->
+
+<!-- port:ts -->
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+The public API does not expose the channel handshake used internally
+by the test server during startup.
+<!-- /port -->
+
+<!-- port:go -->
+<!-- port:root -->
+### Go
+<!-- /port -->
+Call `Server.WaitFor` with a `WaitForRequest`. Set its mode to
+`WaitForModeSignal` to signal the channel; the zero-value mode waits.
+<!-- /port -->
+
+<!-- port:rs -->
+<!-- port:root -->
+### Rust
+<!-- /port -->
+`Server.signal_channel` signals a channel.
+`Server.wait_for_channel` waits with a timeout and returns a `ChannelWait`
+indicating whether it was signalled or timed out.
+<!-- /port -->
+
+<!-- port:java -->
+<!-- port:root -->
+### Java
+<!-- /port -->
+Obtain a channel through `Server.channel`. Its `signal()` method
+wakes a waiter; `await(timeout)` returns a `WakeReason` so the caller can
+distinguish a signal from a timeout.
+<!-- /port -->
+
+<!-- port:csharp -->
+<!-- port:root -->
+### C#
+<!-- /port -->
+`Server.OpenWaitChannel` returns a `TmuxWaitChannel`. Keep it in
+an `await using` scope and call `WaitAsync` with a budget. Select the
+signal mode to signal the channel.
+<!-- /port -->
+
+<!-- port:cxx -->
+<!-- port:root -->
+### C++
+<!-- /port -->
+`Server.signal` signals a channel. `Server.wait_for` waits for the
+channel with a timeout.
+<!-- /port -->
+
+<!-- port:swift -->
+<!-- port:root -->
+### Swift
+<!-- /port -->
+`Server.signal` signals a channel, and `Server.wait(for:)` waits
+for it. Both calls are async and throwing.
+<!-- /port -->
+
 ```python
 server.new_session(session_name="work")
 server.wait_for("built", set_flag=True)  # signal

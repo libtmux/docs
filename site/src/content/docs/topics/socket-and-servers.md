@@ -11,22 +11,80 @@ tableOfContents: true
 
 A tmux server is selected by its Unix-domain socket. Use different sockets for
 independent servers, such as a development session and an isolated test server.
-Ports expose tmux's default, named (`-L`), and explicit-path (`-S`) socket
-selectors:
+Choose the default socket, a named socket (`-L`), or an explicit path (`-S`).
 
 ## Naming a server
 
-| Port | Default | Named socket (`-L`) | Explicit path (`-S`) |
-|------|---------|----------------------|------------------------|
-<!-- port:py -->| Python | `Server()` | `Server(socket_name="work")` | `Server(socket_path="/tmp/tmux-1000/work")` |
-<!-- /port --><!-- port:ts -->| TypeScript | `new Server()` | `new Server({ socketName: "work" })` | `new Server({ socketPath: "..." })` |
-<!-- /port --><!-- port:go -->| Go | `tmux.NewServer(tmux.ServerOptions{})` | `tmux.ServerOptions{SocketName: "work"}` | `tmux.ServerOptions{SocketPath: "..."}` |
-<!-- /port --><!-- port:rs -->| Rust | `Server::new()` | `Server::builder().socket_name("work").build()?` | `Server::builder().socket_path("...").build()?` |
-<!-- /port --><!-- port:java -->| Java | `ServerEndpoint.defaultSocket()` | `ServerEndpoint.namedSocket("work")` | `ServerEndpoint.socketPath(path)` |
-<!-- /port --><!-- port:csharp -->| C# | `new ServerConnectionOptions()` | `new ServerConnectionOptions(socketName: "work")` | `new ServerConnectionOptions(socketPath: "...")` |
-<!-- /port --><!-- port:cxx -->| C++ | `Server::at_default()` | `Server::at_socket_name("work")` | `Server::at_socket_path("...")` |
-<!-- /port --><!-- port:swift -->| Swift | no bare default: see below | `Server(socketName: "work")` | `Server(socketPath: "...")` |
+<!-- port:py -->
+<!-- port:root -->
+### Python
 <!-- /port -->
+`Server()` selects the default socket. Pass `socket_name="work"` to
+select a named socket, or `socket_path="/tmp/tmux-1000/work"` for an
+explicit path.
+<!-- /port -->
+
+<!-- port:ts -->
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+`new Server()` selects the default socket. Set `socketName` to select
+a named socket, or `socketPath` to use an explicit path.
+<!-- /port -->
+
+<!-- port:go -->
+<!-- port:root -->
+### Go
+<!-- /port -->
+`tmux.NewServer(tmux.ServerOptions{})` selects the default socket.
+Set `ServerOptions.SocketName` for a named socket or
+`ServerOptions.SocketPath` for an explicit path.
+<!-- /port -->
+
+<!-- port:rs -->
+<!-- port:root -->
+### Rust
+<!-- /port -->
+`Server::new()` selects the default socket. Use
+`Server::builder().socket_name("work").build()?` for a named socket or
+`Server::builder().socket_path(path).build()?` for an explicit path.
+<!-- /port -->
+
+<!-- port:java -->
+<!-- port:root -->
+### Java
+<!-- /port -->
+`ServerEndpoint.defaultSocket()` selects the default socket.
+`ServerEndpoint.namedSocket("work")` selects a named socket, and
+`ServerEndpoint.socketPath(path)` selects an explicit path.
+<!-- /port -->
+
+<!-- port:csharp -->
+<!-- port:root -->
+### C#
+<!-- /port -->
+`new ServerConnectionOptions()` selects the default socket. Supply
+`socketName` for a named socket or `socketPath` for an explicit path.
+<!-- /port -->
+
+<!-- port:cxx -->
+<!-- port:root -->
+### C++
+<!-- /port -->
+`Server::at_default()` selects the default socket. Use
+`Server::at_socket_name("work")` for a named socket or
+`Server::at_socket_path(path)` for an explicit path.
+<!-- /port -->
+
+<!-- port:swift -->
+<!-- port:root -->
+### Swift
+<!-- /port -->
+Select a named socket with `Server(socketName: "work")` or an
+explicit path with `Server(socketPath: path)`. The initializer requires
+a socket selection; see the default-socket example below.
+<!-- /port -->
+
 ```python
 default_server = libtmux.Server()
 named = libtmux.Server(socket_name="work")
@@ -98,17 +156,66 @@ A server handle does not prove that the target server is running. Use a liveness
 check when your program needs to distinguish a live server from an unavailable
 socket:
 
-| Port | Check |
-|------|-------|
-<!-- port:py -->| Python | `server.is_alive()` → `bool` |
-<!-- /port --><!-- port:ts -->| TypeScript | `await server.isAlive()` → `Promise<boolean>`; `await server.raiseIfDead()` throws with tmux's own reason instead |
-<!-- /port --><!-- port:go -->| Go | `server.IsAlive(ctx)` → `(bool, error)`: the `error` is reserved for a question that couldn't be answered at all, not for "not alive" |
-<!-- /port --><!-- port:rs -->| Rust | `server.is_alive().await` → `bool`; `server.check_alive().await` is the fallible twin, for when the *reason* matters |
-<!-- /port --><!-- port:java -->| Java | `server.isAlive()` → `boolean` |
-<!-- /port --><!-- port:csharp -->| C# | `await server.IsAliveAsync()` → `Task<bool>` |
-<!-- /port --><!-- port:cxx -->| C++ | `server.is_alive(timeout)` → `bool` |
-<!-- /port --><!-- port:swift -->| Swift | `try await server.isRunning()` → `Bool` |
+<!-- port:py -->
+<!-- port:root -->
+### Python
 <!-- /port -->
+`Server.is_alive` returns a boolean indicating whether the server
+responds.
+<!-- /port -->
+
+<!-- port:ts -->
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+`Server.isAlive` returns a promise of a boolean. `Server.raiseIfDead`
+throws when the server is unavailable and retains the reason reported by tmux.
+<!-- /port -->
+
+<!-- port:go -->
+<!-- port:root -->
+### Go
+<!-- /port -->
+`Server.IsAlive` returns `(bool, error)`. The error reports a check
+that could not be completed; a false result alone means the server is not alive.
+<!-- /port -->
+
+<!-- port:rs -->
+<!-- port:root -->
+### Rust
+<!-- /port -->
+`Server.is_alive` returns a boolean. Use `Server.check_alive` when
+you also need to distinguish a failed check from a server that is not alive.
+<!-- /port -->
+
+<!-- port:java -->
+<!-- port:root -->
+### Java
+<!-- /port -->
+`Server.isAlive` returns a boolean.
+<!-- /port -->
+
+<!-- port:csharp -->
+<!-- port:root -->
+### C#
+<!-- /port -->
+`Server.IsAliveAsync` returns `Task<bool>`.
+<!-- /port -->
+
+<!-- port:cxx -->
+<!-- port:root -->
+### C++
+<!-- /port -->
+`Server.is_alive` takes a timeout and returns a boolean.
+<!-- /port -->
+
+<!-- port:swift -->
+<!-- port:root -->
+### Swift
+<!-- /port -->
+`Server.isRunning` is an async throwing check that returns `Bool`.
+<!-- /port -->
+
 ```python
 if server.is_alive():
     server.sessions

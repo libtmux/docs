@@ -69,6 +69,8 @@ describe('shared browse cards', () => {
     const body = index('examples').content
     expect(body).toContain('<a id="what-verified-means-per-port"></a>')
     expect(body).toContain('## Source and verification')
-    expect(body).toContain('<!-- port:swift -->| Swift | `Scripts/check_examples.py`')
+    expect(body).toContain('`Scripts/check_examples.py` checks that README examples match sources')
+    expect(body).toContain('`swift test --package-path Examples` compiles')
+    expect(body).not.toContain('| Swift |')
   })
 })

@@ -125,16 +125,64 @@ covers their transport costs and batching.
 
 These packages read or build workspace configurations based on tmuxp:
 
-| Port | Package | Shape |
-|------|---------|-------|
-<!-- port:py -->| Python | tmuxp itself | the format this whole idea is named after |
-<!-- /port --><!-- port:ts -->| TypeScript | `@libtmux/workspace` | `applyWorkspace(server, { session_name, windows: [...] })` |
-<!-- /port --><!-- port:go -->| Go | `workspace` | tmuxp-shaped, per the port's own module layout |
-<!-- /port --><!-- port:rs -->| Rust | `tmux-workspace` | tmuxp-shaped |
-<!-- /port --><!-- port:java -->| Java | `libtmux-workspace` | "enough of tmuxp's format to describe a workspace" |
-<!-- /port --><!-- port:csharp -->| C# | `LibTmux.Workspace` | reads tmuxp YAML directly |
-<!-- /port --><!-- port:swift -->| Swift | `TmuxWorkspace` | Swift, JSON, or YAML (YAML needs the `YAMLWorkspaces` trait) |
+<!-- port:py -->
+<!-- port:root -->
+### Python
 <!-- /port -->
+`tmuxp` loads a workspace configuration and creates its sessions, windows,
+and panes. See [Workspace Manager](/workspace/) for its configuration and CLI.
+<!-- /port -->
+
+<!-- port:ts -->
+<!-- port:root -->
+### TypeScript
+<!-- /port -->
+`@libtmux/workspace` applies a workspace configuration through
+`applyWorkspace`. Pass the server and a configuration containing
+`session_name` and `windows`.
+<!-- /port -->
+
+<!-- port:go -->
+<!-- port:root -->
+### Go
+<!-- /port -->
+The `workspace` package loads tmuxp-shaped workspace configurations.
+See [Workspace Manager](/workspace/) for the supported fields and CLI.
+<!-- /port -->
+
+<!-- port:rs -->
+<!-- port:root -->
+### Rust
+<!-- /port -->
+The `tmux-workspace` crate loads tmuxp-shaped configurations.
+See [Workspace Manager](/workspace/) for the supported fields and CLI.
+<!-- /port -->
+
+<!-- port:java -->
+<!-- port:root -->
+### Java
+<!-- /port -->
+`libtmux-workspace` supports the tmuxp configuration fields needed to
+describe a workspace. See [Workspace Manager](/workspace/) for the supported
+configuration and CLI.
+<!-- /port -->
+
+<!-- port:csharp -->
+<!-- port:root -->
+### C#
+<!-- /port -->
+`LibTmux.Workspace` reads tmuxp YAML. See [Workspace Manager](/workspace/)
+for configuration fields and the CLI.
+<!-- /port -->
+
+<!-- port:swift -->
+<!-- port:root -->
+### Swift
+<!-- /port -->
+`TmuxWorkspace` accepts configurations written in Swift, JSON, or YAML.
+YAML support requires the `YAMLWorkspaces` trait.
+<!-- /port -->
+
 <!-- port:ts -->
 TypeScript's `applyWorkspace` applies a desired configuration. Applying the same
 configuration again reuses its existing objects:

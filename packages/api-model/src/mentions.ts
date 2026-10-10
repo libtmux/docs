@@ -92,6 +92,9 @@ export interface ProseMention {
   linked?: boolean
   /** 1-based source line. */
   line: number
+  /** Source offsets including the code span's delimiters. */
+  start: number
+  end: number
 }
 
 const FENCE_PORT: Record<string, string> = {
@@ -158,7 +161,8 @@ export function proseMentions(markdown: string, portByLabel: Record<string, stri
     if (!ctx) continue
     const before = ctx.before + beforeMatch.slice(beforeMatch.lastIndexOf('\n') + 1)
     const linked = body[match.index - 1] === '[' && body.slice(match.index + match[0].length).startsWith('](')
-    out.push({ text, port: portAt?.(match.index) ?? ctx.port, before, line, ...(linked ? { linked: true } : {}) })
+    out.push({ text, port: portAt?.(match.index) ?? ctx.port, before, line,
+      start: match.index, end: match.index + match[0].length, ...(linked ? { linked: true } : {}) })
   }
   return out
 }
