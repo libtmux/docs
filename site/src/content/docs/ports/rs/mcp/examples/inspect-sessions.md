@@ -47,12 +47,21 @@ edition = "2024"
 publish = false
 
 [dependencies]
-libtmux = { git = "https://github.com/libtmux/libtmux-rs", rev = "a6fc2a65674177b92b17fa380757155d2ba150fd" }
-tmux-mcp = { git = "https://github.com/libtmux/libtmux-rs", rev = "a6fc2a65674177b92b17fa380757155d2ba150fd" }
 rmcp = { version = "=3.1.2", features = ["client", "server", "transport-io"] }
 serde_json = "=1.0.151"
 tempfile = "=3.27.0"
-tokio = { version = "=1.53.1", features = ["io-util", "macros", "net", "rt-multi-thread", "time"] }
+
+[dependencies.libtmux]
+git = "https://github.com/libtmux/libtmux-rs"
+rev = "a6fc2a65674177b92b17fa380757155d2ba150fd"
+
+[dependencies.tmux-mcp]
+git = "https://github.com/libtmux/libtmux-rs"
+rev = "a6fc2a65674177b92b17fa380757155d2ba150fd"
+
+[dependencies.tokio]
+version = "=1.53.1"
+features = ["io-util", "macros", "net", "rt-multi-thread", "time"]
 ```
 
 Save this as `src/main.rs`:
@@ -91,11 +100,12 @@ async fn inspect(client: &Peer<RoleClient>) -> Result<(), ExampleError> {
         "send_keys was offered by the inspection server",
     )?;
 
-    let result = client
-        .call_tool(CallToolRequestParams::new("list_sessions").with_arguments(Default::default()))
-        .await?;
+    let request = CallToolRequestParams::new("list_sessions")
+        .with_arguments(Default::default());
+    let result = client.call_tool(request).await?;
     if result.is_error == Some(true) {
-        return Err(format!("list_sessions failed: {}", serde_json::to_string(&result)?).into());
+        let body = serde_json::to_string(&result)?;
+        return Err(format!("list_sessions failed: {body}").into());
     }
     let data = result
         .structured_content
@@ -127,7 +137,9 @@ fn record_close(
     match result {
         Ok(Some(QuitReason::Cancelled | QuitReason::Closed)) => {}
         Ok(Some(reason)) => failures.push(format!("{label}: {reason:?}")),
-        Ok(None) => failures.push(format!("{label}: cleanup deadline exceeded")),
+        Ok(None) => {
+            failures.push(format!("{label}: cleanup deadline exceeded"))
+        }
         Err(error) => failures.push(format!("{label}: {error}")),
     }
 }
@@ -144,8 +156,10 @@ async fn exchange(server: &Server) -> Result<(), ExampleError> {
             async { tools.serve(server_io).await.map_err(ExampleError::from) },
         )
     };
-    let (mut client, mut service) = timeout(Duration::from_secs(5), startup).await??;
-    let outcome = timeout(Duration::from_secs(10), inspect(client.peer())).await;
+    let started = timeout(Duration::from_secs(5), startup).await??;
+    let (mut client, mut service) = started;
+    let inspection = inspect(client.peer());
+    let outcome = timeout(Duration::from_secs(10), inspection).await;
 
     let mut failures = Vec::new();
     match outcome {
@@ -218,10 +232,12 @@ async fn main() -> Result<(), ExampleError> {
 
     // Stop the owned daemon before closing its command executor.
     let killed = server.kill().await;
-    let stopped = timeout(Duration::from_secs(5), wait_until_stopped(&socket)).await;
+    let stopping = wait_until_stopped(&socket);
+    let stopped = timeout(Duration::from_secs(5), stopping).await;
     let closed = timeout(Duration::from_secs(5), server.shutdown()).await;
-    let cleanup_failed =
-        killed.is_err() || !matches!(&stopped, Ok(Ok(()))) || !matches!(&closed, Ok(Ok(())));
+    let cleanup_failed = killed.is_err()
+        || !matches!(&stopped, Ok(Ok(())))
+        || !matches!(&closed, Ok(Ok(())));
     let mut failures = Vec::new();
     if let Err(error) = outcome {
         failures.push(format!("example: {error}"));
@@ -231,17 +247,24 @@ async fn main() -> Result<(), ExampleError> {
     }
     match stopped {
         Ok(Ok(())) => {}
-        Ok(Err(error)) => failures.push(format!("daemon cleanup verification: {error}")),
-        Err(error) => failures.push(format!("daemon cleanup verification deadline: {error}")),
+        Ok(Err(error)) => {
+            failures.push(format!("daemon stop verification: {error}"))
+        }
+        Err(error) => {
+            failures.push(format!("daemon stop verification deadline: {error}"))
+        }
     }
     match closed {
         Ok(Ok(())) => {}
         Ok(Err(error)) => failures.push(format!("executor cleanup: {error}")),
-        Err(error) => failures.push(format!("executor cleanup deadline: {error}")),
+        Err(error) => {
+            failures.push(format!("executor cleanup deadline: {error}"))
+        }
     }
     if cleanup_failed {
         let retained = directory.keep();
-        failures.push(format!("inspect retained directory {}", retained.display()));
+        let kept = retained.display();
+        failures.push(format!("inspect retained directory {kept}"));
     } else if let Err(error) = directory.close() {
         failures.push(format!("directory cleanup: {error}"));
     }
