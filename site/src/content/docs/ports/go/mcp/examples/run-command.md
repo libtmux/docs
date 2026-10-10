@@ -103,7 +103,8 @@ func run() (result error) {
 		return errors.Join(err, os.RemoveAll(directory))
 	}
 	defer func() {
-		cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		background := context.Background()
+		cleanup, cancel := context.WithTimeout(background, 5*time.Second)
 		defer cancel()
 		if err := server.Kill(cleanup); err != nil {
 			result = errors.Join(result, fmt.Errorf(
@@ -156,7 +157,8 @@ func run() (result error) {
 	}
 	defer func() {
 		if err := connection.Close(); err != nil {
-			result = errors.Join(result, fmt.Errorf("close MCP client: %w", err))
+			closeErr := fmt.Errorf("close MCP client: %w", err)
+			result = errors.Join(result, closeErr)
 		}
 	}()
 
@@ -197,13 +199,18 @@ func run() (result error) {
 		return fmt.Errorf("decode command result: %w", err)
 	}
 	if ran.TimedOut || ran.ExitStatus == nil {
-		return errors.New("command completion is unconfirmed; do not retry it automatically")
+		return errors.New("command completion is unconfirmed; " +
+			"do not retry it automatically")
 	}
-	if ran.PaneID != string(pane.ID()) || len(ran.ResolvedPaneIDs) != 1 || ran.ResolvedPaneIDs[0] != ran.PaneID {
+	paneID := string(pane.ID())
+	resolved := ran.ResolvedPaneIDs
+	if ran.PaneID != paneID || len(resolved) != 1 || resolved[0] != paneID {
 		return fmt.Errorf("unexpected pane selection: %s", data)
 	}
 	if ran.OutputUnavailable != "" || ran.LinesMissed {
-		return fmt.Errorf("command exited %d, but its output is incomplete: %s", *ran.ExitStatus, data)
+		return fmt.Errorf(
+			"command exited %d, but its output is incomplete: %s",
+			*ran.ExitStatus, data)
 	}
 	fmt.Printf("exit status: %d\n", *ran.ExitStatus)
 	for _, line := range ran.Output {
