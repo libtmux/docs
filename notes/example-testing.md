@@ -61,6 +61,162 @@ $ python3 scripts/example_environment.py \
 
 Sphinx still owns test groups, setup, cleanup, flags and expected output. Python's doctest runner still owns prompts, exception matching and output checks. Markdown and Astro Markdown/MDX require a collector that selects the displayed program; invoking an Astro build alone does not execute its fences. This supervisor does not collect blocks, compare rendered source or certify that a native runner executed any tests. Those checks belong to the format adapter and its receipt.
 
+## Bind doctest source and expected output
+
+[`run_doctest_examples.py`](../scripts/run_doctest_examples.py) runs transcripts with Python's `DocTestParser` and `DocTestRunner`. It also accepts `--module` for importable modules and uses `DocTestFinder` to collect their existing docstrings. It retains prompt parsing, shared state within a doctest, expected exceptions, `<BLANKLINE>`, comparison flags and skips. It fails when no examples execute.
+
+This transcript demonstrates session cleanup. The `with` block teaches that API; ordinary usage examples leave cleanup to the external runner.
+
+A transcript such as `docs/session.txt` keeps its ordinary imports and endpoint selection:
+
+```pycon
+>>> import uuid
+>>> import libtmux
+>>> server = libtmux.Server()
+>>> with server.new_session(session_name=f"example-{uuid.uuid4().hex}") as session:
+...     print(len(session.windows))
+1
+```
+
+Create a new input manifest before running the transcript. Include every source file whose bytes the run must bind. Module selection requires its source file in the manifest; imported dependencies must be added explicitly if their source also needs binding.
+
+The adapters compile bound Python imports from the verified source bytes. An existing `.pyc` cannot substitute older docstrings, even when its timestamp and size match the source. Python still initializes packages and resolves relative imports. Bound imports require Python's native source loader; custom loaders and bytecode-only modules fail validation. Unbound dependencies use their normal import behavior.
+
+Run each command adapter in a fresh Python process, as the commands below do. A bound module loaded before the adapter starts fails with a diagnostic instead of reusing its in-memory objects. The adapters preserve existing cache files and record imported source paths and hashes in `sourceImports`.
+
+Module collection retains Python's native `__test__` dictionary, including imported functions, methods, classes and modules. Bind the defining source of each object whose docstring supplies an example. For example, when `facade.py` selects a class from `objects.py` through `__test__`, include both files in `--input`. A missing defining source fails before execution and names the required file. Each collected example's receipt records its checked `definingSource` separately from the native filename, which Python may attribute to the facade. String entries in `__test__` use the containing module as their source; this checks that module's import, not the runtime origin of a dynamically assembled string. Native traversal, aliases, test globals and output checks stay unchanged.
+
+For a decorated function, bind the Python wrapper's source. The native runners read its `__doc__`, which can differ from the wrapped function's docstring. When `functools.wraps` copies the wrapped function's docstring, bind both Python source files; the receipt lists them in `docstringSources`. A native wrapper such as `lru_cache` can use that copied string's Python source. If a wrapper has no identifiable Python source and its docstring differs from its wrapped object's docstring, collection fails with a diagnostic. Sphinx retains the native node label and records the selected autodoc object and its checked sources in `autodocObjects`, so a label that names the underlying function cannot stand in for checking the outer wrapper.
+
+These checks cover Python object source metadata and wrapper docstring copies. They do not trace arbitrary runtime assignments, transformations or external data used to construct strings. Bind the source programs that perform those operations; the receipts make no claim about the origin of each character in a dynamically supplied docstring or `__test__` string.
+
+```console
+$ python3 scripts/example_sources.py bind \
+    --output artifacts/session-binding.json \
+    --input docs/session.txt
+```
+
+Run the transcript through the external supervisor. This example uses four native doctest examples: two imports, client construction and the `with` statement. Expected output stays in the transcript.
+
+```console
+$ python3 scripts/example_environment.py \
+    --output-dir artifacts/session-run \
+    -- python3 scripts/run_doctest_examples.py \
+    --binding artifacts/session-binding.json \
+    --receipt artifacts/session-source.json \
+    --transcript docs/session.txt \
+    --expected-tests 4
+```
+
+The source adapter reserves a new receipt before executing examples. It records each native example's source, expected output, exception, options and location. It verifies the bound files again after execution. Changed inputs, a changed test count, an old receipt path or a transcript containing only skipped examples cause failure. The supervisor separately records process cleanup. Both commands must succeed; a source receipt does not establish process cleanup.
+
+## Bind Sphinx rendering and execution
+
+The following reStructuredText and MyST examples demonstrate session cleanup with the same public API as the transcript above.
+
+Author reStructuredText examples with Sphinx's existing directives. The group name `session` connects the code and expected output:
+
+```rst
+Session example
+===============
+
+.. testcode:: session
+
+   import uuid
+   import libtmux
+
+   server = libtmux.Server()
+   with server.new_session(session_name=f"example-{uuid.uuid4().hex}") as session:
+       print(len(session.windows))
+
+.. testoutput:: session
+
+   1
+```
+
+MyST uses directive fences for the same native test group:
+
+````markdown
+# Session example
+
+```{testcode} session
+import uuid
+import libtmux
+
+server = libtmux.Server()
+with server.new_session(session_name=f"example-{uuid.uuid4().hex}") as session:
+    print(len(session.windows))
+```
+
+```{testoutput} session
+1
+```
+````
+
+[`run_sphinx_examples.py`](../scripts/run_sphinx_examples.py) calls Sphinx's native build command. Enable its binding extension after your existing `extensions` configuration, alongside `sphinx.ext.doctest` and, for MyST, `myst_parser`:
+
+```python
+import os
+
+if os.environ.get("LIBTMUX_EXAMPLE_BINDING"):
+    extensions.append("sphinx_example_binding")
+```
+
+The command adapter makes the extension importable and supplies `LIBTMUX_EXAMPLE_BINDING` and `LIBTMUX_EXAMPLE_RECEIPT` for that invocation. The conditional leaves ordinary Sphinx builds on their existing configuration. Keep reStructuredText directives, MyST directive fences, groups, setup, cleanup and expected output as authored. No additional code-fence tag is required.
+
+Bind the project's configuration, documents and included source files. Add any further files selected by native includes; an include missing from the manifest fails validation. Build output belongs outside that explicit input set.
+
+```console
+$ python3 scripts/example_sources.py bind \
+    --output artifacts/sphinx-binding.json \
+    --input docs/conf.py docs/index.rst docs/session.rst
+```
+
+Render the bound source through Sphinx's HTML builder:
+
+```console
+$ python3 scripts/example_environment.py \
+    --output-dir artifacts/sphinx-html-run \
+    -- python3 scripts/run_sphinx_examples.py \
+    --binding artifacts/sphinx-binding.json \
+    --receipt artifacts/sphinx-html-source.json \
+    -- -b html -E -a -W docs artifacts/sphinx-html
+```
+
+Execute the same source through Sphinx's doctest builder:
+
+```console
+$ python3 scripts/example_environment.py \
+    --output-dir artifacts/sphinx-doctest-run \
+    -- python3 scripts/run_sphinx_examples.py \
+    --binding artifacts/sphinx-binding.json \
+    --receipt artifacts/sphinx-doctest-source.json \
+    -- -b doctest -E -a -W docs artifacts/sphinx-doctest
+```
+
+Compare the completed rendering and execution receipts:
+
+```console
+$ python3 scripts/example_sources.py verify \
+    --binding artifacts/sphinx-binding.json \
+    --receipt artifacts/sphinx-doctest-source.json \
+    --sphinx-html artifacts/sphinx-html-source.json
+```
+
+The adapter records native test nodes and configuration, including hidden setup and cleanup. It compares visible blocks with the generated HTML and checks that the HTML and doctest builds saw the same documents, groups, options and test text. For autodoc examples, include the Python source in the manifest; the receipt preserves the docstring's native source label. Sphinx's normal presentation rules remain: for example, it may hide inline doctest flags and render `<BLANKLINE>` as an empty line while retaining both in the executable test text. The adapter records both forms.
+
+For each autodoc example, the extension also checks that the Python module executed from those bound source bytes during this invocation. The HTML and doctest receipts must agree on these `autodocSources` records. The command adapter installs this import check before Sphinx loads the project's configuration and extensions.
+
+Include the source that supplies an inherited docstring, even when the directive names a subclass or an overriding method without its own docstring. For `autoclass_content = "init"` or `"both"`, and the corresponding `class-doc-from` option, this can be a parent's `__init__` or `__new__` method. The adapter checks the provider Sphinx selects and retains Sphinx's native source label in the receipt. It preserves native inheritance, constructor selection, signature stripping and expected-output checking. An unused parent docstring adds no source-binding requirement.
+
+For a `functools.partial` with its default docstring, Sphinx reads the wrapped function's docstring but may label it with `functools.py`. Bind the wrapped function's Python source. The adapter keeps that native label and checks the function's source; it does not require the standard library as an example input solely because of this attribution. An explicit include of the same file still requires its own binding. If the adapter cannot reconcile its provider selection with native autodoc's returned blocks, it fails certification instead of claiming a source match.
+
+The receipt completes after Sphinx returns, including its warning-as-error status and builder cleanup. A build-finished callback alone cannot establish that result. Use `-E -a` to read every selected document instead of reusing cached doctrees. Add `--expected-tests` to the command adapter or final verifier when the project maintains an exact native test count.
+
+The adapters count executed tests in `attempted`. On Python versions whose native count includes skips, the receipt also records that original count and subtracts the native skip count. A skipped-only run fails.
+
+These adapters do not supply a generic Markdown or Astro Markdown/MDX collector. Those formats still need a native pipeline integration that binds the selected rendered program. Sphinx configuration and example imports can execute arbitrary project code; the source manifest is a drift check, and the external supervisor provides tmux lifecycle control rather than operating-system isolation.
+
 ## Failure and process cleanup
 
 The supervisor retains the example's process handle and, in running mode, the foreground fixture's handle. After the command exits, it signals only its accepted child processes and reaps orphaned descendants. Cleanup uses process identities, so it does not rediscover and kill a daemon by a socket name that may have been reused.
