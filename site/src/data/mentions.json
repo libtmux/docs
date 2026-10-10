@@ -2761,6 +2761,13 @@
   {
    "port": "go",
    "symbol": "tmux.NewServer",
+   "page": "/go/latest/mcp/examples/inspect-sessions/",
+   "title": "List sessions through MCP",
+   "section": "ports"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.NewServer",
    "page": "/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
@@ -3020,6 +3027,20 @@
   {
    "port": "go",
    "symbol": "tmux.Server.Kill",
+   "page": "/go/latest/mcp/examples/inspect-sessions/",
+   "title": "List sessions through MCP",
+   "section": "ports"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.Kill",
+   "page": "/go/latest/mcp/examples/run-command/",
+   "title": "Run a command through MCP",
+   "section": "ports"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.Kill",
    "page": "/topics/socket-and-servers/",
    "title": "Socket and servers",
    "section": "topics"
@@ -3030,6 +3051,13 @@
    "page": "/go/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Server.NewSession",
+   "page": "/go/latest/mcp/examples/inspect-sessions/",
+   "title": "List sessions through MCP",
+   "section": "ports"
   },
   {
    "port": "go",
@@ -3198,6 +3226,13 @@
    "page": "/topics/traversal/",
    "title": "Traversal",
    "section": "topics"
+  },
+  {
+   "port": "go",
+   "symbol": "tmux.Session.ResolveActivePane",
+   "page": "/go/latest/mcp/examples/run-command/",
+   "title": "Run a command through MCP",
+   "section": "ports"
   },
   {
    "port": "go",

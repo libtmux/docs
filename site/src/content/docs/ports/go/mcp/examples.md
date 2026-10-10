@@ -1,78 +1,52 @@
 ---
 title: Go MCP examples
-description: List sessions through the Go MCP server and inspect implementation examples.
+description: Run complete SDK clients that inspect sessions and check a shell command's result.
 port: go
 product: mcp
 sidebar:
-  label: Examples
+  label: Overview
+  group: Examples
   order: 3
+cards:
+  - label: List sessions through MCP
+    href: inspect-sessions/
+    body: Create a private server and read structured session metadata.
+  - label: Run a command through MCP
+    href: run-command/
+    body: Execute a command in one pane and check its exit status and output.
 ---
 
-Connect the server using the [setup guide](../guides/), then call
-[`list_sessions`](../tools/list_sessions/) from your MCP client.
+Each program includes its dependencies, entry point, private tmux server,
+client transport, deadlines, and cleanup. The MCP executable is installed
+inside the example directory. No pre-existing tmux session is required.
 
 ## List sessions
 
-This is the `params` object for an MCP `tools/call` request. Send it
-through the connected client:
-
-```json
-{
-  "name": "list_sessions",
-  "arguments": {}
-}
-```
-
-Use the returned session IDs when choosing a window or pane. The
-[tool reference](../tools/list_sessions/) describes this port's result
-and optional arguments.
+The [session inspector](inspect-sessions/) calls
+[`list_sessions`](../tools/list_sessions/) and verifies the returned session
+ID against the session it created. It reads metadata without sending input
+or capturing terminal content through MCP.
 
 ## Internals
 
-The following examples are for applications that embed or extend the server.
-Installing and connecting an MCP client does not require this code.
-
-The Go `agent-workflow` example connects an MCP client and server in
-memory. It discovers caller context, splits a pane, runs a bounded
-command, inspects topology, and collects the command result.
+Applications can also embed the server and use an in-memory client transport.
+The upstream [agent-workflow program](https://github.com/libtmux/libtmux-go/blob/6e7420927f4cb717fe089a710328e44e8d551025/mcp/examples/agent-workflow/main.go)
+demonstrates caller context, pane creation, command completion, and topology
+inspection. The [language API reference](../reference/) documents the types
+used to embed the server.
 
 ### Run the agent workflow
 
-From the Go repository with its dependencies and tmux installed, create
-a disposable server using a socket name reserved for this example:
-
-```console
-$ tmux -L libtmux-go-docs-example new-session -d -s example
-```
-
-Run the example:
-
-```console
-$ go -C mcp run ./examples/agent-workflow \
-    -socket-name libtmux-go-docs-example
-```
-
-It selects `inspect,execute` toolsets when the environment has not
-selected a surface. An inherited inspection-only selection will not
-permit its writes.
-
-The output identifies the created pane, then reports exit status
-and the final layout. The example reads `structuredContent` through
-the MCP client rather than calling private tool handlers.
+The [upstream example instructions](https://github.com/libtmux/libtmux-go/blob/6e7420927f4cb717fe089a710328e44e8d551025/mcp/examples/agent-workflow/README.md)
+describe its repository setup and socket selection. For a standalone program
+with all setup on one page, use [Run a command](run-command/).
 
 ### Clean up
 
-After inspecting the result, end only the disposable server created above:
-
-```console
-$ tmux -L libtmux-go-docs-example kill-server
-```
-
-The [complete source](https://github.com/libtmux/libtmux-go/blob/52968a3181c1c9e6d1b26c565d4b170968ae61c0/mcp/examples/agent-workflow/main.go)
-owns and closes its client and managed server instance. Its
-[README](https://github.com/libtmux/libtmux-go/blob/52968a3181c1c9e6d1b26c565d4b170968ae61c0/mcp/examples/agent-workflow/README.md)
-describes the expected workflow. These commands execute real tmux
-operations; viewing this page does not run them.
+The standalone programs close the MCP connection before stopping their owned
+tmux server. They use a fresh cleanup deadline even when a request times out,
+and retain the temporary directory if server cleanup fails. They never select
+your default tmux socket.
 
 For workspace configuration without MCP, see
 [Workspace builder examples](../../workspace/internals/examples/).

@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-go",
-  "revision": "52968a3181c1c9e6d1b26c565d4b170968ae61c0",
+  "revision": "6f3df55f8a41999e41225eefb3940545b834e6a2",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -29,7 +29,7 @@
     "resourceTemplates": [],
     "serverInfo": {
       "name": "libtmux",
-      "version": "v0.0.1-alpha.11"
+      "version": "v0.0.1-alpha.12"
     },
     "tools": [
       {
@@ -5526,13 +5526,13 @@
               "openWorldHint": true,
               "readOnlyHint": false
             },
-            "description": "Change tmux state; no client-supplied executable input. Applies a built-in tmux layout, or a saved layout string from get_window_info.",
+            "description": "Change tmux state; no client-supplied executable input. Applies a named layout, a unique abbreviation for the running tmux version, or a saved layout from get_window_info. Invalid syntax is rejected before window lookup; tmux validates geometry when applying the layout.",
             "inputLiteralization": {},
             "inputSchema": {
               "additionalProperties": false,
               "properties": {
                 "layout": {
-                  "description": "a built-in tmux layout name, or a saved layout string from get_window_info",
+                  "description": "a named layout, a unique abbreviation for the running tmux version, or a saved layout from get_window_info",
                   "type": "string"
                 },
                 "window_id": {
@@ -5583,12 +5583,12 @@
           "openWorldHint": true,
           "title": "Select a layout"
         },
-        "description": "Change tmux state; no client-supplied executable input. Applies a built-in tmux layout, or a saved layout string from get_window_info.",
+        "description": "Change tmux state; no client-supplied executable input. Applies a named layout, a unique abbreviation for the running tmux version, or a saved layout from get_window_info. Invalid syntax is rejected before window lookup; tmux validates geometry when applying the layout.",
         "inputSchema": {
           "additionalProperties": false,
           "properties": {
             "layout": {
-              "description": "a built-in tmux layout name, or a saved layout string from get_window_info",
+              "description": "a named layout, a unique abbreviation for the running tmux version, or a saved layout from get_window_info",
               "type": "string"
             },
             "window_id": {
