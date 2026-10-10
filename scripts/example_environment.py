@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import ctypes
 from dataclasses import dataclass, field
+import errno
 import json
 import math
 import os
@@ -76,6 +77,7 @@ class Child:
     role: str
     process: subprocess.Popen | None = None
     descriptor: int | None = field(default=None, init=False)
+    pidfd_bound: bool = field(default=False, init=False)
     start_ticks: int | None = field(default=None, init=False)
     binding_error: dict | None = field(default=None, init=False)
     exit_code: int | None = None
@@ -86,6 +88,7 @@ class Child:
     def bind(self) -> None:
         try:
             self.descriptor = open_pidfd(self.pid)
+            self.pidfd_bound = True
             # An unreaped child cannot be replaced by another process at this PID.
             self.start_ticks = int(Path(f"/proc/{self.pid}/stat").read_text().rsplit(")", 1)[1].split()[19])
         except BaseException as error:
@@ -96,9 +99,13 @@ class Child:
         if self.exit_observed:
             return True
         if self.descriptor is not None:
-            readable, _, _ = select.select([self.descriptor], [], [], 0)
-            if not readable:
+            poller = select.poll()
+            poller.register(self.descriptor, select.POLLIN)
+            events = poller.poll(0)
+            if not events:
                 return False
+            if events[0][1] & select.POLLNVAL:
+                raise OSError(errno.EBADF, "Cannot observe the accepted process descriptor")
         if self.process is not None:
             code = self.process.poll()
             if code is None:
@@ -111,6 +118,10 @@ class Child:
         self.exit_code = code
         self.exit_observed = True
         self.exit_observed_at = time.monotonic()
+        if self.descriptor is not None:
+            # Receipts retain the binding after the exited child's handle is closed.
+            descriptor, self.descriptor = self.descriptor, None
+            os.close(descriptor)
         return True
 
     def stop(self, number: int) -> None:
@@ -129,7 +140,7 @@ class Child:
 
     def receipt(self) -> dict:
         return dict(pid=self.pid, role=self.role, startTicks=self.start_ticks,
-                    identityBinding="pidfd" if self.descriptor is not None else "unreaped-child",
+                    identityBinding="pidfd" if self.pidfd_bound else "unreaped-child",
                     bindingError=self.binding_error,
                     exitCode=self.exit_code, exitObserved=self.exit_observed,
                     exitObservedAt=self.exit_observed_at, signals=self.signals)

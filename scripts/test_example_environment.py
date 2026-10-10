@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import ctypes
 import errno
+import fcntl
 import json
 import os
 from pathlib import Path
+import resource
 import select
 import shutil
 import signal
@@ -15,6 +17,9 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
+
+import example_environment as runner
 
 
 RUNNER = Path(__file__).with_name("example_environment.py")
@@ -26,6 +31,163 @@ def observer_pidfd(pid):
     if descriptor < 0:
         raise OSError(ctypes.get_errno(), "Cannot independently observe the fixture")
     return descriptor
+
+
+class ChildDescriptorTests(unittest.TestCase):
+    @staticmethod
+    def exited(descriptor):
+        poller = select.poll()
+        poller.register(descriptor, select.POLLIN)
+        return bool(poller.poll(0))
+
+    def await_exit(self, child):
+        deadline = time.monotonic() + 5
+        while not child.poll():
+            self.assertLess(time.monotonic(), deadline, "The accepted child did not exit")
+            time.sleep(0.001)
+
+    def start_blocked(self, *, popen=True):
+        process = subprocess.Popen(
+            [sys.executable, "-I", "-c", "import sys; sys.stdin.buffer.read(); sys.exit(17)"],
+            stdin=subprocess.PIPE, env={"LC_ALL": "C"},
+        )
+        child = runner.Child(process.pid, "descriptor-test", process if popen else None)
+        observer = observer_pidfd(process.pid)
+
+        def finish():
+            # This separate handle keeps test rescue bound to the accepted child.
+            try:
+                if not self.exited(observer):
+                    runner.send_pidfd_signal(observer, signal.SIGKILL)
+                if child.exit_observed:
+                    process.returncode = child.exit_code
+                process.wait(timeout=5)
+            finally:
+                process.stdin.close()
+                os.close(observer)
+                if child.descriptor is not None:
+                    os.close(child.descriptor)
+                    child.descriptor = None
+
+        self.addCleanup(finish)
+        return child, process, observer
+
+    def test_high_pidfd_preserves_exit_status_signals_and_receipt_identity(self):
+        for popen in (True, False):
+            for terminate in (False, True):
+                with self.subTest(popen=popen, terminate=terminate):
+                    child, process, observer = self.start_blocked(popen=popen)
+                    child.bind()
+                    high = fcntl.fcntl(child.descriptor, fcntl.F_DUPFD_CLOEXEC, 1024)
+                    os.close(child.descriptor)
+                    child.descriptor = high
+                    before = child.receipt()
+                    self.assertGreaterEqual(high, 1024)
+                    self.assertFalse(self.exited(observer))
+                    self.assertFalse(child.poll())
+                    self.assertEqual(before["identityBinding"], "pidfd")
+                    self.assertIsInstance(before["startTicks"], int)
+                    if terminate:
+                        child.stop(signal.SIGTERM)
+                    else:
+                        process.stdin.close()
+                    self.await_exit(child)
+                    self.assertTrue(self.exited(observer))
+                    self.assertIsNone(child.descriptor)
+                    with self.assertRaises(OSError) as closed:
+                        os.fstat(high)
+                    self.assertEqual(closed.exception.errno, errno.EBADF)
+                    after = child.receipt()
+                    self.assertEqual(after["exitCode"], -signal.SIGTERM if terminate else 17)
+                    self.assertEqual(after["signals"], [signal.SIGTERM] if terminate else [])
+                    for key in ("pid", "role", "startTicks", "identityBinding", "bindingError"):
+                        self.assertEqual(after[key], before[key])
+                    with patch.object(runner, "send_pidfd_signal") as by_handle, patch.object(runner.os, "kill") as by_pid:
+                        child.stop(signal.SIGTERM)
+                        child.stop(signal.SIGKILL)
+                        self.assertTrue(child.poll())
+                        by_handle.assert_not_called()
+                        by_pid.assert_not_called()
+                    self.assertEqual(child.receipt(), after)
+
+    def test_completed_children_release_descriptors_while_another_child_stays_live(self):
+        live, process, observer = self.start_blocked()
+        live.bind()
+        live_descriptor = live.descriptor
+        original_limit = resource.getrlimit(resource.RLIMIT_NOFILE)
+        limit = min(original_limit[0], 64)
+        baseline = len(list(Path("/proc/self/fd").iterdir()))
+        self.assertLess(baseline + 8, limit)
+        accepted = []
+        maximum = baseline
+        try:
+            resource.setrlimit(resource.RLIMIT_NOFILE, (limit, original_limit[1]))
+            for index in range(limit * 2):
+                pid = os.fork()
+                if pid == 0:
+                    os._exit(index % 20)
+                child = runner.Child(pid, "completed-descriptor-test")
+                accepted.append(child)
+                child.bind()
+                self.await_exit(child)
+                maximum = max(maximum, len(list(Path("/proc/self/fd").iterdir())))
+                self.assertEqual(child.exit_code, index % 20)
+                self.assertEqual(child.receipt()["identityBinding"], "pidfd")
+                self.assertLessEqual(maximum, baseline)
+                self.assertFalse(live.poll())
+                self.assertFalse(self.exited(observer))
+                self.assertEqual(live.descriptor, live_descriptor)
+                os.fstat(live_descriptor)
+            self.assertTrue(all(child.exit_observed for child in accepted))
+            self.assertTrue(all(child.descriptor is None for child in accepted))
+            process.stdin.close()
+            self.await_exit(live)
+            self.assertEqual(live.exit_code, 17)
+            self.assertTrue(self.exited(observer))
+            print(f"Descriptor bound: {len(accepted)} completed children; fd baseline/max {baseline}/{maximum}; soft limit {limit}")
+        finally:
+            resource.setrlimit(resource.RLIMIT_NOFILE, original_limit)
+            for child in accepted:
+                if not child.exit_observed:
+                    child.stop(signal.SIGKILL)
+                    self.await_exit(child)
+                if child.descriptor is not None:
+                    os.close(child.descriptor)
+                    child.descriptor = None
+
+    def test_unreaped_child_fallback_retains_identity_after_exit(self):
+        for popen in (True, False):
+            with self.subTest(popen=popen):
+                child, _, observer = self.start_blocked(popen=popen)
+                with patch.object(runner, "open_pidfd", side_effect=OSError(errno.EMFILE, "injected pidfd exhaustion")):
+                    with self.assertRaises(OSError):
+                        child.bind()
+                before = child.receipt()
+                self.assertEqual(before["identityBinding"], "unreaped-child")
+                self.assertEqual(before["bindingError"]["type"], "OSError")
+                child.stop(signal.SIGTERM)
+                self.await_exit(child)
+                self.assertTrue(self.exited(observer))
+                self.assertEqual(child.exit_code, -signal.SIGTERM)
+                self.assertEqual(child.receipt()["identityBinding"], before["identityBinding"])
+                self.assertEqual(child.receipt()["bindingError"], before["bindingError"])
+                with patch.object(runner.os, "kill") as by_pid:
+                    child.stop(signal.SIGKILL)
+                    by_pid.assert_not_called()
+
+    def test_invalid_descriptor_remains_an_observation_failure(self):
+        child, _, observer = self.start_blocked()
+        child.bind()
+        os.close(child.descriptor)
+        try:
+            with self.assertRaises(OSError) as invalid:
+                child.poll()
+            self.assertEqual(invalid.exception.errno, errno.EBADF)
+            self.assertFalse(child.exit_observed)
+            self.assertFalse(self.exited(observer))
+            self.assertEqual(child.receipt()["identityBinding"], "pidfd")
+        finally:
+            child.descriptor = None
 
 
 class ExampleEnvironmentTests(unittest.TestCase):
