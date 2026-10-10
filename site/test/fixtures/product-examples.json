@@ -308,7 +308,7 @@
       "files": [
         {
           "name": "snapshot-sessions.rb",
-          "sha256": "2df8b331308a9541b21b7c8325578fcdecb5f520b639542e7fe9cb6856341fee"
+          "sha256": "e199f960866900ea6d86be97af62575c578226b81e350e3ee0c2b6aa9587e731"
         }
       ],
       "toolchain": [
