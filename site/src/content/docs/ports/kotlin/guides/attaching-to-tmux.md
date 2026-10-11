@@ -128,7 +128,9 @@ Fetch the verified library revision, build, and run:
 ```console
 $ git clone https://github.com/libtmux/libtmux-java libtmux-source &&
   git -C libtmux-source checkout 85ebf6955e56703c5be74e2afd34a18309044741 &&
-  sh run.sh ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2
+  sh run.sh ./libtmux-source/gradlew --project-dir . run \
+    --console=plain \
+    --max-workers=2
 ```
 
 The program prints `work`. To use an existing server of your own, set

@@ -265,7 +265,7 @@
       ],
       "page": "ports/kotlin/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 85ebf6955e56703c5be74e2afd34a18309044741 &&\n  sh run.sh ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2"
+        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 85ebf6955e56703c5be74e2afd34a18309044741 &&\n  sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n    --console=plain \\\n    --max-workers=2"
       ],
       "expectedOutput": "work",
       "files": [
@@ -306,7 +306,7 @@
       ],
       "page": "ports/scala/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 85ebf6955e56703c5be74e2afd34a18309044741 &&\n  sh run.sh ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2"
+        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 85ebf6955e56703c5be74e2afd34a18309044741 &&\n  sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n    --console=plain \\\n    --max-workers=2"
       ],
       "expectedOutput": "work",
       "files": [
