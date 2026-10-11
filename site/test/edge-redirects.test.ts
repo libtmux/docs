@@ -4,40 +4,68 @@ import { describe, expect, it } from 'vitest'
 
 const source = readFileSync(new URL('../../infra/cloudfront-function.js', import.meta.url), 'utf8')
 const handler = runInNewContext(`${source.replace("import cf from 'cloudfront'", '')}\nhandler`, {
-  cf: { kvs: () => ({ get: async () => { throw new Error('No port default') } }) },
+  cf: {
+    kvs: () => ({
+      get: async () => {
+        throw new Error('No port default')
+      },
+    }),
+  },
 }) as (event: { request: { uri: string; querystring?: Record<string, unknown> } }) => Promise<{
-  statusCode?: number; uri?: string; headers?: { location: { value: string } }
+  statusCode?: number
+  uri?: string
+  headers?: { location: { value: string } }
 }>
 
 describe('tmux prose redirects at the edge', () => {
-  it.each(['guides', 'topics', 'concepts', 'examples'])('redirects %s indexes and descendants in one hop', async (section) => {
-    for (const root of ['/en', '/ja', '/pr-42/en']) for (const [suffix, target] of [
-      ['', '/'], ['/', '/'], ['/index.html', '/'],
-      ['/nested/page', '/nested/page/'], ['/nested/page/', '/nested/page/'],
-      ['/nested/page/index.html', '/nested/page/'], ['/nested/page.md', '/nested/page.md'],
-      ['/index.md', '/index.md'], ['.md', '.md'],
-      ['/json', '/json/'], ['/constructor', '/constructor/'],
-    ]) {
-      const result = await handler({ request: { uri: `${root}/${section}${suffix}` } })
-      expect(result.statusCode).toBe(301)
-      expect(result.headers?.location.value).toBe(`${root}/tmux/${section}${target}`)
-    }
-  })
+  it.each(['guides', 'topics', 'concepts', 'examples'])(
+    'redirects %s indexes and descendants in one hop',
+    async (section) => {
+      for (const root of ['/en', '/ja', '/pr-42/en'])
+        for (const [suffix, target] of [
+          ['', '/'],
+          ['/', '/'],
+          ['/index.html', '/'],
+          ['/nested/page', '/nested/page/'],
+          ['/nested/page/', '/nested/page/'],
+          ['/nested/page/index.html', '/nested/page/'],
+          ['/nested/page.md', '/nested/page.md'],
+          ['/index.md', '/index.md'],
+          ['.md', '.md'],
+          ['/json', '/json/'],
+          ['/constructor', '/constructor/'],
+        ]) {
+          const result = await handler({ request: { uri: `${root}/${section}${suffix}` } })
+          expect(result.statusCode).toBe(301)
+          expect(result.headers?.location.value).toBe(`${root}/tmux/${section}${target}`)
+        }
+    },
+  )
 
   it('preserves encoded query values, repeated parameters and empty values', async () => {
-    const result = await handler({ request: { uri: '/en/guides/getting-started/', querystring: {
-      prompt: { value: 'session%20switcher' },
-      tag: { multiValue: [{ value: 'a%2Fb' }, { value: 'a%26b' }] },
-      empty: { value: '' },
-    } } })
-    expect(result.headers?.location.value).toBe('/en/tmux/guides/getting-started/?prompt=session%20switcher&tag=a%2Fb&tag=a%26b&empty=')
+    const result = await handler({
+      request: {
+        uri: '/en/guides/getting-started/',
+        querystring: {
+          prompt: { value: 'session%20switcher' },
+          tag: { multiValue: [{ value: 'a%2Fb' }, { value: 'a%26b' }] },
+          empty: { value: '' },
+        },
+      },
+    })
+    expect(result.headers?.location.value).toBe(
+      '/en/tmux/guides/getting-started/?prompt=session%20switcher&tag=a%2Fb&tag=a%26b&empty=',
+    )
   })
 
-  it.each(['/en/tmux/guides/', '/en/go/latest/guides/', '/en/topics-extra/', '/en/prompts/', '/guides/'])('does not redirect unrelated or already canonical path %s', async (uri) => {
-    const result = await handler({ request: { uri } })
-    expect(result.statusCode).toBeUndefined()
-    expect(result.uri).toBe(`${uri}index.html`)
-  })
+  it.each(['/en/tmux/guides/', '/en/go/latest/guides/', '/en/topics-extra/', '/en/prompts/', '/guides/'])(
+    'does not redirect unrelated or already canonical path %s',
+    async (uri) => {
+      const result = await handler({ request: { uri } })
+      expect(result.statusCode).toBeUndefined()
+      expect(result.uri).toBe(`${uri}index.html`)
+    },
+  )
 
   it('keeps the complete function below the CloudFront source limit', () => {
     expect(Buffer.byteLength(source)).toBeLessThanOrEqual(10_240)
@@ -46,30 +74,45 @@ describe('tmux prose redirects at the edge', () => {
 
 describe('C# documentation redirects at the edge', () => {
   it('keeps locale, preview, version, declaration and export paths', async () => {
-    for (const root of ['/en', '/ja', '/zh-Hant', '/pr-42/en']) for (const [path, target] of [
-      ['', '/'], ['/', '/'], ['/index.html', '/'],
-      ['/latest', '/latest/'], ['/v0.0.0-alpha.20/', '/v0.0.0-alpha.20/'],
-      ['/pr-8/reference/libtmux-pane/', '/pr-8/reference/libtmux-pane/'],
-      ['/stable/api/libtmux.client', '/stable/api/libtmux.client/'],
-      ['/latest/reference/libtmux-server/index.html', '/latest/reference/libtmux-server/'],
-      ['/latest/reference/libtmux-server.md', '/latest/reference/libtmux-server.md'],
-      ['/latest/objects.inv', '/latest/objects.inv'], ['/docs.json', '/docs.json'],
-    ]) {
-      const result = await handler({ request: { uri: `${root}/dotnet${path}` } })
-      expect(result.statusCode).toBe(301)
-      expect(result.headers?.location.value).toBe(`${root}/csharp${target}`)
-    }
+    for (const root of ['/en', '/ja', '/zh-Hant', '/pr-42/en'])
+      for (const [path, target] of [
+        ['', '/'],
+        ['/', '/'],
+        ['/index.html', '/'],
+        ['/latest', '/latest/'],
+        ['/v0.0.0-alpha.20/', '/v0.0.0-alpha.20/'],
+        ['/pr-8/reference/libtmux-pane/', '/pr-8/reference/libtmux-pane/'],
+        ['/stable/api/libtmux.client', '/stable/api/libtmux.client/'],
+        ['/latest/reference/libtmux-server/index.html', '/latest/reference/libtmux-server/'],
+        ['/latest/reference/libtmux-server.md', '/latest/reference/libtmux-server.md'],
+        ['/latest/objects.inv', '/latest/objects.inv'],
+        ['/docs.json', '/docs.json'],
+      ]) {
+        const result = await handler({ request: { uri: `${root}/dotnet${path}` } })
+        expect(result.statusCode).toBe(301)
+        expect(result.headers?.location.value).toBe(`${root}/csharp${target}`)
+      }
   })
 
   it('preserves encoded and repeated query parameters', async () => {
-    const result = await handler({ request: { uri: '/en/dotnet/latest/reference/libtmux-server/', querystring: {
-      q: { value: 'a%20b' }, tag: { multiValue: [{ value: 'a%2Fb' }, { value: 'a%26b' }] }, empty: { value: '' },
-    } } })
-    expect(result.headers?.location.value).toBe('/en/csharp/latest/reference/libtmux-server/?q=a%20b&tag=a%2Fb&tag=a%26b&empty=')
+    const result = await handler({
+      request: {
+        uri: '/en/dotnet/latest/reference/libtmux-server/',
+        querystring: {
+          q: { value: 'a%20b' },
+          tag: { multiValue: [{ value: 'a%2Fb' }, { value: 'a%26b' }] },
+          empty: { value: '' },
+        },
+      },
+    })
+    expect(result.headers?.location.value).toBe(
+      '/en/csharp/latest/reference/libtmux-server/?q=a%20b&tag=a%2Fb&tag=a%26b&empty=',
+    )
   })
 
   it.each(['/en/csharp/latest/', '/en/fsharp/latest/', '/en/dotnetwork/', '/dotnet/', '/en/tmux/dotnet/'])(
-    'leaves unrelated and canonical paths alone: %s', async (uri) => {
+    'leaves unrelated and canonical paths alone: %s',
+    async (uri) => {
       const result = await handler({ request: { uri } })
       expect(result.statusCode).toBeUndefined()
       expect(result.uri).toBe(`${uri}index.html`)

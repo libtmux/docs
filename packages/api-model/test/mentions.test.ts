@@ -30,7 +30,7 @@ describe('prose mentions', () => {
   })
 
   it('keeps sentence context and table port labels', () => {
-    const source = "Python uses `Session.panes`.\n\n| Go | `Session.Panes` |"
+    const source = 'Python uses `Session.panes`.\n\n| Go | `Session.Panes` |'
     expect(proseMentions(source, LABELS).map(({ start: _start, end: _end, ...mention }) => mention)).toEqual([
       { text: 'Session.panes', port: undefined, before: 'Python uses ', line: 1 },
       { text: 'Session.Panes', port: 'go', before: '| Go | ', line: 3 },
@@ -39,8 +39,12 @@ describe('prose mentions', () => {
 
   it('ignores frontmatter and fenced examples but keeps a fence language for subsequent prose', () => {
     const source = [
-      '---', 'description: "`Server`"', '---',
-      '~~~python', '`not_a_reference`', '~~~',
+      '---',
+      'description: "`Server`"',
+      '---',
+      '~~~python',
+      '`not_a_reference`',
+      '~~~',
       'Read `Server.sessions`.',
       '## Other material',
       'Read `Server`.',

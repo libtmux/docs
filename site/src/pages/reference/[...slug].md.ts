@@ -27,10 +27,9 @@ export async function getStaticPaths() {
   if (buildLocale() !== DEFAULT_LOCALE) return []
   const model = API_MODELS[port]
   if (!model) return []
-  const productIds = new Set([
-    ...symbolsForProduct(model, 'mcp'),
-    ...symbolsForProduct(model, 'workspace'),
-  ].map((symbol) => symbol.id))
+  const productIds = new Set(
+    [...symbolsForProduct(model, 'mcp'), ...symbolsForProduct(model, 'workspace')].map((symbol) => symbol.id),
+  )
   const paths: { params: { slug: string }; props: { port: string; id: string } }[] = []
   for (const symbol of model.symbols) {
     if (productIds.has(symbol.id)) continue

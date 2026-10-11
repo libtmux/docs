@@ -94,13 +94,27 @@ const JS_ROLE: Partial<Record<SymbolKind, string>> = {
 }
 
 const C_ROLE: Partial<Record<SymbolKind, string>> = {
-  struct: 'struct', union: 'union', enum: 'enum', function: 'function',
-  typealias: 'type', attribute: 'var', constant: 'var',
+  struct: 'struct',
+  union: 'union',
+  enum: 'enum',
+  function: 'function',
+  typealias: 'type',
+  attribute: 'var',
+  constant: 'var',
 }
 
 function roleFor(language: string, kind: SymbolKind): string {
-  const domain = language === 'c' ? 'c' : DOMAIN[language as PortSlug] ?? 'std'
-  const table = domain === 'py' ? PY_ROLE : domain === 'cpp' ? CPP_ROLE : domain === 'js' ? JS_ROLE : domain === 'c' ? C_ROLE : undefined
+  const domain = language === 'c' ? 'c' : (DOMAIN[language as PortSlug] ?? 'std')
+  const table =
+    domain === 'py'
+      ? PY_ROLE
+      : domain === 'cpp'
+        ? CPP_ROLE
+        : domain === 'js'
+          ? JS_ROLE
+          : domain === 'c'
+            ? C_ROLE
+            : undefined
   // `std:label` is the honest home for a language Sphinx has no domain for.
   return `${domain}:${table?.[kind] ?? 'label'}`
 }
@@ -123,7 +137,10 @@ export interface InventoryOptions {
 }
 
 /** Serialise a model as `objects.inv` bytes. */
-export function writeInventory(model: ApiModelBase & { port?: string; language?: string }, options: InventoryOptions): Buffer {
+export function writeInventory(
+  model: ApiModelBase & { port?: string; language?: string },
+  options: InventoryOptions,
+): Buffer {
   const header =
     '# Sphinx inventory version 2\n' +
     `# Project: ${escape(options.project)}\n` +
@@ -131,32 +148,38 @@ export function writeInventory(model: ApiModelBase & { port?: string; language?:
     '# The remainder of this file is compressed using zlib.\n'
 
   const lines: string[] = []
-  const parentKinds = model.language === 'c'
-    ? new Map(model.symbols.map((symbol) => [symbol.id, symbol.kind])) : undefined
-  const symbolRole = (symbol: ApiSymbol) => model.language === 'c' && symbol.modifiers.includes('macro') ? 'c:macro'
-    : model.language === 'c' && symbol.parent && symbol.kind === 'constant' && parentKinds?.get(symbol.parent) === 'enum'
-      ? 'c:enumerator'
-      : model.language === 'c' && symbol.parent && ['attribute', 'property'].includes(symbol.kind)
-        ? 'c:member'
-        : roleFor(model.port ?? model.language ?? '', symbol.kind)
-  const cName = (symbol: ApiSymbol) => symbolRole(symbol) === 'c:enumerator' ? symbol.name : qualifiedNameOf(symbol)
+  const parentKinds =
+    model.language === 'c' ? new Map(model.symbols.map((symbol) => [symbol.id, symbol.kind])) : undefined
+  const symbolRole = (symbol: ApiSymbol) =>
+    model.language === 'c' && symbol.modifiers.includes('macro')
+      ? 'c:macro'
+      : model.language === 'c' &&
+          symbol.parent &&
+          symbol.kind === 'constant' &&
+          parentKinds?.get(symbol.parent) === 'enum'
+        ? 'c:enumerator'
+        : model.language === 'c' && symbol.parent && ['attribute', 'property'].includes(symbol.kind)
+          ? 'c:member'
+          : roleFor(model.port ?? model.language ?? '', symbol.kind)
+  const cName = (symbol: ApiSymbol) => (symbolRole(symbol) === 'c:enumerator' ? symbol.name : qualifiedNameOf(symbol))
   const spellings = new Map<string, number>()
-  if (model.language === 'c') for (const symbol of model.symbols) {
-    const key = `${symbolRole(symbol)}:${cName(symbol)}`
-    spellings.set(key, (spellings.get(key) ?? 0) + 1)
-  }
+  if (model.language === 'c')
+    for (const symbol of model.symbols) {
+      const key = `${symbolRole(symbol)}:${cName(symbol)}`
+      spellings.set(key, (spellings.get(key) ?? 0) + 1)
+    }
   // Sorted, so the file is byte-stable across runs and a diff means a real
   // change rather than a map iteration order.
-  const sorted = [...model.symbols].sort((a, b) =>
-    (a.publicId ?? a.id).localeCompare(b.publicId ?? b.id),
-  )
+  const sorted = [...model.symbols].sort((a, b) => (a.publicId ?? a.id).localeCompare(b.publicId ?? b.id))
   for (const symbol of sorted) {
     const role = symbolRole(symbol)
     const spelling = cName(symbol)
     // Sphinx consumers ask for C spellings, not our declaration IDs. A
     // duplicated file-local name or an anonymous type keeps its scoped ID.
-    const name = model.language === 'c' && !/\s/.test(spelling) && spellings.get(`${role}:${spelling}`) === 1
-      ? spelling : symbol.publicId ?? symbol.id
+    const name =
+      model.language === 'c' && !/\s/.test(spelling) && spellings.get(`${role}:${spelling}`) === 1
+        ? spelling
+        : (symbol.publicId ?? symbol.id)
     // Records are whitespace-delimited, so a name containing whitespace is
     // not representable — Sphinx's reader mis-splits it and the entry is
     // silently lost. Two Java symbols disappeared exactly this way, because

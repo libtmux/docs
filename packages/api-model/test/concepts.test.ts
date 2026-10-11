@@ -41,9 +41,12 @@ describe('concept map', () => {
       const model = models.get(port)
       if (!model) continue
       const symbol = model.symbols.find((entry) => (entry.publicId ?? entry.id) === publicId)
-      expect(symbol?.signatures.some((signature) =>
-        signature.params.some((parameter) => /\bSession\b/.test(parameter.type ?? '')),
-      ), `${port}: ${publicId}`).toBe(true)
+      expect(
+        symbol?.signatures.some((signature) =>
+          signature.params.some((parameter) => /\bSession\b/.test(parameter.type ?? '')),
+        ),
+        `${port}: ${publicId}`,
+      ).toBe(true)
     }
     expect(CONCEPTS['freeze-workspace'].symbols.swift).toBeUndefined()
   })
@@ -70,11 +73,16 @@ describe('concept map', () => {
   it('preserves native handle scopes and recognises Cats Effect operations', () => {
     for (const port of ['kotlin', 'scala']) {
       for (const [concept, member] of Object.entries({
-        'split-pane': 'Pane.split', 'split-window': 'Window.split',
-        'list-windows': 'Session.windows', 'list-panes': 'Window.panes',
-        'list-server-windows': 'Server.windows', 'list-server-panes': 'Server.panes',
+        'split-pane': 'Pane.split',
+        'split-window': 'Window.split',
+        'list-windows': 'Session.windows',
+        'list-panes': 'Window.panes',
+        'list-server-windows': 'Server.windows',
+        'list-server-panes': 'Server.panes',
       })) {
-        expect(CONCEPTS[concept].symbols[port]).toBe(`io.github.libtmux.${port === 'scala' ? 'scaladsl' : port}.${member}`)
+        expect(CONCEPTS[concept].symbols[port]).toBe(
+          `io.github.libtmux.${port === 'scala' ? 'scaladsl' : port}.${member}`,
+        )
       }
     }
     expect(conceptsFor('scala', 'io.github.libtmux.scaladsl.cats.Server.newSession')).toContain(CONCEPTS['new-session'])

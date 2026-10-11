@@ -40,7 +40,10 @@ function catalogFor(model: ApiModelBase) {
 }
 function catalog(model: ApiModelBase) {
   let value = catalogs.get(model)
-  if (!value) { value = catalogFor(model); catalogs.set(model, value) }
+  if (!value) {
+    value = catalogFor(model)
+    catalogs.set(model, value)
+  }
   return value
 }
 
@@ -62,22 +65,48 @@ export function apiRelationshipSections(model: ApiModelBase, symbol: ApiSymbol):
   const calls = new Set(outgoing.filter((edge) => edge.kind === 'call').map((edge) => edge.to.id))
   const callers = new Set(incoming.filter((edge) => edge.kind === 'call').map((edge) => edge.from.id))
   const groups: ApiRelationshipSection[] = [
-    { id: 'api-called-by', label: 'Called by', items: incoming.filter((edge) => edge.kind === 'call').map((edge) => edge.from) },
+    {
+      id: 'api-called-by',
+      label: 'Called by',
+      items: incoming.filter((edge) => edge.kind === 'call').map((edge) => edge.from),
+    },
     { id: 'api-calls', label: 'Calls', items: outgoing.filter((edge) => edge.kind === 'call').map((edge) => edge.to) },
-    { id: 'api-function-references', label: 'Other function references', items: outgoing
-      .filter((edge) => edge.kind === 'reference' && edge.to.kind === 'function' && !calls.has(edge.to.id)).map((edge) => edge.to) },
-    { id: 'api-referenced-by', label: 'Referenced by', items: incoming
-      .filter((edge) => edge.kind === 'reference' && !callers.has(edge.from.id)).map((edge) => edge.from) },
-    { id: 'api-referenced-declarations', label: 'Referenced declarations', items: outgoing
-      .filter((edge) => edge.kind !== 'call' && edge.to.kind !== 'function').map((edge) => edge.to) },
+    {
+      id: 'api-function-references',
+      label: 'Other function references',
+      items: outgoing
+        .filter((edge) => edge.kind === 'reference' && edge.to.kind === 'function' && !calls.has(edge.to.id))
+        .map((edge) => edge.to),
+    },
+    {
+      id: 'api-referenced-by',
+      label: 'Referenced by',
+      items: incoming
+        .filter((edge) => edge.kind === 'reference' && !callers.has(edge.from.id))
+        .map((edge) => edge.from),
+    },
+    {
+      id: 'api-referenced-declarations',
+      label: 'Referenced declarations',
+      items: outgoing.filter((edge) => edge.kind !== 'call' && edge.to.kind !== 'function').map((edge) => edge.to),
+    },
   ]
-  return groups.map((group) => ({ ...group, items: [...new Map(group.items.map((item) => [item.id, item])).values()]
-    .sort((left, right) => left.name.localeCompare(right.name) || left.id.localeCompare(right.id)) }))
+  return groups
+    .map((group) => ({
+      ...group,
+      items: [...new Map(group.items.map((item) => [item.id, item])).values()].sort(
+        (left, right) => left.name.localeCompare(right.name) || left.id.localeCompare(right.id),
+      ),
+    }))
     .filter((group) => group.items.length > 0)
 }
 
 /** A reading path is available only when every edge exists in this version. */
-export function apiRelationshipPath(model: ApiModelBase, title: string, ids: string[]): ApiRelationshipPath | undefined {
+export function apiRelationshipPath(
+  model: ApiModelBase,
+  title: string,
+  ids: string[],
+): ApiRelationshipPath | undefined {
   const graph = catalog(model)
   const symbols = ids.map((id) => graph.symbols.get(id))
   if (symbols.length < 2 || symbols.some((symbol) => !symbol || symbol.kind !== 'function')) return undefined

@@ -78,7 +78,8 @@ trap 'exit 1' HUP INT TERM
 
 unset TMUX TMUX_PANE
 export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
+"$binary" -S "$socket" -f /dev/null \
+    new-session -d -s work-one -n editor /bin/cat
 "$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
 "$@"
 "$binary" -S "$socket" has-session -t '=work-one'
@@ -109,7 +110,8 @@ import scala.jdk.CollectionConverters.*
 object Layout {
   def main(args: Array[String]): Unit = {
     val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+      throw new IllegalArgumentException(
+        "Set LIBTMUX_SOCKET_PATH to an existing socket"))
     val config = ServerConfig.builder()
       .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
       .defaultTimeout(Duration.ofSeconds(5))
@@ -157,7 +159,8 @@ import scala.jdk.CollectionConverters.*
 object ReuseLayout {
   def main(args: Array[String]): Unit = {
     val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+      throw new IllegalArgumentException(
+        "Set LIBTMUX_SOCKET_PATH to an existing socket"))
     val config = ServerConfig.builder()
       .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
       .defaultTimeout(Duration.ofSeconds(5))
@@ -173,7 +176,8 @@ object ReuseLayout {
       val first = ensureTools()
       val second = ensureTools()
       assert(first.id == second.id)
-      assert(server.sessions().find(_.name == "work-one").get.windows.size == 2)
+      val one = server.sessions().find(_.name == "work-one").get
+      assert(one.windows.size == 2)
       println("one tools window after two calls")
     }
   }

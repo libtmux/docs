@@ -9,6 +9,8 @@
     "preview": "pnpm --filter @libtmux/site preview",
     "build:site": "./scripts/build-site.sh",
     "type-check": "pnpm run --recursive type-check",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
     "lint": "pnpm run --recursive lint && oxlint scripts",
     "test": "node scripts/test-loop.mjs outer",
     "test:inner": "node scripts/test-loop.mjs inner",
@@ -21,10 +23,10 @@
   },
   "packageManager": "pnpm@12.7.0",
   "devDependencies": {
-    "@biomejs/biome": "catalog:",
     "happy-dom": "catalog:",
     "mdast-util-from-markdown": "2.0.3",
     "mdast-util-to-markdown": "2.1.3",
+    "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "typescript": "catalog:"
   }

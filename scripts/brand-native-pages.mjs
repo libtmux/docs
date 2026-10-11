@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url'
 import { branding, documentationTitle, jsonLd } from '../site/src/lib/branding.ts'
 import { PORT_BY_SLUG } from '../site/src/lib/ports.ts'
 
-const escape = (text) => String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+const escape = (text) =>
+  String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
 
 /** Add crawler-visible artwork while preserving native canonical/robots policy. */
 export function nativeBrandHead(html, { port, pagePath, root = '/en' }) {
@@ -16,7 +17,10 @@ export function nativeBrandHead(html, { port, pagePath, root = '/en' }) {
   const twitter = new URL(brand.asset('twitter-light.png'), origin).href
   // Native generators already escape title text. Retain those entities when
   // adding the project suffix, including in the social-title attributes.
-  const title = documentationTitle(/<title\b[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1].trim() || brand.projectName, brand.projectName)
+  const title = documentationTitle(
+    /<title\b[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1].trim() || brand.projectName,
+    brand.projectName,
+  )
   const titleAttribute = title.replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
   const attr = (text) => escape(text)
   const tags = [
@@ -42,7 +46,8 @@ export function nativeBrandHead(html, { port, pagePath, root = '/en' }) {
     `<meta name="twitter:image" content="${attr(twitter)}">`,
     `<meta name="twitter:image:alt" content="${attr(brand.label)}">`,
     `<script type="application/ld+json" data-libtmux-brand>${jsonLd({
-      '@context': 'https://schema.org', '@type': 'SoftwareSourceCode',
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareSourceCode',
       name: brand.projectName,
       alternateName: brand.port?.packageName,
       programmingLanguage: brand.palette.name,
@@ -50,19 +55,26 @@ export function nativeBrandHead(html, { port, pagePath, root = '/en' }) {
       image: new URL(brand.asset('logo-512.png'), origin).href,
     })}</script>`,
   ].join('\n')
-  const branded = html.replace(/<html\b([^>]*)>/i, (_match, attributes) =>
-    `<html${attributes.replace(/\sdata-brand(?:-variant)?=["'][^"']*["']/g, '')} data-brand="${brand.language}" data-brand-variant="${brand.variant}">`)
+  const branded = html.replace(
+    /<html\b([^>]*)>/i,
+    (_match, attributes) =>
+      `<html${attributes.replace(/\sdata-brand(?:-variant)?=["'][^"']*["']/g, '')} data-brand="${brand.language}" data-brand-variant="${brand.variant}">`,
+  )
   const withLogo = branded.replace(/<img\b[^>]*>/gi, (tag) => {
     const classes = /\bclass=["']([^"']*)["']/i.exec(tag)?.[1].split(/\s+/) ?? []
     if (!classes.includes('sidebar-logo')) return tag
-    return tag.replace(/\s(?:src|srcset)=["'][^"']*["']/gi, '')
+    return tag
+      .replace(/\s(?:src|srcset)=["'][^"']*["']/gi, '')
       .replace(/\s*\/?>$/, ` src="${attr(brand.asset('logo.svg'))}">`)
   })
   return withLogo.replace(/(<head\b[^>]*>)([\s\S]*?)(<\/head>)/i, (_match, open, head, close) => {
     const clean = head
       .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, '')
       .replace(/<link\b[^>]*\brel=["'](?:shortcut icon|icon|apple-touch-icon|mask-icon|manifest)["'][^>]*>/gi, '')
-      .replace(/<meta\b[^>]*\b(?:name|property)=["'](?:og:title|og:site_name|twitter:title|og:image(?::[a-z_]+)?|twitter:image(?::alt)?|twitter:card|theme-color|msapplication-config)["'][^>]*>/gi, '')
+      .replace(
+        /<meta\b[^>]*\b(?:name|property)=["'](?:og:title|og:site_name|twitter:title|og:image(?::[a-z_]+)?|twitter:image(?::alt)?|twitter:card|theme-color|msapplication-config)["'][^>]*>/gi,
+        '',
+      )
       .replace(/<script\b[^>]*\bdata-libtmux-brand[^>]*>[\s\S]*?<\/script>/gi, '')
     return `${open}${clean.trimEnd()}\n${tags}\n${close}`
   })
@@ -77,7 +89,10 @@ export function brandNativePages(directory, port, root) {
       else if (entry.name.endsWith('.html')) {
         const before = readFileSync(path, 'utf8')
         const after = nativeBrandHead(before, { port, root, pagePath: relative(directory, path).replaceAll('\\', '/') })
-        if (before !== after) { writeFileSync(path, after); count++ }
+        if (before !== after) {
+          writeFileSync(path, after)
+          count++
+        }
       }
     }
   }

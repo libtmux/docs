@@ -226,9 +226,7 @@ export function parseMarkdownDocFull(raw: string, defaultLang = 'text'): ParsedM
       const rest = block[2] ?? ''
       const needsName = kind === 'param' || kind === 'throws'
       const [first, ...tail] = rest.split(/\s+/)
-      tag = needsName
-        ? { kind, name: first || undefined, text: tail }
-        : { kind, text: rest ? [rest] : [] }
+      tag = needsName ? { kind, name: first || undefined, text: tail } : { kind, text: rest ? [rest] : [] }
       continue
     }
     if (tag) {

@@ -28,8 +28,10 @@ Fetch the source revision used by this example:
 
 ```console
 $ git init libtmux-source && \
-    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-ts.git && \
-    git -C libtmux-source fetch --depth 1 origin 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \
+    git -C libtmux-source remote add origin \
+      https://github.com/libtmux/libtmux-ts.git && \
+    git -C libtmux-source fetch --depth 1 origin \
+      3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \
     git -C libtmux-source checkout --detach FETCH_HEAD
 ```
 
@@ -110,7 +112,9 @@ try {
     catch (error) { failures.push(error); }
   }
 }
-if (failures.length > 0) throw new AggregateError(failures, "Workspace example failed");
+if (failures.length > 0) {
+  throw new AggregateError(failures, "Workspace example failed");
+}
 ```
 
 `newSession` can fail after starting tmux. Cleanup checks the owned socket

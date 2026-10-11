@@ -67,7 +67,8 @@ trap 'exit 1' HUP INT TERM
 
 unset TMUX TMUX_PANE
 export LIBTMUX_SOCKET_PATH="$socket"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
+"$binary" -S "$socket" -f /dev/null \
+    new-session -d -s work-one -n editor /bin/cat
 "$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
 "$@"
 "$binary" -S "$socket" has-session -t '=work-one'
@@ -124,7 +125,10 @@ func run() error {
 	if socket == "" {
 		return errors.New("run this program with run.sh")
 	}
-	server, err := tmux.NewServer(tmux.ServerOptions{SocketPath: socket, ConfigFile: "/dev/null"})
+	server, err := tmux.NewServer(tmux.ServerOptions{
+		SocketPath: socket,
+		ConfigFile: "/dev/null",
+	})
 	if err != nil {
 		return err
 	}
@@ -140,7 +144,11 @@ func run() error {
 		filter tmux.SessionFilter
 		want   string
 	}{
-		{"prefix", tmux.SessionFilter{NameRegex: "^work-"}, "work-one, work-two"},
+		{
+			"prefix",
+			tmux.SessionFilter{NameRegex: "^work-"},
+			"work-one, work-two",
+		},
 		{"AND and NOT", tmux.SessionFilter{
 			NameRegex: "^work-", Not: tmux.Ptr(tmux.SessionNameIs("work-two")),
 		}, "work-one"},
@@ -172,7 +180,8 @@ func run() error {
 		}
 		fmt.Printf("%s: %s\n", test.label, got)
 	}
-	_, err = tmuxq.Matching(snapshot.Sessions(), tmux.SessionFilter{NameRegex: "["})
+	invalid := tmux.SessionFilter{NameRegex: "["}
+	_, err = tmuxq.Matching(snapshot.Sessions(), invalid)
 	if !errors.Is(err, tmux.ErrInvalidFilter) {
 		return fmt.Errorf("expected invalid filter, got %v", err)
 	}
@@ -231,7 +240,10 @@ func run() error {
 	if socket == "" {
 		return errors.New("run this program with run.sh")
 	}
-	server, err := tmux.NewServer(tmux.ServerOptions{SocketPath: socket, ConfigFile: "/dev/null"})
+	server, err := tmux.NewServer(tmux.ServerOptions{
+		SocketPath: socket,
+		ConfigFile: "/dev/null",
+	})
 	if err != nil {
 		return err
 	}
@@ -249,7 +261,11 @@ func run() error {
 	}{
 		{"work-one", tmux.SessionNameIs("work-one"), nil},
 		{"missing", tmux.SessionNameIs("missing"), tmuxq.ErrNoMatch},
-		{"work-", tmux.SessionFilter{NameRegex: "^work-"}, tmuxq.ErrMultipleMatches},
+		{
+			"work-",
+			tmux.SessionFilter{NameRegex: "^work-"},
+			tmuxq.ErrMultipleMatches,
+		},
 	}
 	for _, test := range cases {
 		predicate, err := test.filter.Predicate()
@@ -329,7 +345,10 @@ func run() error {
 	if socket == "" {
 		return errors.New("run this program with run.sh")
 	}
-	server, err := tmux.NewServer(tmux.ServerOptions{SocketPath: socket, ConfigFile: "/dev/null"})
+	server, err := tmux.NewServer(tmux.ServerOptions{
+		SocketPath: socket,
+		ConfigFile: "/dev/null",
+	})
 	if err != nil {
 		return err
 	}
@@ -351,12 +370,17 @@ func run() error {
 		{"every window is editor", tmux.WindowRel{Every: &editor}, "work-one"},
 	}
 	for _, test := range cases {
-		matches, err := tmuxq.Matching(snapshot.Sessions(), tmux.SessionFilter{Windows: &test.relation})
+		filter := tmux.SessionFilter{Windows: &test.relation}
+		matches, err := tmuxq.Matching(snapshot.Sessions(), filter)
 		if err != nil {
 			return err
 		}
 		if len(matches) != 1 {
-			return fmt.Errorf("%s: expected one match, got %d", test.label, len(matches))
+			return fmt.Errorf(
+				"%s: expected one match, got %d",
+				test.label,
+				len(matches),
+			)
 		}
 		name, ok := matches[0].Name()
 		if !ok || name != test.want {
@@ -374,9 +398,10 @@ func run() error {
 		return errors.New("live filter should return work-one")
 	}
 	if _, captured := live[0].Windows(); captured {
-		return errors.New("a session-only listing should not contain window relations")
+		return errors.New("a session listing should not have windows")
 	}
-	matches, err := tmuxq.Matching(live, tmux.SessionFilter{Windows: &tmux.WindowRel{None: &editor}})
+	none := tmux.SessionFilter{Windows: &tmux.WindowRel{None: &editor}}
+	matches, err := tmuxq.Matching(live, none)
 	if err != nil {
 		return err
 	}

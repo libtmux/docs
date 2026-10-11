@@ -48,10 +48,7 @@ export function withRoot(path: string): string {
  * `SITE_ROOT` is where *this* build is mounted (`/pr-42/ja` for a preview's
  * Japanese build), while this is where *any* locale begins (`/pr-42`).
  */
-export const LOCALES_ROOT: string = (process.env.LIBTMUX_DOCS_LOCALES_ROOT || '').replace(
-  /\/+$/,
-  '',
-)
+export const LOCALES_ROOT: string = (process.env.LIBTMUX_DOCS_LOCALES_ROOT || '').replace(/\/+$/, '')
 
 /**
  * Whether this build mounts the whole site rather than one port's subtree.

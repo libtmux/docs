@@ -31,15 +31,30 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
   let generation = 0
   input.disabled = false
   for (const button of filters) button.disabled = false
-  document.addEventListener('keydown', (event) => {
-    if (event.key !== '/' || event.defaultPrevented || event.isComposing || event.metaKey || event.ctrlKey || event.altKey) return
-    const target = event.target as Element
-    if (target.closest('input, textarea, select, [role="textbox"], [contenteditable]:not([contenteditable="false"])') ||
-        document.querySelector('dialog[open]')) return
-    event.preventDefault()
-    if (nav.inert) document.querySelector<HTMLButtonElement>('[data-api-nav-toggle]')?.click()
-    input.focus({ preventScroll: true })
-  }, { signal })
+  document.addEventListener(
+    'keydown',
+    (event) => {
+      if (
+        event.key !== '/' ||
+        event.defaultPrevented ||
+        event.isComposing ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey
+      )
+        return
+      const target = event.target as Element
+      if (
+        target.closest('input, textarea, select, [role="textbox"], [contenteditable]:not([contenteditable="false"])') ||
+        document.querySelector('dialog[open]')
+      )
+        return
+      event.preventDefault()
+      if (nav.inert) document.querySelector<HTMLButtonElement>('[data-api-nav-toggle]')?.click()
+      input.focus({ preventScroll: true })
+    },
+    { signal },
+  )
   const render = async () => {
     const ownGeneration = ++generation
     const query = input.value.trim()
@@ -54,8 +69,10 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
       const json = await load(nav.dataset.src ?? '')
       if (signal.aborted || generation !== ownGeneration) return
       const found = searchApi(json, query, kind)
-      status.textContent = found.length > 100 ? `Showing 100 of ${found.length} results. Refine your search.`
-        : `${found.length} ${found.length === 1 ? 'result' : 'results'}`
+      status.textContent =
+        found.length > 100
+          ? `Showing 100 of ${found.length} results. Refine your search.`
+          : `${found.length} ${found.length === 1 ? 'result' : 'results'}`
       for (const record of found.slice(0, 100)) {
         const li = document.createElement('li')
         const link = document.createElement('a')
@@ -80,35 +97,56 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
   }
   input.addEventListener('input', () => void render(), { signal })
   retry?.addEventListener('click', () => void render(), { signal })
-  for (const button of filters) button.addEventListener('click', () => {
-    kind = button.dataset.apiSearchKind ?? 'all'
-    for (const filter of filters) filter.setAttribute('aria-pressed', String(filter === button))
-    void render()
-  }, { signal })
-  input.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowDown') {
-      results.querySelector<HTMLAnchorElement>('a')?.focus()
+  for (const button of filters)
+    button.addEventListener(
+      'click',
+      () => {
+        kind = button.dataset.apiSearchKind ?? 'all'
+        for (const filter of filters) filter.setAttribute('aria-pressed', String(filter === button))
+        void render()
+      },
+      { signal },
+    )
+  input.addEventListener(
+    'keydown',
+    (event) => {
+      if (event.key === 'ArrowDown') {
+        results.querySelector<HTMLAnchorElement>('a')?.focus()
+        event.preventDefault()
+      } else if (event.key === 'Escape' && (input.value || kind !== 'all')) {
+        event.stopPropagation()
+        input.value = ''
+        filters[0]?.click()
+      }
+    },
+    { signal },
+  )
+  results.addEventListener(
+    'keydown',
+    (event) => {
+      const links = [...results.querySelectorAll<HTMLAnchorElement>('a')]
+      const current = links.indexOf(document.activeElement as HTMLAnchorElement)
+      if (event.key === 'Escape') {
+        input.focus()
+        return
+      }
+      const next =
+        event.key === 'ArrowDown'
+          ? current + 1
+          : event.key === 'ArrowUp'
+            ? current - 1
+            : event.key === 'Home'
+              ? 0
+              : event.key === 'End'
+                ? links.length - 1
+                : undefined
+      if (next === undefined) return
       event.preventDefault()
-    } else if (event.key === 'Escape' && (input.value || kind !== 'all')) {
-      event.stopPropagation()
-      input.value = ''
-      filters[0]?.click()
-    }
-  }, { signal })
-  results.addEventListener('keydown', (event) => {
-    const links = [...results.querySelectorAll<HTMLAnchorElement>('a')]
-    const current = links.indexOf(document.activeElement as HTMLAnchorElement)
-    if (event.key === 'Escape') {
-      input.focus()
-      return
-    }
-    const next = event.key === 'ArrowDown' ? current + 1 : event.key === 'ArrowUp' ? current - 1
-      : event.key === 'Home' ? 0 : event.key === 'End' ? links.length - 1 : undefined
-    if (next === undefined) return
-    event.preventDefault()
-    if (next < 0) input.focus()
-    else links[Math.min(next, links.length - 1)]?.focus()
-  }, { signal })
+      if (next < 0) input.focus()
+      else links[Math.min(next, links.length - 1)]?.focus()
+    },
+    { signal },
+  )
 }
 
 function load(src: string): Promise<TreeJson> {
@@ -129,7 +167,11 @@ const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)'
 
 /** A row is visible when every branch above it is expanded. */
 function shown(item: HTMLElement): boolean {
-  for (let group = item.parentElement?.closest('[role="group"]'); group; group = group.parentElement?.closest('[role="group"]')) {
+  for (
+    let group = item.parentElement?.closest('[role="group"]');
+    group;
+    group = group.parentElement?.closest('[role="group"]')
+  ) {
     if (group.closest(ITEM)?.getAttribute('aria-expanded') !== 'true') return false
   }
   return true
@@ -139,7 +181,12 @@ const rows = (tree: HTMLElement) => [...tree.querySelectorAll<HTMLElement>(ITEM)
 const isBranch = (item: HTMLElement) => item.hasAttribute('aria-expanded')
 const isOpen = (item: HTMLElement) => item.getAttribute('aria-expanded') === 'true'
 const labelOf = (item: HTMLElement) =>
-  (item.matches('a') ? item.querySelector('.api-nav__label') : item.querySelector(':scope > .api-nav__row > .api-nav__label'))?.textContent?.trim().toLowerCase() ?? ''
+  (item.matches('a')
+    ? item.querySelector('.api-nav__label')
+    : item.querySelector(':scope > .api-nav__row > .api-nav__label')
+  )?.textContent
+    ?.trim()
+    .toLowerCase() ?? ''
 
 function focusRow(tree: HTMLElement, item: HTMLElement | undefined | null) {
   if (!item) return
@@ -149,7 +196,9 @@ function focusRow(tree: HTMLElement, item: HTMLElement | undefined | null) {
   item.focus({ preventScroll: true })
   // The tree scrolls, never the page: scrollIntoView would move every
   // scrolling ancestor, the document included.
-  const row = (item.matches('a') ? item : item.querySelector<HTMLElement>(':scope > .api-nav__row'))?.getBoundingClientRect()
+  const row = (
+    item.matches('a') ? item : item.querySelector<HTMLElement>(':scope > .api-nav__row')
+  )?.getBoundingClientRect()
   const box = tree.getBoundingClientRect()
   if (!row) return
   if (row.top < box.top) tree.scrollTop -= box.top - row.top
@@ -196,7 +245,14 @@ function leaf(name: string, href: string, level: number, kind?: string): HTMLLIE
   return li
 }
 
-function branch(name: string, href: string | undefined, level: number, lazy: string, count?: number, kind?: string): HTMLLIElement {
+function branch(
+  name: string,
+  href: string | undefined,
+  level: number,
+  lazy: string,
+  count?: number,
+  kind?: string,
+): HTMLLIElement {
   const id = `api-nav-c${++seq}`
   const li = document.createElement('li')
   li.setAttribute('role', 'treeitem')
@@ -264,16 +320,22 @@ async function build(nav: HTMLElement, item: HTMLElement): Promise<HTMLElement |
     const bucket = findBucket(json.buckets, id)
     if (!bucket) return undefined
     for (const t of bucket.types) {
-      children.push(t.m ? branch(t.name, `${base}${t.slug}/`, level, `type:${t.id}`, undefined, t.kind) : leaf(t.name, `${base}${t.slug}/`, level, t.kind))
+      children.push(
+        t.m
+          ? branch(t.name, `${base}${t.slug}/`, level, `type:${t.id}`, undefined, t.kind)
+          : leaf(t.name, `${base}${t.slug}/`, level, t.kind),
+      )
     }
     for (const c of bucket.children) {
       children.push(branch(c.label, c.slug ? `${base}${c.slug}/` : undefined, level, `bucket:${c.id}`, c.types.length))
     }
   } else {
     for (const [name, slug, memberId, kind] of json.members[id] ?? []) {
-      children.push(memberId && json.members[memberId]?.length
-        ? branch(name, `${base}${slug}/`, level, `type:${memberId}`, undefined, kind)
-        : leaf(name, `${base}${slug}/`, level, kind))
+      children.push(
+        memberId && json.members[memberId]?.length
+          ? branch(name, `${base}${slug}/`, level, `type:${memberId}`, undefined, kind)
+          : leaf(name, `${base}${slug}/`, level, kind),
+      )
     }
   }
   const group = document.createElement('ul')
@@ -298,7 +360,15 @@ function animate(group: HTMLElement, open: boolean) {
   const height = `${group.scrollHeight}px`
   group.style.overflow = 'hidden'
   const animation = group.animate(
-    open ? [{ maxHeight: '0px', opacity: 0 }, { maxHeight: height, opacity: 1 }] : [{ maxHeight: height, opacity: 1 }, { maxHeight: '0px', opacity: 0 }],
+    open
+      ? [
+          { maxHeight: '0px', opacity: 0 },
+          { maxHeight: height, opacity: 1 },
+        ]
+      : [
+          { maxHeight: height, opacity: 1 },
+          { maxHeight: '0px', opacity: 0 },
+        ],
     { duration: 200, easing: EASING },
   )
   const done = () => {
@@ -327,7 +397,8 @@ async function toggle(nav: HTMLElement, item: HTMLElement, open: boolean) {
   item.setAttribute('aria-expanded', String(open))
   if (group) animate(group, open)
   // Focus inside a closing branch would be left on a row no one can see.
-  if (!open && item.contains(document.activeElement) && document.activeElement !== item) focusRow(item.closest<HTMLElement>('[role="tree"]')!, item)
+  if (!open && item.contains(document.activeElement) && document.activeElement !== item)
+    focusRow(item.closest<HTMLElement>('[role="tree"]')!, item)
 }
 
 function initTree(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
@@ -448,8 +519,12 @@ function initDrawer(nav: HTMLElement, signal: AbortSignal) {
   toggleButton?.addEventListener('click', () => setOpen(true), { signal })
   closeButton?.addEventListener('click', () => setOpen(false), { signal })
   overlay?.addEventListener('click', () => setOpen(false), { signal })
-  document.addEventListener('keydown', (e) => e.key === 'Escape' && nav.hasAttribute('data-open') && setOpen(false), { signal })
-  document.addEventListener('libtmux:drawer-open', (e) => (e as CustomEvent).detail !== 'api-nav' && setOpen(false), { signal })
+  document.addEventListener('keydown', (e) => e.key === 'Escape' && nav.hasAttribute('data-open') && setOpen(false), {
+    signal,
+  })
+  document.addEventListener('libtmux:drawer-open', (e) => (e as CustomEvent).detail !== 'api-nav' && setOpen(false), {
+    signal,
+  })
   phone.addEventListener('change', () => setOpen(false), { signal })
 }
 

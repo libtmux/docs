@@ -66,8 +66,7 @@ export function localeRoot(locale: string): string {
 /** The page path below its build locale, including Astro's flat error page. */
 export function localeSourcePath(pathname: string, buildLocale: string): string {
   const root = localeRoot(buildLocale)
-  const path = (pathname.startsWith(root) ? pathname.slice(root.length) : pathname)
-    .replace(/^\/+|\/+$/g, '')
+  const path = (pathname.startsWith(root) ? pathname.slice(root.length) : pathname).replace(/^\/+|\/+$/g, '')
   return path.replace(/(^|\/)404$/, '$1404.html')
 }
 

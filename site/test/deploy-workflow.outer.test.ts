@@ -19,7 +19,8 @@ describe('publication server deadlines', () => {
       // so the real curl must hit its deadline instead of receiving a reply.
       const started = performance.now()
       const result = spawnSync('bash', ['-c', `exec ${probes[0]}`], {
-        encoding: 'utf8', timeout: 5000,
+        encoding: 'utf8',
+        timeout: 5000,
         env: { ...process.env, SERVE_SITE: `http://127.0.0.1:${address.port}` },
       })
       expect(result.error).toBeUndefined()

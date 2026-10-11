@@ -27,8 +27,10 @@ Fetch the library revision and build its stdio server:
 
 ```console
 $ git init libtmux-source && \
-  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \
-  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \
+  git -C libtmux-source remote add origin \
+    https://github.com/libtmux/libtmux-swift.git && \
+  git -C libtmux-source fetch --depth=1 origin \
+    254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \
   git -C libtmux-source checkout --detach FETCH_HEAD && \
   swift build --package-path libtmux-source --product libtmux-mcp --jobs 2
 ```

@@ -130,7 +130,10 @@ const portsModule = resolve(dirname(dirname(fileURLToPath(import.meta.url))), 's
 const { PORTS: PORT_DEFS, productAvailable } = await import(`file://${portsModule}`)
 const portBySlug = Object.fromEntries(PORT_DEFS.map((port) => [port.slug, port]))
 if (only && !portBySlug[only]) throw new Error(`Unknown MCP port: ${only}`)
-if (sourceBound && (!only || process.env.LIBTMUX_DOCS_PORT !== only || !/^[0-9a-f]{40}$/.test(process.env.LIBTMUX_DOCS_SOURCE_SHA ?? ''))) {
+if (
+  sourceBound &&
+  (!only || process.env.LIBTMUX_DOCS_PORT !== only || !/^[0-9a-f]{40}$/.test(process.env.LIBTMUX_DOCS_SOURCE_SHA ?? ''))
+) {
   throw new Error('source-bound MCP catalog requires --port, matching LIBTMUX_DOCS_PORT and LIBTMUX_DOCS_SOURCE_SHA')
 }
 if (only && !productAvailable(portBySlug[only], 'mcp')) process.exit(0)
@@ -138,14 +141,17 @@ for (const port of PORTS) {
   const definition = portBySlug[port.slug]
   const configured = process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || definition.worktree
   const oldRoot = definition.checkout
-  port.dir = port.slug === 'py' ? port.dir.replace('~/work/python/libtmux-mcp', process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp') : port.dir.replace(oldRoot, configured)
-  port.checkout = expand(port.slug === 'py' ? process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp' : configured)
+  port.dir =
+    port.slug === 'py'
+      ? port.dir.replace('~/work/python/libtmux-mcp', process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp')
+      : port.dir.replace(oldRoot, configured)
+  port.checkout = expand(
+    port.slug === 'py' ? process.env.LIBTMUX_DOCS_MCP_PY || '~/work/python/libtmux-mcp' : configured,
+  )
   port.repo = port.slug === 'py' ? 'tmux-python/libtmux-mcp' : definition.repo
   if (port.serverDir) port.serverDir = join(port.checkout, 'src/libtmux_mcp')
 }
-const declaredSlugs = new Set(PORT_DEFS
-  .filter((port) => productAvailable(port, 'mcp'))
-  .map((port) => port.slug))
+const declaredSlugs = new Set(PORT_DEFS.filter((port) => productAvailable(port, 'mcp')).map((port) => port.slug))
 const coveredSlugs = new Set(PORTS.map((port) => port.slug))
 const absentHere = [...declaredSlugs].filter((slug) => !coveredSlugs.has(slug))
 const absentThere = [...coveredSlugs].filter((slug) => !declaredSlugs.has(slug))
@@ -156,11 +162,12 @@ if (absentHere.length || absentThere.length) {
   process.exit(1)
 }
 
-
 function filesIn(dir, glob, exclude = []) {
   if (!existsSync(dir)) return []
-  return globSync(glob, { cwd: dir, exclude }).map((file) => join(dir, file))
-    .filter((file) => !file.includes('__pycache__') && statSync(file).isFile()).sort()
+  return globSync(glob, { cwd: dir, exclude })
+    .map((file) => join(dir, file))
+    .filter((file) => !file.includes('__pycache__') && statSync(file).isFile())
+    .sort()
 }
 
 /**
@@ -202,49 +209,80 @@ for (const port of relevant) {
   const head = git(port.checkout, 'rev-parse', 'HEAD')
   const apiModel = JSON.parse(readFileSync(join(repoRoot, 'site/src/data/api', `${port.slug}.json`), 'utf8'))
   const source = apiModel.sources?.find((entry) => entry.repo === port.repo && entry.product === 'mcp')
-  if (sourceBound && (apiModel.port !== port.slug || apiModel.revision !== process.env.LIBTMUX_DOCS_SOURCE_SHA ||
-      (source?.extractedRevision ?? source?.revision) !== head)) {
+  if (
+    sourceBound &&
+    (apiModel.port !== port.slug ||
+      apiModel.revision !== process.env.LIBTMUX_DOCS_SOURCE_SHA ||
+      (source?.extractedRevision ?? source?.revision) !== head)
+  ) {
     throw new Error(`${port.slug}: API model must describe the selected source and actual MCP checkout ${head}`)
   }
   if (sourceBound && git(port.checkout, 'status', '--porcelain', '--untracked-files=no')) {
     throw new Error(`${port.slug}: MCP checkout has tracked source changes`)
   }
-  const revision = sourceBound ? head : source?.revision ?? head
+  const revision = sourceBound ? head : (source?.revision ?? head)
   const names = new Map()
   for (const file of filesIn(dir, port.glob, port.exclude)) {
     const text = readFileSync(file, 'utf8')
     const path = relative(port.checkout, file)
-    const hunks = head === revision ? [] : parseHunks(git(port.checkout, 'diff', '-U0', `${revision}..${head}`, '--', path))
+    const hunks =
+      head === revision ? [] : parseHunks(git(port.checkout, 'diff', '-U0', `${revision}..${head}`, '--', path))
     for (const match of text.matchAll(port.pattern)) {
       const wireName = port.capture ? port.capture(match) : match[1]
       const name = port.wirePrefix ? wireName.replace(new RegExp(`^${port.wirePrefix}`), '') : wireName
       const line = mapLine(hunks, text.slice(0, match.index).split('\n').length)
-      names.set(name, { wireName, source: { repo: port.repo, revision, extractedRevision: head, file: path, ...(line ? { line } : {}) } })
+      names.set(name, {
+        wireName,
+        source: { repo: port.repo, revision, extractedRevision: head, file: path, ...(line ? { line } : {}) },
+      })
     }
   }
   const snapshotFile = join(repoRoot, 'site/src/data/mcp-protocol', `${port.slug}.json`)
   const snapshot = existsSync(snapshotFile) ? JSON.parse(readFileSync(snapshotFile, 'utf8')) : undefined
-  if (snapshot && (snapshot.revision !== head || snapshot.repo !== port.repo)) throw new Error(`${port.slug}: MCP protocol snapshot describes another source revision or repository`)
-  if (sourceBound && !snapshot) throw new Error(`${port.slug}: source-bound MCP catalog requires a runtime protocol snapshot`)
+  if (snapshot && (snapshot.revision !== head || snapshot.repo !== port.repo))
+    throw new Error(`${port.slug}: MCP protocol snapshot describes another source revision or repository`)
+  if (sourceBound && !snapshot)
+    throw new Error(`${port.slug}: source-bound MCP catalog requires a runtime protocol snapshot`)
   const protocols = new Map((snapshot?.protocol.tools ?? []).map((tool) => [tool.name, tool]))
-  const registrations = [...names.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([name, registration]) => {
-    const tool = protocols.get(registration.wireName)
-    return {
-      name, ...registration, description: tool?.description ?? '',
-      schemaStatus: tool ? 'runtime' : 'unavailable',
-      ...(port.slug === 'ruby' ? { enabledByDefault: ['capabilities', 'snapshot'].includes(name) } : {}),
-      ...(tool ? { inputSchema: tool.inputSchema, outputSchema: tool.outputSchema, annotations: tool.annotations, meta: tool._meta } : {}),
-    }
-  })
-  const unregistered = [...protocols.keys()].filter((name) => !registrations.some((registration) => registration.wireName === name))
-  if (unregistered.length) throw new Error(`${port.slug}: runtime tools absent from source registrations: ${unregistered.join(', ')}`)
+  const registrations = [...names.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, registration]) => {
+      const tool = protocols.get(registration.wireName)
+      return {
+        name,
+        ...registration,
+        description: tool?.description ?? '',
+        schemaStatus: tool ? 'runtime' : 'unavailable',
+        ...(port.slug === 'ruby' ? { enabledByDefault: ['capabilities', 'snapshot'].includes(name) } : {}),
+        ...(tool
+          ? {
+              inputSchema: tool.inputSchema,
+              outputSchema: tool.outputSchema,
+              annotations: tool.annotations,
+              meta: tool._meta,
+            }
+          : {}),
+      }
+    })
+  const unregistered = [...protocols.keys()].filter(
+    (name) => !registrations.some((registration) => registration.wireName === name),
+  )
+  if (unregistered.length)
+    throw new Error(`${port.slug}: runtime tools absent from source registrations: ${unregistered.join(', ')}`)
   const unavailable = registrations.filter((entry) => entry.schemaStatus !== 'runtime' || !entry.inputSchema)
-  if (sourceBound && unavailable.length) throw new Error(`${port.slug}: runtime schemas missing for ${unavailable.map((entry) => entry.wireName).join(', ')}`)
+  if (sourceBound && unavailable.length)
+    throw new Error(
+      `${port.slug}: runtime schemas missing for ${unavailable.map((entry) => entry.wireName).join(', ')}`,
+    )
   results[port.slug] = {
-    tools: [...names.keys()].sort(), registrations,
+    tools: [...names.keys()].sort(),
+    registrations,
     wirePrefix: port.wirePrefix ?? '',
     selectable: selectsToolsets(expand(port.serverDir ?? port.dir)),
-    source: relative(port.checkout, dir), repo: port.repo, revision, extractedRevision: head,
+    source: relative(port.checkout, dir),
+    repo: port.repo,
+    revision,
+    extractedRevision: head,
     ...(snapshot ? { selection: snapshot.selection, protocol: { ...snapshot.protocol, tools: undefined } } : {}),
   }
 }
@@ -320,9 +358,7 @@ if (silent.length) {
 }
 
 const universe = [...new Set(slugs.flatMap((s) => results[s].tools))].sort()
-const coverage = Object.fromEntries(
-  universe.map((t) => [t, slugs.filter((s) => results[s].tools.includes(t))]),
-)
+const coverage = Object.fromEntries(universe.map((t) => [t, slugs.filter((s) => results[s].tools.includes(t))]))
 
 const payload = {
   generated: 'scripts/gen-mcp-tools.mjs',

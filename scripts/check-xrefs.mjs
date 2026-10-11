@@ -27,8 +27,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 /* `--floor` points at a different record so `check-xrefs.negative.mjs` can
  * drive this script rather than a copy of its logic. */
 const floorArg = process.argv.indexOf('--floor')
-const FLOOR_FILE =
-  floorArg === -1 ? join(root, 'scripts/xref-floor.json') : process.argv[floorArg + 1]
+const FLOOR_FILE = floorArg === -1 ? join(root, 'scripts/xref-floor.json') : process.argv[floorArg + 1]
 const { API_MODEL_PORTS: PORT_DEFS } = await import(`file://${join(root, 'site/src/lib/ports.ts')}`)
 const PORTS = PORT_DEFS.map((p) => p.slug)
 
@@ -55,18 +54,22 @@ function countIn(dir) {
 // Core and companion references share one floor within a version. Count each
 // version separately: a healthy stable tree must not conceal broken latest
 // references, and building both versions must not double the recorded floor.
-const versionCounts = Object.fromEntries(PORTS.map((port) => {
-  const versions = {}
-  for (const dir of referenceDirs(site, port, { products: true })) {
-    const version = relative(join(site, port), dir).split(sep)[0]
-    versions[version] = (versions[version] ?? 0) + countIn(dir)
-  }
-  return [port, versions]
-}))
-const counts = Object.fromEntries(PORTS.map((port) => {
-  const values = Object.values(versionCounts[port])
-  return [port, values.length ? Math.min(...values) : 0]
-}))
+const versionCounts = Object.fromEntries(
+  PORTS.map((port) => {
+    const versions = {}
+    for (const dir of referenceDirs(site, port, { products: true })) {
+      const version = relative(join(site, port), dir).split(sep)[0]
+      versions[version] = (versions[version] ?? 0) + countIn(dir)
+    }
+    return [port, versions]
+  }),
+)
+const counts = Object.fromEntries(
+  PORTS.map((port) => {
+    const values = Object.values(versionCounts[port])
+    return [port, values.length ? Math.min(...values) : 0]
+  }),
+)
 
 if (args.includes('--update')) {
   /*
@@ -122,8 +125,12 @@ const below = PORTS.filter((p) => counts[p] < floor[p])
 for (const p of PORTS) {
   const f = floor[p]
   const mark = counts[p] < f ? 'FELL' : counts[p] > f ? 'up' : 'ok'
-  const versions = Object.entries(versionCounts[p]).map(([version, count]) => `${version}: ${count}`).join(', ')
-  console.log(`${p.padEnd(7)} ${String(counts[p]).padStart(7)} resolved  (floor ${f})  ${mark}  [${versions || 'no versions'}]`)
+  const versions = Object.entries(versionCounts[p])
+    .map(([version, count]) => `${version}: ${count}`)
+    .join(', ')
+  console.log(
+    `${p.padEnd(7)} ${String(counts[p]).padStart(7)} resolved  (floor ${f})  ${mark}  [${versions || 'no versions'}]`,
+  )
 }
 
 if (below.length) {

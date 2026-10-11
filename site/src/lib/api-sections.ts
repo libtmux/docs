@@ -11,14 +11,15 @@ export interface ApiSection {
 export function apiEntryFields(symbol: ApiSymbol, port?: string) {
   const native = ['kotlin', 'scala', 'fsharp', 'c'].includes(port ?? '')
   const name = port === 'swift' ? symbol.name.replace(/\([^)]*\)$/, '') : symbol.name
-  const labels = symbol.signatures.map((signature) =>
-    `${name}(${signature.params.map((param) => param.name).join(', ')})`)
-  const label = (i: number) => labels.filter((entry) => entry === labels[i]).length > 1
-    ? `${labels[i]} [overload ${i + 1}]` : labels[i]
+  const labels = symbol.signatures.map(
+    (signature) => `${name}(${signature.params.map((param) => param.name).join(', ')})`,
+  )
+  const label = (i: number) =>
+    labels.filter((entry) => entry === labels[i]).length > 1 ? `${labels[i]} [overload ${i + 1}]` : labels[i]
   // Python's extractor merges @overload stubs followed by their implementation.
   // The implementation docstring documents the complete callable, not one stub.
-  const familyDocumentation = port === 'py' && !symbol.modifiers.includes('overload')
-    ? symbol.signatures.length - 1 : -1
+  const familyDocumentation =
+    port === 'py' && !symbol.modifiers.includes('overload') ? symbol.signatures.length - 1 : -1
   const collect = <T>(read: (signature: Signature) => T[]) => {
     const fields = new Map<string, { value: T; signatures: Set<number> }>()
     symbol.signatures.forEach((signature, i) => {
@@ -31,13 +32,15 @@ export function apiEntryFields(symbol: ApiSymbol, port?: string) {
     })
     return [...fields.values()].map(({ value, signatures }) => ({
       ...value,
-      overloads: signatures.size < symbol.signatures.length && !signatures.has(familyDocumentation)
-        ? [...signatures].map(label) : [],
+      overloads:
+        signatures.size < symbol.signatures.length && !signatures.has(familyDocumentation)
+          ? [...signatures].map(label)
+          : [],
     }))
   }
   return {
     params: collect((signature) => signature.params.filter((param) => native || param.doc)),
-    returns: collect((signature) => signature.returnsDoc ? [{ doc: signature.returnsDoc }] : []),
+    returns: collect((signature) => (signature.returnsDoc ? [{ doc: signature.returnsDoc }] : [])),
     raises: collect((signature) => signature.raises ?? []),
   }
 }
@@ -66,18 +69,36 @@ export function apiMemberGroups(members: ApiSymbol[], signals: MemberSignals) {
   ]
   for (const member of members) {
     const tier = memberTier(member, signals)
-    const group = tier === 'parent' ? 0 : tier === 'listing' || tier === 'query' ? 1 : tier === 'concept' || tier === 'discussed' ? 2 : 3
+    const group =
+      tier === 'parent'
+        ? 0
+        : tier === 'listing' || tier === 'query'
+          ? 1
+          : tier === 'concept' || tier === 'discussed'
+            ? 2
+            : 3
     groups[group].members.push(member)
   }
   return groups.filter((group) => group.members.length > 0)
 }
 
 /** Related declarations come from ownership, inheritance and return types. */
-export function relatedApiTypes(owner: ApiSymbol, members: ApiSymbol[], index: SymbolIndex, parent?: ApiSymbol, options: { includeInternal?: boolean } = {}) {
+export function relatedApiTypes(
+  owner: ApiSymbol,
+  members: ApiSymbol[],
+  index: SymbolIndex,
+  parent?: ApiSymbol,
+  options: { includeInternal?: boolean } = {},
+) {
   const types = new Map<string, ApiSymbol>()
   const add = (symbol?: ApiSymbol) => {
-    if (!symbol || symbol.id === owner.id || (!options.includeInternal && symbol.apiScope === 'internal') ||
-        !['class', 'struct', 'union', 'interface', 'trait', 'enum', 'typealias'].includes(symbol.kind)) return
+    if (
+      !symbol ||
+      symbol.id === owner.id ||
+      (!options.includeInternal && symbol.apiScope === 'internal') ||
+      !['class', 'struct', 'union', 'interface', 'trait', 'enum', 'typealias'].includes(symbol.kind)
+    )
+      return
     types.set(symbol.publicId ?? symbol.id, symbol)
   }
   add(parent)
@@ -89,7 +110,10 @@ export function relatedApiTypes(owner: ApiSymbol, members: ApiSymbol[], index: S
       for (const span of index.linkType(symbol.type, symbol)) add(span.link?.symbol)
     }
     for (const signature of symbol.signatures) {
-      for (const type of [signature.returns, ...(options.includeInternal ? signature.params.map((param) => param.type) : [])]) {
+      for (const type of [
+        signature.returns,
+        ...(options.includeInternal ? signature.params.map((param) => param.type) : []),
+      ]) {
         if (type) for (const span of index.linkType(type, symbol)) add(span.link?.symbol)
       }
     }

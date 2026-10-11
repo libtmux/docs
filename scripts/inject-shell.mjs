@@ -16,10 +16,16 @@ const selectedVersion = argument('--version')
 const locale = process.env.LIBTMUX_DOCS_LOCALE || 'en'
 const siteDir = existsSync(join(output, locale, 'index.html')) ? join(output, locale) : output
 const prefix = `${(process.env.LIBTMUX_DOCS_LOCALES_ROOT || '').replace(/\/+$/, '')}/${locale}/`
-const failures = new Set(), checked = [], skipped = [], assets = new Map(), allAssets = new Set()
+const failures = new Set(),
+  checked = [],
+  skipped = [],
+  assets = new Map(),
+  allAssets = new Set()
 const stripCssComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '')
-const cssUrls = (css) => [...stripCssComments(css).matchAll(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^\s)]+))\s*\)/g)]
-  .map((match) => match[1] ?? match[2] ?? match[3])
+const cssUrls = (css) =>
+  [...stripCssComments(css).matchAll(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^\s)]+))\s*\)/g)].map(
+    (match) => match[1] ?? match[2] ?? match[3],
+  )
 
 function files(directory, suffix) {
   if (!existsSync(directory)) return []
@@ -55,7 +61,10 @@ function checkAsset(href, parent) {
 
 for (const port of PORTS.filter((entry) => entry.renderer === 'sphinx')) {
   const root = join(siteDir, port.slug)
-  if (!existsSync(root)) { skipped.push(`${port.slug}: no assembled native reference`); continue }
+  if (!existsSync(root)) {
+    skipped.push(`${port.slug}: no assembled native reference`)
+    continue
+  }
   for (const version of readdirSync(root)) {
     if (selectedVersion && version !== selectedVersion) continue
     assets.clear()
@@ -69,10 +78,13 @@ for (const port of PORTS.filter((entry) => entry.renderer === 'sphinx')) {
       count++
       const url = `https://libtmux.org${prefix}${relative(siteDir, file).replace(/index\.html$/, '')}`
       if (!html.includes('data-native-shell="')) failures.add(`${url}: compiled native shell is absent`)
-      if (/data-native-shell-export|data-native-boundary/.test(html)) failures.add(`${url}: temporary native export was published`)
-      if (/<script[^>]*src=["'][^"']*(?:\/_shell\/shell\.js|(?:^|\/)spa-nav\.js)/.test(html)) failures.add(`${url}: competing native shell/router remains`)
+      if (/data-native-shell-export|data-native-boundary/.test(html))
+        failures.add(`${url}: temporary native export was published`)
+      if (/<script[^>]*src=["'][^"']*(?:\/_shell\/shell\.js|(?:^|\/)spa-nav\.js)/.test(html))
+        failures.add(`${url}: competing native shell/router remains`)
       for (const tag of html.matchAll(/<(?:link|script|img)\b[^>]*>/g)) {
-        if (tag[0].startsWith('<link') && !/\b(?:rel="(?:stylesheet|preload|modulepreload)"|as="font")/.test(tag[0])) continue
+        if (tag[0].startsWith('<link') && !/\b(?:rel="(?:stylesheet|preload|modulepreload)"|as="font")/.test(tag[0]))
+          continue
         const asset = /\b(?:src|href)=["']([^"']+)["']/.exec(tag[0])?.[1]
         if (asset) checkAsset(asset, url)
       }
@@ -81,7 +93,10 @@ for (const port of PORTS.filter((entry) => entry.renderer === 'sphinx')) {
         for (const href of cssUrls(style[1])) checkAsset(href, url)
       }
     }
-    if (!count) { skipped.push(`${port.slug}/${version}: no native content`); continue }
+    if (!count) {
+      skipped.push(`${port.slug}/${version}: no native content`)
+      continue
+    }
     const styles = [...assets].filter(([file]) => file.endsWith('.css')).map(([, css]) => css)
     styles.push(...inlineStyles)
     const adapter = styles.find((css) => css.includes('html[data-native-shell]'))
@@ -89,14 +104,20 @@ for (const port of PORTS.filter((entry) => entry.renderer === 'sphinx')) {
     if (adapter) {
       const css = stripCssComments(adapter)
       const generated = files(join(native, '_static'), '.css')
-        .filter((path) => !path.endsWith('/libtmux-org.css')).map((path) => readFileSync(path, 'utf8')).join('\n')
-      const nativeRules = [...css.matchAll(/[^{}]*html\[data-native-shell\][^{}]*\{([^{}]*)\}/g)].map((match) => match[1]).join('\n')
+        .filter((path) => !path.endsWith('/libtmux-org.css'))
+        .map((path) => readFileSync(path, 'utf8'))
+        .join('\n')
+      const nativeRules = [...css.matchAll(/[^{}]*html\[data-native-shell\][^{}]*\{([^{}]*)\}/g)]
+        .map((match) => match[1])
+        .join('\n')
       for (const [name] of nativeRules.matchAll(/--color-[a-z0-9-]+(?=\s*:)/gi)) {
-        if (!generated.includes(name)) failures.add(`${port.slug}/${version}: native generator no longer declares ${name}`)
+        if (!generated.includes(name))
+          failures.add(`${port.slug}/${version}: native generator no longer declares ${name}`)
       }
       const compiled = styles.join('\n')
       for (const [, name] of nativeRules.matchAll(/var\((--(?:lt-)?[a-z0-9-]+)/gi)) {
-        if (!compiled.includes(`${name}:`) && !css.includes(`${name}:`)) failures.add(`${port.slug}/${version}: shared CSS does not declare ${name}`)
+        if (!compiled.includes(`${name}:`) && !css.includes(`${name}:`))
+          failures.add(`${port.slug}/${version}: shared CSS does not declare ${name}`)
       }
     }
     checked.push(`${port.slug}/${version}: ${count} native pages`)

@@ -13,7 +13,10 @@ export type Renderer = 'sphinx' | 'astro' | 'native-skinned' | 'none'
 
 /** Documentation products layered on each language library. */
 export const DOC_PRODUCTS = {
-  workspace: { label: 'Workspace Manager', description: 'Define and build tmux sessions from workspace configuration.' },
+  workspace: {
+    label: 'Workspace Manager',
+    description: 'Define and build tmux sessions from workspace configuration.',
+  },
   mcp: { label: 'MCP', description: 'Connect an MCP client to tmux tools and inspect the server API.' },
 } as const
 
@@ -299,16 +302,39 @@ const CORE_PORTS: readonly Port[] = [
     language: 'Python',
     packageName: 'libtmux',
     packages: [
-      { id: 'workspace', name: 'tmuxp', registry: 'https://pypi.org/project/tmuxp/',
+      {
+        id: 'workspace',
+        name: 'tmuxp',
+        registry: 'https://pypi.org/project/tmuxp/',
         source: { repo: 'tmux-python/tmuxp', path: 'src/tmuxp', ref: 'master' },
         executable: 'tmuxp',
         installs: [
-          { label: 'uv tool', lang: 'console', code: 'uv tool install tmuxp', note: 'Installs tmuxp in an isolated Python environment. Run tmuxp load ./workspace.yaml.' },
-          { label: 'uvx', lang: 'console', code: 'uvx tmuxp --help', note: 'Runs without a permanent installation. Replace --help with load ./workspace.yaml to load a workspace.' },
-          { label: 'pipx', lang: 'console', code: 'pipx install tmuxp', note: 'Installs the tmuxp command in an isolated Python environment.' },
-        ] },
-      { id: 'mcp', name: 'libtmux-mcp', registry: 'https://pypi.org/project/libtmux-mcp/',
-        source: { repo: 'tmux-python/libtmux-mcp', path: 'src/libtmux_mcp', ref: 'main' } },
+          {
+            label: 'uv tool',
+            lang: 'console',
+            code: 'uv tool install tmuxp',
+            note: 'Installs tmuxp in an isolated Python environment. Run tmuxp load ./workspace.yaml.',
+          },
+          {
+            label: 'uvx',
+            lang: 'console',
+            code: 'uvx tmuxp --help',
+            note: 'Runs without a permanent installation. Replace --help with load ./workspace.yaml to load a workspace.',
+          },
+          {
+            label: 'pipx',
+            lang: 'console',
+            code: 'pipx install tmuxp',
+            note: 'Installs the tmuxp command in an isolated Python environment.',
+          },
+        ],
+      },
+      {
+        id: 'mcp',
+        name: 'libtmux-mcp',
+        registry: 'https://pypi.org/project/libtmux-mcp/',
+        source: { repo: 'tmux-python/libtmux-mcp', path: 'src/libtmux_mcp', ref: 'main' },
+      },
     ],
     workspaceCli: 'tmuxp load',
     workspaceCliAvailability: 'released',
@@ -373,7 +399,10 @@ const CORE_PORTS: readonly Port[] = [
     packages: [
       { id: 'core', name: 'libtmux', registry: 'https://rubygems.org/gems/libtmux', require: 'libtmux' },
       {
-        id: 'async', name: 'libtmux-async', registry: 'https://rubygems.org/gems/libtmux-async', require: 'libtmux/async',
+        id: 'async',
+        name: 'libtmux-async',
+        registry: 'https://rubygems.org/gems/libtmux-async',
+        require: 'libtmux/async',
         installs: [
           { label: 'gem', lang: 'console', code: 'gem install --version 0.1.0.alpha.1 libtmux-async' },
           { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux-async", "0.1.0.alpha.1"' },
@@ -622,20 +651,37 @@ const CORE_PORTS: readonly Port[] = [
       // A git install takes the workspace root, which is `@libtmux/repo` and
       // carries no library, so the import fails with "Cannot find module".
       // Depend on the package directory instead.
-      git: { code: 'git clone --branch {tag} https://github.com/libtmux/libtmux-ts && bun add ./libtmux-ts/packages/libtmux', lang: 'console' },
+      git: {
+        code: 'git clone --branch {tag} https://github.com/libtmux/libtmux-ts && bun add ./libtmux-ts/packages/libtmux',
+        lang: 'console',
+      },
     },
   },
   {
     slug: 'rs',
     projectName: 'libtmux-rs',
     packages: [
-      { id: 'workspace', name: 'tmux-workspace', registry: 'https://crates.io/crates/tmux-workspace',
+      {
+        id: 'workspace',
+        name: 'tmux-workspace',
+        registry: 'https://crates.io/crates/tmux-workspace',
         source: { path: 'crates/tmux-workspace', ref: 'master' },
         executable: 'tmux-workspace',
-        installs: [{ label: 'cargo', lang: 'console', code: 'cargo install --locked --path crates/tmux-workspace',
-          note: 'Run from a libtmux-rs checkout with its pinned Rust toolchain. This builds and installs the native CLI; run tmux-workspace --help afterward.' }] },
-      { id: 'mcp', name: 'tmux-mcp', registry: 'https://crates.io/crates/tmux-mcp',
-        source: { path: 'crates/tmux-mcp', ref: 'master' } },
+        installs: [
+          {
+            label: 'cargo',
+            lang: 'console',
+            code: 'cargo install --locked --path crates/tmux-workspace',
+            note: 'Run from a libtmux-rs checkout with its pinned Rust toolchain. This builds and installs the native CLI; run tmux-workspace --help afterward.',
+          },
+        ],
+      },
+      {
+        id: 'mcp',
+        name: 'tmux-mcp',
+        registry: 'https://crates.io/crates/tmux-mcp',
+        source: { path: 'crates/tmux-mcp', ref: 'master' },
+      },
     ],
     logoLanguage: 'rust',
     shortName: 'Rs',
@@ -656,8 +702,7 @@ const CORE_PORTS: readonly Port[] = [
     ecosystemHost: {
       name: 'docs.rs',
       url: 'https://docs.rs/libtmux',
-      rationale:
-        'Rust API documentation for published crate versions on docs.rs.',
+      rationale: 'Rust API documentation for published crate versions on docs.rs.',
     },
     generator: '',
     installs: [
@@ -688,8 +733,12 @@ const CORE_PORTS: readonly Port[] = [
     language: 'Go',
     packageName: 'github.com/libtmux/libtmux-go/tmux',
     packages: [
-      { id: 'mcp', name: 'github.com/libtmux/libtmux-go/mcp', registry: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp',
-        source: { path: 'mcp/cmd/libtmux-mcp', ref: 'master' } },
+      {
+        id: 'mcp',
+        name: 'github.com/libtmux/libtmux-go/mcp',
+        registry: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp',
+        source: { path: 'mcp/cmd/libtmux-mcp', ref: 'master' },
+      },
       {
         id: 'workspace',
         name: 'github.com/libtmux/libtmux-go/workspace',
@@ -718,8 +767,7 @@ const CORE_PORTS: readonly Port[] = [
     ecosystemHost: {
       name: 'pkg.go.dev',
       url: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux',
-      rationale:
-        'Go API documentation for published module versions on pkg.go.dev.',
+      rationale: 'Go API documentation for published module versions on pkg.go.dev.',
     },
     generator: '',
     installs: [
@@ -743,13 +791,27 @@ const CORE_PORTS: readonly Port[] = [
     slug: 'java',
     projectName: 'libtmux-java',
     packages: [
-      { id: 'workspace', name: 'libtmux-workspace-cli', registry: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-workspace-cli',
+      {
+        id: 'workspace',
+        name: 'libtmux-workspace-cli',
+        registry: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-workspace-cli',
         source: { path: 'libtmux-workspace-cli', ref: 'master' },
         executable: 'tmux-workspace',
-        installs: [{ label: 'Gradle', lang: 'console', code: './gradlew \\\n    --max-workers=2 \\\n    --no-parallel \\\n    :libtmux-workspace-cli:installDist',
-          note: 'Run from a libtmux-java checkout with JDK 25 or newer. The launcher is libtmux-workspace-cli/build/install/tmux-workspace/bin/tmux-workspace; keep its adjacent libraries.' }] },
-      { id: 'mcp', name: 'libtmux-mcp', registry: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-mcp',
-        source: { path: 'libtmux-mcp', ref: 'master' } },
+        installs: [
+          {
+            label: 'Gradle',
+            lang: 'console',
+            code: './gradlew \\\n    --max-workers=2 \\\n    --no-parallel \\\n    :libtmux-workspace-cli:installDist',
+            note: 'Run from a libtmux-java checkout with JDK 25 or newer. The launcher is libtmux-workspace-cli/build/install/tmux-workspace/bin/tmux-workspace; keep its adjacent libraries.',
+          },
+        ],
+      },
+      {
+        id: 'mcp',
+        name: 'libtmux-mcp',
+        registry: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-mcp',
+        source: { path: 'libtmux-mcp', ref: 'master' },
+      },
     ],
     logoLanguage: 'java',
     shortName: 'Java',
@@ -769,8 +831,7 @@ const CORE_PORTS: readonly Port[] = [
     ecosystemHost: {
       name: 'javadoc.io',
       url: 'https://javadoc.io/doc/io.github.libtmux/libtmux',
-      rationale:
-        'Java API documentation from the Javadoc JAR published to Maven Central.',
+      rationale: 'Java API documentation from the Javadoc JAR published to Maven Central.',
     },
     generator: '',
     installs: [
@@ -806,7 +867,11 @@ const CORE_PORTS: readonly Port[] = [
 </dependency>`,
       },
     ],
-    registry: { name: 'Maven Central', url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux', icon: 'maven' },
+    registry: {
+      name: 'Maven Central',
+      url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux',
+      icon: 'maven',
+    },
     initProject: { code: 'gradle init --type java-application --dsl kotlin', lang: 'console' },
     installForms: {
       // Gradle has no unpinned form, so every spelling carries the version.
@@ -814,7 +879,10 @@ const CORE_PORTS: readonly Port[] = [
       // to readers as if it were a command.
       stable: { code: 'implementation("io.github.libtmux:libtmux:{version}")', lang: 'kotlin' },
       prerelease: { code: 'implementation("io.github.libtmux:libtmux:{version}")', lang: 'kotlin' },
-      git: { code: 'git clone --branch {tag} https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew publishToMavenLocal)', lang: 'console' },
+      git: {
+        code: 'git clone --branch {tag} https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew publishToMavenLocal)',
+        lang: 'console',
+      },
     },
   },
   {
@@ -855,8 +923,12 @@ const CORE_PORTS: readonly Port[] = [
       git: { code: 'dotnet add reference ../libtmux-dotnet/src/LibTmux/LibTmux.csproj', lang: 'console' },
     },
     packages: [
-      { id: 'mcp', name: 'LibTmux.Mcp', registry: 'https://www.nuget.org/packages/LibTmux.Mcp',
-        source: { path: 'src/LibTmux.Mcp', ref: 'master' } },
+      {
+        id: 'mcp',
+        name: 'LibTmux.Mcp',
+        registry: 'https://www.nuget.org/packages/LibTmux.Mcp',
+        source: { path: 'src/LibTmux.Mcp', ref: 'master' },
+      },
       {
         id: 'workspace',
         name: 'LibTmux.Workspace.Cli',
@@ -891,10 +963,20 @@ const CORE_PORTS: readonly Port[] = [
     slug: 'cxx',
     projectName: 'libtmux-cxx',
     packages: [
-      { id: 'workspace', name: 'tmux-workspace', source: { path: 'apps/workspace', ref: 'master' },
+      {
+        id: 'workspace',
+        name: 'tmux-workspace',
+        source: { path: 'apps/workspace', ref: 'master' },
         executable: 'tmux-workspace',
-        installs: [{ label: 'CMake', lang: 'console', code: 'cmake --preset cxx-dev -DLIBTMUX_BUILD_WORKSPACE_CLI=ON && \\\n    cmake --build --preset cxx-dev --target tmux-workspace --parallel 2',
-          note: 'Run from a libtmux-cxx checkout with Clang 18.1.3, libc++ 18.1, CMake 3.25 or newer, and Ninja. The command is build/cxx-dev/apps/workspace/tmux-workspace.' }] },
+        installs: [
+          {
+            label: 'CMake',
+            lang: 'console',
+            code: 'cmake --preset cxx-dev -DLIBTMUX_BUILD_WORKSPACE_CLI=ON && \\\n    cmake --build --preset cxx-dev --target tmux-workspace --parallel 2',
+            note: 'Run from a libtmux-cxx checkout with Clang 18.1.3, libc++ 18.1, CMake 3.25 or newer, and Ninja. The command is build/cxx-dev/apps/workspace/tmux-workspace.',
+          },
+        ],
+      },
       { id: 'mcp', name: 'libtmux-mcp-server', source: { path: 'apps/mcp', ref: 'master' } },
     ],
     logoLanguage: 'cpp',
@@ -960,20 +1042,37 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
       // There is no vcpkg port yet, so this is the only form that works today.
       // FetchContent rather than a clone: it pins the tag in the build file,
       // where the next reader of the repository can see it.
-      git: { code: 'include(FetchContent)\nFetchContent_Declare(libtmux-cxx\n  GIT_REPOSITORY https://github.com/libtmux/libtmux-cxx\n  GIT_TAG {tag})\nFetchContent_MakeAvailable(libtmux-cxx)', lang: 'cmake' },
+      git: {
+        code: 'include(FetchContent)\nFetchContent_Declare(libtmux-cxx\n  GIT_REPOSITORY https://github.com/libtmux/libtmux-cxx\n  GIT_TAG {tag})\nFetchContent_MakeAvailable(libtmux-cxx)',
+        lang: 'cmake',
+      },
     },
   },
   {
     slug: 'swift',
     projectName: 'libtmux-swift',
     packages: [
-      { id: 'workspace', name: 'tmux-workspace', registry: 'https://swiftpackageindex.com/libtmux/libtmux-swift',
+      {
+        id: 'workspace',
+        name: 'tmux-workspace',
+        registry: 'https://swiftpackageindex.com/libtmux/libtmux-swift',
         source: { path: 'Sources/TmuxWorkspaceCLI', ref: 'master' },
         executable: 'tmux-workspace',
-        installs: [{ label: 'SwiftPM', lang: 'console', code: 'swift build \\\n    --jobs 2 \\\n    --traits YAMLWorkspaces \\\n    --force-resolved-versions \\\n    --product tmux-workspace',
-          note: 'Run from a libtmux-swift checkout with Swift 6.2 or newer on Linux, or Xcode Swift 6.3 or newer on macOS. The command is .build/debug/tmux-workspace.' }] },
-      { id: 'mcp', name: 'libtmux-mcp', registry: 'https://swiftpackageindex.com/libtmux/libtmux-swift',
-        source: { path: 'Sources/LibTmuxMCP', ref: 'master' } },
+        installs: [
+          {
+            label: 'SwiftPM',
+            lang: 'console',
+            code: 'swift build \\\n    --jobs 2 \\\n    --traits YAMLWorkspaces \\\n    --force-resolved-versions \\\n    --product tmux-workspace',
+            note: 'Run from a libtmux-swift checkout with Swift 6.2 or newer on Linux, or Xcode Swift 6.3 or newer on macOS. The command is .build/debug/tmux-workspace.',
+          },
+        ],
+      },
+      {
+        id: 'mcp',
+        name: 'libtmux-mcp',
+        registry: 'https://swiftpackageindex.com/libtmux/libtmux-swift',
+        source: { path: 'Sources/LibTmuxMCP', ref: 'master' },
+      },
     ],
     logoLanguage: 'swift',
     shortName: 'Sw',
@@ -1020,7 +1119,10 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
       // `from: "0.1.0"` means ">= 0.1.0, < 1.0.0", and `0.1.0-alpha.5` sorts
       // below `0.1.0`, so nothing in the repository is in range. This is the
       // one port where the spelling is forced rather than chosen.
-      prerelease: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", exact: "{version}")', lang: 'swift' },
+      prerelease: {
+        code: '.package(url: "https://github.com/libtmux/libtmux-swift", exact: "{version}")',
+        lang: 'swift',
+      },
       git: { code: '.package(url: "https://github.com/libtmux/libtmux-swift", exact: "{tag}")', lang: 'swift' },
     },
     installNote:
@@ -1028,52 +1130,104 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
   },
 ] as const
 
-type WrapperLibrary = Omit<Port, 'repo' | 'checkout' | 'worktree' | 'tagGrammar' | 'tagPrefix' | 'versionedDocs' | 'renderer' | 'generator'> & {
+type WrapperLibrary = Omit<
+  Port,
+  'repo' | 'checkout' | 'worktree' | 'tagGrammar' | 'tagPrefix' | 'versionedDocs' | 'renderer' | 'generator'
+> & {
   parentLibrary: { slug: string; runtime: string }
 }
 
 const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
   {
-    slug: 'kotlin', logoLanguage: 'kotlin', shortName: 'Kt', name: 'Kotlin', language: 'Kotlin',
+    slug: 'kotlin',
+    logoLanguage: 'kotlin',
+    shortName: 'Kt',
+    name: 'Kotlin',
+    language: 'Kotlin',
     projectName: 'libtmux-kotlin',
     parentLibrary: { slug: 'java', runtime: 'JVM' },
     source: { path: 'libtmux-kotlin', ref: 'master' },
     packageName: 'io.github.libtmux:libtmux-kotlin',
-    registry: { name: 'Maven Central', url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-kotlin', icon: 'maven' },
-    ecosystemHost: { name: 'Dokka', url: 'https://javadoc.io/doc/io.github.libtmux/libtmux-kotlin', rationale: 'Kotlin API documentation from the Dokka archive published with the package.' },
+    registry: {
+      name: 'Maven Central',
+      url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-kotlin',
+      icon: 'maven',
+    },
+    ecosystemHost: {
+      name: 'Dokka',
+      url: 'https://javadoc.io/doc/io.github.libtmux/libtmux-kotlin',
+      rationale: 'Kotlin API documentation from the Dokka archive published with the package.',
+    },
     installs: [
       { label: 'Gradle', lang: 'kotlin', code: 'implementation("io.github.libtmux:libtmux-kotlin:{version}")' },
-      { label: 'Maven', lang: 'xml', code: '<dependency>\n  <groupId>io.github.libtmux</groupId>\n  <artifactId>libtmux-kotlin</artifactId>\n  <version>{version}</version>\n</dependency>' },
+      {
+        label: 'Maven',
+        lang: 'xml',
+        code: '<dependency>\n  <groupId>io.github.libtmux</groupId>\n  <artifactId>libtmux-kotlin</artifactId>\n  <version>{version}</version>\n</dependency>',
+      },
     ],
     initProject: { code: 'gradle init --type kotlin-application --dsl kotlin', lang: 'console' },
     installForms: {
       stable: { code: 'implementation("io.github.libtmux:libtmux-kotlin:{version}")', lang: 'kotlin' },
       prerelease: { code: 'implementation("io.github.libtmux:libtmux-kotlin:{version}")', lang: 'kotlin' },
-      git: { code: 'git clone --branch {tag} https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew :libtmux:publishToMavenLocal :libtmux-kotlin:publishToMavenLocal)', lang: 'console' },
+      git: {
+        code: 'git clone --branch {tag} https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew :libtmux:publishToMavenLocal :libtmux-kotlin:publishToMavenLocal)',
+        lang: 'console',
+      },
     },
   },
   {
-    slug: 'scala', logoLanguage: 'scala', shortName: 'Sc', name: 'Scala', language: 'Scala',
+    slug: 'scala',
+    logoLanguage: 'scala',
+    shortName: 'Sc',
+    name: 'Scala',
+    language: 'Scala',
     projectName: 'libtmux-scala',
     parentLibrary: { slug: 'java', runtime: 'JVM' },
     source: { path: 'libtmux-scala', ref: 'master' },
     packageName: 'io.github.libtmux:libtmux-scala_3',
-    registry: { name: 'Maven Central', url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala_3', icon: 'maven' },
-    ecosystemHost: { name: 'Scaladoc', url: 'https://javadoc.io/doc/io.github.libtmux/libtmux-scala_3', rationale: 'Scala 3 API documentation from the Scaladoc archive published with the package.' },
+    registry: {
+      name: 'Maven Central',
+      url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala_3',
+      icon: 'maven',
+    },
+    ecosystemHost: {
+      name: 'Scaladoc',
+      url: 'https://javadoc.io/doc/io.github.libtmux/libtmux-scala_3',
+      rationale: 'Scala 3 API documentation from the Scaladoc archive published with the package.',
+    },
     installs: [
-      { label: 'sbt', lang: 'scala', code: 'libraryDependencies += "io.github.libtmux" %% "libtmux-scala" % "{version}"' },
+      {
+        label: 'sbt',
+        lang: 'scala',
+        code: 'libraryDependencies += "io.github.libtmux" %% "libtmux-scala" % "{version}"',
+      },
       { label: 'Gradle', lang: 'kotlin', code: 'implementation("io.github.libtmux:libtmux-scala_3:{version}")' },
-      { label: 'Maven', lang: 'xml', code: '<dependency>\n  <groupId>io.github.libtmux</groupId>\n  <artifactId>libtmux-scala_3</artifactId>\n  <version>{version}</version>\n</dependency>' },
+      {
+        label: 'Maven',
+        lang: 'xml',
+        code: '<dependency>\n  <groupId>io.github.libtmux</groupId>\n  <artifactId>libtmux-scala_3</artifactId>\n  <version>{version}</version>\n</dependency>',
+      },
     ],
     initProject: { code: 'sbt new scala/scala3.g8', lang: 'console' },
     installForms: {
       stable: { code: 'libraryDependencies += "io.github.libtmux" %% "libtmux-scala" % "{version}"', lang: 'scala' },
-      prerelease: { code: 'libraryDependencies += "io.github.libtmux" %% "libtmux-scala" % "{version}"', lang: 'scala' },
-      git: { code: 'git clone --branch {tag} https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew :libtmux:publishToMavenLocal :libtmux-scala:publishToMavenLocal)', lang: 'console' },
+      prerelease: {
+        code: 'libraryDependencies += "io.github.libtmux" %% "libtmux-scala" % "{version}"',
+        lang: 'scala',
+      },
+      git: {
+        code: 'git clone --branch {tag} https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew :libtmux:publishToMavenLocal :libtmux-scala:publishToMavenLocal)',
+        lang: 'console',
+      },
     },
   },
   {
-    slug: 'fsharp', logoLanguage: 'fsharp', shortName: 'F#', name: 'F#', language: 'F#',
+    slug: 'fsharp',
+    logoLanguage: 'fsharp',
+    shortName: 'F#',
+    name: 'F#',
+    language: 'F#',
     projectName: 'libtmux-fsharp',
     parentLibrary: { slug: 'csharp', runtime: '.NET' },
     sourceReferenceDirectory: 'docs/fsharp-reference/reference',
@@ -1093,10 +1247,16 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
 export const PORTS: readonly Port[] = CORE_PORTS.flatMap((parent) => [
   parent,
   ...WRAPPER_LIBRARIES.filter((library) => library.parentLibrary.slug === parent.slug).map((library): Port => ({
-    repo: parent.repo, checkout: parent.checkout, worktree: parent.worktree,
+    repo: parent.repo,
+    checkout: parent.checkout,
+    worktree: parent.worktree,
     docsDispatch: parent.docsDispatch && { ...parent.docsDispatch, language: library.slug },
-    tagGrammar: parent.tagGrammar, tagPrefix: parent.tagPrefix,
-    versionedDocs: parent.versionedDocs, renderer: 'none', generator: '', referenceKind: 'model',
+    tagGrammar: parent.tagGrammar,
+    tagPrefix: parent.tagPrefix,
+    versionedDocs: parent.versionedDocs,
+    renderer: 'none',
+    generator: '',
+    referenceKind: 'model',
     publishesOwnTree: true,
     ...library,
   })),
@@ -1104,9 +1264,7 @@ export const PORTS: readonly Port[] = CORE_PORTS.flatMap((parent) => [
 
 export const API_MODEL_PORTS = PORTS.filter((port) => port.referenceKind !== 'guide')
 
-export const PORT_BY_SLUG: Readonly<Record<string, Port>> = Object.fromEntries(
-  PORTS.map((p) => [p.slug, p]),
-)
+export const PORT_BY_SLUG: Readonly<Record<string, Port>> = Object.fromEntries(PORTS.map((p) => [p.slug, p]))
 
 /** Open a library's directory at its documented revision, tag, or default branch. */
 export function portSourceUrl(port: Port, version = 'latest', revision?: string): string {
@@ -1144,15 +1302,17 @@ export function workspaceOverviewNotice(port: Port): { title: string; body: stri
   if (port.workspaceCliAvailability === 'published') {
     return {
       title,
-      body: `The \`tmux-workspace\` CLI is published to ${port.registry?.name ?? 'the package registry'} `
-        + 'as a prerelease. Pin its version when automation depends on its output.',
+      body:
+        `The \`tmux-workspace\` CLI is published to ${port.registry?.name ?? 'the package registry'} ` +
+        'as a prerelease. Pin its version when automation depends on its output.',
     }
   }
   if (port.workspaceCliAvailability !== 'local') return undefined
   return {
     title,
-    body: 'Build `tmux-workspace` from the source revision in the installation guide. '
-      + 'Its CLI and workspace library have separate installation and configuration contracts.',
+    body:
+      'Build `tmux-workspace` from the source revision in the installation guide. ' +
+      'Its CLI and workspace library have separate installation and configuration contracts.',
   }
 }
 
@@ -1297,8 +1457,7 @@ export function installCommand(port: Port, entry: RegistryEntry): InstallForm {
   // only place the code exists, so the tag is the version.
   if (!entry.tag) {
     throw new Error(
-      `installCommand: ${port.slug} has no registry version and no release tag; ` +
-        'run node scripts/gen-registry.mjs',
+      `installCommand: ${port.slug} has no registry version and no release tag; ` + 'run node scripts/gen-registry.mjs',
     )
   }
   return fill(forms.git, '{tag}', entry.tag)
@@ -1316,9 +1475,12 @@ export function releaseWording(port: Port, entry: RegistryEntry): string {
 }
 
 /** Artwork identity for a port page, reference, or shared product landing. */
-export function pageBrand(portSlug?: string, pagePath = ''): { language: string; variant: 'library' | 'workspace' | 'mcp' } {
+export function pageBrand(
+  portSlug?: string,
+  pagePath = '',
+): { language: string; variant: 'library' | 'workspace' | 'mcp' } {
   const segments = pagePath.toLowerCase().split('/').filter(Boolean)
-  const port = PORT_BY_SLUG[portSlug ?? ''] ?? PORT_BY_SLUG[segments[0] === 'reference' ? segments[1] ?? '' : '']
+  const port = PORT_BY_SLUG[portSlug ?? ''] ?? PORT_BY_SLUG[segments[0] === 'reference' ? (segments[1] ?? '') : '']
   let language = port?.logoLanguage ?? 'python'
   if (port?.slug === 'java') {
     if (segments.some((segment) => /(^|[-.])kotlin($|[-.])/.test(segment))) language = 'kotlin'
@@ -1326,7 +1488,10 @@ export function pageBrand(portSlug?: string, pagePath = ''): { language: string;
   } else if (port?.slug === 'csharp' && segments.some((segment) => /(^|[-.])fsharp($|[-.])/.test(segment))) {
     language = 'fsharp'
   }
-  const variant = segments.some((segment) => /^(?:libtmux[-.]|tmux-)?mcp(?:[.-]|$)/.test(segment)) ? 'mcp'
-    : segments.some((segment) => /^(?:libtmux[-.]|tmux-)?workspace(?:[.-]|$)/.test(segment)) ? 'workspace' : 'library'
+  const variant = segments.some((segment) => /^(?:libtmux[-.]|tmux-)?mcp(?:[.-]|$)/.test(segment))
+    ? 'mcp'
+    : segments.some((segment) => /^(?:libtmux[-.]|tmux-)?workspace(?:[.-]|$)/.test(segment))
+      ? 'workspace'
+      : 'library'
   return { language, variant }
 }

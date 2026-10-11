@@ -80,7 +80,8 @@ trap 'exit 1' HUP INT TERM
 
 unset TMUX TMUX_PANE
 export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
+"$binary" -S "$socket" -f /dev/null \
+    new-session -d -s work-one -n editor /bin/cat
 "$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
 "$@"
 "$binary" -S "$socket" has-session -t '=work-one'
@@ -111,7 +112,8 @@ import scala.jdk.CollectionConverters.*
 object Local {
   def main(args: Array[String]): Unit = {
     val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+      throw new IllegalArgumentException(
+        "Set LIBTMUX_SOCKET_PATH to an existing socket"))
     val config = ServerConfig.builder()
       .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
       .defaultTimeout(Duration.ofSeconds(5))
@@ -124,11 +126,13 @@ object Local {
       println(names.mkString(", "))
       // Filtering the captured vector makes no new tmux calls.
       assert(sessions.filter(_.name.startsWith("work-")) == matching)
-      val onlyOne = Session.name.startsWith("work-") && Session.name.endsWith("one")
+      val endsInOne = Session.name.endsWith("one")
+      val onlyOne = Session.name.startsWith("work-") && endsInOne
       assert(sessions.matching(onlyOne).head.name == "work-one")
       val either = Session.name.is("work-one") || Session.name.is("work-two")
       assert(sessions.matching(either).size == 2)
-      assert(sessions.matching(!Session.name.is("work-one")).head.name == "work-two")
+      val notOne = sessions.matching(!Session.name.is("work-one"))
+      assert(notOne.head.name == "work-two")
     }
   }
 }
@@ -161,7 +165,8 @@ import scala.jdk.CollectionConverters.*
 object Control {
   def main(args: Array[String]): Unit = {
     val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+      throw new IllegalArgumentException(
+        "Set LIBTMUX_SOCKET_PATH to an existing socket"))
     val config = ServerConfig.builder()
       .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
       .defaultTimeout(Duration.ofSeconds(5))
@@ -170,7 +175,9 @@ object Control {
       val session = server.sessions().find(_.name == "work-one").get
       Using.resource(server.control(session)) { control =>
         val reply = control.send("list-sessions", "-F", "#{session_name}")
-        require(reply.succeeded(), s"tmux rejected list-sessions: ${reply.outcome()}")
+        require(
+          reply.succeeded(),
+          s"tmux rejected list-sessions: ${reply.outcome()}")
         val names = reply.lines().asScala.toVector.sorted
         assert(names == Vector("work-one", "work-two"))
         println(names.mkString(", "))

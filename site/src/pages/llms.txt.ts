@@ -51,9 +51,7 @@ export const GET: APIRoute = async ({ site }) => {
   }
 
   out.push('## Optional', '')
-  out.push(
-    `- [Full documentation text](${origin}${base}llms-full.txt): guides and MCP contracts in a single fetch.`,
-  )
+  out.push(`- [Full documentation text](${origin}${base}llms-full.txt): guides and MCP contracts in a single fetch.`)
   out.push('')
 
   return new Response(out.join('\n'), {

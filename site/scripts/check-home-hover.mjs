@@ -3,19 +3,24 @@ import { PORTS } from '../src/lib/ports.ts'
 
 /** Real pointer events, with the clock advanced instead of sleeping per option. */
 export async function checkHomeHover(browser, base) {
-  const context = await browser.newContext({ viewport: { width: 914, height: 777 }, colorScheme: 'light', reducedMotion: 'no-preference' })
+  const context = await browser.newContext({
+    viewport: { width: 914, height: 777 },
+    colorScheme: 'light',
+    reducedMotion: 'no-preference',
+  })
   const page = await context.newPage()
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))
-  const read = () => page.evaluate(() => ({
-    port: document.documentElement.dataset.homeSelectedPort ?? null,
-    savedPort: localStorage.getItem('libtmux-docs.package-install.port'),
-    promptPort: document.querySelector('.lm-agent-prompt')?.dataset.activePort,
-    scheme: document.documentElement.dataset.colorScheme,
-    mode: document.documentElement.dataset.themeMode,
-    savedScheme: localStorage.getItem('color-scheme'),
-    checked: document.querySelector('[data-scheme-switch] input:checked')?.value,
-  }))
+  const read = () =>
+    page.evaluate(() => ({
+      port: document.documentElement.dataset.homeSelectedPort ?? null,
+      savedPort: localStorage.getItem('libtmux-docs.package-install.port'),
+      promptPort: document.querySelector('.lm-agent-prompt')?.dataset.activePort,
+      scheme: document.documentElement.dataset.colorScheme,
+      mode: document.documentElement.dataset.themeMode,
+      savedScheme: localStorage.getItem('color-scheme'),
+      checked: document.querySelector('[data-scheme-switch] input:checked')?.value,
+    }))
   const language = page.locator('[data-home-launcher] [data-page-port-switcher]')
   const scheme = (value) => page.locator(`[data-scheme-switch] [data-scheme="${value}"]`)
   const leave = () => page.mouse.move(5, 400)
@@ -37,10 +42,17 @@ export async function checkHomeHover(browser, base) {
       assert.equal(state.promptPort, slug, 'The current prompt follows the preview')
       assert.equal(state.savedPort, 'py', 'Hover does not save a language')
       assert.equal(page.url(), url, 'Hover does not change any URL state')
-      assert.equal(await language.locator('[aria-current]').getAttribute('data-port'), 'py', 'Only the committed menu option is checked')
+      assert.equal(
+        await language.locator('[aria-current]').getAttribute('data-port'),
+        'py',
+        'Only the committed menu option is checked',
+      )
       assert(await page.locator(`.home-examples > [data-home-language="${slug}"]`).isVisible())
       assert.equal(await page.locator('.lm-agent-prompt [data-select="topic"]').inputValue(), 'session-switcher')
-      assert.match(await page.locator(`.lm-agent-prompt__panel[data-port="${slug}"] [data-prompt-text]`).innerText(), /Then build a tmux session switcher/)
+      assert.match(
+        await page.locator(`.lm-agent-prompt__panel[data-port="${slug}"] [data-prompt-text]`).innerText(),
+        /Then build a tmux session switcher/,
+      )
       await leave()
       assert.equal((await read()).port, 'py', 'Leaving restores the committed language')
     }
@@ -77,7 +89,10 @@ export async function checkHomeHover(browser, base) {
       assert.equal(during.savedScheme, before.savedScheme)
       assert.equal(during.scheme, before.scheme)
       assert.equal(during.checked, before.checked, 'A preview does not select a radio')
-      assert.equal(await page.locator('body').evaluate((el) => getComputedStyle(el).transitionDuration), '0.18s, 0.18s, 0.18s')
+      assert.equal(
+        await page.locator('body').evaluate((el) => getComputedStyle(el).transitionDuration),
+        '0.18s, 0.18s, 0.18s',
+      )
       await leave()
       assert.equal((await read()).mode, before.mode)
     }
@@ -101,7 +116,11 @@ export async function checkHomeHover(browser, base) {
     await leave()
     await page.clock.fastForward(1000)
     await page.emulateMedia({ reducedMotion: 'no-preference' })
-    assert.equal(await page.locator('html').getAttribute('data-home-scheme-fade'), null, 'Changing motion preference during a fade cleans up its styling')
+    assert.equal(
+      await page.locator('html').getAttribute('data-home-scheme-fade'),
+      null,
+      'Changing motion preference during a fade cleans up its styling',
+    )
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await scheme('light').hover()
     await page.clock.fastForward(1200)
@@ -111,7 +130,12 @@ export async function checkHomeHover(browser, base) {
     await language.locator('summary').click()
     await language.locator('a[data-port="ruby"]').hover()
     await page.clock.fastForward(1200)
-    assert.equal(await page.evaluate(() => document.getAnimations().filter((a) => a.effect?.target?.matches('[data-home-language]')).length), 0)
+    assert.equal(
+      await page.evaluate(
+        () => document.getAnimations().filter((a) => a.effect?.target?.matches('[data-home-language]')).length,
+      ),
+      0,
+    )
     await page.keyboard.press('Escape')
     await language.locator('a[data-port="ruby"]').dispatchEvent('pointerenter', { pointerType: 'touch' })
     await page.clock.fastForward(1200)
@@ -120,7 +144,13 @@ export async function checkHomeHover(browser, base) {
     // A real client-side navigation unbinds homepage previews.
     await page.evaluate(() => {
       window.__homeNavigationComplete = false
-      document.addEventListener('astro:page-load', () => { window.__homeNavigationComplete = true }, { once: true })
+      document.addEventListener(
+        'astro:page-load',
+        () => {
+          window.__homeNavigationComplete = true
+        },
+        { once: true },
+      )
     })
     await page.locator('.site-header__mark').click()
     await page.waitForFunction(() => window.__homeNavigationComplete && document.querySelector('[data-home-launcher]'))
@@ -136,5 +166,7 @@ export async function checkHomeHover(browser, base) {
   } finally {
     await context.close()
   }
-  console.log('Homepage hover: all 13 languages, task sync, dwell, restore, commit, URL/storage, Auto/Light/Dark, reduced motion and documentation exclusion PASS')
+  console.log(
+    'Homepage hover: all 13 languages, task sync, dwell, restore, commit, URL/storage, Auto/Light/Dark, reduced motion and documentation exclusion PASS',
+  )
 }

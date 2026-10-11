@@ -2,8 +2,8 @@ packages:
   - packages/*
   - site
 catalog:
-  '@biomejs/biome': 2.5.14
   happy-dom: ^20.14.5
+  oxfmt: 0.70.0
   oxlint: ^1.86.0
   tree-sitter-wasms: ^0.1.13
   # Pinned exactly, not caret: the prebuilt grammars are ABI 13-14 and runtime

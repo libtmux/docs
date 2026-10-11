@@ -277,7 +277,8 @@ Constraints:
       rs: 'Use `libtmux::test::TestServer`, which runs an isolated server and shuts it down on drop.',
       go: 'Use `tmuxtest.NewServer(ctx, t)` from `github.com/libtmux/libtmux-go/tmux/tmuxtest`, which registers its own cleanup.',
       java: 'Use the JUnit 5 support in `io.github.libtmux.junit5`: `TmuxExtension`, and `NamedServerFixture` when the socket name matters.',
-      csharp: 'Use `LibTmux.Testing.TemporaryServerScope`, which is `IAsyncDisposable`, so `await using` handles teardown on the failure path.',
+      csharp:
+        'Use `LibTmux.Testing.TemporaryServerScope`, which is `IAsyncDisposable`, so `await using` handles teardown on the failure path.',
       cxx: 'Use `libtmux::testing::ScopedTmuxServer` from `<libtmux/testing/scoped_server.hpp>`, whose destructor reports teardown.',
       swift: 'Use `withTmuxServer { }` from the `TmuxFixture` library product, which scopes the server to the closure.',
       ts: 'This port does not export a test fixture yet; its launcher is internal. Build the fixture on the public API and say what you needed that was missing, so it can be vended properly.',
@@ -382,11 +383,16 @@ function installStep(port: Port, entry: RegistryEntry, install: InstallForm, wor
   // Indented as a block rather than prefixed with `$`: half these forms are
   // manifest lines, not shell commands, and a prompt that tells an agent to
   // run `implementation("...")` in a shell gets exactly that.
-  lines.push(install.code.split('\n').map((line) => `       ${line}`).join('\n'))
+  lines.push(
+    install.code
+      .split('\n')
+      .map((line) => `       ${line}`)
+      .join('\n'),
+  )
   const check =
     entry.status === 'stable'
-      ? `Check ${(port.registry?.url ?? `https://github.com/${port.repo}`)} if you need a different version.`
-      : `Check ${(port.registry?.url ?? `https://github.com/${port.repo}`)} for a newer version, and prefer a stable release over this one if there now is any.`
+      ? `Check ${port.registry?.url ?? `https://github.com/${port.repo}`} if you need a different version.`
+      : `Check ${port.registry?.url ?? `https://github.com/${port.repo}`} for a newer version, and prefer a stable release over this one if there now is any.`
   lines.push(wrap(check, 76, '   '))
   if (port.installNote) lines.push(wrap(port.installNote, 76, '   '))
   return lines.join('\n')
@@ -453,7 +459,7 @@ export function portParts(args: {
     `is at ${ctx.docsBase}/.`,
     '',
     `Language:   ${port.language}`,
-    `Package:    ${port.packageName} (${(port.registry?.name ?? 'its repository')})`,
+    `Package:    ${port.packageName} (${port.registry?.name ?? 'its repository'})`,
     `Repository: https://github.com/${port.repo}`,
     '',
     'Read these before writing code:',
@@ -465,11 +471,13 @@ export function portParts(args: {
     '1. Report the tmux version with `tmux -V`. libtmux drives a real tmux, so',
     '   nothing below works without one. Stop and tell me if it is missing.',
     ...(port.initProject.lang === 'text'
-      ? [wrap(`2. If this directory is not a ${port.language} project yet, ${port.initProject.code}`, 76, '').replace(/\n/g, '\n   ')]
-      : [
-          `2. If this directory is not a ${port.language} project yet, start one:`,
-          `       ${port.initProject.code}`,
-        ]),
+      ? [
+          wrap(`2. If this directory is not a ${port.language} project yet, ${port.initProject.code}`, 76, '').replace(
+            /\n/g,
+            '\n   ',
+          ),
+        ]
+      : [`2. If this directory is not a ${port.language} project yet, start one:`, `       ${port.initProject.code}`]),
     '   Skip this in a project that already exists, and match what is here.',
     installStep(port, entry, install, wording),
     '4. Write the smallest program that proves the install works: connect to a',
@@ -495,12 +503,16 @@ export function portParts(args: {
 
   const unavailable: Record<string, string> = {}
   if (port.slug === 'ruby') {
-    unavailable['session-freezer'] = 'Ruby workspace support loads and applies creation plans. It does not freeze a live session, preserve program state, or reconcile an existing topology. Report that boundary and do not invent a freeze API.'
-    unavailable['session-supervisor'] = 'Ruby workspace support is creation-only. It can validate, plan, and load a new workspace, but it does not reconcile or delete drift. Report that boundary and do not present creation as convergence.'
+    unavailable['session-freezer'] =
+      'Ruby workspace support loads and applies creation plans. It does not freeze a live session, preserve program state, or reconcile an existing topology. Report that boundary and do not invent a freeze API.'
+    unavailable['session-supervisor'] =
+      'Ruby workspace support is creation-only. It can validate, plan, and load a new workspace, but it does not reconcile or delete drift. Report that boundary and do not present creation as convergence.'
   }
   if (port.slug === 'lua') {
-    unavailable['session-freezer'] = 'Lua has no published workspace package or loader. Document the missing product and stop; do not call the scaffold or invent freeze and restore APIs.'
-    unavailable['session-supervisor'] = 'Lua has no published workspace product or reconciliation API. Document the missing product and stop; do not advertise scaffold modules as usable.'
+    unavailable['session-freezer'] =
+      'Lua has no published workspace package or loader. Document the missing product and stop; do not call the scaffold or invent freeze and restore APIs.'
+    unavailable['session-supervisor'] =
+      'Lua has no published workspace product or reconciliation API. Document the missing product and stop; do not advertise scaffold modules as usable.'
   }
 
   return { setup, notes, unavailable }

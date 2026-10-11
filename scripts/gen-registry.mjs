@@ -93,8 +93,7 @@ function isPrerelease(version, grammar) {
 }
 
 /** Newest first, under this port's grammar. */
-const newestFirst = (versions, grammar) =>
-  [...versions].sort((a, b) => comparePackageVersions(a, b, grammar))
+const newestFirst = (versions, grammar) => [...versions].sort((a, b) => comparePackageVersions(a, b, grammar))
 
 async function getJson(url, headers = {}) {
   const res = await fetch(url, {
@@ -151,11 +150,12 @@ const PROBES = {
     const packages = {}
     for (const name of names) {
       const { missing, body } = await getJson(`https://rubygems.org/api/v1/versions/${name}.json`)
-      packages[name] = missing || !Array.isArray(body)
-        ? null
-        : body
-            .filter((release) => release.yanked_at === null || release.yanked_at === undefined)
-            .map((release) => release.number)
+      packages[name] =
+        missing || !Array.isArray(body)
+          ? null
+          : body
+              .filter((release) => release.yanked_at === null || release.yanked_at === undefined)
+              .map((release) => release.number)
     }
     return { versions: packages.libtmux, packages }
   },
@@ -184,9 +184,7 @@ const PROBES = {
     return (body.versions ?? []).filter((v) => !v.yanked).map((v) => v.num)
   },
   async go() {
-    const { missing, body } = await getText(
-      'https://proxy.golang.org/github.com/libtmux/libtmux-go/@v/list',
-    )
+    const { missing, body } = await getText('https://proxy.golang.org/github.com/libtmux/libtmux-go/@v/list')
     if (missing || body === null) return null
     const versions = body.split('\n').filter(Boolean)
     return versions.length > 0 ? versions : null
@@ -198,9 +196,15 @@ const PROBES = {
     if (missing || !body) return null
     return [...body.matchAll(/<version>([^<]+)<\/version>/g)].map((m) => m[1])
   },
-  async kotlin(port) { return PROBES.java(port) },
-  async scala(port) { return PROBES.java(port) },
-  async fsharp(port) { return PROBES.csharp(port) },
+  async kotlin(port) {
+    return PROBES.java(port)
+  },
+  async scala(port) {
+    return PROBES.java(port)
+  },
+  async fsharp(port) {
+    return PROBES.csharp(port)
+  },
   async csharp(port) {
     const { missing, body } = await getJson(
       `https://api.nuget.org/v3-flatcontainer/${port.packageName.toLowerCase()}/index.json`,
@@ -346,10 +350,7 @@ for (const port of PORTS) {
   const entry = classify(port, versions, tag)
   if (probe && !Array.isArray(probe) && probe.packages) {
     entry.packages = Object.fromEntries(
-      Object.entries(probe.packages).map(([name, packageVersions]) => [
-        name,
-        classify(port, packageVersions, tag),
-      ]),
+      Object.entries(probe.packages).map(([name, packageVersions]) => [name, classify(port, packageVersions, tag)]),
     )
   }
   ports[port.slug] = entry

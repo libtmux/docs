@@ -18,7 +18,9 @@ const PORTS = ALL_PORTS.filter((port) => KNOWN_PORTS.has(port.slug))
 vi.mock('astro/loaders', () => ({ glob: () => ({ load: async () => {} }) }))
 
 const roots: string[] = []
-afterEach(async () => { await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true }))) })
+afterEach(async () => {
+  await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true })))
+})
 
 async function fixture() {
   const root = await mkdtemp(join(tmpdir(), 'workspace-loader-'))
@@ -56,7 +58,8 @@ async function fixture() {
     const stats = event === 'unlink' ? undefined : statSync(path)
     await Promise.all(watcher.listeners(event).map((listener) => Promise.resolve(listener(path, stats))))
   }
-  const notify = (event: string, path = file) => watcher.emit(event, path, event === 'unlink' ? undefined : statSync(path))
+  const notify = (event: string, path = file) =>
+    watcher.emit(event, path, event === 'unlink' ? undefined : statSync(path))
   const bodies = () => PORTS.map(({ slug }) => entries.get(`ports/${slug}/workspace`)?.body)
   return { shared, file, entries, writes, render, parseData, infos, errors, emit, notify, bodies }
 }
@@ -117,42 +120,48 @@ it('converges to the latest edit when watcher events overlap', async () => {
   expect(bodies()).toEqual(PORTS.map(() => '\nlatest edit'))
 })
 
-it.each(['render', 'schema', 'render dependency'] as const)('retains complete previous entries on %s failure and recovers on the next edit', async (failure) => {
-  const { file, shared, entries, render, parseData, infos, errors, emit, bodies } = await fixture()
-  const original = [...entries]
-  let calls = 0
-  if (failure === 'schema') {
-    parseData.mockImplementation(async ({ data }) => {
-      if (++calls === 3) throw new Error('invalid shared metadata')
-      return data
-    })
-  } else {
-    render.mockImplementation(async (body) => {
-      if (++calls === 3) throw Object.assign(new Error('invalid shared page'), { code: failure === 'render dependency' ? 'ENOENT' : undefined })
-      return { html: body }
-    })
-  }
-  await writeFile(file, '---\ntitle: Shared\n---\nbroken edit')
-  await expect(emit('change')).resolves.toBeUndefined()
-  expect(errors).toHaveBeenCalled()
-  expect([...entries]).toEqual(original)
-  await writeFile(file, '---\ntitle: Shared\n---\nrecovered edit')
-  await emit('change')
-  expect(bodies()).toEqual(PORTS.map(() => '\nrecovered edit'))
-  render.mockClear()
-  infos.mockClear()
-  const sibling = `${shared}-backup/workspace/index.md`
-  const text = join(shared, 'notes.txt')
-  const outside = join(shared, '..', 'outside.md')
-  await mkdir(join(sibling, '..'), { recursive: true })
-  for (const ignored of [sibling, text, outside]) await writeFile(ignored, 'ignored')
-  await emit('change', sibling)
-  await emit('add', text)
-  await emit('change', outside)
-  expect(render).not.toHaveBeenCalled()
-  expect(infos).not.toHaveBeenCalled()
-  expect(await readFile(file, 'utf8')).toContain('recovered edit')
-})
+it.each(['render', 'schema', 'render dependency'] as const)(
+  'retains complete previous entries on %s failure and recovers on the next edit',
+  async (failure) => {
+    const { file, shared, entries, render, parseData, infos, errors, emit, bodies } = await fixture()
+    const original = [...entries]
+    let calls = 0
+    if (failure === 'schema') {
+      parseData.mockImplementation(async ({ data }) => {
+        if (++calls === 3) throw new Error('invalid shared metadata')
+        return data
+      })
+    } else {
+      render.mockImplementation(async (body) => {
+        if (++calls === 3)
+          throw Object.assign(new Error('invalid shared page'), {
+            code: failure === 'render dependency' ? 'ENOENT' : undefined,
+          })
+        return { html: body }
+      })
+    }
+    await writeFile(file, '---\ntitle: Shared\n---\nbroken edit')
+    await expect(emit('change')).resolves.toBeUndefined()
+    expect(errors).toHaveBeenCalled()
+    expect([...entries]).toEqual(original)
+    await writeFile(file, '---\ntitle: Shared\n---\nrecovered edit')
+    await emit('change')
+    expect(bodies()).toEqual(PORTS.map(() => '\nrecovered edit'))
+    render.mockClear()
+    infos.mockClear()
+    const sibling = `${shared}-backup/workspace/index.md`
+    const text = join(shared, 'notes.txt')
+    const outside = join(shared, '..', 'outside.md')
+    await mkdir(join(sibling, '..'), { recursive: true })
+    for (const ignored of [sibling, text, outside]) await writeFile(ignored, 'ignored')
+    await emit('change', sibling)
+    await emit('add', text)
+    await emit('change', outside)
+    expect(render).not.toHaveBeenCalled()
+    expect(infos).not.toHaveBeenCalled()
+    expect(await readFile(file, 'utf8')).toContain('recovered edit')
+  },
+)
 
 it('contains watcher failures when the emitter ignores the returned promise', async () => {
   const { file, render, errors, notify, emit, bodies } = await fixture()

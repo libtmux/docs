@@ -1,0 +1,24 @@
+width = 80
+markdown = ["**/*.md"]
+shared_digest = "872d3f4cb1eb2b5cd9c5b7adc9cd140a153e4bbed3cb5bd0b7400a905e6dae4d"
+checker_digest = "f852a6c154fc2c080563c2908e5d915ccde7f21ea56b7d2b92c69ec1be09028e"
+allow_ceiling = 3
+
+[[exclude]]
+glob = "notes/research/**"
+reason = "dated research notes with pasted tool output and probes, kept as written; no reader copies code from them"
+
+[[allow]]
+path = "site/src/content/docs/ports/py/examples/capture-pane-output.md"
+line = "    --with 'libtmux @ git+https://github.com/tmux-python/libtmux@9fdd083a8181a827889337b63cd4e6daea661a8c' \\"
+reason = "one quoted PEP 508 requirement pinning libtmux to a commit; the URL and revision cannot break"
+
+[[allow]]
+path = "site/src/content/docs/ports/py/guides/attaching-to-tmux.md"
+line = "    --with 'libtmux @ git+https://github.com/tmux-python/libtmux@9fdd083a8181a827889337b63cd4e6daea661a8c' \\"
+reason = "one quoted PEP 508 requirement pinning libtmux to a commit; the URL and revision cannot break"
+
+[[allow]]
+path = "WRITING.md"
+line = "Session session = await server.CreateSessionAsync(new NewSessionRequest(name: \"work\"));"
+reason = "the Bad example in the port block; it shows the width problem the Good example fixes"

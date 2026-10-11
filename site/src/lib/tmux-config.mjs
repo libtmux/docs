@@ -1,8 +1,9 @@
 import older from '../data/tmux/3.2a.json' with { type: 'json' }
 import current from '../data/tmux/3.7c.json' with { type: 'json' }
 
-const commands = [...new Set([...older.commands, ...current.commands]
-  .flatMap(({ name, alias }) => [name, alias]).filter(Boolean))].join('|')
+const commands = [
+  ...new Set([...older.commands, ...current.commands].flatMap(({ name, alias }) => [name, alias]).filter(Boolean)),
+].join('|')
 
 /** tmux configuration has directives and recursive formats that Bash does not. */
 export const tmuxConfig = {
@@ -16,11 +17,21 @@ export const tmuxConfig = {
     { match: '%(?:if|elif|else|endif|hidden)\\b', name: 'keyword.control.tmux-config' },
     { include: '#escape' },
     {
-      begin: '"', end: '"', name: 'string.quoted.double.tmux-config',
-      patterns: [{ include: '#escape' }, { include: '#format' }, { include: '#style' }, { include: '#job' }, { include: '#variable' }],
+      begin: '"',
+      end: '"',
+      name: 'string.quoted.double.tmux-config',
+      patterns: [
+        { include: '#escape' },
+        { include: '#format' },
+        { include: '#style' },
+        { include: '#job' },
+        { include: '#variable' },
+      ],
     },
     {
-      begin: "'", end: "'", name: 'string.quoted.single.tmux-config',
+      begin: "'",
+      end: "'",
+      name: 'string.quoted.single.tmux-config',
       patterns: [{ include: '#format' }, { include: '#style' }, { include: '#job' }, { include: '#format-variable' }],
     },
     { include: '#variable' },
@@ -32,17 +43,23 @@ export const tmuxConfig = {
   ],
   repository: {
     escape: { match: '\\\\.', name: 'constant.character.escape.tmux-config' },
-    variable: { patterns: [
-      { match: '\\$[A-Za-z_][A-Za-z0-9_]*|\\$\\{[^}]*\\}', name: 'variable.other.tmux-config' },
-      { include: '#format-variable' },
-    ] },
+    variable: {
+      patterns: [
+        { match: '\\$[A-Za-z_][A-Za-z0-9_]*|\\$\\{[^}]*\\}', name: 'variable.other.tmux-config' },
+        { include: '#format-variable' },
+      ],
+    },
     'format-variable': { match: '#[A-Z0-9]', name: 'variable.other.tmux-config' },
     format: {
-      begin: '#\\{', end: '\\}', name: 'meta.interpolation.tmux-config',
+      begin: '#\\{',
+      end: '\\}',
+      name: 'meta.interpolation.tmux-config',
       beginCaptures: { 0: { name: 'punctuation.definition.interpolation.tmux-config' } },
       endCaptures: { 0: { name: 'punctuation.definition.interpolation.tmux-config' } },
       patterns: [
-        { include: '#format' }, { include: '#style' }, { include: '#job' },
+        { include: '#format' },
+        { include: '#style' },
+        { include: '#job' },
         { match: '#[,}]', name: 'constant.character.escape.tmux-config' },
         { match: '[?:,=<>!+*/|&;-]+', name: 'keyword.operator.tmux-config' },
         { match: '[A-Za-z_][A-Za-z0-9_]*', name: 'variable.other.tmux-config' },
@@ -50,11 +67,15 @@ export const tmuxConfig = {
       ],
     },
     style: {
-      begin: '#\\[', end: '\\]', name: 'meta.style.tmux-config',
+      begin: '#\\[',
+      end: '\\]',
+      name: 'meta.style.tmux-config',
       patterns: [{ include: '#format' }, { match: '[A-Za-z][\\w-]*', name: 'constant.other.style.tmux-config' }],
     },
     job: {
-      begin: '#\\(', end: '\\)', name: 'meta.job.tmux-config',
+      begin: '#\\(',
+      end: '\\)',
+      name: 'meta.job.tmux-config',
       patterns: [{ include: '#escape' }, { include: '#format' }, { include: '#variable' }],
     },
   },

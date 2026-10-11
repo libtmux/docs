@@ -43,9 +43,11 @@ export async function loadLanguage(name: GrammarName): Promise<Language> {
   const hit = cache.get(name)
   if (hit) return hit
   // The older bundle predates Scala 3 opaque types, givens, and extensions.
-  const wasm = require.resolve(name === 'scala'
-    ? 'tree-sitter-scala/tree-sitter-scala.wasm'
-    : `tree-sitter-wasms/out/tree-sitter-${GRAMMAR[name]}.wasm`)
+  const wasm = require.resolve(
+    name === 'scala'
+      ? 'tree-sitter-scala/tree-sitter-scala.wasm'
+      : `tree-sitter-wasms/out/tree-sitter-${GRAMMAR[name]}.wasm`,
+  )
   const lang = await Language.load(wasm)
   cache.set(name, lang)
   return lang

@@ -36,15 +36,23 @@ const linkFor = (idx: SymbolIndex, annotation: string, name: string, context?: A
 it('resolves an explicit source import before a same-named local declaration', () => {
   const idx = new SymbolIndex([sym('example.Server'), sym('other.Server')], (s) => `/${s.id}/`, 'kotlin')
   const from = { ...sym('example.connect', 'function'), imports: { Server: 'other.Server', JavaServer: 'java.Server' } }
-  idx.addInventory('https://example.org/', [{ name: 'java.Server', type: 'std:label', priority: 1, uri: 'server', dispname: '-' }], ['kotlin'])
+  idx.addInventory(
+    'https://example.org/',
+    [{ name: 'java.Server', type: 'std:label', priority: 1, uri: 'server', dispname: '-' }],
+    ['kotlin'],
+  )
   expect(linkFor(idx, 'Server', 'Server', from)?.href).toBe('/other.Server/')
   expect(linkFor(idx, 'JavaServer', 'JavaServer', from)?.href).toBe('https://example.org/server')
 })
 
 it('links F# types around apostrophe-prefixed generic parameters', () => {
   const idx = new SymbolIndex([sym('Filter'), sym('Field')], (s) => `/${s.id}/`, 'fsharp')
-  expect(idx.linkType("Filter<'T> -> Field<'T, 'Value>").filter((span) => span.link).map((span) => span.text))
-    .toEqual(['Filter', 'Field'])
+  expect(
+    idx
+      .linkType("Filter<'T> -> Field<'T, 'Value>")
+      .filter((span) => span.link)
+      .map((span) => span.text),
+  ).toEqual(['Filter', 'Field'])
 })
 
 describe('a bare name with more than one candidate', () => {
@@ -95,9 +103,7 @@ describe('a bare name with more than one candidate', () => {
       'java',
     )
     const from = sym('io.github.libtmux.SplitSpec.SplitSpec.Builder.percent', 'method')
-    expect(linkFor(java, 'Builder', 'Builder', from)?.href).toBe(
-      '/io.github.libtmux.SplitSpec.SplitSpec.Builder/',
-    )
+    expect(linkFor(java, 'Builder', 'Builder', from)?.href).toBe('/io.github.libtmux.SplitSpec.SplitSpec.Builder/')
   })
 
   it('stays plain when two candidates are equally near', () => {
@@ -111,7 +117,9 @@ it('resolves C++ core and workspace types through their enclosing namespaces', (
   const symbols = ['libtmux::Pane', 'libtmux::workspace::Pane'].map(cpp)
   const idx = new SymbolIndex(symbols, (symbol) => `/${symbol.id}/`, 'cxx')
   expect(linkFor(idx, 'Pane', 'Pane', cpp('libtmux::Window::split'))?.href).toBe('/libtmux::Pane/')
-  expect(linkFor(idx, 'Pane', 'Pane', cpp('libtmux::workspace::Window::panes'))?.href).toBe('/libtmux::workspace::Pane/')
+  expect(linkFor(idx, 'Pane', 'Pane', cpp('libtmux::workspace::Window::panes'))?.href).toBe(
+    '/libtmux::workspace::Pane/',
+  )
   expect(linkFor(idx, 'Pane', 'Pane', cpp('other::Window::split'))).toBeUndefined()
 })
 

@@ -57,20 +57,29 @@ describe('shared reference index sections', () => {
     const ids = sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => symbol.id)
     expect(new Set(ids).size).toBe(ids.length)
     const available = new Set(sections.map((section) => section.id))
-    expect(sections.map((section) => section.id).filter((id) => PRIMARY_OBJECT_BUCKETS.has(id)))
-      .toEqual([...PRIMARY_OBJECT_BUCKETS].filter((id) => available.has(id)))
+    expect(sections.map((section) => section.id).filter((id) => PRIMARY_OBJECT_BUCKETS.has(id))).toEqual(
+      [...PRIMARY_OBJECT_BUCKETS].filter((id) => available.has(id)),
+    )
   })
 })
 
 describe('core reference inventory', () => {
   it.each(PORTS)('publishes every reachable %s core declaration without product-only records', async (port) => {
     const model = API_MODELS[port]
-    const core = model.symbols.filter((symbol) =>
-      !['mcp', 'workspace'].includes(symbol.product ?? 'core') || symbol.apiScope === 'internal')
+    const core = model.symbols.filter(
+      (symbol) => !['mcp', 'workspace'].includes(symbol.product ?? 'core') || symbol.apiScope === 'internal',
+    )
     const coreIds = new Set(core.map((symbol) => symbol.id))
     const expected = [...coreIds].sort()
-    const identities = new Map(model.symbols.flatMap((symbol) =>
-      [[symbol.id, symbol.id], [symbol.publicId ?? symbol.id, symbol.id]] as const))
+    const identities = new Map(
+      model.symbols.flatMap(
+        (symbol) =>
+          [
+            [symbol.id, symbol.id],
+            [symbol.publicId ?? symbol.id, symbol.id],
+          ] as const,
+      ),
+    )
     const allMembers = membersByType(port)
     const before = structuredClone([...allMembers])
     vi.stubEnv('LIBTMUX_DOCS_PORT', port)
@@ -82,9 +91,12 @@ describe('core reference inventory', () => {
     } finally {
       vi.unstubAllEnvs()
     }
-    const roots = (buckets: ApiTreeBucket[]): string[] => buckets.flatMap((bucket) =>
-      [...bucket.types.map((entry) => entry.id), ...roots(bucket.children)])
-    const listed = [...roots(tree.buckets), ...Object.values(tree.members).flatMap((rows) => rows.map((row) => row[2]!))]
+    const roots = (buckets: ApiTreeBucket[]): string[] =>
+      buckets.flatMap((bucket) => [...bucket.types.map((entry) => entry.id), ...roots(bucket.children)])
+    const listed = [
+      ...roots(tree.buckets),
+      ...Object.values(tree.members).flatMap((rows) => rows.map((row) => row[2]!)),
+    ]
     expect([...new Set(listed.map((id) => identities.get(id) ?? id))].sort()).toEqual(expected)
     const reachable = new Set<string>()
     const visit = (id: string) => {
@@ -96,9 +108,12 @@ describe('core reference inventory', () => {
     expect([...new Set([...reachable].map((id) => identities.get(id) ?? id))].sort()).toEqual(expected)
     for (const [owner, rows] of Object.entries(tree.members)) {
       expect(reachable.has(owner), `${port}: orphan owner ${owner}`).toBe(true)
-      expect(rows.map((row) => row.slice(0, 3))).toEqual(allMembers.get(owner)!
-        .filter((member) => coreIds.has(member.id))
-        .map((member) => [member.name, member.slug, member.id]))
+      expect(rows.map((row) => row.slice(0, 3))).toEqual(
+        allMembers
+          .get(owner)!
+          .filter((member) => coreIds.has(member.id))
+          .map((member) => [member.name, member.slug, member.id]),
+      )
     }
     expect([...membersByType(port)]).toEqual(before)
   })
@@ -106,14 +121,28 @@ describe('core reference inventory', () => {
 
 describe('major tmux object domains', () => {
   it('puts Kotlin handles before builders and Rust Server before helpers', () => {
-    for (const [port, bucket, name] of [['rs', 'server', 'Server'], ['kotlin', 'session', 'Session'], ['kotlin', 'window', 'Window']]) {
+    for (const [port, bucket, name] of [
+      ['rs', 'server', 'Server'],
+      ['kotlin', 'session', 'Session'],
+      ['kotlin', 'window', 'Window'],
+    ]) {
       expect(navTree(port).find((entry) => entry.id === bucket)?.entries[0].name).toBe(name)
     }
-    expect(navTree('rs').find((entry) => entry.id === 'server')?.entries.some((entry) => entry.name.startsWith('__fuzz_'))).toBe(false)
-    expect(navTree('rs').find((entry) => entry.id === 'internal')?.entries.some((entry) => entry.name.startsWith('__fuzz_'))).toBe(true)
+    expect(
+      navTree('rs')
+        .find((entry) => entry.id === 'server')
+        ?.entries.some((entry) => entry.name.startsWith('__fuzz_')),
+    ).toBe(false)
+    expect(
+      navTree('rs')
+        .find((entry) => entry.id === 'internal')
+        ?.entries.some((entry) => entry.name.startsWith('__fuzz_')),
+    ).toBe(true)
   })
   it('distinguishes Scala variants without long package labels', () => {
-    const names = navTree('scala').find((entry) => entry.id === 'window')!.entries.map((entry) => entry.name)
+    const names = navTree('scala')
+      .find((entry) => entry.id === 'window')!
+      .entries.map((entry) => entry.name)
     expect(names).toContain('Window (Direct API)')
     expect(names).toContain('Window (Cats Effect)')
   })
@@ -125,20 +154,29 @@ describe('major tmux object domains', () => {
     const model = API_MODELS[port]!
     const branches = membersByType(port)
     const compare = compareMembers(memberSignals(port, mentions.mentions))
-    const owners = model.symbols.filter((symbol) => OWNER_KINDS.has(symbol.kind) &&
-      ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot'].includes(symbol.name))
-    expect(owners.some((owner) => owner.name === 'Server'), port).toBe(true)
+    const owners = model.symbols.filter(
+      (symbol) =>
+        OWNER_KINDS.has(symbol.kind) &&
+        ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot'].includes(symbol.name),
+    )
+    expect(
+      owners.some((owner) => owner.name === 'Server'),
+      port,
+    ).toBe(true)
     for (const owner of owners) {
       const displayed = membersOf(model, owner, memberSignals(port, mentions.mentions)).sort(compare)
-      expect(branches.get(owner.publicId ?? owner.id)?.map((member) => member.id) ?? [], `${port}:${owner.id}`)
-        .toEqual(displayed.map((member) => member.id))
+      expect(branches.get(owner.publicId ?? owner.id)?.map((member) => member.id) ?? [], `${port}:${owner.id}`).toEqual(
+        displayed.map((member) => member.id),
+      )
     }
   })
   it.each(['kotlin', 'scala', 'ts'])('puts %s listings first in lazily expanded branches', (port) => {
     const servers = API_MODELS[port]!.symbols.filter((symbol) => symbol.name === 'Server' && !symbol.parent)
     expect(servers.length).toBeGreaterThan(0)
     for (const server of servers) {
-      const names = membersByType(port).get(server.publicId ?? server.id)!.map((member) => member.name)
+      const names = membersByType(port)
+        .get(server.publicId ?? server.id)!
+        .map((member) => member.name)
       for (const listing of ['sessions', 'windows', 'panes', 'clients']) {
         expect(names.indexOf(listing), `${server.id}.${listing}`).toBeGreaterThanOrEqual(0)
         expect(names.indexOf(listing), `${server.id}.${listing}`).toBeLessThan(names.indexOf('newSession'))
@@ -150,7 +188,10 @@ describe('major tmux object domains', () => {
     for (const port of PORTS) {
       for (const bucket of navTree(port).filter((candidate) => PRIMARY_OBJECT_BUCKETS.has(candidate.id))) {
         const primary = bucket.entries
-          .filter((entry) => OWNER_KINDS.has(entry.kind) && segments(entry.id).at(-1)?.toLowerCase() === bucket.label.toLowerCase())
+          .filter(
+            (entry) =>
+              OWNER_KINDS.has(entry.kind) && segments(entry.id).at(-1)?.toLowerCase() === bucket.label.toLowerCase(),
+          )
           .toSorted((left, right) => segments(left.id).length - segments(right.id).length)[0]
 
         if (primary) expect(bucket.entries[0]?.id, `${port}:${bucket.id}`).toBe(primary.id)
@@ -174,32 +215,47 @@ describe.skipIf(!SITE_BUILT)('rendered reference ordering', () => {
         const cardIds = new Set(topLevelTypesOf(API_MODELS[port]!).map((symbol) => symbol.publicId ?? symbol.id))
         for (const bucket of tree) {
           const section = template.content.getElementById(`section-${bucket.id}`)?.closest('details')
-          const cards = [...section?.querySelectorAll('.api-index-card__link') ?? []]
-            .map((link) => new URL(link.getAttribute('href')!, 'https://libtmux.org').pathname.split('/').filter(Boolean).at(-1))
+          const cards = [...(section?.querySelectorAll('.api-index-card__link') ?? [])].map((link) =>
+            new URL(link.getAttribute('href')!, 'https://libtmux.org').pathname.split('/').filter(Boolean).at(-1),
+          )
           const types = bucket.entries.filter((entry) => cardIds.has(entry.id))
           const free = bucket.entries.filter((entry) => !cardIds.has(entry.id))
           expect(cards, `${port}/${version}:${bucket.id}`).toEqual([...types, ...free].map((entry) => entry.slug))
-          const declarations = [...section?.querySelectorAll(':scope > div > dl > dt[id]') ?? []]
-            .map((entry) => entry.id)
-          expect(declarations, `${port}/${version}:${bucket.id} inline declarations`)
-            .toEqual([])
+          const declarations = [...(section?.querySelectorAll(':scope > div > dl > dt[id]') ?? [])].map(
+            (entry) => entry.id,
+          )
+          expect(declarations, `${port}/${version}:${bucket.id} inline declarations`).toEqual([])
           for (const entry of free) {
-            expect(section?.querySelector(`[id="${entry.id}"] .api-index-card__link`)?.getAttribute('href'),
-              `${port}/${version}:${entry.id} retains its index fragment`).toContain(`/${entry.slug}/`)
+            expect(
+              section?.querySelector(`[id="${entry.id}"] .api-index-card__link`)?.getAttribute('href'),
+              `${port}/${version}:${entry.id} retains its index fragment`,
+            ).toContain(`/${entry.slug}/`)
           }
-          expect(lazy.buckets.find((entry: { id: string }) => entry.id === bucket.id)?.types.map((entry: { id: string }) => entry.id))
-            .toEqual(bucket.entries.map((entry) => entry.id))
+          expect(
+            lazy.buckets
+              .find((entry: { id: string }) => entry.id === bucket.id)
+              ?.types.map((entry: { id: string }) => entry.id),
+          ).toEqual(bucket.entries.map((entry) => entry.id))
         }
-        const coreIds = new Set(API_MODELS[port].symbols.filter((symbol) =>
-          !['mcp', 'workspace'].includes(symbol.product ?? 'core') || symbol.apiScope === 'internal')
-          .flatMap((symbol) => [symbol.id, symbol.publicId ?? symbol.id]))
-        const coreMembers = [...membersByType(port)].filter(([owner]) => coreIds.has(owner))
+        const coreIds = new Set(
+          API_MODELS[port].symbols
+            .filter(
+              (symbol) => !['mcp', 'workspace'].includes(symbol.product ?? 'core') || symbol.apiScope === 'internal',
+            )
+            .flatMap((symbol) => [symbol.id, symbol.publicId ?? symbol.id]),
+        )
+        const coreMembers = [...membersByType(port)]
+          .filter(([owner]) => coreIds.has(owner))
           .map(([owner, members]) => [owner, members.filter((member) => coreIds.has(member.id))] as const)
           .filter(([, members]) => members.length)
-        expect(Object.keys(lazy.members), `${port}/${version}: core owner keys`).toEqual(coreMembers.map(([owner]) => owner))
+        expect(Object.keys(lazy.members), `${port}/${version}: core owner keys`).toEqual(
+          coreMembers.map(([owner]) => owner),
+        )
         for (const [owner, members] of coreMembers) {
-          expect(lazy.members[owner]?.map((member: string[]) => member.slice(0, 2)), `${port}/${version}:${owner}`)
-            .toEqual(members.map((member) => [member.name, member.slug]))
+          expect(
+            lazy.members[owner]?.map((member: string[]) => member.slice(0, 2)),
+            `${port}/${version}:${owner}`,
+          ).toEqual(members.map((member) => [member.name, member.slug]))
         }
       } finally {
         window.happyDOM.abort()

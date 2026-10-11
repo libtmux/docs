@@ -20,8 +20,9 @@ createInterface({ input: process.stdin }).on('line', line => {
 
 describe('MCP protocol discovery', () => {
   it('normalizes object order while preserving tuple and enumeration order', () => {
-    expect(JSON.stringify(orderedProtocol({ z: { b: 1, a: 2 }, a: ['z', 'a'] })))
-      .toBe('{"a":["z","a"],"z":{"a":2,"b":1}}')
+    expect(JSON.stringify(orderedProtocol({ z: { b: 1, a: 2 }, a: ['z', 'a'] }))).toBe(
+      '{"a":["z","a"],"z":{"a":2,"b":1}}',
+    )
   })
   it('collects paginated advertised contracts without invoking tools or unsupported capabilities', async () => {
     const protocol = await captureProtocol({ command: process.execPath, args: ['-e', server] })
@@ -33,19 +34,21 @@ describe('MCP protocol discovery', () => {
   })
 
   it('bounds an unresponsive process', async () => {
-    await expect(captureProtocol({ command: process.execPath, args: ['-e', 'setInterval(() => {}, 1000)'], timeoutMs: 50 }))
-      .rejects.toThrow('MCP discovery timed out')
+    await expect(
+      captureProtocol({ command: process.execPath, args: ['-e', 'setInterval(() => {}, 1000)'], timeoutMs: 50 }),
+    ).rejects.toThrow('MCP discovery timed out')
   })
 
   it.each([-32601, -32603])('handles resource template discovery error %i', async (code) => {
-    const resources = server
-      .replace('tools: {}', 'resources: {}')
-      .replace("} else if (message.method === 'tools/list') {", `} else if (message.method === 'resources/list') {
+    const resources = server.replace('tools: {}', 'resources: {}').replace(
+      "} else if (message.method === 'tools/list') {",
+      `} else if (message.method === 'resources/list') {
         result = { resources: [{ name: 'capabilities', uri: 'tmux://capabilities' }] };
       } else if (message.method === 'resources/templates/list') {
         process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: message.id, error: { code: ${code}, message: 'template discovery failed' } }) + '\\n');
         return;
-      } else if (message.method === 'tools/list') {`)
+      } else if (message.method === 'tools/list') {`,
+    )
     const discovery = captureProtocol({ command: process.execPath, args: ['-e', resources] })
     if (code === -32601) {
       const protocol = await discovery

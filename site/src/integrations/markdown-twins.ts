@@ -42,11 +42,18 @@ export function markdownTwins(): AstroIntegration {
         // MCP exports write schema-preserving twins. Let the generic pass skip them.
         if (buildLocale() === DEFAULT_LOCALE) {
           const defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
-          writeMcpExports(out, base, mcpReferenceRoutes(process.env.LIBTMUX_DOCS_PORT, defaults, buildTarget(process.env).version))
+          writeMcpExports(
+            out,
+            base,
+            mcpReferenceRoutes(process.env.LIBTMUX_DOCS_PORT, defaults, buildTarget(process.env).version),
+          )
         }
-        for (const page of (readdirSync(out, { recursive: true }) as string[]).filter((file) => file.endsWith('.html'))) {
+        for (const page of (readdirSync(out, { recursive: true }) as string[]).filter((file) =>
+          file.endsWith('.html'),
+        )) {
           const html = readFileSync(join(out, page), 'utf8')
-          const link = [...html.matchAll(/<link\b[^>]*>/g)].map((tag) => tag[0])
+          const link = [...html.matchAll(/<link\b[^>]*>/g)]
+            .map((tag) => tag[0])
             .find((tag) => attribute(tag, 'rel') === 'alternate' && attribute(tag, 'type') === 'text/markdown')
           const href = link && attribute(link, 'href')
           const twin = link && attribute(link, 'data-twin')
@@ -63,7 +70,9 @@ export function markdownTwins(): AstroIntegration {
           converted++
         }
         if (missing.length > 0) {
-          throw new Error(`${missing.length} pages link a Markdown twin no route wrote:\n${missing.slice(0, 20).join('\n')}`)
+          throw new Error(
+            `${missing.length} pages link a Markdown twin no route wrote:\n${missing.slice(0, 20).join('\n')}`,
+          )
         }
         logger.info(`${converted} twins converted from rendered pages`)
       },
@@ -84,9 +93,12 @@ export function writeMcpExports(out: string, base: string, routes: ReturnType<ty
     const tool = reference.registrations.find((entry) => entry.wireName === toolName)
     if (toolName && !tool) throw new Error(`Missing MCP registration: ${port}/${toolName}`)
     const source = tool?.source ?? {
-      repo: reference.repo, revision: reference.revision, extractedRevision: reference.extractedRevision,
+      repo: reference.repo,
+      revision: reference.revision,
+      extractedRevision: reference.extractedRevision,
     }
-    if (!tool) page.body += `\nSource revision: [${source.repo}@${source.extractedRevision ?? source.revision}](https://github.com/${source.repo}/tree/${source.extractedRevision ?? source.revision}).\n`
+    if (!tool)
+      page.body += `\nSource revision: [${source.repo}@${source.extractedRevision ?? source.revision}](https://github.com/${source.repo}/tree/${source.extractedRevision ?? source.revision}).\n`
     const markdownUrl = markdownPath(page.url, false)
     const target = join(out, decodeURIComponent(new URL(markdownUrl).pathname.slice(base.length)))
     const markdown = markdownDocument(page)
@@ -95,21 +107,39 @@ export function writeMcpExports(out: string, base: string, routes: ReturnType<ty
     const section = `${PORT_BY_SLUG[port].name} MCP tools`
     // Replacing an existing entry also makes a repeated integration idempotent.
     manifest.pages = manifest.pages.filter((entry: { url: string }) => entry.url !== page.url)
-    manifest.pages.push({ title: page.title, description: page.description ?? '', section,
-      url: page.url, markdownUrl, headings: page.headings, source })
+    manifest.pages.push({
+      title: page.title,
+      description: page.description ?? '',
+      section,
+      url: page.url,
+      markdownUrl,
+      headings: page.headings,
+      source,
+    })
     documents.push({ url: page.url, markdown, title: page.title, section })
   }
   writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
   const fullPath = join(out, 'llms-full.txt')
   const urls = new Set(documents.map((page) => page.url))
-  const prose = readFileSync(fullPath, 'utf8').split('\n---\n\n')
-    .filter((section) => !urls.has(/^Source: (\S+)$/m.exec(section)?.[1] ?? '')).join('\n---\n\n').trimEnd()
+  const prose = readFileSync(fullPath, 'utf8')
+    .split('\n---\n\n')
+    .filter((section) => !urls.has(/^Source: (\S+)$/m.exec(section)?.[1] ?? ''))
+    .join('\n---\n\n')
+    .trimEnd()
   writeFileSync(fullPath, `${prose}\n\n${documents.map((page) => `---\n\n${page.markdown}`).join('\n')}\n`)
   const indexPath = join(out, 'llms.txt')
-  const index = readFileSync(indexPath, 'utf8').split('\n## ')
-    .filter((section) => !documents.some((page) => section.startsWith(`${page.section}\n`))).join('\n## ').trimEnd()
-  const sections = [...new Set(documents.map((page) => page.section))]
-    .map((section) => `## ${section}\n\n${documents.filter((page) => page.section === section).map((page) => `- [${page.title}](${page.url})`).join('\n')}`)
+  const index = readFileSync(indexPath, 'utf8')
+    .split('\n## ')
+    .filter((section) => !documents.some((page) => section.startsWith(`${page.section}\n`)))
+    .join('\n## ')
+    .trimEnd()
+  const sections = [...new Set(documents.map((page) => page.section))].map(
+    (section) =>
+      `## ${section}\n\n${documents
+        .filter((page) => page.section === section)
+        .map((page) => `- [${page.title}](${page.url})`)
+        .join('\n')}`,
+  )
   writeFileSync(indexPath, `${index}\n\n${sections.join('\n\n')}\n`)
 }
 
@@ -127,7 +157,19 @@ interface Node {
 }
 
 /** Chrome that is not the page's content, and markup Markdown cannot carry. */
-const DROP = new Set(['script', 'style', 'template', 'noscript', 'svg', 'button', 'nav', 'form', 'input', 'select', 'dialog'])
+const DROP = new Set([
+  'script',
+  'style',
+  'template',
+  'noscript',
+  'svg',
+  'button',
+  'nav',
+  'form',
+  'input',
+  'select',
+  'dialog',
+])
 
 function find(node: Node, test: (element: Node) => boolean): Node | undefined {
   if (node.type === 'element' && test(node)) return node
@@ -150,25 +192,34 @@ function textOf(node: Node | undefined): string {
  */
 function prune(node: Node, origin: string, drop?: Node, preserveSchemas = false, pageUrl?: string): void {
   // A tab set shows one panel until someone clicks; keep the one it opens on.
-  const opening = (node.children ?? []).find((child) => child.properties?.role === 'tabpanel' && child.properties?.dataDefault !== undefined)
+  const opening = (node.children ?? []).find(
+    (child) => child.properties?.role === 'tabpanel' && child.properties?.dataDefault !== undefined,
+  )
   node.children = (node.children ?? []).filter((child) => {
     if (child === drop || child.type === 'comment') return false
     if (child.type !== 'element') return true
     const props = child.properties ?? {}
-    if (DROP.has(child.tagName!) || props.hidden || props.ariaHidden === 'true' ||
-      (props.dataPagefindIgnore !== undefined && !(preserveSchemas && child.tagName === 'details'))) return false
+    if (
+      DROP.has(child.tagName!) ||
+      props.hidden ||
+      props.ariaHidden === 'true' ||
+      (props.dataPagefindIgnore !== undefined && !(preserveSchemas && child.tagName === 'details'))
+    )
+      return false
     if (props.role === 'dialog' || (opening && props.role === 'tabpanel' && child !== opening)) return false
     // A collapsible table of contents: without its `nav`, the summary says nothing.
     return !(child.tagName === 'details' && find(child, (element) => element.tagName === 'nav'))
   })
   for (const child of node.children) {
     if (child.type !== 'element') continue
-    const props = child.properties ??= {}
+    const props = (child.properties ??= {})
     for (const key of ['href', 'src']) {
       if (typeof props[key] !== 'string') continue
       if (preserveSchemas && pageUrl) props[key] = new URL(props[key] as string, pageUrl).href
-      else if ((props[key] as string).startsWith('/') && !(props[key] as string).startsWith('//')) props[key] = `${origin}${props[key]}`
-      else if (pageUrl && (props[key] as string).startsWith('#')) props[key] = new URL(props[key] as string, pageUrl).href
+      else if ((props[key] as string).startsWith('/') && !(props[key] as string).startsWith('//'))
+        props[key] = `${origin}${props[key]}`
+      else if (pageUrl && (props[key] as string).startsWith('#'))
+        props[key] = new URL(props[key] as string, pageUrl).href
     }
     // Shiki and the install widget put the language on the block, not on `code`.
     if (typeof props.dataLanguage === 'string') {
@@ -182,24 +233,38 @@ function prune(node: Node, origin: string, drop?: Node, preserveSchemas = false,
 function renderedPage(html: string, preserveSchemas = false, pathname?: string) {
   const tree = fromHtml(html) as unknown as Node
   const head = find(tree, (element) => element.tagName === 'head')
-  const canonical = find(head ?? tree, (element) => element.tagName === 'link' && String(element.properties?.rel) === 'canonical')?.properties?.href as string | undefined
-  const description = find(head ?? tree, (element) => element.tagName === 'meta' && element.properties?.name === 'description')?.properties?.content as string | undefined
-  const url = pathname ? new URL(pathname, canonical).href : canonical ?? ''
+  const canonical = find(
+    head ?? tree,
+    (element) => element.tagName === 'link' && String(element.properties?.rel) === 'canonical',
+  )?.properties?.href as string | undefined
+  const description = find(
+    head ?? tree,
+    (element) => element.tagName === 'meta' && element.properties?.name === 'description',
+  )?.properties?.content as string | undefined
+  const url = pathname ? new URL(pathname, canonical).href : (canonical ?? '')
   const origin = url ? new URL(url).origin : ''
   // `main` first: the landing page's port cards are `article`s, and on a
   // DocsLayout page `main` holds nothing but the article.
-  const main = find(tree, (element) => element.tagName === 'main')
-    ?? find(tree, (element) => element.tagName === 'article')
-    ?? find(tree, (element) => element.properties?.dataPagefindBody !== undefined)
-    ?? find(tree, (element) => element.tagName === 'body')!
+  const main =
+    find(tree, (element) => element.tagName === 'main') ??
+    find(tree, (element) => element.tagName === 'article') ??
+    find(tree, (element) => element.properties?.dataPagefindBody !== undefined) ??
+    find(tree, (element) => element.tagName === 'body')!
   const heading = find(main, (element) => element.tagName === 'h1')
-  const title = textOf(heading).trim() || textOf(find(head ?? tree, (element) => element.tagName === 'title')).replace(/ \| libtmux$/, '').trim()
+  const title =
+    textOf(heading).trim() ||
+    textOf(find(head ?? tree, (element) => element.tagName === 'title'))
+      .replace(/ \| libtmux$/, '')
+      .trim()
   // The title leads the document, so the page's own h1 would repeat it.
   const headings: { id: string; level: number; text: string }[] = []
   const collectHeadings = (node: Node) => {
-    if (/^h[2-6]$/.test(node.tagName ?? '') && typeof node.properties?.id === 'string') headings.push({
-      id: node.properties.id, level: Number(node.tagName![1]), text: textOf(node).trim(),
-    })
+    if (/^h[2-6]$/.test(node.tagName ?? '') && typeof node.properties?.id === 'string')
+      headings.push({
+        id: node.properties.id,
+        level: Number(node.tagName![1]),
+        text: textOf(node).trim(),
+      })
     for (const child of node.children ?? []) collectHeadings(child)
   }
   collectHeadings(main)

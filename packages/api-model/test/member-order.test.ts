@@ -45,8 +45,10 @@ function violations(compare: Compare): string[] {
     for (const concept of LISTINGS) {
       const listing = byId.get(CONCEPTS[concept]!.symbols[port] ?? '')
       if (!listing?.parent) continue
-      const rank = [...children.get(listing.parent)!].sort(cmp)
-        .filter((member) => memberTier(member, signals) !== 'parent').indexOf(listing)
+      const rank = [...children.get(listing.parent)!]
+        .sort(cmp)
+        .filter((member) => memberTier(member, signals) !== 'parent')
+        .indexOf(listing)
       if (rank >= TOP) found.push(`${port}: ${concept} is #${rank + 1} on ${listing.parent}`)
     }
     for (const [owner, members] of children) {
@@ -84,18 +86,38 @@ d('member order', () => {
     const { symbols } = model(port)
     const signals = memberSignals(port)
     let checked = 0
-    for (const owner of symbols.filter((symbol) => ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot'].includes(symbol.name))) {
+    for (const owner of symbols.filter((symbol) =>
+      ['Server', 'Session', 'Window', 'Pane', 'Client', 'Snapshot'].includes(symbol.name),
+    )) {
       const members = symbols.filter((symbol) => symbol.parent === owner.id)
       const ordered = members.toSorted(compareMembers(signals))
-      const routine = members.filter((symbol) => /^(new_?session|new_?window|create_?session|create_?window|close|dispose|asjava|tostring|__enter__|kill_?server)$/.test(
-        symbol.name.replace(/\(.*$/, '').replace(/Async$/, '').toLowerCase()))
-      const priority = members.filter((symbol) => symbol.doc?.deprecated === undefined && !symbol.modifiers?.includes('deprecated') && (
-        /^(?:list_?|get)?(?:sessions|windows|panes|clients|buffers)$/.test(symbol.name.replace(/\(.*$/, '').replace(/Async$/, '').toLowerCase()) ||
-        /^(search-|snapshot$)/.test(signals.conceptIds.get(symbol.publicId ?? symbol.id) ?? '')))
-      for (const listing of priority) for (const helper of routine) {
-        expect(ordered.indexOf(listing), `${owner.id}: ${listing.name} before ${helper.name}`).toBeLessThan(ordered.indexOf(helper))
-        checked++
-      }
+      const routine = members.filter((symbol) =>
+        /^(new_?session|new_?window|create_?session|create_?window|close|dispose|asjava|tostring|__enter__|kill_?server)$/.test(
+          symbol.name
+            .replace(/\(.*$/, '')
+            .replace(/Async$/, '')
+            .toLowerCase(),
+        ),
+      )
+      const priority = members.filter(
+        (symbol) =>
+          symbol.doc?.deprecated === undefined &&
+          !symbol.modifiers?.includes('deprecated') &&
+          (/^(?:list_?|get)?(?:sessions|windows|panes|clients|buffers)$/.test(
+            symbol.name
+              .replace(/\(.*$/, '')
+              .replace(/Async$/, '')
+              .toLowerCase(),
+          ) ||
+            /^(search-|snapshot$)/.test(signals.conceptIds.get(symbol.publicId ?? symbol.id) ?? '')),
+      )
+      for (const listing of priority)
+        for (const helper of routine) {
+          expect(ordered.indexOf(listing), `${owner.id}: ${listing.name} before ${helper.name}`).toBeLessThan(
+            ordered.indexOf(helper),
+          )
+          checked++
+        }
       // F# currently exposes listPanes without creation or lifecycle helpers.
       if (priority.length && !routine.length) {
         expect(priority, owner.id).toContain(ordered.find((member) => memberTier(member, signals) !== 'parent'))
@@ -142,9 +164,15 @@ d('member order', () => {
   ] as const)('puts %s %s parents first, walking toward the server', (port, owner, expected) => {
     const signals = memberSignals(port)
     const api = model(port)
-    const members = membersOf(api, api.symbols.find((symbol) => symbol.id === owner)!, signals)
+    const members = membersOf(
+      api,
+      api.symbols.find((symbol) => symbol.id === owner)!,
+      signals,
+    )
     expect(members.slice(0, expected.length).map((member) => member.name)).toEqual(expected)
-    expect(members.filter((member) => memberTier(member, signals) === 'parent').map((member) => member.name)).toEqual(expected)
+    expect(members.filter((member) => memberTier(member, signals) === 'parent').map((member) => member.name)).toEqual(
+      expected,
+    )
   })
 
   it.each(PORTS)('puts every mapped %s parent before collections and operations', (port) => {
@@ -163,11 +191,14 @@ d('member order', () => {
 
   it('does not promote scalar names, query fields, downward lookups, private or deprecated parents', () => {
     for (const [port, id] of [
-      ['go', 'tmux.Client.Session'], ['go', 'tmux.Pane.SessionID'],
-      ['java', 'io.github.libtmux.Server.Server.session'], ['rs', 'session.Session.window'],
+      ['go', 'tmux.Client.Session'],
+      ['go', 'tmux.Pane.SessionID'],
+      ['java', 'io.github.libtmux.Server.Server.session'],
+      ['rs', 'session.Session.window'],
       ['kotlin', 'io.github.libtmux.kotlin.Window.Companion.session'],
       ['scala', 'io.github.libtmux.scaladsl.generated.WindowFields.session'],
-      ['ts', 'selection.PaneWhere.window'], ['swift', 'Pane.windowID'],
+      ['ts', 'selection.PaneWhere.window'],
+      ['swift', 'Pane.windowID'],
     ]) {
       const symbol = model(port).symbols.find((entry) => (entry.publicId ?? entry.id) === id)!
       expect(symbol, id).toBeDefined()
@@ -176,7 +207,9 @@ d('member order', () => {
     const symbol = model('ts').symbols.find((entry) => entry.id === 'pane.Pane.server')!
     expect(memberTier({ ...symbol, modifiers: ['private'] }, memberSignals('ts'))).toBe('private')
     expect(memberTier({ ...symbol, apiScope: 'internal' }, memberSignals('ts'))).toBe('private')
-    expect(memberTier({ ...symbol, doc: { summary: '', deprecated: 'Use another handle.' } }, memberSignals('ts'))).toBe('deprecated')
+    expect(
+      memberTier({ ...symbol, doc: { summary: '', deprecated: 'Use another handle.' } }, memberSignals('ts')),
+    ).toBe('deprecated')
   })
 
   it('retains the parent relation when a broader concept also names the symbol', () => {
@@ -199,7 +232,9 @@ d('member order', () => {
     const privateReceiver = { ...owner, id: 'libtmux::PrivateRow', publicId: 'libtmux::PrivateRow' }
     expect(membersOf({ ...api, symbols: [...api.symbols, privateReceiver] }, privateReceiver)).toEqual([])
     const override = { ...source, id: `${owner.id}::server`, publicId: `${owner.id}::server`, parent: owner.id }
-    expect(membersOf({ ...api, symbols: [...api.symbols, override] }, owner).filter((member) => member.name === 'server')).toEqual([override])
+    expect(
+      membersOf({ ...api, symbols: [...api.symbols, override] }, owner).filter((member) => member.name === 'server'),
+    ).toEqual([override])
     expect(JSON.stringify(api)).toBe(before)
   })
 })

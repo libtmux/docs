@@ -133,13 +133,22 @@ d('resolver', () => {
 
   it('resolves most of the real corpus', () => {
     const LABEL: Record<string, string> = {
-      Python: 'py', Ruby: 'ruby', Lua: 'lua', TypeScript: 'ts', Rust: 'rs', Go: 'go',
-      Java: 'java', '.NET': 'csharp', 'C++': 'cxx', Swift: 'swift',
+      Python: 'py',
+      Ruby: 'ruby',
+      Lua: 'lua',
+      TypeScript: 'ts',
+      Rust: 'rs',
+      Go: 'go',
+      Java: 'java',
+      '.NET': 'csharp',
+      'C++': 'cxx',
+      Swift: 'swift',
     }
     const docs = join(here, '../../../site/src/content/docs')
     const walk = (dir: string): string[] =>
       readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
-        e.isDirectory() ? walk(join(dir, e.name)) : e.name.endsWith('.md') ? [join(dir, e.name)] : [])
+        e.isDirectory() ? walk(join(dir, e.name)) : e.name.endsWith('.md') ? [join(dir, e.name)] : [],
+      )
     let linkable = 0
     let resolved = 0
     for (const f of walk(docs)) {

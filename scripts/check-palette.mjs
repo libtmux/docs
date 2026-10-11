@@ -25,8 +25,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 /* `--ceiling` points at a different record so `check-palette.negative.mjs` can
  * exercise --update without rewriting the ceiling this repo ships. */
 const ceilingArg = process.argv.indexOf('--ceiling')
-const CEILING_FILE =
-  ceilingArg === -1 ? join(root, 'scripts/palette-ceiling.json') : process.argv[ceilingArg + 1]
+const CEILING_FILE = ceilingArg === -1 ? join(root, 'scripts/palette-ceiling.json') : process.argv[ceilingArg + 1]
 const PATTERN = /(?:bg|text|border|ring|divide|from|via|to)-(?:slate|gray|zinc|neutral|stone)-\d{2,3}/g
 
 const args = process.argv.slice(2)
@@ -34,7 +33,10 @@ const dir = args.includes('--dir') ? args[args.indexOf('--dir') + 1] : join(root
 
 const files = execFileSync('rg', ['-l', '--glob', '*.{astro,ts,tsx,css}', PATTERN.source, dir], {
   encoding: 'utf8',
-}).trim().split('\n').filter(Boolean)
+})
+  .trim()
+  .split('\n')
+  .filter(Boolean)
 
 /** Strip block comments and `//` lines so prose about the old classes is free. */
 const stripComments = (src) =>
@@ -76,9 +78,7 @@ const { ceiling } = JSON.parse(readFileSync(CEILING_FILE, 'utf8'))
 if (hits.length > ceiling) {
   const byFile = new Map()
   for (const h of hits) byFile.set(h.file, (byFile.get(h.file) ?? 0) + 1)
-  console.error(
-    `check-palette: ${hits.length} hard-coded palette utilities, ceiling is ${ceiling}.\n`,
-  )
+  console.error(`check-palette: ${hits.length} hard-coded palette utilities, ceiling is ${ceiling}.\n`)
   for (const [f, n] of [...byFile].sort((a, b) => b[1] - a[1]).slice(0, 10)) {
     console.error(`    ${String(n).padStart(3)}  ${f}`)
   }
@@ -91,9 +91,7 @@ if (hits.length > ceiling) {
 }
 
 if (hits.length < ceiling) {
-  console.log(
-    `check-palette: ${hits.length} hard-coded palette utilities, below the ceiling of ${ceiling}.`,
-  )
+  console.log(`check-palette: ${hits.length} hard-coded palette utilities, below the ceiling of ${ceiling}.`)
   console.log(`Lower it: node scripts/check-palette.mjs --update`)
   process.exit(1)
 }

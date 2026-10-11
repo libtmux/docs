@@ -22,8 +22,16 @@ async function navigation() {
   })
   const json: ApiTreeJson = {
     port: 'tmux',
-    buckets: [{ id: 'args', label: 'Arguments', count: 1, slug: 'args-entry', children: [],
-      types: [{ id: 'c:args_entry', name: 'args_entry', slug: 'args-entry', kind: 'struct', m: 1 }] }],
+    buckets: [
+      {
+        id: 'args',
+        label: 'Arguments',
+        count: 1,
+        slug: 'args-entry',
+        children: [],
+        types: [{ id: 'c:args_entry', name: 'args_entry', slug: 'args-entry', kind: 'struct', m: 1 }],
+      },
+    ],
     members: {
       'c:args_entry': [
         ['entry', 'entry', 'c:args_entry:entry', 'struct'],
@@ -51,7 +59,11 @@ async function navigation() {
     item.dispatchEvent(new win.KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true }))
     await vi.waitFor(() => expect(item.hasAttribute('aria-busy')).toBe(false))
   }
-  const children = (item: HTMLElement) => [...item.querySelectorAll<HTMLElement>(':scope > [role="group"] > [role="treeitem"], :scope > [role="group"] > [role="none"] > [role="treeitem"]')]
+  const children = (item: HTMLElement) => [
+    ...item.querySelectorAll<HTMLElement>(
+      ':scope > [role="group"] > [role="treeitem"], :scope > [role="group"] > [role="none"] > [role="treeitem"]',
+    ),
+  ]
   return { tree, bucket, key, children, fetch }
 }
 
@@ -96,7 +108,9 @@ it('keeps terminal, empty-owner and legacy members as ordered leaves', async () 
   await n.key(owner, 'ArrowRight')
   const leaves = n.children(owner).slice(1)
   expect(leaves.map((item) => item.getAttribute('href'))).toEqual([
-    '/en/tmux/3.7c/reference/value/', '/en/tmux/3.7c/reference/empty/', '/en/tmux/3.7c/reference/legacy/',
+    '/en/tmux/3.7c/reference/value/',
+    '/en/tmux/3.7c/reference/empty/',
+    '/en/tmux/3.7c/reference/legacy/',
   ])
   for (const leaf of leaves) {
     expect(leaf.tagName).toBe('A')

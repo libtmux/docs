@@ -18,17 +18,25 @@ describe('verified complete Java-family API programs', () => {
     expect(new Set(examples.map((example) => 'sourceProgramId' in example && example.sourceProgramId)).size).toBe(32)
     expect(new Set(examples.map((example) => example.page)).size).toBe(53)
     for (const port of ['java', 'kotlin', 'scala']) {
-      const covered = models[port].symbols.filter((symbol) => symbol.doc?.examples?.some(
-        (block) => block.sourceUrl?.includes('/examples/src/main/'))).map((symbol) => symbol.id)
-      expect([...new Set(examples.filter((example) => example.port === port).map((example) => example.symbol))].sort())
-        .toEqual(covered.sort())
-      expect(examples.filter((example) => example.port === port)).toHaveLength({ java: 14, kotlin: 15, scala: 28 }[port]!)
+      const covered = models[port].symbols
+        .filter((symbol) => symbol.doc?.examples?.some((block) => block.sourceUrl?.includes('/examples/src/main/')))
+        .map((symbol) => symbol.id)
+      expect(
+        [...new Set(examples.filter((example) => example.port === port).map((example) => example.symbol))].sort(),
+      ).toEqual(covered.sort())
+      expect(examples.filter((example) => example.port === port)).toHaveLength(
+        { java: 14, kotlin: 15, scala: 28 }[port]!,
+      )
     }
   })
 
   it.each(examples)('preserves $sourceProgramId on $symbol', (example) => {
-    if (!('sourceProgramId' in example) || typeof example.sourceProgramId !== 'string' ||
-        !('consoleBlocks' in example) || !example.consoleBlocks) {
+    if (
+      !('sourceProgramId' in example) ||
+      typeof example.sourceProgramId !== 'string' ||
+      !('consoleBlocks' in example) ||
+      !example.consoleBlocks
+    ) {
       throw new Error(`${example.symbol}: missing complete program selection`)
     }
     const model = models[example.port]
@@ -56,8 +64,9 @@ describe('verified complete Java-family API programs', () => {
         expect(line.length).toBeLessThanOrEqual(100)
       }
     }
-    expect(example.consoleBlocks.map((index) => blocks[index].code.replace(/^\$ /gm, '').trim()))
-      .toEqual(example.shellRecipe)
+    expect(example.consoleBlocks.map((index) => blocks[index].code.replace(/^\$ /gm, '').trim())).toEqual(
+      example.shellRecipe,
+    )
     expect(blocks[example.consoleBlocks[1] + 1].code.trimEnd().split('\n')).toEqual(example.expectedOutputs[1])
     for (const index of example.consoleBlocks) {
       expect(blocks[index].lang).toBe('console')

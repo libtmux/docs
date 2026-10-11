@@ -290,14 +290,15 @@ if err != nil {
 for _, session := range sessions {
     windows, captured := session.Windows()
     if !captured {
-        return fmt.Errorf("session %s has no captured window relations", session.ID())
+        return fmt.Errorf("session %s has no windows", session.ID())
     }
     for _, window := range windows {
         back, captured := window.Session()
         if !captured {
             return fmt.Errorf("window %s has no captured session", window.ID())
         }
-        fmt.Println(window.ID(), "belongs to session:", back.ID() == session.ID())
+        same := back.ID() == session.ID()
+        fmt.Println(window.ID(), "belongs to session:", same)
     }
 }
 ```
@@ -329,10 +330,12 @@ back.Equals(session);
 ```
 
 ```cpp
-auto sessions = server.sessions();       // expected<vector<Session>, CommandFailure>
+// expected<vector<Session>, CommandFailure>
+auto sessions = server.sessions();
 const auto& session = sessions->at(0);
 
-auto windows = session.windows();        // expected<vector<Window>, CommandFailure>
+// expected<vector<Window>, CommandFailure>
+auto windows = session.windows();
 const auto& window = windows->at(0);
 
 auto back = window.session();            // expected<Session, CommandFailure>

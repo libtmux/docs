@@ -98,13 +98,18 @@ const check = (name, ok, detail) => {
   const license = join(dir, 'reference', 'py', 'LICENSE')
   writeFileSync(license, 'Copyright and license notice')
   const broken = run(dir, fn)
-  check('an extensionless file fails even when every extension is allowed',
+  check(
+    'an extensionless file fails even when every extension is allowed',
     broken.code !== 0 && broken.out.includes('no extension') && broken.out.includes('/LICENSE'),
-    `exited ${broken.code}:\n${broken.out}`)
+    `exited ${broken.code}:\n${broken.out}`,
+  )
   renameSync(license, `${license}.txt`)
   const corrected = run(dir, fn)
-  check('an allowed text extension makes the same notice routable', corrected.code === 0,
-    `exited ${corrected.code}:\n${corrected.out}`)
+  check(
+    'an allowed text extension makes the same notice routable',
+    corrected.code === 0,
+    `exited ${corrected.code}:\n${corrected.out}`,
+  )
   rmSync(dir, { recursive: true, force: true })
 }
 
@@ -117,7 +122,11 @@ const check = (name, ok, detail) => {
   const f = join(fnDir, 'nofn.js')
   writeFileSync(f, 'export default 1\n')
   const { code, out } = run(dir, f)
-  check('a function file with no table fails loudly', code !== 0 && out.includes('no ASSET_EXTENSIONS'), `exited ${code}:\n${out}`)
+  check(
+    'a function file with no table fails loudly',
+    code !== 0 && out.includes('no ASSET_EXTENSIONS'),
+    `exited ${code}:\n${out}`,
+  )
   rmSync(dir, { recursive: true, force: true })
 }
 
@@ -125,7 +134,11 @@ const check = (name, ok, detail) => {
   const dir = mkdtempSync(join(tmpdir(), 'check-edge-ext-absent-'))
   rmSync(dir, { recursive: true, force: true })
   const { code, out } = run(dir, script)
-  check('an absent site directory fails rather than passing empty', code !== 0 && out.includes('no site at'), `exited ${code}:\n${out}`)
+  check(
+    'an absent site directory fails rather than passing empty',
+    code !== 0 && out.includes('no site at'),
+    `exited ${code}:\n${out}`,
+  )
 }
 
 if (failures) {

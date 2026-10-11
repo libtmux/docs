@@ -25,83 +25,123 @@ export interface DocumentationSurface {
 }
 
 const labels: Record<string, string> = {
-  home: 'Home', guides: 'Guides', tutorials: 'Tutorials', topics: 'Topics', concepts: 'Concepts',
-  examples: 'Examples', reference: 'API Reference', configuration: 'Configuration', internals: 'Internals',
-  async: 'Async', runtimes: 'Runtimes', manual: 'CLI Manual',
+  home: 'Home',
+  guides: 'Guides',
+  tutorials: 'Tutorials',
+  topics: 'Topics',
+  concepts: 'Concepts',
+  examples: 'Examples',
+  reference: 'API Reference',
+  configuration: 'Configuration',
+  internals: 'Internals',
+  async: 'Async',
+  runtimes: 'Runtimes',
+  manual: 'CLI Manual',
 }
 const standardSections = ['home', 'guides', 'tutorials', 'topics', 'concepts', 'examples', 'manual', 'reference']
-const linksOf = (items: SidebarItem[]): SidebarLinkItem[] => items.flatMap((item) => item.type === 'link'
-  ? [item] : [...(item.href ? [{ type: 'link' as const, label: item.label, href: item.href }] : []), ...item.items])
+const linksOf = (items: SidebarItem[]): SidebarLinkItem[] =>
+  items.flatMap((item) =>
+    item.type === 'link'
+      ? [item]
+      : [...(item.href ? [{ type: 'link' as const, label: item.label, href: item.href }] : []), ...item.items],
+  )
 
 /** Group actual published destinations, not a guessed matrix of app routes. */
 export function buildDocumentationSurfaces(
-  port: string, version: string, menus: Partial<Record<'core' | DocProduct, SidebarItem[]>>,
+  port: string,
+  version: string,
+  menus: Partial<Record<'core' | DocProduct, SidebarItem[]>>,
 ): DocumentationSurface[] {
   const info = PORT_BY_SLUG[port]
   const base = portPageUrl(info, version)
-  return documentationAreas(port).filter((domain) => domain.kind !== 'unavailable' && (domain.id === 'core' || domain.product))
-    .sort((a, b) => ['core', 'mcp', 'workspace'].indexOf(a.product ?? 'core') - ['core', 'mcp', 'workspace'].indexOf(b.product ?? 'core'))
+  return documentationAreas(port)
+    .filter((domain) => domain.kind !== 'unavailable' && (domain.id === 'core' || domain.product))
+    .sort(
+      (a, b) =>
+        ['core', 'mcp', 'workspace'].indexOf(a.product ?? 'core') -
+        ['core', 'mcp', 'workspace'].indexOf(b.product ?? 'core'),
+    )
     .map((domain) => {
-    const id = domain.product ?? 'core'
-    const prefix = domain.product ? `${domain.product}/` : ''
-    const href = portPageUrl(info, version, domain.route)
-    const home: DocumentationSection = { id: 'home', label: 'Home', href, items: [] }
-    const sections = new Map<string, DocumentationSection>([['home', home]])
-    const seen = new Set<string>()
-    for (const link of linksOf(menus[id] ?? [])) {
-      if (seen.has(link.href)) continue
-      seen.add(link.href)
-      const route = link.href.startsWith(base) ? link.href.slice(base.length).replace(/\/$/, '') : undefined
-      const relative = route === domain.route ? '' : route?.startsWith(prefix) ? route.slice(prefix.length) : undefined
-      let key = relative?.split('/')[0] || 'home'
-      if (key === 'third-party-notices') continue
-      if (key === 'source-guide') key = 'guides'
-      if (id === 'workspace' && (key === 'cli' || /^reference\/(?:exit-codes|output)$/.test(relative ?? ''))) key = 'manual'
-      else if (link.external || key === 'cli' || key === 'tools' || key === 'api') key = 'reference'
-      const section = sections.get(key) ?? { id: key, label: labels[key] ?? link.label, items: [] }
-      if (!section.href && (relative === key || (key === 'manual' && relative === 'cli')) && !link.external) section.href = link.href
-      section.items.push(link)
-      sections.set(key, section)
-    }
-    const reference: DocumentationSection = sections.get('reference') ?? { id: 'reference', label: 'API Reference', items: [] }
-    reference.href = referenceUrl(info, version, id)
-    if (domain.product) {
-      // Protocol tools and the implementation API retain their native URLs.
-      const groups = new Map<string, SidebarLinkItem[]>()
-      for (const item of linksOf(reference.items)) {
-        const route = item.href.slice(base.length)
-        const label = route.startsWith(`${prefix}cli/`) ? 'CLI reference'
-          : route.startsWith(`${prefix}tools/`) ? 'Tools'
-          : domain.product === 'workspace' && item.href !== reference.href ? 'CLI contracts' : 'Language API'
-        const entries = groups.get(label) ?? []
-        entries.push(item)
-        groups.set(label, entries)
+      const id = domain.product ?? 'core'
+      const prefix = domain.product ? `${domain.product}/` : ''
+      const href = portPageUrl(info, version, domain.route)
+      const home: DocumentationSection = { id: 'home', label: 'Home', href, items: [] }
+      const sections = new Map<string, DocumentationSection>([['home', home]])
+      const seen = new Set<string>()
+      for (const link of linksOf(menus[id] ?? [])) {
+        if (seen.has(link.href)) continue
+        seen.add(link.href)
+        const route = link.href.startsWith(base) ? link.href.slice(base.length).replace(/\/$/, '') : undefined
+        const relative =
+          route === domain.route ? '' : route?.startsWith(prefix) ? route.slice(prefix.length) : undefined
+        let key = relative?.split('/')[0] || 'home'
+        if (key === 'third-party-notices') continue
+        if (key === 'source-guide') key = 'guides'
+        if (id === 'workspace' && (key === 'cli' || /^reference\/(?:exit-codes|output)$/.test(relative ?? '')))
+          key = 'manual'
+        else if (link.external || key === 'cli' || key === 'tools' || key === 'api') key = 'reference'
+        const section = sections.get(key) ?? { id: key, label: labels[key] ?? link.label, items: [] }
+        if (!section.href && (relative === key || (key === 'manual' && relative === 'cli')) && !link.external)
+          section.href = link.href
+        section.items.push(link)
+        sections.set(key, section)
       }
-      const api = groups.get('Language API') ?? []
-      if (API_MODELS[port]) api.push(...productApiRoots(API_MODELS[port], domain.product).map((symbol) => ({
-        type: 'link' as const, label: symbol.name, kind: symbol.kind,
-        href: productApiHref(API_MODELS[port], symbol, version),
-      })))
-      groups.set('Language API', api)
-      reference.items = [...groups].map(([label, items]) => ({ type: 'group', label, items }))
-    } else {
-      reference.alternatives = linksOf(reference.items).filter((item) => item.href !== reference.href)
-    }
-    sections.set('reference', reference)
-    // Some named areas have no overview. Their first real page is a useful
-    // destination without inventing an overview route.
-    for (const section of sections.values()) section.href ??= linksOf(section.items)[0]?.href
-    const ordered = [...sections.values()].filter((section) => section.href).sort((a, b) => {
-      const rank = (key: string) => standardSections.includes(key) ? standardSections.indexOf(key) : standardSections.length
-      return rank(a.id) - rank(b.id)
+      const reference: DocumentationSection = sections.get('reference') ?? {
+        id: 'reference',
+        label: 'API Reference',
+        items: [],
+      }
+      reference.href = referenceUrl(info, version, id)
+      if (domain.product) {
+        // Protocol tools and the implementation API retain their native URLs.
+        const groups = new Map<string, SidebarLinkItem[]>()
+        for (const item of linksOf(reference.items)) {
+          const route = item.href.slice(base.length)
+          const label = route.startsWith(`${prefix}cli/`)
+            ? 'CLI reference'
+            : route.startsWith(`${prefix}tools/`)
+              ? 'Tools'
+              : domain.product === 'workspace' && item.href !== reference.href
+                ? 'CLI contracts'
+                : 'Language API'
+          const entries = groups.get(label) ?? []
+          entries.push(item)
+          groups.set(label, entries)
+        }
+        const api = groups.get('Language API') ?? []
+        if (API_MODELS[port])
+          api.push(
+            ...productApiRoots(API_MODELS[port], domain.product).map((symbol) => ({
+              type: 'link' as const,
+              label: symbol.name,
+              kind: symbol.kind,
+              href: productApiHref(API_MODELS[port], symbol, version),
+            })),
+          )
+        groups.set('Language API', api)
+        reference.items = [...groups].map(([label, items]) => ({ type: 'group', label, items }))
+      } else {
+        reference.alternatives = linksOf(reference.items).filter((item) => item.href !== reference.href)
+      }
+      sections.set('reference', reference)
+      // Some named areas have no overview. Their first real page is a useful
+      // destination without inventing an overview route.
+      for (const section of sections.values()) section.href ??= linksOf(section.items)[0]?.href
+      const ordered = [...sections.values()]
+        .filter((section) => section.href)
+        .sort((a, b) => {
+          const rank = (key: string) =>
+            standardSections.includes(key) ? standardSections.indexOf(key) : standardSections.length
+          return rank(a.id) - rank(b.id)
+        })
+      home.items = [
+        { type: 'link', label: 'Overview', href },
+        ...ordered
+          .filter((section) => section.id !== 'home' && section.href)
+          .map((section): SidebarLinkItem => ({ type: 'link', label: section.label, href: section.href! })),
+      ]
+      return { id, label: domain.id === 'core' ? 'Core Library' : domain.label, href, sections: ordered }
     })
-    home.items = [
-      { type: 'link', label: 'Overview', href },
-      ...ordered.filter((section) => section.id !== 'home' && section.href)
-        .map((section): SidebarLinkItem => ({ type: 'link', label: section.label, href: section.href! })),
-    ]
-    return { id, label: domain.id === 'core' ? 'Core Library' : domain.label, href, sections: ordered }
-  })
 }
 
 const cache = new Map<string, Promise<DocumentationSurface[]>>()
@@ -115,19 +155,38 @@ export function getDocumentationSurfaces(port: string | undefined, version: stri
       const current = version === 'latest'
       const sections: DocumentationSection[] = [
         { id: 'home', label: current ? 'Home' : 'Current docs →', href: withPortRoot('/tmux/'), items: [] },
-        ...(current ? menus : []).flatMap((item) => item.type === 'group' && item.href
-          ? [{ id: item.label.toLowerCase(), label: item.label, href: item.href, items: item.items }] : []),
+        ...(current ? menus : []).flatMap((item) =>
+          item.type === 'group' && item.href
+            ? [{ id: item.label.toLowerCase(), label: item.label, href: item.href, items: item.items }]
+            : [],
+        ),
         { id: 'manual', label: 'CLI Manual', href: tmuxManualUrl(version), items: [] },
-        { id: 'reference', label: 'C source reference', shortLabel: 'C reference', href: tmuxReferenceUrl(version), items: [] },
+        {
+          id: 'reference',
+          label: 'C source reference',
+          shortLabel: 'C reference',
+          href: tmuxReferenceUrl(version),
+          items: [],
+        },
       ]
-      sections[0].items = sections.filter((section) => section.href).map((section) => ({
-        type: 'link', label: section.label, href: section.href!,
-      }))
+      sections[0].items = sections
+        .filter((section) => section.href)
+        .map((section) => ({
+          type: 'link',
+          label: section.label,
+          href: section.href!,
+        }))
       return [{ id: 'tmux', label: 'tmux', href: withPortRoot('/tmux/'), sections }]
     }
-    const products = documentationAreas(port).flatMap((domain) => domain.kind !== 'unavailable' && domain.product ? [domain.product] : [])
-    const menus = await Promise.all(['core' as const, ...products].map(async (product) =>
-      [product, await getSidebar(port, version, locale, product === 'core' ? undefined : product)] as const))
+    const products = documentationAreas(port).flatMap((domain) =>
+      domain.kind !== 'unavailable' && domain.product ? [domain.product] : [],
+    )
+    const menus = await Promise.all(
+      ['core' as const, ...products].map(
+        async (product) =>
+          [product, await getSidebar(port, version, locale, product === 'core' ? undefined : product)] as const,
+      ),
+    )
     return buildDocumentationSurfaces(port, version, Object.fromEntries(menus))
   }
   if (import.meta.env.DEV) return build()
@@ -137,19 +196,31 @@ export function getDocumentationSurfaces(port: string | undefined, version: stri
 
 /** URL-derived selection also works on direct loads, reloads and browser history. */
 export function currentDocumentation(surfaces: DocumentationSurface[], currentPath: string) {
-  const surface = surfaces.filter((entry) => currentPath.startsWith(entry.href))
-    .sort((a, b) => b.href.length - a.href.length)[0] ?? surfaces[0]
+  const surface =
+    surfaces.filter((entry) => currentPath.startsWith(entry.href)).sort((a, b) => b.href.length - a.href.length)[0] ??
+    surfaces[0]
   const path = currentPath.slice(surface.href.length).split('/')[0] || 'home'
-  const key = path === 'source-guide' ? 'guides'
-    : path === 'cli' && surface.id === 'workspace' ? 'manual'
-    : path === 'cli' || path === 'tools' || path === 'api' ? 'reference' : path
-  const section = surface.sections.filter((entry) => entry.id !== 'home').flatMap((entry) =>
-    [entry.href, ...linksOf(entry.items).map((item) => item.href)]
-      .filter((href): href is string => Boolean(href && currentPath.startsWith(href)))
-      .map((href) => ({ entry, href })))
-    .sort((a, b) => b.href.length - a.href.length)[0]?.entry
-    ?? surface.sections.find((entry) => entry.id === key) ?? surface.sections[0]
-  const alternative = section.alternatives?.filter((item) => !item.external && currentPath.startsWith(item.href))
+  const key =
+    path === 'source-guide'
+      ? 'guides'
+      : path === 'cli' && surface.id === 'workspace'
+        ? 'manual'
+        : path === 'cli' || path === 'tools' || path === 'api'
+          ? 'reference'
+          : path
+  const section =
+    surface.sections
+      .filter((entry) => entry.id !== 'home')
+      .flatMap((entry) =>
+        [entry.href, ...linksOf(entry.items).map((item) => item.href)]
+          .filter((href): href is string => Boolean(href && currentPath.startsWith(href)))
+          .map((href) => ({ entry, href })),
+      )
+      .sort((a, b) => b.href.length - a.href.length)[0]?.entry ??
+    surface.sections.find((entry) => entry.id === key) ??
+    surface.sections[0]
+  const alternative = section.alternatives
+    ?.filter((item) => !item.external && currentPath.startsWith(item.href))
     .sort((a, b) => b.href.length - a.href.length)[0]
   return { surface, section, alternative }
 }

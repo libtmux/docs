@@ -197,7 +197,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // One-shot: every call underneath this handle spawns a `tmux` process.
     let server = Server::new()?;
     let session = server.new_session("work").await?;
-    let window = session.active_window().await?.expect("a session has a window");
+    let window = session.active_window().await?.expect("session has a window");
     let pane = window.active_pane().await?.expect("a window has a pane");
     pane.send_line("echo hello").await?;
     Ok(())
@@ -226,7 +226,10 @@ if err != nil {
 	return err
 }
 command := "echo hello"
-return pane.SendKeys(ctx, tmux.SendKeysRequest{Command: &command, Literal: true})
+return pane.SendKeys(ctx, tmux.SendKeysRequest{
+	Command: &command,
+	Literal: true,
+})
 ```
 
 ```java
@@ -247,7 +250,8 @@ using LibTmux;
 
 // One-shot: every call underneath this handle spawns a `tmux` process.
 Server server = await Server.ConnectAsync();
-Session session = await server.CreateSessionAsync(new NewSessionRequest(name: "work"));
+NewSessionRequest request = new(name: "work");
+Session session = await server.CreateSessionAsync(request);
 Window window = (await session.GetWindowsAsync())[0];
 Pane pane = (await window.GetPanesAsync())[0];
 

@@ -6,7 +6,16 @@ import { getCollection } from 'astro:content'
 import { qualifiedNameOf } from '@libtmux/api-model'
 import type { CollectionEntry } from 'astro:content'
 import { resolvePortCode } from '../plugins/remark-port-code.mjs'
-import { PORTS, PORT_BY_SLUG, hasReference, portPageUrl, productApiPath, productAvailable, referenceUrl, workspaceOverviewNotice } from './ports.ts'
+import {
+  PORTS,
+  PORT_BY_SLUG,
+  hasReference,
+  portPageUrl,
+  productApiPath,
+  productAvailable,
+  referenceUrl,
+  workspaceOverviewNotice,
+} from './ports.ts'
 import { DEFAULT_LOCALE } from '../i18n/locales.ts'
 import { buildLocale, localeOf, sourceIdOf } from '../i18n/resolve.ts'
 import { buildTarget } from './versions.ts'
@@ -34,7 +43,8 @@ export interface LlmsPage {
 function sectionOf(entry: CollectionEntry<'docs'>): string {
   const group = entry.data.sidebar?.group
   if (group) return group
-  if (entry.data.product) return `${PORT_BY_SLUG[entry.data.port!].name} ${entry.data.product === 'mcp' ? 'MCP' : 'Workspace Manager'}`
+  if (entry.data.product)
+    return `${PORT_BY_SLUG[entry.data.port!].name} ${entry.data.product === 'mcp' ? 'MCP' : 'Workspace Manager'}`
   const [first] = docsPath(entry).split('/')
   return first === entry.id ? 'Overview' : first[0].toUpperCase() + first.slice(1)
 }
@@ -59,10 +69,18 @@ export async function llmsPages(origin: string, base: string): Promise<LlmsPage[
   // The same page the routes serve: a translation where this locale has one,
   // so a section and that page's `.md` twin stay one text rather than two.
   let defaults: Record<string, string> = {}
-  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
-  const translations = new Map(locale === DEFAULT_LOCALE ? []
-    : localeProse(await getCollection('docs'), locale, port, defaults)
-      .map(({ entry, route }) => [route, entry] as const))
+  try {
+    defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
+  } catch {
+    /* Local defaults are latest. */
+  }
+  const translations = new Map(
+    locale === DEFAULT_LOCALE
+      ? []
+      : localeProse(await getCollection('docs'), locale, port, defaults).map(
+          ({ entry, route }) => [route, entry] as const,
+        ),
+  )
   return entries
     .map((entry) => llmsPage(translations.get(docsRoutePath(entry, port, defaults)) ?? entry, origin, base))
     .sort((a, b) => a.section.localeCompare(b.section) || a.order - b.order || a.title.localeCompare(b.title))
@@ -80,16 +98,27 @@ export async function llmsPages(origin: string, base: string): Promise<LlmsPage[
 export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: string): LlmsPage & { order: number } {
   const port = process.env.LIBTMUX_DOCS_PORT || undefined
   let defaults: Record<string, string> = {}
-  try { defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}') } catch { /* Local defaults are latest. */ }
+  try {
+    defaults = JSON.parse(process.env.LIBTMUX_DOCS_PORT_DEFAULTS || '{}')
+  } catch {
+    /* Local defaults are latest. */
+  }
   const entryPort = entry.data.port
   const version = port ? buildTarget(process.env).version : (defaults[entryPort ?? ''] ?? 'latest')
   const path = docsRoutePath(entry, port, defaults)
   const url = `${origin}${entry.data.product && !port ? `${PORT_ROOT}/` : base}${path ? `${path}/` : ''}`
-  let body = resolvePortCode(linkProseMarkdown(entry.body ?? '', entryPort ?? port, entry.data.product, {
-    resolved: (href) => new URL(href, url).href,
-    authored: (href, owner) => new URL(proseHref(href, SITE_ROOT, owner,
-      owner === port ? version : defaults[owner ?? ''] ?? 'latest', PORT_ROOT), url).href,
-  }), port, entryPort)
+  let body = resolvePortCode(
+    linkProseMarkdown(entry.body ?? '', entryPort ?? port, entry.data.product, {
+      resolved: (href) => new URL(href, url).href,
+      authored: (href, owner) =>
+        new URL(
+          proseHref(href, SITE_ROOT, owner, owner === port ? version : (defaults[owner ?? ''] ?? 'latest'), PORT_ROOT),
+          url,
+        ).href,
+    }),
+    port,
+    entryPort,
+  )
   const cards = selectPortCards(entry.data.cards, entryPort ?? port)
   if (cards.length) {
     body += `\n\n${cards.map((card) => `- [${card.label}](${new URL(proseHref(card.href, SITE_ROOT, entryPort ?? port, version), url).href}): ${card.body}`).join('\n')}\n`
@@ -98,12 +127,17 @@ export function llmsPage(entry: CollectionEntry<'docs'>, origin: string, base: s
     const notice = workspaceOverviewNotice(PORT_BY_SLUG[entryPort])
     if (notice) body = `**${notice.title}** ${notice.body}\n\n${body}`
   }
-  if (entryPort && entry.data.product && productAvailable(PORT_BY_SLUG[entryPort], entry.data.product)
-    && docsPath(entry) === productApiPath(entry.data.product)) {
+  if (
+    entryPort &&
+    entry.data.product &&
+    productAvailable(PORT_BY_SLUG[entryPort], entry.data.product) &&
+    docsPath(entry) === productApiPath(entry.data.product)
+  ) {
     const model = API_MODELS[entryPort]
     const symbols = productApiRoots(model, entry.data.product)
     body += `\n\n## API declarations\n\n${symbols.map((symbol) => `- [${qualifiedNameOf(symbol)}](${origin}${productApiHref(model, symbol, version)})`).join('\n')}\n`
-    if (entry.data.product === 'mcp') body += `\n[Protocol catalog](${origin}${portPageUrl(PORT_BY_SLUG[entryPort], version, 'mcp/tools').replace(/\/$/, '.json')})\n`
+    if (entry.data.product === 'mcp')
+      body += `\n[Protocol catalog](${origin}${portPageUrl(PORT_BY_SLUG[entryPort], version, 'mcp/tools').replace(/\/$/, '.json')})\n`
   }
   // A locale's landing entry routes to '', which is the root itself.
   return {
@@ -162,7 +196,8 @@ export function llmsHeader(): { title: string; blurb: string } {
  * ecosystem host, so only the former needs the origin.
  */
 export function referenceLine(origin: string): string | null {
-  if (buildsTmuxDocumentation()) return `- [tmux manual](${origin}${tmuxManualUrl()}): versioned command syntax and the tmux manual.\n- [tmux C source reference](${origin}${tmuxReferenceUrl()}): internal C declarations, members and source links by tmux version.`
+  if (buildsTmuxDocumentation())
+    return `- [tmux manual](${origin}${tmuxManualUrl()}): versioned command syntax and the tmux manual.\n- [tmux C source reference](${origin}${tmuxReferenceUrl()}): internal C declarations, members and source links by tmux version.`
   const port = process.env.LIBTMUX_DOCS_PORT || undefined
   const p = port ? PORT_BY_SLUG[port] : undefined
   if (!p || !hasReference(p)) return null

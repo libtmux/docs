@@ -46,7 +46,7 @@
       "files": [
         {
           "name": "connect.ts",
-          "sha256": "bd4f946b8fc2a24e1aab9d366402fa1260a3a05542023f3454e0686c72ba3d9d"
+          "sha256": "9691bffbd9e6dbc3270ad47bee181b6e7127c159d99e83d2af3dfc3fc348b4db"
         },
         {
           "name": "package.json",
@@ -143,7 +143,7 @@
       "files": [
         {
           "name": "Connect.java",
-          "sha256": "0dd7f4fef844f89ed6b6f424f3bce74daa43beb5280f43b12ab44cc1f4bf56a3"
+          "sha256": "c13bce86400f8b867208ae4ad4fe0343d251a354801692b6d0d78757e32a8947"
         },
         {
           "name": "run.sh",
@@ -171,7 +171,7 @@
       "files": [
         {
           "name": "Program.cs",
-          "sha256": "0936735d8c29c384b1040d37eca077690017d23eb6c21b9b6de489dde595f072"
+          "sha256": "a986a7f8c4ade6b77049efc48ca6446c176b04e302320adfa9904063682a89d1"
         },
         {
           "name": "Connect.csproj",
@@ -205,7 +205,7 @@
       "files": [
         {
           "name": "connect.cpp",
-          "sha256": "e7cf8fedee0d797982c249ed194885c23c5c8f6d29e583592105dd09a191f875"
+          "sha256": "a2c05e7358b0eec6d35ea6ab023414556e4dc5ccc9d89498daa4c3cbd7e1e644"
         },
         {
           "name": "CMakeLists.txt",
@@ -238,7 +238,7 @@
         {
           "name": "Connect.swift",
           "path": "Sources/Connect/Connect.swift",
-          "sha256": "9821b15aa0bb09ab626164f6f6a1e900f7263fafc5ff3d6297520505c8ebdc07"
+          "sha256": "384a3cf86ec4267d7e01e133eab68041e60ccaf4e43d865bb156f4e61e5e7bf0"
         },
         {
           "name": "Package.swift",
@@ -312,7 +312,7 @@
       "files": [
         {
           "name": "Connect.scala",
-          "sha256": "cbca6ab2fdb96a5b4291cdc9003a17d32a098c2b5f7cff159b03bd4ab63ca1a5"
+          "sha256": "4b471b0afcaba7699b6b2cc5d888e597e62903410a4aa25b1fef3cfd9f0a152f"
         },
         {
           "name": "build.gradle.kts",
@@ -352,11 +352,11 @@
       "files": [
         {
           "name": "Program.fs",
-          "sha256": "22a62e8423aa21ecb88aba93bf1cbf0520aa84c968ce18bb0559122b314517bc"
+          "sha256": "38599c54501b92742fefb97380f327b7a13fd57e6f701a7d16d0c9304e3adc44"
         },
         {
           "name": "Connect.fsproj",
-          "sha256": "314bfb2bef111e8885728a0065943a59594721011da4ac6ef0275aebd8f14bcd"
+          "sha256": "b35f62badfd9ff1220de1cede86aa28da25029f01d36ce81db6a3b46585618fd"
         },
         {
           "name": "run.sh",
@@ -385,7 +385,7 @@
       "files": [
         {
           "name": "connect.rb",
-          "sha256": "b683160fe4caefea0e65c4670519a2bfaa6c4f16f402fc86c730a42df2943f5d"
+          "sha256": "4779f7d61e2dc4c690da75e1c66e1e97fb414fcbd3a419cb673d2d17e4d141a0"
         },
         {
           "name": "Gemfile",
@@ -418,7 +418,7 @@
       "files": [
         {
           "name": "connect.lua",
-          "sha256": "4941e3f804521ec54e8692d83f6f3f22a0badb56affe4c24232ea28973fed2d6"
+          "sha256": "7ba7e904fce0a90788b82b515ca5f3a636ec59aae05c31e0cdea3e39ffc84dfd"
         },
         {
           "name": "run.sh",

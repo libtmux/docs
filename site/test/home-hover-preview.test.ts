@@ -27,9 +27,13 @@ function controls() {
   const show = vi.fn()
   const restore = vi.fn()
   const preview = bindHomeHoverPreview({
-    options: options as unknown as HTMLElement[], show, restore, signal: controller.signal,
+    options: options as unknown as HTMLElement[],
+    show,
+    restore,
+    signal: controller.signal,
   })
-  const enter = (index = 0, pointerType = 'mouse') => options[index].dispatchEvent(new win.PointerEvent('pointerenter', { pointerType }))
+  const enter = (index = 0, pointerType = 'mouse') =>
+    options[index].dispatchEvent(new win.PointerEvent('pointerenter', { pointerType }))
   const leave = (index = 0) => options[index].dispatchEvent(new win.PointerEvent('pointerleave'))
   return { options, show, restore, preview, enter, leave }
 }

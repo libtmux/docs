@@ -13,7 +13,15 @@
  * assertion and could drift on how it handles a missing port.
  */
 import data from '../data/registry.json'
-import { installCommand, releaseWording, type InstallCommand, type InstallForm, type Port, type RegistryData, type RegistryEntry } from './ports'
+import {
+  installCommand,
+  releaseWording,
+  type InstallCommand,
+  type InstallForm,
+  type Port,
+  type RegistryData,
+  type RegistryEntry,
+} from './ports'
 import { portParts, type PortParts, type PromptContext } from './prompts'
 
 export const REGISTRY = data as RegistryData

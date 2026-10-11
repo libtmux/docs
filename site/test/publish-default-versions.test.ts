@@ -24,31 +24,43 @@ function fixture(defaultVersion: Record<string, string>, storeItems: { Key: stri
   writeFileSync(join(directory, 'store.json'), JSON.stringify({ Items: storeItems }))
   const executable = join(directory, 'bin/aws')
   mkdirSync(dirname(executable), { recursive: true })
-  writeFileSync(executable, [
-    '#!/bin/bash',
-    'printf \'%s\\t\' "$@" >> "$AWS_RECORD"; echo >> "$AWS_RECORD"',
-    'if [[ "$2" == "${FAIL:-}" ]]; then echo "An error occurred (AccessDenied)" >&2; exit 254; fi',
-    'if [[ "$2" == describe-key-value-store ]]; then echo \'{"ETag":"etag-1"}\'',
-    'elif [[ "$2" == list-keys ]]; then cat "$STORE_FILE"; fi',
-  ].join('\n') + '\n', { mode: 0o755 })
+  writeFileSync(
+    executable,
+    [
+      '#!/bin/bash',
+      'printf \'%s\\t\' "$@" >> "$AWS_RECORD"; echo >> "$AWS_RECORD"',
+      'if [[ "$2" == "${FAIL:-}" ]]; then echo "An error occurred (AccessDenied)" >&2; exit 254; fi',
+      'if [[ "$2" == describe-key-value-store ]]; then echo \'{"ETag":"etag-1"}\'',
+      'elif [[ "$2" == list-keys ]]; then cat "$STORE_FILE"; fi',
+    ].join('\n') + '\n',
+    { mode: 0o755 },
+  )
   return directory
 }
 
 function publish(directory: string, env: Record<string, string> = {}) {
   const record = join(directory, 'aws.tsv')
   const result = spawnSync('bash', [script], {
-    cwd: directory, encoding: 'utf8', timeout: 10000,
+    cwd: directory,
+    encoding: 'utf8',
+    timeout: 10000,
     env: {
-      ...process.env, PATH: `${join(directory, 'bin')}:${process.env.PATH}`,
-      KVS_ARN, AWS_RECORD: record, STORE_FILE: join(directory, 'store.json'), ...env,
+      ...process.env,
+      PATH: `${join(directory, 'bin')}:${process.env.PATH}`,
+      KVS_ARN,
+      AWS_RECORD: record,
+      STORE_FILE: join(directory, 'store.json'),
+      ...env,
     },
   })
   expect(result.error, result.stderr).toBeUndefined()
   // Split without trimming: the recorder ends each line with a tab, and a
   // whole-file trim would drop the last call's final argument.
   const commands = existsSync(record)
-    ? readFileSync(record, 'utf8').split('\n').filter((line) => line.length > 0)
-      .map((line) => line.split('\t').slice(0, -1))
+    ? readFileSync(record, 'utf8')
+        .split('\n')
+        .filter((line) => line.length > 0)
+        .map((line) => line.split('\t').slice(0, -1))
     : []
   return { ...result, commands }
 }

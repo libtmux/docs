@@ -41,9 +41,7 @@ const INLINE = /(`[^`]+`)|(https?:\/\/[^\s<>()]+)/g
 
 function inline(escaped: string): string {
   return escaped.replace(INLINE, (match, code: string | undefined) =>
-    code
-      ? `<span class="lm-ph-code">${code}</span>`
-      : `<span class="lm-ph-url">${match}</span>`,
+    code ? `<span class="lm-ph-code">${code}</span>` : `<span class="lm-ph-url">${match}</span>`,
   )
 }
 

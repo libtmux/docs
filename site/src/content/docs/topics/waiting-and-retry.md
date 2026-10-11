@@ -136,7 +136,8 @@ await live.waitFor((snapshot) => snapshot.windows.exists({ name: "build" }));
 ```go
 waitCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 defer cancel()
-err := tmuxtest.WaitFor(waitCtx, 50*time.Millisecond, func(ctx context.Context) (bool, error) {
+poll := 50 * time.Millisecond
+err := tmuxtest.WaitFor(waitCtx, poll, func(ctx context.Context) (bool, error) {
 	windows, err := session.SearchWindows(ctx, nil)
 	if err != nil {
 		return false, err
@@ -155,7 +156,8 @@ if err != nil {
 
 ```rust
 libtmux::test::retry_until(std::time::Duration::from_secs(5), async || {
-    session.windows().await.map(|ws| ws.iter().any(|w| w.name() == "build")).unwrap_or(false)
+    let windows = session.windows().await;
+    windows.map(|ws| ws.iter().any(|w| w.name() == "build")).unwrap_or(false)
 })
 .await?;
 ```
@@ -258,14 +260,16 @@ if err := server.WaitFor(ctx, tmux.WaitForRequest{
 }); err != nil {
     return err
 }
-if err := server.WaitFor(ctx, tmux.WaitForRequest{Channel: "built"}); err != nil {
+wait := tmux.WaitForRequest{Channel: "built"}
+if err := server.WaitFor(ctx, wait); err != nil {
     return err
 }
 ```
 
 ```rust
 server.signal_channel("built").await?;
-let outcome = server.wait_for_channel("built", std::time::Duration::from_secs(5)).await?;
+let timeout = std::time::Duration::from_secs(5);
+let outcome = server.wait_for_channel("built", timeout).await?;
 ```
 
 ```java

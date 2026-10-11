@@ -27,7 +27,9 @@ const docs = defineCollection({
     /** Restricts a page to one port's section, e.g. 'py'. Omit for shared pages. */
     port: z.string().optional(),
     /** Shared prose is published only where its native APIs are documented. */
-    supportedPorts: z.array(z.string().refine((slug) => PORTS.some((port) => port.slug === slug), 'Unknown documentation port')).optional(),
+    supportedPorts: z
+      .array(z.string().refine((slug) => PORTS.some((port) => port.slug === slug), 'Unknown documentation port'))
+      .optional(),
     /** Product pages are authored separately for each port. */
     product: z.enum(['mcp', 'workspace']).optional(),
     /** Published package a staged source guide documents. */
@@ -49,10 +51,22 @@ const docs = defineCollection({
       })
       .optional(),
     /** Browse links shared by HTML and Markdown; `href` is relative to the page. */
-    cards: z.array(z.object({
-      label: z.string(), href: z.string(), body: z.string(),
-      ports: z.array(z.string().refine((slug) => slug === 'root' || PORTS.some((port) => port.slug === slug), 'Unknown card port')).optional(),
-    })).optional(),
+    cards: z
+      .array(
+        z.object({
+          label: z.string(),
+          href: z.string(),
+          body: z.string(),
+          ports: z
+            .array(
+              z
+                .string()
+                .refine((slug) => slug === 'root' || PORTS.some((port) => port.slug === slug), 'Unknown card port'),
+            )
+            .optional(),
+        }),
+      )
+      .optional(),
     /** Suppress the on-page table of contents. */
     tableOfContents: z.boolean().default(true),
     /** Explicit canonical override; normally computed. */

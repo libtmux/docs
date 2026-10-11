@@ -71,7 +71,8 @@ export function navSidecarFor(scope: string, model: ApiModelBase, nav: NavConfig
   const entries = (ids: string[], order: string[] = []) => {
     const symbols = [...new Set(ids)].map((id) => byId.get(id)).filter((sym): sym is ApiSymbol => sym !== undefined)
     const ranks = new Map([...new Set(order)].map((id, rank) => [id, rank]))
-    const ordered = symbols.filter((sym) => ranks.has(sym.publicId ?? sym.id))
+    const ordered = symbols
+      .filter((sym) => ranks.has(sym.publicId ?? sym.id))
       .sort((a, b) => ranks.get(a.publicId ?? a.id)! - ranks.get(b.publicId ?? b.id)!)
     const remaining = symbols.filter((sym) => !ranks.has(sym.publicId ?? sym.id))
     const free = remaining

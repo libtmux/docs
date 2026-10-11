@@ -30,7 +30,17 @@ export type Resolution =
   | { how: 'not-a-symbol'; why: string }
 
 /** Kinds that can own members, and therefore act as a scope. */
-const TYPE_KINDS = new Set(['class', 'struct', 'union', 'interface', 'enum', 'trait', 'exception', 'module', 'typealias'])
+const TYPE_KINDS = new Set([
+  'class',
+  'struct',
+  'union',
+  'interface',
+  'enum',
+  'trait',
+  'exception',
+  'module',
+  'typealias',
+])
 
 /**
  * Ecosystems with no `objects.inv` to federate against.
@@ -88,8 +98,7 @@ export const DEFAULT_TEMPLATES: UrlTemplate[] = [
     project: 'Java SE',
     langs: ['java'],
     prefixes: ['Stream.', 'Optional.', 'List.', 'Map.', 'Set.', 'CompletableFuture.'],
-    href: (q) =>
-      'https://docs.oracle.com/en/java/javase/21/docs/api/index.html?q=' + encodeURIComponent(q),
+    href: (q) => 'https://docs.oracle.com/en/java/javase/21/docs/api/index.html?q=' + encodeURIComponent(q),
   },
 ]
 
@@ -105,7 +114,12 @@ export function notASymbol(text: string): string | undefined {
   if (/^(?:net)?\d+\.\d+(?:\.\d+)?[a-z]?$/.test(text)) return 'a version'
   if (/^\w+(?:\.\w+)+:[\w.-]+(?::[\w.<>{}-]+)?$/.test(text)) return 'a dependency coordinate'
   if (/\.(?:tsv|html)$/.test(text)) return 'a filename'
-  if (/\.(py|ts|go|rs|java|kt|kts|scala|cs|fs|fsi|fsproj|properties|cpp|hpp|c|h|lua|rb|swift|md|json|ya?ml|toml|sh)\b/.test(text)) return 'a filename'
+  if (
+    /\.(py|ts|go|rs|java|kt|kts|scala|cs|fs|fsi|fsproj|properties|cpp|hpp|c|h|lua|rb|swift|md|json|ya?ml|toml|sh)\b/.test(
+      text,
+    )
+  )
+    return 'a filename'
   if (/(^|\s)--?[A-Za-z]/.test(text)) return 'a command-line flag'
   if (/[=<>!]=|\s[=<>]\s/.test(text)) return 'an expression, not a reference'
   if (/^new\s/.test(text)) return 'a constructor call'
@@ -116,19 +130,21 @@ export function notASymbol(text: string): string | undefined {
 
 /** Strip call syntax down to a dotted path. */
 export function toPath(text: string): string[] {
-  return text
-    .replace(/^(await|try|new)\s+/, '')
-    .replace(/\(.*$/, '')
-    .replace(/`\d+/g, '')
-    .replace(/->/g, '.')
-    .replace(/::/g, '.')
-    // Lua's method call, `Session:new_window`. Only between two names, so a
-    // Swift selector's labels (already cut with the argument list) and a
-    // `{ key: value }` literal (refused by `notASymbol`) never reach it.
-    .replace(/(\w):(?=[A-Za-z_])/g, '$1.')
-    .replace(/\s+/g, '')
-    .split('.')
-    .filter(Boolean)
+  return (
+    text
+      .replace(/^(await|try|new)\s+/, '')
+      .replace(/\(.*$/, '')
+      .replace(/`\d+/g, '')
+      .replace(/->/g, '.')
+      .replace(/::/g, '.')
+      // Lua's method call, `Session:new_window`. Only between two names, so a
+      // Swift selector's labels (already cut with the argument list) and a
+      // `{ key: value }` literal (refused by `notASymbol`) never reach it.
+      .replace(/(\w):(?=[A-Za-z_])/g, '$1.')
+      .replace(/\s+/g, '')
+      .split('.')
+      .filter(Boolean)
+  )
 }
 
 interface Row {
@@ -198,13 +214,14 @@ export class Resolver {
           this.byMember.set(key, list)
         }
         this.byQualified.set(model.port + ' ' + qualified, row)
-
       }
       // Old anchors remain accepted, including identities that overlap a
       // constructor's native qualified name.
       for (const symbol of model.symbols) {
         this.byQualified.set(model.port + ' ' + (symbol.publicId ?? symbol.id), {
-          port: model.port, symbol, qualified: qualifiedNameOf(symbol),
+          port: model.port,
+          symbol,
+          qualified: qualifiedNameOf(symbol),
         })
       }
     }
@@ -216,12 +233,7 @@ export class Resolver {
    * See `SymbolIndex.addInventory` for why the scope is mandatory in spirit:
    * an unscoped CPython inventory answered for all eight ports.
    */
-  addInventory(
-    project: string,
-    baseUrl: string,
-    entries: InventoryEntry[],
-    langs?: string[],
-  ): void {
+  addInventory(project: string, baseUrl: string, entries: InventoryEntry[], langs?: string[]): void {
     const map = new Map<string, InventoryEntry>()
     for (const e of entries) if (!map.has(e.name)) map.set(e.name, e)
     this.inventories.push({ project, baseUrl: baseUrl.replace(/\/*$/, '/'), entries: map, langs })
@@ -253,9 +265,7 @@ export class Resolver {
    * Rust's three `Error` types — still refuse.
    */
   private static preferTypeOverConstructor(rows: Row[]): Row[] {
-    const types = new Set(
-      rows.filter((r) => TYPE_KINDS.has(r.symbol.kind)).map((r) => r.symbol.id),
-    )
+    const types = new Set(rows.filter((r) => TYPE_KINDS.has(r.symbol.kind)).map((r) => r.symbol.id))
     if (!types.size) return rows
     const kept = rows.filter((r) => !r.symbol.parent || !types.has(r.symbol.parent))
     return kept.length ? kept : rows
@@ -282,8 +292,10 @@ export class Resolver {
     // Unqualified core prose uses the port's primary namespace. A nested
     // effect facade stays addressable through its explicit namespace.
     const primary = this.primary[port]
-    const primaryMember = primary && (!product || product === 'core')
-      ? this.byQualified.get(`${port} ${primary}.${parts.join('.')}`) : undefined
+    const primaryMember =
+      primary && (!product || product === 'core')
+        ? this.byQualified.get(`${port} ${primary}.${parts.join('.')}`)
+        : undefined
     if (primaryMember && primaryMember.symbol.apiScope !== 'internal') {
       return { how: 'scoped', symbol: primaryMember.symbol, port }
     }
@@ -309,7 +321,10 @@ export class Resolver {
       // Prose names a variable after its type; both spellings occur.
       for (const cand of [receiver, receiver[0].toUpperCase() + receiver.slice(1)]) {
         const owners = this.members(port, cand).filter((r) => TYPE_KINDS.has(r.symbol.kind))
-        const scoped = Resolver.preferProduct(candidates.filter((r) => owners.some((o) => r.symbol.parent === o.symbol.id)), product)
+        const scoped = Resolver.preferProduct(
+          candidates.filter((r) => owners.some((o) => r.symbol.parent === o.symbol.id)),
+          product,
+        )
         if (scoped.length === 1) return { how: 'scoped', symbol: scoped[0].symbol, port }
         if (scoped.length > 1) {
           const prefix = this.primary[port]
@@ -328,7 +343,9 @@ export class Resolver {
           .pop()
           ?.trim()
         if (!bare) continue
-        const owner = Resolver.preferProduct(this.members(port, bare), product).find((r) => TYPE_KINDS.has(r.symbol.kind))
+        const owner = Resolver.preferProduct(this.members(port, bare), product).find((r) =>
+          TYPE_KINDS.has(r.symbol.kind),
+        )
         if (!owner) continue
         const hit = local.filter((r) => r.symbol.parent === owner.symbol.id)
         if (hit.length === 1) return { how: 'chained', symbol: hit[0].symbol, port }

@@ -61,7 +61,11 @@ describe('Java callable visibility', () => {
       public enum Mode { SAFE, FAST }
     `)
     expect(symbols.filter((symbol) => symbol.parent).map((symbol) => symbol.name)).toEqual([
-      'read', 'value', 'create', 'SAFE', 'FAST',
+      'read',
+      'value',
+      'create',
+      'SAFE',
+      'FAST',
     ])
   })
 })
@@ -79,18 +83,40 @@ describe('Java source-qualified names', () => {
         }
       }
     `)
-    expect(symbols.map(({ id, qualifiedName, namespace, parent }) => ({ id, qualifiedName, namespace, parent }))).toEqual([
+    expect(
+      symbols.map(({ id, qualifiedName, namespace, parent }) => ({ id, qualifiedName, namespace, parent })),
+    ).toEqual([
       { id: 'example.Example', qualifiedName: 'org.org.api.Example', namespace: 'org.org.api', parent: undefined },
-      { id: 'example.Example.Example', qualifiedName: 'org.org.api.Example.Example', namespace: 'org.org.api', parent: 'example.Example' },
-      { id: 'example.Example.Builder', qualifiedName: 'org.org.api.Example.Builder', namespace: 'org.org.api', parent: 'example.Example' },
-      { id: 'example.Example.Builder.Builder', qualifiedName: 'org.org.api.Example.Builder.Builder', namespace: 'org.org.api', parent: 'example.Example.Builder' },
-      { id: 'example.Example.Builder.build', qualifiedName: 'org.org.api.Example.Builder.build', namespace: 'org.org.api', parent: 'example.Example.Builder' },
+      {
+        id: 'example.Example.Example',
+        qualifiedName: 'org.org.api.Example.Example',
+        namespace: 'org.org.api',
+        parent: 'example.Example',
+      },
+      {
+        id: 'example.Example.Builder',
+        qualifiedName: 'org.org.api.Example.Builder',
+        namespace: 'org.org.api',
+        parent: 'example.Example',
+      },
+      {
+        id: 'example.Example.Builder.Builder',
+        qualifiedName: 'org.org.api.Example.Builder.Builder',
+        namespace: 'org.org.api',
+        parent: 'example.Example.Builder',
+      },
+      {
+        id: 'example.Example.Builder.build',
+        qualifiedName: 'org.org.api.Example.Builder.build',
+        namespace: 'org.org.api',
+        parent: 'example.Example.Builder',
+      },
     ])
     expect(moduleOf(symbols.at(-1)!)).toBe('org.org.api')
     expect(qualifiedNameOf(symbols.at(-1)!)).toBe('org.org.api.Example.Builder.build')
 
     const model = { port: 'java' as const, extractor: 'test', symbols }
-    const hrefFor = (symbol: typeof symbols[number]) => `/reference/${symbol.id}/#${symbol.id}`
+    const hrefFor = (symbol: (typeof symbols)[number]) => `/reference/${symbol.id}/#${symbol.id}`
     const index = new SymbolIndex(symbols, hrefFor, 'java')
     const resolver = new Resolver([model])
     for (const symbol of symbols) {
@@ -102,11 +128,16 @@ describe('Java source-qualified names', () => {
     expect(index.resolve('Example', 'class', builder)?.symbol?.id).toBe('example.Example')
     expect(index.resolve('Builder', 'class', builder)?.symbol?.id).toBe('example.Example.Builder')
     const parents = parentInventory(model, hrefFor)
-    expect(parents.find((entry) => entry.name === 'org.org.api.Example.Builder.build')?.uri).toBe(hrefFor(builder).slice(1))
-    expect(parents.find((entry) => entry.name === 'org.org.api.Example.Example')?.uri).toBe(hrefFor(symbols[1]).slice(1))
+    expect(parents.find((entry) => entry.name === 'org.org.api.Example.Builder.build')?.uri).toBe(
+      hrefFor(builder).slice(1),
+    )
+    expect(parents.find((entry) => entry.name === 'org.org.api.Example.Example')?.uri).toBe(
+      hrefFor(symbols[1]).slice(1),
+    )
     const inventory = readInventory(writeInventory(model, { project: 'java', version: 'test', uriFor: hrefFor }))
     expect(inventory.entries.find((entry) => entry.name === builder.id)).toMatchObject({
-      dispname: 'org.org.api.Example.Builder.build', uri: hrefFor(builder),
+      dispname: 'org.org.api.Example.Builder.build',
+      uri: hrefFor(builder),
     })
   })
 
@@ -120,7 +151,11 @@ describe('Java source-qualified names', () => {
   })
 
   it('keeps legacy type links when a constructor has the same canonical spelling', async () => {
-    const symbols = await extract('package example; public class Example { public Example() {} }', false, 'example.Example')
+    const symbols = await extract(
+      'package example; public class Example { public Example() {} }',
+      false,
+      'example.Example',
+    )
     const index = new SymbolIndex(symbols, (symbol) => `/reference/${symbol.id}`, 'java')
     expect(index.resolve('example.Example')?.symbol?.kind).toBe('class')
     // This is the constructor's native name and an existing type's stable id.

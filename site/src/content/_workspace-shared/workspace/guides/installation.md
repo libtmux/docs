@@ -113,7 +113,9 @@ $ WORKSPACE_BIN="$(mktemp -d)"
 ```
 
 ```console
-$ ln -s "$PWD/packages/workspace-cli/dist/main.js" "$WORKSPACE_BIN/tmux-workspace"
+$ ln -s \
+    "$PWD/packages/workspace-cli/dist/main.js" \
+    "$WORKSPACE_BIN/tmux-workspace"
 ```
 
 ```console
@@ -202,7 +204,8 @@ $ ./gradlew --no-daemon --max-workers=2 :libtmux-workspace-cli:installDist
 ```
 
 ```console
-$ export PATH="$PWD/libtmux-workspace-cli/build/install/tmux-workspace/bin:$PATH"
+$ BIN="$PWD/libtmux-workspace-cli/build/install/tmux-workspace/bin"
+$ export PATH="$BIN:$PATH"
 ```
 
 Keep the distribution's `bin` and `lib` directories together. Set `JAVA_HOME`
@@ -228,7 +231,9 @@ $ git checkout --detach FETCH_HEAD
 Use the .NET 10 SDK to build the command:
 
 ```console
-$ dotnet build src/LibTmux.Workspace.Cli/LibTmux.Workspace.Cli.csproj --configuration Release
+$ dotnet build \
+    src/LibTmux.Workspace.Cli/LibTmux.Workspace.Cli.csproj \
+    --configuration Release
 ```
 
 ```console
@@ -236,7 +241,9 @@ $ WORKSPACE_BIN="$(mktemp -d)"
 ```
 
 ```console
-$ ln -s "$PWD/src/LibTmux.Workspace.Cli/bin/Release/net10.0/LibTmux.Workspace.Cli" "$WORKSPACE_BIN/tmux-workspace"
+$ ln -s \
+    "$PWD/src/LibTmux.Workspace.Cli/bin/Release/net10.0/LibTmux.Workspace.Cli" \
+    "$WORKSPACE_BIN/tmux-workspace"
 ```
 
 ```console
@@ -300,7 +307,10 @@ $ git checkout --detach FETCH_HEAD
 Use Swift 6.2 and enable YAML decoding for this walkthrough:
 
 ```console
-$ swift build --force-resolved-versions --traits YAMLWorkspaces --product tmux-workspace
+$ swift build \
+    --force-resolved-versions \
+    --traits YAMLWorkspaces \
+    --product tmux-workspace
 ```
 
 ```console

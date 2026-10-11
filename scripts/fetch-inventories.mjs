@@ -85,7 +85,9 @@ for (const [name, url] of Object.entries(SOURCES)) {
     const { project, entries } = readInventory(bytes)
     writeFileSync(out, bytes)
     writeSidecar(name, bytes)
-    console.log(`fetch-inventories: ${name} -> ${entries.length} entries (${project}) ${(bytes.length / 1024).toFixed(0)} KB`)
+    console.log(
+      `fetch-inventories: ${name} -> ${entries.length} entries (${project}) ${(bytes.length / 1024).toFixed(0)} KB`,
+    )
   } catch (err) {
     console.error(`fetch-inventories: ${name} failed — ${err.message}`)
     failed++

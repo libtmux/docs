@@ -27,7 +27,13 @@ export function proseHref(href: string, root: string, port?: string, version = '
 
 export interface DocsPage {
   id: string
-  data: { port?: string; supportedPorts?: readonly string[]; product?: string; route?: string; aliases?: readonly string[] }
+  data: {
+    port?: string
+    supportedPorts?: readonly string[]
+    product?: string
+    route?: string
+    aliases?: readonly string[]
+  }
 }
 
 /** Path below a port/version root, or the unchanged shared document id. */
@@ -45,11 +51,7 @@ export function docsPath(entry: DocsPage): string {
 }
 
 /** Root builds expose product pages at the same URLs as assembled port builds. */
-export function docsRoutePath(
-  entry: DocsPage,
-  buildPort?: string,
-  defaults: Record<string, string> = {},
-): string {
+export function docsRoutePath(entry: DocsPage, buildPort?: string, defaults: Record<string, string> = {}): string {
   const path = docsPath(entry)
   if (buildPort) return path
   if (!entry.data.port) return tmuxProsePath(path)
@@ -70,7 +72,8 @@ export function sourceGuideRedirects(buildPort?: string, defaults: Record<string
     sourceGuideRedirectsFor(port).map(({ path, target }) => {
       const project = (route: string) => docsRoutePath({ id: route, data: { port, route } }, buildPort, defaults)
       return { path: project(path), target: project(target) }
-    }))
+    }),
+  )
 }
 
 /**
@@ -113,6 +116,8 @@ export function workspaceRedirects(paths: string[]): { path: string; target: str
 /** Old section roots redirect; nested user references have their own content. */
 export function workspaceRedirectPath(path: string, publishedPaths: ReadonlySet<string>): boolean {
   const normalized = path.replace(/\/$/, '')
-  return !publishedPaths.has(normalized)
-    && (/^workspace\/api(?:\/|$)/.test(normalized) || /^workspace\/(?:topics|guides|examples)$/.test(normalized))
+  return (
+    !publishedPaths.has(normalized) &&
+    (/^workspace\/api(?:\/|$)/.test(normalized) || /^workspace\/(?:topics|guides|examples)$/.test(normalized))
+  )
 }

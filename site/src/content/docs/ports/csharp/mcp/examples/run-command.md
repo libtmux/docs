@@ -70,7 +70,8 @@ using ModelContextProtocol.Protocol;
 
 if (OperatingSystem.IsWindows())
 {
-    throw new PlatformNotSupportedException("Use Linux, macOS, or WSL with tmux.");
+    throw new PlatformNotSupportedException(
+        "Use Linux, macOS, or WSL with tmux.");
 }
 
 using CancellationTokenSource deadline = new(TimeSpan.FromSeconds(30));
@@ -98,7 +99,8 @@ try
 
     Dictionary<string, string?> environment =
         StdioClientTransportOptions.GetDefaultEnvironmentVariables();
-    environment["DOTNET_ROOT"] = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+    string? dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+    environment["DOTNET_ROOT"] = dotnetRoot;
     environment["LIBTMUX_SOCKET_PATH"] = socket;
     environment["LIBTMUX_TOOLSETS"] = "inspect,execute";
     environment["LIBTMUX_MCP_WAIT_MAX_SECONDS"] = "5";
@@ -116,7 +118,8 @@ try
     var tools = await client.ListToolsAsync(cancellationToken: token);
     if (!tools.Any(tool => tool.Name == "run_shell_command"))
     {
-        throw new InvalidOperationException("Command execution is not offered.");
+        throw new InvalidOperationException(
+            "Command execution is not offered.");
     }
 
     JsonElement panes = ReadResult(await client.CallToolAsync(
@@ -138,7 +141,8 @@ try
         || result.GetProperty("paneExited").GetBoolean()
         || !result.GetProperty("started").GetBoolean())
     {
-        throw new InvalidOperationException($"Command did not finish: {result}");
+        throw new InvalidOperationException(
+            $"Command did not finish: {result}");
     }
     int status = result.GetProperty("exitStatus").GetInt32();
     if (status != 0)
@@ -153,7 +157,8 @@ try
         || result.GetProperty("linesMissed").GetBoolean()
         || result.GetProperty("anchorLost").GetBoolean())
     {
-        throw new InvalidOperationException($"Incomplete command output: {result}");
+        throw new InvalidOperationException(
+            $"Incomplete command output: {result}");
     }
     Console.WriteLine($"Command exit status: {status}");
     Console.WriteLine("Captured marker: MCP command ready");
@@ -196,7 +201,8 @@ if (stopped)
     }
     catch (Exception error)
     {
-        failures.Add(new IOException("Temporary directory cleanup failed.", error));
+        failures.Add(
+            new IOException("Temporary directory cleanup failed.", error));
     }
 }
 else
@@ -212,7 +218,8 @@ Console.WriteLine("Owned server stopped.");
 
 static JsonElement ReadResult(CallToolResult result)
 {
-    if (result.IsError == true || result.StructuredContent is not JsonElement data)
+    if (result.IsError == true
+        || result.StructuredContent is not JsonElement data)
     {
         throw new InvalidOperationException(JsonSerializer.Serialize(result));
     }

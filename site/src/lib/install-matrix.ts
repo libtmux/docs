@@ -338,12 +338,14 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
     resolve(method) {
       const command = {
         command: method.id === 'bundler' ? 'bundle' : 'libtmux-mcp',
-        args: method.id === 'bundler'
-          ? ['exec', 'libtmux-mcp', '--socket-name', 'libtmux-docs', '--endpoint', 'local']
-          : ['--socket-name', 'libtmux-docs', '--endpoint', 'local'],
-        prereq: method.id === 'bundler'
-          ? 'bundle add libtmux-mcp --version 0.1.0.alpha.1'
-          : 'gem install --version 0.1.0.alpha.1 libtmux-mcp',
+        args:
+          method.id === 'bundler'
+            ? ['exec', 'libtmux-mcp', '--socket-name', 'libtmux-docs', '--endpoint', 'local']
+            : ['--socket-name', 'libtmux-docs', '--endpoint', 'local'],
+        prereq:
+          method.id === 'bundler'
+            ? 'bundle add libtmux-mcp --version 0.1.0.alpha.1'
+            : 'gem install --version 0.1.0.alpha.1 libtmux-mcp',
         note: 'The server borrows an existing named socket. Start it first with `tmux -L libtmux-docs new-session -d`; `--endpoint` is only its public alias.',
       }
       return command
@@ -365,9 +367,10 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
           args: ['-y', '@libtmux/mcp'],
           // npx resolves the package before it reads the exclusion, so a
           // cooldown would hold back @libtmux/mcp itself.
-          note: cooldown.id === 'days'
-            ? 'npx ignores --min-release-age-exclude, so a cooldown here would also hold back the release it runs; this runs without one. The Global install tab applies a cooldown to the server\'s dependencies.'
-            : undefined,
+          note:
+            cooldown.id === 'days'
+              ? "npx ignores --min-release-age-exclude, so a cooldown here would also hold back the release it runs; this runs without one. The Global install tab applies a cooldown to the server's dependencies."
+              : undefined,
         }
       }
       const note = 'The package installs a `libtmux-mcp` binary. Requires Node 22 or newer, or Bun 1.3.14 or newer.'
@@ -384,7 +387,12 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
         }
       }
       if (cooldown.id === 'bypass') {
-        return { command: 'libtmux-mcp', args: [], prereq: 'npm install --global --min-release-age=0 @libtmux/mcp', note }
+        return {
+          command: 'libtmux-mcp',
+          args: [],
+          prereq: 'npm install --global --min-release-age=0 @libtmux/mcp',
+          note,
+        }
       }
       return { command: 'libtmux-mcp', args: [], prereq: 'npm install --global @libtmux/mcp', note }
     },
@@ -552,9 +560,7 @@ function jsonBody(server: ServerCommand): string {
   }
   const env = Object.entries(server.env ?? {})
   if (env.length > 0) {
-    serverLines.push(
-      `${serverIndent}"env": { ${env.map(([k, v]) => `"${k}": "${v}"`).join(', ')} }`,
-    )
+    serverLines.push(`${serverIndent}"env": { ${env.map(([k, v]) => `"${k}": "${v}"`).join(', ')} }`)
   }
   const serverBlock = serverLines.join(',\n')
   return (
@@ -743,8 +749,7 @@ function panelActiveSelectors(spec: ServerSpec): string {
           `[data-mcp-install-client="${client.id}"]` +
           `[data-mcp-install-method="${method.id}"]` +
           `[data-mcp-install-scope="${scope.id}"]`
-        const panel =
-          ` .lm-mcp-install__panel[data-client="${client.id}"][data-method="${method.id}"][data-scope="${scope.id}"]`
+        const panel = ` .lm-mcp-install__panel[data-client="${client.id}"][data-method="${method.id}"][data-scope="${scope.id}"]`
         if (!hasCooldowns) {
           selectors.push(`html${htmlAttrs}${panel}[data-cooldown="off"]`)
           continue

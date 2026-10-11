@@ -27,7 +27,7 @@ export interface HomeExample {
 }
 
 export const HOME_VIEWS = ['concise', 'errors', 'cleanup', 'full'] as const
-export type HomeView = typeof HOME_VIEWS[number]
+export type HomeView = (typeof HOME_VIEWS)[number]
 
 /** Each view is a complete program, including its imports and initialization. */
 export function homeProgram(example: HomeExample, view: HomeView): string {
@@ -37,16 +37,21 @@ export function homeProgram(example: HomeExample, view: HomeView): string {
 }
 
 export function homeCodeColumns(code: string): number {
-  return Math.max(...code.split('\n').map((line) => Array.from(line).reduce(
-    (column, char) => column + (char === '\t' ? 8 - column % 8 : 1), 0,
-  )))
+  return Math.max(
+    ...code
+      .split('\n')
+      .map((line) => Array.from(line).reduce((column, char) => column + (char === '\t' ? 8 - (column % 8) : 1), 0)),
+  )
 }
 
 export const QUICKSTARTS: Partial<Record<string, Quickstart>> = Object.fromEntries(
-  Object.entries(HOME_EXAMPLES).map(([port, complete]) => [port, {
-    lang: complete.lang,
-    code: homeProgram(complete, 'concise').replace(/\n$/, ''),
-    source: `Verified against ${complete.sourceRepository} at ${complete.sourceRevision.slice(0, 12)}.`,
-    complete,
-  }]),
+  Object.entries(HOME_EXAMPLES).map(([port, complete]) => [
+    port,
+    {
+      lang: complete.lang,
+      code: homeProgram(complete, 'concise').replace(/\n$/, ''),
+      source: `Verified against ${complete.sourceRepository} at ${complete.sourceRevision.slice(0, 12)}.`,
+      complete,
+    },
+  ]),
 )

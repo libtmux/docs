@@ -57,41 +57,66 @@ function graph(conformances: [string, string?][]): string[] {
   return [file]
 }
 
-const basesOf = (files: string[]) =>
-  extractSymbolGraph(files).find((s) => s.id === 'Thing')?.extends
+const basesOf = (files: string[]) => extractSymbolGraph(files).find((s) => s.id === 'Thing')?.extends
 
 const compatibleSelectors = [
-  ['LibTmux', 'Server.newSession(named:startDirectory:windowName:width:height:)',
-    'Server.newSession(named:startDirectory:windowName:width:height:environment:shell:)'],
-  ['LibTmux', 'Server.newWindow(in:named:startDirectory:)',
-    'Server.newWindow(in:named:startDirectory:at:environment:shell:)'],
-  ['LibTmux', 'Server.split(_:direction:size:startDirectory:)',
-    'Server.split(_:direction:size:startDirectory:environment:shell:)'],
-  ['LibTmux', 'Server.splitWindow(_:direction:size:startDirectory:)',
-    'Server.splitWindow(_:direction:size:startDirectory:environment:shell:)'],
-  ['TmuxWorkspace', 'PanePlan.init(shellCommands:startDirectory:)',
-    'PanePlan.init(shellCommands:startDirectory:focus:environment:shell:sleepBefore:sleepAfter:)'],
-  ['TmuxWorkspace', 'WindowPlan.init(windowName:startDirectory:layout:panes:)',
-    'WindowPlan.init(windowName:startDirectory:layout:panes:windowIndex:focus:environment:windowShell:)'],
+  [
+    'LibTmux',
+    'Server.newSession(named:startDirectory:windowName:width:height:)',
+    'Server.newSession(named:startDirectory:windowName:width:height:environment:shell:)',
+  ],
+  [
+    'LibTmux',
+    'Server.newWindow(in:named:startDirectory:)',
+    'Server.newWindow(in:named:startDirectory:at:environment:shell:)',
+  ],
+  [
+    'LibTmux',
+    'Server.split(_:direction:size:startDirectory:)',
+    'Server.split(_:direction:size:startDirectory:environment:shell:)',
+  ],
+  [
+    'LibTmux',
+    'Server.splitWindow(_:direction:size:startDirectory:)',
+    'Server.splitWindow(_:direction:size:startDirectory:environment:shell:)',
+  ],
+  [
+    'TmuxWorkspace',
+    'PanePlan.init(shellCommands:startDirectory:)',
+    'PanePlan.init(shellCommands:startDirectory:focus:environment:shell:sleepBefore:sleepAfter:)',
+  ],
+  [
+    'TmuxWorkspace',
+    'WindowPlan.init(windowName:startDirectory:layout:panes:)',
+    'WindowPlan.init(windowName:startDirectory:layout:panes:windowIndex:focus:environment:windowShell:)',
+  ],
 ] as const
 
 function selectorGraph(module: string, ids: string[]) {
   const dir = mkdtempSync(join(tmpdir(), 'symbolgraph-selector-'))
   dirs.push(dir)
   const file = join(dir, `${module}.symbols.json`)
-  writeFileSync(file, JSON.stringify({
-    module: { name: module },
-    symbols: ids.map((id) => ({
-      identifier: { precise: `s:${id}` },
-      kind: { identifier: 'swift.method' },
-      pathComponents: id.split('.'),
-      names: { title: id.split('.').at(-1), subHeading: [{ kind: 'text', spelling: `func ${id}` }] },
-      functionSignature: { parameters: [{ name: 'environment', declarationFragments: [
-        { kind: 'text', spelling: 'environment: [String: String] = [:]' },
-      ] }] },
-      accessLevel: 'public',
-    })),
-  }))
+  writeFileSync(
+    file,
+    JSON.stringify({
+      module: { name: module },
+      symbols: ids.map((id) => ({
+        identifier: { precise: `s:${id}` },
+        kind: { identifier: 'swift.method' },
+        pathComponents: id.split('.'),
+        names: { title: id.split('.').at(-1), subHeading: [{ kind: 'text', spelling: `func ${id}` }] },
+        functionSignature: {
+          parameters: [
+            {
+              name: 'environment',
+              declarationFragments: [{ kind: 'text', spelling: 'environment: [String: String] = [:]' }],
+            },
+          ],
+        },
+        accessLevel: 'public',
+      })),
+    }),
+  )
   return extractSymbolGraph([file])
 }
 
@@ -99,10 +124,13 @@ describe('compatible Swift selectors', () => {
   it.each(compatibleSelectors)('keeps %s %s links with the current declaration', (module, previous, current) => {
     const symbols = selectorGraph(module, [current])
     const [symbol] = symbols
-    expect(symbol).toMatchObject({ id: current, publicId: previous, qualifiedName: current,
-      name: current.split('.').at(-1), signatures: [{ params: [
-        { name: 'environment', type: '[String: String] = [:]' },
-      ] }] })
+    expect(symbol).toMatchObject({
+      id: current,
+      publicId: previous,
+      qualifiedName: current,
+      name: current.split('.').at(-1),
+      signatures: [{ params: [{ name: 'environment', type: '[String: String] = [:]' }] }],
+    })
     const href = `/reference/${pageSlug(symbol.publicId!)}/#${symbol.publicId}`
     expect(href).toBe(`/reference/${pageSlug(previous)}/#${previous}`)
     const index = new SymbolIndex(symbols, () => href, 'swift')
@@ -126,9 +154,7 @@ describe('symbol graph conformances', () => {
   it('names a standard library protocol rather than its USR', () => {
     // The long mangling form: module `s`, length-prefixed name, `P` for
     // protocol. `Copyable` is the same shape but is dropped as implicit.
-    expect(
-      basesOf(graph([['s:s12IdentifiableP', 'Swift.Identifiable']])),
-    ).toEqual(['Identifiable'])
+    expect(basesOf(graph([['s:s12IdentifiableP', 'Swift.Identifiable']]))).toEqual(['Identifiable'])
   })
 
   it('names one mangled with a standard substitution', () => {
@@ -198,14 +224,31 @@ describe('symbol graph source locations', () => {
     dirs.push(dir)
     const file = join(dir, 'Thing.symbols.json')
     const entry = {
-      identifier: { precise: 'generated-init' }, kind: { identifier: 'swift.init' },
-      pathComponents: ['Thing', 'init(from:)'], names: { title: 'init(from:)' }, accessLevel: 'public',
+      identifier: { precise: 'generated-init' },
+      kind: { identifier: 'swift.init' },
+      pathComponents: ['Thing', 'init(from:)'],
+      names: { title: 'init(from:)' },
+      accessLevel: 'public',
     }
-    const located = { ...entry, identifier: { precise: 'declared-init' }, location: { uri: 'file:///Sources/Thing.swift', position: { line: 12 } } }
-    writeFileSync(file, JSON.stringify({
-      symbols: locatedFirst ? [located, entry] : [entry, located],
-      relationships: [{ kind: 'memberOf', source: 'generated-init', target: 'Thing', sourceOrigin: { identifier: 'Decodable-init', displayName: 'Decodable.init(from:)' } }],
-    }))
+    const located = {
+      ...entry,
+      identifier: { precise: 'declared-init' },
+      location: { uri: 'file:///Sources/Thing.swift', position: { line: 12 } },
+    }
+    writeFileSync(
+      file,
+      JSON.stringify({
+        symbols: locatedFirst ? [located, entry] : [entry, located],
+        relationships: [
+          {
+            kind: 'memberOf',
+            source: 'generated-init',
+            target: 'Thing',
+            sourceOrigin: { identifier: 'Decodable-init', displayName: 'Decodable.init(from:)' },
+          },
+        ],
+      }),
+    )
     return file
   }
 
@@ -230,7 +273,14 @@ describe('symbol graph throwing contracts', () => {
   const keyword = (spelling: string) => ({ kind: 'keyword', spelling })
   const text = (spelling: string) => ({ kind: 'text', spelling })
   const type = (spelling: string) => ({ kind: 'typeIdentifier', spelling })
-  const head = [keyword('func'), text(' '), { kind: 'identifier', spelling: 'next' }, text('() '), keyword('async'), text(' ')]
+  const head = [
+    keyword('func'),
+    text(' '),
+    { kind: 'identifier', spelling: 'next' },
+    text('() '),
+    keyword('async'),
+    text(' '),
+  ]
   const returns = [type('Self'), text('.'), type('Element'), text('?')]
   const returned = [text(' -> '), ...returns]
 
@@ -238,18 +288,29 @@ describe('symbol graph throwing contracts', () => {
     const dir = mkdtempSync(join(tmpdir(), 'symbolgraph-throws-'))
     dirs.push(dir)
     const file = join(dir, 'Iterator.symbols.json')
-    writeFileSync(file, JSON.stringify({ symbols: [{
-      identifier: { precise: 'iterator-next' }, kind: { identifier: 'swift.method' },
-      pathComponents: ['Iterator', 'next()'], accessLevel: 'public',
-      names: { title: 'next()', subHeading: fragments },
-      functionSignature: { parameters: [], returns },
-    }] }))
+    writeFileSync(
+      file,
+      JSON.stringify({
+        symbols: [
+          {
+            identifier: { precise: 'iterator-next' },
+            kind: { identifier: 'swift.method' },
+            pathComponents: ['Iterator', 'next()'],
+            accessLevel: 'public',
+            names: { title: 'next()', subHeading: fragments },
+            functionSignature: { parameters: [], returns },
+          },
+        ],
+      }),
+    )
     return extractSymbolGraph([file])[0].signatures[0]
   }
 
   it('records untyped throws without treating the returned type as an error', () => {
     expect(signature([...head, keyword('throws'), ...returned])).toEqual({
-      params: [], returns: 'Self.Element?', raises: [{ type: 'any Error' }],
+      params: [],
+      returns: 'Self.Element?',
+      raises: [{ type: 'any Error' }],
     })
     expect(signature([...head, keyword('throws')]).raises).toEqual([{ type: 'any Error' }])
     expect(signature([...head, ...returned]).raises).toBeUndefined()
@@ -259,20 +320,35 @@ describe('symbol graph throwing contracts', () => {
     ['TmuxError', [type('TmuxError')]],
     ['Self.Failure', [type('Self'), text('.'), type('Failure')]],
     ['any Error', [keyword('any'), text(' '), type('Error')]],
-    ['Failures.Box<(Int, String)>', [type('Failures'), text('.'), type('Box'), text('<('), type('Int'), text(', '), type('String'), text(')>')]],
+    [
+      'Failures.Box<(Int, String)>',
+      [type('Failures'), text('.'), type('Box'), text('<('), type('Int'), text(', '), type('String'), text(')>')],
+    ],
   ] as const)('preserves the complete balanced error type %s', (expected, fragments) => {
-    expect(signature([...head, keyword('throws'), text('('), ...fragments, text(')'), ...returned]).raises)
-      .toEqual([{ type: expected }])
+    expect(signature([...head, keyword('throws'), text('('), ...fragments, text(')'), ...returned]).raises).toEqual([
+      { type: expected },
+    ])
   })
 
   it('does not attribute a throwing callback or returned function to its enclosing function', () => {
-    const callback = [keyword('func'), text(' map(('), type('Element'), text(') '), keyword('throws'), text(' -> '), type('Value'), text(') ')]
+    const callback = [
+      keyword('func'),
+      text(' map(('),
+      type('Element'),
+      text(') '),
+      keyword('throws'),
+      text(' -> '),
+      type('Value'),
+      text(') '),
+    ]
     expect(signature([...callback, ...returned]).raises).toBeUndefined()
-    expect(signature([...callback, keyword('throws'), text('('), type('TmuxError'), text(')'), ...returned]).raises)
-      .toEqual([{ type: 'TmuxError' }])
+    expect(
+      signature([...callback, keyword('throws'), text('('), type('TmuxError'), text(')'), ...returned]).raises,
+    ).toEqual([{ type: 'TmuxError' }])
     expect(signature([...head, text(' -> () '), keyword('throws'), ...returned]).raises).toBeUndefined()
-    expect(signature([...callback, keyword('rethrows'), ...returned]).raises)
-      .toEqual([{ type: 'any Error', doc: 'Conditionally propagates errors (rethrows).' }])
+    expect(signature([...callback, keyword('rethrows'), ...returned]).raises).toEqual([
+      { type: 'any Error', doc: 'Conditionally propagates errors (rethrows).' },
+    ])
   })
 
   it('does not invent a throwing contract from empty, incomplete or Never clauses', () => {
@@ -283,9 +359,13 @@ describe('symbol graph throwing contracts', () => {
 
   it('keeps the integrated iterator and callback wrapper error contracts separate', () => {
     const model = JSON.parse(readFileSync(new URL('../../../site/src/data/api/swift.json', import.meta.url), 'utf8'))
-    const iterator = model.symbols.find((symbol: { id: string }) => symbol.id === 'ControlNotificationStream.Iterator.next()')
-    expect(iterator.signatures.map((signature: { raises: { type: string }[] }) => signature.raises))
-      .toEqual([[{ type: 'Self.Failure' }], [{ type: 'TmuxError' }]])
+    const iterator = model.symbols.find(
+      (symbol: { id: string }) => symbol.id === 'ControlNotificationStream.Iterator.next()',
+    )
+    expect(iterator.signatures.map((signature: { raises: { type: string }[] }) => signature.raises)).toEqual([
+      [{ type: 'Self.Failure' }],
+      [{ type: 'TmuxError' }],
+    ])
     const wrapper = model.symbols.find((symbol: { id: string }) => symbol.id === 'withTmuxError(_:)')
     expect(wrapper.signatures[0].raises).toEqual([{ type: 'TmuxError' }])
   })

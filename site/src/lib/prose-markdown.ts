@@ -14,7 +14,12 @@ interface MarkdownLinkProjection {
 }
 
 /** Add resolved links without reserializing prose or executable examples. */
-export function linkProseMarkdown(raw: string, port?: string, product?: ApiProduct, project: MarkdownLinkProjection = {}): string {
+export function linkProseMarkdown(
+  raw: string,
+  port?: string,
+  product?: ApiProduct,
+  project: MarkdownLinkProjection = {},
+): string {
   const { body, portAt } = resolvePortContent(raw, port)
   const linkApi = !port || PORT_BY_SLUG[port]?.referenceKind !== 'guide'
   const spans = new Set<number>()
@@ -26,7 +31,11 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
       const end = node.position?.end.offset
       if (start !== undefined && end !== undefined) {
         const owner = portAt(start) ?? port
-        edits.push({ start, end, text: rewriteMarkdownLinks(body.slice(start, end), (href: string) => project.authored!(href, owner)) })
+        edits.push({
+          start,
+          end,
+          text: rewriteMarkdownLinks(body.slice(start, end), (href: string) => project.authored!(href, owner)),
+        })
       }
     }
     if (['link', 'linkReference', 'image', 'imageReference', 'code', 'definition'].includes(node.type)) return SKIP
@@ -42,13 +51,21 @@ export function linkProseMarkdown(raw: string, port?: string, product?: ApiProdu
   const link = createProseLinker(product)
   for (const mention of proseMentions(body, PORT_BY_LABEL, portAt)) {
     if (!spans.has(mention.start)) continue
-    const decision = link(mention.text, { pagePort: portAt(mention.start) ?? port ?? mention.port, before: mention.before })
+    const decision = link(mention.text, {
+      pagePort: portAt(mention.start) ?? port ?? mention.port,
+      before: mention.before,
+    })
     if (decision.kind !== 'link') continue
     // Angle destinations preserve balanced punctuation in API slugs.
     const href = (project.resolved?.(decision.href) ?? decision.href).replaceAll('<', '%3C').replaceAll('>', '%3E')
-    edits.push({ start: mention.start, end: mention.end, text: `[${body.slice(mention.start, mention.end)}](<${href}>)` })
+    edits.push({
+      start: mention.start,
+      end: mention.end,
+      text: `[${body.slice(mention.start, mention.end)}](<${href}>)`,
+    })
   }
   let out = body
-  for (const edit of edits.sort((a, b) => b.start - a.start)) out = `${out.slice(0, edit.start)}${edit.text}${out.slice(edit.end)}`
+  for (const edit of edits.sort((a, b) => b.start - a.start))
+    out = `${out.slice(0, edit.start)}${edit.text}${out.slice(edit.end)}`
   return out
 }

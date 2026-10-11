@@ -74,14 +74,23 @@ import { Server } from "libtmux";
 
 const directory = await mkdtemp(join(tmpdir(), "libtmux-query-"));
 const server = new Server({
-  socketPath: join(directory, "tmux.sock"), configFile: "/dev/null", timeoutMs: 5_000,
+  socketPath: join(directory, "tmux.sock"),
+  configFile: "/dev/null",
+  timeoutMs: 5_000,
 });
 const failures: unknown[] = [];
 try {
   const session = await server.newSession({
     name: "work", windowName: "shell", shellCommand: "cat",
   });
-  for (const name of ["app-api", "app-worker", "MyApp-logs", "app-v1-0", "app-beta"]) {
+  const names = [
+    "app-api",
+    "app-worker",
+    "MyApp-logs",
+    "app-v1-0",
+    "app-beta",
+  ];
+  for (const name of names) {
     await session.newWindow({ name, shellCommand: "cat" });
   }
   const { windows } = await server.snapshot();
@@ -115,13 +124,16 @@ try {
 
   const selected = windows.where({ name: { in: ["app-api", "app-worker"] } });
   assert.equal(selected.count(), 2);
-  assert.equal(selected.where({ name: { notIn: ["app-worker"] } }).one().name, "app-api");
-  console.log("membership:", selected.map((window) => window.name).sort().join(", "));
+  const rest = selected.where({ name: { notIn: ["app-worker"] } });
+  assert.equal(rest.one().name, "app-api");
+  const members = selected.map((window) => window.name).sort();
+  console.log("membership:", members.join(", "));
 
   const namesFromConfig = new Set(["shell", "app-beta"]);
   const local = windows.filter((window) => namesFromConfig.has(window.name));
   assert.equal(local.count(), 2);
-  console.log("predicate:", local.map((window) => window.name).sort().join(", "));
+  const picked = local.map((window) => window.name).sort();
+  console.log("predicate:", picked.join(", "));
 } catch (error) {
   failures.push(error);
 } finally {
@@ -129,10 +141,13 @@ try {
     if ((await readdir(directory)).includes("tmux.sock")) await server.kill();
     await rm(directory, { recursive: true });
   } catch (error) {
-    failures.push(new Error(`Cleanup failed; inspect ${directory}`, { cause: error }));
+    const message = `Cleanup failed; inspect ${directory}`;
+    failures.push(new Error(message, { cause: error }));
   }
 }
-if (failures.length > 0) throw new AggregateError(failures, "Query example failed");
+if (failures.length > 0) {
+  throw new AggregateError(failures, "Query example failed");
+}
 ```
 
 ```console
@@ -189,7 +204,9 @@ import { Server, MultipleMatchesError, NoMatchError } from "libtmux";
 
 const directory = await mkdtemp(join(tmpdir(), "libtmux-query-"));
 const server = new Server({
-  socketPath: join(directory, "tmux.sock"), configFile: "/dev/null", timeoutMs: 5_000,
+  socketPath: join(directory, "tmux.sock"),
+  configFile: "/dev/null",
+  timeoutMs: 5_000,
 });
 const failures: unknown[] = [];
 try {
@@ -230,10 +247,13 @@ try {
     if ((await readdir(directory)).includes("tmux.sock")) await server.kill();
     await rm(directory, { recursive: true });
   } catch (error) {
-    failures.push(new Error(`Cleanup failed; inspect ${directory}`, { cause: error }));
+    const message = `Cleanup failed; inspect ${directory}`;
+    failures.push(new Error(message, { cause: error }));
   }
 }
-if (failures.length > 0) throw new AggregateError(failures, "Query example failed");
+if (failures.length > 0) {
+  throw new AggregateError(failures, "Query example failed");
+}
 ```
 
 ```console
@@ -270,7 +290,9 @@ import { Server, MultipleMatchesError } from "libtmux";
 
 const directory = await mkdtemp(join(tmpdir(), "libtmux-query-"));
 const server = new Server({
-  socketPath: join(directory, "tmux.sock"), configFile: "/dev/null", timeoutMs: 5_000,
+  socketPath: join(directory, "tmux.sock"),
+  configFile: "/dev/null",
+  timeoutMs: 5_000,
 });
 const failures: unknown[] = [];
 try {
@@ -300,19 +322,26 @@ try {
   assert.deepEqual(owners, ["guest", "home"]);
   console.log("linked sessions:", owners.join(", "));
 
-  const hasLogs = snapshot.sessions.where({ windows: { some: { name: "logs" } } });
+  const hasLogs = snapshot.sessions.where({
+    windows: { some: { name: "logs" } },
+  });
   assert.equal(hasLogs.count(), 2);
   const onlyLogs = snapshot.sessions.where({
     windows: { some: {}, every: { name: "logs" } },
   });
   assert.equal(onlyLogs.one().name, "home");
-  const noShell = snapshot.sessions.where({ windows: { none: { name: "shell" } } });
+  const noShell = snapshot.sessions.where({
+    windows: { none: { name: "shell" } },
+  });
   assert.equal(noShell.one().name, "home");
-  console.log("some logs:", hasLogs.map((session) => session.name).sort().join(", "));
+  const logHolders = hasLogs.map((session) => session.name).sort();
+  console.log("some logs:", logHolders.join(", "));
   console.log("every window is logs:", onlyLogs.one().name);
   console.log("no shell:", noShell.one().name);
 
-  const guestPanes = snapshot.panes.where({ session: { is: { name: "guest" } } });
+  const guestPanes = snapshot.panes.where({
+    session: { is: { name: "guest" } },
+  });
   assert.equal(guestPanes.count(), 2);
   console.log("panes reached through guest:", guestPanes.count());
 } catch (error) {
@@ -322,10 +351,13 @@ try {
     if ((await readdir(directory)).includes("tmux.sock")) await server.kill();
     await rm(directory, { recursive: true });
   } catch (error) {
-    failures.push(new Error(`Cleanup failed; inspect ${directory}`, { cause: error }));
+    const message = `Cleanup failed; inspect ${directory}`;
+    failures.push(new Error(message, { cause: error }));
   }
 }
-if (failures.length > 0) throw new AggregateError(failures, "Query example failed");
+if (failures.length > 0) {
+  throw new AggregateError(failures, "Query example failed");
+}
 ```
 
 ```console
@@ -359,7 +391,9 @@ import { Server } from "libtmux";
 
 const directory = await mkdtemp(join(tmpdir(), "libtmux-query-"));
 const server = new Server({
-  socketPath: join(directory, "tmux.sock"), configFile: "/dev/null", timeoutMs: 5_000,
+  socketPath: join(directory, "tmux.sock"),
+  configFile: "/dev/null",
+  timeoutMs: 5_000,
 });
 const failures: unknown[] = [];
 try {
@@ -369,11 +403,13 @@ try {
   const before = await server.snapshot();
   await session.newWindow({ name: "logs", shellCommand: "cat" });
   assert.equal(before.windows.exists({ name: "logs" }), false);
-  console.log("old snapshot sees logs:", before.windows.exists({ name: "logs" }));
+  const oldSees = before.windows.exists({ name: "logs" });
+  console.log("old snapshot sees logs:", oldSees);
 
   const after = await server.snapshot();
   assert.equal(after.windows.exists({ name: "logs" }), true);
-  console.log("fresh snapshot sees logs:", after.windows.exists({ name: "logs" }));
+  const freshSees = after.windows.exists({ name: "logs" });
+  console.log("fresh snapshot sees logs:", freshSees);
   const logs = after.windows.one({ name: "logs" });
   await logs.rename("archive");
   assert.equal(logs.name, "logs");
@@ -389,10 +425,13 @@ try {
     if ((await readdir(directory)).includes("tmux.sock")) await server.kill();
     await rm(directory, { recursive: true });
   } catch (error) {
-    failures.push(new Error(`Cleanup failed; inspect ${directory}`, { cause: error }));
+    const message = `Cleanup failed; inspect ${directory}`;
+    failures.push(new Error(message, { cause: error }));
   }
 }
-if (failures.length > 0) throw new AggregateError(failures, "Query example failed");
+if (failures.length > 0) {
+  throw new AggregateError(failures, "Query example failed");
+}
 ```
 
 ```console
@@ -432,7 +471,9 @@ import {
 
 const directory = await mkdtemp(join(tmpdir(), "libtmux-query-"));
 const server = new Server({
-  socketPath: join(directory, "tmux.sock"), configFile: "/dev/null", timeoutMs: 5_000,
+  socketPath: join(directory, "tmux.sock"),
+  configFile: "/dev/null",
+  timeoutMs: 5_000,
 });
 const failures: unknown[] = [];
 try {
@@ -443,7 +484,9 @@ try {
   });
   const document = decodeWhereDocument(JSON.parse(encoded));
   assert.equal(document.model, "session");
-  if (document.model !== "session") throw new Error("Expected session criteria");
+  if (document.model !== "session") {
+    throw new Error("Expected session criteria");
+  }
   const snapshot = await server.snapshot();
   const selected = snapshot.sessions.where(document.where);
   assert.equal(selected.one().name, "prod-api");
@@ -451,7 +494,11 @@ try {
   console.log("wire JSON:", encoded);
 
   try {
-    decodeWhereDocument({ version: 1, model: "session", where: { session_naem: "prod-api" } });
+    decodeWhereDocument({
+      version: 1,
+      model: "session",
+      where: { session_naem: "prod-api" },
+    });
     throw new Error("Expected an unknown field to fail validation");
   } catch (error) {
     if (!(error instanceof QueryValidationError)) throw error;
@@ -474,10 +521,13 @@ try {
     if ((await readdir(directory)).includes("tmux.sock")) await server.kill();
     await rm(directory, { recursive: true });
   } catch (error) {
-    failures.push(new Error(`Cleanup failed; inspect ${directory}`, { cause: error }));
+    const message = `Cleanup failed; inspect ${directory}`;
+    failures.push(new Error(message, { cause: error }));
   }
 }
-if (failures.length > 0) throw new AggregateError(failures, "Query example failed");
+if (failures.length > 0) {
+  throw new AggregateError(failures, "Query example failed");
+}
 ```
 
 ```console
@@ -512,7 +562,9 @@ import { Server } from "libtmux";
 
 const directory = await mkdtemp(join(tmpdir(), "libtmux-query-"));
 const server = new Server({
-  socketPath: join(directory, "tmux.sock"), configFile: "/dev/null", timeoutMs: 5_000,
+  socketPath: join(directory, "tmux.sock"),
+  configFile: "/dev/null",
+  timeoutMs: 5_000,
 });
 const failures: unknown[] = [];
 try {
@@ -549,10 +601,13 @@ try {
     if ((await readdir(directory)).includes("tmux.sock")) await server.kill();
     await rm(directory, { recursive: true });
   } catch (error) {
-    failures.push(new Error(`Cleanup failed; inspect ${directory}`, { cause: error }));
+    const message = `Cleanup failed; inspect ${directory}`;
+    failures.push(new Error(message, { cause: error }));
   }
 }
-if (failures.length > 0) throw new AggregateError(failures, "Query example failed");
+if (failures.length > 0) {
+  throw new AggregateError(failures, "Query example failed");
+}
 ```
 
 ```console

@@ -61,11 +61,14 @@ function textOf(xml: string): string {
 /** Code XML keeps literal whitespace and decodes each entity exactly once. */
 function codeOf(xml: string): string {
   const entities: Record<string, string> = { lt: '<', gt: '>', amp: '&', quot: '"', apos: "'" }
-  return xml.replace(/<[^>]+>/g, '').replace(/&(lt|gt|amp|quot|apos|#\d+|#x[\da-f]+);/gi, (_, entity: string) => {
-    if (entity.startsWith('#x')) return String.fromCodePoint(Number.parseInt(entity.slice(2), 16))
-    if (entity.startsWith('#')) return String.fromCodePoint(Number(entity.slice(1)))
-    return entities[entity]
-  }).trim()
+  return xml
+    .replace(/<[^>]+>/g, '')
+    .replace(/&(lt|gt|amp|quot|apos|#\d+|#x[\da-f]+);/gi, (_, entity: string) => {
+      if (entity.startsWith('#x')) return String.fromCodePoint(Number.parseInt(entity.slice(2), 16))
+      if (entity.startsWith('#')) return String.fromCodePoint(Number(entity.slice(1)))
+      return entities[entity]
+    })
+    .trim()
 }
 
 const syntheticCName = (name: string): boolean => /\[(?:struct|union)\]|__unnamed\d+__|@[\da-f]+/i.test(name)
@@ -73,9 +76,12 @@ const syntheticCName = (name: string): boolean => /\[(?:struct|union)\]|__unname
 /** Doxygen names anonymous C records for identity; those names are not C syntax. */
 function cDisplayName(name: string, kind?: string): string {
   const anonymous = syntheticCName(name)
-  const clean = name.replace(/\[(?:struct|union)\]\.?|__unnamed\d+__|@[\da-f]+/gi, '')
-    .replaceAll('::', '.').replace(/\.{2,}/g, '.').replace(/^\.|\.$/g, '')
-  return anonymous && kind ? clean ? `${clean} (anonymous ${kind})` : `anonymous ${kind}` : clean
+  const clean = name
+    .replace(/\[(?:struct|union)\]\.?|__unnamed\d+__|@[\da-f]+/gi, '')
+    .replaceAll('::', '.')
+    .replace(/\.{2,}/g, '.')
+    .replace(/^\.|\.$/g, '')
+  return anonymous && kind ? (clean ? `${clean} (anonymous ${kind})` : `anonymous ${kind}`) : clean
 }
 
 /** Reconstruct C declaration syntax from Doxygen's native declaration fields. */
@@ -85,12 +91,16 @@ function cDeclaration(block: string, nativeKind: string, name: string): string |
   const initializer = codeOf(tag(block, 'initializer') ?? '')
   if (nativeKind !== 'enum' && (syntheticCName(name) || syntheticCName(type))) return undefined
   if (nativeKind === 'enum') {
-    const values = [...block.matchAll(/<enumvalue([\s\S]*?)<\/enumvalue>/g)].map((match) =>
-      `${codeOf(tag(match[1], 'name') ?? '')}${tag(match[1], 'initializer') ? ` ${codeOf(tag(match[1], 'initializer') ?? '')}` : ''}`)
+    const values = [...block.matchAll(/<enumvalue([\s\S]*?)<\/enumvalue>/g)].map(
+      (match) =>
+        `${codeOf(tag(match[1], 'name') ?? '')}${tag(match[1], 'initializer') ? ` ${codeOf(tag(match[1], 'initializer') ?? '')}` : ''}`,
+    )
     return `enum${name.startsWith('@') ? '' : ` ${name}`} { ${values.join(', ')} };`
   }
   if (nativeKind === 'define') {
-    const parameters = [...block.matchAll(/<param>([\s\S]*?)<\/param>/g)].map((match) => codeOf(tag(match[1], 'defname') ?? ''))
+    const parameters = [...block.matchAll(/<param>([\s\S]*?)<\/param>/g)].map((match) =>
+      codeOf(tag(match[1], 'defname') ?? ''),
+    )
     return `#define ${name}${parameters.length ? `(${parameters.join(', ')})` : ''}${initializer ? ` ${initializer}` : ''}`
   }
   const pointer = /\(\s*(\*+(?:\s*(?:const|volatile|restrict)\b)*)\s*\)/
@@ -162,8 +172,7 @@ const afterEnumValues = (block: string): string => {
   return last === -1 ? block : block.slice(last)
 }
 
-const attr = (xml: string, name: string): string | undefined =>
-  new RegExp(`${name}="([^"]*)"`).exec(xml)?.[1]
+const attr = (xml: string, name: string): string | undefined => new RegExp(`${name}="([^"]*)"`).exec(xml)?.[1]
 
 /** C source locations distinguish a declaration from a same-file definition.
  * Doxygen 1.18 sometimes keeps a preceding callback's `line` for function
@@ -171,21 +180,27 @@ const attr = (xml: string, name: string): string | undefined =>
  * declaration. A cross-file body belongs to a different member record, and
  * repeated extern declarations are not definitions.
  */
-function cLocation(location: string, fallback: string, externDeclaration = false): {
-  source: { file: string; line: number }; isDefinition: boolean
+function cLocation(
+  location: string,
+  fallback: string,
+  externDeclaration = false,
+): {
+  source: { file: string; line: number }
+  isDefinition: boolean
 } {
   const field = (name: string) => new RegExp(`(?:^|\\s)${name}="([^"]*)"`).exec(location)?.[1]
   const file = field('file') ?? fallback
   const declaredLine = Number(field('line') ?? 1)
   const bodyLine = Number(field('bodystart'))
-  const isDefinition = !externDeclaration && field('bodyfile') === file
-    && Number.isInteger(bodyLine) && bodyLine > 0
+  const isDefinition = !externDeclaration && field('bodyfile') === file && Number.isInteger(bodyLine) && bodyLine > 0
   return { source: { file, line: isDefinition ? bodyLine : declaredLine }, isDefinition }
 }
 
 /** Programlisting is native linked source, not a runtime or complete call graph. */
 function cCalls(
-  documents: { xml: string }[], nativeIds: Map<string, string>, seen: Map<string, ApiSymbol>,
+  documents: { xml: string }[],
+  nativeIds: Map<string, string>,
+  seen: Map<string, ApiSymbol>,
   onDiagnostic?: (message: string) => void,
 ): void {
   const plain = (xml: string) => codeOf(`_${xml.replace(/<sp\s*\/>/g, ' ')}_`).slice(1, -1)
@@ -196,34 +211,49 @@ function cCalls(
     if (!listing) continue
     const lines = [...listing.matchAll(/<codeline\b([^>]*)>([\s\S]*?)<\/codeline>/g)].map((match) => {
       // Comments and literal contents cannot contain callable source tokens.
-      const codeXml = match[2].replace(/<highlight class="(?:comment|stringliteral|charliteral)">([\s\S]*?)<\/highlight>/g,
-        (part) => ' '.repeat(plain(part).length))
+      const codeXml = match[2].replace(
+        /<highlight class="(?:comment|stringliteral|charliteral)">([\s\S]*?)<\/highlight>/g,
+        (part) => ' '.repeat(plain(part).length),
+      )
       const refs = [...codeXml.matchAll(/<ref\b([^>]*)>([\s\S]*?)<\/ref>/g)].map((ref) => ({
-        id: nativeIds.get(attr(ref[1], 'refid') ?? ''), name: plain(ref[2]),
+        id: nativeIds.get(attr(ref[1], 'refid') ?? ''),
+        name: plain(ref[2]),
         start: plain(codeXml.slice(0, ref.index)).length,
         end: plain(codeXml.slice(0, ref.index + ref[0].length)).length,
       }))
-      return { line: Number(attr(match[1], 'lineno')), code: plain(codeXml), refs,
-        preprocessor: /<highlight class="preprocessor">/.test(codeXml) }
+      return {
+        line: Number(attr(match[1], 'lineno')),
+        code: plain(codeXml),
+        refs,
+        preprocessor: /<highlight class="preprocessor">/.test(codeXml),
+      }
     })
     const bodies = [...xml.matchAll(/<memberdef([\s\S]*?)<\/memberdef>/g)].flatMap((member) => {
       if (attr(member[1], 'kind') !== 'function') return []
       const symbol = seen.get(nativeIds.get(attr(member[1], 'id') ?? '') ?? '')
       const location = /<location\b([^>]*)\/>/.exec(member[1])?.[1] ?? ''
-      const start = Number(attr(location, 'bodystart')), end = Number(attr(location, 'bodyend'))
-      return symbol && attr(location, 'bodyfile') === file && start > 0 && end >= start
-        ? [{ symbol, start, end }] : []
+      const start = Number(attr(location, 'bodystart')),
+        end = Number(attr(location, 'bodyend'))
+      return symbol && attr(location, 'bodyfile') === file && start > 0 && end >= start ? [{ symbol, start, end }] : []
     })
     for (const { symbol, start, end } of bodies) {
       // Native body spans have line precision only. Two definitions can share
       // a line, so its first brace is not necessarily this function's body.
-      const conflicts = bodies.filter((body) => body.symbol.id !== symbol.id
-        && body.start <= end && start <= body.end)
+      const conflicts = bodies.filter((body) => body.symbol.id !== symbol.id && body.start <= end && start <= body.end)
       if (conflicts.length) {
-        onDiagnostic?.(`Omitted ambiguous function body ${symbol.id} at ${file}:${start}-${end}; overlaps ${conflicts.map((body) => body.symbol.id).sort().join(', ')}`)
+        onDiagnostic?.(
+          `Omitted ambiguous function body ${symbol.id} at ${file}:${start}-${end}; overlaps ${conflicts
+            .map((body) => body.symbol.id)
+            .sort()
+            .join(', ')}`,
+        )
         continue
       }
-      let opened = false, parentheses = 0, brackets = 0, braces = 1, continuation = false
+      let opened = false,
+        parentheses = 0,
+        brackets = 0,
+        braces = 1,
+        continuation = false
       for (const row of lines) {
         if (row.line < start || row.line > end) continue
         if (row.preprocessor || continuation) {
@@ -241,15 +271,26 @@ function cCalls(
         let limit = row.code.length
         for (let i = offset; i < row.code.length; i++) {
           if (row.code[i] === '{') braces++
-          else if (row.code[i] === '}' && --braces === 0) { limit = i; break }
+          else if (row.code[i] === '}' && --braces === 0) {
+            limit = i
+            break
+          }
         }
         const macro = row.refs.some((ref) => ref.id && seen.get(ref.id)?.modifiers.includes('macro'))
         for (const ref of row.refs) {
           const target = ref.id ? seen.get(ref.id) : undefined
-          if (macro || parentheses !== 0 || brackets !== 0 || ref.start < offset
-            || ref.end > limit || target?.kind !== 'function' || target.name !== ref.name
-            || (target.modifiers.includes('static') && target.source.file !== file)
-            || !/^\s*\(/.test(row.code.slice(ref.end))) continue
+          if (
+            macro ||
+            parentheses !== 0 ||
+            brackets !== 0 ||
+            ref.start < offset ||
+            ref.end > limit ||
+            target?.kind !== 'function' ||
+            target.name !== ref.name ||
+            (target.modifiers.includes('static') && target.source.file !== file) ||
+            !/^\s*\(/.test(row.code.slice(ref.end))
+          )
+            continue
           const prefix = row.code.slice(offset, ref.start)
           // Deliberately bounded: a direct statement, return, first condition,
           // or assignment RHS. Nested/continued expressions and macro arguments
@@ -257,10 +298,14 @@ function cCalls(
           const expression = /^\s*(?:return\s*\(*\s*|(?:if|while|switch)\s*\(\s*!?\s*)?$/.test(prefix)
           const assignment = !/[();{}]/.test(prefix) && /(?<![=!<>])=(?!=)\s*$/.test(prefix)
           if (!expression && !assignment) continue
-          const references = symbol.references ??= []
+          const references = (symbol.references ??= [])
           let edge = references.find((entry) => entry.kind === 'call' && entry.target === target.id)
-          if (!edge) { edge = { target: target.id, kind: 'call', sites: [] }; references.push(edge) }
-          if (!edge.sites!.some((site) => site.file === file && site.line === row.line)) edge.sites!.push({ file, line: row.line })
+          if (!edge) {
+            edge = { target: target.id, kind: 'call', sites: [] }
+            references.push(edge)
+          }
+          if (!edge.sites!.some((site) => site.file === file && site.line === row.line))
+            edge.sites!.push({ file, line: row.line })
         }
         for (const char of row.code.slice(offset, limit)) {
           if (char === '(') parentheses++
@@ -274,7 +319,8 @@ function cCalls(
   }
   for (const symbol of seen.values()) {
     symbol.references?.sort((a, b) => a.kind.localeCompare(b.kind) || a.target.localeCompare(b.target))
-    for (const edge of symbol.references ?? []) edge.sites?.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line)
+    for (const edge of symbol.references ?? [])
+      edge.sites?.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line)
   }
 }
 
@@ -355,9 +401,7 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
   const definitionIds = new Set<string>()
   const pendingTypes = new Map<string, string[]>()
 
-  const files = readdirSync(xmlDir).filter(
-    (f) => f.endsWith('.xml') && f !== 'index.xml' && f !== 'Doxyfile.xml',
-  )
+  const files = readdirSync(xmlDir).filter((f) => f.endsWith('.xml') && f !== 'index.xml' && f !== 'Doxyfile.xml')
 
   const documents = files.sort().map((file) => ({ file, xml: readFileSync(join(xmlDir, file), 'utf8') }))
   if (c) {
@@ -386,7 +430,7 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
     const owner = normalizeCppName(textOf(tag(xml, 'compoundname') ?? ''))
     if (!owner) continue
 
-    const ownerId = c ? nativeIds.get(compoundId) ?? owner : owner
+    const ownerId = c ? (nativeIds.get(compoundId) ?? owner) : owner
     if (kind && compound[1] !== 'namespace') {
       // A compound's own descriptions sit at the end of `<compounddef>`, after
       // every `<sectiondef>` and immediately before `<location>`. Taking the
@@ -410,17 +454,19 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
         const sym: ApiSymbol = {
           id: ownerId,
           publicId: ownerId,
-          ...(c ? { qualifiedName: cDisplayName(owner, kind), namespace: '', parent: compoundParents.get(compoundId) } : {}),
+          ...(c
+            ? { qualifiedName: cDisplayName(owner, kind), namespace: '', parent: compoundParents.get(compoundId) }
+            : {}),
           name: c ? cDisplayName(cppUnqualifiedName(owner), kind) : cppUnqualifiedName(owner),
           kind,
           modifiers: [],
-          signatures: c && !owner.includes('::') && !syntheticCName(owner) ? [{ raw: `${kind} ${owner};`, params: [] }] : [],
-          doc:
-            brief || detail
-              ? { summary: brief, body: detail || undefined }
-              : undefined,
+          signatures:
+            c && !owner.includes('::') && !syntheticCName(owner) ? [{ raw: `${kind} ${owner};`, params: [] }] : [],
+          doc: brief || detail ? { summary: brief, body: detail || undefined } : undefined,
           extends: bases.length ? bases : undefined,
-          source: c ? cLocation(ownLocation, file).source : { file: location?.[1] ?? file, line: Number(location?.[2] ?? 1) },
+          source: c
+            ? cLocation(ownLocation, file).source
+            : { file: location?.[1] ?? file, line: Number(location?.[2] ?? 1) },
         }
         seen.set(ownerId, sym)
         symbols.push(sym)
@@ -443,16 +489,25 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
       // share one identity; static declarations remain local to their file.
       const local = attr(block, 'static') === 'yes' || nativeKind === 'define' || name.startsWith('@')
       const id = c
-        ? parent ? `${parent}::${name}` : `c:${nativeKind}:${local ? `${owner}:` : ''}${name}`
+        ? parent
+          ? `${parent}::${name}`
+          : `c:${nativeKind}:${local ? `${owner}:` : ''}${name}`
         : `${parent ?? owner}::${name}`
       const nativeId = attr(block, 'id')
       if (c && nativeId) nativeIds.set(nativeId, id)
       const nativeLocation = /<location\b([^>]*)\/>/.exec(block)?.[1] ?? ''
-      const { source: nativeSource, isDefinition } = cLocation(nativeLocation, file,
-        attr(block, 'extern') === 'yes' && !tag(block, 'initializer'))
+      const { source: nativeSource, isDefinition } = cLocation(
+        nativeLocation,
+        file,
+        attr(block, 'extern') === 'yes' && !tag(block, 'initializer'),
+      )
       const sourceFile = nativeSource.file
       if (c) {
-        pendingTypes.set(id, [...(pendingTypes.get(id) ?? []), codeOf(tag(block, 'type') ?? ''), codeOf(tag(block, 'argsstring') ?? '')])
+        pendingTypes.set(id, [
+          ...(pendingTypes.get(id) ?? []),
+          codeOf(tag(block, 'type') ?? ''),
+          codeOf(tag(block, 'argsstring') ?? ''),
+        ])
         const refs = pendingReferences.get(id) ?? []
         for (const typeBlock of block.matchAll(/<type>([\s\S]*?)<\/type>/g)) {
           for (const ref of typeBlock[1].matchAll(/<ref\b([^>]*)>([\s\S]*?)<\/ref>/g)) {
@@ -483,7 +538,9 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
         attr(block, 'kind') === 'function'
           ? {
               params: paramsOf(block, paramDocs(block), c),
-              ...(c ? { raw: `${codeOf(tag(block, 'definition') ?? '')}${codeOf(tag(block, 'argsstring') ?? '')}` } : {}),
+              ...(c
+                ? { raw: `${codeOf(tag(block, 'definition') ?? '')}${codeOf(tag(block, 'argsstring') ?? '')}` }
+                : {}),
               returns: returnType || undefined,
               returnsDoc: returnDoc || undefined,
             }
@@ -516,18 +573,24 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
       const sym: ApiSymbol = {
         id,
         publicId: id,
-        ...(c ? { qualifiedName: parent ? cDisplayName(`${owner}::${name}`, syntheticCName(name) ? nativeKind : undefined) : cDisplayName(name, nativeKind), namespace: '' } : {}),
+        ...(c
+          ? {
+              qualifiedName: parent
+                ? cDisplayName(`${owner}::${name}`, syntheticCName(name) ? nativeKind : undefined)
+                : cDisplayName(name, nativeKind),
+              namespace: '',
+            }
+          : {}),
         name: c ? cDisplayName(name, /^(struct|union|enum)\b/.exec(returnType)?.[1] ?? nativeKind) : name,
         kind: memberKind === 'method' && !parent ? 'function' : memberKind,
         modifiers: c && nativeKind === 'define' ? [...modifiersOf(block), 'macro'] : modifiersOf(block),
         parent,
         signatures: signature ? [signature] : c ? [{ raw: cDeclaration(block, nativeKind, name), params: [] }] : [],
         type: signature ? undefined : returnType || undefined,
-        ...(c && tag(block, 'initializer') ? { value: codeOf(tag(block, 'initializer') ?? '').replace(/^=\s*/, '') } : {}),
-        doc:
-          brief || detail
-            ? { summary: brief, body: detail || undefined }
-            : undefined,
+        ...(c && tag(block, 'initializer')
+          ? { value: codeOf(tag(block, 'initializer') ?? '').replace(/^=\s*/, '') }
+          : {}),
+        doc: brief || detail ? { summary: brief, body: detail || undefined } : undefined,
         source: c ? nativeSource : { file: location?.[1] ?? file, line: Number(location?.[2] ?? 1) },
       }
       if (c && isDefinition) definitionIds.add(id)
@@ -552,18 +615,28 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
           const valueSym: ApiSymbol = {
             id: valueId,
             publicId: valueId,
-            ...(c ? { qualifiedName: valueName, namespace: '', value: codeOf(tag(value, 'initializer') ?? '').replace(/^=\s*/, '') || undefined } : {}),
+            ...(c
+              ? {
+                  qualifiedName: valueName,
+                  namespace: '',
+                  value: codeOf(tag(value, 'initializer') ?? '').replace(/^=\s*/, '') || undefined,
+                }
+              : {}),
             name: valueName,
             // No `variant` kind exists, and a named member of an enum is
             // what a constant is — the same choice the tree-sitter specs make.
             kind: 'constant',
             modifiers: [],
             parent: id,
-            signatures: c ? [{ raw: `${valueName}${tag(value, 'initializer') ? ` ${codeOf(tag(value, 'initializer') ?? '')}` : ''}`, params: [] }] : [],
-            doc:
-              valueBrief || valueDetail
-                ? { summary: valueBrief, body: valueDetail || undefined }
-                : undefined,
+            signatures: c
+              ? [
+                  {
+                    raw: `${valueName}${tag(value, 'initializer') ? ` ${codeOf(tag(value, 'initializer') ?? '')}` : ''}`,
+                    params: [],
+                  },
+                ]
+              : [],
+            doc: valueBrief || valueDetail ? { summary: valueBrief, body: valueDetail || undefined } : undefined,
             source: c ? { file: sourceFile } : { file: location?.[1] ?? file, line: Number(location?.[2] ?? 1) },
           }
           if (c && attr(value, 'id')) nativeIds.set(attr(value, 'id')!, valueId)
@@ -585,9 +658,15 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
         // Preserve that uncertainty instead of claiming a compiler call edge.
         const kind = ref.kind
         const related = seen.get(target)!
-        if (kind === 'reference' && related.kind === 'function'
-          && related.modifiers.includes('static') && related.source.file !== symbol.source.file) {
-          options.onDiagnostic?.(`Omitted cross-file static reference ${symbol.id} -> ${target} (${ref.nativeId}); ${symbol.source.file} -> ${related.source.file}`)
+        if (
+          kind === 'reference' &&
+          related.kind === 'function' &&
+          related.modifiers.includes('static') &&
+          related.source.file !== symbol.source.file
+        ) {
+          options.onDiagnostic?.(
+            `Omitted cross-file static reference ${symbol.id} -> ${target} (${ref.nativeId}); ${symbol.source.file} -> ${related.source.file}`,
+          )
           continue
         }
         unique.set(`${kind}:${target}`, { target, kind })
@@ -596,19 +675,34 @@ export function extractDoxygen(xmlDir: string, sourceRoot = '', options: Doxygen
       // Doxygen omits a ref when a C tag and a function share the name.
       // An explicit tag keyword resolves in C's tag namespace, never to the
       // same-named ordinary function or typedef.
-      const types = [...(pendingTypes.get(symbol.id) ?? []), symbol.type, ...symbol.signatures.flatMap((signature) => [signature.returns, ...signature.params.map((param) => param.type)])]
-      for (const type of types) for (const match of (type ?? '').matchAll(/\b(struct|union|enum)\s+([A-Za-z_]\w*)/g)) {
-        const target = `c:${match[1]}:${match[2]}`
-        if (!seen.has(target) || target === symbol.id) continue
-        unique.set(`type:${target}`, { target, kind: 'type' })
-        ;(symbol.imports ??= {})[match[2]] = target
-      }
-      if (unique.size) symbol.references = [...unique.values()].sort((a, b) => a.kind.localeCompare(b.kind) || a.target.localeCompare(b.target))
-      const displayType = (type: string | undefined) => type && syntheticCName(type)
-        ? `anonymous ${/\b(struct|union|enum)\b/.exec(type)?.[1] ?? 'type'}` : type
+      const types = [
+        ...(pendingTypes.get(symbol.id) ?? []),
+        symbol.type,
+        ...symbol.signatures.flatMap((signature) => [
+          signature.returns,
+          ...signature.params.map((param) => param.type),
+        ]),
+      ]
+      for (const type of types)
+        for (const match of (type ?? '').matchAll(/\b(struct|union|enum)\s+([A-Za-z_]\w*)/g)) {
+          const target = `c:${match[1]}:${match[2]}`
+          if (!seen.has(target) || target === symbol.id) continue
+          unique.set(`type:${target}`, { target, kind: 'type' })
+          ;(symbol.imports ??= {})[match[2]] = target
+        }
+      if (unique.size)
+        symbol.references = [...unique.values()].sort(
+          (a, b) => a.kind.localeCompare(b.kind) || a.target.localeCompare(b.target),
+        )
+      const displayType = (type: string | undefined) =>
+        type && syntheticCName(type) ? `anonymous ${/\b(struct|union|enum)\b/.exec(type)?.[1] ?? 'type'}` : type
       if (symbol.type) symbol.type = displayType(symbol.type)
       for (const signature of symbol.signatures) {
-        if (syntheticCName(signature.returns ?? '') || signature.params.some((param) => syntheticCName(param.type ?? ''))) delete signature.raw
+        if (
+          syntheticCName(signature.returns ?? '') ||
+          signature.params.some((param) => syntheticCName(param.type ?? ''))
+        )
+          delete signature.raw
         if (signature.returns) signature.returns = displayType(signature.returns)
         for (const param of signature.params) if (param.type) param.type = displayType(param.type)
       }

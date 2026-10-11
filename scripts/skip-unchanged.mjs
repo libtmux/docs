@@ -57,13 +57,17 @@ function parseArgs(argv) {
 export function unchanged(files, objects, prefix, policySince) {
   const since = Date.parse(policySince)
   const remote = new Map(objects.map((object) => [object.Key, object]))
-  return files.filter(({ path, size, md5 }) => {
-    const object = remote.get(`${prefix}${path}`)
-    return object !== undefined
-      && object.Size === size
-      && object.ETag.replaceAll('"', '') === md5
-      && Date.parse(object.LastModified) >= since
-  }).map(({ path }) => path)
+  return files
+    .filter(({ path, size, md5 }) => {
+      const object = remote.get(`${prefix}${path}`)
+      return (
+        object !== undefined &&
+        object.Size === size &&
+        object.ETag.replaceAll('"', '') === md5 &&
+        Date.parse(object.LastModified) >= since
+      )
+    })
+    .map(({ path }) => path)
 }
 
 function localFiles(directory) {
@@ -81,11 +85,22 @@ function localFiles(directory) {
 }
 
 function remoteObjects(bucket, prefix) {
-  const out = execFileSync('aws', [
-    's3api', 'list-objects-v2', '--bucket', bucket, '--prefix', prefix,
-    '--query', 'Contents[].{Key: Key, ETag: ETag, Size: Size, LastModified: LastModified}',
-    '--output', 'json',
-  ], { encoding: 'utf8', maxBuffer: 1 << 30 })
+  const out = execFileSync(
+    'aws',
+    [
+      's3api',
+      'list-objects-v2',
+      '--bucket',
+      bucket,
+      '--prefix',
+      prefix,
+      '--query',
+      'Contents[].{Key: Key, ETag: ETag, Size: Size, LastModified: LastModified}',
+      '--output',
+      'json',
+    ],
+    { encoding: 'utf8', maxBuffer: 1 << 30 },
+  )
   // An empty prefix lists as `null`, not `[]`.
   return JSON.parse(out || 'null') ?? []
 }
@@ -97,7 +112,9 @@ function main() {
   const files = localFiles(directory)
   const skipped = unchanged(files, remoteObjects(options.bucket, options.prefix), options.prefix, options.policySince)
   for (const path of skipped) utimesSync(join(directory, path), 0, 0)
-  process.stderr.write(`skip-unchanged: ${skipped.length} of ${files.length} file(s) unchanged, ${files.length - skipped.length} to upload\n`)
+  process.stderr.write(
+    `skip-unchanged: ${skipped.length} of ${files.length} file(s) unchanged, ${files.length - skipped.length} to upload\n`,
+  )
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main()

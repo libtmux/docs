@@ -71,9 +71,7 @@ const idsOf = (page) => {
   return ids.get(page)
 }
 
-const pattern = all
-  ? /href="([^"#]*)(?:#([^"]*))?"/g
-  : /href="([^"#]*)#([^"]+)"\s+class="api-mention"/g
+const pattern = all ? /href="([^"#]*)(?:#([^"]*))?"/g : /href="([^"#]*)#([^"]+)"\s+class="api-mention"/g
 
 /**
  * A URI scheme, which means the link leaves the site.
@@ -108,9 +106,13 @@ function resolveHref(fromPage, href) {
 
 let checked = 0
 const broken = []
-const recordBrokenLink = (page, path, anchor, why) => broken.push({
-  page, path: copyText(path), anchor: copyText(anchor), why,
-})
+const recordBrokenLink = (page, path, anchor, why) =>
+  broken.push({
+    page,
+    path: copyText(path),
+    anchor: copyText(anchor),
+    why,
+  })
 for (const page of pages) {
   const html = readFileSync(join(root, page), 'utf8')
   for (const m of html.matchAll(pattern)) {
@@ -130,8 +132,11 @@ for (const page of pages) {
     // A cache-busting query is not part of the path on a static site.
     const clean = path.replace(/\?.*$/, '')
     const resolved = resolveHref(page, clean)
-    const target = !clean ? page
-      : clean.endsWith('/') || resolved === '' ? `${resolved}/index.html`.replace(/^\//, '') : resolved
+    const target = !clean
+      ? page
+      : clean.endsWith('/') || resolved === ''
+        ? `${resolved}/index.html`.replace(/^\//, '')
+        : resolved
     const targetIds = idsOf(target)
     if (targetIds === undefined) recordBrokenLink(page, path, anchor, 'no page')
     else if (anchor && !targetIds.has(anchor)) recordBrokenLink(page, path, anchor, 'no anchor')
@@ -164,8 +169,7 @@ for (const [key, { count, from }] of targets.slice(0, 30)) {
 if (targets.length > 30) console.log(`  ... and ${targets.length - 30} more targets`)
 if (vendored.length && broken.length && ours.length === 0) {
   console.log(
-    '\nall of them come from a vendored generator\'s own output; ' +
-      'reported, but not this build\'s to fail on',
+    "\nall of them come from a vendored generator's own output; " + "reported, but not this build's to fail on",
   )
 }
 process.exit(ours.length ? 1 : 0)

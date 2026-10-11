@@ -7,13 +7,15 @@ import { allExtractions, seed, symbolsOfKind } from '../src/db'
 vi.mock('../src/db/paths', async (original) => {
   const { fileURLToPath } = await import('node:url')
   return {
-    ...await original<typeof import('../src/db/paths')>(),
+    ...(await original<typeof import('../src/db/paths')>()),
     MODEL_DIR: fileURLToPath(new URL('./fixtures/api/', import.meta.url)),
   }
 })
 
 const temporary: string[] = []
-afterAll(() => { for (const path of temporary) rmSync(path, { recursive: true, force: true }) })
+afterAll(() => {
+  for (const path of temporary) rmSync(path, { recursive: true, force: true })
+})
 
 /**
  * A version that leaves the manifest leaves the store.

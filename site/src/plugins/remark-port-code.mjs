@@ -94,8 +94,13 @@ export function resolvePortCode(body, port, authoredPort, link = (href) => href)
       if (dropping) continue
       out.push(line)
       if (fence.replaced) out.push(readFence(owner, meta, 'Markdown export'))
-    } else if (fence && marker && marker[1][0] === fence.marker
-      && marker[1].length >= fence.length && !marker[2].trim()) {
+    } else if (
+      fence &&
+      marker &&
+      marker[1][0] === fence.marker &&
+      marker[1].length >= fence.length &&
+      !marker[2].trim()
+    ) {
       if (!fence.dropping) out.push(line)
       fence = undefined
     } else if (!fence?.dropping && !fence?.replaced) {
@@ -108,7 +113,9 @@ export function resolvePortCode(body, port, authoredPort, link = (href) => href)
 /** Rewrite authored destinations while preserving labels and literal inline code. */
 export function rewriteMarkdownLinks(text, link) {
   return text
-    .replace(/(`+).*?\1|(\]\()(<[^<>\n]*>|[^\s)]+)(?=[\s)])/g, (all, code, prefix, href) => code ? all : `${prefix}${destination(href)}`)
+    .replace(/(`+).*?\1|(\]\()(<[^<>\n]*>|[^\s)]+)(?=[\s)])/g, (all, code, prefix, href) =>
+      code ? all : `${prefix}${destination(href)}`,
+    )
     .replace(/^( {0,3}\[[^\]]+\]:\s*)(<[^<>\n]*>|\S+)/gm, (_all, prefix, href) => `${prefix}${destination(href)}`)
   function destination(href) {
     return href.startsWith('<') && href.endsWith('>') ? `<${link(href.slice(1, -1))}>` : link(href)
@@ -166,7 +173,6 @@ export function remarkPortCode() {
       if (meta.file && owner) {
         node.value = readFence(owner, meta, file?.path)
       }
-
     })
 
     for (const [parent, node] of removals) {
@@ -187,8 +193,11 @@ export function readFence(owner, meta, pagePath) {
   // Assembly refreshes the cache with git show at the documented revision.
   // Reading a nearby working tree here would silently replace those bytes.
   let source = cached?.content
-  if (process.env.LIBTMUX_DOCS_PORT === owner && process.env.LIBTMUX_DOCS_SOURCE_SHA
-      && cached?.revision !== process.env.LIBTMUX_DOCS_SOURCE_SHA) {
+  if (
+    process.env.LIBTMUX_DOCS_PORT === owner &&
+    process.env.LIBTMUX_DOCS_SOURCE_SHA &&
+    cached?.revision !== process.env.LIBTMUX_DOCS_SOURCE_SHA
+  ) {
     throw new Error(`${pagePath ?? 'page'}: ${owner}:${meta.file} does not match the selected source revision`)
   }
 

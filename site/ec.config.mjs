@@ -22,9 +22,7 @@ export default defineEcConfig({
   shiki: { langs: [tmuxUsage, ...bash, tmuxShell, tmuxConfig], langAlias: { sbt: 'scala', tmux: 'tmux-config' } },
   useDarkModeMediaQuery: false,
   themeCssSelector: (theme) =>
-    theme.name === 'github-light'
-      ? '[data-theme-mode]:not([data-theme-mode="dark"])'
-      : '[data-theme-mode="dark"]',
+    theme.name === 'github-light' ? '[data-theme-mode]:not([data-theme-mode="dark"])' : '[data-theme-mode="dark"]',
   styleOverrides: {
     borderRadius: '0.375rem',
     borderWidth: '1px',

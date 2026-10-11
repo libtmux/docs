@@ -17,20 +17,26 @@ function fixture(file: string, code: string) {
 
 describe('native JVM declarations', () => {
   it('links Scala type parameters and extension receivers to their declarations', async () => {
-    const root = fixture('Box.scala', `package example
+    const root = fixture(
+      'Box.scala',
+      `package example
 class Box[F[_], +A <: Other](val value: A) {
   def read: F[A] = TODO
 }
 extension [F[_]](self: Box[F, String]) {
   def map[B](value: B): F[B] = TODO
 }
-`)
+`,
+    )
     const model = await extractJvm('scala', [root])
     const box = model.symbols.find((s) => s.id === 'example.Box')!
     const read = model.symbols.find((s) => s.id === 'example.Box.read')!
     const map = model.symbols.find((s) => s.id === 'example.Box.map')!
     expect(box.signatures[0].typeParams).toEqual(['F', 'A'])
-    expect(map.signatures[0]).toMatchObject({ typeParams: ['F', 'B'], receiver: { name: 'self', type: 'Box[F, String]' } })
+    expect(map.signatures[0]).toMatchObject({
+      typeParams: ['F', 'B'],
+      receiver: { name: 'self', type: 'Box[F, String]' },
+    })
     const index = new SymbolIndex(model.symbols, (symbol) => `#${symbol.id}`, 'scala')
     expect(index.resolve('F', 'class', read)?.href).toBe('#example.Box')
     expect(index.resolve('B', 'class', map)?.href).toBe('#example.Box.map')
@@ -42,27 +48,37 @@ extension [F[_]](self: Box[F, String]) {
     expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
   })
   it('links the types in an overload while leaving its bindings plain', async () => {
-    const root = fixture('Server.scala', `package example
+    const root = fixture(
+      'Server.scala',
+      `package example
 class Server
 class Window
 class WindowId
 extension (self: Server) {
   def windows(id: WindowId): Vector[Window] = TODO
 }
-`)
+`,
+    )
     const { symbols } = await extractJvm('scala', [root])
     const method = symbols.find((s) => s.name === 'windows')!
     const index = new SymbolIndex(symbols, (symbol) => `#${symbol.id}`, 'scala')
     const signature = method.signatures[0]
     const spans = index.linkType(signature.raw!, method, signature)
-    expect(spans.filter((span) => span.link).map((span) => span.text)).toEqual(['Server', 'WindowId', 'Vector', 'Window'])
+    expect(spans.filter((span) => span.link).map((span) => span.text)).toEqual([
+      'Server',
+      'WindowId',
+      'Vector',
+      'Window',
+    ])
     expect(spans.map((span) => span.text).join('')).toBe(signature.raw)
     expect(index.resolve('id', 'any', method)?.href).toContain('.parameter.id')
   })
   it.each(['kotlin', 'scala'] as const)('keeps %s links outside generic code', async (port) => {
     const doc = port === 'kotlin' ? '[the server][Handle]' : '[[Handle the server]]'
-    const root = fixture(port === 'kotlin' ? 'Handle.kt' : 'Handle.scala',
-      'package example\n/** Uses `Execution[F]` and ' + doc + '. */\nclass Handle\n')
+    const root = fixture(
+      port === 'kotlin' ? 'Handle.kt' : 'Handle.scala',
+      'package example\n/** Uses `Execution[F]` and ' + doc + '. */\nclass Handle\n',
+    )
     const { symbols } = await extractJvm(port, [root])
     const summary = symbols[0]!.doc!.summary
     expect(summary).toContain('`Execution[F]`')
@@ -76,7 +92,9 @@ extension (self: Server) {
   })
 
   it('collects Kotlin constructor properties, companion members and generated extensions', async () => {
-    const root = fixture('Pane.kt', `package example
+    const root = fixture(
+      'Pane.kt',
+      `package example
 
 /** A pane in one server. */
 public class Pane internal constructor(internal val java: JavaPane, public val server: Server) {
@@ -95,21 +113,34 @@ public suspend fun Pane.capture(trim: Boolean = true): List<String> = TODO()
 
 /** Read scrollback too. */
 public suspend fun Pane.capture(start: Int): List<String> = TODO()
-`)
-    writeFileSync(join(root, 'Fields.kt'), `package example.query
+`,
+    )
+    writeFileSync(
+      join(root, 'Fields.kt'),
+      `package example.query
 import example.Pane as KotlinPane
 
 /** The pane id. */
 public val KotlinPane.Companion.id: TextField<JavaPane>
     get() = TODO()
-`)
+`,
+    )
     const { symbols } = await extractJvm('kotlin', [root])
-    expect(symbols.map((s) => s.id)).toEqual(expect.arrayContaining([
-      'example.Pane', 'example.Pane.server', 'example.Pane.Companion',
-      'example.Pane.Companion.open', 'example.Pane.Companion.id', 'example.Pane.capture',
-    ]))
+    expect(symbols.map((s) => s.id)).toEqual(
+      expect.arrayContaining([
+        'example.Pane',
+        'example.Pane.server',
+        'example.Pane.Companion',
+        'example.Pane.Companion.open',
+        'example.Pane.Companion.id',
+        'example.Pane.capture',
+      ]),
+    )
     expect(symbols.some((s) => /\.java$|\.implementation$/.test(s.id))).toBe(false)
-    expect(symbols.find((s) => s.id === 'example.Pane')!.signatures[0]).toMatchObject({ raw: 'public class Pane', params: [] })
+    expect(symbols.find((s) => s.id === 'example.Pane')!.signatures[0]).toMatchObject({
+      raw: 'public class Pane',
+      params: [],
+    })
     const capture = symbols.find((s) => s.id === 'example.Pane.capture')!
     const index = new SymbolIndex(symbols, (symbol) => `#${symbol.id}`, 'kotlin')
     const signature = capture.signatures[0]
@@ -122,13 +153,16 @@ public val KotlinPane.Companion.id: TextField<JavaPane>
     expect(capture.signatures[0]).toMatchObject({
       raw: 'public suspend fun Pane.capture(trim: Boolean = true): List<String>',
       params: [{ name: 'trim', type: 'Boolean', default: 'true', doc: 'remove trailing spaces' }],
-      returns: 'List<String>', returnsDoc: 'the captured rows',
+      returns: 'List<String>',
+      returnsDoc: 'the captured rows',
     })
     expect(symbols.find((s) => s.id === 'example.Pane.Companion.id')!.parent).toBe('example.Pane.Companion')
   })
 
   it('retains Scala 3 opaque companions, extension receivers, givens and enum cases', async () => {
-    const root = fixture('Pane.scala', `package example
+    const root = fixture(
+      'Pane.scala',
+      `package example
 
 /** A pane handle. */
 opaque type Pane = JavaPane
@@ -161,7 +195,8 @@ object Fields {
   /** The command field used to build a predicate. */
   def command: TextField[JavaPane] = TODO
 }
-`)
+`,
+    )
     const { symbols } = await extractJvm('scala', [root])
     const pane = symbols.find((s) => s.id === 'example.Pane')!
     expect(pane.kind).toBe('typealias')
@@ -169,37 +204,57 @@ object Fields {
     expect(pane.modifiers).not.toContain('overload')
     expect(symbols.some((s) => s.name === 'wrap')).toBe(false)
     expect(symbols.find((s) => s.id === 'example.Pane.id')!.signatures[0]).toMatchObject({
-      raw: 'extension (self: Pane)\ndef id: String', returns: 'String',
+      raw: 'extension (self: Pane)\ndef id: String',
+      returns: 'String',
     })
     expect(symbols.find((s) => s.id === 'example.Pane.capture')!.parent).toBe('example.Pane')
-    expect(symbols.map((s) => s.id)).toEqual(expect.arrayContaining([
-      'example.Pane.given_CanEqual_Pane_Pane', 'example.Missing.NoMatch', 'example.Missing.Several',
-    ]))
-    expect(symbols.find((s) => s.id === 'example.Missing.Several')!.signatures[0].params)
-      .toEqual([{ name: 'count', type: 'Int', doc: undefined }])
-    expect(symbols.find((s) => s.id === 'example.Box')!.signatures[0])
-      .toMatchObject({ raw: 'class Box[T]', params: [] })
+    expect(symbols.map((s) => s.id)).toEqual(
+      expect.arrayContaining([
+        'example.Pane.given_CanEqual_Pane_Pane',
+        'example.Missing.NoMatch',
+        'example.Missing.Several',
+      ]),
+    )
+    expect(symbols.find((s) => s.id === 'example.Missing.Several')!.signatures[0].params).toEqual([
+      { name: 'count', type: 'Int', doc: undefined },
+    ])
+    expect(symbols.find((s) => s.id === 'example.Box')!.signatures[0]).toMatchObject({
+      raw: 'class Box[T]',
+      params: [],
+    })
     expect(symbols.some((s) => s.id === 'example.Box.get')).toBe(true)
-    expect(symbols.find((s) => s.id === 'example.Box.server'))
-      .toMatchObject({ kind: 'property', parent: 'example.Box', signatures: [{ returns: 'Pane' }] })
+    expect(symbols.find((s) => s.id === 'example.Box.server')).toMatchObject({
+      kind: 'property',
+      parent: 'example.Box',
+      signatures: [{ returns: 'Pane' }],
+    })
     expect(symbols.some((s) => s.id === 'example.Box.value')).toBe(false)
-    expect(symbols.find((s) => s.id === 'example.Pane.command'))
-      .toMatchObject({ parent: 'example.Pane', exportedFrom: 'example.Fields.command',
-        signatures: [{ raw: 'def command: TextField[JavaPane]', returns: 'TextField[JavaPane]' }] })
+    expect(symbols.find((s) => s.id === 'example.Pane.command')).toMatchObject({
+      parent: 'example.Pane',
+      exportedFrom: 'example.Fields.command',
+      signatures: [{ raw: 'def command: TextField[JavaPane]', returns: 'TextField[JavaPane]' }],
+    })
   })
 
   it('keeps a Scala using clause separate from the extension receiver', async () => {
-    const root = fixture('Handle.scala', `package example
+    const root = fixture(
+      'Handle.scala',
+      `package example
 class Handle[F[_]]
 extension [F[_]](self: Handle[F])(using F: Effect[F]) {
   def capture: F[String] = TODO
 }
-`)
+`,
+    )
     const { symbols } = await extractJvm('scala', [root])
-    expect(symbols.find((symbol) => symbol.id === 'example.Handle.capture'))
-      .toMatchObject({ parent: 'example.Handle', signatures: [{
-        raw: 'extension [F[_]](self: Handle[F])(using F: Effect[F])\ndef capture: F[String]',
-      }] })
+    expect(symbols.find((symbol) => symbol.id === 'example.Handle.capture')).toMatchObject({
+      parent: 'example.Handle',
+      signatures: [
+        {
+          raw: 'extension [F[_]](self: Handle[F])(using F: Effect[F])\ndef capture: F[String]',
+        },
+      ],
+    })
   })
 
   it.each(['kotlin', 'scala'] as const)('rejects broken public %s syntax', async (port) => {

@@ -36,8 +36,12 @@ export function nativeShellContext(): NativeShellContext | undefined {
   const file = process.env.LIBTMUX_DOCS_NATIVE_CONTEXT
   if (!file) return undefined
   const context: NativeShellContext = JSON.parse(readFileSync(file, 'utf8'))
-  if (context.schema !== 1 || context.port !== process.env.LIBTMUX_DOCS_PORT ||
-      context.version !== process.env.LIBTMUX_DOCS_VERSION || context.base !== `${process.env.LIBTMUX_DOCS_BASE}api/`) {
+  if (
+    context.schema !== 1 ||
+    context.port !== process.env.LIBTMUX_DOCS_PORT ||
+    context.version !== process.env.LIBTMUX_DOCS_VERSION ||
+    context.base !== `${process.env.LIBTMUX_DOCS_BASE}api/`
+  ) {
     throw new Error('Native context does not match the Astro build identity')
   }
   return context

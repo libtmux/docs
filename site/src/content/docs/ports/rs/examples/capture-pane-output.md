@@ -40,9 +40,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .build()?;
 
     let captured = timeout(Duration::from_secs(5), async {
-        let session = server
-            .new_session(NewSessionOptions::new("capture").command("env ENV=/dev/null sh"))
-            .await?;
+        let options = NewSessionOptions::new("capture")
+            .command("env ENV=/dev/null sh");
+        let session = server.new_session(options).await?;
         let panes = session.panes().await?;
         let pane = panes.first().ok_or("the session has no pane")?;
         pane.send_line("printf '\\nlibtmux capture ready\\n'").await?;

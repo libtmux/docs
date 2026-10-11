@@ -24,8 +24,10 @@ Fetch the source revision used by this guide and build its distribution:
 
 ```console
 $ git init libtmux-source && \
-    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \
-    git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6 && \
+    git -C libtmux-source remote add origin \
+      https://github.com/libtmux/libtmux-java.git && \
+    git -C libtmux-source fetch --depth=1 origin \
+      842228310449e879ebcaa3f910597757c9dbffd6 && \
     git -C libtmux-source checkout --detach FETCH_HEAD && \
     ./libtmux-source/gradlew --no-daemon --max-workers=2 \
     -p libtmux-source :libtmux-mcp:installDist
@@ -71,8 +73,9 @@ tmux -S "$directory/s" -f /dev/null \
     set-environment -g ENV '' \; \
     set-environment -g BASH_ENV '' \; \
     new-session -d -s mcp-example 'exec /bin/cat'
+dist="$project/libtmux-source/libtmux-mcp/build/install/libtmux-mcp"
 LIBTMUX_TMUX_CONFIG=/dev/null LIBTMUX_TOOLSETS= LIBTMUX_TOOLS=list_sessions \
-    "$project/libtmux-source/libtmux-mcp/build/install/libtmux-mcp/bin/libtmux-mcp" \
+    "$dist/bin/libtmux-mcp" \
     --socket "$directory/s" --tmux tmux
 ```
 

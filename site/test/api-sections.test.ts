@@ -4,22 +4,36 @@ import { apiEntryFields, apiEntrySections, apiMemberGroups, relatedApiTypes } fr
 import { API_MODELS } from '../src/lib/api-models'
 
 const symbol = (id: string, overrides: Partial<ApiSymbol> = {}): ApiSymbol => ({
-  id, name: id.split('.').at(-1)!, kind: 'class', modifiers: [], signatures: [],
-  source: { file: 'example.ts', line: 1 }, ...overrides,
+  id,
+  name: id.split('.').at(-1)!,
+  kind: 'class',
+  modifiers: [],
+  signatures: [],
+  source: { file: 'example.ts', line: 1 },
+  ...overrides,
 })
 
 describe('reference page navigation', () => {
   it('preserves distinct overload fields and identifies which calls they describe', () => {
-    const method = symbol('Server.session', { kind: 'method', signatures: [
-      { params: [{ name: 'value', type: 'Expr', doc: 'Match exactly one session.' }],
-        returnsDoc: 'The matching session.', raises: [{ type: 'CardinalityError', doc: 'Zero or multiple matches.' }] },
-      { params: [{ name: 'value', type: 'string', doc: 'Look up a session name.' }],
-        returnsDoc: 'The named session or null.' },
-      { params: [{ name: 'id', type: 'SessionId' }] },
-    ] })
+    const method = symbol('Server.session', {
+      kind: 'method',
+      signatures: [
+        {
+          params: [{ name: 'value', type: 'Expr', doc: 'Match exactly one session.' }],
+          returnsDoc: 'The matching session.',
+          raises: [{ type: 'CardinalityError', doc: 'Zero or multiple matches.' }],
+        },
+        {
+          params: [{ name: 'value', type: 'string', doc: 'Look up a session name.' }],
+          returnsDoc: 'The named session or null.',
+        },
+        { params: [{ name: 'id', type: 'SessionId' }] },
+      ],
+    })
     const fields = apiEntryFields(method, 'kotlin')
     expect(fields.params.map((param) => [param.name, param.type, param.doc])).toEqual([
-      ['value', 'Expr', 'Match exactly one session.'], ['value', 'string', 'Look up a session name.'],
+      ['value', 'Expr', 'Match exactly one session.'],
+      ['value', 'string', 'Look up a session name.'],
       ['id', 'SessionId', undefined],
     ])
     expect(fields.returns).toEqual([
@@ -29,7 +43,11 @@ describe('reference page navigation', () => {
     expect(fields.raises).toEqual([
       { type: 'CardinalityError', doc: 'Zero or multiple matches.', overloads: ['session(value) [overload 1]'] },
     ])
-    expect(apiEntrySections(method, 'kotlin').map((section) => section.label)).toEqual(['Parameters', 'Returns', 'Errors'])
+    expect(apiEntrySections(method, 'kotlin').map((section) => section.label)).toEqual([
+      'Parameters',
+      'Returns',
+      'Errors',
+    ])
   })
 
   it('treats the Python implementation docstring as documentation for every overload', () => {
@@ -44,14 +62,15 @@ describe('reference page navigation', () => {
   it('distinguishes Swift overloads without duplicating its name parentheses', () => {
     const next = API_MODELS.swift.symbols.find((entry) => entry.id === 'ControlNotificationStream.Iterator.next()')!
     const fields = apiEntryFields(next, 'swift')
-    expect(fields.raises.map((entry) => entry.overloads)).toEqual([
-      ['next() [overload 1]'], ['next() [overload 2]'],
-    ])
+    expect(fields.raises.map((entry) => entry.overloads)).toEqual([['next() [overload 1]'], ['next() [overload 2]']])
   })
 
   it('renders a shared field once without an unnecessary overload qualifier', () => {
-    const common = { params: [{ name: 'value', type: 'string', doc: 'The name.' }],
-      returnsDoc: 'The matching session.', raises: [{ type: 'TransportError', doc: 'The server is unavailable.' }] }
+    const common = {
+      params: [{ name: 'value', type: 'string', doc: 'The name.' }],
+      returnsDoc: 'The matching session.',
+      raises: [{ type: 'TransportError', doc: 'The server is unavailable.' }],
+    }
     const method = symbol('Server.session', { signatures: [common, { ...common, returns: 'Session?' }] })
     const fields = apiEntryFields(method, 'kotlin')
     expect(fields.params).toHaveLength(1)
@@ -75,7 +94,10 @@ describe('reference page navigation', () => {
       symbol('Server.sessions', { kind: 'property' }),
       symbol('Server.panes', { kind: 'property' }),
       symbol('Server.listPanes', { kind: 'method', modifiers: ['deprecated'] }),
-      symbol('Server.create', { kind: 'method', doc: { summary: 'Create a session.', examples: [{ code: 'create()', lang: 'ts' }] } }),
+      symbol('Server.create', {
+        kind: 'method',
+        doc: { summary: 'Create a session.', examples: [{ code: 'create()', lang: 'ts' }] },
+      }),
     ].sort(compareMembers(signals))
     const groups = apiMemberGroups(members, signals)
     expect(groups[0].members.map((member) => member.name)).toEqual(['sessions', 'windows', 'panes'])
@@ -94,16 +116,21 @@ describe('reference page navigation', () => {
     expect(relatedApiTypes(member, [], index, owner)).toEqual([owner])
   })
 
-  it.each(['py', 'ts', 'java', 'kotlin', 'scala', 'csharp'])('groups %s parent objects before its other members', (port) => {
-    const signals = memberSignals(port)
-    const owner = API_MODELS[port].symbols.find((entry) => entry.name === 'Pane' && entry.kind === 'class')!
-    const members = API_MODELS[port].symbols.filter((entry) => entry.parent === owner.id).sort(compareMembers(signals))
-    const groups = apiMemberGroups(members, signals)
-    expect(groups[0].id).toBe('api-parent-objects')
-    expect(groups[0].label).toBe('Parent objects')
-    expect(groups[0].members.map((member) => member.name.toLowerCase())).toEqual(
-      ['py', 'ts', 'csharp'].includes(port) ? ['window', 'session', 'server'] : ['window', 'server'],
-    )
-    expect(groups.flatMap((group) => group.members)).toEqual(members)
-  })
+  it.each(['py', 'ts', 'java', 'kotlin', 'scala', 'csharp'])(
+    'groups %s parent objects before its other members',
+    (port) => {
+      const signals = memberSignals(port)
+      const owner = API_MODELS[port].symbols.find((entry) => entry.name === 'Pane' && entry.kind === 'class')!
+      const members = API_MODELS[port].symbols
+        .filter((entry) => entry.parent === owner.id)
+        .sort(compareMembers(signals))
+      const groups = apiMemberGroups(members, signals)
+      expect(groups[0].id).toBe('api-parent-objects')
+      expect(groups[0].label).toBe('Parent objects')
+      expect(groups[0].members.map((member) => member.name.toLowerCase())).toEqual(
+        ['py', 'ts', 'csharp'].includes(port) ? ['window', 'session', 'server'] : ['window', 'server'],
+      )
+      expect(groups.flatMap((group) => group.members)).toEqual(members)
+    },
+  )
 })

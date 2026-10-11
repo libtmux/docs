@@ -67,7 +67,8 @@ using ModelContextProtocol.Protocol;
 
 if (OperatingSystem.IsWindows())
 {
-    throw new PlatformNotSupportedException("Use Linux, macOS, or WSL with tmux.");
+    throw new PlatformNotSupportedException(
+        "Use Linux, macOS, or WSL with tmux.");
 }
 
 using CancellationTokenSource deadline = new(TimeSpan.FromSeconds(30));
@@ -95,7 +96,8 @@ try
 
     Dictionary<string, string?> environment =
         StdioClientTransportOptions.GetDefaultEnvironmentVariables();
-    environment["DOTNET_ROOT"] = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+    string? dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+    environment["DOTNET_ROOT"] = dotnetRoot;
     environment["LIBTMUX_SOCKET_PATH"] = socket;
     environment["LIBTMUX_TOOLSETS"] = "inspect";
 
@@ -118,7 +120,8 @@ try
 
     ReadResourceResult resource = await client.ReadResourceAsync(
         "tmux://capabilities", cancellationToken: token);
-    TextResourceContents text = (TextResourceContents)resource.Contents.Single();
+    TextResourceContents text =
+        (TextResourceContents)resource.Contents.Single();
     using JsonDocument capabilities = JsonDocument.Parse(text.Text);
     string?[] selection = capabilities.RootElement.GetProperty("toolsets")
         .EnumerateArray().Select(value => value.GetString()).ToArray();
@@ -130,7 +133,8 @@ try
 
     CallToolResult result = await client.CallToolAsync(
         "list_sessions", cancellationToken: token);
-    if (result.IsError == true || result.StructuredContent is not JsonElement data)
+    if (result.IsError == true
+        || result.StructuredContent is not JsonElement data)
     {
         throw new InvalidOperationException(JsonSerializer.Serialize(result));
     }
@@ -181,7 +185,8 @@ if (stopped)
     }
     catch (Exception error)
     {
-        failures.Add(new IOException("Temporary directory cleanup failed.", error));
+        failures.Add(
+            new IOException("Temporary directory cleanup failed.", error));
     }
 }
 else

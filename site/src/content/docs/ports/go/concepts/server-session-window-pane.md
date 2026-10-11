@@ -66,7 +66,8 @@ trap 'exit 1' HUP INT TERM
 
 unset TMUX TMUX_PANE
 export LIBTMUX_SOCKET_PATH="$socket"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
+"$binary" -S "$socket" -f /dev/null \
+    new-session -d -s work-one -n editor /bin/cat
 "$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
 "$@"
 "$binary" -S "$socket" has-session -t '=work-one'
@@ -130,7 +131,10 @@ func run() error {
 	if socket == "" {
 		return errors.New("run this program with run.sh")
 	}
-	server, err := tmux.NewServer(tmux.ServerOptions{SocketPath: socket, ConfigFile: "/dev/null"})
+	server, err := tmux.NewServer(tmux.ServerOptions{
+		SocketPath: socket,
+		ConfigFile: "/dev/null",
+	})
 	if err != nil {
 		return err
 	}
@@ -138,13 +142,17 @@ func run() error {
 	defer cancel()
 
 	session, err := server.NewSession(ctx, tmux.NewSessionRequest{
-		Name: "tools", WindowName: "editor", Command: "/bin/cat", Width: 100, Height: 30,
+		Name:       "tools",
+		WindowName: "editor",
+		Command:    "/bin/cat",
+		Width:      100,
+		Height:     30,
 	})
 	if err != nil {
 		return fmt.Errorf("create tools session: %w", err)
 	}
 	if _, captured := session.Windows(); captured {
-		return errors.New("a newly created session unexpectedly includes window relations")
+		return errors.New("a new session unexpectedly includes windows")
 	}
 	window, err := session.NewWindow(ctx, tmux.NewWindowRequest{
 		Name: tmux.Ptr("logs"), Command: "/bin/cat",
@@ -152,7 +160,8 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("create logs window: %w", err)
 	}
-	if _, err := window.SplitPane(ctx, tmux.SplitPaneRequest{Command: "/bin/cat"}); err != nil {
+	split := tmux.SplitPaneRequest{Command: "/bin/cat"}
+	if _, err := window.SplitPane(ctx, split); err != nil {
 		return fmt.Errorf("split logs window: %w", err)
 	}
 
@@ -169,8 +178,12 @@ func run() error {
 		return err
 	}
 	if len(sessions) != 3 || len(windows) != 4 || len(panes) != 5 {
-		return fmt.Errorf("unexpected counts: %d sessions, %d windows, %d panes",
-			len(sessions), len(windows), len(panes))
+		return fmt.Errorf(
+			"unexpected counts: %d sessions, %d windows, %d panes",
+			len(sessions),
+			len(windows),
+			len(panes),
+		)
 	}
 	fmt.Println("server: 3 sessions, 4 windows, 5 panes")
 
@@ -246,7 +259,10 @@ func run() error {
 	if socket == "" {
 		return errors.New("run this program with run.sh")
 	}
-	server, err := tmux.NewServer(tmux.ServerOptions{SocketPath: socket, ConfigFile: "/dev/null"})
+	server, err := tmux.NewServer(tmux.ServerOptions{
+		SocketPath: socket,
+		ConfigFile: "/dev/null",
+	})
 	if err != nil {
 		return err
 	}
@@ -257,7 +273,9 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	if len(before.Sessions()) != 2 || len(before.Windows()) != 2 || len(before.Panes()) != 2 {
+	if len(before.Sessions()) != 2 ||
+		len(before.Windows()) != 2 ||
+		len(before.Panes()) != 2 {
 		return errors.New("expected the initial two-session fixture")
 	}
 	var editor tmux.Window
@@ -295,7 +313,7 @@ func run() error {
 	oldName, oldOK := editor.Name()
 	newName, newOK := renamed.Name()
 	if !oldOK || !newOK || oldName != "editor" || newName != "renamed" {
-		return errors.New("rename should return a new record without changing the old one")
+		return errors.New("rename should leave the old record unchanged")
 	}
 	after, err := server.Snapshot(ctx)
 	if err != nil {
@@ -309,7 +327,12 @@ func run() error {
 	if !ok || currentName != "renamed" {
 		return errors.New("fresh snapshot missed the rename")
 	}
-	fmt.Printf("captured: %s; returned: %s; fresh: %s\n", oldName, newName, currentName)
+	fmt.Printf(
+		"captured: %s; returned: %s; fresh: %s\n",
+		oldName,
+		newName,
+		currentName,
+	)
 	return nil
 }
 ```

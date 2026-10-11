@@ -68,7 +68,8 @@ not disposable:
 
 ```csharp
 await using OwnedSessionScope session = await server.CreateOwnedSessionAsync();
-await using OwnedWindowScope window = await session.Value.CreateOwnedWindowAsync();
+await using OwnedWindowScope window =
+    await session.Value.CreateOwnedWindowAsync();
 
 await window.Value.SendTextAsync("echo hello");
 // window, then session, killed on the way out
@@ -188,9 +189,9 @@ func temporarySession(ctx context.Context, server tmux.Server) (err error) {
         return err
     }
     defer func() {
-        cleanup, cancel := context.WithTimeout(context.Background(), time.Second)
+        done, cancel := context.WithTimeout(context.Background(), time.Second)
         defer cancel()
-        err = errors.Join(err, session.Kill(cleanup))
+        err = errors.Join(err, session.Kill(done))
     }()
     _, err = session.SearchWindows(ctx, nil)
     return err

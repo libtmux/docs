@@ -299,7 +299,9 @@ export function compileNav(nav: PortNav, symbols: ApiSymbol[], ctx: MatchContext
     if (id in unsettled) diagnostics.staleUnsettled.push(id)
     // A parent and its own child both claiming is nesting working, not
     // ambiguity; two unrelated buckets claiming is the CapturePaneRequest case.
-    const roots = claimed.filter((n) => !claimed.some((o) => o !== n && n.path.join('/').startsWith(`${o.path.join('/')}/`)))
+    const roots = claimed.filter(
+      (n) => !claimed.some((o) => o !== n && n.path.join('/').startsWith(`${o.path.join('/')}/`)),
+    )
     if (roots.length > 1) {
       diagnostics.ambiguous.push({ id, buckets: roots.map((r) => r.bucket.id) })
     }

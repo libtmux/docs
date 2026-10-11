@@ -14,23 +14,42 @@ vi.mock('hast-util-from-html', async (importOriginal) => {
 
 afterEach(() => vi.unstubAllEnvs())
 
-const schema = { type: 'object', properties: { nested: {
-  type: 'array', items: { type: 'object', properties: { choice: { enum: ['pane', 'window'] } }, required: ['choice'] },
-} }, required: ['nested'], additionalProperties: false }
+const schema = {
+  type: 'object',
+  properties: {
+    nested: {
+      type: 'array',
+      items: { type: 'object', properties: { choice: { enum: ['pane', 'window'] } }, required: ['choice'] },
+    },
+  },
+  required: ['nested'],
+  additionalProperties: false,
+}
 const escape = (text: string) => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;')
 const base = '/preview/en/go/v9-proof/'
 
 function fixture(run: (out: string, routes: ReturnType<typeof mcpReferenceRoutes>) => void) {
   const out = mkdtempSync(join(tmpdir(), 'libtmux-mcp-exports-'))
-  const write = (path: string, text: string) => { mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, text) }
+  const write = (path: string, text: string) => {
+    mkdirSync(dirname(path), { recursive: true })
+    writeFileSync(path, text)
+  }
   const routes = mcpReferenceRoutes('go', {}, 'v9-proof')
   try {
-    write(join(out, 'docs.json'), JSON.stringify({ pages: [{ title: 'Guide', url: `https://libtmux.org${base}guide/` }] }))
+    write(
+      join(out, 'docs.json'),
+      JSON.stringify({ pages: [{ title: 'Guide', url: `https://libtmux.org${base}guide/` }] }),
+    )
     write(join(out, 'llms.txt'), '# Guides\n\n## Documentation\n\n- [Guide](guide/)\n')
-    write(join(out, 'llms-full.txt'), `# Guides\n\n---\n\n${markdownDocument({ title: 'Guide', url: `https://libtmux.org${base}guide/`, body: 'Existing prose.' })}`)
+    write(
+      join(out, 'llms-full.txt'),
+      `# Guides\n\n---\n\n${markdownDocument({ title: 'Guide', url: `https://libtmux.org${base}guide/`, body: 'Existing prose.' })}`,
+    )
     for (const route of routes) {
       const source = MCP_REFERENCE.go.registrations.find((tool) => tool.wireName === route.toolName)?.source
-      write(join(out, route.path, 'index.html'), `<html><head>
+      write(
+        join(out, route.path, 'index.html'),
+        `<html><head>
 <link rel="canonical" href="https://libtmux.org/en/go/stable/${route.path}/">
 <link rel="alternate" type="text/markdown" data-twin="rendered" href="${base}${route.path}.md">
 <meta name="description" content="Resolved Go contract for ${route.toolName ?? 'catalog'}">
@@ -41,10 +60,13 @@ ${source ? `<a href="https://github.com/${source.repo}/blob/${source.revision}/$
 <h2 id="arguments">Arguments</h2><p>The nested selection is required.</p>
 <h2 id="schemas">Schemas</h2><details data-pagefind-ignore="all"><summary>Input schema</summary>
 <pre data-language="json"><code>${escape(JSON.stringify(schema, null, 2))}</code></pre></details>
-<button>Copy</button><nav>Other languages</nav></main></body></html>`)
+<button>Copy</button><nav>Other languages</nav></main></body></html>`,
+      )
     }
     run(out, routes)
-  } finally { rmSync(out, { recursive: true, force: true }) }
+  } finally {
+    rmSync(out, { recursive: true, force: true })
+  }
 }
 
 it.each(['en', 'ja'])('adds every selected-port MCP contract when the requested locale is %s', (locale) => {
@@ -67,8 +89,12 @@ it.each(['en', 'ja'])('adds every selected-port MCP contract when the requested 
       expect(entry.markdownUrl).toBe(`https://libtmux.org${base}${path}.md`)
       expect(entry.source.repo).toBe('libtmux/libtmux-go')
       expect(entry.source.revision).toBe(MCP_REFERENCE.go.revision)
-      if (toolName) expect(entry.source).toEqual(MCP_REFERENCE.go.registrations.find((tool) => tool.wireName === toolName)!.source)
-      expect(entry.headings).toEqual([{ id: 'arguments', level: 2, text: 'Arguments' }, { id: 'schemas', level: 2, text: 'Schemas' }])
+      if (toolName)
+        expect(entry.source).toEqual(MCP_REFERENCE.go.registrations.find((tool) => tool.wireName === toolName)!.source)
+      expect(entry.headings).toEqual([
+        { id: 'arguments', level: 2, text: 'Arguments' },
+        { id: 'schemas', level: 2, text: 'Schemas' },
+      ])
       const twin = readFileSync(join(out, `${path}.md`), 'utf8')
       expect(full).toContain(twin)
       expect(index).toContain(`](${url})`)
@@ -97,31 +123,43 @@ it('keeps repeated export generation byte-identical', () => {
 
 it('parses each MCP twin once while preserving every final export byte', () => {
   let expected: string[] = []
-  for (const legacyOrder of [true, false]) fixture((out, routes) => {
-    // A translated root runs only the generic pass, reproducing the old first pass.
-    vi.stubEnv('LIBTMUX_DOCS_PORT', legacyOrder ? '' : 'go')
-    vi.stubEnv('LIBTMUX_DOCS_LOCALE', legacyOrder ? 'ja' : 'en')
-    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'v9-proof')
-    writeFileSync(join(out, 'ordinary.html'), `<html><head>
+  for (const legacyOrder of [true, false])
+    fixture((out, routes) => {
+      // A translated root runs only the generic pass, reproducing the old first pass.
+      vi.stubEnv('LIBTMUX_DOCS_PORT', legacyOrder ? '' : 'go')
+      vi.stubEnv('LIBTMUX_DOCS_LOCALE', legacyOrder ? 'ja' : 'en')
+      vi.stubEnv('LIBTMUX_DOCS_VERSION', 'v9-proof')
+      writeFileSync(
+        join(out, 'ordinary.html'),
+        `<html><head>
 <link rel="canonical" href="https://libtmux.org${base}ordinary/">
 <link rel="alternate" type="text/markdown" data-twin="rendered" href="${base}ordinary.md">
-</head><body><main><h1>Ordinary page</h1><p>Keep this content.</p></main></body></html>`)
-    const hooks = markdownTwins().hooks
-    ;(hooks['astro:config:done'] as (value: unknown) => void)({ config: { base } })
-    vi.mocked(fromHtml).mockClear()
-    ;(hooks['astro:build:done'] as (value: unknown) => void)({ dir: new URL(`file://${out}/`), logger: { info() {} } })
-    if (legacyOrder) writeMcpExports(out, base, routes)
-    const files = ['docs.json', 'llms.txt', 'llms-full.txt', 'ordinary.md',
-      ...routes.map((route) => `${route.path}.md`)]
-    const actual = files.map((file) => readFileSync(join(out, file), 'utf8'))
-    if (legacyOrder) {
-      expected = actual
-      expect(fromHtml).toHaveBeenCalledTimes(routes.length * 2 + 1)
-    } else {
-      expect(actual).toEqual(expected)
-      expect(fromHtml).toHaveBeenCalledTimes(routes.length + 1)
-    }
-  })
+</head><body><main><h1>Ordinary page</h1><p>Keep this content.</p></main></body></html>`,
+      )
+      const hooks = markdownTwins().hooks
+      ;(hooks['astro:config:done'] as (value: unknown) => void)({ config: { base } })
+      vi.mocked(fromHtml).mockClear()
+      ;(hooks['astro:build:done'] as (value: unknown) => void)({
+        dir: new URL(`file://${out}/`),
+        logger: { info() {} },
+      })
+      if (legacyOrder) writeMcpExports(out, base, routes)
+      const files = [
+        'docs.json',
+        'llms.txt',
+        'llms-full.txt',
+        'ordinary.md',
+        ...routes.map((route) => `${route.path}.md`),
+      ]
+      const actual = files.map((file) => readFileSync(join(out, file), 'utf8'))
+      if (legacyOrder) {
+        expected = actual
+        expect(fromHtml).toHaveBeenCalledTimes(routes.length * 2 + 1)
+      } else {
+        expect(actual).toEqual(expected)
+        expect(fromHtml).toHaveBeenCalledTimes(routes.length + 1)
+      }
+    })
 })
 
 it('still rejects a missing ordinary source twin after MCP exports are written', () => {
@@ -129,14 +167,20 @@ it('still rejects a missing ordinary source twin after MCP exports are written',
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'go')
     vi.stubEnv('LIBTMUX_DOCS_LOCALE', 'en')
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'v9-proof')
-    writeFileSync(join(out, 'missing.html'), `<html><head>
+    writeFileSync(
+      join(out, 'missing.html'),
+      `<html><head>
 <link rel="alternate" type="text/markdown" data-twin="source" href="${base}missing.md">
-</head><body><main>Missing source twin</main></body></html>`)
+</head><body><main>Missing source twin</main></body></html>`,
+    )
     const hooks = markdownTwins().hooks
     ;(hooks['astro:config:done'] as (value: unknown) => void)({ config: { base } })
-    expect(() => (hooks['astro:build:done'] as (value: unknown) => void)({
-      dir: new URL(`file://${out}/`), logger: { info() {} },
-    })).toThrow(/missing\.html.*missing\.md/)
+    expect(() =>
+      (hooks['astro:build:done'] as (value: unknown) => void)({
+        dir: new URL(`file://${out}/`),
+        logger: { info() {} },
+      }),
+    ).toThrow(/missing\.html.*missing\.md/)
   })
 })
 

@@ -26,7 +26,14 @@ export function symbolSource(model: ApiModel | SourceApiModel, symbol?: ApiSymbo
   const ref = symbol?.source.revision ?? model.revision
   return symbol?.source.file && !model.generatedSources?.[symbol?.source.file] && repo && ref
     ? { repo, path: symbol?.source.file, ref }
-    : { repo: CONTRIBUTE_REPO, path: 'port' in model ? `site/src/data/api/${model.port}.json` : `site/src/data/${model.project}/api/${model.version}.json`, ref: CONTRIBUTE_BRANCH }
+    : {
+        repo: CONTRIBUTE_REPO,
+        path:
+          'port' in model
+            ? `site/src/data/api/${model.port}.json`
+            : `site/src/data/${model.project}/api/${model.version}.json`,
+        ref: CONTRIBUTE_BRANCH,
+      }
 }
 
 /**

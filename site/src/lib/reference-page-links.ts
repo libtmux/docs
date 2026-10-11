@@ -9,9 +9,9 @@ export function referencePageLinks() {
   for (const concept of Object.values(CONCEPTS)) {
     for (const [port, publicId] of Object.entries(concept.symbols)) {
       const entries = referenceAlternatives(port, publicId).flatMap((alternative) =>
-        alternative.ports.flatMap((entry) => entry.href
-          ? [{ port: entry.port, href: entry.href, label: alternative.label }]
-          : []),
+        alternative.ports.flatMap((entry) =>
+          entry.href ? [{ port: entry.port, href: entry.href, label: alternative.label }] : [],
+        ),
       )
       ;(symbols[port] ??= {})[publicId] = entries
     }

@@ -1,4 +1,13 @@
-import { conceptsFor, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model'
+import {
+  conceptsFor,
+  parentInventory,
+  sourceUrl,
+  SymbolIndex,
+  type ApiModel,
+  type ApiModelBase,
+  type ApiSymbol,
+  type InventoryEntry,
+} from '@libtmux/api-model'
 import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
@@ -174,8 +183,9 @@ export function ownersOf(model: ApiModelBase) {
 /** The types the port index lists: top-level only, so nesting reads as nesting. */
 export function topLevelTypesOf(model: ApiModelBase) {
   const owners = new Set(ownersOf(model).map((symbol) => symbol.id))
-  return model.symbols.filter((s) => !s.parent && OWNER_KINDS.has(s.kind)
-    && (s.kind !== 'typealias' || owners.has(s.id)))
+  return model.symbols.filter(
+    (s) => !s.parent && OWNER_KINDS.has(s.kind) && (s.kind !== 'typealias' || owners.has(s.id)),
+  )
 }
 
 /**
@@ -197,7 +207,6 @@ export function pageSlug(id: string): string {
     .replace(/-{2,}/g, '-')
     .replace(/^-|-$/g, '')
 }
-
 
 /**
  * Inventories this site resolves external names against, intersphinx-style.
@@ -240,7 +249,10 @@ const INVENTORIES: {
     project: 'MDN Web Docs',
   },
   ...dependencyInv.map((data) => ({
-    data, baseUrl: data.baseUrl, langs: data.langs, project: data.project,
+    data,
+    baseUrl: data.baseUrl,
+    langs: data.langs,
+    project: data.project,
   })),
 ]
 
@@ -269,12 +281,16 @@ const entriesOf = (inv: InventorySidecar): InventoryEntry[] =>
 /** Parent APIs used by a facade, at the parent's published default version. */
 export function parentApiInventory(port: string): InventoryEntry[] {
   const parent = PORT_BY_SLUG[port]?.parentLibrary
-  return parent ? parentInventory(API_MODELS[parent.slug],
-    (symbol) => referenceHref(parent.slug, symbol.publicId ?? symbol.id)!) : []
+  return parent
+    ? parentInventory(API_MODELS[parent.slug], (symbol) => referenceHref(parent.slug, symbol.publicId ?? symbol.id)!)
+    : []
 }
 
 /** Build an index with this site's language-scoped external inventories. */
-export function createApiIndex(model: ApiModelBase & { port?: string; language?: string }, hrefFor: (s: ApiSymbol) => string): SymbolIndex {
+export function createApiIndex(
+  model: ApiModelBase & { port?: string; language?: string },
+  hrefFor: (s: ApiSymbol) => string,
+): SymbolIndex {
   const index = new SymbolIndex(model.symbols, hrefFor, model.port ?? model.language)
   for (const { data, baseUrl, langs, project } of INVENTORIES) {
     index.addInventory(baseUrl, entriesOf(data), langs, project)
@@ -304,7 +320,8 @@ export function createApiIndex(model: ApiModelBase & { port?: string; language?:
     entries.push({ name, uri: href.slice(base.length), type: 'std:label', priority: 1, dispname: '-' })
     filesByBase.set(base, entries)
   }
-  for (const [base, entries] of filesByBase) index.addInventory(base, entries, [model.port ?? model.language ?? ''], 'Source')
+  for (const [base, entries] of filesByBase)
+    index.addInventory(base, entries, [model.port ?? model.language ?? ''], 'Source')
   return index
 }
 
