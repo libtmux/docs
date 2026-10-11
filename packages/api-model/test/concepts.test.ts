@@ -36,6 +36,40 @@ describe('concept map', () => {
     }
   })
 
+  it.runIf(models.size)('applies reviewed PowerShell workspace plans with native confirmation', () => {
+    const concept = CONCEPTS['build-workspace']
+    const id = 'LibTmux.Workspace\\Invoke-TmuxWorkspace'
+    expect(concept.symbols.powershell).toBe(id)
+    const symbol = models.get('powershell')!.symbols.find((entry) => entry.id === id)!
+    expect(symbol.product).toBe('workspace')
+    expect(symbol.command).toMatchObject({ kind: 'cmdlet', supportsShouldProcess: true, confirmImpact: 'High',
+      outputTypes: ['LibTmux.Workspace.WorkspaceResult'] })
+    expect(symbol.signatures[0].params.find((param) => param.name === 'Plan')).toMatchObject({
+      type: 'LibTmux.Workspace.WorkspacePlan', binding: { mandatory: true, pipeline: { byValue: true } },
+    })
+    expect(conceptsFor('powershell', id)).toContain(concept)
+    expect(conceptsFor('powershell', 'LibTmux.Workspace\\Get-TmuxWorkspacePlan')).not.toContain(concept)
+    expect(concept.notes?.powershell).toContain('`-WhatIf`')
+    expect(concept.absent?.powershell).toBeUndefined()
+  })
+
+  it.runIf(models.size)('applies prepared Julia workspace plans on an explicit server', () => {
+    const concept = CONCEPTS['build-workspace']
+    const id = 'LibTmuxWorkspace.apply'
+    expect(concept.symbols.julia).toBe(id)
+    const symbol = models.get('julia')!.symbols.find((entry) => entry.id === id)!
+    expect(symbol).toMatchObject({ product: 'workspace', kind: 'function' })
+    expect(symbol.signatures[0].params.slice(0, 2)).toMatchObject([
+      { name: 'server', type: 'LibTmux.Server' },
+      { name: 'prepared', type: 'LibTmuxWorkspace.WorkspacePlan' },
+    ])
+    expect(symbol.signatures[0].params.find((param) => param.name === 'reuse')?.default).toBe('nothing')
+    expect(conceptsFor('julia', id)).toContain(concept)
+    expect(conceptsFor('julia', 'LibTmuxWorkspace.plan')).not.toContain(concept)
+    expect(concept.notes?.julia).toContain('prepared `WorkspacePlan`')
+    expect(concept.absent?.julia).toBeUndefined()
+  })
+
   it.runIf(models.size)('live workspace export takes a session rather than a description', () => {
     for (const [port, publicId] of Object.entries(CONCEPTS['freeze-workspace'].symbols)) {
       const model = models.get(port)

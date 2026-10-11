@@ -43,6 +43,12 @@ export const CONCEPTS: Record<string, Concept> = {
       csharp: 'LibTmux.Workspace.WorkspaceBuilder.BuildAsync',
       cxx: 'libtmux::workspace::build',
       swift: 'WorkspaceBuilder.build(_:on:)',
+      powershell: 'LibTmux.Workspace\\Invoke-TmuxWorkspace',
+      julia: 'LibTmuxWorkspace.apply',
+    },
+    notes: {
+      powershell: 'Applies the exact reviewed `-Plan` after PowerShell confirmation. `-WhatIf` previews without applying it; application is detached.',
+      julia: 'Applies a prepared `WorkspacePlan` on an explicit `Server`, detached and under one deadline. Existing session names fail unless reuse is explicit.',
     },
   },
   'freeze-workspace': {

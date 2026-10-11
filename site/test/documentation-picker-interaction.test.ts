@@ -2,7 +2,9 @@ import { readFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { experimental_AstroContainer } from 'astro/container'
-import type { PagePortLink } from '../src/lib/page-port-links'
+import { pagePortLinks, type PagePortLink } from '../src/lib/page-port-links'
+import { API_MODELS } from '../src/lib/api-models'
+import { PORTS, productAvailable } from '../src/lib/ports'
 import ts from 'typescript'
 import { Window, type HTMLElement } from 'happy-dom'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
@@ -104,7 +106,7 @@ it('retains separate native-page home exits when fragment equivalents change', (
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 let pickerComponent: Promise<Parameters<Awaited<ReturnType<typeof experimental_AstroContainer.create>>['renderToString']>[0]> | undefined
 
-async function renderPicker(entries: PagePortLink[]) {
+async function renderPicker(entries: PagePortLink[], portSlug = 'julia') {
   pickerComponent ??= (async () => {
     const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
     async function compile(relative: string, imports: Record<string, string>) {
@@ -128,7 +130,7 @@ async function renderPicker(entries: PagePortLink[]) {
     return (await import(/* @vite-ignore */ component)).default
   })()
   const container = await experimental_AstroContainer.create()
-  win.document.body.innerHTML = await container.renderToString(await pickerComponent, { props: { entries, portSlug: 'julia' } })
+  win.document.body.innerHTML = await container.renderToString(await pickerComponent, { props: { entries, portSlug } })
 }
 
 it('renders section fallbacks as truthful overview exits without repeated destination titles', async () => {
@@ -195,4 +197,73 @@ it('keeps single native distinctions accessible and genuine multiple choices vis
   const choices = [...win.document.querySelectorAll('[data-picker-option][data-port="ruby"]')]
   expect(choices.map((choice) => choice.querySelector('small')?.textContent)).toEqual(['Connect a client', 'MCP server guide'])
   expect(choices.map((choice) => choice.getAttribute('href'))).toEqual(entries[2].links.map((link) => link.href))
+})
+
+
+it.each([
+  ['ts', 'builder.applyWorkspace'],
+  ['powershell', 'LibTmux.Workspace\\Invoke-TmuxWorkspace'],
+  ['julia', 'LibTmuxWorkspace.apply'],
+])('renders source-verified workspace construction equivalents from %s', async (port, id) => {
+  const symbol = API_MODELS[port].symbols.find((entry) => entry.id === id)!
+  const entries = pagePortLinks({ pagePath: `workspace/reference/${symbol.slug}`, portSlug: port,
+    version: 'latest', defaults: { py: 'stable' }, docs: [] })
+  await renderPicker(entries, port)
+  const links = Array.from(win.document.querySelectorAll('a[data-port]'))
+  const published = PORTS.filter((target) => productAvailable(target, 'workspace'))
+  expect(links.map((link) => link.getAttribute('data-port')).sort()).toEqual(published.map((target) => target.slug).sort())
+  for (const [target, slug, kind] of [
+    ['powershell', 'libtmux-workspace-invoke-tmuxworkspace', 'Invoke-TmuxWorkspace (cmdlet)'],
+    ['julia', 'libtmuxworkspace-apply', 'apply (function)'],
+  ]) {
+    const link = win.document.querySelector(`a[data-port="${target}"]`)!
+    expect(link.getAttribute('href')).toBe(`/${target}/latest/workspace/reference/${slug}/`)
+    if (target !== port) expect(link.getAttribute('aria-label')).toContain(kind)
+  }
+  expect(win.document.querySelector('a[data-port="py"]')!.getAttribute('href'))
+    .toBe('/py/stable/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/')
+  expect(win.document.querySelectorAll('a[data-port][aria-current="page"]')).toHaveLength(1)
+  expect(win.document.querySelector('a[data-port][aria-current="page"]')!.getAttribute('data-port')).toBe(port)
+  const unmatched = Array.from(win.document.querySelectorAll('.doc-picker-option--unmatched'))
+  expect(unmatched).toHaveLength(PORTS.length - published.length)
+  for (const row of unmatched) {
+    expect(row.tagName).toBe('DIV')
+    expect(row.querySelector('a[data-port]')).toBeNull()
+    expect(row.querySelector('[data-picker-home]')?.getAttribute('href')).toBe(`/${row.getAttribute('data-port')}/latest/`)
+    expect(row.hasAttribute('aria-disabled')).toBe(false)
+  }
+})
+
+
+it.each(['workspace/guides', 'workspace/internals/guides'])('keeps %s counterparts separate from detailed native source articles', async (pagePath) => {
+  const guidePorts = ['py', 'ruby', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']
+  const builderPorts = ['ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']
+  const docs = [
+    ...guidePorts.map((port) => ({ id: `ports/${port}/workspace/guides`, data: { port, product: 'workspace' } })),
+    ...builderPorts.map((port) => ({ id: `ports/${port}/workspace/internals/guides`, data: { port, product: 'workspace' } })),
+    ...['powershell', 'julia'].map((port) => ({ id: `_staged/${port}/workspace/source-guide`,
+      data: { port, product: 'workspace', route: 'workspace/source-guide', aliases: [] } })),
+  ]
+  const portSlug = pagePath === 'workspace/guides' ? 'py' : 'ts'
+  const entries = pagePortLinks({ pagePath, portSlug, version: portSlug === 'py' ? 'stable' : 'latest',
+    defaults: { py: 'stable' }, docs })
+  await renderPicker(entries, portSlug)
+  const matched = pagePath === 'workspace/guides' ? guidePorts : builderPorts
+  expect(Array.from(win.document.querySelectorAll('a[data-port]')).map((link) => link.getAttribute('data-port')).sort())
+    .toEqual([...matched].sort())
+  const unmatched = Array.from(win.document.querySelectorAll('.doc-picker-option--unmatched'))
+  expect(unmatched).toHaveLength(PORTS.length - matched.length)
+  for (const row of unmatched) {
+    const port = PORTS.find((target) => target.slug === row.getAttribute('data-port'))!
+    const workspace = productAvailable(port, 'workspace')
+    const version = port.slug === 'py' ? 'stable' : 'latest'
+    expect(row.tagName).toBe('DIV')
+    expect(row.hasAttribute('aria-disabled')).toBe(false)
+    expect(row.querySelector('a[data-port]')).toBeNull()
+    expect(row.textContent).toContain('No matching page')
+    expect(row.querySelector('[data-picker-home]')?.getAttribute('href'))
+      .toBe(`/${port.slug}/${version}/${workspace ? 'workspace/' : ''}`)
+    expect(row.querySelector('[data-picker-home]')?.getAttribute('aria-label'))
+      .toBe(`Go to ${port.name}${workspace ? ' Workspace Manager' : ''} home`)
+  }
 })

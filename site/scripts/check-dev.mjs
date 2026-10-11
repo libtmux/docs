@@ -671,15 +671,36 @@ try {
         assert.equal(await switcher.locator('.tmux-area a').getAttribute('href'), '/en/tmux/')
       }
       if (path === 'py/stable/workspace/guides') {
-        assert.equal(await portLinks.count(), workspacePortCount)
-        assert.equal(
-          await switcher.locator('[aria-disabled="true"]').count(),
-          PORTS.length - workspacePortCount,
-        )
+        // Native PowerShell and Julia articles live at workspace/source-guide,
+        // not this guide index; product availability alone is not a counterpart.
+        const guidePorts = ['py', 'ruby', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift']
+        assert.deepEqual((await portLinks.evaluateAll((links) => links.map((link) => link.dataset.port))).sort(),
+          [...guidePorts].sort())
+        assert.equal(await portLinks.count(), guidePorts.length)
+        const unmatched = switcher.locator('.doc-picker-option--unmatched')
+        const unavailablePorts = PORTS.filter((port) => !guidePorts.includes(port.slug))
+        assert.deepEqual((await unmatched.evaluateAll((rows) => rows.map((row) => row.dataset.port))).sort(),
+          unavailablePorts.map((port) => port.slug).sort())
+        assert.equal(await unmatched.count(), PORTS.length - guidePorts.length)
+        for (const port of unavailablePorts) {
+          const row = switcher.locator(`.doc-picker-option--unmatched[data-port="${port.slug}"]`)
+          assert.equal(await row.locator('a[data-port]').count(), 0, `${port.name}: no guide-index equivalent`)
+          assert.equal(await row.getAttribute('aria-disabled'), null, `${port.name}: home exit remains available`)
+          const workspace = productAvailable(port, 'workspace')
+          assert.equal(await row.locator('[data-picker-home]').getAttribute('href'),
+            `/en/${port.slug}/latest/${workspace ? 'workspace/' : ''}`)
+          assert.equal(await row.locator('[data-picker-home]').getAttribute('aria-label'),
+            `Go to ${port.name}${workspace ? ' Workspace Manager' : ''} home`)
+        }
       }
       if (path === 'ts/latest/workspace/internals/guides') {
-        const unavailable = await switcher.locator('[aria-disabled="true"]').allTextContents()
-        assert(unavailable.some((label) => /Python/.test(label)), 'Python internals guide stays unavailable')
+        const python = switcher.locator('.doc-picker-option--unmatched[data-port="py"]')
+        assert.equal(await python.count(), 1, 'Python internals guide stays unmatched')
+        assert.match(await python.textContent(), /No matching page/)
+        assert.equal(await python.locator('a[data-port]').count(), 0)
+        assert.equal(await python.getAttribute('aria-disabled'), null)
+        assert.equal(await python.locator('[data-picker-home]').getAttribute('href'), '/en/py/stable/workspace/')
+        assert.equal(await python.locator('[data-picker-home]').getAttribute('aria-label'), 'Go to Python Workspace Manager home')
       }
       if (path === 'csharp/latest/mcp/tools/capture_pane') {
         assert.equal(await portLinks.count(), 8)
